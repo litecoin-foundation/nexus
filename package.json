@@ -1,12 +1,24 @@
 {
   "name": "lndmobile",
   "version": "0.0.1",
+  "description": "Mobile Bitcoin & Litecoin lightning wallet built with React-Native + Redux",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/losh11/lndmobile.git"
+  },
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start"
   },
   "dependencies": {
+    "prop-types": "^15.7.2",
     "react": "16.8.3",
-    "react-native": "0.59.1"
+    "react-native": "0.59.1",
+    "react-native-gesture-handler": "^1.1.0",
+    "react-navigation": "^3.5.1",
+    "react-redux": "^6.0.1",
+    "redux": "^4.0.1",
+    "redux-thunk": "^2.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",

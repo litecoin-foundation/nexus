@@ -5,6 +5,7 @@
     "prettier/prettier": ["error"],
     "jsx-a11y/href-no-hash": [0],
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
-    "react/prefer-stateless-function": [0, { "ignorePureComponents": "true" }]
+    "react/prefer-stateless-function": [0, { "ignorePureComponents": "true" }],
+    "react/require-default-props": [0]
   }
 }
