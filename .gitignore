@@ -31,3 +31,5 @@ buck-out/
 */fastlane/Preview.html
 */fastlane/screenshots
 *.jsbundle
+src/lib/lightning/rpc.js
+Lndmobile.framework
