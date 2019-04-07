@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
 import onboarding from './onboarding';
-import lnd from './lnd';
+import lightning from './lightning';
 
-export default combineReducers({ onboarding, lnd });
+export default combineReducers({ onboarding, lightning });

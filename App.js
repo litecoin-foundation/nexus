@@ -12,6 +12,7 @@ import { store, pStore } from './store';
 import { Initial, Pin, GenerateWallet, VerifyWallet } from './src/screens/Onboarding';
 import Loading from './src/screens/Loading';
 import Wallets from './src/screens/Wallets';
+import Auth from './src/screens/Auth';
 
 const OnboardingStack = createStackNavigator({
   initial: { screen: Initial },
@@ -26,6 +27,7 @@ const AppStack = createBottomTabNavigator({
 
 const RootStack = createSwitchNavigator(
   {
+    Auth,
     Loading,
     Onboarding: OnboardingStack,
     App: AppStack

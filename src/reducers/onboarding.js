@@ -63,7 +63,6 @@ export const initWallet = () => async (dispatch, getState) => {
       recoveryWindow: 0
     });
   } catch (error) {
-    console.log(error);
     // TODO: handle errors
   }
   dispatch(finishOnboarding());

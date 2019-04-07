@@ -1,15 +1,18 @@
 import Lightning from '../lib/lightning/lightning';
+import { toBuffer } from '../lib/utils';
 
 const LndInstance = new Lightning();
 
 // inital state
 const initialState = {
-  lndActive: false
+  lndActive: false,
+  walletUnlocked: false
 };
 
 // constants
 export const START_LND = 'START_LND';
 export const STOP_LND = 'STOP_LND';
+export const UNLOCK_WALLET = 'UNLOCK_WALLET';
 
 // actions
 export const startLnd = () => async dispatch => {
@@ -36,10 +39,31 @@ export const stopLnd = () => async dispatch => {
   }
 };
 
+export const unlockWallet = input => async (dispatch, getState) => {
+  const { passcode } = getState().onboarding;
+  const status = input === passcode;
+  const encodedPassword = `${input}_losh11`;
+  try {
+    await LndInstance.sendCommand('UnlockWallet', {
+      walletPassword: toBuffer(encodedPassword),
+      recoveryWindow: 0
+    });
+  } catch (error) {
+    // TODO: handle this
+    alert(error);
+  }
+  dispatch({
+    type: UNLOCK_WALLET,
+    payload: status
+  });
+  return status;
+};
+
 // action handlers
 const actionHandler = {
   [START_LND]: state => ({ ...state, lndActive: true }),
-  [STOP_LND]: state => ({ ...state, lndActive: false })
+  [STOP_LND]: state => ({ ...state, lndActive: false }),
+  [UNLOCK_WALLET]: (state, payload) => ({ ...state, walletUnlocked: payload })
 };
 
 // reducer

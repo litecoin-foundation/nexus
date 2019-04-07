@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 import { connect } from 'react-redux';
 import { startOnboarding } from '../reducers/onboarding';
-import { startLnd } from '../reducers/lnd';
+import { startLnd } from '../reducers/lightning';
 
 export class Loading extends Component {
   componentWillMount() {
@@ -17,7 +17,7 @@ export class Loading extends Component {
       navigation.navigate('Onboarding');
     } else if (onboarding === false && isOnboarded === true) {
       // access wallet
-      navigation.navigate('App');
+      navigation.navigate('Auth');
     } else {
       // probably needs to be onboarded (crash)
     }
