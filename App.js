@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import {
   createSwitchNavigator,
   createStackNavigator,
   createBottomTabNavigator,
   createAppContainer
 } from 'react-navigation';
-import store from './store';
+import { store, pStore } from './store';
 
 import { Initial, Pin, GenerateWallet, VerifyWallet } from './src/screens/Onboarding';
 import Loading from './src/screens/Loading';
@@ -40,7 +41,9 @@ class App extends Component {
   render() {
     return (
       <Provider store={store}>
-        <Navigation />
+        <PersistGate loading={null} persistor={pStore}>
+          <Navigation />
+        </PersistGate>
       </Provider>
     );
   }
