@@ -11,17 +11,17 @@ class Lightning {
     this.streamCounter = 0;
   }
 
-  async initUnlocker() {
+  async init() {
     await this.lightning.start();
   }
 
-  async sendUnlockerCommand(method, body) {
-    return this.lnrpcRequest(method, body);
+  // eslint-disable-next-line class-methods-use-this
+  async stop() {
+    // TODO: uncomment when available in API
+    // await this.lightning.close()
   }
 
-  // lnd command stuff
-
-  sendCommand(method, body) {
+  async sendCommand(method, body) {
     return this.lnrpcRequest(method, body);
   }
 

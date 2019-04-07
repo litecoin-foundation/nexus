@@ -46,8 +46,7 @@ export const removePincode = () => dispatch => {
 };
 
 export const getSeed = () => async dispatch => {
-  await LndInstance.initUnlocker();
-  const response = await LndInstance.sendUnlockerCommand('GenSeed');
+  const response = await LndInstance.sendCommand('GenSeed');
   dispatch({
     type: GET_SEED,
     seed: response.cipherSeedMnemonic
@@ -58,7 +57,7 @@ export const initWallet = () => async (dispatch, getState) => {
   const { passcode, seed } = getState().onboarding;
   const encodedPassword = `${passcode}_losh11`;
   try {
-    await LndInstance.sendUnlockerCommand('InitWallet', {
+    await LndInstance.sendCommand('InitWallet', {
       walletPassword: toBuffer(encodedPassword),
       cipherSeedMnemonic: seed,
       recoveryWindow: 0

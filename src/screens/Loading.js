@@ -2,10 +2,14 @@ import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 import { connect } from 'react-redux';
 import { startOnboarding } from '../reducers/onboarding';
+import { startLnd } from '../reducers/lnd';
 
 export class Loading extends Component {
   componentWillMount() {
-    const { navigation, onboarding, isOnboarded, startOnboarding } = this.props;
+    const { navigation, onboarding, isOnboarded, startOnboarding, startLnd } = this.props;
+    // start LND process
+    startLnd();
+
     if (onboarding === false && isOnboarded === false) {
       // needs to be onboarded
       // TODO: handle update STATE!
@@ -33,7 +37,7 @@ const mapStateToProps = state => ({
   isOnboarded: state.onboarding.isOnboarded
 });
 
-const mapDispatchToProps = { startOnboarding };
+const mapDispatchToProps = { startOnboarding, startLnd };
 
 export default connect(
   mapStateToProps,
