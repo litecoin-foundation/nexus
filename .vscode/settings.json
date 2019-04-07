@@ -4,5 +4,9 @@
   "eslint.alwaysShowStatus": true,
   "files.exclude": {
     "**/node_modules": true
+  },
+  "editor.formatOnSave": true,
+  "search.exclude": {
+    "Lndmobile.framework": true
   }
 }

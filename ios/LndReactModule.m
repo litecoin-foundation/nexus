@@ -186,7 +186,7 @@ RCT_EXPORT_METHOD(start: (RCTPromiseResolveBlock)resolve
   NSString *args = [NSString stringWithFormat:@"%@", self.appDir];
   
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
-    RCTLogInfo(@"Starting lnd");
+    RCTLogInfo(@"Starting lnd"); 
     NativeCallback* cb = [[NativeCallback alloc] initWithResolver:resolve rejecter:reject];
     LndmobileStart(args, cb);
   });
