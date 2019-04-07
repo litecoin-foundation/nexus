@@ -1,15 +1,20 @@
 import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-import AsyncStorage from '@react-native-community/async-storage';
 import { persistStore, persistReducer } from 'redux-persist';
+import createSensitiveStorage from 'redux-persist-sensitive-storage';
 import reducer from './src/reducers';
 
 const initialState = {};
 const middleware = [thunk];
 
+const storage = createSensitiveStorage({
+  keychainService: 'lndmobileKeychain',
+  sharedPreferencesName: 'lndmobileKeystore'
+});
+
 const persistConfig = {
   key: 'root',
-  storage: AsyncStorage
+  storage
 };
 const pReducer = persistReducer(persistConfig, reducer);
 

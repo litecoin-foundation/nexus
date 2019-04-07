@@ -775,11 +775,6 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@react-native-community/async-storage@^1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@react-native-community/async-storage/-/async-storage-1.2.4.tgz#34fb252ca296de95d9f8ea0ec106a9c349efdd5c"
-  integrity sha512-DPUdqlG7KDNhKF01272KMBNgPTAM08LQvsqRXYMHC2KhLMBgSea8n4gK7xWW6enYglkc6CInw9vriP1oZ7Kgpw==
-
 "@react-native-community/cli@^1.2.1":
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli/-/cli-1.5.1.tgz#21a93266ecf1885990ac86680a369aa3ff432973"
@@ -3062,11 +3057,6 @@ istanbul-lib-instrument@^3.0.0:
     istanbul-lib-coverage "^2.0.3"
     semver "^5.5.0"
 
-javascript-state-machine@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/javascript-state-machine/-/javascript-state-machine-3.1.0.tgz#06eeb2136a6a19ae1b56105c25caec283dd5cd14"
-  integrity sha512-BwhYxQ1OPenBPXC735RgfB+ZUG8H3kjsx8hrYTgWnoy6TPipEy4fiicyhT2lxRKAXq9pG7CfFT8a2HLr6Hmwxg==
-
 jest-haste-map@24.0.0-alpha.6:
   version "24.0.0-alpha.6"
   resolved "https://registry.yarnpkg.com/jest-haste-map/-/jest-haste-map-24.0.0-alpha.6.tgz#fb2c785080f391b923db51846b86840d0d773076"
@@ -4615,6 +4605,11 @@ react-native-safe-area-view@^0.13.0:
   resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-1.0.0-alpha.22.tgz#7a120377b52aa9bbb94d0b8541a014026be9289b"
   integrity sha512-kSyAt0AeVU6N7ZonfV6dP6iZF8B7Bce+tk3eujXhzBGsLg0VSLnU7uE9VqJF0xdQrHR91ZjGgVMieo/8df9KTA==
 
+react-native-sensitive-info@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/react-native-sensitive-info/-/react-native-sensitive-info-5.3.0.tgz#dab9f346a6f7cc6d4c520c4973e60854b7a82ef8"
+  integrity sha512-bAY05Tye8QDr1Bytv950P7ToxQjan6ZzVdF34Y/RWz7O5b2wvfRLJIafmuY/XN5DboQF+ShIUPxIuBf09vVBAg==
+
 react-native-tab-view@^1.0.0, react-native-tab-view@^1.2.0:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/react-native-tab-view/-/react-native-tab-view-1.3.4.tgz#63fc3eb09652651d0ea0e016cff0f3a5e535f4de"
@@ -4812,6 +4807,11 @@ realpath-native@^1.1.0:
   integrity sha512-wlgPA6cCIIg9gKz0fgAPjnzh4yR/LnXovwuo9hvyGvx3h8nX4+/iLZplfUWasXpqD8BdnGnP5njOFjkUwPzvjA==
   dependencies:
     util.promisify "^1.0.0"
+
+redux-persist-sensitive-storage@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/redux-persist-sensitive-storage/-/redux-persist-sensitive-storage-1.0.0.tgz#19f5e5bd8ce4c4a4bc852eec61d18360abe07b66"
+  integrity sha512-AD8JyDsTpj+H+ZOGcg1qs9MkdcNOmHsBu+QL2kq2aKDB5HaCjy15qP4eryz7RVhWBatu4WC51R//1bfKHNb6yg==
 
 redux-persist@^5.10.0:
   version "5.10.0"
