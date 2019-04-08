@@ -11,15 +11,13 @@ export class Loading extends Component {
     startLnd();
 
     if (onboarding === false && isOnboarded === false) {
-      // needs to be onboarded
-      // TODO: handle update STATE!
       startOnboarding();
       navigation.navigate('Onboarding');
     } else if (onboarding === false && isOnboarded === true) {
-      // access wallet
       navigation.navigate('Auth');
     } else {
-      // probably needs to be onboarded (crash)
+      startOnboarding();
+      navigation.navigate('Onboarding');
     }
   }
 

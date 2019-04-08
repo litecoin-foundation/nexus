@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { View, Text, Button } from 'react-native';
 import { connect } from 'react-redux';
 import { getRandomInt, randomShuffle, getBIP39Word } from '../../lib/utils';
-import { initWallet } from '../../reducers/onboarding';
+import { initWallet } from '../../reducers/lightning';
 
 export class VerifyWallet extends Component {
   constructor(props) {

@@ -1,5 +1,6 @@
 import Lightning from '../lib/lightning/lightning';
 import { toBuffer } from '../lib/utils';
+import { finishOnboarding } from './onboarding';
 
 const LndInstance = new Lightning();
 
@@ -39,6 +40,21 @@ export const stopLnd = () => async dispatch => {
   }
 };
 
+export const initWallet = () => async (dispatch, getState) => {
+  const { passcode, seed } = getState().onboarding;
+  const encodedPassword = `${passcode}_losh11`;
+  try {
+    await LndInstance.sendCommand('InitWallet', {
+      walletPassword: toBuffer(encodedPassword),
+      cipherSeedMnemonic: seed,
+      recoveryWindow: 0
+    });
+  } catch (error) {
+    // TODO: handle errors
+  }
+  dispatch(finishOnboarding());
+};
+
 export const unlockWallet = input => async (dispatch, getState) => {
   const { passcode } = getState().onboarding;
   const status = input === passcode;
@@ -49,8 +65,8 @@ export const unlockWallet = input => async (dispatch, getState) => {
       recoveryWindow: 0
     });
   } catch (error) {
-    // TODO: handle this
-    alert(error);
+    // if error likely no wallet exists
+    initWallet();
   }
   dispatch({
     type: UNLOCK_WALLET,

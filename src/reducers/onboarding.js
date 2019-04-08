@@ -1,6 +1,5 @@
 import Lightning from '../lib/lightning/lightning';
-import { toBuffer } from '../lib/utils';
-// TODO: temporarily run lightning instance in onboarding file
+
 const LndInstance = new Lightning();
 
 // initial state
@@ -51,21 +50,6 @@ export const getSeed = () => async dispatch => {
     type: GET_SEED,
     seed: response.cipherSeedMnemonic
   });
-};
-
-export const initWallet = () => async (dispatch, getState) => {
-  const { passcode, seed } = getState().onboarding;
-  const encodedPassword = `${passcode}_losh11`;
-  try {
-    await LndInstance.sendCommand('InitWallet', {
-      walletPassword: toBuffer(encodedPassword),
-      cipherSeedMnemonic: seed,
-      recoveryWindow: 0
-    });
-  } catch (error) {
-    // TODO: handle errors
-  }
-  dispatch(finishOnboarding());
 };
 
 // action handlers

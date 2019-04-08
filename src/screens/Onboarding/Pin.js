@@ -16,10 +16,10 @@ export class Pin extends Component {
     removePincode();
   }
 
-  handleInput = input => {
+  handleInput = async input => {
     const { addPincode } = this.props;
     if (input.length === 6) {
-      addPincode(input);
+      await addPincode(input);
       this.pinInput.current.clear();
     }
   };
