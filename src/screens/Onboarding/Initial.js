@@ -7,7 +7,11 @@ export class Initial extends Component {
     const { navigation } = this.props;
     return (
       <View style={styles.container}>
-        <Button onPress={() => navigation.navigate('createPin')} title="Create Wallet" />
+        <Button onPress={() => navigation.navigate('Pin')} title="Create Wallet" />
+        <Button
+          onPress={() => navigation.navigate('Recover')}
+          title="Already have a wallet? Log In"
+        />
       </View>
     );
   }

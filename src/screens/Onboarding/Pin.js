@@ -2,7 +2,7 @@ import React, { Component, createRef } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 
-import { addPincode, removePincode } from '../../reducers/onboarding';
+import { addPincode } from '../../reducers/onboarding';
 import { initWallet } from '../../reducers/lightning';
 
 export class Pin extends Component {
@@ -10,11 +10,6 @@ export class Pin extends Component {
     super(props);
     this.handleInput = this.handleInput.bind(this);
     this.pinInput = createRef();
-  }
-
-  componentWillUnmount() {
-    const { removePincode } = this.props;
-    removePincode();
   }
 
   handleInput = async input => {
@@ -90,7 +85,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   addPincode,
-  removePincode,
   initWallet
 };
 

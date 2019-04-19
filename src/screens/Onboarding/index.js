@@ -1,4 +1,5 @@
-export { default as GenerateWallet } from './GenerateWallet';
+export { default as Generate } from './Generate';
 export { default as Initial } from './Initial';
 export { default as Pin } from './Pin';
-export { default as VerifyWallet } from './VerifyWallet';
+export { default as Verify } from './Verify';
+export { default as Recover } from './Recover';

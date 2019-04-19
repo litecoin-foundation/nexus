@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 import { connect } from 'react-redux';
+
 import { startOnboarding } from '../reducers/onboarding';
 import { startLnd } from '../reducers/lightning';
 
 export class Loading extends Component {
   componentWillMount() {
     const { navigation, onboarding, isOnboarded, startOnboarding, startLnd } = this.props;
+
     // start LND process
     startLnd();
 

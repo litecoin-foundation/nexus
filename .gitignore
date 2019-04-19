@@ -33,3 +33,4 @@ buck-out/
 *.jsbundle
 src/lib/lightning/rpc.js
 Lndmobile.framework
+.vscode/ipch

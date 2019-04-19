@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import { getSeed } from '../../reducers/onboarding';
 
-export class GenerateWallet extends Component {
+export class Generate extends Component {
   componentWillMount() {
     const { getSeed } = this.props;
     getSeed();
@@ -23,7 +23,7 @@ export class GenerateWallet extends Component {
         {words}
         <Button
           title="I've written my paper-keys down"
-          onPress={() => navigation.navigate('verifyWallet')}
+          onPress={() => navigation.navigate('Verify')}
         />
       </View>
     );
@@ -48,4 +48,4 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(GenerateWallet);
+)(Generate);

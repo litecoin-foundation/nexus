@@ -9,20 +9,25 @@ import {
 } from 'react-navigation';
 import { store, pStore } from './store';
 
-import { Initial, Pin, GenerateWallet, VerifyWallet } from './src/screens/Onboarding';
+import { Initial, Pin, Generate, Verify, Recover } from './src/screens/Onboarding';
 import Loading from './src/screens/Loading';
 import Wallets from './src/screens/Wallets';
 import Auth from './src/screens/Auth';
+import Send from './src/screens/Send';
+import Receive from './src/screens/Receive';
 
 const OnboardingStack = createStackNavigator({
-  initial: { screen: Initial },
-  createPin: { screen: Pin },
-  generateWallet: { screen: GenerateWallet },
-  verifyWallet: { screen: VerifyWallet }
+  Initial: { screen: Initial },
+  Pin: { screen: Pin },
+  Generate: { screen: Generate },
+  Verify: { screen: Verify },
+  Recover: { screen: Recover }
 });
 
 const AppStack = createBottomTabNavigator({
-  Wallets: { screen: Wallets }
+  Wallets: { screen: Wallets },
+  Send: { screen: Send },
+  Receive: { screen: Receive }
 });
 
 const RootStack = createSwitchNavigator(
