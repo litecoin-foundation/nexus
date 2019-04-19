@@ -8,15 +8,16 @@ const initialState = {
   isOnboarded: false,
   passcode: '',
   seed: [],
-  passcodeSet: false
+  passcodeSet: false,
+  beingRecovered: false
 };
 
 // constants
 export const ONBOARDING_STARTED = 'ONBOARDING_STARTED';
 export const ONBOARDING_FINISHED = 'ONBOARDING_FINISHED';
 export const GET_SEED = 'GET_SEED';
+export const RECOVER_SEED = 'RECOVER_SEED';
 export const ADD_PASSCODE = 'ADD_PASSCODE';
-export const REMOVE_PASSCODE = 'REMOVE_PASSCODE';
 
 // actions
 export const startOnboarding = () => dispatch => {
@@ -38,12 +39,6 @@ export const addPincode = input => dispatch => {
   });
 };
 
-export const removePincode = () => dispatch => {
-  dispatch({
-    type: REMOVE_PASSCODE
-  });
-};
-
 export const getSeed = () => async dispatch => {
   const response = await LndInstance.sendCommand('GenSeed');
   dispatch({
@@ -52,13 +47,30 @@ export const getSeed = () => async dispatch => {
   });
 };
 
+export const recoverSeed = seed => dispatch => {
+  dispatch({
+    type: RECOVER_SEED,
+    seed
+  });
+};
+
 // action handlers
 const actionHandler = {
-  [ONBOARDING_STARTED]: state => ({ ...state, onboarding: true, isOnboarded: false }),
-  [ONBOARDING_FINISHED]: state => ({ ...state, onboarding: false, isOnboarded: true }),
+  [ONBOARDING_STARTED]: state => ({
+    ...state,
+    onboarding: true,
+    isOnboarded: false,
+    beingRecovered: false
+  }),
+  [ONBOARDING_FINISHED]: state => ({
+    ...state,
+    onboarding: false,
+    isOnboarded: true,
+    beingRecovered: false
+  }),
   [GET_SEED]: (state, { seed }) => ({ ...state, seed }),
   [ADD_PASSCODE]: (state, { passcode }) => ({ ...state, passcode, passcodeSet: true }),
-  [REMOVE_PASSCODE]: state => ({ ...state, passcodeSet: false })
+  [RECOVER_SEED]: (state, { seed }) => ({ ...state, seed, beingRecovered: true })
 };
 
 // reducer

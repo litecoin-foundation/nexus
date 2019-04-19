@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 
 import { addPincode, removePincode } from '../../reducers/onboarding';
+import { initWallet } from '../../reducers/lightning';
 
 export class Pin extends Component {
   constructor(props) {
@@ -24,17 +25,19 @@ export class Pin extends Component {
     }
   };
 
-  handleVerifiction = input => {
-    const { passcode, navigation } = this.props;
-    if (input.length === 6) {
-      this.pinInput.current.clear();
-      if (input === passcode) {
-        navigation.push('generateWallet');
-      } else {
-        navigation.goBack();
-        alert('incorrect');
-        // TODO deal with this
-      }
+  handleVerifiction = async input => {
+    const { passcode, navigation, beingRecovered, initWallet } = this.props;
+    if (input.length !== 6) return;
+    this.pinInput.current.clear();
+    if (input === passcode && beingRecovered) {
+      await initWallet();
+      navigation.navigate('App');
+    } else if (input === passcode && !beingRecovered) {
+      navigation.push('Generate');
+    } else {
+      navigation.goBack();
+      alert('incorrect');
+      // TODO deal with this
     }
   };
 
@@ -81,12 +84,14 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => ({
   passcodeSet: state.onboarding.passcodeSet,
-  passcode: state.onboarding.passcode
+  passcode: state.onboarding.passcode,
+  beingRecovered: state.onboarding.beingRecovered
 });
 
 const mapDispatchToProps = {
   addPincode,
-  removePincode
+  removePincode,
+  initWallet
 };
 
 export default connect(
