@@ -1,6 +1,9 @@
 import Lightning from '../lib/lightning/lightning';
 import { toBuffer } from '../lib/utils';
 import { finishOnboarding } from './onboarding';
+import { getBalance } from './balance';
+import { getInfo } from './info';
+import { getTransactions } from './transaction';
 
 const LndInstance = new Lightning();
 
@@ -50,7 +53,11 @@ export const initWallet = () => async (dispatch, getState) => {
       recoveryWindow: 0
     });
   } catch (error) {
-    // TODO: handle errors
+    console.log(error);
+    // if error likely wallet already exists
+    // this should only occur on iOS Simulator & Android emulator
+    // TODO: remove existing wallet files
+    initWallet();
   }
   dispatch(finishOnboarding());
 };
@@ -68,6 +75,12 @@ export const unlockWallet = input => async (dispatch, getState) => {
     // if error likely no wallet exists
     initWallet();
   }
+
+  // dispatch pollers
+  dispatch(getBalance());
+  dispatch(getInfo());
+  dispatch(getTransactions());
+
   dispatch({
     type: UNLOCK_WALLET,
     payload: status
@@ -79,7 +92,7 @@ export const unlockWallet = input => async (dispatch, getState) => {
 const actionHandler = {
   [START_LND]: state => ({ ...state, lndActive: true }),
   [STOP_LND]: state => ({ ...state, lndActive: false }),
-  [UNLOCK_WALLET]: (state, payload) => ({ ...state, walletUnlocked: payload })
+  [UNLOCK_WALLET]: (state, { payload }) => ({ ...state, walletUnlocked: payload })
 };
 
 // reducer

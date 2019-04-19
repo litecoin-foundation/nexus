@@ -7,8 +7,8 @@ const initialState = {
   onboarding: false,
   isOnboarded: false,
   passcode: '',
-  seed: [],
   passcodeSet: false,
+  seed: [],
   beingRecovered: false
 };
 
@@ -60,6 +60,9 @@ const actionHandler = {
     ...state,
     onboarding: true,
     isOnboarded: false,
+    passcode: '',
+    passcodeSet: false,
+    seed: [],
     beingRecovered: false
   }),
   [ONBOARDING_FINISHED]: state => ({
@@ -69,8 +72,8 @@ const actionHandler = {
     beingRecovered: false
   }),
   [GET_SEED]: (state, { seed }) => ({ ...state, seed }),
-  [ADD_PASSCODE]: (state, { passcode }) => ({ ...state, passcode, passcodeSet: true }),
-  [RECOVER_SEED]: (state, { seed }) => ({ ...state, seed, beingRecovered: true })
+  [RECOVER_SEED]: (state, { seed }) => ({ ...state, seed, beingRecovered: true }),
+  [ADD_PASSCODE]: (state, { passcode }) => ({ ...state, passcode, passcodeSet: true })
 };
 
 // reducer
