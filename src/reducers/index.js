@@ -6,6 +6,7 @@ import info from './info';
 import transaction from './transaction';
 import payment from './payment';
 import address from './address';
+import ticker from './ticker';
 
 export default combineReducers({
   onboarding,
@@ -14,5 +15,6 @@ export default combineReducers({
   info,
   transaction,
   payment,
-  address
+  address,
+  ticker
 });

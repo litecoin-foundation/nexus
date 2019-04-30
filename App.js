@@ -11,7 +11,7 @@ import { store, pStore } from './store';
 
 import { Initial, Pin, Generate, Verify, Recover } from './src/screens/Onboarding';
 import Loading from './src/screens/Loading';
-import Wallet from './src/screens/Wallets';
+import Wallet from './src/screens/Wallet';
 import Auth from './src/screens/Auth';
 import Send from './src/screens/Send';
 import Receive from './src/screens/Receive';

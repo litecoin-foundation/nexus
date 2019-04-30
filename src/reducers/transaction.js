@@ -14,10 +14,10 @@ export const GET_TRANSACTIONS = 'GET_TRANSACTIONS';
 // actions
 export const getTransactions = (retries = Infinity) => async dispatch => {
   while ((retries -= 1)) {
-    const txs = await LndInstance.sendCommand('GetTransactions');
+    const { transactions } = await LndInstance.sendCommand('GetTransactions');
     dispatch({
       type: GET_TRANSACTIONS,
-      txs
+      transactions
     });
     await sleep();
   }
@@ -25,7 +25,7 @@ export const getTransactions = (retries = Infinity) => async dispatch => {
 
 // action handlers
 const actionHandler = {
-  [GET_TRANSACTIONS]: (state, { txs }) => ({ ...state, txs })
+  [GET_TRANSACTIONS]: (state, { transactions }) => ({ ...state, transactions })
 };
 
 // reducer
