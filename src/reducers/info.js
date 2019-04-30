@@ -4,9 +4,7 @@ import { sleep } from '../lib/utils';
 const LndInstance = new Lightning();
 
 // initial state
-const initialState = {
-  info: {}
-};
+const initialState = {};
 
 // constants
 export const GET_INFO = 'GET_INFO';

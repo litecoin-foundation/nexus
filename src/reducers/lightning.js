@@ -4,6 +4,7 @@ import { finishOnboarding } from './onboarding';
 import { getBalance } from './balance';
 import { getInfo } from './info';
 import { getTransactions } from './transaction';
+import { getTicker } from './ticker';
 
 const LndInstance = new Lightning();
 
@@ -80,6 +81,7 @@ export const unlockWallet = input => async (dispatch, getState) => {
   dispatch(getBalance());
   dispatch(getInfo());
   dispatch(getTransactions());
+  dispatch(getTicker());
 
   dispatch({
     type: UNLOCK_WALLET,

@@ -11,7 +11,7 @@ import { store, pStore } from './store';
 
 import { Initial, Pin, Generate, Verify, Recover } from './src/screens/Onboarding';
 import Loading from './src/screens/Loading';
-import Wallets from './src/screens/Wallets';
+import Wallet from './src/screens/Wallets';
 import Auth from './src/screens/Auth';
 import Send from './src/screens/Send';
 import Receive from './src/screens/Receive';
@@ -24,10 +24,14 @@ const OnboardingStack = createStackNavigator({
   Recover: { screen: Recover }
 });
 
-const AppStack = createBottomTabNavigator({
-  Wallets: { screen: Wallets },
+const WalletStack = createStackNavigator({
+  Wallet: { screen: Wallet },
   Send: { screen: Send },
   Receive: { screen: Receive }
+});
+
+const AppStack = createBottomTabNavigator({
+  Wallets: { screen: WalletStack }
 });
 
 const RootStack = createSwitchNavigator(
@@ -35,7 +39,8 @@ const RootStack = createSwitchNavigator(
     Auth,
     Loading,
     Onboarding: OnboardingStack,
-    App: AppStack
+    App: AppStack,
+    Wallet: WalletStack
   },
   {
     initialRouteName: 'Loading'

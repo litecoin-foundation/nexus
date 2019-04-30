@@ -4,5 +4,15 @@ import lightning from './lightning';
 import balance from './balance';
 import info from './info';
 import transaction from './transaction';
+import payment from './payment';
+import address from './address';
 
-export default combineReducers({ onboarding, lightning, balance, info, transaction });
+export default combineReducers({
+  onboarding,
+  lightning,
+  balance,
+  info,
+  transaction,
+  payment,
+  address
+});
