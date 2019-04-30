@@ -15,6 +15,9 @@ import Wallet from './src/screens/Wallet';
 import Auth from './src/screens/Auth';
 import Send from './src/screens/Send';
 import Receive from './src/screens/Receive';
+import Account from './src/screens/Account';
+import Transaction from './src/screens/Transaction';
+// import Menu from './src/screens/Settings/Menu';
 
 const OnboardingStack = createStackNavigator({
   Initial: { screen: Initial },
@@ -25,13 +28,20 @@ const OnboardingStack = createStackNavigator({
 });
 
 const WalletStack = createStackNavigator({
+  Account: { screen: Account },
   Wallet: { screen: Wallet },
+  Transaction: { screen: Transaction },
   Send: { screen: Send },
   Receive: { screen: Receive }
 });
 
+// const SettingsStack = createStackNavigator({
+//   Menu: { screen: Menu }
+// });
+
 const AppStack = createBottomTabNavigator({
   Wallets: { screen: WalletStack }
+  // Settings: { screen: SettingsStack }
 });
 
 const RootStack = createSwitchNavigator(

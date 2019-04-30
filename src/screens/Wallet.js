@@ -26,7 +26,10 @@ export class Wallet extends Component {
         <SectionList
           sections={groupedTransactions}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.item}>
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => navigation.navigate('Transaction', { item })}
+            >
               <View style={styles.left}>
                 <Text>{item.name}</Text>
                 <Text>{item.time}</Text>
