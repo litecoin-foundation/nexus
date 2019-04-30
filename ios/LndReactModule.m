@@ -20,7 +20,6 @@ static NSString* const respEventTypeKey = @"event";
 static NSString* const respEventTypeData = @"data";
 static NSString* const respEventTypeError = @"error";
 static NSString* const logEventName = @"logs";
-static NSString* const logEventDataKey = @"logs";
 
 @interface NativeCallback:NSObject<LndmobileCallback>
 @property (nonatomic) RCTPromiseResolveBlock resolve;
@@ -41,6 +40,7 @@ static NSString* const logEventDataKey = @"logs";
 }
 
 - (void)onError:(NSError *)p0 {
+  NSLog(@"ERRORED: %@",[p0 localizedDescription]);
   self.reject(@"error", @"received error", p0);
 }
 
@@ -143,22 +143,16 @@ RCT_EXPORT_METHOD(start: (RCTPromiseResolveBlock)resolve
                        @"DeleteAllPayments" : ^(NSData* bytes, NativeCallback* cb) { LndmobileDeleteAllPayments(bytes, cb); },
                        @"DescribeGraph" : ^(NSData* bytes, NativeCallback* cb) { LndmobileDescribeGraph(bytes, cb); },
                        @"DisconnectPeer" : ^(NSData* bytes, NativeCallback* cb) { LndmobileDisconnectPeer(bytes, cb); },
-                       @"EstimateFee" : ^(NSData* bytes, NativeCallback* cb) { LndmobileEstimateFee(bytes, cb); },
-                       @"ExportAllChannelBackups" : ^(NSData* bytes, NativeCallback* cb) { LndmobileExportAllChannelBackups(bytes, cb); },
-                       @"ExportChannelBackup" : ^(NSData* bytes, NativeCallback* cb) { LndmobileExportChannelBackup(bytes, cb); },
                        @"FeeReport" : ^(NSData* bytes, NativeCallback* cb) { LndmobileFeeReport(bytes, cb); },
                        @"ForwardingHistory" : ^(NSData* bytes, NativeCallback* cb) { LndmobileForwardingHistory(bytes, cb); },
                        @"GetChanInfo" : ^(NSData* bytes, NativeCallback* cb) { LndmobileGetChanInfo(bytes, cb); },
                        @"GetNetworkInfo" : ^(NSData* bytes, NativeCallback* cb) { LndmobileGetNetworkInfo(bytes, cb); },
                        @"GetNodeInfo" : ^(NSData* bytes, NativeCallback* cb) { LndmobileGetNodeInfo(bytes, cb); },
-                       @"ListUnspent" : ^(NSData* bytes, NativeCallback* cb) { LndmobileListUnspent(bytes, cb); },
                        @"LookupInvoice" : ^(NSData* bytes, NativeCallback* cb) { LndmobileLookupInvoice(bytes, cb); },
-                       @"RestoreChannelBackups" : ^(NSData* bytes, NativeCallback* cb) { LndmobileRestoreChannelBackups(bytes, cb); },
                        @"SendMany" : ^(NSData* bytes, NativeCallback* cb) { LndmobileSendMany(bytes, cb); },
                        @"SignMessage" : ^(NSData* bytes, NativeCallback* cb) { LndmobileSignMessage(bytes, cb); },
                        @"StopDaemon" : ^(NSData* bytes, NativeCallback* cb) { LndmobileStopDaemon(bytes, cb); },
                        @"UpdateChannelPolicy" : ^(NSData* bytes, NativeCallback* cb) { LndmobileUpdateChannelPolicy(bytes, cb); },
-                       @"VerifyChanBackup" : ^(NSData* bytes, NativeCallback* cb) { LndmobileVerifyChanBackup(bytes, cb); },
                        @"VerifyMessage" : ^(NSData* bytes, NativeCallback* cb) { LndmobileVerifyMessage(bytes, cb); },
                        };
   
