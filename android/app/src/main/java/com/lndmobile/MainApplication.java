@@ -3,6 +3,7 @@ package com.lndmobile;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactnativecommunity.slider.ReactSliderPackage;
 import com.horcrux.svg.SvgPackage;
 import org.reactnative.camera.RNCameraPackage;
 import com.rnfs.RNFSPackage;
@@ -28,6 +29,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new ReactSliderPackage(),
             new SvgPackage(),
             new RNCameraPackage(),
             new RNFSPackage(),

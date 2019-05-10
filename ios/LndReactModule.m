@@ -177,26 +177,26 @@ RCT_EXPORT_METHOD(start: (RCTPromiseResolveBlock)resolve
   [fileMgr removeItemAtPath:confTarget error:nil];
   [fileMgr copyItemAtPath:lndConf toPath: confTarget error:nil];
   
-  NSString *logFile = [self.appDir stringByAppendingString:@"/logs/bitcoin/testnet/lnd.log"];
-  NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:logFile];
-  
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSFileHandleReadCompletionNotification
-                                                      object:fileHandle
-                                                       queue:[NSOperationQueue mainQueue]
-                                                  usingBlock:^(NSNotification *n) {
-                                                    NSData *data = [n.userInfo objectForKey:NSFileHandleNotificationDataItem];
-                                                    if (data != nil && [data length] > 0) {
-                                                      NSString *s = [[NSString alloc]initWithBytes:[data bytes] length:[data length] encoding:NSUTF8StringEncoding];
-                                                      if (s != nil) {
-                                                        [self sendEventWithName:logEventName body:s];
-                                                      }
-                                                    }
-                                                    [fileHandle readInBackgroundAndNotify];
-                                                  }];
-    [fileHandle seekToEndOfFile];
-    [fileHandle readInBackgroundAndNotify];
-  });
+//  NSString *logFile = [self.appDir stringByAppendingString:@"/logs/bitcoin/testnet/lnd.log"];
+//  NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:logFile];
+//
+//  dispatch_async(dispatch_get_main_queue(), ^{
+//    [[NSNotificationCenter defaultCenter] addObserverForName:NSFileHandleReadCompletionNotification
+//                                                      object:fileHandle
+//                                                       queue:[NSOperationQueue mainQueue]
+//                                                  usingBlock:^(NSNotification *n) {
+//                                                    NSData *data = [n.userInfo objectForKey:NSFileHandleNotificationDataItem];
+//                                                    if (data != nil && [data length] > 0) {
+//                                                      NSString *s = [[NSString alloc]initWithBytes:[data bytes] length:[data length] encoding:NSUTF8StringEncoding];
+//                                                      if (s != nil) {
+//                                                        [self sendEventWithName:logEventName body:s];
+//                                                      }
+//                                                    }
+//                                                    [fileHandle readInBackgroundAndNotify];
+//                                                  }];
+//    [fileHandle seekToEndOfFile];
+//    [fileHandle readInBackgroundAndNotify];
+//  });
   
   NSString *args = [NSString stringWithFormat:@"%@", self.appDir];
   
