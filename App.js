@@ -17,7 +17,10 @@ import Send from './src/screens/Send';
 import Receive from './src/screens/Receive';
 import Account from './src/screens/Account';
 import Transaction from './src/screens/Transaction';
-// import Menu from './src/screens/Settings/Menu';
+import Menu from './src/screens/Settings/Menu';
+import LightningSend from './src/screens/LightningSend';
+import LightningReceive from './src/screens/LightningReceive';
+import LightningInvoice from './src/screens/LightningInvoice';
 
 const OnboardingStack = createStackNavigator({
   Initial: { screen: Initial },
@@ -32,16 +35,29 @@ const WalletStack = createStackNavigator({
   Wallet: { screen: Wallet },
   Transaction: { screen: Transaction },
   Send: { screen: Send },
-  Receive: { screen: Receive }
+  Receive: { screen: Receive },
+  LightningSend: { screen: LightningSend },
+  LightningReceive: { screen: LightningReceive },
+  LightningInvoice: { screen: LightningInvoice }
 });
 
-// const SettingsStack = createStackNavigator({
-//   Menu: { screen: Menu }
-// });
+WalletStack.navigationOptions = ({ navigation }) => {
+  let tabBarVisible = true;
+  if (navigation.state.index > 0) {
+    tabBarVisible = false;
+  }
+  return {
+    tabBarVisible
+  };
+};
+
+const SettingsStack = createStackNavigator({
+  Menu: { screen: Menu }
+});
 
 const AppStack = createBottomTabNavigator({
-  Wallets: { screen: WalletStack }
-  // Settings: { screen: SettingsStack }
+  Wallets: { screen: WalletStack },
+  Settings: { screen: SettingsStack }
 });
 
 const RootStack = createSwitchNavigator(

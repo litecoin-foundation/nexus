@@ -7,6 +7,7 @@ import transaction from './transaction';
 import payment from './payment';
 import address from './address';
 import ticker from './ticker';
+import invoice from './invoice';
 
 export default combineReducers({
   onboarding,
@@ -16,5 +17,6 @@ export default combineReducers({
   transaction,
   payment,
   address,
-  ticker
+  ticker,
+  invoice
 });

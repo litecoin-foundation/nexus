@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import base64 from 'base64-js';
 import { Duplex } from 'stream';
 import { NativeModules, NativeEventEmitter } from 'react-native';
@@ -15,7 +16,6 @@ class Lightning {
     await this.lightning.start();
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async stop() {
     // TODO: uncomment when available in API
     // await this.lightning.close()
@@ -74,7 +74,6 @@ class Lightning {
     return res.decode(buffer);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getRequestName(method) {
     const map = {
       AddInvoice: 'Invoice',
@@ -87,7 +86,6 @@ class Lightning {
     return map[method] || `${method}Request`;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getResponseName(method) {
     const map = {
       DecodePayReq: 'PayReq',

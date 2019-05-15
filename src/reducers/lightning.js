@@ -50,8 +50,7 @@ export const initWallet = () => async (dispatch, getState) => {
   try {
     await LndInstance.sendCommand('InitWallet', {
       walletPassword: toBuffer(encodedPassword),
-      cipherSeedMnemonic: seed,
-      recoveryWindow: 0
+      cipherSeedMnemonic: seed
     });
   } catch (error) {
     console.log(error);
@@ -69,8 +68,7 @@ export const unlockWallet = input => async (dispatch, getState) => {
   const encodedPassword = `${input}_losh11`;
   try {
     await LndInstance.sendCommand('UnlockWallet', {
-      walletPassword: toBuffer(encodedPassword),
-      recoveryWindow: 0
+      walletPassword: toBuffer(encodedPassword)
     });
   } catch (error) {
     // if error likely no wallet exists

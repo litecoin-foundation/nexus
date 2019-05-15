@@ -8,7 +8,7 @@ export class Accounts extends Component {
     return (
       <View>
         <Text>Accounts</Text>
-        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Wallet')} x>
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Wallet')}>
           <View style={styles.left}>
             <Text>Litecoin (LTC)</Text>
             <Text>{`${amount}LTC`}</Text>

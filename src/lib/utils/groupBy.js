@@ -1,6 +1,6 @@
 const groupBy = (objectArray, property) => {
   // TODO: cleanup later (inefficient)
-  let array1 = [];
+  const array1 = [];
   objectArray.map(obj => {
     const bool = array1.find(e => {
       if (e.title !== obj[property]) {
@@ -11,14 +11,17 @@ const groupBy = (objectArray, property) => {
     if (!bool) {
       array1.push({ title: obj[property], data: [] });
     }
-
     array1.find(e => {
       if (e.title === obj[property]) {
         e.data.push(obj);
       }
     });
   });
-
+  // eslint-disable-next-line guard-for-in
+  for (const i in array1) {
+    array1[i].data.reverse();
+  }
+  array1.reverse();
   return array1;
 };
 

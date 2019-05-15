@@ -1,28 +1,19 @@
 import React, { Component } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
+
+import TransactionCell from '../components/TransactionCell';
 
 export class Transaction extends Component {
   render() {
     const { navigation } = this.props;
     const transaction = navigation.getParam('item', {});
-    const addresses = transaction.destAddresses.map((val, indx) => {
-      return <Text>{val}</Text>;
+    const addresses = transaction.destAddresses.map(val => {
+      return <Text key={val}>{val}</Text>;
     });
     return (
-      <View>
-        <TouchableOpacity>
-          <View>
-            <View>
-              <Text>{transaction.name}</Text>
-              <Text>{transaction.time}</Text>
-            </View>
-            <View>
-              <Text style={{ textAlign: 'right' }}>{`${transaction.formattedAmount} LTC`}</Text>
-              <Text style={{ textAlign: 'right' }}>{transaction.fiatAmount}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
+      <View style={styles.container}>
+        <TransactionCell item={transaction} />
         <ScrollView>
           <View>
             <Text>Sender</Text>
@@ -57,6 +48,12 @@ export class Transaction extends Component {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    height: 400
+  }
+});
 
 const mapStateToProps = state => ({});
 

@@ -815,6 +815,11 @@
     xcode "^2.0.0"
     xmldoc "^0.4.0"
 
+"@react-native-community/slider@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@react-native-community/slider/-/slider-1.1.2.tgz#a3eaeb7e0c6808c0d34c2dbb25eb855acc67ca1b"
+  integrity sha512-G9jwFzKy4JT/xkpFSlrdSkkQBtuFa0IiivgLPIsSbou54XlkP3uz5LgF7Of2aHQmoB3LqRzkogAZyhiK24+Zww==
+
 "@react-navigation/core@3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-3.2.0.tgz#329dfe54f305ee22ed750d51cb09c5d18562d56f"
@@ -4715,6 +4720,13 @@ react-lifecycles-compat@^3.0.4:
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
 
+react-native-animatable@^1.3.1:
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/react-native-animatable/-/react-native-animatable-1.3.2.tgz#4783ee1a73dc98815aef234ce6b819f80bfe7d80"
+  integrity sha512-rmah3KQ63ft8DxkzFUwJSuZeq+oSYwldoGF4DTOR5WM2WR5wiWLgBAtrAHlI3Di3by323uOR21s+MlqPcHz2Kw==
+  dependencies:
+    prop-types "^15.5.10"
+
 react-native-camera@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/react-native-camera/-/react-native-camera-2.6.0.tgz#bf97b0fc68aa8732d815e9bbd92e63529f51d598"
@@ -4738,6 +4750,14 @@ react-native-gesture-handler@^1.1.0:
     hoist-non-react-statics "^2.3.1"
     invariant "^2.2.2"
     prop-types "^15.5.10"
+
+react-native-modal@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-modal/-/react-native-modal-11.0.0.tgz#5a45662a2893cfb805ef9d6537c6c3da5e903c60"
+  integrity sha512-xm/WHmAVJj8Kv1vtvFESGC7LHLpQeon+bKBDSxwDCNIr9O5AGPg1sceo5jjS2+U05Uml3rXgbXSbPz3qH25Lbw==
+  dependencies:
+    prop-types "^15.6.2"
+    react-native-animatable "^1.3.1"
 
 react-native-permissions@^1.1.1:
   version "1.1.1"

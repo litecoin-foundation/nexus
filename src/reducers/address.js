@@ -12,9 +12,7 @@ export const GET_ADDRESS = 'GET_ADDRESS';
 
 // actions
 export const getAddress = () => async dispatch => {
-  console.log('running getaddress');
   const { address } = await LndInstance.sendCommand('NewAddress', { type: 3 });
-  console.log(address);
   dispatch({
     type: GET_ADDRESS,
     address

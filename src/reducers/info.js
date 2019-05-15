@@ -4,7 +4,17 @@ import { sleep } from '../lib/utils';
 const LndInstance = new Lightning();
 
 // initial state
-const initialState = {};
+const initialState = {
+  identityPubkey: '',
+  alias: '',
+  version: '',
+  syncedToChain: false,
+  blockHeight: 0,
+  blockHash: '',
+  bestHeaderTimestamp: 0,
+  uris: [],
+  chains: []
+};
 
 // constants
 export const GET_INFO = 'GET_INFO';
@@ -26,7 +36,7 @@ export const getInfo = (retries = Infinity) => async dispatch => {
 const actionHandler = {
   [GET_INFO]: (state, { info }) => ({
     ...state,
-    info
+    ...info
   })
 };
 
