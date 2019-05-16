@@ -1,15 +1,31 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Clipboard } from 'react-native';
+import { View, Text, StyleSheet, Clipboard } from 'react-native';
 import { connect } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import PropTypes from 'prop-types';
 
+import RequestModal from '../components/RequestModal';
+import BlueClearButton from '../components/BlueClearButton';
 import { getAddress } from '../reducers/address';
+import * as bip21 from '../lib/utils/bip21';
 
 export class Receive extends Component {
+  state = {
+    modalTriggered: false,
+    amount: '',
+    uri: ''
+  };
+
   async componentDidMount() {
     const { getAddress } = this.props;
     await getAddress();
+
+    const { address } = this.props;
+    this.setState({ uri: address });
+  }
+
+  setModalVisible(bool) {
+    this.setState({ modalTriggered: bool });
   }
 
   handlePress = async () => {
@@ -17,23 +33,59 @@ export class Receive extends Component {
     await Clipboard.setString(address);
   };
 
+  handleChange = input => {
+    this.setState({ amount: input }, () => this.updateQR());
+  };
+
+  updateQR = () => {
+    const { amount } = this.state;
+    const { address } = this.props;
+    this.setState({ uri: bip21.encodeBIP21(address, { amount }) });
+  };
+
   render() {
     const { address } = this.props;
-    // TODO: refactor qrcode to functional component
-    // which only renders after address is available
+    const { modalTriggered, uri } = this.state;
     return (
       <View style={styles.container}>
-        {!address ? (
+        {!uri ? (
           <Text>loading...</Text>
         ) : (
-          <QRCode value={address} color="rgba(10, 36, 79, 1)" size={350} />
+          <View style={{ paddingTop: 15, paddingBottom: 15 }}>
+            <QRCode value={uri} color="rgba(10, 36, 79, 1)" size={350} />
+          </View>
         )}
+        <View style={styles.details}>
+          <View style={{ paddingTop: 20, paddingLeft: 20 }}>
+            <Text style={{ color: '#7C96AE', fontSize: 14, fontWeight: 'bold' }}>
+              My LTC Address
+            </Text>
+            <Text style={{ color: '#20BB74', fontSize: 16, fontWeight: '600' }}>{address}</Text>
+          </View>
+          <View style={{ alignItems: 'center', paddingTop: 20 }}>
+            <View style={{ paddingBottom: 20 }}>
+              <BlueClearButton value="Copy to Clipboard" onPress={this.handlePress} />
+            </View>
+            <View
+              style={{
+                paddingTop: 20,
+                borderTopColor: 'rgba(151, 151, 151, 0.3)',
+                borderTopWidth: 1
+              }}
+            >
+              <BlueClearButton
+                value="Request Specific Amount"
+                onPress={() => this.setModalVisible(true)}
+              />
+            </View>
+          </View>
+        </View>
 
-        <Text>My LTC Address</Text>
-        <Text>{address}</Text>
-        <TouchableOpacity onPress={this.handlePress}>
-          <Text>Copy to Clipboard</Text>
-        </TouchableOpacity>
+        <RequestModal
+          isVisible={modalTriggered}
+          close={() => this.setModalVisible(false)}
+          onChange={input => this.handleChange(input)}
+        />
       </View>
     );
   }
@@ -42,8 +94,14 @@ export class Receive extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    paddingTop: 15
+    alignItems: 'center'
+  },
+  details: {
+    flex: 1,
+    backgroundColor: '#F6F9FC',
+    width: '100%',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(151, 151, 151, 0.3)'
   }
 });
 

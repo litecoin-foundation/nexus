@@ -26,7 +26,10 @@ export class LightningReceive extends Component {
     return (
       <View>
         <Text> Choose Amount </Text>
-        <AmountInput onChangeText={input => this.setState({ amount: input })} />
+        <AmountInput
+          onChangeText={input => this.setState({ amount: input })}
+          onAccept={() => console.log('meow')}
+        />
         <Text>Add Description</Text>
         <TextInput
           placeholder="description goes here"
