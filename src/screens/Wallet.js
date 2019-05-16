@@ -4,11 +4,19 @@ import { connect } from 'react-redux';
 
 import TransactionModal from '../components/TransactionModal';
 import TransactionList from '../components/TransactionList';
+import AmountView from '../components/AmountView';
 import { date, groupBy, converter } from '../lib/utils';
 
 export class Wallet extends Component {
   static navigationOptions = {
-    tabBarVisible: false
+    headerTitle: 'LTC Wallet',
+    tabBarVisible: false,
+    headerTitleStyle: {
+      fontWeight: 'bold',
+      color: 'white'
+    },
+    headerTransparent: true,
+    headerBackTitle: null
   };
 
   state = {
@@ -39,6 +47,7 @@ export class Wallet extends Component {
 
     return (
       <View style={styles.container}>
+        <AmountView />
         <TransactionList navigation={navigation} groupedTransactions={groupedTransactions} />
 
         <View style={styles.paymentContainer}>

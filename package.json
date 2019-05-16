@@ -24,6 +24,7 @@
     "react-native-camera": "^2.6.0",
     "react-native-fs": "^2.13.3",
     "react-native-gesture-handler": "^1.1.0",
+    "react-native-linear-gradient": "^2.5.4",
     "react-native-modal": "^11.0.0",
     "react-native-qrcode-scanner": "^1.1.2",
     "react-native-qrcode-svg": "^5.1.2",

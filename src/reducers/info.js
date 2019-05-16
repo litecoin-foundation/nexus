@@ -20,9 +20,18 @@ const initialState = {
 export const GET_INFO = 'GET_INFO';
 
 // actions
-export const getInfo = (retries = Infinity) => async dispatch => {
+export const getInfo = (retries = Infinity) => async (dispatch, getState) => {
   while ((retries -= 1)) {
     const info = await LndInstance.sendCommand('getInfo');
+    const { startingSyncTimestamp } = getState().info;
+
+    if (startingSyncTimestamp === undefined) {
+      info.startingSyncTimestamp = info.bestHeaderTimestamp || 0;
+    }
+
+    if (!info.syncedToChain) {
+      info.percentSynced = await calculateSyncProgress(info, startingSyncTimestamp);
+    }
 
     dispatch({
       type: GET_INFO,
@@ -30,6 +39,15 @@ export const getInfo = (retries = Infinity) => async dispatch => {
     });
     await sleep();
   }
+};
+
+const calculateSyncProgress = async (info, startingSyncTimestamp) => {
+  const { bestHeaderTimestamp } = info;
+  const currentTimestamp = new Date().getTime() / 1000;
+  const progressSoFar = bestHeaderTimestamp ? bestHeaderTimestamp - startingSyncTimestamp : 0;
+  const totalProgress = currentTimestamp - startingSyncTimestamp || 0.001;
+  const percentSynced = (progressSoFar * 1.0) / totalProgress;
+  return percentSynced;
 };
 
 // action handlers

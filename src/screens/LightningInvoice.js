@@ -12,11 +12,15 @@ export class LightningInvoice extends Component {
   }
 
   render() {
-    const { invoice } = this.props || 'loading...';
+    const { invoice } = this.props;
     const { description, value } = this.props;
     return (
       <View>
-        <QRCode value={invoice} color="rgba(10, 36, 79, 1)" size={350} />
+        {!invoice ? (
+          <Text>loading...</Text>
+        ) : (
+          <QRCode value={invoice} color="rgba(10, 36, 79, 1)" size={350} />
+        )}
         <Text>Please pay:</Text>
         <Text>{value}</Text>
         <Text>{description}</Text>
