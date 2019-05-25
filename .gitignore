@@ -34,3 +34,4 @@ buck-out/
 src/lib/lightning/rpc.js
 Lndmobile.framework
 .vscode/ipch
+shim.js

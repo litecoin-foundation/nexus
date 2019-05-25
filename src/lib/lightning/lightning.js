@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import base64 from 'base64-js';
-import { Duplex } from 'stream';
+import { Duplex } from 'readable-stream';
 import { NativeModules, NativeEventEmitter } from 'react-native';
 import { lnrpc } from './rpc';
 import { toCaps } from '../utils';

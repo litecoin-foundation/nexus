@@ -5,6 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import PropTypes from 'prop-types';
 
 import GreenButton from './GreenButton';
+import { converter } from '../lib/utils';
 
 export class AmountView extends Component {
   render() {
@@ -15,10 +16,12 @@ export class AmountView extends Component {
           <SafeAreaView>
             <View style={styles.subview}>
               <View style={styles.fiat}>
-                <Text style={styles.fiatText}>{totalBalance * rates.USD}</Text>
+                <Text style={styles.fiatText}>
+                  {converter.satoshisToBtc(totalBalance) * rates.USD}
+                </Text>
               </View>
               <View style={styles.amount}>
-                <Text style={styles.amountText}>{totalBalance}</Text>
+                <Text style={styles.amountText}>{converter.satoshisToBtc(totalBalance)}</Text>
                 <Text style={styles.amountSymbol}>Ł</Text>
               </View>
               <GreenButton value="+0.92%" />

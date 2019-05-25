@@ -51,7 +51,6 @@
 		E0391731037A4B4F9E178C0B /* libRNCamera.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC177A0A46C2439AA7B50789 /* libRNCamera.a */; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
 		ED2971652150620600B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED2971642150620600B7C4FE /* JavaScriptCore.framework */; };
-		F7705EBBE48B4C05AEAAB926 /* libReactNativePermissions.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE75949AB0C74DD2A7E0BC3F /* libReactNativePermissions.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -496,7 +495,6 @@
 				585C6C6F62634C82BAED5C66 /* libRNSensitiveInfo.a in Frameworks */,
 				69F44F63724F40F897CA4B6D /* libRNFS.a in Frameworks */,
 				E0391731037A4B4F9E178C0B /* libRNCamera.a in Frameworks */,
-				F7705EBBE48B4C05AEAAB926 /* libReactNativePermissions.a in Frameworks */,
 				98EF53A907464E5D9363FA42 /* libRNSVG.a in Frameworks */,
 				B712C936DC6D4DABAD1812E2 /* libRNCSlider.a in Frameworks */,
 				3F3DA82E8E6C4DA8865CFEB8 /* libBVLinearGradient.a in Frameworks */,
@@ -924,6 +922,7 @@
 					};
 					13B07F861A680F5B00A75B9A = {
 						DevelopmentTeam = ZV7987N2ZC;
+						ProvisioningStyle = Automatic;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -1605,6 +1604,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
@@ -1632,6 +1633,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.litecoin.lndmobile;
 				PRODUCT_NAME = lndmobile;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -1640,6 +1642,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
 				ENABLE_BITCODE = NO;
@@ -1666,6 +1670,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.litecoin.lndmobile;
 				PRODUCT_NAME = lndmobile;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
