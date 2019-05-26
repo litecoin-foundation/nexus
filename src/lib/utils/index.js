@@ -7,3 +7,4 @@ export { default as sleep } from './sleep';
 export { default as converter } from './converter';
 export { default as groupBy } from './groupBy';
 export { default as date } from './date';
+export { default as validateLtcAddress } from './validate';
