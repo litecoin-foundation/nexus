@@ -1,58 +1,85 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { connect } from 'react-redux';
+import LinearGradient from 'react-native-linear-gradient';
+
 import { unlockWallet } from '../reducers/lightning';
+import AuthPad from '../components/Numpad/AuthPad';
 
 export class Auth extends Component {
-  constructor(props) {
-    super(props);
-    this.handleInput = this.handleInput.bind(this);
-  }
+  state = {
+    pin: ''
+  };
 
-  handleInput = async input => {
-    const { unlockWallet, navigation } = this.props;
-    if (input.length === 6) {
-      const status = await unlockWallet(input);
+  handleInput = async () => {
+    const { pin } = this.state;
+    if (pin.length === 6) {
+      const { unlockWallet, navigation } = this.props;
+      const status = await unlockWallet(pin);
       if (status === true) {
         navigation.navigate('App');
       } else {
+        this.setState({ pin: '' });
         alert('incorrect');
       }
     }
   };
 
   render() {
+    const { pin } = this.state;
     return (
-      <View style={styles.container}>
-        <Text style={styles.instructions}> Login with Pincode</Text>
-        <TextInput
-          style={styles.input}
-          secureTextEntry
-          keyboardType="numeric"
-          autoFocus
-          maxLength={6}
-          onChangeText={this.handleInput}
-          ref={this.pinInput}
-        />
+      <View>
+        <View style={{ height: 200 }}>
+          <LinearGradient colors={['#7E58FF', '#544FE5']}>
+            <SafeAreaView style={{ height: '100%' }}>
+              <View style={styles.headerContainer}>
+                <Text style={styles.headerTitleText}>Unlock Wallet</Text>
+                <Text style={styles.headerDescriptionText}>Use your PIN to unlock your Wallet</Text>
+                <View>
+                  <Text>{pin}</Text>
+                </View>
+              </View>
+            </SafeAreaView>
+          </LinearGradient>
+        </View>
+
+        <View style={styles.padContainer}>
+          <LinearGradient
+            colors={['#544FE6', '#003DB3']}
+            style={{ height: '100%', paddingTop: 100 }}
+          >
+            <AuthPad
+              type="auth"
+              onChange={value => this.setState({ pin: value }, () => this.handleInput())}
+              currentValue={pin}
+            />
+          </LinearGradient>
+        </View>
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    textAlign: 'center',
-    marginTop: 50
+  headerContainer: {
+    flex: 1,
+    alignItems: 'center'
   },
-  instructions: {
-    textAlign: 'center',
-    marginBottom: 20
+  headerTitleText: {
+    fontSize: 20,
+    color: 'white',
+    fontWeight: 'bold',
+    paddingTop: 20,
+    paddingBottom: 20
   },
-  input: {
-    backgroundColor: 'green',
-    height: 90,
-    borderWidth: 1,
-    textAlign: 'center'
+  headerDescriptionText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    paddingBottom: 40
+  },
+  padContainer: {
+    textAlign: 'center',
+    flexGrow: 1
   }
 });
 
