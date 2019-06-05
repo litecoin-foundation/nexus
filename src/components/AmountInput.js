@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -15,10 +15,11 @@ export class AmountInput extends Component {
   };
 
   handlePress = side => {
+    const { selected } = this.props;
     if (side === 'left') {
-      this.setState({ leftToggled: true, selected: true });
+      this.setState({ leftToggled: true, selected: true }, () => selected());
     } else {
-      this.setState({ leftToggled: false, selected: true });
+      this.setState({ leftToggled: false, selected: true }, () => selected());
     }
   };
 
@@ -61,34 +62,40 @@ export class AmountInput extends Component {
     const { amount, fiatAmount, leftToggled, selected } = this.state;
     const { toggleWithoutSelection } = this.props;
     const PadContainer = (
-      <Fragment>
+      <View style={styles.padContainer}>
         <Pad onChange={this.onChange} currentValue={leftToggled ? amount : fiatAmount} />
-        <View>
-          <BlueSquareButton value="ACCEPT" onPress={this.handleAccept} />
-        </View>
-      </Fragment>
+        <BlueSquareButton value="ACCEPT" onPress={this.handleAccept} />
+      </View>
     );
     return (
-      <Fragment>
+      <View style={[selected ? { height: '100%' } : null]}>
         <View style={styles.container}>
           <View style={styles.area}>
             <TouchableOpacity
               style={[styles.left, leftToggled ? styles.active : styles.inActive]}
               onPress={() => this.handlePress('left')}
             >
-              <Text style={styles.leftText}>{amount}</Text>
+              <Text
+                style={[styles.leftText, leftToggled ? styles.textActive : styles.textInactive]}
+              >
+                {amount}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.right, !leftToggled ? styles.active : styles.inActive]}
               onPress={() => this.handlePress('right')}
             >
-              <Text style={styles.rightText}>{fiatAmount}</Text>
+              <Text
+                style={[styles.rightText, leftToggled ? styles.textInactive : styles.textActive]}
+              >
+                {fiatAmount}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
         {toggleWithoutSelection ? PadContainer : null}
         {selected && !toggleWithoutSelection ? PadContainer : null}
-      </Fragment>
+      </View>
     );
   }
 }
@@ -106,34 +113,47 @@ const styles = StyleSheet.create({
       width: 0
     }
   },
+  padContainer: {
+    backgroundColor: '#F8FBFD',
+    flexGrow: 1,
+    justifyContent: 'space-evenly'
+  },
   area: {
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap'
   },
   left: {
-    borderWidth: 1,
-    borderColor: 'green',
     justifyContent: 'center',
-    width: '70%'
+    width: '70%',
+    borderRightColor: '#DBDBDB',
+    borderRightWidth: 1
   },
   leftText: {
-    color: '#2C72FF'
+    color: '#2C72FF',
+    fontWeight: '600',
+    paddingLeft: 20
   },
   right: {
-    borderWidth: 1,
-    borderColor: 'pink',
     justifyContent: 'center',
     width: '30%'
   },
   rightText: {
-    color: '#20BB74'
+    color: '#20BB74',
+    fontWeight: '600',
+    paddingLeft: 20
   },
   active: {
     width: '70%'
   },
   inActive: {
     width: '30%'
+  },
+  textActive: {
+    fontSize: 28
+  },
+  textInactive: {
+    fontSize: 18
   }
 });
 
@@ -141,7 +161,8 @@ AmountInput.propTypes = {
   rates: PropTypes.objectOf(PropTypes.string).isRequired,
   onChangeText: PropTypes.func,
   onAccept: PropTypes.func.isRequired,
-  toggleWithoutSelection: PropTypes.bool
+  toggleWithoutSelection: PropTypes.bool,
+  selected: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({

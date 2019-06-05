@@ -1,26 +1,11 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Slider from '@react-native-community/slider';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
 export class FeeModal extends Component {
-  state = {
-    slider: 1
-  };
-
-  handleSlider = val => {
-    const { slider } = this.state;
-    val = Math.round(val);
-    if (val === slider) return;
-    this.setState({ slider: val });
-  };
-
   render() {
-    const { isVisible, close } = this.props;
-    const { slider } = this.state;
-
-    const time = Math.round(slider * 2.5);
+    const { isVisible, close, address, amount, fee } = this.props;
 
     return (
       <View>
@@ -38,17 +23,25 @@ export class FeeModal extends Component {
               <TouchableOpacity onPress={() => close()}>
                 <Text>Hide Modal</Text>
               </TouchableOpacity>
-              <Text>Transaction Speed</Text>
-              <Text>The higher the speed, the higher the fee.</Text>
-              <Text>{`${slider} blocks === ~${time}mins`}</Text>
-              <Slider
-                minimumValue={0.5}
-                maximumValue={24.4}
-                minimumTrackTintColor="#FFFFFF"
-                maximumTrackTintColor="#000000"
-                width={300}
-                onValueChange={value => this.handleSlider(value)}
-              />
+
+              <Text>Send</Text>
+
+              <View>
+                <Text>Recipient Address</Text>
+                <Text>{address}</Text>
+              </View>
+              <View>
+                <Text>AMOUNT IN FIAT</Text>
+                <Text>{amount}</Text>
+              </View>
+              <View>
+                <Text>AMOUNT IN LTC</Text>
+                <Text>{amount}</Text>
+              </View>
+              <View>
+                <Text>FEE</Text>
+                <Text>{fee}</Text>
+              </View>
             </View>
           </View>
         </Modal>
@@ -68,21 +61,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
     alignItems: 'center'
-  },
-  button: {
-    height: 50,
-    width: 150,
-    borderRadius: 25,
-    backgroundColor: 'white',
-    shadowColor: '#393e53',
-    shadowOpacity: 0.25,
-    shadowRadius: 14
   }
 });
 
 FeeModal.propTypes = {
   isVisible: PropTypes.bool.isRequired,
-  close: PropTypes.func.isRequired
+  close: PropTypes.func.isRequired,
+  address: PropTypes.string.isRequired,
+  amount: PropTypes.number.isRequired,
+  fee: PropTypes.number.isRequired
 };
 
 export default FeeModal;

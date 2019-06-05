@@ -154,6 +154,7 @@ RCT_EXPORT_METHOD(start: (RCTPromiseResolveBlock)resolve
                        @"StopDaemon" : ^(NSData* bytes, NativeCallback* cb) { LndmobileStopDaemon(bytes, cb); },
                        @"UpdateChannelPolicy" : ^(NSData* bytes, NativeCallback* cb) { LndmobileUpdateChannelPolicy(bytes, cb); },
                        @"VerifyMessage" : ^(NSData* bytes, NativeCallback* cb) { LndmobileVerifyMessage(bytes, cb); },
+                       @"EstimateFee" : ^(NSData* bytes, NativeCallback* cb) { LndmobileEstimateFee(bytes, cb); }
                        };
   
   self.streamMethods = @{

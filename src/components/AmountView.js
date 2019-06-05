@@ -1,37 +1,46 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
-import { connect } from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
-import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import { createSelector } from 'reselect';
 
-import GreenButton from './GreenButton';
+import GreenRoundButton from './GreenRoundButton';
 import { converter } from '../lib/utils';
 
-export class AmountView extends Component {
-  render() {
-    const { rates, totalBalance } = this.props;
-    return (
-      <View style={styles.container}>
-        <LinearGradient colors={['#5A4FE7', '#2C44C8']} style={{ height: '100%' }}>
-          <SafeAreaView>
-            <View style={styles.subview}>
-              <View style={styles.fiat}>
-                <Text style={styles.fiatText}>
-                  {converter.satoshisToBtc(totalBalance) * rates.USD}
-                </Text>
-              </View>
-              <View style={styles.amount}>
-                <Text style={styles.amountText}>{converter.satoshisToBtc(totalBalance)}</Text>
-                <Text style={styles.amountSymbol}>Ł</Text>
-              </View>
-              <GreenButton value="+0.92%" />
+const valueSelector = createSelector(
+  state => state.balance.totalBalance,
+  totalBalance => converter.satoshisToBtc(totalBalance)
+);
+
+const fiatValueSelector = createSelector(
+  valueSelector,
+  state => state.ticker.rates,
+  (totalBalance, rates) => totalBalance * rates.USD
+);
+
+const AmountView = () => {
+  const amount = useSelector(state => valueSelector(state));
+  const fiatAmount = useSelector(state => fiatValueSelector(state));
+
+  return (
+    <View style={styles.container}>
+      <LinearGradient colors={['#5A4FE7', '#2C44C8']} style={{ height: '100%' }}>
+        <SafeAreaView>
+          <View style={styles.subview}>
+            <View style={styles.fiat}>
+              <Text style={styles.fiatText}>{fiatAmount}</Text>
             </View>
-          </SafeAreaView>
-        </LinearGradient>
-      </View>
-    );
-  }
-}
+            <View style={styles.amount}>
+              <Text style={styles.amountText}>{amount}</Text>
+              <Text style={styles.amountSymbol}>Ł</Text>
+            </View>
+            <GreenRoundButton value="+0.92%" small />
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -76,19 +85,4 @@ const styles = StyleSheet.create({
   }
 });
 
-AmountView.propTypes = {
-  rates: PropTypes.objectOf(PropTypes.string).isRequired,
-  totalBalance: PropTypes.number.isRequired
-};
-
-const mapStateToProps = state => ({
-  rates: state.ticker.rates,
-  totalBalance: state.balance.totalBalance
-});
-
-const mapDispatchToProps = {};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(AmountView);
+export default AmountView;

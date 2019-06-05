@@ -2,36 +2,39 @@ import React from 'react';
 import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 
-const SquareButton = props => {
+const BlueFatButton = props => {
   const { value, onPress } = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Text>{value}</Text>
+      <Text style={styles.text}>{value}</Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: 100,
-    height: 100,
-    borderRadius: 15,
-    backgroundColor: 'white',
+    height: '100%',
+    backgroundColor: '#2C72FF',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    shadowColor: 'rgb(68,130,255)',
+    shadowOpacity: 0.41,
+    shadowRadius: 6,
     shadowOffset: {
       height: 0,
       width: 0
     }
+  },
+  text: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '600'
   }
 });
 
-SquareButton.propTypes = {
+BlueFatButton.propTypes = {
   value: PropTypes.string.isRequired,
   onPress: PropTypes.func
 };
 
-export default SquareButton;
+export default BlueFatButton;

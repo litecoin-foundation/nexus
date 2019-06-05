@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
 import TypeButton from './TypeButton';
+import GreyRoundButton from './GreyRoundButton';
 
 export class TransactionModal extends Component {
   render() {
@@ -23,16 +24,29 @@ export class TransactionModal extends Component {
       >
         <View style={styles.container}>
           <View style={styles.modal}>
-            <TouchableOpacity
-              onPress={() => {
-                close();
+            <View style={styles.modalHeaderContainer}>
+              <Text style={styles.modalHeaderTitle}>Transaction Type</Text>
+              <GreyRoundButton onPress={() => close()} />
+            </View>
+
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.descriptionText}>
+                Lightning transactions are blah blah blah, while on chain...
+              </Text>
+            </View>
+
+            <Text
+              style={{
+                color: '#7C96AE',
+                fontSize: 12,
+                fontWeight: '600',
+                textAlign: 'center',
+                paddingTop: 40,
+                paddingBottom: 20
               }}
             >
-              <Text>Hide Modal</Text>
-            </TouchableOpacity>
-            <Text>Transaction Type</Text>
-            <Text>Lightning transactions are blah blah blah, while on chain...</Text>
-            <Text>CHOOSE TRANSACTION TYPE</Text>
+              CHOOSE TRANSACTION TYPE
+            </Text>
             <View style={styles.typeContainer}>
               <TypeButton
                 label="Lightning"
@@ -87,6 +101,30 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     marginTop: 10,
     paddingBottom: 150
+  },
+  modalHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingLeft: 25,
+    paddingRight: 25,
+    paddingTop: 25
+  },
+  modalHeaderTitle: {
+    color: '#4E6070',
+    fontSize: 26,
+    fontWeight: 'bold',
+    height: 31
+  },
+  descriptionContainer: {
+    paddingLeft: 25,
+    paddingRight: 25,
+    paddingTop: 30
+  },
+  descriptionText: {
+    opacity: 0.9,
+    color: '#4E6070',
+    fontSize: 16,
+    fontWeight: '500'
   }
 });
 

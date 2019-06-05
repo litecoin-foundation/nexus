@@ -34,7 +34,7 @@ export class Pad extends Component {
     });
     return (
       <View style={styles.container}>
-        <View style={{ height: 400, justifyContent: 'space-evenly' }}>
+        <View style={{ height: 400, justifyContent: 'space-evenly', flexGrow: 1 }}>
           <View style={styles.area}>{buttons}</View>
         </View>
       </View>

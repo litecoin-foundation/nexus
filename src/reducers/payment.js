@@ -1,13 +1,24 @@
+/* eslint-disable camelcase */
 // TODO: refactor this reducer
 import Lightning from '../lib/lightning/lightning';
 
 const LndInstance = new Lightning();
 
 // initial state
-const initialState = {};
+const initialState = {
+  onchain: {
+    amount: '',
+    address: '',
+    memo: '',
+    feeSat: null,
+    feePerByte: null
+  }
+};
 
 // constants
 export const SEND_ONCHAIN_PAYMENT = 'SEND_ONCHAIN_PAYMENT';
+export const ESTIMATE_ONCHAIN_FEE = 'ESTIMATE_ONCHAIN_FEE';
+export const INPUT_PARAMS = 'INPUT_PARAMS';
 
 // actions
 export const sendOnchainPayment = paymentreq => async dispatch => {
@@ -22,14 +33,32 @@ export const sendOnchainPayment = paymentreq => async dispatch => {
   }
 };
 
-export const estimateOnchainFee = request => async dispatch => {
+export const estimateOnchainFee = (address, amount, conf) => async dispatch => {
   try {
-    const { fee_sat, feerate_sat_per_byte } = await LndInstance.sendCommand('EstimateFee', request);
-    return { fee_sat, feerate_sat_per_byte };
+    const AddrToAmount = {};
+    AddrToAmount[address] = parseFloat(amount) * 1000000;
+    const blocksToConfirm = conf !== undefined || isNaN(conf) ? conf : 1;
+    const { fee_sat, feerate_sat_per_byte } = await LndInstance.sendCommand('EstimateFee', {
+      AddrToAmount,
+      target_conf: blocksToConfirm
+    });
+
+    dispatch({
+      type: ESTIMATE_ONCHAIN_FEE,
+      fee_sat,
+      feerate_sat_per_byte
+    });
   } catch (error) {
-    alert('your transaction failed :(');
+    alert(`fee calculation ${error}`);
     console.log(`payment onchain error: ${error}`);
   }
+};
+
+export const inputParams = params => dispatch => {
+  dispatch({
+    INPUT_PARAMS,
+    params
+  });
 };
 
 export const decodePaymentRequest = async payReqString => {
@@ -59,7 +88,13 @@ export const sendLightningPayment = paymentreq => async dispatch => {
 
 // action handlers
 const actionHandler = {
-  [SEND_ONCHAIN_PAYMENT]: state => ({ ...state })
+  [SEND_ONCHAIN_PAYMENT]: state => ({ ...state }),
+  [INPUT_PARAMS]: (state, { params }) => ({ ...state, onchain: params }),
+  [ESTIMATE_ONCHAIN_FEE]: (state, { fee_sat, feerate_sat_per_byte }) => ({
+    ...state.onchain,
+    feeSat: fee_sat,
+    feePerByte: feerate_sat_per_byte
+  })
 };
 
 // reducer

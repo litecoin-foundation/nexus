@@ -30,6 +30,8 @@ export class Accounts extends Component {
             amount={amount}
             progress={percentSynced}
             synced={syncedToChain}
+            // TODO: sync status is only shown on initial sync
+            // future syncs have a timestamp difference where synced should be false if 99+%
           />
         </View>
       </View>

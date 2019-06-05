@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
@@ -20,17 +19,15 @@ export class RequestModal extends Component {
         style={{ margin: 0 }}
       >
         <View style={styles.modal}>
-          <View>
-            <View style={styles.textContainer}>
-              <Text style={styles.text}>Choose Amount</Text>
-            </View>
-
-            <AmountInput
-              onChangeText={input => onChange(input)}
-              toggleWithoutSelection
-              onAccept={() => close()}
-            />
+          <View style={styles.textContainer}>
+            <Text style={styles.text}>Choose Amount</Text>
           </View>
+
+          <AmountInput
+            onChangeText={input => onChange(input)}
+            toggleWithoutSelection
+            onAccept={() => close()}
+          />
         </View>
       </Modal>
     );
@@ -39,15 +36,12 @@ export class RequestModal extends Component {
 
 const styles = StyleSheet.create({
   modal: {
-    margin: 0,
     backgroundColor: 'white',
     height: 640,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    alignItems: 'center'
+    bottom: 0
   },
   textContainer: {
     paddingTop: 20,
@@ -68,11 +62,4 @@ RequestModal.propTypes = {
   onChange: PropTypes.func.isRequired
 };
 
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = {};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(RequestModal);
+export default RequestModal;

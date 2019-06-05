@@ -7,7 +7,7 @@ const SquareButton = props => {
   return (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.container}>
-        <Text>{label}</Text>
+        <Text style={styles.text}>{label}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -28,6 +28,11 @@ const styles = StyleSheet.create({
       height: 0,
       width: 0
     }
+  },
+  text: {
+    color: '#4A4A4A',
+    fontSize: 14,
+    fontWeight: '900'
   }
 });
 

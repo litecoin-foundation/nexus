@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity, Clipboard } from 'react-native';
 import { connect } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -9,6 +9,12 @@ export class LightningInvoice extends Component {
   componentWillUnmount() {
     const { clearInvoice } = this.props;
     clearInvoice();
+  }
+
+  async handleCopy() {
+    const { invoice } = this.props;
+    alert('copied');
+    await Clipboard.setString(invoice);
   }
 
   render() {
@@ -24,7 +30,9 @@ export class LightningInvoice extends Component {
         <Text>Please pay:</Text>
         <Text>{value}</Text>
         <Text>{description}</Text>
-        <Text>{invoice}</Text>
+        <TouchableOpacity onPress={() => this.handleCopy()}>
+          <Text>{invoice}</Text>
+        </TouchableOpacity>
       </View>
     );
   }
