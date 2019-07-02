@@ -9,7 +9,11 @@ import {
 } from 'react-navigation';
 import { store, pStore } from './store';
 
-import { Initial, Pin, Generate, Verify, Recover } from './src/screens/Onboarding';
+import Initial from './src/screens/Onboarding/Initial';
+import Pin from './src/screens/Onboarding/Pin';
+import Generate from './src/screens/Onboarding/Generate';
+import Verify from './src/screens/Onboarding/Verify';
+import Recover from './src/screens/Onboarding/Recover';
 import Loading from './src/screens/Loading';
 import Wallet from './src/screens/Wallet';
 import Auth from './src/screens/Auth';

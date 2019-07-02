@@ -50,7 +50,8 @@ export const initWallet = () => async (dispatch, getState) => {
   try {
     await LndInstance.sendCommand('InitWallet', {
       walletPassword: toBuffer(encodedPassword),
-      cipherSeedMnemonic: seed
+      cipherSeedMnemonic: seed,
+      recoveryWindow: 1000 // TODO: should be 0 if new Wallet
     });
   } catch (error) {
     console.log(error);

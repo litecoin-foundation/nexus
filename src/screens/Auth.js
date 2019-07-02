@@ -1,93 +1,44 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
-import { connect } from 'react-redux';
-import LinearGradient from 'react-native-linear-gradient';
+import React, { useEffect } from 'react';
+import { View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from 'react-navigation-hooks';
 
+import Auth from '../components/Auth';
+import { clearValues } from '../reducers/authpad';
 import { unlockWallet } from '../reducers/lightning';
-import AuthPad from '../components/Numpad/AuthPad';
 
-export class Auth extends Component {
-  state = {
-    pin: ''
-  };
+const Pin = () => {
+  const dispatch = useDispatch();
+  const { navigate } = useNavigation();
+  const pin = useSelector(state => state.authpad.pin);
+  const passcode = useSelector(state => state.onboarding.passcode);
 
-  handleInput = async () => {
-    const { pin } = this.state;
+  useEffect(() => {
     if (pin.length === 6) {
-      const { unlockWallet, navigation } = this.props;
-      const status = await unlockWallet(pin);
-      if (status === true) {
-        navigation.navigate('App');
-      } else {
-        this.setState({ pin: '' });
+      dispatch(clearValues());
+      dispatch(unlockWallet(pin));
+
+      if (pin !== passcode) {
         alert('incorrect');
+      } else {
+        navigate('App');
       }
     }
-  };
+  });
 
-  render() {
-    const { pin } = this.state;
-    return (
-      <View>
-        <View style={{ height: 200 }}>
-          <LinearGradient colors={['#7E58FF', '#544FE5']}>
-            <SafeAreaView style={{ height: '100%' }}>
-              <View style={styles.headerContainer}>
-                <Text style={styles.headerTitleText}>Unlock Wallet</Text>
-                <Text style={styles.headerDescriptionText}>Use your PIN to unlock your Wallet</Text>
-                <View>
-                  <Text>{pin}</Text>
-                </View>
-              </View>
-            </SafeAreaView>
-          </LinearGradient>
-        </View>
+  return (
+    <View>
+      <Auth
+        headerTitleText="Unlock Wallet"
+        headerDescriptionText="Use your PIN to unlock your Wallet"
+      />
+    </View>
+  );
+};
 
-        <View style={styles.padContainer}>
-          <LinearGradient
-            colors={['#544FE6', '#003DB3']}
-            style={{ height: '100%', paddingTop: 100 }}
-          >
-            <AuthPad
-              type="auth"
-              onChange={value => this.setState({ pin: value }, () => this.handleInput())}
-              currentValue={pin}
-            />
-          </LinearGradient>
-        </View>
-      </View>
-    );
-  }
-}
+Pin.navigationOptions = {
+  headerTransparent: true,
+  headerBackTitle: null
+};
 
-const styles = StyleSheet.create({
-  headerContainer: {
-    flex: 1,
-    alignItems: 'center'
-  },
-  headerTitleText: {
-    fontSize: 20,
-    color: 'white',
-    fontWeight: 'bold',
-    paddingTop: 20,
-    paddingBottom: 20
-  },
-  headerDescriptionText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    paddingBottom: 40
-  },
-  padContainer: {
-    textAlign: 'center',
-    flexGrow: 1
-  }
-});
-
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = { unlockWallet };
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Auth);
+export default Pin;

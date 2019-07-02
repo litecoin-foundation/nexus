@@ -1,94 +1,64 @@
-import React, { Component, createRef } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { connect } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from 'react-navigation-hooks';
 
+import Auth from '../../components/Auth';
 import { addPincode } from '../../reducers/onboarding';
+import { clearValues } from '../../reducers/authpad';
 import { initWallet } from '../../reducers/lightning';
 
-export class Pin extends Component {
-  constructor(props) {
-    super(props);
-    this.handleInput = this.handleInput.bind(this);
-    this.pinInput = createRef();
-  }
+const Pin = () => {
+  const dispatch = useDispatch();
+  const { navigate } = useNavigation();
+  const pin = useSelector(state => state.authpad.pin);
+  const passcodeSet = useSelector(state => state.onboarding.passcodeSet);
+  const passcode = useSelector(state => state.onboarding.passcode);
+  const beingRecovered = useSelector(state => state.onboarding.beingRecovered);
 
-  handleInput = async input => {
-    const { addPincode } = this.props;
-    if (input.length === 6) {
-      await addPincode(input);
-      this.pinInput.current.clear();
+  useEffect(() => {
+    if (pin.length === 6) {
+      dispatch(addPincode(pin));
+      dispatch(clearValues());
     }
-  };
+  });
 
-  handleVerifiction = async input => {
-    const { passcode, navigation, beingRecovered, initWallet } = this.props;
-    if (input.length !== 6) return;
-    this.pinInput.current.clear();
-    if (input === passcode && beingRecovered) {
-      await initWallet();
-      navigation.navigate('App');
-    } else if (input === passcode && !beingRecovered) {
-      navigation.push('Generate');
-    } else {
-      navigation.goBack();
-      alert('incorrect');
-      // TODO deal with this
+  useEffect(() => {
+    const handleNavigation = () => {
+      if (!beingRecovered) {
+        navigate('Generate');
+      } else {
+        dispatch(initWallet());
+        navigate('App');
+      }
+    };
+
+    if (pin.length === 6 && passcodeSet === true) {
+      dispatch(clearValues());
+
+      if (pin === passcode) {
+        handleNavigation();
+      } else {
+        // TODO: improve incorrect repeat passcode
+        // instead of pushing to load page
+        // set passcode = '' & passcodeSet = false
+        navigate('Loading');
+      }
     }
-  };
+  }, [beingRecovered, dispatch, navigate, passcode, passcodeSet, pin]);
 
-  render() {
-    const { passcodeSet } = this.props;
-    return (
-      <View>
-        <Text style={styles.title}>
-          {passcodeSet ? `Verify your Passcode` : `Create a Passcode`}
-        </Text>
-        <Text style={styles.instructions}>
-          {passcodeSet ? `Enter your passcode again.` : `Please enter a secure passcode`}
-        </Text>
-        <TextInput
-          style={styles.input}
-          secureTextEntry
-          keyboardType="numeric"
-          autoFocus
-          maxLength={6}
-          onChangeText={passcodeSet ? this.handleVerifiction : this.handleInput}
-          ref={this.pinInput}
-        />
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  title: {
-    textAlign: 'center',
-    fontSize: 20,
-    margin: 20
-  },
-  instructions: {
-    textAlign: 'center',
-    marginBottom: 20
-  },
-  input: {
-    backgroundColor: 'green',
-    height: 90,
-    borderWidth: 1
-  }
-});
-
-const mapStateToProps = state => ({
-  passcodeSet: state.onboarding.passcodeSet,
-  passcode: state.onboarding.passcode,
-  beingRecovered: state.onboarding.beingRecovered
-});
-
-const mapDispatchToProps = {
-  addPincode,
-  initWallet
+  return (
+    <Auth
+      headerTitleText={passcodeSet ? `Verify your Passcode` : `Create a Passcode`}
+      headerDescriptionText={
+        passcodeSet ? `Enter your passcode again.` : `Please enter a secure passcode`
+      }
+    />
+  );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Pin);
+Pin.navigationOptions = {
+  headerTransparent: true,
+  headerBackTitle: null
+};
+
+export default Pin;

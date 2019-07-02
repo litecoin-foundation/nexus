@@ -32,10 +32,10 @@ export const finishOnboarding = () => dispatch => {
   });
 };
 
-export const addPincode = input => dispatch => {
+export const addPincode = passcode => dispatch => {
   dispatch({
     type: ADD_PASSCODE,
-    passcode: input
+    passcode
   });
 };
 

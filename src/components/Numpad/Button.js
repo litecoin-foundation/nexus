@@ -26,8 +26,14 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 72 / 2,
-    borderColor: '#2C72FF',
-    borderWidth: 2
+    backgroundColor: 'white',
+    shadowColor: 'black',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: {
+      height: 0,
+      width: 0
+    }
   },
   text: {
     fontSize: 24,

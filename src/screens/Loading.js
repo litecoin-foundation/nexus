@@ -12,10 +12,7 @@ export class Loading extends Component {
     // start LND process
     startLnd();
 
-    if (onboarding === false && isOnboarded === false) {
-      startOnboarding();
-      navigation.navigate('Onboarding');
-    } else if (onboarding === false && isOnboarded === true) {
+    if (onboarding === false && isOnboarded === true) {
       navigation.navigate('Auth');
     } else {
       startOnboarding();

@@ -1,21 +1,22 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { StyleSheet, View, Button } from 'react-native';
-import { connect } from 'react-redux';
+import { useNavigation } from 'react-navigation-hooks';
 
-export class Initial extends Component {
-  render() {
-    const { navigation } = this.props;
-    return (
-      <View style={styles.container}>
-        <Button onPress={() => navigation.navigate('Pin')} title="Create Wallet" />
-        <Button
-          onPress={() => navigation.navigate('Recover')}
-          title="Already have a wallet? Log In"
-        />
-      </View>
-    );
-  }
-}
+const Initial = () => {
+  const { navigate } = useNavigation();
+
+  return (
+    <View style={styles.container}>
+      <Button onPress={() => navigate('Pin')} title="Create Wallet" />
+      <Button onPress={() => navigate('Recover')} title="Already have a wallet? Log In" />
+    </View>
+  );
+};
+
+Initial.navigationOptions = {
+  headerTransparent: true,
+  headerBackTitle: null
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -36,11 +37,4 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = {};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Initial);
+export default Initial;
