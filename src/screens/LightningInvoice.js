@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Clipboard } from 'react-native';
+import { View, Text, TouchableOpacity, Clipboard, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -21,22 +21,43 @@ export class LightningInvoice extends Component {
     const { invoice } = this.props;
     const { description, value } = this.props;
     return (
-      <View>
+      <View style={styles.container}>
         {!invoice ? (
           <Text>loading...</Text>
         ) : (
-          <QRCode value={invoice} color="rgba(10, 36, 79, 1)" size={350} />
+          <View style={{ paddingTop: 15, paddingBottom: 15 }}>
+            <QRCode value={invoice} color="rgba(10, 36, 79, 1)" size={350} />
+          </View>
         )}
-        <Text>Please pay:</Text>
-        <Text>{value}</Text>
-        <Text>{description}</Text>
-        <TouchableOpacity onPress={() => this.handleCopy()}>
-          <Text>{invoice}</Text>
-        </TouchableOpacity>
+        <View style={styles.detailContainer}>
+          <Text style={styles.paymentText}>Please pay:</Text>
+          <Text style={styles.paymentText}>{description}</Text>
+          <TouchableOpacity onPress={() => this.handleCopy()}>
+            <Text>{invoice}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center'
+  },
+  detailContainer: {
+    flex: 1,
+    backgroundColor: '#F6F9FC',
+    width: '100%',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(151, 151, 151, 0.3)'
+  },
+  paymentText: {
+    textAlign: 'center',
+    color: 'rgba(10, 36, 79, 1)'
+  }
+});
 
 const mapStateToProps = state => ({
   invoice: state.invoice.paymentRequest,

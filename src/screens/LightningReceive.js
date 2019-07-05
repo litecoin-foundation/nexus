@@ -1,64 +1,57 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { connect } from 'react-redux';
+import { useNavigation } from 'react-navigation-hooks';
+import { useDispatch } from 'react-redux';
 
+import LinearGradient from 'react-native-linear-gradient';
 import BlueButton from '../components/BlueButton';
 import AmountInput from '../components/AmountInput';
 import GreyTextInput from '../components/GreyTextInput';
 import { addInvoice } from '../reducers/invoice';
 
-export class LightningReceive extends Component {
-  state = {
-    memo: '',
-    amount: '',
-    selected: false
+const LightningReceive = () => {
+  const { navigate } = useNavigation();
+  const dispatch = useDispatch();
+
+  const [selected, select] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [memo, setMemo] = useState('');
+
+  const handleSubmit = () => {
+    dispatch(addInvoice({ amount, memo }));
+    navigate('LightningInvoice');
   };
 
-  handlePress = bool => {
-    this.setState({ selected: bool });
-  };
+  return (
+    <View>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>CHOOSE AMOUNT</Text>
+      </View>
+      <AmountInput
+        onChangeText={amount => setAmount(amount)}
+        onAccept={() => select(false)}
+        selected={() => select(true)}
+      />
 
-  handleSubmit = async () => {
-    const { amount, memo } = this.state;
-    const { addInvoice, navigation } = this.props;
-
-    const invoice = await addInvoice({ amount, memo });
-    if (invoice === true) {
-      navigation.navigate('LightningInvoice');
-    }
-  };
-
-  render() {
-    const { selected } = this.state;
-
-    return (
-      <View>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>CHOOSE AMOUNT</Text>
-        </View>
-        <AmountInput
-          onChangeText={input => this.setState({ amount: input })}
-          onAccept={() => this.handlePress(false)}
-          selected={() => this.handlePress(true)}
-        />
-
-        {!selected ? (
-          <View>
+      {!selected ? (
+        <View>
+          <LinearGradient
+            colors={['rgba(242,248,253,0.2)', 'rgba(210,225,239,0.2)']}
+            style={{ height: '100%' }}
+          >
             <View style={styles.descriptionContainer}>
               <Text style={styles.leftTitle}>ADD Description</Text>
-              <GreyTextInput
-                placeholder="placeholder"
-                onChangeText={input => this.setState({ memo: input })}
-              />
+              <GreyTextInput placeholder="placeholder" onChangeText={memo => setMemo(memo)} />
             </View>
-
-            <BlueButton value="Create Invoice" onPress={this.handleSubmit} />
-          </View>
-        ) : null}
-      </View>
-    );
-  }
-}
+            <View style={{ alignItems: 'center' }}>
+              <BlueButton value="Create Invoice" onPress={handleSubmit} />
+            </View>
+          </LinearGradient>
+        </View>
+      ) : null}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   descriptionContainer: {
@@ -86,11 +79,4 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = { addInvoice };
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(LightningReceive);
+export default LightningReceive;
