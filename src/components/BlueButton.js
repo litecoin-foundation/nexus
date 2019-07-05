@@ -6,7 +6,7 @@ const BlueButton = props => {
   const { value, onPress } = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Text>{value}</Text>
+      <Text style={styles.text}>{value}</Text>
     </TouchableOpacity>
   );
 };
@@ -26,6 +26,11 @@ const styles = StyleSheet.create({
       height: 0,
       width: 0
     }
+  },
+  text: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600'
   }
 });
 

@@ -8,7 +8,7 @@ import GreyRoundButton from './GreyRoundButton';
 
 export class TransactionModal extends Component {
   render() {
-    const { isVisible, close, navigation, type } = this.props;
+    const { isVisible, close, navigate, type } = this.props;
     const LightningView = type === 'send' ? 'LightningSend' : 'LightningReceive';
     const OnchainView = type === 'send' ? 'Send' : 'Receive';
 
@@ -35,31 +35,20 @@ export class TransactionModal extends Component {
               </Text>
             </View>
 
-            <Text
-              style={{
-                color: '#7C96AE',
-                fontSize: 12,
-                fontWeight: '600',
-                textAlign: 'center',
-                paddingTop: 40,
-                paddingBottom: 20
-              }}
-            >
-              CHOOSE TRANSACTION TYPE
-            </Text>
+            <Text style={styles.subtitleText}>CHOOSE TRANSACTION TYPE</Text>
             <View style={styles.typeContainer}>
               <TypeButton
                 label="Lightning"
                 onPress={() => {
                   close();
-                  navigation.navigate(LightningView);
+                  navigate(LightningView);
                 }}
               />
               <TypeButton
                 label="Onchain"
                 onPress={() => {
                   close();
-                  navigation.navigate(OnchainView);
+                  navigate(OnchainView);
                 }}
               />
             </View>
@@ -125,15 +114,21 @@ const styles = StyleSheet.create({
     color: '#4E6070',
     fontSize: 16,
     fontWeight: '500'
+  },
+  subtitleText: {
+    color: '#7C96AE',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingTop: 40,
+    paddingBottom: 20
   }
 });
 
 TransactionModal.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   close: PropTypes.func.isRequired,
-  navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired
-  }).isRequired,
+  navigate: PropTypes.func.isRequired,
   type: PropTypes.string
 };
 

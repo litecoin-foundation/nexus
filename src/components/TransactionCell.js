@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 const TransactionCell = props => {
   const { item, onPress } = props;
-  // TODO: refactor this, item computes unnecessary data
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.circle} />
@@ -13,7 +13,7 @@ const TransactionCell = props => {
         <Text>{item.time}</Text>
       </View>
       <View style={styles.right}>
-        <Text style={{ textAlign: 'right' }}>{`${item.formattedAmount} LTC`}</Text>
+        <Text style={{ textAlign: 'right' }}>{`${item.amount} LTC`}</Text>
         <Text style={{ textAlign: 'right' }}>{item.fiatAmount}</Text>
       </View>
     </TouchableOpacity>
@@ -24,8 +24,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    height: 60,
-    width: 335,
+    height: 70,
+    width: 360,
     borderRadius: 8,
     backgroundColor: 'white',
     marginTop: 6,

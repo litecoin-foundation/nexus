@@ -1,80 +1,95 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { createSelector } from 'reselect';
+import { useNavigation } from 'react-navigation-hooks';
 
+import TransactionDetailModal from '../components/TransactionDetailModal';
 import TransactionModal from '../components/TransactionModal';
 import TransactionList from '../components/TransactionList';
 import AmountView from '../components/AmountView';
 import { date, groupBy, converter } from '../lib/utils';
 
-export class Wallet extends Component {
-  static navigationOptions = {
-    headerTitle: 'LTC Wallet',
-    tabBarVisible: false,
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white'
-    },
-    headerTransparent: true,
-    headerBackTitle: null
-  };
+const transactionSelector = createSelector(
+  state => state.transaction.transactions,
+  tx =>
+    tx.map(data => {
+      const sign = Math.sign(parseFloat(data.amount)) === -1;
+      const name = sign ? 'Sent Litecoin' : 'Received Litecoin';
+      const hash = data.txHash;
+      const amount = converter.satoshisToBtc(data.amount);
+      const fee = data.totalFees;
+      const confs = data.numConfirmations;
+      const day = date.formatDate(data.timeStamp);
+      const time = date.formatTime(data.timeStamp);
+      const type = 'litecoin onchain';
+      const addresses = data.destAddresses;
+      return { name, sign, hash, amount, fee, confs, day, time, type, addresses };
+    })
+);
 
-  state = {
-    modalTriggered: false,
-    type: ''
-  };
+const Wallet = () => {
+  const { navigate } = useNavigation();
+  const transactions = useSelector(state => transactionSelector(state));
 
-  setModalVisible(bool, type) {
-    this.setState({ modalTriggered: bool, type });
-  }
+  const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
+  const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
+  const [type, setType] = useState('');
+  const [selectedTransaction, selectTransaction] = useState(null);
 
-  render() {
-    const { navigation, transactions, rates } = this.props;
-    const { modalTriggered, type } = this.state;
-    // TODO (util): refactor + fix this
-    const txList = transactions.map(val => {
-      val.date = date.formatDate(val.timeStamp);
-      val.time = date.formatTime(val.timeStamp);
-      val.sent = Math.sign(parseFloat(val.amount)) === -1;
-      val.recieved = Math.sign(parseFloat(val.amount)) === '1';
-      val.name = val.sent ? 'Sent Litecoin' : 'Received Litecoin';
-      val.formattedAmount = converter.satoshisToBtc(val.amount);
-      val.fiatAmount = (val.formattedAmount * rates.USD).toFixed(2);
-      return val;
-    });
+  const groupedTransactions = groupBy(transactions, 'day');
 
-    const groupedTransactions = groupBy(txList, 'date');
+  return (
+    <View style={styles.container}>
+      <AmountView />
+      <TransactionList
+        groupedTransactions={groupedTransactions}
+        onPress={data => {
+          selectTransaction(data);
+          setTxDetailModalVisible(true);
+        }}
+      />
 
-    return (
-      <View style={styles.container}>
-        <AmountView />
-        <TransactionList navigation={navigation} groupedTransactions={groupedTransactions} />
-
-        <View style={styles.paymentContainer}>
-          <TouchableOpacity
-            style={styles.payment}
-            onPress={() => this.setModalVisible(true, 'send')}
-          >
-            <Text>Send</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.payment}
-            onPress={() => this.setModalVisible(true, 'receive')}
-          >
-            <Text>Receive</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TransactionModal
-          isVisible={modalTriggered}
-          type={type}
-          navigation={navigation}
-          close={() => this.setModalVisible(false, '')}
-        />
+      <View style={styles.paymentContainer}>
+        <TouchableOpacity
+          style={styles.payment}
+          onPress={() => {
+            setTxTypeModalVisible(true);
+            setType('send');
+          }}
+        >
+          <Text>Send</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.payment}
+          onPress={() => {
+            setTxTypeModalVisible(true);
+            setType('receive');
+          }}
+        >
+          <Text>Receive</Text>
+        </TouchableOpacity>
       </View>
-    );
-  }
-}
+
+      <TransactionModal
+        isVisible={isTxTypeModalVisible}
+        type={type}
+        navigate={navigate}
+        close={() => setTxTypeModalVisible(false)}
+      />
+      {selectedTransaction ? (
+        <TransactionDetailModal
+          close={() => {
+            setTxDetailModalVisible(false);
+            selectTransaction(null);
+          }}
+          isVisible={isTxDetailModalVisible}
+          transaction={selectedTransaction}
+        />
+      ) : null}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -105,15 +120,15 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = state => ({
-  totalBalance: state.balance.totalBalance,
-  transactions: state.transaction.transactions,
-  rates: state.ticker.rates
-});
+Wallet.navigationOptions = {
+  headerTitle: 'LTC Wallet',
+  tabBarVisible: false,
+  headerTitleStyle: {
+    fontWeight: 'bold',
+    color: 'white'
+  },
+  headerTransparent: true,
+  headerBackTitle: null
+};
 
-const mapDispatchToProps = {};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Wallet);
+export default Wallet;

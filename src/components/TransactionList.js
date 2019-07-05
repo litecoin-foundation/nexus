@@ -5,29 +5,19 @@ import PropTypes from 'prop-types';
 import TransactionCell from './TransactionCell';
 
 const TransactionList = props => {
-  const { groupedTransactions, navigation } = props;
-
-  let emptyList;
-  if (groupedTransactions === undefined || groupedTransactions.length === 0) {
-    emptyList = <Text>Your transactions will appear here.</Text>;
-  }
+  const { groupedTransactions, onPress } = props;
 
   return (
     <View style={styles.container}>
-      {emptyList}
       <SectionList
         sections={groupedTransactions}
-        renderItem={({ item }) => (
-          <TransactionCell
-            item={item}
-            onPress={() => navigation.navigate('Transaction', { item })}
-          />
-        )}
+        renderItem={({ item }) => <TransactionCell item={item} onPress={() => onPress(item)} />}
         renderSectionHeader={({ section }) => (
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
-        keyExtractor={item => item.txHash}
-        initialNumToRender={6}
+        keyExtractor={item => item.hash}
+        initialNumToRender={7}
+        ListEmptyComponent={<Text>Your transactions will appear here.</Text>}
         // currently setting the SectionList to inverted breaks the styling
         // so transaction grouping is manually inverting the arrays
       />
@@ -37,22 +27,23 @@ const TransactionList = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 400,
+    height: 500,
     position: 'absolute',
     bottom: 0
   },
   sectionHeader: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    backgroundColor: 'white'
+    color: '#7C96AE',
+    backgroundColor: 'white',
+    opacity: 0.9,
+    fontSize: 11,
+    letterSpacing: -0.28,
+    paddingLeft: 10
   }
 });
 
 TransactionList.propTypes = {
   groupedTransactions: PropTypes.arrayOf(PropTypes.object),
-  navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired
-  }).isRequired
+  onPress: PropTypes.func.isRequired
 };
 
 export default TransactionList;
