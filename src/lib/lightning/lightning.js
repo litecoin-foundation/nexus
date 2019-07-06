@@ -81,7 +81,8 @@ class Lightning {
       ListInvoices: 'ListInvoiceRequest',
       SendPayment: 'SendRequest',
       SubscribeTransactions: 'GetTransactionsRequest',
-      SubscribeInvoices: 'InvoiceSubscription'
+      SubscribeInvoices: 'InvoiceSubscription',
+      ExportAllChannelBackups: 'ChanBackupExportRequest'
     };
     return map[method] || `${method}Request`;
   }
@@ -95,7 +96,8 @@ class Lightning {
       OpenChannel: 'OpenStatusUpdate',
       CloseChannel: 'CloseStatusUpdate',
       SubscribeTransactions: 'Transaction',
-      SubscribeInvoices: 'Invoice'
+      SubscribeInvoices: 'Invoice',
+      ExportAllChannelBackups: 'ChanBackupSnapshot'
     };
     return map[method] || `${method}Response`;
   }

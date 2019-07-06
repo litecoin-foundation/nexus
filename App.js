@@ -14,13 +14,13 @@ import Pin from './src/screens/Onboarding/Pin';
 import Generate from './src/screens/Onboarding/Generate';
 import Verify from './src/screens/Onboarding/Verify';
 import Recover from './src/screens/Onboarding/Recover';
+import ChannelBackup from './src/screens/Onboarding/ChannelBackup';
 import Loading from './src/screens/Loading';
 import Wallet from './src/screens/Wallet';
 import Auth from './src/screens/Auth';
 import Send from './src/screens/Send';
 import Receive from './src/screens/Receive';
 import Account from './src/screens/Account';
-import Transaction from './src/screens/Transaction';
 import Settings from './src/screens/Settings/Settings';
 import LightningSend from './src/screens/LightningSend';
 import LightningReceive from './src/screens/LightningReceive';
@@ -34,13 +34,13 @@ const OnboardingStack = createStackNavigator({
   Pin: { screen: Pin },
   Generate: { screen: Generate },
   Verify: { screen: Verify },
-  Recover: { screen: Recover }
+  Recover: { screen: Recover },
+  ChannelBackup: { screen: ChannelBackup }
 });
 
 const WalletStack = createStackNavigator({
   Account: { screen: Account },
   Wallet: { screen: Wallet },
-  Transaction: { screen: Transaction },
   Send: { screen: Send },
   Receive: { screen: Receive },
   LightningSend: { screen: LightningSend },

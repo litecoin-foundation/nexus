@@ -1,4 +1,5 @@
 import Lightning from '../lib/lightning/lightning';
+import { sleep } from '../lib/utils';
 
 const LndInstance = new Lightning();
 
@@ -12,13 +13,15 @@ const initialState = {
     pendingClosingChannels: [],
     pendingForceClosingChannels: [],
     waitingCloseChannels: []
-  }
+  },
+  channelBackupsEnabled: false
 };
 
 // constants
 export const LIST_CHANNELS = 'LIST_CHANNELS';
 export const LIST_PENDING_CHANNELS = 'LIST_PENDING_CHANNELS';
 export const LIST_PEERS = 'LIST_PEERS';
+export const ENABLE_CHANNEL_BACKUP = 'ENABLE_CHANNEL_BACKUP';
 
 // actions
 export const listChannels = () => async dispatch => {
@@ -121,11 +124,30 @@ export const openChannel = async (pubkey, amount) => {
   }
 };
 
+export const enableChannelBackup = () => dispatch => {
+  dispatch({
+    type: ENABLE_CHANNEL_BACKUP
+  });
+};
+
+export const backupChannels = (retries = Infinity) => async (dispatch, getState) => {
+  const { channelBackupsEnabled } = getState().channels;
+  if (!channelBackupsEnabled) return;
+
+  while ((retries -= 1)) {
+    const { multiChanBackup } = await LndInstance.sendCommand('ExportAllChannelBackups');
+    console.log(multiChanBackup);
+    // TODO: backup the multichannelbackup to the cloud
+    await sleep(10000);
+  }
+};
+
 // action handlers
 const actionHandler = {
   [LIST_CHANNELS]: (state, { channels }) => ({ ...state, channels }),
   [LIST_PENDING_CHANNELS]: (state, { pending }) => ({ ...state, pending }),
-  [LIST_PEERS]: (state, { peers }) => ({ ...state, peers })
+  [LIST_PEERS]: (state, { peers }) => ({ ...state, peers }),
+  [ENABLE_CHANNEL_BACKUP]: state => ({ ...state, channelBackupsEnabled: true })
 };
 
 // reducer

@@ -5,6 +5,7 @@ import { getBalance } from './balance';
 import { getInfo } from './info';
 import { getTransactions } from './transaction';
 import { getTicker } from './ticker';
+import { backupChannels } from './channels';
 
 const LndInstance = new Lightning();
 
@@ -81,6 +82,7 @@ export const unlockWallet = input => async (dispatch, getState) => {
   dispatch(getInfo());
   dispatch(getTransactions());
   dispatch(getTicker());
+  dispatch(backupChannels());
 
   dispatch({
     type: UNLOCK_WALLET,
