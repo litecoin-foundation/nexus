@@ -1,3 +1,5 @@
+import RNFS from 'react-native-fs';
+
 import Lightning from '../lib/lightning/lightning';
 import { toBuffer } from '../lib/utils';
 import { finishOnboarding } from './onboarding';
@@ -49,17 +51,20 @@ export const initWallet = () => async (dispatch, getState) => {
   const { passcode, seed } = getState().onboarding;
   const encodedPassword = `${passcode}_losh11`;
   try {
+    await deleteWalletDB();
     await LndInstance.sendCommand('InitWallet', {
       walletPassword: toBuffer(encodedPassword),
       cipherSeedMnemonic: seed,
       recoveryWindow: 1000 // TODO: should be 0 if new Wallet
     });
+    // dispatch pollers
+    dispatch(getBalance());
+    dispatch(getInfo());
+    dispatch(getTransactions());
+    dispatch(getTicker());
+    dispatch(backupChannels());
   } catch (error) {
     console.log(error);
-    // if error likely wallet already exists
-    // this should only occur on iOS Simulator & Android emulator
-    // TODO: remove existing wallet files
-    initWallet();
   }
   dispatch(finishOnboarding());
 };
@@ -73,8 +78,7 @@ export const unlockWallet = input => async (dispatch, getState) => {
       walletPassword: toBuffer(encodedPassword)
     });
   } catch (error) {
-    // if error likely no wallet exists
-    initWallet();
+    dispatch(initWallet());
   }
 
   // dispatch pollers
@@ -88,7 +92,16 @@ export const unlockWallet = input => async (dispatch, getState) => {
     type: UNLOCK_WALLET,
     payload: status
   });
-  return status;
+};
+
+export const deleteWalletDB = async () => {
+  const dbPath = `${RNFS.DocumentDirectoryPath}/data/chain/litecoin/mainnet/wallet.db`;
+  try {
+    await RNFS.unlink(dbPath);
+  } catch (error) {
+    // if initial install, then no wallet db will exist
+    console.log('no wallet db exists');
+  }
 };
 
 // action handlers

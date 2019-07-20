@@ -3,7 +3,6 @@ import { View, Text, Button } from 'react-native';
 import { connect } from 'react-redux';
 
 import { getRandomInt, randomShuffle, getBIP39Word } from '../../lib/utils';
-import { initWallet } from '../../reducers/lightning';
 
 export class Verify extends Component {
   constructor(props) {
@@ -12,11 +11,10 @@ export class Verify extends Component {
   }
 
   handlePress = async (val, actualVal) => {
-    const { navigation, initWallet } = this.props;
+    const { navigation } = this.props;
     if (val === actualVal) {
       alert(`congrats!`);
-      await initWallet();
-      navigation.navigate('App');
+      navigation.navigate('ChannelBackup');
     } else {
       alert(`incorrect`);
       navigation.goBack();
@@ -50,7 +48,7 @@ const mapStateToProps = state => ({
   seed: state.onboarding.seed
 });
 
-const mapDispatchToProps = { initWallet };
+const mapDispatchToProps = {};
 
 export default connect(
   mapStateToProps,

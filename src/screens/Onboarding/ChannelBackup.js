@@ -10,11 +10,6 @@ const ChannelBackup = () => {
   const { navigate } = useNavigation();
   const dispatch = useDispatch();
 
-  const handlePress = () => {
-    dispatch(enableChannelBackup());
-    dispatch(initWallet());
-    navigate('App');
-  };
   return (
     <View>
       <Text>iCloud Backup</Text>
@@ -22,10 +17,21 @@ const ChannelBackup = () => {
         Your lightning balances will be backed up to the Cloud securely (encrypted so only your
         device can decrypt it). It is very strongly recommended that you enable this.
       </Text>
-      <TouchableOpacity onPress={() => handlePress()}>
+      <TouchableOpacity
+        onPress={() => {
+          dispatch(enableChannelBackup());
+          dispatch(initWallet());
+          navigate('App');
+        }}
+      >
         <Text>Enable Cloud Backup</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigate('App')}>
+      <TouchableOpacity
+        onPress={() => {
+          dispatch(initWallet());
+          navigate('App');
+        }}
+      >
         <Text>Maybe later</Text>
       </TouchableOpacity>
     </View>

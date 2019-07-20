@@ -5,7 +5,6 @@ import { useNavigation } from 'react-navigation-hooks';
 import Auth from '../../components/Auth';
 import { addPincode } from '../../reducers/onboarding';
 import { clearValues } from '../../reducers/authpad';
-import { initWallet } from '../../reducers/lightning';
 
 const Pin = () => {
   const dispatch = useDispatch();
@@ -27,8 +26,7 @@ const Pin = () => {
       if (!beingRecovered) {
         navigate('Generate');
       } else {
-        dispatch(initWallet());
-        navigate('App');
+        navigate('ChannelBackup');
       }
     };
 
@@ -38,9 +36,6 @@ const Pin = () => {
       if (pin === passcode) {
         handleNavigation();
       } else {
-        // TODO: improve incorrect repeat passcode
-        // instead of pushing to load page
-        // set passcode = '' & passcodeSet = false
         navigate('Loading');
       }
     }

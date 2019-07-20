@@ -29,6 +29,12 @@ export const getInfo = (retries = Infinity) => async (dispatch, getState) => {
       info.startingSyncTimestamp = info.bestHeaderTimestamp || 0;
     }
 
+    const syncPercentage = await calculateSyncProgress(info, startingSyncTimestamp);
+
+    if (syncPercentage < 0.9) {
+      info.syncedToChain = false;
+    }
+
     if (!info.syncedToChain) {
       info.percentSynced = await calculateSyncProgress(info, startingSyncTimestamp);
     }
