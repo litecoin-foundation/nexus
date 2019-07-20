@@ -78,7 +78,10 @@ export const unlockWallet = input => async (dispatch, getState) => {
       walletPassword: toBuffer(encodedPassword)
     });
   } catch (error) {
-    dispatch(initWallet());
+    const dbPath = `${RNFS.DocumentDirectoryPath}/data/chain/litecoin/mainnet/wallet.db`;
+    if (!RNFS.exists(dbPath)) {
+      dispatch(initWallet());
+    }
   }
 
   // dispatch pollers
