@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import Pad from './Numpad/Pad';
-import BlueSquareButton from './Numpad/BlueSquareButton';
+import BlueButton from './BlueButton';
 
 export class AmountInput extends Component {
   state = {
@@ -54,8 +54,9 @@ export class AmountInput extends Component {
 
   handleAccept = () => {
     const { onAccept } = this.props;
+    const { amount } = this.state;
     this.setState({ selected: false });
-    onAccept();
+    onAccept(amount);
   };
 
   render() {
@@ -64,11 +65,13 @@ export class AmountInput extends Component {
     const PadContainer = (
       <View style={styles.padContainer}>
         <Pad onChange={this.onChange} currentValue={leftToggled ? amount : fiatAmount} />
-        <BlueSquareButton value="ACCEPT" onPress={this.handleAccept} />
+        <View style={{ alignItems: 'center' }}>
+          <BlueButton value="Preview Buy" onPress={this.handleAccept} />
+        </View>
       </View>
     );
     return (
-      <View style={[selected ? { height: '100%' } : null]}>
+      <View style={[selected || toggleWithoutSelection ? { height: '100%' } : null]}>
         <View style={styles.container}>
           <View style={styles.area}>
             <TouchableOpacity

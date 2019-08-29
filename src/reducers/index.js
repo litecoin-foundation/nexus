@@ -10,6 +10,7 @@ import ticker from './ticker';
 import invoice from './invoice';
 import channels from './channels';
 import authpad from './authpad';
+import buy from './buy';
 
 export default combineReducers({
   onboarding,
@@ -22,5 +23,6 @@ export default combineReducers({
   ticker,
   invoice,
   channels,
-  authpad
+  authpad,
+  buy
 });

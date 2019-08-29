@@ -28,6 +28,9 @@ import LightningInvoice from './src/screens/LightningInvoice';
 import Scanner from './src/screens/Scanner';
 import Channel from './src/screens/Settings/Channel';
 import OpenChannel from './src/screens/Settings/OpenChannel';
+import Buy from './src/screens/Buy/Buy';
+import Confirm from './src/screens/Buy/Confirm';
+import Processing from './src/screens/Buy/Processing';
 
 const OnboardingStack = createStackNavigator({
   Initial: { screen: Initial },
@@ -75,8 +78,15 @@ SettingsStack.navigationOptions = ({ navigation }) => {
   };
 };
 
+const BuyStack = createStackNavigator({
+  Buy: { screen: Buy },
+  Confirm: { screen: Confirm },
+  Processing: { screen: Processing }
+});
+
 const AppStack = createBottomTabNavigator({
   Wallets: { screen: WalletStack },
+  Buy: { screen: BuyStack },
   Settings: { screen: SettingsStack }
 });
 
