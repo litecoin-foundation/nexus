@@ -36,3 +36,4 @@ Lndmobile.framework
 Lndmobile.aar
 .vscode/ipch
 shim.js
+/ios/Pods/

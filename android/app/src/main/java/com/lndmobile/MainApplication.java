@@ -1,7 +1,11 @@
 package com.lndmobile;
 
 import android.app.Application;
+import android.util.Log;
 
+import com.facebook.react.PackageList;
+import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
+import com.facebook.react.bridge.JavaScriptExecutorFactory;
 import com.facebook.react.ReactApplication;
 import com.BV.LinearGradient.LinearGradientPackage;
 import com.reactnativecommunity.slider.ReactSliderPackage;
@@ -29,17 +33,12 @@ public class MainApplication extends Application implements ReactApplication {
 
     @Override
     protected List<ReactPackage> getPackages() {
-      return Arrays.<ReactPackage>asList(
-          new MainReactPackage(),
-            new LinearGradientPackage(),
-            new ReactSliderPackage(),
-            new SvgPackage(),
-            new RNCameraPackage(),
-            new RNFSPackage(),
-            new RNGestureHandlerPackage(),
-            new RNSensitiveInfoPackage(),
-            new LndNativePackage()
-      );
+
+      @SuppressWarnings("UnnecessaryLocalVariable")
+      List<ReactPackage> packages = new PackageList(this).getPackages();
+      // Packages that cannot be autolinked yet can be added manually here, for example:
+      // packages.add(new MyReactNativePackage());
+      return packages;
     }
 
     @Override
