@@ -1,9 +1,9 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const BlueClearButton = props => {
-  const { value, onPress } = props;
+  const {value, onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.text}>{value}</Text>
@@ -25,19 +25,19 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
+      width: 0,
+    },
   },
   text: {
     fontSize: 15,
     color: '#2C72FF',
-    letterSpacing: 0.1
-  }
+    letterSpacing: 0.1,
+  },
 });
 
 BlueClearButton.propTypes = {
   value: PropTypes.string.isRequired,
-  onPress: PropTypes.func
+  onPress: PropTypes.func,
 };
 
 export default BlueClearButton;

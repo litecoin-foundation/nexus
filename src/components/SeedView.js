@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const SeedView = props => {
-  const { index, value } = props;
+  const {index, value} = props;
   return (
     <View style={styles.container}>
       <Text>{index}</Text>
@@ -18,13 +18,13 @@ const styles = StyleSheet.create({
     width: 350,
     backgroundColor: 'white',
     borderRadius: 7,
-    marginTop: 10
-  }
+    marginTop: 10,
+  },
 });
 
 SeedView.propTypes = {
   index: PropTypes.number.isRequired,
-  value: PropTypes.string.isRequired
+  value: PropTypes.string.isRequired,
 };
 
 export default SeedView;

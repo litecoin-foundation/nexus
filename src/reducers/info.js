@@ -1,5 +1,5 @@
 import Lightning from '../lib/lightning/lightning';
-import { sleep } from '../lib/utils';
+import {sleep} from '../lib/utils';
 
 const LndInstance = new Lightning();
 
@@ -13,7 +13,7 @@ const initialState = {
   blockHash: '',
   bestHeaderTimestamp: 0,
   uris: [],
-  chains: []
+  chains: [],
 };
 
 // constants
@@ -23,34 +23,42 @@ export const GET_INFO = 'GET_INFO';
 export const getInfo = (retries = Infinity) => async (dispatch, getState) => {
   while ((retries -= 1)) {
     const info = await LndInstance.sendCommand('getInfo');
-    const { startingSyncTimestamp } = getState().info;
+    const {startingSyncTimestamp} = getState().info;
 
     if (startingSyncTimestamp === undefined) {
       info.startingSyncTimestamp = info.bestHeaderTimestamp || 0;
     }
 
-    const syncPercentage = await calculateSyncProgress(info, startingSyncTimestamp);
+    const syncPercentage = await calculateSyncProgress(
+      info,
+      startingSyncTimestamp,
+    );
 
     if (syncPercentage < 0.9) {
       info.syncedToChain = false;
     }
 
     if (!info.syncedToChain) {
-      info.percentSynced = await calculateSyncProgress(info, startingSyncTimestamp);
+      info.percentSynced = await calculateSyncProgress(
+        info,
+        startingSyncTimestamp,
+      );
     }
 
     dispatch({
       type: GET_INFO,
-      info
+      info,
     });
     await sleep();
   }
 };
 
 const calculateSyncProgress = async (info, startingSyncTimestamp) => {
-  const { bestHeaderTimestamp } = info;
+  const {bestHeaderTimestamp} = info;
   const currentTimestamp = new Date().getTime() / 1000;
-  const progressSoFar = bestHeaderTimestamp ? bestHeaderTimestamp - startingSyncTimestamp : 0;
+  const progressSoFar = bestHeaderTimestamp
+    ? bestHeaderTimestamp - startingSyncTimestamp
+    : 0;
   const totalProgress = currentTimestamp - startingSyncTimestamp || 0.001;
   const percentSynced = (progressSoFar * 1.0) / totalProgress;
   return percentSynced;
@@ -58,10 +66,10 @@ const calculateSyncProgress = async (info, startingSyncTimestamp) => {
 
 // action handlers
 const actionHandler = {
-  [GET_INFO]: (state, { info }) => ({
+  [GET_INFO]: (state, {info}) => ({
     ...state,
-    ...info
-  })
+    ...info,
+  }),
 };
 
 // reducer

@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useDispatch } from 'react-redux';
+import {View, StyleSheet} from 'react-native';
+import {useDispatch} from 'react-redux';
 
 import Button from './Button';
-import { inputValue, backspaceValue } from '../../reducers/authpad';
+import {inputValue, backspaceValue} from '../../reducers/authpad';
 
 const AuthPad = () => {
   const dispatch = useDispatch();
@@ -25,7 +25,9 @@ const AuthPad = () => {
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 
   const buttons = values.map(value => {
-    return <Button key={value} value={value} onPress={() => handlePress(value)} />;
+    return (
+      <Button key={value} value={value} onPress={() => handlePress(value)} />
+    );
   });
 
   return (
@@ -40,15 +42,15 @@ const styles = StyleSheet.create({
     height: 450,
     backgroundColor: 'transparent',
     justifyContent: 'space-evenly',
-    flexGrow: 1
+    flexGrow: 1,
   },
   area: {
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     width: '80%',
-    alignSelf: 'center'
-  }
+    alignSelf: 'center',
+  },
 });
 
 export default AuthPad;

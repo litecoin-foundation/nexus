@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createSelector } from 'reselect';
+import {createSelector} from 'reselect';
 
 // initial state
 const initialState = {
@@ -9,7 +9,7 @@ const initialState = {
   total_amount: '',
   valid: '',
   order_id: '',
-  user_id: ''
+  user_id: '',
 };
 
 // constants
@@ -21,25 +21,25 @@ const RUN_KYC = 'RUN_KYC';
 export const setAmount = amount => dispatch => {
   dispatch({
     type: SET_AMOUNT,
-    amount
+    amount,
   });
 };
 
 export const getQuote = () => async (dispatch, getState) => {
-  const { amount } = getState().buy;
+  const {amount} = getState().buy;
 
   const data = {
     end_user_id: 'PUT_SOMETHING_HERE',
     requested_amount: parseFloat(amount),
-    fiat_currency: 'USD'
+    fiat_currency: 'USD',
   };
 
   try {
     const response = await axios({
       url: 'https://api.loafwallet.org/api/buy/quote',
       method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      data
+      headers: {'Content-Type': 'application/json'},
+      data,
     });
 
     const valid = new Date(response.data.valid_until);
@@ -47,7 +47,7 @@ export const getQuote = () => async (dispatch, getState) => {
     dispatch({
       type: GET_QUOTE,
       response,
-      valid
+      valid,
     });
   } catch (error) {
     console.log(error);
@@ -55,7 +55,7 @@ export const getQuote = () => async (dispatch, getState) => {
 };
 
 export const runKYC = () => async (dispatch, getState) => {
-  const { quote_id, total_amount, amount } = getState().buy;
+  const {quote_id, total_amount, amount} = getState().buy;
   const data = {
     user_id: 'USER_ID_HERE',
     quote_id,
@@ -65,14 +65,14 @@ export const runKYC = () => async (dispatch, getState) => {
     crypto_amount: amount,
     install_date: 'APP_INSTALL_DATE',
     currency_code: 'CURRENCY_CODE',
-    address: 'LITECOIN_ADDRESS_HERE'
+    address: 'LITECOIN_ADDRESS_HERE',
   };
   try {
     const response = await axios({
       url: 'https://api.loafwallet.org/api/buy/kyc',
       method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      data
+      headers: {'Content-Type': 'application/json'},
+      data,
     });
   } catch (error) {
     console.log(error);
@@ -87,20 +87,20 @@ export const priceSelector = createSelector(
   (total, base, amount) => {
     const pricePerUnit = (total / parseFloat(amount)).toFixed(2);
     const fee = (total - base).toFixed(2);
-    return { total, pricePerUnit, fee };
-  }
+    return {total, pricePerUnit, fee};
+  },
 );
 
 // action handlers
 const actionHandler = {
-  [SET_AMOUNT]: (state, { amount }) => ({ ...state, amount }),
-  [GET_QUOTE]: (state, { response, valid }) => ({
+  [SET_AMOUNT]: (state, {amount}) => ({...state, amount}),
+  [GET_QUOTE]: (state, {response, valid}) => ({
     ...state,
     quote_id: response.data.quote_id,
     base_amount: response.data.fiat_money.base_amount,
     total_amount: response.data.fiat_money.total_amount,
-    valid
-  })
+    valid,
+  }),
 };
 
 // reducer

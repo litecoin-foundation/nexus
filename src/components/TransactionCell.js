@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const TransactionCell = props => {
-  const { item, onPress } = props;
+  const {item, onPress} = props;
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -13,8 +13,8 @@ const TransactionCell = props => {
         <Text>{item.time}</Text>
       </View>
       <View style={styles.right}>
-        <Text style={{ textAlign: 'right' }}>{`${item.amount} LTC`}</Text>
-        <Text style={{ textAlign: 'right' }}>{item.fiatAmount}</Text>
+        <Text style={styles.text}>{`${item.amount} LTC`}</Text>
+        <Text style={styles.text}>{item.fiatAmount}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -38,15 +38,15 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
+      width: 0,
+    },
   },
   left: {
-    flexGrow: 2
+    flexGrow: 2,
   },
   right: {
     flexGrow: 2,
-    paddingRight: 12
+    paddingRight: 12,
   },
   circle: {
     width: 40,
@@ -54,8 +54,11 @@ const styles = StyleSheet.create({
     borderRadius: 40 / 2,
     backgroundColor: '#FF00FF',
     marginLeft: 12,
-    marginRight: 10
-  }
+    marginRight: 10,
+  },
+  text: {
+    textAlign: 'right',
+  },
 });
 
 TransactionCell.propTypes = {
@@ -74,8 +77,8 @@ TransactionCell.propTypes = {
     sent: PropTypes.bool,
     time: PropTypes.string,
     timeStamp: PropTypes.number,
-    txHash: PropTypes.string
-  }).isRequired
+    txHash: PropTypes.string,
+  }).isRequired,
 };
 
 export default TransactionCell;

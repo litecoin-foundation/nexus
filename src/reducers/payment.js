@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 // TODO: refactor this reducer
 import Lightning from '../lib/lightning/lightning';
 
@@ -11,8 +10,8 @@ const initialState = {
     address: '',
     memo: '',
     feeSat: null,
-    feePerByte: null
-  }
+    feePerByte: null,
+  },
 };
 
 // constants
@@ -23,9 +22,9 @@ export const INPUT_PARAMS = 'INPUT_PARAMS';
 // actions
 export const sendOnchainPayment = paymentreq => async dispatch => {
   try {
-    const { txid } = await LndInstance.sendCommand('SendCoins', paymentreq);
+    const {txid} = await LndInstance.sendCommand('SendCoins', paymentreq);
     dispatch({
-      type: SEND_ONCHAIN_PAYMENT
+      type: SEND_ONCHAIN_PAYMENT,
     });
   } catch (error) {
     alert('your transaction failed :(');
@@ -38,15 +37,18 @@ export const estimateOnchainFee = (address, amount, conf) => async dispatch => {
     const AddrToAmount = {};
     AddrToAmount[address] = parseFloat(amount) * 1000000;
     const blocksToConfirm = conf !== undefined || isNaN(conf) ? conf : 1;
-    const { fee_sat, feerate_sat_per_byte } = await LndInstance.sendCommand('EstimateFee', {
-      AddrToAmount,
-      target_conf: blocksToConfirm
-    });
+    const {fee_sat, feerate_sat_per_byte} = await LndInstance.sendCommand(
+      'EstimateFee',
+      {
+        AddrToAmount,
+        target_conf: blocksToConfirm,
+      },
+    );
 
     dispatch({
       type: ESTIMATE_ONCHAIN_FEE,
       fee_sat,
-      feerate_sat_per_byte
+      feerate_sat_per_byte,
     });
   } catch (error) {
     alert(`fee calculation ${error}`);
@@ -57,12 +59,14 @@ export const estimateOnchainFee = (address, amount, conf) => async dispatch => {
 export const inputParams = params => dispatch => {
   dispatch({
     INPUT_PARAMS,
-    params
+    params,
   });
 };
 
 export const decodePaymentRequest = async payReqString => {
-  const response = await LndInstance.sendCommand('DecodePayReq', { payReq: payReqString });
+  const response = await LndInstance.sendCommand('DecodePayReq', {
+    payReq: payReqString,
+  });
   return response;
 };
 
@@ -78,7 +82,7 @@ export const sendLightningPayment = paymentreq => async dispatch => {
         }
       });
       stream.on('error', reject);
-      stream.write(JSON.stringify({ paymentRequest: paymentreq }), 'utf8');
+      stream.write(JSON.stringify({paymentRequest: paymentreq}), 'utf8');
     });
   } catch (error) {
     alert('your transaction failed :(');
@@ -88,13 +92,13 @@ export const sendLightningPayment = paymentreq => async dispatch => {
 
 // action handlers
 const actionHandler = {
-  [SEND_ONCHAIN_PAYMENT]: state => ({ ...state }),
-  [INPUT_PARAMS]: (state, { params }) => ({ ...state, onchain: params }),
-  [ESTIMATE_ONCHAIN_FEE]: (state, { fee_sat, feerate_sat_per_byte }) => ({
+  [SEND_ONCHAIN_PAYMENT]: state => ({...state}),
+  [INPUT_PARAMS]: (state, {params}) => ({...state, onchain: params}),
+  [ESTIMATE_ONCHAIN_FEE]: (state, {fee_sat, feerate_sat_per_byte}) => ({
     ...state.onchain,
     feeSat: fee_sat,
-    feePerByte: feerate_sat_per_byte
-  })
+    feePerByte: feerate_sat_per_byte,
+  }),
 };
 
 // reducer

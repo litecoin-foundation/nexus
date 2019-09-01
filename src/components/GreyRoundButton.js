@@ -1,9 +1,9 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import {TouchableOpacity, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const GreyRoundButton = props => {
-  const { onPress } = props;
+  const {onPress} = props;
   return <TouchableOpacity style={styles.container} onPress={onPress} />;
 };
 
@@ -18,13 +18,13 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
-  }
+      width: 0,
+    },
+  },
 });
 
 GreyRoundButton.propTypes = {
-  onPress: PropTypes.func.isRequired
+  onPress: PropTypes.func.isRequired,
 };
 
 export default GreyRoundButton;

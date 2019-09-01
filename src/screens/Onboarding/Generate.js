@@ -1,26 +1,26 @@
-import React, { useEffect, Fragment, useState, createRef } from 'react';
-import { View, Text, Button, Dimensions } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation } from 'react-navigation-hooks';
-import Carousel, { Pagination } from 'react-native-snap-carousel';
+import React, {useEffect, Fragment, useState, createRef} from 'react';
+import {View, Text, Button, Dimensions, StyleSheet} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
+import {useNavigation} from 'react-navigation-hooks';
+import Carousel, {Pagination} from 'react-native-snap-carousel';
 import LinearGradient from 'react-native-linear-gradient';
-import { createSelector } from 'reselect';
+import {createSelector} from 'reselect';
 
 import chunk from '../../lib/utils/chunk';
 import SeedView from '../../components/SeedView';
 import OnboardingHeader from '../../components/OnboardingHeader';
-import { getSeed } from '../../reducers/onboarding';
+import {getSeed} from '../../reducers/onboarding';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 const Generate = () => {
   const carousel = createRef();
   const dispatch = useDispatch();
-  const { navigate } = useNavigation();
+  const {navigate} = useNavigation();
 
   const seedSelector = createSelector(
     state => state.onboarding.seed,
-    seedArray => chunk(seedArray, 4)
+    seedArray => chunk(seedArray, 4),
   );
   const seed = useSelector(state => seedSelector(state));
 
@@ -40,8 +40,8 @@ const Generate = () => {
         onSnapToItem={index => setActivePage(index)}
         data={seed}
         ref={carousel}
-        containerCustomStyle={{ flexGrow: 0 }}
-        renderItem={({ item, index }) => (
+        containerCustomStyle={styles.carousel}
+        renderItem={({item, index}) => (
           <View>
             <SeedView index={4 * (index + 1) - 3} value={item[0]} />
             <SeedView index={4 * (index + 1) - 2} value={item[1]} />
@@ -70,12 +70,12 @@ const Generate = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <OnboardingHeader
         title="Paper Key"
         description="Please write down your paper-key and place it somewhere secure. "
       />
-      <LinearGradient colors={['#544FE6', '#003DB3']} style={{ height: '100%' }}>
+      <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.header}>
         {!seed ? <Text>Loading...</Text> : list}
         <Button
           title={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
@@ -86,9 +86,21 @@ const Generate = () => {
   );
 };
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    height: '100%',
+  },
+  carousel: {
+    flexGrow: 0,
+  },
+});
+
 Generate.navigationOptions = {
   headerTransparent: true,
-  headerBackTitle: null
+  headerBackTitle: null,
 };
 
 export default Generate;

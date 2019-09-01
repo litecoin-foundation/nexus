@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
+import React, {Component} from 'react';
+import {Provider} from 'react-redux';
+import {PersistGate} from 'redux-persist/integration/react';
 import {
   createSwitchNavigator,
   createStackNavigator,
   createBottomTabNavigator,
-  createAppContainer
+  createAppContainer,
 } from 'react-navigation';
-import { store, pStore } from './store';
+import {store, pStore} from './store';
 
 import Initial from './src/screens/Onboarding/Initial';
 import Pin from './src/screens/Onboarding/Pin';
@@ -33,61 +33,61 @@ import Confirm from './src/screens/Buy/Confirm';
 import Processing from './src/screens/Buy/Processing';
 
 const OnboardingStack = createStackNavigator({
-  Initial: { screen: Initial },
-  Pin: { screen: Pin },
-  Generate: { screen: Generate },
-  Verify: { screen: Verify },
-  Recover: { screen: Recover },
-  ChannelBackup: { screen: ChannelBackup }
+  Initial: {screen: Initial},
+  Pin: {screen: Pin},
+  Generate: {screen: Generate},
+  Verify: {screen: Verify},
+  Recover: {screen: Recover},
+  ChannelBackup: {screen: ChannelBackup},
 });
 
 const WalletStack = createStackNavigator({
-  Account: { screen: Account },
-  Wallet: { screen: Wallet },
-  Send: { screen: Send },
-  Receive: { screen: Receive },
-  LightningSend: { screen: LightningSend },
-  LightningReceive: { screen: LightningReceive },
-  LightningInvoice: { screen: LightningInvoice },
-  Scanner: { screen: Scanner }
+  Account: {screen: Account},
+  Wallet: {screen: Wallet},
+  Send: {screen: Send},
+  Receive: {screen: Receive},
+  LightningSend: {screen: LightningSend},
+  LightningReceive: {screen: LightningReceive},
+  LightningInvoice: {screen: LightningInvoice},
+  Scanner: {screen: Scanner},
 });
 
-WalletStack.navigationOptions = ({ navigation }) => {
+WalletStack.navigationOptions = ({navigation}) => {
   let tabBarVisible = true;
   if (navigation.state.index > 0) {
     tabBarVisible = false;
   }
   return {
-    tabBarVisible
+    tabBarVisible,
   };
 };
 
 const SettingsStack = createStackNavigator({
-  Settings: { screen: Settings },
-  Channel: { screen: Channel },
-  OpenChannel: { screen: OpenChannel }
+  Settings: {screen: Settings},
+  Channel: {screen: Channel},
+  OpenChannel: {screen: OpenChannel},
 });
 
-SettingsStack.navigationOptions = ({ navigation }) => {
+SettingsStack.navigationOptions = ({navigation}) => {
   let tabBarVisible = true;
   if (navigation.state.index > 0) {
     tabBarVisible = false;
   }
   return {
-    tabBarVisible
+    tabBarVisible,
   };
 };
 
 const BuyStack = createStackNavigator({
-  Buy: { screen: Buy },
-  Confirm: { screen: Confirm },
-  Processing: { screen: Processing }
+  Buy: {screen: Buy},
+  Confirm: {screen: Confirm},
+  Processing: {screen: Processing},
 });
 
 const AppStack = createBottomTabNavigator({
-  Wallets: { screen: WalletStack },
-  Buy: { screen: BuyStack },
-  Settings: { screen: SettingsStack }
+  Wallets: {screen: WalletStack},
+  Buy: {screen: BuyStack},
+  Settings: {screen: SettingsStack},
 });
 
 const RootStack = createSwitchNavigator(
@@ -96,11 +96,11 @@ const RootStack = createSwitchNavigator(
     Loading,
     Onboarding: OnboardingStack,
     App: AppStack,
-    Wallet: WalletStack
+    Wallet: WalletStack,
   },
   {
-    initialRouteName: 'Loading'
-  }
+    initialRouteName: 'Loading',
+  },
 );
 
 const Navigation = createAppContainer(RootStack);

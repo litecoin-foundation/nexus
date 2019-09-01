@@ -6,7 +6,7 @@ const LndInstance = new Lightning();
 const initialState = {
   paymentRequest: '',
   description: '',
-  value: 0
+  value: 0,
 };
 
 // constants
@@ -18,14 +18,17 @@ export const addInvoice = invoice => async dispatch => {
   try {
     const request = {
       memo: invoice.memo,
-      value: invoice.amount
+      value: invoice.amount,
     };
-    const { paymentRequest } = await LndInstance.sendCommand('AddInvoice', request);
+    const {paymentRequest} = await LndInstance.sendCommand(
+      'AddInvoice',
+      request,
+    );
     dispatch({
       type: ADD_INVOICE,
       paymentRequest,
       description: invoice.memo,
-      value: invoice.value
+      value: invoice.value,
     });
     return true;
   } catch (error) {
@@ -38,24 +41,24 @@ export const clearInvoice = () => dispatch => {
     type: CLEAR_INVOICE,
     paymentRequest: '',
     description: '',
-    value: ''
+    value: '',
   });
 };
 
 // action handlers
 const actionHandler = {
-  [ADD_INVOICE]: (state, { paymentRequest, description, value }) => ({
+  [ADD_INVOICE]: (state, {paymentRequest, description, value}) => ({
     ...state,
     paymentRequest,
     description,
-    value
+    value,
   }),
-  [CLEAR_INVOICE]: (state, { paymentRequest, description, value }) => ({
+  [CLEAR_INVOICE]: (state, {paymentRequest, description, value}) => ({
     ...state,
     paymentRequest,
     description,
-    value
-  })
+    value,
+  }),
 };
 
 // reducer

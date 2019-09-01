@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import { View, Text, Button } from 'react-native';
-import { connect } from 'react-redux';
+import React, {Component} from 'react';
+import {View, Text, Button} from 'react-native';
+import {connect} from 'react-redux';
 
-import { getRandomInt, randomShuffle, getBIP39Word } from '../../lib/utils';
+import {getRandomInt, randomShuffle, getBIP39Word} from '../../lib/utils';
 
 export class Verify extends Component {
   constructor(props) {
@@ -11,28 +11,38 @@ export class Verify extends Component {
   }
 
   handlePress = async (val, actualVal) => {
-    const { navigation } = this.props;
+    const {navigation} = this.props;
     if (val === actualVal) {
-      alert(`congrats!`);
+      alert('congrats!');
       navigation.navigate('ChannelBackup');
     } else {
-      alert(`incorrect`);
+      alert('incorrect');
       navigation.goBack();
     }
   };
 
   render() {
-    const { seed } = this.props;
+    const {seed} = this.props;
 
     // TODO: refactor all of this!
     const startNumber = getRandomInt(0, 21); // limit to 21 otherwise overflow
     const seedArray = seed.slice(startNumber, startNumber + 3);
     const topLine = `${seedArray[0]} ________ ${seedArray[2]}`;
-    const challengeArray = [seedArray[1], getBIP39Word(), getBIP39Word(), getBIP39Word()];
+    const challengeArray = [
+      seedArray[1],
+      getBIP39Word(),
+      getBIP39Word(),
+      getBIP39Word(),
+    ];
 
     const shuffled = randomShuffle(challengeArray);
     const options = shuffled.map(val => {
-      return <Button title={val} onPress={() => this.handlePress(val, seedArray[1])} />;
+      return (
+        <Button
+          title={val}
+          onPress={() => this.handlePress(val, seedArray[1])}
+        />
+      );
     });
 
     return (
@@ -45,12 +55,12 @@ export class Verify extends Component {
 }
 
 const mapStateToProps = state => ({
-  seed: state.onboarding.seed
+  seed: state.onboarding.seed,
 });
 
 const mapDispatchToProps = {};
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(Verify);

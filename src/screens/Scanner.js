@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import { View, StyleSheet, Dimensions, Vibration } from 'react-native';
-import { connect } from 'react-redux';
-import { RNCamera } from 'react-native-camera';
+import React, {Component} from 'react';
+import {View, StyleSheet, Dimensions, Vibration} from 'react-native';
+import {connect} from 'react-redux';
+import {RNCamera} from 'react-native-camera';
 
 export class Scanner extends Component {
   handleRead = event => {
@@ -22,9 +22,10 @@ export class Scanner extends Component {
           barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}
           androidCameraPermissionOptions={{
             title: 'Permission to use Camera',
-            message: 'App will use your camera to scan QR codes for Litecoin Payments',
+            message:
+              'App will use your camera to scan QR codes for Litecoin Payments',
             buttonPositive: 'Ok',
-            buttonNegative: 'Cancel'
+            buttonNegative: 'Cancel',
           }}
         />
       </View>
@@ -34,8 +35,8 @@ export class Scanner extends Component {
 
 const styles = StyleSheet.create({
   camera: {
-    height: Dimensions.get('window').height
-  }
+    height: Dimensions.get('window').height,
+  },
 });
 
 const mapStateToProps = state => ({});
@@ -44,5 +45,5 @@ const mapDispatchToProps = {};
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(Scanner);

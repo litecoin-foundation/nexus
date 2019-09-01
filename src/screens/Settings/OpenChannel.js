@@ -1,16 +1,16 @@
-import React, { Component } from 'react';
-import { View, TextInput, TouchableOpacity, Text } from 'react-native';
-import { connect } from 'react-redux';
+import React, {Component} from 'react';
+import {View, TextInput, TouchableOpacity, Text} from 'react-native';
+import {connect} from 'react-redux';
 
 import BlueButton from '../../components/BlueButton';
-import { connectToPeer } from '../../reducers/channels';
+import {connectToPeer} from '../../reducers/channels';
 
 export class OpenChannel extends Component {
   state = {};
 
   handlePress = async () => {
-    const { pubkey } = this.state;
-    const { connectToPeer } = this.props;
+    const {pubkey} = this.state;
+    const {connectToPeer} = this.props;
 
     await connectToPeer(pubkey);
   };
@@ -19,7 +19,10 @@ export class OpenChannel extends Component {
     return (
       <View>
         <Text>ENTER PUBKEY</Text>
-        <TextInput placeholder="host" onChangeText={input => this.setState({ pubkey: input })} />
+        <TextInput
+          placeholder="host"
+          onChangeText={input => this.setState({pubkey: input})}
+        />
         <Text>OR</Text>
         <TouchableOpacity>
           <Text>Paste</Text>
@@ -36,10 +39,10 @@ export class OpenChannel extends Component {
 const mapStateToProps = state => ({});
 
 const mapDispatchToProps = {
-  connectToPeer
+  connectToPeer,
 };
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(OpenChannel);

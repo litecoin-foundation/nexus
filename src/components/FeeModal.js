@@ -1,24 +1,26 @@
-import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {Component} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import Slider from '@react-native-community/slider';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
 export class FeeModal extends Component {
   state = {
-    slider: 1
+    slider: 1,
   };
 
   handleSlider = val => {
-    const { slider } = this.state;
+    const {slider} = this.state;
     val = Math.round(val);
-    if (val === slider) return;
-    this.setState({ slider: val });
+    if (val === slider) {
+      return;
+    }
+    this.setState({slider: val});
   };
 
   render() {
-    const { isVisible, close } = this.props;
-    const { slider } = this.state;
+    const {isVisible, close} = this.props;
+    const {slider} = this.state;
 
     const time = Math.round(slider * 2.5);
 
@@ -31,8 +33,7 @@ export class FeeModal extends Component {
           onBackdropPress={() => close()}
           backdropColor="rgb(19,58,138)"
           backdropOpacity={0.6}
-          style={{ margin: 0 }}
-        >
+          style={styles.noMargin}>
           <View style={styles.modal}>
             <View>
               <TouchableOpacity onPress={() => close()}>
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   button: {
     height: 50,
@@ -76,13 +77,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     shadowColor: '#393e53',
     shadowOpacity: 0.25,
-    shadowRadius: 14
-  }
+    shadowRadius: 14,
+  },
+  noMargin: {
+    margin: 0,
+  },
 });
 
 FeeModal.propTypes = {
   isVisible: PropTypes.bool.isRequired,
-  close: PropTypes.func.isRequired
+  close: PropTypes.func.isRequired,
 };
 
 export default FeeModal;

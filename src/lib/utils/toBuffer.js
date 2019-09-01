@@ -1,4 +1,4 @@
-import { Buffer } from 'buffer';
+import {Buffer} from 'buffer';
 
 const toBuffer = str => {
   if (typeof str !== 'string') {

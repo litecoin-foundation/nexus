@@ -1,4 +1,4 @@
-import { combineReducers } from 'redux';
+import {combineReducers} from 'redux';
 import onboarding from './onboarding';
 import lightning from './lightning';
 import balance from './balance';
@@ -24,5 +24,5 @@ export default combineReducers({
   invoice,
   channels,
   authpad,
-  buy
+  buy,
 });

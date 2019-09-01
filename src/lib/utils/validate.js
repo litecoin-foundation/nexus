@@ -4,37 +4,39 @@
 import baseX from 'base-x';
 import bech32 from 'bech32';
 import hashSha256 from 'hash.js/lib/hash/sha/256';
-import { Buffer } from 'buffer';
+import {Buffer} from 'buffer';
 
-const base58 = baseX('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz');
+const base58 = baseX(
+  '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
+);
 
 const sha256 = payload =>
   Buffer.from(
     hashSha256()
       .update(payload)
-      .digest()
+      .digest(),
   );
 
 const addressTypes = {
   0x30: {
     type: 'p2pkh',
-    testnet: false
+    testnet: false,
   },
 
   0x6f: {
     type: 'p2pkh',
-    testnet: true
+    testnet: true,
   },
 
   0x32: {
     type: 'p2sh',
-    testnet: false
+    testnet: false,
   },
 
   0x3a: {
     type: 'p2sh',
-    testnet: true
-  }
+    testnet: true,
+  },
 };
 
 const validateBech32 = address => {
@@ -70,7 +72,7 @@ const validateBech32 = address => {
     bech32: true,
     testnet: decoded.prefix !== 'ltc',
     address,
-    type
+    type,
   };
 };
 
@@ -91,7 +93,7 @@ const validateLtcAddress = address => {
     return false;
   }
 
-  const { length } = decoded;
+  const {length} = decoded;
 
   if (length !== 25) {
     return false;
@@ -109,7 +111,7 @@ const validateLtcAddress = address => {
   }
 
   return addressTypes[version]
-    ? Object.assign({ address, bech32: false }, addressTypes[version])
+    ? Object.assign({address, bech32: false}, addressTypes[version])
     : false;
 };
 

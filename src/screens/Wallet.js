@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
-import { useNavigation } from 'react-navigation-hooks';
+import React, {useState} from 'react';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {useSelector} from 'react-redux';
+import {createSelector} from 'reselect';
+import {useNavigation} from 'react-navigation-hooks';
 
 import TransactionDetailModal from '../components/TransactionDetailModal';
 import TransactionModal from '../components/TransactionModal';
 import TransactionList from '../components/TransactionList';
 import AmountView from '../components/AmountView';
-import { date, groupBy, converter } from '../lib/utils';
+import {date, groupBy, converter} from '../lib/utils';
 
 const transactionSelector = createSelector(
   state => state.transaction.transactions,
@@ -24,12 +24,12 @@ const transactionSelector = createSelector(
       const time = date.formatTime(data.timeStamp);
       const type = 'litecoin onchain';
       const addresses = data.destAddresses;
-      return { name, sign, hash, amount, fee, confs, day, time, type, addresses };
-    })
+      return {name, sign, hash, amount, fee, confs, day, time, type, addresses};
+    }),
 );
 
 const Wallet = () => {
-  const { navigate } = useNavigation();
+  const {navigate} = useNavigation();
   const transactions = useSelector(state => transactionSelector(state));
 
   const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
@@ -56,8 +56,7 @@ const Wallet = () => {
           onPress={() => {
             setTxTypeModalVisible(true);
             setType('send');
-          }}
-        >
+          }}>
           <Text>Send</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -65,8 +64,7 @@ const Wallet = () => {
           onPress={() => {
             setTxTypeModalVisible(true);
             setType('receive');
-          }}
-        >
+          }}>
           <Text>Receive</Text>
         </TouchableOpacity>
       </View>
@@ -94,7 +92,7 @@ const Wallet = () => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    flex: 1
+    flex: 1,
   },
   paymentContainer: {
     paddingTop: 30,
@@ -105,7 +103,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    justifyContent: 'space-evenly'
+    justifyContent: 'space-evenly',
   },
   payment: {
     height: 50,
@@ -116,8 +114,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 14,
     justifyContent: 'center',
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
 });
 
 Wallet.navigationOptions = {
@@ -125,10 +123,10 @@ Wallet.navigationOptions = {
   tabBarVisible: false,
   headerTitleStyle: {
     fontWeight: 'bold',
-    color: 'white'
+    color: 'white',
   },
   headerTransparent: true,
-  headerBackTitle: null
+  headerBackTitle: null,
 };
 
 export default Wallet;

@@ -9,7 +9,6 @@ function chunk(array, size) {
   const result = new Array(Math.ceil(length / size));
 
   while (index < length) {
-    // eslint-disable-next-line no-plusplus
     result[resIndex++] = array.slice(index, (index += size));
   }
   return result;

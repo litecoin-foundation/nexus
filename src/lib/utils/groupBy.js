@@ -9,7 +9,7 @@ const groupBy = (objectArray, property) => {
       return e.title === obj[property];
     });
     if (!bool) {
-      array1.push({ title: obj[property], data: [] });
+      array1.push({title: obj[property], data: []});
     }
     array1.find(e => {
       if (e.title === obj[property]) {
@@ -17,7 +17,7 @@ const groupBy = (objectArray, property) => {
       }
     });
   });
-  // eslint-disable-next-line guard-for-in
+  // eslint-disable-next-line no-unused-vars
   for (const i in array1) {
     array1[i].data.reverse();
   }

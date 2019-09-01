@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react';
-import { View } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation } from 'react-navigation-hooks';
+import React, {useEffect} from 'react';
+import {View} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
+import {useNavigation} from 'react-navigation-hooks';
 
 import Auth from '../components/Auth';
-import { clearValues } from '../reducers/authpad';
-import { unlockWallet } from '../reducers/lightning';
+import {clearValues} from '../reducers/authpad';
+import {unlockWallet} from '../reducers/lightning';
 
 const Pin = () => {
   const dispatch = useDispatch();
-  const { navigate } = useNavigation();
+  const {navigate} = useNavigation();
   const pin = useSelector(state => state.authpad.pin);
   const passcode = useSelector(state => state.onboarding.passcode);
 
@@ -38,7 +38,7 @@ const Pin = () => {
 
 Pin.navigationOptions = {
   headerTransparent: true,
-  headerBackTitle: null
+  headerBackTitle: null,
 };
 
 export default Pin;

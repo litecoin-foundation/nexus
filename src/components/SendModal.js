@@ -1,75 +1,98 @@
-import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {Component} from 'react';
+import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
+import GreyRoundButton from './GreyRoundButton';
+import TableCell from './TableCell';
+import VerticalTableCell from './VerticalTableCell';
+import BlueButton from './BlueButton';
+
 export class FeeModal extends Component {
   render() {
-    const { isVisible, close, address, amount, fee } = this.props;
+    const {isVisible, close} = this.props;
 
     return (
-      <View>
-        <Modal
-          isVisible={isVisible}
-          swipeDirection="down"
-          onSwipeComplete={() => close()}
-          onBackdropPress={() => close()}
-          backdropColor="rgb(19,58,138)"
-          backdropOpacity={0.6}
-          style={{ margin: 0 }}
-        >
+      <Modal
+        isVisible={isVisible}
+        swipeDirection="down"
+        onSwipeComplete={() => close()}
+        onBackdropPress={() => close()}
+        backdropColor="rgb(19,58,138)"
+        backdropOpacity={0.6}
+        style={styles.noMargin}>
+        <View style={styles.container}>
           <View style={styles.modal}>
-            <View>
-              <TouchableOpacity onPress={() => close()}>
-                <Text>Hide Modal</Text>
-              </TouchableOpacity>
+            <View style={styles.modalHeaderContainer}>
+              <Text style={styles.modalHeaderTitle}>Send</Text>
+              <GreyRoundButton onPress={() => close()} />
+            </View>
 
-              <Text>Send</Text>
+            <VerticalTableCell title="Recipient Address">
+              <Text>Meow</Text>
+            </VerticalTableCell>
+            <View style={styles.modalList}>
+              <TableCell title="AMOUNT IN FIAT" value="PLACEHOLDER" />
+              <TableCell title="AMOUNT IN LTC" value="PLACEHOLDER" />
+              <TableCell title="FEE" value="PLACEHOLDER" />
+            </View>
 
-              <View>
-                <Text>Recipient Address</Text>
-                <Text>{address}</Text>
-              </View>
-              <View>
-                <Text>AMOUNT IN FIAT</Text>
-                <Text>{amount}</Text>
-              </View>
-              <View>
-                <Text>AMOUNT IN LTC</Text>
-                <Text>{amount}</Text>
-              </View>
-              <View>
-                <Text>FEE</Text>
-                <Text>{fee}</Text>
-              </View>
+            <View style={styles.modalButtonContainer}>
+              <BlueButton
+                value="Create Invoice"
+                onPress={() => console.log('meow')}
+              />
             </View>
           </View>
-        </Modal>
-      </View>
+        </View>
+      </Modal>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  modal: {
+  container: {
+    flex: 1,
     margin: 0,
+    justifyContent: 'flex-end',
+  },
+  modal: {
     backgroundColor: 'white',
-    height: 300,
+    height: 500,
+    width: '100%',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     position: 'absolute',
     bottom: 0,
-    width: '100%',
-    alignItems: 'center'
-  }
+  },
+  modalHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingLeft: 25,
+    paddingRight: 25,
+    paddingTop: 25,
+    paddingBottom: 25,
+  },
+  modalHeaderTitle: {
+    color: '#4E6070',
+    fontSize: 26,
+    fontWeight: 'bold',
+    height: 31,
+  },
+  modalList: {
+    height: 180,
+  },
+  modalButtonContainer: {
+    alignItems: 'center',
+  },
+  noMargin: {
+    margin: 0,
+  },
 });
 
 FeeModal.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   close: PropTypes.func.isRequired,
-  address: PropTypes.string.isRequired,
-  amount: PropTypes.number.isRequired,
-  fee: PropTypes.number.isRequired
 };
 
 export default FeeModal;

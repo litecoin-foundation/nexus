@@ -1,9 +1,8 @@
-/* eslint-disable class-methods-use-this */
 import base64 from 'base64-js';
-import { Duplex } from 'readable-stream';
-import { NativeModules, NativeEventEmitter } from 'react-native';
-import { lnrpc } from './rpc';
-import { toCaps } from '../utils';
+import {Duplex} from 'readable-stream';
+import {NativeModules, NativeEventEmitter} from 'react-native';
+import {lnrpc} from './rpc';
+import {toCaps} from '../utils';
 
 class Lightning {
   constructor() {
@@ -27,28 +26,27 @@ class Lightning {
 
   sendStreamCommand(method, body) {
     method = toCaps(method);
-    const self = this;
-    const streamId = self.generateStreamId();
+    const streamId = this.generateStreamId();
     const stream = new Duplex({
       write(data) {
         data = JSON.parse(data.toString('utf8'));
-        const req = self.serializeRequest(method, data);
-        self.lightning.sendStreamWrite(streamId, req);
+        const req = this.serializeRequest(method, data);
+        this.lightning.sendStreamWrite(streamId, req);
       },
-      read() {}
+      read() {},
     });
-    self.lightningEvent.addListener('streamEvent', res => {
+    this.lightningEvent.addListener('streamEvent', res => {
       if (res.streamId !== streamId) {
         return;
       }
       if (res.event === 'data') {
-        stream.emit('data', self.deserializeResponse(method, res.data));
+        stream.emit('data', this.deserializeResponse(method, res.data));
       } else {
         stream.emit(res.event, res.error || res.data);
       }
     });
-    const req = self.serializeRequest(method, body);
-    self.lightning.sendStreamCommand(method, streamId, req);
+    const req = this.serializeRequest(method, body);
+    this.lightning.sendStreamCommand(method, streamId, req);
     return stream;
   }
 
@@ -82,7 +80,7 @@ class Lightning {
       SendPayment: 'SendRequest',
       SubscribeTransactions: 'GetTransactionsRequest',
       SubscribeInvoices: 'InvoiceSubscription',
-      ExportAllChannelBackups: 'ChanBackupExportRequest'
+      ExportAllChannelBackups: 'ChanBackupExportRequest',
     };
     return map[method] || `${method}Request`;
   }
@@ -97,7 +95,7 @@ class Lightning {
       CloseChannel: 'CloseStatusUpdate',
       SubscribeTransactions: 'Transaction',
       SubscribeInvoices: 'Invoice',
-      ExportAllChannelBackups: 'ChanBackupSnapshot'
+      ExportAllChannelBackups: 'ChanBackupSnapshot',
     };
     return map[method] || `${method}Response`;
   }

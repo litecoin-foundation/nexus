@@ -1,5 +1,5 @@
 import Lightning from '../lib/lightning/lightning';
-import { sleep } from '../lib/utils';
+import {sleep} from '../lib/utils';
 
 const LndInstance = new Lightning();
 
@@ -9,7 +9,7 @@ const initialState = {
   confirmedBalance: null,
   unconfirmedBalance: null,
   balance: null,
-  pendingOpenBalance: null
+  pendingOpenBalance: null,
 };
 
 // constants
@@ -20,8 +20,8 @@ export const getBalance = (retries = Infinity) => async dispatch => {
   while ((retries -= 1)) {
     const w = await LndInstance.sendCommand('WalletBalance');
     const c = await LndInstance.sendCommand('ChannelBalance');
-    const { totalBalance, confirmedBalance, unconfirmedBalance } = w;
-    const { balance, pendingOpenBalance } = c;
+    const {totalBalance, confirmedBalance, unconfirmedBalance} = w;
+    const {balance, pendingOpenBalance} = c;
 
     dispatch({
       type: GET_BALANCE,
@@ -29,7 +29,7 @@ export const getBalance = (retries = Infinity) => async dispatch => {
       confirmedBalance,
       unconfirmedBalance,
       balance,
-      pendingOpenBalance
+      pendingOpenBalance,
     });
     await sleep();
   }
@@ -39,15 +39,21 @@ export const getBalance = (retries = Infinity) => async dispatch => {
 const actionHandler = {
   [GET_BALANCE]: (
     state,
-    { totalBalance, confirmedBalance, unconfirmedBalance, balance, pendingOpenBalance }
+    {
+      totalBalance,
+      confirmedBalance,
+      unconfirmedBalance,
+      balance,
+      pendingOpenBalance,
+    },
   ) => ({
     ...state,
     totalBalance,
     confirmedBalance,
     unconfirmedBalance,
     balance,
-    pendingOpenBalance
-  })
+    pendingOpenBalance,
+  }),
 };
 
 // reducer

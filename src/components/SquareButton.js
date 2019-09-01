@@ -1,9 +1,9 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const SquareButton = props => {
-  const { value, onPress } = props;
+  const {value, onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text>{value}</Text>
@@ -24,14 +24,14 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
-  }
+      width: 0,
+    },
+  },
 });
 
 SquareButton.propTypes = {
   value: PropTypes.string.isRequired,
-  onPress: PropTypes.func
+  onPress: PropTypes.func,
 };
 
 export default SquareButton;

@@ -4,7 +4,7 @@ const LndInstance = new Lightning();
 
 // initial state
 const initialState = {
-  address: ''
+  address: '',
 };
 
 // constants
@@ -12,16 +12,16 @@ export const GET_ADDRESS = 'GET_ADDRESS';
 
 // actions
 export const getAddress = () => async dispatch => {
-  const { address } = await LndInstance.sendCommand('NewAddress', { type: 3 });
+  const {address} = await LndInstance.sendCommand('NewAddress', {type: 3});
   dispatch({
     type: GET_ADDRESS,
-    address
+    address,
   });
 };
 
 // action handlers
 const actionHandler = {
-  [GET_ADDRESS]: (state, { address }) => ({ ...state, address })
+  [GET_ADDRESS]: (state, {address}) => ({...state, address}),
 };
 
 // reducer

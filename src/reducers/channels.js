@@ -1,5 +1,6 @@
+import {Buffer} from 'buffer';
 import Lightning from '../lib/lightning/lightning';
-import { sleep } from '../lib/utils';
+import {sleep} from '../lib/utils';
 
 const LndInstance = new Lightning();
 
@@ -12,9 +13,9 @@ const initialState = {
     pendingOpenChannels: [],
     pendingClosingChannels: [],
     pendingForceClosingChannels: [],
-    waitingCloseChannels: []
+    waitingCloseChannels: [],
   },
-  channelBackupsEnabled: false
+  channelBackupsEnabled: false,
 };
 
 // constants
@@ -25,10 +26,10 @@ export const ENABLE_CHANNEL_BACKUP = 'ENABLE_CHANNEL_BACKUP';
 
 // actions
 export const listChannels = () => async dispatch => {
-  const { channels } = await LndInstance.sendCommand('ListChannels');
+  const {channels} = await LndInstance.sendCommand('ListChannels');
   dispatch({
     type: LIST_CHANNELS,
-    channels
+    channels,
   });
 };
 
@@ -38,7 +39,7 @@ export const listPendingChannels = () => async dispatch => {
     pendingOpenChannels,
     pendingClosingChannels,
     pendingForceClosingChannels,
-    waitingCloseChannels
+    waitingCloseChannels,
   } = await LndInstance.sendCommand('PendingChannels');
 
   const mapPendingAttributes = channel => ({
@@ -46,29 +47,29 @@ export const listPendingChannels = () => async dispatch => {
     capacity: channel.capacity,
     localBalance: channel.localBalance,
     remoteBalance: channel.remoteBalance,
-    channelPoint: channel.channelPoint
+    channelPoint: channel.channelPoint,
   });
   const pocs = pendingOpenChannels.map(poc => ({
     ...mapPendingAttributes(poc.channel),
     confirmationHeight: poc.confirmationHeight,
     blocksTillOpen: poc.blocksTillOpen,
     commitFee: poc.commitFee,
-    feePerKw: poc.feePerKw
+    feePerKw: poc.feePerKw,
   }));
   const pccs = pendingClosingChannels.map(pcc => ({
     ...mapPendingAttributes(pcc.channel),
-    closingTxId: pcc.closingTxid
+    closingTxId: pcc.closingTxid,
   }));
   const pfccs = pendingForceClosingChannels.map(pfcc => ({
     ...mapPendingAttributes(pfcc.channel),
     closingTxId: pfcc.closingTxid,
     limboBalance: pfcc.limboBalance,
     maturityHeight: pfcc.maturityHeight,
-    blocksTilMaturity: pfcc.blocksTilMaturity
+    blocksTilMaturity: pfcc.blocksTilMaturity,
   }));
   const wccs = waitingCloseChannels.map(wcc => ({
     ...mapPendingAttributes(wcc.channel),
-    limboBalance: wcc.limboBalance
+    limboBalance: wcc.limboBalance,
   }));
 
   const pending = {};
@@ -81,15 +82,15 @@ export const listPendingChannels = () => async dispatch => {
 
   dispatch({
     type: LIST_PENDING_CHANNELS,
-    pending
+    pending,
   });
 };
 
 export const listPeers = () => async dispatch => {
-  const { peers } = await LndInstance.sendCommand('ListPeers');
+  const {peers} = await LndInstance.sendCommand('ListPeers');
   dispatch({
     type: LIST_PEERS,
-    peers
+    peers,
   });
 };
 
@@ -99,7 +100,7 @@ export const connectToPeer = async input => {
 
   try {
     await LndInstance.sendCommand('ConnectPeer', {
-      addr: { host, pubkey }
+      addr: {host, pubkey},
     });
   } catch (error) {
     console.log(error);
@@ -111,11 +112,13 @@ export const openChannel = async (pubkey, amount) => {
     const stream = LndInstance.sendStreamCommand('OpenChannel', {
       nodePubkey: Buffer.from(pubkey, 'hex'),
       localFundingAmount: amount,
-      private: true
+      private: true,
     });
     await new Promise((resolve, reject) => {
       stream.on('data', () => console.log('update channel data'));
-      stream.on('status', status => console.log(`CHANNEL: update in channel status:  ${status}`));
+      stream.on('status', status =>
+        console.log(`CHANNEL: update in channel status:  ${status}`),
+      );
       stream.on('end', resolve);
       stream.on('error', reject);
     });
@@ -126,16 +129,23 @@ export const openChannel = async (pubkey, amount) => {
 
 export const enableChannelBackup = () => dispatch => {
   dispatch({
-    type: ENABLE_CHANNEL_BACKUP
+    type: ENABLE_CHANNEL_BACKUP,
   });
 };
 
-export const backupChannels = (retries = Infinity) => async (dispatch, getState) => {
-  const { channelBackupsEnabled } = getState().channels;
-  if (!channelBackupsEnabled) return;
+export const backupChannels = (retries = Infinity) => async (
+  dispatch,
+  getState,
+) => {
+  const {channelBackupsEnabled} = getState().channels;
+  if (!channelBackupsEnabled) {
+    return;
+  }
 
   while ((retries -= 1)) {
-    const { multiChanBackup } = await LndInstance.sendCommand('ExportAllChannelBackups');
+    const {multiChanBackup} = await LndInstance.sendCommand(
+      'ExportAllChannelBackups',
+    );
     console.log(multiChanBackup);
     // TODO: backup the multichannelbackup to the cloud
     await sleep(10000);
@@ -144,10 +154,10 @@ export const backupChannels = (retries = Infinity) => async (dispatch, getState)
 
 // action handlers
 const actionHandler = {
-  [LIST_CHANNELS]: (state, { channels }) => ({ ...state, channels }),
-  [LIST_PENDING_CHANNELS]: (state, { pending }) => ({ ...state, pending }),
-  [LIST_PEERS]: (state, { peers }) => ({ ...state, peers }),
-  [ENABLE_CHANNEL_BACKUP]: state => ({ ...state, channelBackupsEnabled: true })
+  [LIST_CHANNELS]: (state, {channels}) => ({...state, channels}),
+  [LIST_PENDING_CHANNELS]: (state, {pending}) => ({...state, pending}),
+  [LIST_PEERS]: (state, {peers}) => ({...state, peers}),
+  [ENABLE_CHANNEL_BACKUP]: state => ({...state, channelBackupsEnabled: true}),
 };
 
 // reducer

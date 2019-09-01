@@ -1,37 +1,28 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 import ProgressBar from './ProgressBar';
 
 const AccountCell = props => {
-  const { onPress, amount, rates, progress, synced } = props;
+  const {onPress, amount, rates, progress, synced} = props;
   return (
     <TouchableOpacity
       style={[styles.container, !synced ? styles.notSynced : null]}
-      onPress={onPress}
-    >
-      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+      onPress={onPress}>
+      <View style={styles.subContainer}>
         <View style={styles.circle} />
         <View style={styles.left}>
           <Text>Litecoin (LTC)</Text>
           <Text>{`${amount}LTC`}</Text>
         </View>
         <View style={styles.right}>
-          <Text style={{ textAlign: 'right' }}>{amount * rates.USD}</Text>
-          <Text style={{ textAlign: 'right' }}>69%</Text>
+          <Text style={styles.text}>{amount * rates.USD}</Text>
+          <Text style={styles.text}>69%</Text>
         </View>
       </View>
       {!synced ? (
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderTopWidth: 0.5,
-            borderTopColor: '#d6d7da'
-          }}
-        >
+        <View style={styles.syncContainer}>
           <View style={styles.circle} />
           <View style={styles.left}>
             <Text>This account is currently syncing...</Text>
@@ -54,15 +45,27 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
+      width: 0,
+    },
+  },
+  subContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  syncContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 0.5,
+    borderTopColor: '#d6d7da',
   },
   left: {
-    flexGrow: 2
+    flexGrow: 2,
   },
   right: {
     flexGrow: 2,
-    paddingRight: 12
+    paddingRight: 12,
   },
   circle: {
     width: 40,
@@ -70,11 +73,14 @@ const styles = StyleSheet.create({
     borderRadius: 40 / 2,
     backgroundColor: '#FF00FF',
     marginLeft: 12,
-    marginRight: 10
+    marginRight: 10,
   },
   notSynced: {
-    height: 140
-  }
+    height: 140,
+  },
+  text: {
+    textAlign: 'right',
+  },
 });
 
 AccountCell.propTypes = {
@@ -82,7 +88,7 @@ AccountCell.propTypes = {
   amount: PropTypes.number.isRequired,
   rates: PropTypes.objectOf(PropTypes.string).isRequired,
   progress: PropTypes.number,
-  synced: PropTypes.bool.isRequired
+  synced: PropTypes.bool.isRequired,
 };
 
 export default AccountCell;

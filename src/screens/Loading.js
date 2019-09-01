@@ -1,13 +1,19 @@
-import React, { Component } from 'react';
-import { View, Text } from 'react-native';
-import { connect } from 'react-redux';
+import React, {Component} from 'react';
+import {View, Text} from 'react-native';
+import {connect} from 'react-redux';
 
-import { startOnboarding } from '../reducers/onboarding';
-import { startLnd } from '../reducers/lightning';
+import {startOnboarding} from '../reducers/onboarding';
+import {startLnd} from '../reducers/lightning';
 
 export class Loading extends Component {
-  componentWillMount() {
-    const { navigation, onboarding, isOnboarded, startOnboarding, startLnd } = this.props;
+  componentDidMount() {
+    const {
+      navigation,
+      onboarding,
+      isOnboarded,
+      startOnboarding,
+      startLnd,
+    } = this.props;
 
     // start LND process
     startLnd();
@@ -31,12 +37,12 @@ export class Loading extends Component {
 
 const mapStateToProps = state => ({
   onboarding: state.onboarding.onboarding,
-  isOnboarded: state.onboarding.isOnboarded
+  isOnboarded: state.onboarding.isOnboarded,
 });
 
-const mapDispatchToProps = { startOnboarding, startLnd };
+const mapDispatchToProps = {startOnboarding, startLnd};
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(Loading);

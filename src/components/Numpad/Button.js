@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import {TouchableOpacity, Text, StyleSheet, View} from 'react-native';
 
 const Button = props => {
-  const { value, onPress } = props;
+  const {value, onPress} = props;
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.button} onPress={onPress}>
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     width: '33%',
     alignItems: 'center',
     paddingTop: 10,
-    paddingBottom: 10
+    paddingBottom: 10,
   },
   button: {
     justifyContent: 'center',
@@ -32,19 +32,19 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
+      width: 0,
+    },
   },
   text: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2C72FF'
-  }
+    color: '#2C72FF',
+  },
 });
 
 Button.propTypes = {
   value: PropTypes.string.isRequired,
-  onPress: PropTypes.func.isRequired
+  onPress: PropTypes.func.isRequired,
 };
 
 export default Button;

@@ -9,15 +9,22 @@ const formatDate = date => {
   }
 
   if (diff > ONE_DAY && jsDate.getFullYear() === time.getFullYear()) {
-    return jsDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    return jsDate.toLocaleDateString('en-US', {month: 'long', day: 'numeric'});
   }
 
-  return jsDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  return jsDate.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
 };
 
 const formatTime = time => {
   const jsTime = new Date(time * 1000);
-  return jsTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' });
+  return jsTime.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: 'numeric',
+  });
 };
 
-export default { formatDate, formatTime };
+export default {formatDate, formatTime};

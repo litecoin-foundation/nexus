@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { sleep } from '../lib/utils';
+import {sleep} from '../lib/utils';
 
 // initial state
 const initialState = {
-  rates: []
+  rates: [],
 };
 
 // constants
@@ -13,11 +13,13 @@ export const GET_TICKER = 'GET_TICKER';
 export const getTicker = (retries = Infinity) => async dispatch => {
   while ((retries -= 1)) {
     const {
-      data: { data: { rates } = {} }
-    } = await axios.get('https://api.coinbase.com/v2/exchange-rates?currency=LTC');
+      data: {data: {rates} = {}},
+    } = await axios.get(
+      'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
+    );
     dispatch({
       type: GET_TICKER,
-      rates
+      rates,
     });
     await sleep();
   }
@@ -25,7 +27,7 @@ export const getTicker = (retries = Infinity) => async dispatch => {
 
 // action handlers
 const actionHandler = {
-  [GET_TICKER]: (state, { rates }) => ({ ...state, rates })
+  [GET_TICKER]: (state, {rates}) => ({...state, rates}),
 };
 
 // reducer

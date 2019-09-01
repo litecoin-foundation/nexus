@@ -1,6 +1,6 @@
 // initial state
 const initialState = {
-  pin: ''
+  pin: '',
 };
 
 // constants
@@ -12,23 +12,23 @@ const CLEAR_VALUES = 'CLEAR_VALUES';
 export const inputValue = input => dispatch => {
   dispatch({
     type: INPUT_VALUE,
-    input
+    input,
   });
 };
 
 export const backspaceValue = () => dispatch => {
-  dispatch({ type: BACKSPACE_VALUE });
+  dispatch({type: BACKSPACE_VALUE});
 };
 
 export const clearValues = () => dispatch => {
-  dispatch({ type: CLEAR_VALUES });
+  dispatch({type: CLEAR_VALUES});
 };
 
 // action handlers
 const actionHandler = {
-  [INPUT_VALUE]: (state, { input }) => ({ ...state, pin: state.pin + input }),
-  [BACKSPACE_VALUE]: state => ({ ...state, pin: state.pin.slice(0, -1) }),
-  [CLEAR_VALUES]: state => ({ ...state, pin: '' })
+  [INPUT_VALUE]: (state, {input}) => ({...state, pin: state.pin + input}),
+  [BACKSPACE_VALUE]: state => ({...state, pin: state.pin.slice(0, -1)}),
+  [CLEAR_VALUES]: state => ({...state, pin: ''}),
 };
 
 // reducer

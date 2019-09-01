@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { connect } from 'react-redux';
+import React, {Component} from 'react';
+import {View, Text, StyleSheet} from 'react-native';
+import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 
 import AmountView from '../components/AmountView';
@@ -11,14 +11,20 @@ export class Accounts extends Component {
     headerTitle: 'Your Wallet',
     headerTitleStyle: {
       fontWeight: 'bold',
-      color: 'white'
+      color: 'white',
     },
     headerTransparent: true,
-    headerBackTitle: null
+    headerBackTitle: null,
   };
 
   render() {
-    const { navigation, amount, rates, percentSynced, syncedToChain } = this.props;
+    const {
+      navigation,
+      amount,
+      rates,
+      percentSynced,
+      syncedToChain,
+    } = this.props;
     return (
       <View style={styles.container}>
         <AmountView />
@@ -41,11 +47,11 @@ export class Accounts extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   accountsContainer: {
     flex: 1,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   text: {
     color: '#7C96AE',
@@ -54,30 +60,30 @@ const styles = StyleSheet.create({
     letterSpacing: -0.28,
     paddingTop: 15,
     paddingBottom: 15,
-    paddingLeft: 20
-  }
+    paddingLeft: 20,
+  },
 });
 
 Accounts.propTypes = {
   navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired
+    navigate: PropTypes.func.isRequired,
   }).isRequired,
   amount: PropTypes.number.isRequired,
   rates: PropTypes.objectOf(PropTypes.string),
   percentSynced: PropTypes.number,
-  syncedToChain: PropTypes.bool.isRequired
+  syncedToChain: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => ({
   amount: state.balance.totalBalance,
   rates: state.ticker.rates,
   percentSynced: state.info.percentSynced,
-  syncedToChain: state.info.syncedToChain
+  syncedToChain: state.info.syncedToChain,
 });
 
 const mapDispatchToProps = {};
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(Accounts);

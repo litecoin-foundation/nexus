@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation } from 'react-navigation-hooks';
+import React, {useEffect} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {useNavigation} from 'react-navigation-hooks';
 
 import Auth from '../../components/Auth';
-import { addPincode } from '../../reducers/onboarding';
-import { clearValues } from '../../reducers/authpad';
+import {addPincode} from '../../reducers/onboarding';
+import {clearValues} from '../../reducers/authpad';
 
 const Pin = () => {
   const dispatch = useDispatch();
-  const { navigate } = useNavigation();
+  const {navigate} = useNavigation();
   const pin = useSelector(state => state.authpad.pin);
   const passcodeSet = useSelector(state => state.onboarding.passcodeSet);
   const passcode = useSelector(state => state.onboarding.passcode);
@@ -43,9 +43,13 @@ const Pin = () => {
 
   return (
     <Auth
-      headerTitleText={passcodeSet ? `Verify your Passcode` : `Create a Passcode`}
+      headerTitleText={
+        passcodeSet ? 'Verify your Passcode' : 'Create a Passcode'
+      }
       headerDescriptionText={
-        passcodeSet ? `Enter your passcode again.` : `Please enter a secure passcode`
+        passcodeSet
+          ? 'Enter your passcode again.'
+          : 'Please enter a secure passcode'
       }
     />
   );
@@ -53,7 +57,7 @@ const Pin = () => {
 
 Pin.navigationOptions = {
   headerTransparent: true,
-  headerBackTitle: null
+  headerBackTitle: null,
 };
 
 export default Pin;

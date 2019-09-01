@@ -1,23 +1,22 @@
-import React, { Component } from 'react';
-import { View, Text, TextInput, Clipboard, TouchableOpacity } from 'react-native';
-import { connect } from 'react-redux';
+import React, {Component} from 'react';
+import {View, Text, TextInput, Clipboard, TouchableOpacity} from 'react-native';
+import {connect} from 'react-redux';
 
-import { decodePaymentRequest, sendLightningPayment } from '../reducers/payment';
+import {decodePaymentRequest, sendLightningPayment} from '../reducers/payment';
 
 export class LightningSend extends Component {
   state = {
-    invoice: ''
+    invoice: '',
   };
 
   handleInput = input => {
     console.log(input);
-    this.setState({ invoice: input }, () => console.log(`updated state`));
+    this.setState({invoice: input}, () => console.log('updated state'));
     this.setState((state, props) => {
       console.log(state);
     });
   };
 
-  // eslint-disable-next-line class-methods-use-this
   async handleClipboard() {
     const content = await Clipboard.getString();
     const res = await decodePaymentRequest(content);
@@ -25,8 +24,8 @@ export class LightningSend extends Component {
   }
 
   async handleSend() {
-    const { invoice } = this.state;
-    const { sendLightningPayment } = this.props;
+    const {invoice} = this.state;
+    const {sendLightningPayment} = this.props;
 
     console.log(`about to send payment to: ${invoice}`);
 
@@ -40,7 +39,7 @@ export class LightningSend extends Component {
           placeholder="Invoice"
           selectTextOnFocus
           onChangeText={input => this.handleInput(input)}
-          style={{ marginTop: 50 }}
+          style={{marginTop: 50}}
         />
         <TouchableOpacity onPress={() => this.handleClipboard()}>
           <Text>Clipboard</Text>
@@ -59,10 +58,10 @@ export class LightningSend extends Component {
 const mapStateToProps = state => ({});
 
 const mapDispatchToProps = {
-  sendLightningPayment
+  sendLightningPayment,
 };
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(LightningSend);

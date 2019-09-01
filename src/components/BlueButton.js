@@ -1,9 +1,9 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const BlueButton = props => {
-  const { value, onPress } = props;
+  const {value, onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.text}>{value}</Text>
@@ -24,19 +24,19 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
+      width: 0,
+    },
   },
   text: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '600'
-  }
+    fontWeight: '600',
+  },
 });
 
 BlueButton.propTypes = {
   value: PropTypes.string.isRequired,
-  onPress: PropTypes.func
+  onPress: PropTypes.func,
 };
 
 export default BlueButton;

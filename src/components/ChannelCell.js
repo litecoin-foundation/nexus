@@ -1,14 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import PropTypes from 'prop-types';
 
 import VerticalProgressBar from './VerticalProgressBar';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 const ChannelCell = props => {
-  const { item } = props;
-  const { remotePubkey, channelPoint, capacity, localBalance, remoteBalance } = item;
+  const {item} = props;
+  const {
+    remotePubkey,
+    channelPoint,
+    capacity,
+    localBalance,
+    remoteBalance,
+  } = item;
   return (
     <View style={styles.container}>
       <View style={styles.section}>
@@ -32,7 +38,7 @@ const ChannelCell = props => {
 
       <View style={[styles.subcontainer, styles.channel]}>
         <Text style={styles.titleText}>CHANNEL CAPACITY</Text>
-        <View style={{ height: 65 }}>
+        <View style={styles.channelSubContainer}>
           <View style={styles.capacityContainer}>
             <VerticalProgressBar balance={localBalance} capacity={capacity} />
             <View>
@@ -41,16 +47,20 @@ const ChannelCell = props => {
             </View>
           </View>
         </View>
-        <View style={{ height: 65 }}>
+        <View style={styles.channelSubContainer}>
           <View>
             <Text>Capacity</Text>
             <Text>{capacity}</Text>
           </View>
         </View>
 
-        <View style={{ height: 65 }}>
+        <View style={styles.channelSubContainer}>
           <View style={styles.capacityContainer}>
-            <VerticalProgressBar balance={remoteBalance} capacity={capacity} type="remote" />
+            <VerticalProgressBar
+              balance={remoteBalance}
+              capacity={capacity}
+              type="remote"
+            />
             <View>
               <Text>Remote Capacity</Text>
               <Text>{remoteBalance}</Text>
@@ -58,7 +68,8 @@ const ChannelCell = props => {
           </View>
         </View>
       </View>
-      <View style={[styles.subcontainer, { paddingTop: 10, paddingBottom: 20 }]}>
+      <View
+        style={[styles.subcontainer, styles.channelBottomDescriptorContainer]}>
         <Text style={styles.titleText}>CHANNEL OPENING DATE</Text>
         <Text style={styles.text}>WIP 15, 2019, 1:26 PM</Text>
       </View>
@@ -80,40 +91,47 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
+      width: 0,
+    },
   },
   section: {
     borderBottomColor: '#979797',
     borderBottomWidth: 1,
     paddingTop: 10,
-    paddingBottom: 10
+    paddingBottom: 10,
   },
   subcontainer: {
     paddingLeft: 20,
-    paddingRight: 20
+    paddingRight: 20,
+  },
+  channelSubContainer: {
+    height: 65,
+  },
+  channelBottomDescriptorContainer: {
+    paddingTop: 10,
+    paddingBottom: 20,
   },
   titleText: {
     color: '#7C96AE',
     fontSize: 12,
     fontWeight: '600',
-    paddingBottom: 7
+    paddingBottom: 7,
   },
   text: {
     color: '#4A4A4A',
     fontSize: 15,
-    fontWeight: '600'
+    fontWeight: '600',
   },
   channel: {
     backgroundColor: '#F6F9FC',
     paddingTop: 15,
-    paddingBottom: 15
+    paddingBottom: 15,
   },
   capacityContainer: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
 });
 
 ChannelCell.propTypes = {
@@ -122,8 +140,8 @@ ChannelCell.propTypes = {
     channelPoint: PropTypes.string.isRequired,
     capacity: PropTypes.number.isRequired,
     localBalance: PropTypes.number.isRequired,
-    remoteBalance: PropTypes.number.isRequired
-  })
+    remoteBalance: PropTypes.number.isRequired,
+  }),
 };
 
 export default ChannelCell;

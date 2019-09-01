@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { connect } from 'react-redux';
+import React, {Component} from 'react';
+import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 
 import Pad from './Numpad/Pad';
@@ -11,86 +11,99 @@ export class AmountInput extends Component {
     amount: '0.00',
     fiatAmount: '0.00',
     leftToggled: true,
-    selected: false
+    selected: false,
   };
 
   handlePress = side => {
-    const { selected } = this.props;
+    const {selected} = this.props;
     if (side === 'left') {
-      this.setState({ leftToggled: true, selected: true }, () => selected());
+      this.setState({leftToggled: true, selected: true}, () => selected());
     } else {
-      this.setState({ leftToggled: false, selected: true }, () => selected());
+      this.setState({leftToggled: false, selected: true}, () => selected());
     }
   };
 
   onChange = value => {
-    const { leftToggled } = this.state;
+    const {leftToggled} = this.state;
     if (leftToggled === true) {
-      this.setState({ amount: value }, () => this.handleConversion());
+      this.setState({amount: value}, () => this.handleConversion());
     } else {
-      this.setState({ fiatAmount: value }, () => this.handleConversion());
+      this.setState({fiatAmount: value}, () => this.handleConversion());
     }
   };
 
   handleConversion = () => {
-    const { leftToggled, amount, fiatAmount } = this.state;
-    const { rates } = this.props;
+    const {leftToggled, amount, fiatAmount} = this.state;
+    const {rates} = this.props;
 
     if (!leftToggled) {
-      const convertedAmount = `${(parseFloat(fiatAmount) / rates.USD).toFixed(4)}`;
-      this.setState({ amount: convertedAmount }, () => this.afterConversion());
+      const convertedAmount = `${(parseFloat(fiatAmount) / rates.USD).toFixed(
+        4,
+      )}`;
+      this.setState({amount: convertedAmount}, () => this.afterConversion());
     } else {
       const convertedFiat = `${(parseFloat(amount) * rates.USD).toFixed(2)}`;
-      this.setState({ fiatAmount: convertedFiat }, () => this.afterConversion());
+      this.setState({fiatAmount: convertedFiat}, () => this.afterConversion());
     }
   };
 
   afterConversion = () => {
-    const { amount } = this.state;
-    const { onChangeText } = this.props;
+    const {amount} = this.state;
+    const {onChangeText} = this.props;
 
     onChangeText(amount);
   };
 
   handleAccept = () => {
-    const { onAccept } = this.props;
-    const { amount } = this.state;
-    this.setState({ selected: false });
+    const {onAccept} = this.props;
+    const {amount} = this.state;
+    this.setState({selected: false});
     onAccept(amount);
   };
 
   render() {
-    const { amount, fiatAmount, leftToggled, selected } = this.state;
-    const { toggleWithoutSelection } = this.props;
+    const {amount, fiatAmount, leftToggled, selected} = this.state;
+    const {toggleWithoutSelection} = this.props;
     const PadContainer = (
       <View style={styles.padContainer}>
-        <Pad onChange={this.onChange} currentValue={leftToggled ? amount : fiatAmount} />
-        <View style={{ alignItems: 'center' }}>
+        <Pad
+          onChange={this.onChange}
+          currentValue={leftToggled ? amount : fiatAmount}
+        />
+        <View style={styles.centerAlign}>
           <BlueButton value="Preview Buy" onPress={this.handleAccept} />
         </View>
       </View>
     );
     return (
-      <View style={[selected || toggleWithoutSelection ? { height: '100%' } : null]}>
+      <View style={[selected || toggleWithoutSelection ? styles.height : null]}>
         <View style={styles.container}>
           <View style={styles.area}>
             <TouchableOpacity
-              style={[styles.left, leftToggled ? styles.active : styles.inActive]}
-              onPress={() => this.handlePress('left')}
-            >
+              style={[
+                styles.left,
+                leftToggled ? styles.active : styles.inActive,
+              ]}
+              onPress={() => this.handlePress('left')}>
               <Text
-                style={[styles.leftText, leftToggled ? styles.textActive : styles.textInactive]}
-              >
+                style={[
+                  styles.leftText,
+                  leftToggled ? styles.textActive : styles.textInactive,
+                ]}>
                 {amount}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.right, !leftToggled ? styles.active : styles.inActive]}
-              onPress={() => this.handlePress('right')}
-            >
+              style={[
+                styles.right,
+                !leftToggled ? styles.active : styles.inActive,
+              ]}
+              onPress={() => this.handlePress('right')}>
               <Text
-                style={[styles.rightText, leftToggled ? styles.textInactive : styles.textActive]}
-              >
+                style={[
+                  styles.rightText,
+                  leftToggled ? styles.textInactive : styles.textActive,
+                ]}>
                 {fiatAmount}
               </Text>
             </TouchableOpacity>
@@ -113,51 +126,57 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     shadowOffset: {
       height: 0,
-      width: 0
-    }
+      width: 0,
+    },
   },
   padContainer: {
     backgroundColor: '#F8FBFD',
     flexGrow: 1,
-    justifyContent: 'space-evenly'
+    justifyContent: 'space-evenly',
   },
   area: {
     flex: 1,
     flexDirection: 'row',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
   },
   left: {
     justifyContent: 'center',
     width: '70%',
     borderRightColor: '#DBDBDB',
-    borderRightWidth: 1
+    borderRightWidth: 1,
   },
   leftText: {
     color: '#2C72FF',
     fontWeight: '600',
-    paddingLeft: 20
+    paddingLeft: 20,
   },
   right: {
     justifyContent: 'center',
-    width: '30%'
+    width: '30%',
   },
   rightText: {
     color: '#20BB74',
     fontWeight: '600',
-    paddingLeft: 20
+    paddingLeft: 20,
   },
   active: {
-    width: '70%'
+    width: '70%',
   },
   inActive: {
-    width: '30%'
+    width: '30%',
   },
   textActive: {
-    fontSize: 28
+    fontSize: 28,
   },
   textInactive: {
-    fontSize: 18
-  }
+    fontSize: 18,
+  },
+  height: {
+    height: '100%',
+  },
+  centerAlign: {
+    alignItems: 'center',
+  },
 });
 
 AmountInput.propTypes = {
@@ -165,16 +184,16 @@ AmountInput.propTypes = {
   onChangeText: PropTypes.func,
   onAccept: PropTypes.func.isRequired,
   toggleWithoutSelection: PropTypes.bool,
-  selected: PropTypes.func.isRequired
+  selected: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
-  rates: state.ticker.rates
+  rates: state.ticker.rates,
 });
 
 const mapDispatchToProps = {};
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(AmountInput);
