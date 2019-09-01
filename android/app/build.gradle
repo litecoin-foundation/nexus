@@ -186,6 +186,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-randombytes')
+    implementation project(':react-native-keychain')
     implementation project(':react-native-linear-gradient')
     implementation project(':@react-native-community_slider')
     implementation project(':react-native-svg')

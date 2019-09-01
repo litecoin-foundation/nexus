@@ -1,7 +1,11 @@
 import RNFS from 'react-native-fs';
 
 import Lightning from '../lib/lightning/lightning';
+
 import {toBuffer} from '../lib/utils';
+import {getRandomBytes} from '../lib/utils/random';
+import {setItem, getItem} from '../lib/utils/keychain';
+
 import {finishOnboarding} from './onboarding';
 import {getBalance} from './balance';
 import {getInfo} from './info';
@@ -10,17 +14,19 @@ import {getTicker} from './ticker';
 import {backupChannels} from './channels';
 
 const LndInstance = new Lightning();
+const PASS = 'PASSWORD';
 
 // inital state
 const initialState = {
   lndActive: false,
-  walletUnlocked: false,
+  walletUnlocked: null,
 };
 
 // constants
 export const START_LND = 'START_LND';
 export const STOP_LND = 'STOP_LND';
 export const UNLOCK_WALLET = 'UNLOCK_WALLET';
+export const CLEAR_UNLOCK = 'CLEAR_UNLOCK';
 
 // actions
 export const startLnd = () => async dispatch => {
@@ -48,12 +54,15 @@ export const stopLnd = () => async dispatch => {
 };
 
 export const initWallet = () => async (dispatch, getState) => {
-  const {passcode, seed} = getState().onboarding;
-  const encodedPassword = `${passcode}_losh11`;
+  const {seed} = getState().onboarding;
+
+  const password = await getRandomBytes();
+  await setItem(PASS, password);
+
   try {
     await deleteWalletDB();
     await LndInstance.sendCommand('InitWallet', {
-      walletPassword: toBuffer(encodedPassword),
+      walletPassword: toBuffer(password),
       cipherSeedMnemonic: seed,
       recoveryWindow: 1000, // TODO: should be 0 if new Wallet
     });
@@ -69,15 +78,41 @@ export const initWallet = () => async (dispatch, getState) => {
   dispatch(finishOnboarding());
 };
 
-export const unlockWallet = input => async (dispatch, getState) => {
-  const {passcode} = getState().onboarding;
-  const status = input === passcode;
-  const encodedPassword = `${input}_losh11`;
+export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
+  const pincode = await getItem('PINCODE');
+  if (pincodeAttempt !== pincode) {
+    dispatch({
+      type: UNLOCK_WALLET,
+      payload: false,
+    });
+  } else {
+    await dispatch(unlockWallet());
+    dispatch({
+      type: UNLOCK_WALLET,
+      payload: true,
+    });
+  }
+};
+
+export const unlockWalletWithBiometric = () => {
+  // TODO when expo-local-authentication is available for rn v0.60
+};
+
+export const clearWalletUnlocked = () => dispatch => {
+  dispatch({
+    type: CLEAR_UNLOCK,
+  });
+};
+
+export const unlockWallet = () => async dispatch => {
+  const password = await getItem(PASS);
+
   try {
     await LndInstance.sendCommand('UnlockWallet', {
-      walletPassword: toBuffer(encodedPassword),
+      walletPassword: toBuffer(password),
     });
   } catch (error) {
+    console.log(error);
     const dbPath = `${
       RNFS.DocumentDirectoryPath
     }/data/chain/litecoin/mainnet/wallet.db`;
@@ -92,11 +127,6 @@ export const unlockWallet = input => async (dispatch, getState) => {
   dispatch(getTransactions());
   dispatch(getTicker());
   dispatch(backupChannels());
-
-  dispatch({
-    type: UNLOCK_WALLET,
-    payload: status,
-  });
 };
 
 export const deleteWalletDB = async () => {
@@ -116,6 +146,7 @@ const actionHandler = {
   [START_LND]: state => ({...state, lndActive: true}),
   [STOP_LND]: state => ({...state, lndActive: false}),
   [UNLOCK_WALLET]: (state, {payload}) => ({...state, walletUnlocked: payload}),
+  [CLEAR_UNLOCK]: state => ({...state, walletUnlocked: null}),
 };
 
 // reducer

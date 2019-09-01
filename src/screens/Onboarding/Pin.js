@@ -5,6 +5,7 @@ import {useNavigation} from 'react-navigation-hooks';
 import Auth from '../../components/Auth';
 import {addPincode} from '../../reducers/onboarding';
 import {clearValues} from '../../reducers/authpad';
+import {setItem} from '../../lib/utils/keychain';
 
 const Pin = () => {
   const dispatch = useDispatch();
@@ -22,20 +23,15 @@ const Pin = () => {
   });
 
   useEffect(() => {
-    const handleNavigation = () => {
-      if (!beingRecovered) {
-        navigate('Generate');
-      } else {
-        navigate('ChannelBackup');
-      }
-    };
-
     if (pin.length === 6 && passcodeSet === true) {
       dispatch(clearValues());
 
       if (pin === passcode) {
-        handleNavigation();
+        // valid pincode repeat attempt
+        setPincodeToKeychain(pin);
+        handleNavigation(beingRecovered, navigate);
       } else {
+        // invalid pincode repeat attempt
         navigate('Loading');
       }
     }
@@ -54,6 +50,18 @@ const Pin = () => {
     />
   );
 };
+
+const handleNavigation = (beingRecovered, navigate) => {
+  if (!beingRecovered) {
+    navigate('Generate');
+  } else {
+    navigate('ChannelBackup');
+  }
+};
+
+async function setPincodeToKeychain(pin) {
+  await setItem('PINCODE', pin);
+}
 
 Pin.navigationOptions = {
   headerTransparent: true,

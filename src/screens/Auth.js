@@ -5,24 +5,30 @@ import {useNavigation} from 'react-navigation-hooks';
 
 import Auth from '../components/Auth';
 import {clearValues} from '../reducers/authpad';
-import {unlockWallet} from '../reducers/lightning';
+import {unlockWalletWithPin, clearWalletUnlocked} from '../reducers/lightning';
 
 const Pin = () => {
   const dispatch = useDispatch();
   const {navigate} = useNavigation();
   const pin = useSelector(state => state.authpad.pin);
-  const passcode = useSelector(state => state.onboarding.passcode);
+  const walletUnlocked = useSelector(state => state.lightning.walletUnlocked);
 
   useEffect(() => {
     if (pin.length === 6) {
-      dispatch(clearValues());
-      dispatch(unlockWallet(pin));
+      const checkPincode = async () => {
+        await dispatch(unlockWalletWithPin(pin));
+        await dispatch(clearValues());
 
-      if (pin !== passcode) {
-        alert('incorrect');
-      } else {
-        navigate('App');
-      }
+        if (walletUnlocked === null) {
+          return;
+        } else if (walletUnlocked === false) {
+          alert('incorrect pincode');
+          await dispatch(clearWalletUnlocked());
+        } else {
+          navigate('App');
+        }
+      };
+      checkPincode();
     }
   });
 

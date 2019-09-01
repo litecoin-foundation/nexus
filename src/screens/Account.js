@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 import AmountView from '../components/AmountView';
 import AccountCell from '../components/AccountCell';
+import {clearWalletUnlocked} from '../reducers/lightning';
 
 export class Accounts extends Component {
   static navigationOptions = {
@@ -16,6 +17,11 @@ export class Accounts extends Component {
     headerTransparent: true,
     headerBackTitle: null,
   };
+
+  componentDidMount() {
+    const {clearWalletUnlocked} = this.props;
+    clearWalletUnlocked();
+  }
 
   render() {
     const {
@@ -81,7 +87,7 @@ const mapStateToProps = state => ({
   syncedToChain: state.info.syncedToChain,
 });
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {clearWalletUnlocked};
 
 export default connect(
   mapStateToProps,

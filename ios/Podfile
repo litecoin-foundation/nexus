@@ -29,6 +29,10 @@ target 'lndmobile' do
 
   pod 'react-native-sensitive-info', path: "../node_modules/react-native-sensitive-info"
 
+  pod 'RNKeychain', :path => '../node_modules/react-native-keychain'
+
+  pod 'react-native-randombytes', :path => '../node_modules/react-native-randombytes'
+
   target 'lndmobileTests' do
     inherit! :search_paths
     # Pods for testing

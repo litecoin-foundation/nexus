@@ -9,7 +9,11 @@ const BACKSPACE_VALUE = 'BACKSPACE_VALUE';
 const CLEAR_VALUES = 'CLEAR_VALUES';
 
 // actions
-export const inputValue = input => dispatch => {
+export const inputValue = input => (dispatch, getState) => {
+  const {pin} = getState().authpad;
+  if (pin.length >= 6) {
+    return;
+  }
   dispatch({
     type: INPUT_VALUE,
     input,
