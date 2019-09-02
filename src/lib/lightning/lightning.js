@@ -53,10 +53,14 @@ class Lightning {
   // helper functions
 
   async lnrpcRequest(method, body) {
-    method = toCaps(method);
-    const req = this.serializeRequest(method, body);
-    const response = await this.lightning.sendCommand(method, req);
-    return this.deserializeResponse(method, response.data);
+    try {
+      method = toCaps(method);
+      const req = this.serializeRequest(method, body);
+      const response = await this.lightning.sendCommand(method, req);
+      return this.deserializeResponse(method, response.data);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   serializeRequest(method, body = {}) {
