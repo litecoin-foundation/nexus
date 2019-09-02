@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
   amountInputContainer: {
     height: '100%',
     paddingBottom: 180,
+    backgroundColor: '#F8FBFD',
   },
   title: {
     color: '#7C96AE',

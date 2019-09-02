@@ -35,6 +35,10 @@ export class Confirm extends Component {
     }, 2000);
   }
 
+  componentWillUnmount() {
+    clearInterval(this.refreshRates);
+  }
+
   render() {
     const {amount, price, navigation} = this.props;
     const {pricePerUnit, fee, total} = price;

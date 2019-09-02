@@ -144,6 +144,7 @@ const styles = StyleSheet.create({
     width: '70%',
     borderRightColor: '#DBDBDB',
     borderRightWidth: 1,
+    height: '100%',
   },
   leftText: {
     color: '#2C72FF',
