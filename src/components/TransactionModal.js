@@ -8,10 +8,7 @@ import GreyRoundButton from './GreyRoundButton';
 
 export class TransactionModal extends Component {
   render() {
-    const {isVisible, close, navigate, type} = this.props;
-    const LightningView =
-      type === 'send' ? 'LightningSend' : 'LightningReceive';
-    const OnchainView = type === 'send' ? 'Send' : 'Receive';
+    const {isVisible, close, navigate} = this.props;
 
     return (
       <Modal
@@ -41,14 +38,14 @@ export class TransactionModal extends Component {
                 label="Lightning"
                 onPress={() => {
                   close();
-                  navigate(LightningView);
+                  navigate('LightningReceive');
                 }}
               />
               <TypeButton
                 label="Onchain"
                 onPress={() => {
                   close();
-                  navigate(OnchainView);
+                  navigate('Receive');
                 }}
               />
             </View>

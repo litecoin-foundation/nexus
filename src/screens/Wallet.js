@@ -34,7 +34,6 @@ const Wallet = () => {
 
   const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
-  const [type, setType] = useState('');
   const [selectedTransaction, selectTransaction] = useState(null);
 
   const groupedTransactions = groupBy(transactions, 'day');
@@ -54,8 +53,7 @@ const Wallet = () => {
         <TouchableOpacity
           style={styles.payment}
           onPress={() => {
-            setTxTypeModalVisible(true);
-            setType('send');
+            navigate('Send');
           }}>
           <Text>Send</Text>
         </TouchableOpacity>
@@ -63,7 +61,6 @@ const Wallet = () => {
           style={styles.payment}
           onPress={() => {
             setTxTypeModalVisible(true);
-            setType('receive');
           }}>
           <Text>Receive</Text>
         </TouchableOpacity>
@@ -71,7 +68,6 @@ const Wallet = () => {
 
       <TransactionModal
         isVisible={isTxTypeModalVisible}
-        type={type}
         navigate={navigate}
         close={() => setTxTypeModalVisible(false)}
       />
