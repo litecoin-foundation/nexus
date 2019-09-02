@@ -3,7 +3,6 @@ import {View, Text, Clipboard, StyleSheet, TextInput} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch} from 'react-redux';
 
-import bip21 from 'bip21';
 import AmountInput from '../components/AmountInput';
 import AddressField from '../components/AddressField';
 import FeeModal from '../components/FeeModal';
@@ -11,9 +10,10 @@ import SendModal from '../components/SendModal';
 import SquareButton from '../components/SquareButton';
 import GreenRoundButton from '../components/GreenRoundButton';
 import BlueButton from '../components/BlueButton';
+
 import {inputParams, estimateOnchainFee} from '../reducers/payment';
-// import * as bip21 from '../lib/utils/bip21';
-import validate from '../lib/utils/validate';
+import {decodeBIP21} from '../lib/utils/bip21';
+import validateLtcAddress from '../lib/utils/validate';
 
 const Send = () => {
   const {navigate} = useNavigation();
@@ -33,38 +33,40 @@ const Send = () => {
     dispatch(estimateOnchainFee(address, amount));
   };
 
-  const validation = address => {
-    const decoded = bip21.decode(address, 'litecoin');
-    console.log(decoded);
-    // try {
-    //   const decoded = bip21.decode(address, 'litecoin');
-    //   console.log(decoded);
-    //   const bool = validate(decoded.address);
-    //   return bool;
-    // } catch {
-    //   const bool = validate(address);
-    //   console.log(bool);
-    //   return bool;
-    // }
-  };
-
   const handleScan = () => {
     navigate('Scanner');
   };
 
   const handlePaste = async () => {
     const address = await Clipboard.getString();
-    if (validation(address) !== false) {
-      // TODO: handle validation failure
-      try {
-        const decoded = bip21.decodeBIP21(address);
-        setAddress(decoded.address);
-        setAmount(decoded.options.amount);
-        updateFees();
-      } catch {
-        setAddress(address);
-        updateFees();
+
+    // check if URI by decoding using the bip21 library
+    try {
+      const decoded = decodeBIP21(address);
+      console.log(decoded);
+
+      const validated = await validateLtcAddress(decoded.address);
+
+      if (!validated) {
+        alert('invalid address');
+        console.log(address);
+        return;
       }
+
+      setAddress(decoded.address);
+      setAmount(decoded.options.amount);
+      await updateFees();
+    } catch (error) {
+      const validated = await validateLtcAddress(address);
+
+      if (!validated) {
+        alert('invalid address');
+        console.log(address);
+        return;
+      }
+
+      setAddress(validated.address);
+      await updateFees();
     }
   };
 
@@ -78,10 +80,12 @@ const Send = () => {
         onChangeText={amount => setAmount(amount)}
         onAccept={() => triggerAmountInput(false)}
         selected={() => triggerAmountInput(true)}
-        customAcceptButton={<Text>d</Text>}
       />
       <View>
-        <Text style={styles.recipientHeaderText}>CHOOSE recipient</Text>
+        <View style={styles.typeTextContainer}>
+          <Text style={styles.recipientHeaderText}>CHOOSE recipient</Text>
+        </View>
+
         {address ? (
           <AddressField
             address={address}
@@ -203,6 +207,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     position: 'absolute',
     alignItems: 'center',
+  },
+  typeTextContainer: {
+    marginLeft: 20,
   },
 });
 
