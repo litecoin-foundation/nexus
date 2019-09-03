@@ -3,9 +3,11 @@ import {TouchableOpacity, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const WhiteButton = props => {
-  const {value, onPress} = props;
+  const {value, onPress, small} = props;
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.container, small ? styles.small : styles.big]}
+      onPress={onPress}>
       <Text style={styles.text}>{value}</Text>
     </TouchableOpacity>
   );
@@ -13,9 +15,6 @@ const WhiteButton = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 24,
-    width: 70,
-    borderRadius: 12,
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
@@ -26,7 +25,16 @@ const styles = StyleSheet.create({
       height: 0,
       width: 0,
     },
-    marginRight: 20,
+  },
+  small: {
+    height: 24,
+    width: 70,
+    borderRadius: 12,
+  },
+  big: {
+    height: 50,
+    width: 335,
+    borderRadius: 25,
   },
   text: {
     color: '#183CB0',
@@ -37,6 +45,7 @@ const styles = StyleSheet.create({
 WhiteButton.propTypes = {
   value: PropTypes.string.isRequired,
   onPress: PropTypes.func.isRequired,
+  small: PropTypes.bool.isRequired,
 };
 
 export default WhiteButton;

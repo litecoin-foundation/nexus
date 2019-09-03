@@ -9,6 +9,7 @@ import {createSelector} from 'reselect';
 import chunk from '../../lib/utils/chunk';
 import SeedView from '../../components/SeedView';
 import OnboardingHeader from '../../components/OnboardingHeader';
+import WhiteButton from '../../components/WhiteButton';
 import {getSeed} from '../../reducers/onboarding';
 
 const {width} = Dimensions.get('window');
@@ -77,10 +78,15 @@ const Generate = () => {
       />
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.header}>
         {!seed ? <Text>Loading...</Text> : list}
-        <Button
-          title={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
-          onPress={() => handlePress()}
-        />
+        <View style={styles.bottomContainer}>
+          <Text style={styles.warningText}>
+            Without these words you won't be able to access your wallet!
+          </Text>
+          <WhiteButton
+            value={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
+            onPress={() => handlePress()}
+          />
+        </View>
       </LinearGradient>
     </View>
   );
@@ -91,10 +97,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: '100%',
+    flex: 1,
   },
   carousel: {
     flexGrow: 0,
+  },
+  warningText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 15,
+  },
+  bottomContainer: {
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    paddingBottom: 40,
   },
 });
 
