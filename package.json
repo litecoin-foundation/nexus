@@ -9,9 +9,8 @@
   },
   "scripts": {
     "start": "react-native start",
-    "postinstall": "yarn run protobuf && yarn run nodeify",
+    "postinstall": "yarn run protobuf",
     "protobuf": "pbjs src/lib/lightning/rpc.proto -t static-module -w es6 -o src/lib/lightning/rpc.js",
-    "nodeify": "rn-nodeify --install buffer,events,process,stream,util,inherits,path --hack",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -21,11 +20,8 @@
     "base64-js": "^1.3.0",
     "bech32": "^1.1.3",
     "bip21": "^2.0.2",
-    "buffer": "^4.9.1",
-    "events": "^1.1.1",
+    "events": "^3.0.0",
     "hash.js": "^1.1.7",
-    "path-browserify": "0.0.0",
-    "process": "^0.11.10",
     "prop-types": "^15.7.2",
     "protobufjs": "^6.8.8",
     "react": "16.8.6",
@@ -44,17 +40,15 @@
     "react-navigation": "^3.12.1",
     "react-navigation-hooks": "^1.0.1",
     "react-redux": "^7.1.1",
-    "readable-stream": "^3.3.0",
+    "readable-stream": "^3.4.0",
     "redux": "^4.0.4",
     "redux-devtools-extension": "^2.13.8",
     "redux-persist": "^5.10.0",
     "redux-persist-sensitive-storage": "^1.0.0",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
-    "rn-nodeify": "^10.1.0",
     "satoshi-bitcoin": "^1.0.4",
-    "stream-browserify": "^2.0.2",
-    "util": "^0.12.0"
+    "stream-browserify": "^2.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
@@ -64,14 +58,5 @@
     "eslint": "^6.1.0",
     "metro-react-native-babel-preset": "^0.56.0",
     "react-test-renderer": "16.8.6"
-  },
-  "react-native": {
-    "path": "path-browserify",
-    "_stream_transform": "readable-stream/transform",
-    "_stream_readable": "readable-stream/readable",
-    "_stream_writable": "readable-stream/writable",
-    "_stream_duplex": "readable-stream/duplex",
-    "_stream_passthrough": "readable-stream/passthrough",
-    "stream": "stream-browserify"
   }
 }
