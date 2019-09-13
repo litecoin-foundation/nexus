@@ -1,18 +1,27 @@
 import React from 'react';
-import {StyleSheet, View, Button} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
+import LinearGradient from 'react-native-linear-gradient';
+
+import WhiteButton from '../../components/WhiteButton';
+import WhiteClearButton from '../../components/WhiteClearButton';
 
 const Initial = () => {
   const {navigate} = useNavigation();
 
   return (
-    <View style={styles.container}>
-      <Button onPress={() => navigate('Pin')} title="Create Wallet" />
-      <Button
-        onPress={() => navigate('Recover')}
-        title="Already have a wallet? Log In"
+    <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
+      <WhiteButton
+        value="Create Wallet"
+        small={false}
+        onPress={() => navigate('Pin')}
       />
-    </View>
+      <WhiteClearButton
+        value="Already have a wallet? Log In"
+        small={true}
+        onPress={() => navigate('Recover')}
+      />
+    </LinearGradient>
   );
 };
 
@@ -24,9 +33,10 @@ Initial.navigationOptions = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+    paddingBottom: 50,
   },
   welcome: {
     fontSize: 20,

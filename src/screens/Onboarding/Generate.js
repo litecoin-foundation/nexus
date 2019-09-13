@@ -1,5 +1,5 @@
 import React, {useEffect, Fragment, useState, createRef} from 'react';
-import {View, Text, Button, Dimensions, StyleSheet} from 'react-native';
+import {View, Text, Dimensions, StyleSheet} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
 import Carousel, {Pagination} from 'react-native-snap-carousel';
@@ -85,6 +85,7 @@ const Generate = () => {
           <WhiteButton
             value={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
             onPress={() => handlePress()}
+            small={false}
           />
         </View>
       </LinearGradient>

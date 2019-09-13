@@ -22,7 +22,7 @@ const OnboardingHeader = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 200,
+    height: 220,
   },
   safeAreaViewContainer: {
     height: '100%',
