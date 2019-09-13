@@ -54,6 +54,7 @@ WhiteButton.propTypes = {
   value: PropTypes.string.isRequired,
   onPress: PropTypes.func.isRequired,
   small: PropTypes.bool.isRequired,
+  disabled: PropTypes.bool,
 };
 
 export default WhiteButton;

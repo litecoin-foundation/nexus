@@ -27,6 +27,7 @@ export class Channel extends Component {
       headerRight: (
         <WhiteButton
           value="Open"
+          small={true}
           onPress={() => navigation.navigate('OpenChannel')}
         />
       ),
