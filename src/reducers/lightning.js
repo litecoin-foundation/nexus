@@ -7,10 +7,10 @@ import {getRandomBytes} from '../lib/utils/random';
 import {setItem, getItem} from '../lib/utils/keychain';
 
 import {finishOnboarding} from './onboarding';
-import {getBalance} from './balance';
-import {getInfo} from './info';
-import {getTransactions} from './transaction';
-import {getTicker} from './ticker';
+import {pollBalance} from './balance';
+import {pollInfo} from './info';
+import {pollTransactions} from './transaction';
+import {pollTicker} from './ticker';
 import {backupChannels} from './channels';
 
 const LndInstance = new Lightning();
@@ -67,10 +67,10 @@ export const initWallet = () => async (dispatch, getState) => {
       recoveryWindow: 1000, // TODO: should be 0 if new Wallet
     });
     // dispatch pollers
-    dispatch(getBalance());
-    dispatch(getInfo());
-    dispatch(getTransactions());
-    dispatch(getTicker());
+    dispatch(pollBalance());
+    dispatch(pollInfo());
+    dispatch(pollTransactions());
+    dispatch(pollTicker());
     dispatch(backupChannels());
   } catch (error) {
     console.log(error);
@@ -122,10 +122,10 @@ export const unlockWallet = () => async dispatch => {
   }
 
   // dispatch pollers
-  dispatch(getBalance());
-  dispatch(getInfo());
-  dispatch(getTransactions());
-  dispatch(getTicker());
+  dispatch(pollBalance());
+  dispatch(pollInfo());
+  dispatch(pollTransactions());
+  dispatch(pollTicker());
   dispatch(backupChannels());
 };
 

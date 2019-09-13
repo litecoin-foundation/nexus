@@ -1,6 +1,6 @@
 import {Buffer} from 'buffer';
 import Lightning from '../lib/lightning/lightning';
-import {sleep} from '../lib/utils';
+import {poll} from '../lib/utils/poll';
 
 const LndInstance = new Lightning();
 
@@ -133,23 +133,19 @@ export const enableChannelBackup = () => dispatch => {
   });
 };
 
-export const backupChannels = (retries = Infinity) => async (
-  dispatch,
-  getState,
-) => {
+export const backupChannels = () => async (dispatch, getState) => {
   const {channelBackupsEnabled} = getState().channels;
   if (!channelBackupsEnabled) {
     return;
   }
 
-  while ((retries -= 1)) {
+  await poll(async () => {
     const {multiChanBackup} = await LndInstance.sendCommand(
       'ExportAllChannelBackups',
     );
     console.log(multiChanBackup);
     // TODO: backup the multichannelbackup to the cloud
-    await sleep(10000);
-  }
+  });
 };
 
 // action handlers

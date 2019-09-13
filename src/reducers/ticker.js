@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {sleep} from '../lib/utils';
+import {poll} from '../lib/utils/poll';
 
 // initial state
 const initialState = {
@@ -10,19 +10,20 @@ const initialState = {
 export const GET_TICKER = 'GET_TICKER';
 
 // actions
-export const getTicker = (retries = Infinity) => async dispatch => {
-  while ((retries -= 1)) {
-    const {
-      data: {data: {rates} = {}},
-    } = await axios.get(
-      'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
-    );
-    dispatch({
-      type: GET_TICKER,
-      rates,
-    });
-    await sleep();
-  }
+export const getTicker = () => async dispatch => {
+  const {
+    data: {data: {rates} = {}},
+  } = await axios.get(
+    'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
+  );
+  dispatch({
+    type: GET_TICKER,
+    rates,
+  });
+};
+
+export const pollTicker = () => async dispatch => {
+  await poll(() => dispatch(getTicker()));
 };
 
 // action handlers

@@ -1,7 +1,6 @@
 export {default as toCaps} from './toCaps';
 export {default as toBuffer} from './toBuffer';
 export {default as randomShuffle} from './randomShuffle';
-export {default as sleep} from './sleep';
 export {default as converter} from './converter';
 export {default as groupBy} from './groupBy';
 export {default as date} from './date';

@@ -1,5 +1,5 @@
 import Lightning from '../lib/lightning/lightning';
-import {sleep} from '../lib/utils';
+import {poll} from '../lib/utils/poll';
 
 const LndInstance = new Lightning();
 
@@ -16,23 +16,24 @@ const initialState = {
 export const GET_BALANCE = 'GET_BALANCE';
 
 // actions
-export const getBalance = (retries = Infinity) => async dispatch => {
-  while ((retries -= 1)) {
-    const w = await LndInstance.sendCommand('WalletBalance');
-    const c = await LndInstance.sendCommand('ChannelBalance');
-    const {totalBalance, confirmedBalance, unconfirmedBalance} = w;
-    const {balance, pendingOpenBalance} = c;
+export const getBalance = () => async dispatch => {
+  const w = await LndInstance.sendCommand('WalletBalance');
+  const c = await LndInstance.sendCommand('ChannelBalance');
+  const {totalBalance, confirmedBalance, unconfirmedBalance} = w;
+  const {balance, pendingOpenBalance} = c;
 
-    dispatch({
-      type: GET_BALANCE,
-      totalBalance,
-      confirmedBalance,
-      unconfirmedBalance,
-      balance,
-      pendingOpenBalance,
-    });
-    await sleep();
-  }
+  dispatch({
+    type: GET_BALANCE,
+    totalBalance,
+    confirmedBalance,
+    unconfirmedBalance,
+    balance,
+    pendingOpenBalance,
+  });
+};
+
+export const pollBalance = () => async dispatch => {
+  await poll(() => dispatch(getBalance()));
 };
 
 // action handlers

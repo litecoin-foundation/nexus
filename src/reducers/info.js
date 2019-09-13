@@ -1,5 +1,5 @@
 import Lightning from '../lib/lightning/lightning';
-import {sleep} from '../lib/utils';
+import {poll} from '../lib/utils/poll';
 
 const LndInstance = new Lightning();
 
@@ -20,37 +20,38 @@ const initialState = {
 export const GET_INFO = 'GET_INFO';
 
 // actions
-export const getInfo = (retries = Infinity) => async (dispatch, getState) => {
-  while ((retries -= 1)) {
-    const info = await LndInstance.sendCommand('getInfo');
-    const {startingSyncTimestamp} = getState().info;
+export const getInfo = () => async (dispatch, getState) => {
+  const info = await LndInstance.sendCommand('getInfo');
+  const {startingSyncTimestamp} = getState().info;
 
-    if (startingSyncTimestamp === undefined) {
-      info.startingSyncTimestamp = info.bestHeaderTimestamp || 0;
-    }
+  if (startingSyncTimestamp === undefined) {
+    info.startingSyncTimestamp = info.bestHeaderTimestamp || 0;
+  }
 
-    const syncPercentage = await calculateSyncProgress(
+  const syncPercentage = await calculateSyncProgress(
+    info,
+    startingSyncTimestamp,
+  );
+
+  if (syncPercentage < 0.9) {
+    info.syncedToChain = false;
+  }
+
+  if (!info.syncedToChain) {
+    info.percentSynced = await calculateSyncProgress(
       info,
       startingSyncTimestamp,
     );
-
-    if (syncPercentage < 0.9) {
-      info.syncedToChain = false;
-    }
-
-    if (!info.syncedToChain) {
-      info.percentSynced = await calculateSyncProgress(
-        info,
-        startingSyncTimestamp,
-      );
-    }
-
-    dispatch({
-      type: GET_INFO,
-      info,
-    });
-    await sleep();
   }
+
+  dispatch({
+    type: GET_INFO,
+    info,
+  });
+};
+
+export const pollInfo = () => async dispatch => {
+  await poll(() => dispatch(getInfo()));
 };
 
 const calculateSyncProgress = async (info, startingSyncTimestamp) => {

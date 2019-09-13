@@ -1,5 +1,5 @@
 import Lightning from '../lib/lightning/lightning';
-import {sleep} from '../lib/utils';
+import {poll} from '../lib/utils/poll';
 
 const LndInstance = new Lightning();
 
@@ -14,26 +14,28 @@ export const GET_TRANSACTIONS = 'GET_TRANSACTIONS';
 export const GET_INVOICES = 'GET_INVOICES';
 
 // actions
-export const getTransactions = (retries = Infinity) => async dispatch => {
-  while ((retries -= 1)) {
-    const {transactions} = await LndInstance.sendCommand('GetTransactions');
-    dispatch({
-      type: GET_TRANSACTIONS,
-      transactions,
-    });
-    await sleep();
-  }
+export const getTransactions = () => async dispatch => {
+  const {transactions} = await LndInstance.sendCommand('GetTransactions');
+  dispatch({
+    type: GET_TRANSACTIONS,
+    transactions,
+  });
 };
 
-export const getInvoices = (retries = Infinity) => async dispatch => {
-  while ((retries -= 1)) {
-    const {invoices} = await LndInstance.sendCommand('GetInvoices');
-    dispatch({
-      type: GET_INVOICES,
-      invoices,
-    });
-    await sleep();
-  }
+export const pollTransactions = () => async dispatch => {
+  await poll(() => dispatch(getTransactions()));
+};
+
+export const getInvoices = () => async dispatch => {
+  const {invoices} = await LndInstance.sendCommand('GetInvoices');
+  dispatch({
+    type: GET_INVOICES,
+    invoices,
+  });
+};
+
+export const pollInvoices = () => async dispatch => {
+  await poll(() => dispatch(getInvoices()));
 };
 
 // action handlers
