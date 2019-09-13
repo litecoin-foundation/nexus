@@ -2,12 +2,21 @@ import React from 'react';
 import {Text, StyleSheet, TouchableOpacity} from 'react-native';
 
 const WhiteClearButton = props => {
-  const {onPress, value, small} = props;
+  const {onPress, value, small, selected} = props;
   return (
     <TouchableOpacity
-      style={[styles.container, small ? styles.smallContainer : null]}
+      style={[
+        styles.container,
+        small ? styles.smallContainer : null,
+        selected ? styles.selectedContainer : null,
+      ]}
       onPress={onPress}>
-      <Text style={[styles.text, small ? styles.smallText : null]}>
+      <Text
+        style={[
+          styles.text,
+          small ? styles.smallText : null,
+          selected ? styles.selectedText : null,
+        ]}>
         {value}
       </Text>
     </TouchableOpacity>
@@ -33,6 +42,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
+  selectedContainer: {
+    backgroundColor: 'white',
+  },
+
   smallContainer: {
     height: 50,
     borderRadius: 25,
@@ -40,6 +53,10 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 24,
     color: 'white',
+  },
+  selectedText: {
+    color: '#1341BE',
+    fontWeight: 'bold',
   },
   smallText: {
     fontSize: 15,

@@ -1,66 +1,176 @@
-import React, {Component} from 'react';
-import {View, Text, Button} from 'react-native';
-import {connect} from 'react-redux';
+import React, {useState, useEffect} from 'react';
+import {View, Text, StyleSheet} from 'react-native';
+import {useSelector} from 'react-redux';
+import {useNavigation} from 'react-navigation-hooks';
+import LinearGradient from 'react-native-linear-gradient';
 
-import {getRandomInt, randomShuffle, getBIP39Word} from '../../lib/utils';
+import OnboardingHeader from '../../components/OnboardingHeader';
+import WhiteButton from '../../components/WhiteButton';
+import WhiteClearButton from '../../components/WhiteClearButton';
+import {randomShuffle} from '../../lib/utils';
+import {getBIP39Word} from '../../lib/utils/bip39';
 
-export class Verify extends Component {
-  constructor(props) {
-    super(props);
-    this.handlePress = this.handlePress.bind(this);
-  }
+const Verify = () => {
+  const {navigate} = useNavigation();
+  const seed = useSelector(state => state.onboarding.seed);
+  const [multiplier, setMultiplier] = useState(1);
+  const [selected, setSelectedIndex] = useState(null);
 
-  handlePress = async (val, actualVal) => {
-    const {navigation} = this.props;
-    if (val === actualVal) {
-      alert('congrats!');
-      navigation.navigate('ChannelBackup');
+  const [scrambled, setScrambledArray] = useState([]);
+
+  const handlePress = async () => {
+    if (multiplier === 8) {
+      navigate('ChannelBackup');
+      return;
+    }
+    setMultiplier(multiplier + 1);
+    setSelectedIndex(null);
+  };
+
+  const handleSelection = async (word, index) => {
+    if (word === seed[3 * multiplier - 2]) {
+      setSelectedIndex(index);
     } else {
+      setSelectedIndex(null);
       alert('incorrect');
-      navigation.goBack();
     }
   };
 
-  render() {
-    const {seed} = this.props;
+  useEffect(() => {
+    for (let i = 1; i < 9; i++) {
+      const challengeArray = randomShuffle([
+        seed[3 * i - 2],
+        getBIP39Word(),
+        getBIP39Word(),
+        getBIP39Word(),
+      ]);
 
-    // TODO: refactor all of this!
-    const startNumber = getRandomInt(0, 21); // limit to 21 otherwise overflow
-    const seedArray = seed.slice(startNumber, startNumber + 3);
-    const topLine = `${seedArray[0]} ________ ${seedArray[2]}`;
-    const challengeArray = [
-      seedArray[1],
-      getBIP39Word(),
-      getBIP39Word(),
-      getBIP39Word(),
-    ];
+      setScrambledArray(arrayItems => [...arrayItems, ...challengeArray]);
+    }
+  }, [seed]);
 
-    const shuffled = randomShuffle(challengeArray);
-    const options = shuffled.map(val => {
-      return (
-        <Button
-          title={val}
-          onPress={() => this.handlePress(val, seedArray[1])}
-        />
-      );
-    });
+  return (
+    <View style={styles.container}>
+      <OnboardingHeader
+        title="Verify Paper Key"
+        description={`Select word #${3 * multiplier -
+          1} to verify your paper-key`}>
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionSubContainer}>
+            <Text style={styles.optionText}>{seed[3 * multiplier - 3]}</Text>
+            <Text style={styles.optionValueText}>#{3 * multiplier - 2}</Text>
+          </View>
+          <View style={styles.optionSubContainer}>
+            <View style={styles.optionBox} />
+            <Text style={styles.optionValueTextActual}>
+              #{3 * multiplier - 1}
+            </Text>
+          </View>
+          <View style={styles.optionSubContainer}>
+            <Text style={styles.optionText}>{seed[3 * multiplier - 1]}</Text>
+            <Text style={styles.optionValueText}>#{3 * multiplier}</Text>
+          </View>
+        </View>
+      </OnboardingHeader>
 
-    return (
-      <View>
-        <Text>{topLine}</Text>
-        {options}
-      </View>
-    );
-  }
-}
+      <LinearGradient
+        colors={['#544FE6', '#003DB3']}
+        style={styles.gradientContainer}>
+        <View style={styles.buttonContainer}>
+          <WhiteClearButton
+            value={scrambled[4 * multiplier - 4]}
+            onPress={() => handleSelection(scrambled[4 * multiplier - 4], 0)}
+            selected={selected === 0 ? true : false}
+          />
+          <WhiteClearButton
+            value={scrambled[4 * multiplier - 3]}
+            onPress={() => handleSelection(scrambled[4 * multiplier - 3], 1)}
+            selected={selected === 1 ? true : false}
+          />
+          <WhiteClearButton
+            value={scrambled[4 * multiplier - 2]}
+            onPress={() => handleSelection(scrambled[4 * multiplier - 2], 2)}
+            selected={selected === 2 ? true : false}
+          />
+          <WhiteClearButton
+            value={scrambled[4 * multiplier - 1]}
+            onPress={() => handleSelection(scrambled[4 * multiplier - 1], 3)}
+            selected={selected === 3 ? true : false}
+          />
+        </View>
 
-const mapStateToProps = state => ({
-  seed: state.onboarding.seed,
+        <View style={styles.bottomContainer}>
+          <WhiteButton
+            disabled={selected === null ? true : false}
+            value="Continue"
+            onPress={() => handlePress()}
+            small={false}
+          />
+        </View>
+      </LinearGradient>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  gradientContainer: {
+    flex: 1,
+  },
+  optionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  optionBox: {
+    height: 30,
+    width: 80,
+    backgroundColor: 'white',
+    borderRadius: 9,
+    shadowColor: 'black',
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    shadowOffset: {
+      height: 0,
+      width: 0,
+    },
+    marginBottom: 5,
+  },
+  optionSubContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  bottomContainer: {
+    alignContent: 'center',
+    position: 'absolute',
+    bottom: 0,
+    paddingBottom: 40,
+  },
+  optionText: {
+    fontSize: 18,
+    color: 'white',
+    height: 40,
+    paddingTop: 10,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+  },
+  optionValueText: {
+    color: 'white',
+    opacity: 0.2,
+    fontSize: 15,
+  },
+  optionValueTextActual: {
+    color: 'white',
+    opacity: 0.5,
+    fontSize: 15,
+  },
 });
 
-const mapDispatchToProps = {};
+Verify.navigationOptions = {
+  headerTransparent: true,
+  headerBackTitle: null,
+};
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Verify);
+export default Verify;
