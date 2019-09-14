@@ -39,13 +39,10 @@ const AuthPad = () => {
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    height: 450,
-    backgroundColor: 'transparent',
-    justifyContent: 'space-evenly',
-    flexGrow: 1,
+    flex: 1,
+    justifyContent: 'center',
   },
   area: {
-    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     width: '80%',

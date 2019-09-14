@@ -13,23 +13,24 @@ const Auth = props => {
   const pin = useSelector(state => state.authpad.pin);
 
   return (
-    <View>
+    <View style={styles.container}>
       <OnboardingHeader
         title={headerTitleText}
         description={headerDescriptionText}>
         <Pagination dotsLength={6} activeDotIndex={pin.length - 1} />
       </OnboardingHeader>
 
-      <View style={styles.padContainer}>
-        <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
-          <AuthPad type="auth" currentValue={pin} />
-        </LinearGradient>
-      </View>
+      <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
+        <AuthPad type="auth" currentValue={pin} />
+      </LinearGradient>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   headerContainer: {
     flex: 1,
     alignItems: 'center',
@@ -46,13 +47,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     paddingBottom: 40,
   },
-  padContainer: {
-    textAlign: 'center',
-    flexGrow: 1,
-  },
   gradient: {
-    height: '100%',
-    paddingTop: 100,
+    flexGrow: 1,
   },
 });
 

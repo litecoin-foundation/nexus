@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-import {View} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
 
@@ -33,12 +32,10 @@ const Pin = () => {
   });
 
   return (
-    <View>
-      <Auth
-        headerTitleText="Unlock Wallet"
-        headerDescriptionText="Use your PIN to unlock your Wallet"
-      />
-    </View>
+    <Auth
+      headerTitleText="Unlock Wallet"
+      headerDescriptionText="Use your PIN to unlock your Wallet"
+    />
   );
 };
 
