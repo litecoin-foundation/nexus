@@ -1,9 +1,11 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Clipboard} from 'react-native';
+import {View, Text, StyleSheet, Clipboard, SafeAreaView} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
+import LinearGradient from 'react-native-linear-gradient';
 
 import RequestModal from '../components/RequestModal';
+import BlueButton from '../components/BlueButton';
 import BlueClearButton from '../components/BlueClearButton';
 import {getAddress} from '../reducers/address';
 import * as bip21 from '../lib/utils/bip21';
@@ -36,6 +38,11 @@ const Receive = () => {
 
   return (
     <View style={styles.container}>
+      <LinearGradient
+        colors={['#5A4FE7', '#2C44C8']}
+        style={styles.headerContainer}>
+        <SafeAreaView />
+      </LinearGradient>
       {!uri ? (
         <Text>loading...</Text>
       ) : (
@@ -50,7 +57,7 @@ const Receive = () => {
         </View>
         <View style={styles.bottomDetailContainer}>
           <View style={styles.bottomDetailPadding}>
-            <BlueClearButton value="Copy to Clipboard" onPress={handleCopy} />
+            <BlueButton value="Copy to Clipboard" onPress={handleCopy} />
           </View>
           <View style={styles.containerDivider}>
             <BlueClearButton
@@ -73,7 +80,6 @@ const Receive = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
   },
   detailContainer: {
     flex: 1,
@@ -85,6 +91,7 @@ const styles = StyleSheet.create({
   qrContainer: {
     paddingTop: 15,
     paddingBottom: 15,
+    alignItems: 'center',
   },
   topDetailContainer: {
     paddingTop: 20,
@@ -112,6 +119,21 @@ const styles = StyleSheet.create({
   bottomDetailPadding: {
     paddingBottom: 20,
   },
+  headerContainer: {
+    height: 120,
+  },
 });
+
+Receive.navigationOptions = ({navigation}) => {
+  return {
+    headerTitle: 'Receive',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+      color: 'white',
+    },
+    headerTransparent: true,
+    headerBackTitle: null,
+  };
+};
 
 export default Receive;
