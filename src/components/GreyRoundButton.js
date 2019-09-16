@@ -1,10 +1,14 @@
 import React from 'react';
-import {TouchableOpacity, StyleSheet} from 'react-native';
+import {TouchableOpacity, Image, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const GreyRoundButton = props => {
   const {onPress} = props;
-  return <TouchableOpacity style={styles.container} onPress={onPress} />;
+  return (
+    <TouchableOpacity style={styles.container} onPress={onPress}>
+      <Image source={require('../assets/images/close.png')} />
+    </TouchableOpacity>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -20,6 +24,9 @@ const styles = StyleSheet.create({
       height: 0,
       width: 0,
     },
+
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
