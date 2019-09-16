@@ -15,19 +15,24 @@ const Pin = () => {
   useEffect(() => {
     if (pin.length === 6) {
       const checkPincode = async () => {
-        await dispatch(unlockWalletWithPin(pin));
         await dispatch(clearValues());
-
-        if (walletUnlocked === null) {
-          return;
-        } else if (walletUnlocked === false) {
-          alert('incorrect pincode');
-          await dispatch(clearWalletUnlocked());
-        } else {
-          navigate('App');
-        }
+        await dispatch(unlockWalletWithPin(pin));
       };
       checkPincode();
+    }
+  }, [dispatch, pin]);
+
+  useEffect(() => {
+    if (walletUnlocked === null) {
+      return;
+    } else if (walletUnlocked === false) {
+      alert('incorrect pincode');
+      const clear = async () => {
+        await dispatch(clearWalletUnlocked());
+      };
+      clear();
+    } else {
+      navigate('App');
     }
   });
 
