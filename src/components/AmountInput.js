@@ -70,6 +70,7 @@ export class AmountInput extends Component {
           onChange={this.onChange}
           currentValue={leftToggled ? amount : fiatAmount}
         />
+
         <View style={styles.centerAlign}>
           <BlueButton value="Preview Buy" onPress={this.handleAccept} />
         </View>
@@ -131,8 +132,7 @@ const styles = StyleSheet.create({
   },
   padContainer: {
     backgroundColor: '#F8FBFD',
-    flexGrow: 1,
-    justifyContent: 'space-evenly',
+    flex: 1,
   },
   area: {
     flex: 1,
