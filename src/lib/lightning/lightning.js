@@ -59,7 +59,11 @@ class Lightning {
       const response = await this.lightning.sendCommand(method, req);
       return this.deserializeResponse(method, response.data);
     } catch (error) {
-      console.log(error);
+      if (typeof error === 'string') {
+        throw new Error(error);
+      } else {
+        throw error;
+      }
     }
   }
 
