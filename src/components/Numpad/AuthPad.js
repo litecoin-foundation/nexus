@@ -1,12 +1,19 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {useDispatch} from 'react-redux';
 
 import Button from './Button';
-import {inputValue, backspaceValue} from '../../reducers/authpad';
+import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 
 const AuthPad = () => {
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const clear = async () => {
+      await dispatch(clearValues());
+    };
+    clear();
+  }, [dispatch]);
 
   const handlePress = input => {
     switch (input) {
