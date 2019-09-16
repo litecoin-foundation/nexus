@@ -8,6 +8,7 @@ import {
   createAppContainer,
 } from 'react-navigation';
 import {store, pStore} from './store';
+import {Image} from 'react-native';
 
 import Initial from './src/screens/Onboarding/Initial';
 import Pin from './src/screens/Onboarding/Pin';
@@ -57,6 +58,15 @@ WalletStack.navigationOptions = ({navigation}) => {
   }
   return {
     tabBarVisible,
+    tabBarLabel: 'WALLETS',
+    tabBarIcon: ({focused}) =>
+      focused ? (
+        <Image
+          source={require('./src/assets/icons/wallet-selected-icon.png')}
+        />
+      ) : (
+        <Image source={require('./src/assets/icons/wallet-icon.png')} />
+      ),
   };
 };
 
@@ -73,6 +83,15 @@ SettingsStack.navigationOptions = ({navigation}) => {
   }
   return {
     tabBarVisible,
+    tabBarLabel: 'SETTINGS',
+    tabBarIcon: ({focused}) =>
+      focused ? (
+        <Image
+          source={require('./src/assets/icons/settings-selected-icon.png')}
+        />
+      ) : (
+        <Image source={require('./src/assets/icons/settings-icon.png')} />
+      ),
   };
 };
 
@@ -82,11 +101,45 @@ const BuyStack = createStackNavigator({
   Processing: {screen: Processing},
 });
 
-const AppStack = createBottomTabNavigator({
-  Wallets: {screen: WalletStack},
-  Buy: {screen: BuyStack},
-  Settings: {screen: SettingsStack},
-});
+BuyStack.navigationOptions = {
+  tabBarLabel: 'BUY',
+  tabBarIcon: ({focused}) =>
+    focused ? (
+      <Image source={require('./src/assets/icons/buy-selected-icon.png')} />
+    ) : (
+      <Image source={require('./src/assets/icons/buy-icon.png')} />
+    ),
+};
+
+const AppStack = createBottomTabNavigator(
+  {
+    Wallets: {screen: WalletStack},
+    Buy: {screen: BuyStack},
+    Settings: {screen: SettingsStack},
+  },
+  {
+    tabBarOptions: {
+      style: {
+        backgroundColor: '#FBFCFE',
+        borderTopWidth: 0,
+        shadowColor: 'black',
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        shadowOffset: {
+          height: 0,
+          width: 0,
+        },
+        height: 60,
+      },
+      labelStyle: {
+        fontWeight: '500',
+        letterSpacing: -0.5,
+      },
+      activeTintColor: '#2645CA',
+      inactiveTintColor: '#9B9B9B',
+    },
+  },
+);
 
 const RootStack = createSwitchNavigator(
   {
