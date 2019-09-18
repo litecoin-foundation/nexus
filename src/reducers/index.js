@@ -11,6 +11,7 @@ import invoice from './invoice';
 import channels from './channels';
 import authpad from './authpad';
 import buy from './buy';
+import authentication from './authentication';
 
 export default combineReducers({
   onboarding,
@@ -25,4 +26,5 @@ export default combineReducers({
   channels,
   authpad,
   buy,
+  authentication,
 });

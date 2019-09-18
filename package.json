@@ -37,6 +37,7 @@
     "react-native-sensitive-info": "^5.5.0",
     "react-native-snap-carousel": "^3.8.0",
     "react-native-svg": "^9.7.1",
+    "react-native-touch-id": "^4.4.1",
     "react-navigation": "^3.12.1",
     "react-navigation-hooks": "^1.0.1",
     "react-redux": "^7.1.1",

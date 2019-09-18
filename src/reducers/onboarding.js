@@ -6,8 +6,6 @@ const LndInstance = new Lightning();
 const initialState = {
   onboarding: false,
   isOnboarded: false,
-  passcode: '',
-  passcodeSet: false,
   seed: [],
   beingRecovered: false,
 };
@@ -17,7 +15,6 @@ export const ONBOARDING_STARTED = 'ONBOARDING_STARTED';
 export const ONBOARDING_FINISHED = 'ONBOARDING_FINISHED';
 export const GET_SEED = 'GET_SEED';
 export const RECOVER_SEED = 'RECOVER_SEED';
-export const ADD_PASSCODE = 'ADD_PASSCODE';
 
 // actions
 export const startOnboarding = () => dispatch => {
@@ -29,13 +26,6 @@ export const startOnboarding = () => dispatch => {
 export const finishOnboarding = () => dispatch => {
   dispatch({
     type: ONBOARDING_FINISHED,
-  });
-};
-
-export const addPincode = passcode => dispatch => {
-  dispatch({
-    type: ADD_PASSCODE,
-    passcode,
   });
 };
 
@@ -60,8 +50,6 @@ const actionHandler = {
     ...state,
     onboarding: true,
     isOnboarded: false,
-    passcode: '',
-    passcodeSet: false,
     seed: [],
     beingRecovered: false,
   }),
@@ -73,11 +61,6 @@ const actionHandler = {
   }),
   [GET_SEED]: (state, {seed}) => ({...state, seed}),
   [RECOVER_SEED]: (state, {seed}) => ({...state, seed, beingRecovered: true}),
-  [ADD_PASSCODE]: (state, {passcode}) => ({
-    ...state,
-    passcode,
-    passcodeSet: true,
-  }),
 };
 
 // reducer

@@ -21,7 +21,7 @@ const Auth = props => {
       </OnboardingHeader>
 
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
-        <AuthPad type="auth" currentValue={pin} />
+        <AuthPad currentValue={pin} />
       </LinearGradient>
     </View>
   );

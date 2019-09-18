@@ -1,14 +1,16 @@
 import React from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import {enableChannelBackup} from '../../reducers/channels';
-import {initWallet} from '../../reducers/lightning';
 
 const ChannelBackup = () => {
   const {navigate} = useNavigation();
   const dispatch = useDispatch();
+  const biometricsAvailable = useSelector(
+    state => state.authentication.biometricsAvailable,
+  );
 
   return (
     <View>
@@ -21,15 +23,22 @@ const ChannelBackup = () => {
       <TouchableOpacity
         onPress={() => {
           dispatch(enableChannelBackup());
-          dispatch(initWallet());
-          navigate('App');
+
+          if (!biometricsAvailable) {
+            navigate('Welcome');
+          } else {
+            navigate('Biometric');
+          }
         }}>
         <Text>Enable Cloud Backup</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          dispatch(initWallet());
-          navigate('App');
+          if (!biometricsAvailable) {
+            navigate('Welcome');
+          } else {
+            navigate('Biometric');
+          }
         }}>
         <Text>Maybe later</Text>
       </TouchableOpacity>

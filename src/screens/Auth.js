@@ -4,13 +4,18 @@ import {useNavigation} from 'react-navigation-hooks';
 
 import Auth from '../components/Auth';
 import {clearValues} from '../reducers/authpad';
-import {unlockWalletWithPin, clearWalletUnlocked} from '../reducers/lightning';
+import {
+  unlockWalletWithPin,
+  clearWalletUnlocked,
+} from '../reducers/authentication';
 
 const Pin = () => {
   const dispatch = useDispatch();
   const {navigate} = useNavigation();
   const pin = useSelector(state => state.authpad.pin);
-  const walletUnlocked = useSelector(state => state.lightning.walletUnlocked);
+  const walletUnlocked = useSelector(
+    state => state.authentication.walletUnlocked,
+  );
 
   useEffect(() => {
     if (pin.length === 6) {

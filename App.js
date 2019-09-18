@@ -16,6 +16,8 @@ import Generate from './src/screens/Onboarding/Generate';
 import Verify from './src/screens/Onboarding/Verify';
 import Recover from './src/screens/Onboarding/Recover';
 import ChannelBackup from './src/screens/Onboarding/ChannelBackup';
+import Biometric from './src/screens/Onboarding/Biometric';
+import Welcome from './src/screens/Onboarding/Welcome';
 import Loading from './src/screens/Loading';
 import Wallet from './src/screens/Wallet';
 import Auth from './src/screens/Auth';
@@ -39,6 +41,8 @@ const OnboardingStack = createStackNavigator({
   Verify: {screen: Verify},
   Recover: {screen: Recover},
   ChannelBackup: {screen: ChannelBackup},
+  Biometric: {screen: Biometric},
+  Welcome: {screen: Welcome},
 });
 
 const WalletStack = createStackNavigator({

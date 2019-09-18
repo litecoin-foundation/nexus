@@ -103,6 +103,8 @@ PODS:
     - React
   - RNSVG (9.8.1):
     - React
+  - TouchID (4.4.1):
+    - React
   - yoga (0.60.5.React)
 
 DEPENDENCIES:
@@ -135,6 +137,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - TouchID (from `../node_modules/react-native-touch-id`)
   - yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -200,6 +203,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  TouchID:
+    :path: "../node_modules/react-native-touch-id"
   yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -234,8 +239,9 @@ SPEC CHECKSUMS:
   RNGestureHandler: 4cb47a93019c1a201df2644413a0a1569a51c8aa
   RNKeychain: c658833a9cb2cbcba6423bdd6e16cce59e27da0e
   RNSVG: 1bf07c4638c2d7c4cb9a90c8964f72c3397300a6
+  TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
   yoga: 312528f5bbbba37b4dcea5ef00e8b4033fdd9411
 
-PODFILE CHECKSUM: cfb5996825161f0173cc1404ee60dd79f60b3aad
+PODFILE CHECKSUM: a815e2e7ed53d7cee36e5088e3ff2bf9355ccb9b
 
 COCOAPODS: 1.7.3

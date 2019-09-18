@@ -3,7 +3,9 @@ import {View, StyleSheet} from 'react-native';
 import {useDispatch} from 'react-redux';
 
 import Button from './Button';
+import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
+import {unlockWalletWithBiometric} from '../../reducers/authentication';
 
 const AuthPad = () => {
   const dispatch = useDispatch();
@@ -32,6 +34,14 @@ const AuthPad = () => {
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 
   const buttons = values.map(value => {
+    if (value === '.') {
+      return (
+        <BiometricButton
+          key="biometric-button-key"
+          onPress={() => dispatch(unlockWalletWithBiometric())}
+        />
+      );
+    }
     return (
       <Button key={value} value={value} onPress={() => handlePress(value)} />
     );

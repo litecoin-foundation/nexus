@@ -19,14 +19,11 @@ const PASS = 'PASSWORD';
 // inital state
 const initialState = {
   lndActive: false,
-  walletUnlocked: null,
 };
 
 // constants
 export const START_LND = 'START_LND';
 export const STOP_LND = 'STOP_LND';
-export const UNLOCK_WALLET = 'UNLOCK_WALLET';
-export const CLEAR_UNLOCK = 'CLEAR_UNLOCK';
 
 // actions
 export const startLnd = () => async dispatch => {
@@ -64,7 +61,7 @@ export const initWallet = () => async (dispatch, getState) => {
     await LndInstance.sendCommand('InitWallet', {
       walletPassword: toBuffer(password),
       cipherSeedMnemonic: seed,
-      recoveryWindow: 1000, // TODO: should be 0 if new Wallet
+      recoveryWindow: 2500, // TODO: should be 0 if new Wallet
     });
     // dispatch pollers
     dispatch(pollBalance());
@@ -76,32 +73,6 @@ export const initWallet = () => async (dispatch, getState) => {
     console.log(error);
   }
   dispatch(finishOnboarding());
-};
-
-export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
-  const pincode = await getItem('PINCODE');
-  if (pincodeAttempt !== pincode) {
-    dispatch({
-      type: UNLOCK_WALLET,
-      payload: false,
-    });
-  } else {
-    await dispatch(unlockWallet());
-    dispatch({
-      type: UNLOCK_WALLET,
-      payload: true,
-    });
-  }
-};
-
-export const unlockWalletWithBiometric = () => {
-  // TODO when expo-local-authentication is available for rn v0.60
-};
-
-export const clearWalletUnlocked = () => dispatch => {
-  dispatch({
-    type: CLEAR_UNLOCK,
-  });
 };
 
 export const unlockWallet = () => async dispatch => {
@@ -145,8 +116,6 @@ export const deleteWalletDB = async () => {
 const actionHandler = {
   [START_LND]: state => ({...state, lndActive: true}),
   [STOP_LND]: state => ({...state, lndActive: false}),
-  [UNLOCK_WALLET]: (state, {payload}) => ({...state, walletUnlocked: payload}),
-  [CLEAR_UNLOCK]: state => ({...state, walletUnlocked: null}),
 };
 
 // reducer

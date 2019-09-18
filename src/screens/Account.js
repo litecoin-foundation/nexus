@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 import AmountView from '../components/AmountView';
 import AccountCell from '../components/AccountCell';
-import {clearWalletUnlocked} from '../reducers/lightning';
+import {clearWalletUnlocked} from '../reducers/authentication';
 
 export class Accounts extends Component {
   static navigationOptions = {
@@ -42,8 +42,7 @@ export class Accounts extends Component {
             amount={amount}
             progress={percentSynced}
             synced={syncedToChain}
-            // TODO: sync status is only shown on initial sync
-            // future syncs have a timestamp difference where synced should be false if 99+%
+            // TODO: refactor (no need to pass in props)
           />
         </View>
       </View>
