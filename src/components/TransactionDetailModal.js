@@ -10,8 +10,16 @@ import VerticalTableCell from './VerticalTableCell';
 const TransactionDetailModal = props => {
   const {isVisible, close, transaction} = props;
 
+  if (transaction === null) {
+    return <View />;
+  }
+
   const addresses = transaction.addresses.map(val => {
-    return <Text key={val}>{val}</Text>;
+    return (
+      <Text key={val} style={styles.text}>
+        {val}
+      </Text>
+    );
   });
 
   return (
@@ -19,7 +27,6 @@ const TransactionDetailModal = props => {
       isVisible={isVisible}
       swipeDirection="down"
       onSwipeComplete={() => close()}
-      onBackdropPress={() => close()} // TODO: for whatever goddamn reason this doesn't work
       backdropColor="rgb(19,58,138)"
       backdropOpacity={0.6}
       style={styles.noMargin}>
@@ -47,7 +54,7 @@ const TransactionDetailModal = props => {
             <TableCell title="AMOUNT IN LTC" value={`${transaction.amount}Ł`} />
             <VerticalTableCell title="ADDRESSES">{addresses}</VerticalTableCell>
             <VerticalTableCell title="TRANSACTION ID (txid)">
-              <Text>{transaction.hash}</Text>
+              <Text style={styles.text}>{transaction.hash}</Text>
             </VerticalTableCell>
           </ScrollView>
         </View>
@@ -64,7 +71,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     backgroundColor: 'white',
-    height: 600,
+    height: 700,
     width: '100%',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -87,6 +94,11 @@ const styles = StyleSheet.create({
   },
   noMargin: {
     margin: 0,
+  },
+  text: {
+    color: '#4A4A4A',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 

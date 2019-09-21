@@ -1,11 +1,25 @@
 import React from 'react';
 import {View, SectionList, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
+import {useSelector} from 'react-redux';
 
 import TransactionCell from './TransactionCell';
+import {groupBy} from '../lib/utils';
+import {txDetailSelector} from '../reducers/transaction';
 
 const TransactionList = props => {
-  const {groupedTransactions, onPress} = props;
+  const {onPress} = props;
+
+  const transactions = useSelector(state => txDetailSelector(state));
+  const groupedTransactions = groupBy(transactions, 'day');
+
+  const EmptySectionList = (
+    <View style={styles.emptySectionListContainer}>
+      <Text style={styles.emptySectionListText}>
+        Your transactions will appear here.
+      </Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -19,9 +33,8 @@ const TransactionList = props => {
         )}
         keyExtractor={item => item.hash}
         initialNumToRender={7}
-        ListEmptyComponent={<Text>Your transactions will appear here.</Text>}
-        // currently setting the SectionList to inverted breaks the styling
-        // so transaction grouping is manually inverting the arrays
+        ListEmptyComponent={EmptySectionList}
+        ListFooterComponent={<View style={styles.emptyView} />}
       />
     </View>
   );
@@ -40,6 +53,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: -0.28,
     paddingLeft: 10,
+  },
+  emptySectionListContainer: {
+    marginTop: 30,
+  },
+  emptySectionListText: {
+    color: '#7C96AE',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  emptyView: {
+    height: 110,
   },
 });
 

@@ -1,5 +1,8 @@
+import {createSelector} from 'reselect';
+
 import Lightning from '../lib/lightning/lightning';
 import {poll} from '../lib/utils/poll';
+import {formatDate, formatTime} from '../lib/utils/date';
 
 const LndInstance = new Lightning();
 
@@ -45,6 +48,28 @@ const actionHandler = {
 };
 
 // selectors
+const txSelector = state => state.transaction.transactions;
+
+export const txDetailSelector = createSelector(
+  txSelector,
+  tx =>
+    tx.map(data => {
+      return {
+        name:
+          Math.sign(parseFloat(data.amount)) === -1
+            ? 'Sent Litecoin'
+            : 'Received Litecoin',
+        hash: data.txHash,
+        amount: data.amount,
+        day: formatDate(data.timeStamp),
+        time: formatTime(data.timeStamp),
+        fee: data.totalFees,
+        confs: data.numConfirmations,
+        type: 'litecoin onchain',
+        addresses: data.destAddresses,
+      };
+    }),
+);
 
 // reducer
 export default function(state = initialState, action) {

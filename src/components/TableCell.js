@@ -7,7 +7,7 @@ const TableCell = props => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <Text>{value}</Text>
+      <Text style={styles.text}>{value}</Text>
     </View>
   );
 };
@@ -28,6 +28,11 @@ const styles = StyleSheet.create({
     color: 'rgb(124,150,174)',
     fontSize: 12,
     fontWeight: '600',
+  },
+  text: {
+    color: '#4A4A4A',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 

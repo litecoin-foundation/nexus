@@ -1,4 +1,4 @@
-const formatDate = date => {
+export const formatDate = date => {
   const ONE_DAY = 60 * 60 * 24 * 1000;
   const jsDate = new Date(date * 1000);
   const time = new Date();
@@ -19,12 +19,10 @@ const formatDate = date => {
   });
 };
 
-const formatTime = time => {
+export const formatTime = time => {
   const jsTime = new Date(time * 1000);
   return jsTime.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: 'numeric',
   });
 };
-
-export default {formatDate, formatTime};
