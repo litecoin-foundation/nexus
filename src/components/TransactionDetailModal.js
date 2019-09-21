@@ -2,12 +2,15 @@ import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
+import {useNavigation} from 'react-navigation-hooks';
 
 import GreyRoundButton from './GreyRoundButton';
 import TableCell from './TableCell';
 import VerticalTableCell from './VerticalTableCell';
+import BlueButton from './BlueButton';
 
 const TransactionDetailModal = props => {
+  const {navigate} = useNavigation();
   const {isVisible, close, transaction} = props;
 
   if (transaction === null) {
@@ -56,6 +59,21 @@ const TransactionDetailModal = props => {
             <VerticalTableCell title="TRANSACTION ID (txid)">
               <Text style={styles.text}>{transaction.hash}</Text>
             </VerticalTableCell>
+            <View style={styles.buttonContainer}>
+              <BlueButton
+                small={false}
+                value="View on Blockchain"
+                onPress={() => {
+                  close();
+                  navigate({
+                    routeName: 'WebPage',
+                    params: {
+                      uri: `https://insight.litecore.io/tx/${transaction.hash}`,
+                    },
+                  });
+                }}
+              />
+            </View>
           </ScrollView>
         </View>
       </View>
@@ -94,6 +112,17 @@ const styles = StyleSheet.create({
   },
   noMargin: {
     margin: 0,
+  },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingLeft: 25,
+    paddingRight: 25,
+    height: 100,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(151,151,151,0.3)',
   },
   text: {
     color: '#4A4A4A',

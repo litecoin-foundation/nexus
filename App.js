@@ -33,6 +33,7 @@ import OpenChannel from './src/screens/Settings/OpenChannel';
 import Buy from './src/screens/Buy/Buy';
 import Confirm from './src/screens/Buy/Confirm';
 import Processing from './src/screens/Buy/Processing';
+import WebPage from './src/screens/WebPage';
 
 const OnboardingStack = createStackNavigator({
   Initial: {screen: Initial},
@@ -53,6 +54,7 @@ const WalletStack = createStackNavigator({
   LightningReceive: {screen: LightningReceive},
   LightningInvoice: {screen: LightningInvoice},
   Scanner: {screen: Scanner},
+  WebPage: {screen: WebPage},
 });
 
 WalletStack.navigationOptions = ({navigation}) => {
