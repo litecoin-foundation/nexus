@@ -162,16 +162,16 @@ const RootStack = createSwitchNavigator(
 
 const Navigation = createAppContainer(RootStack);
 
-class App extends Component {
-  render() {
-    return (
+const App: () => React$Node = () => {
+  return (
+    <>
       <Provider store={store}>
         <PersistGate loading={null} persistor={pStore}>
           <Navigation />
         </PersistGate>
       </Provider>
-    );
-  }
-}
+    </>
+  );
+};
 
 export default App;
