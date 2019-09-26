@@ -241,6 +241,8 @@ PODS:
     - React
   - RNKeychain (4.0.0):
     - React
+  - RNReactNativeHapticFeedback (1.8.2):
+    - React
   - RNReanimated (1.2.0):
     - React
   - RNSVG (9.9.5):
@@ -286,6 +288,7 @@ DEPENDENCIES:
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
+  - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - TouchID (from `../node_modules/react-native-touch-id`)
@@ -362,6 +365,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
+  RNReactNativeHapticFeedback:
+    :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNSVG:
@@ -406,6 +411,7 @@ SPEC CHECKSUMS:
   RNFS: a8fbe7060fa49157d819466404794ad9c58e58cf
   RNGestureHandler: 4cb47a93019c1a201df2644413a0a1569a51c8aa
   RNKeychain: de0a565ff2f548576ac494612f05f77a7cda3f55
+  RNReactNativeHapticFeedback: e11a4da0ce174e9f88b03cbaf5d76d94633cdee2
   RNReanimated: 1b52415c4302f198cb581282a0166690bad62c43
   RNSVG: f578799dd236be1ff32c55306df3e01711d428e5
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4

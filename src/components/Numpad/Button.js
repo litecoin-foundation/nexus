@@ -2,11 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {TouchableOpacity, Text, StyleSheet, View} from 'react-native';
 
+import {triggerSelectionFeedback} from '../../lib/utils/haptic';
+
 const Button = props => {
   const {value, onPress} = props;
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={onPress}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          triggerSelectionFeedback();
+          onPress();
+        }}>
         <Text style={styles.text}>{value}</Text>
       </TouchableOpacity>
     </View>
