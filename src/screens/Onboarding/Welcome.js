@@ -17,7 +17,7 @@ const Welcome = () => {
 
   return (
     <View style={styles.container}>
-      <BlueButton value="Welcome" onPress={handlePress()} />
+      <BlueButton value="Welcome" onPress={handlePress} />
     </View>
   );
 };
