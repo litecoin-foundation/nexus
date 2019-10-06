@@ -1,54 +1,30 @@
-import React, {Component} from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {connect} from 'react-redux';
-import PropTypes from 'prop-types';
+import {useDispatch} from 'react-redux';
+import {useNavigation} from 'react-navigation-hooks';
 
 import AmountView from '../components/AmountView';
 import AccountCell from '../components/AccountCell';
 import {clearWalletUnlocked} from '../reducers/authentication';
 
-export class Accounts extends Component {
-  static navigationOptions = {
-    headerTitle: 'Your Wallet',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitle: null,
-  };
+const Account = () => {
+  const dispatch = useDispatch();
+  const {navigate} = useNavigation();
 
-  componentDidMount() {
-    const {clearWalletUnlocked} = this.props;
-    clearWalletUnlocked();
-  }
+  useEffect(() => {
+    dispatch(clearWalletUnlocked());
+  }, [dispatch]);
 
-  render() {
-    const {
-      navigation,
-      amount,
-      rates,
-      percentSynced,
-      syncedToChain,
-    } = this.props;
-    return (
-      <View style={styles.container}>
-        <AmountView />
-        <Text style={styles.text}>Accounts</Text>
-        <View style={styles.accountsContainer}>
-          <AccountCell
-            onPress={() => navigation.navigate('Wallet')}
-            rates={rates}
-            amount={amount}
-            progress={percentSynced}
-            synced={syncedToChain}
-            // TODO: refactor (no need to pass in props)
-          />
-        </View>
+  return (
+    <View style={styles.container}>
+      <AmountView />
+      <Text style={styles.text}>Accounts</Text>
+      <View style={styles.accountsContainer}>
+        <AccountCell onPress={() => navigate('Wallet')} />
       </View>
-    );
-  }
-}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -69,26 +45,14 @@ const styles = StyleSheet.create({
   },
 });
 
-Accounts.propTypes = {
-  navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired,
-  }).isRequired,
-  amount: PropTypes.number.isRequired,
-  rates: PropTypes.objectOf(PropTypes.string),
-  percentSynced: PropTypes.number,
-  syncedToChain: PropTypes.bool.isRequired,
+Account.navigationOptions = {
+  headerTitle: 'Your Wallet',
+  headerTitleStyle: {
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  headerTransparent: true,
+  headerBackTitle: null,
 };
 
-const mapStateToProps = state => ({
-  amount: state.balance.totalBalance,
-  rates: state.ticker.rates,
-  percentSynced: state.info.percentSynced,
-  syncedToChain: state.info.syncedToChain,
-});
-
-const mapDispatchToProps = {clearWalletUnlocked};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Accounts);
+export default Account;

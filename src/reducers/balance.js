@@ -57,6 +57,9 @@ const actionHandler = {
   }),
 };
 
+// selectors
+export const balanceSelector = state => state.balance.totalBalance;
+
 // reducer
 export default function(state = initialState, action) {
   const handler = actionHandler[action.type];

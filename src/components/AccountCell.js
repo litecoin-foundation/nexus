@@ -1,12 +1,21 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
-import PropTypes from 'prop-types';
 import LinearGradient from 'react-native-linear-gradient';
+import {useSelector} from 'react-redux';
 
 import ProgressBar from './ProgressBar';
+import {percentSyncedSelector, syncStatusSelector} from '../reducers/info';
+import {rateSelector} from '../reducers/ticker';
+import {balanceSelector} from '../reducers/balance';
 
 const AccountCell = props => {
-  const {onPress, amount, rates, progress, synced} = props;
+  const {onPress} = props;
+
+  const synced = useSelector(state => syncStatusSelector(state));
+  const progress = useSelector(state => percentSyncedSelector(state));
+  const rates = useSelector(state => rateSelector(state));
+  const balance = useSelector(state => balanceSelector(state));
+
   return (
     <TouchableOpacity
       style={[styles.container, !synced ? styles.notSynced : null]}
@@ -25,10 +34,10 @@ const AccountCell = props => {
         </LinearGradient>
         <View style={styles.left}>
           <Text style={styles.nameText}>Litecoin (LTC)</Text>
-          <Text style={styles.leftValueText}>{`${amount} LTC`}</Text>
+          <Text style={styles.leftValueText}>{`${balance} LTC`}</Text>
         </View>
         <View style={styles.right}>
-          <Text style={styles.rightValueText}>{amount * rates.USD}</Text>
+          <Text style={styles.rightValueText}>{balance * rates.USD}</Text>
           <Text style={styles.percentageText}>+0.6%</Text>
         </View>
       </View>
@@ -129,13 +138,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-AccountCell.propTypes = {
-  onPress: PropTypes.func.isRequired,
-  amount: PropTypes.number.isRequired,
-  rates: PropTypes.objectOf(PropTypes.string).isRequired,
-  progress: PropTypes.number,
-  synced: PropTypes.bool.isRequired,
-};
 
 export default AccountCell;

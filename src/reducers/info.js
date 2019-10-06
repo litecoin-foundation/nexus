@@ -73,6 +73,10 @@ const actionHandler = {
   }),
 };
 
+// selectors
+export const percentSyncedSelector = state => state.info.percentSynced;
+export const syncStatusSelector = state => state.info.syncedToChain;
+
 // reducer
 export default function(state = initialState, action) {
   const handler = actionHandler[action.type];
