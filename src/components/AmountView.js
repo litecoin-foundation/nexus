@@ -18,7 +18,8 @@ const fiatValueSelector = createSelector(
   (totalBalance, rates) => totalBalance * rates.USD,
 );
 
-const AmountView = () => {
+const AmountView = props => {
+  const {children} = props;
   const amount = useSelector(state => valueSelector(state));
   const fiatAmount = useSelector(state => fiatValueSelector(state));
 
@@ -36,6 +37,7 @@ const AmountView = () => {
             </View>
             <GreenRoundButton value="+0.92%" small />
           </View>
+          <View style={styles.childrenContainer}>{children}</View>
         </SafeAreaView>
       </LinearGradient>
     </View>
@@ -45,7 +47,7 @@ const AmountView = () => {
 const styles = StyleSheet.create({
   container: {
     top: 0,
-    height: 300,
+    height: 360,
     width: '100%',
   },
   subview: {
@@ -85,6 +87,11 @@ const styles = StyleSheet.create({
   },
   gradient: {
     height: '100%',
+  },
+  childrenContainer: {
+    flex: 1,
+
+    paddingTop: 100,
   },
 });
 

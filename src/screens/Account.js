@@ -1,15 +1,19 @@
 import React, {useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
 
 import AmountView from '../components/AmountView';
 import AccountCell from '../components/AccountCell';
+import LineChart from '../components/Chart/Chart';
 import {clearWalletUnlocked} from '../reducers/authentication';
+import {monthSelector} from '../reducers/ticker';
 
 const Account = () => {
   const dispatch = useDispatch();
   const {navigate} = useNavigation();
+
+  const data = useSelector(state => monthSelector(state));
 
   useEffect(() => {
     dispatch(clearWalletUnlocked());
@@ -17,7 +21,9 @@ const Account = () => {
 
   return (
     <View style={styles.container}>
-      <AmountView />
+      <AmountView>
+        <LineChart data={data} />
+      </AmountView>
       <Text style={styles.text}>Accounts</Text>
       <View style={styles.accountsContainer}>
         <AccountCell onPress={() => navigate('Wallet')} />
