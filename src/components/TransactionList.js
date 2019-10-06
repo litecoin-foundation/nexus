@@ -42,9 +42,7 @@ const TransactionList = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 500,
-    position: 'absolute',
-    bottom: 0,
+    height: 450,
   },
   sectionHeader: {
     color: '#7C96AE',
