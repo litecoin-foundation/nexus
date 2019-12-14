@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -16,7 +16,9 @@ const Wallet = () => {
   const [selectedTransaction, selectTransaction] = useState(null);
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#F6F9FC', 'rgba(210,225,239,0)']}
+      style={styles.container}>
       <AmountView />
       <TransactionList
         onPress={data => {
@@ -26,22 +28,45 @@ const Wallet = () => {
       />
 
       <LinearGradient
-        colors={['rgba(255,255,255,0)', 'rgba(255,255,255, 1)']}
+        colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
         style={styles.paymentContainer}>
-        <TouchableOpacity
-          style={styles.payment}
-          onPress={() => {
-            navigate('Send');
-          }}>
-          <Text>Send</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.payment}
-          onPress={() => {
-            setTxTypeModalVisible(true);
-          }}>
-          <Text>Receive</Text>
-        </TouchableOpacity>
+        <LinearGradient
+          colors={['#FF415E', '#FF9052']}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 0}}
+          style={styles.paymentButton}>
+          <TouchableOpacity
+            style={styles.paymentButtonContainer}
+            onPress={() => {
+              navigate('Send');
+            }}>
+            <Image
+              style={styles.image}
+              source={require('../assets/images/send-white.png')}
+            />
+            <View style={styles.paymentTextContainer}>
+              <Text style={styles.paymentText}>SEND</Text>
+            </View>
+          </TouchableOpacity>
+        </LinearGradient>
+
+        <LinearGradient
+          colors={['#7E58FF', '#0D59EA']}
+          style={styles.paymentButton}>
+          <TouchableOpacity
+            style={styles.paymentButtonContainer}
+            onPress={() => {
+              setTxTypeModalVisible(true);
+            }}>
+            <Image
+              style={styles.image}
+              source={require('../assets/images/receive-white.png')}
+            />
+            <View style={styles.paymentTextContainer}>
+              <Text style={[styles.paymentText, styles.left]}>RECEIVE</Text>
+            </View>
+          </TouchableOpacity>
+        </LinearGradient>
       </LinearGradient>
 
       <TransactionModal
@@ -57,7 +82,7 @@ const Wallet = () => {
         isVisible={isTxDetailModalVisible}
         transaction={selectedTransaction}
       />
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -77,16 +102,35 @@ const styles = StyleSheet.create({
     right: 0,
     justifyContent: 'space-evenly',
   },
-  payment: {
+  paymentButton: {
     height: 50,
     width: 150,
     borderRadius: 25,
-    backgroundColor: 'white',
-    shadowColor: '#393e53',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    justifyContent: 'center',
+  },
+  paymentButtonContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+  },
+  paymentTextContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  paymentText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: 'white',
+    letterSpacing: -0.32,
+    textAlign: 'center',
+  },
+  image: {
+    height: 24,
+    width: 25,
+    position: 'absolute',
+    left: 14,
+  },
+  left: {
+    left: 7,
   },
 });
 
