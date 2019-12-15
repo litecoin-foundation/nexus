@@ -38,3 +38,4 @@ Lndmobile.aar
 .vscode/ipch
 shim.js
 /ios/Pods/
+storyLoader.js
