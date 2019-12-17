@@ -6,7 +6,7 @@ const GreyRoundButton = props => {
   const {onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Image source={require('../assets/images/close.png')} />
+      <Image source={require('../../assets/images/close.png')} />
     </TouchableOpacity>
   );
 };

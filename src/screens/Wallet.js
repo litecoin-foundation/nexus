@@ -3,8 +3,8 @@ import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
 
-import TransactionDetailModal from '../components/TransactionDetailModal';
-import TransactionModal from '../components/TransactionModal';
+import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
+import TransactionModal from '../components/Modals/TransactionModal';
 import TransactionList from '../components/TransactionList';
 import AmountView from '../components/AmountView';
 

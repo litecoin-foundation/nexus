@@ -3,12 +3,12 @@ import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
-import GreyRoundButton from './GreyRoundButton';
-import TableCell from './TableCell';
-import VerticalTableCell from './VerticalTableCell';
-import BlueButton from './BlueButton';
+import GreyRoundButton from '../Buttons/GreyRoundButton';
+import TableCell from '../Cells/TableCell';
+import VerticalTableCell from '../Cells/VerticalTableCell';
+import BlueButton from '../Buttons/BlueButton';
 
-export class FeeModal extends Component {
+export class SendModal extends Component {
   render() {
     const {isVisible, close} = this.props;
 
@@ -90,9 +90,9 @@ const styles = StyleSheet.create({
   },
 });
 
-FeeModal.propTypes = {
+SendModal.propTypes = {
   isVisible: PropTypes.bool.isRequired,
   close: PropTypes.func.isRequired,
 };
 
-export default FeeModal;
+export default SendModal;

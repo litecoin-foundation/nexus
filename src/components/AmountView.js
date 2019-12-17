@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
 import {createSelector} from 'reselect';
 
-import GreenRoundButton from './GreenRoundButton';
+import GreenRoundButton from './Buttons/GreenRoundButton';
 import {converter} from '../lib/utils';
 
 const valueSelector = createSelector(

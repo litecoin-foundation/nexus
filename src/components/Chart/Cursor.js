@@ -34,6 +34,7 @@ const Cursor = props => {
     const xRight = x(d1.x);
     const d = Math.abs(x0 - xLeft) < Math.abs(x0 - xRight) ? d0 : d1;
 
+    console.log(d); // d contains the date of the point of touch
     return {
       barOffsetX: x(d.x),
       barOffsetY: y(d.y),

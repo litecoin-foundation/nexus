@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import PropTypes from 'prop-types';
 
-import VerticalProgressBar from './VerticalProgressBar';
+import VerticalProgressBar from '../VerticalProgressBar';
 
 const {width} = Dimensions.get('window');
 

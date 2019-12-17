@@ -4,9 +4,9 @@ import {useDispatch, useSelector} from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import LinearGradient from 'react-native-linear-gradient';
 
-import RequestModal from '../components/RequestModal';
-import BlueButton from '../components/BlueButton';
-import BlueClearButton from '../components/BlueClearButton';
+import RequestModal from '../components/Modals/RequestModal';
+import BlueButton from '../components/Buttons/BlueButton';
+import BlueClearButton from '../components/Buttons/BlueClearButton';
 import {getAddress} from '../reducers/address';
 import * as bip21 from '../lib/utils/bip21';
 

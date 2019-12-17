@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {View, TextInput, TouchableOpacity, Text} from 'react-native';
 import {connect} from 'react-redux';
 
-import BlueButton from '../../components/BlueButton';
+import BlueButton from '../../components/Buttons/BlueButton';
 import {connectToPeer} from '../../reducers/channels';
 
 export class OpenChannel extends Component {

@@ -3,7 +3,7 @@ import {View, SectionList, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 import {useSelector} from 'react-redux';
 
-import TransactionCell from './TransactionCell';
+import TransactionCell from './Cells/TransactionCell';
 import {groupBy} from '../lib/utils';
 import {txDetailSelector} from '../reducers/transaction';
 

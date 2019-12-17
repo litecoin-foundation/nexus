@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 
 import Pad from './Numpad/Pad';
-import BlueButton from './BlueButton';
+import BlueButton from './Buttons/BlueButton';
 
 export class AmountInput extends Component {
   state = {

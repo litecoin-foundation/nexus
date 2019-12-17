@@ -4,8 +4,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 
-import TableCell from '../../components/TableCell';
-import BlueButton from '../../components/BlueButton';
+import TableCell from '../../components/Cells/TableCell';
+import BlueButton from '../../components/Buttons/BlueButton';
 import {getQuote, priceSelector} from '../../reducers/buy';
 
 export class Confirm extends Component {
@@ -112,7 +112,4 @@ const mapDispatchToProps = {
   getQuote,
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Confirm);
+export default connect(mapStateToProps, mapDispatchToProps)(Confirm);

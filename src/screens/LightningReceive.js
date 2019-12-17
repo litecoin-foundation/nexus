@@ -4,7 +4,7 @@ import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch} from 'react-redux';
 
 import LinearGradient from 'react-native-linear-gradient';
-import BlueButton from '../components/BlueButton';
+import BlueButton from '../components/Buttons/BlueButton';
 import AmountInput from '../components/AmountInput';
 import GreyTextInput from '../components/GreyTextInput';
 import {addInvoice} from '../reducers/invoice';

@@ -4,10 +4,10 @@ import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 import {useNavigation} from 'react-navigation-hooks';
 
-import GreyRoundButton from './GreyRoundButton';
-import TableCell from './TableCell';
-import VerticalTableCell from './VerticalTableCell';
-import BlueButton from './BlueButton';
+import GreyRoundButton from '../Buttons/GreyRoundButton';
+import TableCell from '../Cells/TableCell';
+import VerticalTableCell from '../Cells/VerticalTableCell';
+import BlueButton from '../Buttons/BlueButton';
 
 const TransactionDetailModal = props => {
   const {navigate} = useNavigation();

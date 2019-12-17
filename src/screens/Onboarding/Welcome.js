@@ -3,7 +3,7 @@ import {View, StyleSheet} from 'react-native';
 import {useDispatch} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
 
-import BlueButton from '../../components/BlueButton';
+import BlueButton from '../../components/Buttons/BlueButton';
 import {initWallet} from '../../reducers/lightning';
 
 const Welcome = () => {

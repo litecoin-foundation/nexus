@@ -4,7 +4,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
 
 import AmountView from '../components/AmountView';
-import AccountCell from '../components/AccountCell';
+import AccountCell from '../components/Cells/AccountCell';
 import LineChart from '../components/Chart/Chart';
 import {clearWalletUnlocked} from '../reducers/authentication';
 import {monthSelector} from '../reducers/ticker';

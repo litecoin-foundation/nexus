@@ -9,7 +9,7 @@ import {createSelector} from 'reselect';
 import chunk from '../../lib/utils/chunk';
 import SeedView from '../../components/SeedView';
 import OnboardingHeader from '../../components/OnboardingHeader';
-import WhiteButton from '../../components/WhiteButton';
+import WhiteButton from '../../components/Buttons/WhiteButton';
 import {getSeed} from '../../reducers/onboarding';
 
 const {width} = Dimensions.get('window');

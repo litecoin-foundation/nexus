@@ -10,8 +10,8 @@ import {
 import {connect} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 
-import ChannelCell from '../../components/ChannelCell';
-import WhiteButton from '../../components/WhiteButton';
+import ChannelCell from '../../components/Cells/ChannelCell';
+import WhiteButton from '../../components/Buttons/WhiteButton';
 import {
   listChannels,
   listPeers,

@@ -3,10 +3,10 @@ import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
 
-import ProgressBar from './ProgressBar';
-import {percentSyncedSelector, syncStatusSelector} from '../reducers/info';
-import {rateSelector} from '../reducers/ticker';
-import {balanceSelector} from '../reducers/balance';
+import ProgressBar from '../ProgressBar';
+import {percentSyncedSelector, syncStatusSelector} from '../../reducers/info';
+import {rateSelector} from '../../reducers/ticker';
+import {balanceSelector} from '../../reducers/balance';
 
 const AccountCell = props => {
   const {onPress} = props;
@@ -28,7 +28,7 @@ const AccountCell = props => {
             <Image
               style={styles.image}
               resizeMode="contain"
-              source={require('../assets/images/ltc-logo.png')}
+              source={require('../../assets/images/ltc-logo.png')}
             />
           </View>
         </LinearGradient>

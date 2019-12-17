@@ -5,8 +5,8 @@ import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
-import WhiteButton from '../../components/WhiteButton';
-import WhiteClearButton from '../../components/WhiteClearButton';
+import WhiteButton from '../../components/Buttons/WhiteButton';
+import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {randomShuffle} from '../../lib/utils';
 import {getBIP39Word} from '../../lib/utils/bip39';
 

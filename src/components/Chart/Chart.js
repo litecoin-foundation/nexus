@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {StyleSheet, Dimensions} from 'react-native';
+import {Dimensions} from 'react-native';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
 import Svg, {Path, Line, G} from 'react-native-svg';
@@ -96,7 +96,5 @@ const Chart = props => {
     </Cursor>
   );
 };
-
-const styles = StyleSheet.create({});
 
 export default Chart;

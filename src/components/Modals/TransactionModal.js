@@ -3,8 +3,8 @@ import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
-import TypeButton from './TypeButton';
-import GreyRoundButton from './GreyRoundButton';
+import TypeButton from '../Buttons/TypeButton';
+import GreyRoundButton from '../Buttons/GreyRoundButton';
 
 export class TransactionModal extends Component {
   render() {

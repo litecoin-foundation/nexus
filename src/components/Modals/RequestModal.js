@@ -3,7 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
-import AmountInput from './AmountInput';
+import AmountInput from '../AmountInput';
 
 export class RequestModal extends Component {
   render() {

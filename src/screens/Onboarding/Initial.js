@@ -3,8 +3,8 @@ import {StyleSheet} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
 
-import WhiteButton from '../../components/WhiteButton';
-import WhiteClearButton from '../../components/WhiteClearButton';
+import WhiteButton from '../../components/Buttons/WhiteButton';
+import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 
 const Initial = () => {
   const {navigate} = useNavigation();

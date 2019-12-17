@@ -5,7 +5,7 @@ import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch} from 'react-redux';
 
 import AmountInput from '../../components/AmountInput';
-import WhiteButton from '../../components/WhiteButton';
+import WhiteButton from '../../components/Buttons/WhiteButton';
 import {setAmount} from '../../reducers/buy';
 
 const Buy = () => {

@@ -5,9 +5,9 @@ import {storiesOf} from '@storybook/react-native';
 import {action} from '@storybook/addon-actions';
 
 import CenterView from '../CenterView';
-import BlueButton from '../../../src/components/BlueButton';
-import BlueClearButton from '../../../src/components/BlueClearButton';
-import BlueFatButton from '../../../src/components/BlueFatButton';
+import BlueButton from '../../../src/components/Buttons/BlueButton';
+import BlueClearButton from '../../../src/components/Buttons/BlueClearButton';
+import BlueFatButton from '../../../src/components/Buttons/BlueFatButton';
 
 storiesOf('BlueButton', module)
   .addDecorator(getStory => <CenterView>{getStory()}</CenterView>)
