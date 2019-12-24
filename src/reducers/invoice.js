@@ -28,7 +28,7 @@ export const addInvoice = invoice => async dispatch => {
       type: ADD_INVOICE,
       paymentRequest,
       description: invoice.memo,
-      value: invoice.value,
+      value: invoice.amount,
     });
     return true;
   } catch (error) {
