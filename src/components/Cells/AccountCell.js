@@ -58,15 +58,15 @@ const AccountCell = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 70,
+    height: 68,
     width: '90%',
     backgroundColor: 'white',
     borderRadius: 8,
-    shadowColor: '#000000',
+    shadowColor: 'rgba(82,84,103,0.5)',
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: 12,
     shadowOffset: {
-      height: 0,
+      height: 6,
       width: 0,
     },
   },
