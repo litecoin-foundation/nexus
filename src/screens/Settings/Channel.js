@@ -29,6 +29,7 @@ export class Channel extends Component {
           value="Open"
           small={true}
           onPress={() => navigation.navigate('OpenChannel')}
+          active={true}
         />
       ),
       headerTitleStyle: {
@@ -100,7 +101,4 @@ const mapDispatchToProps = {
   listPendingChannels,
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Channel);
+export default connect(mapStateToProps, mapDispatchToProps)(Channel);

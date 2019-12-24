@@ -36,6 +36,7 @@ const Biometric = () => {
         <WhiteButton
           value={`Enable ${biometryType}`}
           small={false}
+          active={true}
           onPress={async () => {
             try {
               await authenticate(`Enable ${biometryType}`);

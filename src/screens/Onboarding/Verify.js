@@ -105,6 +105,7 @@ const Verify = () => {
             value="Continue"
             onPress={() => handlePress()}
             small={false}
+            active={true}
           />
         </View>
       </LinearGradient>

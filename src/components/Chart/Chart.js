@@ -1,46 +1,59 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {Dimensions} from 'react-native';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
 import Svg, {Path, Line, G} from 'react-native-svg';
 import * as scale from 'd3-scale';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import Cursor from './Cursor';
 import {getHistoricalRates} from '../../reducers/ticker';
+import {monthSelector} from '../../reducers/ticker';
 
 const d3 = {shape};
 
 const height = 130;
 const {width} = Dimensions.get('window');
 
-const Chart = props => {
-  const {data} = props;
+const Chart = () => {
   const dispatch = useDispatch();
+  const data = useSelector(state => monthSelector(state));
 
-  const yValues = data.map(item => item.y);
-  const xValues = data.map(item => item.x);
-  const yExtent = array.extent(yValues);
-  const xExtent = array.extent(xValues);
-
-  const x = scale
-    .scaleTime()
-    .range([0, width])
-    .domain([xExtent[0], xExtent[1]]);
-  const y = scale
-    .scaleLinear()
-    .range([height - 5, 5])
-    .domain([yExtent[0], yExtent[1]]);
-
-  const line = d3.shape
-    .line()
-    .x(d => x(d.x))
-    .y(d => y(d.y))
-    .curve(d3.shape.curveBasis)(data);
+  const [line, setLine] = useState('');
+  const x = useRef(null);
+  const y = useRef(null);
 
   useEffect(() => {
     dispatch(getHistoricalRates());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (data === undefined || data.length === 0) {
+      return;
+    }
+
+    const yValues = data.map(item => item.y);
+    const xValues = data.map(item => item.x);
+    const yExtent = array.extent(yValues);
+    const xExtent = array.extent(xValues);
+
+    x.current = scale
+      .scaleTime()
+      .range([0, width - 20])
+      .domain([xExtent[0], xExtent[1]]);
+    y.current = scale
+      .scaleLinear()
+      .range([height - 5, 5])
+      .domain([yExtent[0], yExtent[1]]);
+
+    const calcLine = d3.shape
+      .line()
+      .x(d => x.current(d.x))
+      .y(d => y.current(d.y))
+      .curve(d3.shape.curveBasis)(data);
+
+    setLine(calcLine);
+  }, [data, line]);
 
   const Graph = (
     <Svg height={height} width={width}>
@@ -86,11 +99,11 @@ const Chart = props => {
 
   return (
     <Cursor
-      width={width}
+      width={width - 20}
       height={height}
       data={data}
-      x={x}
-      y={y}
+      x={x.current}
+      y={y.current}
       useCounterValue={false}>
       {Container}
     </Cursor>

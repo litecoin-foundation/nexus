@@ -31,6 +31,7 @@ const ChannelBackup = () => {
         <WhiteButton
           value="Enable Cloud Backup"
           small={false}
+          active={true}
           onPress={() => {
             dispatch(enableChannelBackup());
 

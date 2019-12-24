@@ -7,13 +7,16 @@ import {
   State,
   LongPressGestureHandler,
 } from 'react-native-gesture-handler';
+import {useDispatch} from 'react-redux';
 
 import {
   triggerMediumFeedback,
   triggerSelectionFeedback,
 } from '../../lib/utils/haptic';
+import {updateCursorValue, setCursorSelected} from '../../reducers/chart';
 
 const Cursor = props => {
+  const dispatch = useDispatch();
   const {height, width, x, y, data, children} = props;
   const panRef = createRef();
   const longPressRef = createRef();
@@ -34,7 +37,8 @@ const Cursor = props => {
     const xRight = x(d1.x);
     const d = Math.abs(x0 - xLeft) < Math.abs(x0 - xRight) ? d0 : d1;
 
-    console.log(d); // d contains the date of the point of touch
+    dispatch(updateCursorValue(d.x, d.y));
+
     return {
       barOffsetX: x(d.x),
       barOffsetY: y(d.y),
@@ -47,6 +51,7 @@ const Cursor = props => {
       const r = collectHovered(nativeEvent.x);
       triggerMediumFeedback();
       setBarVisible(true);
+      dispatch(setCursorSelected(true));
       setbarOffsetX(r.barOffsetX);
       setbarOffsetY(r.barOffsetY);
     } else if (
@@ -54,6 +59,7 @@ const Cursor = props => {
       nativeEvent.state === State.CANCELLED
     ) {
       setBarVisible(false);
+      dispatch(setCursorSelected(false));
     }
   };
 

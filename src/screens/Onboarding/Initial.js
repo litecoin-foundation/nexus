@@ -15,6 +15,7 @@ const Initial = () => {
         value="Create Wallet"
         small={false}
         onPress={() => navigate('Pin')}
+        active={true}
       />
       <WhiteClearButton
         value="Already have a wallet? Log In"

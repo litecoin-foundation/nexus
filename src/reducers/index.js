@@ -12,6 +12,7 @@ import channels from './channels';
 import authpad from './authpad';
 import buy from './buy';
 import authentication from './authentication';
+import chart from './chart';
 
 export default combineReducers({
   onboarding,
@@ -27,4 +28,5 @@ export default combineReducers({
   authpad,
   buy,
   authentication,
+  chart,
 });

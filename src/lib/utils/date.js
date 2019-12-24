@@ -1,6 +1,6 @@
 export const formatDate = date => {
   const ONE_DAY = 60 * 60 * 24 * 1000;
-  const jsDate = new Date(date * 1000);
+  const jsDate = new Date(date);
   const time = new Date();
   const diff = time - jsDate;
 

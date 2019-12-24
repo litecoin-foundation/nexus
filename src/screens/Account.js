@@ -2,18 +2,21 @@ import React, {useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
+import LinearGradient from 'react-native-linear-gradient';
 
 import AmountView from '../components/AmountView';
 import AccountCell from '../components/Cells/AccountCell';
 import LineChart from '../components/Chart/Chart';
+import DatePicker from '../components/DatePicker';
 import {clearWalletUnlocked} from '../reducers/authentication';
-import {monthSelector} from '../reducers/ticker';
+import {formatDate} from '../lib/utils/date';
 
 const Account = () => {
   const dispatch = useDispatch();
   const {navigate} = useNavigation();
 
-  const data = useSelector(state => monthSelector(state));
+  const chartCursorDate = useSelector(state => state.chart.cursorDate);
+  const chartCursorSelected = useSelector(state => state.chart.cursorSelected);
 
   useEffect(() => {
     dispatch(clearWalletUnlocked());
@@ -22,12 +25,24 @@ const Account = () => {
   return (
     <View style={styles.container}>
       <AmountView>
-        <LineChart data={data} />
+        <LineChart />
+        {chartCursorSelected ? (
+          <Text style={styles.chartDateText}>
+            {formatDate(chartCursorDate)}
+          </Text>
+        ) : (
+          <View style={styles.emptyTextView} />
+        )}
+        <DatePicker />
       </AmountView>
-      <Text style={styles.text}>Accounts</Text>
-      <View style={styles.accountsContainer}>
-        <AccountCell onPress={() => navigate('Wallet')} />
-      </View>
+      <LinearGradient
+        colors={['#F6F9FC', 'rgba(210,225,239,0)']}
+        style={styles.container}>
+        <Text style={styles.text}>Accounts</Text>
+        <View style={styles.accountsContainer}>
+          <AccountCell onPress={() => navigate('Wallet')} />
+        </View>
+      </LinearGradient>
     </View>
   );
 };
@@ -43,11 +58,24 @@ const styles = StyleSheet.create({
   text: {
     color: '#7C96AE',
     opacity: 0.9,
-    fontSize: 11,
+    fontSize: 12,
+    fontWeight: '600',
     letterSpacing: -0.28,
     paddingTop: 15,
     paddingBottom: 15,
     paddingLeft: 20,
+  },
+  chartDateText: {
+    height: 13,
+    opacity: 0.5,
+    color: 'white',
+    fontSize: 11,
+    fontWeight: 'bold',
+    letterSpacing: -0.25,
+    textAlign: 'center',
+  },
+  emptyTextView: {
+    height: 13,
   },
 });
 

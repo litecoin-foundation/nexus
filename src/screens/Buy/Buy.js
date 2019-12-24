@@ -67,6 +67,7 @@ Buy.navigationOptions = ({navigation}) => {
       <WhiteButton
         value="History"
         small={true}
+        active={true}
         onPress={() => navigation.navigate('History')}
       />
     ),

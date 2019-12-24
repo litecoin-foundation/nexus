@@ -86,6 +86,7 @@ const Generate = () => {
             value={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
             onPress={() => handlePress()}
             small={false}
+            active={true}
           />
         </View>
       </LinearGradient>
