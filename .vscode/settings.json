@@ -1,5 +1,4 @@
 {
-  "eslint.autoFixOnSave": true,
   "eslint.packageManager": "yarn",
   "eslint.alwaysShowStatus": true,
   "files.exclude": {
@@ -8,5 +7,8 @@
   "editor.formatOnSave": true,
   "search.exclude": {
     "Lndmobile.framework": true
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
   }
 }
