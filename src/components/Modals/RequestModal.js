@@ -4,6 +4,7 @@ import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
 import AmountInput from '../AmountInput';
+import GreyRoundButton from '../Buttons/GreyRoundButton';
 
 export class RequestModal extends Component {
   render() {
@@ -18,8 +19,9 @@ export class RequestModal extends Component {
         backdropOpacity={0.6}
         style={styles.noMargin}>
         <View style={styles.modal}>
-          <View style={styles.textContainer}>
-            <Text style={styles.text}>Choose Amount</Text>
+          <View style={styles.modalHeaderContainer}>
+            <Text style={styles.modalHeaderTitle}>Choose Amount</Text>
+            <GreyRoundButton onPress={() => close()} />
           </View>
           <View style={styles.amountInputContainer}>
             <AmountInput
@@ -49,6 +51,20 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 20,
     alignItems: 'center',
+  },
+  modalHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingLeft: 25,
+    paddingRight: 25,
+    paddingTop: 25,
+    paddingBottom: 25,
+  },
+  modalHeaderTitle: {
+    color: '#4E6070',
+    fontSize: 26,
+    fontWeight: 'bold',
+    height: 31,
   },
   amountInputContainer: {
     height: 520,
