@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Clipboard, SafeAreaView} from 'react-native';
+import {View, Text, StyleSheet, Clipboard} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
-import LinearGradient from 'react-native-linear-gradient';
 
+import Header from '../components/Header';
 import RequestModal from '../components/Modals/RequestModal';
 import BlueButton from '../components/Buttons/BlueButton';
 import BlueClearButton from '../components/Buttons/BlueClearButton';
@@ -38,11 +38,7 @@ const Receive = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#5A4FE7', '#2C44C8']}
-        style={styles.headerContainer}>
-        <SafeAreaView />
-      </LinearGradient>
+      <Header />
       {!uri ? (
         <Text>loading...</Text>
       ) : (
@@ -119,12 +115,9 @@ const styles = StyleSheet.create({
   bottomDetailPadding: {
     paddingBottom: 20,
   },
-  headerContainer: {
-    height: 120,
-  },
 });
 
-Receive.navigationOptions = ({navigation}) => {
+Receive.navigationOptions = () => {
   return {
     headerTitle: 'Receive',
     headerTitleStyle: {

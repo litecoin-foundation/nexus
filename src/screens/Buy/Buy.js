@@ -1,11 +1,11 @@
 import React from 'react';
-import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import {View, Text, StyleSheet} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch} from 'react-redux';
 
 import AmountInput from '../../components/AmountInput';
 import WhiteButton from '../../components/Buttons/WhiteButton';
+import Header from '../../components/Header';
 import {setAmount} from '../../reducers/buy';
 
 const Buy = () => {
@@ -14,9 +14,7 @@ const Buy = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#5A4FE7', '#2C44C8']} style={styles.gradient}>
-        <SafeAreaView />
-      </LinearGradient>
+      <Header />
       <View style={styles.titleContainer}>
         <Text style={styles.title}>CHOOSE AMOUNT</Text>
       </View>
@@ -55,9 +53,6 @@ const styles = StyleSheet.create({
     color: '#7C96AE',
     fontSize: 12,
     fontWeight: '600',
-  },
-  gradient: {
-    height: 120,
   },
 });
 
