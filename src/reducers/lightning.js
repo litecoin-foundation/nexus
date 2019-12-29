@@ -5,6 +5,7 @@ import Lightning from '../lib/lightning/lightning';
 import {toBuffer} from '../lib/utils';
 import {getRandomBytes} from '../lib/utils/random';
 import {setItem, getItem} from '../lib/utils/keychain';
+import {deleteWalletDB} from '../lib/utils/file';
 
 import {finishOnboarding} from './onboarding';
 import {pollBalance} from './balance';
@@ -33,6 +34,7 @@ export const startLnd = () => async dispatch => {
       type: START_LND,
     });
   } catch (err) {
+    console.log(err);
     console.log('CANT start LND');
     // TODO: handle this
   }
@@ -83,9 +85,7 @@ export const unlockWallet = () => async dispatch => {
       walletPassword: toBuffer(password),
     });
   } catch (error) {
-    const dbPath = `${
-      RNFS.DocumentDirectoryPath
-    }/data/chain/litecoin/mainnet/wallet.db`;
+    const dbPath = `${RNFS.DocumentDirectoryPath}/data/chain/litecoin/mainnet/wallet.db`;
 
     if ((await RNFS.exists(dbPath)) === false) {
       dispatch(initWallet());
@@ -98,18 +98,6 @@ export const unlockWallet = () => async dispatch => {
   dispatch(pollTransactions());
   dispatch(pollTicker());
   dispatch(backupChannels());
-};
-
-export const deleteWalletDB = async () => {
-  const dbPath = `${
-    RNFS.DocumentDirectoryPath
-  }/data/chain/litecoin/mainnet/wallet.db`;
-  try {
-    await RNFS.unlink(dbPath);
-  } catch (error) {
-    // if initial install, then no wallet db will exist
-    console.log('no wallet db exists');
-  }
 };
 
 // action handlers
