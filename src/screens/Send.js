@@ -2,135 +2,149 @@ import React, {Fragment, useState} from 'react';
 import {View, Text, Clipboard, StyleSheet, TextInput} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch} from 'react-redux';
+import LinearGradient from 'react-native-linear-gradient';
 
 import AmountInput from '../components/AmountInput';
 import AddressField from '../components/AddressField';
-import FeeModal from '../components/FeeModal';
-import SendModal from '../components/SendModal';
-import SquareButton from '../components/SquareButton';
-import GreenRoundButton from '../components/GreenRoundButton';
-import BlueButton from '../components/BlueButton';
+import SendModal from '../components/Modals/SendModal';
+import SquareButton from '../components/Buttons/SquareButton';
+import BlueButton from '../components/Buttons/BlueButton';
+import AccountCell from '../components/Cells/AccountCell';
+import ScanModal from '../components/Modals/ScanModal';
 
-import {inputParams, estimateOnchainFee} from '../reducers/payment';
+import {inputParams} from '../reducers/payment';
 import {decodeBIP21} from '../lib/utils/bip21';
 import validateLtcAddress from '../lib/utils/validate';
+import {updateAmount} from '../reducers/input';
 
 const Send = () => {
   const {navigate} = useNavigation();
   const dispatch = useDispatch();
 
   const [isSendModalTriggered, triggerSendModal] = useState(false);
-  const [isFeeModalTriggered, triggerFeeModal] = useState(false);
+  const [isScanModalTriggered, triggerScanModal] = useState(false);
   const [isAmountInputTriggered, triggerAmountInput] = useState(false);
   const [address, setAddress] = useState(null);
   const [amount, setAmount] = useState(null);
-  const [fee, setFee] = useState(0);
 
-  const updateFees = () => {
-    if (address === undefined || amount === undefined) {
-      return;
-    }
-    dispatch(estimateOnchainFee(address, amount));
-  };
-
-  const handleScan = () => {
-    navigate('Scanner');
-  };
-
-  const handlePaste = async () => {
-    const address = await Clipboard.getString();
-
-    // check if URI by decoding using the bip21 library
+  const validate = async data => {
     try {
-      const decoded = decodeBIP21(address);
-      console.log(decoded);
-
+      const decoded = decodeBIP21(data);
       const validated = await validateLtcAddress(decoded.address);
 
       if (!validated) {
         alert('invalid address');
-        console.log(address);
         return;
       }
 
-      setAddress(decoded.address);
       setAmount(decoded.options.amount);
-      await updateFees();
+      setAddress(decoded.address);
+      dispatch(updateAmount(toString(decoded.options.amount)));
     } catch (error) {
-      const validated = await validateLtcAddress(address);
+      const validated = await validateLtcAddress(data);
 
       if (!validated) {
         alert('invalid address');
-        console.log(address);
         return;
       }
-
       setAddress(validated.address);
-      await updateFees();
     }
+  };
+
+  const handleScan = () => {
+    triggerScanModal(true);
+  };
+
+  const handlePaste = async () => {
+    const clipboard = await Clipboard.getString();
+    validate(clipboard);
   };
 
   return (
     <Fragment>
+      <LinearGradient
+        colors={['#7E58FF', '#2C44C8']}
+        style={styles.headerContainer}>
+        <Text style={styles.headerText}>From Wallet</Text>
+
+        <AccountCell
+          onPress={() => console.log('nothing')}
+          syncStatusDisabled={true}
+        />
+      </LinearGradient>
       <View style={styles.amountHeaderContainer}>
         <Text style={styles.amountHeaderText}>CHOOSE AMOUNT</Text>
       </View>
 
       <AmountInput
-        onChangeText={amount => setAmount(amount)}
+        onChangeText={input => setAmount(input)}
         onAccept={() => triggerAmountInput(false)}
         selected={() => triggerAmountInput(true)}
+        confirmButtonText="Confirm"
       />
-      <View>
-        <View style={styles.typeTextContainer}>
-          <Text style={styles.recipientHeaderText}>CHOOSE recipient</Text>
-        </View>
 
-        {address ? (
-          <AddressField
-            address={address}
-            onPressClose={() => setAddress(null)}
-          />
-        ) : (
-          <View style={styles.recipientContainer}>
-            <SquareButton value="Paste" onPress={() => handlePaste()} />
-            <SquareButton value="NFC" />
-            <SquareButton value="Scan" onPress={handleScan} />
+      <LinearGradient
+        colors={['#F6F9FC', 'rgba(210,225,239,0)']}
+        style={styles.flex}>
+        <View>
+          <View style={styles.typeTextContainer}>
+            <Text style={styles.recipientHeaderText}>CHOOSE recipient</Text>
           </View>
-        )}
-      </View>
 
-      <View style={styles.recipientHeaderContainer}>
-        <Text style={styles.descriptionHeaderText}>ADD Description</Text>
-        <View style={styles.descriptionContainer}>
-          <TextInput placeholder="description" />
+          {address ? (
+            <AddressField
+              address={address}
+              onPressClose={() => setAddress(null)}
+            />
+          ) : (
+            <View style={styles.recipientContainer}>
+              <SquareButton
+                imageSource={require('../assets/images/paste.png')}
+                value="Paste"
+                onPress={() => handlePaste()}
+              />
+              <SquareButton
+                imageSource={require('../assets/images/nfc.png')}
+                value="NFC"
+              />
+              <SquareButton
+                imageSource={require('../assets/images/qrcode.png')}
+                value="Scan"
+                onPress={handleScan}
+              />
+            </View>
+          )}
         </View>
-        <View style={styles.feeContainer}>
-          <Text style={styles.feeHeaderText}>FEE</Text>
-          <GreenRoundButton
-            onPress={() => triggerFeeModal(true)}
-            value={fee}
-            disabled
-          />
+
+        <View style={styles.recipientHeaderContainer}>
+          <Text style={styles.descriptionHeaderText}>ADD Description</Text>
+          <View style={styles.descriptionContainer}>
+            <TextInput
+              placeholder="description"
+              style={styles.descriptionText}
+            />
+          </View>
         </View>
-      </View>
+      </LinearGradient>
 
       {isAmountInputTriggered ? null : (
         <View style={styles.sendContainer}>
-          <BlueButton
-            value="Create Invoice"
-            onPress={() => triggerSendModal(true)}
-          />
+          <BlueButton value="Send" onPress={() => triggerSendModal(true)} />
         </View>
       )}
 
-      <FeeModal
-        isVisible={isFeeModalTriggered}
-        close={() => triggerFeeModal(false)}
-      />
       <SendModal
         isVisible={isSendModalTriggered}
         close={() => triggerSendModal(false)}
+      />
+
+      <ScanModal
+        isVisible={isScanModalTriggered}
+        close={() => triggerScanModal(false)}
+        handleQRRead={data => {
+          validate(data);
+          triggerScanModal(false);
+        }}
       />
     </Fragment>
   );
@@ -180,13 +194,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: 'white',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
+    shadowColor: 'rgba(82,84,103,0.5)',
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
     shadowOffset: {
-      height: 0,
+      height: 6,
       width: 0,
     },
+  },
+  descriptionText: {
+    color: 'rgba(74, 74, 74, 1)',
   },
   feeContainer: {
     flex: 1,
@@ -211,6 +228,35 @@ const styles = StyleSheet.create({
   typeTextContainer: {
     marginLeft: 20,
   },
+  headerContainer: {
+    height: 200,
+    justifyContent: 'center',
+    borderWidth: 1,
+    paddingTop: 60,
+    alignItems: 'center',
+  },
+  headerText: {
+    textAlign: 'center',
+    paddingBottom: 10,
+    color: '#C4C4F9',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  flex: {
+    flex: 1,
+  },
 });
+
+Send.navigationOptions = () => {
+  return {
+    headerTitle: 'Send',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+      color: 'white',
+    },
+    headerTransparent: true,
+    headerBackTitle: null,
+  };
+};
 
 export default Send;

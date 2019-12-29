@@ -29,6 +29,7 @@ const Buy = () => {
             dispatch(setAmount(amount));
             navigate('Confirm');
           }}
+          confirmButtonText="Preview Buy"
         />
       </View>
     </View>

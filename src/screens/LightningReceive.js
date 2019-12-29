@@ -31,6 +31,7 @@ const LightningReceive = () => {
         onChangeText={amount => setAmount(amount)}
         onAccept={() => select(false)}
         selected={() => select(true)}
+        confirmButtonText="Create Invoice"
       />
 
       {!selected ? (

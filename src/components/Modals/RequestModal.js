@@ -27,6 +27,7 @@ export class RequestModal extends Component {
               toggleWithoutSelection
               onAccept={() => close()}
               selected={() => console.log('selected')}
+              confirmButtonText="Request"
             />
           </View>
         </View>

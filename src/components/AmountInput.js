@@ -1,121 +1,133 @@
-import React, {Component} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
-import {connect} from 'react-redux';
-import PropTypes from 'prop-types';
+import {useSelector, useDispatch} from 'react-redux';
 
 import Pad from './Numpad/Pad';
 import BlueButton from './Buttons/BlueButton';
+import {updateAmount, updateFiatAmount, resetInputs} from '../reducers/input';
 
-export class AmountInput extends Component {
-  state = {
-    amount: '0.00',
-    fiatAmount: '0.00',
-    leftToggled: true,
-    selected: false,
-  };
+const AmountInput = props => {
+  const {
+    toggleWithoutSelection,
+    confirmButtonText,
+    selected,
+    onChangeText,
+    onAccept,
+  } = props;
+  const dispatch = useDispatch();
+  const rates = useSelector(state => state.ticker.rates);
+  const amount = useSelector(state => state.input.amount);
+  const fiatAmount = useSelector(state => state.input.fiatAmount);
 
-  handlePress = side => {
-    const {selected} = this.props;
+  const [leftToggled, toggleLeft] = useState(true);
+  const [toggled, toggle] = useState(false);
+
+  const handlePress = side => {
     if (side === 'left') {
-      this.setState({leftToggled: true, selected: true}, () => selected());
+      toggleLeft(true);
+      toggle(true);
+      selected();
     } else {
-      this.setState({leftToggled: false, selected: true}, () => selected());
+      toggleLeft(false);
+      toggle(true);
+      selected();
     }
   };
 
-  onChange = value => {
-    const {leftToggled} = this.state;
-    if (leftToggled === true) {
-      this.setState({amount: value}, () => this.handleConversion());
+  const onChange = value => {
+    if (leftToggled) {
+      dispatch(updateAmount(value));
     } else {
-      this.setState({fiatAmount: value}, () => this.handleConversion());
+      dispatch(updateFiatAmount(value));
     }
   };
 
-  handleConversion = () => {
-    const {leftToggled, amount, fiatAmount} = this.state;
-    const {rates} = this.props;
-
+  useEffect(() => {
     if (!leftToggled) {
-      const convertedAmount = `${(parseFloat(fiatAmount) / rates.USD).toFixed(
-        4,
-      )}`;
-      this.setState({amount: convertedAmount}, () => this.afterConversion());
-    } else {
-      const convertedFiat = `${(parseFloat(amount) * rates.USD).toFixed(2)}`;
-      this.setState({fiatAmount: convertedFiat}, () => this.afterConversion());
+      return;
     }
-  };
+    dispatch(
+      updateFiatAmount(`${(parseFloat(amount) * rates.USD).toFixed(2)}`),
+    );
+  }, [amount, leftToggled, onChangeText, rates.USD, dispatch]);
 
-  afterConversion = () => {
-    const {amount} = this.state;
-    const {onChangeText} = this.props;
+  useEffect(() => {
+    if (leftToggled) {
+      return;
+    }
+    dispatch(
+      updateAmount(`${(parseFloat(fiatAmount) / rates.USD).toFixed(4)}`),
+    );
+  }, [amount, fiatAmount, leftToggled, onChangeText, rates.USD, dispatch]);
 
+  useEffect(() => {
+    if (!toggled) {
+      return;
+    }
     onChangeText(amount);
-  };
+  }, [amount, onChangeText, toggled]);
 
-  handleAccept = () => {
-    const {onAccept} = this.props;
-    const {amount} = this.state;
-    this.setState({selected: false});
-    onAccept(amount);
-  };
+  useEffect(() => {
+    return () => {
+      dispatch(resetInputs());
+    };
+  }, [dispatch]);
 
-  render() {
-    const {amount, fiatAmount, leftToggled, selected} = this.state;
-    const {toggleWithoutSelection} = this.props;
-    const PadContainer = (
-      <View style={styles.padContainer}>
-        <Pad
-          onChange={this.onChange}
-          currentValue={leftToggled ? amount : fiatAmount}
+  const PadContainer = (
+    <View style={styles.padContainer}>
+      <Pad
+        onChange={value => onChange(value)}
+        currentValue={leftToggled ? amount : fiatAmount}
+      />
+
+      <View style={styles.centerAlign}>
+        <BlueButton
+          value={confirmButtonText}
+          onPress={() => {
+            toggle(false);
+            onAccept(amount);
+          }}
         />
+      </View>
+    </View>
+  );
 
-        <View style={styles.centerAlign}>
-          <BlueButton value="Preview Buy" onPress={this.handleAccept} />
+  return (
+    <View style={[toggled || toggleWithoutSelection ? styles.height : null]}>
+      <View style={styles.container}>
+        <View style={styles.area}>
+          <TouchableOpacity
+            style={[styles.left, leftToggled ? styles.active : styles.inActive]}
+            onPress={() => handlePress('left')}>
+            <Text
+              style={[
+                styles.leftText,
+                leftToggled ? styles.textActive : styles.textInactive,
+              ]}>
+              {amount}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.right,
+              !leftToggled ? styles.active : styles.inActive,
+            ]}
+            onPress={() => handlePress('right')}>
+            <Text
+              style={[
+                styles.rightText,
+                leftToggled ? styles.textInactive : styles.textActive,
+              ]}>
+              {fiatAmount}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
-    );
-    return (
-      <View style={[selected || toggleWithoutSelection ? styles.height : null]}>
-        <View style={styles.container}>
-          <View style={styles.area}>
-            <TouchableOpacity
-              style={[
-                styles.left,
-                leftToggled ? styles.active : styles.inActive,
-              ]}
-              onPress={() => this.handlePress('left')}>
-              <Text
-                style={[
-                  styles.leftText,
-                  leftToggled ? styles.textActive : styles.textInactive,
-                ]}>
-                {amount}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.right,
-                !leftToggled ? styles.active : styles.inActive,
-              ]}
-              onPress={() => this.handlePress('right')}>
-              <Text
-                style={[
-                  styles.rightText,
-                  leftToggled ? styles.textInactive : styles.textActive,
-                ]}>
-                {fiatAmount}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        {toggleWithoutSelection ? PadContainer : null}
-        {selected && !toggleWithoutSelection ? PadContainer : null}
-      </View>
-    );
-  }
-}
+      {toggleWithoutSelection ? PadContainer : null}
+      {toggled && !toggleWithoutSelection ? PadContainer : null}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -180,21 +192,4 @@ const styles = StyleSheet.create({
   },
 });
 
-AmountInput.propTypes = {
-  rates: PropTypes.objectOf(PropTypes.string).isRequired,
-  onChangeText: PropTypes.func,
-  onAccept: PropTypes.func.isRequired,
-  toggleWithoutSelection: PropTypes.bool,
-  selected: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = state => ({
-  rates: state.ticker.rates,
-});
-
-const mapDispatchToProps = {};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(AmountInput);
+export default AmountInput;

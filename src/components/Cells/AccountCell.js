@@ -9,7 +9,7 @@ import {rateSelector} from '../../reducers/ticker';
 import {balanceSelector} from '../../reducers/balance';
 
 const AccountCell = props => {
-  const {onPress} = props;
+  const {onPress, syncStatusDisabled} = props;
 
   const synced = useSelector(state => syncStatusSelector(state));
   const progress = useSelector(state => percentSyncedSelector(state));
@@ -18,7 +18,10 @@ const AccountCell = props => {
 
   return (
     <TouchableOpacity
-      style={[styles.container, !synced ? styles.notSynced : null]}
+      style={[
+        styles.container,
+        !synced && !syncStatusDisabled ? styles.notSynced : null,
+      ]}
       onPress={onPress}>
       <View style={styles.subContainer}>
         <LinearGradient
@@ -41,7 +44,7 @@ const AccountCell = props => {
           <Text style={styles.percentageText}>+0.6%</Text>
         </View>
       </View>
-      {!synced ? (
+      {!synced && !syncStatusDisabled ? (
         <View style={styles.syncContainer}>
           <View style={styles.circle} />
           <View style={styles.left}>

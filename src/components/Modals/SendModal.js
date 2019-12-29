@@ -39,7 +39,7 @@ export class SendModal extends Component {
 
             <View style={styles.modalButtonContainer}>
               <BlueButton
-                value="Create Invoice"
+                value="Confirm Send"
                 onPress={() => console.log('meow')}
               />
             </View>

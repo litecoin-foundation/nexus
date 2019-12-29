@@ -1,5 +1,11 @@
 import React from 'react';
-import {View, TextInput, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import PropTypes from 'prop-types';
 
 const AddressField = props => {
@@ -7,10 +13,13 @@ const AddressField = props => {
   return (
     <View style={styles.container}>
       <View style={styles.addressContainer}>
-        <TextInput editable={false} value={address} />
+        <TextInput editable={false} value={address} style={styles.text} />
       </View>
       <TouchableOpacity style={styles.closeContainer} onPress={onPressClose}>
-        <View style={styles.circle} />
+        <Image
+          style={styles.circle}
+          source={require('../assets/images/check-off.png')}
+        />
       </TouchableOpacity>
     </View>
   );
@@ -19,12 +28,12 @@ const AddressField = props => {
 const styles = StyleSheet.create({
   container: {
     height: 60,
-    backgroundColor: '#F1F3F6',
+    backgroundColor: 'rgba(216,216,216,0.2)',
     alignItems: 'center',
     flexDirection: 'row',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: 'rgba(151,151,151,0.2)',
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    borderColor: '#97979733',
   },
   addressContainer: {
     width: '95%',
@@ -38,10 +47,12 @@ const styles = StyleSheet.create({
   circle: {
     height: 18,
     width: 18,
-    borderRadius: 18 / 2,
-    backgroundColor: '#979090',
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  text: {
+    color: '#20BB74',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: -0.54,
   },
 });
 

@@ -13,6 +13,7 @@ import authpad from './authpad';
 import buy from './buy';
 import authentication from './authentication';
 import chart from './chart';
+import input from './input';
 
 export default combineReducers({
   onboarding,
@@ -29,4 +30,5 @@ export default combineReducers({
   buy,
   authentication,
   chart,
+  input,
 });
