@@ -184,21 +184,21 @@ PODS:
     - React-cxxreact (= 0.61.1)
     - React-jsi (= 0.61.1)
   - React-jsinspector (0.61.1)
-  - react-native-camera (3.6.0):
+  - react-native-camera (3.15.0):
     - React
-    - react-native-camera/RCT (= 3.6.0)
-    - react-native-camera/RN (= 3.6.0)
-  - react-native-camera/RCT (3.6.0):
+    - react-native-camera/RCT (= 3.15.0)
+    - react-native-camera/RN (= 3.15.0)
+  - react-native-camera/RCT (3.15.0):
     - React
-  - react-native-camera/RN (3.6.0):
+  - react-native-camera/RN (3.15.0):
     - React
   - react-native-randombytes (3.5.3):
     - React
-  - react-native-sensitive-info (5.5.1):
+  - react-native-sensitive-info (5.5.4):
     - React
-  - react-native-slider (2.0.1):
+  - react-native-slider (2.0.8):
     - React
-  - react-native-webview (7.4.1):
+  - react-native-webview (8.0.2):
     - React
   - React-RCTActionSheet (0.61.1):
     - React-Core/RCTActionSheetHeaders (= 0.61.1)
@@ -235,23 +235,21 @@ PODS:
     - React-cxxreact (= 0.61.1)
     - React-jsi (= 0.61.1)
     - ReactCommon/jscallinvoker (= 0.61.1)
-  - RNCAsyncStorage (1.6.2):
+  - RNDeviceInfo (5.4.0):
     - React
-  - RNDeviceInfo (3.1.4):
+  - RNFS (2.16.2):
     - React
-  - RNFS (2.14.1):
-    - React
-  - RNGestureHandler (1.4.1):
+  - RNGestureHandler (1.5.2):
     - React
   - RNICloudStore (0.1.0):
     - React
-  - RNKeychain (4.0.1):
+  - RNKeychain (4.0.5):
     - React
   - RNReactNativeHapticFeedback (1.8.2):
     - React
-  - RNReanimated (1.3.0):
+  - RNReanimated (1.4.0):
     - React
-  - RNSVG (9.11.1):
+  - RNSVG (9.13.6):
     - React
   - TouchID (4.4.1):
     - React
@@ -291,7 +289,6 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/jscallinvoker (from `../node_modules/react-native/ReactCommon`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -304,7 +301,7 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  trunk:
     - boost-for-react-native
 
 EXTERNAL SOURCES:
@@ -368,8 +365,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/Vibration"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  RNCAsyncStorage:
-    :path: "../node_modules/@react-native-community/async-storage"
   RNDeviceInfo:
     :path: "../node_modules/react-native-device-info"
   RNFS:
@@ -408,11 +403,11 @@ SPEC CHECKSUMS:
   React-jsi: 61ff417c95e6c3af50fb96399037e80752fb5ce7
   React-jsiexecutor: ee45274419eb95614bbbadb98e20684c5f29996e
   React-jsinspector: 574d597112f9ea3d1b717f6fb62aef764c70dd6f
-  react-native-camera: 4f614d2da6526be735ecbe658c3f57eebfb0686a
+  react-native-camera: 6eaa78f9afda93fab531ba92f597c0b137244777
   react-native-randombytes: 991545e6eaaf700b4ee384c291ef3d572e0b2ca8
-  react-native-sensitive-info: e05877777e50e8112b8728f69eab407c3dcf38ab
-  react-native-slider: a11631bca5df3680b748df2bd5bb17654371829e
-  react-native-webview: 4dbc1d2a4a6b9c5e9e723c62651917aa2b5e579e
+  react-native-sensitive-info: b6461ab07c45e7fe534f113f537fabaa367c3ece
+  react-native-slider: b2f361499888302147205f17f6fffa921a7bda70
+  react-native-webview: 88b0a0453a88cd7e3c0729ce8723a66783814dd6
   React-RCTActionSheet: af4d951113b1e068bb30611f91b984a7a73597ff
   React-RCTAnimation: 4f518d70bb6890b7c3d9d732f84786d6693ca297
   React-RCTBlob: 072a4888c08de0eef6d04eaa727d25e577e6ff26
@@ -423,18 +418,17 @@ SPEC CHECKSUMS:
   React-RCTText: 81b62b4e7f11531a5154e4daa5617670d5a2d5de
   React-RCTVibration: 8be61459e3749d1fb02cf414edd05b3007622882
   ReactCommon: 4fba5be89efdf0b5720e0adb3d8d7edf6e532db0
-  RNCAsyncStorage: 5ae4d57458804e99f73d427214442a6b10a53856
-  RNDeviceInfo: 9e88577c51bd42f65275e53bb0de0a0f728ed6b8
-  RNFS: a8fbe7060fa49157d819466404794ad9c58e58cf
-  RNGestureHandler: 4cb47a93019c1a201df2644413a0a1569a51c8aa
+  RNDeviceInfo: d0fff8432ccdf276cb342a52e665ea6dd311472e
+  RNFS: 0d4191b1052bef9ce70deff00a5b4169c62bbd9b
+  RNGestureHandler: 946a7691e41df61e2c4b1884deab41a4cdc3afff
   RNICloudStore: bc6e225811637c09bd1eb055d6cd7448e61cd451
-  RNKeychain: 45dbd50d1ac4bd42c3740f76ffb135abf05746d0
+  RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
   RNReactNativeHapticFeedback: e11a4da0ce174e9f88b03cbaf5d76d94633cdee2
-  RNReanimated: 6abbbae2e5e72609d85aabd92a982a94566885f1
-  RNSVG: be27aa7c58819f97399388ae53d7fa0572f32c7f
+  RNReanimated: b2ab0b693dddd2339bd2f300e770f6302d2e960c
+  RNSVG: 8ba35cbeb385a52fd960fd28db9d7d18b4c2974f
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
   Yoga: d8c572ddec8d05b7dba08e4e5f1924004a177078
 
 PODFILE CHECKSUM: c55781d54d9fc1fc29f73e4afcd7d72e678c32b0
 
-COCOAPODS: 1.8.3
+COCOAPODS: 1.8.4

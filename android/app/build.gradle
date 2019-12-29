@@ -177,12 +177,12 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-svg')
     implementation project(':react-native-touch-id')
     implementation project(':react-native-randombytes')
     implementation project(':react-native-keychain')
     implementation project(':react-native-linear-gradient')
     implementation project(':@react-native-community_slider')
-    implementation project(':react-native-svg')
     implementation project(':react-native-camera')
     implementation project(':react-native-fs')
     implementation project(':react-native-gesture-handler')
