@@ -15,6 +15,7 @@ export const updateAmount = amount => dispatch => {
     type: UPDATE_AMOUNT,
     amount,
   });
+  dispatch(handleFiatConversion());
 };
 
 export const updateFiatAmount = fiatAmount => dispatch => {
@@ -22,10 +23,31 @@ export const updateFiatAmount = fiatAmount => dispatch => {
     type: UPDATE_FIAT_AMOUNT,
     fiatAmount,
   });
+  dispatch(handleAmountConversion());
 };
 
 export const resetInputs = () => dispatch => {
   dispatch({type: RESET_INPUTS});
+};
+
+const handleFiatConversion = () => (dispatch, getState) => {
+  const {amount} = getState().input;
+  const {rates} = getState().ticker;
+
+  dispatch({
+    type: UPDATE_FIAT_AMOUNT,
+    fiatAmount: `${(parseFloat(amount) * rates.USD).toFixed(2)}`,
+  });
+};
+
+const handleAmountConversion = () => (dispatch, getState) => {
+  const {fiatAmount} = getState().input;
+  const {rates} = getState().ticker;
+
+  dispatch({
+    type: UPDATE_AMOUNT,
+    amount: `${(parseFloat(fiatAmount) / rates.USD).toFixed(4)}`,
+  });
 };
 
 // action handlers

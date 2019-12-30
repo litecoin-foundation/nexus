@@ -15,7 +15,6 @@ const AmountInput = props => {
     onAccept,
   } = props;
   const dispatch = useDispatch();
-  const rates = useSelector(state => state.ticker.rates);
   const amount = useSelector(state => state.input.amount);
   const fiatAmount = useSelector(state => state.input.fiatAmount);
 
@@ -45,24 +44,6 @@ const AmountInput = props => {
       dispatch(updateFiatAmount(value));
     }
   };
-
-  useEffect(() => {
-    if (!leftToggled) {
-      return;
-    }
-    dispatch(
-      updateFiatAmount(`${(parseFloat(amount) * rates.USD).toFixed(2)}`),
-    );
-  }, [amount, leftToggled, rates.USD, dispatch]);
-
-  useEffect(() => {
-    if (leftToggled) {
-      return;
-    }
-    dispatch(
-      updateAmount(`${(parseFloat(fiatAmount) / rates.USD).toFixed(4)}`),
-    );
-  }, [amount, fiatAmount, leftToggled, rates.USD, dispatch]);
 
   useEffect(() => {
     if (onChangeText) {
