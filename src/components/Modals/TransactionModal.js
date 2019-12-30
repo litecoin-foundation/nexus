@@ -28,7 +28,8 @@ export class TransactionModal extends Component {
 
             <View style={styles.descriptionContainer}>
               <Text style={styles.descriptionText}>
-                Lightning transactions are blah blah blah, while on chain...
+                Lightning transactions are instant... If you don't know what to
+                choose, pick "Onchain".
               </Text>
             </View>
 
@@ -36,6 +37,7 @@ export class TransactionModal extends Component {
             <View style={styles.typeContainer}>
               <TypeButton
                 label="Lightning"
+                imageSource={require('../../assets/images/lightning.png')}
                 onPress={() => {
                   close();
                   navigate('LightningReceive');
@@ -43,6 +45,7 @@ export class TransactionModal extends Component {
               />
               <TypeButton
                 label="Onchain"
+                imageSource={require('../../assets/images/onchain.png')}
                 onPress={() => {
                   close();
                   navigate('Receive');
