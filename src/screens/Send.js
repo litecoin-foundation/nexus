@@ -3,6 +3,7 @@ import {View, Text, Clipboard, StyleSheet, TextInput} from 'react-native';
 import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
+import DeviceInfo from 'react-native-device-info';
 
 import AmountInput from '../components/AmountInput';
 import AddressField from '../components/AddressField';
@@ -64,7 +65,10 @@ const Send = () => {
     <Fragment>
       <LinearGradient
         colors={['#7E58FF', '#2C44C8']}
-        style={styles.headerContainer}>
+        style={[
+          styles.headerContainer,
+          DeviceInfo.hasNotch() ? styles.notch : styles.noNotch,
+        ]}>
         <Text style={styles.headerText}>From Wallet</Text>
 
         <AccountCell
@@ -229,7 +233,6 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   headerContainer: {
-    height: 200,
     justifyContent: 'center',
     borderWidth: 1,
     paddingTop: 60,
@@ -244,6 +247,12 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+  },
+  notch: {
+    height: 200,
+  },
+  noNotch: {
+    height: 165,
   },
 });
 

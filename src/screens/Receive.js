@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Clipboard} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
+import DeviceInfo from 'react-native-device-info';
 
 import Header from '../components/Header';
 import RequestModal from '../components/Modals/RequestModal';
@@ -43,7 +44,11 @@ const Receive = () => {
         <Text>loading...</Text>
       ) : (
         <View style={styles.qrContainer}>
-          <QRCode value={uri} color="rgba(10, 36, 79, 1)" size={350} />
+          <QRCode
+            value={uri}
+            color="rgba(10, 36, 79, 1)"
+            size={DeviceInfo.hasNotch() ? 350 : 280}
+          />
         </View>
       )}
       <View style={styles.detailContainer}>

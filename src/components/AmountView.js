@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
 import {createSelector} from 'reselect';
+import DeviceInfo from 'react-native-device-info';
 
 import GreenRoundButton from './Buttons/GreenRoundButton';
 import {converter} from '../lib/utils';
@@ -30,7 +31,11 @@ const AmountView = props => {
   );
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        DeviceInfo.hasNotch() ? styles.notch : styles.noNotch,
+      ]}>
       <LinearGradient colors={['#7E58FF', '#003DB3']} style={styles.gradient}>
         <SafeAreaView>
           <View style={styles.subview}>
@@ -63,7 +68,6 @@ const AmountView = props => {
 const styles = StyleSheet.create({
   container: {
     top: 0,
-    height: 400,
     width: '100%',
   },
   subview: {
@@ -110,6 +114,12 @@ const styles = StyleSheet.create({
   },
   margin: {
     marginTop: 10,
+  },
+  noNotch: {
+    height: 380,
+  },
+  notch: {
+    height: 400,
   },
 });
 
