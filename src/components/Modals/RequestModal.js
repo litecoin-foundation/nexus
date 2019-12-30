@@ -28,7 +28,6 @@ export class RequestModal extends Component {
               onChangeText={input => onChange(input)}
               toggleWithoutSelection
               onAccept={() => close()}
-              selected={() => console.log('selected')}
               confirmButtonText="Request"
             />
           </View>

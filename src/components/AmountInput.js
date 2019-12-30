@@ -26,11 +26,15 @@ const AmountInput = props => {
     if (side === 'left') {
       toggleLeft(true);
       toggle(true);
-      selected();
+      if (selected) {
+        selected();
+      }
     } else {
       toggleLeft(false);
       toggle(true);
-      selected();
+      if (selected) {
+        selected();
+      }
     }
   };
 
@@ -49,7 +53,7 @@ const AmountInput = props => {
     dispatch(
       updateFiatAmount(`${(parseFloat(amount) * rates.USD).toFixed(2)}`),
     );
-  }, [amount, leftToggled, onChangeText, rates.USD, dispatch]);
+  }, [amount, leftToggled, rates.USD, dispatch]);
 
   useEffect(() => {
     if (leftToggled) {
@@ -58,13 +62,12 @@ const AmountInput = props => {
     dispatch(
       updateAmount(`${(parseFloat(fiatAmount) / rates.USD).toFixed(4)}`),
     );
-  }, [amount, fiatAmount, leftToggled, onChangeText, rates.USD, dispatch]);
+  }, [amount, fiatAmount, leftToggled, rates.USD, dispatch]);
 
   useEffect(() => {
-    if (!toggled) {
-      return;
+    if (onChangeText) {
+      onChangeText(amount);
     }
-    onChangeText(amount);
   }, [amount, onChangeText, toggled]);
 
   useEffect(() => {

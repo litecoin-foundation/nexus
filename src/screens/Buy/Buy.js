@@ -21,8 +21,6 @@ const Buy = () => {
       <View style={styles.amountInputContainer}>
         <AmountInput
           toggleWithoutSelection
-          onChangeText={() => console.log('change text')}
-          selected={() => console.log('selected')}
           onAccept={amount => {
             dispatch(setAmount(amount));
             navigate('Confirm');
