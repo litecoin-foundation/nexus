@@ -40,7 +40,7 @@ const Send = () => {
 
       setAmount(decoded.options.amount);
       setAddress(decoded.address);
-      dispatch(updateAmount(toString(decoded.options.amount)));
+      dispatch(updateAmount(decoded.options.amount));
     } catch (error) {
       const validated = await validateLtcAddress(data);
 
