@@ -23,7 +23,6 @@ import Receive from './src/screens/Receive';
 import Account from './src/screens/Account';
 import Settings from './src/screens/Settings/Settings';
 import LightningReceive from './src/screens/LightningReceive';
-import LightningInvoice from './src/screens/LightningInvoice';
 import Channel from './src/screens/Settings/Channel';
 import OpenChannel from './src/screens/Settings/OpenChannel';
 import Buy from './src/screens/Buy/Buy';
@@ -48,7 +47,6 @@ const WalletStack = createStackNavigator({
   Send: {screen: Send},
   Receive: {screen: Receive},
   LightningReceive: {screen: LightningReceive},
-  LightningInvoice: {screen: LightningInvoice},
   WebPage: {screen: WebPage},
 });
 
