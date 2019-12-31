@@ -16,16 +16,16 @@ const Wallet = () => {
   const [selectedTransaction, selectTransaction] = useState(null);
 
   return (
-    <LinearGradient
-      colors={['#F6F9FC', 'rgba(210,225,239,0)']}
-      style={styles.container}>
+    <View style={styles.container}>
       <AmountView />
-      <TransactionList
-        onPress={data => {
-          selectTransaction(data);
-          setTxDetailModalVisible(true);
-        }}
-      />
+      <View style={styles.transactionListContainer}>
+        <TransactionList
+          onPress={data => {
+            selectTransaction(data);
+            setTxDetailModalVisible(true);
+          }}
+        />
+      </View>
 
       <LinearGradient
         colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
@@ -82,7 +82,7 @@ const Wallet = () => {
         isVisible={isTxDetailModalVisible}
         transaction={selectedTransaction}
       />
-    </LinearGradient>
+    </View>
   );
 };
 
@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flex: 1,
+    backgroundColor: 'rgb(238,244,249)',
   },
   paymentContainer: {
     paddingTop: 30,
@@ -131,6 +132,9 @@ const styles = StyleSheet.create({
   },
   left: {
     left: 7,
+  },
+  transactionListContainer: {
+    paddingTop: 25,
   },
 });
 

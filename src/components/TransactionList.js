@@ -46,11 +46,13 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     color: '#7C96AE',
-    backgroundColor: 'white',
+    backgroundColor: 'rgb(238,244,249)',
     opacity: 0.9,
-    fontSize: 11,
+    fontSize: 12,
+    fontWeight: '600',
     letterSpacing: -0.28,
     paddingLeft: 10,
+    paddingBottom: 4,
   },
   emptySectionListContainer: {
     marginTop: 30,
