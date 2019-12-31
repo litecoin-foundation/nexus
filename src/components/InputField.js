@@ -1,27 +1,38 @@
 import React from 'react';
 import {View, TextInput, StyleSheet} from 'react-native';
 
-const InputField = () => {
+const InputField = props => {
+  const {value, onChangeText, placeholder} = props;
   return (
     <View style={styles.container}>
-      <TextInput placeholder="enter a description" />
+      <TextInput
+        placeholder={placeholder ? placeholder : 'description'}
+        style={styles.text}
+        onChangeText={text => onChangeText(text)}
+        value={value}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: '90%',
-    height: 65,
-    borderRadius: 7,
+    marginLeft: 0,
+    paddingLeft: 20,
+    height: 50,
+    borderRadius: 5,
     backgroundColor: 'white',
-    shadowColor: 'black',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    justifyContent: 'center',
+    shadowColor: 'rgba(82,84,103,0.5)',
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
     shadowOffset: {
-      height: 0,
+      height: 6,
       width: 0,
     },
+  },
+  text: {
+    color: 'rgba(74, 74, 74, 1)',
   },
 });
 

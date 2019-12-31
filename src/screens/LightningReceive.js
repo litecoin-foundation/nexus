@@ -6,8 +6,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import Header from '../components/Header';
 import BlueButton from '../components/Buttons/BlueButton';
 import AmountInput from '../components/AmountInput';
-import GreyTextInput from '../components/GreyTextInput';
 import InvoiceModal from '../components/Modals/InvoiceModal';
+import InputField from '../components/InputField';
 import {addInvoice} from '../reducers/invoice';
 
 const LightningReceive = () => {
@@ -42,8 +42,8 @@ const LightningReceive = () => {
           style={styles.bottomContainer}>
           <View style={styles.descriptionContainer}>
             <Text style={styles.leftTitle}>ADD Description</Text>
-            <GreyTextInput
-              placeholder="placeholder"
+            <InputField
+              placeholder="Enter Note to Self"
               onChangeText={memo => setMemo(memo)}
             />
           </View>
