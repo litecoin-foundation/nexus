@@ -1,20 +1,36 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
+import LinearGradient from 'react-native-linear-gradient';
 
 const TransactionCell = props => {
   const {item, onPress} = props;
 
+  console.log(item);
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.circle} />
+      <LinearGradient
+        colors={item.sent ? ['#FF415E', '#FF9052'] : ['#7E58FF', '#0D59EA']}
+        style={styles.circle}>
+        <View style={styles.smallCircle} />
+      </LinearGradient>
       <View style={styles.left}>
-        <Text>{item.name}</Text>
-        <Text>{item.time}</Text>
+        <Text style={styles.labelText}>{item.name}</Text>
+        <Text style={styles.timeText}>{item.time}</Text>
       </View>
       <View style={styles.right}>
-        <Text style={styles.text}>{`${item.amount} LTC`}</Text>
-        <Text style={styles.text}>{item.fiatAmount}</Text>
+        <Text
+          style={[
+            styles.text,
+            item.sent ? styles.negativeText : styles.positiveText,
+          ]}>{`${item.amount} LTC`}</Text>
+        <Text
+          style={[
+            styles.fiatText,
+            item.sent ? styles.negativeFiatText : styles.positiveFiatText,
+          ]}>
+          +$6.01
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -30,14 +46,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginTop: 6,
     marginBottom: 6,
-    marginLeft: 10,
+    marginLeft: 15,
     marginRight: 15,
     alignItems: 'center',
     shadowColor: '#000000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     shadowOffset: {
-      height: 0,
+      height: 3,
       width: 0,
     },
   },
@@ -46,31 +62,59 @@ const styles = StyleSheet.create({
   },
   right: {
     flexGrow: 2,
-    paddingRight: 12,
+    paddingRight: 15,
   },
   circle: {
-    width: 40,
-    height: 40,
-    borderRadius: 40 / 2,
-    backgroundColor: '#FF00FF',
-    marginLeft: 12,
-    marginRight: 10,
+    width: 35,
+    height: 35,
+    borderRadius: 35 / 2,
+    marginLeft: 15,
+    marginRight: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  smallCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 30 / 2,
+    backgroundColor: 'white',
+  },
+  labelText: {
+    color: '#484859',
+    fontSize: 14,
+    fontWeight: 'bold',
+    letterSpacing: -0.19,
+  },
+  timeText: {
+    color: '#7C96AE',
+    fontSize: 12,
+    fontWeight: '500',
+    letterSpacing: -0.31,
   },
   text: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    letterSpacing: -0.19,
     textAlign: 'right',
   },
+  fiatText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    letterSpacing: -0.17,
+    textAlign: 'right',
+  },
+  positiveText: {
+    color: '#2C72FF',
+  },
+  negativeText: {
+    color: '#FF4B5C',
+  },
+  positiveFiatText: {
+    color: '#20BB74',
+  },
+  negativeFiatText: {
+    color: '#484859',
+  },
 });
-
-TransactionCell.propTypes = {
-  onPress: PropTypes.func,
-  item: PropTypes.shape({
-    amount: PropTypes.number,
-    date: PropTypes.string,
-    name: PropTypes.string,
-    time: PropTypes.string,
-    timeStamp: PropTypes.number,
-    txHash: PropTypes.string,
-  }).isRequired,
-};
 
 export default TransactionCell;

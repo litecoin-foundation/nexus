@@ -67,6 +67,7 @@ export const txDetailSelector = createSelector(
         confs: data.numConfirmations,
         type: 'litecoin onchain',
         addresses: data.destAddresses,
+        sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
       };
     }),
 );
