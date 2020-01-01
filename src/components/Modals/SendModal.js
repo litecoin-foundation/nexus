@@ -1,54 +1,87 @@
-import React, {Component} from 'react';
+import React, {useState, Fragment, useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
-import PropTypes from 'prop-types';
+import {useSelector} from 'react-redux';
+import {Pagination} from 'react-native-snap-carousel';
 
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
+import AuthPad from '../Numpad/AuthPad';
 
-export class SendModal extends Component {
-  render() {
-    const {isVisible, close} = this.props;
+const SendModal = props => {
+  const {isVisible, close, amount, address, memo} = props;
+  const [confirmed, confirm] = useState(false);
+  const pin = useSelector(state => state.authpad.pin);
 
-    return (
-      <Modal
-        isVisible={isVisible}
-        swipeDirection="down"
-        onSwipeComplete={() => close()}
-        onBackdropPress={() => close()}
-        backdropColor="rgb(19,58,138)"
-        backdropOpacity={0.6}
-        style={styles.noMargin}>
-        <View style={styles.container}>
-          <View style={styles.modal}>
-            <View style={styles.modalHeaderContainer}>
-              <Text style={styles.modalHeaderTitle}>Send</Text>
-              <GreyRoundButton onPress={() => close()} />
-            </View>
+  const handleConfirm = () => {
+    if (!confirmed) {
+      confirm(true);
+    }
+  };
 
-            <VerticalTableCell title="Recipient Address">
-              <Text>Meow</Text>
-            </VerticalTableCell>
-            <View style={styles.modalList}>
-              <TableCell title="AMOUNT IN FIAT" value="PLACEHOLDER" />
-              <TableCell title="AMOUNT IN LTC" value="PLACEHOLDER" />
-              <TableCell title="FEE" value="PLACEHOLDER" />
-            </View>
+  return (
+    <Modal
+      isVisible={isVisible}
+      swipeDirection="down"
+      onSwipeComplete={() => close()}
+      onBackdropPress={() => close()}
+      backdropColor="rgb(19,58,138)"
+      backdropOpacity={0.6}
+      style={styles.noMargin}>
+      <View style={styles.container}>
+        <View style={styles.modal}>
+          <View style={styles.modalHeaderContainer}>
+            <Text style={styles.modalHeaderTitle}>Send</Text>
+            <GreyRoundButton onPress={() => close()} />
+          </View>
 
-            <View style={styles.modalButtonContainer}>
-              <BlueButton
-                value="Confirm Send"
-                onPress={() => console.log('meow')}
+          {!confirmed ? (
+            <Fragment>
+              <VerticalTableCell title="Recipient Address">
+                <Text>{address}</Text>
+              </VerticalTableCell>
+              <View style={styles.modalList}>
+                <TableCell title="AMOUNT IN LTC" value={amount} />
+                <TableCell title="AMOUNT IN FIAT" value="PLACEHOLDER" />
+                {memo ? <TableCell title="DESCRIPTION" value={memo} /> : null}
+                <TableCell title="FEE" value="PLACEHOLDER" />
+              </View>
+            </Fragment>
+          ) : (
+            <View style={{flex: 1}}>
+              <Pagination
+                containerStyle={{borderWidth: 1}}
+                dotStyle={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: 9 / 2,
+                  marginHorizontal: 5,
+                }}
+                inactiveDotColor="#2C72FF"
+                dotColor="#2C72FF"
+                dotsLength={6}
+                activeDotIndex={pin.length - 1}
               />
+
+              <AuthPad />
             </View>
+          )}
+
+          <View style={styles.modalButtonContainer}>
+            <BlueButton
+              value={!confirmed ? 'Confirm' : 'Confirm Send'}
+              onPress={() => {
+                handleConfirm();
+              }}
+            />
           </View>
         </View>
-      </Modal>
-    );
-  }
-}
+      </View>
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -58,7 +91,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     backgroundColor: 'white',
-    height: 500,
+    height: 650,
     width: '100%',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -84,15 +117,11 @@ const styles = StyleSheet.create({
   },
   modalButtonContainer: {
     alignItems: 'center',
+    bottom: 30,
   },
   noMargin: {
     margin: 0,
   },
 });
-
-SendModal.propTypes = {
-  isVisible: PropTypes.bool.isRequired,
-  close: PropTypes.func.isRequired,
-};
 
 export default SendModal;

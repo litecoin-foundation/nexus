@@ -1,4 +1,3 @@
-// TODO: refactor this reducer
 import Lightning from '../lib/lightning/lightning';
 
 const LndInstance = new Lightning();
@@ -54,13 +53,6 @@ export const estimateOnchainFee = (address, amount, conf) => async dispatch => {
     alert(`fee calculation ${error}`);
     console.log(`payment onchain error: ${error}`);
   }
-};
-
-export const inputParams = params => dispatch => {
-  dispatch({
-    INPUT_PARAMS,
-    params,
-  });
 };
 
 export const decodePaymentRequest = async payReqString => {

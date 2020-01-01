@@ -3,9 +3,12 @@ import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const BlueButton = props => {
-  const {value, onPress} = props;
+  const {value, onPress, disabled} = props;
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      disabled={disabled}>
       <Text style={styles.text}>{value}</Text>
     </TouchableOpacity>
   );
