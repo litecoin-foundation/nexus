@@ -1,8 +1,17 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Clipboard} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Clipboard,
+  TouchableOpacity,
+  Image,
+  Share,
+} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import DeviceInfo from 'react-native-device-info';
+import {useNavigation} from 'react-navigation-hooks';
 
 import Header from '../components/Header';
 import RequestModal from '../components/Modals/RequestModal';
@@ -13,6 +22,7 @@ import * as bip21 from '../lib/utils/bip21';
 
 const Receive = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const address = useSelector(state => state.address.address);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,6 +33,15 @@ const Receive = () => {
     dispatch(getAddress());
     setURI(address);
   }, [address, dispatch]);
+
+  useEffect(() => {
+    const handleShare = async () => {
+      await Share.share({message: uri, url: uri});
+    };
+
+    navigation.setParams({share: handleShare});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uri]);
 
   const handleCopy = async () => {
     await Clipboard.setString(address);
@@ -120,11 +139,21 @@ const styles = StyleSheet.create({
   bottomDetailPadding: {
     paddingBottom: 20,
   },
+  headerRight: {
+    paddingRight: 18,
+  },
 });
 
-Receive.navigationOptions = () => {
+Receive.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'Receive',
+    headerRight: (
+      <TouchableOpacity
+        style={styles.headerRight}
+        onPress={navigation.getParam('share')}>
+        <Image source={require('../assets/images/share.png')} />
+      </TouchableOpacity>
+    ),
     headerTitleStyle: {
       fontWeight: 'bold',
       color: 'white',
