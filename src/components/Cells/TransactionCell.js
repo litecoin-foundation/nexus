@@ -5,8 +5,6 @@ import LinearGradient from 'react-native-linear-gradient';
 const TransactionCell = props => {
   const {item, onPress} = props;
 
-  console.log(item);
-
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <LinearGradient
