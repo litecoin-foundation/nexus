@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Text,
   Image,
+  Platform,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import {RNCamera} from 'react-native-camera';
@@ -38,7 +39,11 @@ const ScanModal = props => {
           onBarCodeRead={e => handleRead(e)}
           type={RNCamera.Constants.Type.back}
           barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}
-          videoStabilizationMode={RNCamera.Constants.VideoStabilization.auto}
+          videoStabilizationMode={
+            Platform.OS === 'android'
+              ? null
+              : RNCamera.Constants.VideoStabilization.auto
+          }
           androidCameraPermissionOptions={{
             title: 'Permission to use Camera',
             message:
