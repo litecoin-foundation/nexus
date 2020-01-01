@@ -1,6 +1,5 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
 const BlueFatButton = props => {
   const {value, onPress} = props;
@@ -20,6 +19,7 @@ const styles = StyleSheet.create({
     shadowColor: 'rgb(68,130,255)',
     shadowOpacity: 0.41,
     shadowRadius: 6,
+    elevation: 6,
     shadowOffset: {
       height: 0,
       width: 0,
@@ -31,10 +31,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-BlueFatButton.propTypes = {
-  value: PropTypes.string.isRequired,
-  onPress: PropTypes.func,
-};
 
 export default BlueFatButton;

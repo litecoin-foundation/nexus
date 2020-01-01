@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
     shadowColor: '#393e53',
     shadowOpacity: 0.25,
     shadowRadius: 14,
+    elevation: 10,
   },
   noMargin: {
     margin: 0,

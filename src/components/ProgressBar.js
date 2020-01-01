@@ -20,6 +20,7 @@ const progressBarStyle = progress => {
     shadowColor: '#20BB74',
     shadowOpacity: 1,
     shadowRadius: 14,
+    elevation: 14,
     shadowOffset: {
       height: 0,
       width: 0,
