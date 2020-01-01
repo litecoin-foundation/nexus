@@ -61,9 +61,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: -0.28,
-    paddingTop: 15,
-    paddingBottom: 15,
-    paddingLeft: 20,
+    paddingTop: 30,
+    paddingLeft: 25,
+    paddingBottom: 4,
   },
   chartDateText: {
     height: 13,
