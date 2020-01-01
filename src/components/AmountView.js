@@ -37,6 +37,14 @@ const AmountView = props => {
         DeviceInfo.hasNotch() ? styles.notch : styles.noNotch,
       ]}>
       <LinearGradient colors={['#7E58FF', '#003DB3']} style={styles.gradient}>
+        <View style={styles.maskContainer}>
+          <LinearGradient
+            colors={['#7E58FF', '#00369E']}
+            style={styles.secondGradient}>
+            <View style={styles.first} />
+          </LinearGradient>
+        </View>
+
         <SafeAreaView>
           <View style={styles.subview}>
             {!chartCursorSelected ? (
@@ -120,6 +128,19 @@ const styles = StyleSheet.create({
   },
   notch: {
     height: 400,
+  },
+  maskContainer: {
+    position: 'absolute',
+    width: '100%',
+  },
+  secondGradient: {
+    alignSelf: 'center',
+    width: 110,
+    height: 190,
+    borderBottomRightRadius: 70,
+    borderBottomLeftRadius: 70,
+    transform: [{scaleX: 4}],
+    opacity: 0.1,
   },
 });
 
