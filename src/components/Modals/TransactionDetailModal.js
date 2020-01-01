@@ -42,10 +42,6 @@ const TransactionDetailModal = props => {
 
           <ScrollView>
             <TableCell
-              title="SENDER"
-              value={transaction.sign ? 'Me' : 'Them'}
-            />
-            <TableCell
               title="RECIPIENT"
               value={transaction.sign ? 'Them' : 'Me'}
             />
@@ -84,12 +80,11 @@ const TransactionDetailModal = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
     margin: 0,
   },
   modal: {
+    flex: 1,
     backgroundColor: 'white',
-    height: 700,
     width: '100%',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -115,14 +110,11 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: 25,
-    paddingRight: 25,
-    height: 100,
     borderTopWidth: 1,
     borderTopColor: 'rgba(151,151,151,0.3)',
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   text: {
     color: '#4A4A4A',
