@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import {useDispatch} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
@@ -144,7 +145,11 @@ const Send = () => {
       )}
 
       <LinearGradient
-        colors={['#F6F9FC', 'rgba(210,225,239,0)']}
+        colors={
+          Platform.OS === 'android'
+            ? ['#eef4f9', '#eef4f9']
+            : ['#F6F9FC', '#d2e1ef00']
+        }
         style={styles.flex}>
         <View>
           <View style={styles.typeTextContainer}>

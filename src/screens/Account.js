@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Platform} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
@@ -36,7 +36,11 @@ const Account = () => {
         <DatePicker />
       </AmountView>
       <LinearGradient
-        colors={['#F6F9FC', 'rgba(210,225,239,0)']}
+        colors={
+          Platform.OS === 'android'
+            ? ['#eef4f9', '#eef4f9']
+            : ['#F6F9FC', '#d2e1ef00']
+        }
         style={styles.container}>
         <Text style={styles.text}>Accounts</Text>
         <View style={styles.accountsContainer}>
