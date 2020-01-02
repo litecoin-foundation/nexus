@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   Dimensions,
   SafeAreaView,
 } from 'react-native';
-import {connect} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 
 import ChannelCell from '../../components/Cells/ChannelCell';
@@ -20,67 +20,47 @@ import {
 
 const {width} = Dimensions.get('window');
 
-export class Channel extends Component {
-  static navigationOptions = ({navigation}) => {
-    return {
-      headerTitle: 'Channels',
-      headerRight: (
-        <WhiteButton
-          value="Open"
-          small={true}
-          onPress={() => navigation.navigate('OpenChannel')}
-          active={true}
-        />
-      ),
-      headerTitleStyle: {
-        fontWeight: 'bold',
-        color: 'white',
-      },
-      headerTransparent: true,
-      headerBackTitle: null,
-    };
-  };
+const Channel = () => {
+  const dispatch = useDispatch();
+  const channels = useSelector(state => state.channels.channels);
 
-  async componentDidMount() {
-    const {listChannels, listPeers, listPendingChannels} = this.props;
-    await listChannels();
-    await listPeers();
-    await listPendingChannels();
-  }
+  useEffect(() => {
+    dispatch(listChannels());
+    dispatch(listPeers());
+    dispatch(listPendingChannels());
+  }, [dispatch]);
 
-  render() {
-    const {channels} = this.props;
-    const list = (
-      <FlatList
-        pagingEnabled
-        horizontal
-        decelerationRate={0}
-        snapToInterval={width - 40}
-        snapToAlignment="center"
-        showsHorizontalScrollIndicator={false}
-        contentInset={{
-          top: 0,
-          left: 20,
-          bottom: 0,
-          right: 20,
-        }}
-        data={channels}
-        renderItem={({item}) => <ChannelCell item={item} />}
-        keyExtractor={item => item.remotePubkey}
-      />
-    );
-    return (
-      <View style={styles.container}>
-        <LinearGradient
-          colors={['#5A4FE7', '#2C44C8']}
-          style={styles.headerContainer}>
-          <SafeAreaView />
-        </LinearGradient>
-        {!channels ? <Text>No channels here.</Text> : list}
-      </View>
-    );
-  }
-}
+  const list = (
+    <FlatList
+      pagingEnabled
+      horizontal
+      decelerationRate={0}
+      snapToInterval={width - 40}
+      snapToAlignment="center"
+      showsHorizontalScrollIndicator={false}
+      contentInset={{
+        top: 0,
+        left: 20,
+        bottom: 0,
+        right: 20,
+      }}
+      data={channels}
+      renderItem={({item}) => <ChannelCell item={item} />}
+      keyExtractor={item => item.remotePubkey}
+    />
+  );
+
+  return (
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#5A4FE7', '#2C44C8']}
+        style={styles.headerContainer}>
+        <SafeAreaView />
+      </LinearGradient>
+      {!channels ? <Text>No channels here.</Text> : list}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -91,14 +71,24 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapStateToProps = state => ({
-  channels: state.channels.channels,
-});
-
-const mapDispatchToProps = {
-  listChannels,
-  listPeers,
-  listPendingChannels,
+Channel.navigationOptions = ({navigation}) => {
+  return {
+    headerTitle: 'Channels',
+    headerRight: (
+      <WhiteButton
+        value="Open"
+        small={true}
+        onPress={() => navigation.navigate('OpenChannel')}
+        active={true}
+      />
+    ),
+    headerTitleStyle: {
+      fontWeight: 'bold',
+      color: 'white',
+    },
+    headerTransparent: true,
+    headerBackTitle: null,
+  };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Channel);
+export default Channel;
