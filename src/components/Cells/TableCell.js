@@ -3,11 +3,11 @@ import {View, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
 const TableCell = props => {
-  const {title, value} = props;
+  const {title, value, valueStyle} = props;
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.text}>{value}</Text>
+      <Text style={[styles.text, valueStyle ? valueStyle : null]}>{value}</Text>
     </View>
   );
 };

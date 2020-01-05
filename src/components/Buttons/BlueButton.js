@@ -1,12 +1,11 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
 const BlueButton = props => {
   const {value, onPress, disabled} = props;
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, disabled ? styles.disabled : null]}
       onPress={onPress}
       disabled={disabled}>
       <Text style={styles.text}>{value}</Text>
@@ -36,11 +35,9 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
+  disabled: {
+    opacity: 0.4,
+  },
 });
-
-BlueButton.propTypes = {
-  value: PropTypes.string.isRequired,
-  onPress: PropTypes.func,
-};
 
 export default BlueButton;

@@ -1,4 +1,4 @@
-import React, {useState, Fragment, useEffect} from 'react';
+import React, {useState, Fragment} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
 import {useSelector} from 'react-redux';
@@ -21,12 +21,54 @@ const SendModal = props => {
     }
   };
 
+  const handleClose = () => {
+    confirm(false);
+    close();
+  };
+
+  const DescriptionView = () => (
+    <Fragment>
+      <VerticalTableCell title="Recipient Address">
+        <Text style={styles.addressText}>{address}</Text>
+      </VerticalTableCell>
+      <View style={styles.modalList}>
+        <TableCell
+          title="AMOUNT IN LTC"
+          value={`${amount}Ł`}
+          valueStyle={styles.ltcText}
+        />
+        <TableCell
+          title="AMOUNT IN FIAT"
+          value="PLACEHOLDER"
+          valueStyle={styles.fiatText}
+        />
+        {memo ? <TableCell title="DESCRIPTION" value={memo} /> : null}
+        <TableCell title="FEE" value="PLACEHOLDER" />
+      </View>
+    </Fragment>
+  );
+
+  const ConfirmationView = () => (
+    <View style={styles.flex}>
+      <Pagination
+        dotStyle={styles.dotStyle}
+        inactiveDotColor="#2C72FF"
+        dotColor="#2C72FF"
+        dotsLength={6}
+        activeDotIndex={pin.length - 1}
+      />
+      <View>
+        <AuthPad />
+      </View>
+    </View>
+  );
+
   return (
     <Modal
       isVisible={isVisible}
       swipeDirection="down"
-      onSwipeComplete={() => close()}
-      onBackdropPress={() => close()}
+      onSwipeComplete={() => handleClose()}
+      onBackdropPress={() => handleClose()}
       backdropColor="rgb(19,58,138)"
       backdropOpacity={0.6}
       style={styles.noMargin}>
@@ -34,40 +76,10 @@ const SendModal = props => {
         <View style={styles.modal}>
           <View style={styles.modalHeaderContainer}>
             <Text style={styles.modalHeaderTitle}>Send</Text>
-            <GreyRoundButton onPress={() => close()} />
+            <GreyRoundButton onPress={() => handleClose()} />
           </View>
 
-          {!confirmed ? (
-            <Fragment>
-              <VerticalTableCell title="Recipient Address">
-                <Text>{address}</Text>
-              </VerticalTableCell>
-              <View style={styles.modalList}>
-                <TableCell title="AMOUNT IN LTC" value={amount} />
-                <TableCell title="AMOUNT IN FIAT" value="PLACEHOLDER" />
-                {memo ? <TableCell title="DESCRIPTION" value={memo} /> : null}
-                <TableCell title="FEE" value="PLACEHOLDER" />
-              </View>
-            </Fragment>
-          ) : (
-            <View style={{flex: 1}}>
-              <Pagination
-                containerStyle={{borderWidth: 1}}
-                dotStyle={{
-                  width: 9,
-                  height: 9,
-                  borderRadius: 9 / 2,
-                  marginHorizontal: 5,
-                }}
-                inactiveDotColor="#2C72FF"
-                dotColor="#2C72FF"
-                dotsLength={6}
-                activeDotIndex={pin.length - 1}
-              />
-
-              <AuthPad />
-            </View>
-          )}
+          {!confirmed ? <DescriptionView /> : <ConfirmationView />}
 
           <View style={styles.modalButtonContainer}>
             <BlueButton
@@ -118,9 +130,38 @@ const styles = StyleSheet.create({
   modalButtonContainer: {
     alignItems: 'center',
     bottom: 30,
+    position: 'absolute',
+    alignSelf: 'center',
   },
   noMargin: {
     margin: 0,
+  },
+  flex: {
+    flex: 1,
+  },
+  addressText: {
+    color: '#20BB74',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: -0.54,
+  },
+  ltcText: {
+    color: '#2C72FF',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.68,
+  },
+  fiatText: {
+    color: '#20BB74',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.68,
+  },
+  dotStyle: {
+    width: 9,
+    height: 9,
+    borderRadius: 9 / 2,
+    marginHorizontal: 5,
   },
 });
 
