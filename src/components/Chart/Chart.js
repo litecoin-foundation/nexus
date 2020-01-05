@@ -99,7 +99,7 @@ const Chart = () => {
 
   return (
     <Cursor
-      width={width - 20}
+      width={width}
       height={height}
       data={data}
       x={x.current}
