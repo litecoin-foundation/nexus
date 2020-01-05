@@ -1,5 +1,5 @@
 import React, {useEffect, Fragment, useState, createRef} from 'react';
-import {View, Text, Dimensions, StyleSheet} from 'react-native';
+import {View, Text, Dimensions, StyleSheet, Image} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
 import Carousel, {Pagination} from 'react-native-snap-carousel';
@@ -79,9 +79,16 @@ const Generate = () => {
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.header}>
         {!seed ? <Text>Loading...</Text> : list}
         <View style={styles.bottomContainer}>
-          <Text style={styles.warningText}>
-            Without these words you won't be able to access your wallet!
-          </Text>
+          <View style={styles.bottomTextContainer}>
+            <Image
+              style={styles.image}
+              source={require('../../assets/images/attention.png')}
+            />
+            <Text style={styles.warningText}>
+              Without these words you won't be able to access your wallet!
+            </Text>
+          </View>
+
           <WhiteButton
             value={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
             onPress={() => handlePress()}
@@ -109,10 +116,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   bottomContainer: {
-    alignItems: 'center',
+    alignSelf: 'center',
     position: 'absolute',
     bottom: 0,
     paddingBottom: 40,
+  },
+  bottomTextContainer: {
+    flexDirection: 'row',
+    width: 335,
+    paddingBottom: 19,
+    alignItems: 'baseline',
+  },
+  image: {
+    marginRight: 18,
   },
 });
 
