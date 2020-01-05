@@ -1,4 +1,4 @@
-import React, {Fragment, useState} from 'react';
+import React, {Fragment, useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,21 @@ const Send = () => {
   const [amount, setAmount] = useState(null);
   const [memo, changeMemo] = useState('');
   const [invalidQR, setInvalidQR] = useState(false);
+  const [isConfirmDisabled, disableConfirm] = useState(true);
+
+  useEffect(() => {
+    if (
+      address === null ||
+      address === undefined ||
+      amount === null ||
+      amount === undefined ||
+      parseFloat((amount + '').replace('.', '')) === 0
+    ) {
+      disableConfirm(true);
+    } else {
+      disableConfirm(false);
+    }
+  }, [address, amount]);
 
   const validate = async data => {
     try {
@@ -189,7 +204,11 @@ const Send = () => {
 
       {isAmountInputTriggered ? null : (
         <View style={styles.sendContainer}>
-          <BlueButton value="Send" onPress={() => triggerSendModal(true)} />
+          <BlueButton
+            value="Send"
+            onPress={() => triggerSendModal(true)}
+            disabled={isConfirmDisabled}
+          />
         </View>
       )}
 
