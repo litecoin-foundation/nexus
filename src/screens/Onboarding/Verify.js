@@ -142,9 +142,11 @@ const styles = StyleSheet.create({
   optionSubContainer: {
     flexDirection: 'column',
     alignItems: 'center',
+    paddingLeft: 4,
+    paddingRight: 4,
   },
   bottomContainer: {
-    alignContent: 'center',
+    alignSelf: 'center',
     position: 'absolute',
     bottom: 0,
     paddingBottom: 40,
