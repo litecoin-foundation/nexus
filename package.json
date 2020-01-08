@@ -35,7 +35,7 @@
     "react-native-camera": "^3.15.0",
     "react-native-device-info": "^5.4.0",
     "react-native-fs": "^2.16.2",
-    "react-native-gesture-handler": "^1.5.2",
+    "react-native-gesture-handler": "^1.5.3",
     "react-native-haptic-feedback": "^1.8.2",
     "react-native-icloudstore": "manicakes/react-native-icloudstore#7aeb7ea",
     "react-native-keychain": "^4.0.5",
