@@ -1,46 +1,32 @@
 import React, {useState} from 'react';
-import {TouchableOpacity, StyleSheet, Text, Animated} from 'react-native';
+import {StyleSheet, Switch} from 'react-native';
 
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
-const Switch = props => {
+const SwitchButton = props => {
   const {onPress} = props;
   const [triggered, trigger] = useState(false);
 
-  const handlePress = () => {
-    trigger(!triggered);
-    onPress(!triggered);
+  const handlePress = value => {
+    trigger(value);
+    onPress(value);
   };
 
   return (
-    <AnimatedTouchable style={[styles.container]} onPress={() => handlePress()}>
-      <Text>{triggered ? 'ON' : 'OFF'}</Text>
-    </AnimatedTouchable>
+    <Switch
+      value={triggered}
+      onValueChange={value => handlePress(value)}
+      trackColor={{true: 'white'}}
+      thumbColor={triggered ? '#2C72FF' : '#C2C2C2'}
+      ios_backgroundColor="#E9E9E948"
+      style={triggered ? styles.triggered : null}
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: 36,
-    width: 63,
-    borderRadius: 20,
-    backgroundColor: '#D4D3DA',
-    shadowColor: 'black',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 10,
-    shadowOffset: {
-      height: 0,
-      width: 0,
-    },
-
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    width: 100,
-    height: 100,
+  triggered: {
+    borderWidth: 0.5,
+    borderColor: '#D5D5D5',
   },
 });
 
-export default Switch;
+export default SwitchButton;
