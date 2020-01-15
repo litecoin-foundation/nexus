@@ -1,12 +1,12 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {useSelector} from 'react-redux';
 
 import ProgressBar from '../ProgressBar';
 import {percentSyncedSelector, syncStatusSelector} from '../../reducers/info';
 import {rateSelector} from '../../reducers/ticker';
 import {balanceSelector} from '../../reducers/balance';
+import LitecoinIcon from '../LitecoinIcon';
 
 const AccountCell = props => {
   const {onPress, syncStatusDisabled, disabled} = props;
@@ -25,17 +25,7 @@ const AccountCell = props => {
         !synced && !syncStatusDisabled ? styles.notSynced : null,
       ]}
       onPress={onPress}>
-      <LinearGradient
-        colors={['#6954F2', 'rgb(0, 61, 179)']}
-        style={styles.circle}>
-        <View style={styles.imageContainer}>
-          <Image
-            style={styles.image}
-            resizeMode="contain"
-            source={require('../../assets/images/ltc-logo.png')}
-          />
-        </View>
-      </LinearGradient>
+      <LitecoinIcon />
       <View style={styles.left}>
         <Text style={styles.labelText}>Litecoin (LTC)</Text>
         <Text style={styles.timeText}>{`${balance} LTC`}</Text>
@@ -87,15 +77,6 @@ const styles = StyleSheet.create({
     flexGrow: 2,
     paddingRight: 15,
   },
-  circle: {
-    width: 35,
-    height: 35,
-    borderRadius: 35 / 2,
-    marginLeft: 15,
-    marginRight: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   labelText: {
     color: '#484859',
     fontSize: 14,
@@ -131,15 +112,6 @@ const styles = StyleSheet.create({
   },
   notSynced: {
     height: 140,
-  },
-  imageContainer: {
-    height: 15,
-    width: 15,
-  },
-  image: {
-    flex: 1,
-    height: undefined,
-    width: undefined,
   },
   descriptionText: {
     color: '#2E3033',
