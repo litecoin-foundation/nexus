@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   Platform,
+  ScrollView,
 } from 'react-native';
 import {useDispatch} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
@@ -166,7 +167,7 @@ const Send = () => {
             : ['#F6F9FC', '#d2e1ef00']
         }
         style={styles.flex}>
-        <View>
+        <ScrollView style={styles.flex}>
           <View style={styles.typeTextContainer}>
             <Text style={styles.recipientHeaderText}>CHOOSE recipient</Text>
           </View>
@@ -194,12 +195,12 @@ const Send = () => {
               />
             </View>
           )}
-        </View>
 
-        <View style={styles.recipientHeaderContainer}>
-          <Text style={styles.descriptionHeaderText}>ADD Description</Text>
-          <InputField onChangeText={text => changeMemo(text)} value={memo} />
-        </View>
+          <View style={styles.recipientHeaderContainer}>
+            <Text style={styles.descriptionHeaderText}>ADD Description</Text>
+            <InputField onChangeText={text => changeMemo(text)} value={memo} />
+          </View>
+        </ScrollView>
       </LinearGradient>
 
       {isAmountInputTriggered ? null : (
@@ -235,7 +236,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'nowrap',
     justifyContent: 'space-evenly',
-    paddingBottom: 105,
   },
   amountHeaderContainer: {
     height: 55,
