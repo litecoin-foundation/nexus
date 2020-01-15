@@ -14,7 +14,7 @@ const WhiteButton = props => {
   } = props;
   return (
     <TouchableOpacity
-      disabled={disabled}
+      disabled={disabled ? disabled : null}
       style={[
         styles.container,
         small ? styles.small : styles.big,
@@ -28,6 +28,7 @@ const WhiteButton = props => {
           styles.text,
           customFontStyles,
           active ? null : styles.inactiveText,
+          small ? styles.smallText : null,
         ]}>
         {value}
       </Text>
@@ -64,6 +65,9 @@ const styles = StyleSheet.create({
   },
   inactiveText: {
     color: 'white',
+  },
+  smallText: {
+    fontSize: 11,
   },
 });
 
