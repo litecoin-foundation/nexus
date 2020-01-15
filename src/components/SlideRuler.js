@@ -5,7 +5,7 @@ import React, {
   useEffect,
   Fragment,
 } from 'react';
-import {FlatList, View, StyleSheet, Text} from 'react-native';
+import {FlatList, View, StyleSheet, Text, Dimensions} from 'react-native';
 
 class Item extends PureComponent {
   render() {
@@ -28,19 +28,7 @@ class Item extends PureComponent {
   }
 }
 
-const comparator = (prevProps, nextProps) => {
-  if (nextProps.width === 0 && prevProps.width !== 0) {
-    return true;
-  }
-
-  if (nextProps.value !== prevProps.value) {
-    return true;
-  }
-
-  return false;
-};
-
-const SlideRuler = React.memo(props => {
+const SlideRuler = props => {
   const itemAmountPerScreen = 30;
   const flatList = useRef();
 
@@ -69,11 +57,10 @@ const SlideRuler = React.memo(props => {
     setItems(new Array(length).fill(0));
   }, [arrayLength, maximumValue, multiplicity]);
 
-  const onLayout = event => {
-    setWidth(event.nativeEvent.layout.width);
-    setOneItemWidth(
-      Math.round(event.nativeEvent.layout.width / itemAmountPerScreen),
-    );
+  const onLayout = () => {
+    const {width} = Dimensions.get('window');
+    setWidth(width);
+    setOneItemWidth(Math.round(width / itemAmountPerScreen));
   };
 
   const onSliderMoved = event => {
@@ -134,7 +121,7 @@ const SlideRuler = React.memo(props => {
       {renderDefaultThumb()}
     </View>
   );
-}, comparator);
+};
 
 SlideRuler.defaultProps = {
   multiplicity: 0.1,
