@@ -14,6 +14,7 @@ import buy from './buy';
 import authentication from './authentication';
 import chart from './chart';
 import input from './input';
+import alerts from './alerts';
 
 export default combineReducers({
   onboarding,
@@ -31,4 +32,5 @@ export default combineReducers({
   authentication,
   chart,
   input,
+  alerts,
 });

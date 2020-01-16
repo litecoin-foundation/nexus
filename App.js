@@ -29,6 +29,8 @@ import Buy from './src/screens/Buy/Buy';
 import Confirm from './src/screens/Buy/Confirm';
 import Processing from './src/screens/Buy/Processing';
 import WebPage from './src/screens/WebPage';
+import Alert from './src/screens/Alert/Alert';
+import Dial from './src/screens/Alert/Dial';
 
 const OnboardingStack = createStackNavigator({
   Initial: {screen: Initial},
@@ -65,6 +67,30 @@ WalletStack.navigationOptions = ({navigation}) => {
         />
       ) : (
         <Image source={require('./src/assets/icons/wallet-icon.png')} />
+      ),
+  };
+};
+
+const AlertsStack = createStackNavigator({
+  Alert: {screen: Alert},
+  Dial: {screen: Dial},
+});
+
+AlertsStack.navigationOptions = ({navigation}) => {
+  let tabBarVisible = true;
+  if (navigation.state.index > 0) {
+    tabBarVisible = false;
+  }
+  return {
+    tabBarVisible,
+    tabBarLabel: 'ALERTS',
+    tabBarIcon: ({focused}) =>
+      focused ? (
+        <Image
+          source={require('./src/assets/icons/alerts-selected-icon.png')}
+        />
+      ) : (
+        <Image source={require('./src/assets/icons/alerts-icon.png')} />
       ),
   };
 };
@@ -114,6 +140,7 @@ const AppStack = createBottomTabNavigator(
   {
     Wallets: {screen: WalletStack},
     Buy: {screen: BuyStack},
+    Alert: {screen: AlertsStack},
     Settings: {screen: SettingsStack},
   },
   {
