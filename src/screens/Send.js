@@ -37,6 +37,7 @@ const Send = () => {
   const [amount, setAmount] = useState(null);
   const [memo, changeMemo] = useState('');
   const [invalidQR, setInvalidQR] = useState(false);
+  const [invalidPaste, setInvalidPaste] = useState(false);
   const [isConfirmDisabled, disableConfirm] = useState(true);
 
   useEffect(() => {
@@ -87,7 +88,13 @@ const Send = () => {
 
   const handlePaste = async () => {
     const clipboard = await Clipboard.getString();
-    validate(clipboard);
+
+    try {
+      await validate(clipboard);
+    } catch (error) {
+      setInvalidPaste(true);
+      return;
+    }
   };
 
   const handleScanCallback = async data => {
@@ -111,7 +118,27 @@ const Send = () => {
         <Text style={styles.headerText}>From Wallet</Text>
         <AccountCell disabled={true} syncStatusDisabled={true} />
       </LinearGradient>
-      {invalidQR ? (
+      {invalidPaste ? (
+        <LinearGradient
+          colors={['#FF415E', '#FF9052']}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 0}}
+          style={styles.invalidContainer}>
+          <View style={styles.invalidHeaderContainer}>
+            <View style={styles.invalidHeaderTextContainer}>
+              <Image source={require('../assets/images/block.png')} />
+              <Text style={styles.invalidHeaderText}>Invalid Paste</Text>
+            </View>
+            <TouchableOpacity onPress={() => setInvalidPaste(false)}>
+              <Image source={require('../assets/images/close-white.png')} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.invalidText}>
+            We couldn't recognize a valid address in your Clipboard. Try copying
+            and pasting the correct address instead.
+          </Text>
+        </LinearGradient>
+      ) : invalidQR ? (
         <LinearGradient
           colors={['#FF415E', '#FF9052']}
           start={{x: 0, y: 0}}
