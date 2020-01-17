@@ -45,6 +45,14 @@ const SendModal = props => {
         {memo ? <TableCell title="DESCRIPTION" value={memo} /> : null}
         <TableCell title="FEE" value="PLACEHOLDER" />
       </View>
+      <View style={styles.modalButtonContainer}>
+        <BlueButton
+          value={!confirmed ? 'Confirm' : 'Confirm Send'}
+          onPress={() => {
+            handleConfirm();
+          }}
+        />
+      </View>
     </Fragment>
   );
 
@@ -80,15 +88,6 @@ const SendModal = props => {
           </View>
 
           {!confirmed ? <DescriptionView /> : <ConfirmationView />}
-
-          <View style={styles.modalButtonContainer}>
-            <BlueButton
-              value={!confirmed ? 'Confirm' : 'Confirm Send'}
-              onPress={() => {
-                handleConfirm();
-              }}
-            />
-          </View>
         </View>
       </View>
     </Modal>
