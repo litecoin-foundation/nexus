@@ -10,7 +10,7 @@ import {deleteWalletDB} from '../lib/utils/file';
 import {finishOnboarding} from './onboarding';
 import {pollBalance} from './balance';
 import {pollInfo} from './info';
-import {pollTransactions} from './transaction';
+import {getTransactions} from './transaction';
 import {pollTicker} from './ticker';
 import {backupChannels} from './channels';
 
@@ -68,7 +68,7 @@ export const initWallet = () => async (dispatch, getState) => {
     // dispatch pollers
     dispatch(pollBalance());
     dispatch(pollInfo());
-    dispatch(pollTransactions());
+    dispatch(getTransactions());
     dispatch(pollTicker());
     dispatch(backupChannels());
   } catch (error) {
@@ -85,7 +85,9 @@ export const unlockWallet = () => async dispatch => {
       walletPassword: toBuffer(password),
     });
   } catch (error) {
-    const dbPath = `${RNFS.DocumentDirectoryPath}/data/chain/litecoin/mainnet/wallet.db`;
+    const dbPath = `${
+      RNFS.DocumentDirectoryPath
+    }/data/chain/litecoin/mainnet/wallet.db`;
 
     if ((await RNFS.exists(dbPath)) === false) {
       dispatch(initWallet());
@@ -95,7 +97,7 @@ export const unlockWallet = () => async dispatch => {
   // dispatch pollers
   dispatch(pollBalance());
   dispatch(pollInfo());
-  dispatch(pollTransactions());
+  dispatch(getTransactions());
   dispatch(pollTicker());
   dispatch(backupChannels());
 };
