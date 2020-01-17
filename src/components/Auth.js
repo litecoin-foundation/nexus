@@ -17,7 +17,13 @@ const Auth = props => {
       <OnboardingHeader
         title={headerTitleText}
         description={headerDescriptionText}>
-        <Pagination dotsLength={6} activeDotIndex={pin.length - 1} />
+        <Pagination
+          dotStyle={styles.dotStyle}
+          inactiveDotColor="#FFFFFF36"
+          dotColor="white"
+          dotsLength={6}
+          activeDotIndex={pin.length - 1}
+        />
       </OnboardingHeader>
 
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
@@ -49,6 +55,12 @@ const styles = StyleSheet.create({
   },
   gradient: {
     flexGrow: 1,
+  },
+  dotStyle: {
+    width: 9,
+    height: 9,
+    borderRadius: 9 / 2,
+    marginHorizontal: 5,
   },
 });
 
