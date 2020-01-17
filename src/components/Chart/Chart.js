@@ -7,7 +7,7 @@ import * as scale from 'd3-scale';
 import {useDispatch, useSelector} from 'react-redux';
 
 import Cursor from './Cursor';
-import {getHistoricalRates} from '../../reducers/ticker';
+import {updateHistoricalRates} from '../../reducers/ticker';
 import {monthSelector} from '../../reducers/ticker';
 
 const d3 = {shape};
@@ -24,7 +24,7 @@ const Chart = () => {
   const y = useRef(null);
 
   useEffect(() => {
-    dispatch(getHistoricalRates());
+    dispatch(updateHistoricalRates());
   }, [dispatch]);
 
   useEffect(() => {

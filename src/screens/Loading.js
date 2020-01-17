@@ -5,7 +5,6 @@ import {connect} from 'react-redux';
 import {startOnboarding} from '../reducers/onboarding';
 import {startLnd} from '../reducers/lightning';
 import {checkBiometricSupport} from '../lib/utils/biometric';
-import {getHistoricalRates} from '../reducers/ticker';
 
 export class Loading extends Component {
   componentDidMount() {
@@ -16,13 +15,11 @@ export class Loading extends Component {
       startOnboarding,
       startLnd,
       checkBiometricSupport,
-      getHistoricalRates,
     } = this.props;
 
     // start LND process
     startLnd();
     checkBiometricSupport();
-    getHistoricalRates();
 
     if (onboarding === false && isOnboarded === true) {
       navigation.navigate('Auth');
@@ -50,7 +47,9 @@ const mapDispatchToProps = {
   startOnboarding,
   startLnd,
   checkBiometricSupport,
-  getHistoricalRates,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Loading);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Loading);

@@ -1,5 +1,6 @@
 import {createSelector} from 'reselect';
 
+import {updateHistoricalRates} from './ticker';
 import percentageDiff from '../lib/utils/percentageDiff';
 
 // initial state
@@ -21,6 +22,7 @@ export const changeGraphPeriod = graphPeriod => dispatch => {
     type: CHANGE_GRAPH_PERIOD,
     graphPeriod,
   });
+  dispatch(updateHistoricalRates());
 };
 
 export const updateCursorValue = (x, y) => dispatch => {
@@ -56,6 +58,9 @@ const actionHandler = {
 const chartPercentageDaySelector = createSelector(
   state => state.ticker.day,
   dayRates => {
+    if (dayRates.length === 0) {
+      return 0;
+    }
     return percentageDiff(dayRates[0][3], dayRates[dayRates.length - 1][3]);
   },
 );
@@ -63,6 +68,9 @@ const chartPercentageDaySelector = createSelector(
 const chartPercentageWeekSelector = createSelector(
   state => state.ticker.week,
   weeksRate => {
+    if (weeksRate.length === 0) {
+      return 0;
+    }
     return percentageDiff(weeksRate[0][3], weeksRate[weeksRate.length - 1][3]);
   },
 );
@@ -70,6 +78,9 @@ const chartPercentageWeekSelector = createSelector(
 const chartPercentageMonthSelector = createSelector(
   state => state.ticker.month,
   monthsRate => {
+    if (monthsRate.length === 0) {
+      return 0;
+    }
     return percentageDiff(
       monthsRate[0][3],
       monthsRate[monthsRate.length - 1][3],

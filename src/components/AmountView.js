@@ -56,7 +56,10 @@ const AmountView = props => {
                   <Text style={styles.amountText}>{amount}</Text>
                   <Text style={styles.amountSymbol}>Ł</Text>
                 </View>
-                <GreenRoundButton value={chartPercentageChange} small />
+                <GreenRoundButton
+                  value={chartPercentageChange ? chartPercentageChange : ''}
+                  small
+                />
               </Fragment>
             ) : (
               <Fragment>

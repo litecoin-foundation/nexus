@@ -31,13 +31,7 @@ export const getTicker = () => async dispatch => {
 };
 
 export const pollTicker = () => async dispatch => {
-  await poll(() => dispatch(getTicker()));
-};
-
-export const getHistoricalRates = () => async dispatch => {
-  dispatch(getDayHistoricalRates());
-  dispatch(getWeekHistoricalRates());
-  dispatch(getMonthHistoricalRates());
+  await poll(() => dispatch(getTicker()), 15000);
 };
 
 export const getDayHistoricalRates = () => async dispatch => {
@@ -104,6 +98,25 @@ export const getMonthHistoricalRates = () => async dispatch => {
     type: UPDATE_HISTORIC_RATE_MONTH,
     data,
   });
+};
+
+export const updateHistoricalRates = () => (dispatch, getStore) => {
+  const graphPeriod = getStore().chart.graphPeriod;
+
+  switch (graphPeriod) {
+    case '1D':
+      dispatch(getDayHistoricalRates());
+      break;
+    case '1W':
+      dispatch(getWeekHistoricalRates());
+      break;
+    case '1M':
+      dispatch(getMonthHistoricalRates());
+      break;
+    default:
+      dispatch(getDayHistoricalRates());
+      break;
+  }
 };
 
 // action handlers

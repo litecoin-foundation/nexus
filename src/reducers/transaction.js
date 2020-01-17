@@ -1,7 +1,6 @@
 import {createSelector} from 'reselect';
 
 import Lightning from '../lib/lightning/lightning';
-import {poll} from '../lib/utils/poll';
 import {formatDate, formatTime} from '../lib/utils/date';
 
 const LndInstance = new Lightning();
@@ -17,34 +16,50 @@ export const GET_TRANSACTIONS = 'GET_TRANSACTIONS';
 export const GET_INVOICES = 'GET_INVOICES';
 
 // actions
-export const getTransactions = () => async dispatch => {
-  const {transactions} = await LndInstance.sendCommand('GetTransactions');
-  dispatch({
-    type: GET_TRANSACTIONS,
-    transactions,
+export const getTransactions = () => dispatch => {
+  const stream = LndInstance.sendStreamCommand('subscribeTransactions');
+  stream.on('data', transaction => {
+    dispatch({
+      type: GET_TRANSACTIONS,
+      transaction,
+    });
+  });
+  stream.on('error', err => console.log(`SubscribeTransaction error: ${err}`));
+  stream.on('status', status =>
+    console.log(`SubscribeTransactions status: ${status}`),
+  );
+  stream.on('end', () => {
+    console.log('SubscribeTransactions closed stream');
   });
 };
 
-export const pollTransactions = () => async dispatch => {
-  await poll(() => dispatch(getTransactions()));
-};
-
-export const getInvoices = () => async dispatch => {
-  const {invoices} = await LndInstance.sendCommand('GetInvoices');
-  dispatch({
-    type: GET_INVOICES,
-    invoices,
+export const getInvoices = () => dispatch => {
+  const stream = LndInstance.sendStreamCommand('subscribeInvoices');
+  stream.on('data', invoice => {
+    dispatch({
+      type: GET_INVOICES,
+      invoice,
+    });
   });
-};
-
-export const pollInvoices = () => async dispatch => {
-  await poll(() => dispatch(getInvoices()));
+  stream.on('error', err => console.log(`SubscribeTransaction error: ${err}`));
+  stream.on('status', status =>
+    console.log(`SubscribeTransactions status: ${status}`),
+  );
+  stream.on('end', () => {
+    console.log('SubscribeInvoices closed stream');
+  });
 };
 
 // action handlers
 const actionHandler = {
-  [GET_TRANSACTIONS]: (state, {transactions}) => ({...state, transactions}),
-  [GET_INVOICES]: (state, {invoices}) => ({...state, invoices}),
+  [GET_TRANSACTIONS]: (state, {transaction}) => ({
+    ...state,
+    transactions: [...state.transactions, transaction],
+  }),
+  [GET_INVOICES]: (state, {invoice}) => ({
+    ...state,
+    invoices: [...state.invoices, invoice],
+  }),
 };
 
 // selectors
