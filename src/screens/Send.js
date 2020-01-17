@@ -9,7 +9,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 import DeviceInfo from 'react-native-device-info';
 
@@ -30,6 +30,7 @@ import WhiteButton from '../components/Buttons/WhiteButton';
 const Send = () => {
   const dispatch = useDispatch();
 
+  const confirmedBalance = useSelector(state => state.balance.confirmedBalance);
   const [isSendModalTriggered, triggerSendModal] = useState(false);
   const [isScanModalTriggered, triggerScanModal] = useState(false);
   const [isAmountInputTriggered, triggerAmountInput] = useState(false);
@@ -49,10 +50,12 @@ const Send = () => {
       parseFloat((amount + '').replace('.', '')) === 0
     ) {
       disableConfirm(true);
+    } else if (amount > confirmedBalance || amount === '0' || amount === 0) {
+      disableConfirm(true);
     } else {
       disableConfirm(false);
     }
-  }, [address, amount]);
+  }, [address, amount, confirmedBalance]);
 
   const validate = async data => {
     try {
