@@ -64,7 +64,11 @@ const TransactionDetailModal = props => {
                   navigate({
                     routeName: 'WebPage',
                     params: {
-                      uri: `https://insight.litecore.io/tx/${transaction.hash}`,
+                      source: {
+                        uri: `https://blockchair.com/litecoin/transaction/${
+                          transaction.hash
+                        }`,
+                      },
                     },
                   });
                 }}
