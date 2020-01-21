@@ -1,5 +1,5 @@
 import React from 'react';
-import {Image, StyleSheet} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const LitecoinIcon = props => {
@@ -11,10 +11,13 @@ const LitecoinIcon = props => {
         styles.container,
         size ? {width: size, height: size, borderRadius: size / 2} : null,
       ]}>
-      <Image
-        style={styles.image}
-        source={require('../assets/images/ltc-logo.png')}
-      />
+      <View style={styles.imageContainer}>
+        <Image
+          style={styles.image}
+          resizeMode="contain"
+          source={require('../assets/images/ltc-logo.png')}
+        />
+      </View>
     </LinearGradient>
   );
 };
@@ -29,9 +32,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  image: {
+  imageContainer: {
     height: 15,
     width: 15,
+  },
+  image: {
+    flex: 1,
+    height: undefined,
+    width: undefined,
   },
 });
 
