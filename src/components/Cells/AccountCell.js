@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+} from 'react-native';
 import {useSelector} from 'react-redux';
 
 import ProgressBar from '../ProgressBar';
@@ -25,18 +32,25 @@ const AccountCell = props => {
         !synced && !syncStatusDisabled ? styles.notSynced : null,
       ]}
       onPress={onPress}>
-      <LitecoinIcon />
-      <View style={styles.left}>
-        <Text style={styles.labelText}>Litecoin (LTC)</Text>
-        <Text style={styles.timeText}>{`${balance} LTC`}</Text>
+      <View style={styles.mainContainer}>
+        <LitecoinIcon />
+        <View style={styles.left}>
+          <Text style={styles.labelText}>Litecoin (LTC)</Text>
+          <Text style={styles.timeText}>{`${balance} LTC`}</Text>
+        </View>
+        <View style={styles.right}>
+          <Text style={styles.text}>{balance * rates.USD}</Text>
+          <Text style={styles.fiatText}>+$6.01</Text>
+        </View>
       </View>
-      <View style={styles.right}>
-        <Text style={styles.text}>{balance * rates.USD}</Text>
-        <Text style={styles.fiatText}>+$6.01</Text>
-      </View>
+
       {!synced && !syncStatusDisabled ? (
         <View style={styles.syncContainer}>
-          <View style={styles.circle} />
+          <ActivityIndicator
+            size="small"
+            color="#2C72FF"
+            style={styles.indicator}
+          />
           <View style={styles.left}>
             <Text style={styles.descriptionText}>
               This account is currently syncing...
@@ -51,9 +65,9 @@ const AccountCell = props => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     height: 70,
-    width: 360,
+    width: Dimensions.get('window').width - 40,
     borderRadius: 8,
     backgroundColor: 'white',
     marginTop: 6,
@@ -103,6 +117,11 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     color: '#20BB74',
   },
+  mainContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   syncContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -117,6 +136,10 @@ const styles = StyleSheet.create({
     color: '#2E3033',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  indicator: {
+    paddingLeft: 22,
+    paddingRight: 21,
   },
 });
 

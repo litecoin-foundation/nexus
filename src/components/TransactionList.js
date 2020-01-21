@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.28,
     paddingLeft: 10,
+    paddingTop: 4,
     paddingBottom: 4,
   },
   emptySectionListContainer: {
