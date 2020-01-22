@@ -2,8 +2,8 @@ import React, {useState} from 'react';
 import {StyleSheet, Switch} from 'react-native';
 
 const SwitchButton = props => {
-  const {onPress} = props;
-  const [triggered, trigger] = useState(false);
+  const {onPress, initialValue} = props;
+  const [triggered, trigger] = useState(initialValue ? initialValue : false);
 
   const handlePress = value => {
     trigger(value);

@@ -26,7 +26,7 @@ const AlertCell = props => {
           </View>
         </View>
         <View style={styles.switchContainer}>
-          <Switch onPress={handleSwitch} />
+          <Switch initialValue={item.enabled} onPress={handleSwitch} />
         </View>
       </View>
       <View style={styles.bottomContainer}>
