@@ -1,14 +1,16 @@
 import React, {useEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import Button from './Button';
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
 
-const AuthPad = () => {
+const AuthPad = props => {
+  const {handleCompletion} = props;
   const dispatch = useDispatch();
+  const pin = useSelector(state => state.authpad.pin);
 
   useEffect(() => {
     const clear = async () => {
@@ -17,10 +19,16 @@ const AuthPad = () => {
     clear();
   }, [dispatch]);
 
+  useEffect(() => {
+    if (pin.length === 6) {
+      handleCompletion();
+    }
+  }, [dispatch, handleCompletion, pin]);
+
   const handlePress = input => {
     switch (input) {
       case '.':
-        // TODO: biometric login flow
+        // handled by BiometricButton
         break;
       case '⌫':
         dispatch(backspaceValue());

@@ -12,20 +12,11 @@ import {
 const Pin = () => {
   const dispatch = useDispatch();
   const {navigate} = useNavigation();
+
   const pin = useSelector(state => state.authpad.pin);
   const walletUnlocked = useSelector(
     state => state.authentication.walletUnlocked,
   );
-
-  useEffect(() => {
-    if (pin.length === 6) {
-      const checkPincode = async () => {
-        await dispatch(clearValues());
-        await dispatch(unlockWalletWithPin(pin));
-      };
-      checkPincode();
-    }
-  }, [dispatch, pin]);
 
   useEffect(() => {
     if (walletUnlocked === null) {
@@ -41,10 +32,16 @@ const Pin = () => {
     }
   });
 
+  const checkPincode = async () => {
+    await dispatch(clearValues());
+    await dispatch(unlockWalletWithPin(pin));
+  };
+
   return (
     <Auth
       headerTitleText="Unlock Wallet"
       headerDescriptionText="Use your PIN to unlock your Wallet"
+      handleCompletion={checkPincode}
     />
   );
 };

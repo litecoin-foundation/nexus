@@ -15,7 +15,10 @@ const Button = props => {
   return (
     <View
       style={[styles.container, !biometricsEnabled ? styles.disabled : null]}>
-      <TouchableOpacity style={styles.button} onPress={onPress}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={onPress}
+        disabled={!biometricsEnabled}>
         <Image
           source={
             biometricType === true
