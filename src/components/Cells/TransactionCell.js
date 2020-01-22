@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const TransactionCell = props => {
@@ -10,7 +10,16 @@ const TransactionCell = props => {
       <LinearGradient
         colors={item.sent ? ['#FF415E', '#FF9052'] : ['#7E58FF', '#0D59EA']}
         style={styles.circle}>
-        <View style={styles.smallCircle} />
+        <View style={styles.smallCircle}>
+          <Image
+            style={styles.image}
+            source={
+              item.sent
+                ? require('../../assets/images/sent.png')
+                : require('../../assets/images/received.png')
+            }
+          />
+        </View>
       </LinearGradient>
       <View style={styles.left}>
         <Text style={styles.labelText}>{item.name}</Text>
@@ -77,6 +86,7 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 30 / 2,
     backgroundColor: 'white',
+    justifyContent: 'center',
   },
   labelText: {
     color: '#484859',
@@ -113,6 +123,9 @@ const styles = StyleSheet.create({
   },
   negativeFiatText: {
     color: '#484859',
+  },
+  image: {
+    alignSelf: 'center',
   },
 });
 
