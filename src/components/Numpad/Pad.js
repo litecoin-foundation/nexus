@@ -1,12 +1,12 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
 import Button from './Button';
 
-export class Pad extends Component {
-  handlePress = input => {
-    const {currentValue, onChange} = this.props;
+const Pad = props => {
+  const {currentValue, onChange, children} = props;
+
+  const handlePress = input => {
     let response;
     switch (input) {
       case '.':
@@ -30,46 +30,32 @@ export class Pad extends Component {
     onChange(response);
   };
 
-  render() {
-    const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
-    const buttons = values.map(value => {
-      return (
-        <Button
-          key={value}
-          value={value}
-          onPress={() => this.handlePress(value)}
-        />
-      );
-    });
+  const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
+  const buttons = values.map(value => {
     return (
-      <View>
-        <View style={styles.container}>
-          <View style={styles.area}>{buttons}</View>
-        </View>
-      </View>
+      <Button key={value} value={value} onPress={() => handlePress(value)} />
     );
-  }
-}
+  });
+  return (
+    <View style={styles.container}>
+      <View style={styles.area}>{buttons}</View>
+      {children}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: '#F8FBFD',
-    height: 400,
     justifyContent: 'space-evenly',
-    flexGrow: 1,
   },
   area: {
-    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     width: '80%',
     alignSelf: 'center',
   },
 });
-
-Pad.propTypes = {
-  currentValue: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-};
 
 export default Pad;

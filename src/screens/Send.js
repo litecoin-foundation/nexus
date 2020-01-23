@@ -1,4 +1,4 @@
-import React, {Fragment, useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Platform,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
@@ -111,7 +112,7 @@ const Send = () => {
   };
 
   return (
-    <Fragment>
+    <View style={styles.flex}>
       <LinearGradient
         colors={['#7E58FF', '#2C44C8']}
         style={[
@@ -121,6 +122,7 @@ const Send = () => {
         <Text style={styles.headerText}>From Wallet</Text>
         <AccountCell disabled={true} syncStatusDisabled={true} />
       </LinearGradient>
+
       {invalidPaste ? (
         <LinearGradient
           colors={['#FF415E', '#FF9052']}
@@ -176,7 +178,14 @@ const Send = () => {
           </View>
         </LinearGradient>
       ) : (
-        <Fragment>
+        <View
+          style={
+            isAmountInputTriggered
+              ? {
+                  height: Dimensions.get('window').height - 255,
+                }
+              : styles.amountsContainer
+          }>
           <View style={styles.amountHeaderContainer}>
             <Text style={styles.amountHeaderText}>CHOOSE AMOUNT</Text>
           </View>
@@ -187,60 +196,67 @@ const Send = () => {
             selected={() => triggerAmountInput(true)}
             confirmButtonText="Confirm"
           />
-        </Fragment>
+        </View>
       )}
 
-      <LinearGradient
-        colors={
-          Platform.OS === 'android'
-            ? ['#eef4f9', '#eef4f9']
-            : ['#F6F9FC', '#d2e1ef00']
-        }
-        style={styles.flex}>
-        <ScrollView style={styles.flex}>
-          <View style={styles.typeTextContainer}>
-            <Text style={styles.recipientHeaderText}>CHOOSE recipient</Text>
-          </View>
-
-          {address ? (
-            <AddressField
-              address={address}
-              onPressClose={() => setAddress(null)}
-            />
-          ) : (
-            <View style={styles.recipientContainer}>
-              <SquareButton
-                imageSource={require('../assets/images/paste.png')}
-                value="Paste"
-                onPress={() => handlePaste()}
-              />
-              <SquareButton
-                imageSource={require('../assets/images/nfc.png')}
-                value="NFC"
-              />
-              <SquareButton
-                imageSource={require('../assets/images/qrcode.png')}
-                value="Scan"
-                onPress={handleScan}
-              />
-            </View>
-          )}
-
-          <View style={styles.recipientHeaderContainer}>
-            <Text style={styles.descriptionHeaderText}>ADD Description</Text>
-            <InputField onChangeText={text => changeMemo(text)} value={memo} />
-          </View>
-        </ScrollView>
-      </LinearGradient>
-
       {isAmountInputTriggered ? null : (
-        <View style={styles.sendContainer}>
-          <BlueButton
-            value="Send"
-            onPress={() => triggerSendModal(true)}
-            disabled={isConfirmDisabled}
-          />
-        </View>
+        <>
+          <LinearGradient
+            colors={
+              Platform.OS === 'android'
+                ? ['#eef4f9', '#eef4f9']
+                : ['#F6F9FC', '#d2e1ef00']
+            }
+            style={styles.flex}>
+            <ScrollView style={styles.flex}>
+              <View style={styles.typeTextContainer}>
+                <Text style={styles.recipientHeaderText}>CHOOSE recipient</Text>
+              </View>
+
+              {address ? (
+                <AddressField
+                  address={address}
+                  onPressClose={() => setAddress(null)}
+                />
+              ) : (
+                <View style={styles.recipientContainer}>
+                  <SquareButton
+                    imageSource={require('../assets/images/paste.png')}
+                    value="Paste"
+                    onPress={() => handlePaste()}
+                  />
+                  <SquareButton
+                    imageSource={require('../assets/images/nfc.png')}
+                    value="NFC"
+                  />
+                  <SquareButton
+                    imageSource={require('../assets/images/qrcode.png')}
+                    value="Scan"
+                    onPress={handleScan}
+                  />
+                </View>
+              )}
+
+              <View style={styles.recipientHeaderContainer}>
+                <Text style={styles.descriptionHeaderText}>
+                  ADD Description
+                </Text>
+                <InputField
+                  onChangeText={text => changeMemo(text)}
+                  value={memo}
+                />
+              </View>
+            </ScrollView>
+          </LinearGradient>
+
+          <View style={styles.sendContainer}>
+            <BlueButton
+              value="Send"
+              onPress={() => triggerSendModal(true)}
+              disabled={isConfirmDisabled}
+            />
+          </View>
+        </>
       )}
 
       <SendModal
@@ -256,7 +272,7 @@ const Send = () => {
         close={() => triggerScanModal(false)}
         handleQRRead={data => handleScanCallback(data)}
       />
-    </Fragment>
+    </View>
   );
 };
 
@@ -380,6 +396,9 @@ const styles = StyleSheet.create({
   invalidButtonText: {
     color: '#F04E37',
     fontSize: 11,
+  },
+  amountsContainer: {
+    height: 132,
   },
 });
 

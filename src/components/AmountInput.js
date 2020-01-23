@@ -61,18 +61,17 @@ const AmountInput = props => {
     <View style={styles.padContainer}>
       <Pad
         onChange={value => onChange(value)}
-        currentValue={leftToggled ? amount : fiatAmount}
-      />
-
-      <View style={styles.centerAlign}>
-        <BlueButton
-          value={confirmButtonText}
-          onPress={() => {
-            toggle(false);
-            onAccept(amount);
-          }}
-        />
-      </View>
+        currentValue={leftToggled ? amount : fiatAmount}>
+        <View style={styles.centerAlign}>
+          <BlueButton
+            value={confirmButtonText}
+            onPress={() => {
+              toggle(false);
+              onAccept(amount);
+            }}
+          />
+        </View>
+      </Pad>
     </View>
   );
 
