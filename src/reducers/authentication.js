@@ -4,7 +4,7 @@ import {unlockWallet} from '../reducers/lightning';
 
 // initial state
 const initialState = {
-  password: '',
+  passcode: '',
   passcodeSet: false,
   walletUnlocked: null,
   biometricsAvailable: null,
