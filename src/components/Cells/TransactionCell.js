@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const TransactionCell = props => {
@@ -48,7 +55,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     height: 70,
-    width: 360,
+    width: Dimensions.get('window').width - 30,
     borderRadius: 8,
     backgroundColor: 'white',
     marginTop: 6,

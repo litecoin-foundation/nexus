@@ -36,11 +36,11 @@ const AccountCell = props => {
         <LitecoinIcon />
         <View style={styles.left}>
           <Text style={styles.labelText}>Litecoin (LTC)</Text>
-          <Text style={styles.timeText}>{`${balance} LTC`}</Text>
+          <Text style={styles.differenceText}>+ 2.3%</Text>
         </View>
         <View style={styles.right}>
-          <Text style={styles.text}>{balance * rates.USD}</Text>
-          <Text style={styles.fiatText}>+$6.01</Text>
+          <Text style={styles.text}>${balance * rates.USD}</Text>
+          <Text style={styles.fiatText}>{`${balance} LTC`}</Text>
         </View>
       </View>
 
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
     height: 70,
-    width: Dimensions.get('window').width - 40,
+    width: Dimensions.get('window').width - 30,
     borderRadius: 8,
     backgroundColor: 'white',
     marginTop: 6,
@@ -97,11 +97,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: -0.19,
   },
-  timeText: {
+  fiatText: {
     color: '#7C96AE',
     fontSize: 12,
     fontWeight: '500',
     letterSpacing: -0.31,
+    textAlign: 'right',
   },
   text: {
     fontSize: 14,
@@ -110,11 +111,11 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     color: '#2C72FF',
   },
-  fiatText: {
+  differenceText: {
     fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: -0.17,
-    textAlign: 'right',
+    textAlign: 'left',
     color: '#20BB74',
   },
   mainContainer: {

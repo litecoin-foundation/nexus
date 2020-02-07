@@ -24,9 +24,9 @@ const LitecoinIcon = props => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 35,
-    height: 35,
-    borderRadius: 35 / 2,
+    width: 44,
+    height: 44,
+    borderRadius: 44 / 2,
     marginLeft: 15,
     marginRight: 15,
     justifyContent: 'center',
