@@ -8,10 +8,18 @@ import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
 
 const AuthPad = props => {
-  const {handleCompletion} = props;
+  const {
+    handleCompletion,
+    handleValidationFailure,
+    handleValidationSuccess,
+  } = props;
   const dispatch = useDispatch();
-  const pin = useSelector(state => state.authpad.pin);
 
+  const pin = useSelector(state => state.authpad.pin);
+  const passcode = useSelector(state => state.authentication.passcode);
+  const passcodeSet = useSelector(state => state.authentication.passcodeSet);
+
+  // clear all inputs in AuthPad on initial render
   useEffect(() => {
     const clear = async () => {
       await dispatch(clearValues());
@@ -19,11 +27,34 @@ const AuthPad = props => {
     clear();
   }, [dispatch]);
 
+  // handles when AuthPad inputs are filled
   useEffect(() => {
-    if (pin.length === 6) {
+    const clear = async () => {
+      await dispatch(clearValues());
+    };
+    if (pin.length === 6 && !passcodeSet) {
+      // only runs if wallet does not exist
       handleCompletion();
+      clear();
+    } else if (pin.length === 6 && passcodeSet) {
+      // only runs if wallet exists
+      if (pin === passcode) {
+        handleValidationSuccess();
+        clear();
+      } else {
+        handleValidationFailure();
+        clear();
+      }
     }
-  }, [dispatch, handleCompletion, pin]);
+  }, [
+    dispatch,
+    handleCompletion,
+    handleValidationFailure,
+    handleValidationSuccess,
+    passcode,
+    passcodeSet,
+    pin,
+  ]);
 
   const handlePress = input => {
     switch (input) {

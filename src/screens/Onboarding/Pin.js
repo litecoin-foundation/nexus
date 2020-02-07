@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from 'react-navigation-hooks';
 
@@ -12,30 +12,21 @@ const Pin = () => {
   const {navigate} = useNavigation();
   const pin = useSelector(state => state.authpad.pin);
   const passcodeSet = useSelector(state => state.authentication.passcodeSet);
-  const passcode = useSelector(state => state.authentication.passcode);
   const beingRecovered = useSelector(state => state.onboarding.beingRecovered);
 
-  useEffect(() => {
-    if (pin.length === 6) {
-      dispatch(addPincode(pin));
-      dispatch(clearValues());
-    }
-  });
+  const handleCompletion = () => {
+    dispatch(addPincode(pin));
+    dispatch(clearValues());
+  };
 
-  useEffect(() => {
-    if (pin.length === 6 && passcodeSet === true) {
-      dispatch(clearValues());
+  const handleValidationSuccess = () => {
+    setPincodeToKeychain(pin);
+    handleNavigation(beingRecovered, navigate);
+  };
 
-      if (pin === passcode) {
-        // valid pincode repeat attempt
-        setPincodeToKeychain(pin);
-        handleNavigation(beingRecovered, navigate);
-      } else {
-        // invalid pincode repeat attempt
-        navigate('Loading');
-      }
-    }
-  }, [beingRecovered, dispatch, navigate, passcode, passcodeSet, pin]);
+  const handleValidationFailure = () => {
+    navigate('Loading');
+  };
 
   return (
     <Auth
@@ -47,6 +38,9 @@ const Pin = () => {
           ? 'Enter your passcode again.'
           : 'Please enter a secure passcode'
       }
+      handleCompletion={handleCompletion}
+      handleValidationFailure={handleValidationFailure}
+      handleValidationSuccess={handleValidationSuccess}
     />
   );
 };

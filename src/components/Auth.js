@@ -9,7 +9,13 @@ import AuthPad from './Numpad/AuthPad';
 import OnboardingHeader from './OnboardingHeader';
 
 const Auth = props => {
-  const {headerTitleText, headerDescriptionText, handleCompletion} = props;
+  const {
+    headerTitleText,
+    headerDescriptionText,
+    handleCompletion,
+    handleValidationSuccess,
+    handleValidationFailure,
+  } = props;
   const pin = useSelector(state => state.authpad.pin);
 
   return (
@@ -27,7 +33,11 @@ const Auth = props => {
       </OnboardingHeader>
 
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
-        <AuthPad handleCompletion={handleCompletion} />
+        <AuthPad
+          handleCompletion={handleCompletion}
+          handleValidationSuccess={handleValidationSuccess}
+          handleValidationFailure={handleValidationFailure}
+        />
       </LinearGradient>
     </View>
   );
