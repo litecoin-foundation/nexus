@@ -31,6 +31,8 @@ import Processing from './src/screens/Buy/Processing';
 import WebPage from './src/screens/WebPage';
 import Alert from './src/screens/Alert/Alert';
 import Dial from './src/screens/Alert/Dial';
+import General from './src/screens/Settings/General';
+import ChangePincode from './src/screens/Settings/ChangePincode';
 
 const OnboardingStack = createStackNavigator({
   Initial: {screen: Initial},
@@ -99,6 +101,8 @@ const SettingsStack = createStackNavigator({
   Settings: {screen: Settings},
   Channel: {screen: Channel},
   OpenChannel: {screen: OpenChannel},
+  General: {screen: General},
+  ChangePincode: {screen: ChangePincode},
 });
 
 SettingsStack.navigationOptions = ({navigation}) => {

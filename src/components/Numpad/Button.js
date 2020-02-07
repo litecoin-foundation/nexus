@@ -5,11 +5,12 @@ import {TouchableOpacity, Text, StyleSheet, View} from 'react-native';
 import {triggerSelectionFeedback} from '../../lib/utils/haptic';
 
 const Button = props => {
-  const {value, onPress} = props;
+  const {value, onPress, disabled} = props;
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.button}
+        style={[styles.button, disabled ? styles.disabled : null]}
+        disabled={disabled}
         onPress={() => {
           triggerSelectionFeedback();
           onPress();
@@ -47,6 +48,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#2C72FF',
+  },
+  disabled: {
+    opacity: 0,
   },
 });
 
