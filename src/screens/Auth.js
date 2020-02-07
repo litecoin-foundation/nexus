@@ -7,6 +7,7 @@ import {clearValues} from '../reducers/authpad';
 import {
   unlockWalletWithPin,
   clearWalletUnlocked,
+  unlockWalletWithBiometric,
 } from '../reducers/authentication';
 
 const Pin = () => {
@@ -14,15 +15,23 @@ const Pin = () => {
   const {navigate} = useNavigation();
 
   const pin = useSelector(state => state.authpad.pin);
+  const biometricsEnabled = useSelector(
+    state => state.authentication.biometricsEnabled,
+  );
   const walletUnlocked = useSelector(
     state => state.authentication.walletUnlocked,
   );
 
   useEffect(() => {
+    if (biometricsEnabled) {
+      dispatch(unlockWalletWithBiometric());
+    }
+  }, [biometricsEnabled, dispatch]);
+
+  useEffect(() => {
     if (walletUnlocked === null) {
       return;
     } else if (walletUnlocked === false) {
-      alert('incorrect pincode');
       const clear = async () => {
         await dispatch(clearWalletUnlocked());
       };
@@ -32,16 +41,21 @@ const Pin = () => {
     }
   });
 
-  const checkPincode = async () => {
+  const unlockWallet = async () => {
     await dispatch(clearValues());
     await dispatch(unlockWalletWithPin(pin));
+  };
+
+  const handleValidationFailure = () => {
+    alert('incorrect pincode');
   };
 
   return (
     <Auth
       headerTitleText="Unlock Wallet"
       headerDescriptionText="Use your PIN to unlock your Wallet"
-      handleCompletion={checkPincode}
+      handleValidationSuccess={unlockWallet}
+      handleValidationFailure={handleValidationFailure}
     />
   );
 };
