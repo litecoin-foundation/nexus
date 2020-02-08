@@ -1,10 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {TouchableOpacity, Image, StyleSheet, View} from 'react-native';
+import {TouchableWithoutFeedback, Image, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
+import {useSpring, animated, config} from 'react-spring/native';
 
 const Button = props => {
   const {onPress} = props;
+  const AnimatedView = animated(View);
   const biometricsEnabled = useSelector(
     state => state.authentication.biometricsEnabled,
   );
@@ -12,22 +14,34 @@ const Button = props => {
     state => state.authentication.faceIDSupported,
   );
 
+  const [scaler, set] = useSpring(() => ({
+    from: {scale: 1},
+    config: config.wobbly,
+  }));
+
+  const motionStyle = {
+    transform: [{scale: scaler.scale}],
+  };
+
   return (
     <View
       style={[styles.container, !biometricsEnabled ? styles.disabled : null]}>
-      <TouchableOpacity
-        style={styles.button}
+      <TouchableWithoutFeedback
+        onPressIn={() => set({scale: 0.85})}
+        onPressOut={() => set({scale: 1})}
         onPress={onPress}
         disabled={!biometricsEnabled}>
-        <Image
-          source={
-            biometricType === true
-              ? require('../../assets/images/face-id-blue.png')
-              : require('../../assets/images/touch-id-blue.png')
-          }
-          style={styles.image}
-        />
-      </TouchableOpacity>
+        <AnimatedView style={[styles.button, motionStyle]}>
+          <Image
+            source={
+              biometricType === true
+                ? require('../../assets/images/face-id-blue.png')
+                : require('../../assets/images/touch-id-blue.png')
+            }
+            style={styles.image}
+          />
+        </AnimatedView>
+      </TouchableWithoutFeedback>
     </View>
   );
 };

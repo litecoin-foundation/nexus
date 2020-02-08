@@ -1,22 +1,42 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {TouchableOpacity, Text, StyleSheet, View} from 'react-native';
+import {TouchableWithoutFeedback, Text, StyleSheet, View} from 'react-native';
+import {useSpring, animated, config} from 'react-spring/native';
 
 import {triggerSelectionFeedback} from '../../lib/utils/haptic';
 
 const Button = props => {
   const {value, onPress, disabled} = props;
+  const AnimatedView = animated(View);
+
+  const [scaler, set] = useSpring(() => ({
+    from: {scale: 1},
+    config: config.wobbly,
+  }));
+
+  const motionStyle = {
+    transform: [{scale: scaler.scale}],
+  };
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={[styles.button, disabled ? styles.disabled : null]}
+      <TouchableWithoutFeedback
+        onPressIn={() => set({scale: 0.85})}
+        onPressOut={() => set({scale: 1})}
         disabled={disabled}
         onPress={() => {
           triggerSelectionFeedback();
           onPress();
         }}>
-        <Text style={styles.text}>{value}</Text>
-      </TouchableOpacity>
+        <AnimatedView
+          style={[
+            styles.button,
+            disabled ? styles.disabled : null,
+            motionStyle,
+          ]}>
+          <Text style={styles.text}>{value}</Text>
+        </AnimatedView>
+      </TouchableWithoutFeedback>
     </View>
   );
 };
