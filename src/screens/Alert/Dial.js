@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useDispatch, useSelector} from 'react-redux';
-import {useNavigation} from 'react-navigation-hooks';
 
 import Header from '../../components/Header';
 import SlideRuler from '../../components/SlideRuler';
@@ -10,9 +9,8 @@ import BlueButton from '../../components/Buttons/BlueButton';
 import {addAlert} from '../../reducers/alerts';
 import {getRandomBytes} from '../../lib/utils/random';
 
-const Dial = () => {
+const Dial = props => {
   const dispatch = useDispatch();
-  const {goBack} = useNavigation();
   const [value, setValue] = useState(0);
   const rates = useSelector(state => state.ticker.rates);
 
@@ -57,7 +55,7 @@ const Dial = () => {
                 originalValue: rates.USD,
               }),
             );
-            goBack();
+            props.navigation.goBack();
           }}
         />
       </View>
@@ -125,9 +123,8 @@ Dial.navigationOptions = ({}) => {
       fontWeight: 'bold',
       color: 'white',
     },
-
     headerTransparent: true,
-    headerBackTitle: null,
+    headerBackTitleVisible: false,
     headerTintColor: 'white',
   };
 };

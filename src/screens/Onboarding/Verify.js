@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {useSelector} from 'react-redux';
-import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
+import {HeaderBackButton} from '@react-navigation/stack';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -10,8 +10,7 @@ import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {randomShuffle} from '../../lib/utils';
 import {getBIP39Word} from '../../lib/utils/bip39';
 
-const Verify = () => {
-  const {navigate} = useNavigation();
+const Verify = props => {
   const seed = useSelector(state => state.onboarding.seed);
   const [multiplier, setMultiplier] = useState(1);
   const [selected, setSelectedIndex] = useState(null);
@@ -20,7 +19,7 @@ const Verify = () => {
 
   const handlePress = async () => {
     if (multiplier === 8) {
-      navigate('ChannelBackup');
+      props.navigation.navigate('ChannelBackup');
       return;
     }
     setMultiplier(multiplier + 1);
@@ -52,7 +51,6 @@ const Verify = () => {
   return (
     <View style={styles.container}>
       <OnboardingHeader
-        title="Verify Paper Key"
         description={`Select word #${3 * multiplier -
           1} to verify your paper-key`}>
         <View style={styles.optionsContainer}>
@@ -172,9 +170,20 @@ const styles = StyleSheet.create({
   },
 });
 
-Verify.navigationOptions = {
-  headerTransparent: true,
-  headerBackTitle: null,
+Verify.navigationOptions = ({navigation}) => {
+  return {
+    headerTitle: 'Verify Paper Key',
+    headerTransparent: true,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderBackButton
+        tintColor="white"
+        labelVisible={false}
+        onPress={() => navigation.goBack()}
+      />
+    ),
+  };
 };
 
 export default Verify;

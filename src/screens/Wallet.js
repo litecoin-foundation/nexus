@@ -1,16 +1,14 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
-import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
+import {HeaderBackButton} from '@react-navigation/stack';
 
 import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
 import TransactionModal from '../components/Modals/TransactionModal';
 import TransactionList from '../components/TransactionList';
 import AmountView from '../components/AmountView';
 
-const Wallet = () => {
-  const {navigate} = useNavigation();
-
+const Wallet = props => {
   const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
@@ -38,10 +36,10 @@ const Wallet = () => {
           <TouchableOpacity
             style={styles.paymentButtonContainer}
             onPress={() => {
-              navigate('Send');
+              props.navigation.navigate('Send');
             }}>
             <Image
-              style={styles.image}
+              style={styles.sendImage}
               source={require('../assets/images/send-white.png')}
             />
             <View style={styles.paymentTextContainer}>
@@ -59,7 +57,7 @@ const Wallet = () => {
               setTxTypeModalVisible(true);
             }}>
             <Image
-              style={styles.image}
+              style={styles.receiveImage}
               source={require('../assets/images/receive-white.png')}
             />
             <View style={styles.paymentTextContainer}>
@@ -71,7 +69,7 @@ const Wallet = () => {
 
       <TransactionModal
         isVisible={isTxTypeModalVisible}
-        navigate={navigate}
+        navigate={props.navigation.navigate}
         close={() => setTxTypeModalVisible(false)}
       />
 
@@ -81,6 +79,7 @@ const Wallet = () => {
         }}
         isVisible={isTxDetailModalVisible}
         transaction={selectedTransaction}
+        navigate={props.navigation.navigate}
       />
     </View>
   );
@@ -124,8 +123,14 @@ const styles = StyleSheet.create({
     letterSpacing: -0.32,
     textAlign: 'center',
   },
-  image: {
+  sendImage: {
     height: 24,
+    width: 25,
+    position: 'absolute',
+    left: 14,
+  },
+  receiveImage: {
+    height: 23,
     width: 25,
     position: 'absolute',
     left: 14,
@@ -138,15 +143,25 @@ const styles = StyleSheet.create({
   },
 });
 
-Wallet.navigationOptions = {
-  headerTitle: 'LTC Wallet',
-  tabBarVisible: false,
-  headerTitleStyle: {
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  headerTransparent: true,
-  headerBackTitle: null,
+Wallet.navigationOptions = ({navigation}) => {
+  return {
+    headerTitle: 'LTC Wallet',
+    tabBarVisible: false,
+    headerTitleStyle: {
+      fontWeight: 'bold',
+      color: 'white',
+    },
+    headerTransparent: true,
+    headerBackTitleVisible: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderBackButton
+        tintColor="white"
+        labelVisible={false}
+        onPress={() => navigation.goBack()}
+      />
+    ),
+  };
 };
 
 export default Wallet;

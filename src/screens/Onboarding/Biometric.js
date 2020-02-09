@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, StyleSheet, SafeAreaView} from 'react-native';
-import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch, useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -10,9 +9,8 @@ import Card from '../../components/Card';
 import {authenticate} from '../../lib/utils/biometric';
 import {setBiometricEnabled} from '../../reducers/authentication';
 
-const Biometric = () => {
+const Biometric = props => {
   const dispatch = useDispatch();
-  const {navigate} = useNavigation();
   const faceIDSupported = useSelector(
     state => state.authentication.faceIDSupported,
   );
@@ -41,7 +39,7 @@ const Biometric = () => {
             try {
               await authenticate(`Enable ${biometryType}`);
               dispatch(setBiometricEnabled(true));
-              navigate('Welcome');
+              props.navigation.navigate('Welcome');
             } catch (error) {
               console.log(error);
               return;
@@ -53,7 +51,7 @@ const Biometric = () => {
           small={true}
           onPress={() => {
             dispatch(setBiometricEnabled(false));
-            navigate('Welcome');
+            props.navigation.navigate('Welcome');
           }}
         />
       </View>
@@ -76,7 +74,8 @@ Biometric.navigationOptions = {
     color: 'white',
   },
   headerTransparent: true,
-  headerBackTitle: null,
+  headerBackTitleVisible: false,
+  headerTintColor: 'white',
 };
 
 export default Biometric;

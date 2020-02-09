@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, Alert} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {Pagination} from 'react-native-snap-carousel';
-import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Pad from '../../components/Numpad/Pad';
@@ -10,9 +9,8 @@ import Header from '../../components/Header';
 import {addPincode} from '../../reducers/authentication';
 import {setItem} from '../../lib/utils/keychain';
 
-const ChangePincode = () => {
+const ChangePincode = props => {
   const dispatch = useDispatch();
-  const {goBack} = useNavigation();
   const pin = useSelector(state => state.authentication.passcode);
 
   const [currentPin, setCurrentPin] = useState(true);
@@ -57,7 +55,7 @@ const ChangePincode = () => {
         Alert.alert(
           'Success',
           'Successfully reset PIN!',
-          [{text: 'OK', onPress: () => goBack()}],
+          [{text: 'OK', onPress: () => props.navigation.goBack()}],
           {cancelable: false},
         );
       } else {
@@ -67,7 +65,10 @@ const ChangePincode = () => {
         Alert.alert(
           'Invalid',
           'Pincodes did not match. Try again.',
-          [{text: 'Cancel', onPress: () => goBack()}, {text: 'OK'}],
+          [
+            {text: 'Cancel', onPress: () => props.navigation.goBack()},
+            {text: 'OK'},
+          ],
           {
             cancelable: false,
           },
@@ -139,7 +140,7 @@ ChangePincode.navigationOptions = () => {
       color: 'white',
     },
     headerTransparent: true,
-    headerBackTitle: null,
+    headerBackTitleVisible: false,
     headerTintColor: 'white',
   };
 };

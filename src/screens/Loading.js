@@ -1,55 +1,43 @@
-import React, {Component} from 'react';
-import {View, Text} from 'react-native';
-import {connect} from 'react-redux';
+import React, {useEffect} from 'react';
+import {View, StyleSheet} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
 
 import {startOnboarding} from '../reducers/onboarding';
 import {startLnd} from '../reducers/lightning';
 import {checkBiometricSupport} from '../lib/utils/biometric';
 
-export class Loading extends Component {
-  componentDidMount() {
-    const {
-      navigation,
-      onboarding,
-      isOnboarded,
-      startOnboarding,
-      startLnd,
-      checkBiometricSupport,
-    } = this.props;
+const Loading = props => {
+  const dispatch = useDispatch();
+  const onboarding = useSelector(state => state.onboarding.onboarding);
+  const isOnboarded = useSelector(state => state.onboarding.isOnboarded);
 
-    // start LND process
-    startLnd();
-    checkBiometricSupport();
+  useEffect(() => {
+    dispatch(checkBiometricSupport());
+    dispatch(startLnd());
+  }, [dispatch]);
 
-    if (onboarding === false && isOnboarded === true) {
-      navigation.navigate('Auth');
-    } else {
-      startOnboarding();
-      navigation.navigate('Onboarding');
-    }
+  if (onboarding === false && isOnboarded === true) {
+    props.navigation.replace('Auth');
+  } else {
+    dispatch(startOnboarding());
+    props.navigation.navigate('Onboarding');
   }
 
-  render() {
-    return (
-      <View>
-        <Text> Loading... </Text>
-      </View>
-    );
-  }
-}
-
-const mapStateToProps = state => ({
-  onboarding: state.onboarding.onboarding,
-  isOnboarded: state.onboarding.isOnboarded,
-});
-
-const mapDispatchToProps = {
-  startOnboarding,
-  startLnd,
-  checkBiometricSupport,
+  return <View style={styles.containter} />;
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Loading);
+const styles = StyleSheet.create({
+  containter: {
+    flex: 1,
+    backgroundColor: 'black',
+  },
+});
+
+Loading.navigationOptions = {
+  headerTransparent: true,
+  headerBackTitleVisible: false,
+  headerTintColor: 'white',
+  headerShown: false,
+};
+
+export default Loading;

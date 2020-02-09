@@ -1,12 +1,11 @@
 import React, {useRef, useState} from 'react';
 import {View, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import WebView from 'react-native-webview';
-import {useNavigationParam} from 'react-navigation-hooks';
 
 import Header from '../components/Header';
 
-const WebPage = () => {
-  const source = useNavigationParam('source');
+const WebPage = props => {
+  const {route} = props;
   const WebPageRef = useRef();
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -23,10 +22,10 @@ const WebPage = () => {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header modal={true} />
       <WebView
         style={styles.webview}
-        source={source}
+        source={route.params}
         ref={WebPageRef}
         onLoadStart={syntheticEvent => handleEvent(syntheticEvent)}
         onLoadEnd={syntheticEvent => handleEvent(syntheticEvent)}
@@ -34,7 +33,6 @@ const WebPage = () => {
       <View style={styles.optionsContainer}>
         <TouchableOpacity
           onPress={() => {
-            console.log(canGoBack);
             WebPageRef.current.goBack();
           }}
           disabled={!canGoBack}>
@@ -73,7 +71,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   webview: {
-    flex: 1,
+    height: 400,
   },
   optionsContainer: {
     height: 100,
@@ -86,17 +84,5 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
 });
-
-WebPage.navigationOptions = () => {
-  return {
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitle: null,
-    headerTintColor: 'white',
-  };
-};
 
 export default WebPage;

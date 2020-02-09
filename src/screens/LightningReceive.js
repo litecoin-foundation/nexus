@@ -104,7 +104,7 @@ LightningReceive.navigationOptions = () => {
       color: 'white',
     },
     headerTransparent: true,
-    headerBackTitle: null,
+    headerBackTitleVisible: false,
     headerTintColor: 'white',
   };
 };

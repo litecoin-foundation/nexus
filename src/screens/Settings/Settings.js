@@ -7,21 +7,18 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
-import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Header from '../../components/Header';
 import BlueClearButton from '../../components/Buttons/BlueClearButton';
 
-const Settings = () => {
-  const {navigate} = useNavigation();
-
+const Settings = props => {
   return (
     <View style={styles.container}>
       <Header />
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={() => navigate('General')}
+          onPress={() => props.navigation.navigate('General')}
           style={styles.button}>
           <Image
             source={require('../../assets/images/general.png')}
@@ -30,7 +27,7 @@ const Settings = () => {
           <Text style={styles.buttonText}>GENERAL</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => navigate('Wallets')}
+          onPress={() => props.navigation.navigate('Wallets')}
           style={styles.button}>
           <Image
             source={require('../../assets/images/wallets.png')}
@@ -39,7 +36,7 @@ const Settings = () => {
           <Text style={styles.buttonText}>WALLETS</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => navigate('Channel')}
+          onPress={() => props.navigation.navigate('Channel')}
           style={styles.button}>
           <Text style={styles.buttonText}>CHANNELS</Text>
         </TouchableOpacity>
@@ -54,7 +51,7 @@ const Settings = () => {
           <View style={styles.bottomButtonContainer}>
             <BlueClearButton
               value="Sign Out"
-              onPress={() => navigate('Auth')}
+              onPress={() => props.navigation.navigate('Auth')}
             />
           </View>
         </LinearGradient>
@@ -120,7 +117,8 @@ Settings.navigationOptions = {
     color: 'white',
   },
   headerTransparent: true,
-  headerBackTitle: null,
+  headerBackTitleVisible: false,
+  headerTintColor: 'white',
 };
 
 export default Settings;

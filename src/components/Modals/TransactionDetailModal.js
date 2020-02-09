@@ -2,7 +2,6 @@ import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
-import {useNavigation} from 'react-navigation-hooks';
 
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
@@ -10,8 +9,7 @@ import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
 
 const TransactionDetailModal = props => {
-  const {navigate} = useNavigation();
-  const {isVisible, close, transaction} = props;
+  const {isVisible, close, transaction, navigate} = props;
 
   if (transaction === null) {
     return <View />;
@@ -61,15 +59,10 @@ const TransactionDetailModal = props => {
                 value="View on Blockchain"
                 onPress={() => {
                   close();
-                  navigate({
-                    routeName: 'WebPage',
-                    params: {
-                      source: {
-                        uri: `https://blockchair.com/litecoin/transaction/${
-                          transaction.hash
-                        }`,
-                      },
-                    },
+                  navigate('WebPage', {
+                    uri: `https://blockchair.com/litecoin/transaction/${
+                      transaction.hash
+                    }`,
                   });
                 }}
               />

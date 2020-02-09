@@ -69,25 +69,31 @@ const styles = StyleSheet.create({
   headerContainer: {
     height: 120,
   },
+  headerRight: {
+    paddingRight: 18,
+  },
 });
 
 Channel.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'Channels',
-    headerRight: (
-      <WhiteButton
-        value="Open"
-        small={true}
-        onPress={() => navigation.navigate('OpenChannel')}
-        active={true}
-      />
+    headerRight: () => (
+      <View style={styles.headerRight}>
+        <WhiteButton
+          value="Open"
+          small={true}
+          onPress={() => navigation.navigate('OpenChannel')}
+          active={true}
+        />
+      </View>
     ),
     headerTitleStyle: {
       fontWeight: 'bold',
       color: 'white',
     },
     headerTransparent: true,
-    headerBackTitle: null,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
   };
 };
 

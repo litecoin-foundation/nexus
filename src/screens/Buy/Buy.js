@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch} from 'react-redux';
 
 import AmountInput from '../../components/AmountInput';
@@ -8,9 +7,8 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import Header from '../../components/Header';
 import {setAmount} from '../../reducers/buy';
 
-const Buy = () => {
+const Buy = props => {
   const dispatch = useDispatch();
-  const {navigate} = useNavigation();
 
   return (
     <View style={styles.container}>
@@ -23,7 +21,7 @@ const Buy = () => {
           toggleWithoutSelection
           onAccept={amount => {
             dispatch(setAmount(amount));
-            navigate('Confirm');
+            props.navigation.navigate('Confirm');
           }}
           confirmButtonText="Preview Buy"
         />
@@ -52,25 +50,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  headerRight: {
+    paddingRight: 18,
+  },
 });
 
 Buy.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'Buy',
-    headerRight: (
-      <WhiteButton
-        value="History"
-        small={true}
-        active={true}
-        onPress={() => navigation.navigate('History')}
-      />
+    headerRight: () => (
+      <View style={styles.headerRight}>
+        <WhiteButton
+          value="History"
+          small={true}
+          active={true}
+          onPress={() => navigation.navigate('History')}
+        />
+      </View>
     ),
     headerTitleStyle: {
       fontWeight: 'bold',
       color: 'white',
     },
     headerTransparent: true,
-    headerBackTitle: null,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
   };
 };
 

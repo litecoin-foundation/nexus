@@ -1,5 +1,5 @@
 import React, {Fragment} from 'react';
-import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
 import {createSelector} from 'reselect';
@@ -45,32 +45,30 @@ const AmountView = props => {
           </LinearGradient>
         </View>
 
-        <SafeAreaView>
-          <View style={styles.subview}>
-            {!chartCursorSelected ? (
-              <Fragment>
-                <View style={styles.fiat}>
-                  <Text style={styles.fiatText}>{fiatAmount}</Text>
-                </View>
-                <View style={styles.amount}>
-                  <Text style={styles.amountText}>{amount}</Text>
-                  <Text style={styles.amountSymbol}>Ł</Text>
-                </View>
-                <GreenRoundButton
-                  value={chartPercentageChange ? chartPercentageChange : ''}
-                  small
-                />
-              </Fragment>
-            ) : (
-              <Fragment>
-                <View style={[styles.amount, styles.margin]}>
-                  <Text style={styles.amountText}>${chartCursorValue}</Text>
-                </View>
-              </Fragment>
-            )}
-          </View>
-          <View style={styles.childrenContainer}>{children}</View>
-        </SafeAreaView>
+        <View style={styles.subview}>
+          {!chartCursorSelected ? (
+            <Fragment>
+              <View style={styles.fiat}>
+                <Text style={styles.fiatText}>${fiatAmount}</Text>
+              </View>
+              <View style={styles.amount}>
+                <Text style={styles.amountText}>{amount}</Text>
+                <Text style={styles.amountSymbol}>Ł</Text>
+              </View>
+              <GreenRoundButton
+                value={chartPercentageChange ? chartPercentageChange : ''}
+                small
+              />
+            </Fragment>
+          ) : (
+            <Fragment>
+              <View style={[styles.amount, styles.margin]}>
+                <Text style={styles.amountText}>${chartCursorValue}</Text>
+              </View>
+            </Fragment>
+          )}
+        </View>
+        <View style={styles.childrenContainer}>{children}</View>
       </LinearGradient>
     </View>
   );
@@ -82,11 +80,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subview: {
-    flex: 1,
+    height: 190,
     flexDirection: 'column',
     flexWrap: 'nowrap',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: 90,
   },
   amount: {
     height: 40,
@@ -107,7 +105,7 @@ const styles = StyleSheet.create({
     lineHeight: 27,
   },
   fiat: {
-    height: 10,
+    height: 12,
   },
   fiatText: {
     opacity: 0.9,
@@ -121,7 +119,6 @@ const styles = StyleSheet.create({
   },
   childrenContainer: {
     flex: 1,
-    paddingTop: 110,
   },
   margin: {
     marginTop: 10,
@@ -130,7 +127,7 @@ const styles = StyleSheet.create({
     height: 380,
   },
   notch: {
-    height: 400,
+    height: 390,
   },
   maskContainer: {
     position: 'absolute',

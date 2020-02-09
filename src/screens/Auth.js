@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
+import {Alert} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import {useNavigation} from 'react-navigation-hooks';
 
 import Auth from '../components/Auth';
 import {clearValues} from '../reducers/authpad';
@@ -10,9 +10,8 @@ import {
   unlockWalletWithBiometric,
 } from '../reducers/authentication';
 
-const Pin = () => {
+const AuthScreen = props => {
   const dispatch = useDispatch();
-  const {navigate} = useNavigation();
 
   const pin = useSelector(state => state.authpad.pin);
   const biometricsEnabled = useSelector(
@@ -37,7 +36,7 @@ const Pin = () => {
       };
       clear();
     } else {
-      navigate('App');
+      props.navigation.replace('AppStack');
     }
   });
 
@@ -47,12 +46,13 @@ const Pin = () => {
   };
 
   const handleValidationFailure = () => {
-    alert('incorrect pincode');
+    Alert.alert('Incorrect PIN', 'Try Again', [{text: 'OK'}], {
+      cancelable: false,
+    });
   };
 
   return (
     <Auth
-      headerTitleText="Unlock Wallet"
       headerDescriptionText="Use your PIN to unlock your Wallet"
       handleValidationSuccess={unlockWallet}
       handleValidationFailure={handleValidationFailure}
@@ -60,9 +60,14 @@ const Pin = () => {
   );
 };
 
-Pin.navigationOptions = {
-  headerTransparent: true,
-  headerBackTitle: null,
+AuthScreen.navigationOptions = () => {
+  return {
+    headerTitle: 'Unlock Wallet',
+    headerTransparent: true,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
+    animationEnabled: false,
+  };
 };
 
-export default Pin;
+export default AuthScreen;

@@ -1,18 +1,16 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {useDispatch} from 'react-redux';
-import {useNavigation} from 'react-navigation-hooks';
 
 import BlueButton from '../../components/Buttons/BlueButton';
 import {initWallet} from '../../reducers/lightning';
 
-const Welcome = () => {
+const Welcome = props => {
   const dispatch = useDispatch();
-  const {navigate} = useNavigation();
 
   const handlePress = () => {
     dispatch(initWallet());
-    navigate('App');
+    props.navigation.navigate('AppStack');
   };
 
   return (

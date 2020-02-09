@@ -2,7 +2,6 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
-import PropTypes from 'prop-types';
 import {Pagination} from 'react-native-snap-carousel';
 
 import AuthPad from './Numpad/AuthPad';
@@ -10,7 +9,6 @@ import OnboardingHeader from './OnboardingHeader';
 
 const Auth = props => {
   const {
-    headerTitleText,
     headerDescriptionText,
     handleCompletion,
     handleValidationSuccess,
@@ -20,9 +18,7 @@ const Auth = props => {
 
   return (
     <View style={styles.container}>
-      <OnboardingHeader
-        title={headerTitleText}
-        description={headerDescriptionText}>
+      <OnboardingHeader description={headerDescriptionText}>
         <Pagination
           dotStyle={styles.dotStyle}
           inactiveDotColor="#FFFFFF36"
@@ -73,10 +69,5 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
 });
-
-Auth.propTypes = {
-  headerTitleText: PropTypes.string.isRequired,
-  headerDescriptionText: PropTypes.string.isRequired,
-};
 
 export default Auth;

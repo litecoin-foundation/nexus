@@ -8,16 +8,14 @@ import {
   KeyboardAvoidingView,
   StyleSheet,
 } from 'react-native';
-import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {recoverSeed} from '../../reducers/onboarding';
 import {checkBIP39Word} from '../../lib/utils/bip39';
 
-const Recover = () => {
+const Recover = props => {
   const dispatch = useDispatch();
-  const {navigate} = useNavigation();
   const n = [...Array(24).keys()];
   const [phrase, setPhrasePosition] = useState(0);
   const phraseRef = useRef(n.map(() => createRef()));
@@ -58,7 +56,7 @@ const Recover = () => {
 
   const attemptLogin = () => {
     dispatch(recoverSeed(seed));
-    navigate('Pin');
+    props.navigation.navigate('Pin');
   };
 
   return (
@@ -167,7 +165,8 @@ Recover.navigationOptions = {
     color: 'white',
   },
   headerTransparent: true,
-  headerBackTitle: null,
+  headerBackTitleVisible: false,
+  headerTintColor: 'white',
 };
 
 export default Recover;

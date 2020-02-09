@@ -1,18 +1,21 @@
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {useNavigation} from 'react-navigation-hooks';
+import {HeaderBackButton} from '@react-navigation/stack';
 
 import Auth from '../../components/Auth';
 import {addPincode} from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {setItem} from '../../lib/utils/keychain';
 
-const Pin = () => {
+const Pin = props => {
   const dispatch = useDispatch();
-  const {navigate} = useNavigation();
   const pin = useSelector(state => state.authpad.pin);
   const passcodeSet = useSelector(state => state.authentication.passcodeSet);
   const beingRecovered = useSelector(state => state.onboarding.beingRecovered);
+
+  props.navigation.setOptions({
+    headerTitle: passcodeSet ? 'Verify your Passcode' : 'Create a Passcode',
+  });
 
   const handleCompletion = () => {
     dispatch(addPincode(pin));
@@ -21,18 +24,15 @@ const Pin = () => {
 
   const handleValidationSuccess = () => {
     setPincodeToKeychain(pin);
-    handleNavigation(beingRecovered, navigate);
+    handleNavigation(beingRecovered, props.navigation.navigate);
   };
 
   const handleValidationFailure = () => {
-    navigate('Loading');
+    props.navigation.navigate('Loading');
   };
 
   return (
     <Auth
-      headerTitleText={
-        passcodeSet ? 'Verify your Passcode' : 'Create a Passcode'
-      }
       headerDescriptionText={
         passcodeSet
           ? 'Enter your passcode again.'
@@ -57,9 +57,19 @@ async function setPincodeToKeychain(pin) {
   await setItem('PINCODE', pin);
 }
 
-Pin.navigationOptions = {
-  headerTransparent: true,
-  headerBackTitle: null,
+Pin.navigationOptions = ({navigation}) => {
+  return {
+    headerTransparent: true,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderBackButton
+        tintColor="white"
+        labelVisible={false}
+        onPress={() => navigation.goBack()}
+      />
+    ),
+  };
 };
 
 export default Pin;

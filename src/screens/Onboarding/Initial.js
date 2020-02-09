@@ -1,34 +1,26 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
-import {useNavigation} from 'react-navigation-hooks';
 import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 
-const Initial = () => {
-  const {navigate} = useNavigation();
-
+const Initial = props => {
   return (
     <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
       <WhiteButton
         value="Create Wallet"
         small={false}
-        onPress={() => navigate('Pin')}
+        onPress={() => props.navigation.navigate('Pin')}
         active={true}
       />
       <WhiteClearButton
         value="Already have a wallet? Log In"
         small={true}
-        onPress={() => navigate('Recover')}
+        onPress={() => props.navigation.navigate('Recover')}
       />
     </LinearGradient>
   );
-};
-
-Initial.navigationOptions = {
-  headerTransparent: true,
-  headerBackTitle: null,
 };
 
 const styles = StyleSheet.create({
@@ -50,5 +42,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
+
+Initial.navigationOptions = {
+  headerTransparent: true,
+  headerBackTitleVisible: false,
+  headerShown: false,
+};
 
 export default Initial;

@@ -11,7 +11,6 @@ import {
 import {useDispatch, useSelector} from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import DeviceInfo from 'react-native-device-info';
-import {useNavigation} from 'react-navigation-hooks';
 
 import Header from '../components/Header';
 import RequestModal from '../components/Modals/RequestModal';
@@ -20,9 +19,8 @@ import BlueClearButton from '../components/Buttons/BlueClearButton';
 import {getAddress} from '../reducers/address';
 import * as bip21 from '../lib/utils/bip21';
 
-const Receive = () => {
+const Receive = props => {
   const dispatch = useDispatch();
-  const navigation = useNavigation();
   const address = useSelector(state => state.address.address);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -34,14 +32,15 @@ const Receive = () => {
     setURI(address);
   }, [address, dispatch]);
 
-  useEffect(() => {
-    const handleShare = async () => {
-      await Share.share({message: uri, url: uri});
-    };
-
-    navigation.setParams({share: handleShare});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uri]);
+  props.navigation.setOptions({
+    headerRight: () => (
+      <TouchableOpacity
+        style={styles.headerRight}
+        onPress={() => Share.share({message: uri, url: uri})}>
+        <Image source={require('../assets/images/share.png')} />
+      </TouchableOpacity>
+    ),
+  });
 
   const handleCopy = async () => {
     await Clipboard.setString(address);
@@ -144,22 +143,16 @@ const styles = StyleSheet.create({
   },
 });
 
-Receive.navigationOptions = ({navigation}) => {
+Receive.navigationOptions = () => {
   return {
     headerTitle: 'Receive',
-    headerRight: (
-      <TouchableOpacity
-        style={styles.headerRight}
-        onPress={navigation.getParam('share')}>
-        <Image source={require('../assets/images/share.png')} />
-      </TouchableOpacity>
-    ),
     headerTitleStyle: {
       fontWeight: 'bold',
       color: 'white',
     },
     headerTransparent: true,
-    headerBackTitle: null,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
   };
 };
 

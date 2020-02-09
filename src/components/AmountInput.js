@@ -115,6 +115,7 @@ const AmountInput = props => {
 const styles = StyleSheet.create({
   container: {
     height: 77,
+    backgroundColor: 'white',
     borderWidth: 1,
     borderColor: '#E1E1E1',
     shadowColor: 'rgb(82,84,103)',

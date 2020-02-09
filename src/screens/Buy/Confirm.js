@@ -16,7 +16,8 @@ export class Confirm extends Component {
       color: 'white',
     },
     headerTransparent: true,
-    headerBackTitle: null,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
   };
 
   constructor(props) {
@@ -112,4 +113,7 @@ const mapDispatchToProps = {
   getQuote,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Confirm);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Confirm);

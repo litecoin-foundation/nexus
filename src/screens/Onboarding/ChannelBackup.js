@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, StyleSheet, SafeAreaView} from 'react-native';
-import {useNavigation} from 'react-navigation-hooks';
 import {useDispatch, useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -9,8 +8,7 @@ import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import Card from '../../components/Card';
 import {enableChannelBackup} from '../../reducers/channels';
 
-const ChannelBackup = () => {
-  const {navigate} = useNavigation();
+const ChannelBackup = props => {
   const dispatch = useDispatch();
   const biometricsAvailable = useSelector(
     state => state.authentication.biometricsAvailable,
@@ -36,9 +34,9 @@ const ChannelBackup = () => {
             dispatch(enableChannelBackup());
 
             if (!biometricsAvailable) {
-              navigate('Welcome');
+              props.navigation.navigate('Welcome');
             } else {
-              navigate('Biometric');
+              props.navigation.navigate('Biometric');
             }
           }}
         />
@@ -48,9 +46,9 @@ const ChannelBackup = () => {
           small={true}
           onPress={() => {
             if (!biometricsAvailable) {
-              navigate('Welcome');
+              props.navigation.navigate('Welcome');
             } else {
-              navigate('Biometric');
+              props.navigation.navigate('Biometric');
             }
           }}
         />
@@ -74,7 +72,8 @@ ChannelBackup.navigationOptions = {
     color: 'white',
   },
   headerTransparent: true,
-  headerBackTitle: null,
+  headerBackTitleVisible: false,
+  headerTintColor: 'white',
 };
 
 export default ChannelBackup;

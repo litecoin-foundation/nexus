@@ -54,7 +54,7 @@ Alert.navigationOptions = ({navigation}) => {
       fontWeight: 'bold',
       color: 'white',
     },
-    headerRight: (
+    headerRight: () => (
       <View style={styles.headerRight}>
         <WhiteButton
           value="CREATE"
@@ -65,7 +65,7 @@ Alert.navigationOptions = ({navigation}) => {
       </View>
     ),
     headerTransparent: true,
-    headerBackTitle: null,
+    headerBackTitleVisible: false,
     headerTintColor: 'white',
   };
 };

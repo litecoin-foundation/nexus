@@ -1,23 +1,22 @@
 import React, {useEffect, Fragment, useState, createRef} from 'react';
 import {View, Text, Dimensions, StyleSheet, Image} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import {useNavigation} from 'react-navigation-hooks';
 import Carousel, {Pagination} from 'react-native-snap-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from 'reselect';
+import {HeaderBackButton} from '@react-navigation/stack';
 
-import chunk from '../../lib/utils/chunk';
 import SeedView from '../../components/SeedView';
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {getSeed} from '../../reducers/onboarding';
+import chunk from '../../lib/utils/chunk';
 
 const {width} = Dimensions.get('window');
 
-const Generate = () => {
+const Generate = props => {
   const carousel = createRef();
   const dispatch = useDispatch();
-  const {navigate} = useNavigation();
 
   const seedSelector = createSelector(
     state => state.onboarding.seed,
@@ -63,7 +62,7 @@ const Generate = () => {
 
   const handlePress = () => {
     if (activePage === 5) {
-      navigate('Verify');
+      props.navigation.navigate('Verify');
       return;
     }
 
@@ -72,10 +71,7 @@ const Generate = () => {
 
   return (
     <View style={styles.container}>
-      <OnboardingHeader
-        title="Paper Key"
-        description="Please write down your paper-key and place it somewhere secure. "
-      />
+      <OnboardingHeader description="Please write down your paper-key and place it somewhere secure. " />
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.header}>
         {!seed ? <Text>Loading...</Text> : list}
         <View style={styles.bottomContainer}>
@@ -132,9 +128,20 @@ const styles = StyleSheet.create({
   },
 });
 
-Generate.navigationOptions = {
-  headerTransparent: true,
-  headerBackTitle: null,
+Generate.navigationOptions = ({navigation}) => {
+  return {
+    headerTitle: 'Paper Key',
+    headerTransparent: true,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderBackButton
+        tintColor="white"
+        labelVisible={false}
+        onPress={() => navigation.goBack()}
+      />
+    ),
+  };
 };
 
 export default Generate;

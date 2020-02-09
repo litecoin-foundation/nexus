@@ -1,48 +1,47 @@
-import React, {Component} from 'react';
+import React, {useState} from 'react';
 import {View, TextInput, TouchableOpacity, Text} from 'react-native';
-import {connect} from 'react-redux';
+import {useDispatch} from 'react-redux';
 
+import Header from '../../components/Header';
 import BlueButton from '../../components/Buttons/BlueButton';
 import {connectToPeer} from '../../reducers/channels';
 
-export class OpenChannel extends Component {
-  state = {};
+const OpenChannel = () => {
+  const dispatch = useDispatch();
+  const [pubkey, setPubkey] = useState(null);
 
-  handlePress = async () => {
-    const {pubkey} = this.state;
-    const {connectToPeer} = this.props;
-
-    await connectToPeer(pubkey);
+  const handlePress = async () => {
+    await dispatch(connectToPeer(pubkey));
   };
 
-  render() {
-    return (
-      <View>
-        <Text>ENTER PUBKEY</Text>
-        <TextInput
-          placeholder="host"
-          onChangeText={input => this.setState({pubkey: input})}
-        />
-        <Text>OR</Text>
-        <TouchableOpacity>
-          <Text>Paste</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Text>Scan</Text>
-        </TouchableOpacity>
-        <BlueButton value="Open Channel" onPress={() => this.handlePress()} />
-      </View>
-    );
-  }
-}
-
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = {
-  connectToPeer,
+  return (
+    <View>
+      <Header />
+      <Text>ENTER PUBKEY</Text>
+      <TextInput placeholder="host" onChangeText={input => setPubkey(input)} />
+      <Text>OR</Text>
+      <TouchableOpacity>
+        <Text>Paste</Text>
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <Text>Scan</Text>
+      </TouchableOpacity>
+      <BlueButton value="Open Channel" onPress={() => handlePress()} />
+    </View>
+  );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(OpenChannel);
+OpenChannel.navigationOptions = () => {
+  return {
+    headerTitle: 'Open Channel',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+      color: 'white',
+    },
+    headerTransparent: true,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
+  };
+};
+
+export default OpenChannel;
