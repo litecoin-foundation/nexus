@@ -88,6 +88,24 @@ public class LndNativeModule extends ReactContextBaseJavaModule {
         return constants;
     }
 
+    class UnlockCallback implements Callback {
+        Promise promise;
+
+        UnlockCallback(Promise promise) {
+            this.promise = promise;
+        }
+
+        @Override
+        public void onError(Exception e) {
+            // TODO: implement unlocker error
+        }
+
+        @Override
+        public void onResponse(byte[] bytes) {
+            promise.resolve("unlocked");
+        }
+    }
+
     class NativeCallback implements Callback {
         Promise promise;
 
@@ -207,7 +225,7 @@ public class LndNativeModule extends ReactContextBaseJavaModule {
         Runnable startLnd = new Runnable() {
             @Override
             public void run() {
-                Lndmobile.start(args, new NativeCallback(promise));
+                Lndmobile.start(args, new UnlockCallback(promise), new NativeCallback(promise));
             }
         };
         new Thread(startLnd).start();
