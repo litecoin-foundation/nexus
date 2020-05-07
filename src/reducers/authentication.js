@@ -1,6 +1,6 @@
 import {getItem} from '../lib/utils/keychain';
 import {authenticate} from '../lib/utils/biometric';
-import {unlockWallet} from '../reducers/lightning';
+import {unlockWallet} from './lightning';
 
 // initial state
 const initialState = {
