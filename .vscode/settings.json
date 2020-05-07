@@ -2,7 +2,11 @@
   "eslint.packageManager": "yarn",
   "eslint.alwaysShowStatus": true,
   "files.exclude": {
-    "**/node_modules": true
+    "**/node_modules": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
   },
   "editor.formatOnSave": true,
   "search.exclude": {
