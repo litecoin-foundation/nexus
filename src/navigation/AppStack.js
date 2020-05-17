@@ -1,6 +1,7 @@
 import React from 'react';
 import {Image} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import DeviceInfo from 'react-native-device-info';
 
 import WalletStack from './WalletStack';
 import BuyStack from './BuyStack';
@@ -23,7 +24,7 @@ function AppStack() {
             height: 0,
             width: 0,
           },
-          height: 90,
+          height: DeviceInfo.hasNotch() ? 90 : 70,
         },
         labelStyle: {
           fontWeight: '500',
