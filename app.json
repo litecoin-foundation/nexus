@@ -1,4 +1,5 @@
 {
   "name": "lndmobile",
-  "displayName": "lndmobile"
+  "displayName": "lndmobile",
+  "backgroundColor": "#000000"
 }
