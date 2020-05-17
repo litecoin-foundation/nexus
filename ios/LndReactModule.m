@@ -24,6 +24,7 @@ static NSString* const logEventName = @"logs";
 @interface NativeCallback:NSObject<LndmobileCallback>
 @property (nonatomic) RCTPromiseResolveBlock resolve;
 @property (nonatomic) RCTPromiseRejectBlock reject;
+@property (nonatomic) RCTEventEmitter* eventEmitter;
 
 @end
 
@@ -39,8 +40,27 @@ static NSString* const logEventName = @"logs";
   return self;
 }
 
+- (instancetype)initWithEmitter: (RCTEventEmitter*)e
+{
+    self = [super init];
+    if (self) {
+        self.eventEmitter = e;
+    }
+    return self;
+}
+
 - (void)onError:(NSError *)p0 {
-  self.reject(@"error", [p0 localizedDescription], p0);
+  if (self.reject) {
+    self.reject(@"error", [p0 localizedDescription], p0);
+  }
+  
+  if (self.eventEmitter) {
+    [self.eventEmitter sendEventWithName:streamEventName body:@{
+      respEventTypeKey: respEventTypeError,
+      respErrorKey: [p0 localizedDescription],
+      }
+    ];
+  }
 }
 
 - (void)onResponse:(NSData *)p0 {
@@ -48,7 +68,18 @@ static NSString* const logEventName = @"logs";
   if (b64 == nil) {
     b64 = @"";
   }
-  self.resolve(@{respB64DataKey: b64});
+  
+  if (self.resolve) {
+    self.resolve(@{respB64DataKey: b64});
+  }
+  
+  if (self.eventEmitter) {
+    [self.eventEmitter sendEventWithName:streamEventName body:@{
+      respEventTypeKey: respEventTypeData,
+      respB64DataKey: b64,
+      }
+    ];
+  }
 }
 
 @end
@@ -208,8 +239,9 @@ RCT_EXPORT_METHOD(start: (RCTPromiseResolveBlock)resolve
   
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
     RCTLogInfo(@"Starting lnd");
-    NativeCallback* cb = [[NativeCallback alloc] initWithResolver:resolve rejecter:reject];
-    LndmobileStart(args, cb);
+    NativeCallback *unlockerCallback = [[NativeCallback alloc] initWithEmitter:self];
+    NativeCallback* rpcCallback = [[NativeCallback alloc] initWithResolver:resolve rejecter:reject];
+    LndmobileStart(args, unlockerCallback, rpcCallback);
   });
   
 }

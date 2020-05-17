@@ -65,6 +65,10 @@ export const initWallet = () => async (dispatch, getState) => {
       cipherSeedMnemonic: seed,
       recoveryWindow: 2500, // TODO: should be 0 if new Wallet
     });
+
+    //TODO: replace timeout with rpcCallback from Lnd
+    await new Promise(r => setTimeout(r, 5000));
+
     // dispatch pollers
     dispatch(pollBalance());
     dispatch(pollInfo());
@@ -93,6 +97,9 @@ export const unlockWallet = () => async dispatch => {
       dispatch(initWallet());
     }
   }
+
+  //TODO: replace timeout with rpcCallback from Lnd
+  await new Promise(r => setTimeout(r, 5000));
 
   // dispatch pollers
   dispatch(pollBalance());
