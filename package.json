@@ -15,7 +15,9 @@
     "protobuf": "pbjs src/lib/lightning/rpc.proto -t static-module -w es6 -o src/lib/lightning/rpc.js",
     "lint": "eslint .",
     "storybook": "start-storybook -p 7007",
-    "prestorybook": "rnstl"
+    "prestorybook": "rnstl",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.10",
@@ -65,7 +67,8 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "satoshi-bitcoin": "^1.0.4",
-    "stream-browserify": "^3.0.0"
+    "stream-browserify": "^3.0.0",
+    "snyk": "^1.321.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
@@ -96,5 +99,6 @@
       "pattern": "**/*.story.js",
       "outputFile": "./storybook/storyLoader.js"
     }
-  }
+  },
+  "snyk": true
 }
