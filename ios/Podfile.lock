@@ -243,6 +243,8 @@ PODS:
     - React
   - react-native-camera/RN (3.26.0):
     - React
+  - react-native-flipper (0.39.0):
+    - React
   - react-native-randombytes (3.5.3):
     - React
   - react-native-safe-area-context (1.0.0):
@@ -376,6 +378,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-camera (from `../node_modules/react-native-camera`)
+  - react-native-flipper (from `../node_modules/react-native-flipper`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-sensitive-info (from `../node_modules/react-native-sensitive-info`)
@@ -453,6 +456,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   react-native-camera:
     :path: "../node_modules/react-native-camera"
+  react-native-flipper:
+    :path: "../node_modules/react-native-flipper"
   react-native-randombytes:
     :path: "../node_modules/react-native-randombytes"
   react-native-safe-area-context:
@@ -536,6 +541,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 1540d1c01bb493ae3124ed83351b1b6a155db7da
   React-jsinspector: 512e560d0e985d0e8c479a54a4e5c147a9c83493
   react-native-camera: 9e3d60336e221d62e5b72adf551ca31ff74a94b5
+  react-native-flipper: 5dc086b3fe71a6ebb8b4e42e4b9191cf07fe50ac
   react-native-randombytes: 991545e6eaaf700b4ee384c291ef3d572e0b2ca8
   react-native-safe-area-context: 5f3e081f937ab7c44c179d551f332fa494cfcf8f
   react-native-sensitive-info: 4629b223484a08225c3eb088ff3f91b03097b5e5

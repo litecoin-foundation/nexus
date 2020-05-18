@@ -4,8 +4,11 @@ import createSensitiveStorage from 'redux-persist-sensitive-storage';
 import thunk from 'redux-thunk';
 import reducer from './src/reducers';
 
+const createDebugger = require('redux-flipper').default;
+let reduxDebugger = createDebugger();
+
 const initialState = {};
-const middleware = [thunk];
+const middleware = [thunk, reduxDebugger];
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
