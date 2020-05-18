@@ -20,14 +20,14 @@ export const SET_BIOMETRIC_AVAILABILITY = 'SET_BIOMETRIC_AVAILABILITY';
 export const SET_BIOMETRIC_ENABLED = 'SET_BIOMETRIC_ENABLED';
 
 // actions
-export const addPincode = passcode => dispatch => {
+export const addPincode = (passcode) => (dispatch) => {
   dispatch({
     type: ADD_PASSCODE,
     passcode,
   });
 };
 
-export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
+export const unlockWalletWithPin = (pincodeAttempt) => async (dispatch) => {
   const pincode = await getItem('PINCODE');
   if (pincodeAttempt !== pincode) {
     dispatch({
@@ -43,7 +43,7 @@ export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
   }
 };
 
-export const unlockWalletWithBiometric = () => async dispatch => {
+export const unlockWalletWithBiometric = () => async (dispatch) => {
   try {
     await authenticate('Unlock Wallet');
     await dispatch(unlockWallet());
@@ -56,16 +56,15 @@ export const unlockWalletWithBiometric = () => async dispatch => {
   }
 };
 
-export const clearWalletUnlocked = () => dispatch => {
+export const clearWalletUnlocked = () => (dispatch) => {
   dispatch({
     type: CLEAR_UNLOCK,
   });
 };
 
-export const setBiometricAvailability = (
-  available,
-  faceIDSupported,
-) => dispatch => {
+export const setBiometricAvailability = (available, faceIDSupported) => (
+  dispatch,
+) => {
   dispatch({
     type: SET_BIOMETRIC_AVAILABILITY,
     available,
@@ -73,7 +72,7 @@ export const setBiometricAvailability = (
   });
 };
 
-export const setBiometricEnabled = boolean => dispatch => {
+export const setBiometricEnabled = (boolean) => (dispatch) => {
   dispatch({
     type: SET_BIOMETRIC_ENABLED,
     boolean,
@@ -83,7 +82,7 @@ export const setBiometricEnabled = boolean => dispatch => {
 // action handlers
 const actionHandler = {
   [UNLOCK_WALLET]: (state, {payload}) => ({...state, walletUnlocked: payload}),
-  [CLEAR_UNLOCK]: state => ({...state, walletUnlocked: null}),
+  [CLEAR_UNLOCK]: (state) => ({...state, walletUnlocked: null}),
   [ADD_PASSCODE]: (state, {passcode}) => ({
     ...state,
     passcode,
@@ -92,6 +91,10 @@ const actionHandler = {
   [SET_BIOMETRIC_AVAILABILITY]: (state, {available, faceIDSupported}) => ({
     ...state,
     biometricsAvailable: available,
+    biometricsEnabled:
+      state.biometricsEnabled === true && !available
+        ? false
+        : state.biometricsEnabled,
     faceIDSupported,
   }),
   [SET_BIOMETRIC_ENABLED]: (state, {boolean}) => ({
@@ -101,7 +104,7 @@ const actionHandler = {
 };
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

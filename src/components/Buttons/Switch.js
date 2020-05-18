@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import {StyleSheet, Switch} from 'react-native';
 
-const SwitchButton = props => {
+const SwitchButton = (props) => {
   const {onPress, initialValue} = props;
   const [triggered, trigger] = useState(initialValue ? initialValue : false);
 
-  const handlePress = value => {
+  const handlePress = (value) => {
     trigger(value);
     onPress(value);
   };
@@ -13,7 +13,7 @@ const SwitchButton = props => {
   return (
     <Switch
       value={triggered}
-      onValueChange={value => handlePress(value)}
+      onValueChange={(value) => handlePress(value)}
       trackColor={{true: 'white'}}
       thumbColor={triggered ? '#2C72FF' : '#C2C2C2'}
       ios_backgroundColor="#E9E9E948"

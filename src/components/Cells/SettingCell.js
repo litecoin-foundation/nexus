@@ -1,12 +1,28 @@
 import React from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
+import {TouchableOpacity, Text, StyleSheet, Image} from 'react-native';
 
-const SettingCell = props => {
-  const {title, children, onPress} = props;
+import Switch from '../Buttons/Switch';
+
+const SettingCell = (props) => {
+  const {
+    title,
+    children,
+    onPress,
+    forward,
+    switchEnabled,
+    handleSwitch,
+    switchValue,
+  } = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.title}>{title}</Text>
       {children}
+      {forward ? (
+        <Image source={require('../../assets/images/forward.png')} />
+      ) : null}
+      {switchEnabled ? (
+        <Switch initialValue={switchValue} onPress={handleSwitch} />
+      ) : null}
     </TouchableOpacity>
   );
 };

@@ -1,35 +1,52 @@
 import React from 'react';
-import {ScrollView, StyleSheet, Image} from 'react-native';
+import {ScrollView, StyleSheet} from 'react-native';
 import {useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
+import {useDispatch} from 'react-redux';
 
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
+import {setBiometricEnabled} from '../../reducers/authentication';
 
-const General = props => {
+const General = (props) => {
+  const dispatch = useDispatch();
   const biometricsAvailable = useSelector(
-    state => state.authentication.biometricsAvailable,
+    (state) => state.authentication.biometricsAvailable,
+  );
+  const biometricsEnabled = useSelector(
+    (state) => state.authentication.biometricsEnabled,
   );
   const faceIDSupported = useSelector(
-    state => state.authentication.faceIDSupported,
+    (state) => state.authentication.faceIDSupported,
   );
+
+  const handleBiometricSwitch = () => {
+    dispatch(setBiometricEnabled(!biometricsEnabled));
+  };
 
   return (
     <LinearGradient style={styles.container} colors={['#F2F8FD', '#d2e1ef00']}>
       <Header />
       <ScrollView>
-        <SettingCell title="About" value="meow" />
+        <SettingCell title="About" />
         <SettingCell
           title="Change Wallet Pin"
-          onPress={() => props.navigation.navigate('ChangePincode')}>
-          <Image source={require('../../assets/images/forward.png')} />
-        </SettingCell>
+          onPress={() => props.navigation.navigate('ChangePincode')}
+          forward
+        />
         {biometricsAvailable ? (
           <SettingCell
             title={`Enable ${faceIDSupported ? 'Face ID' : 'Touch ID'}`}
-            value="meow"
+            switchEnabled
+            switchValue={biometricsEnabled}
+            handleSwitch={handleBiometricSwitch}
           />
         ) : null}
+        <SettingCell
+          title="View Paper Key"
+          onPress={() => props.navigation.navigate('ChangePincode')}
+          forward
+        />
       </ScrollView>
     </LinearGradient>
   );
