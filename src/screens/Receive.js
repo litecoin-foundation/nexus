@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Clipboard,
   TouchableOpacity,
   Image,
   Share,
@@ -11,6 +10,7 @@ import {
 import {useDispatch, useSelector} from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import DeviceInfo from 'react-native-device-info';
+import Clipboard from '@react-native-community/clipboard';
 
 import Header from '../components/Header';
 import RequestModal from '../components/Modals/RequestModal';
@@ -19,9 +19,9 @@ import BlueClearButton from '../components/Buttons/BlueClearButton';
 import {getAddress} from '../reducers/address';
 import * as bip21 from '../lib/utils/bip21';
 
-const Receive = props => {
+const Receive = (props) => {
   const dispatch = useDispatch();
-  const address = useSelector(state => state.address.address);
+  const address = useSelector((state) => state.address.address);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [amount, changeAmount] = useState('');
@@ -46,7 +46,7 @@ const Receive = props => {
     await Clipboard.setString(address);
   };
 
-  const handleChange = input => {
+  const handleChange = (input) => {
     changeAmount(input);
     updateQR();
   };
@@ -90,7 +90,7 @@ const Receive = props => {
       <RequestModal
         isVisible={modalVisible}
         close={() => setModalVisible(false)}
-        onChange={input => handleChange(input)}
+        onChange={(input) => handleChange(input)}
       />
     </View>
   );

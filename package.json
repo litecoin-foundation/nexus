@@ -18,6 +18,7 @@
     "prestorybook": "rnstl"
   },
   "dependencies": {
+    "@react-native-community/clipboard": "^1.2.2",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-native-community/slider": "^2.0.9",
     "@react-navigation/bottom-tabs": "^5.4.5",

@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
-  Clipboard,
   StyleSheet,
   Image,
   TouchableOpacity,
@@ -13,6 +12,7 @@ import {
 import {useDispatch, useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 import DeviceInfo from 'react-native-device-info';
+import Clipboard from '@react-native-community/clipboard';
 
 import AmountInput from '../components/AmountInput';
 import AddressField from '../components/AddressField';
@@ -31,7 +31,9 @@ import WhiteButton from '../components/Buttons/WhiteButton';
 const Send = () => {
   const dispatch = useDispatch();
 
-  const confirmedBalance = useSelector(state => state.balance.confirmedBalance);
+  const confirmedBalance = useSelector(
+    (state) => state.balance.confirmedBalance,
+  );
   const [isSendModalTriggered, triggerSendModal] = useState(false);
   const [isScanModalTriggered, triggerScanModal] = useState(false);
   const [isAmountInputTriggered, triggerAmountInput] = useState(false);
@@ -58,7 +60,7 @@ const Send = () => {
     }
   }, [address, amount, confirmedBalance]);
 
-  const validate = async data => {
+  const validate = async (data) => {
     try {
       const decoded = decodeBIP21(data);
       const valid = await validateLtcAddress(decoded.address);
@@ -101,7 +103,7 @@ const Send = () => {
     }
   };
 
-  const handleScanCallback = async data => {
+  const handleScanCallback = async (data) => {
     triggerScanModal(false);
     try {
       await validate(data);
@@ -191,7 +193,7 @@ const Send = () => {
           </View>
 
           <AmountInput
-            onChangeText={input => setAmount(input)}
+            onChangeText={(input) => setAmount(input)}
             onAccept={() => triggerAmountInput(false)}
             selected={() => triggerAmountInput(true)}
             confirmButtonText="Confirm"
@@ -242,7 +244,7 @@ const Send = () => {
                   ADD Description
                 </Text>
                 <InputField
-                  onChangeText={text => changeMemo(text)}
+                  onChangeText={(text) => changeMemo(text)}
                   value={memo}
                 />
               </View>
@@ -270,7 +272,7 @@ const Send = () => {
       <ScanModal
         isVisible={isScanModalTriggered}
         close={() => triggerScanModal(false)}
-        handleQRRead={data => handleScanCallback(data)}
+        handleQRRead={(data) => handleScanCallback(data)}
       />
     </View>
   );
