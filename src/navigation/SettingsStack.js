@@ -6,6 +6,7 @@ import Channel from '../screens/Settings/Channel';
 import OpenChannel from '../screens/Settings/OpenChannel';
 import General from '../screens/Settings/General';
 import ChangePincode from '../screens/Settings/ChangePincode';
+import Seed from '../screens/Settings/Seed';
 
 const Stack = createStackNavigator();
 
@@ -36,6 +37,11 @@ function SettingsStack() {
         name="ChangePincode"
         component={ChangePincode}
         options={ChangePincode.navigationOptions}
+      />
+      <Stack.Screen
+        name="Seed"
+        component={Seed}
+        options={Seed.navigationOptions}
       />
     </Stack.Navigator>
   );

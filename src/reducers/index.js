@@ -15,6 +15,7 @@ import authentication from './authentication';
 import chart from './chart';
 import input from './input';
 import alerts from './alerts';
+import settings from './settings';
 
 export default combineReducers({
   onboarding,
@@ -33,4 +34,5 @@ export default combineReducers({
   chart,
   input,
   alerts,
+  settings,
 });
