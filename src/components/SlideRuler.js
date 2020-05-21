@@ -28,7 +28,7 @@ class Item extends PureComponent {
   }
 }
 
-const SlideRuler = props => {
+const SlideRuler = (props) => {
   const itemAmountPerScreen = 30;
   const flatList = useRef();
 
@@ -63,7 +63,7 @@ const SlideRuler = props => {
     setOneItemWidth(Math.round(width / itemAmountPerScreen));
   };
 
-  const onSliderMoved = event => {
+  const onSliderMoved = (event) => {
     let newValue =
       Math.floor(event.nativeEvent.contentOffset.x / oneItemWidth) *
       multiplicity;
@@ -86,7 +86,7 @@ const SlideRuler = props => {
       animated: true,
     });
 
-  const renderItem = element => (
+  const renderItem = (element) => (
     <Item oneColumnSize={oneItemWidth} index={element.index} />
   );
 

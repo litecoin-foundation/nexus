@@ -10,15 +10,15 @@ import {
   unlockWalletWithBiometric,
 } from '../reducers/authentication';
 
-const AuthScreen = props => {
+const AuthScreen = (props) => {
   const dispatch = useDispatch();
 
-  const pin = useSelector(state => state.authpad.pin);
+  const pin = useSelector((state) => state.authpad.pin);
   const biometricsEnabled = useSelector(
-    state => state.authentication.biometricsEnabled,
+    (state) => state.authentication.biometricsEnabled,
   );
   const walletUnlocked = useSelector(
-    state => state.authentication.walletUnlocked,
+    (state) => state.authentication.walletUnlocked,
   );
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import {useDispatch} from 'react-redux';
 import BlueButton from '../../components/Buttons/BlueButton';
 import {initWallet} from '../../reducers/lightning';
 
-const Welcome = props => {
+const Welcome = (props) => {
   const dispatch = useDispatch();
 
   const handlePress = () => {

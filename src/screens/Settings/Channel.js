@@ -22,7 +22,7 @@ const {width} = Dimensions.get('window');
 
 const Channel = () => {
   const dispatch = useDispatch();
-  const channels = useSelector(state => state.channels.channels);
+  const channels = useSelector((state) => state.channels.channels);
 
   useEffect(() => {
     dispatch(listChannels());
@@ -46,7 +46,7 @@ const Channel = () => {
       }}
       data={channels}
       renderItem={({item}) => <ChannelCell item={item} />}
-      keyExtractor={item => item.remotePubkey}
+      keyExtractor={(item) => item.remotePubkey}
     />
   );
 

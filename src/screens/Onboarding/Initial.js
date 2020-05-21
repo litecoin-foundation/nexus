@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 
-const Initial = props => {
+const Initial = (props) => {
   return (
     <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
       <WhiteButton

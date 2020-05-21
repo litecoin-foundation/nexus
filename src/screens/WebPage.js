@@ -4,14 +4,14 @@ import WebView from 'react-native-webview';
 
 import Header from '../components/Header';
 
-const WebPage = props => {
+const WebPage = (props) => {
   const {route} = props;
   const WebPageRef = useRef();
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleEvent = syntheticEvent => {
+  const handleEvent = (syntheticEvent) => {
     const {nativeEvent} = syntheticEvent;
     const {canGoBack, canGoForward, loading} = nativeEvent;
 
@@ -27,8 +27,8 @@ const WebPage = props => {
         style={styles.webview}
         source={route.params}
         ref={WebPageRef}
-        onLoadStart={syntheticEvent => handleEvent(syntheticEvent)}
-        onLoadEnd={syntheticEvent => handleEvent(syntheticEvent)}
+        onLoadStart={(syntheticEvent) => handleEvent(syntheticEvent)}
+        onLoadEnd={(syntheticEvent) => handleEvent(syntheticEvent)}
       />
       <View style={styles.optionsContainer}>
         <TouchableOpacity

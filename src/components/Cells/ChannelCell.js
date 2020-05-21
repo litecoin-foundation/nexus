@@ -6,7 +6,7 @@ import VerticalProgressBar from '../VerticalProgressBar';
 
 const {width} = Dimensions.get('window');
 
-const ChannelCell = props => {
+const ChannelCell = (props) => {
   const {item} = props;
   const {
     remotePubkey,

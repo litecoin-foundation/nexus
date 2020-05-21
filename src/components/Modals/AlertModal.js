@@ -5,7 +5,7 @@ import Modal from 'react-native-modal';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import BlueButton from '../Buttons/BlueButton';
 
-const AlertModal = props => {
+const AlertModal = (props) => {
   const {isVisible, close, onPress} = props;
 
   return (

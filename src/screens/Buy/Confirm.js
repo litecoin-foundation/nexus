@@ -103,7 +103,7 @@ Confirm.propTypes = {
   }).isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   amount: state.buy.amount,
   valid: state.buy.valid,
   price: priceSelector(state),
@@ -113,7 +113,4 @@ const mapDispatchToProps = {
   getQuote,
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Confirm);
+export default connect(mapStateToProps, mapDispatchToProps)(Confirm);

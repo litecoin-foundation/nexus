@@ -5,7 +5,7 @@ import {useSpring, animated, config} from 'react-spring/native';
 
 import {triggerSelectionFeedback} from '../../lib/utils/haptic';
 
-const Button = props => {
+const Button = (props) => {
   const {value, onPress, disabled} = props;
   const AnimatedView = animated(View);
 

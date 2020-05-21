@@ -35,7 +35,7 @@ class Lightning {
       },
       read() {},
     });
-    this.lightningEvent.addListener('streamEvent', res => {
+    this.lightningEvent.addListener('streamEvent', (res) => {
       if (res.streamId !== streamId) {
         return;
       }

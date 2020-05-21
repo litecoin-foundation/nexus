@@ -9,10 +9,10 @@ import Card from '../../components/Card';
 import {authenticate} from '../../lib/utils/biometric';
 import {setBiometricEnabled} from '../../reducers/authentication';
 
-const Biometric = props => {
+const Biometric = (props) => {
   const dispatch = useDispatch();
   const faceIDSupported = useSelector(
-    state => state.authentication.faceIDSupported,
+    (state) => state.authentication.faceIDSupported,
   );
   const biometryType = faceIDSupported ? 'Face ID' : 'Touch ID';
 

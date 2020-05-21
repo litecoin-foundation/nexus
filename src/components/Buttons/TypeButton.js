@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import PropTypes from 'prop-types';
 
-const TypeButton = props => {
+const TypeButton = (props) => {
   const {label, onPress, imageSource} = props;
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>

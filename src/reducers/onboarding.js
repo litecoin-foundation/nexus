@@ -17,19 +17,19 @@ export const GET_SEED = 'GET_SEED';
 export const RECOVER_SEED = 'RECOVER_SEED';
 
 // actions
-export const startOnboarding = () => dispatch => {
+export const startOnboarding = () => (dispatch) => {
   dispatch({
     type: ONBOARDING_STARTED,
   });
 };
 
-export const finishOnboarding = () => dispatch => {
+export const finishOnboarding = () => (dispatch) => {
   dispatch({
     type: ONBOARDING_FINISHED,
   });
 };
 
-export const getSeed = () => async dispatch => {
+export const getSeed = () => async (dispatch) => {
   const response = await LndInstance.sendCommand('GenSeed');
   dispatch({
     type: GET_SEED,
@@ -37,7 +37,7 @@ export const getSeed = () => async dispatch => {
   });
 };
 
-export const recoverSeed = seed => dispatch => {
+export const recoverSeed = (seed) => (dispatch) => {
   dispatch({
     type: RECOVER_SEED,
     seed,
@@ -46,14 +46,14 @@ export const recoverSeed = seed => dispatch => {
 
 // action handlers
 const actionHandler = {
-  [ONBOARDING_STARTED]: state => ({
+  [ONBOARDING_STARTED]: (state) => ({
     ...state,
     onboarding: true,
     isOnboarded: false,
     seed: [],
     beingRecovered: false,
   }),
-  [ONBOARDING_FINISHED]: state => ({
+  [ONBOARDING_FINISHED]: (state) => ({
     ...state,
     onboarding: false,
     isOnboarded: true,
@@ -64,7 +64,7 @@ const actionHandler = {
 };
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

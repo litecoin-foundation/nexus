@@ -15,11 +15,11 @@ import LinearGradient from 'react-native-linear-gradient';
 import Switch from '../Buttons/Switch';
 import Header from '../Header';
 
-const ScanModal = props => {
+const ScanModal = (props) => {
   const {isVisible, close, handleQRRead} = props;
   const [flashEnabled, triggerFlash] = useState(false);
 
-  const handleRead = event => {
+  const handleRead = (event) => {
     Vibration.vibrate();
     handleQRRead(event.data);
   };
@@ -36,7 +36,7 @@ const ScanModal = props => {
         <RNCamera
           style={styles.camera}
           captureAudio={false}
-          onBarCodeRead={e => handleRead(e)}
+          onBarCodeRead={(e) => handleRead(e)}
           type={RNCamera.Constants.Type.back}
           barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}
           videoStabilizationMode={
@@ -75,7 +75,7 @@ const ScanModal = props => {
           style={styles.bottomContainer}>
           <View style={styles.bottomContentContainer}>
             <Text style={styles.bottomText}>Enable Flash</Text>
-            <Switch onPress={flashStatus => triggerFlash(flashStatus)} />
+            <Switch onPress={(flashStatus) => triggerFlash(flashStatus)} />
           </View>
         </LinearGradient>
       </View>

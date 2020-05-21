@@ -7,11 +7,11 @@ import {changeGraphPeriod} from '../reducers/chart';
 
 const DatePicker = () => {
   const dispatch = useDispatch();
-  const currentGraphPeriod = useSelector(state => state.chart.graphPeriod);
+  const currentGraphPeriod = useSelector((state) => state.chart.graphPeriod);
 
   const options = ['1D', '1W', '1M', '3M', '1Y', 'ALL'];
 
-  const buttons = options.map(value => {
+  const buttons = options.map((value) => {
     return (
       <WhiteButton
         value={value}

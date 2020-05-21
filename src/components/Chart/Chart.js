@@ -17,7 +17,7 @@ const {width} = Dimensions.get('window');
 
 const Chart = () => {
   const dispatch = useDispatch();
-  const data = useSelector(state => monthSelector(state));
+  const data = useSelector((state) => monthSelector(state));
 
   const [line, setLine] = useState('');
   const x = useRef(null);
@@ -32,8 +32,8 @@ const Chart = () => {
       return;
     }
 
-    const yValues = data.map(item => item.y);
-    const xValues = data.map(item => item.x);
+    const yValues = data.map((item) => item.y);
+    const xValues = data.map((item) => item.x);
     const yExtent = array.extent(yValues);
     const xExtent = array.extent(xValues);
 
@@ -48,8 +48,8 @@ const Chart = () => {
 
     const calcLine = d3.shape
       .line()
-      .x(d => x.current(d.x))
-      .y(d => y.current(d.y))
+      .x((d) => x.current(d.x))
+      .y((d) => y.current(d.y))
       .curve(d3.shape.curveBasis)(data);
 
     setLine(calcLine);

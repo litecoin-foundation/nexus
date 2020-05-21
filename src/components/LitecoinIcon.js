@@ -2,7 +2,7 @@ import React from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-const LitecoinIcon = props => {
+const LitecoinIcon = (props) => {
   const {size} = props;
   return (
     <LinearGradient

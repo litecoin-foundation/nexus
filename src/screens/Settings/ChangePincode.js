@@ -9,9 +9,9 @@ import Header from '../../components/Header';
 import {addPincode} from '../../reducers/authentication';
 import {setItem} from '../../lib/utils/keychain';
 
-const ChangePincode = props => {
+const ChangePincode = (props) => {
   const dispatch = useDispatch();
-  const pin = useSelector(state => state.authentication.passcode);
+  const pin = useSelector((state) => state.authentication.passcode);
 
   const [currentPin, setCurrentPin] = useState(true);
   const [newPin, setNewPin] = useState(false);
@@ -19,7 +19,7 @@ const ChangePincode = props => {
   const [newPinCodeValue, setNewPinCodeValue] = useState('');
   const [padValue, setPadValue] = useState('');
 
-  const handleInput = pincode => {
+  const handleInput = (pincode) => {
     if (padValue.length === 5) {
       handleCompletion(pincode);
     } else {
@@ -27,7 +27,7 @@ const ChangePincode = props => {
     }
   };
 
-  const handleCompletion = passcodeAttempt => {
+  const handleCompletion = (passcodeAttempt) => {
     setPadValue('');
     if (currentPin) {
       if (passcodeAttempt === pin) {
@@ -100,7 +100,7 @@ const ChangePincode = props => {
       <LinearGradient style={styles.flex} colors={['#F2F8FD', '#d2e1ef00']}>
         <Pad
           currentValue={padValue}
-          onChange={value => handleInput(value)}
+          onChange={(value) => handleInput(value)}
           maxLength={6}
           dotDisabled={true}
           noBackgroundColor={true}

@@ -16,16 +16,18 @@ export const GET_TRANSACTIONS = 'GET_TRANSACTIONS';
 export const GET_INVOICES = 'GET_INVOICES';
 
 // actions
-export const getTransactions = () => dispatch => {
+export const getTransactions = () => (dispatch) => {
   const stream = LndInstance.sendStreamCommand('subscribeTransactions');
-  stream.on('data', transaction => {
+  stream.on('data', (transaction) => {
     dispatch({
       type: GET_TRANSACTIONS,
       transaction,
     });
   });
-  stream.on('error', err => console.log(`SubscribeTransaction error: ${err}`));
-  stream.on('status', status =>
+  stream.on('error', (err) =>
+    console.log(`SubscribeTransaction error: ${err}`),
+  );
+  stream.on('status', (status) =>
     console.log(`SubscribeTransactions status: ${status}`),
   );
   stream.on('end', () => {
@@ -33,16 +35,18 @@ export const getTransactions = () => dispatch => {
   });
 };
 
-export const getInvoices = () => dispatch => {
+export const getInvoices = () => (dispatch) => {
   const stream = LndInstance.sendStreamCommand('subscribeInvoices');
-  stream.on('data', invoice => {
+  stream.on('data', (invoice) => {
     dispatch({
       type: GET_INVOICES,
       invoice,
     });
   });
-  stream.on('error', err => console.log(`SubscribeTransaction error: ${err}`));
-  stream.on('status', status =>
+  stream.on('error', (err) =>
+    console.log(`SubscribeTransaction error: ${err}`),
+  );
+  stream.on('status', (status) =>
     console.log(`SubscribeTransactions status: ${status}`),
   );
   stream.on('end', () => {
@@ -63,32 +67,30 @@ const actionHandler = {
 };
 
 // selectors
-const txSelector = state => state.transaction.transactions;
+const txSelector = (state) => state.transaction.transactions;
 
-export const txDetailSelector = createSelector(
-  txSelector,
-  tx =>
-    tx.map(data => {
-      return {
-        name:
-          Math.sign(parseFloat(data.amount)) === -1
-            ? 'Sent Litecoin'
-            : 'Received Litecoin',
-        hash: data.txHash,
-        amount: data.amount,
-        day: formatDate(data.timeStamp * 1000),
-        time: formatTime(data.timeStamp),
-        fee: data.totalFees,
-        confs: data.numConfirmations,
-        type: 'litecoin onchain',
-        addresses: data.destAddresses,
-        sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
-      };
-    }),
+export const txDetailSelector = createSelector(txSelector, (tx) =>
+  tx.map((data) => {
+    return {
+      name:
+        Math.sign(parseFloat(data.amount)) === -1
+          ? 'Sent Litecoin'
+          : 'Received Litecoin',
+      hash: data.txHash,
+      amount: data.amount,
+      day: formatDate(data.timeStamp * 1000),
+      time: formatTime(data.timeStamp),
+      fee: data.totalFees,
+      confs: data.numConfirmations,
+      type: 'litecoin onchain',
+      addresses: data.destAddresses,
+      sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
+    };
+  }),
 );
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

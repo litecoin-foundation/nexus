@@ -50,7 +50,7 @@ export const getInfo = () => async (dispatch, getState) => {
   });
 };
 
-export const pollInfo = () => async dispatch => {
+export const pollInfo = () => async (dispatch) => {
   await poll(() => dispatch(getInfo()));
 };
 
@@ -74,11 +74,11 @@ const actionHandler = {
 };
 
 // selectors
-export const percentSyncedSelector = state => state.info.percentSynced;
-export const syncStatusSelector = state => state.info.syncedToChain;
+export const percentSyncedSelector = (state) => state.info.percentSynced;
+export const syncStatusSelector = (state) => state.info.syncedToChain;
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

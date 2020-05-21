@@ -1,6 +1,6 @@
 import bip21 from 'bip21';
 
-export const decodeBIP21 = uri => {
+export const decodeBIP21 = (uri) => {
   return bip21.decode(uri, 'litecoin');
 };
 

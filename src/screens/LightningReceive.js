@@ -30,7 +30,7 @@ const LightningReceive = () => {
         <Text style={styles.title}>CHOOSE AMOUNT</Text>
       </View>
       <AmountInput
-        onChangeText={amount => setAmount(amount)}
+        onChangeText={(amount) => setAmount(amount)}
         onAccept={() => select(false)}
         selected={() => select(true)}
         confirmButtonText="Create Invoice"
@@ -44,7 +44,7 @@ const LightningReceive = () => {
             <Text style={styles.leftTitle}>ADD Description</Text>
             <InputField
               placeholder="Enter Note to Self"
-              onChangeText={memo => setMemo(memo)}
+              onChangeText={(memo) => setMemo(memo)}
             />
           </View>
           <View style={styles.buttonContainer}>

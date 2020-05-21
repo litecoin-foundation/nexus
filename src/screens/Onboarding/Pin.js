@@ -7,11 +7,13 @@ import {addPincode} from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {setItem} from '../../lib/utils/keychain';
 
-const Pin = props => {
+const Pin = (props) => {
   const dispatch = useDispatch();
-  const pin = useSelector(state => state.authpad.pin);
-  const passcodeSet = useSelector(state => state.authentication.passcodeSet);
-  const beingRecovered = useSelector(state => state.onboarding.beingRecovered);
+  const pin = useSelector((state) => state.authpad.pin);
+  const passcodeSet = useSelector((state) => state.authentication.passcodeSet);
+  const beingRecovered = useSelector(
+    (state) => state.onboarding.beingRecovered,
+  );
 
   props.navigation.setOptions({
     headerTitle: passcodeSet ? 'Verify your Passcode' : 'Create a Passcode',

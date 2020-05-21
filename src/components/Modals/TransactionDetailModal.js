@@ -8,14 +8,14 @@ import TableCell from '../Cells/TableCell';
 import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
 
-const TransactionDetailModal = props => {
+const TransactionDetailModal = (props) => {
   const {isVisible, close, transaction, navigate} = props;
 
   if (transaction === null) {
     return <View />;
   }
 
-  const addresses = transaction.addresses.map(val => {
+  const addresses = transaction.addresses.map((val) => {
     return (
       <Text key={val} style={styles.text}>
         {val}
@@ -60,9 +60,7 @@ const TransactionDetailModal = props => {
                 onPress={() => {
                   close();
                   navigate('WebPage', {
-                    uri: `https://blockchair.com/litecoin/transaction/${
-                      transaction.hash
-                    }`,
+                    uri: `https://blockchair.com/litecoin/transaction/${transaction.hash}`,
                   });
                 }}
               />

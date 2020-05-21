@@ -18,7 +18,7 @@ export const UPDATE_HISTORIC_RATE_WEEK = 'UPDATE_HISTORIC_RATE_WEEK';
 export const UPDATE_HISTORIC_RATE_MONTH = 'UPDATE_HISTORIC_RATE_MONTH';
 
 // actions
-export const getTicker = () => async dispatch => {
+export const getTicker = () => async (dispatch) => {
   const {
     data: {data: {rates} = {}},
   } = await axios.get(
@@ -30,11 +30,11 @@ export const getTicker = () => async dispatch => {
   });
 };
 
-export const pollTicker = () => async dispatch => {
+export const pollTicker = () => async (dispatch) => {
   await poll(() => dispatch(getTicker()), 15000);
 };
 
-export const getDayHistoricalRates = () => async dispatch => {
+export const getDayHistoricalRates = () => async (dispatch) => {
   const date = new Date();
   const lastDay = new Date();
   lastDay.setDate(lastDay.getDate() - 1);
@@ -56,7 +56,7 @@ export const getDayHistoricalRates = () => async dispatch => {
   });
 };
 
-export const getWeekHistoricalRates = () => async dispatch => {
+export const getWeekHistoricalRates = () => async (dispatch) => {
   const date = new Date();
   const lastWeek = new Date();
   lastWeek.setDate(lastWeek.getDate() - 7);
@@ -78,7 +78,7 @@ export const getWeekHistoricalRates = () => async dispatch => {
   });
 };
 
-export const getMonthHistoricalRates = () => async dispatch => {
+export const getMonthHistoricalRates = () => async (dispatch) => {
   const date = new Date();
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -137,13 +137,13 @@ const actionHandler = {
 };
 
 // selectors
-export const rateSelector = state => state.ticker.rates;
+export const rateSelector = (state) => state.ticker.rates;
 
 export const monthSelector = createSelector(
-  state => state.chart.graphPeriod,
-  state => state.ticker.day,
-  state => state.ticker.week,
-  state => state.ticker.month,
+  (state) => state.chart.graphPeriod,
+  (state) => state.ticker.day,
+  (state) => state.ticker.week,
+  (state) => state.ticker.month,
   (graphPeriod, dayData, weekData, monthData) => {
     let data;
 
@@ -159,7 +159,7 @@ export const monthSelector = createSelector(
       return;
     }
 
-    const result = data.map(data => {
+    const result = data.map((data) => {
       return {
         x: new Date(data[0] * 1000),
         y: data[3],
@@ -168,7 +168,7 @@ export const monthSelector = createSelector(
 
     // sort array by date (old -> new)
     // by default Coinbase API returns new -> old
-    result.sort(function(a, b) {
+    result.sort(function (a, b) {
       return new Date(a.x) - new Date(b.x);
     });
 
@@ -177,7 +177,7 @@ export const monthSelector = createSelector(
 );
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

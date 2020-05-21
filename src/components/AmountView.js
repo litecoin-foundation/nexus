@@ -10,23 +10,25 @@ import {converter} from '../lib/utils';
 import {chartPercentageChangeSelector} from '../reducers/chart';
 
 const valueSelector = createSelector(
-  state => state.balance.totalBalance,
-  totalBalance => converter.satoshisToBtc(totalBalance),
+  (state) => state.balance.totalBalance,
+  (totalBalance) => converter.satoshisToBtc(totalBalance),
 );
 
 const fiatValueSelector = createSelector(
   valueSelector,
-  state => state.ticker.rates,
+  (state) => state.ticker.rates,
   (totalBalance, rates) => totalBalance * rates.USD,
 );
 
-const AmountView = props => {
+const AmountView = (props) => {
   const {children} = props;
-  const amount = useSelector(state => valueSelector(state));
-  const fiatAmount = useSelector(state => fiatValueSelector(state));
-  const chartCursorSelected = useSelector(state => state.chart.cursorSelected);
-  const chartCursorValue = useSelector(state => state.chart.cursorValue);
-  const chartPercentageChange = useSelector(state =>
+  const amount = useSelector((state) => valueSelector(state));
+  const fiatAmount = useSelector((state) => fiatValueSelector(state));
+  const chartCursorSelected = useSelector(
+    (state) => state.chart.cursorSelected,
+  );
+  const chartCursorValue = useSelector((state) => state.chart.cursorValue);
+  const chartPercentageChange = useSelector((state) =>
     chartPercentageChangeSelector(state),
   );
 

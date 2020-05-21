@@ -16,7 +16,7 @@ const initialState = {
 export const GET_BALANCE = 'GET_BALANCE';
 
 // actions
-export const getBalance = () => async dispatch => {
+export const getBalance = () => async (dispatch) => {
   const w = await LndInstance.sendCommand('WalletBalance');
   const c = await LndInstance.sendCommand('ChannelBalance');
   const {totalBalance, confirmedBalance, unconfirmedBalance} = w;
@@ -32,7 +32,7 @@ export const getBalance = () => async dispatch => {
   });
 };
 
-export const pollBalance = () => async dispatch => {
+export const pollBalance = () => async (dispatch) => {
   await poll(() => dispatch(getBalance()));
 };
 
@@ -58,10 +58,10 @@ const actionHandler = {
 };
 
 // selectors
-export const balanceSelector = state => state.balance.totalBalance;
+export const balanceSelector = (state) => state.balance.totalBalance;
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

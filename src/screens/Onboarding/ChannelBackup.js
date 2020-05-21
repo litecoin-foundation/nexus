@@ -8,10 +8,10 @@ import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import Card from '../../components/Card';
 import {enableChannelBackup} from '../../reducers/channels';
 
-const ChannelBackup = props => {
+const ChannelBackup = (props) => {
   const dispatch = useDispatch();
   const biometricsAvailable = useSelector(
-    state => state.authentication.biometricsAvailable,
+    (state) => state.authentication.biometricsAvailable,
   );
 
   return (

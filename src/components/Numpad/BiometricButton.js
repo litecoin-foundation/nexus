@@ -4,14 +4,14 @@ import {TouchableWithoutFeedback, Image, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
 import {useSpring, animated, config} from 'react-spring/native';
 
-const Button = props => {
+const Button = (props) => {
   const {onPress} = props;
   const AnimatedView = animated(View);
   const biometricsEnabled = useSelector(
-    state => state.authentication.biometricsEnabled,
+    (state) => state.authentication.biometricsEnabled,
   );
   const biometricType = useSelector(
-    state => state.authentication.faceIDSupported,
+    (state) => state.authentication.faceIDSupported,
   );
 
   const [scaler, set] = useSpring(() => ({

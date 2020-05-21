@@ -19,7 +19,7 @@ export const ESTIMATE_ONCHAIN_FEE = 'ESTIMATE_ONCHAIN_FEE';
 export const INPUT_PARAMS = 'INPUT_PARAMS';
 
 // actions
-export const sendOnchainPayment = paymentreq => async dispatch => {
+export const sendOnchainPayment = (paymentreq) => async (dispatch) => {
   try {
     const {txid} = await LndInstance.sendCommand('SendCoins', paymentreq);
     dispatch({
@@ -31,7 +31,9 @@ export const sendOnchainPayment = paymentreq => async dispatch => {
   }
 };
 
-export const estimateOnchainFee = (address, amount, conf) => async dispatch => {
+export const estimateOnchainFee = (address, amount, conf) => async (
+  dispatch,
+) => {
   try {
     const AddrToAmount = {};
     AddrToAmount[address] = parseFloat(amount) * 1000000;
@@ -55,18 +57,18 @@ export const estimateOnchainFee = (address, amount, conf) => async dispatch => {
   }
 };
 
-export const decodePaymentRequest = async payReqString => {
+export const decodePaymentRequest = async (payReqString) => {
   const response = await LndInstance.sendCommand('DecodePayReq', {
     payReq: payReqString,
   });
   return response;
 };
 
-export const sendLightningPayment = paymentreq => async dispatch => {
+export const sendLightningPayment = (paymentreq) => async (dispatch) => {
   try {
     const stream = LndInstance.sendStreamCommand('sendPayment');
     await new Promise((resolve, reject) => {
-      stream.on('data', data => {
+      stream.on('data', (data) => {
         if (data.paymentError) {
           reject(new Error(`Lightning payment error: ${data.paymentError}`));
         } else {
@@ -84,7 +86,7 @@ export const sendLightningPayment = paymentreq => async dispatch => {
 
 // action handlers
 const actionHandler = {
-  [SEND_ONCHAIN_PAYMENT]: state => ({...state}),
+  [SEND_ONCHAIN_PAYMENT]: (state) => ({...state}),
   [INPUT_PARAMS]: (state, {params}) => ({...state, onchain: params}),
   [ESTIMATE_ONCHAIN_FEE]: (state, {fee_sat, feerate_sat_per_byte}) => ({
     ...state.onchain,
@@ -94,7 +96,7 @@ const actionHandler = {
 };
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

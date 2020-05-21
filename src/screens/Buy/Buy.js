@@ -7,7 +7,7 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import Header from '../../components/Header';
 import {setAmount} from '../../reducers/buy';
 
-const Buy = props => {
+const Buy = (props) => {
   const dispatch = useDispatch();
 
   return (
@@ -19,7 +19,7 @@ const Buy = props => {
       <View style={styles.amountInputContainer}>
         <AmountInput
           toggleWithoutSelection
-          onAccept={amount => {
+          onAccept={(amount) => {
             dispatch(setAmount(amount));
             props.navigation.navigate('Confirm');
           }}

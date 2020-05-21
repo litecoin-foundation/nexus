@@ -11,7 +11,7 @@ export const setItem = async (key, value) => {
   await Keychain.setInternetCredentials(vKey, USER, value, options);
 };
 
-export const getItem = async key => {
+export const getItem = async (key) => {
   const vKey = `${VERSION}_${key}`;
   const credentials = await Keychain.getInternetCredentials(vKey);
   if (credentials) {

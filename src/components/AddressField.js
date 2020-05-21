@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 
-const AddressField = props => {
+const AddressField = (props) => {
   const {address, onPressClose} = props;
   return (
     <View style={styles.container}>

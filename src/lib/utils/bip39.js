@@ -2055,6 +2055,6 @@ export const getBIP39Word = () => {
   return wordlist[getRandomInt(0, 2047)];
 };
 
-export const checkBIP39Word = word => {
+export const checkBIP39Word = (word) => {
   return wordlist.includes(word);
 };

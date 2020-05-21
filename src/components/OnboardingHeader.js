@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-const OnboardingHeader = props => {
+const OnboardingHeader = (props) => {
   const {description, children} = props;
   return (
     <View style={styles.container}>

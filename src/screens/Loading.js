@@ -6,10 +6,10 @@ import {startOnboarding} from '../reducers/onboarding';
 import {startLnd} from '../reducers/lightning';
 import {checkBiometricSupport} from '../lib/utils/biometric';
 
-const Loading = props => {
+const Loading = (props) => {
   const dispatch = useDispatch();
-  const onboarding = useSelector(state => state.onboarding.onboarding);
-  const isOnboarded = useSelector(state => state.onboarding.isOnboarded);
+  const onboarding = useSelector((state) => state.onboarding.onboarding);
+  const isOnboarded = useSelector((state) => state.onboarding.isOnboarded);
 
   useEffect(() => {
     dispatch(checkBiometricSupport());

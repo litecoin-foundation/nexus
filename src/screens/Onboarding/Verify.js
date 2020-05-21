@@ -10,8 +10,8 @@ import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {randomShuffle} from '../../lib/utils';
 import {getBIP39Word} from '../../lib/utils/bip39';
 
-const Verify = props => {
-  const seed = useSelector(state => state.onboarding.seed);
+const Verify = (props) => {
+  const seed = useSelector((state) => state.onboarding.seed);
   const [multiplier, setMultiplier] = useState(1);
   const [selected, setSelectedIndex] = useState(null);
 
@@ -44,15 +44,16 @@ const Verify = props => {
         getBIP39Word(),
       ]);
 
-      setScrambledArray(arrayItems => [...arrayItems, ...challengeArray]);
+      setScrambledArray((arrayItems) => [...arrayItems, ...challengeArray]);
     }
   }, [seed]);
 
   return (
     <View style={styles.container}>
       <OnboardingHeader
-        description={`Select word #${3 * multiplier -
-          1} to verify your paper-key`}>
+        description={`Select word #${
+          3 * multiplier - 1
+        } to verify your paper-key`}>
         <View style={styles.optionsContainer}>
           <View style={styles.optionSubContainer}>
             <Text style={styles.optionText}>{seed[3 * multiplier - 3]}</Text>

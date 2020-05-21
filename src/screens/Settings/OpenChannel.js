@@ -18,7 +18,10 @@ const OpenChannel = () => {
     <View>
       <Header />
       <Text>ENTER PUBKEY</Text>
-      <TextInput placeholder="host" onChangeText={input => setPubkey(input)} />
+      <TextInput
+        placeholder="host"
+        onChangeText={(input) => setPubkey(input)}
+      />
       <Text>OR</Text>
       <TouchableOpacity>
         <Text>Paste</Text>

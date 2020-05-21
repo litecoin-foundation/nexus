@@ -8,7 +8,7 @@ import TransactionModal from '../components/Modals/TransactionModal';
 import TransactionList from '../components/TransactionList';
 import AmountView from '../components/AmountView';
 
-const Wallet = props => {
+const Wallet = (props) => {
   const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
@@ -18,7 +18,7 @@ const Wallet = props => {
       <AmountView />
       <View style={styles.transactionListContainer}>
         <TransactionList
-          onPress={data => {
+          onPress={(data) => {
             selectTransaction(data);
             setTxDetailModalVisible(true);
           }}

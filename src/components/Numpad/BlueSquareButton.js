@@ -2,7 +2,7 @@ import React from 'react';
 import {TouchableOpacity, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
-const BlueSquareButton = props => {
+const BlueSquareButton = (props) => {
   const {value, onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>

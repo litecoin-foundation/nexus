@@ -14,7 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {recoverSeed} from '../../reducers/onboarding';
 import {checkBIP39Word} from '../../lib/utils/bip39';
 
-const Recover = props => {
+const Recover = (props) => {
   const dispatch = useDispatch();
   const n = [...Array(24).keys()];
   const [phrase, setPhrasePosition] = useState(0);
@@ -26,7 +26,7 @@ const Recover = props => {
     phraseRef.current[phrase].current.focus();
   });
 
-  const handleSubmit = async index => {
+  const handleSubmit = async (index) => {
     if (checkBIP39Word(seed[index]) === false) {
       alert('invalid word');
       return;
@@ -70,7 +70,7 @@ const Recover = props => {
             <FlatList
               data={n}
               ref={listRef}
-              keyExtractor={item => item}
+              keyExtractor={(item) => item}
               ListFooterComponent={<View style={styles.emptyView} />}
               renderItem={({item, index}) => (
                 <View
@@ -90,7 +90,7 @@ const Recover = props => {
                     keyboardAppearance="dark"
                     ref={phraseRef.current[index]}
                     onSubmitEditing={() => handleSubmit(index)}
-                    onChangeText={text => handleChange(text, index)}
+                    onChangeText={(text) => handleChange(text, index)}
                     onFocus={() => setPhrasePosition(index)}
                     style={[
                       styles.wordText,

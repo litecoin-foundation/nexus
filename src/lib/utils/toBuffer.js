@@ -1,6 +1,6 @@
 import {Buffer} from 'buffer';
 
-const toBuffer = str => {
+const toBuffer = (str) => {
   if (typeof str !== 'string') {
     throw new Error('Invalid input!');
   }

@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
-const SeedView = props => {
+const SeedView = (props) => {
   const {index, value} = props;
   return (
     <View style={styles.container}>

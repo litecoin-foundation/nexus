@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-const TransactionCell = props => {
+const TransactionCell = (props) => {
   const {item, onPress} = props;
 
   return (

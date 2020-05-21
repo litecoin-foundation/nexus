@@ -2,7 +2,7 @@ import React from 'react';
 import {TouchableOpacity, Text, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
-const GreenRoundButton = props => {
+const GreenRoundButton = (props) => {
   const {value, small, onPress, disabled} = props;
   return (
     <TouchableOpacity

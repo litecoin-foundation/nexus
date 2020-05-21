@@ -9,10 +9,10 @@ import BlueButton from '../../components/Buttons/BlueButton';
 import {addAlert} from '../../reducers/alerts';
 import {getRandomBytes} from '../../lib/utils/random';
 
-const Dial = props => {
+const Dial = (props) => {
   const dispatch = useDispatch();
   const [value, setValue] = useState(0);
-  const rates = useSelector(state => state.ticker.rates);
+  const rates = useSelector((state) => state.ticker.rates);
 
   return (
     <LinearGradient style={styles.container} colors={['#F6F9FC', '#d2e1ef00']}>
@@ -35,7 +35,7 @@ const Dial = props => {
           </View>
           <View>
             <SlideRuler
-              onValueChange={value => setValue(value)}
+              onValueChange={(value) => setValue(value)}
               multiplicity={1}
               initialValue={rates.USD}
             />

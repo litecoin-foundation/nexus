@@ -10,12 +10,7 @@ const base58 = baseX(
   '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
 );
 
-const sha256 = payload =>
-  Buffer.from(
-    hashSha256()
-      .update(payload)
-      .digest(),
-  );
+const sha256 = (payload) => Buffer.from(hashSha256().update(payload).digest());
 
 const addressTypes = {
   0x30: {
@@ -39,7 +34,7 @@ const addressTypes = {
   },
 };
 
-const validateBech32 = address => {
+const validateBech32 = (address) => {
   let decoded;
 
   try {
@@ -76,7 +71,7 @@ const validateBech32 = address => {
   };
 };
 
-const validateLtcAddress = address => {
+const validateLtcAddress = (address) => {
   if (!address) {
     return false;
   }

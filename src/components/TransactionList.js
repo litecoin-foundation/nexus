@@ -7,10 +7,10 @@ import TransactionCell from './Cells/TransactionCell';
 import {groupBy} from '../lib/utils';
 import {txDetailSelector} from '../reducers/transaction';
 
-const TransactionList = props => {
+const TransactionList = (props) => {
   const {onPress} = props;
 
-  const transactions = useSelector(state => txDetailSelector(state));
+  const transactions = useSelector((state) => txDetailSelector(state));
   const groupedTransactions = groupBy(transactions, 'day');
 
   const EmptySectionList = (
@@ -31,7 +31,7 @@ const TransactionList = props => {
         renderSectionHeader={({section}) => (
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
-        keyExtractor={item => item.hash}
+        keyExtractor={(item) => item.hash}
         initialNumToRender={7}
         ListEmptyComponent={EmptySectionList}
         ListFooterComponent={<View style={styles.emptyView} />}

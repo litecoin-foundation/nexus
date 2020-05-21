@@ -15,13 +15,13 @@ import {rateSelector} from '../../reducers/ticker';
 import {balanceSelector} from '../../reducers/balance';
 import LitecoinIcon from '../LitecoinIcon';
 
-const AccountCell = props => {
+const AccountCell = (props) => {
   const {onPress, syncStatusDisabled, disabled} = props;
 
-  const synced = useSelector(state => syncStatusSelector(state));
-  const progress = useSelector(state => percentSyncedSelector(state));
-  const rates = useSelector(state => rateSelector(state));
-  const balance = useSelector(state => balanceSelector(state));
+  const synced = useSelector((state) => syncStatusSelector(state));
+  const progress = useSelector((state) => percentSyncedSelector(state));
+  const rates = useSelector((state) => rateSelector(state));
+  const balance = useSelector((state) => balanceSelector(state));
 
   return (
     <TouchableOpacity

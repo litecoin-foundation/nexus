@@ -3,7 +3,7 @@ import {View, StyleSheet} from 'react-native';
 
 import Button from './Button';
 
-const Pad = props => {
+const Pad = (props) => {
   const {
     currentValue,
     onChange,
@@ -12,7 +12,7 @@ const Pad = props => {
     noBackgroundColor,
   } = props;
 
-  const handlePress = input => {
+  const handlePress = (input) => {
     let response;
     switch (input) {
       case '.':
@@ -37,7 +37,7 @@ const Pad = props => {
   };
 
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
-  const buttons = values.map(value => {
+  const buttons = values.map((value) => {
     if (value === '.') {
       return (
         <Button

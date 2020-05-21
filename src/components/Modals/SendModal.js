@@ -10,10 +10,10 @@ import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
 import AuthPad from '../Numpad/AuthPad';
 
-const SendModal = props => {
+const SendModal = (props) => {
   const {isVisible, close, amount, address, memo} = props;
   const [confirmed, confirm] = useState(false);
-  const pin = useSelector(state => state.authpad.pin);
+  const pin = useSelector((state) => state.authpad.pin);
 
   const handleConfirm = () => {
     if (!confirmed) {

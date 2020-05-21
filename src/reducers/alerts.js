@@ -9,7 +9,7 @@ const REMOVE_ALERT = 'REMOVE_ALERT';
 const SET_ALERT_AVAILABILITY = 'SET_ALERT_AVAILABILITY';
 
 // actions
-export const addAlert = data => (dispatch, getState) => {
+export const addAlert = (data) => (dispatch, getState) => {
   const {alerts} = getState().alerts;
   alerts.push(data);
   dispatch({
@@ -18,14 +18,14 @@ export const addAlert = data => (dispatch, getState) => {
   });
 };
 
-export const removeAlert = id => dispatch => {
+export const removeAlert = (id) => (dispatch) => {
   dispatch({
     type: REMOVE_ALERT,
     id,
   });
 };
 
-export const setAlertAvailability = (id, availability) => dispatch => {
+export const setAlertAvailability = (id, availability) => (dispatch) => {
   dispatch({
     type: SET_ALERT_AVAILABILITY,
     id,
@@ -38,11 +38,11 @@ const actionHandler = {
   [ADD_ALERT]: (state, {alerts}) => ({...state, alerts}),
   [REMOVE_ALERT]: (state, {id}) => ({
     ...state,
-    alerts: state.alerts.filter(obj => obj.id !== id),
+    alerts: state.alerts.filter((obj) => obj.id !== id),
   }),
   [SET_ALERT_AVAILABILITY]: (state, {id, availability}) => ({
     ...state,
-    alerts: state.alerts.map(alert => {
+    alerts: state.alerts.map((alert) => {
       if (alert.id === id) {
         alert.enabled = availability;
         return alert;
@@ -54,7 +54,7 @@ const actionHandler = {
 };
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

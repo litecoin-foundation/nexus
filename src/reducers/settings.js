@@ -9,7 +9,7 @@ const initialState = {};
 const actionHandler = {};
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

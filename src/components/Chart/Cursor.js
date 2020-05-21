@@ -15,7 +15,7 @@ import {
 } from '../../lib/utils/haptic';
 import {updateCursorValue, setCursorSelected} from '../../reducers/chart';
 
-const Cursor = props => {
+const Cursor = (props) => {
   const dispatch = useDispatch();
   const {height, width, x, y, data, children} = props;
   const panRef = createRef();
@@ -25,9 +25,9 @@ const Cursor = props => {
   const [barOffsetX, setbarOffsetX] = useState(0);
   const [barOffsetY, setbarOffsetY] = useState(0);
 
-  const bisectDate = array.bisector(d => d.x).left;
+  const bisectDate = array.bisector((d) => d.x).left;
 
-  const collectHovered = xPos => {
+  const collectHovered = (xPos) => {
     const x0 = Math.round(xPos);
     const hoveredDate = x.invert(x0);
     const i = bisectDate(data, hoveredDate, 1);
@@ -45,7 +45,7 @@ const Cursor = props => {
     };
   };
 
-  const onHandlerStateChange = e => {
+  const onHandlerStateChange = (e) => {
     const {nativeEvent} = e;
     if (nativeEvent.state === State.ACTIVE) {
       const r = collectHovered(nativeEvent.x);
@@ -63,7 +63,7 @@ const Cursor = props => {
     }
   };
 
-  const onPanGestureEvent = e => {
+  const onPanGestureEvent = (e) => {
     const r = collectHovered(e.nativeEvent.x);
     if (barOffsetX === r.barOffsetX && barOffsetY === r.barOffsetY) {
       return;

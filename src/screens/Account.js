@@ -9,11 +9,13 @@ import DatePicker from '../components/DatePicker';
 import {clearWalletUnlocked} from '../reducers/authentication';
 import {formatDate} from '../lib/utils/date';
 
-const Account = props => {
+const Account = (props) => {
   const dispatch = useDispatch();
 
-  const chartCursorDate = useSelector(state => state.chart.cursorDate);
-  const chartCursorSelected = useSelector(state => state.chart.cursorSelected);
+  const chartCursorDate = useSelector((state) => state.chart.cursorDate);
+  const chartCursorSelected = useSelector(
+    (state) => state.chart.cursorSelected,
+  );
 
   useEffect(() => {
     dispatch(clearWalletUnlocked());

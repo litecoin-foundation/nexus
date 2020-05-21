@@ -6,12 +6,12 @@ import LitecoinIcon from '../LitecoinIcon';
 import Switch from '../Buttons/Switch';
 import {setAlertAvailability} from '../../reducers/alerts';
 
-const AlertCell = props => {
+const AlertCell = (props) => {
   const {data, onPress} = props;
   const item = data;
   const dispatch = useDispatch();
 
-  const handleSwitch = value => {
+  const handleSwitch = (value) => {
     dispatch(setAlertAvailability(item.id, value));
   };
 

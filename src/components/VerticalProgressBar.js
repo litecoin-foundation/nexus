@@ -2,7 +2,7 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
-const VerticalProgressBar = props => {
+const VerticalProgressBar = (props) => {
   const {capacity, type} = props;
   const {balance} = props;
 

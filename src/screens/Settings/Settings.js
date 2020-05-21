@@ -12,7 +12,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Header from '../../components/Header';
 import BlueClearButton from '../../components/Buttons/BlueClearButton';
 
-const Settings = props => {
+const Settings = (props) => {
   return (
     <View style={styles.container}>
       <Header />

@@ -14,15 +14,15 @@ import chunk from '../../lib/utils/chunk';
 
 const {width} = Dimensions.get('window');
 
-const Generate = props => {
+const Generate = (props) => {
   const carousel = createRef();
   const dispatch = useDispatch();
 
   const seedSelector = createSelector(
-    state => state.onboarding.seed,
-    seedArray => chunk(seedArray, 4),
+    (state) => state.onboarding.seed,
+    (seedArray) => chunk(seedArray, 4),
   );
-  const seed = useSelector(state => seedSelector(state));
+  const seed = useSelector((state) => seedSelector(state));
 
   const [activePage, setActivePage] = useState(0);
 
@@ -37,7 +37,7 @@ const Generate = props => {
         inactiveSlideOpacity={0.9}
         sliderWidth={width}
         itemWidth={350}
-        onSnapToItem={index => setActivePage(index)}
+        onSnapToItem={(index) => setActivePage(index)}
         data={seed}
         ref={carousel}
         containerCustomStyle={styles.carousel}

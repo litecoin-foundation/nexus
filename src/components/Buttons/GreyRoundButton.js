@@ -2,7 +2,7 @@ import React from 'react';
 import {TouchableOpacity, Image, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
-const GreyRoundButton = props => {
+const GreyRoundButton = (props) => {
   const {onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>

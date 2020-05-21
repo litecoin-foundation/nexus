@@ -11,7 +11,7 @@ const initialState = {
 export const GET_ADDRESS = 'GET_ADDRESS';
 
 // actions
-export const getAddress = () => async dispatch => {
+export const getAddress = () => async (dispatch) => {
   const {address} = await LndInstance.sendCommand('NewAddress', {type: 3});
   dispatch({
     type: GET_ADDRESS,
@@ -25,7 +25,7 @@ const actionHandler = {
 };
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-const BlueFatButton = props => {
+const BlueFatButton = (props) => {
   const {value, onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>

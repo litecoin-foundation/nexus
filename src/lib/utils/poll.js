@@ -1,5 +1,5 @@
 const sleep = (milliseconds = 5000) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
 
 export const poll = async (api, interval = 5000, retries = Infinity) => {

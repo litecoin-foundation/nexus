@@ -25,7 +25,7 @@ export class RequestModal extends Component {
           </View>
           <View style={styles.amountInputContainer}>
             <AmountInput
-              onChangeText={input => onChange(input)}
+              onChangeText={(input) => onChange(input)}
               toggleWithoutSelection
               onAccept={() => close()}
               confirmButtonText="Request"

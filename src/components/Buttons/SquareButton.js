@@ -2,7 +2,7 @@ import React from 'react';
 import {Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import PropTypes from 'prop-types';
 
-const SquareButton = props => {
+const SquareButton = (props) => {
   const {value, onPress, imageSource} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>

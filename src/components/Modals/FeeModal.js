@@ -9,7 +9,7 @@ export class FeeModal extends Component {
     slider: 1,
   };
 
-  handleSlider = val => {
+  handleSlider = (val) => {
     const {slider} = this.state;
     val = Math.round(val);
     if (val === slider) {
@@ -48,7 +48,7 @@ export class FeeModal extends Component {
                 minimumTrackTintColor="#FFFFFF"
                 maximumTrackTintColor="#000000"
                 width={300}
-                onValueChange={value => this.handleSlider(value)}
+                onValueChange={(value) => this.handleSlider(value)}
               />
             </View>
           </View>

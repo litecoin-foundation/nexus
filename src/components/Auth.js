@@ -7,14 +7,14 @@ import {Pagination} from 'react-native-snap-carousel';
 import AuthPad from './Numpad/AuthPad';
 import OnboardingHeader from './OnboardingHeader';
 
-const Auth = props => {
+const Auth = (props) => {
   const {
     headerDescriptionText,
     handleCompletion,
     handleValidationSuccess,
     handleValidationFailure,
   } = props;
-  const pin = useSelector(state => state.authpad.pin);
+  const pin = useSelector((state) => state.authpad.pin);
 
   return (
     <View style={styles.container}>

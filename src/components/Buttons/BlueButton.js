@@ -1,7 +1,7 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-const BlueButton = props => {
+const BlueButton = (props) => {
   const {value, onPress, disabled} = props;
   return (
     <TouchableOpacity

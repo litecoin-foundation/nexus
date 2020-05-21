@@ -7,7 +7,7 @@ import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
 
-const AuthPad = props => {
+const AuthPad = (props) => {
   const {
     handleCompletion,
     handleValidationFailure,
@@ -15,9 +15,9 @@ const AuthPad = props => {
   } = props;
   const dispatch = useDispatch();
 
-  const pin = useSelector(state => state.authpad.pin);
-  const passcode = useSelector(state => state.authentication.passcode);
-  const passcodeSet = useSelector(state => state.authentication.passcodeSet);
+  const pin = useSelector((state) => state.authpad.pin);
+  const passcode = useSelector((state) => state.authentication.passcode);
+  const passcodeSet = useSelector((state) => state.authentication.passcodeSet);
 
   // clear all inputs in AuthPad on initial render
   useEffect(() => {
@@ -56,7 +56,7 @@ const AuthPad = props => {
     pin,
   ]);
 
-  const handlePress = input => {
+  const handlePress = (input) => {
     switch (input) {
       case '.':
         // handled by BiometricButton
@@ -72,7 +72,7 @@ const AuthPad = props => {
 
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 
-  const buttons = values.map(value => {
+  const buttons = values.map((value) => {
     if (value === '.') {
       return (
         <BiometricButton

@@ -1,6 +1,6 @@
 import sb from 'satoshi-bitcoin';
 
-const isEmptyAmount = amount =>
+const isEmptyAmount = (amount) =>
   amount === undefined || amount === null || amount === '';
 
 // BTC to things /////

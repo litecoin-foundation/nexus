@@ -2,7 +2,7 @@ import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
-const BlueClearButton = props => {
+const BlueClearButton = (props) => {
   const {value, onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>

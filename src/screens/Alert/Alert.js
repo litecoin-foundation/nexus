@@ -13,9 +13,9 @@ const Alert = () => {
   const dispatch = useDispatch();
   const [alertModalVisible, setAlertModalVisible] = useState(false);
   const [selectedID, setSelectedID] = useState(null);
-  const {alerts} = useSelector(state => state.alerts);
+  const {alerts} = useSelector((state) => state.alerts);
 
-  const handleAlertPress = id => {
+  const handleAlertPress = (id) => {
     setSelectedID(id);
     setAlertModalVisible(true);
   };
@@ -34,7 +34,7 @@ const Alert = () => {
       <FlatList
         data={alerts}
         renderItem={({item}) => (
-          <AlertCell data={item} onPress={id => handleAlertPress(id)} />
+          <AlertCell data={item} onPress={(id) => handleAlertPress(id)} />
         )}
         ListEmptyComponent={EmptySectionList}
       />

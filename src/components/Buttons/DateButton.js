@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 
-const DateButton = props => {
+const DateButton = (props) => {
   const {value, isActive} = props;
   return (
     <View>

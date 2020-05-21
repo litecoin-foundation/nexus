@@ -18,7 +18,7 @@ const GET_QUOTE = 'GET_QUOTE';
 const RUN_KYC = 'RUN_KYC';
 
 // actions
-export const setAmount = amount => dispatch => {
+export const setAmount = (amount) => (dispatch) => {
   dispatch({
     type: SET_AMOUNT,
     amount,
@@ -81,9 +81,9 @@ export const runKYC = () => async (dispatch, getState) => {
 
 // selectors
 export const priceSelector = createSelector(
-  state => state.buy.total_amount,
-  state => state.buy.base_amount,
-  state => state.buy.amount,
+  (state) => state.buy.total_amount,
+  (state) => state.buy.base_amount,
+  (state) => state.buy.amount,
   (total, base, amount) => {
     const pricePerUnit = (total / parseFloat(amount)).toFixed(2);
     const fee = (total - base).toFixed(2);
@@ -104,7 +104,7 @@ const actionHandler = {
 };
 
 // reducer
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   const handler = actionHandler[action.type];
 
   return handler ? handler(state, action) : state;

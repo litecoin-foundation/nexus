@@ -73,7 +73,7 @@ function AppStack() {
   );
 }
 
-const isTabBarVisible = route => {
+const isTabBarVisible = (route) => {
   if (route.state === undefined || route.state === null) {
     return;
   } else {
@@ -85,7 +85,7 @@ const isTabBarVisible = route => {
   }
 };
 
-const WalletTabBarIcon = focused => {
+const WalletTabBarIcon = (focused) => {
   return (
     <Image
       source={
@@ -97,7 +97,7 @@ const WalletTabBarIcon = focused => {
   );
 };
 
-const BuyTabBarIcon = focused => {
+const BuyTabBarIcon = (focused) => {
   return (
     <Image
       source={
@@ -109,7 +109,7 @@ const BuyTabBarIcon = focused => {
   );
 };
 
-const AlertsTabBarIcon = focused => {
+const AlertsTabBarIcon = (focused) => {
   return (
     <Image
       source={
@@ -121,7 +121,7 @@ const AlertsTabBarIcon = focused => {
   );
 };
 
-const SettingsTabBarIcon = focused => {
+const SettingsTabBarIcon = (focused) => {
   return (
     <Image
       source={
