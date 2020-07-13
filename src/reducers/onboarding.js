@@ -1,3 +1,5 @@
+import shajs from 'sha.js';
+
 import Lightning from '../lib/lightning/lightning';
 
 const LndInstance = new Lightning();
@@ -7,6 +9,7 @@ const initialState = {
   onboarding: false,
   isOnboarded: false,
   seed: [],
+  uniqueId: '',
   beingRecovered: false,
 };
 
@@ -23,9 +26,13 @@ export const startOnboarding = () => (dispatch) => {
   });
 };
 
-export const finishOnboarding = () => (dispatch) => {
+export const finishOnboarding = () => (dispatch, getState) => {
+  const {seed} = getState().onboarding;
+  const uniqueId = shajs('sha256').update(seed.join('')).digest('hex');
+
   dispatch({
     type: ONBOARDING_FINISHED,
+    uniqueId,
   });
 };
 
@@ -53,11 +60,12 @@ const actionHandler = {
     seed: [],
     beingRecovered: false,
   }),
-  [ONBOARDING_FINISHED]: (state) => ({
+  [ONBOARDING_FINISHED]: (state, {uniqueId}) => ({
     ...state,
     onboarding: false,
     isOnboarded: true,
     beingRecovered: false,
+    uniqueId,
   }),
   [GET_SEED]: (state, {seed}) => ({...state, seed}),
   [RECOVER_SEED]: (state, {seed}) => ({...state, seed, beingRecovered: true}),

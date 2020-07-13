@@ -13,6 +13,7 @@ const AmountInput = (props) => {
     selected,
     onChangeText,
     onAccept,
+    confirmButtonDisabled,
   } = props;
   const dispatch = useDispatch();
   const amount = useSelector((state) => state.input.amount);
@@ -64,6 +65,7 @@ const AmountInput = (props) => {
         currentValue={leftToggled ? amount : fiatAmount}>
         <View style={styles.centerAlign}>
           <BlueButton
+            disabled={confirmButtonDisabled === true ? true : false}
             value={confirmButtonText}
             onPress={() => {
               toggle(false);

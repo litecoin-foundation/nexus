@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import AmountInput from '../../components/AmountInput';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -9,6 +9,7 @@ import {setAmount} from '../../reducers/buy';
 
 const Buy = (props) => {
   const dispatch = useDispatch();
+  const {amount, fiatAmount} = useSelector((state) => state.input);
 
   return (
     <View style={styles.container}>
@@ -19,10 +20,11 @@ const Buy = (props) => {
       <View style={styles.amountInputContainer}>
         <AmountInput
           toggleWithoutSelection
-          onAccept={(amount) => {
-            dispatch(setAmount(amount));
+          onAccept={() => {
+            dispatch(setAmount(amount, fiatAmount));
             props.navigation.navigate('Confirm');
           }}
+          confirmButtonDisabled={fiatAmount < 20 ? true : false}
           confirmButtonText="Preview Buy"
         />
       </View>

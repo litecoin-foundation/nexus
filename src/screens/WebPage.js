@@ -1,6 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {View, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import WebView from 'react-native-webview';
+import DeviceInfo from 'react-native-device-info';
 
 import Header from '../components/Header';
 
@@ -29,6 +30,9 @@ const WebPage = (props) => {
         ref={WebPageRef}
         onLoadStart={(syntheticEvent) => handleEvent(syntheticEvent)}
         onLoadEnd={(syntheticEvent) => handleEvent(syntheticEvent)}
+        applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${
+          DeviceInfo.getSystemVersion
+        }`}
       />
       <View style={styles.optionsContainer}>
         <TouchableOpacity

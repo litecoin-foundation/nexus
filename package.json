@@ -68,6 +68,7 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "satoshi-bitcoin": "^1.0.4",
+    "sha.js": "^2.4.11",
     "stream-browserify": "^3.0.0"
   },
   "devDependencies": {

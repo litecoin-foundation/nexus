@@ -1,11 +1,39 @@
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 
 import Buy from '../screens/Buy/Buy';
 import Confirm from '../screens/Buy/Confirm';
-import Processing from '../screens/Buy/Processing';
+import WebPage from '../screens/WebPage';
 
 const Stack = createStackNavigator();
+
+function ConfirmWebPageModalStack() {
+  return (
+    <Stack.Navigator mode="modal" initialRouteName="Confirm">
+      <Stack.Screen
+        name="Confirm"
+        component={Confirm}
+        options={Confirm.navigationOptions}
+      />
+      <Stack.Screen
+        name="WebPage"
+        component={WebPage}
+        options={{
+          ...TransitionPresets.ModalPresentationIOS,
+          cardOverlayEnabled: true,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerTitle: '',
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 function BuyStack() {
   return (
@@ -17,13 +45,8 @@ function BuyStack() {
       />
       <Stack.Screen
         name="Confirm"
-        component={Confirm}
-        options={Confirm.navigationOptions}
-      />
-      <Stack.Screen
-        name="Processing"
-        component={Processing}
-        options={Processing.navigationOptions}
+        component={ConfirmWebPageModalStack}
+        options={{headerShown: false}}
       />
     </Stack.Navigator>
   );
