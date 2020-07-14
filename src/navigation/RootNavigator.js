@@ -1,5 +1,5 @@
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import OnboardingStack from './OnboardingStack';
@@ -9,9 +9,16 @@ import AppStack from './AppStack';
 
 const Stack = createStackNavigator();
 
+const Theme = {
+  ...DefaultTheme,
+  colors: {
+    background: '#000000',
+  },
+};
+
 function RootNavigator() {
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={Theme}>
       <Stack.Navigator initialRouteName="Loading">
         <Stack.Screen
           name="Loading"

@@ -29,7 +29,9 @@ const Alert = () => {
   );
 
   return (
-    <LinearGradient style={styles.container} colors={['#F6F9FC', '#d2e1ef00']}>
+    <LinearGradient
+      style={styles.container}
+      colors={['#F6F9FC', 'rgb(238,244,249)']}>
       <Header />
       <FlatList
         data={alerts}

@@ -351,6 +351,7 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+    backgroundColor: 'rgb(238,244,249)',
   },
   notch: {
     height: 200,

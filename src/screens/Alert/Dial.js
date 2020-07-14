@@ -15,7 +15,9 @@ const Dial = (props) => {
   const rates = useSelector((state) => state.ticker.rates);
 
   return (
-    <LinearGradient style={styles.container} colors={['#F6F9FC', '#d2e1ef00']}>
+    <LinearGradient
+      style={styles.container}
+      colors={['#F6F9FC', 'rgb(238,244,249)']}>
       <Header />
       <View style={styles.subContainer}>
         <View style={styles.topContainer}>

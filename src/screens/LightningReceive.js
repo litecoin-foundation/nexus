@@ -1,4 +1,4 @@
-import React, {useState, Fragment} from 'react';
+import React, {useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {useDispatch} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,7 +24,7 @@ const LightningReceive = () => {
   };
 
   return (
-    <Fragment>
+    <>
       <Header />
       <View style={styles.titleContainer}>
         <Text style={styles.title}>CHOOSE AMOUNT</Text>
@@ -38,7 +38,7 @@ const LightningReceive = () => {
 
       {!selected ? (
         <LinearGradient
-          colors={['#F6F9FC', 'rgba(210,225,239,0)']}
+          colors={['#F6F9FC', 'rgb(238,244,249)']}
           style={styles.bottomContainer}>
           <View style={styles.descriptionContainer}>
             <Text style={styles.leftTitle}>ADD Description</Text>
@@ -57,7 +57,7 @@ const LightningReceive = () => {
         isVisible={isInvoiceModalTriggered}
         close={() => triggerInvoiceModal(false)}
       />
-    </Fragment>
+    </>
   );
 };
 

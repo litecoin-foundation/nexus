@@ -69,6 +69,7 @@ const Confirm = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'rgb(238,244,249)',
   },
   headerContainer: {
     height: 200,
