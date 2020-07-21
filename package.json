@@ -12,7 +12,7 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "postinstall": "npm run protobuf && npx jetify",
-    "protobuf": "pbjs src/lib/lightning/rpc.proto -t static-module -w es6 -o src/lib/lightning/rpc.js",
+    "protobuf": "pbjs src/lib/lightning/rpc.proto -t static-module -w es6 -o src/lib/lightning/rpc.js && pbjs src/lib/lightning/router.proto -t static-module -w es6 -o src/lib/lightning/router.js",
     "lint": "eslint .",
     "storybook": "start-storybook -p 7007",
     "prestorybook": "rnstl"

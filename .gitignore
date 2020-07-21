@@ -33,6 +33,7 @@ buck-out/
 */fastlane/screenshots
 *.jsbundle
 src/lib/lightning/rpc.js
+src/lib/lightning/router.js
 Lndmobile.framework
 Lndmobile.aar
 .vscode/ipch

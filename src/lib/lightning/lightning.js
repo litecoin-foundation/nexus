@@ -2,6 +2,7 @@ import base64 from 'base64-js';
 import {Duplex} from 'readable-stream';
 import {NativeModules, NativeEventEmitter} from 'react-native';
 import {lnrpc} from './rpc';
+import {routerrpc} from './router';
 import {toCaps} from '../utils';
 
 class Lightning {
@@ -68,14 +69,16 @@ class Lightning {
   }
 
   serializeRequest(method, body = {}) {
-    const req = lnrpc[this.getRequestName(method)];
+    const subserver = this.getRpcSubserver(method);
+    const req = subserver[this.getRequestName(method)];
     const message = req.create(body);
     const buffer = req.encode(message).finish();
     return base64.fromByteArray(buffer);
   }
 
   deserializeResponse(method, response) {
-    const res = lnrpc[this.getResponseName(method)];
+    const subserver = this.getRpcSubserver(method);
+    const res = subserver[this.getResponseName(method)];
     const buffer = base64.toByteArray(response);
     return res.decode(buffer);
   }
@@ -85,7 +88,7 @@ class Lightning {
       AddInvoice: 'Invoice',
       DecodePayReq: 'PayReqString',
       ListInvoices: 'ListInvoiceRequest',
-      SendPayment: 'SendRequest',
+      SendPaymentV2: 'SendPaymentRequest',
       SubscribeTransactions: 'GetTransactionsRequest',
       SubscribeInvoices: 'InvoiceSubscription',
       SubscribeChannelBackups: 'ChannelBackupSubscription',
@@ -98,7 +101,7 @@ class Lightning {
       DecodePayReq: 'PayReq',
       GetTransactions: 'TransactionDetails',
       ListInvoices: 'ListInvoiceResponse',
-      SendPayment: 'SendResponse',
+      SendPayment: 'Payment',
       OpenChannel: 'OpenStatusUpdate',
       CloseChannel: 'CloseStatusUpdate',
       SubscribeTransactions: 'Transaction',
@@ -106,6 +109,13 @@ class Lightning {
       SubscribeChannelBackups: 'ChanBackupSnapshot',
     };
     return map[method] || `${method}Response`;
+  }
+
+  getRpcSubserver(method) {
+    const map = {
+      SendPaymentV2: routerrpc,
+    };
+    return map[method] || lnrpc;
   }
 
   // stream helpers
