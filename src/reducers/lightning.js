@@ -53,7 +53,7 @@ export const stopLnd = () => async (dispatch) => {
 };
 
 export const initWallet = () => async (dispatch, getState) => {
-  const {seed} = getState().onboarding;
+  const {seed, beingRecovered} = getState().onboarding;
 
   const password = await getRandomBytes();
   await setItem(PASS, password);
@@ -63,7 +63,7 @@ export const initWallet = () => async (dispatch, getState) => {
     await LndInstance.sendCommand('InitWallet', {
       walletPassword: toBuffer(password),
       cipherSeedMnemonic: seed,
-      recoveryWindow: 2500, // TODO: should be 0 if new Wallet
+      recoveryWindow: beingRecovered === true ? 3000 : 0,
     });
 
     //TODO: replace timeout with rpcCallback from Lnd
@@ -97,7 +97,7 @@ export const unlockWallet = () => async (dispatch) => {
   }
 
   //TODO: replace timeout with rpcCallback from Lnd
-  await new Promise((r) => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1500));
 
   // dispatch pollers
   dispatch(pollBalance());
