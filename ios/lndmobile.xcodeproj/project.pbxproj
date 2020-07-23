@@ -9,20 +9,20 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* lndmobileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* lndmobileTests.m */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
-		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		1B266BC62470F786003980AA /* LndReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B266BC52470F786003980AA /* LndReactModule.m */; };
-		1B266BC82470F78B003980AA /* lnd.conf in Resources */ = {isa = PBXBuildFile; fileRef = 1B266BC72470F78B003980AA /* lnd.conf */; };
-		1B266BCA2470F7B7003980AA /* Lndmobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B266BC92470F7B7003980AA /* Lndmobile.framework */; };
+		1B7556A0FD78A5D3429A5B7D /* libPods-lndmobile-lndmobileTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 57C4EC8C244296CAE8379D84 /* libPods-lndmobile-lndmobileTests.a */; };
 		2D02E4BC1E0B4A80006451C7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* lndmobileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* lndmobileTests.m */; };
-		6C4786B10F840CE7868FCDFC /* libPods-lndmobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AAB21B689DAA73ABDA51CD5 /* libPods-lndmobile.a */; };
-		A702D6ACA94A41B51B01097E /* libPods-lndmobile-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB0B4F242132D94E08FD95CE /* libPods-lndmobile-tvOSTests.a */; };
-		BEF960B50D44BB01A243D8DA /* libPods-lndmobile-lndmobileTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EC2F4E5A5E310DA1EE0134A3 /* libPods-lndmobile-lndmobileTests.a */; };
-		ED6CA21FAB7C2F5737616F34 /* libPods-lndmobile-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A7B8E26196305CDB59A28C4 /* libPods-lndmobile-tvOS.a */; };
+		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		A7B594A3714866910571D823 /* libPods-lndmobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */; };
+		CB008EDE24C93E6A00FFD914 /* Lndmobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */; };
+		CB008EE424C93EA100FFD914 /* LndReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = CB008EE324C93EA100FFD914 /* LndReactModule.m */; };
+		CB008EE624C93EA700FFD914 /* lnd.conf in Resources */ = {isa = PBXBuildFile; fileRef = CB008EE524C93EA700FFD914 /* lnd.conf */; };
+		D8C2D484085A489EFCC3D8B1 /* libPods-lndmobile-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E3821E6B5BD9819E50146D5B /* libPods-lndmobile-tvOSTests.a */; };
+		E81F505ECC4EE8919524849B /* libPods-lndmobile-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6767482013407F53329B41CC /* libPods-lndmobile-tvOS.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,28 +50,28 @@
 		13B07F961A680F5B00A75B9A /* lndmobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = lndmobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = lndmobile/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = lndmobile/AppDelegate.m; sourceTree = "<group>"; };
-		13B07FB21A68108700A75B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = lndmobile/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = lndmobile/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = lndmobile/main.m; sourceTree = "<group>"; };
-		13ED5227931E8B4B2082CC51 /* Pods-lndmobile-lndmobileTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.release.xcconfig"; sourceTree = "<group>"; };
-		1AAB21B689DAA73ABDA51CD5 /* libPods-lndmobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		1B266BC42470F781003980AA /* LndReactModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LndReactModule.h; sourceTree = "<group>"; };
-		1B266BC52470F786003980AA /* LndReactModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LndReactModule.m; sourceTree = "<group>"; };
-		1B266BC72470F78B003980AA /* lnd.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lnd.conf; sourceTree = "<group>"; };
-		1B266BC92470F7B7003980AA /* Lndmobile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Lndmobile.framework; sourceTree = "<group>"; };
-		21488CA3BC3B6DB3E5D902EC /* Pods-lndmobile-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOS/Pods-lndmobile-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
-		24212B441A729E8E56FAF291 /* Pods-lndmobile-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOS.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOS/Pods-lndmobile-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		2D02E47B1E0B4A5D006451C7 /* lndmobile-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "lndmobile-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* lndmobile-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lndmobile-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4D2F00E30F36FD49ECB9E761 /* Pods-lndmobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile.release.xcconfig"; path = "Target Support Files/Pods-lndmobile/Pods-lndmobile.release.xcconfig"; sourceTree = "<group>"; };
-		55EB047C592122AD14E723E5 /* Pods-lndmobile-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOSTests/Pods-lndmobile-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
-		5E824258EC158212137230F1 /* Pods-lndmobile-lndmobileTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.debug.xcconfig"; sourceTree = "<group>"; };
-		6A175D55BB81937D6912ACB2 /* Pods-lndmobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile/Pods-lndmobile.debug.xcconfig"; sourceTree = "<group>"; };
-		7A7B8E26196305CDB59A28C4 /* libPods-lndmobile-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		ADEFF6118451A499F8C048D8 /* Pods-lndmobile-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOSTests/Pods-lndmobile-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
-		DB0B4F242132D94E08FD95CE /* libPods-lndmobile-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		EC2F4E5A5E310DA1EE0134A3 /* libPods-lndmobile-lndmobileTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-lndmobileTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		394B8640334EB3FBF5F0A493 /* Pods-lndmobile-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOSTests/Pods-lndmobile-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
+		57C4EC8C244296CAE8379D84 /* libPods-lndmobile-lndmobileTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-lndmobileTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6767482013407F53329B41CC /* libPods-lndmobile-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = lndmobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.debug.xcconfig"; sourceTree = "<group>"; };
+		8D9112A7B69039FAACAD3057 /* Pods-lndmobile-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOSTests/Pods-lndmobile-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
+		AEDCEC9A27484D3D77DF725F /* Pods-lndmobile-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOS.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOS/Pods-lndmobile-tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Lndmobile.framework; sourceTree = "<group>"; };
+		CB008EE224C93EA100FFD914 /* LndReactModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LndReactModule.h; sourceTree = "<group>"; };
+		CB008EE324C93EA100FFD914 /* LndReactModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LndReactModule.m; sourceTree = "<group>"; };
+		CB008EE524C93EA700FFD914 /* lnd.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lnd.conf; sourceTree = "<group>"; };
+		DB6E8CBE6C467D6D85A0AD2E /* Pods-lndmobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile/Pods-lndmobile.debug.xcconfig"; sourceTree = "<group>"; };
+		DC687FE39C3BE89A0CB9FEAB /* Pods-lndmobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile.release.xcconfig"; path = "Target Support Files/Pods-lndmobile/Pods-lndmobile.release.xcconfig"; sourceTree = "<group>"; };
+		DD322566ED8224DAB7DCCE6D /* Pods-lndmobile-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOS/Pods-lndmobile-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
+		E3821E6B5BD9819E50146D5B /* libPods-lndmobile-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
@@ -81,7 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BEF960B50D44BB01A243D8DA /* libPods-lndmobile-lndmobileTests.a in Frameworks */,
+				1B7556A0FD78A5D3429A5B7D /* libPods-lndmobile-lndmobileTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,8 +89,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6C4786B10F840CE7868FCDFC /* libPods-lndmobile.a in Frameworks */,
-				1B266BCA2470F7B7003980AA /* Lndmobile.framework in Frameworks */,
+				A7B594A3714866910571D823 /* libPods-lndmobile.a in Frameworks */,
+				CB008EDE24C93E6A00FFD914 /* Lndmobile.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,7 +98,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ED6CA21FAB7C2F5737616F34 /* libPods-lndmobile-tvOS.a in Frameworks */,
+				E81F505ECC4EE8919524849B /* libPods-lndmobile-tvOS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,7 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A702D6ACA94A41B51B01097E /* libPods-lndmobile-tvOSTests.a in Frameworks */,
+				D8C2D484085A489EFCC3D8B1 /* libPods-lndmobile-tvOSTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,16 +133,14 @@
 		13B07FAE1A68108700A75B9A /* lndmobile */ = {
 			isa = PBXGroup;
 			children = (
+				CB008EDF24C93E8000FFD914 /* lightning */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
-				13B07FB11A68108700A75B9A /* LaunchScreen.xib */,
+				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
-				1B266BC42470F781003980AA /* LndReactModule.h */,
-				1B266BC52470F786003980AA /* LndReactModule.m */,
-				1B266BC72470F78B003980AA /* lnd.conf */,
 			);
 			name = lndmobile;
 			sourceTree = "<group>";
@@ -150,13 +148,13 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
-				1B266BC92470F7B7003980AA /* Lndmobile.framework */,
-				1AAB21B689DAA73ABDA51CD5 /* libPods-lndmobile.a */,
-				EC2F4E5A5E310DA1EE0134A3 /* libPods-lndmobile-lndmobileTests.a */,
-				7A7B8E26196305CDB59A28C4 /* libPods-lndmobile-tvOS.a */,
-				DB0B4F242132D94E08FD95CE /* libPods-lndmobile-tvOSTests.a */,
+				7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */,
+				57C4EC8C244296CAE8379D84 /* libPods-lndmobile-lndmobileTests.a */,
+				6767482013407F53329B41CC /* libPods-lndmobile-tvOS.a */,
+				E3821E6B5BD9819E50146D5B /* libPods-lndmobile-tvOSTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -176,7 +174,7 @@
 				00E356EF1AD99517003FC87E /* lndmobileTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				E4473A1C2883CC7BDEE9D6A1 /* Pods */,
+				F110BB5C6A86315F57ED5AEE /* Pods */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -194,17 +192,27 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E4473A1C2883CC7BDEE9D6A1 /* Pods */ = {
+		CB008EDF24C93E8000FFD914 /* lightning */ = {
 			isa = PBXGroup;
 			children = (
-				6A175D55BB81937D6912ACB2 /* Pods-lndmobile.debug.xcconfig */,
-				4D2F00E30F36FD49ECB9E761 /* Pods-lndmobile.release.xcconfig */,
-				5E824258EC158212137230F1 /* Pods-lndmobile-lndmobileTests.debug.xcconfig */,
-				13ED5227931E8B4B2082CC51 /* Pods-lndmobile-lndmobileTests.release.xcconfig */,
-				21488CA3BC3B6DB3E5D902EC /* Pods-lndmobile-tvOS.debug.xcconfig */,
-				24212B441A729E8E56FAF291 /* Pods-lndmobile-tvOS.release.xcconfig */,
-				ADEFF6118451A499F8C048D8 /* Pods-lndmobile-tvOSTests.debug.xcconfig */,
-				55EB047C592122AD14E723E5 /* Pods-lndmobile-tvOSTests.release.xcconfig */,
+				CB008EE524C93EA700FFD914 /* lnd.conf */,
+				CB008EE224C93EA100FFD914 /* LndReactModule.h */,
+				CB008EE324C93EA100FFD914 /* LndReactModule.m */,
+			);
+			path = lightning;
+			sourceTree = "<group>";
+		};
+		F110BB5C6A86315F57ED5AEE /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				DB6E8CBE6C467D6D85A0AD2E /* Pods-lndmobile.debug.xcconfig */,
+				DC687FE39C3BE89A0CB9FEAB /* Pods-lndmobile.release.xcconfig */,
+				895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */,
+				E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */,
+				DD322566ED8224DAB7DCCE6D /* Pods-lndmobile-tvOS.debug.xcconfig */,
+				AEDCEC9A27484D3D77DF725F /* Pods-lndmobile-tvOS.release.xcconfig */,
+				394B8640334EB3FBF5F0A493 /* Pods-lndmobile-tvOSTests.debug.xcconfig */,
+				8D9112A7B69039FAACAD3057 /* Pods-lndmobile-tvOSTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -216,10 +224,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "lndmobileTests" */;
 			buildPhases = (
-				D7485254506EA49CC9D3C679 /* [CP] Check Pods Manifest.lock */,
+				F8AF726F4F3209680378531B /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
+				B32E74F204EDCE010C06C09B /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -235,12 +244,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "lndmobile" */;
 			buildPhases = (
-				49A05D5F3C4757793DD423B5 /* [CP] Check Pods Manifest.lock */,
+				120C8BC4EFF22983144ED667 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
+				49BAB250BE6F629E2DD4C9ED /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -255,7 +265,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D02E4BA1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "lndmobile-tvOS" */;
 			buildPhases = (
-				F5CDFA593708A137F322D49B /* [CP] Check Pods Manifest.lock */,
+				AC83DD77B3889AED9EA26BB6 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F122414F3F0027D42C /* Start Packager */,
 				2D02E4771E0B4A5D006451C7 /* Sources */,
 				2D02E4781E0B4A5D006451C7 /* Frameworks */,
@@ -275,7 +285,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D02E4BB1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "lndmobile-tvOSTests" */;
 			buildPhases = (
-				28D2DC2C8118A3FF1E70E0C0 /* [CP] Check Pods Manifest.lock */,
+				E8A1C4F39712EB9CB3B4F778 /* [CP] Check Pods Manifest.lock */,
 				2D02E48C1E0B4A5D006451C7 /* Sources */,
 				2D02E48D1E0B4A5D006451C7 /* Frameworks */,
 				2D02E48E1E0B4A5D006451C7 /* Resources */,
@@ -353,9 +363,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B266BC82470F78B003980AA /* lnd.conf in Resources */,
+				CB008EE624C93EA700FFD914 /* lnd.conf in Resources */,
+				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -391,43 +401,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
 		};
-		28D2DC2C8118A3FF1E70E0C0 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-lndmobile-tvOSTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		2D02E4CB1E0B4B27006451C7 /* Bundle React Native Code And Images */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Bundle React Native Code And Images";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
-		};
-		49A05D5F3C4757793DD423B5 /* [CP] Check Pods Manifest.lock */ = {
+		120C8BC4EFF22983144ED667 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -449,29 +423,39 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D7485254506EA49CC9D3C679 /* [CP] Check Pods Manifest.lock */ = {
+		2D02E4CB1E0B4B27006451C7 /* Bundle React Native Code And Images */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
 			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
+			name = "Bundle React Native Code And Images";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-lndmobile-lndmobileTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
+		};
+		49BAB250BE6F629E2DD4C9ED /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-lndmobile/Pods-lndmobile-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-lndmobile/Pods-lndmobile-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F5CDFA593708A137F322D49B /* [CP] Check Pods Manifest.lock */ = {
+		AC83DD77B3889AED9EA26BB6 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -487,6 +471,68 @@
 			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-lndmobile-tvOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B32E74F204EDCE010C06C09B /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E8A1C4F39712EB9CB3B4F778 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-lndmobile-tvOSTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F8AF726F4F3209680378531B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-lndmobile-lndmobileTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -547,7 +593,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
-				1B266BC62470F786003980AA /* LndReactModule.m in Sources */,
+				CB008EE424C93EA100FFD914 /* LndReactModule.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -584,22 +630,10 @@
 		};
 /* End PBXTargetDependency section */
 
-/* Begin PBXVariantGroup section */
-		13B07FB11A68108700A75B9A /* LaunchScreen.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				13B07FB21A68108700A75B9A /* Base */,
-			);
-			name = LaunchScreen.xib;
-			path = lndmobile;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
-
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5E824258EC158212137230F1 /* Pods-lndmobile-lndmobileTests.debug.xcconfig */;
+			baseConfigurationReference = 895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
@@ -608,7 +642,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = lndmobileTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -623,13 +657,13 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 13ED5227931E8B4B2082CC51 /* Pods-lndmobile-lndmobileTests.release.xcconfig */;
+			baseConfigurationReference = E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
 				INFOPLIST_FILE = lndmobileTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -644,7 +678,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6A175D55BB81937D6912ACB2 /* Pods-lndmobile.debug.xcconfig */;
+			baseConfigurationReference = DB6E8CBE6C467D6D85A0AD2E /* Pods-lndmobile.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -654,10 +688,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
-				);
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = lndmobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -676,12 +706,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4D2F00E30F36FD49ECB9E761 /* Pods-lndmobile.release.xcconfig */;
+			baseConfigurationReference = DC687FE39C3BE89A0CB9FEAB /* Pods-lndmobile.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -702,7 +733,7 @@
 		};
 		2D02E4971E0B4A5E006451C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 21488CA3BC3B6DB3E5D902EC /* Pods-lndmobile-tvOS.debug.xcconfig */;
+			baseConfigurationReference = DD322566ED8224DAB7DCCE6D /* Pods-lndmobile-tvOS.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -725,13 +756,13 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 9.2;
+				TVOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Debug;
 		};
 		2D02E4981E0B4A5E006451C7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 24212B441A729E8E56FAF291 /* Pods-lndmobile-tvOS.release.xcconfig */;
+			baseConfigurationReference = AEDCEC9A27484D3D77DF725F /* Pods-lndmobile-tvOS.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -754,13 +785,13 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 9.2;
+				TVOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Release;
 		};
 		2D02E4991E0B4A5E006451C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = ADEFF6118451A499F8C048D8 /* Pods-lndmobile-tvOSTests.debug.xcconfig */;
+			baseConfigurationReference = 394B8640334EB3FBF5F0A493 /* Pods-lndmobile-tvOSTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -788,7 +819,7 @@
 		};
 		2D02E49A1E0B4A5E006451C7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 55EB047C592122AD14E723E5 /* Pods-lndmobile-tvOSTests.release.xcconfig */;
+			baseConfigurationReference = 8D9112A7B69039FAACAD3057 /* Pods-lndmobile-tvOSTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -861,7 +892,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
@@ -914,7 +945,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",

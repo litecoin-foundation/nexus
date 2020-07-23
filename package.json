@@ -18,6 +18,8 @@
     "prestorybook": "rnstl"
   },
   "dependencies": {
+    "react": "16.13.1",
+    "react-native": "0.63.2",
     "@react-native-community/clipboard": "^1.2.2",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-native-community/slider": "^2.0.9",
@@ -35,8 +37,6 @@
     "hash.js": "^1.1.7",
     "prop-types": "^15.7.2",
     "protobufjs": "^6.9.0",
-    "react": "16.11.0",
-    "react-native": "^0.62.2",
     "react-native-camera": "^3.26.0",
     "react-native-device-info": "^5.5.7",
     "react-native-flipper": "^0.39.0",
@@ -72,25 +72,29 @@
     "stream-browserify": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/runtime": "^7.9.6",
+    "@babel/core": "^7.8.4",
+    "@babel/runtime": "^7.8.4",
+    "@react-native-community/eslint-config": "^1.1.0",
+    "babel-jest": "^25.1.0",
+    "eslint": "^6.5.1",
+    "jest": "^25.1.0",
+    "metro-react-native-babel-preset": "^0.59.0",
+    "react-test-renderer": "16.13.1",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
-    "@react-native-community/eslint-config": "^1.1.0",
     "@storybook/addon-actions": "^5.3.18",
     "@storybook/addon-links": "^5.3.18",
     "@storybook/addons": "^5.3.18",
     "@storybook/react-native": "^5.3.18",
     "@storybook/react-native-server": "^5.3.18",
-    "babel-jest": "^24.9.0",
     "babel-loader": "^8.1.0",
-    "eslint": "^6.8.0",
     "husky": "^4.2.5",
     "jetifier": "^1.6.5",
-    "metro-react-native-babel-preset": "^0.59.0",
     "react-dom": "^16.9.0",
-    "react-native-storybook-loader": "^1.8.1",
-    "react-test-renderer": "16.11.0"
+    "react-native-storybook-loader": "^1.8.1"
+  },
+  "jest": {
+    "preset": "react-native"
   },
   "config": {
     "react-native-storybook-loader": {
