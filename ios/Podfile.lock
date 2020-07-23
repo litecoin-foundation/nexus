@@ -256,7 +256,7 @@ PODS:
     - React
   - react-native-slider (2.0.9):
     - React
-  - react-native-webview (9.4.0):
+  - react-native-webview (7.6.0):
     - React
   - React-RCTActionSheet (0.63.2):
     - React-Core/RCTActionSheetHeaders (= 0.63.2)
@@ -558,7 +558,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 5292aacb304803e215ff13fd7f01c3577909319f
   react-native-sensitive-info: 4629b223484a08225c3eb088ff3f91b03097b5e5
   react-native-slider: b34d943dc60deb96d952ba6b6b249aa8091e86da
-  react-native-webview: 0e2881d2e3e72ad52a82445c1a116c43205fd471
+  react-native-webview: 711cef318a554093b09a5b871894011435d87a8d
   React-RCTActionSheet: 910163b6b09685a35c4ebbc52b66d1bfbbe39fc5
   React-RCTAnimation: 9a883bbe1e9d2e158d4fb53765ed64c8dc2200c6
   React-RCTBlob: 39cf0ece1927996c4466510e25d2105f67010e13

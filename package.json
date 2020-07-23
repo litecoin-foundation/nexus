@@ -56,7 +56,7 @@
     "react-native-snap-carousel": "^3.9.0",
     "react-native-svg": "^12.1.0",
     "react-native-touch-id": "^4.4.1",
-    "react-native-webview": "^9.4.0",
+    "react-native-webview": "7.6.0",
     "react-redux": "^7.2.0",
     "react-spring": "^9.0.0-beta.34",
     "readable-stream": "^3.6.0",
