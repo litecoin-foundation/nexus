@@ -5,6 +5,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {startOnboarding} from '../reducers/onboarding';
 import {startLnd} from '../reducers/lightning';
 import {checkBiometricSupport} from '../lib/utils/biometric';
+import {isInternetReachable} from '../reducers/info';
 
 const Loading = (props) => {
   const dispatch = useDispatch();
@@ -13,11 +14,12 @@ const Loading = (props) => {
 
   useEffect(() => {
     dispatch(checkBiometricSupport());
+    dispatch(isInternetReachable());
     dispatch(startLnd());
   }, [dispatch]);
 
   if (onboarding === false && isOnboarded === true) {
-    props.navigation.replace('Auth');
+    props.navigation.replace('AuthStack');
   } else {
     dispatch(startOnboarding());
     props.navigation.navigate('Onboarding');

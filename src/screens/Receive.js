@@ -16,6 +16,7 @@ import Header from '../components/Header';
 import RequestModal from '../components/Modals/RequestModal';
 import BlueButton from '../components/Buttons/BlueButton';
 import BlueClearButton from '../components/Buttons/BlueClearButton';
+import InfoModal from '../components/Modals/InfoModal';
 import {getAddress} from '../reducers/address';
 import * as bip21 from '../lib/utils/bip21';
 
@@ -23,6 +24,7 @@ const Receive = (props) => {
   const dispatch = useDispatch();
   const address = useSelector((state) => state.address.address);
 
+  const [isInternetModalVisible, setInternetModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [amount, changeAmount] = useState('');
   const [uri, setURI] = useState('');
@@ -43,6 +45,7 @@ const Receive = (props) => {
   });
 
   const handleCopy = async () => {
+    setInternetModalVisible(true);
     await Clipboard.setString(address);
   };
 
@@ -91,6 +94,13 @@ const Receive = (props) => {
         isVisible={modalVisible}
         close={() => setModalVisible(false)}
         onChange={(input) => handleChange(input)}
+      />
+
+      <InfoModal
+        isVisible={isInternetModalVisible}
+        close={() => setInternetModalVisible(false)}
+        textColor="green"
+        text="COPIED TO CLIPBOARD!"
       />
     </View>
   );

@@ -1,14 +1,15 @@
 import React, {useEffect} from 'react';
-import {Alert} from 'react-native';
+import {Alert, View, StyleSheet} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 
-import Auth from '../components/Auth';
-import {clearValues} from '../reducers/authpad';
+import Auth from '../../components/Auth';
+import WhiteButton from '../../components/Buttons/WhiteButton';
+import {clearValues} from '../../reducers/authpad';
 import {
   unlockWalletWithPin,
   clearWalletUnlocked,
   unlockWalletWithBiometric,
-} from '../reducers/authentication';
+} from '../../reducers/authentication';
 
 const AuthScreen = (props) => {
   const dispatch = useDispatch();
@@ -60,13 +61,28 @@ const AuthScreen = (props) => {
   );
 };
 
-AuthScreen.navigationOptions = () => {
+const styles = StyleSheet.create({
+  headerRight: {
+    paddingRight: 18,
+  },
+});
+
+AuthScreen.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'Unlock Wallet',
+    headerRight: () => (
+      <View style={styles.headerRight}>
+        <WhiteButton
+          value="FORGOT?"
+          small={true}
+          onPress={() => navigation.navigate('Forgot')}
+          active={true}
+        />
+      </View>
+    ),
     headerTransparent: true,
     headerBackTitleVisible: false,
     headerTintColor: 'white',
-    animationEnabled: false,
   };
 };
 

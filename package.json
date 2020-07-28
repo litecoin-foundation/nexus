@@ -18,10 +18,9 @@
     "prestorybook": "rnstl"
   },
   "dependencies": {
-    "react": "16.13.1",
-    "react-native": "0.63.2",
     "@react-native-community/clipboard": "^1.2.2",
     "@react-native-community/masked-view": "^0.1.10",
+    "@react-native-community/netinfo": "^5.9.5",
     "@react-native-community/slider": "^2.0.9",
     "@react-navigation/bottom-tabs": "^5.4.5",
     "@react-navigation/native": "^5.4.0",
@@ -37,6 +36,8 @@
     "hash.js": "^1.1.7",
     "prop-types": "^15.7.2",
     "protobufjs": "^6.9.0",
+    "react": "16.13.1",
+    "react-native": "0.63.2",
     "react-native-camera": "^3.26.0",
     "react-native-device-info": "^5.5.7",
     "react-native-flipper": "^0.39.0",

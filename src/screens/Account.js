@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 
 import AmountView from '../components/AmountView';
@@ -8,6 +8,7 @@ import LineChart from '../components/Chart/Chart';
 import DatePicker from '../components/DatePicker';
 import {clearWalletUnlocked} from '../reducers/authentication';
 import {formatDate} from '../lib/utils/date';
+import InfoCell from '../components/Cells/InfoCell';
 
 const Account = (props) => {
   const dispatch = useDispatch();
@@ -16,6 +17,7 @@ const Account = (props) => {
   const chartCursorSelected = useSelector(
     (state) => state.chart.cursorSelected,
   );
+  const {isInternetReachable} = useSelector((state) => state.info);
 
   useEffect(() => {
     dispatch(clearWalletUnlocked());
@@ -35,10 +37,18 @@ const Account = (props) => {
         <DatePicker />
       </AmountView>
       <View style={styles.container}>
-        <Text style={styles.text}>Accounts</Text>
-        <View style={styles.accountsContainer}>
-          <AccountCell onPress={() => props.navigation.navigate('Wallet')} />
-        </View>
+        <ScrollView>
+          {!isInternetReachable ? (
+            <>
+              <Text style={styles.text}>Alerts</Text>
+              <InfoCell text="Internet connection unavailable!" />
+            </>
+          ) : null}
+          <Text style={styles.text}>Accounts</Text>
+          <View style={styles.accountsContainer}>
+            <AccountCell onPress={() => props.navigation.navigate('Wallet')} />
+          </View>
+        </ScrollView>
       </View>
     </View>
   );

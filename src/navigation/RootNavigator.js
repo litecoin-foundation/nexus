@@ -4,7 +4,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import OnboardingStack from './OnboardingStack';
 import Loading from '../screens/Loading';
-import AuthScreen from '../screens/Auth';
+import AuthStack from './AuthStack';
 import AppStack from './AppStack';
 
 const Stack = createStackNavigator();
@@ -26,9 +26,13 @@ function RootNavigator() {
           options={Loading.navigationOptions}
         />
         <Stack.Screen
-          name="Auth"
-          component={AuthScreen}
-          options={AuthScreen.navigationOptions}
+          name="AuthStack"
+          component={AuthStack}
+          options={{
+            headerTransparent: true,
+            headerShown: false,
+            animationEnabled: false,
+          }}
         />
         <Stack.Screen
           name="Onboarding"

@@ -2,16 +2,28 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {HeaderBackButton} from '@react-navigation/stack';
+import {useSelector} from 'react-redux';
 
 import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
 import TransactionModal from '../components/Modals/TransactionModal';
 import TransactionList from '../components/TransactionList';
 import AmountView from '../components/AmountView';
+import InfoModal from '../components/Modals/InfoModal';
 
 const Wallet = (props) => {
   const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
+  const [isInternetModalVisible, setInternetModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
+  const {isInternetReachable} = useSelector((state) => state.info);
+
+  const handleSendPress = () => {
+    if (!isInternetReachable) {
+      setInternetModalVisible(true);
+      return;
+    }
+    props.navigation.navigate('Send');
+  };
 
   return (
     <View style={styles.container}>
@@ -35,9 +47,7 @@ const Wallet = (props) => {
           style={styles.paymentButton}>
           <TouchableOpacity
             style={styles.paymentButtonContainer}
-            onPress={() => {
-              props.navigation.navigate('Send');
-            }}>
+            onPress={handleSendPress}>
             <Image
               style={styles.sendImage}
               source={require('../assets/images/send-white.png')}
@@ -80,6 +90,13 @@ const Wallet = (props) => {
         isVisible={isTxDetailModalVisible}
         transaction={selectedTransaction}
         navigate={props.navigation.navigate}
+      />
+
+      <InfoModal
+        isVisible={isInternetModalVisible}
+        close={() => setInternetModalVisible(false)}
+        textColor="red"
+        text="No network connection!"
       />
     </View>
   );

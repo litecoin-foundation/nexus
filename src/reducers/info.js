@@ -1,3 +1,5 @@
+import NetInfo from '@react-native-community/netinfo';
+
 import Lightning from '../lib/lightning/lightning';
 import {poll} from '../lib/utils/poll';
 
@@ -14,10 +16,12 @@ const initialState = {
   bestHeaderTimestamp: 0,
   uris: [],
   chains: [],
+  isInternetReachable: null,
 };
 
 // constants
 export const GET_INFO = 'GET_INFO';
+export const IS_INTERNET_REACHABLE = 'IS_INTERNET_REACHABLE';
 
 // actions
 export const getInfo = () => async (dispatch, getState) => {
@@ -50,6 +54,15 @@ export const getInfo = () => async (dispatch, getState) => {
   });
 };
 
+export const isInternetReachable = () => (dispatch) => {
+  NetInfo.addEventListener((state) => {
+    dispatch({
+      type: IS_INTERNET_REACHABLE,
+      isInternetReachable: state.isInternetReachable,
+    });
+  });
+};
+
 export const pollInfo = () => async (dispatch) => {
   await poll(() => dispatch(getInfo()));
 };
@@ -70,6 +83,10 @@ const actionHandler = {
   [GET_INFO]: (state, {info}) => ({
     ...state,
     ...info,
+  }),
+  [IS_INTERNET_REACHABLE]: (state, {isInternetReachable}) => ({
+    ...state,
+    isInternetReachable,
   }),
 };
 
