@@ -53,7 +53,7 @@ const AmountInput = (props) => {
   }, [amount, onChangeText, toggled]);
 
   useEffect(() => {
-    return () => {
+    return function cleanup() {
       dispatch(resetInputs());
     };
   }, [dispatch]);
