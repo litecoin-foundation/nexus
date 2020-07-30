@@ -25,11 +25,17 @@ const Pad = (props) => {
         }
         break;
       case '⌫':
-        response = currentValue.length === 1 ? '0' : currentValue.slice(0, -1);
+        response =
+          currentValue.length === 1 && (dotDisabled === false || !dotDisabled)
+            ? '0'
+            : currentValue.length === 1 && dotDisabled === true
+            ? ''
+            : currentValue.slice(0, -1);
         break;
       default:
         response =
-          currentValue === '0.00' || currentValue === '0'
+          (dotDisabled === false || !dotDisabled) &&
+          (currentValue === '0.00' || currentValue === '0')
             ? input
             : currentValue + input;
     }

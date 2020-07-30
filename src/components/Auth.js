@@ -13,6 +13,8 @@ const Auth = (props) => {
     handleCompletion,
     handleValidationSuccess,
     handleValidationFailure,
+    newPasscode,
+    passcodeInitialSet,
   } = props;
   const pin = useSelector((state) => state.authpad.pin);
 
@@ -27,12 +29,13 @@ const Auth = (props) => {
           activeDotIndex={pin.length - 1}
         />
       </OnboardingHeader>
-
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
         <AuthPad
           handleCompletion={handleCompletion}
           handleValidationSuccess={handleValidationSuccess}
           handleValidationFailure={handleValidationFailure}
+          newPasscode={newPasscode}
+          passcodeInitialSet={passcodeInitialSet}
         />
       </LinearGradient>
     </View>
@@ -42,6 +45,7 @@ const Auth = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
   },
   headerContainer: {
     flex: 1,

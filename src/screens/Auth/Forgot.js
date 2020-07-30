@@ -1,13 +1,52 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {StyleSheet, Alert} from 'react-native';
+import {useSelector} from 'react-redux';
+import LinearGradient from 'react-native-linear-gradient';
 
 import Header from '../../components/Header';
+import RecoveryField from '../../components/RecoveryField';
 
-const Forgot = () => {
+const Forgot = ({navigation}) => {
+  const {seed} = useSelector((state) => state.onboarding);
+
+  const attemptLogin = async (seedAttempt) => {
+    // validate user seed
+    if (seedAttempt !== seed.toString()) {
+      await Alert.alert(
+        'Incorrect Paper-Key',
+        null,
+        [
+          {
+            text: 'Retry',
+            onPress: null,
+          },
+          {
+            text: 'Cancel',
+            onPress: () => navigation.goBack(),
+            style: 'cancel',
+          },
+        ],
+        {cancelable: false},
+      );
+      return;
+    }
+
+    // if valid navigate to ChangePincode
+    // route param 'type' will disable check for old pincode
+    // and pop navigation to AuthScreen on success
+    navigation.navigate('ChangePincode', {type: 'RESET'});
+  };
+
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
       <Header />
-    </View>
+      <RecoveryField
+        handleLogin={(seedAttempt) => attemptLogin(seedAttempt)}
+        headerText={
+          'Forgot your pincode?\nEnter your paper-key to reset your pincode.'
+        }
+      />
+    </LinearGradient>
   );
 };
 
@@ -19,7 +58,7 @@ const styles = StyleSheet.create({
 
 Forgot.navigationOptions = () => {
   return {
-    headerTitle: 'Unlock Wallet',
+    headerTitle: 'Reset Pincode',
     headerTransparent: true,
     headerBackTitleVisible: false,
     headerTintColor: 'white',

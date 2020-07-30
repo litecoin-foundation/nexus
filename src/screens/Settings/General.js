@@ -55,7 +55,9 @@ const General = (props) => {
           <SettingCell title="About" />
           <SettingCell
             title="Change Wallet Pin"
-            onPress={() => props.navigation.navigate('ChangePincode')}
+            onPress={() =>
+              props.navigation.navigate('ChangePincode', {type: null})
+            }
             forward
           />
           {biometricsAvailable ? (

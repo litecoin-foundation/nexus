@@ -20,3 +20,8 @@ export const getItem = async (key) => {
     return null;
   }
 };
+
+export const resetItem = async (key) => {
+  const vKey = `${VERSION}_${key}`;
+  await Keychain.resetInternetCredentials(vKey);
+};

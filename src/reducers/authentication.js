@@ -1,6 +1,7 @@
 import {getItem} from '../lib/utils/keychain';
 import {authenticate} from '../lib/utils/biometric';
 import {unlockWallet} from './lightning';
+import {setItem, resetItem} from '../lib/utils/keychain';
 
 // initial state
 const initialState = {
@@ -14,16 +15,27 @@ const initialState = {
 
 // constants
 export const ADD_PASSCODE = 'ADD_PASSCODE';
+export const RESET_PASSCODE = 'RESET_PASSCODE';
 export const UNLOCK_WALLET = 'UNLOCK_WALLET';
 export const CLEAR_UNLOCK = 'CLEAR_UNLOCK';
 export const SET_BIOMETRIC_AVAILABILITY = 'SET_BIOMETRIC_AVAILABILITY';
 export const SET_BIOMETRIC_ENABLED = 'SET_BIOMETRIC_ENABLED';
 
 // actions
-export const addPincode = (passcode) => (dispatch) => {
+export const addPincode = (passcode) => async (dispatch) => {
+  await setItem('PINCODE', passcode);
+
   dispatch({
     type: ADD_PASSCODE,
     passcode,
+  });
+};
+
+export const resetPincode = () => async (dispatch) => {
+  await resetItem('PINCODE');
+
+  dispatch({
+    type: RESET_PASSCODE,
   });
 };
 
@@ -87,6 +99,11 @@ const actionHandler = {
     ...state,
     passcode,
     passcodeSet: true,
+  }),
+  [RESET_PASSCODE]: (state) => ({
+    ...state,
+    passcode: '',
+    passcodeSet: false,
   }),
   [SET_BIOMETRIC_AVAILABILITY]: (state, {available, faceIDSupported}) => ({
     ...state,

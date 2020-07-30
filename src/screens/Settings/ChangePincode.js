@@ -10,11 +10,16 @@ import {addPincode} from '../../reducers/authentication';
 import {setItem} from '../../lib/utils/keychain';
 
 const ChangePincode = (props) => {
+  const {navigation, route} = props;
   const dispatch = useDispatch();
   const pin = useSelector((state) => state.authentication.passcode);
 
-  const [currentPin, setCurrentPin] = useState(true);
-  const [newPin, setNewPin] = useState(false);
+  const [currentPin, setCurrentPin] = useState(
+    route.params.type === 'RESET' ? false : true,
+  );
+  const [newPin, setNewPin] = useState(
+    route.params.type === 'RESET' ? true : false,
+  );
   const [repeatPin, setRepeatPin] = useState(false);
   const [newPinCodeValue, setNewPinCodeValue] = useState('');
   const [padValue, setPadValue] = useState('');
@@ -55,7 +60,15 @@ const ChangePincode = (props) => {
         Alert.alert(
           'Success',
           'Successfully reset PIN!',
-          [{text: 'OK', onPress: () => props.navigation.goBack()}],
+          [
+            {
+              text: 'OK',
+              onPress: () =>
+                route.params.type === 'RESET'
+                  ? navigation.pop(2)
+                  : navigation.goBack(),
+            },
+          ],
           {cancelable: false},
         );
       } else {
@@ -65,10 +78,7 @@ const ChangePincode = (props) => {
         Alert.alert(
           'Invalid',
           'Pincodes did not match. Try again.',
-          [
-            {text: 'Cancel', onPress: () => props.navigation.goBack()},
-            {text: 'OK'},
-          ],
+          [{text: 'Cancel', onPress: () => navigation.goBack()}, {text: 'OK'}],
           {
             cancelable: false,
           },
@@ -117,6 +127,7 @@ async function setPincodeToKeychain(pin) {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+    backgroundColor: 'white',
   },
   pinContainer: {
     height: 162,
