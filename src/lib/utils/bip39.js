@@ -2058,3 +2058,7 @@ export const getBIP39Word = () => {
 export const checkBIP39Word = (word) => {
   return wordlist.includes(word);
 };
+
+export const getBIP39Index = (word) => {
+  return wordlist.indexOf(word);
+};

@@ -9,8 +9,9 @@ import RecoveryField from '../../components/RecoveryField';
 const Recover = (props) => {
   const dispatch = useDispatch();
 
-  const attemptLogin = ({seed}) => {
-    dispatch(recoverSeed(seed));
+  const attemptLogin = async (seed) => {
+    console.log('attempting login');
+    await dispatch(recoverSeed(seed));
     props.navigation.navigate('Pin');
   };
 

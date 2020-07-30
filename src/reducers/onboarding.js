@@ -45,6 +45,7 @@ export const getSeed = () => async (dispatch) => {
 };
 
 export const recoverSeed = (seed) => (dispatch) => {
+  console.log('recover seed');
   dispatch({
     type: RECOVER_SEED,
     seed,

@@ -11,7 +11,7 @@ const Forgot = ({navigation}) => {
 
   const attemptLogin = async (seedAttempt) => {
     // validate user seed
-    if (seedAttempt !== seed.toString()) {
+    if (seedAttempt.toString() !== seed.toString()) {
       await Alert.alert(
         'Incorrect Paper-Key',
         null,

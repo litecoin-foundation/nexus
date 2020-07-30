@@ -6,17 +6,20 @@ import {
   FlatList,
   KeyboardAvoidingView,
   StyleSheet,
+  Alert,
 } from 'react-native';
 
 import {checkBIP39Word} from '../lib/utils/bip39';
+import {checkSeedChecksum} from '../lib/utils/aezeed';
 
 const RecoveryField = (props) => {
+  const {handleLogin, headerText} = props;
   const n = [...Array(24).keys()];
+
   const [phrase, setPhrasePosition] = useState(0);
+  const [seed, setSeed] = useState([]);
   const phraseRef = useRef(n.map(() => createRef()));
   const listRef = useRef(null);
-  const [seed, setSeed] = useState([]);
-  const {handleLogin, headerText} = props;
 
   useEffect(() => {
     phraseRef.current[phrase].current.focus();
@@ -24,13 +27,40 @@ const RecoveryField = (props) => {
 
   const handleSubmit = async (index) => {
     if (checkBIP39Word(seed[index]) === false) {
-      alert('invalid word');
+      await Alert.alert(
+        'Invalid Word',
+        'This word is not valid - check your spelling and try again.',
+        [
+          {
+            text: 'Try Again',
+            onPress: null,
+            style: 'cancel',
+          },
+        ],
+        {cancelable: false},
+      );
       return;
     }
 
     if (index === 23) {
-      console.log(seed);
-      await handleLogin(seed.toString());
+      try {
+        await checkSeedChecksum(seed);
+      } catch (error) {
+        await Alert.alert(
+          'Incorrect Paper-Key',
+          error,
+          [
+            {
+              text: 'Try Again',
+              onPress: null,
+              style: 'cancel',
+            },
+          ],
+          {cancelable: false},
+        );
+        return;
+      }
+      await handleLogin(seed);
 
       // reset seed list inputs in state and ui
       setSeed([]);
