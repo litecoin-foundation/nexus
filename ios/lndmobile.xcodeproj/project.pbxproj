@@ -306,7 +306,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1160;
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
 						CreatedOnToolsVersion = 6.2;
@@ -635,6 +635,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -659,6 +660,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				DEVELOPMENT_TEAM = ZV7987N2ZC;

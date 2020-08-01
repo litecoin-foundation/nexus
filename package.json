@@ -40,7 +40,6 @@
     "react-native": "0.63.2",
     "react-native-camera": "^3.26.0",
     "react-native-device-info": "^5.5.7",
-    "react-native-flipper": "^0.39.0",
     "react-native-fs": "^2.16.6",
     "react-native-gesture-handler": "^1.6.1",
     "react-native-haptic-feedback": "^1.10.0",
