@@ -4,7 +4,6 @@ import {useDispatch, useSelector} from 'react-redux';
 
 import Auth from '../../components/Auth';
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import {clearValues} from '../../reducers/authpad';
 import {
   unlockWalletWithPin,
   clearWalletUnlocked,
@@ -42,7 +41,6 @@ const AuthScreen = (props) => {
   });
 
   const unlockWallet = async () => {
-    await dispatch(clearValues());
     await dispatch(unlockWalletWithPin(pin));
   };
 

@@ -33,7 +33,6 @@ const AuthPad = (props) => {
     if (pin.length === 6) {
       if (pin === passcode) {
         handleValidationSuccess();
-        clear();
       } else {
         handleValidationFailure();
         clear();
