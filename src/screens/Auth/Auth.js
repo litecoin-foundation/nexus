@@ -9,6 +9,7 @@ import {
   clearWalletUnlocked,
   unlockWalletWithBiometric,
 } from '../../reducers/authentication';
+import {clearValues} from '../../reducers/authpad';
 
 const AuthScreen = (props) => {
   const dispatch = useDispatch();
@@ -28,20 +29,26 @@ const AuthScreen = (props) => {
   }, [biometricsEnabled, dispatch]);
 
   useEffect(() => {
-    if (walletUnlocked === null) {
-      return;
-    } else if (walletUnlocked === false) {
-      const clear = async () => {
-        await dispatch(clearWalletUnlocked());
-      };
-      clear();
-    } else {
-      props.navigation.replace('AppStack');
+    const clear = async () => {
+      await dispatch(clearWalletUnlocked());
+    };
+
+    switch (walletUnlocked) {
+      case false:
+        clear();
+        break;
+      case true:
+        props.navigation.replace('AppStack');
+        clear();
+        break;
+      default:
+        return;
     }
   });
 
   const unlockWallet = async () => {
     await dispatch(unlockWalletWithPin(pin));
+    await dispatch(clearValues());
   };
 
   const handleValidationFailure = () => {

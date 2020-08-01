@@ -1,27 +1,20 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 
 import AmountView from '../components/AmountView';
 import AccountCell from '../components/Cells/AccountCell';
 import LineChart from '../components/Chart/Chart';
 import DatePicker from '../components/DatePicker';
-import {clearWalletUnlocked} from '../reducers/authentication';
 import {formatDate} from '../lib/utils/date';
 import InfoCell from '../components/Cells/InfoCell';
 
 const Account = (props) => {
-  const dispatch = useDispatch();
-
   const chartCursorDate = useSelector((state) => state.chart.cursorDate);
   const chartCursorSelected = useSelector(
     (state) => state.chart.cursorSelected,
   );
   const {isInternetReachable} = useSelector((state) => state.info);
-
-  useEffect(() => {
-    dispatch(clearWalletUnlocked());
-  }, [dispatch]);
 
   return (
     <View style={styles.container}>

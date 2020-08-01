@@ -21,8 +21,6 @@ const PinModal = (props) => {
     <Modal
       isVisible={isVisible}
       swipeDirection="down"
-      onSwipeComplete={() => close()}
-      onBackdropPress={() => close()}
       backdropColor="rgb(19,58,138)"
       backdropOpacity={0.6}
       style={styles.noMargin}>

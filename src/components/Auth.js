@@ -10,7 +10,6 @@ import OnboardingHeader from './OnboardingHeader';
 const Auth = (props) => {
   const {
     headerDescriptionText,
-    handleCompletion,
     handleValidationSuccess,
     handleValidationFailure,
     newPasscode,
@@ -31,7 +30,6 @@ const Auth = (props) => {
       </OnboardingHeader>
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
         <AuthPad
-          handleCompletion={handleCompletion}
           handleValidationSuccess={handleValidationSuccess}
           handleValidationFailure={handleValidationFailure}
           newPasscode={newPasscode}

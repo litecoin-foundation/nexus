@@ -8,44 +8,34 @@ import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
 
 const AuthPad = (props) => {
-  const {
-    handleCompletion,
-    handleValidationFailure,
-    handleValidationSuccess,
-  } = props;
+  const {handleValidationFailure, handleValidationSuccess} = props;
   const dispatch = useDispatch();
   const pin = useSelector((state) => state.authpad.pin);
   const passcode = useSelector((state) => state.authentication.passcode);
 
   // clear all inputs in AuthPad on initial render
   useEffect(() => {
-    const clear = async () => {
-      await dispatch(clearValues());
+    dispatch(clearValues());
+  }, [dispatch]);
+
+  useEffect(() => {
+    return function cleanup() {
+      dispatch(clearValues());
     };
-    clear();
   }, [dispatch]);
 
   // handles when AuthPad inputs are filled
   useEffect(() => {
-    const clear = async () => {
-      await dispatch(clearValues());
-    };
     if (pin.length === 6) {
       if (pin === passcode) {
         handleValidationSuccess();
       } else {
         handleValidationFailure();
-        clear();
+        dispatch(clearValues());
       }
     }
-  }, [
-    dispatch,
-    handleCompletion,
-    handleValidationFailure,
-    handleValidationSuccess,
-    passcode,
-    pin,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pin]);
 
   const handlePress = (input) => {
     switch (input) {
