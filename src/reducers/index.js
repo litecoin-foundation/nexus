@@ -4,7 +4,6 @@ import lightning from './lightning';
 import balance from './balance';
 import info from './info';
 import transaction from './transaction';
-import payment from './payment';
 import address from './address';
 import ticker from './ticker';
 import invoice from './invoice';
@@ -23,7 +22,6 @@ export default combineReducers({
   balance,
   info,
   transaction,
-  payment,
   address,
   ticker,
   invoice,

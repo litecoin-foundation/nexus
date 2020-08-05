@@ -9,11 +9,14 @@ const LndInstance = new Lightning();
 const initialState = {
   transactions: [],
   invoices: [],
+  memos: [],
 };
 
 // constants
 export const GET_TRANSACTIONS = 'GET_TRANSACTIONS';
 export const GET_INVOICES = 'GET_INVOICES';
+export const SEND_ONCHAIN_PAYMENT = 'SEND_ONCHAIN_PAYMENT';
+export const ESTIMATE_ONCHAIN_FEE = 'ESTIMATE_ONCHAIN_FEE';
 
 // actions
 export const getTransactions = () => (dispatch) => {
@@ -54,6 +57,78 @@ export const getInvoices = () => (dispatch) => {
   });
 };
 
+export const sendOnchainPayment = (paymentreq) => (dispatch) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const {txid} = await LndInstance.sendCommand('SendCoins', paymentreq);
+      dispatch({
+        type: SEND_ONCHAIN_PAYMENT,
+        txid,
+        label:
+          paymentreq.label === '' || paymentreq.label === undefined
+            ? ''
+            : paymentreq.label,
+      });
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const estimateOnchainFee = (address, amount, conf) => async (
+  dispatch,
+) => {
+  try {
+    const AddrToAmount = {};
+    AddrToAmount[address] = parseFloat(amount) * 1000000;
+    const blocksToConfirm = conf !== undefined || isNaN(conf) ? conf : 1;
+    const {fee_sat, feerate_sat_per_byte} = await LndInstance.sendCommand(
+      'EstimateFee',
+      {
+        AddrToAmount,
+        target_conf: blocksToConfirm,
+      },
+    );
+
+    dispatch({
+      type: ESTIMATE_ONCHAIN_FEE,
+      fee_sat,
+      feerate_sat_per_byte,
+    });
+  } catch (error) {
+    alert(`fee calculation ${error}`);
+    console.log(`payment onchain error: ${error}`);
+  }
+};
+
+export const decodePaymentRequest = async (payReqString) => {
+  const response = await LndInstance.sendCommand('DecodePayReq', {
+    payReq: payReqString,
+  });
+  return response;
+};
+
+export const sendLightningPayment = (paymentreq) => async (dispatch) => {
+  try {
+    const stream = LndInstance.sendStreamCommand('sendPayment');
+    await new Promise((resolve, reject) => {
+      stream.on('data', (data) => {
+        if (data.paymentError) {
+          reject(new Error(`Lightning payment error: ${data.paymentError}`));
+        } else {
+          resolve();
+        }
+      });
+      stream.on('error', reject);
+      stream.write(JSON.stringify({paymentRequest: paymentreq}), 'utf8');
+    });
+  } catch (error) {
+    alert('your transaction failed :(');
+    console.log(`payment lightning error: ${error}`);
+  }
+};
+
 // action handlers
 const actionHandler = {
   [GET_TRANSACTIONS]: (state, {transaction}) => ({
@@ -63,6 +138,13 @@ const actionHandler = {
   [GET_INVOICES]: (state, {invoice}) => ({
     ...state,
     invoices: [...state.invoices, invoice],
+  }),
+  [SEND_ONCHAIN_PAYMENT]: (state, {txid, label}) => ({
+    ...state,
+    memos: [...state.memos, {[txid]: label}],
+  }),
+  [ESTIMATE_ONCHAIN_FEE]: (state, {fee_sat, feerate_sat_per_byte}) => ({
+    ...state,
   }),
 };
 
