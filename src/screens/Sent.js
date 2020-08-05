@@ -102,6 +102,8 @@ Sent.navigationOptions = {
   headerTransparent: true,
   headerBackTitleVisible: false,
   headerTintColor: 'white',
+  headerLeft: null,
+  gesturesEnabled: false,
 };
 
 export default Sent;

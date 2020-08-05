@@ -1,5 +1,5 @@
 import React, {useState, Fragment} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Alert} from 'react-native';
 import Modal from 'react-native-modal';
 import {useSelector} from 'react-redux';
 import {Pagination} from 'react-native-snap-carousel';
@@ -11,7 +11,7 @@ import BlueButton from '../Buttons/BlueButton';
 import AuthPad from '../Numpad/AuthPad';
 
 const SendModal = (props) => {
-  const {isVisible, close, amount, address, memo} = props;
+  const {isVisible, close, amount, address, memo, handleSend} = props;
   const [confirmed, confirm] = useState(false);
   const pin = useSelector((state) => state.authpad.pin);
 
@@ -24,6 +24,12 @@ const SendModal = (props) => {
   const handleClose = () => {
     confirm(false);
     close();
+  };
+
+  const handleValidationFailure = () => {
+    Alert.alert('Incorrect PIN', 'Try Again', [{text: 'OK'}], {
+      cancelable: false,
+    });
   };
 
   const DescriptionView = () => (
@@ -66,7 +72,10 @@ const SendModal = (props) => {
         activeDotIndex={pin.length - 1}
       />
       <View>
-        <AuthPad />
+        <AuthPad
+          handleValidationFailure={handleValidationFailure}
+          handleValidationSuccess={() => handleSend()}
+        />
       </View>
     </View>
   );

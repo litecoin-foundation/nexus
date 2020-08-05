@@ -27,8 +27,9 @@ import {decodeBIP21} from '../lib/utils/bip21';
 import validateLtcAddress from '../lib/utils/validate';
 import {updateAmount} from '../reducers/input';
 import WhiteButton from '../components/Buttons/WhiteButton';
+import {sendOnchainPayment} from '../reducers/transaction';
 
-const Send = () => {
+const Send = ({navigation}) => {
   const dispatch = useDispatch();
 
   const confirmedBalance = useSelector(
@@ -110,6 +111,21 @@ const Send = () => {
     } catch (error) {
       setInvalidQR(true);
       return;
+    }
+  };
+
+  const handleSend = async () => {
+    const paymentreq = {
+      addr: address,
+      amount,
+      ...(memo !== '' && {label: memo}),
+    };
+    console.log(paymentreq);
+    try {
+      await sendOnchainPayment(paymentreq);
+      navigation.navigate('Sent', {amount, address});
+    } catch (error) {
+      navigation.navigate('Fail', {amount, error});
     }
   };
 
@@ -267,6 +283,7 @@ const Send = () => {
         amount={amount}
         address={address}
         memo={memo}
+        handleSend={handleSend}
       />
 
       <ScanModal

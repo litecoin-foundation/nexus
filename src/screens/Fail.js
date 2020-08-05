@@ -4,7 +4,7 @@ import {View, Text, StyleSheet, Platform} from 'react-native';
 import AnimatedLinearGradient from '../components/AnimatedLinearGradient';
 import WhiteButton from '../components/Buttons/WhiteButton';
 
-const Sent = (props) => {
+const Fail = (props) => {
   const {navigation, route} = props;
   const {amount, error} = route.params;
 
@@ -77,11 +77,19 @@ const styles = StyleSheet.create({
   },
 });
 
-Sent.navigationOptions = {
+Fail.navigationOptions = {
   headerTitle: null,
   headerTransparent: true,
   headerBackTitleVisible: false,
   headerTintColor: 'white',
 };
 
-export default Sent;
+Fail.navigationOptions = {
+  headerTitle: null,
+  headerTransparent: true,
+  headerBackTitleVisible: false,
+  headerLeft: null,
+  gesturesEnabled: false,
+};
+
+export default Fail;
