@@ -1,14 +1,6 @@
 import React, {useEffect} from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  Dimensions,
-  SafeAreaView,
-} from 'react-native';
+import {View, Text, FlatList, StyleSheet, Dimensions} from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
-import LinearGradient from 'react-native-linear-gradient';
 
 import ChannelCell from '../../components/Cells/ChannelCell';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -17,12 +9,13 @@ import {
   listPeers,
   listPendingChannels,
 } from '../../reducers/channels';
+import Header from '../../components/Header';
 
 const {width} = Dimensions.get('window');
 
 const Channel = () => {
   const dispatch = useDispatch();
-  const channels = useSelector((state) => state.channels.channels);
+  const {channels} = useSelector((state) => state.channels);
 
   useEffect(() => {
     dispatch(listChannels());
@@ -52,12 +45,12 @@ const Channel = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#5A4FE7', '#2C44C8']}
-        style={styles.headerContainer}>
-        <SafeAreaView />
-      </LinearGradient>
-      {!channels ? <Text>No channels here.</Text> : list}
+      <Header />
+      {!channels || channels.length === 0 ? (
+        <Text>No channels here.</Text>
+      ) : (
+        list
+      )}
     </View>
   );
 };
@@ -65,6 +58,7 @@ const Channel = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FCFEFF',
+    flex: 1,
   },
   headerContainer: {
     height: 120,

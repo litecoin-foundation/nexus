@@ -52,7 +52,10 @@ const General = (props) => {
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
         <ScrollView>
-          <SettingCell title="About" />
+          <SettingCell
+            title="About"
+            onPress={() => props.navigation.navigate('About')}
+          />
           <SettingCell
             title="Change Wallet Pin"
             onPress={() =>

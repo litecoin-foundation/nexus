@@ -7,6 +7,7 @@ import OpenChannel from '../screens/Settings/OpenChannel';
 import General from '../screens/Settings/General';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed from '../screens/Settings/Seed';
+import About from '../screens/Settings/About';
 
 const Stack = createStackNavigator();
 
@@ -42,6 +43,11 @@ function SettingsStack() {
         name="Seed"
         component={Seed}
         options={Seed.navigationOptions}
+      />
+      <Stack.Screen
+        name="About"
+        component={About}
+        options={About.navigationOptions}
       />
     </Stack.Navigator>
   );

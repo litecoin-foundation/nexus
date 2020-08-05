@@ -1,5 +1,11 @@
 import React, {useState} from 'react';
-import {View, TextInput, TouchableOpacity, Text} from 'react-native';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+} from 'react-native';
 import {useDispatch} from 'react-redux';
 
 import Header from '../../components/Header';
@@ -15,7 +21,7 @@ const OpenChannel = () => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <Header />
       <Text>ENTER PUBKEY</Text>
       <TextInput
@@ -33,6 +39,12 @@ const OpenChannel = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'white',
+  },
+});
 
 OpenChannel.navigationOptions = () => {
   return {
