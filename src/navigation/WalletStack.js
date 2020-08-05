@@ -7,6 +7,8 @@ import Receive from '../screens/Receive';
 import Account from '../screens/Account';
 import LightningReceive from '../screens/LightningReceive';
 import WebPage from '../screens/WebPage';
+import Sent from '../screens/Sent';
+import Fail from '../screens/Fail';
 
 const Stack = createStackNavigator();
 
@@ -68,6 +70,16 @@ function WalletStack() {
         name="WebPage"
         component={WebPage}
         options={WebPage.navigationOptions}
+      />
+      <Stack.Screen
+        name="Sent"
+        component={Sent}
+        options={Sent.navigationOptions}
+      />
+      <Stack.Screen
+        name="Fail"
+        component={Fail}
+        options={Fail.navigationOptions}
       />
     </Stack.Navigator>
   );
