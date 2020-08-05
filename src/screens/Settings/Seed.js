@@ -17,8 +17,10 @@ const Seed = () => {
   const n = [...Array(12).keys()];
 
   useEffect(() => {
-    dispatch(updateLastViewSeed());
-  }, [dispatch]);
+    return function cleanup() {
+      dispatch(updateLastViewSeed());
+    };
+  });
 
   const words = n.map((val, index) => {
     return (
