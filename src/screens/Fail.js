@@ -81,13 +81,6 @@ Fail.navigationOptions = {
   headerTitle: null,
   headerTransparent: true,
   headerBackTitleVisible: false,
-  headerTintColor: 'white',
-};
-
-Fail.navigationOptions = {
-  headerTitle: null,
-  headerTransparent: true,
-  headerBackTitleVisible: false,
   headerLeft: null,
   gesturesEnabled: false,
 };
