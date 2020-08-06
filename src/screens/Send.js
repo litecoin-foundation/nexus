@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  Alert,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
@@ -17,6 +18,7 @@ import Clipboard from '@react-native-community/clipboard';
 import AmountInput from '../components/AmountInput';
 import AddressField from '../components/AddressField';
 import SendModal from '../components/Modals/SendModal';
+import PinModal from '../components/Modals/PinModal';
 import SquareButton from '../components/Buttons/SquareButton';
 import BlueButton from '../components/Buttons/BlueButton';
 import AccountCell from '../components/Cells/AccountCell';
@@ -37,6 +39,7 @@ const Send = ({navigation}) => {
   );
   const [isSendModalTriggered, triggerSendModal] = useState(false);
   const [isScanModalTriggered, triggerScanModal] = useState(false);
+  const [isPinModalTriggered, triggerPinModal] = useState(false);
   const [isAmountInputTriggered, triggerAmountInput] = useState(false);
   const [address, setAddress] = useState(null);
   const [amount, setAmount] = useState(null);
@@ -114,19 +117,40 @@ const Send = ({navigation}) => {
     }
   };
 
-  const handleSend = async () => {
+  const handleConfirm = async () => {
+    triggerSendModal(false);
+    // sleep for 350ms whilst send confirm modal closes
+    // required due to react-native bug where multiple
+    // modals cannot be open at the same time.
+    // closing should take 300ms
+    await new Promise((r) => setTimeout(r, 600));
+    triggerPinModal(true);
+  };
+
+  const handleValidationSuccess = async () => {
+    triggerPinModal(false);
+
+    // TODO: handle subunit
+    // we're multiplying amount by 100M to find
+    // the value in sats
     const paymentreq = {
       addr: address,
-      amount,
+      amount: parseFloat(amount) * 100000000,
       ...(memo !== '' && {label: memo}),
     };
-    console.log(paymentreq);
+
     try {
-      await sendOnchainPayment(paymentreq);
+      await dispatch(sendOnchainPayment(paymentreq));
       navigation.navigate('Sent', {amount, address});
     } catch (error) {
       navigation.navigate('Fail', {amount, error});
     }
+  };
+
+  const handleValidationFailure = () => {
+    Alert.alert('Incorrect PIN', 'Try Again', [{text: 'OK'}], {
+      cancelable: false,
+    });
   };
 
   return (
@@ -146,7 +170,7 @@ const Send = ({navigation}) => {
           colors={['#FF415E', '#FF9052']}
           start={{x: 0, y: 0}}
           end={{x: 1, y: 0}}
-          style={styles.invalidContainer}>
+          style={styles.invalidPasteContainer}>
           <View style={styles.invalidHeaderContainer}>
             <View style={styles.invalidHeaderTextContainer}>
               <Image source={require('../assets/images/block.png')} />
@@ -283,7 +307,14 @@ const Send = ({navigation}) => {
         amount={amount}
         address={address}
         memo={memo}
-        handleSend={handleSend}
+        handleConfirm={handleConfirm}
+      />
+
+      <PinModal
+        isVisible={isPinModalTriggered}
+        close={() => triggerPinModal(false)}
+        handleValidationFailure={() => handleValidationFailure()}
+        handleValidationSuccess={() => handleValidationSuccess()}
       />
 
       <ScanModal
@@ -378,6 +409,9 @@ const styles = StyleSheet.create({
   },
   invalidContainer: {
     height: 155,
+  },
+  invalidPasteContainer: {
+    height: 120,
   },
   invalidHeaderContainer: {
     flexDirection: 'row',

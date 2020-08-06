@@ -1,36 +1,14 @@
-import React, {useState, Fragment} from 'react';
-import {View, Text, StyleSheet, Alert} from 'react-native';
+import React, {Fragment} from 'react';
+import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
-import {useSelector} from 'react-redux';
-import {Pagination} from 'react-native-snap-carousel';
 
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
-import AuthPad from '../Numpad/AuthPad';
 
 const SendModal = (props) => {
-  const {isVisible, close, amount, address, memo, handleSend} = props;
-  const [confirmed, confirm] = useState(false);
-  const pin = useSelector((state) => state.authpad.pin);
-
-  const handleConfirm = () => {
-    if (!confirmed) {
-      confirm(true);
-    }
-  };
-
-  const handleClose = () => {
-    confirm(false);
-    close();
-  };
-
-  const handleValidationFailure = () => {
-    Alert.alert('Incorrect PIN', 'Try Again', [{text: 'OK'}], {
-      cancelable: false,
-    });
-  };
+  const {isVisible, close, amount, address, memo, handleConfirm} = props;
 
   const DescriptionView = () => (
     <Fragment>
@@ -53,7 +31,7 @@ const SendModal = (props) => {
       </View>
       <View style={styles.modalButtonContainer}>
         <BlueButton
-          value={!confirmed ? 'Confirm' : 'Confirm Send'}
+          value="Confirm"
           onPress={() => {
             handleConfirm();
           }}
@@ -62,30 +40,12 @@ const SendModal = (props) => {
     </Fragment>
   );
 
-  const ConfirmationView = () => (
-    <View style={styles.flex}>
-      <Pagination
-        dotStyle={styles.dotStyle}
-        inactiveDotColor="#2C72FF"
-        dotColor="#2C72FF"
-        dotsLength={6}
-        activeDotIndex={pin.length - 1}
-      />
-      <View>
-        <AuthPad
-          handleValidationFailure={handleValidationFailure}
-          handleValidationSuccess={() => handleSend()}
-        />
-      </View>
-    </View>
-  );
-
   return (
     <Modal
       isVisible={isVisible}
       swipeDirection="down"
-      onSwipeComplete={() => handleClose()}
-      onBackdropPress={() => handleClose()}
+      onSwipeComplete={() => close()}
+      onBackdropPress={() => close()}
       backdropColor="rgb(19,58,138)"
       backdropOpacity={0.6}
       style={styles.noMargin}>
@@ -93,10 +53,9 @@ const SendModal = (props) => {
         <View style={styles.modal}>
           <View style={styles.modalHeaderContainer}>
             <Text style={styles.modalHeaderTitle}>Send</Text>
-            <GreyRoundButton onPress={() => handleClose()} />
+            <GreyRoundButton onPress={() => close()} />
           </View>
-
-          {!confirmed ? <DescriptionView /> : <ConfirmationView />}
+          <DescriptionView />
         </View>
       </View>
     </Modal>
