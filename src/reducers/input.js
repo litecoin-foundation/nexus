@@ -1,7 +1,7 @@
 // initial state
 const initialState = {
-  amount: '0.00',
-  fiatAmount: '0.00',
+  amount: '',
+  fiatAmount: '',
 };
 
 // constants
@@ -54,7 +54,7 @@ const handleAmountConversion = () => (dispatch, getState) => {
 const actionHandler = {
   [UPDATE_AMOUNT]: (state, {amount}) => ({...state, amount}),
   [UPDATE_FIAT_AMOUNT]: (state, {fiatAmount}) => ({...state, fiatAmount}),
-  [RESET_INPUTS]: (state) => ({...state, amount: '0.00', fiatAmount: '0.00'}),
+  [RESET_INPUTS]: (state) => ({...state, amount: '', fiatAmount: ''}),
 };
 
 // reducer

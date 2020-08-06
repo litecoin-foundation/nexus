@@ -89,7 +89,7 @@ const AmountInput = (props) => {
                 styles.leftText,
                 leftToggled ? styles.textActive : styles.textInactive,
               ]}>
-              {amount} LTC
+              {amount === '' ? '0.00' : amount} LTC
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -103,7 +103,7 @@ const AmountInput = (props) => {
                 styles.rightText,
                 leftToggled ? styles.textInactive : styles.textActive,
               ]}>
-              ${fiatAmount}
+              ${fiatAmount === '' ? '0.00' : fiatAmount}
             </Text>
           </TouchableOpacity>
         </View>

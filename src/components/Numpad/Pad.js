@@ -20,7 +20,7 @@ const Pad = (props) => {
         if (currentValue.indexOf('.') === -1) {
           response = `${currentValue}.`;
         }
-        if (currentValue === '0.00' || currentValue === '0') {
+        if (currentValue === '' || currentValue === '0') {
           response = '0.';
         }
         break;
@@ -30,12 +30,16 @@ const Pad = (props) => {
             ? '0'
             : currentValue.length === 1 && dotDisabled === true
             ? ''
+            : currentValue.length === 0 &&
+              currentValue === '' &&
+              (dotDisabled === false || !dotDisabled)
+            ? '0'
             : currentValue.slice(0, -1);
         break;
       default:
         response =
           (dotDisabled === false || !dotDisabled) &&
-          (currentValue === '0.00' || currentValue === '0')
+          (currentValue === '' || currentValue === '0')
             ? input
             : currentValue + input;
     }
