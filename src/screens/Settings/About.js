@@ -4,30 +4,39 @@ import {useSelector} from 'react-redux';
 
 import TableCell from '../../components/Cells/TableCell';
 import VerticalTableCell from '../../components/Cells/VerticalTableCell';
+import Header from '../../components/Header';
 
 const About = () => {
   const {
     syncedToChain,
     blockHeight,
     blockHash,
-    bestHeaderTimeStamp,
+    bestHeaderTimestamp,
     version,
   } = useSelector((state) => state.info);
 
   return (
     <View style={styles.container}>
+      <Header />
       <Text style={styles.titleText}>DEBUG INFO</Text>
       <ScrollView>
-        <TableCell title="Synced to Chain?" value={syncedToChain} />
+        <TableCell
+          title="Synced to Chain?"
+          value={`${syncedToChain === true ? 'true' : 'false'}`}
+        />
         <TableCell title="Block Height" value={blockHeight} />
         <VerticalTableCell title="Blockhash">
           <Text style={styles.text}>{blockHash}</Text>
         </VerticalTableCell>
-        <TableCell
-          title="bestHeaderTimeStamp"
-          value={`${new Date(bestHeaderTimeStamp * 1000)}`}
-        />
-        <TableCell title="LND version" value={version} />
+        <VerticalTableCell title="bestHeaderTimestamp">
+          <Text style={styles.text}>{`${new Date(
+            bestHeaderTimestamp * 1000,
+          )}`}</Text>
+        </VerticalTableCell>
+
+        <VerticalTableCell title="LND version">
+          <Text style={styles.text}>{version}</Text>
+        </VerticalTableCell>
       </ScrollView>
     </View>
   );
@@ -42,6 +51,9 @@ const styles = StyleSheet.create({
     color: '#7C96AE',
     fontSize: 12,
     fontWeight: '600',
+    paddingLeft: 10,
+    paddingTop: 15,
+    paddingBottom: 5,
   },
   text: {
     color: '#4A4A4A',

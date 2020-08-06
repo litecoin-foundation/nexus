@@ -27,8 +27,6 @@ const General = (props) => {
     dispatch(setBiometricEnabled(!biometricsEnabled));
   };
 
-  // TODO: okay I realise I shouldn't be using DeviceEventEmitter
-  // need to figure out a better way in the future
   const handleAuthenticationRequired = () => {
     return new Promise((resolve, reject) => {
       triggerPinModal(true);
@@ -55,6 +53,7 @@ const General = (props) => {
           <SettingCell
             title="About"
             onPress={() => props.navigation.navigate('About')}
+            forward
           />
           <SettingCell
             title="Change Wallet Pin"
