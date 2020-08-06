@@ -19,13 +19,11 @@ export const SEND_ONCHAIN_PAYMENT = 'SEND_ONCHAIN_PAYMENT';
 export const ESTIMATE_ONCHAIN_FEE = 'ESTIMATE_ONCHAIN_FEE';
 
 // actions
-export const getTransactions = () => (dispatch) => {
+export const subscribeTransactions = () => (dispatch) => {
   const stream = LndInstance.sendStreamCommand('subscribeTransactions');
-  stream.on('data', (transaction) => {
-    dispatch({
-      type: GET_TRANSACTIONS,
-      transaction,
-    });
+  stream.on('data', async () => {
+    await new Promise((r) => setTimeout(r, 500));
+    dispatch(updateTransactions());
   });
   stream.on('error', (err) =>
     console.log(`SubscribeTransaction error: ${err}`),
@@ -38,14 +36,9 @@ export const getTransactions = () => (dispatch) => {
   });
 };
 
-export const getInvoices = () => (dispatch) => {
+export const subscribeInvoices = () => (dispatch) => {
   const stream = LndInstance.sendStreamCommand('subscribeInvoices');
-  stream.on('data', (invoice) => {
-    dispatch({
-      type: GET_INVOICES,
-      invoice,
-    });
-  });
+  stream.on('data', () => dispatch(updateTransactions()));
   stream.on('error', (err) =>
     console.log(`SubscribeTransaction error: ${err}`),
   );
@@ -55,6 +48,26 @@ export const getInvoices = () => (dispatch) => {
   stream.on('end', () => {
     console.log('SubscribeInvoices closed stream');
   });
+};
+
+export const getTransactions = () => async (dispatch) => {
+  const {transactions} = await LndInstance.sendCommand('getTransactions');
+  dispatch({
+    type: GET_TRANSACTIONS,
+    transactions,
+  });
+};
+
+const getInvoices = () => async (dispatch) => {
+  const {invoices} = await LndInstance.sendCommand('listInvoices');
+  dispatch({
+    type: GET_INVOICES,
+    invoices,
+  });
+};
+
+const updateTransactions = () => async (dispatch) => {
+  await Promise.all(dispatch(getTransactions()), dispatch(getInvoices()));
 };
 
 export const sendOnchainPayment = (paymentreq) => (dispatch) => {
@@ -131,13 +144,13 @@ export const sendLightningPayment = (paymentreq) => async (dispatch) => {
 
 // action handlers
 const actionHandler = {
-  [GET_TRANSACTIONS]: (state, {transaction}) => ({
+  [GET_TRANSACTIONS]: (state, {transactions}) => ({
     ...state,
-    transactions: [...state.transactions, transaction],
+    transactions,
   }),
-  [GET_INVOICES]: (state, {invoice}) => ({
+  [GET_INVOICES]: (state, {invoices}) => ({
     ...state,
-    invoices: [...state.invoices, invoice],
+    invoices,
   }),
   [SEND_ONCHAIN_PAYMENT]: (state, {txid, label}) => ({
     ...state,

@@ -10,7 +10,7 @@ import {deleteWalletDB} from '../lib/utils/file';
 import {finishOnboarding} from './onboarding';
 import {pollBalance} from './balance';
 import {pollInfo} from './info';
-import {getTransactions} from './transaction';
+import {subscribeTransactions, subscribeInvoices} from './transaction';
 import {pollTicker} from './ticker';
 import {backupChannels} from './channels';
 
@@ -72,7 +72,8 @@ export const initWallet = () => async (dispatch, getState) => {
     // dispatch pollers
     dispatch(pollBalance());
     dispatch(pollInfo());
-    dispatch(getTransactions());
+    dispatch(subscribeTransactions());
+    dispatch(subscribeInvoices());
     dispatch(pollTicker());
     dispatch(backupChannels());
   } catch (error) {
@@ -97,12 +98,12 @@ export const unlockWallet = () => async (dispatch) => {
   }
 
   //TODO: replace timeout with rpcCallback from Lnd
-  await new Promise((r) => setTimeout(r, 1500));
+  await new Promise((r) => setTimeout(r, 4500));
 
   // dispatch pollers
   dispatch(pollBalance());
   dispatch(pollInfo());
-  dispatch(getTransactions());
+  dispatch(subscribeTransactions());
   dispatch(pollTicker());
   dispatch(backupChannels());
 };
