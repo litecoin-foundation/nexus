@@ -12,7 +12,7 @@ const Seed = () => {
   const lastViewSeed = useSelector((state) => state.settings.lastViewSeed);
   const formatedTime =
     lastViewSeed !== null
-      ? `${formatDate(lastViewSeed)}, ${formatTime(lastViewSeed)}`
+      ? `${formatDate(lastViewSeed)}, ${formatTime(new Date(lastViewSeed))}`
       : 'Never';
   const n = [...Array(12).keys()];
 
@@ -20,7 +20,7 @@ const Seed = () => {
     return function cleanup() {
       dispatch(updateLastViewSeed());
     };
-  });
+  }, [dispatch]);
 
   const words = n.map((val, index) => {
     return (

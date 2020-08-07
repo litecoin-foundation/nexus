@@ -174,7 +174,7 @@ export const txDetailSelector = createSelector(txSelector, (tx) =>
       hash: data.txHash,
       amount: data.amount,
       day: formatDate(data.timeStamp * 1000),
-      time: formatTime(data.timeStamp),
+      time: formatTime(data.timeStamp * 1000),
       fee: data.totalFees,
       confs: data.numConfirmations,
       type: 'litecoin onchain',

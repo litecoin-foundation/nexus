@@ -20,7 +20,7 @@ export const formatDate = (date) => {
 };
 
 export const formatTime = (time) => {
-  const jsTime = new Date(time * 1000);
+  const jsTime = new Date(time);
   return jsTime.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: 'numeric',
