@@ -5,11 +5,13 @@ const initialState = {
   amount: '',
   fiatAmount: '',
   quote: null,
+  history: [],
 };
 
 // constants
 const SET_AMOUNT = 'SET_AMOUNT';
 const GET_QUOTE = 'GET_QUOTE';
+const GET_TRANSACTION_HISTORY = 'GET_TRANSACTION_HISTORY';
 
 const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 
@@ -19,6 +21,21 @@ export const setAmount = (amount, fiatAmount) => (dispatch) => {
     type: SET_AMOUNT,
     amount,
     fiatAmount,
+  });
+};
+
+export const getTransactionHistory = () => async (dispatch, getState) => {
+  const {uniqueId} = getState().onboarding;
+  const response = await axios.post(
+    'https://lndmobile.loshan.co.uk/api/buy/moonpay/transactions',
+    {
+      id: uniqueId,
+    },
+  );
+
+  dispatch({
+    type: GET_TRANSACTION_HISTORY,
+    history: response.data,
   });
 };
 
@@ -70,6 +87,7 @@ const actionHandler = {
     fiatAmount,
   }),
   [GET_QUOTE]: (state, {quote}) => ({...state, quote}),
+  [GET_TRANSACTION_HISTORY]: (state, {history}) => ({...state, history}),
 };
 
 // reducer

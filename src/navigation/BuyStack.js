@@ -4,6 +4,7 @@ import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import Buy from '../screens/Buy/Buy';
 import Confirm from '../screens/Buy/Confirm';
 import WebPage from '../screens/WebPage';
+import History from '../screens/Buy/History';
 
 const Stack = createStackNavigator();
 
@@ -47,6 +48,11 @@ function BuyStack() {
         name="Confirm"
         component={ConfirmWebPageModalStack}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="History"
+        component={History}
+        options={History.navigationOptions}
       />
     </Stack.Navigator>
   );
