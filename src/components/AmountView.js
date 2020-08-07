@@ -17,7 +17,7 @@ const valueSelector = createSelector(
 const fiatValueSelector = createSelector(
   valueSelector,
   (state) => state.ticker.rates,
-  (totalBalance, rates) => totalBalance * rates.USD,
+  (totalBalance, rates) => (totalBalance * rates.USD).toFixed(2),
 );
 
 const AmountView = (props) => {
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   },
   fiatText: {
     opacity: 0.9,
-    color: '#7C96AE',
+    color: '#c3d5e6',
     fontSize: 11,
     letterSpacing: -0.28,
     lineHeight: 13,
