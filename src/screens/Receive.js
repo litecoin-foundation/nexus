@@ -19,6 +19,7 @@ import BlueClearButton from '../components/Buttons/BlueClearButton';
 import InfoModal from '../components/Modals/InfoModal';
 import {getAddress} from '../reducers/address';
 import * as bip21 from '../lib/utils/bip21';
+import validateLtcAddress from '../lib/utils/validate';
 
 const Receive = (props) => {
   const dispatch = useDispatch();
@@ -91,7 +92,7 @@ const Receive = (props) => {
       </View>
 
       <RequestModal
-        isVisible={modalVisible}
+        isVisible={modalVisible && validateLtcAddress(address) ? true : false}
         close={() => setModalVisible(false)}
         onChange={(input) => handleChange(input)}
       />
