@@ -4,7 +4,8 @@ import {NativeModules, NativeEventEmitter} from 'react-native';
 
 import {lnrpc} from './rpc';
 import {routerrpc} from './router';
-import {walletrpc} from './walletkit';
+import {lnrpc as unlockerrpc} from './walletunlocker';
+import {signrpc as walletsignrpc} from './walletkit';
 
 import {toCaps} from '../utils';
 
@@ -95,6 +96,7 @@ class Lightning {
       SubscribeTransactions: 'GetTransactionsRequest',
       SubscribeInvoices: 'InvoiceSubscription',
       SubscribeChannelBackups: 'ChannelBackupSubscription',
+      DeriveKey: 'KeyLocator',
     };
     return map[method] || `${method}Request`;
   }
@@ -110,6 +112,7 @@ class Lightning {
       SubscribeTransactions: 'Transaction',
       SubscribeInvoices: 'Invoice',
       SubscribeChannelBackups: 'ChanBackupSnapshot',
+      DeriveKey: 'KeyDescriptor',
     };
     return map[method] || `${method}Response`;
   }
@@ -117,7 +120,11 @@ class Lightning {
   getRpcSubserver(method) {
     const map = {
       SendPaymentV2: routerrpc,
-      DeriveKey: walletrpc,
+      DeriveKey: walletsignrpc,
+      InitWallet: unlockerrpc,
+      UnlockWallet: unlockerrpc,
+      GenSeed: unlockerrpc,
+      ChangePassword: unlockerrpc,
     };
     return map[method] || lnrpc;
   }

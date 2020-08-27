@@ -40,6 +40,7 @@ src/lib/lightning/signer.js
 src/lib/lightning/walletkit.js
 src/lib/lightning/watchtower.js
 src/lib/lightning/wtclient.js
+src/lib/lightning/walletunlocker.js
 Lndmobile.framework
 Lndmobile.aar
 .vscode/ipch

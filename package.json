@@ -12,7 +12,7 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "postinstall": "npm run protobuf && npx jetify",
-    "protobuf": "npm run protobuf:rpc && npm run protobuf:router && npm run protobuf:autopilot && npm run protobuf:invoices && npm run protobuf:signer && npm run protobuf:walletkit && npm run protobuf:watchtower && npm run protobuf:wtclient",
+    "protobuf": "npm run protobuf:rpc && npm run protobuf:router && npm run protobuf:autopilot && npm run protobuf:invoices && npm run protobuf:signer && npm run protobuf:walletkit && npm run protobuf:watchtower && npm run protobuf:wtclient && npm run protobuf:walletunlocker",
     "protobuf:rpc": "pbjs src/lib/lightning/rpc.proto -t static-module -w es6 -o src/lib/lightning/rpc.js",
     "protobuf:router": "pbjs src/lib/lightning/router.proto -t static-module -w es6 -o src/lib/lightning/router.js",
     "protobuf:autopilot": "pbjs src/lib/lightning/autopilot.proto -t static-module -w es6 -o src/lib/lightning/autopilot.js",
@@ -21,6 +21,7 @@
     "protobuf:walletkit": "pbjs src/lib/lightning/walletkit.proto -t static-module -w es6 -o src/lib/lightning/walletkit.js",
     "protobuf:watchtower": "pbjs src/lib/lightning/watchtower.proto -t static-module -w es6 -o src/lib/lightning/watchtower.js",
     "protobuf:wtclient": "pbjs src/lib/lightning/wtclient.proto -t static-module -w es6 -o src/lib/lightning/wtclient.js",
+    "protobuf:walletunlocker": "pbjs src/lib/lightning/walletunlocker.proto -t static-module -w es6 -o src/lib/lightning/walletunlocker.js",
     "lint": "eslint .",
     "storybook": "start-storybook -p 7007",
     "prestorybook": "rnstl"
