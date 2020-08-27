@@ -6,7 +6,7 @@ import AmountView from '../components/AmountView';
 import AccountCell from '../components/Cells/AccountCell';
 import LineChart from '../components/Chart/Chart';
 import DatePicker from '../components/DatePicker';
-import {formatDate} from '../lib/utils/date';
+import {formatDate, formatTime} from '../lib/utils/date';
 import InfoCell from '../components/Cells/InfoCell';
 
 const Account = (props) => {
@@ -22,7 +22,7 @@ const Account = (props) => {
         <LineChart />
         {chartCursorSelected ? (
           <Text style={styles.chartDateText}>
-            {formatDate(chartCursorDate)}
+            {formatDate(chartCursorDate)} {formatTime(chartCursorDate)}
           </Text>
         ) : (
           <View style={styles.emptyTextView} />
