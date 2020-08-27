@@ -1,8 +1,11 @@
 import base64 from 'base64-js';
 import {Duplex} from 'readable-stream';
 import {NativeModules, NativeEventEmitter} from 'react-native';
+
 import {lnrpc} from './rpc';
 import {routerrpc} from './router';
+import {walletrpc} from './walletkit';
+
 import {toCaps} from '../utils';
 
 class Lightning {
@@ -114,6 +117,7 @@ class Lightning {
   getRpcSubserver(method) {
     const map = {
       SendPaymentV2: routerrpc,
+      DeriveKey: walletrpc,
     };
     return map[method] || lnrpc;
   }

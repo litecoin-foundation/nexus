@@ -1,1 +1,8 @@
 src/lib/lightning/rpc.js
+src/lib/lightning/router.js
+src/lib/lightning/autopilot.js
+src/lib/lightning/invoices.js
+src/lib/lightning/signer.js
+src/lib/lightning/walletkit.js
+src/lib/lightning/watchtower.js
+src/lib/lightning/wtclient.js
