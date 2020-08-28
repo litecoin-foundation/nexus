@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Clipboard,
+  Alert,
+} from 'react-native';
 import Modal from 'react-native-modal';
 import PropTypes from 'prop-types';
 
@@ -7,6 +14,7 @@ import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
+import {triggerMediumFeedback} from '../../lib/utils/haptic';
 
 const TransactionDetailModal = (props) => {
   const {isVisible, close, transaction, navigate} = props;
@@ -23,6 +31,12 @@ const TransactionDetailModal = (props) => {
     );
   });
 
+  const onLongPress = async (item) => {
+    await Alert.alert('Copied', null, [], {cancelable: true});
+    triggerMediumFeedback();
+    await Clipboard.setString(item);
+  };
+
   return (
     <Modal
       isVisible={isVisible}
@@ -38,34 +52,34 @@ const TransactionDetailModal = (props) => {
             <GreyRoundButton onPress={() => close()} />
           </View>
 
-          <ScrollView>
-            <TableCell
-              title="RECIPIENT"
-              value={transaction.sign ? 'Them' : 'Me'}
-            />
-            <TableCell
-              title="TIME & DATE"
-              value={`${transaction.day}, ${transaction.time}`}
-            />
-            <TableCell title="AMOUNT IN FIAT" value="PLACEHOLDER" />
-            <TableCell title="AMOUNT IN LTC" value={`${transaction.amount}Ł`} />
-            <VerticalTableCell title="ADDRESSES">{addresses}</VerticalTableCell>
-            <VerticalTableCell title="TRANSACTION ID (txid)">
+          <TableCell
+            title="RECIPIENT"
+            value={transaction.sign ? 'Them' : 'Me'}
+          />
+          <TableCell
+            title="TIME & DATE"
+            value={`${transaction.day}, ${transaction.time}`}
+          />
+          <TableCell title="AMOUNT IN FIAT" value="PLACEHOLDER" />
+          <TableCell title="AMOUNT IN LTC" value={`${transaction.amount}Ł`} />
+          <VerticalTableCell title="ADDRESSES">{addresses}</VerticalTableCell>
+          <VerticalTableCell title="TRANSACTION ID (txid)">
+            <Pressable onLongPress={() => onLongPress(transaction.hash)}>
               <Text style={styles.text}>{transaction.hash}</Text>
-            </VerticalTableCell>
-            <View style={styles.buttonContainer}>
-              <BlueButton
-                small={false}
-                value="View on Blockchain"
-                onPress={() => {
-                  close();
-                  navigate('WebPage', {
-                    uri: `https://blockchair.com/litecoin/transaction/${transaction.hash}`,
-                  });
-                }}
-              />
-            </View>
-          </ScrollView>
+            </Pressable>
+          </VerticalTableCell>
+          <View style={styles.buttonContainer}>
+            <BlueButton
+              small={false}
+              value="View on Blockchain"
+              onPress={() => {
+                close();
+                navigate('WebPage', {
+                  uri: `https://blockchair.com/litecoin/transaction/${transaction.hash}`,
+                });
+              }}
+            />
+          </View>
         </View>
       </View>
     </Modal>
