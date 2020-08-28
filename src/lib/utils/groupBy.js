@@ -21,7 +21,6 @@ const groupBy = (objectArray, property) => {
   for (const i in array1) {
     array1[i].data.reverse();
   }
-  array1.reverse();
   return array1;
 };
 

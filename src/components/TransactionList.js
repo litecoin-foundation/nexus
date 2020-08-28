@@ -1,17 +1,31 @@
-import React from 'react';
-import {View, SectionList, Text, StyleSheet} from 'react-native';
+import React, {useState, useCallback} from 'react';
+import {
+  View,
+  SectionList,
+  Text,
+  StyleSheet,
+  RefreshControl,
+} from 'react-native';
 import PropTypes from 'prop-types';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
 
 import TransactionCell from './Cells/TransactionCell';
 import {groupBy} from '../lib/utils';
-import {txDetailSelector} from '../reducers/transaction';
+import {txDetailSelector, getTransactions} from '../reducers/transaction';
 
 const TransactionList = (props) => {
   const {onPress} = props;
+  const dispatch = useDispatch();
 
+  const [refreshing, setRefreshing] = useState(false);
   const transactions = useSelector((state) => txDetailSelector(state));
   const groupedTransactions = groupBy(transactions, 'day');
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    dispatch(getTransactions());
+    setRefreshing(false);
+  }, [dispatch]);
 
   const EmptySectionList = (
     <View style={styles.emptySectionListContainer}>
@@ -35,6 +49,9 @@ const TransactionList = (props) => {
         initialNumToRender={7}
         ListEmptyComponent={EmptySectionList}
         ListFooterComponent={<View style={styles.emptyView} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </View>
   );
