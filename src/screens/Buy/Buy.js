@@ -70,13 +70,6 @@ Buy.navigationOptions = ({navigation}) => {
         />
       </View>
     ),
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

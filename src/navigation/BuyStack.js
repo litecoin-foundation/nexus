@@ -10,7 +10,12 @@ const Stack = createStackNavigator();
 
 function ConfirmWebPageModalStack() {
   return (
-    <Stack.Navigator mode="modal" initialRouteName="Confirm">
+    <Stack.Navigator
+      mode="modal"
+      initialRouteName="Confirm"
+      screenOptions={{
+        headerTitleAlign: 'center',
+      }}>
       <Stack.Screen
         name="Confirm"
         component={Confirm}
@@ -38,7 +43,17 @@ function ConfirmWebPageModalStack() {
 
 function BuyStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          color: 'white',
+        },
+        headerTransparent: true,
+        headerBackTitleVisible: false,
+        headerTintColor: 'white',
+      }}>
       <Stack.Screen
         name="Buy"
         component={Buy}

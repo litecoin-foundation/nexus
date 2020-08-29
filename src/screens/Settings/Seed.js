@@ -100,13 +100,6 @@ const styles = StyleSheet.create({
 Seed.navigationOptions = () => {
   return {
     headerTitle: 'View Paper Key',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

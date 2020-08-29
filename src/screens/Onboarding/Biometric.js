@@ -73,9 +73,6 @@ Biometric.navigationOptions = {
     fontWeight: 'bold',
     color: 'white',
   },
-  headerTransparent: true,
-  headerBackTitleVisible: false,
-  headerTintColor: 'white',
 };
 
 export default Biometric;

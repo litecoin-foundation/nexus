@@ -47,10 +47,6 @@ const styles = StyleSheet.create({
   },
 });
 
-Welcome.navigationOptions = {
-  headerTransparent: true,
-  headerBackTitleVisible: false,
-  headerShown: false,
-};
+Welcome.navigationOptions = {};
 
 export default Welcome;

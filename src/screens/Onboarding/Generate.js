@@ -131,9 +131,6 @@ const styles = StyleSheet.create({
 Generate.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'Paper Key',
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
     headerLeft: () => (
       <HeaderBackButton
         tintColor="white"

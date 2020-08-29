@@ -99,9 +99,6 @@ const styles = StyleSheet.create({
 
 Sent.navigationOptions = {
   headerTitle: null,
-  headerTransparent: true,
-  headerBackTitleVisible: false,
-  headerTintColor: 'white',
   headerLeft: null,
   gesturesEnabled: false,
 };

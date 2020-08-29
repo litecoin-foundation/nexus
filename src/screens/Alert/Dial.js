@@ -121,13 +121,6 @@ const styles = StyleSheet.create({
 Dial.navigationOptions = ({}) => {
   return {
     headerTitle: 'Create Alert',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

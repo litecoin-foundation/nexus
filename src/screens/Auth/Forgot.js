@@ -59,9 +59,6 @@ const styles = StyleSheet.create({
 Forgot.navigationOptions = () => {
   return {
     headerTitle: 'Reset Pincode',
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

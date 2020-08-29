@@ -13,7 +13,18 @@ const Stack = createStackNavigator();
 
 function SettingsStack() {
   return (
-    <Stack.Navigator initialRouteName="Settings">
+    <Stack.Navigator
+      initialRouteName="Settings"
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          color: 'white',
+        },
+        headerTransparent: true,
+        headerBackTitleVisible: false,
+        headerTintColor: 'white',
+      }}>
       <Stack.Screen
         name="Settings"
         component={Settings}

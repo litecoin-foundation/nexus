@@ -9,7 +9,14 @@ const Stack = createStackNavigator();
 
 function AuthStack() {
   return (
-    <Stack.Navigator initialRouteName="Auth">
+    <Stack.Navigator
+      initialRouteName="Auth"
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerTransparent: true,
+        headerBackTitleVisible: false,
+        headerTintColor: 'white',
+      }}>
       <Stack.Screen
         name="Auth"
         component={Auth}

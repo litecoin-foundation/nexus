@@ -174,9 +174,6 @@ const styles = StyleSheet.create({
 Verify.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'Verify Paper Key',
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
     headerLeft: () => (
       <HeaderBackButton
         tintColor="white"

@@ -85,9 +85,6 @@ AuthScreen.navigationOptions = ({navigation}) => {
         />
       </View>
     ),
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

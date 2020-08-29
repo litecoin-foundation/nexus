@@ -65,13 +65,6 @@ const styles = StyleSheet.create({
 About.navigationOptions = () => {
   return {
     headerTitle: 'General',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

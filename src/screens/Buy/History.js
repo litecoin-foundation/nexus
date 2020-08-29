@@ -57,13 +57,6 @@ const styles = StyleSheet.create({
 History.navigationOptions = () => {
   return {
     headerTitle: 'History',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

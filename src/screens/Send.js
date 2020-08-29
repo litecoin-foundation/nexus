@@ -459,13 +459,7 @@ const styles = StyleSheet.create({
 Send.navigationOptions = () => {
   return {
     headerTitle: 'Send',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
     headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

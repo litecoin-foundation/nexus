@@ -14,7 +14,19 @@ const Stack = createStackNavigator();
 
 function WalletWebPageModalStack() {
   return (
-    <Stack.Navigator mode="modal" initialRouteName="Wallet">
+    <Stack.Navigator
+      mode="modal"
+      initialRouteName="Wallet"
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          color: 'white',
+        },
+        headerTransparent: true,
+        headerBackTitleVisible: true,
+        headerTintColor: 'white',
+      }}>
       <Stack.Screen
         name="Wallet"
         component={Wallet}
@@ -25,13 +37,8 @@ function WalletWebPageModalStack() {
         component={WebPage}
         options={{
           ...TransitionPresets.ModalPresentationIOS,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
           headerBackTitleVisible: false,
-          headerTintColor: 'white',
+          headerTitle: null,
         }}
       />
     </Stack.Navigator>
@@ -40,7 +47,18 @@ function WalletWebPageModalStack() {
 
 function WalletStack() {
   return (
-    <Stack.Navigator initialRouteName="Account">
+    <Stack.Navigator
+      initialRouteName="Account"
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          color: 'white',
+        },
+        headerTransparent: true,
+        headerBackTitleVisible: true,
+        headerTintColor: 'white',
+      }}>
       <Stack.Screen
         name="Account"
         component={Account}

@@ -158,13 +158,7 @@ const styles = StyleSheet.create({
 Receive.navigationOptions = () => {
   return {
     headerTitle: 'Receive',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
     headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

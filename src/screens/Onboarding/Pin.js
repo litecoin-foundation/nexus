@@ -56,6 +56,7 @@ const Pin = (props) => {
   };
 
   const handleValidationFailure = () => {
+    dispatch(resetPincode());
     navigation.pop(1);
   };
 

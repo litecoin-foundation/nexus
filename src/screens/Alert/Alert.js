@@ -52,10 +52,6 @@ const Alert = () => {
 Alert.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'Alerts',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
     headerRight: () => (
       <View style={styles.headerRight}>
         <WhiteButton
@@ -66,9 +62,6 @@ Alert.navigationOptions = ({navigation}) => {
         />
       </View>
     ),
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
   };
 };
 

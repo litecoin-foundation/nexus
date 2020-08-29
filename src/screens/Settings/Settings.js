@@ -114,13 +114,6 @@ const styles = StyleSheet.create({
 
 Settings.navigationOptions = {
   headerTitle: 'Settings',
-  headerTitleStyle: {
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  headerTransparent: true,
-  headerBackTitleVisible: false,
-  headerTintColor: 'white',
 };
 
 export default Settings;

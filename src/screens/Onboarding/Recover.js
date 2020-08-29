@@ -10,7 +10,6 @@ const Recover = (props) => {
   const dispatch = useDispatch();
 
   const attemptLogin = async (seed) => {
-    console.log('attempting login');
     await dispatch(recoverSeed(seed));
     props.navigation.navigate('Pin');
   };
@@ -33,9 +32,6 @@ Recover.navigationOptions = {
     fontWeight: 'bold',
     color: 'white',
   },
-  headerTransparent: true,
-  headerBackTitleVisible: false,
-  headerTintColor: 'white',
 };
 
 export default Recover;

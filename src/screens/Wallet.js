@@ -164,13 +164,6 @@ Wallet.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'LTC Wallet',
     tabBarVisible: false,
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitleVisible: true,
-    headerTintColor: 'white',
     headerLeft: () => (
       <HeaderBackButton
         tintColor="white"

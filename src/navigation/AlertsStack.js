@@ -8,7 +8,17 @@ const Stack = createStackNavigator();
 
 function BuyStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          color: 'white',
+        },
+        headerTransparent: true,
+        headerBackTitleVisible: false,
+        headerTintColor: 'white',
+      }}>
       <Stack.Screen
         name="Alert"
         component={Alert}

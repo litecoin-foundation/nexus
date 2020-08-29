@@ -14,7 +14,14 @@ const Stack = createStackNavigator();
 
 function OnboardingStack() {
   return (
-    <Stack.Navigator initialRouteName="Initial">
+    <Stack.Navigator
+      initialRouteName="Initial"
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerTransparent: true,
+        headerBackTitleVisible: false,
+        headerTintColor: 'white',
+      }}>
       <Stack.Screen
         name="Initial"
         component={Initial}
