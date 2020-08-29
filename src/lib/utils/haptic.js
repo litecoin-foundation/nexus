@@ -2,7 +2,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const options = {
   enableVibrateFallback: false,
-  ignoreAndroidSystemSettings: true,
+  ignoreAndroidSystemSettings: false,
 };
 
 export const triggerSelectionFeedback = () => {
