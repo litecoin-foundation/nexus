@@ -8,8 +8,10 @@ import {
   Alert,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import PropTypes from 'prop-types';
+import {useSelector} from 'react-redux';
 
+import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
+import {fiatValueSelector} from '../../reducers/ticker';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import VerticalTableCell from '../Cells/VerticalTableCell';
@@ -19,9 +21,20 @@ import {triggerMediumFeedback} from '../../lib/utils/haptic';
 const TransactionDetailModal = (props) => {
   const {isVisible, close, transaction, navigate} = props;
 
+  // when no txs has been selected the transaction prop is null
+  // to prevent errors return empty view
+  // TODO: handle this in a better way
   if (transaction === null) {
     return <View />;
   }
+
+  /* eslint-disable react-hooks/rules-of-hooks */
+  const convertToSubunit = useSelector((state) => subunitSelector(state));
+  const cryptoAmount = convertToSubunit(transaction.amount);
+  const amountSymbol = useSelector((state) => subunitSymbolSelector(state));
+
+  const calculateFiatAmount = useSelector((state) => fiatValueSelector(state));
+  const fiatAmount = calculateFiatAmount(transaction.amount);
 
   const addresses = transaction.addresses.map((val) => {
     return (
@@ -60,8 +73,8 @@ const TransactionDetailModal = (props) => {
             title="TIME & DATE"
             value={`${transaction.day}, ${transaction.time}`}
           />
-          <TableCell title="AMOUNT IN FIAT" value="PLACEHOLDER" />
-          <TableCell title="AMOUNT IN LTC" value={`${transaction.amount}Ł`} />
+          <TableCell title="AMOUNT" value={`${cryptoAmount}${amountSymbol}`} />
+          <TableCell title="AMOUNT IN FIAT" value={`$${fiatAmount}`} />
           <VerticalTableCell title="ADDRESSES">{addresses}</VerticalTableCell>
           <VerticalTableCell title="TRANSACTION ID (txid)">
             <Pressable onLongPress={() => onLongPress(transaction.hash)}>
@@ -131,10 +144,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-TransactionDetailModal.propTypes = {
-  isVisible: PropTypes.bool.isRequired,
-  close: PropTypes.func.isRequired,
-};
 
 export default TransactionDetailModal;

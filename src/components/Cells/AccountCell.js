@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import {useSelector} from 'react-redux';
 
-import ProgressBar from '../ProgressBar';
 import {percentSyncedSelector, syncStatusSelector} from '../../reducers/info';
-import {rateSelector} from '../../reducers/ticker';
-import {balanceSelector} from '../../reducers/balance';
+import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
+import {fiatValueSelector} from '../../reducers/ticker';
+import ProgressBar from '../ProgressBar';
 import LitecoinIcon from '../LitecoinIcon';
 
 const AccountCell = (props) => {
@@ -20,8 +20,14 @@ const AccountCell = (props) => {
 
   const synced = useSelector((state) => syncStatusSelector(state));
   const progress = useSelector((state) => percentSyncedSelector(state));
-  const rates = useSelector((state) => rateSelector(state));
-  const balance = useSelector((state) => balanceSelector(state));
+
+  const totalBalance = useSelector((state) => state.balance.totalBalance);
+  const convertToSubunit = useSelector((state) => subunitSelector(state));
+  const amount = convertToSubunit(totalBalance);
+  const amountSymbol = useSelector((state) => subunitSymbolSelector(state));
+
+  const calculateFiatAmount = useSelector((state) => fiatValueSelector(state));
+  const fiatAmount = calculateFiatAmount(totalBalance);
 
   return (
     <TouchableOpacity
@@ -39,8 +45,10 @@ const AccountCell = (props) => {
           <Text style={styles.differenceText}>+ 2.3%</Text>
         </View>
         <View style={styles.right}>
-          <Text style={styles.text}>${balance * rates.USD}</Text>
-          <Text style={styles.fiatText}>{`${balance} LTC`}</Text>
+          <Text style={styles.text}>${fiatAmount}</Text>
+          <Text style={styles.fiatText}>
+            {amount} {amountSymbol}
+          </Text>
         </View>
       </View>
 

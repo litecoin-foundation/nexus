@@ -2,28 +2,16 @@ import React, {Fragment} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
-import {createSelector} from 'reselect';
 import DeviceInfo from 'react-native-device-info';
 
 import GreenRoundButton from './Buttons/GreenRoundButton';
-import {converter} from '../lib/utils';
 import {chartPercentageChangeSelector} from '../reducers/chart';
-
-const valueSelector = createSelector(
-  (state) => state.balance.totalBalance,
-  (totalBalance) => converter.satoshisToBtc(totalBalance),
-);
-
-const fiatValueSelector = createSelector(
-  valueSelector,
-  (state) => state.ticker.rates,
-  (totalBalance, rates) => (totalBalance * rates.USD).toFixed(2),
-);
+import {subunitSelector, subunitSymbolSelector} from '../reducers/settings';
+import {fiatValueSelector} from '../reducers/ticker';
 
 const AmountView = (props) => {
   const {children} = props;
-  const amount = useSelector((state) => valueSelector(state));
-  const fiatAmount = useSelector((state) => fiatValueSelector(state));
+
   const chartCursorSelected = useSelector(
     (state) => state.chart.cursorSelected,
   );
@@ -31,6 +19,14 @@ const AmountView = (props) => {
   const chartPercentageChange = useSelector((state) =>
     chartPercentageChangeSelector(state),
   );
+
+  const totalBalance = useSelector((state) => state.balance.totalBalance);
+  const convertToSubunit = useSelector((state) => subunitSelector(state));
+  const subunitAmount = convertToSubunit(totalBalance);
+  const amountSymbol = useSelector((state) => subunitSymbolSelector(state));
+
+  const calculateFiatAmount = useSelector((state) => fiatValueSelector(state));
+  const fiatAmount = calculateFiatAmount(totalBalance);
 
   return (
     <View
@@ -54,8 +50,8 @@ const AmountView = (props) => {
                 <Text style={styles.fiatText}>${fiatAmount}</Text>
               </View>
               <View style={styles.amount}>
-                <Text style={styles.amountText}>{amount}</Text>
-                <Text style={styles.amountSymbol}>Ł</Text>
+                <Text style={styles.amountText}>{subunitAmount}</Text>
+                <Text style={styles.amountSymbol}>{amountSymbol}</Text>
               </View>
               <GreenRoundButton
                 value={chartPercentageChange ? chartPercentageChange : ''}

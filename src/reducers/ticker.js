@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {createSelector} from 'reselect';
+import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 
@@ -137,7 +138,11 @@ const actionHandler = {
 };
 
 // selectors
-export const rateSelector = (state) => state.ticker.rates;
+export const fiatValueSelector = createSelector(
+  (state) => state.ticker.rates,
+  (rates) =>
+    memoize((satoshi) => ((satoshi / 100000000) * rates.USD).toFixed(2)),
+);
 
 export const monthSelector = createSelector(
   (state) => state.chart.graphPeriod,

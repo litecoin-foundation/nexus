@@ -8,20 +8,32 @@ import {
   Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useSelector} from 'react-redux';
+
+import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
+import {fiatValueSelector} from '../../reducers/ticker';
 
 const TransactionCell = (props) => {
   const {item, onPress} = props;
+  const {name, time, amount, sent} = item;
+
+  const convertToSubunit = useSelector((state) => subunitSelector(state));
+  const cryptoAmount = convertToSubunit(amount);
+  const amountSymbol = useSelector((state) => subunitSymbolSelector(state));
+
+  const calculateFiatAmount = useSelector((state) => fiatValueSelector(state));
+  const fiatAmount = calculateFiatAmount(amount);
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <LinearGradient
-        colors={item.sent ? ['#FF415E', '#FF9052'] : ['#7E58FF', '#0D59EA']}
+        colors={sent ? ['#FF415E', '#FF9052'] : ['#7E58FF', '#0D59EA']}
         style={styles.circle}>
         <View style={styles.smallCircle}>
           <Image
             style={styles.image}
             source={
-              item.sent
+              sent
                 ? require('../../assets/images/sent.png')
                 : require('../../assets/images/received.png')
             }
@@ -29,21 +41,23 @@ const TransactionCell = (props) => {
         </View>
       </LinearGradient>
       <View style={styles.left}>
-        <Text style={styles.labelText}>{item.name}</Text>
-        <Text style={styles.timeText}>{item.time}</Text>
+        <Text style={styles.labelText}>{name}</Text>
+        <Text style={styles.timeText}>{time}</Text>
       </View>
       <View style={styles.right}>
         <Text
           style={[
             styles.text,
-            item.sent ? styles.negativeText : styles.positiveText,
-          ]}>{`${item.amount} LTC`}</Text>
+            sent ? styles.negativeText : styles.positiveText,
+          ]}>
+          {cryptoAmount} {amountSymbol}
+        </Text>
         <Text
           style={[
             styles.fiatText,
-            item.sent ? styles.negativeFiatText : styles.positiveFiatText,
+            sent ? styles.negativeFiatText : styles.positiveFiatText,
           ]}>
-          +$6.01
+          +${fiatAmount}
         </Text>
       </View>
     </TouchableOpacity>

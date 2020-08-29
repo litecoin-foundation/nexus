@@ -8,6 +8,7 @@ import General from '../screens/Settings/General';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed from '../screens/Settings/Seed';
 import About from '../screens/Settings/About';
+import Wallet from '../screens/Settings/Wallet';
 
 const Stack = createStackNavigator();
 
@@ -59,6 +60,11 @@ function SettingsStack() {
         name="About"
         component={About}
         options={About.navigationOptions}
+      />
+      <Stack.Screen
+        name="Wallets"
+        component={Wallet}
+        options={Wallet.navigationOptions}
       />
     </Stack.Navigator>
   );
