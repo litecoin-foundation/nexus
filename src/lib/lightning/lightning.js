@@ -4,7 +4,7 @@ import {NativeModules, NativeEventEmitter} from 'react-native';
 
 import {lnrpc} from './rpc';
 import {routerrpc} from './router';
-import {lnrpc as unlockerrpc} from './walletunlocker';
+import {unlockerrpc} from './walletunlocker';
 import {signrpc as walletsignrpc} from './walletkit';
 
 import {toCaps} from '../utils';
@@ -117,7 +117,7 @@ class Lightning {
     return map[method] || `${method}Response`;
   }
 
-  getRpcSubserver(method) {
+  getRpcSubserver(method, direction) {
     const map = {
       SendPaymentV2: routerrpc,
       DeriveKey: walletsignrpc,

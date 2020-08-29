@@ -12,7 +12,7 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "postinstall": "npm run protobuf && npx jetify",
-    "protobuf": "npm run protobuf:rpc && npm run protobuf:router && npm run protobuf:autopilot && npm run protobuf:invoices && npm run protobuf:signer && npm run protobuf:walletkit && npm run protobuf:watchtower && npm run protobuf:wtclient && npm run protobuf:walletunlocker",
+    "protobuf": "npm run protobuf:rpc && npm run protobuf:router && npm run protobuf:autopilot && npm run protobuf:invoices && npm run protobuf:signer && npm run protobuf:walletkit && npm run protobuf:watchtower && npm run protobuf:wtclient",
     "protobuf:rpc": "pbjs src/lib/lightning/rpc.proto -t static-module -w es6 -o src/lib/lightning/rpc.js",
     "protobuf:router": "pbjs src/lib/lightning/router.proto -t static-module -w es6 -o src/lib/lightning/router.js",
     "protobuf:autopilot": "pbjs src/lib/lightning/autopilot.proto -t static-module -w es6 -o src/lib/lightning/autopilot.js",
