@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
 
 import {checkBIP39Word} from '../lib/utils/bip39';
@@ -88,13 +89,14 @@ const RecoveryField = (props) => {
   };
 
   return (
-    <KeyboardAvoidingView behavior="padding">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'android' ? 'height' : 'padding'}>
       <View style={styles.container}>
         <Text style={styles.headerText}>{headerText}</Text>
         <FlatList
           data={n}
           ref={listRef}
-          keyExtractor={(item) => item}
+          keyExtractor={(item) => item.toString()}
           ListFooterComponent={<View style={styles.emptyView} />}
           renderItem={({item, index}) => (
             <View
@@ -105,6 +107,21 @@ const RecoveryField = (props) => {
               <View style={styles.wordNumberContainer}>
                 <Text style={styles.wordNumber}>{index + 1}</Text>
               </View>
+
+              {/*
+              hack until fixed on android
+              https://github.com/facebook/react-native/issues/29804
+              */}
+              {Platform.OS === 'android' && index !== phrase ? (
+                <Text
+                  style={
+                    index === phrase
+                      ? styles.wordTextActive
+                      : styles.wordTextInactive
+                  }>
+                  {seed[index]}
+                </Text>
+              ) : null}
 
               <TextInput
                 autoCorrect={false}
@@ -174,6 +191,11 @@ const styles = StyleSheet.create({
     color: '#2C72FF',
     fontSize: 28,
     fontWeight: 'bold',
+  },
+  wordTextInactive: {
+    color: '#C5D4E3',
+    fontSize: 15,
+    fontWeight: '600',
   },
   emptyView: {
     height: 120,
