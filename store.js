@@ -20,6 +20,7 @@ const storage = createSensitiveStorage({
 const persistConfig = {
   key: 'root',
   storage,
+  timeout: 0,
 };
 const pReducer = persistReducer(persistConfig, reducer);
 
