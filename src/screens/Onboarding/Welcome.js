@@ -5,12 +5,22 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {initWallet} from '../../reducers/lightning';
+import {connectToPeer} from '../../reducers/channels';
 
 const Welcome = (props) => {
   const dispatch = useDispatch();
 
   const handlePress = () => {
     dispatch(initWallet());
+
+    // currently no litecoin lightning dns seed exists for bootstrapping
+    // in the meanwhile to sync to graph we must manually connect to a peer
+    // in this case BOLTZ exchange's peer
+    dispatch(
+      connectToPeer(
+        '02a4cb9d9c40ab508be3641a3b42be249e7cacfc7fea600485f9e37e46382aaa49@104.196.200.39:10735',
+      ),
+    );
     props.navigation.navigate('AppStack');
   };
 
