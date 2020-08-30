@@ -9,8 +9,44 @@ import LightningReceive from '../screens/LightningReceive';
 import WebPage from '../screens/WebPage';
 import Sent from '../screens/Sent';
 import Fail from '../screens/Fail';
+import Scan from '../screens/Scan';
 
 const Stack = createStackNavigator();
+
+function SendScanModalStack() {
+  return (
+    <Stack.Navigator mode="modal" initialRouteName="Send">
+      <Stack.Screen
+        name="Send"
+        component={Send}
+        options={{
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+        }}
+      />
+      <Stack.Screen
+        name="Scan"
+        component={Scan}
+        options={{
+          ...TransitionPresets.ModalPresentationIOS,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 function WalletWebPageModalStack() {
   return (
@@ -71,8 +107,8 @@ function WalletStack() {
       />
       <Stack.Screen
         name="Send"
-        component={Send}
-        options={Send.navigationOptions}
+        component={SendScanModalStack}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Receive"

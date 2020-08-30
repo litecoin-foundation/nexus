@@ -22,7 +22,6 @@ import PinModal from '../components/Modals/PinModal';
 import SquareButton from '../components/Buttons/SquareButton';
 import BlueButton from '../components/Buttons/BlueButton';
 import AccountCell from '../components/Cells/AccountCell';
-import ScanModal from '../components/Modals/ScanModal';
 import InputField from '../components/InputField';
 
 import {decodeBIP21} from '../lib/utils/bip21';
@@ -31,14 +30,13 @@ import {updateAmount} from '../reducers/input';
 import WhiteButton from '../components/Buttons/WhiteButton';
 import {sendOnchainPayment} from '../reducers/transaction';
 
-const Send = ({navigation}) => {
+const Send = ({navigation, route}) => {
   const dispatch = useDispatch();
 
   const confirmedBalance = useSelector(
     (state) => state.balance.confirmedBalance,
   );
   const [isSendModalTriggered, triggerSendModal] = useState(false);
-  const [isScanModalTriggered, triggerScanModal] = useState(false);
   const [isPinModalTriggered, triggerPinModal] = useState(false);
   const [isAmountInputTriggered, triggerAmountInput] = useState(false);
   const [address, setAddress] = useState(null);
@@ -92,8 +90,15 @@ const Send = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    if (route.params?.scanData) {
+      handleScanCallback(route.params?.scanData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.params?.scanData]);
+
   const handleScan = () => {
-    triggerScanModal(true);
+    navigation.navigate('Scan');
   };
 
   const handlePaste = async () => {
@@ -108,7 +113,7 @@ const Send = ({navigation}) => {
   };
 
   const handleScanCallback = async (data) => {
-    triggerScanModal(false);
+    console.log(data);
     try {
       await validate(data);
     } catch (error) {
@@ -213,7 +218,7 @@ const Send = ({navigation}) => {
                 customFontStyles={styles.invalidButtonText}
                 onPress={() => {
                   setInvalidQR(false);
-                  triggerScanModal(true);
+                  handleScan();
                 }}
               />
             </View>
@@ -315,12 +320,6 @@ const Send = ({navigation}) => {
         close={() => triggerPinModal(false)}
         handleValidationFailure={() => handleValidationFailure()}
         handleValidationSuccess={() => handleValidationSuccess()}
-      />
-
-      <ScanModal
-        isVisible={isScanModalTriggered}
-        close={() => triggerScanModal(false)}
-        handleQRRead={(data) => handleScanCallback(data)}
       />
     </View>
   );
