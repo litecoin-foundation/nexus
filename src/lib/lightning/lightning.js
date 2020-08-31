@@ -97,6 +97,7 @@ class Lightning {
       SubscribeInvoices: 'InvoiceSubscription',
       SubscribeChannelBackups: 'ChannelBackupSubscription',
       DeriveKey: 'KeyLocator',
+      DescribeGraph: 'ChannelGraphRequest',
     };
     return map[method] || `${method}Request`;
   }
@@ -113,6 +114,7 @@ class Lightning {
       SubscribeInvoices: 'Invoice',
       SubscribeChannelBackups: 'ChanBackupSnapshot',
       DeriveKey: 'KeyDescriptor',
+      DescribeGraph: 'ChannelGraph',
     };
     return map[method] || `${method}Response`;
   }

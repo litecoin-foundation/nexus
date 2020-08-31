@@ -1,4 +1,8 @@
 import {Buffer} from 'buffer';
+import {createSelector} from 'reselect';
+import memoize from 'lodash.memoize';
+import leven from 'leven';
+
 import Lightning from '../lib/lightning/lightning';
 import {handleChannelBackup} from '../lib/utils/backup';
 
@@ -16,6 +20,8 @@ const initialState = {
     waitingCloseChannels: [],
   },
   channelBackupsEnabled: false,
+  nodes: [],
+  edges: [],
 };
 
 // constants
@@ -23,6 +29,7 @@ export const LIST_CHANNELS = 'LIST_CHANNELS';
 export const LIST_PENDING_CHANNELS = 'LIST_PENDING_CHANNELS';
 export const LIST_PEERS = 'LIST_PEERS';
 export const ENABLE_CHANNEL_BACKUP = 'ENABLE_CHANNEL_BACKUP';
+export const GET_DESCRIBE_GRAPH = 'GET_DESCRIBE_GRAPH';
 
 // actions
 export const listChannels = () => async (dispatch) => {
@@ -147,13 +154,67 @@ export const backupChannels = () => async (dispatch, getState) => {
   );
 };
 
+export const getDescribeGraph = () => async (dispatch) => {
+  const {nodes, edges} = await LndInstance.sendCommand('DescribeGraph', {
+    include_unannounced: false,
+  });
+
+  dispatch({
+    type: GET_DESCRIBE_GRAPH,
+    nodes,
+    edges,
+  });
+};
+
 // action handlers
 const actionHandler = {
   [LIST_CHANNELS]: (state, {channels}) => ({...state, channels}),
   [LIST_PENDING_CHANNELS]: (state, {pending}) => ({...state, pending}),
   [LIST_PEERS]: (state, {peers}) => ({...state, peers}),
   [ENABLE_CHANNEL_BACKUP]: (state) => ({...state, channelBackupsEnabled: true}),
+  [GET_DESCRIBE_GRAPH]: (state, {nodes, edges}) => ({...state, nodes, edges}),
 };
+
+// selectors
+
+export const searchGraph = createSelector(
+  (state) => state.channels.nodes,
+  (nodes) =>
+    memoize((searchTerm) => {
+      // remove all nodes with no alias
+      const a1 = nodes.filter((node) => {
+        return node.alias !== undefined;
+      });
+
+      const a2 = a1.filter((node) => {
+        return node.alias !== '';
+      });
+
+      // filter nodes based on levenstein score
+      // searchTerm and node alias are normalised
+      // TODO: .filter() seems to have issues here
+      let arr = [];
+      for (let i = 0; i < a2.length; i++) {
+        if (
+          leven(
+            a2[i].alias.toLowerCase().replace(/[^a-zA-Z ]/g, ''),
+            searchTerm.toLowerCase().replace(/[^a-zA-Z ]/g, ''),
+          ) < 6
+        ) {
+          arr.push(a2[i]);
+        }
+      }
+
+      // sort array by lowest levenstein score
+      // lower is more accurate
+      let sortedArray = arr.sort(
+        (a, b) =>
+          leven(a.alias.toLowerCase(), searchTerm.toLowerCase()) -
+          leven(b.alias.toLowerCase(), searchTerm.toLowerCase()),
+      );
+      return sortedArray;
+    }),
+);
 
 // reducer
 export default function (state = initialState, action) {
