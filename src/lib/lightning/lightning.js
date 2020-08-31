@@ -2,11 +2,7 @@ import base64 from 'base64-js';
 import {Duplex} from 'readable-stream';
 import {NativeModules, NativeEventEmitter} from 'react-native';
 
-import {lnrpc} from './rpc';
-import {routerrpc} from './router';
-import {unlockerrpc} from './walletunlocker';
-import {signrpc as walletsignrpc} from './walletkit';
-
+import {lnrpc, routerrpc, signrpc as walletsignrpc} from './rpc';
 import {toCaps} from '../utils';
 
 class Lightning {
@@ -123,10 +119,6 @@ class Lightning {
     const map = {
       SendPaymentV2: routerrpc,
       DeriveKey: walletsignrpc,
-      InitWallet: unlockerrpc,
-      UnlockWallet: unlockerrpc,
-      GenSeed: unlockerrpc,
-      ChangePassword: unlockerrpc,
     };
     return map[method] || lnrpc;
   }
