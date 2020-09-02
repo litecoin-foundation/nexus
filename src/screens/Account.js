@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
 
 Account.navigationOptions = {
   headerTitle: 'Your Wallet',
+  headerLeft: null,
 };
 
 export default Account;

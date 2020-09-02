@@ -12,7 +12,7 @@ const Welcome = (props) => {
   const handlePress = () => {
     dispatch(initWallet());
 
-    props.navigation.navigate('AppStack');
+    props.navigation.replace('AppStack');
   };
 
   return (
@@ -48,6 +48,8 @@ const styles = StyleSheet.create({
   },
 });
 
-Welcome.navigationOptions = {};
+Welcome.navigationOptions = {
+  headerTitle: null,
+};
 
 export default Welcome;

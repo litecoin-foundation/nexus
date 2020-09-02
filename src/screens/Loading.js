@@ -18,12 +18,15 @@ const Loading = (props) => {
     dispatch(startLnd());
   }, [dispatch]);
 
-  if (onboarding === false && isOnboarded === true) {
-    props.navigation.replace('AuthStack');
-  } else {
-    dispatch(startOnboarding());
-    props.navigation.navigate('Onboarding');
-  }
+  useEffect(() => {
+    if (onboarding === false && isOnboarded === true) {
+      props.navigation.replace('AuthStack');
+    } else {
+      dispatch(startOnboarding());
+      props.navigation.navigate('Onboarding');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return <View style={styles.containter} />;
 };
