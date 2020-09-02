@@ -5,7 +5,6 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {initWallet} from '../../reducers/lightning';
-import {connectToPeer} from '../../reducers/channels';
 
 const Welcome = (props) => {
   const dispatch = useDispatch();
