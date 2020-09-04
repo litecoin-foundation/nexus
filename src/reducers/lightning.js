@@ -7,7 +7,7 @@ import {getRandomBytes} from '../lib/utils/random';
 import {setItem, getItem} from '../lib/utils/keychain';
 import {deleteWalletDB} from '../lib/utils/file';
 
-import {finishOnboarding} from './onboarding';
+import {finishOnboarding, setRecoveryMode} from './onboarding';
 import {pollBalance} from './balance';
 import {pollInfo} from './info';
 import {subscribeTransactions, subscribeInvoices} from './transaction';
@@ -102,7 +102,12 @@ export const unlockWallet = () => async (dispatch) => {
     const dbPath = `${RNFS.DocumentDirectoryPath}/data/chain/litecoin/mainnet/wallet.db`;
 
     if ((await RNFS.exists(dbPath)) === false) {
-      dispatch(initWallet());
+      // if no wallet db exists, user has likely uninstalled the app previously
+      // in this case, seed exists in keychain. initialise wallet from seed
+      // enabling recovery mode to scan for addresses
+      await dispatch(setRecoveryMode(true));
+      await dispatch(initWallet());
+      await dispatch(setRecoveryMode(false));
     }
   }
 

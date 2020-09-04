@@ -18,6 +18,7 @@ export const ONBOARDING_STARTED = 'ONBOARDING_STARTED';
 export const ONBOARDING_FINISHED = 'ONBOARDING_FINISHED';
 export const GET_SEED = 'GET_SEED';
 export const RECOVER_SEED = 'RECOVER_SEED';
+export const SET_RECOVERY_MODE = 'SET_RECOVERY_MODE';
 
 // actions
 export const startOnboarding = () => (dispatch) => {
@@ -45,10 +46,16 @@ export const getSeed = () => async (dispatch) => {
 };
 
 export const recoverSeed = (seed) => (dispatch) => {
-  console.log('recover seed');
   dispatch({
     type: RECOVER_SEED,
     seed,
+  });
+};
+
+export const setRecoveryMode = (bool) => (dispatch) => {
+  dispatch({
+    type: SET_RECOVERY_MODE,
+    bool,
   });
 };
 
@@ -70,6 +77,7 @@ const actionHandler = {
   }),
   [GET_SEED]: (state, {seed}) => ({...state, seed}),
   [RECOVER_SEED]: (state, {seed}) => ({...state, seed, beingRecovered: true}),
+  [SET_RECOVERY_MODE]: (state, {bool}) => ({...state, beingRecovered: bool}),
 };
 
 // reducer
