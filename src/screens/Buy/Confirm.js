@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {View, Text, SafeAreaView, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSelector, useDispatch} from 'react-redux';
-import {HeaderBackButton} from '@react-navigation/stack';
+import {HeaderBackButton} from '@react-navigation/elements';
 
 import TableCell from '../../components/Cells/TableCell';
 import BlueButton from '../../components/Buttons/BlueButton';

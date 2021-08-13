@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {TouchableWithoutFeedback, Text, StyleSheet, View} from 'react-native';
-import {useSpring, animated, config} from 'react-spring/native';
+import {useSpring, animated, config} from '@react-spring/native';
 
 import {triggerSelectionFeedback} from '../../lib/utils/haptic';
 

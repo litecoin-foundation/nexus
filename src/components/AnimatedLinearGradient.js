@@ -1,6 +1,6 @@
 import React from 'react';
 import LinearGradient from 'react-native-linear-gradient';
-import {useSpring, animated, config} from 'react-spring/native';
+import {useSpring, animated, config} from '@react-spring/native';
 
 const AnimatedLinearGradient = (props) => {
   const {style, children, colors} = props;

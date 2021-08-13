@@ -1,6 +1,6 @@
 import React, {useState, useLayoutEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {HeaderBackButton} from '@react-navigation/stack';
+import {HeaderBackButton} from '@react-navigation/elements';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
 import {addPincode} from '../../reducers/authentication';

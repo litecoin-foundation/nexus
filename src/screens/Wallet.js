@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {HeaderBackButton} from '@react-navigation/stack';
+import {HeaderBackButton} from '@react-navigation/elements';
 import {useSelector} from 'react-redux';
 
 import TransactionDetailModal from '../components/Modals/TransactionDetailModal';

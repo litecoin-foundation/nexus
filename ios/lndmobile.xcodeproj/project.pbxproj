@@ -16,6 +16,7 @@
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* lndmobileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* lndmobileTests.m */; };
+		4C5EAD8225644174AFF103BF /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A7B594A3714866910571D823 /* libPods-lndmobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */; };
 		CB008EDE24C93E6A00FFD914 /* Lndmobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */; };
@@ -23,7 +24,6 @@
 		CB008EE624C93EA700FFD914 /* lnd.conf in Resources */ = {isa = PBXBuildFile; fileRef = CB008EE524C93EA700FFD914 /* lnd.conf */; };
 		D8C2D484085A489EFCC3D8B1 /* libPods-lndmobile-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E3821E6B5BD9819E50146D5B /* libPods-lndmobile-tvOSTests.a */; };
 		E81F505ECC4EE8919524849B /* libPods-lndmobile-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6767482013407F53329B41CC /* libPods-lndmobile-tvOS.a */; };
-		4C5EAD8225644174AFF103BF /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,7 +75,7 @@
 		E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
-		F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */ = {isa = PBXFileReference; name = "SugarstyleMillenial-Regular.ttf"; path = "../src/assets/fonts/SugarstyleMillenial-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "SugarstyleMillenial-Regular.ttf"; path = "../src/assets/fonts/SugarstyleMillenial-Regular.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -195,6 +195,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		886AB2EE3D5F451A83A4E445 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */,
+			);
+			name = Resources;
+			path = "";
+			sourceTree = "<group>";
+		};
 		CB008EDF24C93E8000FFD914 /* lightning */ = {
 			isa = PBXGroup;
 			children = (
@@ -220,15 +229,6 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		886AB2EE3D5F451A83A4E445 /* Resources */ = {
-			isa = "PBXGroup";
-			children = (
-				F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */,
-			);
-			name = Resources;
-			sourceTree = "<group>";
-			path = "";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -241,6 +241,7 @@
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
 				B32E74F204EDCE010C06C09B /* [CP] Copy Pods Resources */,
+				8A3313C24101A25AF8FA90A0 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -263,6 +264,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				49BAB250BE6F629E2DD4C9ED /* [CP] Copy Pods Resources */,
+				D2BE8ADF23DDE3259BCCF3BE /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -468,6 +470,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-lndmobile/Pods-lndmobile-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		8A3313C24101A25AF8FA90A0 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL/OpenSSL.framework/OpenSSL",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OpenSSL.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		AC83DD77B3889AED9EA26BB6 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -506,6 +526,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D2BE8ADF23DDE3259BCCF3BE /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-lndmobile/Pods-lndmobile-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL/OpenSSL.framework/OpenSSL",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OpenSSL.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-lndmobile/Pods-lndmobile-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E8A1C4F39712EB9CB3B4F778 /* [CP] Check Pods Manifest.lock */ = {

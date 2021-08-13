@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {TouchableWithoutFeedback, Image, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
-import {useSpring, animated, config} from 'react-spring/native';
+import {useSpring, animated, config} from '@react-spring/native';
 
 const Button = (props) => {
   const {onPress} = props;
