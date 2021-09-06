@@ -28,7 +28,7 @@
     "@react-navigation/native": "^6.0.2",
     "@react-navigation/stack": "^6.0.6",
     "@react-spring/native": "^9.2.4",
-    "axios": "^0.21.1",
+    "axios": "^0.21.3",
     "base-x": "^3.0.8",
     "base64-js": "^1.5.1",
     "bech32": "^2.0.0",
