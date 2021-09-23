@@ -42,7 +42,7 @@
     "prop-types": "^15.7.2",
     "protobufjs": "^6.11.2",
     "react": "16.13.1",
-    "react-native": "^0.64.2",
+    "react-native": "^0.65.1",
     "react-native-camera": "^4.0.1",
     "react-native-device-info": "^8.2.0",
     "react-native-fs": "^2.18.0",
