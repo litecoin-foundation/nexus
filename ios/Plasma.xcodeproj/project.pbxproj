@@ -41,22 +41,16 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = lndmobile/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = lndmobile/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = lndmobile/main.m; sourceTree = "<group>"; };
-		394B8640334EB3FBF5F0A493 /* Pods-lndmobile-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOSTests/Pods-lndmobile-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
 		57C4EC8C244296CAE8379D84 /* libPods-lndmobile-lndmobileTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-lndmobileTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6767482013407F53329B41CC /* libPods-lndmobile-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = lndmobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.debug.xcconfig"; sourceTree = "<group>"; };
-		8D9112A7B69039FAACAD3057 /* Pods-lndmobile-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOSTests/Pods-lndmobile-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
-		AEDCEC9A27484D3D77DF725F /* Pods-lndmobile-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOS.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOS/Pods-lndmobile-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Lndmobile.framework; sourceTree = "<group>"; };
 		CB008EE224C93EA100FFD914 /* LndReactModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LndReactModule.h; sourceTree = "<group>"; };
 		CB008EE324C93EA100FFD914 /* LndReactModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LndReactModule.m; sourceTree = "<group>"; };
 		CB008EE524C93EA700FFD914 /* lnd.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lnd.conf; sourceTree = "<group>"; };
 		DB6E8CBE6C467D6D85A0AD2E /* Pods-lndmobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile/Pods-lndmobile.debug.xcconfig"; sourceTree = "<group>"; };
 		DC687FE39C3BE89A0CB9FEAB /* Pods-lndmobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile.release.xcconfig"; path = "Target Support Files/Pods-lndmobile/Pods-lndmobile.release.xcconfig"; sourceTree = "<group>"; };
-		DD322566ED8224DAB7DCCE6D /* Pods-lndmobile-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-tvOS/Pods-lndmobile-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
-		E3821E6B5BD9819E50146D5B /* libPods-lndmobile-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
@@ -124,8 +118,6 @@
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
 				7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */,
 				57C4EC8C244296CAE8379D84 /* libPods-lndmobile-lndmobileTests.a */,
-				6767482013407F53329B41CC /* libPods-lndmobile-tvOS.a */,
-				E3821E6B5BD9819E50146D5B /* libPods-lndmobile-tvOSTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -187,10 +179,6 @@
 				DC687FE39C3BE89A0CB9FEAB /* Pods-lndmobile.release.xcconfig */,
 				895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */,
 				E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */,
-				DD322566ED8224DAB7DCCE6D /* Pods-lndmobile-tvOS.debug.xcconfig */,
-				AEDCEC9A27484D3D77DF725F /* Pods-lndmobile-tvOS.release.xcconfig */,
-				394B8640334EB3FBF5F0A493 /* Pods-lndmobile-tvOSTests.debug.xcconfig */,
-				8D9112A7B69039FAACAD3057 /* Pods-lndmobile-tvOSTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
