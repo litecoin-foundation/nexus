@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, StyleSheet, SafeAreaView} from 'react-native';
+import {View, StyleSheet, SafeAreaView, Platform} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -14,14 +14,15 @@ const ChannelBackup = (props) => {
     (state) => state.authentication.biometricsAvailable,
   );
 
+  const backupProvider = Platform.OS === 'android' ? 'Google Drive' : 'iCloud';
+
   return (
     <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.container}>
       <SafeAreaView />
       <Card
-        titleText="iCloud Backup"
-        descriptionText="Your lightning balances will be backed up to the Cloud securely
-            (encrypted so only your device can decrypt it). It is very strongly
-            recommended that you enable this."
+        titleText={`${backupProvider} Backup`}
+        descriptionText={`Lightning balances are encrypted, so only your device can decrypt it). It is very strongly
+            recommended that you enable this.`}
         imageSource={require('../../assets/images/cloud.png')}
       />
 
@@ -66,7 +67,8 @@ const styles = StyleSheet.create({
 });
 
 ChannelBackup.navigationOptions = {
-  headerTitle: 'iCloud Backup',
+  headerTitle:
+    Platform.OS === 'android' ? 'Google Drive Backup' : 'iCloud Backup',
   headerTitleStyle: {
     fontWeight: 'bold',
     color: 'white',
