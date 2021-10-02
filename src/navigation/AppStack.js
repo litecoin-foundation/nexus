@@ -41,7 +41,7 @@ function AppStack() {
         ],
       }}>
       <Tab.Screen
-        name="Wallet"
+        name="WalletStack"
         component={WalletStack}
         options={({route}) => ({
           tabBarLabel: 'WALLETS',
@@ -71,7 +71,7 @@ function AppStack() {
         })}
       />
       <Tab.Screen
-        name="Settings"
+        name="SettingsStack"
         component={SettingsStack}
         options={({route}) => ({
           tabBarLabel: 'SETTINGS',
