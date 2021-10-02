@@ -13,25 +13,32 @@ const Tab = createBottomTabNavigator();
 function AppStack() {
   return (
     <Tab.Navigator
-      tabBarOptions={{
-        style: {
-          backgroundColor: '#FBFCFE',
-          borderTopWidth: 0,
-          shadowColor: 'black',
-          shadowOpacity: 0.1,
-          shadowRadius: 10,
-          shadowOffset: {
-            height: 0,
-            width: 0,
-          },
-          height: DeviceInfo.hasNotch() ? 90 : 70,
-        },
+      screenOptions={{
         labelStyle: {
           fontWeight: '500',
           letterSpacing: -0.5,
         },
-        activeTintColor: '#2645CA',
-        inactiveTintColor: '#9B9B9B',
+        tabBarActiveTintColor: '#2645CA',
+        tabBarInactiveTintColor: '#9B9B9B',
+        tabBarLabelStyle: {
+          fontWeight: '500',
+          letterSpacing: -0.5,
+        },
+        tabBarStyle: [
+          {
+            backgroundColor: '#FBFCFE',
+            borderTopWidth: 0,
+            shadowColor: 'black',
+            shadowOpacity: 0.1,
+            shadowRadius: 10,
+            shadowOffset: {
+              height: 0,
+              width: 0,
+            },
+            height: DeviceInfo.hasNotch() ? 90 : 70,
+          },
+          null,
+        ],
       }}>
       <Tab.Screen
         name="Wallet"
