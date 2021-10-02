@@ -28,6 +28,7 @@ const WebPage = (props) => {
         style={styles.webview}
         source={route.params}
         ref={WebPageRef}
+        enableApplePay={true}
         onLoadStart={(syntheticEvent) => handleEvent(syntheticEvent)}
         onLoadEnd={(syntheticEvent) => handleEvent(syntheticEvent)}
         applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${
