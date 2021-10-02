@@ -47,6 +47,7 @@ function AppStack() {
           tabBarLabel: 'WALLETS',
           tabBarIcon: ({focused}) => WalletTabBarIcon(focused),
           tabBarVisible: isTabBarVisible(route),
+          headerShown: false,
         })}
       />
       <Tab.Screen
@@ -56,6 +57,7 @@ function AppStack() {
           tabBarLabel: 'BUY',
           tabBarIcon: ({focused}) => BuyTabBarIcon(focused),
           tabBarVisible: isTabBarVisible(route),
+          headerShown: false,
         })}
       />
       <Tab.Screen
@@ -65,6 +67,7 @@ function AppStack() {
           tabBarLabel: 'ALERTS',
           tabBarIcon: ({focused}) => AlertsTabBarIcon(focused),
           tabBarVisible: isTabBarVisible(route),
+          headerShown: false,
         })}
       />
       <Tab.Screen
@@ -74,6 +77,7 @@ function AppStack() {
           tabBarLabel: 'SETTINGS',
           tabBarIcon: ({focused}) => SettingsTabBarIcon(focused),
           tabBarVisible: isTabBarVisible(route),
+          headerShown: false,
         })}
       />
     </Tab.Navigator>
