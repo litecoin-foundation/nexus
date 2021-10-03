@@ -7,52 +7,38 @@ import androidx.annotation.Nullable;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.horcrux.svg.SvgPackage;
-import com.rnfingerprint.FingerprintAuthPackage;
-import com.bitgo.randombytes.RandomBytesPackage;
-import com.oblador.keychain.KeychainPackage;
-import com.BV.LinearGradient.LinearGradientPackage;
-import com.reactnativecommunity.slider.ReactSliderPackage;
-import org.reactnative.camera.RNCameraPackage;
-import com.rnfs.RNFSPackage;
-import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
-import br.com.classapp.RNSensitiveInfo.RNSensitiveInfoPackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.shell.MainReactPackage;
 import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.soloader.SoLoader;
-import java.lang.reflect.InvocationTargetException;
-import com.lndmobile.LndNativePackage;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class MainApplication extends Application implements ReactApplication {
 
-  private final ReactNativeHost mReactNativeHost =
-      new ReactNativeHost(this) {
-        @Override
-        public boolean getUseDeveloperSupport() {
-          return BuildConfig.DEBUG;
-        }
+  private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
+    @Override
+    public boolean getUseDeveloperSupport() {
+      return BuildConfig.DEBUG;
+    }
 
     @Override
-        protected List<ReactPackage> getPackages() {
-          @SuppressWarnings("UnnecessaryLocalVariable")
-          List<ReactPackage> packages = new PackageList(this).getPackages();
-          // Packages that cannot be autolinked yet can be added manually here, for example:
-          // packages.add(new MyReactNativePackage());
+    protected List<ReactPackage> getPackages() {
+      @SuppressWarnings("UnnecessaryLocalVariable") List<ReactPackage> packages = new PackageList(this).getPackages();
+      // Packages that cannot be autolinked yet can be added manually here, for example:
+      // packages.add(new MyReactNativePackage());
       packages.add(new LndNativePackage());
-          return packages;
-        }
+      return packages;
+    }
 
     @Override
-        protected String getJSMainModuleName() {
-          return "index";
-        }
+    protected String getJSMainModuleName() {
+      return "index";
+    }
+
     @Nullable
     @Override
     protected JSIModulePackage getJSIModulePackage() {
@@ -75,12 +61,8 @@ public class MainApplication extends Application implements ReactApplication {
   /**
    * Loads Flipper in React Native templates. Call this in the onCreate method with something like
    * initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
-   *
-   * @param context
-   * @param reactInstanceManager
    */
-  private static void initializeFlipper(
-    Context context, ReactInstanceManager reactInstanceManager) {
+  private static void initializeFlipper(Context context, ReactInstanceManager reactInstanceManager) {
     if (BuildConfig.DEBUG) {
       try {
         /*
@@ -88,9 +70,8 @@ public class MainApplication extends Application implements ReactApplication {
         since Flipper library is not available in release mode
         */
         Class<?> aClass = Class.forName("com.lndmobile.ReactNativeFlipper");
-        aClass
-          .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
-          .invoke(null, context, reactInstanceManager);
+        aClass.getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
+            .invoke(null, context, reactInstanceManager);
       } catch (ClassNotFoundException e) {
         e.printStackTrace();
       } catch (NoSuchMethodException e) {
