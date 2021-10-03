@@ -7,84 +7,86 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00E356F31AD99517003FC87E /* lndmobileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* lndmobileTests.m */; };
-		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
-		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		1B7556A0FD78A5D3429A5B7D /* libPods-lndmobile-lndmobileTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 57C4EC8C244296CAE8379D84 /* libPods-lndmobile-lndmobileTests.a */; };
-		4C5EAD8225644174AFF103BF /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		A7B594A3714866910571D823 /* libPods-lndmobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */; };
-		CB008EDE24C93E6A00FFD914 /* Lndmobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */; };
-		CB008EE424C93EA100FFD914 /* LndReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = CB008EE324C93EA100FFD914 /* LndReactModule.m */; };
-		CB008EE624C93EA700FFD914 /* lnd.conf in Resources */ = {isa = PBXBuildFile; fileRef = CB008EE524C93EA700FFD914 /* lnd.conf */; };
+		1A242710270A64AF009D05E1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
+		1A242711270A64AF009D05E1 /* LndReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = CB008EE324C93EA100FFD914 /* LndReactModule.m */; };
+		1A242712270A64AF009D05E1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		1A242715270A64AF009D05E1 /* Lndmobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */; };
+		1A242717270A64AF009D05E1 /* lnd.conf in Resources */ = {isa = PBXBuildFile; fileRef = CB008EE524C93EA700FFD914 /* lnd.conf */; };
+		1A242718270A64AF009D05E1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		1A242719270A64AF009D05E1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		1A24271A270A64AF009D05E1 /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */; };
+		1A24272A270A64BB009D05E1 /* PlasmaTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* PlasmaTests.m */; };
+		A376BD002281B76C6C3CFD60 /* libPods-Plasma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */; };
+		AE22AFF5CDE87B575028D529 /* libPods-Plasma-PlasmaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D30A2D3B377348B6AAAF4C /* libPods-Plasma-PlasmaTests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		00E356F41AD99517003FC87E /* PBXContainerItemProxy */ = {
+		1A2C7B63270A6FBE007FED5A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
-			remoteInfo = lndmobile;
+			remoteGlobalIDString = 1A24270C270A64AF009D05E1;
+			remoteInfo = Plasma;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
-		00E356EE1AD99517003FC87E /* lndmobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = lndmobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		00E356F21AD99517003FC87E /* lndmobileTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = lndmobileTests.m; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* lndmobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = lndmobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		00E356F21AD99517003FC87E /* PlasmaTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlasmaTests.m; sourceTree = "<group>"; };
+		08E9E2E9350E67C4350393F8 /* Pods-Plasma.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plasma.release.xcconfig"; path = "Target Support Files/Pods-Plasma/Pods-Plasma.release.xcconfig"; sourceTree = "<group>"; };
+		0D46AC0A2133AA5989F4C3C9 /* Pods-Plasma-PlasmaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plasma-PlasmaTests.release.xcconfig"; path = "Target Support Files/Pods-Plasma-PlasmaTests/Pods-Plasma-PlasmaTests.release.xcconfig"; sourceTree = "<group>"; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = lndmobile/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = lndmobile/AppDelegate.m; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = lndmobile/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = lndmobile/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = lndmobile/main.m; sourceTree = "<group>"; };
-		57C4EC8C244296CAE8379D84 /* libPods-lndmobile-lndmobileTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile-lndmobileTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lndmobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A242720270A64AF009D05E1 /* Plasma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Plasma.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A242721270A64AF009D05E1 /* Plasma-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Plasma-Info.plist"; path = "/Volumes/Data/Git_Repos/git/litecoin-dev/plasma/ios/Plasma-Info.plist"; sourceTree = "<absolute>"; };
+		1A242732270A64BB009D05E1 /* PlasmaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlasmaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A242737270A64BB009D05E1 /* PlasmaTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "PlasmaTests-Info.plist"; path = "/Volumes/Data/Git_Repos/git/litecoin-dev/plasma/ios/PlasmaTests-Info.plist"; sourceTree = "<absolute>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = lndmobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.debug.xcconfig"; sourceTree = "<group>"; };
+		8DC2844C579282C811255B7D /* Pods-Plasma.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plasma.debug.xcconfig"; path = "Target Support Files/Pods-Plasma/Pods-Plasma.debug.xcconfig"; sourceTree = "<group>"; };
+		96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Plasma.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6D30A2D3B377348B6AAAF4C /* libPods-Plasma-PlasmaTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Plasma-PlasmaTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9B2DC53130DBE53F6BEC8D9 /* Pods-Plasma-PlasmaTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plasma-PlasmaTests.debug.xcconfig"; path = "Target Support Files/Pods-Plasma-PlasmaTests/Pods-Plasma-PlasmaTests.debug.xcconfig"; sourceTree = "<group>"; };
 		CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Lndmobile.framework; sourceTree = "<group>"; };
 		CB008EE224C93EA100FFD914 /* LndReactModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LndReactModule.h; sourceTree = "<group>"; };
 		CB008EE324C93EA100FFD914 /* LndReactModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LndReactModule.m; sourceTree = "<group>"; };
 		CB008EE524C93EA700FFD914 /* lnd.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lnd.conf; sourceTree = "<group>"; };
-		DB6E8CBE6C467D6D85A0AD2E /* Pods-lndmobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile.debug.xcconfig"; path = "Target Support Files/Pods-lndmobile/Pods-lndmobile.debug.xcconfig"; sourceTree = "<group>"; };
-		DC687FE39C3BE89A0CB9FEAB /* Pods-lndmobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile.release.xcconfig"; path = "Target Support Files/Pods-lndmobile/Pods-lndmobile.release.xcconfig"; sourceTree = "<group>"; };
-		E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lndmobile-lndmobileTests.release.xcconfig"; path = "Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 		F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SugarstyleMillenial-Regular.ttf"; path = "../src/assets/fonts/SugarstyleMillenial-Regular.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		00E356EB1AD99517003FC87E /* Frameworks */ = {
+		1A242713270A64AF009D05E1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B7556A0FD78A5D3429A5B7D /* libPods-lndmobile-lndmobileTests.a in Frameworks */,
+				1A242715270A64AF009D05E1 /* Lndmobile.framework in Frameworks */,
+				A376BD002281B76C6C3CFD60 /* libPods-Plasma.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
+		1A24272B270A64BB009D05E1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A7B594A3714866910571D823 /* libPods-lndmobile.a in Frameworks */,
-				CB008EDE24C93E6A00FFD914 /* Lndmobile.framework in Frameworks */,
+				AE22AFF5CDE87B575028D529 /* libPods-Plasma-PlasmaTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		00E356EF1AD99517003FC87E /* lndmobileTests */ = {
+		00E356EF1AD99517003FC87E /* PlasmaTests */ = {
 			isa = PBXGroup;
 			children = (
-				00E356F21AD99517003FC87E /* lndmobileTests.m */,
+				00E356F21AD99517003FC87E /* PlasmaTests.m */,
 				00E356F01AD99517003FC87E /* Supporting Files */,
 			);
-			path = lndmobileTests;
+			path = PlasmaTests;
 			sourceTree = "<group>";
 		};
 		00E356F01AD99517003FC87E /* Supporting Files */ = {
@@ -95,7 +97,7 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		13B07FAE1A68108700A75B9A /* lndmobile */ = {
+		13B07FAE1A68108700A75B9A /* Plasma */ = {
 			isa = PBXGroup;
 			children = (
 				CB008EDF24C93E8000FFD914 /* lightning */,
@@ -107,7 +109,7 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
 			);
-			name = lndmobile;
+			name = Plasma;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -116,8 +118,8 @@
 				CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
-				7E78509D4E242B90C1ABCDE7 /* libPods-lndmobile.a */,
-				57C4EC8C244296CAE8379D84 /* libPods-lndmobile-lndmobileTests.a */,
+				96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */,
+				C6D30A2D3B377348B6AAAF4C /* libPods-Plasma-PlasmaTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -132,13 +134,15 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* lndmobile */,
+				13B07FAE1A68108700A75B9A /* Plasma */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
-				00E356EF1AD99517003FC87E /* lndmobileTests */,
+				00E356EF1AD99517003FC87E /* PlasmaTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				F110BB5C6A86315F57ED5AEE /* Pods */,
 				886AB2EE3D5F451A83A4E445 /* Resources */,
+				1A242721270A64AF009D05E1 /* Plasma-Info.plist */,
+				1A242737270A64BB009D05E1 /* PlasmaTests-Info.plist */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -148,8 +152,8 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* lndmobile.app */,
-				00E356EE1AD99517003FC87E /* lndmobileTests.xctest */,
+				1A242720270A64AF009D05E1 /* Plasma.app */,
+				1A242732270A64BB009D05E1 /* PlasmaTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -175,10 +179,10 @@
 		F110BB5C6A86315F57ED5AEE /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				DB6E8CBE6C467D6D85A0AD2E /* Pods-lndmobile.debug.xcconfig */,
-				DC687FE39C3BE89A0CB9FEAB /* Pods-lndmobile.release.xcconfig */,
-				895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */,
-				E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */,
+				8DC2844C579282C811255B7D /* Pods-Plasma.debug.xcconfig */,
+				08E9E2E9350E67C4350393F8 /* Pods-Plasma.release.xcconfig */,
+				C9B2DC53130DBE53F6BEC8D9 /* Pods-Plasma-PlasmaTests.debug.xcconfig */,
+				0D46AC0A2133AA5989F4C3C9 /* Pods-Plasma-PlasmaTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -186,46 +190,46 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		00E356ED1AD99517003FC87E /* lndmobileTests */ = {
+		1A24270C270A64AF009D05E1 /* Plasma */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "lndmobileTests" */;
+			buildConfigurationList = 1A24271D270A64AF009D05E1 /* Build configuration list for PBXNativeTarget "Plasma" */;
 			buildPhases = (
-				F8AF726F4F3209680378531B /* [CP] Check Pods Manifest.lock */,
-				00E356EA1AD99517003FC87E /* Sources */,
-				00E356EB1AD99517003FC87E /* Frameworks */,
-				00E356EC1AD99517003FC87E /* Resources */,
-				B32E74F204EDCE010C06C09B /* [CP] Copy Pods Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				00E356F51AD99517003FC87E /* PBXTargetDependency */,
-			);
-			name = lndmobileTests;
-			productName = lndmobileTests;
-			productReference = 00E356EE1AD99517003FC87E /* lndmobileTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		13B07F861A680F5B00A75B9A /* lndmobile */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "lndmobile" */;
-			buildPhases = (
-				120C8BC4EFF22983144ED667 /* [CP] Check Pods Manifest.lock */,
-				FD10A7F022414F080027D42C /* Start Packager */,
-				13B07F871A680F5B00A75B9A /* Sources */,
-				13B07F8C1A680F5B00A75B9A /* Frameworks */,
-				13B07F8E1A680F5B00A75B9A /* Resources */,
-				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				49BAB250BE6F629E2DD4C9ED /* [CP] Copy Pods Resources */,
+				1A24270D270A64AF009D05E1 /* [CP] Check Pods Manifest.lock */,
+				1A24270E270A64AF009D05E1 /* Start Packager */,
+				1A24270F270A64AF009D05E1 /* Sources */,
+				1A242713270A64AF009D05E1 /* Frameworks */,
+				1A242716270A64AF009D05E1 /* Resources */,
+				1A24271B270A64AF009D05E1 /* Bundle React Native code and images */,
+				1A24271C270A64AF009D05E1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = lndmobile;
+			name = Plasma;
 			productName = lndmobile;
-			productReference = 13B07F961A680F5B00A75B9A /* lndmobile.app */;
+			productReference = 1A242720270A64AF009D05E1 /* Plasma.app */;
 			productType = "com.apple.product-type.application";
+		};
+		1A242725270A64BB009D05E1 /* PlasmaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A24272F270A64BB009D05E1 /* Build configuration list for PBXNativeTarget "PlasmaTests" */;
+			buildPhases = (
+				1A242728270A64BB009D05E1 /* [CP] Check Pods Manifest.lock */,
+				1A242729270A64BB009D05E1 /* Sources */,
+				1A24272B270A64BB009D05E1 /* Frameworks */,
+				1A24272D270A64BB009D05E1 /* Resources */,
+				1A24272E270A64BB009D05E1 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A2C7B64270A6FBE007FED5A /* PBXTargetDependency */,
+			);
+			name = PlasmaTests;
+			productName = lndmobileTests;
+			productReference = 1A242732270A64BB009D05E1 /* PlasmaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -235,14 +239,11 @@
 			attributes = {
 				LastUpgradeCheck = 1300;
 				TargetAttributes = {
-					00E356ED1AD99517003FC87E = {
-						CreatedOnToolsVersion = 6.2;
+					1A24270C270A64AF009D05E1 = {
 						DevelopmentTeam = ZV7987N2ZC;
-						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
-					13B07F861A680F5B00A75B9A = {
+					1A242725270A64BB009D05E1 = {
 						DevelopmentTeam = ZV7987N2ZC;
-						LastSwiftMigration = 1120;
 					};
 				};
 			};
@@ -259,49 +260,35 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* lndmobile */,
-				00E356ED1AD99517003FC87E /* lndmobileTests */,
+				1A24270C270A64AF009D05E1 /* Plasma */,
+				1A242725270A64BB009D05E1 /* PlasmaTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		00E356EC1AD99517003FC87E /* Resources */ = {
+		1A242716270A64AF009D05E1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A242717270A64AF009D05E1 /* lnd.conf in Resources */,
+				1A242718270A64AF009D05E1 /* LaunchScreen.storyboard in Resources */,
+				1A242719270A64AF009D05E1 /* Images.xcassets in Resources */,
+				1A24271A270A64AF009D05E1 /* SugarstyleMillenial-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		13B07F8E1A680F5B00A75B9A /* Resources */ = {
+		1A24272D270A64BB009D05E1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CB008EE624C93EA700FFD914 /* lnd.conf in Resources */,
-				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
-				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				4C5EAD8225644174AFF103BF /* SugarstyleMillenial-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Bundle React Native code and images";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
-		};
-		120C8BC4EFF22983144ED667 /* [CP] Check Pods Manifest.lock */ = {
+		1A24270D270A64AF009D05E1 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -316,72 +303,14 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-lndmobile-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Plasma-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		49BAB250BE6F629E2DD4C9ED /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-lndmobile/Pods-lndmobile-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-lndmobile/Pods-lndmobile-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		B32E74F204EDCE010C06C09B /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-lndmobile-lndmobileTests/Pods-lndmobile-lndmobileTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		F8AF726F4F3209680378531B /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-lndmobile-lndmobileTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FD10A7F022414F080027D42C /* Start Packager */ = {
+		1A24270E270A64AF009D05E1 /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -400,88 +329,113 @@
 			shellScript = "export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\necho \"export RCT_METRO_PORT=${RCT_METRO_PORT}\" > \"${SRCROOT}/../node_modules/react-native/scripts/.packager.env\"\nif [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost ${RCT_METRO_PORT} ; then\n    if ! curl -s \"http://localhost:${RCT_METRO_PORT}/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port ${RCT_METRO_PORT} already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    open \"$SRCROOT/../node_modules/react-native/scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		1A24271B270A64AF009D05E1 /* Bundle React Native code and images */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle React Native code and images";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
+		};
+		1A24271C270A64AF009D05E1 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Plasma/Pods-Plasma-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Plasma/Pods-Plasma-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		1A242728270A64BB009D05E1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Plasma-PlasmaTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		1A24272E270A64BB009D05E1 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Plasma-PlasmaTests/Pods-Plasma-PlasmaTests-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Plasma-PlasmaTests/Pods-Plasma-PlasmaTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		00E356EA1AD99517003FC87E /* Sources */ = {
+		1A24270F270A64AF009D05E1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00E356F31AD99517003FC87E /* lndmobileTests.m in Sources */,
+				1A242710270A64AF009D05E1 /* AppDelegate.m in Sources */,
+				1A242711270A64AF009D05E1 /* LndReactModule.m in Sources */,
+				1A242712270A64AF009D05E1 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		13B07F871A680F5B00A75B9A /* Sources */ = {
+		1A242729270A64BB009D05E1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
-				CB008EE424C93EA100FFD914 /* LndReactModule.m in Sources */,
-				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				1A24272A270A64BB009D05E1 /* PlasmaTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		00E356F51AD99517003FC87E /* PBXTargetDependency */ = {
+		1A2C7B64270A6FBE007FED5A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 13B07F861A680F5B00A75B9A /* lndmobile */;
-			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
+			target = 1A24270C270A64AF009D05E1 /* Plasma */;
+			targetProxy = 1A2C7B63270A6FBE007FED5A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		00E356F61AD99517003FC87E /* Debug */ = {
+		1A24271E270A64AF009D05E1 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 895569CC69A3F1C7FCB253BE /* Pods-lndmobile-lndmobileTests.debug.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = ZV7987N2ZC;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = lndmobileTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				OTHER_LDFLAGS = (
-					"-ObjC",
-					"-lc++",
-					"$(inherited)",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/lndmobile.app/lndmobile";
-			};
-			name = Debug;
-		};
-		00E356F71AD99517003FC87E /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = E7ED65EB675198830F15CB4A /* Pods-lndmobile-lndmobileTests.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = ZV7987N2ZC;
-				INFOPLIST_FILE = lndmobileTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				OTHER_LDFLAGS = (
-					"-ObjC",
-					"-lc++",
-					"$(inherited)",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/lndmobile.app/lndmobile";
-			};
-			name = Release;
-		};
-		13B07F941A680F5B00A75B9A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = DB6E8CBE6C467D6D85A0AD2E /* Pods-lndmobile.debug.xcconfig */;
+			baseConfigurationReference = 8DC2844C579282C811255B7D /* Pods-Plasma.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -492,7 +446,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				INFOPLIST_FILE = lndmobile/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/Plasma-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -500,16 +454,16 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.litecoin.plasma;
-				PRODUCT_NAME = lndmobile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
 		};
-		13B07F951A680F5B00A75B9A /* Release */ = {
+		1A24271F270A64AF009D05E1 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DC687FE39C3BE89A0CB9FEAB /* Pods-lndmobile.release.xcconfig */;
+			baseConfigurationReference = 08E9E2E9350E67C4350393F8 /* Pods-Plasma.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -520,7 +474,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				INFOPLIST_FILE = lndmobile/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/Plasma-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -528,9 +482,52 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.litecoin.plasma;
-				PRODUCT_NAME = lndmobile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		1A242730270A64BB009D05E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C9B2DC53130DBE53F6BEC8D9 /* Pods-Plasma-PlasmaTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				DEVELOPMENT_TEAM = ZV7987N2ZC;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/PlasmaTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+					"$(inherited)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		1A242731270A64BB009D05E1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0D46AC0A2133AA5989F4C3C9 /* Pods-Plasma-PlasmaTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = ZV7987N2ZC;
+				INFOPLIST_FILE = "$(SRCROOT)/PlasmaTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+					"$(inherited)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -654,20 +651,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "lndmobileTests" */ = {
+		1A24271D270A64AF009D05E1 /* Build configuration list for PBXNativeTarget "Plasma" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				00E356F61AD99517003FC87E /* Debug */,
-				00E356F71AD99517003FC87E /* Release */,
+				1A24271E270A64AF009D05E1 /* Debug */,
+				1A24271F270A64AF009D05E1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "lndmobile" */ = {
+		1A24272F270A64BB009D05E1 /* Build configuration list for PBXNativeTarget "PlasmaTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				13B07F941A680F5B00A75B9A /* Debug */,
-				13B07F951A680F5B00A75B9A /* Release */,
+				1A242730270A64BB009D05E1 /* Debug */,
+				1A242731270A64BB009D05E1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
