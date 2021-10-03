@@ -1,4 +1,4 @@
-package com.lndmobile;
+package com.litecoin.plasma;
 
 import android.app.Application;
 import android.content.Context;
