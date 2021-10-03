@@ -1,11 +1,11 @@
 {
-  "name": "lndmobile",
+  "name": "plasma",
   "version": "0.0.1",
   "description": "Mobile Bitcoin & Litecoin lightning wallet built with React-Native + Redux",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/losh11/lndmobile.git"
+    "url": "https://github.com/litecoin-foundation/plasma.git"
   },
   "scripts": {
     "android": "react-native run-android",
