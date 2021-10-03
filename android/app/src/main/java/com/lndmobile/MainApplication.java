@@ -3,6 +3,8 @@ package com.lndmobile;
 import android.app.Application;
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.horcrux.svg.SvgPackage;
@@ -19,9 +21,11 @@ import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
+import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import com.lndmobile.LndNativePackage;
+import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +53,11 @@ public class MainApplication extends Application implements ReactApplication {
         protected String getJSMainModuleName() {
           return "index";
         }
+    @Nullable
+    @Override
+    protected JSIModulePackage getJSIModulePackage() {
+      return new ReanimatedJSIModulePackage();
+    }
   };
 
   @Override
