@@ -47,6 +47,7 @@
     "react-native-device-info": "^8.3.3",
     "react-native-fs": "^2.18.0",
     "react-native-gesture-handler": "^1.10.3",
+    "react-native-get-random-values": "^1.7.0",
     "react-native-haptic-feedback": "^1.11.0",
     "react-native-icloudstore": "manicakes/react-native-icloudstore#a2a1ad78",
     "react-native-keychain": "^7.0.0",
@@ -72,7 +73,8 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "sha.js": "^2.4.11",
-    "stream-browserify": "^3.0.0"
+    "stream-browserify": "^3.0.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",

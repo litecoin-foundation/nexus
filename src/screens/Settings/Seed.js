@@ -2,6 +2,8 @@ import React, {useEffect} from 'react';
 import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useDispatch, useSelector} from 'react-redux';
+import 'react-native-get-random-values';
+import {v4 as uuidv4} from 'uuid';
 
 import {updateLastViewSeed} from '../../reducers/settings';
 import {formatDate, formatTime} from '../../lib/utils/date';
@@ -24,7 +26,7 @@ const Seed = () => {
 
   const words = n.map((val, index) => {
     return (
-      <View style={styles.wordContainer}>
+      <View style={styles.wordContainer} key={uuidv4()}>
         <View style={styles.wordSubContainer}>
           <Text style={[styles.indexText, {paddingLeft: 37 / 2}]}>{index}</Text>
           <Text style={styles.word}>{seedArray[index]}</Text>
