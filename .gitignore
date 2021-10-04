@@ -41,3 +41,4 @@ shim.js
 /ios/Pods/
 storyLoader.js
 android/app/release/
+ios/Plasma.xcworkspace
