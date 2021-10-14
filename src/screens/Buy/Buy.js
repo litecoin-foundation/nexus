@@ -22,7 +22,7 @@ const Buy = (props) => {
           toggleWithoutSelection
           onAccept={() => {
             dispatch(setAmount(amount, fiatAmount));
-            props.navigation.navigate('Confirm');
+            props.navigation.navigate('ConfirmStack');
           }}
           confirmButtonDisabled={fiatAmount < 20 ? true : false}
           confirmButtonText="Preview Buy"

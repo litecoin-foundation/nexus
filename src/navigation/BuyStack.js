@@ -60,7 +60,7 @@ function BuyStack() {
         options={Buy.navigationOptions}
       />
       <Stack.Screen
-        name="Confirm"
+        name="ConfirmStack"
         component={ConfirmWebPageModalStack}
         options={{headerShown: false}}
       />

@@ -6,7 +6,7 @@ import Dial from '../screens/Alert/Dial';
 
 const Stack = createStackNavigator();
 
-function BuyStack() {
+function AlertsStack() {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -33,4 +33,4 @@ function BuyStack() {
   );
 }
 
-export default BuyStack;
+export default AlertsStack;

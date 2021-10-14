@@ -1,6 +1,7 @@
 import React from 'react';
 import {Image} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import DeviceInfo from 'react-native-device-info';
 
 import WalletStack from './WalletStack';
@@ -24,21 +25,6 @@ function AppStack() {
           fontWeight: '500',
           letterSpacing: -0.5,
         },
-        tabBarStyle: [
-          {
-            backgroundColor: '#FBFCFE',
-            borderTopWidth: 0,
-            shadowColor: 'black',
-            shadowOpacity: 0.1,
-            shadowRadius: 10,
-            shadowOffset: {
-              height: 0,
-              width: 0,
-            },
-            height: DeviceInfo.hasNotch() ? 90 : 70,
-          },
-          null,
-        ],
       }}>
       <Tab.Screen
         name="WalletStack"
@@ -46,7 +32,12 @@ function AppStack() {
         options={({route}) => ({
           tabBarLabel: 'WALLETS',
           tabBarIcon: ({focused}) => WalletTabBarIcon(focused),
-          tabBarVisible: isTabBarVisible(route),
+          tabBarStyle: [
+            tabBarStyle,
+            {
+              display: isTabBarVisible(route) === true ? 'flex' : 'none',
+            },
+          ],
           headerShown: false,
         })}
       />
@@ -56,7 +47,12 @@ function AppStack() {
         options={({route}) => ({
           tabBarLabel: 'BUY',
           tabBarIcon: ({focused}) => BuyTabBarIcon(focused),
-          tabBarVisible: isTabBarVisible(route),
+          tabBarStyle: [
+            tabBarStyle,
+            {
+              display: isTabBarVisible(route) === true ? 'flex' : 'none',
+            },
+          ],
           headerShown: false,
         })}
       />
@@ -66,7 +62,12 @@ function AppStack() {
         options={({route}) => ({
           tabBarLabel: 'ALERTS',
           tabBarIcon: ({focused}) => AlertsTabBarIcon(focused),
-          tabBarVisible: isTabBarVisible(route),
+          tabBarStyle: [
+            tabBarStyle,
+            {
+              display: isTabBarVisible(route) === true ? 'flex' : 'none',
+            },
+          ],
           headerShown: false,
         })}
       />
@@ -76,7 +77,12 @@ function AppStack() {
         options={({route}) => ({
           tabBarLabel: 'SETTINGS',
           tabBarIcon: ({focused}) => SettingsTabBarIcon(focused),
-          tabBarVisible: isTabBarVisible(route),
+          tabBarStyle: [
+            tabBarStyle,
+            {
+              display: isTabBarVisible(route) === true ? 'flex' : 'none',
+            },
+          ],
           headerShown: false,
         })}
       />
@@ -84,15 +90,45 @@ function AppStack() {
   );
 }
 
+const tabBarStyle = {
+  backgroundColor: '#FBFCFE',
+  borderTopWidth: 0,
+  shadowColor: 'black',
+  shadowOpacity: 0.1,
+  shadowRadius: 10,
+  shadowOffset: {
+    height: 0,
+    width: 0,
+  },
+  height: DeviceInfo.hasNotch() ? 90 : 70,
+};
+
 const isTabBarVisible = (route) => {
-  if (route.state === undefined || route.state === null) {
-    return;
+  const routes = [
+    'Wallet',
+    'Send',
+    'Receive',
+    'LightningReceive',
+    'WebPage',
+    'Sent',
+    'Fail',
+    'Dial',
+    'Confirm',
+    'ConfirmStack',
+    'History',
+    'Channel',
+    'OpenChannel',
+    'General',
+    'ChangePincode',
+    'Seed',
+    'About',
+    'Wallets',
+  ];
+
+  if (routes.includes(getFocusedRouteNameFromRoute(route))) {
+    return false;
   } else {
-    if (route.state.index > 0) {
-      return false;
-    } else {
-      return true;
-    }
+    return true;
   }
 };
 
