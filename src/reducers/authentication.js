@@ -11,6 +11,7 @@ const initialState = {
   biometricsAvailable: null,
   biometricsEnabled: false,
   faceIDSupported: false,
+  timeLastUnlocked: null,
 };
 
 // constants
@@ -74,15 +75,14 @@ export const clearWalletUnlocked = () => (dispatch) => {
   });
 };
 
-export const setBiometricAvailability = (available, faceIDSupported) => (
-  dispatch,
-) => {
-  dispatch({
-    type: SET_BIOMETRIC_AVAILABILITY,
-    available,
-    faceIDSupported,
-  });
-};
+export const setBiometricAvailability =
+  (available, faceIDSupported) => (dispatch) => {
+    dispatch({
+      type: SET_BIOMETRIC_AVAILABILITY,
+      available,
+      faceIDSupported,
+    });
+  };
 
 export const setBiometricEnabled = (boolean) => (dispatch) => {
   dispatch({
@@ -94,7 +94,11 @@ export const setBiometricEnabled = (boolean) => (dispatch) => {
 // action handlers
 const actionHandler = {
   [UNLOCK_WALLET]: (state, {payload}) => ({...state, walletUnlocked: payload}),
-  [CLEAR_UNLOCK]: (state) => ({...state, walletUnlocked: null}),
+  [CLEAR_UNLOCK]: (state) => ({
+    ...state,
+    walletUnlocked: null,
+    timeLastUnlocked: Date.now(),
+  }),
   [ADD_PASSCODE]: (state, {passcode}) => ({
     ...state,
     passcode,

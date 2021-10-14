@@ -8,11 +8,17 @@ import {
   Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useSelector} from 'react-redux';
 
+import {formatDate} from '../../lib/utils/date';
 import Header from '../../components/Header';
 import BlueClearButton from '../../components/Buttons/BlueClearButton';
 
 const Settings = (props) => {
+  const timeLastUnlocked = useSelector(
+    (state) => state.authentication.timeLastUnlocked,
+  );
+
   return (
     <View style={styles.container}>
       <Header />
@@ -46,7 +52,9 @@ const Settings = (props) => {
           colors={['#F6F9FC', 'rgba(210,225,239,0)']}
           style={styles.gradient}>
           <View style={styles.bottomTextContainer}>
-            <Text style={styles.bottomText}>Last Signed In on Apr 20 2019</Text>
+            <Text style={styles.bottomText}>
+              Last Signed In on {formatDate(timeLastUnlocked)}
+            </Text>
           </View>
           <View style={styles.bottomButtonContainer}>
             <BlueClearButton
