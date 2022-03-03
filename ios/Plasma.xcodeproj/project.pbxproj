@@ -3,19 +3,19 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		1A242710270A64AF009D05E1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		1A242711270A64AF009D05E1 /* LndReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = CB008EE324C93EA100FFD914 /* LndReactModule.m */; };
 		1A242712270A64AF009D05E1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		1A242715270A64AF009D05E1 /* Lndmobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */; };
 		1A242717270A64AF009D05E1 /* lnd.conf in Resources */ = {isa = PBXBuildFile; fileRef = CB008EE524C93EA700FFD914 /* lnd.conf */; };
 		1A242718270A64AF009D05E1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		1A242719270A64AF009D05E1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		1A24271A270A64AF009D05E1 /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */; };
 		1A24272A270A64BB009D05E1 /* PlasmaTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* PlasmaTests.m */; };
+		1B0634BF27D0FC29006FEC69 /* Lndmobile.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B0634BE27D0FC29006FEC69 /* Lndmobile.xcframework */; };
 		A376BD002281B76C6C3CFD60 /* libPods-Plasma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */; };
 		AE22AFF5CDE87B575028D529 /* libPods-Plasma-PlasmaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D30A2D3B377348B6AAAF4C /* libPods-Plasma-PlasmaTests.a */; };
 /* End PBXBuildFile section */
@@ -45,12 +45,12 @@
 		1A242721270A64AF009D05E1 /* Plasma-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Plasma-Info.plist"; path = "/Volumes/Data/Git_Repos/git/litecoin-dev/plasma/ios/Plasma-Info.plist"; sourceTree = "<absolute>"; };
 		1A242732270A64BB009D05E1 /* PlasmaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlasmaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A242737270A64BB009D05E1 /* PlasmaTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "PlasmaTests-Info.plist"; path = "/Volumes/Data/Git_Repos/git/litecoin-dev/plasma/ios/PlasmaTests-Info.plist"; sourceTree = "<absolute>"; };
+		1B0634BE27D0FC29006FEC69 /* Lndmobile.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Lndmobile.xcframework; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = lndmobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8DC2844C579282C811255B7D /* Pods-Plasma.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plasma.debug.xcconfig"; path = "Target Support Files/Pods-Plasma/Pods-Plasma.debug.xcconfig"; sourceTree = "<group>"; };
 		96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Plasma.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6D30A2D3B377348B6AAAF4C /* libPods-Plasma-PlasmaTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Plasma-PlasmaTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9B2DC53130DBE53F6BEC8D9 /* Pods-Plasma-PlasmaTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plasma-PlasmaTests.debug.xcconfig"; path = "Target Support Files/Pods-Plasma-PlasmaTests/Pods-Plasma-PlasmaTests.debug.xcconfig"; sourceTree = "<group>"; };
-		CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Lndmobile.framework; sourceTree = "<group>"; };
 		CB008EE224C93EA100FFD914 /* LndReactModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LndReactModule.h; sourceTree = "<group>"; };
 		CB008EE324C93EA100FFD914 /* LndReactModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LndReactModule.m; sourceTree = "<group>"; };
 		CB008EE524C93EA700FFD914 /* lnd.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lnd.conf; sourceTree = "<group>"; };
@@ -64,7 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A242715270A64AF009D05E1 /* Lndmobile.framework in Frameworks */,
+				1B0634BF27D0FC29006FEC69 /* Lndmobile.xcframework in Frameworks */,
 				A376BD002281B76C6C3CFD60 /* libPods-Plasma.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -115,7 +115,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				CB008EDD24C93E6A00FFD914 /* Lndmobile.framework */,
+				1B0634BE27D0FC29006FEC69 /* Lndmobile.xcframework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
 				96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */,
@@ -447,7 +447,10 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Plasma-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -475,7 +478,10 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Plasma-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -500,7 +506,11 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/PlasmaTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lc++",
@@ -520,7 +530,11 @@
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
 				INFOPLIST_FILE = "$(SRCROOT)/PlasmaTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lc++",
@@ -581,7 +595,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"$(inherited)",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)\"",
@@ -636,7 +653,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"$(inherited)",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)\"",
