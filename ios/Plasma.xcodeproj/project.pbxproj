@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1A242710270A64AF009D05E1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
-		1A242711270A64AF009D05E1 /* LndReactModule.m in Sources */ = {isa = PBXBuildFile; fileRef = CB008EE324C93EA100FFD914 /* LndReactModule.m */; };
 		1A242712270A64AF009D05E1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1A242717270A64AF009D05E1 /* lnd.conf in Resources */ = {isa = PBXBuildFile; fileRef = CB008EE524C93EA700FFD914 /* lnd.conf */; };
 		1A242718270A64AF009D05E1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -16,6 +15,9 @@
 		1A24271A270A64AF009D05E1 /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F94C85F45861446FB34946DA /* SugarstyleMillenial-Regular.ttf */; };
 		1A24272A270A64BB009D05E1 /* PlasmaTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* PlasmaTests.m */; };
 		1B0634BF27D0FC29006FEC69 /* Lndmobile.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B0634BE27D0FC29006FEC69 /* Lndmobile.xcframework */; };
+		1B0634C127D0FFF3006FEC69 /* ReactNativeLightning.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B0634C027D0FFF3006FEC69 /* ReactNativeLightning.m */; };
+		1B0634C527D100B6006FEC69 /* ReactNativeLightning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B0634C427D100B6006FEC69 /* ReactNativeLightning.swift */; };
+		1B0634C727D10117006FEC69 /* ReactNativeLightningCallbacks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B0634C627D10117006FEC69 /* ReactNativeLightningCallbacks.swift */; };
 		A376BD002281B76C6C3CFD60 /* libPods-Plasma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */; };
 		AE22AFF5CDE87B575028D529 /* libPods-Plasma-PlasmaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D30A2D3B377348B6AAAF4C /* libPods-Plasma-PlasmaTests.a */; };
 /* End PBXBuildFile section */
@@ -46,13 +48,16 @@
 		1A242732270A64BB009D05E1 /* PlasmaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlasmaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A242737270A64BB009D05E1 /* PlasmaTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "PlasmaTests-Info.plist"; path = "/Volumes/Data/Git_Repos/git/litecoin-dev/plasma/ios/PlasmaTests-Info.plist"; sourceTree = "<absolute>"; };
 		1B0634BE27D0FC29006FEC69 /* Lndmobile.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Lndmobile.xcframework; sourceTree = "<group>"; };
+		1B0634C027D0FFF3006FEC69 /* ReactNativeLightning.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ReactNativeLightning.m; sourceTree = "<group>"; };
+		1B0634C327D100B6006FEC69 /* ReactNativeLightning.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReactNativeLightning.h; sourceTree = "<group>"; };
+		1B0634C427D100B6006FEC69 /* ReactNativeLightning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactNativeLightning.swift; sourceTree = "<group>"; };
+		1B0634C627D10117006FEC69 /* ReactNativeLightningCallbacks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactNativeLightningCallbacks.swift; sourceTree = "<group>"; };
+		1B0634C827D105E2006FEC69 /* Lndmobile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Lndmobile.h; path = "Lndmobile.xcframework/ios-arm64/Lndmobile.framework/Versions/A/Headers/Lndmobile.h"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = lndmobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8DC2844C579282C811255B7D /* Pods-Plasma.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plasma.debug.xcconfig"; path = "Target Support Files/Pods-Plasma/Pods-Plasma.debug.xcconfig"; sourceTree = "<group>"; };
 		96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Plasma.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6D30A2D3B377348B6AAAF4C /* libPods-Plasma-PlasmaTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Plasma-PlasmaTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9B2DC53130DBE53F6BEC8D9 /* Pods-Plasma-PlasmaTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plasma-PlasmaTests.debug.xcconfig"; path = "Target Support Files/Pods-Plasma-PlasmaTests/Pods-Plasma-PlasmaTests.debug.xcconfig"; sourceTree = "<group>"; };
-		CB008EE224C93EA100FFD914 /* LndReactModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LndReactModule.h; sourceTree = "<group>"; };
-		CB008EE324C93EA100FFD914 /* LndReactModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LndReactModule.m; sourceTree = "<group>"; };
 		CB008EE524C93EA700FFD914 /* lnd.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lnd.conf; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
@@ -116,6 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				1B0634BE27D0FC29006FEC69 /* Lndmobile.xcframework */,
+				1B0634C827D105E2006FEC69 /* Lndmobile.h */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
 				96F2E906CCCDAB3730A59B5A /* libPods-Plasma.a */,
@@ -170,8 +176,10 @@
 			isa = PBXGroup;
 			children = (
 				CB008EE524C93EA700FFD914 /* lnd.conf */,
-				CB008EE224C93EA100FFD914 /* LndReactModule.h */,
-				CB008EE324C93EA100FFD914 /* LndReactModule.m */,
+				1B0634C027D0FFF3006FEC69 /* ReactNativeLightning.m */,
+				1B0634C427D100B6006FEC69 /* ReactNativeLightning.swift */,
+				1B0634C327D100B6006FEC69 /* ReactNativeLightning.h */,
+				1B0634C627D10117006FEC69 /* ReactNativeLightningCallbacks.swift */,
 			);
 			path = lightning;
 			sourceTree = "<group>";
@@ -241,6 +249,7 @@
 				TargetAttributes = {
 					1A24270C270A64AF009D05E1 = {
 						DevelopmentTeam = ZV7987N2ZC;
+						LastSwiftMigration = 1320;
 					};
 					1A242725270A64BB009D05E1 = {
 						DevelopmentTeam = ZV7987N2ZC;
@@ -341,7 +350,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
+			shellScript = "export NODE_BINARY=/Users/loshan/.nvm/versions/node/v14.17.5/bin/node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
 		1A24271C270A64AF009D05E1 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -408,9 +417,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B0634C727D10117006FEC69 /* ReactNativeLightningCallbacks.swift in Sources */,
 				1A242710270A64AF009D05E1 /* AppDelegate.m in Sources */,
-				1A242711270A64AF009D05E1 /* LndReactModule.m in Sources */,
 				1A242712270A64AF009D05E1 /* main.m in Sources */,
+				1B0634C127D0FFF3006FEC69 /* ReactNativeLightning.m in Sources */,
+				1B0634C527D100B6006FEC69 /* ReactNativeLightning.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -458,6 +469,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.litecoin.plasma;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = lightning/ReactNativeLightning.h;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -489,6 +501,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.litecoin.plasma;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "lightning/Plasma-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};

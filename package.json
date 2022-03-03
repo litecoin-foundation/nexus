@@ -11,8 +11,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
-    "postinstall": "npm run protobuf && npx jetify",
-    "protobuf": "pbjs -t static-module -w es6  --force-long -o src/lib/lightning/rpc.js src/lib/lightning/proto/rpc.proto src/lib/lightning/proto/walletunlocker.proto src/lib/lightning/proto/autopilot.proto src/lib/lightning/proto/walletkit.proto src/lib/lightning/proto/signer.proto src/lib/lightning/proto/router.proto src/lib/lightning/proto/invoices.proto src/lib/lightning/proto/watchtower.proto src/lib/lightning/proto/wtclient.proto",
+    "postinstall": "npx jetify",
     "lint": "eslint .",
     "storybook": "start-storybook -p 7007",
     "prestorybook": "rnstl"
