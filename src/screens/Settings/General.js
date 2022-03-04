@@ -9,18 +9,18 @@ import SettingCell from '../../components/Cells/SettingCell';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import PinModal from '../../components/Modals/PinModal';
 
-const General = (props) => {
+const General = props => {
   const dispatch = useDispatch();
   const [isPinModalTriggered, triggerPinModal] = useState(false);
 
   const biometricsAvailable = useSelector(
-    (state) => state.authentication.biometricsAvailable,
+    state => state.authentication.biometricsAvailable,
   );
   const biometricsEnabled = useSelector(
-    (state) => state.authentication.biometricsEnabled,
+    state => state.authentication.biometricsEnabled,
   );
   const faceIDSupported = useSelector(
-    (state) => state.authentication.faceIDSupported,
+    state => state.authentication.faceIDSupported,
   );
 
   const handleBiometricSwitch = () => {
@@ -30,7 +30,7 @@ const General = (props) => {
   const handleAuthenticationRequired = () => {
     return new Promise((resolve, reject) => {
       triggerPinModal(true);
-      const subscription = DeviceEventEmitter.addListener('auth', (bool) => {
+      const subscription = DeviceEventEmitter.addListener('auth', bool => {
         if (bool === true) {
           triggerPinModal(false);
           subscription.remove();

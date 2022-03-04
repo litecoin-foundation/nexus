@@ -10,7 +10,7 @@ export const UPDATE_FIAT_AMOUNT = 'UPDATE_FIAT_AMOUNT';
 export const RESET_INPUTS = 'RESET_INPUTS';
 
 // actions
-export const updateAmount = (amount) => (dispatch) => {
+export const updateAmount = amount => dispatch => {
   dispatch({
     type: UPDATE_AMOUNT,
     amount,
@@ -18,7 +18,7 @@ export const updateAmount = (amount) => (dispatch) => {
   dispatch(handleFiatConversion());
 };
 
-export const updateFiatAmount = (fiatAmount) => (dispatch) => {
+export const updateFiatAmount = fiatAmount => dispatch => {
   dispatch({
     type: UPDATE_FIAT_AMOUNT,
     fiatAmount,
@@ -26,7 +26,7 @@ export const updateFiatAmount = (fiatAmount) => (dispatch) => {
   dispatch(handleAmountConversion());
 };
 
-export const resetInputs = () => (dispatch) => {
+export const resetInputs = () => dispatch => {
   dispatch({type: RESET_INPUTS});
 };
 
@@ -54,7 +54,7 @@ const handleAmountConversion = () => (dispatch, getState) => {
 const actionHandler = {
   [UPDATE_AMOUNT]: (state, {amount}) => ({...state, amount}),
   [UPDATE_FIAT_AMOUNT]: (state, {fiatAmount}) => ({...state, fiatAmount}),
-  [RESET_INPUTS]: (state) => ({...state, amount: '', fiatAmount: ''}),
+  [RESET_INPUTS]: state => ({...state, amount: '', fiatAmount: ''}),
 };
 
 // reducer

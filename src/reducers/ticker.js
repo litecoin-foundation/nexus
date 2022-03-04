@@ -19,7 +19,7 @@ export const UPDATE_HISTORIC_RATE_WEEK = 'UPDATE_HISTORIC_RATE_WEEK';
 export const UPDATE_HISTORIC_RATE_MONTH = 'UPDATE_HISTORIC_RATE_MONTH';
 
 // actions
-export const getTicker = () => async (dispatch) => {
+export const getTicker = () => async dispatch => {
   const {
     data: {data: {rates} = {}},
   } = await axios.get(
@@ -31,11 +31,11 @@ export const getTicker = () => async (dispatch) => {
   });
 };
 
-export const pollTicker = () => async (dispatch) => {
+export const pollTicker = () => async dispatch => {
   await poll(() => dispatch(getTicker()), 15000);
 };
 
-export const getDayHistoricalRates = () => async (dispatch) => {
+export const getDayHistoricalRates = () => async dispatch => {
   const date = new Date();
   const lastDay = new Date();
   lastDay.setDate(lastDay.getDate() - 1);
@@ -57,7 +57,7 @@ export const getDayHistoricalRates = () => async (dispatch) => {
   });
 };
 
-export const getWeekHistoricalRates = () => async (dispatch) => {
+export const getWeekHistoricalRates = () => async dispatch => {
   const date = new Date();
   const lastWeek = new Date();
   lastWeek.setDate(lastWeek.getDate() - 7);
@@ -79,7 +79,7 @@ export const getWeekHistoricalRates = () => async (dispatch) => {
   });
 };
 
-export const getMonthHistoricalRates = () => async (dispatch) => {
+export const getMonthHistoricalRates = () => async dispatch => {
   const date = new Date();
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -139,16 +139,15 @@ const actionHandler = {
 
 // selectors
 export const fiatValueSelector = createSelector(
-  (state) => state.ticker.rates,
-  (rates) =>
-    memoize((satoshi) => ((satoshi / 100000000) * rates.USD).toFixed(2)),
+  state => state.ticker.rates,
+  rates => memoize(satoshi => ((satoshi / 100000000) * rates.USD).toFixed(2)),
 );
 
 export const monthSelector = createSelector(
-  (state) => state.chart.graphPeriod,
-  (state) => state.ticker.day,
-  (state) => state.ticker.week,
-  (state) => state.ticker.month,
+  state => state.chart.graphPeriod,
+  state => state.ticker.day,
+  state => state.ticker.week,
+  state => state.ticker.month,
   (graphPeriod, dayData, weekData, monthData) => {
     let data;
 
@@ -164,7 +163,7 @@ export const monthSelector = createSelector(
       return;
     }
 
-    const result = data.map((data) => {
+    const result = data.map(data => {
       return {
         x: new Date(data[0] * 1000),
         y: data[3],

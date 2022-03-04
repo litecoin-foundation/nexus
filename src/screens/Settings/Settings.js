@@ -14,9 +14,9 @@ import {formatDate} from '../../lib/utils/date';
 import Header from '../../components/Header';
 import BlueClearButton from '../../components/Buttons/BlueClearButton';
 
-const Settings = (props) => {
+const Settings = props => {
   const timeLastUnlocked = useSelector(
-    (state) => state.authentication.timeLastUnlocked,
+    state => state.authentication.timeLastUnlocked,
   );
 
   return (

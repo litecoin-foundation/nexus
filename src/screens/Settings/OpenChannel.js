@@ -19,7 +19,7 @@ const OpenChannel = () => {
   const [search, setPubkey] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const filterByAlias = useSelector((state) => searchGraph(state));
+  const filterByAlias = useSelector(state => searchGraph(state));
 
   useEffect(() => {
     dispatch(getDescribeGraph());
@@ -39,7 +39,7 @@ const OpenChannel = () => {
       <View style={styles.inputContainer}>
         <InputField
           value={search}
-          onChangeText={(input) => setPubkey(input)}
+          onChangeText={input => setPubkey(input)}
           placeholder="pubKey@ip"
         />
       </View>
@@ -60,7 +60,7 @@ const OpenChannel = () => {
             renderItem={({item}) => (
               <ChannelSearchCell
                 data={item}
-                keyExtractor={(item) => item.pubKey}
+                keyExtractor={item => item.pubKey}
               />
             )}
           />
@@ -92,7 +92,7 @@ const OpenChannel = () => {
         close={() => setIsModalVisible(false)}
         isVisible={isModalVisible}
         handleConfirm={() => handleConfirm()}
-        onChange={(input) => console.log(input)}
+        onChange={input => console.log(input)}
       />
     </View>
   );

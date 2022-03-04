@@ -23,7 +23,7 @@ export const SET_BIOMETRIC_AVAILABILITY = 'SET_BIOMETRIC_AVAILABILITY';
 export const SET_BIOMETRIC_ENABLED = 'SET_BIOMETRIC_ENABLED';
 
 // actions
-export const addPincode = (passcode) => async (dispatch) => {
+export const addPincode = passcode => async dispatch => {
   await setItem('PINCODE', passcode);
 
   dispatch({
@@ -32,7 +32,7 @@ export const addPincode = (passcode) => async (dispatch) => {
   });
 };
 
-export const resetPincode = () => async (dispatch) => {
+export const resetPincode = () => async dispatch => {
   await resetItem('PINCODE');
 
   dispatch({
@@ -40,7 +40,7 @@ export const resetPincode = () => async (dispatch) => {
   });
 };
 
-export const unlockWalletWithPin = (pincodeAttempt) => async (dispatch) => {
+export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
   const pincode = await getItem('PINCODE');
   if (pincodeAttempt !== pincode) {
     dispatch({
@@ -56,7 +56,7 @@ export const unlockWalletWithPin = (pincodeAttempt) => async (dispatch) => {
   }
 };
 
-export const unlockWalletWithBiometric = () => async (dispatch) => {
+export const unlockWalletWithBiometric = () => async dispatch => {
   try {
     await authenticate('Unlock Wallet');
     await dispatch(unlockWallet());
@@ -69,14 +69,14 @@ export const unlockWalletWithBiometric = () => async (dispatch) => {
   }
 };
 
-export const clearWalletUnlocked = () => (dispatch) => {
+export const clearWalletUnlocked = () => dispatch => {
   dispatch({
     type: CLEAR_UNLOCK,
   });
 };
 
 export const setBiometricAvailability =
-  (available, faceIDSupported) => (dispatch) => {
+  (available, faceIDSupported) => dispatch => {
     dispatch({
       type: SET_BIOMETRIC_AVAILABILITY,
       available,
@@ -84,7 +84,7 @@ export const setBiometricAvailability =
     });
   };
 
-export const setBiometricEnabled = (boolean) => (dispatch) => {
+export const setBiometricEnabled = boolean => dispatch => {
   dispatch({
     type: SET_BIOMETRIC_ENABLED,
     boolean,
@@ -94,7 +94,7 @@ export const setBiometricEnabled = (boolean) => (dispatch) => {
 // action handlers
 const actionHandler = {
   [UNLOCK_WALLET]: (state, {payload}) => ({...state, walletUnlocked: payload}),
-  [CLEAR_UNLOCK]: (state) => ({
+  [CLEAR_UNLOCK]: state => ({
     ...state,
     walletUnlocked: null,
     timeLastUnlocked: Date.now(),
@@ -104,7 +104,7 @@ const actionHandler = {
     passcode,
     passcodeSet: true,
   }),
-  [RESET_PASSCODE]: (state) => ({
+  [RESET_PASSCODE]: state => ({
     ...state,
     passcode: '',
     passcodeSet: false,

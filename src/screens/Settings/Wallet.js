@@ -16,16 +16,16 @@ import SettingCell from '../../components/Cells/SettingCell';
 import PinModal from '../../components/Modals/PinModal';
 import {updateSubunit} from '../../reducers/settings';
 
-const Wallet = (props) => {
+const Wallet = props => {
   const dispatch = useDispatch();
   const [isPinModalTriggered, triggerPinModal] = useState(false);
 
-  const {subunit} = useSelector((state) => state.settings);
+  const {subunit} = useSelector(state => state.settings);
 
   const handleAuthenticationRequired = () => {
     return new Promise((resolve, reject) => {
       triggerPinModal(true);
-      const subscription = DeviceEventEmitter.addListener('auth', (bool) => {
+      const subscription = DeviceEventEmitter.addListener('auth', bool => {
         if (bool === true) {
           triggerPinModal(false);
           subscription.remove();
@@ -57,7 +57,7 @@ const Wallet = (props) => {
               tintColor="#20BB74"
               activeFontStyle={styles.text}
               backgroundColor="#FFFFFF"
-              onChange={(event) =>
+              onChange={event =>
                 dispatch(updateSubunit(event.nativeEvent.selectedSegmentIndex))
               }
             />

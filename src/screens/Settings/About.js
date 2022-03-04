@@ -7,13 +7,8 @@ import VerticalTableCell from '../../components/Cells/VerticalTableCell';
 import Header from '../../components/Header';
 
 const About = () => {
-  const {
-    syncedToChain,
-    blockHeight,
-    blockHash,
-    bestHeaderTimestamp,
-    version,
-  } = useSelector((state) => state.info);
+  const {syncedToChain, blockHeight, blockHash, bestHeaderTimestamp, version} =
+    useSelector(state => state.info);
 
   return (
     <View style={styles.container}>

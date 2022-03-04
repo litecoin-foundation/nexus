@@ -21,7 +21,7 @@ export const RECOVER_SEED = 'RECOVER_SEED';
 export const SET_RECOVERY_MODE = 'SET_RECOVERY_MODE';
 
 // actions
-export const startOnboarding = () => (dispatch) => {
+export const startOnboarding = () => dispatch => {
   dispatch({
     type: ONBOARDING_STARTED,
   });
@@ -37,7 +37,7 @@ export const finishOnboarding = () => (dispatch, getState) => {
   });
 };
 
-export const getSeed = () => async (dispatch) => {
+export const getSeed = () => async dispatch => {
   const response = await LndInstance.sendCommand('GenSeed');
   dispatch({
     type: GET_SEED,
@@ -45,14 +45,14 @@ export const getSeed = () => async (dispatch) => {
   });
 };
 
-export const recoverSeed = (seed) => (dispatch) => {
+export const recoverSeed = seed => dispatch => {
   dispatch({
     type: RECOVER_SEED,
     seed,
   });
 };
 
-export const setRecoveryMode = (bool) => (dispatch) => {
+export const setRecoveryMode = bool => dispatch => {
   dispatch({
     type: SET_RECOVERY_MODE,
     bool,
@@ -61,7 +61,7 @@ export const setRecoveryMode = (bool) => (dispatch) => {
 
 // action handlers
 const actionHandler = {
-  [ONBOARDING_STARTED]: (state) => ({
+  [ONBOARDING_STARTED]: state => ({
     ...state,
     onboarding: true,
     isOnboarded: false,

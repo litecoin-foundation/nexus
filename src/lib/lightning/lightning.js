@@ -8,7 +8,7 @@ import {toCaps} from '../utils';
 class Lightning {
   constructor() {
     this.lightning = NativeModules.LndReactModule;
-    this.lightningEvent = new NativeEventEmitter(this.lightning);
+    // this.lightningEvent = new NativeEventEmitter();
     this.streamCounter = 0;
   }
 
@@ -36,16 +36,16 @@ class Lightning {
       },
       read() {},
     });
-    this.lightningEvent.addListener('streamEvent', (res) => {
-      if (res.streamId !== streamId) {
-        return;
-      }
-      if (res.event === 'data') {
-        stream.emit('data', this.deserializeResponse(method, res.data));
-      } else {
-        stream.emit(res.event, res.error || res.data);
-      }
-    });
+    // this.lightningEvent.addListener('streamEvent', (res) => {
+    //   if (res.streamId !== streamId) {
+    //     return;
+    //   }
+    //   if (res.event === 'data') {
+    //     stream.emit('data', this.deserializeResponse(method, res.data));
+    //   } else {
+    //     stream.emit(res.event, res.error || res.data);
+    //   }
+    // });
     const req = this.serializeRequest(method, body);
     this.lightning.sendStreamCommand(method, streamId, req);
     return stream;

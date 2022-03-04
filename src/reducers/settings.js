@@ -12,14 +12,14 @@ const UPDATE_LAST_VIEW_SEED = 'UPDATE_LAST_VIEW_SEED';
 const UPDATE_SUBUNIT = 'UPDATE_SUBUNIT';
 
 // actions
-export const updateLastViewSeed = () => (dispatch) => {
+export const updateLastViewSeed = () => dispatch => {
   dispatch({
     type: UPDATE_LAST_VIEW_SEED,
     time: new Date(),
   });
 };
 
-export const updateSubunit = (index) => (dispatch) => {
+export const updateSubunit = index => dispatch => {
   dispatch({
     type: UPDATE_SUBUNIT,
     subunit: index,
@@ -38,9 +38,9 @@ const actionHandler = {
 // selectors
 
 export const subunitSelector = createSelector(
-  (state) => state.settings.subunit,
-  (subunit) =>
-    memoize((satoshi) => {
+  state => state.settings.subunit,
+  subunit =>
+    memoize(satoshi => {
       switch (subunit) {
         case 0: // litecoin
           return satoshi / 100000000;
@@ -56,8 +56,8 @@ export const subunitSelector = createSelector(
 );
 
 export const subunitSymbolSelector = createSelector(
-  (state) => state.settings.subunit,
-  (subunit) => {
+  state => state.settings.subunit,
+  subunit => {
     switch (subunit) {
       case 0: // litecoin
         return 'Ł';
