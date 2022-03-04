@@ -27,7 +27,7 @@ export const START_LND = 'START_LND';
 export const STOP_LND = 'STOP_LND';
 
 // actions
-export const startLnd = () => async (dispatch) => {
+export const startLnd = () => async dispatch => {
   try {
     await LndInstance.init();
     dispatch({
@@ -40,7 +40,7 @@ export const startLnd = () => async (dispatch) => {
   }
 };
 
-export const stopLnd = () => async (dispatch) => {
+export const stopLnd = () => async dispatch => {
   try {
     await LndInstance.close();
     dispatch({
@@ -67,7 +67,7 @@ export const initWallet = () => async (dispatch, getState) => {
     });
 
     //TODO: replace timeout with rpcCallback from Lnd
-    await new Promise((r) => setTimeout(r, 5000));
+    await new Promise(r => setTimeout(r, 5000));
 
     // dispatch pollers
     dispatch(pollBalance());
@@ -91,7 +91,7 @@ export const initWallet = () => async (dispatch, getState) => {
   dispatch(finishOnboarding());
 };
 
-export const unlockWallet = () => async (dispatch) => {
+export const unlockWallet = () => async dispatch => {
   const password = await getItem(PASS);
 
   try {
@@ -112,7 +112,7 @@ export const unlockWallet = () => async (dispatch) => {
   }
 
   //TODO: replace timeout with rpcCallback from Lnd
-  await new Promise((r) => setTimeout(r, 4500));
+  await new Promise(r => setTimeout(r, 4500));
 
   // dispatch pollers
   dispatch(pollBalance());
@@ -124,8 +124,8 @@ export const unlockWallet = () => async (dispatch) => {
 
 // action handlers
 const actionHandler = {
-  [START_LND]: (state) => ({...state, lndActive: true}),
-  [STOP_LND]: (state) => ({...state, lndActive: false}),
+  [START_LND]: state => ({...state, lndActive: true}),
+  [STOP_LND]: state => ({...state, lndActive: false}),
 };
 
 // reducer

@@ -17,7 +17,7 @@ export const UPDATE_CURSOR_VALUE = 'UPDATE_CURSOR_VALUE';
 export const SET_CURSOR_SELECTED = 'SET_CURSOR_SELECTED';
 
 // actions
-export const changeGraphPeriod = (graphPeriod) => (dispatch) => {
+export const changeGraphPeriod = graphPeriod => dispatch => {
   dispatch({
     type: CHANGE_GRAPH_PERIOD,
     graphPeriod,
@@ -25,7 +25,7 @@ export const changeGraphPeriod = (graphPeriod) => (dispatch) => {
   dispatch(updateHistoricalRates());
 };
 
-export const updateCursorValue = (x, y) => (dispatch) => {
+export const updateCursorValue = (x, y) => dispatch => {
   dispatch({
     type: UPDATE_CURSOR_VALUE,
     x,
@@ -33,7 +33,7 @@ export const updateCursorValue = (x, y) => (dispatch) => {
   });
 };
 
-export const setCursorSelected = (bool) => (dispatch) => {
+export const setCursorSelected = bool => dispatch => {
   dispatch({
     type: SET_CURSOR_SELECTED,
     bool,
@@ -56,8 +56,8 @@ const actionHandler = {
 // find percentage difference
 // divides current price by price at start of timespan
 const chartPercentageDaySelector = createSelector(
-  (state) => state.ticker.day,
-  (dayRates) => {
+  state => state.ticker.day,
+  dayRates => {
     if (dayRates.length === 0) {
       return 0;
     }
@@ -66,8 +66,8 @@ const chartPercentageDaySelector = createSelector(
 );
 
 const chartPercentageWeekSelector = createSelector(
-  (state) => state.ticker.week,
-  (weeksRate) => {
+  state => state.ticker.week,
+  weeksRate => {
     if (weeksRate.length === 0) {
       return 0;
     }
@@ -76,8 +76,8 @@ const chartPercentageWeekSelector = createSelector(
 );
 
 const chartPercentageMonthSelector = createSelector(
-  (state) => state.ticker.month,
-  (monthsRate) => {
+  state => state.ticker.month,
+  monthsRate => {
     if (monthsRate.length === 0) {
       return 0;
     }
@@ -92,7 +92,7 @@ export const chartPercentageChangeSelector = createSelector(
   chartPercentageDaySelector,
   chartPercentageWeekSelector,
   chartPercentageMonthSelector,
-  (state) => state.chart.graphPeriod,
+  state => state.chart.graphPeriod,
   (day, week, month, graphPeriod) => {
     switch (graphPeriod) {
       case '1D':

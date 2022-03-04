@@ -13,15 +13,15 @@ import {useSelector} from 'react-redux';
 import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 
-const TransactionCell = (props) => {
+const TransactionCell = props => {
   const {item, onPress} = props;
   const {name, time, amount, sent} = item;
 
-  const convertToSubunit = useSelector((state) => subunitSelector(state));
+  const convertToSubunit = useSelector(state => subunitSelector(state));
   const cryptoAmount = convertToSubunit(amount);
-  const amountSymbol = useSelector((state) => subunitSymbolSelector(state));
+  const amountSymbol = useSelector(state => subunitSymbolSelector(state));
 
-  const calculateFiatAmount = useSelector((state) => fiatValueSelector(state));
+  const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(amount);
 
   return (

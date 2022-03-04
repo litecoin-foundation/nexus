@@ -19,16 +19,14 @@ export const SEND_ONCHAIN_PAYMENT = 'SEND_ONCHAIN_PAYMENT';
 export const ESTIMATE_ONCHAIN_FEE = 'ESTIMATE_ONCHAIN_FEE';
 
 // actions
-export const subscribeTransactions = () => (dispatch) => {
+export const subscribeTransactions = () => dispatch => {
   const stream = LndInstance.sendStreamCommand('subscribeTransactions');
   stream.on('data', async () => {
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 500));
     dispatch(updateTransactions());
   });
-  stream.on('error', (err) =>
-    console.log(`SubscribeTransaction error: ${err}`),
-  );
-  stream.on('status', (status) =>
+  stream.on('error', err => console.log(`SubscribeTransaction error: ${err}`));
+  stream.on('status', status =>
     console.log(`SubscribeTransactions status: ${status}`),
   );
   stream.on('end', () => {
@@ -36,13 +34,11 @@ export const subscribeTransactions = () => (dispatch) => {
   });
 };
 
-export const subscribeInvoices = () => (dispatch) => {
+export const subscribeInvoices = () => dispatch => {
   const stream = LndInstance.sendStreamCommand('subscribeInvoices');
   stream.on('data', () => dispatch(updateTransactions()));
-  stream.on('error', (err) =>
-    console.log(`SubscribeTransaction error: ${err}`),
-  );
-  stream.on('status', (status) =>
+  stream.on('error', err => console.log(`SubscribeTransaction error: ${err}`));
+  stream.on('status', status =>
     console.log(`SubscribeTransactions status: ${status}`),
   );
   stream.on('end', () => {
@@ -50,7 +46,7 @@ export const subscribeInvoices = () => (dispatch) => {
   });
 };
 
-export const getTransactions = () => async (dispatch) => {
+export const getTransactions = () => async dispatch => {
   const {transactions} = await LndInstance.sendCommand('getTransactions');
   dispatch({
     type: GET_TRANSACTIONS,
@@ -58,7 +54,7 @@ export const getTransactions = () => async (dispatch) => {
   });
 };
 
-const getInvoices = () => async (dispatch) => {
+const getInvoices = () => async dispatch => {
   const {invoices} = await LndInstance.sendCommand('listInvoices');
   dispatch({
     type: GET_INVOICES,
@@ -66,11 +62,11 @@ const getInvoices = () => async (dispatch) => {
   });
 };
 
-const updateTransactions = () => async (dispatch) => {
+const updateTransactions = () => async dispatch => {
   await Promise.all(dispatch(getTransactions()), dispatch(getInvoices()));
 };
 
-export const sendOnchainPayment = (paymentreq) => (dispatch) => {
+export const sendOnchainPayment = paymentreq => dispatch => {
   return new Promise(async (resolve, reject) => {
     try {
       const {txid} = await LndInstance.sendCommand('SendCoins', paymentreq);
@@ -89,9 +85,7 @@ export const sendOnchainPayment = (paymentreq) => (dispatch) => {
   });
 };
 
-export const estimateOnchainFee = (address, amount, conf) => async (
-  dispatch,
-) => {
+export const estimateOnchainFee = (address, amount, conf) => async dispatch => {
   try {
     const AddrToAmount = {};
     AddrToAmount[address] = parseFloat(amount) * 1000000;
@@ -115,18 +109,18 @@ export const estimateOnchainFee = (address, amount, conf) => async (
   }
 };
 
-export const decodePaymentRequest = async (payReqString) => {
+export const decodePaymentRequest = async payReqString => {
   const response = await LndInstance.sendCommand('DecodePayReq', {
     payReq: payReqString,
   });
   return response;
 };
 
-export const sendLightningPayment = (paymentreq) => async (dispatch) => {
+export const sendLightningPayment = paymentreq => async dispatch => {
   try {
     const stream = LndInstance.sendStreamCommand('sendPayment');
     await new Promise((resolve, reject) => {
-      stream.on('data', (data) => {
+      stream.on('data', data => {
         if (data.paymentError) {
           reject(new Error(`Lightning payment error: ${data.paymentError}`));
         } else {
@@ -162,10 +156,10 @@ const actionHandler = {
 };
 
 // selectors
-const txSelector = (state) => state.transaction.transactions;
+const txSelector = state => state.transaction.transactions;
 
-export const txDetailSelector = createSelector(txSelector, (tx) =>
-  tx.map((data) => {
+export const txDetailSelector = createSelector(txSelector, tx =>
+  tx.map(data => {
     return {
       name:
         Math.sign(parseFloat(data.amount)) === -1

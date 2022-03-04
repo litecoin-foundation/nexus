@@ -32,7 +32,7 @@ export const ENABLE_CHANNEL_BACKUP = 'ENABLE_CHANNEL_BACKUP';
 export const GET_DESCRIBE_GRAPH = 'GET_DESCRIBE_GRAPH';
 
 // actions
-export const listChannels = () => async (dispatch) => {
+export const listChannels = () => async dispatch => {
   const {channels} = await LndInstance.sendCommand('ListChannels');
   dispatch({
     type: LIST_CHANNELS,
@@ -40,7 +40,7 @@ export const listChannels = () => async (dispatch) => {
   });
 };
 
-export const listPendingChannels = () => async (dispatch) => {
+export const listPendingChannels = () => async dispatch => {
   const {
     totalLimboBalance,
     pendingOpenChannels,
@@ -49,32 +49,32 @@ export const listPendingChannels = () => async (dispatch) => {
     waitingCloseChannels,
   } = await LndInstance.sendCommand('PendingChannels');
 
-  const mapPendingAttributes = (channel) => ({
+  const mapPendingAttributes = channel => ({
     remotePubkey: channel.remoteNodePub,
     capacity: channel.capacity,
     localBalance: channel.localBalance,
     remoteBalance: channel.remoteBalance,
     channelPoint: channel.channelPoint,
   });
-  const pocs = pendingOpenChannels.map((poc) => ({
+  const pocs = pendingOpenChannels.map(poc => ({
     ...mapPendingAttributes(poc.channel),
     confirmationHeight: poc.confirmationHeight,
     blocksTillOpen: poc.blocksTillOpen,
     commitFee: poc.commitFee,
     feePerKw: poc.feePerKw,
   }));
-  const pccs = pendingClosingChannels.map((pcc) => ({
+  const pccs = pendingClosingChannels.map(pcc => ({
     ...mapPendingAttributes(pcc.channel),
     closingTxId: pcc.closingTxid,
   }));
-  const pfccs = pendingForceClosingChannels.map((pfcc) => ({
+  const pfccs = pendingForceClosingChannels.map(pfcc => ({
     ...mapPendingAttributes(pfcc.channel),
     closingTxId: pfcc.closingTxid,
     limboBalance: pfcc.limboBalance,
     maturityHeight: pfcc.maturityHeight,
     blocksTilMaturity: pfcc.blocksTilMaturity,
   }));
-  const wccs = waitingCloseChannels.map((wcc) => ({
+  const wccs = waitingCloseChannels.map(wcc => ({
     ...mapPendingAttributes(wcc.channel),
     limboBalance: wcc.limboBalance,
   }));
@@ -93,7 +93,7 @@ export const listPendingChannels = () => async (dispatch) => {
   });
 };
 
-export const listPeers = () => async (dispatch) => {
+export const listPeers = () => async dispatch => {
   const {peers} = await LndInstance.sendCommand('ListPeers');
   dispatch({
     type: LIST_PEERS,
@@ -101,7 +101,7 @@ export const listPeers = () => async (dispatch) => {
   });
 };
 
-export const connectToPeer = async (input) => {
+export const connectToPeer = async input => {
   const pubkey = input.split('@')[0];
   const host = input.split('@')[1];
 
@@ -123,7 +123,7 @@ export const openChannel = async (pubkey, amount) => {
     });
     await new Promise((resolve, reject) => {
       stream.on('data', () => console.log('update channel data'));
-      stream.on('status', (status) =>
+      stream.on('status', status =>
         console.log(`CHANNEL: update in channel status:  ${status}`),
       );
       stream.on('end', resolve);
@@ -134,7 +134,7 @@ export const openChannel = async (pubkey, amount) => {
   }
 };
 
-export const enableChannelBackup = () => (dispatch) => {
+export const enableChannelBackup = () => dispatch => {
   dispatch({
     type: ENABLE_CHANNEL_BACKUP,
   });
@@ -148,13 +148,13 @@ export const backupChannels = () => async (dispatch, getState) => {
 
   const stream = LndInstance.sendStreamCommand('subscribeChannelBackups');
   stream.on('data', () => handleChannelBackup());
-  stream.on('error', (err) => console.log('Channel backup error:', err));
-  stream.on('status', (status) =>
+  stream.on('error', err => console.log('Channel backup error:', err));
+  stream.on('status', status =>
     console.log(`Channel backup status: ${status}`),
   );
 };
 
-export const getDescribeGraph = () => async (dispatch) => {
+export const getDescribeGraph = () => async dispatch => {
   const {nodes, edges} = await LndInstance.sendCommand('DescribeGraph', {
     include_unannounced: false,
   });
@@ -171,22 +171,22 @@ const actionHandler = {
   [LIST_CHANNELS]: (state, {channels}) => ({...state, channels}),
   [LIST_PENDING_CHANNELS]: (state, {pending}) => ({...state, pending}),
   [LIST_PEERS]: (state, {peers}) => ({...state, peers}),
-  [ENABLE_CHANNEL_BACKUP]: (state) => ({...state, channelBackupsEnabled: true}),
+  [ENABLE_CHANNEL_BACKUP]: state => ({...state, channelBackupsEnabled: true}),
   [GET_DESCRIBE_GRAPH]: (state, {nodes, edges}) => ({...state, nodes, edges}),
 };
 
 // selectors
 
 export const searchGraph = createSelector(
-  (state) => state.channels.nodes,
-  (nodes) =>
-    memoize((searchTerm) => {
+  state => state.channels.nodes,
+  nodes =>
+    memoize(searchTerm => {
       // remove all nodes with no alias
-      const a1 = nodes.filter((node) => {
+      const a1 = nodes.filter(node => {
         return node.alias !== undefined;
       });
 
-      const a2 = a1.filter((node) => {
+      const a2 = a1.filter(node => {
         return node.alias !== '';
       });
 

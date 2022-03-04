@@ -14,7 +14,7 @@ export const ADD_INVOICE = 'ADD_INVOICE';
 export const CLEAR_INVOICE = 'CLEAR_INVOICE';
 
 // actions
-export const addInvoice = (invoice) => async (dispatch) => {
+export const addInvoice = invoice => async dispatch => {
   try {
     const request = {
       memo: invoice.memo,
@@ -36,7 +36,7 @@ export const addInvoice = (invoice) => async (dispatch) => {
   }
 };
 
-export const clearInvoice = () => (dispatch) => {
+export const clearInvoice = () => dispatch => {
   dispatch({
     type: CLEAR_INVOICE,
     paymentRequest: '',

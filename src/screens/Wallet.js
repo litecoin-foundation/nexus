@@ -10,12 +10,12 @@ import TransactionList from '../components/TransactionList';
 import AmountView from '../components/AmountView';
 import InfoModal from '../components/Modals/InfoModal';
 
-const Wallet = (props) => {
+const Wallet = props => {
   const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
   const [isInternetModalVisible, setInternetModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
-  const {isInternetReachable} = useSelector((state) => state.info);
+  const {isInternetReachable} = useSelector(state => state.info);
 
   const handleSendPress = () => {
     if (!isInternetReachable) {
@@ -30,7 +30,7 @@ const Wallet = (props) => {
       <AmountView />
       <View style={styles.transactionListContainer}>
         <TransactionList
-          onPress={(data) => {
+          onPress={data => {
             selectTransaction(data);
             setTxDetailModalVisible(true);
           }}
