@@ -195,7 +195,6 @@ RCT_EXPORT_METHOD(start: (RCTPromiseResolveBlock)resolve
                              @"SubscribeTransactions" : ^(NSData* req, RecvStream* cb) { return LndmobileSubscribeTransactions(req, cb); },
                              @"SubscribeInvoices" : ^(NSData* req, RecvStream* cb) { return LndmobileSubscribeInvoices(req, cb); },
                              @"SubscribeChannelBackups" : ^(NSData* req, RecvStream* cb) { return LndmobileSubscribeChannelBackups(req, cb); },
-                             @"SendPaymentV2" : ^(NSData* req, RecvStream* cb) { return LndmobileRouterSendPaymentV2(req, cb); },
                              };
   
   self.biStreamMethods = @{
@@ -241,9 +240,8 @@ RCT_EXPORT_METHOD(start: (RCTPromiseResolveBlock)resolve
   
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(void){
     RCTLogInfo(@"Starting lnd");
-    NativeCallback *unlockerCallback = [[NativeCallback alloc] initWithEmitter:self];
     NativeCallback* rpcCallback = [[NativeCallback alloc] initWithResolver:resolve rejecter:reject];
-    LndmobileStart(args, unlockerCallback, rpcCallback);
+    LndmobileStart(args, rpcCallback);
   });
   
 }

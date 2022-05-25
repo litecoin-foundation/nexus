@@ -1,19 +1,20 @@
-
+// prettier-ignore
 {
   "compilerOptions": {
-    "target": "esnext",                       /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
-    "module": "commonjs",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
-    "lib": ["es2017"],                        /* Specify library files to be included in the compilation. */
-    "allowJs": true,                          /* Allow javascript files to be compiled. */
-    "jsx": "react-native",                    /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
-    "noEmit": true,                           /* Do not emit outputs. */
-    "isolatedModules": true,                  /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
-    "strict": true,                           /* Enable all strict type-checking options. */
-    "moduleResolution": "node",               /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
-    "allowSyntheticDefaultImports": true,     /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */
-    "esModuleInterop": true,                  /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
-    "skipLibCheck": true,                     /* Skip type checking of declaration files. */
-    "resolveJsonModule": true                 /* Allows importing modules with a ‘.json’ extension, which is a common practice in node projects. */
+    "target": "esnext",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "lib": ["es2017"],                                   /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+    "jsx": "react-native",                               /* Specify what JSX code is generated. */
+    "module": "commonjs",                                /* Specify what module code is generated. */
+    "moduleResolution": "node",                          /* Specify how TypeScript looks up a file from a given module specifier. */
+    "resolveJsonModule": true,                           /* Enable importing .json files */
+    "allowJs": true,                                     /* Allow JavaScript files to be a part of your program. Use the `checkJS` option to get errors from these files. */
+    "noEmit": true,                                      /* Disable emitting files from a compilation. */
+    "isolatedModules": true,                             /* Ensure that each file can be safely transpiled without relying on other imports. */
+    "allowSyntheticDefaultImports": true,                /* Allow 'import x from y' when a module doesn't have a default export. */
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+    "strict": true,                                      /* Enable all strict type-checking options. */
+    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "exclude": [
     "node_modules", "babel.config.js", "metro.config.js", "jest.config.js"

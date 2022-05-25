@@ -1,13 +1,17 @@
-import {createStore, applyMiddleware, compose} from 'redux';
-import {persistStore, persistReducer} from 'redux-persist';
+import {configureStore} from '@reduxjs/toolkit';
 import createSensitiveStorage from 'redux-persist-sensitive-storage';
-import thunk from 'redux-thunk';
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from 'redux-persist';
+
 import reducer from './src/reducers';
-
-const initialState = {};
-const middleware = [thunk];
-
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 const storage = createSensitiveStorage({
   keychainService: 'lndmobileKeychain',
@@ -19,11 +23,16 @@ const persistConfig = {
   storage,
   timeout: 0,
 };
+
 const pReducer = persistReducer(persistConfig, reducer);
 
-export const store = createStore(
-  pReducer,
-  initialState,
-  composeEnhancers(applyMiddleware(...middleware)),
-);
+export const store = configureStore({
+  reducer: pReducer,
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+});
 export const pStore = persistStore(store);

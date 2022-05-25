@@ -1,4 +1,4 @@
-import {createSelector} from 'reselect';
+import {createSelector} from '@reduxjs/toolkit';
 
 import Lightning from '../lib/lightning/lightning';
 import {formatDate, formatTime} from '../lib/utils/date';

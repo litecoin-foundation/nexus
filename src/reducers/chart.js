@@ -1,4 +1,4 @@
-import {createSelector} from 'reselect';
+import {createSelector} from '@reduxjs/toolkit';
 
 import {updateHistoricalRates} from './ticker';
 import percentageDiff from '../lib/utils/percentageDiff';

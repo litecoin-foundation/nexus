@@ -1,5 +1,5 @@
 import {Buffer} from 'buffer';
-import {createSelector} from 'reselect';
+import {createSelector} from '@reduxjs/toolkit';
 import memoize from 'lodash.memoize';
 import leven from 'leven';
 

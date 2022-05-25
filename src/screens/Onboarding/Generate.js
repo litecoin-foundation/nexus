@@ -3,7 +3,7 @@ import {View, Text, Dimensions, StyleSheet, Image} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import Carousel, {Pagination} from 'react-native-snap-carousel';
 import LinearGradient from 'react-native-linear-gradient';
-import {createSelector} from 'reselect';
+import {createSelector} from '@reduxjs/toolkit';
 import {HeaderBackButton} from '@react-navigation/elements';
 
 import SeedView from '../../components/SeedView';

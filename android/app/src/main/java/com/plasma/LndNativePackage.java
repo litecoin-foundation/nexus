@@ -1,4 +1,4 @@
-package com.litecoin.plasma;
+package com.plasma;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

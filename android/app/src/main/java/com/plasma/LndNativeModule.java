@@ -1,4 +1,4 @@
-package com.litecoin.plasma;
+package com.plasma;
 
 import android.content.res.AssetManager;
 import android.os.FileObserver;

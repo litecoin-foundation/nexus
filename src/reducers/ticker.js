@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {createSelector} from 'reselect';
+import {createSelector} from '@reduxjs/toolkit';
 import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
