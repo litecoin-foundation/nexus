@@ -21,9 +21,9 @@ import {getAddress} from '../reducers/address';
 import * as bip21 from '../lib/utils/bip21';
 import validateLtcAddress from '../lib/utils/validate';
 
-const Receive = (props) => {
+const Receive = props => {
   const dispatch = useDispatch();
-  const address = useSelector((state) => state.address.address);
+  const address = useSelector(state => state.address.address);
 
   const [isInternetModalVisible, setInternetModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -33,7 +33,8 @@ const Receive = (props) => {
   useEffect(() => {
     dispatch(getAddress());
     setURI(address);
-  }, [address, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   props.navigation.setOptions({
     headerRight: () => (
@@ -50,7 +51,7 @@ const Receive = (props) => {
     await Clipboard.setString(address);
   };
 
-  const handleChange = (input) => {
+  const handleChange = input => {
     changeAmount(input);
     updateQR();
   };
@@ -94,7 +95,7 @@ const Receive = (props) => {
       <RequestModal
         isVisible={modalVisible && validateLtcAddress(address) ? true : false}
         close={() => setModalVisible(false)}
-        onChange={(input) => handleChange(input)}
+        onChange={input => handleChange(input)}
       />
 
       <InfoModal

@@ -1,58 +1,98 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, Vibration, Text, Image, Platform} from 'react-native';
-import {RNCamera} from 'react-native-camera';
+import React, {useState, useEffect} from 'react';
+import {View, StyleSheet, Vibration, Text, Image} from 'react-native';
+import {Camera, useCameraDevices} from 'react-native-vision-camera';
+import {useScanBarcodes, BarcodeFormat} from 'vision-camera-code-scanner';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Switch from '../components/Buttons/Switch';
 import Header from '../components/Header';
 
-const Scan = (props) => {
+const Scan = props => {
   const {navigation} = props;
   const [flashEnabled, triggerFlash] = useState(false);
+  const [scanned, triggerScanned] = useState(false);
 
-  const handleRead = (event) => {
-    Vibration.vibrate();
-    navigation.navigate('Send', {scanData: event.data});
+  const [frameProcessor, barcodes] = useScanBarcodes([
+    BarcodeFormat.ALL_FORMATS, // You can only specify a particular format
+  ]);
+
+  const toggleActiveState = async () => {
+    if (barcodes && barcodes.length > 0 && scanned === false) {
+      triggerScanned(true);
+      barcodes.forEach(async qr => {
+        if (qr.rawValue !== '') {
+          Vibration.vibrate();
+          navigation.navigate('Send', {scanData: qr.rawValue});
+        }
+      });
+    }
   };
+
+  React.useEffect(() => {
+    toggleActiveState();
+    return () => {
+      barcodes;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [barcodes]);
+
+  useEffect(() => {
+    async function checkCameraPermissions() {
+      const cameraPermission = await Camera.getCameraPermissionStatus();
+      return cameraPermission;
+    }
+
+    async function handlePermissions() {
+      const permission = await checkCameraPermissions();
+      switch (permission) {
+        case 'authorized':
+          break;
+        case 'not-determined':
+          // TODO test this
+          await Camera.requestCameraPermission();
+          break;
+        case 'denied':
+          // TODO
+          alert('camera disabled');
+          // The user explicitly denied the permission request alert.
+          // You cannot use the request functions again, but you can
+          // use the Linking API to redirect the user to the Settings
+          // App where he can manually grant the permission.
+          break;
+        case 'restricted':
+          alert('camera disabled');
+          // iOS only - camera restricted
+          // handle same as denied?
+          break;
+        default:
+          break;
+      }
+    }
+
+    handlePermissions();
+  }, []);
+
+  const devices = useCameraDevices();
+  const device = devices.back;
+
+  if (device == null) {
+    return <View />;
+  }
 
   return (
     <View style={styles.container}>
       <Header modal={true} />
-      <RNCamera
+      <Camera
         style={styles.camera}
-        captureAudio={false}
-        onBarCodeRead={(e) => handleRead(e)}
-        type={RNCamera.Constants.Type.back}
-        barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}
-        videoStabilizationMode={
-          Platform.OS === 'android'
-            ? null
-            : RNCamera.Constants.VideoStabilization.auto
-        }
-        androidCameraPermissionOptions={{
-          title: 'Permission to use Camera',
-          message:
-            'App will use your camera to scan QR codes for Litecoin Payments',
-          buttonPositive: 'Ok',
-          buttonNegative: 'Cancel',
-        }}
-        notAuthorizedView={
-          <View>
-            <Text style={styles.textAlign}>
-              Camera not enabled. Go to Settings and enable your Camera for
-              settings to scan QR codes.
-            </Text>
-          </View>
-        }
-        flashMode={
-          flashEnabled
-            ? RNCamera.Constants.FlashMode.torch
-            : RNCamera.Constants.FlashMode.off
-        }>
+        device={device}
+        isActive={true}
+        frameProcessor={frameProcessor}
+        frameProcessorFps={5}
+        audio={false}>
         <View style={styles.qrFrameContainer}>
           <Image source={require('../assets/images/qr-frame.png')} />
         </View>
-      </RNCamera>
+      </Camera>
       <LinearGradient
         colors={['#7E58FFF2', '#003DB3F2']}
         start={{x: 0, y: 0}}
@@ -60,7 +100,7 @@ const Scan = (props) => {
         style={styles.bottomContainer}>
         <View style={styles.bottomContentContainer}>
           <Text style={styles.bottomText}>Enable Flash</Text>
-          <Switch onPress={(flashStatus) => triggerFlash(flashStatus)} />
+          <Switch onPress={flashStatus => triggerFlash(flashStatus)} />
         </View>
       </LinearGradient>
     </View>
@@ -70,7 +110,7 @@ const Scan = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'black',
   },
   noMargin: {
     margin: 0,

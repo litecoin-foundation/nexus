@@ -1,6 +1,4 @@
-import Lightning from '../lib/lightning/lightning';
-
-const LndInstance = new Lightning();
+import lnd from '@litecoinfoundation/react-native-lndltc';
 
 // initial state
 const initialState = {
@@ -11,8 +9,12 @@ const initialState = {
 export const GET_ADDRESS = 'GET_ADDRESS';
 
 // actions
-export const getAddress = () => async (dispatch) => {
-  const {address} = await LndInstance.sendCommand('NewAddress', {type: 3});
+export const getAddress = () => async dispatch => {
+  const rpc = await lnd.getAddress();
+
+  console.error(rpc.value);
+  const {address} = rpc.value;
+
   dispatch({
     type: GET_ADDRESS,
     address,

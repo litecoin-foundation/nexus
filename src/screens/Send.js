@@ -25,7 +25,7 @@ import AccountCell from '../components/Cells/AccountCell';
 import InputField from '../components/InputField';
 
 import {decodeBIP21} from '../lib/utils/bip21';
-import validateLtcAddress from '../lib/utils/validate';
+import {validate as validateLtcAddress} from '../lib/utils/validate';
 import {updateAmount} from '../reducers/input';
 import WhiteButton from '../components/Buttons/WhiteButton';
 import {sendOnchainPayment} from '../reducers/transaction';
@@ -33,9 +33,7 @@ import {sendOnchainPayment} from '../reducers/transaction';
 const Send = ({navigation, route}) => {
   const dispatch = useDispatch();
 
-  const confirmedBalance = useSelector(
-    (state) => state.balance.confirmedBalance,
-  );
+  const confirmedBalance = useSelector(state => state.balance.confirmedBalance);
   const [isSendModalTriggered, triggerSendModal] = useState(false);
   const [isPinModalTriggered, triggerPinModal] = useState(false);
   const [isAmountInputTriggered, triggerAmountInput] = useState(false);
@@ -62,7 +60,7 @@ const Send = ({navigation, route}) => {
     }
   }, [address, amount, confirmedBalance]);
 
-  const validate = async (data) => {
+  const validate = async data => {
     try {
       const decoded = decodeBIP21(data);
       const valid = await validateLtcAddress(decoded.address);
@@ -70,12 +68,15 @@ const Send = ({navigation, route}) => {
       if (!valid) {
         throw new Error('Invalid URI');
       } else {
-        setAmount(decoded.options.amount);
+        if (decoded.options.amount) {
+          setAmount(decoded.options.amount);
+          dispatch(updateAmount(decoded.options.amount));
+        }
         setAddress(decoded.address);
         if (decoded.options.message) {
           changeMemo(decoded.options.message);
         }
-        dispatch(updateAmount(decoded.options.amount));
+
         return;
       }
     } catch (error) {
@@ -112,8 +113,7 @@ const Send = ({navigation, route}) => {
     }
   };
 
-  const handleScanCallback = async (data) => {
-    console.log(data);
+  const handleScanCallback = async data => {
     try {
       await validate(data);
     } catch (error) {
@@ -128,7 +128,7 @@ const Send = ({navigation, route}) => {
     // required due to react-native bug where multiple
     // modals cannot be open at the same time.
     // closing should take 300ms
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 600));
     triggerPinModal(true);
   };
 
@@ -138,17 +138,14 @@ const Send = ({navigation, route}) => {
     // TODO: handle subunit
     // we're multiplying amount by 100M to find
     // the value in sats
-    const paymentreq = {
-      addr: address,
-      amount: parseFloat(amount) * 100000000,
-      ...(memo !== '' && {label: memo}),
-    };
-
     try {
-      await dispatch(sendOnchainPayment(paymentreq));
+      await dispatch(
+        sendOnchainPayment(address, parseFloat(amount) * 100000000, memo),
+      );
       navigation.navigate('Sent', {amount, address});
     } catch (error) {
-      navigation.navigate('Fail', {amount, error});
+      const errorMessage = `${error}`;
+      navigation.navigate('Fail', {amount, errorMessage});
     }
   };
 
@@ -238,7 +235,7 @@ const Send = ({navigation, route}) => {
           </View>
 
           <AmountInput
-            onChangeText={(input) => setAmount(input)}
+            onChangeText={input => setAmount(input)}
             onAccept={() => triggerAmountInput(false)}
             selected={() => triggerAmountInput(true)}
             confirmButtonText="Confirm"
@@ -289,7 +286,7 @@ const Send = ({navigation, route}) => {
                   ADD Description
                 </Text>
                 <InputField
-                  onChangeText={(text) => changeMemo(text)}
+                  onChangeText={text => changeMemo(text)}
                   value={memo}
                 />
               </View>

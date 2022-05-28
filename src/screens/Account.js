@@ -9,12 +9,10 @@ import DatePicker from '../components/DatePicker';
 import {formatDate, formatTime} from '../lib/utils/date';
 import InfoCell from '../components/Cells/InfoCell';
 
-const Account = (props) => {
-  const chartCursorDate = useSelector((state) => state.chart.cursorDate);
-  const chartCursorSelected = useSelector(
-    (state) => state.chart.cursorSelected,
-  );
-  const {isInternetReachable} = useSelector((state) => state.info);
+const Account = props => {
+  const chartCursorDate = useSelector(state => state.chart.cursorDate);
+  const chartCursorSelected = useSelector(state => state.chart.cursorSelected);
+  const {isInternetReachable} = useSelector(state => state.info);
 
   return (
     <View style={styles.container}>

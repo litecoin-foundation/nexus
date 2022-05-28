@@ -6,12 +6,17 @@ import Button from './Button';
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
+import {authenticate} from '../../lib/utils/biometric';
 
-const AuthPad = (props) => {
-  const {handleValidationFailure, handleValidationSuccess} = props;
+const AuthPad = props => {
+  const {
+    handleValidationFailure,
+    handleValidationSuccess,
+    handleBiometricPress,
+  } = props;
   const dispatch = useDispatch();
-  const pin = useSelector((state) => state.authpad.pin);
-  const passcode = useSelector((state) => state.authentication.passcode);
+  const pin = useSelector(state => state.authpad.pin);
+  const passcode = useSelector(state => state.authentication.passcode);
 
   // clear all inputs in AuthPad on initial render
   useEffect(() => {
@@ -37,7 +42,7 @@ const AuthPad = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin]);
 
-  const handlePress = (input) => {
+  const handlePress = input => {
     switch (input) {
       case '.':
         // handled by BiometricButton
@@ -53,12 +58,19 @@ const AuthPad = (props) => {
 
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 
-  const buttons = values.map((value) => {
+  const buttons = values.map(value => {
     if (value === '.') {
       return (
         <BiometricButton
           key="biometric-button-key"
-          onPress={() => dispatch(unlockWalletWithBiometric())}
+          onPress={async () => {
+            if (handleBiometricPress) {
+              await authenticate();
+              handleBiometricPress();
+            } else {
+              dispatch(unlockWalletWithBiometric());
+            }
+          }}
         />
       );
     }

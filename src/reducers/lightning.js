@@ -1,40 +1,55 @@
 import RNFS from 'react-native-fs';
 
-import Lightning from '../lib/lightning/lightning';
+import lnd, {
+  ENetworks,
+  LndConf,
+  ss_lnrpc,
+} from '@litecoinfoundation/react-native-lndltc';
 
-import {toBuffer} from '../lib/utils';
 import {getRandomBytes} from '../lib/utils/random';
 import {setItem, getItem} from '../lib/utils/keychain';
 import {deleteWalletDB} from '../lib/utils/file';
 
 import {finishOnboarding, setRecoveryMode} from './onboarding';
-import {pollBalance} from './balance';
-import {pollInfo} from './info';
 import {subscribeTransactions, subscribeInvoices} from './transaction';
+import {pollInfo} from './info';
 import {pollTicker} from './ticker';
-import {backupChannels, connectToPeer} from './channels';
+import {backupChannels} from './channels';
 
-const LndInstance = new Lightning();
 const PASS = 'PASSWORD';
+const lndConf = new LndConf(ENetworks.mainnet);
 
 // inital state
 const initialState = {
   lndActive: false,
+  lndState: null,
 };
 
 // constants
 export const START_LND = 'START_LND';
 export const STOP_LND = 'STOP_LND';
+export const UPDATE_LND_STATE = 'UPDATE_LND_STATE';
 
 // actions
 export const startLnd = () => async dispatch => {
   try {
-    await LndInstance.init();
+    // subscribe to LND state
+    lnd.stateService.subscribeToStateChanges(res => {
+      if (res.isOk()) {
+        dispatch({
+          type: UPDATE_LND_STATE,
+          payload: res.value,
+        });
+      }
+    });
+
+    // start LND
+    await lnd.start(lndConf);
+
     dispatch({
       type: START_LND,
     });
   } catch (err) {
-    console.log(err);
     console.log('CANT start LND');
     // TODO: handle this
   }
@@ -42,7 +57,7 @@ export const startLnd = () => async dispatch => {
 
 export const stopLnd = () => async dispatch => {
   try {
-    await LndInstance.close();
+    await lnd.stop();
     dispatch({
       type: STOP_LND,
     });
@@ -60,72 +75,72 @@ export const initWallet = () => async (dispatch, getState) => {
 
   try {
     await deleteWalletDB();
-    await LndInstance.sendCommand('InitWallet', {
-      walletPassword: toBuffer(password),
-      cipherSeedMnemonic: seed,
-      recoveryWindow: beingRecovered === true ? 3000 : 0,
+    await lnd.walletUnlocker.initWallet(password, seed);
+    // TODO: no recovery window!
+    // recoveryWindow: beingRecovered === true ? 3000 : 0,
+
+    lnd.stateService.subscribeToStateChanges(res => {
+      if (res.isOk()) {
+        if (res.value === ss_lnrpc.WalletState.RPC_ACTIVE) {
+          // dispatch pollers
+          dispatch(pollInfo());
+          dispatch(subscribeTransactions());
+          dispatch(subscribeInvoices());
+          dispatch(pollTicker());
+          dispatch(backupChannels());
+          dispatch(finishOnboarding());
+          return;
+        }
+      }
     });
-
-    //TODO: replace timeout with rpcCallback from Lnd
-    await new Promise(r => setTimeout(r, 5000));
-
-    // dispatch pollers
-    dispatch(pollBalance());
-    dispatch(pollInfo());
-    dispatch(subscribeTransactions());
-    dispatch(subscribeInvoices());
-    dispatch(pollTicker());
-    dispatch(backupChannels());
-
-    // currently no litecoin lightning dns seed exists for bootstrapping
-    // in the meanwhile to sync to graph we must manually connect to a peer
-    // in this case BOLTZ exchange's peer
-    dispatch(
-      connectToPeer(
-        '02a4cb9d9c40ab508be3641a3b42be249e7cacfc7fea600485f9e37e46382aaa49@104.196.200.39:10735',
-      ),
-    );
   } catch (error) {
     console.log(error);
   }
-  dispatch(finishOnboarding());
 };
 
 export const unlockWallet = () => async dispatch => {
-  const password = await getItem(PASS);
+  return new Promise(async resolve => {
+    const password = await getItem(PASS);
 
-  try {
-    await LndInstance.sendCommand('UnlockWallet', {
-      walletPassword: toBuffer(password),
-    });
-  } catch (error) {
-    const dbPath = `${RNFS.DocumentDirectoryPath}/data/chain/litecoin/mainnet/wallet.db`;
+    try {
+      await lnd.walletUnlocker.unlockWallet(password);
 
-    if ((await RNFS.exists(dbPath)) === false) {
-      // if no wallet db exists, user has likely uninstalled the app previously
-      // in this case, seed exists in keychain. initialise wallet from seed
-      // enabling recovery mode to scan for addresses
-      await dispatch(setRecoveryMode(true));
-      await dispatch(initWallet());
-      await dispatch(setRecoveryMode(false));
+      lnd.stateService.subscribeToStateChanges(res => {
+        if (res.isOk()) {
+          if (res.value === ss_lnrpc.WalletState.RPC_ACTIVE) {
+            // dispatch pollers
+            dispatch(pollInfo());
+            dispatch(subscribeTransactions());
+            dispatch(subscribeInvoices());
+            dispatch(pollTicker());
+            dispatch(backupChannels());
+
+            resolve();
+          }
+        }
+      });
+    } catch (error) {
+      const dbPath = `${RNFS.DocumentDirectoryPath}/data/chain/litecoin/mainnet/wallet.db`;
+
+      if ((await RNFS.exists(dbPath)) === false) {
+        // if no wallet db exists, user has likely uninstalled the app previously
+        // in this case, seed exists in keychain. initialise wallet from seed
+        // enabling recovery mode to scan for addresses
+        await dispatch(setRecoveryMode(true));
+        await dispatch(initWallet());
+        await dispatch(setRecoveryMode(false));
+      } else {
+        throw new Error(error);
+      }
     }
-  }
-
-  //TODO: replace timeout with rpcCallback from Lnd
-  await new Promise(r => setTimeout(r, 4500));
-
-  // dispatch pollers
-  dispatch(pollBalance());
-  dispatch(pollInfo());
-  dispatch(subscribeTransactions());
-  dispatch(pollTicker());
-  dispatch(backupChannels());
+  });
 };
 
 // action handlers
 const actionHandler = {
   [START_LND]: state => ({...state, lndActive: true}),
   [STOP_LND]: state => ({...state, lndActive: false}),
+  [UPDATE_LND_STATE]: (state, {payload}) => ({...state, lndState: payload}),
 };
 
 // reducer

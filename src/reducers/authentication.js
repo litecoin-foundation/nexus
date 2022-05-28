@@ -1,3 +1,5 @@
+import lnd, {ss_lnrpc} from '@litecoinfoundation/react-native-lndltc';
+
 import {getItem} from '../lib/utils/keychain';
 import {authenticate} from '../lib/utils/biometric';
 import {unlockWallet} from './lightning';
@@ -48,10 +50,16 @@ export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
       payload: false,
     });
   } else {
-    await dispatch(unlockWallet());
-    dispatch({
-      type: UNLOCK_WALLET,
-      payload: true,
+    dispatch(await unlockWallet());
+    lnd.stateService.subscribeToStateChanges(res => {
+      if (res.isOk()) {
+        if (res.value === ss_lnrpc.WalletState.UNLOCKED) {
+          dispatch({
+            type: UNLOCK_WALLET,
+            payload: true,
+          });
+        }
+      }
     });
   }
 };
@@ -59,10 +67,16 @@ export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
 export const unlockWalletWithBiometric = () => async dispatch => {
   try {
     await authenticate('Unlock Wallet');
-    await dispatch(unlockWallet());
-    dispatch({
-      type: UNLOCK_WALLET,
-      payload: true,
+    dispatch(await unlockWallet());
+    lnd.stateService.subscribeToStateChanges(res => {
+      if (res.isOk()) {
+        if (res.value === ss_lnrpc.WalletState.UNLOCKED) {
+          dispatch({
+            type: UNLOCK_WALLET,
+            payload: true,
+          });
+        }
+      }
     });
   } catch (error) {
     console.log(error);

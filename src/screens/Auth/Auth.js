@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import {Alert, View, StyleSheet} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import lnd, {ss_lnrpc} from '@litecoinfoundation/react-native-lndltc';
 
 import Auth from '../../components/Auth';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -11,15 +12,15 @@ import {
 } from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 
-const AuthScreen = (props) => {
+const AuthScreen = props => {
   const dispatch = useDispatch();
 
-  const pin = useSelector((state) => state.authpad.pin);
+  const pin = useSelector(state => state.authpad.pin);
   const biometricsEnabled = useSelector(
-    (state) => state.authentication.biometricsEnabled,
+    state => state.authentication.biometricsEnabled,
   );
   const walletUnlocked = useSelector(
-    (state) => state.authentication.walletUnlocked,
+    state => state.authentication.walletUnlocked,
   );
 
   useEffect(() => {

@@ -1,7 +1,4 @@
-import Lightning from '../lib/lightning/lightning';
-import {poll} from '../lib/utils/poll';
-
-const LndInstance = new Lightning();
+import lnd from '@litecoinfoundation/react-native-lndltc';
 
 // initial state
 const initialState = {
@@ -16,11 +13,12 @@ const initialState = {
 export const GET_BALANCE = 'GET_BALANCE';
 
 // actions
-export const getBalance = () => async (dispatch) => {
-  const w = await LndInstance.sendCommand('WalletBalance');
-  const c = await LndInstance.sendCommand('ChannelBalance');
-  const {totalBalance, confirmedBalance, unconfirmedBalance} = w;
-  const {balance, pendingOpenBalance} = c;
+export const getBalance = () => async dispatch => {
+  const w = await lnd.getWalletBalance();
+  const c = await lnd.getChannelBalance();
+
+  const {totalBalance, confirmedBalance, unconfirmedBalance} = w.value;
+  const {balance, pendingOpenBalance} = c.value;
 
   dispatch({
     type: GET_BALANCE,
@@ -30,10 +28,6 @@ export const getBalance = () => async (dispatch) => {
     balance,
     pendingOpenBalance,
   });
-};
-
-export const pollBalance = () => async (dispatch) => {
-  await poll(() => dispatch(getBalance()));
 };
 
 // action handlers

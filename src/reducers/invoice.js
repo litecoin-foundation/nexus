@@ -1,6 +1,4 @@
-import Lightning from '../lib/lightning/lightning';
-
-const LndInstance = new Lightning();
+import lnd from '@litecoinfoundation/react-native-lndltc';
 
 // initial state
 const initialState = {
@@ -16,23 +14,30 @@ export const CLEAR_INVOICE = 'CLEAR_INVOICE';
 // actions
 export const addInvoice = invoice => async dispatch => {
   try {
-    const request = {
-      memo: invoice.memo,
-      value: invoice.amount,
-    };
-    const {paymentRequest} = await LndInstance.sendCommand(
-      'AddInvoice',
-      request,
-    );
-    dispatch({
-      type: ADD_INVOICE,
-      paymentRequest,
-      description: invoice.memo,
-      value: invoice.amount,
-    });
-    return true;
+    // const request = {
+    //   value: invoice.amount,
+    //   memo: invoice.memo,
+    // };
+    // const rpc = await lnd.createInvoice(50000, 'test');
+    // console.error(`POOPY: ${rpc.value}`);
+    // if (rpc.isErr()) {
+    //   console.error(rpc.error);
+    //   return;
+    // }
+    // if (rpc.isOk()) {
+    //   console.error(`POOPY: ${rpc.value}`);
+    //   console.log(rpc.value);
+    //   const {paymentRequest} = rpc.value;
+    //   dispatch({
+    //     type: ADD_INVOICE,
+    //     paymentRequest,
+    //     description: invoice.memo,
+    //     value: invoice.amount,
+    //   });
+    //   return true;
+    // }
   } catch (error) {
-    console.log(error);
+    alert(error);
   }
 };
 

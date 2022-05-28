@@ -5,16 +5,16 @@ import {useDispatch, useSelector} from 'react-redux';
 import {startOnboarding} from '../reducers/onboarding';
 import {startLnd} from '../reducers/lightning';
 import {checkBiometricSupport} from '../lib/utils/biometric';
-import {isInternetReachable} from '../reducers/info';
+import {checkInternetReachable} from '../reducers/info';
 
-const Loading = (props) => {
+const Loading = props => {
   const dispatch = useDispatch();
-  const onboarding = useSelector((state) => state.onboarding.onboarding);
-  const isOnboarded = useSelector((state) => state.onboarding.isOnboarded);
+  const onboarding = useSelector(state => state.onboarding.onboarding);
+  const isOnboarded = useSelector(state => state.onboarding.isOnboarded);
 
   useEffect(() => {
     dispatch(checkBiometricSupport());
-    dispatch(isInternetReachable());
+    dispatch(checkInternetReachable());
     dispatch(startLnd());
   }, [dispatch]);
 

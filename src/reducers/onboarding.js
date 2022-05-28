@@ -1,8 +1,5 @@
+import lnd from '@litecoinfoundation/react-native-lndltc';
 import shajs from 'sha.js';
-
-import Lightning from '../lib/lightning/lightning';
-
-const LndInstance = new Lightning();
 
 // initial state
 const initialState = {
@@ -38,10 +35,10 @@ export const finishOnboarding = () => (dispatch, getState) => {
 };
 
 export const getSeed = () => async dispatch => {
-  const response = await LndInstance.sendCommand('GenSeed');
+  const {value} = await lnd.walletUnlocker.genSeed();
   dispatch({
     type: GET_SEED,
-    seed: response.cipherSeedMnemonic,
+    seed: value,
   });
 };
 

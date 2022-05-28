@@ -33,8 +33,7 @@ buck-out/
 */fastlane/Preview.html
 */fastlane/screenshots
 *.jsbundle
-src/lib/lightning/rpc.js
-Lndmobile.framework
+Lndmobile.xcframework
 Lndmobile.aar
 .vscode/ipch
 shim.js

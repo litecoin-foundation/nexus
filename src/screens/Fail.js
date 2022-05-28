@@ -4,9 +4,9 @@ import {View, Text, StyleSheet, Platform} from 'react-native';
 import AnimatedLinearGradient from '../components/AnimatedLinearGradient';
 import WhiteButton from '../components/Buttons/WhiteButton';
 
-const Fail = (props) => {
+const Fail = props => {
   const {navigation, route} = props;
-  const {amount, error} = route.params;
+  const {amount, errorMessage} = route.params;
 
   return (
     <AnimatedLinearGradient
@@ -19,7 +19,7 @@ const Fail = (props) => {
         <Text style={styles.text}>HAS FAILED</Text>
 
         <View style={styles.errorContainer}>
-          <Text style={styles.text}>{error}</Text>
+          <Text style={styles.text}>{errorMessage}</Text>
         </View>
       </View>
       <View style={styles.bottomContainer}>

@@ -28,7 +28,7 @@ export const changeGraphPeriod = graphPeriod => dispatch => {
 export const updateCursorValue = (x, y) => dispatch => {
   dispatch({
     type: UPDATE_CURSOR_VALUE,
-    x,
+    x: `${x}`,
     y,
   });
 };

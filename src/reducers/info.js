@@ -1,9 +1,7 @@
+import lnd from '@litecoinfoundation/react-native-lndltc';
 import NetInfo from '@react-native-community/netinfo';
 
-import Lightning from '../lib/lightning/lightning';
 import {poll} from '../lib/utils/poll';
-
-const LndInstance = new Lightning();
 
 // initial state
 const initialState = {
@@ -25,7 +23,49 @@ export const IS_INTERNET_REACHABLE = 'IS_INTERNET_REACHABLE';
 
 // actions
 export const getInfo = () => async (dispatch, getState) => {
-  const info = await LndInstance.sendCommand('getInfo');
+  const rpc = await lnd.getInfo();
+  const {
+    identityPubkey,
+    syncedToChain,
+    blockHeight,
+    numPeers,
+    numActiveChannels,
+    version,
+    alias,
+    numPendingChannels,
+    numInactiveChannels,
+    blockHash,
+    bestHeaderTimestamp,
+    syncedToGraph,
+    testnet,
+    chains,
+    uris,
+  } = rpc.value;
+
+  let info = {
+    version,
+    identityPubkey,
+    alias,
+    numActiveChannels,
+    numPendingChannels,
+    numInactiveChannels,
+    numPeers,
+    blockHeight,
+    blockHash,
+    bestHeaderTimestamp,
+    syncedToChain,
+    syncedToGraph,
+    testnet,
+    chains: {
+      chain: chains.chain,
+      network: chains.network,
+    },
+    uris,
+  };
+
+  // TODO: refactor required
+  // first get neutrino cache before initwallet
+  // then only calculate actual sync progress
   const {startingSyncTimestamp} = getState().info;
 
   if (startingSyncTimestamp === undefined) {
@@ -54,8 +94,8 @@ export const getInfo = () => async (dispatch, getState) => {
   });
 };
 
-export const isInternetReachable = () => (dispatch) => {
-  NetInfo.addEventListener((state) => {
+export const checkInternetReachable = () => dispatch => {
+  NetInfo.addEventListener(state => {
     dispatch({
       type: IS_INTERNET_REACHABLE,
       isInternetReachable: state.isInternetReachable,
@@ -63,7 +103,7 @@ export const isInternetReachable = () => (dispatch) => {
   });
 };
 
-export const pollInfo = () => async (dispatch) => {
+export const pollInfo = () => async dispatch => {
   await poll(() => dispatch(getInfo()));
 };
 
@@ -91,8 +131,8 @@ const actionHandler = {
 };
 
 // selectors
-export const percentSyncedSelector = (state) => state.info.percentSynced;
-export const syncStatusSelector = (state) => state.info.syncedToChain;
+export const percentSyncedSelector = state => state.info.percentSynced;
+export const syncStatusSelector = state => state.info.syncedToChain;
 
 // reducer
 export default function (state = initialState, action) {

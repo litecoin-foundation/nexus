@@ -103,7 +103,7 @@ const tabBarStyle = {
   height: DeviceInfo.hasNotch() ? 90 : 70,
 };
 
-const isTabBarVisible = (route) => {
+const isTabBarVisible = route => {
   const routes = [
     'Wallet',
     'Send',
@@ -132,7 +132,7 @@ const isTabBarVisible = (route) => {
   }
 };
 
-const WalletTabBarIcon = (focused) => {
+const WalletTabBarIcon = focused => {
   return (
     <Image
       source={
@@ -144,7 +144,7 @@ const WalletTabBarIcon = (focused) => {
   );
 };
 
-const BuyTabBarIcon = (focused) => {
+const BuyTabBarIcon = focused => {
   return (
     <Image
       source={
@@ -156,7 +156,7 @@ const BuyTabBarIcon = (focused) => {
   );
 };
 
-const AlertsTabBarIcon = (focused) => {
+const AlertsTabBarIcon = focused => {
   return (
     <Image
       source={
@@ -168,7 +168,7 @@ const AlertsTabBarIcon = (focused) => {
   );
 };
 
-const SettingsTabBarIcon = (focused) => {
+const SettingsTabBarIcon = focused => {
   return (
     <Image
       source={

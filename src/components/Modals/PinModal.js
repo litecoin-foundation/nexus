@@ -8,14 +8,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import AuthPad from '../Numpad/AuthPad';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 
-const PinModal = (props) => {
-  const {
-    isVisible,
-    close,
-    handleValidationFailure,
-    handleValidationSuccess,
-  } = props;
-  const pin = useSelector((state) => state.authpad.pin);
+const PinModal = props => {
+  const {isVisible, close, handleValidationFailure, handleValidationSuccess} =
+    props;
+  const pin = useSelector(state => state.authpad.pin);
 
   return (
     <Modal
@@ -43,6 +39,7 @@ const PinModal = (props) => {
             <AuthPad
               handleValidationFailure={handleValidationFailure}
               handleValidationSuccess={handleValidationSuccess}
+              handleBiometricPress={handleValidationSuccess}
             />
           </LinearGradient>
         </View>
