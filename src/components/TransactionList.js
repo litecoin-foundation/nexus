@@ -13,12 +13,12 @@ import TransactionCell from './Cells/TransactionCell';
 import {groupBy} from '../lib/utils';
 import {txDetailSelector, getTransactions} from '../reducers/transaction';
 
-const TransactionList = (props) => {
+const TransactionList = props => {
   const {onPress} = props;
   const dispatch = useDispatch();
 
   const [refreshing, setRefreshing] = useState(false);
-  const transactions = useSelector((state) => txDetailSelector(state));
+  const transactions = useSelector(state => txDetailSelector(state));
   const groupedTransactions = groupBy(transactions, 'day');
 
   const onRefresh = useCallback(() => {
@@ -45,7 +45,7 @@ const TransactionList = (props) => {
         renderSectionHeader={({section}) => (
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
-        keyExtractor={(item) => item.hash}
+        keyExtractor={item => item.hash}
         initialNumToRender={7}
         ListEmptyComponent={EmptySectionList}
         ListFooterComponent={<View style={styles.emptyView} />}
@@ -59,7 +59,7 @@ const TransactionList = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 450,
+    flex: 1,
   },
   sectionHeader: {
     color: '#7C96AE',

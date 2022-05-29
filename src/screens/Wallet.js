@@ -27,7 +27,7 @@ const Wallet = props => {
 
   return (
     <View style={styles.container}>
-      <AmountView />
+      <AmountView small={true} />
       <View style={styles.transactionListContainer}>
         <TransactionList
           onPress={data => {

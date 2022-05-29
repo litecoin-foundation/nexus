@@ -9,23 +9,21 @@ import {chartPercentageChangeSelector} from '../reducers/chart';
 import {subunitSelector, subunitSymbolSelector} from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 
-const AmountView = (props) => {
-  const {children} = props;
+const AmountView = props => {
+  const {children, small} = props;
 
-  const chartCursorSelected = useSelector(
-    (state) => state.chart.cursorSelected,
-  );
-  const chartCursorValue = useSelector((state) => state.chart.cursorValue);
-  const chartPercentageChange = useSelector((state) =>
+  const chartCursorSelected = useSelector(state => state.chart.cursorSelected);
+  const chartCursorValue = useSelector(state => state.chart.cursorValue);
+  const chartPercentageChange = useSelector(state =>
     chartPercentageChangeSelector(state),
   );
 
-  const totalBalance = useSelector((state) => state.balance.totalBalance);
-  const convertToSubunit = useSelector((state) => subunitSelector(state));
+  const totalBalance = useSelector(state => state.balance.totalBalance);
+  const convertToSubunit = useSelector(state => subunitSelector(state));
   const subunitAmount = convertToSubunit(totalBalance);
-  const amountSymbol = useSelector((state) => subunitSymbolSelector(state));
+  const amountSymbol = useSelector(state => subunitSymbolSelector(state));
 
-  const calculateFiatAmount = useSelector((state) => fiatValueSelector(state));
+  const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(totalBalance);
 
   return (
@@ -33,6 +31,7 @@ const AmountView = (props) => {
       style={[
         styles.container,
         DeviceInfo.hasNotch() ? styles.notch : styles.noNotch,
+        small ? styles.short : null,
       ]}>
       <LinearGradient colors={['#7E58FF', '#003DB3']} style={styles.gradient}>
         <View style={styles.maskContainer}>
@@ -127,6 +126,7 @@ const styles = StyleSheet.create({
   notch: {
     height: 390,
   },
+  short: {height: 210},
   maskContainer: {
     position: 'absolute',
     width: '100%',
