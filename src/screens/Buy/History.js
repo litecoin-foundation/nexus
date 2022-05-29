@@ -8,7 +8,7 @@ import BuyTransactionCell from '../../components/Cells/BuyTransactionCell';
 
 const History = () => {
   const dispatch = useDispatch();
-  const {history} = useSelector((state) => state.buy);
+  const {history} = useSelector(state => state.buy);
 
   useEffect(() => {
     dispatch(getTransactionHistory());
@@ -17,7 +17,7 @@ const History = () => {
   const EmptySectionList = (
     <View style={styles.emptySectionListContainer}>
       <Text style={styles.emptySectionListText}>
-        Your alerts will appear here. Create alerts with the button above.
+        Litecoin purchased with Plasma will appear here.
       </Text>
     </View>
   );
@@ -51,6 +51,15 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
     paddingTop: 10,
+  },
+  emptySectionListContainer: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  emptySectionListText: {
+    color: '#7C96AE',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 
