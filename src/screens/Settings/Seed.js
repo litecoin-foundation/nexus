@@ -10,8 +10,8 @@ import {formatDate, formatTime} from '../../lib/utils/date';
 
 const Seed = () => {
   const dispatch = useDispatch();
-  const seedArray = useSelector((state) => state.onboarding.seed);
-  const lastViewSeed = useSelector((state) => state.settings.lastViewSeed);
+  const seedArray = useSelector(state => state.onboarding.seed);
+  const lastViewSeed = useSelector(state => state.settings.lastViewSeed);
   const formatedTime =
     lastViewSeed !== null
       ? `${formatDate(lastViewSeed)}, ${formatTime(new Date(lastViewSeed))}`
@@ -28,11 +28,13 @@ const Seed = () => {
     return (
       <View style={styles.wordContainer} key={uuidv4()}>
         <View style={styles.wordSubContainer}>
-          <Text style={[styles.indexText, {paddingLeft: 37 / 2}]}>{index}</Text>
+          <Text style={[styles.indexText, {paddingLeft: 37 / 2}]}>
+            {index + 1}
+          </Text>
           <Text style={styles.word}>{seedArray[index]}</Text>
         </View>
         <View style={styles.wordSubContainer}>
-          <Text style={styles.indexText}>{index + 12}</Text>
+          <Text style={styles.indexText}>{index + 13}</Text>
           <Text style={styles.word}>{seedArray[index + 12]}</Text>
         </View>
       </View>
