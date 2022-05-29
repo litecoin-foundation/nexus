@@ -6,13 +6,16 @@ import LinearGradient from 'react-native-linear-gradient';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {initWallet} from '../../reducers/lightning';
 
-const Welcome = (props) => {
+const Welcome = props => {
   const dispatch = useDispatch();
 
   const handlePress = () => {
     dispatch(initWallet());
 
-    props.navigation.replace('AppStack');
+    props.navigation.reset({
+      index: 0,
+      routes: [{name: 'AppStack'}],
+    });
   };
 
   return (

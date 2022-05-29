@@ -59,7 +59,12 @@ const Settings = props => {
           <View style={styles.bottomButtonContainer}>
             <BlueClearButton
               value="Sign Out"
-              onPress={() => props.navigation.navigate('AuthStack')}
+              onPress={() => {
+                props.navigation.reset({
+                  index: 0,
+                  routes: [{name: 'AuthStack'}],
+                });
+              }}
             />
           </View>
         </LinearGradient>
