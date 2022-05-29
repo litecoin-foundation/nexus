@@ -26,13 +26,6 @@ export class TransactionModal extends Component {
               <GreyRoundButton onPress={() => close()} />
             </View>
 
-            <View style={styles.descriptionContainer}>
-              <Text style={styles.descriptionText}>
-                Lightning transactions are instant... If you don't know what to
-                choose, pick "Onchain".
-              </Text>
-            </View>
-
             <Text style={styles.subtitleText}>CHOOSE TRANSACTION TYPE</Text>
             <View style={styles.typeContainer}>
               <TypeButton
@@ -67,7 +60,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     backgroundColor: 'white',
-    height: 300,
+    height: 220,
     width: '100%',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -103,17 +96,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     height: 31,
-  },
-  descriptionContainer: {
-    paddingLeft: 25,
-    paddingRight: 25,
-    paddingTop: 30,
-  },
-  descriptionText: {
-    opacity: 0.9,
-    color: '#4E6070',
-    fontSize: 16,
-    fontWeight: '500',
   },
   subtitleText: {
     color: '#7C96AE',
