@@ -9,12 +9,18 @@ const initialState = {
   alias: '',
   version: '',
   syncedToChain: false,
+  syncedToGraph: false,
   blockHeight: 0,
   blockHash: '',
   bestHeaderTimestamp: 0,
   uris: [],
   chains: [],
   isInternetReachable: null,
+  numPeers: 0,
+  numActiveChannels: 0,
+  numPendingChannels: 0,
+  numInactiveChannels: 0,
+  testnet: false,
 };
 
 // constants
