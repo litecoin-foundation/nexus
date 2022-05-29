@@ -23,9 +23,17 @@ const AuthScreen = props => {
     state => state.authentication.walletUnlocked,
   );
 
+  // Presents Biometric authentication on launch
+  // If biometricEnabled & lnd is ready, present Biometric auth request
   useEffect(() => {
     if (biometricsEnabled) {
-      dispatch(unlockWalletWithBiometric());
+      lnd.stateService.subscribeToStateChanges(res => {
+        if (res.isOk()) {
+          if (res.value === ss_lnrpc.WalletState.WAITING_TO_START) {
+            dispatch(unlockWalletWithBiometric());
+          }
+        }
+      });
     }
   }, [biometricsEnabled, dispatch]);
 
