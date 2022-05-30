@@ -1,14 +1,15 @@
 import React from 'react';
 import {View, TextInput, StyleSheet} from 'react-native';
 
-const InputField = (props) => {
+const InputField = props => {
   const {value, onChangeText, placeholder} = props;
   return (
     <View style={styles.container}>
       <TextInput
         placeholder={placeholder ? placeholder : 'description'}
+        placeholderTextColor="#dbdbdb"
         style={styles.text}
-        onChangeText={(text) => onChangeText(text)}
+        onChangeText={text => onChangeText(text)}
         value={value}
       />
     </View>
@@ -33,7 +34,9 @@ const styles = StyleSheet.create({
     },
   },
   text: {
-    color: 'rgba(74, 74, 74, 1)',
+    color: '#dbdbdb',
+    fontStyle: 'italic',
+    fontSize: 15,
   },
 });
 

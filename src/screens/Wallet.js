@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useLayoutEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {HeaderBackButton} from '@react-navigation/elements';
@@ -9,20 +9,32 @@ import TransactionModal from '../components/Modals/TransactionModal';
 import TransactionList from '../components/TransactionList';
 import AmountView from '../components/AmountView';
 import InfoModal from '../components/Modals/InfoModal';
+import SearchButton from '../components/Buttons/SearchButton';
+import TransactionFilterModal from '../components/Modals/TransactionFilterModal';
 
 const Wallet = props => {
+  const {navigation} = props;
   const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
   const [isInternetModalVisible, setInternetModalVisible] = useState(false);
+  const [isTxFilterModalVisible, setTxFilterModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
   const {isInternetReachable} = useSelector(state => state.info);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <SearchButton onPress={() => setTxFilterModalVisible(true)} />
+      ),
+    });
+  }, [navigation]);
 
   const handleSendPress = () => {
     if (!isInternetReachable) {
       setInternetModalVisible(true);
       return;
     }
-    props.navigation.navigate('Send');
+    navigation.navigate('Send');
   };
 
   return (
@@ -79,7 +91,7 @@ const Wallet = props => {
 
       <TransactionModal
         isVisible={isTxTypeModalVisible}
-        navigate={props.navigation.navigate}
+        navigate={navigation.navigate}
         close={() => setTxTypeModalVisible(false)}
       />
 
@@ -89,7 +101,14 @@ const Wallet = props => {
         }}
         isVisible={isTxDetailModalVisible}
         transaction={selectedTransaction}
-        navigate={props.navigation.navigate}
+        navigate={navigation.navigate}
+      />
+
+      <TransactionFilterModal
+        close={() => {
+          setTxFilterModalVisible(false);
+        }}
+        isVisible={isTxFilterModalVisible}
       />
 
       <InfoModal
@@ -158,6 +177,9 @@ const styles = StyleSheet.create({
   transactionListContainer: {
     paddingTop: 25,
   },
+  headerLeftMargin: {
+    marginLeft: 22,
+  },
 });
 
 Wallet.navigationOptions = ({navigation}) => {
@@ -165,11 +187,13 @@ Wallet.navigationOptions = ({navigation}) => {
     headerTitle: 'LTC Wallet',
     tabBarVisible: false,
     headerLeft: () => (
-      <HeaderBackButton
-        tintColor="white"
-        labelVisible={false}
-        onPress={() => navigation.goBack()}
-      />
+      <View style={styles.headerLeftMargin}>
+        <HeaderBackButton
+          tintColor="white"
+          labelVisible={false}
+          onPress={() => navigation.goBack()}
+        />
+      </View>
     ),
   };
 };
