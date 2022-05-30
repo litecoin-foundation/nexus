@@ -15,7 +15,7 @@ const {width} = Dimensions.get('window');
 
 const Channel = () => {
   const dispatch = useDispatch();
-  const {channels} = useSelector((state) => state.channels);
+  const {channels} = useSelector(state => state.channels);
 
   useEffect(() => {
     dispatch(listChannels());
@@ -39,7 +39,7 @@ const Channel = () => {
       }}
       data={channels}
       renderItem={({item}) => <ChannelCell item={item} />}
-      keyExtractor={(item) => item.remotePubkey}
+      keyExtractor={item => item.remotePubkey}
     />
   );
 
@@ -47,7 +47,11 @@ const Channel = () => {
     <View style={styles.container}>
       <Header />
       {!channels || channels.length === 0 ? (
-        <Text>No channels here.</Text>
+        <View style={styles.emptySectionListContainer}>
+          <Text style={styles.emptySectionListText}>
+            No Channels currently exist. Open Channels using the button above.
+          </Text>
+        </View>
       ) : (
         list
       )}
@@ -65,6 +69,15 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     paddingRight: 18,
+  },
+  emptySectionListContainer: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  emptySectionListText: {
+    color: '#7C96AE',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 
