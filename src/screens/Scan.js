@@ -86,6 +86,7 @@ const Scan = props => {
         style={styles.camera}
         device={device}
         isActive={true}
+        torch={flashEnabled === false ? 'off' : 'on'}
         frameProcessor={frameProcessor}
         frameProcessorFps={5}
         audio={false}>
