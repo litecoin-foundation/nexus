@@ -14,7 +14,8 @@
     "postinstall": "npx jetify",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "copy:ios": "cp -r ./lightning/Lndmobile.xcframework ./node_modules/@litecoinfoundation/react-native-lndltc/ios/Lndmobile.xcframework"
+    "fetch:ios": "curl https://api.getplasma.org/files/lnd/lndmobile-ios-v0.14.2rc2.tar.gz --output lndmobile-ios-v0.14.2rc2.tar.gz && npm run extract:ios",
+    "extract:ios": "tar xzvf lndmobile-ios-v0.14.2rc2.tar.gz -C ./node_modules/@litecoinfoundation/react-native-lndltc/ios"
   },
   "dependencies": {
     "@litecoinfoundation/react-native-lndltc": "0.0.3",
