@@ -2,7 +2,7 @@ import React from 'react';
 import {StatusBar, Platform} from 'react-native';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
-import {store, pStore} from './store';
+import {store, pStore} from './src/store';
 
 import RootNavigator from './src/navigation/RootNavigator';
 

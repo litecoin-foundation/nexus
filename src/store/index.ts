@@ -11,7 +11,7 @@ import {
   REGISTER,
 } from 'redux-persist';
 
-import reducer from './src/reducers';
+import reducer from '../reducers';
 
 const storage = createSensitiveStorage({
   keychainService: 'lndmobileKeychain',
@@ -36,3 +36,6 @@ export const store = configureStore({
     }),
 });
 export const pStore = persistStore(store);
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
