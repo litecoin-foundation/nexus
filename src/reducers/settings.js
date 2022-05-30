@@ -1,15 +1,18 @@
 import {createSelector} from '@reduxjs/toolkit';
 import memoize from 'lodash.memoize';
+import {getCurrencies} from 'react-native-localize';
 
 // initial state
 const initialState = {
   lastViewSeed: null,
   subunit: 0,
+  countryCode: 'USD',
 };
 
 // constants
 const UPDATE_LAST_VIEW_SEED = 'UPDATE_LAST_VIEW_SEED';
 const UPDATE_SUBUNIT = 'UPDATE_SUBUNIT';
+const UPDATE_COUNTRY_CODE = 'UPDATE_COUNTRY_CODE';
 
 // actions
 export const updateLastViewSeed = () => dispatch => {
@@ -26,6 +29,14 @@ export const updateSubunit = index => dispatch => {
   });
 };
 
+export const detectCountryCode = () => dispatch => {
+  const countryCode = getCurrencies()[0];
+  dispatch({
+    type: UPDATE_COUNTRY_CODE,
+    countryCode,
+  });
+};
+
 // action handlers
 const actionHandler = {
   [UPDATE_LAST_VIEW_SEED]: (state, {time}) => ({
@@ -33,6 +44,7 @@ const actionHandler = {
     lastViewSeed: time,
   }),
   [UPDATE_SUBUNIT]: (state, {subunit}) => ({...state, subunit}),
+  [UPDATE_COUNTRY_CODE]: (state, {countryCode}) => ({...state, countryCode}),
 };
 
 // selectors

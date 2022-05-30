@@ -49,6 +49,11 @@ const Wallet = props => {
             title="Block Explorer"
             onPress={() => props.navigation.navigate('Explorer')}
           />
+          <SettingCell
+            title="Currency Code"
+            onPress={() => props.navigation.navigate('Currency')}
+            forward
+          />
           <View style={styles.cellContainer}>
             <Text style={styles.title}>Litecoin Denomination</Text>
             <SegmentedControl

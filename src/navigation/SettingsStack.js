@@ -9,6 +9,7 @@ import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed from '../screens/Settings/Seed';
 import About from '../screens/Settings/About';
 import Wallet from '../screens/Settings/Wallet';
+import Currency from '../screens/Settings/Currency';
 
 const Stack = createStackNavigator();
 
@@ -65,6 +66,20 @@ function SettingsStack() {
         name="Wallets"
         component={Wallet}
         options={Wallet.navigationOptions}
+      />
+      <Stack.Screen
+        name="Currency"
+        component={Currency}
+        options={{
+          headerTitle: 'Currency',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+        }}
       />
     </Stack.Navigator>
   );
