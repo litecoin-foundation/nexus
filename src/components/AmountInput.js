@@ -6,7 +6,7 @@ import Pad from './Numpad/Pad';
 import BlueButton from './Buttons/BlueButton';
 import {updateAmount, updateFiatAmount, resetInputs} from '../reducers/input';
 
-const AmountInput = (props) => {
+const AmountInput = props => {
   const {
     toggleWithoutSelection,
     confirmButtonText,
@@ -16,13 +16,13 @@ const AmountInput = (props) => {
     confirmButtonDisabled,
   } = props;
   const dispatch = useDispatch();
-  const amount = useSelector((state) => state.input.amount);
-  const fiatAmount = useSelector((state) => state.input.fiatAmount);
+  const amount = useSelector(state => state.input.amount);
+  const fiatAmount = useSelector(state => state.input.fiatAmount);
 
   const [leftToggled, toggleLeft] = useState(true);
   const [toggled, toggle] = useState(false);
 
-  const handlePress = (side) => {
+  const handlePress = side => {
     if (side === 'left') {
       toggleLeft(true);
       toggle(true);
@@ -38,7 +38,7 @@ const AmountInput = (props) => {
     }
   };
 
-  const onChange = (value) => {
+  const onChange = value => {
     if (leftToggled) {
       dispatch(updateAmount(value));
     } else {
@@ -61,7 +61,7 @@ const AmountInput = (props) => {
   const PadContainer = (
     <View style={styles.padContainer}>
       <Pad
-        onChange={(value) => onChange(value)}
+        onChange={value => onChange(value)}
         currentValue={leftToggled ? amount : fiatAmount}>
         <View style={styles.centerAlign}>
           <BlueButton

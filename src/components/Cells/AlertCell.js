@@ -5,13 +5,15 @@ import {useDispatch} from 'react-redux';
 import LitecoinIcon from '../LitecoinIcon';
 import Switch from '../Buttons/Switch';
 import {setAlertAvailability} from '../../reducers/alerts';
+import {useAppSelector} from '../../store/hooks';
 
-const AlertCell = (props) => {
+const AlertCell = props => {
   const {data, onPress} = props;
   const item = data;
   const dispatch = useDispatch();
+  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
 
-  const handleSwitch = (value) => {
+  const handleSwitch = value => {
     dispatch(setAlertAvailability(item.id, value));
   };
 
@@ -22,7 +24,10 @@ const AlertCell = (props) => {
           <LitecoinIcon size={44} />
           <View>
             <Text style={styles.text}>Litecoin (LTC) is above</Text>
-            <Text style={styles.valueText}>${item.value}</Text>
+            <Text style={styles.valueText}>
+              {currencySymbol}
+              {item.value}
+            </Text>
           </View>
         </View>
         <View style={styles.switchContainer}>

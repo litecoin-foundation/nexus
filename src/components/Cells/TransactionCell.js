@@ -57,7 +57,7 @@ const TransactionCell = props => {
             styles.fiatText,
             sent ? styles.negativeFiatText : styles.positiveFiatText,
           ]}>
-          +${fiatAmount}
+          +{fiatAmount}
         </Text>
       </View>
     </TouchableOpacity>

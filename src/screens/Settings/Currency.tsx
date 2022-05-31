@@ -5,7 +5,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import OptionCell from '../../components/Cells/OptionCell';
 import Header from '../../components/Header';
 import fiat from '../../assets/fiat';
-import {useAppSelector} from '../../store/hooks';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {setCurrencyCode} from '../../reducers/settings';
 
 type CurrencyCodeType = {
   name: string;
@@ -14,14 +15,20 @@ type CurrencyCodeType = {
 };
 
 const Currency: React.FC = () => {
-  const {countryCode} = useAppSelector(state => state.settings);
-  const [selectedCurrency, setSelectedCurrency] = useState(countryCode);
+  const dispatch = useAppDispatch();
+  const {currencyCode} = useAppSelector(state => state.settings);
+  const [selectedCurrency, setSelectedCurrency] = useState(currencyCode);
+
+  const handlePress = (code: string, symbol: string): void => {
+    setSelectedCurrency(code);
+    dispatch(setCurrencyCode(code, symbol));
+  };
 
   const renderItem = ({item}: {item: CurrencyCodeType}) => (
     <OptionCell
       title={`${item.name} (${item.symbol_native})`}
       key={item.key}
-      onPress={() => setSelectedCurrency(item.key)}
+      onPress={() => handlePress(item.key, item.symbol_native)}
       selected={selectedCurrency === item.key ? true : false}
     />
   );

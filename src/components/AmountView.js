@@ -46,7 +46,7 @@ const AmountView = props => {
           {!chartCursorSelected ? (
             <Fragment>
               <View style={styles.fiat}>
-                <Text style={styles.fiatText}>${fiatAmount}</Text>
+                <Text style={styles.fiatText}>{fiatAmount}</Text>
               </View>
               <View style={styles.amount}>
                 <Text style={styles.amountText}>{subunitAmount}</Text>

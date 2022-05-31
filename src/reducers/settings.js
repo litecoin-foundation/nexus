@@ -2,11 +2,14 @@ import {createSelector} from '@reduxjs/toolkit';
 import memoize from 'lodash.memoize';
 import {getCurrencies} from 'react-native-localize';
 
+import fiat from '../assets/fiat';
+
 // initial state
 const initialState = {
   lastViewSeed: null,
   subunit: 0,
-  countryCode: 'USD',
+  currencyCode: 'USD',
+  currencySymbol: '$',
 };
 
 // constants
@@ -29,11 +32,22 @@ export const updateSubunit = index => dispatch => {
   });
 };
 
-export const detectCountryCode = () => dispatch => {
-  const countryCode = getCurrencies()[0];
+export const detectCurrencyCode = () => dispatch => {
+  const currencyCode = getCurrencies()[0];
+  const currencySymbolObject = fiat.find(e => e.code === currencyCode);
+  const currencySymbol = currencySymbolObject.symbol_native;
   dispatch({
     type: UPDATE_COUNTRY_CODE,
-    countryCode,
+    currencyCode,
+    currencySymbol,
+  });
+};
+
+export const setCurrencyCode = (currencyCode, currencySymbol) => dispatch => {
+  dispatch({
+    type: UPDATE_COUNTRY_CODE,
+    currencyCode,
+    currencySymbol,
   });
 };
 
@@ -44,7 +58,11 @@ const actionHandler = {
     lastViewSeed: time,
   }),
   [UPDATE_SUBUNIT]: (state, {subunit}) => ({...state, subunit}),
-  [UPDATE_COUNTRY_CODE]: (state, {countryCode}) => ({...state, countryCode}),
+  [UPDATE_COUNTRY_CODE]: (state, {currencyCode, currencySymbol}) => ({
+    ...state,
+    currencyCode,
+    currencySymbol,
+  }),
 };
 
 // selectors

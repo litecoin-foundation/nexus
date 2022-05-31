@@ -140,7 +140,16 @@ const actionHandler = {
 // selectors
 export const fiatValueSelector = createSelector(
   state => state.ticker.rates,
-  rates => memoize(satoshi => ((satoshi / 100000000) * rates.USD).toFixed(2)),
+  state => state.settings.currencyCode,
+  state => state.settings.currencySymbol,
+  (rates, currencyCode, currencySymbol) =>
+    memoize(
+      satoshi =>
+        `${currencySymbol}${(
+          (satoshi / 100000000) *
+          rates[currencyCode]
+        ).toFixed(2)}`,
+    ),
 );
 
 export const monthSelector = createSelector(

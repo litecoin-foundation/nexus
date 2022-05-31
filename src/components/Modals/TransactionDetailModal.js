@@ -18,7 +18,7 @@ import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
 import {triggerMediumFeedback} from '../../lib/utils/haptic';
 
-const TransactionDetailModal = (props) => {
+const TransactionDetailModal = props => {
   const {isVisible, close, transaction, navigate} = props;
 
   // when no txs has been selected the transaction prop is null
@@ -29,14 +29,14 @@ const TransactionDetailModal = (props) => {
   }
 
   /* eslint-disable react-hooks/rules-of-hooks */
-  const convertToSubunit = useSelector((state) => subunitSelector(state));
+  const convertToSubunit = useSelector(state => subunitSelector(state));
   const cryptoAmount = convertToSubunit(transaction.amount);
-  const amountSymbol = useSelector((state) => subunitSymbolSelector(state));
+  const amountSymbol = useSelector(state => subunitSymbolSelector(state));
 
-  const calculateFiatAmount = useSelector((state) => fiatValueSelector(state));
+  const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(transaction.amount);
 
-  const addresses = transaction.addresses.map((val) => {
+  const addresses = transaction.addresses.map(val => {
     return (
       <Text key={val} style={styles.text}>
         {val}
@@ -44,7 +44,7 @@ const TransactionDetailModal = (props) => {
     );
   });
 
-  const onLongPress = async (item) => {
+  const onLongPress = async item => {
     await Alert.alert('Copied', null, [], {cancelable: true});
     triggerMediumFeedback();
     await Clipboard.setString(item);
@@ -74,7 +74,7 @@ const TransactionDetailModal = (props) => {
             value={`${transaction.day}, ${transaction.time}`}
           />
           <TableCell title="AMOUNT" value={`${cryptoAmount}${amountSymbol}`} />
-          <TableCell title="AMOUNT IN FIAT" value={`$${fiatAmount}`} />
+          <TableCell title="AMOUNT IN FIAT" value={`${fiatAmount}`} />
           <VerticalTableCell title="ADDRESSES">{addresses}</VerticalTableCell>
           <VerticalTableCell title="TRANSACTION ID (txid)">
             <Pressable onLongPress={() => onLongPress(transaction.hash)}>

@@ -1,14 +1,19 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {useAppDispatch} from '../../store/hooks';
-import {detectCountryCode} from '../../reducers/settings';
+import {detectCurrencyCode} from '../../reducers/settings';
 
 const Initial = props => {
-  useAppDispatch(detectCountryCode());
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(detectCurrencyCode());
+  }, [dispatch]);
+
   return (
     <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
       <WhiteButton
