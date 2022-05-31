@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, Text, View, FlatList} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import {HeaderBackButton} from '@react-navigation/elements';
 
 import Header from '../../components/Header';
 import {getTransactionHistory} from '../../reducers/buy';
@@ -61,11 +62,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  headerLeftMargin: {
+    marginLeft: 22,
+  },
 });
 
-History.navigationOptions = () => {
+History.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'History',
+    headerLeft: () => (
+      <View style={styles.headerLeftMargin}>
+        <HeaderBackButton
+          tintColor="white"
+          labelVisible={false}
+          onPress={() => navigation.goBack()}
+        />
+      </View>
+    ),
   };
 };
 
