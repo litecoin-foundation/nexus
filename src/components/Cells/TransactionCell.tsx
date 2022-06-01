@@ -1,27 +1,37 @@
-import React from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
   Image,
   Dimensions,
 } from 'react-native';
+import React from 'react';
 import LinearGradient from 'react-native-linear-gradient';
-import {useSelector} from 'react-redux';
 
+import {useAppSelector} from '../../store/hooks';
 import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 
-const TransactionCell = props => {
+interface Props {
+  item: {
+    time: Date;
+    amount: number;
+    sent: boolean;
+  };
+  onPress(): void;
+}
+
+const TransactionCell: React.FC<Props> = props => {
   const {item, onPress} = props;
-  const {name, time, amount, sent} = item;
+  const {time, amount, sent} = item;
 
-  const convertToSubunit = useSelector(state => subunitSelector(state));
+  const name = sent ? 'Sent Litecoin' : 'Received Litecoin';
+
+  const convertToSubunit = useAppSelector(state => subunitSelector(state));
+  const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
+  const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const cryptoAmount = convertToSubunit(amount);
-  const amountSymbol = useSelector(state => subunitSymbolSelector(state));
-
-  const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(amount);
 
   return (

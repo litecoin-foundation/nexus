@@ -11,15 +11,22 @@ import AmountView from '../components/AmountView';
 import InfoModal from '../components/Modals/InfoModal';
 import SearchButton from '../components/Buttons/SearchButton';
 import TransactionFilterModal from '../components/Modals/TransactionFilterModal';
+import {groupBy} from '../lib/utils';
+import {txDetailSelector} from '../reducers/transaction';
 
 const Wallet = props => {
   const {navigation} = props;
+
+  const transactions = useSelector(state => txDetailSelector(state));
+  const groupedTransactions = groupBy(transactions, 'day');
+
   const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
   const [isInternetModalVisible, setInternetModalVisible] = useState(false);
   const [isTxFilterModalVisible, setTxFilterModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
   const {isInternetReachable} = useSelector(state => state.info);
+  const [diplayedTxs, setDisplayedTxs] = useState(groupedTransactions);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -37,6 +44,33 @@ const Wallet = props => {
     navigation.navigate('Send');
   };
 
+  const filterTransactions = (transactionType, lightning, searchQuery) => {
+    const txArray = [];
+
+    if (transactionType === 0) {
+      txArray.push(...transactions);
+    }
+    if (transactionType === 1) {
+      txArray.push(
+        ...transactions.filter(tx => Math.sign(parseFloat(tx.amount)) === -1),
+      );
+    }
+    if (transactionType === 2) {
+      txArray.push(
+        ...transactions.filter(tx => Math.sign(parseFloat(tx.amount)) === 1),
+      );
+    }
+    if (lightning) {
+      // currently unhandled
+    }
+    if (searchQuery) {
+      // currently unhandled
+    }
+
+    setDisplayedTxs(groupBy(txArray, 'day'));
+    setTxFilterModalVisible(false);
+  };
+
   return (
     <View style={styles.container}>
       <AmountView small={true} />
@@ -46,6 +80,7 @@ const Wallet = props => {
             selectTransaction(data);
             setTxDetailModalVisible(true);
           }}
+          transactions={diplayedTxs}
         />
       </View>
 
@@ -109,6 +144,9 @@ const Wallet = props => {
           setTxFilterModalVisible(false);
         }}
         isVisible={isTxFilterModalVisible}
+        onPress={(txType, lightning, searchField) =>
+          filterTransactions(txType, lightning, searchField)
+        }
       />
 
       <InfoModal

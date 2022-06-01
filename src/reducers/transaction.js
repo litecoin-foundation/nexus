@@ -175,17 +175,13 @@ const txSelector = state => state.transaction.transactions;
 export const txDetailSelector = createSelector(txSelector, tx =>
   tx.map(data => {
     return {
-      name:
-        Math.sign(parseFloat(data.amount)) === -1
-          ? 'Sent Litecoin'
-          : 'Received Litecoin',
       hash: data.txHash,
       amount: data.amount,
       day: formatDate(data.timeStamp * 1000),
       time: formatTime(data.timeStamp * 1000),
       fee: data.totalFees,
       confs: data.numConfirmations,
-      type: 'litecoin onchain',
+      lightning: false,
       addresses: data.destAddresses,
       sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
     };

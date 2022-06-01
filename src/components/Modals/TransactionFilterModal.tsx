@@ -12,7 +12,11 @@ import InputField from '../InputField';
 
 interface Props {
   close(): void;
-  onPress(): void;
+  onPress(
+    segmentOption: number,
+    switchOption: boolean,
+    searchField: string | undefined,
+  ): void;
   isVisible: boolean;
 }
 
@@ -68,7 +72,13 @@ const TransactionFilterModal: React.FC<Props> = (props: Props): JSX.Element => {
             </VerticalTableCell>
 
             <View style={styles.buttonContainer}>
-              <BlueButton small={false} value="Apply" onPress={onPress} />
+              <BlueButton
+                small={false}
+                value="Apply"
+                onPress={() =>
+                  onPress(segmentOption, switchOption, searchField)
+                }
+              />
             </View>
           </View>
         </View>

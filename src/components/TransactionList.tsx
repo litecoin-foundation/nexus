@@ -1,25 +1,51 @@
-import React, {useState, useCallback} from 'react';
 import {
+  StyleSheet,
+  Text,
   View,
   SectionList,
-  Text,
-  StyleSheet,
   RefreshControl,
+  SectionListRenderItem,
 } from 'react-native';
-import PropTypes from 'prop-types';
-import {useSelector, useDispatch} from 'react-redux';
+import React, {useCallback, useState} from 'react';
 
+import {useAppDispatch} from '../store/hooks';
+import {getTransactions} from '../reducers/transaction';
 import TransactionCell from './Cells/TransactionCell';
-import {groupBy} from '../lib/utils';
-import {txDetailSelector, getTransactions} from '../reducers/transaction';
 
-const TransactionList = props => {
-  const {onPress} = props;
-  const dispatch = useDispatch();
+interface Props {
+  onPress(item: ItemType): void;
+  transactions: ITransactions[];
+}
 
-  const [refreshing, setRefreshing] = useState(false);
-  const transactions = useSelector(state => txDetailSelector(state));
-  const groupedTransactions = groupBy(transactions, 'day');
+interface ITransactions {
+  title: string;
+  data: IData[];
+}
+
+interface IData {
+  hash: string;
+  amount: number;
+  confs: number;
+  day: string;
+  fee: undefined;
+  lightning: boolean;
+  sent: boolean;
+  time: Date;
+  addresses: string[];
+}
+
+type ItemType = {
+  time: Date;
+  amount: number;
+  sent: boolean;
+  hash: string;
+};
+
+const TransactionList = (props: Props) => {
+  const {onPress, transactions} = props;
+  const dispatch = useAppDispatch();
+
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -35,13 +61,15 @@ const TransactionList = props => {
     </View>
   );
 
+  const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
+    item,
+  }) => <TransactionCell item={item} onPress={() => onPress(item)} />;
+
   return (
     <View style={styles.container}>
       <SectionList
-        sections={groupedTransactions}
-        renderItem={({item}) => (
-          <TransactionCell item={item} onPress={() => onPress(item)} />
-        )}
+        sections={transactions}
+        renderItem={renderItem}
         renderSectionHeader={({section}) => (
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
@@ -84,10 +112,5 @@ const styles = StyleSheet.create({
     height: 300,
   },
 });
-
-TransactionList.propTypes = {
-  groupedTransactions: PropTypes.arrayOf(PropTypes.object),
-  onPress: PropTypes.func.isRequired,
-};
 
 export default TransactionList;
