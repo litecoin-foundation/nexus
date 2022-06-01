@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   emptyView: {
-    height: 110,
+    height: 300,
   },
 });
 
