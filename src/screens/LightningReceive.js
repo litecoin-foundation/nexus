@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import {useDispatch} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -13,6 +13,7 @@ import {addInvoice} from '../reducers/invoice';
 const LightningReceive = () => {
   const dispatch = useDispatch();
 
+  const [isAmountInputTriggered, triggerAmountInput] = useState(false);
   const [selected, select] = useState(false);
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
@@ -29,12 +30,27 @@ const LightningReceive = () => {
       <View style={styles.titleContainer}>
         <Text style={styles.title}>CHOOSE AMOUNT</Text>
       </View>
-      <AmountInput
-        onChangeText={amount => setAmount(amount)}
-        onAccept={() => select(false)}
-        selected={() => select(true)}
-        confirmButtonText="Create Invoice"
-      />
+      <View
+        style={
+          isAmountInputTriggered
+            ? {
+                height: Dimensions.get('window').height - 175,
+              }
+            : styles.amountsContainer
+        }>
+        <AmountInput
+          onChangeText={value => setAmount(value)}
+          onAccept={() => {
+            select(false);
+            triggerAmountInput(false);
+          }}
+          selected={() => {
+            select(true);
+            triggerAmountInput(true);
+          }}
+          confirmButtonText="Confirm"
+        />
+      </View>
 
       {!selected ? (
         <LinearGradient
@@ -44,7 +60,7 @@ const LightningReceive = () => {
             <Text style={styles.leftTitle}>ADD Description</Text>
             <InputField
               placeholder="Enter Note to Self"
-              onChangeText={memo => setMemo(memo)}
+              onChangeText={value => setMemo(value)}
             />
           </View>
           <View style={styles.buttonContainer}>
