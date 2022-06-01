@@ -279,7 +279,7 @@ PODS:
     - glog
   - react-native-get-random-values (1.8.0):
     - React-Core
-  - react-native-lndltc (0.0.3):
+  - react-native-lndltc (0.0.4):
     - React
   - react-native-netinfo (8.3.0):
     - React-Core
@@ -651,7 +651,7 @@ SPEC CHECKSUMS:
   React-jsinspector: c5989c77cb89ae6a69561095a61cce56a44ae8e8
   React-logger: a0833912d93b36b791b7a521672d8ee89107aff1
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
-  react-native-lndltc: c36db828668a492058bb392803b977ec151b677c
+  react-native-lndltc: 80595354a461275818b10380a48b20a0a323b228
   react-native-netinfo: 3671b091c4843fda5e153612866ef4024b8f5d62
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: ebf8c413eb8b5f7c392a036a315eb7b46b96845f

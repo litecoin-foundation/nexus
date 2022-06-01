@@ -18,7 +18,7 @@
     "extract:ios": "tar xzvf lndmobile-ios-v0.14.2rc2.tar.gz -C ./node_modules/@litecoinfoundation/react-native-lndltc/ios"
   },
   "dependencies": {
-    "@litecoinfoundation/react-native-lndltc": "0.0.3",
+    "@litecoinfoundation/react-native-lndltc": "0.0.4",
     "@react-native-community/clipboard": "^1.5.1",
     "@react-native-community/netinfo": "^8.3.0",
     "@react-native-community/segmented-control": "^2.2.2",
