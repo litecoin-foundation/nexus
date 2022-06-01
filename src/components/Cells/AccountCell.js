@@ -15,18 +15,18 @@ import {fiatValueSelector} from '../../reducers/ticker';
 import ProgressBar from '../ProgressBar';
 import LitecoinIcon from '../LitecoinIcon';
 
-const AccountCell = (props) => {
+const AccountCell = props => {
   const {onPress, syncStatusDisabled, disabled} = props;
 
-  const synced = useSelector((state) => syncStatusSelector(state));
-  const progress = useSelector((state) => percentSyncedSelector(state));
+  const synced = useSelector(state => syncStatusSelector(state));
+  const progress = useSelector(state => percentSyncedSelector(state));
 
-  const totalBalance = useSelector((state) => state.balance.totalBalance);
-  const convertToSubunit = useSelector((state) => subunitSelector(state));
+  const totalBalance = useSelector(state => state.balance.totalBalance);
+  const convertToSubunit = useSelector(state => subunitSelector(state));
   const amount = convertToSubunit(totalBalance);
-  const amountSymbol = useSelector((state) => subunitSymbolSelector(state));
+  const amountSymbol = useSelector(state => subunitSymbolSelector(state));
 
-  const calculateFiatAmount = useSelector((state) => fiatValueSelector(state));
+  const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(totalBalance);
 
   return (
@@ -42,10 +42,10 @@ const AccountCell = (props) => {
         <LitecoinIcon />
         <View style={styles.left}>
           <Text style={styles.labelText}>Litecoin (LTC)</Text>
-          <Text style={styles.differenceText}>+ 2.3%</Text>
+          <Text style={styles.differenceText}>+2.3%</Text>
         </View>
         <View style={styles.right}>
-          <Text style={styles.text}>${fiatAmount}</Text>
+          <Text style={styles.text}>{fiatAmount}</Text>
           <Text style={styles.fiatText}>
             {amount} {amountSymbol}
           </Text>
