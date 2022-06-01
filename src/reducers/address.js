@@ -12,13 +12,17 @@ export const GET_ADDRESS = 'GET_ADDRESS';
 export const getAddress = () => async dispatch => {
   const rpc = await lnd.getAddress();
 
-  console.error(rpc.value);
-  const {address} = rpc.value;
+  if (rpc.isErr()) {
+    console.error(`getAddress error: ${rpc.error}`);
+  }
 
-  dispatch({
-    type: GET_ADDRESS,
-    address,
-  });
+  if (rpc.isOk()) {
+    const {address} = rpc.value;
+    dispatch({
+      type: GET_ADDRESS,
+      address,
+    });
+  }
 };
 
 // action handlers
