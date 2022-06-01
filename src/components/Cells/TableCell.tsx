@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderTopWidth: 1,
     borderTopColor: 'rgba(151,151,151,0.3)',
+    backgroundColor: 'white',
   },
   title: {
     color: 'rgb(124,150,174)',

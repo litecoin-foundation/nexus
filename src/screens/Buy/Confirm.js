@@ -1,5 +1,12 @@
 import React, {useEffect} from 'react';
-import {View, Text, SafeAreaView, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  Image,
+  ScrollView,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSelector, useDispatch} from 'react-redux';
 import {HeaderBackButton} from '@react-navigation/elements';
@@ -9,30 +16,36 @@ import BlueButton from '../../components/Buttons/BlueButton';
 import {getQuote, getSignedUrl} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 
-const Confirm = (props) => {
+const Confirm = props => {
   const {navigation} = props;
   const dispatch = useDispatch();
 
-  const {amount, fiatAmount} = useSelector((state) => state.buy);
+  const {quote} = useSelector(state => state.buy);
+  const {currencySymbol} = useSelector(state => state.settings);
+  const {
+    baseCurrencyAmount,
+    quoteCurrencyAmount,
+    quoteCurrencyPrice,
+    feeAmount,
+    extraFeeAmount,
+    networkFeeAmount,
+    totalAmount,
+  } = quote;
 
-  const {address} = useSelector((state) => state.address);
-  const {uniqueId} = useSelector((state) => state.onboarding);
+  const {address} = useSelector(state => state.address);
+  const {uniqueId} = useSelector(state => state.onboarding);
 
   useEffect(() => {
     dispatch(getQuote());
     dispatch(getAddress());
   }, [dispatch]);
 
-  useEffect(() => {}, []);
-
   const onPress = async () => {
     const {urlWithSignature} = await getSignedUrl(
       address,
-      fiatAmount,
+      baseCurrencyAmount,
       uniqueId,
     );
-    console.log(urlWithSignature);
-    // test url: https://buy-staging.moonpay.io?apiKey=pk_test_RPbBRvEyfEh2h5KOKPwRhwDlwokr4Nv&walletAddress=n4VQ5YdHf7hLQ2gWQYYrcxoE5B7nWuDFNF
     navigation.navigate('WebPage', {
       uri: urlWithSignature,
     });
@@ -46,21 +59,52 @@ const Confirm = (props) => {
         <SafeAreaView>
           <View style={styles.headerTitle}>
             <Text style={styles.text}>YOU ARE PURCHASING</Text>
-            <Text style={styles.amountText}>{amount} LTC</Text>
+            <Text style={styles.amountText}>{quoteCurrencyAmount} LTC</Text>
+            <Image
+              style={styles.image}
+              source={require('../../assets/images/down-arrow.png')}
+            />
             <Text style={styles.text}>FROM PAYMENT PARTNER</Text>
+
+            <View style={styles.partnerContainer}>
+              <Image
+                source={require('../../assets/images/moonpay.png')}
+                style={styles.partnerLogo}
+              />
+            </View>
           </View>
         </SafeAreaView>
       </LinearGradient>
 
-      <View style={styles.tableContainer}>
-        <TableCell title="AVAILABLE" value="10-15 mins" />
-        <TableCell title="1 LTC PRICE" value="PRICE" />
-        <TableCell title="PAYMENT FEE" value="FEE" />
-        <TableCell title="YOU WILL SPEND" value="TOTAL" />
-      </View>
+      <ScrollView style={styles.tableContainer}>
+        <TableCell
+          title="AVAILABLE"
+          value="5-10 mins"
+          valueStyle={styles.availableText}
+        />
+        <TableCell
+          title="1 LTC PRICE"
+          value={`${currencySymbol}${parseFloat(quoteCurrencyPrice).toFixed(
+            2,
+          )}`}
+          valueStyle={styles.ltcText}
+        />
+        <TableCell
+          title="PAYMENT FEE"
+          value={`${currencySymbol}${parseFloat(
+            feeAmount + extraFeeAmount + networkFeeAmount,
+          ).toFixed(2)}`}
+          valueStyle={styles.feeText}
+        />
+        <TableCell
+          title="YOU WILL SPEND"
+          value={`${currencySymbol}${totalAmount}`}
+          valueStyle={styles.totalText}
+        />
+      </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <BlueButton value={`BUY ${amount} LTC NOW`} onPress={onPress} />
+        <BlueButton value="BUY NOW" onPress={onPress} />
       </View>
     </View>
   );
@@ -69,17 +113,16 @@ const Confirm = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgb(238,244,249)',
   },
   headerContainer: {
-    height: 200,
+    height: 330,
   },
   headerTitle: {
     alignItems: 'center',
     paddingTop: 50,
   },
   tableContainer: {
-    height: 200,
+    backgroundColor: 'rgb(238,244,249)',
   },
   buttonContainer: {
     paddingTop: 30,
@@ -105,6 +148,47 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -1.08,
   },
+  headerLeftMargin: {
+    marginLeft: 22,
+  },
+  image: {
+    height: 14,
+    width: 14,
+    marginTop: 18,
+    marginBottom: 14,
+  },
+  availableText: {
+    color: '#4A4A4A',
+    fontSize: 16,
+  },
+  ltcText: {
+    color: '#2C72FF',
+    fontSize: 16,
+  },
+  feeText: {
+    color: '#7C96AE',
+    fontSize: 16,
+  },
+  totalText: {
+    color: '#20BB74',
+    fontSize: 16,
+  },
+  partnerContainer: {
+    width: 335,
+    height: 74,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    shadowColor: 'rgb(38,44,85)',
+    shadowOpacity: 0.86,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 3},
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  partnerLogo: {
+    height: 40,
+  },
 });
 
 Confirm.navigationOptions = ({navigation}) => {
@@ -118,11 +202,13 @@ Confirm.navigationOptions = ({navigation}) => {
     headerBackTitleVisible: false,
     headerTintColor: 'white',
     headerLeft: () => (
-      <HeaderBackButton
-        tintColor="white"
-        labelVisible={false}
-        onPress={() => navigation.goBack()}
-      />
+      <View style={styles.headerLeftMargin}>
+        <HeaderBackButton
+          tintColor="white"
+          labelVisible={false}
+          onPress={() => navigation.goBack()}
+        />
+      </View>
     ),
   };
 };
