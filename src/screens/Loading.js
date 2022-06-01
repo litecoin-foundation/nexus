@@ -6,6 +6,7 @@ import {startOnboarding} from '../reducers/onboarding';
 import {startLnd} from '../reducers/lightning';
 import {checkBiometricSupport} from '../lib/utils/biometric';
 import {checkInternetReachable} from '../reducers/info';
+import {subscribeAppState} from '../reducers/authentication';
 
 const Loading = props => {
   const dispatch = useDispatch();
@@ -16,6 +17,7 @@ const Loading = props => {
     dispatch(checkBiometricSupport());
     dispatch(checkInternetReachable());
     dispatch(startLnd());
+    dispatch(subscribeAppState());
   }, [dispatch]);
 
   useEffect(() => {

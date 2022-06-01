@@ -1,4 +1,5 @@
 import lnd, {ss_lnrpc} from '@litecoinfoundation/react-native-lndltc';
+import {AppState} from 'react-native';
 
 import {getItem} from '../lib/utils/keychain';
 import {authenticate} from '../lib/utils/biometric';
@@ -14,6 +15,7 @@ const initialState = {
   biometricsEnabled: false,
   faceIDSupported: false,
   timeLastUnlocked: null,
+  appState: null,
 };
 
 // constants
@@ -23,6 +25,7 @@ export const UNLOCK_WALLET = 'UNLOCK_WALLET';
 export const CLEAR_UNLOCK = 'CLEAR_UNLOCK';
 export const SET_BIOMETRIC_AVAILABILITY = 'SET_BIOMETRIC_AVAILABILITY';
 export const SET_BIOMETRIC_ENABLED = 'SET_BIOMETRIC_ENABLED';
+export const UPDATE_APP_STATE = 'UPDATE_APP_STATE';
 
 // actions
 export const addPincode = passcode => async dispatch => {
@@ -105,6 +108,31 @@ export const setBiometricEnabled = boolean => dispatch => {
   });
 };
 
+export const subscribeAppState = () => (dispatch, getState) => {
+  AppState.addEventListener('change', nextAppState => {
+    const {appState} = getState().authentication;
+
+    // when app goes into background for long periods of time
+    // lnd may lock the user wallet
+    // present an authentication screen if wallet locked
+    if (nextAppState === 'active' && appState === 'background') {
+      lnd.stateService.subscribeToStateChanges(res => {
+        if (res.isOk()) {
+          if (res.value === ss_lnrpc.WalletState.LOCKED) {
+            //
+            console.warn('bg: user wallet locked!');
+          }
+        }
+      });
+    }
+
+    dispatch({
+      type: UPDATE_APP_STATE,
+      appState: nextAppState,
+    });
+  });
+};
+
 // action handlers
 const actionHandler = {
   [UNLOCK_WALLET]: (state, {payload}) => ({...state, walletUnlocked: payload}),
@@ -135,6 +163,10 @@ const actionHandler = {
   [SET_BIOMETRIC_ENABLED]: (state, {boolean}) => ({
     ...state,
     biometricsEnabled: boolean,
+  }),
+  [UPDATE_APP_STATE]: (state, {appState}) => ({
+    ...state,
+    appState,
   }),
 };
 
