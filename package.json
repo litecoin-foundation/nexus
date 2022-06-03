@@ -8,14 +8,17 @@
     "url": "https://github.com/litecoin-foundation/plasma.git"
   },
   "scripts": {
-    "android": "react-native run-android",
+    "android": "export JAVA_HOME='/Applications/Android Studio.app/Contents/jre/Contents/Home' && react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
     "postinstall": "npx jetify",
+    "reset": "rm -rf node_modules/ && npm cache clear && watchman watch-del-all && npm i",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "fetch:ios": "curl https://api.getplasma.org/files/lnd/lndmobile-ios-v0.14.2rc2.tar.gz --output lndmobile-ios-v0.14.2rc2.tar.gz && npm run extract:ios",
-    "extract:ios": "tar xzvf lndmobile-ios-v0.14.2rc2.tar.gz -C ./node_modules/@litecoinfoundation/react-native-lndltc/ios"
+    "extract:ios": "tar xzvf lndmobile-ios-v0.14.2rc2.tar.gz -C ./node_modules/@litecoinfoundation/react-native-lndltc/ios",
+    "fetch:android": "cd ./lightning && curl https://api.getplasma.org/files/lnd/lndmobile-android-v0.14.2rc2.tar.gz --output lndmobile-android-v0.14.2rc2.tar.gz && npm run extract:android",
+    "extract:android": "cd ./lightning && tar xzvf lndmobile-android-v0.14.2rc2.tar.gz"
   },
   "dependencies": {
     "@litecoinfoundation/react-native-lndltc": "0.0.4",
