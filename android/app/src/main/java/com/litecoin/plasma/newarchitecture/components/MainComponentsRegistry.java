@@ -1,4 +1,4 @@
-package com.plasma.newarchitecture.components;
+package com.litecoin.plasma.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;
@@ -13,24 +13,20 @@ import com.facebook.soloader.SoLoader;
  * <p>Please note that this class is used ONLY if you opt-in for the New Architecture (see the
  * `newArchEnabled` property). Is ignored otherwise.
  */
-@DoNotStrip
-public class MainComponentsRegistry {
+@DoNotStrip public class MainComponentsRegistry {
   static {
     SoLoader.loadLibrary("fabricjni");
   }
 
   @DoNotStrip private final HybridData mHybridData;
 
-  @DoNotStrip
-  private native HybridData initHybrid(ComponentFactory componentFactory);
+  @DoNotStrip private native HybridData initHybrid(ComponentFactory componentFactory);
 
-  @DoNotStrip
-  private MainComponentsRegistry(ComponentFactory componentFactory) {
+  @DoNotStrip private MainComponentsRegistry(ComponentFactory componentFactory) {
     mHybridData = initHybrid(componentFactory);
   }
 
-  @DoNotStrip
-  public static MainComponentsRegistry register(ComponentFactory componentFactory) {
+  @DoNotStrip public static MainComponentsRegistry register(ComponentFactory componentFactory) {
     return new MainComponentsRegistry(componentFactory);
   }
 }

@@ -136,7 +136,6 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-        missingDimensionStrategy 'general'
         multiDexEnabled true
     }
     splits {
@@ -217,7 +216,9 @@ dependencies {
     }
     implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0-alpha02'
-    implementation project(':Lndmobile')
+
+    implementation files('../../lightning/Lndmobile.aar')
+    implementation project(':react-native-lndltc')
 
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
