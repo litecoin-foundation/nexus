@@ -62,32 +62,40 @@ const Send = ({navigation, route}) => {
 
   const validate = async data => {
     try {
-      const decoded = decodeBIP21(data);
-      const valid = await validateLtcAddress(decoded.address);
+      // handle BIP21 litecoin URI
+      if (data.startsWith('litecoin:')) {
+        const decoded = decodeBIP21(data);
+        const valid = await validateLtcAddress(decoded.address);
 
-      if (!valid) {
-        throw new Error('Invalid URI');
-      } else {
+        // BIP21 validation
+        if (!valid) {
+          throw new Error('Invalid URI');
+        }
+
+        // If additional data included, set amount/address
         if (decoded.options.amount) {
           setAmount(decoded.options.amount);
           dispatch(updateAmount(decoded.options.amount));
         }
-        setAddress(decoded.address);
         if (decoded.options.message) {
           changeMemo(decoded.options.message);
         }
+        setAddress(decoded.address);
 
         return;
       }
-    } catch (error) {
+
+      // handle Litecoin Address
       const valid = await validateLtcAddress(data);
 
       if (!valid) {
         throw new Error('Invalid Address');
       } else {
-        setAddress(valid.address);
+        setAddress(data);
         return;
       }
+    } catch (error) {
+      throw new Error(error);
     }
   };
 
@@ -407,7 +415,7 @@ const styles = StyleSheet.create({
     height: 155,
   },
   invalidPasteContainer: {
-    height: 120,
+    height: 132,
   },
   invalidHeaderContainer: {
     flexDirection: 'row',
@@ -435,6 +443,7 @@ const styles = StyleSheet.create({
     lineHeight: 13,
     width: 300,
     paddingLeft: 41,
+    paddingTop: 10,
   },
   invalidButtonContainer: {
     paddingLeft: 41,

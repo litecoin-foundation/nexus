@@ -16,25 +16,21 @@ const Scan = props => {
     BarcodeFormat.ALL_FORMATS, // You can only specify a particular format
   ]);
 
-  const toggleActiveState = async () => {
-    if (barcodes && barcodes.length > 0 && scanned === false) {
-      triggerScanned(true);
-      barcodes.forEach(async qr => {
-        if (qr.rawValue !== '') {
-          Vibration.vibrate();
-          navigation.navigate('Send', {scanData: qr.rawValue});
-        }
-      });
-    }
-  };
-
   React.useEffect(() => {
-    toggleActiveState();
-    return () => {
-      barcodes;
+    const toggleActiveState = async () => {
+      if (barcodes && barcodes.length > 0 && scanned === false) {
+        triggerScanned(true);
+        barcodes.forEach(async qr => {
+          if (qr.rawValue !== '') {
+            Vibration.vibrate();
+            navigation.navigate('Send', {scanData: qr.rawValue});
+          }
+        });
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [barcodes]);
+
+    toggleActiveState();
+  }, [barcodes, navigation, scanned]);
 
   useEffect(() => {
     async function checkCameraPermissions() {
