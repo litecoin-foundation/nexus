@@ -14,28 +14,25 @@ export const CLEAR_INVOICE = 'CLEAR_INVOICE';
 // actions
 export const addInvoice = invoice => async dispatch => {
   try {
-    // const request = {
-    //   value: invoice.amount,
-    //   memo: invoice.memo,
-    // };
-    // const rpc = await lnd.createInvoice(50000, 'test');
-    // console.error(`POOPY: ${rpc.value}`);
-    // if (rpc.isErr()) {
-    //   console.error(rpc.error);
-    //   return;
-    // }
-    // if (rpc.isOk()) {
-    //   console.error(`POOPY: ${rpc.value}`);
-    //   console.log(rpc.value);
-    //   const {paymentRequest} = rpc.value;
-    //   dispatch({
-    //     type: ADD_INVOICE,
-    //     paymentRequest,
-    //     description: invoice.memo,
-    //     value: invoice.amount,
-    //   });
-    //   return true;
-    // }
+    const {amount, memo} = invoice;
+
+    const rpc = await lnd.createInvoice(amount, memo);
+
+    if (rpc.isErr()) {
+      console.error(rpc.error);
+      return;
+    }
+
+    if (rpc.isOk()) {
+      const {paymentRequest} = rpc.value;
+      dispatch({
+        type: ADD_INVOICE,
+        paymentRequest,
+        description: invoice.memo,
+        value: invoice.amount,
+      });
+      return true;
+    }
   } catch (error) {
     alert(error);
   }
