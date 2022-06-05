@@ -21,7 +21,7 @@
     "extract:android": "cd ./lightning && tar xzvf lndmobile-android-v0.14.2rc2.tar.gz"
   },
   "dependencies": {
-    "@litecoinfoundation/react-native-lndltc": "0.0.4",
+    "@litecoinfoundation/react-native-lndltc": "0.0.5",
     "@react-native-community/clipboard": "^1.5.1",
     "@react-native-community/netinfo": "^8.3.0",
     "@react-native-community/segmented-control": "^2.2.2",
