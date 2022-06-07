@@ -47,13 +47,15 @@ export const getTransactions = () => async dispatch => {
 
   transactions.forEach(tx => {
     let obj = {
+      txHash: tx.txHash,
       amount: tx.amount,
+      numConfirmations: tx.numConfirmations,
       blockHash: tx.blockHash,
       blockHeight: tx.blockHeight,
-      numConfirmations: tx.numConfirmations,
       timeStamp: tx.timeStamp,
-      txHash: tx.txHash,
+      fee: tx.total_fees,
       destAddresses: tx.destAddresses,
+      label: tx.label,
     };
     txs.push(obj);
   });
@@ -179,7 +181,8 @@ export const txDetailSelector = createSelector(txSelector, tx =>
       amount: data.amount,
       day: formatDate(data.timeStamp * 1000),
       time: formatTime(data.timeStamp * 1000),
-      fee: data.totalFees,
+      timestamp: data.timeStamp,
+      fee: data.fee,
       confs: data.numConfirmations,
       lightning: false,
       addresses: data.destAddresses,

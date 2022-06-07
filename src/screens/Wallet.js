@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect} from 'react';
+import React, {useState, useLayoutEffect, useRef} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {HeaderBackButton} from '@react-navigation/elements';
@@ -11,12 +11,17 @@ import AmountView from '../components/AmountView';
 import InfoModal from '../components/Modals/InfoModal';
 import SearchButton from '../components/Buttons/SearchButton';
 import TransactionFilterModal from '../components/Modals/TransactionFilterModal';
+import TxDatePicker from '../components/TxDatePicker';
 import {groupBy} from '../lib/utils';
 import {txDetailSelector} from '../reducers/transaction';
 
 const Wallet = props => {
   const {navigation} = props;
 
+  const TxDatePickerRef = useRef();
+  const TransactionListRef = useRef();
+
+  const {isInternetReachable} = useSelector(state => state.info);
   const transactions = useSelector(state => txDetailSelector(state));
   const groupedTransactions = groupBy(transactions, 'day');
 
@@ -25,8 +30,8 @@ const Wallet = props => {
   const [isInternetModalVisible, setInternetModalVisible] = useState(false);
   const [isTxFilterModalVisible, setTxFilterModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
-  const {isInternetReachable} = useSelector(state => state.info);
   const [diplayedTxs, setDisplayedTxs] = useState(groupedTransactions);
+  const [sectionHeader, setSectionHeader] = useState(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -71,16 +76,45 @@ const Wallet = props => {
     setTxFilterModalVisible(false);
   };
 
+  const handleDatePick = (hash, timestamp) => {
+    const dateIndex = diplayedTxs.findIndex(sections => {
+      const {data} = sections;
+      return data[0].hash === hash;
+    });
+    TransactionListRef.current.scrollToLocation(dateIndex);
+
+    setSectionHeader(timestamp);
+  };
+
   return (
     <View style={styles.container}>
-      <AmountView small={true} />
+      <AmountView small={true}>
+        <TxDatePicker
+          ref={TxDatePickerRef}
+          selectedTimestamp={sectionHeader}
+          transactions={transactions}
+          handlePress={(txid, timestamp) => handleDatePick(txid, timestamp)}
+        />
+      </AmountView>
       <View style={styles.transactionListContainer}>
         <TransactionList
+          ref={TransactionListRef}
           onPress={data => {
             selectTransaction(data);
             setTxDetailModalVisible(true);
           }}
           transactions={diplayedTxs}
+          onViewableItemsChanged={viewableItems => {
+            if (
+              viewableItems.viewableItems !== undefined &&
+              viewableItems.viewableItems.length >= 1
+            ) {
+              const {timestamp} = viewableItems.viewableItems[0].item;
+              if (timestamp !== undefined) {
+                setSectionHeader(timestamp);
+              }
+            }
+          }}
         />
       </View>
 

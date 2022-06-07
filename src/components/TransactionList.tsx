@@ -6,7 +6,13 @@ import {
   RefreshControl,
   SectionListRenderItem,
 } from 'react-native';
-import React, {useCallback, useState} from 'react';
+import React, {
+  useCallback,
+  useState,
+  forwardRef,
+  useRef,
+  useImperativeHandle,
+} from 'react';
 
 import {useAppDispatch} from '../store/hooks';
 import {getTransactions} from '../reducers/transaction';
@@ -15,6 +21,7 @@ import TransactionCell from './Cells/TransactionCell';
 interface Props {
   onPress(item: ItemType): void;
   transactions: ITransactions[];
+  onViewableItemsChanged(): void;
 }
 
 interface ITransactions {
@@ -32,6 +39,7 @@ interface IData {
   sent: boolean;
   time: Date;
   addresses: string[];
+  timestamp: number;
 }
 
 type ItemType = {
@@ -41,8 +49,21 @@ type ItemType = {
   hash: string;
 };
 
-const TransactionList = (props: Props) => {
-  const {onPress, transactions} = props;
+const TransactionList = forwardRef((props: Props, ref) => {
+  const transactionListRef = useRef();
+
+  useImperativeHandle(ref, () => ({
+    scrollToLocation: (sectionIndex: number) => {
+      transactionListRef.current.scrollToLocation({
+        animated: true,
+        sectionIndex: sectionIndex,
+        itemIndex: 0,
+        viewPosition: 0,
+      });
+    },
+  }));
+
+  const {onPress, transactions, onViewableItemsChanged} = props;
   const dispatch = useAppDispatch();
 
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -68,8 +89,11 @@ const TransactionList = (props: Props) => {
   return (
     <View style={styles.container}>
       <SectionList
+        ref={transactionListRef}
         sections={transactions}
+        stickySectionHeadersEnabled={true}
         renderItem={renderItem}
+        viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
         renderSectionHeader={({section}) => (
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
@@ -80,10 +104,11 @@ const TransactionList = (props: Props) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        onViewableItemsChanged={onViewableItemsChanged}
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -109,7 +134,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   emptyView: {
-    height: 300,
+    height: 350,
   },
 });
 

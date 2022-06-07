@@ -1,4 +1,4 @@
-export const formatDate = (date) => {
+export const formatDate = date => {
   const ONE_DAY = 60 * 60 * 24 * 1000;
   const jsDate = new Date(date);
   const time = new Date();
@@ -19,10 +19,24 @@ export const formatDate = (date) => {
   });
 };
 
-export const formatTime = (time) => {
+export const formatTime = time => {
   const jsTime = new Date(time);
   return jsTime.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: 'numeric',
+  });
+};
+
+export const formatMonths = date => {
+  const jsDate = new Date(date);
+  const time = new Date();
+
+  if (jsDate.getFullYear() === time.getFullYear()) {
+    return jsDate.toLocaleDateString('en-US', {month: 'long'});
+  }
+
+  return jsDate.toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
   });
 };

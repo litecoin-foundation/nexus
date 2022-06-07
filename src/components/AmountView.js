@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   notch: {
     height: 390,
   },
-  short: {height: 210},
+  short: {height: 250},
   maskContainer: {
     position: 'absolute',
     width: '100%',
