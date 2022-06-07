@@ -1,15 +1,19 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 
 import AmountInput from '../../components/AmountInput';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import Header from '../../components/Header';
-import {setAmount} from '../../reducers/buy';
+import {setAmount, getQuote} from '../../reducers/buy';
 
-const Buy = (props) => {
+const Buy = props => {
   const dispatch = useDispatch();
-  const {amount, fiatAmount} = useSelector((state) => state.input);
+  const {amount, fiatAmount} = useSelector(state => state.input);
+
+  useEffect(() => {
+    dispatch(getQuote());
+  }, [dispatch]);
 
   return (
     <View style={styles.container}>

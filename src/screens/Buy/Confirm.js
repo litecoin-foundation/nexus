@@ -20,10 +20,9 @@ const Confirm = props => {
   const {navigation} = props;
   const dispatch = useDispatch();
 
-  const {quote} = useSelector(state => state.buy);
+  const {quote, fiatAmount} = useSelector(state => state.buy);
   const {currencySymbol} = useSelector(state => state.settings);
   const {
-    baseCurrencyAmount,
     quoteCurrencyAmount,
     quoteCurrencyPrice,
     feeAmount,
@@ -36,14 +35,13 @@ const Confirm = props => {
   const {uniqueId} = useSelector(state => state.onboarding);
 
   useEffect(() => {
-    dispatch(getQuote());
     dispatch(getAddress());
   }, [dispatch]);
 
   const onPress = async () => {
     const {urlWithSignature} = await getSignedUrl(
       address,
-      baseCurrencyAmount,
+      fiatAmount,
       uniqueId,
     );
     navigation.navigate('WebPage', {
