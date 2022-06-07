@@ -48,27 +48,12 @@ const initialState: ILightningState = {
 // constants
 export const START_LND: ReduxType = 'START_LND';
 export const STOP_LND: ReduxType = 'STOP_LND';
-export const UPDATE_LND_STATE: ReduxType = 'UPDATE_LND_STATE';
 
 // actions
 export const startLnd = (): AppThunk => async dispatch => {
   try {
-    // subscribe to LND state
-    lnd.stateService.subscribeToStateChanges(
-      res => {
-        if (res.isOk()) {
-          dispatch({
-            type: UPDATE_LND_STATE,
-            payload: res.value,
-          });
-        }
-      },
-      () => console.log('LND: onDone'),
-    );
-
     // start LND
     await lnd.start(lndConf);
-
     dispatch({
       type: START_LND,
     });
@@ -175,10 +160,6 @@ export const unlockWallet = (): AppThunk => async dispatch => {
 const actionHandler: IActionHandler = {
   [START_LND]: state => ({...state, lndActive: true}),
   [STOP_LND]: state => ({...state, lndActive: false}),
-  [UPDATE_LND_STATE]: (state, {payload}: ss_lnrpc.WalletState) => ({
-    ...state,
-    lndState: payload,
-  }),
 };
 
 // reducer
