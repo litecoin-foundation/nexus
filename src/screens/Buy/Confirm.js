@@ -13,7 +13,7 @@ import {HeaderBackButton} from '@react-navigation/elements';
 
 import TableCell from '../../components/Cells/TableCell';
 import BlueButton from '../../components/Buttons/BlueButton';
-import {getQuote, getSignedUrl} from '../../reducers/buy';
+import {getSignedUrl} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 
 const Confirm = props => {
