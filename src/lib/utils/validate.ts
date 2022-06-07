@@ -97,9 +97,12 @@ const parseBech32 = (address: string): AddressInfo => {
 
 const getAddressInfo = (address: string): AddressInfo => {
   let decoded: Uint8Array;
-  const prefix = address.substr(0, 3).toLowerCase();
+  const prefix = address.substring(0, 4).toLowerCase();
 
-  if (prefix === 'ltc' || prefix === 'tlt') {
+  if (
+    ((prefix === 'ltc1' || prefix === 'tltc') && address.length === 33) ||
+    34
+  ) {
     return parseBech32(address);
   }
 
