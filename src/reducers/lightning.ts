@@ -3,10 +3,10 @@ import lnd, {
   LndConf,
   ss_lnrpc,
 } from '@litecoinfoundation/react-native-lndltc';
-import {ThunkAction, AnyAction} from '@reduxjs/toolkit';
+import {AnyAction} from '@reduxjs/toolkit';
 import RNFS from 'react-native-fs';
 
-import {RootState} from '../store';
+import {ReduxType, AppThunk, IActionHandler} from './types';
 import {getRandomBytes} from '../lib/utils/random';
 import {setItem, getItem} from '../lib/utils/keychain';
 import {deleteWalletDB} from '../lib/utils/file';
@@ -21,19 +21,6 @@ const PASS = 'PASSWORD';
 const lndConf = new LndConf(ENetworks.mainnet);
 
 // types
-type ReduxType = string;
-
-type AppThunk<ReturnType = void> = ThunkAction<
-  ReturnType,
-  RootState,
-  unknown,
-  AnyAction
->;
-
-interface IActionHandler {
-  [reduxType: ReduxType]: (state: any, {payload}: any) => void;
-}
-
 interface ILightningState {
   lndActive: boolean;
   lndState: string | null;
