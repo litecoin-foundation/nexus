@@ -99,11 +99,10 @@ const getAddressInfo = (address: string): AddressInfo => {
   let decoded: Uint8Array;
   const prefix = address.substring(0, 4).toLowerCase();
 
-  if (
-    ((prefix === 'ltc1' || prefix === 'tltc') && address.length === 33) ||
-    34
-  ) {
-    return parseBech32(address);
+  if (prefix === 'ltc1' || prefix === 'tltc') {
+    if (address.length === 33 || 34) {
+      return parseBech32(address);
+    }
   }
 
   try {
@@ -113,7 +112,6 @@ const getAddressInfo = (address: string): AddressInfo => {
   }
 
   const {length} = decoded;
-
   if (length !== 25) {
     throw new Error('Invalid address');
   }
