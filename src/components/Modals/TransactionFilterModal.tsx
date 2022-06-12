@@ -20,7 +20,7 @@ interface Props {
   isVisible: boolean;
 }
 
-const TransactionFilterModal: React.FC<Props> = (props: Props): JSX.Element => {
+const TransactionFilterModal: React.FC<Props> = props => {
   const {close, isVisible, onPress} = props;
 
   const [segmentOption, setSegmentOption] = useState<number>(0);

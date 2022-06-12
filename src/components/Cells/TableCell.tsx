@@ -19,7 +19,7 @@ type ConditionalProps =
 
 type Props = CommonProps & ConditionalProps;
 
-const TableCell: React.FC<Props> = (props: Props): JSX.Element => {
+const TableCell: React.FC<Props> = props => {
   const {title, value, valueStyle, children} = props;
   return (
     <View style={styles.container}>
