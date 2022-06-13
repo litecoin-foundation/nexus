@@ -15,6 +15,7 @@ import chart from './chart';
 import input from './input';
 import alerts from './alerts';
 import settings from './settings';
+import deeplinks from './deeplinks';
 
 export default combineReducers({
   onboarding,
@@ -33,4 +34,5 @@ export default combineReducers({
   input,
   alerts,
   settings,
+  deeplinks,
 });

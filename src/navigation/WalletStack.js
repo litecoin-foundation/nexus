@@ -98,7 +98,10 @@ function WalletStack() {
       <Stack.Screen
         name="Account"
         component={Account}
-        options={Account.navigationOptions}
+        options={{
+          headerTitle: 'Your Wallet',
+          headerLeft: null,
+        }}
       />
       <Stack.Screen
         name="Wallet"

@@ -16,14 +16,24 @@ const Theme = {
   },
 };
 
+const Linking = {
+  prefixes: ['litecoin://', 'litecoin:'],
+  config: {},
+};
+
 function RootNavigator() {
   return (
-    <NavigationContainer theme={Theme}>
+    <NavigationContainer theme={Theme} linking={Linking}>
       <Stack.Navigator initialRouteName="Loading">
         <Stack.Screen
           name="Loading"
           component={Loading}
-          options={Loading.navigationOptions}
+          options={{
+            headerTransparent: true,
+            headerBackTitleVisible: false,
+            headerTintColor: 'white',
+            headerShown: false,
+          }}
         />
         <Stack.Screen
           name="AuthStack"

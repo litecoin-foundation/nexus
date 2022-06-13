@@ -1,4 +1,4 @@
-import React, {Fragment} from 'react';
+import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -6,39 +6,27 @@ import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
+import {useAppSelector} from '../../store/hooks';
+import {fiatValueSelector} from '../../reducers/ticker';
+import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
 
-const SendModal = (props) => {
-  const {isVisible, close, amount, address, memo, handleConfirm} = props;
+interface Props {
+  handleConfirm(): void;
+  close(): void;
+  isVisible: boolean;
+  amount: number;
+  address: string;
+  memo?: string;
+}
 
-  const DescriptionView = () => (
-    <Fragment>
-      <VerticalTableCell title="Recipient Address">
-        <Text style={styles.addressText}>{address}</Text>
-      </VerticalTableCell>
-      <View style={styles.modalList}>
-        <TableCell
-          title="AMOUNT IN LTC"
-          value={`${amount}Ł`}
-          valueStyle={styles.ltcText}
-        />
-        <TableCell
-          title="AMOUNT IN FIAT"
-          value="PLACEHOLDER"
-          valueStyle={styles.fiatText}
-        />
-        {memo ? <TableCell title="DESCRIPTION" value={memo} /> : null}
-        <TableCell title="FEE" value="PLACEHOLDER" />
-      </View>
-      <View style={styles.modalButtonContainer}>
-        <BlueButton
-          value="Confirm"
-          onPress={() => {
-            handleConfirm();
-          }}
-        />
-      </View>
-    </Fragment>
-  );
+const SendModal: React.FC<Props> = props => {
+  const {handleConfirm, close, isVisible, amount, address, memo} = props;
+
+  const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
+  const convertToSubunit = useAppSelector(state => subunitSelector(state));
+  const subunitAmount = convertToSubunit(amount);
+  const subunitSymbol = useAppSelector(state => subunitSymbolSelector(state));
+  const fiatAmount = calculateFiatAmount(amount);
 
   return (
     <Modal
@@ -55,7 +43,32 @@ const SendModal = (props) => {
             <Text style={styles.modalHeaderTitle}>Send</Text>
             <GreyRoundButton onPress={() => close()} />
           </View>
-          <DescriptionView />
+
+          <VerticalTableCell title="Recipient Address">
+            <Text style={styles.addressText}>{address}</Text>
+          </VerticalTableCell>
+          <View style={styles.modalList}>
+            <TableCell
+              title="Litecoin Amount"
+              value={`${subunitAmount}${subunitSymbol}`}
+              valueStyle={styles.ltcText}
+            />
+            <TableCell
+              title="AMOUNT IN FIAT"
+              value={fiatAmount}
+              valueStyle={styles.fiatText}
+            />
+            {memo ? <TableCell title="DESCRIPTION" value={memo} /> : null}
+            <TableCell title="FEE" value="PLACEHOLDER" />
+          </View>
+          <View style={styles.modalButtonContainer}>
+            <BlueButton
+              value="Confirm"
+              onPress={() => {
+                handleConfirm();
+              }}
+            />
+          </View>
         </View>
       </View>
     </Modal>
