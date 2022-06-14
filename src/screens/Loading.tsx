@@ -30,9 +30,11 @@ const Loading: React.FC<Props> = props => {
   useEffect(() => {
     dispatch(checkBiometricSupport());
     dispatch(checkInternetReachable());
-    dispatch(startLnd());
-    dispatch(subscribeAppState());
-  }, [dispatch]);
+    if (isOnboarded === true) {
+      dispatch(startLnd());
+      dispatch(subscribeAppState());
+    }
+  }, [dispatch, isOnboarded]);
 
   useEffect(() => {
     const getURI = async () => {

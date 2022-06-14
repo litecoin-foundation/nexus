@@ -1,8 +1,8 @@
 import React from 'react';
 import {Text, StyleSheet, TouchableOpacity} from 'react-native';
 
-const WhiteClearButton = (props) => {
-  const {onPress, value, small, selected} = props;
+const WhiteClearButton = props => {
+  const {onPress, value, small, selected, disabled} = props;
   return (
     <TouchableOpacity
       style={[
@@ -10,6 +10,7 @@ const WhiteClearButton = (props) => {
         small ? styles.smallContainer : null,
         selected ? styles.selectedContainer : null,
       ]}
+      disabled={disabled}
       onPress={onPress}>
       <Text
         style={[
