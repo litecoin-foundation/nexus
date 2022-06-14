@@ -1,14 +1,8 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Clipboard,
-  Alert,
-} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Alert} from 'react-native';
 import Modal from 'react-native-modal';
 import {useSelector} from 'react-redux';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';

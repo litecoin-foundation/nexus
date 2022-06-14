@@ -1,19 +1,26 @@
 import React, {useEffect} from 'react';
-import {View, StyleSheet, TouchableOpacity, Text, Image} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Image,
+  Alert,
+} from 'react-native';
 import Modal from 'react-native-modal';
 import QRCode from 'react-native-qrcode-svg';
 import {useDispatch, useSelector} from 'react-redux';
-import Clipboard from '@react-native-community/clipboard';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 import Header from '../Header';
 import {clearInvoice} from '../../reducers/invoice';
 
-const InvoiceModal = (props) => {
+const InvoiceModal = props => {
   const {isVisible, close} = props;
   const dispatch = useDispatch();
-  const invoice = useSelector((state) => state.invoice.paymentRequest);
-  const description = useSelector((state) => state.invoice.description);
-  const value = useSelector((state) => state.invoice.value);
+  const invoice = useSelector(state => state.invoice.paymentRequest);
+  const description = useSelector(state => state.invoice.description);
+  const value = useSelector(state => state.invoice.value);
 
   useEffect(() => {
     return () => {
@@ -22,7 +29,7 @@ const InvoiceModal = (props) => {
   }, [dispatch]);
 
   const handleCopy = async () => {
-    alert('copied');
+    Alert.alert('Copied');
     await Clipboard.setString(invoice);
   };
 

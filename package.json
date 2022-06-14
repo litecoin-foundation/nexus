@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@litecoinfoundation/react-native-lndltc": "0.0.6",
-    "@react-native-community/clipboard": "^1.5.1",
+    "@react-native-clipboard/clipboard": "^1.10.0",
     "@react-native-community/netinfo": "^8.3.0",
     "@react-native-community/segmented-control": "^2.2.2",
     "@react-native-community/slider": "^4.2.2",
