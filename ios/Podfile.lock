@@ -279,7 +279,7 @@ PODS:
     - glog
   - react-native-get-random-values (1.8.0):
     - React-Core
-  - react-native-lndltc (0.0.4):
+  - react-native-lndltc (0.0.6):
     - React
   - react-native-netinfo (8.3.0):
     - React-Core
@@ -414,6 +414,14 @@ PODS:
     - React-RCTImage
   - RNSVG (12.3.0):
     - React-Core
+  - RNZipArchive (6.0.8):
+    - React-Core
+    - RNZipArchive/Core (= 6.0.8)
+    - SSZipArchive (= 2.2.3)
+  - RNZipArchive/Core (6.0.8):
+    - React-Core
+    - SSZipArchive (= 2.2.3)
+  - SSZipArchive (2.2.3)
   - TouchID (4.4.1):
     - React
   - vision-camera-code-scanner (0.2.0):
@@ -480,6 +488,7 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - RNZipArchive (from `../node_modules/react-native-zip-archive`)
   - TouchID (from `../node_modules/react-native-touch-id`)
   - vision-camera-code-scanner (from `../node_modules/vision-camera-code-scanner`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
@@ -501,6 +510,7 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - Protobuf
+    - SSZipArchive
 
 EXTERNAL SOURCES:
   boost:
@@ -607,6 +617,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  RNZipArchive:
+    :path: "../node_modules/react-native-zip-archive"
   TouchID:
     :path: "../node_modules/react-native-touch-id"
   vision-camera-code-scanner:
@@ -651,7 +663,7 @@ SPEC CHECKSUMS:
   React-jsinspector: c5989c77cb89ae6a69561095a61cce56a44ae8e8
   React-logger: a0833912d93b36b791b7a521672d8ee89107aff1
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
-  react-native-lndltc: 80595354a461275818b10380a48b20a0a323b228
+  react-native-lndltc: 412bc32bb8d1b82b5356d2b6801da6c833861df3
   react-native-netinfo: 3671b091c4843fda5e153612866ef4024b8f5d62
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: ebf8c413eb8b5f7c392a036a315eb7b46b96845f
@@ -683,6 +695,8 @@ SPEC CHECKSUMS:
   RNReanimated: 64573e25e078ae6bec03b891586d50b9ec284393
   RNScreens: 40a2cb40a02a609938137a1e0acfbf8fc9eebf19
   RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
+  RNZipArchive: 3f89b114cfeb89dac027fc5c7afd7e58d3dc4ebf
+  SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
   vision-camera-code-scanner: dda884a7f3ec8243a2a6d6489b91860648371bca
   VisionCamera: c1c171fcdbf18c438987847f785829c5638f3a4c
