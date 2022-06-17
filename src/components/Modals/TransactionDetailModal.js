@@ -44,10 +44,6 @@ const TransactionDetailModal = props => {
       </Text>
     );
   });
-  // console.log(transaction.addresses);
-  // const addresses = <Text key={1} style={styles.text}>
-  //   {"123456"}
-  // </Text>
 
   const onLongPress = async item => {
     await Alert.alert('Copied', null, [], {cancelable: true});

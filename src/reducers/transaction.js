@@ -59,17 +59,6 @@ export const getTransactions = () => async dispatch => {
     txs.push(obj);
   });
 
-  // let obj = {
-  //   amount: 240562294710,
-  //   blockHash: 'a33ca0e72ba78a8717e22f83a5d640a383d6f828b9e7ba935b457458714d1856',
-  //   blockHeight: '2281274',
-  //   numConfirmations: '6',
-  //   timeStamp: '1655357340',
-  //   txHash: '33ee3359e1f81ccb03558450c63fb01d203d1bfd40ab472036f17fac26f9c856',
-  //   destAddresses: ["MGRTniZrMQR79d8SbJdLKV2xcBgWdcMVVm", "ltc1qqrqpneshreva37t348evvxdrllvx6pfd59l83u"],
-  // };
-  // txs.push(obj);
-
   dispatch({
     type: GET_TRANSACTIONS,
     transactions: txs,
