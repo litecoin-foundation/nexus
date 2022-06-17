@@ -10,7 +10,11 @@ import {
 import Modal from 'react-native-modal';
 import {useSelector} from 'react-redux';
 
-import {subunitSelector, subunitSymbolSelector, defaultExplorerSelector} from '../../reducers/settings';
+import {
+  subunitSelector,
+  subunitSymbolSelector,
+  defaultExplorerSelector,
+} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
@@ -89,7 +93,6 @@ const TransactionDetailModal = props => {
               onPress={() => {
                 close();
                 navigate('WebPage', {
-                  // uri: `https://blockchair.com/litecoin/transaction/${transaction.hash}`,
                   uri: `${explorerUrl + transaction.hash}`,
                 });
               }}

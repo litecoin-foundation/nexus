@@ -4,8 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import OptionCell from '../../components/Cells/OptionCell';
 import Header from '../../components/Header';
-import fiat from '../../assets/fiat';
-import explorer from '../../assets/explorer';
+import explorer from '../../assets/explorers';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setExplorer} from '../../reducers/settings';
 
@@ -14,7 +13,7 @@ type ExplorerType = {
   key: string;
 };
 
-const DefaultExplorer: React.FC = () => {
+const Explorer: React.FC = () => {
   const dispatch = useAppDispatch();
   const {defaultExplorer} = useAppSelector(state => state.settings);
   const [selectedExplorer, setSelectedExplorer] = useState(defaultExplorer);
@@ -52,4 +51,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DefaultExplorer;
+export default Explorer;

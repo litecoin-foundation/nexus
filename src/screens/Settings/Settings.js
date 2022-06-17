@@ -46,15 +46,6 @@ const Settings = props => {
           style={styles.button}>
           <Text style={styles.buttonText}>CHANNELS</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => props.navigation.navigate('Explorer')}
-          style={styles.button}>
-          <Image
-            source={require('../../assets/images/explorer.png')}
-            style={styles.image}
-          />
-          <Text style={styles.buttonText}>EXPLORER</Text>
-        </TouchableOpacity>
       </View>
       <View style={styles.bottomContainer}>
         <LinearGradient

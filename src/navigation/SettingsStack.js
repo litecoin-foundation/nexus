@@ -11,7 +11,6 @@ import Seed from '../screens/Settings/Seed';
 import About from '../screens/Settings/About';
 import Wallet from '../screens/Settings/Wallet';
 import Currency from '../screens/Settings/Currency';
-import DefaultExplorer from '../screens/Settings/DefaultExplorer';
 
 const Stack = createStackNavigator();
 
@@ -50,11 +49,6 @@ function SettingsStack() {
         options={General.navigationOptions}
       />
       <Stack.Screen
-        name="Explorer"
-        component={Explorer}
-        options={Explorer.navigationOptions}
-      />
-      <Stack.Screen
         name="ChangePincode"
         component={ChangePincode}
         options={ChangePincode.navigationOptions}
@@ -89,10 +83,10 @@ function SettingsStack() {
         }}
       />
       <Stack.Screen
-        name="DefaultExplorer"
-        component={DefaultExplorer}
+        name="Explorer"
+        component={Explorer}
         options={{
-          headerTitle: 'Default Explorer',
+          headerTitle: 'Select Default Explorer',
           headerTitleStyle: {
             fontWeight: 'bold',
             color: 'white',

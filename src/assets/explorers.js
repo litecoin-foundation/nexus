@@ -1,4 +1,4 @@
-const explorer = [
+const explorers = [
   {
     key: 'Blockchair',
     name: 'Blockchair',
@@ -33,4 +33,4 @@ const explorer = [
   },
 ];
 
-export default explorer;
+export default explorers;

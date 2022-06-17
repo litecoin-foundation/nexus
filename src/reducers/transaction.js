@@ -7,7 +7,6 @@ import {getBalance} from './balance';
 // initial state
 const initialState = {
   transactions: [],
-  testTransactions: [],
   invoices: [],
   memos: [],
 };

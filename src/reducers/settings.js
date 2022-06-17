@@ -3,7 +3,7 @@ import memoize from 'lodash.memoize';
 import {getCurrencies} from 'react-native-localize';
 
 import fiat from '../assets/fiat';
-import explorer from '../assets/explorer';
+import explorers from '../assets/explorers';
 
 // initial state
 const initialState = {
@@ -55,7 +55,6 @@ export const setCurrencyCode = (currencyCode, currencySymbol) => dispatch => {
 };
 
 export const setExplorer = explorer => dispatch => {
-  console.log(explorer);
   dispatch({
     type: UPDATE_DEFAULT_EXPLORER,
     explorer: explorer,
@@ -120,7 +119,7 @@ export const subunitSymbolSelector = createSelector(
 export const defaultExplorerSelector = createSelector(
   state => state.settings.defaultExplorer,
   defaultExplorer => {
-    const explorerObject = explorer.find(e => e.key === defaultExplorer);
+    const explorerObject = explorers.find(e => e.key === defaultExplorer);
     return explorerObject.tx;
   },
 );
