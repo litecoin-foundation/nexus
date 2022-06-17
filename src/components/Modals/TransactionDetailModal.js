@@ -10,7 +10,7 @@ import {
 import Modal from 'react-native-modal';
 import {useSelector} from 'react-redux';
 
-import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
+import {subunitSelector, subunitSymbolSelector, defaultExplorerSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
@@ -32,6 +32,7 @@ const TransactionDetailModal = props => {
   const convertToSubunit = useSelector(state => subunitSelector(state));
   const cryptoAmount = convertToSubunit(transaction.amount);
   const amountSymbol = useSelector(state => subunitSymbolSelector(state));
+  const explorerUrl = useSelector(state => defaultExplorerSelector(state));
 
   const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(transaction.amount);
@@ -43,6 +44,10 @@ const TransactionDetailModal = props => {
       </Text>
     );
   });
+  // console.log(transaction.addresses);
+  // const addresses = <Text key={1} style={styles.text}>
+  //   {"123456"}
+  // </Text>
 
   const onLongPress = async item => {
     await Alert.alert('Copied', null, [], {cancelable: true});
@@ -88,7 +93,8 @@ const TransactionDetailModal = props => {
               onPress={() => {
                 close();
                 navigate('WebPage', {
-                  uri: `https://blockchair.com/litecoin/transaction/${transaction.hash}`,
+                  // uri: `https://blockchair.com/litecoin/transaction/${transaction.hash}`,
+                  uri: `${explorerUrl + transaction.hash}`,
                 });
               }}
             />

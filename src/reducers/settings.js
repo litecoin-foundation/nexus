@@ -3,6 +3,7 @@ import memoize from 'lodash.memoize';
 import {getCurrencies} from 'react-native-localize';
 
 import fiat from '../assets/fiat';
+import explorer from '../assets/explorer';
 
 // initial state
 const initialState = {
@@ -10,12 +11,14 @@ const initialState = {
   subunit: 0,
   currencyCode: 'USD',
   currencySymbol: '$',
+  defaultExplorer: 'Blockchair',
 };
 
 // constants
 const UPDATE_LAST_VIEW_SEED = 'UPDATE_LAST_VIEW_SEED';
 const UPDATE_SUBUNIT = 'UPDATE_SUBUNIT';
 const UPDATE_COUNTRY_CODE = 'UPDATE_COUNTRY_CODE';
+const UPDATE_DEFAULT_EXPLORER = 'UPDATE_DEFAULT_EXPLORER';
 
 // actions
 export const updateLastViewSeed = () => dispatch => {
@@ -51,6 +54,14 @@ export const setCurrencyCode = (currencyCode, currencySymbol) => dispatch => {
   });
 };
 
+export const setExplorer = explorer => dispatch => {
+  console.log(explorer);
+  dispatch({
+    type: UPDATE_DEFAULT_EXPLORER,
+    explorer: explorer,
+  });
+};
+
 // action handlers
 const actionHandler = {
   [UPDATE_LAST_VIEW_SEED]: (state, {time}) => ({
@@ -62,6 +73,10 @@ const actionHandler = {
     ...state,
     currencyCode,
     currencySymbol,
+  }),
+  [UPDATE_DEFAULT_EXPLORER]: (state, {explorer}) => ({
+    ...state,
+    defaultExplorer: explorer,
   }),
 };
 
@@ -99,6 +114,14 @@ export const subunitSymbolSelector = createSelector(
         // always default litecoin
         return 'Ł';
     }
+  },
+);
+
+export const defaultExplorerSelector = createSelector(
+  state => state.settings.defaultExplorer,
+  defaultExplorer => {
+    const explorerObject = explorer.find(e => e.key === defaultExplorer);
+    return explorerObject.tx;
   },
 );
 

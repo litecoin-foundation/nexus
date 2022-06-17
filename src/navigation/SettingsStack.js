@@ -5,11 +5,13 @@ import Settings from '../screens/Settings/Settings';
 import Channel from '../screens/Settings/Channel';
 import OpenChannel from '../screens/Settings/OpenChannel';
 import General from '../screens/Settings/General';
+import Explorer from '../screens/Settings/Explorer';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed from '../screens/Settings/Seed';
 import About from '../screens/Settings/About';
 import Wallet from '../screens/Settings/Wallet';
 import Currency from '../screens/Settings/Currency';
+import DefaultExplorer from '../screens/Settings/DefaultExplorer';
 
 const Stack = createStackNavigator();
 
@@ -48,6 +50,11 @@ function SettingsStack() {
         options={General.navigationOptions}
       />
       <Stack.Screen
+        name="Explorer"
+        component={Explorer}
+        options={Explorer.navigationOptions}
+      />
+      <Stack.Screen
         name="ChangePincode"
         component={ChangePincode}
         options={ChangePincode.navigationOptions}
@@ -72,6 +79,20 @@ function SettingsStack() {
         component={Currency}
         options={{
           headerTitle: 'Currency',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+        }}
+      />
+      <Stack.Screen
+        name="DefaultExplorer"
+        component={DefaultExplorer}
+        options={{
+          headerTitle: 'Default Explorer',
           headerTitleStyle: {
             fontWeight: 'bold',
             color: 'white',
