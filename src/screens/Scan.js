@@ -44,7 +44,6 @@ const Scan = props => {
         case 'authorized':
           break;
         case 'not-determined':
-          // TODO test this
           await Camera.requestCameraPermission();
           break;
         case 'denied':

@@ -2,7 +2,7 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import PropTypes from 'prop-types';
 
-const ProgressBar = (props) => {
+const ProgressBar = props => {
   const {progress} = props;
   return (
     <View style={styles.container}>
@@ -11,9 +11,9 @@ const ProgressBar = (props) => {
   );
 };
 
-const progressBarStyle = (progress) => {
+const progressBarStyle = progress => {
   return {
-    width: `${progress}%`,
+    width: `${progress ? progress : 0}%`,
     backgroundColor: '#20BB74',
     height: '100%',
     borderRadius: 1.5,
