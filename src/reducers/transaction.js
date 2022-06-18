@@ -81,10 +81,20 @@ const updateTransactions = () => async dispatch => {
 
 export const sendOnchainPayment =
   (address, amount, label = '') =>
-  dispatch => {
+  (dispatch, getState) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const rpc = await lnd.sendCoins(address, amount);
+        const {confirmedBalance} = getState().balance;
+        const sendAll = confirmedBalance === amount ? true : false;
+
+        const rpc = await lnd.sendCoins(
+          address,
+          amount,
+          undefined,
+          undefined,
+          sendAll,
+          label,
+        );
         if (rpc.isErr()) {
           reject(rpc.error);
         }
