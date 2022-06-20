@@ -279,7 +279,7 @@ PODS:
     - glog
   - react-native-get-random-values (1.8.0):
     - React-Core
-  - react-native-lndltc (0.0.6):
+  - react-native-lndltc (0.0.7):
     - React
   - react-native-netinfo (8.3.0):
     - React-Core
@@ -427,7 +427,7 @@ PODS:
   - vision-camera-code-scanner (0.2.0):
     - GoogleMLKit/BarcodeScanning
     - React-Core
-  - VisionCamera (2.13.3):
+  - VisionCamera (2.13.5):
     - React
     - React-callinvoker
     - React-Core
@@ -663,7 +663,7 @@ SPEC CHECKSUMS:
   React-jsinspector: c5989c77cb89ae6a69561095a61cce56a44ae8e8
   React-logger: a0833912d93b36b791b7a521672d8ee89107aff1
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
-  react-native-lndltc: 412bc32bb8d1b82b5356d2b6801da6c833861df3
+  react-native-lndltc: 79b559bd137f3b62720b2dca68c8f05db4a4b22d
   react-native-netinfo: 3671b091c4843fda5e153612866ef4024b8f5d62
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: ebf8c413eb8b5f7c392a036a315eb7b46b96845f
@@ -699,7 +699,7 @@ SPEC CHECKSUMS:
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
   vision-camera-code-scanner: dda884a7f3ec8243a2a6d6489b91860648371bca
-  VisionCamera: c1c171fcdbf18c438987847f785829c5638f3a4c
+  VisionCamera: 1ae1415dd21fee97c9bbfc1504d87cd7daba8d9c
   Yoga: 99652481fcd320aefa4a7ef90095b95acd181952
 
 PODFILE CHECKSUM: ed8f36fc96dd36b65b55a2489af081f41b186bdc

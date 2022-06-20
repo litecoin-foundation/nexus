@@ -15,13 +15,13 @@
     "reset": "rm -rf node_modules/ && npm cache clear && watchman watch-del-all && npm i",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "fetch:ios": "curl https://api.getplasma.org/files/lnd/lndmobile-ios-v0.14.2rc2.tar.gz --output lndmobile-ios-v0.14.2rc2.tar.gz && npm run extract:ios",
-    "extract:ios": "tar xzvf lndmobile-ios-v0.14.2rc2.tar.gz -C ./node_modules/@litecoinfoundation/react-native-lndltc/ios",
-    "fetch:android": "cd ./lightning && curl https://api.getplasma.org/files/lnd/lndmobile-android-v0.14.2rc2.tar.gz --output lndmobile-android-v0.14.2rc2.tar.gz && npm run extract:android",
-    "extract:android": "cd ./lightning && tar xzvf lndmobile-android-v0.14.2rc2.tar.gz"
+    "fetch:ios": "curl https://api.getplasma.org/files/lnd/lndmobile-ios-v0.14.2rc3.tar.gz --output lndmobile-ios-v0.14.2rc3.tar.gz && npm run extract:ios",
+    "extract:ios": "tar xzvf lndmobile-ios-v0.14.2rc3.tar.gz -C ./node_modules/@litecoinfoundation/react-native-lndltc/ios",
+    "fetch:android": "cd ./lightning && curl https://api.getplasma.org/files/lnd/lndmobile-android-v0.14.2rc3.tar.gz --output lndmobile-android-v0.14.2rc3.tar.gz && npm run extract:android",
+    "extract:android": "cd ./lightning && tar xzvf lndmobile-android-v0.14.2rc3.tar.gz"
   },
   "dependencies": {
-    "@litecoinfoundation/react-native-lndltc": "0.0.6",
+    "@litecoinfoundation/react-native-lndltc": "0.0.7",
     "@react-native-clipboard/clipboard": "^1.10.0",
     "@react-native-community/netinfo": "^8.3.0",
     "@react-native-community/segmented-control": "^2.2.2",

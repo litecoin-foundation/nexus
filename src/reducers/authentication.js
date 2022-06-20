@@ -54,16 +54,22 @@ export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
     });
   } else {
     dispatch(await unlockWallet());
-    lnd.stateService.subscribeToStateChanges(res => {
-      if (res.isOk()) {
-        if (res.value === ss_lnrpc.WalletState.UNLOCKED) {
-          dispatch({
-            type: UNLOCK_WALLET,
-            payload: true,
-          });
+    lnd.stateService.subscribeToStateChanges(
+      res => {
+        if (res.isErr()) {
+          console.error(res.error);
         }
-      }
-    });
+        if (res.isOk()) {
+          if (res.value === ss_lnrpc.WalletState.UNLOCKED) {
+            dispatch({
+              type: UNLOCK_WALLET,
+              payload: true,
+            });
+          }
+        }
+      },
+      () => console.log('done'),
+    );
   }
 };
 
