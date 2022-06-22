@@ -48,6 +48,7 @@ const Wallet = props => {
           <SettingCell
             title="Block Explorer"
             onPress={() => props.navigation.navigate('Explorer')}
+            forward
           />
           <SettingCell
             title="Currency Code"

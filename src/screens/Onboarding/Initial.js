@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {detectCurrencyCode} from '../../reducers/settings';
+import {detectCurrencyCode, setExplorer} from '../../reducers/settings';
 import {getNeutrinoCache} from '../../reducers/onboarding';
 import ProgressBar from '../../components/ProgressBar';
 import {startLnd} from '../../reducers/lightning';
@@ -20,6 +20,7 @@ const Initial = props => {
 
   useEffect(() => {
     dispatch(detectCurrencyCode());
+    dispatch(setExplorer('Blockchair'));
   }, [dispatch]);
 
   useEffect(() => {
