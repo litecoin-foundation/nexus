@@ -57,6 +57,7 @@ const Account: React.FC<Props> = props => {
         // TODO: currently Send confirmation modal doesn't have UI
         // to modify an amount. Fail every URI without amount set.
         // After redesign take a look at this
+        dispatch(unsetDeeplink());
         Alert.alert(
           'URI Invalid',
           'Plasma can only process URIs containing an amount',
