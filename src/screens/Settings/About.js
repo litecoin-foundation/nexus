@@ -7,8 +7,14 @@ import VerticalTableCell from '../../components/Cells/VerticalTableCell';
 import Header from '../../components/Header';
 
 const About = () => {
-  const {syncedToChain, blockHeight, blockHash, bestHeaderTimestamp, version} =
-    useSelector(state => state.info);
+  const {
+    syncedToChain,
+    sycnedToGraph,
+    blockHeight,
+    blockHash,
+    bestHeaderTimestamp,
+    version,
+  } = useSelector(state => state.info);
 
   return (
     <View style={styles.container}>
@@ -18,6 +24,10 @@ const About = () => {
         <TableCell
           title="Synced to Chain?"
           value={`${syncedToChain === true ? 'true' : 'false'}`}
+        />
+        <TableCell
+          title="Synced to Graph?"
+          value={`${sycnedToGraph === true ? 'true' : 'false'}`}
         />
         <TableCell title="Block Height" value={blockHeight} />
         <VerticalTableCell title="Blockhash">
