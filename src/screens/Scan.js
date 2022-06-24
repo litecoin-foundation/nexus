@@ -8,7 +8,7 @@ import Switch from '../components/Buttons/Switch';
 import Header from '../components/Header';
 
 const Scan = props => {
-  const {navigation} = props;
+  const {navigation, route} = props;
   const [flashEnabled, triggerFlash] = useState(false);
   const [scanned, triggerScanned] = useState(false);
 
@@ -23,14 +23,16 @@ const Scan = props => {
         barcodes.forEach(async qr => {
           if (qr.rawValue !== '') {
             Vibration.vibrate();
-            navigation.navigate('Send', {scanData: qr.rawValue});
+            navigation.navigate(route.params.returnRoute, {
+              scanData: qr.rawValue,
+            });
           }
         });
       }
     };
 
     toggleActiveState();
-  }, [barcodes, navigation, scanned]);
+  }, [barcodes, navigation, route.params.returnRoute, scanned]);
 
   useEffect(() => {
     async function checkCameraPermissions() {

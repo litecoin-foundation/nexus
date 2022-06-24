@@ -11,6 +11,7 @@ import Seed from '../screens/Settings/Seed';
 import About from '../screens/Settings/About';
 import Wallet from '../screens/Settings/Wallet';
 import Currency from '../screens/Settings/Currency';
+import Scan from '../screens/Scan';
 
 const Stack = createStackNavigator();
 
@@ -94,6 +95,14 @@ function SettingsStack() {
           headerTransparent: true,
           headerBackTitleVisible: false,
           headerTintColor: 'white',
+        }}
+      />
+      <Stack.Screen
+        name="Scan"
+        component={Scan}
+        options={{
+          headerTransparent: true,
+          headerBackTitleVisible: false,
         }}
       />
     </Stack.Navigator>

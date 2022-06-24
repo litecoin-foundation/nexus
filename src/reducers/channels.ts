@@ -89,8 +89,9 @@ export const listPeers = (): AppThunk => async dispatch => {
 
     if (rpc.isOk()) {
       let arr: lnrpc.IPeer[] = [];
+      console.log(rpc.value);
 
-      rpc.value.peers.map((peer: lnrpc.IPeer) => {
+      rpc.value.peers.forEach((peer: lnrpc.IPeer) => {
         arr.push({
           pubKey: peer.pubKey,
           address: peer.address,
@@ -114,11 +115,19 @@ export const listPeers = (): AppThunk => async dispatch => {
 export const connectToPeer = async (input: string) => {
   const pubkey = input.split('@')[0];
   const host = input.split('@')[1];
+  console.error(pubkey);
+  console.error(host);
 
   try {
-    await lnd.connectPeer(pubkey, host);
+    const rpc = await lnd.connectPeer(
+      '027a2fde010babcefeb875ca7729aeb3303c53127ef48f8c85eeaa1a29b2e14ace',
+      '86.10.110.143:9735',
+    );
+    if (rpc.isErr()) {
+      console.error(rpc.error);
+    }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
@@ -177,27 +186,30 @@ export const getDescribeGraph = (): AppThunk => async dispatch => {
     }
 
     if (rpc.isOk()) {
-      const nodes = rpc.value.nodes.map((node: lnrpc.ILightningNode) => {
-        let arr: lnrpc.ILightningNode[] = [];
+      let nodes: lnrpc.ILightningNode[] = [];
+      let edges: lnrpc.IChannelEdge[] = [];
+
+      rpc.value.nodes.forEach((node: lnrpc.ILightningNode) => {
         let addresses: lnrpc.INodeAddress[] = [];
 
         node.addresses?.map(address => {
-          addresses.push(address);
+          addresses.push({
+            network: address.network,
+            addr: address.addr,
+          });
         });
 
-        arr.push({
+        nodes.push({
           lastUpdate: node.lastUpdate,
           pubKey: node.pubKey,
-          alias: node.alias,
+          alias: node.alias === null || undefined ? '' : node.alias,
           addresses,
           color: node.color,
         });
       });
 
-      const edges = rpc.value.nodes.map((edge: lnrpc.IChannelEdge) => {
-        let arr: lnrpc.IChannelEdge[] = [];
-
-        arr.push({
+      rpc.value.edges.forEach((edge: lnrpc.IChannelEdge) => {
+        edges.push({
           channelId: edge.channelId,
           chanPoint: edge.chanPoint,
           lastUpdate: edge.lastUpdate,

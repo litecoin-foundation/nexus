@@ -107,7 +107,7 @@ const Send = ({navigation, route}) => {
   }, [route.params?.scanData]);
 
   const handleScan = () => {
-    navigation.navigate('Scan');
+    navigation.navigate('Scan', {returnRoute: 'Send'});
   };
 
   const handlePaste = async () => {

@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
+import {StyleSheet, Text, View, FlatList} from 'react-native';
+import {StackScreenProps} from '@react-navigation/stack';
 
 import Header from '../../components/Header';
 import InputField from '../../components/InputField';
@@ -13,17 +13,41 @@ import {
   getDescribeGraph,
   searchGraph,
 } from '../../reducers/channels';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-const OpenChannel = () => {
-  const dispatch = useDispatch();
+type RootStackParamList = {
+  OpenChannel: {
+    scanData: string | undefined;
+  };
+  Scan: {
+    returnRoute: string;
+  };
+};
+
+type Props = StackScreenProps<RootStackParamList, 'OpenChannel'>;
+
+const OpenChannel: React.FC<Props> = ({navigation, route}) => {
+  const dispatch = useAppDispatch();
   const [search, setPubkey] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const filterByAlias = useSelector(state => searchGraph(state));
+  const filterByAlias = useAppSelector(state => searchGraph(state));
 
   useEffect(() => {
     dispatch(getDescribeGraph());
   }, [dispatch]);
+
+  useEffect(() => {
+    const handleScanCallback = async (data: string) => {
+      // TODO: pubkey validation required
+      setPubkey(data);
+      await dispatch(connectToPeer(search));
+    };
+
+    if (route.params?.scanData) {
+      handleScanCallback(route.params?.scanData);
+    }
+  }, [dispatch, route.params?.scanData, search]);
 
   const handleConfirm = async () => {
     await dispatch(connectToPeer(search));
@@ -39,7 +63,7 @@ const OpenChannel = () => {
       <View style={styles.inputContainer}>
         <InputField
           value={search}
-          onChangeText={input => setPubkey(input)}
+          onChangeText={(input: string) => setPubkey(input)}
           placeholder="pubKey@ip"
         />
       </View>
@@ -58,10 +82,7 @@ const OpenChannel = () => {
             data={filterByAlias(search)}
             extraData={filterByAlias(search)}
             renderItem={({item}) => (
-              <ChannelSearchCell
-                data={item}
-                keyExtractor={item => item.pubKey}
-              />
+              <ChannelSearchCell data={item} keyExtractor={item.pubKey} />
             )}
           />
         </View>
@@ -74,7 +95,9 @@ const OpenChannel = () => {
           />
 
           <WhiteRectButton
-            onPress={() => console.log('')}
+            onPress={() =>
+              navigation.navigate('Scan', {returnRoute: 'OpenChannel'})
+            }
             title="Scan"
             imageSource={require('../../assets/images/qrcode.png')}
           />
@@ -92,7 +115,7 @@ const OpenChannel = () => {
         close={() => setIsModalVisible(false)}
         isVisible={isModalVisible}
         handleConfirm={() => handleConfirm()}
-        onChange={input => console.log(input)}
+        onChange={() => console.log('open channel modal change')}
       />
     </View>
   );
@@ -156,11 +179,5 @@ const styles = StyleSheet.create({
     letterSpacing: -0.28,
   },
 });
-
-OpenChannel.navigationOptions = () => {
-  return {
-    headerTitle: 'Open Channel',
-  };
-};
 
 export default OpenChannel;
