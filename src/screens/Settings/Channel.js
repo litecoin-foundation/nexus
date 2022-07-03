@@ -7,7 +7,7 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import {
   listChannels,
   listPeers,
-  listPendingChannels,
+  // listPendingChannels,
 } from '../../reducers/channels';
 import Header from '../../components/Header';
 
@@ -20,7 +20,7 @@ const Channel = () => {
   useEffect(() => {
     dispatch(listChannels());
     dispatch(listPeers());
-    dispatch(listPendingChannels());
+    // dispatch(listPendingChannels());
   }, [dispatch]);
 
   const list = (

@@ -3,10 +3,10 @@ import lnd, {
   LndConf,
   ss_lnrpc,
 } from '@litecoinfoundation/react-native-lndltc';
-import {AnyAction} from '@reduxjs/toolkit';
+import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import RNFS from 'react-native-fs';
 
-import {ReduxType, AppThunk, IActionHandler} from './types';
+import {AppThunk} from './types';
 import {getRandomBytes} from '../lib/utils/random';
 import {setItem, getItem} from '../lib/utils/keychain';
 import {deleteWalletDB} from '../lib/utils/file';
@@ -23,27 +23,22 @@ const lndConf = new LndConf(ENetworks.mainnet);
 // types
 interface ILightningState {
   lndActive: boolean;
-  lndState: string | null;
 }
 
 // initial state
-const initialState: ILightningState = {
+const initialState = {
   lndActive: false,
-  lndState: null,
-};
-
-// constants
-export const START_LND: ReduxType = 'START_LND';
-export const STOP_LND: ReduxType = 'STOP_LND';
+} as ILightningState;
 
 // actions
+const lndState = createAction<boolean>('lightning/lndState');
+
+// functions
 export const startLnd = (): AppThunk => async dispatch => {
   try {
     // start LND
     await lnd.start(lndConf);
-    dispatch({
-      type: START_LND,
-    });
+    dispatch(lndState(true));
   } catch (err) {
     console.log('CANT start LND');
     // TODO: handle this
@@ -53,9 +48,7 @@ export const startLnd = (): AppThunk => async dispatch => {
 export const stopLnd = (): AppThunk => async dispatch => {
   try {
     await lnd.stop();
-    dispatch({
-      type: STOP_LND,
-    });
+    dispatch(lndState(false));
   } catch (err) {
     console.log('CANT stop LND');
     // TODO: handle this
@@ -143,15 +136,16 @@ export const unlockWallet = (): AppThunk => async dispatch => {
   });
 };
 
-// action handlers
-const actionHandler: IActionHandler = {
-  [START_LND]: state => ({...state, lndActive: true}),
-  [STOP_LND]: state => ({...state, lndActive: false}),
-};
+// slicer
+export const lightningSlice = createSlice({
+  name: 'lightning',
+  initialState,
+  reducers: {
+    lndState: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      lndActive: action.payload,
+    }),
+  },
+});
 
-// reducer
-export default function (state = initialState, action: AnyAction) {
-  const handler = actionHandler[action.type];
-
-  return handler ? handler(state, action) : state;
-}
+export default lightningSlice.reducer;

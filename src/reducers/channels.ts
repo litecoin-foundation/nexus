@@ -1,27 +1,31 @@
 import lnd, {lnrpc} from '@litecoinfoundation/react-native-lndltc';
-import {createSelector} from 'reselect';
 import memoize from 'lodash.memoize';
 import leven from 'leven';
 
 import {handleChannelBackup} from '../lib/utils/backup';
-import {AppThunk, IActionHandler, ReduxType} from './types';
-import {AnyAction} from '@reduxjs/toolkit';
+import {AppThunk} from './types';
+import {
+  createAction,
+  createSlice,
+  PayloadAction,
+  createSelector,
+} from '@reduxjs/toolkit';
+import {RootState} from '../store';
 
 // types
 interface IChannelState {
-  channels: [];
-  peers: [];
-  pending: {
-    totalLimboBalance: null;
-    pendingOpenChannels: [];
-    pendingClosingChannels: [];
-    pendingForceClosingChannels: [];
-    waitingCloseChannels: [];
-  };
+  channels: lnrpc.IChannel[];
+  peers: lnrpc.IPeer[];
+  pending: lnrpc.IPendingChannelsResponse;
   channelBackupsEnabled: boolean;
-  nodes: [];
-  edges: [];
+  nodes: lnrpc.ILightningNode[];
+  edges: lnrpc.IChannelEdge[];
 }
+
+type IGraph = {
+  nodes: lnrpc.ILightningNode[];
+  edges: lnrpc.IChannelEdge[];
+};
 
 // initial state
 const initialState: IChannelState = {
@@ -39,14 +43,17 @@ const initialState: IChannelState = {
   edges: [],
 };
 
-// constants
-export const LIST_CHANNELS: ReduxType = 'LIST_CHANNELS';
-export const LIST_PENDING_CHANNELS: ReduxType = 'LIST_PENDING_CHANNELS';
-export const LIST_PEERS: ReduxType = 'LIST_PEERS';
-export const ENABLE_CHANNEL_BACKUP: ReduxType = 'ENABLE_CHANNEL_BACKUP';
-export const GET_DESCRIBE_GRAPH: ReduxType = 'GET_DESCRIBE_GRAPH';
-
 // actions
+const listChannelAction = createAction<lnrpc.IChannel[]>(
+  'channels/listChannelAction',
+);
+const listPeersAction = createAction<lnrpc.IPeer[]>('channels/listPeersAction');
+export const enableChannelBackup = createAction('channels/enableChannelBackup');
+const describeGraphAction = createAction<IGraph>(
+  'channels/describeGraphAction',
+);
+
+// functions
 export const listChannels = (): AppThunk => async dispatch => {
   try {
     const rpc = await lnd.listChannels();
@@ -61,23 +68,20 @@ export const listChannels = (): AppThunk => async dispatch => {
         arr.push(channel),
       );
 
-      dispatch({
-        type: LIST_CHANNELS,
-        channels: arr,
-      });
+      dispatch(listChannelAction(arr));
     }
   } catch (error) {
     console.error(error);
   }
 };
 
-export const listPendingChannels = (): AppThunk => async dispatch => {
-  try {
-    // TODO: implement when listPendingChannels api available in rn-lndltc
-  } catch (error) {
-    console.error(error);
-  }
-};
+// export const listPendingChannels = (): AppThunk => async dispatch => {
+//   try {
+//     // TODO: implement when listPendingChannels api available in rn-lndltc
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 export const listPeers = (): AppThunk => async dispatch => {
   try {
@@ -89,7 +93,6 @@ export const listPeers = (): AppThunk => async dispatch => {
 
     if (rpc.isOk()) {
       let arr: lnrpc.IPeer[] = [];
-      console.log(rpc.value);
 
       rpc.value.peers.forEach((peer: lnrpc.IPeer) => {
         arr.push({
@@ -102,10 +105,7 @@ export const listPeers = (): AppThunk => async dispatch => {
           lastFlapNs: peer.lastFlapNs,
         });
       });
-      dispatch({
-        type: LIST_PEERS,
-        peers: arr,
-      });
+      dispatch(listPeersAction(arr));
     }
   } catch (error) {
     console.error(error);
@@ -145,12 +145,6 @@ export const openChannel = async (pubkey: string, amount: number) => {
   } catch (error) {
     console.error(error);
   }
-};
-
-export const enableChannelBackup = (): AppThunk => dispatch => {
-  dispatch({
-    type: ENABLE_CHANNEL_BACKUP,
-  });
 };
 
 export const backupChannels = (): AppThunk => async (dispatch, getState) => {
@@ -235,30 +229,21 @@ export const getDescribeGraph = (): AppThunk => async dispatch => {
         });
       });
 
-      dispatch({
-        type: GET_DESCRIBE_GRAPH,
-        nodes,
-        edges,
-      });
+      dispatch(
+        describeGraphAction({
+          nodes,
+          edges,
+        }),
+      );
     }
   } catch (error) {
     console.error(error);
   }
 };
 
-// action handlers
-const actionHandler: IActionHandler = {
-  [LIST_CHANNELS]: (state, {channels}) => ({...state, channels}),
-  [LIST_PENDING_CHANNELS]: (state, {pending}) => ({...state, pending}),
-  [LIST_PEERS]: (state, {peers}) => ({...state, peers}),
-  [ENABLE_CHANNEL_BACKUP]: state => ({...state, channelBackupsEnabled: true}),
-  [GET_DESCRIBE_GRAPH]: (state, {nodes, edges}) => ({...state, nodes, edges}),
-};
-
 // selectors
-
 export const searchGraph = createSelector(
-  state => state.channels.nodes,
+  (state: RootState) => state.channels.nodes,
   nodes =>
     memoize(searchTerm => {
       // remove all nodes with no alias
@@ -277,7 +262,7 @@ export const searchGraph = createSelector(
       for (let i = 0; i < a2.length; i++) {
         if (
           leven(
-            a2[i].alias.toLowerCase().replace(/[^a-zA-Z ]/g, ''),
+            a2[i].alias!.toLowerCase().replace(/[^a-zA-Z ]/g, ''),
             searchTerm.toLowerCase().replace(/[^a-zA-Z ]/g, ''),
           ) < 6
         ) {
@@ -289,16 +274,33 @@ export const searchGraph = createSelector(
       // lower is more accurate
       let sortedArray = arr.sort(
         (a, b) =>
-          leven(a.alias.toLowerCase(), searchTerm.toLowerCase()) -
-          leven(b.alias.toLowerCase(), searchTerm.toLowerCase()),
+          leven(a.alias!.toLowerCase(), searchTerm.toLowerCase()) -
+          leven(b.alias!.toLowerCase(), searchTerm.toLowerCase()),
       );
       return sortedArray;
     }),
 );
 
-// reducer
-export default function (state = initialState, action: AnyAction) {
-  const handler = actionHandler[action.type];
+// slice
+export const channelsSlice = createSlice({
+  name: 'channels',
+  initialState,
+  reducers: {
+    listChannelAction: (state, action: PayloadAction<lnrpc.IChannel[]>) => ({
+      ...state,
+      channels: action.payload,
+    }),
+    listPeersAction: (state, action: PayloadAction<lnrpc.IPeer[]>) => ({
+      ...state,
+      peers: action.payload,
+    }),
+    enableChannelBackup: state => ({...state, channelBackupsEnabled: true}),
+    describeGraphAction: (state, action) => ({
+      ...state,
+      nodes: action.payload.nodes,
+      edges: action.payload.edges,
+    }),
+  },
+});
 
-  return handler ? handler(state, action) : state;
-}
+export default channelsSlice.reducer;

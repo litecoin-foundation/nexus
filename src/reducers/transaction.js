@@ -1,5 +1,5 @@
 import lnd from '@litecoinfoundation/react-native-lndltc';
-import {createSelector} from 'reselect';
+import {createSelector} from '@reduxjs/toolkit';
 
 import {formatDate, formatTime} from '../lib/utils/date';
 import {getBalance} from './balance';

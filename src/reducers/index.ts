@@ -16,6 +16,7 @@ import input from './input';
 import alerts from './alerts';
 import settings from './settings';
 import deeplinks from './deeplinks';
+import watchtower from './watchtower';
 
 export default combineReducers({
   onboarding,
@@ -35,4 +36,5 @@ export default combineReducers({
   alerts,
   settings,
   deeplinks,
+  watchtower,
 });

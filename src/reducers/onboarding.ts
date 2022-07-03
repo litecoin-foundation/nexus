@@ -1,5 +1,5 @@
-import {AnyAction} from '@reduxjs/toolkit';
-import {ReduxType, AppThunk, IActionHandler} from './types';
+import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {AppThunk} from './types';
 import lnd, {
   ENetworks,
   ICachedNeutrinoDBDownloadState,
@@ -19,8 +19,14 @@ interface IOnboardingState {
   unzipProgress?: number;
 }
 
+type neutrinoCacheState = {
+  task: undefined | 'downloading' | 'unzipping' | 'complete' | 'failed';
+  downloadProgress?: number;
+  unzipProgress?: number;
+};
+
 // initial state
-const initialState: IOnboardingState = {
+const initialState = {
   onboarding: false,
   isOnboarded: false,
   seed: [],
@@ -29,31 +35,28 @@ const initialState: IOnboardingState = {
   task: undefined,
   downloadProgress: 0,
   unzipProgress: 0,
-};
-
-// constants
-export const ONBOARDING_STARTED: ReduxType = 'ONBOARDING_STARTED';
-export const ONBOARDING_FINISHED: ReduxType = 'ONBOARDING_FINISHED';
-export const GET_SEED: ReduxType = 'GET_SEED';
-export const RECOVER_SEED: ReduxType = 'RECOVER_SEED';
-export const SET_RECOVERY_MODE: ReduxType = 'SET_RECOVERY_MODE';
-export const GET_NEUTRINO_CACHE: ReduxType = 'GET_NEUTRINO_CACHE';
+} as IOnboardingState;
 
 // actions
-export const startOnboarding = (): AppThunk => dispatch => {
-  dispatch({
-    type: ONBOARDING_STARTED,
-  });
-};
+export const startOnboarding = createAction('onboarding/startOnboarding');
+const finishOnboardingAction = createAction<string>(
+  'onboarding/finishOnboardingAction',
+);
+const getSeedAction = createAction<string[]>('onboarding/getSeedAction');
+export const setRecoveryMode = createAction<boolean>(
+  'onboarding/setRecoveryMode',
+);
+export const recoverSeed = createAction<string[]>('onboarding/recoverSeed');
+const getNeutrinoCacheAction = createAction<neutrinoCacheState>(
+  'getNeutrinoCacheAction',
+);
 
+// actions
 export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
   const {seed} = getState().onboarding;
-  const uniqueId = shajs('sha256').update(seed.join('')).digest('hex');
+  const uniqueId: string = shajs('sha256').update(seed.join('')).digest('hex');
 
-  dispatch({
-    type: ONBOARDING_FINISHED,
-    uniqueId,
-  });
+  dispatch(finishOnboardingAction(uniqueId));
 };
 
 export const getSeed = (): AppThunk => async dispatch => {
@@ -63,74 +66,66 @@ export const getSeed = (): AppThunk => async dispatch => {
   }
 
   if (rpc.isOk()) {
-    dispatch({
-      type: GET_SEED,
-      seed: rpc.value,
-    });
+    dispatch(getSeedAction(rpc.value));
   }
 };
-
-export const recoverSeed =
-  (seed: string[]): AppThunk =>
-  dispatch => {
-    dispatch({
-      type: RECOVER_SEED,
-      seed,
-    });
-  };
-
-export const setRecoveryMode =
-  (bool: boolean): AppThunk =>
-  dispatch => {
-    dispatch({
-      type: SET_RECOVERY_MODE,
-      bool,
-    });
-  };
 
 export const getNeutrinoCache = (): AppThunk => async dispatch => {
   lndCache.addStateListener((state: ICachedNeutrinoDBDownloadState) => {
     const {task, downloadProgress, unzipProgress} = state;
-    dispatch({
-      type: GET_NEUTRINO_CACHE,
-      task,
-      downloadProgress,
-      unzipProgress,
-    });
+    dispatch(
+      getNeutrinoCacheAction({
+        task,
+        downloadProgress,
+        unzipProgress,
+      }),
+    );
   });
   await lndCache.downloadCache(ENetworks.mainnet);
 };
 
-// action handlers
-const actionHandler: IActionHandler = {
-  [ONBOARDING_STARTED]: state => ({
-    ...state,
-    onboarding: true,
-    isOnboarded: false,
-    seed: [],
-    beingRecovered: false,
-  }),
-  [ONBOARDING_FINISHED]: (state, {uniqueId}) => ({
-    ...state,
-    onboarding: false,
-    isOnboarded: true,
-    beingRecovered: false,
-    uniqueId,
-  }),
-  [GET_SEED]: (state, {seed}) => ({...state, seed}),
-  [RECOVER_SEED]: (state, {seed}) => ({...state, seed, beingRecovered: true}),
-  [SET_RECOVERY_MODE]: (state, {bool}) => ({...state, beingRecovered: bool}),
-  [GET_NEUTRINO_CACHE]: (state, {task, downloadProgress, unzipProgress}) => ({
-    ...state,
-    task,
-    downloadProgress,
-    unzipProgress,
-  }),
-};
+// slicer
+export const onboardingSlice = createSlice({
+  name: 'onboarding',
+  initialState,
+  reducers: {
+    startOnboarding: state => ({
+      ...state,
+      onboarding: true,
+      isOnboarded: false,
+      seed: [],
+      beingRecovered: false,
+    }),
+    finishOnboarding: (state, action: PayloadAction<string>) => ({
+      ...state,
+      onboarding: false,
+      isOnboarded: true,
+      beingRecovered: false,
+      uniqueId: action.payload,
+    }),
+    getSeedAction: (state, action: PayloadAction<string[]>) => ({
+      ...state,
+      seed: action.payload,
+    }),
+    recoverSeed: (state, action: PayloadAction<string[]>) => ({
+      ...state,
+      seed: action.payload,
+      beingRecovered: true,
+    }),
+    setRecoveryMode: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      beingRecovered: action.payload,
+    }),
+    getNeutrinoCacheAction: (
+      state,
+      action: PayloadAction<neutrinoCacheState>,
+    ) => ({
+      ...state,
+      task: action.payload.task,
+      downloadProgress: action.payload.downloadProgress,
+      unzipProgress: action.payload.unzipProgress,
+    }),
+  },
+});
 
-// reducer
-export default function (state = initialState, action: AnyAction) {
-  const handler = actionHandler[action.type];
-
-  return handler ? handler(state, action) : state;
-}
+export default onboardingSlice.reducer;

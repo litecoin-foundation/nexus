@@ -1,45 +1,47 @@
-import {AnyAction} from '@reduxjs/toolkit';
-import {ReduxType, AppThunk, IActionHandler} from './types';
+import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {AppThunk} from './types';
 import {decodeBIP21} from '../lib/utils/bip21';
+
+// types
+interface IDeeplinkState {
+  deeplinkSet: boolean;
+  uri: string;
+}
 
 // initial state
 const initialState = {
   deeplinkSet: false,
   uri: '',
-};
-
-// constants
-export const SET_DEEPLINK: ReduxType = 'SET_DEEPLINK';
-export const UNSET_DEEPLINK: ReduxType = 'UNSET_DEEPLINK';
+} as IDeeplinkState;
 
 // actions
+const setDeeplinkAction = createAction<string>('deeplinks/setDeeplinkAction');
+export const unsetDeeplink = createAction('deeplinks/unsetDeeplink');
+
+// functions
 export const setDeeplink =
   (link: string): AppThunk =>
   dispatch => {
     try {
       decodeBIP21(link);
-      dispatch({
-        type: 'SET_DEEPLINK',
-        uri: link,
-      });
+      dispatch(setDeeplinkAction(link));
     } catch (error) {
       console.error(error);
     }
   };
 
-export const unsetDeeplink = (): AppThunk => dispatch => {
-  dispatch({type: UNSET_DEEPLINK});
-};
+// slice
+export const deeplinksSlice = createSlice({
+  name: 'deeplinks',
+  initialState,
+  reducers: {
+    setDeeplinkAction: (state, action: PayloadAction<string>) => ({
+      ...state,
+      deeplinkSet: true,
+      uri: action.payload,
+    }),
+    unsetDeeplink: state => ({...state, deeplinkSet: false, uri: ''}),
+  },
+});
 
-// action handler
-const actionHandler: IActionHandler = {
-  [SET_DEEPLINK]: (state, {uri}) => ({...state, deeplinkSet: true, uri}),
-  [UNSET_DEEPLINK]: state => ({...state, deeplinkSet: false, uri: ''}),
-};
-
-// reducer
-export default function (state = initialState, action: AnyAction) {
-  const handler = actionHandler[action.type];
-
-  return handler ? handler(state, action) : state;
-}
+export default deeplinksSlice.reducer;
