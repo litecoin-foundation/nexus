@@ -4,7 +4,6 @@ import {StackScreenProps} from '@react-navigation/stack';
 
 import Header from '../../components/Header';
 import InputField from '../../components/InputField';
-import BlueButton from '../../components/Buttons/BlueButton';
 import WhiteRectButton from '../../components/Buttons/WhiteRectButton';
 import ChannelSearchCell from '../../components/Cells/ChannelSearchCell';
 import OpenChannelModal from '../../components/Modals/OpenChannelModal';
@@ -70,10 +69,6 @@ const OpenChannel: React.FC<Props> = ({navigation, route}) => {
 
       <View style={styles.dividerContainer}>
         <View style={styles.divider} />
-        <View style={styles.orText}>
-          <Text style={styles.text}>OR</Text>
-        </View>
-        <View style={styles.divider} />
       </View>
 
       {search !== '' ? (
@@ -82,7 +77,10 @@ const OpenChannel: React.FC<Props> = ({navigation, route}) => {
             data={filterByAlias(search)}
             extraData={filterByAlias(search)}
             renderItem={({item}) => (
-              <ChannelSearchCell data={item} keyExtractor={item.pubKey} />
+              <ChannelSearchCell
+                data={item}
+                onPress={() => console.log('create channel pressed')}
+              />
             )}
           />
         </View>
@@ -104,13 +102,6 @@ const OpenChannel: React.FC<Props> = ({navigation, route}) => {
         </View>
       )}
 
-      <View style={styles.bottomButtomContainer}>
-        <BlueButton
-          value="Open Channel"
-          onPress={() => setIsModalVisible(true)}
-        />
-      </View>
-
       <OpenChannelModal
         close={() => setIsModalVisible(false)}
         isVisible={isModalVisible}
@@ -126,23 +117,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(245,249,252)',
     flex: 1,
   },
-  bottomButtomContainer: {
-    height: 100,
-    width: '100%',
-    bottom: 0,
-    position: 'absolute',
-    alignItems: 'center',
-  },
   inputContainer: {
     paddingLeft: 17,
     paddingRight: 17,
     paddingTop: 10,
   },
   dividerContainer: {
-    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'baseline',
     paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  divider: {
+    height: 1,
+    borderTopColor: 'rgba(151,151,151,0.3)',
+    borderTopWidth: 1,
+    flex: 1,
   },
   titleTextContainer: {
     paddingLeft: 15,
@@ -158,13 +147,6 @@ const styles = StyleSheet.create({
   },
   footerComponent: {
     marginBottom: 100,
-  },
-  divider: {
-    height: 1,
-    borderTopColor: 'rgb(217,218,220)',
-    borderTopWidth: 1,
-    flex: 2,
-    paddingBottom: 3,
   },
   orText: {
     alignItems: 'center',

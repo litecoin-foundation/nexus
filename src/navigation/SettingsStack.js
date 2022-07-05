@@ -1,5 +1,5 @@
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 
 import Settings from '../screens/Settings/Settings';
 import Channel from '../screens/Settings/Channel';
@@ -42,7 +42,15 @@ function SettingsStack() {
       <Stack.Screen
         name="OpenChannel"
         component={OpenChannel}
-        options={OpenChannel.navigationOptions}
+        options={{
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+          headerTitle: 'Open Channel',
+          headerLeftContainerStyle: {
+            paddingLeft: 15,
+          },
+        }}
       />
       <Stack.Screen
         name="General"
@@ -101,8 +109,14 @@ function SettingsStack() {
         name="Scan"
         component={Scan}
         options={{
+          ...TransitionPresets.ModalPresentationIOS,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
           headerTransparent: true,
           headerBackTitleVisible: false,
+          headerTintColor: 'white',
         }}
       />
     </Stack.Navigator>
