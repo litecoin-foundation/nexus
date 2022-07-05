@@ -49,13 +49,19 @@ function SettingsStack() {
           headerTitle: 'Open Channel',
           headerLeftContainerStyle: {
             paddingLeft: 15,
+            marginRight: -15,
           },
         }}
       />
       <Stack.Screen
         name="General"
         component={General}
-        options={General.navigationOptions}
+        options={{
+          headerLeftContainerStyle: {
+            paddingLeft: 15,
+            marginRight: -15,
+          },
+        }}
       />
       <Stack.Screen
         name="ChangePincode"

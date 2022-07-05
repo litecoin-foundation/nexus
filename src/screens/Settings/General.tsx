@@ -1,25 +1,37 @@
 import React, {useState} from 'react';
-import {ScrollView, StyleSheet, DeviceEventEmitter, Alert} from 'react-native';
-import {useSelector} from 'react-redux';
+import {StyleSheet, ScrollView, DeviceEventEmitter} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {useDispatch} from 'react-redux';
 
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import PinModal from '../../components/Modals/PinModal';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {StackNavigationProp} from '@react-navigation/stack';
 
-const General = props => {
-  const dispatch = useDispatch();
+type RootStackParamList = {
+  General: undefined;
+  About: undefined;
+  ChangePincode: {
+    type: null;
+  };
+};
+
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'General'>;
+}
+
+const General: React.FC<Props> = props => {
+  const dispatch = useAppDispatch();
   const [isPinModalTriggered, triggerPinModal] = useState(false);
 
-  const biometricsAvailable = useSelector(
+  const biometricsAvailable = useAppSelector(
     state => state.authentication.biometricsAvailable,
   );
-  const biometricsEnabled = useSelector(
+  const biometricsEnabled = useAppSelector(
     state => state.authentication.biometricsEnabled,
   );
-  const faceIDSupported = useSelector(
+  const faceIDSupported = useAppSelector(
     state => state.authentication.faceIDSupported,
   );
 
@@ -27,21 +39,21 @@ const General = props => {
     dispatch(setBiometricEnabled(!biometricsEnabled));
   };
 
-  const handleAuthenticationRequired = () => {
-    return new Promise((resolve, reject) => {
-      triggerPinModal(true);
-      const subscription = DeviceEventEmitter.addListener('auth', bool => {
-        if (bool === true) {
-          triggerPinModal(false);
-          subscription.remove();
-          resolve();
-        } else if (bool === false) {
-          subscription.remove();
-          reject();
-        }
-      });
-    });
-  };
+  // const handleAuthenticationRequired = () => {
+  //   return new Promise((resolve, reject) => {
+  //     triggerPinModal(true);
+  //     const subscription = DeviceEventEmitter.addListener('auth', bool => {
+  //       if (bool === true) {
+  //         triggerPinModal(false);
+  //         subscription.remove();
+  //         resolve();
+  //       } else if (bool === false) {
+  //         subscription.remove();
+  //         reject();
+  //       }
+  //     });
+  //   });
+  // };
 
   return (
     <>
@@ -70,23 +82,6 @@ const General = props => {
               handleSwitch={handleBiometricSwitch}
             />
           ) : null}
-          <SettingCell
-            title="View Paper Key"
-            onPress={() => {
-              handleAuthenticationRequired()
-                .then(() => props.navigation.navigate('Seed'))
-                .catch(() =>
-                  Alert.alert('Incorrect Pincode', null, [
-                    {
-                      text: 'Dismiss',
-                      onPress: () => triggerPinModal(false),
-                      style: 'cancel',
-                    },
-                  ]),
-                );
-            }}
-            forward
-          />
         </ScrollView>
       </LinearGradient>
 
@@ -106,11 +101,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(238,244,249)',
   },
 });
-
-General.navigationOptions = () => {
-  return {
-    headerTitle: 'General',
-  };
-};
 
 export default General;
