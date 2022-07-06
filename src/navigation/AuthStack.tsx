@@ -7,7 +7,7 @@ import ChangePincode from '../screens/Settings/ChangePincode';
 
 const Stack = createStackNavigator();
 
-function AuthStack() {
+function AuthStack(): JSX.Element {
   return (
     <Stack.Navigator
       initialRouteName="Auth"
@@ -30,7 +30,17 @@ function AuthStack() {
       <Stack.Screen
         name="ChangePincode"
         component={ChangePincode}
-        options={ChangePincode.navigationOptions}
+        options={{
+          headerTitle: 'Change Wallet PIN',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerLeftContainerStyle: {
+            paddingLeft: 15,
+            marginRight: -15,
+          },
+        }}
       />
     </Stack.Navigator>
   );

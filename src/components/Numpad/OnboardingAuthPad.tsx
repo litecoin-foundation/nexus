@@ -1,8 +1,5 @@
-// TODO: cleanup needed
 import React, {useEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-import {Pagination} from 'react-native-snap-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Button from './Button';
@@ -10,8 +7,19 @@ import BiometricButton from './BiometricButton';
 import OnboardingHeader from '../OnboardingHeader';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
+import Dots from '../Dots';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-const AuthPad = (props) => {
+interface Props {
+  handleCompletion(): void;
+  handleValidationFailure(): void;
+  handleValidationSuccess(): void;
+  passcodeInitialSet: boolean;
+  newPasscode: string;
+  headerDescriptionText: string;
+}
+
+const OnboardingAuthPad: React.FC<Props> = props => {
   const {
     handleCompletion,
     handleValidationFailure,
@@ -20,10 +28,10 @@ const AuthPad = (props) => {
     newPasscode,
     headerDescriptionText,
   } = props;
-  const dispatch = useDispatch();
 
-  const pin = useSelector((state) => state.authpad.pin);
-  const passcodeSet = useSelector((state) => state.authentication.passcodeSet);
+  const dispatch = useAppDispatch();
+  const pin = useAppSelector(state => state.authpad.pin);
+  const passcodeSet = useAppSelector(state => state.authentication.passcodeSet);
 
   // clear all inputs in AuthPad on initial render
   useEffect(() => {
@@ -71,7 +79,7 @@ const AuthPad = (props) => {
     pin,
   ]);
 
-  const handlePress = (input) => {
+  const handlePress = (input: string) => {
     switch (input) {
       case '.':
         // handled by BiometricButton
@@ -87,7 +95,7 @@ const AuthPad = (props) => {
 
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 
-  const buttons = values.map((value) => {
+  const buttons = values.map(value => {
     if (value === '.') {
       return (
         <BiometricButton
@@ -104,13 +112,7 @@ const AuthPad = (props) => {
   return (
     <View style={styles.container}>
       <OnboardingHeader description={headerDescriptionText}>
-        <Pagination
-          dotStyle={styles.dotStyle}
-          inactiveDotColor="#FFFFFF36"
-          dotColor="white"
-          dotsLength={6}
-          activeDotIndex={pin.length - 1}
-        />
+        <Dots dotsLength={6} activeDotIndex={pin.length - 1} />
       </OnboardingHeader>
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
         <View style={styles.buttonContainer}>
@@ -139,12 +141,6 @@ const styles = StyleSheet.create({
     width: '80%',
     alignSelf: 'center',
   },
-  dotStyle: {
-    width: 9,
-    height: 9,
-    borderRadius: 9 / 2,
-    marginHorizontal: 5,
-  },
 });
 
-export default AuthPad;
+export default OnboardingAuthPad;

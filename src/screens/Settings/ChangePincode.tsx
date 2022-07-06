@@ -1,18 +1,24 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, Alert} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-import {Pagination} from 'react-native-snap-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Pad from '../../components/Numpad/Pad';
 import Header from '../../components/Header';
 import {addPincode} from '../../reducers/authentication';
 import {setItem} from '../../lib/utils/keychain';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {useNavigation} from '@react-navigation/native';
+import Dots from '../../components/Dots';
 
-const ChangePincode = (props) => {
-  const {navigation, route} = props;
-  const dispatch = useDispatch();
-  const pin = useSelector((state) => state.authentication.passcode);
+interface Props {
+  route: any; // TODO
+}
+
+const ChangePincode: React.FC<Props> = props => {
+  const navigation = useNavigation<any>();
+  const {route} = props;
+  const dispatch = useAppDispatch();
+  const pin = useAppSelector(state => state.authentication.passcode);
 
   const [currentPin, setCurrentPin] = useState(
     route.params.type === 'RESET' ? false : true,
@@ -24,7 +30,7 @@ const ChangePincode = (props) => {
   const [newPinCodeValue, setNewPinCodeValue] = useState('');
   const [padValue, setPadValue] = useState('');
 
-  const handleInput = (pincode) => {
+  const handleInput = (pincode: string) => {
     if (padValue.length === 5) {
       handleCompletion(pincode);
     } else {
@@ -32,7 +38,7 @@ const ChangePincode = (props) => {
     }
   };
 
-  const handleCompletion = (passcodeAttempt) => {
+  const handleCompletion = (passcodeAttempt: string) => {
     setPadValue('');
     if (currentPin) {
       if (passcodeAttempt === pin) {
@@ -98,19 +104,13 @@ const ChangePincode = (props) => {
             ? 'Enter a New PIN'
             : 'Repeat your New PIN'}
         </Text>
-        <Pagination
-          dotStyle={styles.dotStyle}
-          inactiveDotColor="#2C72FF"
-          dotColor="#2C72FF"
-          dotsLength={6}
-          activeDotIndex={padValue.length - 1}
-        />
+        <Dots dotsLength={6} activeDotIndex={padValue.length - 1} />
       </View>
 
       <LinearGradient style={styles.flex} colors={['#F2F8FD', '#d2e1ef00']}>
         <Pad
           currentValue={padValue}
-          onChange={(value) => handleInput(value)}
+          onChange={(value: string) => handleInput(value)}
           maxLength={6}
           dotDisabled={true}
           noBackgroundColor={true}
@@ -120,7 +120,7 @@ const ChangePincode = (props) => {
   );
 };
 
-async function setPincodeToKeychain(pin) {
+async function setPincodeToKeychain(pin: string) {
   await setItem('PINCODE', pin);
 }
 
@@ -142,15 +142,5 @@ const styles = StyleSheet.create({
     letterSpacing: -0.46,
   },
 });
-
-ChangePincode.navigationOptions = () => {
-  return {
-    headerTitle: 'Change Wallet PIN',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-  };
-};
 
 export default ChangePincode;

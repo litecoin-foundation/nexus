@@ -1,7 +1,7 @@
 import React, {useEffect, Fragment, useState, createRef} from 'react';
 import {View, Text, Dimensions, StyleSheet, Image} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import Carousel, {Pagination} from 'react-native-snap-carousel';
+import Carousel from 'react-native-snap-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
 import {HeaderBackButton} from '@react-navigation/elements';
@@ -11,18 +11,19 @@ import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {getSeed} from '../../reducers/onboarding';
 import chunk from '../../lib/utils/chunk';
+import Dots from '../../components/Dots';
 
 const {width} = Dimensions.get('window');
 
-const Generate = (props) => {
+const Generate = props => {
   const carousel = createRef();
   const dispatch = useDispatch();
 
   const seedSelector = createSelector(
-    (state) => state.onboarding.seed,
-    (seedArray) => chunk(seedArray, 4),
+    state => state.onboarding.seed,
+    seedArray => chunk(seedArray, 4),
   );
-  const seed = useSelector((state) => seedSelector(state));
+  const seed = useSelector(state => seedSelector(state));
 
   const [activePage, setActivePage] = useState(0);
 
@@ -37,7 +38,7 @@ const Generate = (props) => {
         inactiveSlideOpacity={0.9}
         sliderWidth={width}
         itemWidth={350}
-        onSnapToItem={(index) => setActivePage(index)}
+        onSnapToItem={index => setActivePage(index)}
         data={seed}
         ref={carousel}
         containerCustomStyle={styles.carousel}
@@ -50,13 +51,7 @@ const Generate = (props) => {
           </View>
         )}
       />
-      <Pagination
-        dotsLength={seed.length}
-        dotColor="white"
-        inactiveDotColor="white"
-        inactiveDotScale={1}
-        activeDotIndex={activePage}
-      />
+      <Dots dotsLength={seed.length} activeDotIndex={activePage} />
     </Fragment>
   );
 

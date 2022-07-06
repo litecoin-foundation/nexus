@@ -1,18 +1,24 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
-import {Pagination} from 'react-native-snap-carousel';
-import {useSelector} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 
 import AuthPad from '../Numpad/AuthPad';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
+import Dots from '../Dots';
+import {useAppSelector} from '../../store/hooks';
 
-const PinModal = props => {
+interface Props {
+  isVisible: boolean;
+  close(): void;
+  handleValidationFailure: void;
+  handleValidationSuccess: void;
+}
+
+const PinModal: React.FC<Props> = props => {
   const {isVisible, close, handleValidationFailure, handleValidationSuccess} =
     props;
-  const pin = useSelector(state => state.authpad.pin);
-
+  const pin = useAppSelector(state => state.authpad.pin);
   return (
     <Modal
       isVisible={isVisible}
@@ -29,13 +35,7 @@ const PinModal = props => {
           <LinearGradient
             style={styles.contentContainer}
             colors={['#F2F8FD', '#d2e1ef00']}>
-            <Pagination
-              dotStyle={styles.dotStyle}
-              inactiveDotColor="#2C72FF"
-              dotColor="#2C72FF"
-              dotsLength={6}
-              activeDotIndex={pin.length - 1}
-            />
+            <Dots dotsLength={6} activeDotIndex={pin.length - 1} />
             <AuthPad
               handleValidationFailure={handleValidationFailure}
               handleValidationSuccess={handleValidationSuccess}
@@ -80,15 +80,8 @@ const styles = StyleSheet.create({
   noMargin: {
     margin: 0,
   },
-  dotStyle: {
-    width: 9,
-    height: 9,
-    borderRadius: 9 / 2,
-    marginHorizontal: 5,
-  },
   contentContainer: {
     flex: 1,
   },
 });
-
 export default PinModal;
