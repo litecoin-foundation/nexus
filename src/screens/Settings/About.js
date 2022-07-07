@@ -9,7 +9,7 @@ import Header from '../../components/Header';
 const About = () => {
   const {
     syncedToChain,
-    sycnedToGraph,
+    syncedToGraph,
     blockHeight,
     blockHash,
     bestHeaderTimestamp,
@@ -25,10 +25,7 @@ const About = () => {
           title="Synced to Chain?"
           value={`${syncedToChain === true ? 'true' : 'false'}`}
         />
-        <TableCell
-          title="Synced to Graph?"
-          value={`${sycnedToGraph === true ? 'true' : 'false'}`}
-        />
+        <TableCell title="Synced to Graph?" value={`${syncedToGraph}`} />
         <TableCell title="Block Height" value={blockHeight} />
         <VerticalTableCell title="Blockhash">
           <Text style={styles.text}>{blockHash}</Text>
