@@ -1,5 +1,5 @@
 import {configureStore} from '@reduxjs/toolkit';
-import createSensitiveStorage from 'redux-persist-sensitive-storage';
+import createSensitiveStorage from '@litecoinfoundation/redux-persist-sensitive-storage';
 import {
   persistStore,
   persistReducer,
