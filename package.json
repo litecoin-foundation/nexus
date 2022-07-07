@@ -65,6 +65,7 @@
     "react-native-sensitive-info": "^6.0.0-alpha.9",
     "react-native-snap-carousel": "^3.9.1",
     "react-native-svg": "^12.3.0",
+    "react-native-tor": "^0.1.8",
     "react-native-touch-id": "^4.4.1",
     "react-native-vision-camera": "^2.13.5",
     "react-native-webview": "11.18.2",

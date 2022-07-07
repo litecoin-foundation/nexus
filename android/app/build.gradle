@@ -220,6 +220,8 @@ dependencies {
     implementation files('../../lightning/Lndmobile.aar')
     implementation project(':react-native-lndltc')
 
+    implementation files("../../node_modules/react-native-tor/android/libs/sifir_android.aar")
+
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
         debugImplementation files(hermesPath + "hermes-debug.aar")

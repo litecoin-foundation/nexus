@@ -297,6 +297,8 @@ PODS:
     - React-Core
   - react-native-slider (4.2.2):
     - React-Core
+  - react-native-tor (0.1.8):
+    - React
   - react-native-webview (11.18.2):
     - React-Core
   - React-perflogger (0.68.2)
@@ -463,6 +465,7 @@ DEPENDENCIES:
   - "react-native-segmented-control (from `../node_modules/@react-native-community/segmented-control`)"
   - react-native-sensitive-info (from `../node_modules/react-native-sensitive-info`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
+  - react-native-tor (from `../node_modules/react-native-tor`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -567,6 +570,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-sensitive-info"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
+  react-native-tor:
+    :path: "../node_modules/react-native-tor"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-perflogger:
@@ -670,6 +675,7 @@ SPEC CHECKSUMS:
   react-native-segmented-control: 65df6cd0619b780b3843d574a72d4c7cec396097
   react-native-sensitive-info: d44e909d065f9c0e15734245e5dd6a24b82e3dcd
   react-native-slider: 2f25c919f1dc309b90e2cc8346b8042ecec2102f
+  react-native-tor: 3b14e9160b2eb7fa3f310921b2dee71a5171e5b7
   react-native-webview: 8ec7ddf9eb4ddcd92b32cee7907efec19a9ec7cb
   React-perflogger: a18b4f0bd933b8b24ecf9f3c54f9bf65180f3fe6
   React-RCTActionSheet: 547fe42fdb4b6089598d79f8e1d855d7c23e2162
@@ -702,6 +708,6 @@ SPEC CHECKSUMS:
   VisionCamera: 1ae1415dd21fee97c9bbfc1504d87cd7daba8d9c
   Yoga: 99652481fcd320aefa4a7ef90095b95acd181952
 
-PODFILE CHECKSUM: ed8f36fc96dd36b65b55a2489af081f41b186bdc
+PODFILE CHECKSUM: d009b7e3066461e1ae40a10c11a80085df7f10ed
 
 COCOAPODS: 1.11.3

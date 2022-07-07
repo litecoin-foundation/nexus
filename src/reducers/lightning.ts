@@ -5,6 +5,7 @@ import lnd, {
 } from '@litecoinfoundation/react-native-lndltc';
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import RNFS from 'react-native-fs';
+import Tor from 'react-native-tor';
 
 import {AppThunk} from './types';
 import {getRandomBytes} from '../lib/utils/random';
@@ -18,7 +19,6 @@ import {pollTicker} from './ticker';
 import {backupChannels} from './channels';
 
 const PASS = 'PASSWORD';
-const lndConf = new LndConf(ENetworks.mainnet);
 
 // types
 interface ILightningState {
@@ -36,6 +36,20 @@ const lndState = createAction<boolean>('lightning/lndState');
 // functions
 export const startLnd = (): AppThunk => async dispatch => {
   try {
+    // tor startup/setup
+    const tor = Tor({
+      stopDaemonOnBackground: true,
+    });
+    const socksProxy = await tor.startIfNotStarted();
+    const lndConf = new LndConf(ENetworks.mainnet, {
+      tor: {
+        'tor.active': true,
+        'tor.socks': `127.0.0.1:${socksProxy}`,
+        'tor.streamisolation': false,
+        'tor.skip-proxy-for-clearnet-targets': true,
+      },
+    });
+
     // start LND
     await lnd.start(lndConf);
     dispatch(lndState(true));
