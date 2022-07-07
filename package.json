@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@litecoinfoundation/react-native-lndltc": "0.0.9",
-    "@litecoinfoundation/redux-persist-sensitive-storage": "github:litecoin-foundation/redux-persist-sensitive-storage#321c76b955261fe069912533176f313a91199f56",
+    "@litecoinfoundation/redux-persist-sensitive-storage": "github:litecoin-foundation/redux-persist-sensitive-storage#d2145aecc75d47f6485a6af47eea0ae0b46c6786",
     "@react-native-clipboard/clipboard": "^1.10.0",
     "@react-native-community/netinfo": "^8.3.0",
     "@react-native-community/segmented-control": "^2.2.2",
