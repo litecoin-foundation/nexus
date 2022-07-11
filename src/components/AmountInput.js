@@ -18,6 +18,8 @@ const AmountInput = props => {
   const dispatch = useDispatch();
   const amount = useSelector(state => state.input.amount);
   const fiatAmount = useSelector(state => state.input.fiatAmount);
+  const paymentRate = useSelector(state => state.ticker.paymentRate);
+  const currencySymbol = useSelector(state => state.settings.currencySymbol);
 
   const [leftToggled, toggleLeft] = useState(true);
   const [toggled, toggle] = useState(false);
@@ -103,7 +105,7 @@ const AmountInput = props => {
                 styles.rightText,
                 leftToggled ? styles.textInactive : styles.textActive,
               ]}>
-              ${fiatAmount === '' ? '0.00' : fiatAmount}
+              {currencySymbol}{leftToggled ? (paymentRate === '' ? '0.00' : parseFloat(paymentRate*amount).toFixed(2)) : fiatAmount}
             </Text>
           </TouchableOpacity>
         </View>
