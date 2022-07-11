@@ -6,6 +6,7 @@ import {poll} from '../lib/utils/poll';
 
 // initial state
 const initialState = {
+  paymentRate: null,
   rates: [],
   day: [],
   week: [],
@@ -13,12 +14,57 @@ const initialState = {
 };
 
 // constants
+export const GET_PAYMENT_RATE = 'GET_PAYMENT_RATE';
 export const GET_TICKER = 'GET_TICKER';
 export const UPDATE_HISTORIC_RATE_DAY = 'UPDATE_HISTORIC_RATE_DAY';
 export const UPDATE_HISTORIC_RATE_WEEK = 'UPDATE_HISTORIC_RATE_WEEK';
 export const UPDATE_HISTORIC_RATE_MONTH = 'UPDATE_HISTORIC_RATE_MONTH';
 
+const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
+
 // actions
+export const getPaymentRate = (exchange) => async (dispatch, getState) => {
+  const {currencyCode} = getState().settings;
+  let url = '';
+  switch (exchange) {
+    case 'moonpay':
+      url =
+        'https://api.moonpay.io/v3/currencies/ltc/quote/' +
+        `?apiKey=${publishableKey}` +
+        '&baseCurrencyAmount=1' +
+        `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
+        '&paymentMethod=credit_debit_card';
+      break;
+    default:
+      url =
+        'https://api.moonpay.io/v3/currencies/ltc/quote/' +
+        `?apiKey=${publishableKey}` +
+        '&baseCurrencyAmount=1' +
+        `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
+        '&paymentMethod=credit_debit_card';
+      break;
+  }
+  try {
+    const {data} = await axios.get(url);
+    let paymentRate = null;
+    switch (exchange) {
+      case 'moonpay':
+        paymentRate = data['quoteCurrencyPrice'];
+        break;
+      default:
+        paymentRate = data['quoteCurrencyPrice'];
+        break;
+    }
+    dispatch({
+      type: GET_PAYMENT_RATE,
+      paymentRate,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+
+};
+
 export const getTicker = () => async dispatch => {
   const {
     data: {data: {rates} = {}},
@@ -29,6 +75,10 @@ export const getTicker = () => async dispatch => {
     type: GET_TICKER,
     rates,
   });
+};
+
+export const pollPaymentRate = () => async dispatch => {
+  await poll(() => dispatch(getPaymentRate('moonpay')), 15000);
 };
 
 export const pollTicker = () => async dispatch => {
@@ -122,6 +172,7 @@ export const updateHistoricalRates = () => (dispatch, getStore) => {
 
 // action handlers
 const actionHandler = {
+  [GET_PAYMENT_RATE]: (state, {paymentRate}) => ({...state, paymentRate}),
   [GET_TICKER]: (state, {rates}) => ({...state, rates}),
   [UPDATE_HISTORIC_RATE_DAY]: (state, {data}) => ({
     ...state,

@@ -5,7 +5,8 @@ import {useDispatch, useSelector} from 'react-redux';
 import AmountInput from '../../components/AmountInput';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import Header from '../../components/Header';
-import {setAmount, getQuote} from '../../reducers/buy';
+import {getQuote} from '../../reducers/buy';
+import {getPaymentRate, pollPaymentRate} from '../../reducers/ticker';
 
 const Buy = props => {
   const dispatch = useDispatch();
@@ -13,6 +14,11 @@ const Buy = props => {
 
   useEffect(() => {
     dispatch(getQuote());
+    dispatch(getPaymentRate('moonpay'));
+  });
+
+  useEffect(() => {
+    dispatch(pollPaymentRate('moonpay'));
   }, [dispatch]);
 
   return (
@@ -25,7 +31,7 @@ const Buy = props => {
         <AmountInput
           toggleWithoutSelection
           onAccept={() => {
-            dispatch(setAmount(amount, fiatAmount));
+            dispatch(getQuote());
             props.navigation.navigate('ConfirmStack');
           }}
           confirmButtonDisabled={fiatAmount < 20 ? true : false}

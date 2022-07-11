@@ -2,28 +2,17 @@ import axios from 'axios';
 
 // initial state
 const initialState = {
-  amount: '',
-  fiatAmount: '',
   quote: null,
   history: [],
 };
 
 // constants
-const SET_AMOUNT = 'SET_AMOUNT';
 const GET_QUOTE = 'GET_QUOTE';
 const GET_TRANSACTION_HISTORY = 'GET_TRANSACTION_HISTORY';
 
 const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 
 // actions
-export const setAmount = (amount, fiatAmount) => (dispatch) => {
-  dispatch({
-    type: SET_AMOUNT,
-    amount,
-    fiatAmount,
-  });
-};
-
 export const getTransactionHistory = () => async (dispatch, getState) => {
   const {uniqueId} = getState().onboarding;
   const response = await axios.post(
@@ -40,18 +29,18 @@ export const getTransactionHistory = () => async (dispatch, getState) => {
 };
 
 export const getQuote = () => async (dispatch, getState) => {
-  const {fiatAmount} = getState().buy;
-
+  const {fiatAmount} = getState().input;
+  const {amount} = getState().input;
+  const {currencyCode} = getState().settings;
   const url =
     'https://api.moonpay.io/v3/currencies/ltc/quote/' +
     `?apiKey=${publishableKey}` +
-    `&baseCurrencyAmount=${fiatAmount}` +
-    '&baseCurrencyCode=usd' +
+    `&quoteCurrencyAmount=${amount}` +
+    `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
     '&paymentMethod=credit_debit_card';
 
   try {
     const {data} = await axios.get(url);
-
     dispatch({
       type: GET_QUOTE,
       quote: data,
@@ -81,11 +70,6 @@ export const getSignedUrl = async (address, fiatAmount, id) => {
 
 // action handlers
 const actionHandler = {
-  [SET_AMOUNT]: (state, {amount, fiatAmount}) => ({
-    ...state,
-    amount,
-    fiatAmount,
-  }),
   [GET_QUOTE]: (state, {quote}) => ({...state, quote}),
   [GET_TRANSACTION_HISTORY]: (state, {history}) => ({...state, history}),
 };

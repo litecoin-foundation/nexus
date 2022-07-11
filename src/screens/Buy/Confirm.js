@@ -20,7 +20,7 @@ const Confirm = props => {
   const {navigation} = props;
   const dispatch = useDispatch();
 
-  const {quote, fiatAmount} = useSelector(state => state.buy);
+  const {quote} = useSelector(state => state.buy);
   const {currencySymbol} = useSelector(state => state.settings);
   const {
     quoteCurrencyAmount,
@@ -30,6 +30,7 @@ const Confirm = props => {
     networkFeeAmount,
     totalAmount,
   } = quote;
+  const paymentRate = useSelector(state => state.ticker.paymentRate);
 
   const {address} = useSelector(state => state.address);
   const {uniqueId} = useSelector(state => state.onboarding);
@@ -41,7 +42,9 @@ const Confirm = props => {
   const onPress = async () => {
     const {urlWithSignature} = await getSignedUrl(
       address,
-      fiatAmount,
+      parseFloat(
+        quoteCurrencyAmount*paymentRate + feeAmount + extraFeeAmount + networkFeeAmount
+      ).toFixed(2),
       uniqueId,
     );
     navigation.navigate('WebPage', {
@@ -82,7 +85,7 @@ const Confirm = props => {
         />
         <TableCell
           title="1 LTC PRICE"
-          value={`${currencySymbol}${parseFloat(quoteCurrencyPrice).toFixed(
+          value={`${currencySymbol}${parseFloat(paymentRate).toFixed(
             2,
           )}`}
           valueStyle={styles.ltcText}
@@ -90,13 +93,15 @@ const Confirm = props => {
         <TableCell
           title="PAYMENT FEE"
           value={`${currencySymbol}${parseFloat(
-            feeAmount + extraFeeAmount + networkFeeAmount,
+            feeAmount + extraFeeAmount + networkFeeAmount
           ).toFixed(2)}`}
           valueStyle={styles.feeText}
         />
         <TableCell
           title="YOU WILL SPEND"
-          value={`${currencySymbol}${totalAmount}`}
+          value={`${currencySymbol}${parseFloat(
+            quoteCurrencyAmount*paymentRate + feeAmount + extraFeeAmount + networkFeeAmount
+          ).toFixed(2)}`}
           valueStyle={styles.totalText}
         />
       </ScrollView>
