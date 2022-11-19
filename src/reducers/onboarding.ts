@@ -96,7 +96,7 @@ export const onboardingSlice = createSlice({
       seed: [],
       beingRecovered: false,
     }),
-    finishOnboarding: (state, action: PayloadAction<string>) => ({
+    finishOnboardingAction: (state, action: PayloadAction<string>) => ({
       ...state,
       onboarding: false,
       isOnboarded: true,
