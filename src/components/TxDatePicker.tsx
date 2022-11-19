@@ -5,7 +5,7 @@ import WhiteButton from './Buttons/WhiteButton';
 import {formatMonths} from '../lib/utils/date';
 
 interface Props {
-  selectedTimestamp: number;
+  selectedTimestamp: number | null;
   transactions: ITransactions[];
   handlePress(item: IOptions['hash'], timestamp: IOptions['timestamp']): void;
 }
@@ -33,13 +33,13 @@ const TxDatePicker = forwardRef((props: Props, ref) => {
   const {selectedTimestamp, transactions, handlePress} = props;
 
   let options: IOptions[] = [];
-  const DatePickerRef = useRef(null);
+  const DatePickerRef = useRef<FlatList>(null);
 
-  let currentHeaderTx = formatMonths(selectedTimestamp * 1000);
+  let currentHeaderTx = formatMonths(selectedTimestamp! * 1000);
 
   useImperativeHandle(ref, () => ({
     scrollToItem: () => {
-      DatePickerRef.current.scrollToIndex({animated: true, index: 1});
+      DatePickerRef.current?.scrollToIndex({animated: true, index: 1});
     },
   }));
 

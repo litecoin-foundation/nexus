@@ -1,3 +1,11 @@
+import React, {
+  useCallback,
+  useState,
+  forwardRef,
+  useRef,
+  useImperativeHandle,
+  MutableRefObject,
+} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,13 +14,6 @@ import {
   RefreshControl,
   SectionListRenderItem,
 } from 'react-native';
-import React, {
-  useCallback,
-  useState,
-  forwardRef,
-  useRef,
-  useImperativeHandle,
-} from 'react';
 
 import {useAppDispatch} from '../store/hooks';
 import {getTransactions} from '../reducers/transaction';
@@ -50,11 +51,13 @@ type ItemType = {
 };
 
 const TransactionList = forwardRef((props: Props, ref) => {
-  const transactionListRef = useRef();
+  const transactionListRef = useRef() as MutableRefObject<
+    SectionList<any, ITransactions>
+  >;
 
   useImperativeHandle(ref, () => ({
     scrollToLocation: (sectionIndex: number) => {
-      transactionListRef.current.scrollToLocation({
+      transactionListRef.current?.scrollToLocation({
         animated: true,
         sectionIndex: sectionIndex,
         itemIndex: 0,

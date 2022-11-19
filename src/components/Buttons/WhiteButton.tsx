@@ -1,8 +1,17 @@
 import React from 'react';
 import {TouchableOpacity, Text, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
-const WhiteButton = (props) => {
+interface Props {
+  value: string;
+  onPress(): void;
+  small: boolean;
+  disabled?: boolean;
+  customStyles?: {};
+  customFontStyles?: {};
+  active: boolean;
+}
+
+const WhiteButton: React.FC<Props> = props => {
   const {
     value,
     onPress,
@@ -12,6 +21,7 @@ const WhiteButton = (props) => {
     customFontStyles,
     active,
   } = props;
+
   return (
     <TouchableOpacity
       disabled={disabled ? disabled : null}
@@ -70,12 +80,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
 });
-
-WhiteButton.propTypes = {
-  value: PropTypes.string.isRequired,
-  onPress: PropTypes.func.isRequired,
-  small: PropTypes.bool.isRequired,
-  disabled: PropTypes.bool,
-};
 
 export default WhiteButton;
