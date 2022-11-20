@@ -1,31 +1,36 @@
 import React, {Fragment} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import {useSelector} from 'react-redux';
 import DeviceInfo from 'react-native-device-info';
+import LinearGradient from 'react-native-linear-gradient';
 
 import GreenRoundButton from './Buttons/GreenRoundButton';
 import {chartPercentageChangeSelector} from '../reducers/chart';
 import {subunitSelector, subunitSymbolSelector} from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
+import {useAppSelector} from '../store/hooks';
 
-const AmountView = props => {
+interface Props {
+  children: React.ReactNode;
+  small: boolean;
+}
+
+const AmountView: React.FC<Props> = props => {
   const {children, small} = props;
-
-  const chartCursorSelected = useSelector(state => state.chart.cursorSelected);
-  const chartCursorValue = useSelector(state => state.chart.cursorValue);
-  const chartPercentageChange = useSelector(state =>
+  const chartCursorSelected = useAppSelector(
+    state => state.chart.cursorSelected,
+  );
+  const chartCursorValue = useAppSelector(state => state.chart.cursorValue);
+  const chartPercentageChange = useAppSelector(state =>
     chartPercentageChangeSelector(state),
   );
 
-  const totalBalance = useSelector(state => state.balance.totalBalance);
-  const convertToSubunit = useSelector(state => subunitSelector(state));
+  const totalBalance = useAppSelector(state => state.balance.totalBalance);
+  const convertToSubunit = useAppSelector(state => subunitSelector(state));
   const subunitAmount = convertToSubunit(totalBalance);
-  const amountSymbol = useSelector(state => subunitSymbolSelector(state));
+  const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
 
-  const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
+  const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(totalBalance);
-
   return (
     <View
       style={[
@@ -38,7 +43,7 @@ const AmountView = props => {
           <LinearGradient
             colors={['#7E58FF', '#00369E']}
             style={styles.secondGradient}>
-            <View style={styles.first} />
+            <View />
           </LinearGradient>
         </View>
 
