@@ -48,7 +48,7 @@ export const setRecoveryMode = createAction<boolean>(
 );
 export const recoverSeed = createAction<string[]>('onboarding/recoverSeed');
 const getNeutrinoCacheAction = createAction<neutrinoCacheState>(
-  'getNeutrinoCacheAction',
+  'onboarding/getNeutrinoCacheAction',
 );
 
 // actions

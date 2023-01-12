@@ -25,12 +25,12 @@ const Initial = props => {
 
   useEffect(() => {
     dispatch(getNeutrinoCache());
-  });
+  }, [dispatch]);
 
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
-      <Text>Presyncing...</Text>
-      <Text>Status: {task}</Text>
+      <Text style={styles.text}>Presyncing {task}</Text>
+      <Text style={[styles.text, styles.normalText]}>{task}</Text>
       <ProgressBar
         progress={task === 'downloading' ? downloadProgress : unzipProgress}
       />
@@ -85,11 +85,18 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   neutrinoCacheContainer: {
-    height: 300,
-    width: 300,
-    marginBottom: 100,
-    borderRadius: 15,
-    backgroundColor: 'rgb(238,244,249)',
+    height: 100,
+    marginBottom: 70,
+    justifyContent: 'center',
+  },
+  text: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  normalText: {
+    fontWeight: 'normal',
   },
 });
 
