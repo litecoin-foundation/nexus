@@ -54,7 +54,7 @@ export const startLnd = (): AppThunk => async dispatch => {
     await lnd.start(lndConf);
     dispatch(lndState(true));
   } catch (err) {
-    console.log('CANT start LND');
+    console.error('CANT start LND');
     // TODO: handle this
   }
 };
@@ -64,7 +64,7 @@ export const stopLnd = (): AppThunk => async dispatch => {
     await lnd.stop();
     dispatch(lndState(false));
   } catch (err) {
-    console.log('CANT stop LND');
+    console.error('CANT stop LND');
     // TODO: handle this
   }
 };
@@ -113,11 +113,20 @@ export const unlockWallet = (): AppThunk => async dispatch => {
 
     try {
       if (password !== null) {
-        await lnd.walletUnlocker.unlockWallet(password);
+        const res = await lnd.walletUnlocker.unlockWallet(password);
+
+        if (res.isErr()) {
+          throw new Error(String(res.error));
+        }
+      } else {
+        throw new Error('wallet password is null');
       }
 
       lnd.stateService.subscribeToStateChanges(
         res => {
+          if (res.isErr()) {
+            throw new Error(String(res.error));
+          }
           if (res.isOk()) {
             if (res.value === ss_lnrpc.WalletState.RPC_ACTIVE) {
               // dispatch pollers
@@ -143,6 +152,11 @@ export const unlockWallet = (): AppThunk => async dispatch => {
         await dispatch(setRecoveryMode(true));
         await dispatch(initWallet());
         await dispatch(setRecoveryMode(false));
+
+        // TODO: addtional handling here required
+        // TODO: also need to check if seed exist prior to attempting recovery
+
+        resolve();
       } else {
         throw new Error(String(error));
       }
