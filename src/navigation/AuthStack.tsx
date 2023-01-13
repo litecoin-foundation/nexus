@@ -1,9 +1,11 @@
 import React from 'react';
+import {StyleSheet, View} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import Auth from '../screens/Auth/Auth';
 import Forgot from '../screens/Auth/Forgot';
 import ChangePincode from '../screens/Settings/ChangePincode';
+import WhiteButton from '../components/Buttons/WhiteButton';
 
 const Stack = createStackNavigator();
 
@@ -20,7 +22,19 @@ function AuthStack(): JSX.Element {
       <Stack.Screen
         name="Auth"
         component={Auth}
-        options={Auth.navigationOptions}
+        options={({navigation}) => ({
+          headerTitle: 'Unlock Wallet',
+          headerRight: () => (
+            <View style={styles.headerRight}>
+              <WhiteButton
+                value="FORGOT?"
+                small={true}
+                onPress={() => navigation.navigate('Forgot')}
+                active={true}
+              />
+            </View>
+          ),
+        })}
       />
       <Stack.Screen
         name="Forgot"
@@ -45,5 +59,11 @@ function AuthStack(): JSX.Element {
     </Stack.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  headerRight: {
+    paddingRight: 18,
+  },
+});
 
 export default AuthStack;

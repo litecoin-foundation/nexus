@@ -9,8 +9,8 @@ import OnboardingHeader from './OnboardingHeader';
 
 interface Props {
   headerDescriptionText: string;
-  handleValidationSuccess: void;
-  handleValidationFailure: void;
+  handleValidationSuccess: () => Promise<void>;
+  handleValidationFailure: () => void;
 }
 
 const Auth: React.FC<Props> = props => {
