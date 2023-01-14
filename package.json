@@ -37,6 +37,9 @@
     "axios": "^0.27.2",
     "base58-js": "^1.0.0",
     "bech32": "^2.0.0",
+    "bip32": "^3.1.0",
+    "bip39": "^3.0.4",
+    "bitcoinjs-lib": "^6.1.0",
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.1.0",
     "events": "^3.3.0",
@@ -77,6 +80,7 @@
     "sha.js": "^2.4.11",
     "sha256-uint8array": "^0.10.3",
     "stream-browserify": "^3.0.0",
+    "tiny-secp256k1": "^2.2.1",
     "uuid": "^8.3.2",
     "vision-camera-code-scanner": "^0.2.0"
   },
