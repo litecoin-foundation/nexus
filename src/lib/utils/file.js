@@ -2,13 +2,13 @@ import RNFS from 'react-native-fs';
 
 const lndDir = RNFS.DocumentDirectoryPath;
 const externalStorageDir = RNFS.ExternalStorageDirectoryPath;
-const scbPath = `${lndDir}/data/chain/litecoin/mainnet/channel.backup`;
+const scbPath = `${lndDir}/lndltc/data/chain/litecoin/mainnet/channel.backup`;
 const scbExternalDir = `${externalStorageDir}/Lightning/mainnet-ltc`;
 const scbExternalPath = `${scbExternalDir}/channel.backup`;
 
 // wallet database
 export const deleteWalletDB = async () => {
-  const dbPath = `${lndDir}/data/chain/litecoin/mainnet/wallet.db`;
+  const dbPath = `${lndDir}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
   try {
     await RNFS.unlink(dbPath);
   } catch (error) {
@@ -20,7 +20,7 @@ export const deleteWalletDB = async () => {
 // static channel backups
 export const readSCB = async () => {
   return RNFS.readFile(
-    `${lndDir}/data/chain/litecoin/mainnet/channel.backup`,
+    `${lndDir}/lndltc/data/chain/litecoin/mainnet/channel.backup`,
     'base64',
   );
 };

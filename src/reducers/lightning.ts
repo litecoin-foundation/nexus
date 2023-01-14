@@ -143,7 +143,7 @@ export const unlockWallet = (): AppThunk => async dispatch => {
         () => console.log('LND: onDone'),
       );
     } catch (error: unknown) {
-      const dbPath = `${RNFS.DocumentDirectoryPath}/data/chain/litecoin/mainnet/wallet.db`;
+      const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
 
       if ((await RNFS.exists(dbPath)) === false) {
         // if no wallet db exists, user has likely uninstalled the app previously
