@@ -429,7 +429,7 @@ PODS:
   - vision-camera-code-scanner (0.2.0):
     - GoogleMLKit/BarcodeScanning
     - React-Core
-  - VisionCamera (2.13.5):
+  - VisionCamera (2.15.2):
     - React
     - React-callinvoker
     - React-Core
@@ -705,7 +705,7 @@ SPEC CHECKSUMS:
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
   vision-camera-code-scanner: dda884a7f3ec8243a2a6d6489b91860648371bca
-  VisionCamera: 1ae1415dd21fee97c9bbfc1504d87cd7daba8d9c
+  VisionCamera: d011219ead7037dd6bd0c776ab20fa0874d95de0
   Yoga: 99652481fcd320aefa4a7ef90095b95acd181952
 
 PODFILE CHECKSUM: d009b7e3066461e1ae40a10c11a80085df7f10ed
