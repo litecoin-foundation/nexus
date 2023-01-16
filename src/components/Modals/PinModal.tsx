@@ -11,8 +11,8 @@ import {useAppSelector} from '../../store/hooks';
 interface Props {
   isVisible: boolean;
   close(): void;
-  handleValidationFailure: void;
-  handleValidationSuccess: void;
+  handleValidationFailure: () => void;
+  handleValidationSuccess: () => void;
 }
 
 const PinModal: React.FC<Props> = props => {

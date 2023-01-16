@@ -125,6 +125,8 @@ const isTabBarVisible = route => {
     'Wallets',
     'Currency',
     'Explorer',
+    'Import',
+    'Scan',
   ];
 
   if (routes.includes(getFocusedRouteNameFromRoute(route))) {

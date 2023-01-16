@@ -12,6 +12,7 @@ import About from '../screens/Settings/About';
 import Wallet from '../screens/Settings/Wallet';
 import Currency from '../screens/Settings/Currency';
 import Scan from '../screens/Scan';
+import Import from '../screens/Settings/Import';
 
 const Stack = createStackNavigator();
 
@@ -81,7 +82,16 @@ function SettingsStack() {
       <Stack.Screen
         name="Wallets"
         component={Wallet}
-        options={Wallet.navigationOptions}
+        options={{
+          headerTitle: 'Wallet',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+        }}
       />
       <Stack.Screen
         name="Currency"
@@ -116,6 +126,20 @@ function SettingsStack() {
         component={Scan}
         options={{
           ...TransitionPresets.ModalPresentationIOS,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+        }}
+      />
+      <Stack.Screen
+        name="Import"
+        component={Import}
+        options={{
+          headerTitle: 'Import Private Key',
           headerTitleStyle: {
             fontWeight: 'bold',
             color: 'white',

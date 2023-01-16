@@ -8,22 +8,33 @@ import {
   Text,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {useDispatch, useSelector} from 'react-redux';
 import SegmentedControl from '@react-native-community/segmented-control';
+import {StackScreenProps} from '@react-navigation/stack';
 
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
 import PinModal from '../../components/Modals/PinModal';
 import {updateSubunit} from '../../reducers/settings';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-const Wallet = props => {
-  const dispatch = useDispatch();
+type RootStackParamList = {
+  Wallet: undefined;
+  Explorer: undefined;
+  Currency: undefined;
+  Seed: undefined;
+  Import: undefined;
+  Litewallet: undefined;
+};
+
+type Props = StackScreenProps<RootStackParamList, 'Wallet'>;
+
+const Wallet: React.FC<Props> = props => {
+  const dispatch = useAppDispatch();
   const [isPinModalTriggered, triggerPinModal] = useState(false);
-
-  const {subunit} = useSelector(state => state.settings);
+  const {subunit} = useAppSelector(state => state.settings);
 
   const handleAuthenticationRequired = () => {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       triggerPinModal(true);
       const subscription = DeviceEventEmitter.addListener('auth', bool => {
         if (bool === true) {
@@ -45,6 +56,16 @@ const Wallet = props => {
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
         <ScrollView>
+          <SettingCell
+            title="Import Private Key"
+            onPress={() => props.navigation.navigate('Import')}
+            forward
+          />
+          <SettingCell
+            title="Import Litewallet"
+            onPress={() => props.navigation.navigate('Litewallet')}
+            forward
+          />
           <SettingCell
             title="Block Explorer"
             onPress={() => props.navigation.navigate('Explorer')}
@@ -75,7 +96,7 @@ const Wallet = props => {
               handleAuthenticationRequired()
                 .then(() => props.navigation.navigate('Seed'))
                 .catch(() =>
-                  Alert.alert('Incorrect Pincode', null, [
+                  Alert.alert('Incorrect Pincode', undefined, [
                     {
                       text: 'Dismiss',
                       onPress: () => triggerPinModal(false),
@@ -125,18 +146,5 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
-
-Wallet.navigationOptions = () => {
-  return {
-    headerTitle: 'Wallet',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-      color: 'white',
-    },
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
-  };
-};
 
 export default Wallet;
