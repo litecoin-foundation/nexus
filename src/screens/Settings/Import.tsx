@@ -6,6 +6,9 @@ import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
+import {sweepWIF} from '../../lib/utils/sweep';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {getAddress} from '../../reducers/address';
 
 type RootStackParamList = {
   Import: {
@@ -21,16 +24,20 @@ interface Props {
 
 const Import: React.FC<Props> = props => {
   const {navigation, route} = props;
+  const dispatch = useAppDispatch();
+  const {address} = useAppSelector(state => state.address);
+
+  useEffect(() => {
+    dispatch(getAddress());
+  }, [dispatch]);
 
   // handle scanned QR code
   useEffect(() => {
     if (route.params?.scanData) {
       console.warn(route.params?.scanData);
-      // check balance of private key
-
-      // initate sweep
+      sweepWIF(route.params.scanData, address);
     }
-  }, [route.params?.scanData]);
+  }, [address, route.params?.scanData]);
 
   return (
     <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
@@ -50,7 +57,11 @@ const Import: React.FC<Props> = props => {
           small={false}
           active={true}
           onPress={() => {
-            navigation.navigate('Scan', {returnRoute: 'Import'});
+            // navigation.navigate('Scan', {returnRoute: 'Import'});
+            sweepWIF(
+              'T9AGGdbPB8awSweFqjnmhTnLLLwfoZvDgqvZq74S3QqnudmGUfvg',
+              address,
+            );
           }}
         />
       </View>
