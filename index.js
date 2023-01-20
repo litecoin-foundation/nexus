@@ -1,7 +1,8 @@
 /**
  * @format
  */
-
+import {Buffer} from '@craftzdog/react-native-buffer';
+window.Buffer = Buffer;
 import 'react-native-gesture-handler';
 import 'react-native-get-random-values';
 import {AppRegistry} from 'react-native';

@@ -1,12 +1,12 @@
-import bjs from 'bitcoinjs-lib';
+import ecc from '@bitcoinerlab/secp256k1';
+import {payments, Psbt} from 'bitcoinjs-lib';
 import bip39 from 'bip39';
 import axios from 'axios';
 import {BIP32Factory} from 'bip32';
 import {ECPairFactory, ECPairInterface} from 'ecpair';
 import wif from 'wif';
-import {Buffer} from 'buffer';
+import {Buffer} from '@craftzdog/react-native-buffer';
 
-import ecc from './nobleSecp256k1Wrapper';
 import {LITECOIN} from './litecoin';
 import {estimateTxSize} from './estimateTxSize';
 
@@ -54,7 +54,7 @@ export const scanAccount = async (mnemonic: IMnemonic) => {
   while (currentGap < GAP_LIMIT) {
     // generate address
     const child = root.derivePath(`m/0'/0/${currentIndex}`);
-    const {address} = bjs.payments.p2pkh({
+    const {address} = payments.p2pkh({
       pubkey: child.publicKey,
       network: LITECOIN,
     });
@@ -96,7 +96,7 @@ export const sweepWIF = (wifString: string, receiveAddress: string) => {
   let bech32Address;
 
   // build p2pkh address
-  const legacyAddress = bjs.payments.p2pkh({
+  const legacyAddress = payments.p2pkh({
     pubkey: keyPair.publicKey,
     network: LITECOIN,
   }).address;
@@ -108,15 +108,15 @@ export const sweepWIF = (wifString: string, receiveAddress: string) => {
   // only compressed WIFs can generate p2sh/bech32
   if (compressed) {
     // build p2sh segwit address
-    p2shAddress = bjs.payments.p2sh({
-      redeem: bjs.payments.p2wpkh({
+    p2shAddress = payments.p2sh({
+      redeem: payments.p2wpkh({
         pubkey: keyPair.publicKey,
         network: LITECOIN,
       }),
       network: LITECOIN,
     }).address;
     // build bech32 address
-    bech32Address = bjs.payments.p2wpkh({
+    bech32Address = payments.p2wpkh({
       pubkey: keyPair.publicKey,
       network: LITECOIN,
     }).address;
@@ -143,7 +143,7 @@ const sweepAddress = (
       );
 
       // construct psbt tx
-      const psbt = new bjs.Psbt({network: LITECOIN});
+      const psbt = new Psbt({network: LITECOIN});
       const unspents = data.txs;
       let totalBalance = 0;
 
@@ -173,8 +173,10 @@ const sweepAddress = (
       // single output
       psbt.addOutput({
         address: receiveAddress,
-        value:
-          totalBalance - estimateTxSize(inputScript, unspents.length) * 0.188,
+        value: Math.floor(
+          totalBalance -
+            Math.ceil(estimateTxSize(inputScript, unspents.length) * 18.8),
+        ),
       });
 
       console.log(estimateTxSize('P2PKH', unspents.length));
