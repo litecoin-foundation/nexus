@@ -8,7 +8,7 @@ import RNFS from 'react-native-fs';
 import Tor from 'react-native-tor';
 
 import {AppThunk} from './types';
-import {getRandomBytes} from '../lib/utils/random';
+import {v4 as uuidv4} from 'uuid';
 import {setItem, getItem} from '../lib/utils/keychain';
 import {deleteWalletDB} from '../lib/utils/file';
 
@@ -72,7 +72,7 @@ export const stopLnd = (): AppThunk => async dispatch => {
 export const initWallet = (): AppThunk => async (dispatch, getState) => {
   const {seed, beingRecovered} = getState().onboarding;
 
-  const password = await getRandomBytes();
+  const password: string = uuidv4();
   await setItem(PASS, password);
 
   try {

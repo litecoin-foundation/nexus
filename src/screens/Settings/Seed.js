@@ -2,7 +2,6 @@ import React, {useEffect} from 'react';
 import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useDispatch, useSelector} from 'react-redux';
-import 'react-native-get-random-values';
 import {v4 as uuidv4} from 'uuid';
 
 import {updateLastViewSeed} from '../../reducers/settings';

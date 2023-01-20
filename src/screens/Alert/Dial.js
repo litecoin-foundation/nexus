@@ -7,12 +7,12 @@ import Header from '../../components/Header';
 import SlideRuler from '../../components/SlideRuler';
 import BlueButton from '../../components/Buttons/BlueButton';
 import {addAlert} from '../../reducers/alerts';
-import {getRandomBytes} from '../../lib/utils/random';
+import {v4 as uuidv4} from 'uuid';
 
-const Dial = (props) => {
+const Dial = props => {
   const dispatch = useDispatch();
   const [value, setValue] = useState(0);
-  const rates = useSelector((state) => state.ticker.rates);
+  const rates = useSelector(state => state.ticker.rates);
 
   return (
     <LinearGradient
@@ -37,7 +37,7 @@ const Dial = (props) => {
           </View>
           <View>
             <SlideRuler
-              onValueChange={(value) => setValue(value)}
+              onValueChange={value => setValue(value)}
               multiplicity={1}
               initialValue={rates.USD}
             />
@@ -50,7 +50,7 @@ const Dial = (props) => {
           onPress={async () => {
             dispatch(
               addAlert({
-                id: await getRandomBytes(),
+                id: uuidv4(),
                 date: Date.now(),
                 enabled: true,
                 value,
