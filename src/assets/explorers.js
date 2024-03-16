@@ -1,5 +1,13 @@
 const explorers = [
   {
+    key: 'Litecoin Space',
+    name: 'Litecoin Space',
+    url: 'https://litecoinspace.org/',
+    base_url: 'https://litecoinspace.org/',
+    tx: 'https://litecoinspace.org/tx/',
+    address: 'https://litecoinspace.org/address/',
+  },
+  {
     key: 'Blockchair',
     name: 'Blockchair',
     url: 'https://blockchair.com/',

@@ -11,7 +11,7 @@ const initialState = {
   subunit: 0,
   currencyCode: 'USD',
   currencySymbol: '$',
-  defaultExplorer: 'Blockchair',
+  defaultExplorer: 'Litecoin Space',
 };
 
 // constants
@@ -117,17 +117,15 @@ export const subunitSymbolSelector = createSelector(
 );
 
 export const defaultExplorerSelector = createSelector(
-  [
-    state => state.settings.defaultExplorer,
-    (state, txHash) => txHash
-  ],
+  [state => state.settings.defaultExplorer, (state, txHash) => txHash],
   (defaultExplorer, txHash) => {
     const explorerObject = explorers.find(e => e.key === defaultExplorer);
     switch (defaultExplorer) {
-      case "Blockchair":
-      case "Bitinfocharts":
-      case "Blockcypher":
-      case "Litecoinblockexplorer":
+      case 'Litecoin Space':
+      case 'Blockchair':
+      case 'Bitinfocharts':
+      case 'Blockcypher':
+      case 'Litecoinblockexplorer':
         return explorerObject.tx + txHash;
       default:
         return explorerObject.tx + txHash;

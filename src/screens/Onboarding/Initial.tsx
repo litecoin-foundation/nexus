@@ -26,7 +26,7 @@ const Initial = (props: Props) => {
 
   useEffect(() => {
     dispatch(detectCurrencyCode());
-    dispatch(setExplorer('Blockchair'));
+    dispatch(setExplorer('Litecoin Space'));
   }, [dispatch]);
 
   return (
