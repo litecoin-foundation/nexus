@@ -22,7 +22,7 @@
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.0.1",
     "@craftzdog/react-native-buffer": "^6.0.5",
-    "@litecoinfoundation/react-native-lndltc": "^0.0.9",
+    "@litecoinfoundation/react-native-lndltc": "^0.0.11",
     "@litecoinfoundation/redux-persist-sensitive-storage": "github:litecoin-foundation/redux-persist-sensitive-storage#d2145aecc75d47f6485a6af47eea0ae0b46c6786",
     "@noble/secp256k1": "^1.7.1",
     "@react-native-clipboard/clipboard": "^1.11.1",
@@ -110,5 +110,8 @@
   },
   "jest": {
     "preset": "react-native"
-  }
+  },
+  "trustedDependencies": [
+    "protobufjs"
+  ]
 }
