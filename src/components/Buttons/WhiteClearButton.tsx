@@ -1,7 +1,15 @@
+import {StyleSheet, Text, TouchableOpacity} from 'react-native';
 import React from 'react';
-import {Text, StyleSheet, TouchableOpacity} from 'react-native';
 
-const WhiteClearButton = props => {
+interface Props {
+  onPress: () => void;
+  value: string;
+  small?: boolean;
+  selected?: boolean;
+  disabled?: boolean;
+}
+
+const WhiteClearButton = (props: Props): React.JSX.Element => {
   const {onPress, value, small, selected, disabled} = props;
   return (
     <TouchableOpacity
