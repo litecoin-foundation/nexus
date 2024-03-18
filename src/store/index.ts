@@ -1,5 +1,5 @@
 import {configureStore} from '@reduxjs/toolkit';
-import createSensitiveStorage from '@litecoinfoundation/redux-persist-sensitive-storage';
+
 import {
   persistStore,
   persistReducer,
@@ -12,11 +12,7 @@ import {
 } from 'redux-persist';
 
 import reducer from '../reducers';
-
-const storage = createSensitiveStorage({
-  keychainService: 'lndmobileKeychain',
-  sharedPreferencesName: 'lndmobileKeystore',
-});
+import {storage} from './mmkv';
 
 const persistConfig = {
   key: 'root',

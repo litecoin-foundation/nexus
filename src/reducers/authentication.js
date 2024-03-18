@@ -1,10 +1,9 @@
 import lnd, {ss_lnrpc} from '@litecoinfoundation/react-native-lndltc';
 import {AppState} from 'react-native';
 
-import {getItem} from '../lib/utils/keychain';
 import {authenticate} from '../lib/utils/biometric';
 import {unlockWallet} from './lightning';
-import {setItem, resetItem} from '../lib/utils/keychain';
+import {getItem, setItem, resetItem} from '../lib/utils/keychain';
 
 // initial state
 const initialState = {

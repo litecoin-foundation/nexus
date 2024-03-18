@@ -42,3 +42,4 @@ storyLoader.js
 android/app/release/
 ios/Plasma.xcworkspace
 lndmobile-*-v*.tar.gz
+ios/.xcode.env.local
