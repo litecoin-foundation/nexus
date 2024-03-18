@@ -1,12 +1,23 @@
 import React from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  GestureResponderEvent,
+} from 'react-native';
 
-const GreenRoundButton = (props) => {
+interface Props {
+  value: string;
+  small: boolean;
+  disabled?: boolean;
+  onPress: (event: GestureResponderEvent) => void | undefined;
+}
+
+const GreenRoundButton: React.FC<Props> = props => {
   const {value, small, onPress, disabled} = props;
   return (
     <TouchableOpacity
-      onPress={disabled ? null : onPress}
+      onPress={disabled ? undefined : onPress}
       style={[
         styles.container,
         small ? styles.small : styles.big,
@@ -49,12 +60,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-GreenRoundButton.propTypes = {
-  value: PropTypes.string.isRequired,
-  small: PropTypes.bool,
-  onPress: PropTypes.func,
-  disabled: PropTypes.bool,
-};
 
 export default GreenRoundButton;

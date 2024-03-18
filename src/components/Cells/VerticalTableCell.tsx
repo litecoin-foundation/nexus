@@ -1,8 +1,12 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
-const VerticalTableCell = props => {
+interface Props {
+  title: string;
+  children: React.ReactElement;
+}
+
+const VerticalTableCell: React.FC<Props> = props => {
   const {title, children} = props;
   return (
     <View style={styles.container}>
@@ -29,10 +33,5 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
 });
-
-VerticalTableCell.propTypes = {
-  title: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired,
-};
 
 export default VerticalTableCell;

@@ -1,8 +1,12 @@
 import React from 'react';
 import {TouchableOpacity, Text, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
-const BlueSquareButton = (props) => {
+interface Props {
+  value: string;
+  onPress: () => void;
+}
+
+const BlueSquareButton: React.FC<Props> = props => {
   const {value, onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -25,10 +29,5 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
 });
-
-BlueSquareButton.propTypes = {
-  value: PropTypes.string.isRequired,
-  onPress: PropTypes.func.isRequired,
-};
 
 export default BlueSquareButton;

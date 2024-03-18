@@ -6,9 +6,13 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import PropTypes from 'prop-types';
 
-const AddressField = (props) => {
+interface Props {
+  address: string;
+  onPressClose: () => void;
+}
+
+const AddressField: React.FC<Props> = props => {
   const {address, onPressClose} = props;
   return (
     <View style={styles.container}>
@@ -55,10 +59,5 @@ const styles = StyleSheet.create({
     letterSpacing: -0.54,
   },
 });
-
-AddressField.propTypes = {
-  address: PropTypes.string,
-  onPressClose: PropTypes.func.isRequired,
-};
 
 export default AddressField;

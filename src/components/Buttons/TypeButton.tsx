@@ -1,8 +1,20 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ImageSourcePropType,
+} from 'react-native';
 
-const TypeButton = (props) => {
+interface Props {
+  label: string;
+  onPress: () => void;
+  imageSource: ImageSourcePropType;
+}
+
+const TypeButton: React.FC<Props> = props => {
   const {label, onPress, imageSource} = props;
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
@@ -55,10 +67,5 @@ const styles = StyleSheet.create({
     left: 14,
   },
 });
-
-TypeButton.propTypes = {
-  label: PropTypes.string.isRequired,
-  onPress: PropTypes.func.isRequired,
-};
 
 export default TypeButton;

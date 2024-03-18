@@ -1,8 +1,19 @@
 import React from 'react';
-import {Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ImageSourcePropType,
+} from 'react-native';
 
-const SquareButton = (props) => {
+interface Props {
+  value: string;
+  onPress: () => void;
+  imageSource: ImageSourcePropType;
+}
+
+const SquareButton: React.FC<Props> = props => {
   const {value, onPress, imageSource} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -40,10 +51,5 @@ const styles = StyleSheet.create({
   },
   image: {top: -10},
 });
-
-SquareButton.propTypes = {
-  value: PropTypes.string.isRequired,
-  onPress: PropTypes.func,
-};
 
 export default SquareButton;

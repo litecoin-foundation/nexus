@@ -1,15 +1,21 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
-const VerticalProgressBar = (props) => {
-  const {capacity, type} = props;
-  const {balance} = props;
+type type = 'remote' | 'local';
+
+interface Props {
+  capacity: number | Long;
+  balance: number | Long;
+  type: type;
+}
+
+const VerticalProgressBar: React.FC<Props> = props => {
+  const {capacity, type, balance} = props;
 
   let progress = 0;
 
   if (balance !== undefined && balance !== 0) {
-    progress = parseFloat((capacity / balance) * 100);
+    progress = (capacity / balance) * 100;
   }
 
   return (
@@ -19,7 +25,7 @@ const VerticalProgressBar = (props) => {
   );
 };
 
-const progressBarStyle = (progress, type) => {
+const progressBarStyle = (progress: number, type: type) => {
   return {
     width: '100%',
     backgroundColor: '#20BB74',
@@ -38,11 +44,5 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
 });
-
-VerticalProgressBar.propTypes = {
-  capacity: PropTypes.number.isRequired,
-  type: PropTypes.string.isRequired,
-  balance: PropTypes.number.isRequired,
-};
 
 export default VerticalProgressBar;

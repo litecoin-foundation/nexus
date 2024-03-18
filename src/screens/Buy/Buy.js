@@ -10,7 +10,7 @@ import {getPaymentRate, pollPaymentRate} from '../../reducers/ticker';
 
 const Buy = props => {
   const dispatch = useDispatch();
-  const {amount, fiatAmount} = useSelector(state => state.input);
+  const {fiatAmount} = useSelector(state => state.input);
 
   useEffect(() => {
     dispatch(getQuote());
@@ -34,7 +34,7 @@ const Buy = props => {
             dispatch(getQuote());
             props.navigation.navigate('ConfirmStack');
           }}
-          confirmButtonDisabled={fiatAmount < 20 ? true : false}
+          disabled={fiatAmount < 20 ? true : false}
           confirmButtonText="Preview Buy"
         />
       </View>

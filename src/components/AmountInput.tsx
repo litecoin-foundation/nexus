@@ -1,30 +1,41 @@
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
-import {useSelector, useDispatch} from 'react-redux';
 
+import {updateAmount, updateFiatAmount, resetInputs} from '../reducers/input';
+import {useAppDispatch, useAppSelector} from '../store/hooks';
 import Pad from './Numpad/Pad';
 import BlueButton from './Buttons/BlueButton';
-import {updateAmount, updateFiatAmount, resetInputs} from '../reducers/input';
 
-const AmountInput = props => {
+type side = 'left' | 'right';
+
+interface Props {
+  toggleWithoutSelection: boolean;
+  confirmButtonText: string;
+  selected?: () => void;
+  onChangeText: (amount: number) => void;
+  onAccept: (amount: number) => void;
+  disabled?: boolean;
+}
+
+const AmountInput: React.FC<Props> = props => {
+  const dispatch = useAppDispatch();
   const {
     toggleWithoutSelection,
     confirmButtonText,
     selected,
     onChangeText,
     onAccept,
-    confirmButtonDisabled,
+    disabled,
   } = props;
-  const dispatch = useDispatch();
-  const amount = useSelector(state => state.input.amount);
-  const fiatAmount = useSelector(state => state.input.fiatAmount);
-  const paymentRate = useSelector(state => state.ticker.paymentRate);
-  const currencySymbol = useSelector(state => state.settings.currencySymbol);
+  const amount = useAppSelector(state => state.input.amount);
+  const fiatAmount = useAppSelector(state => state.input.fiatAmount);
+  const paymentRate = useAppSelector(state => state.ticker.paymentRate);
+  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
 
   const [leftToggled, toggleLeft] = useState(true);
   const [toggled, toggle] = useState(false);
 
-  const handlePress = side => {
+  const handlePress = (side: side) => {
     if (side === 'left') {
       toggleLeft(true);
       toggle(true);
@@ -40,7 +51,7 @@ const AmountInput = props => {
     }
   };
 
-  const onChange = value => {
+  const onChange = (value: string) => {
     if (leftToggled) {
       dispatch(updateAmount(value));
     } else {
@@ -63,11 +74,11 @@ const AmountInput = props => {
   const PadContainer = (
     <View style={styles.padContainer}>
       <Pad
-        onChange={value => onChange(value)}
+        onChange={(value: string) => onChange(value)}
         currentValue={leftToggled ? amount : fiatAmount}>
         <View style={styles.centerAlign}>
           <BlueButton
-            disabled={confirmButtonDisabled === true ? true : false}
+            disabled={disabled === true ? true : false}
             value={confirmButtonText}
             onPress={() => {
               toggle(false);
@@ -105,7 +116,12 @@ const AmountInput = props => {
                 styles.rightText,
                 leftToggled ? styles.textInactive : styles.textActive,
               ]}>
-              {currencySymbol}{leftToggled ? (paymentRate === '' ? '0.00' : parseFloat(paymentRate*amount).toFixed(2)) : fiatAmount}
+              {currencySymbol}
+              {leftToggled
+                ? paymentRate === ''
+                  ? '0.00'
+                  : parseFloat(paymentRate * amount).toFixed(2)
+                : fiatAmount}
             </Text>
           </TouchableOpacity>
         </View>

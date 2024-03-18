@@ -1,8 +1,12 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
-const BlueClearButton = (props) => {
+interface Props {
+  value: string;
+  onPress: () => void;
+}
+
+const BlueClearButton: React.FC<Props> = props => {
   const {value, onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -34,10 +38,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
 });
-
-BlueClearButton.propTypes = {
-  value: PropTypes.string.isRequired,
-  onPress: PropTypes.func,
-};
 
 export default BlueClearButton;

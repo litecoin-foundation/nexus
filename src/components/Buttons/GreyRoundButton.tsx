@@ -1,8 +1,11 @@
 import React from 'react';
 import {TouchableOpacity, Image, StyleSheet} from 'react-native';
-import PropTypes from 'prop-types';
 
-const GreyRoundButton = (props) => {
+interface Props {
+  onPress: () => void;
+}
+
+const GreyRoundButton: React.FC<Props> = props => {
   const {onPress} = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -30,9 +33,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
-GreyRoundButton.propTypes = {
-  onPress: PropTypes.func.isRequired,
-};
 
 export default GreyRoundButton;

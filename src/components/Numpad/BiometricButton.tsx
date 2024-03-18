@@ -1,13 +1,22 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import {TouchableWithoutFeedback, Text, StyleSheet, View} from 'react-native';
+import {TouchableWithoutFeedback, Image, StyleSheet, View} from 'react-native';
 import {useSpring, animated, config} from '@react-spring/native';
 
-import {triggerSelectionFeedback} from '../../lib/utils/haptic';
+import {useAppSelector} from '../../store/hooks';
 
-const Button = (props) => {
-  const {value, onPress, disabled} = props;
+interface Props {
+  onPress: () => void;
+}
+
+const Button: React.FC<Props> = props => {
+  const {onPress} = props;
   const AnimatedView = animated(View);
+  const biometricsEnabled = useAppSelector(
+    state => state.authentication.biometricsEnabled,
+  );
+  const biometricType = useAppSelector(
+    state => state.authentication.faceIDSupported,
+  );
 
   const [scaler, set] = useSpring(() => ({
     from: {scale: 1},
@@ -19,22 +28,22 @@ const Button = (props) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, !biometricsEnabled ? styles.disabled : null]}>
       <TouchableWithoutFeedback
         onPressIn={() => set({scale: 0.85})}
         onPressOut={() => set({scale: 1})}
-        disabled={disabled}
-        onPress={() => {
-          triggerSelectionFeedback();
-          onPress();
-        }}>
-        <AnimatedView
-          style={[
-            styles.button,
-            disabled ? styles.disabled : null,
-            motionStyle,
-          ]}>
-          <Text style={styles.text}>{value}</Text>
+        onPress={onPress}
+        disabled={!biometricsEnabled}>
+        <AnimatedView style={[styles.button, motionStyle]}>
+          <Image
+            source={
+              biometricType === true
+                ? require('../../assets/images/face-id-blue.png')
+                : require('../../assets/images/touch-id-blue.png')
+            }
+            style={styles.image}
+          />
         </AnimatedView>
       </TouchableWithoutFeedback>
     </View>
@@ -64,19 +73,13 @@ const styles = StyleSheet.create({
       width: 0,
     },
   },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C72FF',
+  image: {
+    height: 30,
+    width: 30,
   },
   disabled: {
     opacity: 0,
   },
 });
-
-Button.propTypes = {
-  value: PropTypes.string.isRequired,
-  onPress: PropTypes.func.isRequired,
-};
 
 export default Button;

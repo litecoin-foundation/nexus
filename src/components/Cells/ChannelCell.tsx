@@ -1,20 +1,19 @@
 import React from 'react';
 import {View, Text, StyleSheet, Dimensions} from 'react-native';
-import PropTypes from 'prop-types';
+import {lnrpc} from '@litecoinfoundation/react-native-lndltc';
 
 import VerticalProgressBar from '../VerticalProgressBar';
 
+interface Props {
+  channel: lnrpc.Channel;
+}
+
 const {width} = Dimensions.get('window');
 
-const ChannelCell = (props) => {
-  const {item} = props;
-  const {
-    remotePubkey,
-    channelPoint,
-    capacity,
-    localBalance,
-    remoteBalance,
-  } = item;
+const ChannelCell: React.FC<Props> = props => {
+  const {channel} = props;
+  const {remotePubkey, channelPoint, capacity, localBalance, remoteBalance} =
+    channel;
   return (
     <View style={styles.container}>
       <View style={styles.section}>
@@ -40,17 +39,21 @@ const ChannelCell = (props) => {
         <Text style={styles.titleText}>CHANNEL CAPACITY</Text>
         <View style={styles.channelSubContainer}>
           <View style={styles.capacityContainer}>
-            <VerticalProgressBar balance={localBalance} capacity={capacity} />
+            <VerticalProgressBar
+              balance={localBalance}
+              capacity={capacity}
+              type="local"
+            />
             <View>
               <Text>Local Capacity</Text>
-              <Text>{localBalance}</Text>
+              <Text>{localBalance.toString()}</Text>
             </View>
           </View>
         </View>
         <View style={styles.channelSubContainer}>
           <View>
             <Text>Capacity</Text>
-            <Text>{capacity}</Text>
+            <Text>{capacity.toString()}</Text>
           </View>
         </View>
 
@@ -63,7 +66,7 @@ const ChannelCell = (props) => {
             />
             <View>
               <Text>Remote Capacity</Text>
-              <Text>{remoteBalance}</Text>
+              <Text>{remoteBalance.toString()}</Text>
             </View>
           </View>
         </View>
@@ -134,15 +137,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
-ChannelCell.propTypes = {
-  item: PropTypes.shape({
-    remotePubkey: PropTypes.string.isRequired,
-    channelPoint: PropTypes.string.isRequired,
-    capacity: PropTypes.number.isRequired,
-    localBalance: PropTypes.number.isRequired,
-    remoteBalance: PropTypes.number.isRequired,
-  }),
-};
 
 export default ChannelCell;

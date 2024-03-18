@@ -59,6 +59,7 @@ const AmountView: React.FC<Props> = props => {
               </View>
               <GreenRoundButton
                 value={chartPercentageChange ? chartPercentageChange : ''}
+                onPress={() => console.log('does nothing')}
                 small
               />
             </Fragment>
