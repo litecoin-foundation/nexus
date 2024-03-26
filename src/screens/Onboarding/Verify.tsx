@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import {useSelector} from 'react-redux';
+import {View, Text, StyleSheet, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {HeaderBackButton} from '@react-navigation/elements';
 
@@ -9,9 +8,22 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {randomShuffle} from '../../lib/utils';
 import {getBIP39Word} from '../../lib/utils/bip39';
+import {useAppSelector} from '../../store/hooks';
+import {StackNavigationProp} from '@react-navigation/stack';
 
-const Verify = (props) => {
-  const seed = useSelector((state) => state.onboarding.seed);
+type RootStackParamList = {
+  Verify: undefined;
+  ChannelBackup: undefined;
+};
+
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'Verify'>;
+}
+
+const Verify: React.FC<Props> = props => {
+  const {navigation} = props;
+
+  const seed = useAppSelector(state => state.onboarding.generatedSeed);
   const [multiplier, setMultiplier] = useState(1);
   const [selected, setSelectedIndex] = useState(null);
 
@@ -19,7 +31,7 @@ const Verify = (props) => {
 
   const handlePress = async () => {
     if (multiplier === 8) {
-      props.navigation.navigate('ChannelBackup');
+      navigation.navigate('ChannelBackup');
       return;
     }
     setMultiplier(multiplier + 1);
@@ -31,7 +43,7 @@ const Verify = (props) => {
       setSelectedIndex(index);
     } else {
       setSelectedIndex(null);
-      alert('incorrect');
+      Alert.alert('Incorrect!');
     }
   };
 
@@ -44,7 +56,7 @@ const Verify = (props) => {
         getBIP39Word(),
       ]);
 
-      setScrambledArray((arrayItems) => [...arrayItems, ...challengeArray]);
+      setScrambledArray(arrayItems => [...arrayItems, ...challengeArray]);
     }
   }, [seed]);
 

@@ -1,14 +1,25 @@
 import React, {useState, useLayoutEffect} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
 import {HeaderBackButton} from '@react-navigation/elements';
+import {StackNavigationProp} from '@react-navigation/stack';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
 import {addPincode} from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {resetPincode} from '../../reducers/authentication';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-const Pin = (props) => {
-  const dispatch = useDispatch();
+type RootStackParamList = {
+  Pin: undefined;
+  Generate: undefined;
+  ChannelBackup: undefined;
+};
+
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'Pin'>;
+}
+
+const Pin: React.FC<Props> = props => {
+  const dispatch = useAppDispatch();
   const {navigation} = props;
 
   useLayoutEffect(() => {
@@ -31,12 +42,12 @@ const Pin = (props) => {
     });
   }, [dispatch, navigation]);
 
-  const pin = useSelector((state) => state.authpad.pin);
+  const pin = useAppSelector(state => state.authpad.pin);
+  const beingRecovered = useAppSelector(
+    state => state.onboarding.beingRecovered,
+  );
   const [newPasscode, setNewPasscode] = useState('');
   const [passcodeInitialSet, setPasscodeInitialSet] = useState(false);
-  const beingRecovered = useSelector(
-    (state) => state.onboarding.beingRecovered,
-  );
 
   navigation.setOptions({
     headerTitle: passcodeInitialSet
@@ -52,7 +63,7 @@ const Pin = (props) => {
 
   const handleValidationSuccess = () => {
     dispatch(addPincode(newPasscode));
-    handleNavigation(beingRecovered, navigation.navigate);
+    handleNavigation();
   };
 
   const handleValidationFailure = () => {
@@ -60,7 +71,7 @@ const Pin = (props) => {
     navigation.pop(1);
   };
 
-  const handleNavigation = (beingRecovered) => {
+  const handleNavigation = () => {
     if (!beingRecovered) {
       navigation.navigate('Generate');
     } else {

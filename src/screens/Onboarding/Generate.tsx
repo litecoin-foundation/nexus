@@ -1,74 +1,95 @@
-import React, {useEffect, Fragment, useState, createRef} from 'react';
+import React, {useState, useRef} from 'react';
 import {View, Text, Dimensions, StyleSheet, Image} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-import Carousel from 'react-native-snap-carousel';
+import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
 import {HeaderBackButton} from '@react-navigation/elements';
+import {StackNavigationProp} from '@react-navigation/stack';
 
+import {useAppSelector} from '../../store/hooks';
 import SeedView from '../../components/SeedView';
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import {getSeed} from '../../reducers/onboarding';
 import chunk from '../../lib/utils/chunk';
 import Dots from '../../components/Dots';
 
 const {width} = Dimensions.get('window');
 
-const Generate = props => {
-  const carousel = createRef();
-  const dispatch = useDispatch();
+type RootStackParamList = {
+  Generate: undefined;
+  Verify: undefined;
+};
+
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'Generate'>;
+}
+
+const Generate: React.FC<Props> = props => {
+  const carousel = useRef<ICarouselInstance>(null);
+  const {navigation} = props;
 
   const seedSelector = createSelector(
-    state => state.onboarding.seed,
+    state => state.onboarding.generatedSeed,
     seedArray => chunk(seedArray, 4),
   );
-  const seed = useSelector(state => seedSelector(state));
+  const seed = useAppSelector(state => seedSelector(state));
 
   const [activePage, setActivePage] = useState(0);
 
-  useEffect(() => {
-    dispatch(getSeed());
-  }, [dispatch]);
-
   const list = (
-    <Fragment>
-      <Carousel
-        inactiveSlideScale={1}
-        inactiveSlideOpacity={0.9}
-        sliderWidth={width}
-        itemWidth={350}
-        onSnapToItem={index => setActivePage(index)}
-        data={seed}
-        ref={carousel}
-        containerCustomStyle={styles.carousel}
-        renderItem={({item, index}) => (
-          <View>
-            <SeedView index={4 * (index + 1) - 3} value={item[0]} />
-            <SeedView index={4 * (index + 1) - 2} value={item[1]} />
-            <SeedView index={4 * (index + 1) - 1} value={item[2]} />
-            <SeedView index={4 * (index + 1)} value={item[3]} />
-          </View>
-        )}
-      />
-      <Dots dotsLength={seed.length} activeDotIndex={activePage} />
-    </Fragment>
+    <Carousel
+      loop={false}
+      width={width}
+      onSnapToItem={index => setActivePage(index)}
+      data={seed}
+      ref={carousel}
+      mode="parallax"
+      modeConfig={{
+        parallaxScrollingScale: 1,
+        parallaxScrollingOffset: 70,
+      }}
+      renderItem={({item, index}) => (
+        <View style={styles.carouselItem}>
+          <SeedView index={4 * (index + 1) - 3} value={item[0]} />
+          <SeedView index={4 * (index + 1) - 2} value={item[1]} />
+          <SeedView index={4 * (index + 1) - 1} value={item[2]} />
+          <SeedView index={4 * (index + 1)} value={item[3]} />
+        </View>
+      )}
+    />
   );
 
   const handlePress = () => {
     if (activePage === 5) {
-      props.navigation.navigate('Verify');
+      navigation.navigate('Verify');
       return;
     }
 
-    carousel.current.snapToNext();
+    carousel.current?.next();
   };
 
   return (
     <View style={styles.container}>
       <OnboardingHeader description="Please write down your paper-key and place it somewhere secure. " />
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.header}>
-        {!seed ? <Text>Loading...</Text> : list}
+        <View style={styles.seedContainer}>
+          {!seed ? <Text>Loading...</Text> : list}
+        </View>
+
+        <View
+          style={{
+            alignSelf: 'center',
+            position: 'absolute',
+            bottom: 0,
+            paddingBottom: 180,
+          }}>
+          <Dots
+            dotsLength={seed.length}
+            activeDotIndex={activePage}
+            dashLineEnabled={false}
+          />
+        </View>
+
         <View style={styles.bottomContainer}>
           <View style={styles.bottomTextContainer}>
             <Image
@@ -99,8 +120,11 @@ const styles = StyleSheet.create({
   header: {
     flex: 1,
   },
-  carousel: {
-    flexGrow: 0,
+  seedContainer: {
+    paddingTop: 60,
+  },
+  carouselItem: {
+    alignItems: 'center',
   },
   warningText: {
     color: 'rgba(255, 255, 255, 0.6)',

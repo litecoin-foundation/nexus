@@ -6,15 +6,20 @@ import Dot from './Dot';
 interface Props {
   dotsLength: number;
   activeDotIndex: number;
+  dashLineEnabled?: boolean;
 }
 
 const Dots: React.FC<Props> = props => {
-  const {dotsLength, activeDotIndex} = props;
+  const {dotsLength, activeDotIndex, dashLineEnabled} = props;
   const dotsArray = [...Array(dotsLength)];
 
   const meow = dotsArray.map((val, index) => {
     return (
-      <Dot key={uuidv4()} active={index <= activeDotIndex ? true : false} />
+      <Dot
+        key={uuidv4()}
+        active={index <= activeDotIndex ? true : false}
+        dashLines={dashLineEnabled}
+      />
     );
   });
 
@@ -23,7 +28,6 @@ const Dots: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     flexDirection: 'row',
   },
 });

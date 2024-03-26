@@ -7,7 +7,7 @@ import {triggerSelectionFeedback} from '../../lib/utils/haptic';
 interface Props {
   value: string;
   onPress: () => void;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 const Button: React.FC<Props> = props => {

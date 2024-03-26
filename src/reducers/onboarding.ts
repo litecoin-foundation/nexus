@@ -11,6 +11,7 @@ import shajs from 'sha.js';
 interface IOnboardingState {
   onboarding: boolean;
   isOnboarded: boolean;
+  generatedSeed: string[];
   seed: string[];
   uniqueId: string;
   beingRecovered: boolean;
@@ -29,6 +30,7 @@ type neutrinoCacheState = {
 const initialState = {
   onboarding: false,
   isOnboarded: false,
+  generatedSeed: [],
   seed: [],
   uniqueId: '',
   beingRecovered: false,
@@ -42,7 +44,8 @@ export const startOnboarding = createAction('onboarding/startOnboarding');
 const finishOnboardingAction = createAction<string>(
   'onboarding/finishOnboardingAction',
 );
-const getSeedAction = createAction<string[]>('onboarding/getSeedAction');
+const genSeedAction = createAction<string[]>('onboarding/genSeedAction');
+const setSeedAction = createAction<string[]>('onboarding/setSeedAction');
 export const setRecoveryMode = createAction<boolean>(
   'onboarding/setRecoveryMode',
 );
@@ -59,16 +62,26 @@ export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
   dispatch(finishOnboardingAction(uniqueId));
 };
 
-export const getSeed = (): AppThunk => async dispatch => {
+// generates a seed on initial startup
+// not necessarily used if wallet is recovered
+export const genSeed = (): AppThunk => async dispatch => {
   const rpc = await lnd.walletUnlocker.genSeed();
   if (rpc.isErr()) {
     console.error(rpc.error);
   }
 
   if (rpc.isOk()) {
-    dispatch(getSeedAction(rpc.value));
+    dispatch(genSeedAction(rpc.value));
+    console.log(rpc.value);
   }
 };
+
+// sets users wallet seed
+export const setSeed =
+  (seedPhrase: string[]): AppThunk =>
+  dispatch => {
+    dispatch(setSeedAction(seedPhrase));
+  };
 
 export const getNeutrinoCache = (): AppThunk => async dispatch => {
   lndCache.addStateListener((state: ICachedNeutrinoDBDownloadState) => {
@@ -103,7 +116,11 @@ export const onboardingSlice = createSlice({
       beingRecovered: false,
       uniqueId: action.payload,
     }),
-    getSeedAction: (state, action: PayloadAction<string[]>) => ({
+    genSeedAction: (state, action: PayloadAction<string[]>) => ({
+      ...state,
+      generatedSeed: action.payload,
+    }),
+    setSeedAction: (state, action: PayloadAction<string[]>) => ({
       ...state,
       seed: action.payload,
     }),

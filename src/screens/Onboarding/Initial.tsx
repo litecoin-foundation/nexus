@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import {StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {StackNavigationProp} from '@react-navigation/stack';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
@@ -8,7 +9,6 @@ import {useAppDispatch} from '../../store/hooks';
 import {detectCurrencyCode, setExplorer} from '../../reducers/settings';
 import {startLnd} from '../../reducers/lightning';
 import {subscribeAppState} from '../../reducers/authentication';
-import {StackNavigationProp} from '@react-navigation/stack';
 
 type RootStackParamList = {
   Initial: undefined;

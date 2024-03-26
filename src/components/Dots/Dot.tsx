@@ -3,18 +3,21 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 interface Props {
   active: boolean;
+  dashLines?: boolean;
 }
 
 const Dot: React.FC<Props> = props => {
-  const {active} = props;
+  const {active, dashLines} = props;
 
   return (
     <TouchableOpacity
       accessible={false}
       style={styles.dotContainerStyle}
       activeOpacity={1}>
-      {active ? <View style={styles.dotStyle} /> : null}
-      <View style={[styles.dashStyle, !active ? styles.inactive : null]} />
+      <View style={[styles.dotStyle, !active ? styles.inactive : null]} />
+      {dashLines ? (
+        <View style={[styles.dashStyle, !active ? styles.inactive : null]} />
+      ) : null}
     </TouchableOpacity>
   );
 };
@@ -40,7 +43,6 @@ const styles = StyleSheet.create({
   },
   inactive: {
     opacity: 0.5,
-    marginTop: 27,
   },
 });
 

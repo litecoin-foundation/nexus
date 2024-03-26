@@ -8,13 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* plasmaTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* plasmaTests.m */; };
+		0521C424DE76A687BA6952D1 /* libPods-plasma-plasmaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1939B0C617D18D5C400BC012 /* libPods-plasma-plasmaTests.a */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		3A4745FC586CBA19D551E0A0 /* libPods-plasma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BB040A388F05405DBFAFC36 /* libPods-plasma.a */; };
+		7FF0B989DA1ADB4E51431C5D /* libPods-plasma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 86E9780E67D43A7C5AC016B6 /* libPods-plasma.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		BFBC2921FFE6BD11D01412F5 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC6E4E8A0CCC60D554BD209 /* ExpoModulesProvider.swift */; };
-		D631AD65CBF9F688D6EA4959 /* libPods-plasma-plasmaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B34F0399A617D6609F513BCC /* libPods-plasma-plasmaTests.a */; };
 		F073F61D26D8C5D23D75E26F /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1C5DE85471794F61EEA721 /* ExpoModulesProvider.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,22 +32,22 @@
 		00E356EE1AD99517003FC87E /* plasmaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = plasmaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* plasmaTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = plasmaTests.m; sourceTree = "<group>"; };
-		0A21407961E9D6AC9D4BE761 /* Pods-plasma-plasmaTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.debug.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.debug.xcconfig"; sourceTree = "<group>"; };
-		0BB040A388F05405DBFAFC36 /* libPods-plasma.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-plasma.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* plasma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = plasma.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = plasma/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = plasma/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = plasma/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = plasma/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = plasma/main.m; sourceTree = "<group>"; };
+		1939B0C617D18D5C400BC012 /* libPods-plasma-plasmaTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-plasma-plasmaTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		28866340EB750E320368F3A9 /* Pods-plasma.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma.debug.xcconfig"; path = "Target Support Files/Pods-plasma/Pods-plasma.debug.xcconfig"; sourceTree = "<group>"; };
+		2CD56DC7B9E37EA10ABEDC83 /* Pods-plasma.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma.release.xcconfig"; path = "Target Support Files/Pods-plasma/Pods-plasma.release.xcconfig"; sourceTree = "<group>"; };
+		3C942BA19F4EC95FFAF1B14B /* Pods-plasma-plasmaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.release.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.release.xcconfig"; sourceTree = "<group>"; };
 		5CC6E4E8A0CCC60D554BD209 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-plasma-plasmaTests/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		6FCEF968394CC127EE26CECB /* Pods-plasma.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma.debug.xcconfig"; path = "Target Support Files/Pods-plasma/Pods-plasma.debug.xcconfig"; sourceTree = "<group>"; };
-		7B760259EAB11E68C68CDCA2 /* Pods-plasma.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma.release.xcconfig"; path = "Target Support Files/Pods-plasma/Pods-plasma.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = plasma/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		86E9780E67D43A7C5AC016B6 /* libPods-plasma.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-plasma.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		89B71C25A19940BF599AE6F2 /* Pods-plasma-plasmaTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.debug.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.debug.xcconfig"; sourceTree = "<group>"; };
 		8A1C5DE85471794F61EEA721 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-plasma/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		B34F0399A617D6609F513BCC /* libPods-plasma-plasmaTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-plasma-plasmaTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		FFD15C9909BAEB397C2698B0 /* Pods-plasma-plasmaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.release.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,7 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D631AD65CBF9F688D6EA4959 /* libPods-plasma-plasmaTests.a in Frameworks */,
+				0521C424DE76A687BA6952D1 /* libPods-plasma-plasmaTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,7 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A4745FC586CBA19D551E0A0 /* libPods-plasma.a in Frameworks */,
+				7FF0B989DA1ADB4E51431C5D /* libPods-plasma.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,8 +112,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				0BB040A388F05405DBFAFC36 /* libPods-plasma.a */,
-				B34F0399A617D6609F513BCC /* libPods-plasma-plasmaTests.a */,
+				86E9780E67D43A7C5AC016B6 /* libPods-plasma.a */,
+				1939B0C617D18D5C400BC012 /* libPods-plasma-plasmaTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -170,10 +170,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				6FCEF968394CC127EE26CECB /* Pods-plasma.debug.xcconfig */,
-				7B760259EAB11E68C68CDCA2 /* Pods-plasma.release.xcconfig */,
-				0A21407961E9D6AC9D4BE761 /* Pods-plasma-plasmaTests.debug.xcconfig */,
-				FFD15C9909BAEB397C2698B0 /* Pods-plasma-plasmaTests.release.xcconfig */,
+				28866340EB750E320368F3A9 /* Pods-plasma.debug.xcconfig */,
+				2CD56DC7B9E37EA10ABEDC83 /* Pods-plasma.release.xcconfig */,
+				89B71C25A19940BF599AE6F2 /* Pods-plasma-plasmaTests.debug.xcconfig */,
+				3C942BA19F4EC95FFAF1B14B /* Pods-plasma-plasmaTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -185,12 +185,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "plasmaTests" */;
 			buildPhases = (
-				5E8F2871071CD7A73F42BF0E /* [CP] Check Pods Manifest.lock */,
+				582A306530E70591FED78070 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				EDD946DB8E61E72C245E2C04 /* [CP] Embed Pods Frameworks */,
-				00141B06A46E48404AD5092A /* [CP] Copy Pods Resources */,
+				195A4F996D78947B0917BB46 /* [CP] Embed Pods Frameworks */,
+				8D8E147C646BF6B4E959752F /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -206,14 +206,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "plasma" */;
 			buildPhases = (
-				58ECB046BA96C2765E63D5F0 /* [CP] Check Pods Manifest.lock */,
+				6F75ED1D16485C571FB8CA4E /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				E251EF01B608ADF136C709B7 /* [CP] Embed Pods Frameworks */,
-				C5B5AB56B407D5B93CD29BD8 /* [CP] Copy Pods Resources */,
+				B1E2EBACC82DBFD97C24EA0E /* [CP] Embed Pods Frameworks */,
+				77E6AC9B1243F4A3083DA8D5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -280,23 +280,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		00141B06A46E48404AD5092A /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -313,29 +296,24 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		58ECB046BA96C2765E63D5F0 /* [CP] Check Pods Manifest.lock */ = {
+		195A4F996D78947B0917BB46 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
+			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-plasma-checkManifestLockResult.txt",
+				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		5E8F2871071CD7A73F42BF0E /* [CP] Check Pods Manifest.lock */ = {
+		582A306530E70591FED78070 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -357,7 +335,29 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C5B5AB56B407D5B93CD29BD8 /* [CP] Copy Pods Resources */ = {
+		6F75ED1D16485C571FB8CA4E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-plasma-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		77E6AC9B1243F4A3083DA8D5 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -374,7 +374,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E251EF01B608ADF136C709B7 /* [CP] Embed Pods Frameworks */ = {
+		8D8E147C646BF6B4E959752F /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B1E2EBACC82DBFD97C24EA0E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -389,23 +406,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		EDD946DB8E61E72C245E2C04 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -462,7 +462,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0A21407961E9D6AC9D4BE761 /* Pods-plasma-plasmaTests.debug.xcconfig */;
+			baseConfigurationReference = 89B71C25A19940BF599AE6F2 /* Pods-plasma-plasmaTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -490,7 +490,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FFD15C9909BAEB397C2698B0 /* Pods-plasma-plasmaTests.release.xcconfig */;
+			baseConfigurationReference = 3C942BA19F4EC95FFAF1B14B /* Pods-plasma-plasmaTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -515,7 +515,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6FCEF968394CC127EE26CECB /* Pods-plasma.debug.xcconfig */;
+			baseConfigurationReference = 28866340EB750E320368F3A9 /* Pods-plasma.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -546,7 +546,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7B760259EAB11E68C68CDCA2 /* Pods-plasma.release.xcconfig */;
+			baseConfigurationReference = 2CD56DC7B9E37EA10ABEDC83 /* Pods-plasma.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
