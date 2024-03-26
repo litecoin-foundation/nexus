@@ -5,11 +5,13 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {initWallet} from '../../reducers/lightning';
+import {setSeed} from '../../reducers/onboarding';
 
 const Welcome = props => {
   const dispatch = useDispatch();
 
   const handlePress = () => {
+    dispatch(setSeed());
     dispatch(initWallet());
 
     props.navigation.reset({

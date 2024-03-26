@@ -7,8 +7,7 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {useAppDispatch} from '../../store/hooks';
 import {detectCurrencyCode, setExplorer} from '../../reducers/settings';
-import {startLnd} from '../../reducers/lightning';
-import {subscribeAppState} from '../../reducers/authentication';
+import {genSeed} from '../../reducers/onboarding';
 
 type RootStackParamList = {
   Initial: undefined;
@@ -35,8 +34,7 @@ const Initial = (props: Props) => {
         value="Create Wallet"
         small={false}
         onPress={() => {
-          dispatch(startLnd());
-          dispatch(subscribeAppState());
+          dispatch(genSeed());
           navigation.navigate('Pin');
         }}
         active={true}
@@ -45,8 +43,6 @@ const Initial = (props: Props) => {
         value="Already have a wallet? Log In"
         small={true}
         onPress={() => {
-          dispatch(startLnd());
-          dispatch(subscribeAppState());
           navigation.navigate('Recover');
         }}
       />

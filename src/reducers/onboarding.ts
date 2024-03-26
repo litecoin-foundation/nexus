@@ -46,6 +46,9 @@ const finishOnboardingAction = createAction<string>(
 );
 const genSeedAction = createAction<string[]>('onboarding/genSeedAction');
 const setSeedAction = createAction<string[]>('onboarding/setSeedAction');
+const setSeedRecoveryAction = createAction<string[]>(
+  'onboarding/setSeedRecoveryAction',
+);
 export const setRecoveryMode = createAction<boolean>(
   'onboarding/setRecoveryMode',
 );
@@ -72,15 +75,19 @@ export const genSeed = (): AppThunk => async dispatch => {
 
   if (rpc.isOk()) {
     dispatch(genSeedAction(rpc.value));
-    console.log(rpc.value);
   }
 };
 
 // sets users wallet seed
-export const setSeed =
+export const setSeed = (): AppThunk => (dispatch, getState) => {
+  const {generatedSeed} = getState().onboarding;
+  dispatch(setSeedAction(generatedSeed));
+};
+
+export const setSeedRecovery =
   (seedPhrase: string[]): AppThunk =>
   dispatch => {
-    dispatch(setSeedAction(seedPhrase));
+    dispatch(setSeedRecoveryAction(seedPhrase));
   };
 
 export const getNeutrinoCache = (): AppThunk => async dispatch => {
@@ -121,6 +128,10 @@ export const onboardingSlice = createSlice({
       generatedSeed: action.payload,
     }),
     setSeedAction: (state, action: PayloadAction<string[]>) => ({
+      ...state,
+      seed: action.payload,
+    }),
+    setSeedRecoveryAction: (state, action: PayloadAction<string[]>) => ({
       ...state,
       seed: action.payload,
     }),

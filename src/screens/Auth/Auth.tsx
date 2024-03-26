@@ -78,7 +78,7 @@ const AuthScreen: React.FC<Props> = props => {
   }, []);
 
   const unlockWallet = async () => {
-    // setLoading(true);
+    setLoading(true);
     // unlockerLoopRef.current = setInterval(async () => {
 
     // }, 2500);

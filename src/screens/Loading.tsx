@@ -30,10 +30,8 @@ const Loading: React.FC<Props> = props => {
   useEffect(() => {
     dispatch(checkBiometricSupport());
     dispatch(checkInternetReachable());
-    if (isOnboarded === true) {
-      dispatch(startLnd());
-      dispatch(subscribeAppState());
-    }
+    dispatch(startLnd());
+    dispatch(subscribeAppState());
   }, [dispatch, isOnboarded]);
 
   useEffect(() => {
