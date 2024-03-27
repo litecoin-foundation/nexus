@@ -90,7 +90,7 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
       () => console.log('LND: onDone'),
     );
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 

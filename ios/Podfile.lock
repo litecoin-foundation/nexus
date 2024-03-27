@@ -260,7 +260,7 @@ PODS:
     - glog
   - react-native-get-random-values (1.11.0):
     - React-Core
-  - react-native-lndltc (0.0.11):
+  - react-native-lndltc (0.0.12):
     - React
   - react-native-mmkv (2.12.2):
     - MMKV (>= 1.3.3)
@@ -687,7 +687,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 5061fcbec93fd672183dfb39cc2f65e55a0835db
   React-logger: a6c0b3a807a8e81f6d7fea2e72660766f55daa50
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
-  react-native-lndltc: a08dc9a75f409d99f8ca575b80845ec0b7c2c21c
+  react-native-lndltc: 4372c18cbd6658f99cfcebcf3e9205f90b1dc7f8
   react-native-mmkv: 38d484ccd8f5760fe0e46d206ed07add5ddda1fc
   react-native-netinfo: 48c5f79a84fbc3ba1d28a8b0d04adeda72885fa8
   react-native-quick-base64: 777057ea4286f806b00259ede65dc79c7c706320

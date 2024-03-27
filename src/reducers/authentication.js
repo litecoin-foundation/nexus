@@ -87,7 +87,7 @@ export const unlockWalletWithBiometric = () => async dispatch => {
       }
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
