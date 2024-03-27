@@ -73,7 +73,7 @@
     "react-native-sensitive-info": "^6.0.0-alpha.9",
     "react-native-svg": "^13.7.0",
     "react-native-touch-id": "^4.4.1",
-    "react-native-vision-camera": "^2.15.2",
+    "react-native-vision-camera": "^3.9.1",
     "react-native-webview": "^11.26.0",
     "react-native-zip-archive": "^6.0.9",
     "react-redux": "^8.0.5",
@@ -81,8 +81,7 @@
     "sha.js": "^2.4.11",
     "sha256-uint8array": "^0.10.3",
     "stream-browserify": "^3.0.0",
-    "uuid": "^9.0.0",
-    "vision-camera-code-scanner": "^0.2.0"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

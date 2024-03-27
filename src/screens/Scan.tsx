@@ -1,38 +1,45 @@
 import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, Vibration, Text, Image} from 'react-native';
-import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import {useScanBarcodes, BarcodeFormat} from 'vision-camera-code-scanner';
+import {View, StyleSheet, Vibration, Text, Image, Alert} from 'react-native';
+import {
+  Camera,
+  useCameraDevice,
+  useCodeScanner,
+} from 'react-native-vision-camera';
 import LinearGradient from 'react-native-linear-gradient';
+import {StackScreenProps} from '@react-navigation/stack';
 
 import Switch from '../components/Buttons/Switch';
 import Header from '../components/Header';
 
-const Scan = props => {
-  const {navigation, route} = props;
+type RootStackParamList = {
+  Scan: {
+    returnRoute: any;
+  };
+};
+
+const Scan = ({
+  navigation,
+  route,
+}: StackScreenProps<RootStackParamList, 'Scan'>) => {
   const [flashEnabled, triggerFlash] = useState(false);
   const [scanned, triggerScanned] = useState(false);
 
-  const [frameProcessor, barcodes] = useScanBarcodes([
-    BarcodeFormat.ALL_FORMATS, // You can only specify a particular format
-  ]);
-
-  React.useEffect(() => {
-    const toggleActiveState = async () => {
-      if (barcodes && barcodes.length > 0 && scanned === false) {
+  const codeScanner = useCodeScanner({
+    codeTypes: ['qr'],
+    onCodeScanned: codes => {
+      if (codes.length > 0 && scanned === false) {
         triggerScanned(true);
-        barcodes.forEach(async qr => {
-          if (qr.rawValue !== '') {
+        for (const code of codes) {
+          if (code.value !== '') {
             Vibration.vibrate();
             navigation.navigate(route.params.returnRoute, {
-              scanData: qr.rawValue,
+              scanData: code.value,
             });
           }
-        });
+        }
       }
-    };
-
-    toggleActiveState();
-  }, [barcodes, navigation, route.params.returnRoute, scanned]);
+    },
+  });
 
   useEffect(() => {
     async function checkCameraPermissions() {
@@ -43,21 +50,21 @@ const Scan = props => {
     async function handlePermissions() {
       const permission = await checkCameraPermissions();
       switch (permission) {
-        case 'authorized':
+        case 'granted':
           break;
         case 'not-determined':
           await Camera.requestCameraPermission();
           break;
         case 'denied':
           // TODO
-          alert('camera disabled');
+          Alert.alert('camera disabled');
           // The user explicitly denied the permission request alert.
           // You cannot use the request functions again, but you can
           // use the Linking API to redirect the user to the Settings
           // App where he can manually grant the permission.
           break;
         case 'restricted':
-          alert('camera disabled');
+          Alert.alert('camera disabled');
           // iOS only - camera restricted
           // handle same as denied?
           break;
@@ -69,8 +76,7 @@ const Scan = props => {
     handlePermissions();
   }, []);
 
-  const devices = useCameraDevices();
-  const device = devices.back;
+  const device = useCameraDevice('back');
 
   if (device == null) {
     return <View />;
@@ -80,12 +86,11 @@ const Scan = props => {
     <View style={styles.container}>
       <Header modal={true} />
       <Camera
+        codeScanner={codeScanner}
         style={styles.camera}
         device={device}
         isActive={true}
         torch={flashEnabled === false ? 'off' : 'on'}
-        frameProcessor={frameProcessor}
-        frameProcessorFps={5}
         audio={false}>
         <View style={styles.qrFrameContainer}>
           <Image source={require('../assets/images/qr-frame.png')} />
@@ -98,7 +103,10 @@ const Scan = props => {
         style={styles.bottomContainer}>
         <View style={styles.bottomContentContainer}>
           <Text style={styles.bottomText}>Enable Flash</Text>
-          <Switch onPress={flashStatus => triggerFlash(flashStatus)} />
+          <Switch
+            onPress={flashStatus => triggerFlash(flashStatus)}
+            initialValue={false}
+          />
         </View>
       </LinearGradient>
     </View>
