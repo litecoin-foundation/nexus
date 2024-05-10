@@ -17,6 +17,16 @@ export const deleteWalletDB = async () => {
   }
 };
 
+// delete lndltc directory
+export const deleteLNDDir = async () => {
+  const path = `${lndDir}/lndltc`;
+  try {
+    await RNFS.unlink(path);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // static channel backups
 export const readSCB = async () => {
   return RNFS.readFile(

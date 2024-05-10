@@ -16,6 +16,10 @@ import SettingCell from '../../components/Cells/SettingCell';
 import PinModal from '../../components/Modals/PinModal';
 import {updateSubunit} from '../../reducers/settings';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {purgeStore} from '../../store';
+import {resetPincode} from '../../reducers/authentication';
+import {deleteLNDDir} from '../../lib/utils/file';
+import {sleep} from '../../lib/utils/poll';
 
 type RootStackParamList = {
   Wallet: undefined;
@@ -24,11 +28,13 @@ type RootStackParamList = {
   Seed: undefined;
   Import: undefined;
   Litewallet: undefined;
+  Loading: undefined;
 };
 
 type Props = StackScreenProps<RootStackParamList, 'Wallet'>;
 
 const Wallet: React.FC<Props> = props => {
+  const {navigation} = props;
   const dispatch = useAppDispatch();
   const [isPinModalTriggered, triggerPinModal] = useState(false);
   const {subunit} = useAppSelector(state => state.settings);
@@ -49,6 +55,18 @@ const Wallet: React.FC<Props> = props => {
     });
   };
 
+  // TODO: prompt and confirm if reset is wanted
+  const handleReset = async () => {
+    dispatch(resetPincode());
+    purgeStore();
+    await deleteLNDDir();
+    await sleep(4000);
+    navigation.reset({
+      index: 0,
+      routes: [{name: 'Loading'}],
+    });
+  };
+
   return (
     <>
       <LinearGradient
@@ -58,22 +76,22 @@ const Wallet: React.FC<Props> = props => {
         <ScrollView>
           <SettingCell
             title="Import Private Key"
-            onPress={() => props.navigation.navigate('Import')}
+            onPress={() => navigation.navigate('Import')}
             forward
           />
           <SettingCell
             title="Import Litewallet"
-            onPress={() => props.navigation.navigate('Litewallet')}
+            onPress={() => navigation.navigate('Litewallet')}
             forward
           />
           <SettingCell
             title="Block Explorer"
-            onPress={() => props.navigation.navigate('Explorer')}
+            onPress={() => navigation.navigate('Explorer')}
             forward
           />
           <SettingCell
             title="Currency Code"
-            onPress={() => props.navigation.navigate('Currency')}
+            onPress={() => navigation.navigate('Currency')}
             forward
           />
           <View style={styles.cellContainer}>
@@ -106,6 +124,26 @@ const Wallet: React.FC<Props> = props => {
                 );
             }}
             forward
+          />
+
+          <SettingCell
+            title="RESET"
+            onPress={() => {
+              handleAuthenticationRequired().then(() =>
+                Alert.alert(
+                  'Reset Wallet?',
+                  'Are you absolutely sure you would like to reset your wallet? Backup your seed phrase before resetting.',
+                  [
+                    {
+                      text: 'Cancel',
+                      onPress: () => triggerPinModal(false),
+                      style: 'cancel',
+                    },
+                    {text: 'OK', onPress: () => handleReset()},
+                  ],
+                ),
+              );
+            }}
           />
         </ScrollView>
       </LinearGradient>

@@ -35,3 +35,8 @@ export const pStore = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// completely purges store!
+export const purgeStore = () => {
+  pStore.purge();
+};

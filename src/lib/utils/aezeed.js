@@ -13,7 +13,7 @@ const CHECKSUM_LENGTH = 4;
 const CHECKSUM_OFFSET = ENCIPHERED_LENGTH - CHECKSUM_LENGTH;
 const NUM_WORDS = 24;
 
-const mnemonicToSeedBytes = (mnemonic) => {
+const mnemonicToSeedBytes = mnemonic => {
   return new Promise((resolve, reject) => {
     if (!mnemonic) {
       reject('No mnemonic');
@@ -25,24 +25,24 @@ const mnemonicToSeedBytes = (mnemonic) => {
       return;
     }
 
-    const belongToList = mnemonic.every((word) => checkBIP39Word(word));
+    const belongToList = mnemonic.every(word => checkBIP39Word(word));
     if (!belongToList) {
       reject('Mnemonic word is not in BIP39 wordlist');
       return;
     }
 
     const bits = mnemonic
-      .map((word) => {
+      .map(word => {
         const index = getBIP39Index(word);
         return lpad(index.toString(2), '0', 11);
       })
       .join('');
-    const seedBytes = bits.match(/(.{1,8})/g).map((bin) => parseInt(bin, 2));
+    const seedBytes = bits.match(/(.{1,8})/g).map(bin => parseInt(bin, 2));
     resolve(seedBytes);
   });
 };
 
-export const checkSeedChecksum = async (seed) => {
+export const checkSeedChecksum = async seed => {
   return new Promise(async (resolve, reject) => {
     try {
       const words = await mnemonicToSeedBytes(seed);
