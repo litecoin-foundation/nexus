@@ -4,6 +4,10 @@
 
 @implementation AppDelegate
 
+-(BOOL)prefersStatusBarHidden {
+    return true;
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.moduleName = @"plasma";

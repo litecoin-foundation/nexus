@@ -13,6 +13,9 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		16B7D44D8E32981660A79633 /* libPods-plasma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E479A43DCCA8F3E665B71C6 /* libPods-plasma.a */; };
+		1B7B08C82BEDC3670050E29A /* Satoshi-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1B7B08C72BEDC3670050E29A /* Satoshi-Variable.ttf */; };
+		1B7B08CA2BEDC3790050E29A /* Satoshi-VariableItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1B7B08C92BEDC3790050E29A /* Satoshi-VariableItalic.ttf */; };
+		1B7B08CC2BEDC3930050E29A /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1B7B08CB2BEDC3930050E29A /* SugarstyleMillenial-Regular.ttf */; };
 		1BAC84042BB4501D0082CCA2 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BAC84032BB450160082CCA2 /* libresolv.tbd */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		BFBC2921FFE6BD11D01412F5 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC6E4E8A0CCC60D554BD209 /* ExpoModulesProvider.swift */; };
@@ -39,6 +42,9 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = plasma/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = plasma/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = plasma/main.m; sourceTree = "<group>"; };
+		1B7B08C72BEDC3670050E29A /* Satoshi-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Variable.ttf"; sourceTree = "<group>"; };
+		1B7B08C92BEDC3790050E29A /* Satoshi-VariableItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-VariableItalic.ttf"; sourceTree = "<group>"; };
+		1B7B08CB2BEDC3930050E29A /* SugarstyleMillenial-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SugarstyleMillenial-Regular.ttf"; sourceTree = "<group>"; };
 		1BAC84032BB450160082CCA2 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		1C6484591F6AB4F45A2A9E76 /* Pods-plasma-plasmaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.release.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.release.xcconfig"; sourceTree = "<group>"; };
 		5CC6E4E8A0CCC60D554BD209 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-plasma-plasmaTests/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
@@ -93,6 +99,7 @@
 		13B07FAE1A68108700A75B9A /* plasma */ = {
 			isa = PBXGroup;
 			children = (
+				1B7B08CE2BEDC3D20050E29A /* fonts */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -109,6 +116,16 @@
 				8A1C5DE85471794F61EEA721 /* ExpoModulesProvider.swift */,
 			);
 			name = plasma;
+			sourceTree = "<group>";
+		};
+		1B7B08CE2BEDC3D20050E29A /* fonts */ = {
+			isa = PBXGroup;
+			children = (
+				1B7B08CB2BEDC3930050E29A /* SugarstyleMillenial-Regular.ttf */,
+				1B7B08C92BEDC3790050E29A /* Satoshi-VariableItalic.ttf */,
+				1B7B08C72BEDC3670050E29A /* Satoshi-Variable.ttf */,
+			);
+			path = fonts;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -276,6 +293,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B7B08CC2BEDC3930050E29A /* SugarstyleMillenial-Regular.ttf in Resources */,
+				1B7B08CA2BEDC3790050E29A /* Satoshi-VariableItalic.ttf in Resources */,
+				1B7B08C82BEDC3670050E29A /* Satoshi-Variable.ttf in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);

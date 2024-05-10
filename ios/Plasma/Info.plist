@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UIStatusBarHidden</key>
+	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>SugarstyleMillenial-Regular.ttf</string>
+		<string>Satoshi-VariableItalic.ttf</string>
+		<string>Satoshi-Variable.ttf</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>App will use your camera to scan QR codes for Litecoin Payments</string>
 	<key>NSFaceIDUsageDescription</key>

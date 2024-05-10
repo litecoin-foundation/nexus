@@ -154,7 +154,7 @@ const BuyTabBarIcon = focused => {
       source={
         focused
           ? require('../assets/icons/buy-selected-icon.png')
-          : require('../assets/icons/buy-icon.png')
+          : require('../assets/icons/buy-legacy-icon.png')
       }
     />
   );

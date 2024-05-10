@@ -10,7 +10,7 @@ const App = () => (
   <>
     <Provider store={store}>
       {Platform.OS === 'android' ? (
-        <StatusBar hidden backgroundColor="transparent" />
+        <StatusBar hidden={true} backgroundColor="transparent" />
       ) : null}
       <PersistGate loading={null} persistor={pStore}>
         <RootNavigator />

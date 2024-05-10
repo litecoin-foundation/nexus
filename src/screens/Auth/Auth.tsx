@@ -15,6 +15,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 type RootStackParamList = {
   Auth: undefined;
   AppStack: undefined;
+  NewWalletStack: undefined;
 };
 
 interface Props {
@@ -62,7 +63,7 @@ const AuthScreen: React.FC<Props> = props => {
         clear();
         break;
       case true:
-        navigation.replace('AppStack');
+        navigation.replace('NewWalletStack');
         clear();
         break;
       default:

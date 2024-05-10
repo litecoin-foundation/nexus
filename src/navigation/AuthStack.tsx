@@ -9,7 +9,7 @@ import WhiteButton from '../components/Buttons/WhiteButton';
 
 const Stack = createStackNavigator();
 
-function AuthStack(): JSX.Element {
+function AuthStack(): React.JSX.Element {
   return (
     <Stack.Navigator
       initialRouteName="Auth"
