@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   childrenContainer: {
+    paddingTop: 29,
     flex: 1,
   },
   margin: {

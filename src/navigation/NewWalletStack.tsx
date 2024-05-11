@@ -1,7 +1,8 @@
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 
 import Main, {navigationOptions} from '../screens/Main';
+import Scan from '../screens/Scan';
 import SettingsStack from './SettingsStack';
 
 const Stack = createStackNavigator();
@@ -18,6 +19,20 @@ function NewWalletStack(): React.JSX.Element {
         name="SettingsStack"
         component={SettingsStack}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Scan"
+        component={Scan}
+        options={{
+          ...TransitionPresets.ModalPresentationIOS,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            color: 'white',
+          },
+          headerTransparent: true,
+          headerBackTitleVisible: false,
+          headerTintColor: 'white',
+        }}
       />
     </Stack.Navigator>
   );

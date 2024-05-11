@@ -13,6 +13,7 @@ import {
   SectionList,
   RefreshControl,
   SectionListRenderItem,
+  Platform,
 } from 'react-native';
 
 import {useAppDispatch} from '../store/hooks';
@@ -98,7 +99,9 @@ const TransactionList = forwardRef((props: Props, ref) => {
         renderItem={renderItem}
         viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
         renderSectionHeader={({section}) => (
-          <Text style={styles.sectionHeader}>{section.title}</Text>
+          <View style={styles.sectionHeaderContainer}>
+            <Text style={styles.sectionHeaderText}>{section.title}</Text>
+          </View>
         )}
         keyExtractor={item => item.hash}
         initialNumToRender={7}
@@ -117,24 +120,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  sectionHeader: {
-    color: '#7C96AE',
-    backgroundColor: 'rgb(238,244,249)',
-    opacity: 0.9,
+  sectionHeaderContainer: {
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(214, 216, 218, 0.3)',
+    backgroundColor: 'white',
+    paddingLeft: 20,
+  },
+  sectionHeaderText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#747E87',
     fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: -0.28,
-    paddingLeft: 15,
-    paddingTop: 4,
-    paddingBottom: 4,
   },
   emptySectionListContainer: {
     marginTop: 30,
   },
   emptySectionListText: {
-    color: '#7C96AE',
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
     fontSize: 12,
-    fontWeight: '600',
+    color: '#747E87',
   },
   emptyView: {
     height: 350,

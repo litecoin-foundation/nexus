@@ -60,6 +60,9 @@ export const getTransactions = () => async dispatch => {
     txs.push(obj);
   });
 
+  console.log('LOSHY: got some txs!!!');
+  console.log(transactions);
+
   dispatch({
     type: GET_TRANSACTIONS,
     transactions: txs,

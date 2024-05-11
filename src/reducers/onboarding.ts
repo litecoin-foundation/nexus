@@ -52,7 +52,6 @@ const setSeedRecoveryAction = createAction<string[]>(
 export const setRecoveryMode = createAction<boolean>(
   'onboarding/setRecoveryMode',
 );
-export const recoverSeed = createAction<string[]>('onboarding/recoverSeed');
 const getNeutrinoCacheAction = createAction<neutrinoCacheState>(
   'onboarding/getNeutrinoCacheAction',
 );
@@ -80,7 +79,11 @@ export const genSeed = (): AppThunk => async dispatch => {
 
 // sets users wallet seed
 export const setSeed = (): AppThunk => (dispatch, getState) => {
-  const {generatedSeed} = getState().onboarding;
+  const {generatedSeed, beingRecovered} = getState().onboarding;
+  // if wallet is being recovered, there is not generated seed to set!
+  if (beingRecovered) {
+    return;
+  }
   dispatch(setSeedAction(generatedSeed));
 };
 
@@ -132,10 +135,6 @@ export const onboardingSlice = createSlice({
       seed: action.payload,
     }),
     setSeedRecoveryAction: (state, action: PayloadAction<string[]>) => ({
-      ...state,
-      seed: action.payload,
-    }),
-    recoverSeed: (state, action: PayloadAction<string[]>) => ({
       ...state,
       seed: action.payload,
       beingRecovered: true,

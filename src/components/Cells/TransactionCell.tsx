@@ -3,11 +3,10 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Image,
   Dimensions,
+  Platform,
 } from 'react-native';
 import React from 'react';
-import LinearGradient from 'react-native-linear-gradient';
 
 import {useAppSelector} from '../../store/hooks';
 import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
@@ -36,39 +35,17 @@ const TransactionCell: React.FC<Props> = props => {
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <LinearGradient
-        colors={sent ? ['#FF415E', '#FF9052'] : ['#7E58FF', '#0D59EA']}
-        style={styles.circle}>
-        <View style={styles.smallCircle}>
-          <Image
-            style={styles.image}
-            source={
-              sent
-                ? require('../../assets/images/sent.png')
-                : require('../../assets/images/received.png')
-            }
-          />
-        </View>
-      </LinearGradient>
+      <View style={styles.circle} />
       <View style={styles.left}>
         <Text style={styles.labelText}>{name}</Text>
-        <Text style={styles.timeText}>{time}</Text>
+        <Text style={styles.timeText}>{String(time)}</Text>
       </View>
       <View style={styles.right}>
-        <Text
-          style={[
-            styles.text,
-            sent ? styles.negativeText : styles.positiveText,
-          ]}>
-          {cryptoAmount} {amountSymbol}
+        <Text style={styles.cryptoText}>
+          {cryptoAmount}
+          {amountSymbol}
         </Text>
-        <Text
-          style={[
-            styles.fiatText,
-            sent ? styles.negativeFiatText : styles.positiveFiatText,
-          ]}>
-          +{fiatAmount}
-        </Text>
+        <Text style={styles.fiatText}>+{fiatAmount}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -79,81 +56,70 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     height: 70,
-    width: Dimensions.get('window').width - 30,
-    borderRadius: 8,
-    backgroundColor: 'white',
-    marginTop: 6,
-    marginBottom: 6,
-    marginLeft: 15,
-    marginRight: 15,
+    width: Dimensions.get('window').width,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
-    shadowOffset: {
-      height: 3,
-      width: 0,
-    },
+    paddingHorizontal: 19,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(214, 216, 218, 0.3)',
   },
   left: {
-    flexGrow: 2,
+    flexGrow: 1,
+    paddingLeft: 8,
   },
   right: {
-    flexGrow: 2,
-    paddingRight: 15,
+    // flexGrow: 1,
   },
   circle: {
-    width: 35,
-    height: 35,
-    borderRadius: 35 / 2,
-    marginLeft: 15,
-    marginRight: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 32 / 2,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  smallCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 30 / 2,
-    backgroundColor: 'white',
-    justifyContent: 'center',
+    backgroundColor: 'black',
   },
   labelText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
     color: '#484859',
     fontSize: 14,
-    fontWeight: 'bold',
-    letterSpacing: -0.19,
   },
   timeText: {
-    color: '#7C96AE',
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#747E87',
     fontSize: 12,
-    fontWeight: '500',
-    letterSpacing: -0.31,
+    paddingTop: 2,
   },
-  text: {
+  cryptoText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#212124',
     fontSize: 14,
-    fontWeight: 'bold',
-    letterSpacing: -0.19,
     textAlign: 'right',
   },
   fiatText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#747E87',
     fontSize: 12,
-    fontWeight: 'bold',
-    letterSpacing: -0.17,
     textAlign: 'right',
-  },
-  positiveText: {
-    color: '#2C72FF',
-  },
-  negativeText: {
-    color: '#FF4B5C',
-  },
-  positiveFiatText: {
-    color: '#20BB74',
-  },
-  negativeFiatText: {
-    color: '#484859',
   },
   image: {
     alignSelf: 'center',
