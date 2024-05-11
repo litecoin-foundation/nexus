@@ -3,14 +3,14 @@ import {SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useDispatch} from 'react-redux';
 
-import {recoverSeed} from '../../reducers/onboarding';
+import {setSeedRecovery} from '../../reducers/onboarding';
 import RecoveryField from '../../components/RecoveryField';
 
-const Recover = (props) => {
+const Recover = props => {
   const dispatch = useDispatch();
 
-  const attemptLogin = async (seed) => {
-    await dispatch(recoverSeed(seed));
+  const attemptLogin = async seed => {
+    await dispatch(setSeedRecovery(seed));
     props.navigation.navigate('Pin');
   };
 
@@ -18,7 +18,7 @@ const Recover = (props) => {
     <LinearGradient colors={['#7E58FF', '#3649DF', '#003DB3']}>
       <SafeAreaView>
         <RecoveryField
-          handleLogin={(seed) => attemptLogin(seed)}
+          handleLogin={seed => attemptLogin(seed)}
           headerText="Enter your paper-key words below."
         />
       </SafeAreaView>
