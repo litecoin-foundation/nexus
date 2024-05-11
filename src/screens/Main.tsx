@@ -12,6 +12,7 @@ import SettingsCogsButton from '../components/Buttons/SettingsCogsButton';
 import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';
 import Send from '../components/Cards/Send';
+import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
 
 type RootStackParamList = {
   Main: undefined;
@@ -22,6 +23,7 @@ interface Props {
 }
 
 const Main: React.FC<Props> = props => {
+  const {navigation} = props;
   const TransactionListRef = useRef();
   const transactions = useSelector(state => txDetailSelector(state));
   const groupedTransactions = groupBy(transactions, 'day');
@@ -116,6 +118,15 @@ const Main: React.FC<Props> = props => {
         />
       </View>
       <View style={styles.cardContainer}>{renderedCard}</View>
+
+      <TransactionDetailModal
+        close={() => {
+          setTxDetailModalVisible(false);
+        }}
+        isVisible={isTxDetailModalVisible}
+        transaction={selectedTransaction}
+        navigate={navigation.navigate}
+      />
     </View>
   );
 };

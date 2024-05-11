@@ -1,15 +1,12 @@
 import React, {PureComponent} from 'react';
 import {StyleSheet, SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import DeviceInfo from 'react-native-device-info';
 
 export default class Header extends PureComponent {
   render() {
-    const {children, modal} = this.props;
+    const {children} = this.props;
     return (
-      <LinearGradient
-        colors={['#5A4FE7', '#2C44C8']}
-        style={DeviceInfo.hasNotch() && !modal ? styles.notch : styles.noNotch}>
+      <LinearGradient colors={['#5A4FE7', '#2C44C8']} style={styles.container}>
         <SafeAreaView>{children}</SafeAreaView>
       </LinearGradient>
     );
@@ -17,10 +14,7 @@ export default class Header extends PureComponent {
 }
 
 const styles = StyleSheet.create({
-  noNotch: {
-    height: 90,
-  },
-  notch: {
-    height: 120,
+  container: {
+    height: 54,
   },
 });

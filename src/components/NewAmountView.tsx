@@ -60,7 +60,8 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#1162E6',
     height: 350,
-    borderRadius: 40,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
   subview: {
     flexDirection: 'column',
