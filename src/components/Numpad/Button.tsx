@@ -1,8 +1,12 @@
 import React from 'react';
 import {TouchableWithoutFeedback, Text, StyleSheet, View} from 'react-native';
-import {useSpring, animated, config} from '@react-spring/native';
 
 import {triggerSelectionFeedback} from '../../lib/utils/haptic';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 interface Props {
   value: string;
@@ -12,35 +16,40 @@ interface Props {
 
 const Button: React.FC<Props> = props => {
   const {value, onPress, disabled} = props;
-  const AnimatedView = animated(View);
+  const scaler = useSharedValue(1);
 
-  const [scaler, set] = useSpring(() => ({
-    from: {scale: 1},
-    config: config.wobbly,
-  }));
+  const motionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scaler.value}],
+    };
+  });
 
-  const motionStyle = {
-    transform: [{scale: scaler.scale}],
+  const onPressIn = () => {
+    scaler.value = withSpring(0.85, {mass: 1});
+  };
+
+  const onPressOut = () => {
+    scaler.value = withSpring(1, {mass: 1});
   };
 
   return (
     <View style={styles.container}>
       <TouchableWithoutFeedback
-        onPressIn={() => set({scale: 0.85})}
-        onPressOut={() => set({scale: 1})}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
         disabled={disabled}
         onPress={() => {
           triggerSelectionFeedback();
           onPress();
         }}>
-        <AnimatedView
+        <Animated.View
           style={[
             styles.button,
             disabled ? styles.disabled : null,
             motionStyle,
           ]}>
           <Text style={styles.text}>{value}</Text>
-        </AnimatedView>
+        </Animated.View>
       </TouchableWithoutFeedback>
     </View>
   );

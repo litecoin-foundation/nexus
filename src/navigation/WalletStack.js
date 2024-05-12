@@ -3,7 +3,6 @@ import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 
 import Wallet from '../screens/Wallet';
 import Send from '../screens/Send';
-import Receive from '../screens/Receive';
 import Account from '../screens/Account';
 import LightningReceive from '../screens/LightningReceive';
 import WebPage from '../screens/WebPage';
@@ -112,11 +111,6 @@ function WalletStack() {
         name="Send"
         component={SendScanModalStack}
         options={{headerShown: false}}
-      />
-      <Stack.Screen
-        name="Receive"
-        component={Receive}
-        options={Receive.navigationOptions}
       />
       <Stack.Screen
         name="LightningReceive"

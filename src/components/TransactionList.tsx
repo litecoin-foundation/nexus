@@ -19,6 +19,12 @@ import {
 import {useAppDispatch} from '../store/hooks';
 import {getTransactions} from '../reducers/transaction';
 import TransactionCell from './Cells/TransactionCell';
+import Animated, {
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 
 interface Props {
   onPress(item: ItemType): void;
@@ -90,29 +96,51 @@ const TransactionList = forwardRef((props: Props, ref) => {
     item,
   }) => <TransactionCell item={item} onPress={() => onPress(item)} />;
 
+  const translationY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler(event => {
+    translationY.value = event.contentOffset.y;
+  });
+
+  const headerHeightAnim = useAnimatedStyle(() => {
+    return {
+      // height: translationY.value,
+      opacity: interpolate(translationY.value, [0, 100], [1, 0]),
+    };
+  });
+
+  const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
+
   return (
-    <View style={styles.container}>
-      <SectionList
-        ref={transactionListRef}
-        sections={transactions}
-        stickySectionHeadersEnabled={true}
-        renderItem={renderItem}
-        viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
-        renderSectionHeader={({section}) => (
-          <View style={styles.sectionHeaderContainer}>
-            <Text style={styles.sectionHeaderText}>{section.title}</Text>
-          </View>
-        )}
-        keyExtractor={item => item.hash}
-        initialNumToRender={7}
-        ListEmptyComponent={EmptySectionList}
-        ListFooterComponent={<View style={styles.emptyView} />}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        onViewableItemsChanged={onViewableItemsChanged}
+    <>
+      <Animated.View
+        style={[{backgroundColor: 'red', height: 200}, headerHeightAnim]}
       />
-    </View>
+      <View style={styles.container}>
+        <AnimatedSectionList
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          ref={transactionListRef}
+          sections={transactions}
+          stickySectionHeadersEnabled={true}
+          renderItem={renderItem}
+          viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
+          renderSectionHeader={({section}) => (
+            <View style={styles.sectionHeaderContainer}>
+              <Text style={styles.sectionHeaderText}>{section.title}</Text>
+            </View>
+          )}
+          keyExtractor={item => item.hash}
+          initialNumToRender={7}
+          ListEmptyComponent={EmptySectionList}
+          ListFooterComponent={<View style={styles.emptyView} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onViewableItemsChanged={onViewableItemsChanged}
+        />
+      </View>
+    </>
   );
 });
 

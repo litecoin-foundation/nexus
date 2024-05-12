@@ -5,15 +5,19 @@ import NewButton from '../Buttons/NewButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import QRCode from 'react-native-qrcode-svg';
+import InfoModal from '../Modals/InfoModal';
+import Clipboard from '@react-native-clipboard/clipboard';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 interface Props {}
 
-const Receive: React.FC<Props> = props => {
+const Receive: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const address = useAppSelector(state => state.address.address);
 
   const [mwebAddress, setMwebAddress] = useState(false);
   const [uri, setURI] = useState('');
+  const [isInfoModalVisible, setInfoModalVisible] = useState(false);
 
   // generate fresh new address on launch
   useEffect(() => {
@@ -27,6 +31,11 @@ const Receive: React.FC<Props> = props => {
   useEffect(() => {
     setURI(address);
   }, [address]);
+
+  const handleCopy = async () => {
+    setInfoModalVisible(true);
+    await Clipboard.setString(address);
+  };
 
   return (
     <View style={styles.container}>
@@ -55,14 +64,23 @@ const Receive: React.FC<Props> = props => {
         <Text style={styles.subtitleText}>MY LTC ADDRESS</Text>
         <View style={styles.addressContainer}>
           <Text style={styles.addressText}>{address}</Text>
-          <NewButton
-            imageSource={require('../../assets/icons/share-icon.png')}
-          />
+          <TouchableOpacity onPress={handleCopy}>
+            <NewButton
+              imageSource={require('../../assets/icons/share-icon.png')}
+            />
+          </TouchableOpacity>
         </View>
       </View>
       <View style={styles.qrContainer}>
         {uri ? <QRCode value={uri} size={200} /> : null}
       </View>
+
+      <InfoModal
+        isVisible={isInfoModalVisible}
+        close={() => setInfoModalVisible(false)}
+        textColor="green"
+        text="COPIED TO CLIPBOARD!"
+      />
     </View>
   );
 };
@@ -71,18 +89,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FCFCFC',
+    flexDirection: 'column',
   },
   subcontainer: {
     marginHorizontal: 24,
+    flex: 1,
   },
   addressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: 7,
   },
   txTypeContainer: {
     flexDirection: 'row',
     gap: 8,
+    paddingTop: 19,
+    paddingBottom: 22,
   },
   qrContainer: {
     backgroundColor: '#FEFEFE',
@@ -93,6 +116,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: 248,
+    flex: 1,
+    marginBottom: 50,
   },
   titleText: {
     fontFamily:
@@ -123,6 +148,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#20BB74',
     fontSize: 18,
+    width: 300,
   },
 });
 

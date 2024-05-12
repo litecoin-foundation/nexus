@@ -1,20 +1,24 @@
-import {StyleSheet, TouchableHighlight, Image} from 'react-native';
 import React from 'react';
+import {
+  StyleSheet,
+  TouchableHighlight,
+  Image,
+  ImageSourcePropType,
+} from 'react-native';
 
 interface Props {
   onPress: () => void;
+  imageSource: ImageSourcePropType;
 }
 
-const SettingsCogsButton: React.FC<Props> = props => {
-  const {onPress} = props;
+const HeaderButton: React.FC<Props> = props => {
+  const {onPress, imageSource} = props;
   return (
     <TouchableHighlight style={styles.container} onPress={onPress}>
-      <Image source={require('../../assets/icons/settings-cog.png')} />
+      <Image source={imageSource} />
     </TouchableHighlight>
   );
 };
-
-export default SettingsCogsButton;
 
 const styles = StyleSheet.create({
   container: {
@@ -27,3 +31,5 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
 });
+
+export default HeaderButton;

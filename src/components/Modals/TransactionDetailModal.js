@@ -30,7 +30,9 @@ const TransactionDetailModal = props => {
   const convertToSubunit = useSelector(state => subunitSelector(state));
   const cryptoAmount = convertToSubunit(transaction.amount);
   const amountSymbol = useSelector(state => subunitSymbolSelector(state));
-  const explorerUrl = useSelector(state => defaultExplorerSelector(state, transaction.hash));
+  const explorerUrl = useSelector(state =>
+    defaultExplorerSelector(state, transaction.hash),
+  );
 
   const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(transaction.amount);

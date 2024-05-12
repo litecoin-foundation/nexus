@@ -1,5 +1,12 @@
 import React, {useEffect} from 'react';
-import {ImageSourcePropType, StyleSheet, View, Platform} from 'react-native';
+import {
+  ImageSourcePropType,
+  StyleSheet,
+  View,
+  Platform,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import Animated, {
   interpolateColor,
@@ -14,10 +21,11 @@ interface Props {
   title: string;
   handlePress: () => void;
   active: boolean;
+  imageContainerStyle: StyleProp<ViewStyle>;
 }
 
 const DashboardButton: React.FC<Props> = props => {
-  const {imageSource, title, handlePress, active} = props;
+  const {imageSource, title, handlePress, active, imageContainerStyle} = props;
 
   // animates when active prop changes
   useEffect(() => {
@@ -60,7 +68,12 @@ const DashboardButton: React.FC<Props> = props => {
   return (
     <TouchableOpacity onPress={handlePress}>
       <>
-        <Animated.View style={[styles.container, animatedButtonContainerStyle]}>
+        <Animated.View
+          style={[
+            styles.container,
+            animatedButtonContainerStyle,
+            imageContainerStyle,
+          ]}>
           <Animated.Image style={animatedImageStyle} source={imageSource} />
         </Animated.View>
         <View style={styles.textContainer}>
@@ -79,7 +92,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: '#fefefe',
     width: 60,
-    justifyContent: 'center',
     alignItems: 'center',
   },
   textContainer: {

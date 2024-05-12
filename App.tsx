@@ -6,6 +6,18 @@ import {store, pStore} from './src/store';
 
 import RootNavigator from './src/navigation/RootNavigator';
 
+type RootStackParamList = {
+  Scan: {
+    returnRoute: any;
+  };
+};
+
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends RootStackParamList {}
+  }
+}
+
 const App = () => (
   <>
     <Provider store={store}>

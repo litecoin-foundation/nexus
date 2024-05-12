@@ -1,24 +1,16 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, View, Platform} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+
 import InputField from '../InputField';
 import AddressField from '../AddressField';
-import {StackNavigationProp} from '@react-navigation/stack';
 
-type RootStackParamList = {
-  Send: undefined;
-  Scan: {
-    returnRoute: string;
-  };
-};
-
-interface Props {
-  navigation: StackNavigationProp<RootStackParamList, 'Send'>;
-}
+interface Props {}
 
 const Send: React.FC<Props> = props => {
-  const {navigation} = props;
   const [address, setAddress] = useState('');
   const [description, setDescription] = useState('');
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
@@ -30,7 +22,6 @@ const Send: React.FC<Props> = props => {
         <Text style={styles.subtitleText}>To Address</Text>
         <AddressField
           address={address}
-          onPressClose={() => setAddress('')}
           onScanPress={() => navigation.navigate('Scan', {returnRoute: 'Main'})}
         />
 

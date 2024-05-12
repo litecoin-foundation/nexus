@@ -6,13 +6,14 @@ import {subunitSelector} from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
+import Animated from 'react-native-reanimated';
 
 interface Props {
   children: React.ReactNode;
 }
 
 const NewAmountView: React.FC<Props> = props => {
-  const {children} = props;
+  const {children, animatedProps} = props;
   const chartCursorSelected = useAppSelector(
     state => state.chart.cursorSelected,
   );
@@ -28,7 +29,7 @@ const NewAmountView: React.FC<Props> = props => {
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(totalBalance);
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, animatedProps]}>
       <SafeAreaView>
         <View style={styles.subview}>
           {!chartCursorSelected ? (
@@ -50,7 +51,7 @@ const NewAmountView: React.FC<Props> = props => {
         </View>
         <View style={styles.childrenContainer}>{children}</View>
       </SafeAreaView>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -59,7 +60,6 @@ const styles = StyleSheet.create({
     top: 0,
     width: '100%',
     backgroundColor: '#1162E6',
-    height: 350,
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
   },

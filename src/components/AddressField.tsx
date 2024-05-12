@@ -10,33 +10,26 @@ import {
 
 interface Props {
   address: string;
-  onPressClose: () => void;
   onScanPress: () => void;
 }
 
 const AddressField: React.FC<Props> = props => {
-  const {address, onPressClose, onScanPress} = props;
+  const {address, onScanPress} = props;
 
   return (
     <View style={styles.container}>
       <TextInput
         placeholderTextColor="#dbdbdb"
+        placeholder="Address to send Litecoin"
         style={styles.text}
         value={address}
         autoCorrect={false}
         autoComplete="off"
       />
 
-      <TouchableHighlight onPress={onScanPress}>
+      <TouchableHighlight style={styles.closeContainer} onPress={onScanPress}>
         <Image source={require('../assets/images/qrcode-btn.png')} />
       </TouchableHighlight>
-
-      {/* <TouchableOpacity style={styles.closeContainer} onPress={onPressClose}>
-        <Image
-          style={styles.circle}
-          source={require('../assets/images/check-off.png')}
-        />
-      </TouchableOpacity> */}
     </View>
   );
 };
@@ -51,6 +44,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
+    flex: 1,
     paddingLeft: 11.5,
     fontFamily:
       Platform.OS === 'ios'
@@ -65,10 +59,6 @@ const styles = StyleSheet.create({
     right: 0,
     position: 'absolute',
     paddingRight: 25,
-  },
-  circle: {
-    height: 18,
-    width: 18,
   },
 });
 
