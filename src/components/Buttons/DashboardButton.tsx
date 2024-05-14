@@ -6,8 +6,8 @@ import {
   Platform,
   StyleProp,
   ViewStyle,
+  Pressable,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -66,23 +66,21 @@ const DashboardButton: React.FC<Props> = props => {
   });
 
   return (
-    <TouchableOpacity onPress={handlePress}>
-      <>
-        <Animated.View
-          style={[
-            styles.container,
-            animatedButtonContainerStyle,
-            imageContainerStyle,
-          ]}>
-          <Animated.Image style={animatedImageStyle} source={imageSource} />
-        </Animated.View>
-        <View style={styles.textContainer}>
-          <Animated.Text style={[styles.text, animatedTextStyle]}>
-            {title}
-          </Animated.Text>
-        </View>
-      </>
-    </TouchableOpacity>
+    <Pressable onPress={handlePress}>
+      <Animated.View
+        style={[
+          styles.container,
+          animatedButtonContainerStyle,
+          imageContainerStyle,
+        ]}>
+        <Animated.Image style={animatedImageStyle} source={imageSource} />
+      </Animated.View>
+      <View style={styles.textContainer}>
+        <Animated.Text style={[styles.text, animatedTextStyle]}>
+          {title}
+        </Animated.Text>
+      </View>
+    </Pressable>
   );
 };
 

@@ -1,5 +1,7 @@
+/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import {StatusBar, Platform} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {store, pStore} from './src/store';
@@ -25,7 +27,9 @@ const App = () => (
         <StatusBar hidden={true} backgroundColor="transparent" />
       ) : null}
       <PersistGate loading={null} persistor={pStore}>
-        <RootNavigator />
+        <GestureHandlerRootView style={{flex: 1}}>
+          <RootNavigator />
+        </GestureHandlerRootView>
       </PersistGate>
     </Provider>
   </>
