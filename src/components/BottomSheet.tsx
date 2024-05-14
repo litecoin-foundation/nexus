@@ -1,41 +1,34 @@
 import React, {useRef, useState} from 'react';
-import {
-  Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {
   Gesture,
   GestureDetector,
   PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler';
 import Animated, {
+  SharedValue,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
 
-const HEADER_HEIGTH = 50;
-const windowHeight = Dimensions.get('window').height;
-const SNAP_POINTS_FROM_TOP = [windowHeight * 0.4, windowHeight * 0.7];
-
+const SNAP_POINTS_FROM_TOP = [150, 350];
 const FULLY_OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
 const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 
 interface Props {
   children: React.ReactNode;
+  headerComponent: React.ReactNode;
+  translationY: SharedValue<number>;
+  scrollOffset: SharedValue<number>;
 }
 
 const BottomSheet: React.FC<Props> = props => {
-  const {children} = props;
+  const {children, headerComponent, translationY, scrollOffset} = props;
   const panGestureRef = useRef(Gesture.Pan());
   const blockScrollUntilAtTheTopRef = useRef(Gesture.Tap());
   const [snapPoint, setSnapPoint] = useState(CLOSED_SNAP_POINT);
-  const translationY = useSharedValue(0);
-  const scrollOffset = useSharedValue(0);
   const bottomSheetTranslateY = useSharedValue(CLOSED_SNAP_POINT);
 
   const onHandlerEndOnJS = (point: number) => {
@@ -57,10 +50,10 @@ const BottomSheet: React.FC<Props> = props => {
       return;
     }
 
-    for (const snapPoint of SNAP_POINTS_FROM_TOP) {
-      const distFromSnap = Math.abs(snapPoint - endOffsetY);
+    for (const snapPointComputed of SNAP_POINTS_FROM_TOP) {
+      const distFromSnap = Math.abs(snapPointComputed - endOffsetY);
       if (distFromSnap < Math.abs(destSnapPoint - endOffsetY)) {
-        destSnapPoint = snapPoint;
+        destSnapPoint = snapPointComputed;
       }
     }
 
@@ -118,18 +111,11 @@ const BottomSheet: React.FC<Props> = props => {
     <GestureDetector gesture={blockScrollUntilAtTheTop}>
       <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
         <GestureDetector gesture={headerGesture}>
-          <View style={styles.header} />
+          {headerComponent}
         </GestureDetector>
         <GestureDetector
           gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
-          <Animated.ScrollView
-            bounces={false}
-            scrollEventThrottle={1}
-            onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-              scrollOffset.value = e.nativeEvent.contentOffset.y;
-            }}>
-            {children}
-          </Animated.ScrollView>
+          {children}
         </GestureDetector>
       </Animated.View>
     </GestureDetector>
@@ -137,13 +123,11 @@ const BottomSheet: React.FC<Props> = props => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    height: HEADER_HEIGTH,
-    backgroundColor: 'coral',
-  },
   bottomSheet: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#ff9f7A',
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
   },
 });
 

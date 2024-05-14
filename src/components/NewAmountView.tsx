@@ -10,6 +10,7 @@ import Animated from 'react-native-reanimated';
 
 interface Props {
   children: React.ReactNode;
+  animatedProps: any; // TODO
 }
 
 const NewAmountView: React.FC<Props> = props => {

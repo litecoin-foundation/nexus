@@ -36,7 +36,6 @@
     "@react-navigation/stack": "^6.3.29",
     "@react-spring/native": "^9.7.3",
     "@reduxjs/toolkit": "^1.9.7",
-    "@shopify/flash-list": "^1.6.4",
     "axios": "^1.6.8",
     "base58-js": "^1.0.5",
     "bech32": "^2.0.0",
