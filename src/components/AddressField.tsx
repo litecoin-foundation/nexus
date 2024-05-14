@@ -11,10 +11,11 @@ import {
 interface Props {
   address: string;
   onScanPress: () => void;
+  onChangeText: (text: string) => void;
 }
 
 const AddressField: React.FC<Props> = props => {
-  const {address, onScanPress} = props;
+  const {address, onScanPress, onChangeText} = props;
 
   return (
     <View style={styles.container}>
@@ -25,6 +26,8 @@ const AddressField: React.FC<Props> = props => {
         value={address}
         autoCorrect={false}
         autoComplete="off"
+        onChangeText={onChangeText}
+        blurOnSubmit={false}
       />
 
       <TouchableHighlight style={styles.closeContainer} onPress={onScanPress}>
@@ -36,7 +39,7 @@ const AddressField: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 44,
+    height: 63,
     borderRadius: 8,
     borderColor: '#DEDEDE',
     borderWidth: 1.5,
@@ -54,6 +57,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#20BB74',
     fontSize: 18,
+    maxWidth: 310,
   },
   closeContainer: {
     right: 0,

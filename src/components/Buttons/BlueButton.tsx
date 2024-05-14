@@ -1,7 +1,13 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-const BlueButton = (props) => {
+interface Props {
+  value: string;
+  onPress: () => void;
+  disabled?: boolean;
+}
+
+const BlueButton: React.FC<Props> = props => {
   const {value, onPress, disabled} = props;
   return (
     <TouchableOpacity
@@ -16,19 +22,11 @@ const BlueButton = (props) => {
 const styles = StyleSheet.create({
   container: {
     height: 50,
-    width: 335,
     backgroundColor: '#2C72FF',
-    borderRadius: 25,
+    borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: 'rgb(68,130,255)',
-    shadowOpacity: 0.41,
-    shadowRadius: 6,
-    elevation: 3,
-    shadowOffset: {
-      height: 1,
-      width: 0,
-    },
+    paddingHorizontal: 25,
   },
   text: {
     color: '#FFFFFF',

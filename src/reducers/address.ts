@@ -19,7 +19,6 @@ const getAddressAction = createAction<string>('address/getAddressAction');
 export const getAddress =
   (mwebAddress?: boolean): AppThunk =>
   async dispatch => {
-    console.log(mwebAddress);
     const rpc = await lnd.getAddress(mwebAddress ? 7 : undefined);
 
     if (rpc.isErr()) {
@@ -28,7 +27,6 @@ export const getAddress =
 
     if (rpc.isOk()) {
       const {address} = rpc.value;
-      console.log('poop');
       dispatch(getAddressAction(address));
     }
   };

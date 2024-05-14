@@ -23,17 +23,18 @@ import Send from '../components/Cards/Send';
 import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 import TransactionCell from '../components/Cells/TransactionCell';
+import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 
 type RootStackParamList = {
-  Main: undefined;
+  Main: {
+    scanData?: string;
+  };
 };
 
-interface Props {
-  navigation: StackNavigationProp<RootStackParamList, 'Main'>;
-}
+interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
 
 const Main: React.FC<Props> = props => {
-  const {navigation} = props;
+  const {navigation, route} = props;
   const transactions = useSelector(state => txDetailSelector(state));
   const groupedTransactions = groupTransactions(transactions);
 
@@ -161,7 +162,7 @@ const Main: React.FC<Props> = props => {
       renderedCard = txListComponent;
       break;
     case 4:
-      renderedCard = <Send />;
+      renderedCard = <Send route={route} />;
       break;
     case 5:
       renderedCard = <Receive />;

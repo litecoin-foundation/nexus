@@ -136,8 +136,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(151,151,151,0.3)',
     height: 120,
+    width: 335,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignSelf: 'center',
   },
   text: {
     color: '#4A4A4A',

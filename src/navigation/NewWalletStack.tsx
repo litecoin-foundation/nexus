@@ -5,6 +5,7 @@ import Main, {navigationOptions} from '../screens/Main';
 import Scan from '../screens/Scan';
 import SettingsStack from './SettingsStack';
 import WebPage from '../screens/WebPage';
+import ConfirmSend from '../screens/Wallet/ConfirmSend';
 
 const Stack = createStackNavigator();
 
@@ -45,6 +46,7 @@ function NewWalletStack(): React.JSX.Element {
           headerTitle: '',
         }}
       />
+      <Stack.Screen name="ConfirmSend" component={ConfirmSend} />
     </Stack.Navigator>
   );
 }
