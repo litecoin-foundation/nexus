@@ -8,6 +8,8 @@ import {setBiometricEnabled} from '../../reducers/authentication';
 import PinModal from '../../components/Modals/PinModal';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {startLnd, stopLnd} from '../../reducers/lightning';
+import {poll, sleep} from '../../lib/utils/poll';
 
 type RootStackParamList = {
   General: undefined;
@@ -82,6 +84,18 @@ const General: React.FC<Props> = props => {
               handleSwitch={handleBiometricSwitch}
             />
           ) : null}
+
+          <SettingCell
+            title="Rescan for missing coins?"
+            onPress={() => {
+              dispatch(stopLnd());
+              sleep(10000).then(() => {
+                console.warn('LOSHY: looking to start lnd');
+                poll(dispatch(startLnd()), 1000, 1000);
+              });
+            }}
+            forward
+          />
         </ScrollView>
       </LinearGradient>
 

@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FCFCFC',
     flexDirection: 'column',
+    maxHeight: 680,
   },
   subcontainer: {
     marginHorizontal: 24,

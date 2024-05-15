@@ -112,7 +112,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
         </View>
       )}
       keyExtractor={item => item.hash}
-      initialNumToRender={7}
+      initialNumToRender={9}
       ListEmptyComponent={EmptySectionList}
       ListFooterComponent={<View style={styles.emptyView} />}
       refreshControl={
@@ -157,6 +157,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 12,
     color: '#747E87',
+    textAlign: 'center',
   },
   emptyView: {
     height: 350,

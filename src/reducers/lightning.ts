@@ -41,7 +41,8 @@ export const startLnd = (): AppThunk => async dispatch => {
     await lnd.start(lndConf);
     dispatch(lndState(true));
   } catch (err) {
-    console.error('CANT start LND');
+    console.error(err.error);
+    // console.error('CANT start LND');
     // TODO: handle this
   }
 };

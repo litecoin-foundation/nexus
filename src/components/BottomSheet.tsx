@@ -22,10 +22,17 @@ interface Props {
   headerComponent: React.ReactNode;
   translationY: SharedValue<number>;
   scrollOffset: SharedValue<number>;
+  handleSwipeDown: () => void;
 }
 
 const BottomSheet: React.FC<Props> = props => {
-  const {children, headerComponent, translationY, scrollOffset} = props;
+  const {
+    children,
+    headerComponent,
+    translationY,
+    scrollOffset,
+    handleSwipeDown,
+  } = props;
   const panGestureRef = useRef(Gesture.Pan());
   const blockScrollUntilAtTheTopRef = useRef(Gesture.Tap());
   const [snapPoint, setSnapPoint] = useState(CLOSED_SNAP_POINT);
@@ -33,6 +40,12 @@ const BottomSheet: React.FC<Props> = props => {
 
   const onHandlerEndOnJS = (point: number) => {
     setSnapPoint(point);
+    // check if BottomSheet is being swiped away
+    // if true, close open tab and show tx history!
+    // TODO: fix slowdown
+    if (point === 350) {
+      runOnJS(handleSwipeDown)();
+    }
   };
   const onHandlerEnd = ({velocityY}: PanGestureHandlerEventPayload) => {
     'worklet';
@@ -56,6 +69,8 @@ const BottomSheet: React.FC<Props> = props => {
         destSnapPoint = snapPointComputed;
       }
     }
+
+    // lsohy
 
     // update current translation to be able to animate withSpring to snapPoint
     bottomSheetTranslateY.value =
