@@ -2,18 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIStatusBarHidden</key>
-	<true/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>SugarstyleMillenial-Regular.ttf</string>
-		<string>Satoshi-VariableItalic.ttf</string>
-		<string>Satoshi-Variable.ttf</string>
-	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>App will use your camera to scan QR codes for Litecoin Payments</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Unlock &amp; Authorise payments using Face ID</string>
+	<key>NSCameraUsageDescription</key>
+	<string>App will use your camera to scan QR codes for Litecoin Payments</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Satoshi-Variable.ttf</string>
+		<string>Satoshi-VariableItalic.ttf</string>
+		<string>SugarstyleMillenial-Regular.ttf</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -38,14 +38,10 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>localhost</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-			</dict>
-		</dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
@@ -53,11 +49,14 @@
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
+	<key>UIStatusBarHidden</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
