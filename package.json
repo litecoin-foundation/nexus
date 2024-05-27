@@ -15,15 +15,15 @@
     "reset": "rm -rf node_modules/ && npm cache clear && watchman watch-del-all && bun install",
     "test": "jest",
     "fetch:ios": "curl https://api.getplasma.org/files/lnd/lndmobile-ios-v0.17.3.tar.gz --output lndmobile-ios-v0.17.3.tar.gz && bun run extract:ios",
-    "extract:ios": "tar xzvf lndmobile-ios-v0.17.3.tar.gz -C ./node_modules/@litecoinfoundation/react-native-lndltc/ios",
+    "extract:ios": "tar xzvf lndmobile-ios-v0.17.3.tar.gz -C ./ios/plasma/LndMobile",
     "fetch:android": "cd ./lightning && curl https://api.getplasma.org/files/lnd/lndmobile-android-v0.17.3.tar.gz --output lndmobile-android-v0.17.3.tar.gz && bun run extract:android",
     "extract:android": "cd ./lightning && tar xzvf lndmobile-android-v0.17.3.tar.gz"
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.1.1",
     "@craftzdog/react-native-buffer": "^6.0.5",
-    "@litecoinfoundation/react-native-lndltc": "^0.0.12",
     "@noble/secp256k1": "^1.7.1",
+    "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-clipboard/clipboard": "^1.13.2",
     "@react-native-community/netinfo": "^9.5.0",
     "@react-native-community/segmented-control": "^2.2.2",

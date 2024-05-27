@@ -1,4 +1,4 @@
-import lnd from '@litecoinfoundation/react-native-lndltc';
+import * as Lnd from '../lib/lightning/onchain';
 
 // initial state
 const initialState = {
@@ -14,20 +14,22 @@ export const GET_BALANCE = 'GET_BALANCE';
 
 // actions
 export const getBalance = () => async dispatch => {
-  const w = await lnd.getWalletBalance();
-  const c = await lnd.getChannelBalance();
+  try {
+    const {totalBalance, confirmedBalance, unconfirmedBalance} =
+      await Lnd.walletBalance();
+    const {balance, pendingOpenBalance} = await Lnd.getChannelBalance();
 
-  const {totalBalance, confirmedBalance, unconfirmedBalance} = w.value;
-  const {balance, pendingOpenBalance} = c.value;
-
-  dispatch({
-    type: GET_BALANCE,
-    totalBalance,
-    confirmedBalance,
-    unconfirmedBalance,
-    balance,
-    pendingOpenBalance,
-  });
+    dispatch({
+      type: GET_BALANCE,
+      totalBalance,
+      confirmedBalance,
+      unconfirmedBalance,
+      balance,
+      pendingOpenBalance,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 // action handlers

@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, ActivityIndicator, StyleSheet, View} from 'react-native';
-import lnd, {ss_lnrpc} from '@litecoinfoundation/react-native-lndltc';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import Auth from '../../components/Auth';
@@ -11,6 +10,9 @@ import {
 } from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {LndMobileEventEmitter} from '../../lib/utils/event-listener';
+import * as Lnd from '../../lib/lightning';
+import {lnrpc} from '../../lib/lightning/proto/lightning';
 
 type RootStackParamList = {
   Auth: undefined;
@@ -25,12 +27,11 @@ interface Props {
 const AuthScreen: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
-  // const unlockerLoopRef = useRef();
   const [loading, setLoading] = useState(false);
 
-  const pin = useAppSelector(state => state.authpad.pin);
+  const pin = useAppSelector(state => state.authpad!.pin);
   const biometricsEnabled = useAppSelector(
-    state => state.authentication.biometricsEnabled,
+    state => state.authentication!.biometricsEnabled,
   );
   const walletUnlocked = useAppSelector(
     state => state.authentication.walletUnlocked,
@@ -40,22 +41,23 @@ const AuthScreen: React.FC<Props> = props => {
   // If biometricEnabled & lnd is ready, present Biometric auth request
   useEffect(() => {
     if (biometricsEnabled) {
-      lnd.stateService.subscribeToStateChanges(
-        res => {
-          if (res.isOk()) {
-            if (res.value === ss_lnrpc.WalletState.WAITING_TO_START) {
-              dispatch(unlockWalletWithBiometric());
-            }
+      LndMobileEventEmitter.addListener('SubscribeState', async event => {
+        try {
+          const {state} = Lnd.decodeState(event.data);
+          if (state === lnrpc.WalletState.WAITING_TO_START) {
+            dispatch(unlockWalletWithBiometric());
           }
-        },
-        () => {},
-      );
+        } catch (error) {
+          console.error(error);
+        }
+      });
+      Lnd.subscribeState();
     }
   }, [biometricsEnabled, dispatch]);
 
   useEffect(() => {
     const clear = async () => {
-      await dispatch(clearWalletUnlocked());
+      dispatch(clearWalletUnlocked());
     };
 
     switch (walletUnlocked) {
@@ -64,27 +66,26 @@ const AuthScreen: React.FC<Props> = props => {
         break;
       case true:
         navigation.replace('NewWalletStack');
-        clear();
         break;
       default:
         return;
     }
-  });
+  }, [walletUnlocked]);
 
   useEffect(() => {
+    const clear = async () => {
+      dispatch(clearWalletUnlocked());
+    };
     return () => {
+      clear();
       setLoading(false);
-      // clearInterval(unlockerLoopRef.current);
     };
   }, []);
 
   const unlockWallet = async () => {
     setLoading(true);
-    // unlockerLoopRef.current = setInterval(async () => {
-
-    // }, 2500);
     await dispatch(unlockWalletWithPin(pin));
-    await dispatch(clearValues());
+    dispatch(clearValues());
   };
 
   const handleValidationFailure = () => {

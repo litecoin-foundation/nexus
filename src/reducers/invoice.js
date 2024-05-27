@@ -1,4 +1,4 @@
-import lnd from '@litecoinfoundation/react-native-lndltc';
+import * as Lnd from '../lib/lightning';
 
 // initial state
 const initialState = {
@@ -15,25 +15,17 @@ export const CLEAR_INVOICE = 'CLEAR_INVOICE';
 export const addInvoice = invoice => async dispatch => {
   try {
     const {amount, memo} = invoice;
+    const {paymentRequest} = await Lnd.addInvoice(amount, memo);
 
-    const rpc = await lnd.createInvoice(amount, memo);
-
-    if (rpc.isErr()) {
-      console.error(rpc.error);
-      return;
-    }
-
-    if (rpc.isOk()) {
-      const {paymentRequest} = rpc.value;
-      dispatch({
-        type: ADD_INVOICE,
-        paymentRequest,
-        description: invoice.memo,
-        value: invoice.amount,
-      });
-      return true;
-    }
+    dispatch({
+      type: ADD_INVOICE,
+      paymentRequest,
+      description: invoice.memo,
+      value: invoice.amount,
+    });
+    return true;
   } catch (error) {
+    console.error(error);
     alert(error);
   }
 };

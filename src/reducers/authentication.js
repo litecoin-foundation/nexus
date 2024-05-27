@@ -1,9 +1,11 @@
-import lnd, {ss_lnrpc} from '@litecoinfoundation/react-native-lndltc';
 import {AppState} from 'react-native';
 
 import {authenticate} from '../lib/utils/biometric';
 import {unlockWallet} from './lightning';
 import {getItem, setItem, resetItem} from '../lib/utils/keychain';
+import {LndMobileEventEmitter} from '../lib/utils/event-listener';
+import * as Lnd from '../lib/lightning';
+import {lnrpc} from '../lib/lightning/proto/lightning';
 
 // initial state
 const initialState = {
@@ -52,40 +54,42 @@ export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
       payload: false,
     });
   } else {
-    dispatch(await unlockWallet());
-    lnd.stateService.subscribeToStateChanges(
-      res => {
-        if (res.isErr()) {
-          console.error(res.error);
+    dispatch(unlockWallet());
+    LndMobileEventEmitter.addListener('SubscribeState', async event => {
+      try {
+        const {state} = Lnd.decodeState(event.data);
+        if (state === lnrpc.WalletState.UNLOCKED) {
+          dispatch({
+            type: UNLOCK_WALLET,
+            payload: true,
+          });
         }
-        if (res.isOk()) {
-          if (res.value === ss_lnrpc.WalletState.UNLOCKED) {
-            dispatch({
-              type: UNLOCK_WALLET,
-              payload: true,
-            });
-          }
-        }
-      },
-      () => console.log('done'),
-    );
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    await Lnd.subscribeState();
   }
 };
 
 export const unlockWalletWithBiometric = () => async dispatch => {
   try {
     await authenticate('Unlock Wallet');
-    dispatch(await unlockWallet());
-    lnd.stateService.subscribeToStateChanges(res => {
-      if (res.isOk()) {
-        if (res.value === ss_lnrpc.WalletState.UNLOCKED) {
+    dispatch(unlockWallet());
+    LndMobileEventEmitter.addListener('SubscribeState', async event => {
+      try {
+        const {state} = Lnd.decodeState(event.data);
+        if (state === lnrpc.WalletState.UNLOCKED) {
           dispatch({
             type: UNLOCK_WALLET,
             payload: true,
           });
         }
+      } catch (error) {
+        console.error(error);
       }
     });
+    await Lnd.subscribeState();
   } catch (error) {
     console.error(error);
   }
@@ -121,14 +125,18 @@ export const subscribeAppState = () => (dispatch, getState) => {
     // lnd may lock the user wallet
     // present an authentication screen if wallet locked
     if (nextAppState === 'active' && appState === 'background') {
-      lnd.stateService.subscribeToStateChanges(res => {
-        if (res.isOk()) {
-          if (res.value === ss_lnrpc.WalletState.LOCKED) {
+      LndMobileEventEmitter.addListener('SubscribeState', async event => {
+        try {
+          const {state} = Lnd.decodeState(event.data);
+          if (state === lnrpc.WalletState.LOCKED) {
             //
             console.warn('bg: user wallet locked!');
           }
+        } catch (error) {
+          console.error(error);
         }
       });
+      Lnd.subscribeState();
     }
 
     dispatch({

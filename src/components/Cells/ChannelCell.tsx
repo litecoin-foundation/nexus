@@ -1,8 +1,8 @@
 import React from 'react';
 import {View, Text, StyleSheet, Dimensions} from 'react-native';
-import {lnrpc} from '@litecoinfoundation/react-native-lndltc';
 
 import VerticalProgressBar from '../VerticalProgressBar';
+import {lnrpc} from '../../lib/lightning/proto/lightning';
 
 interface Props {
   channel: lnrpc.Channel;

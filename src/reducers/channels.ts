@@ -1,4 +1,3 @@
-import lnd, {lnrpc} from '@litecoinfoundation/react-native-lndltc';
 import memoize from 'lodash.memoize';
 import leven from 'leven';
 
@@ -11,6 +10,9 @@ import {
   createSelector,
 } from '@reduxjs/toolkit';
 import {RootState} from '../store';
+import {lnrpc} from '../lib/lightning/proto/lightning';
+import * as Lnd from '../lib/lightning';
+import * as LndChannel from '../lib/lightning/channel';
 
 // types
 interface IChannelState {
@@ -56,20 +58,12 @@ const describeGraphAction = createAction<IGraph>(
 // functions
 export const listChannels = (): AppThunk => async dispatch => {
   try {
-    const rpc = await lnd.listChannels();
+    const rpc = await LndChannel.listChannels();
 
-    if (rpc.isErr()) {
-      console.error(rpc.error);
-    }
+    let arr: lnrpc.IChannel[] = [];
+    rpc.channels.forEach((channel: lnrpc.IChannel) => arr.push(channel));
 
-    if (rpc.isOk()) {
-      let arr: lnrpc.IChannel[] = [];
-      rpc.value.channels.forEach((channel: lnrpc.IChannel) =>
-        arr.push(channel),
-      );
-
-      dispatch(listChannelAction(arr));
-    }
+    dispatch(listChannelAction(arr));
   } catch (error) {
     console.error(error);
   }
@@ -85,28 +79,22 @@ export const listChannels = (): AppThunk => async dispatch => {
 
 export const listPeers = (): AppThunk => async dispatch => {
   try {
-    const rpc = await lnd.listPeers();
+    const rpc = await Lnd.listPeers();
 
-    if (rpc.isErr()) {
-      console.error(rpc.error);
-    }
+    let arr: lnrpc.IPeer[] = [];
 
-    if (rpc.isOk()) {
-      let arr: lnrpc.IPeer[] = [];
-
-      rpc.value.peers.forEach((peer: lnrpc.IPeer) => {
-        arr.push({
-          pubKey: peer.pubKey,
-          address: peer.address,
-          bytesSent: peer.bytesSent,
-          bytesRecv: peer.bytesRecv,
-          syncType: peer.syncType,
-          flapCount: peer.flapCount,
-          lastFlapNs: peer.lastFlapNs,
-        });
+    rpc.peers.forEach((peer: lnrpc.IPeer) => {
+      arr.push({
+        pubKey: peer.pubKey,
+        address: peer.address,
+        bytesSent: peer.bytesSent,
+        bytesRecv: peer.bytesRecv,
+        syncType: peer.syncType,
+        flapCount: peer.flapCount,
+        lastFlapNs: peer.lastFlapNs,
       });
-      dispatch(listPeersAction(arr));
-    }
+    });
+    dispatch(listPeersAction(arr));
   } catch (error) {
     console.error(error);
   }
@@ -119,13 +107,10 @@ export const connectToPeer = async (input: string) => {
   console.error(host);
 
   try {
-    const rpc = await lnd.connectPeer(
+    await Lnd.connectPeer(
       '027a2fde010babcefeb875ca7729aeb3303c53127ef48f8c85eeaa1a29b2e14ace',
       '86.10.110.143:9735',
     );
-    if (rpc.isErr()) {
-      console.error(rpc.error);
-    }
   } catch (error) {
     console.error(error);
   }
@@ -133,39 +118,32 @@ export const connectToPeer = async (input: string) => {
 
 export const openChannel = async (pubkey: string, amount: number) => {
   try {
-    const rpc = await lnd.openChannel(amount, pubkey);
+    await LndChannel.openChannel(pubkey, amount, false);
 
-    if (rpc.isErr()) {
-      console.error(rpc.error);
-    }
-
-    if (rpc.isOk()) {
-      // implement later
-    }
+    // implement later
   } catch (error) {
     console.error(error);
   }
 };
 
 export const backupChannels = (): AppThunk => async (dispatch, getState) => {
-  const {channelBackupsEnabled} = getState().channels;
+  const {channelBackupsEnabled} = getState().channels!;
   if (!channelBackupsEnabled) {
     return;
   }
 
   try {
-    await lnd.subscribeToBackups(
-      rpc => {
-        if (rpc.isErr()) {
-          console.error(rpc.error);
-        }
-
-        if (rpc.isOk()) {
-          handleChannelBackup();
-        }
-      },
-      () => console.log('end subscription'),
-    );
+    // await lnd.subscribeToBackups(
+    //   rpc => {
+    //     if (rpc.isErr()) {
+    //       console.error(rpc.error);
+    //     }
+    //     if (rpc.isOk()) {
+    //       handleChannelBackup();
+    //     }
+    //   },
+    //   () => console.log('end subscription'),
+    // );
   } catch (error) {
     console.error(error);
   }
@@ -173,69 +151,63 @@ export const backupChannels = (): AppThunk => async (dispatch, getState) => {
 
 export const getDescribeGraph = (): AppThunk => async dispatch => {
   try {
-    const rpc = await lnd.describeGraph();
+    const rpc = await Lnd.describeGraph();
 
-    if (rpc.isErr()) {
-      console.error(rpc.error);
-    }
+    let nodes: lnrpc.ILightningNode[] = [];
+    let edges: lnrpc.IChannelEdge[] = [];
 
-    if (rpc.isOk()) {
-      let nodes: lnrpc.ILightningNode[] = [];
-      let edges: lnrpc.IChannelEdge[] = [];
+    rpc.nodes.forEach((node: lnrpc.ILightningNode) => {
+      let addresses: lnrpc.INodeAddress[] = [];
 
-      rpc.value.nodes.forEach((node: lnrpc.ILightningNode) => {
-        let addresses: lnrpc.INodeAddress[] = [];
-
-        node.addresses?.map(address => {
-          addresses.push({
-            network: address.network,
-            addr: address.addr,
-          });
-        });
-
-        nodes.push({
-          lastUpdate: node.lastUpdate,
-          pubKey: node.pubKey,
-          alias: node.alias === null || undefined ? '' : node.alias,
-          addresses,
-          color: node.color,
+      node.addresses?.map(address => {
+        addresses.push({
+          network: address.network,
+          addr: address.addr,
         });
       });
 
-      rpc.value.edges.forEach((edge: lnrpc.IChannelEdge) => {
-        edges.push({
-          channelId: edge.channelId,
-          chanPoint: edge.chanPoint,
-          lastUpdate: edge.lastUpdate,
-          node1Pub: edge.node1Pub,
-          node2Pub: edge.node2Pub,
-          node1Policy: {
-            timeLockDelta: edge.node1Policy?.timeLockDelta,
-            minHtlc: edge.node1Policy?.minHtlc,
-            feeBaseMsat: edge.node1Policy?.feeBaseMsat,
-            feeRateMilliMsat: edge.node1Policy?.feeRateMilliMsat,
-            maxHtlcMsat: edge.node1Policy?.maxHtlcMsat,
-            lastUpdate: edge.node1Policy?.lastUpdate,
-          },
-          node2Policy: {
-            timeLockDelta: edge.node2Policy?.timeLockDelta,
-            minHtlc: edge.node2Policy?.minHtlc,
-            feeBaseMsat: edge.node2Policy?.feeBaseMsat,
-            feeRateMilliMsat: edge.node2Policy?.feeRateMilliMsat,
-            disabled: edge.node2Policy?.disabled,
-            maxHtlcMsat: edge.node2Policy?.maxHtlcMsat,
-            lastUpdate: edge.node2Policy?.lastUpdate,
-          },
-        });
+      nodes.push({
+        lastUpdate: node.lastUpdate,
+        pubKey: node.pubKey,
+        alias: node.alias === null || undefined ? '' : node.alias,
+        addresses,
+        color: node.color,
       });
+    });
 
-      dispatch(
-        describeGraphAction({
-          nodes,
-          edges,
-        }),
-      );
-    }
+    rpc.edges.forEach((edge: lnrpc.IChannelEdge) => {
+      edges.push({
+        channelId: edge.channelId,
+        chanPoint: edge.chanPoint,
+        lastUpdate: edge.lastUpdate,
+        node1Pub: edge.node1Pub,
+        node2Pub: edge.node2Pub,
+        node1Policy: {
+          timeLockDelta: edge.node1Policy?.timeLockDelta,
+          minHtlc: edge.node1Policy?.minHtlc,
+          feeBaseMsat: edge.node1Policy?.feeBaseMsat,
+          feeRateMilliMsat: edge.node1Policy?.feeRateMilliMsat,
+          maxHtlcMsat: edge.node1Policy?.maxHtlcMsat,
+          lastUpdate: edge.node1Policy?.lastUpdate,
+        },
+        node2Policy: {
+          timeLockDelta: edge.node2Policy?.timeLockDelta,
+          minHtlc: edge.node2Policy?.minHtlc,
+          feeBaseMsat: edge.node2Policy?.feeBaseMsat,
+          feeRateMilliMsat: edge.node2Policy?.feeRateMilliMsat,
+          disabled: edge.node2Policy?.disabled,
+          maxHtlcMsat: edge.node2Policy?.maxHtlcMsat,
+          lastUpdate: edge.node2Policy?.lastUpdate,
+        },
+      });
+    });
+
+    dispatch(
+      describeGraphAction({
+        nodes,
+        edges,
+      }),
+    );
   } catch (error) {
     console.error(error);
   }
@@ -243,7 +215,7 @@ export const getDescribeGraph = (): AppThunk => async dispatch => {
 
 // selectors
 export const searchGraph = createSelector(
-  (state: RootState) => state.channels.nodes,
+  (state: RootState) => state.channels!.nodes,
   nodes =>
     memoize(searchTerm => {
       // remove all nodes with no alias

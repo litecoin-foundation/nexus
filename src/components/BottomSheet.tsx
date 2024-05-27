@@ -70,8 +70,6 @@ const BottomSheet: React.FC<Props> = props => {
       }
     }
 
-    // lsohy
-
     // update current translation to be able to animate withSpring to snapPoint
     bottomSheetTranslateY.value =
       bottomSheetTranslateY.value + translationY.value;

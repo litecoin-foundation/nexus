@@ -1,6 +1,10 @@
 import React from 'react';
 import {TouchableWithoutFeedback, Image, StyleSheet, View} from 'react-native';
-import {useSpring, animated, config} from '@react-spring/native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 import {useAppSelector} from '../../store/hooks';
 
@@ -10,32 +14,38 @@ interface Props {
 
 const Button: React.FC<Props> = props => {
   const {onPress} = props;
-  const AnimatedView = animated(View);
+  const scaler = useSharedValue(1);
+
   const biometricsEnabled = useAppSelector(
-    state => state.authentication.biometricsEnabled,
+    state => state.authentication!.biometricsEnabled,
   );
   const biometricType = useAppSelector(
-    state => state.authentication.faceIDSupported,
+    state => state.authentication!.faceIDSupported,
   );
 
-  const [scaler, set] = useSpring(() => ({
-    from: {scale: 1},
-    config: config.wobbly,
-  }));
+  const motionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scaler.value}],
+    };
+  });
 
-  const motionStyle = {
-    transform: [{scale: scaler.scale}],
+  const onPressIn = () => {
+    scaler.value = withSpring(0.85, {mass: 1});
+  };
+
+  const onPressOut = () => {
+    scaler.value = withSpring(1, {mass: 1});
   };
 
   return (
     <View
       style={[styles.container, !biometricsEnabled ? styles.disabled : null]}>
       <TouchableWithoutFeedback
-        onPressIn={() => set({scale: 0.85})}
-        onPressOut={() => set({scale: 1})}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
         onPress={onPress}
         disabled={!biometricsEnabled}>
-        <AnimatedView style={[styles.button, motionStyle]}>
+        <Animated.View style={[styles.button, motionStyle]}>
           <Image
             source={
               biometricType === true
@@ -44,7 +54,7 @@ const Button: React.FC<Props> = props => {
             }
             style={styles.image}
           />
-        </AnimatedView>
+        </Animated.View>
       </TouchableWithoutFeedback>
     </View>
   );

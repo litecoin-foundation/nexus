@@ -9,7 +9,6 @@ import {checkInternetReachable} from '../reducers/info';
 import {subscribeAppState} from '../reducers/authentication';
 import {setDeeplink} from '../reducers/deeplinks';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
-import {sleep} from '../lib/utils/poll';
 
 type RootStackParamList = {
   Loading: undefined;
@@ -29,10 +28,9 @@ const Loading: React.FC<Props> = props => {
   const isOnboarded = useAppSelector(state => state.onboarding.isOnboarded);
 
   useEffect(() => {
-    sleep(5000).then(() => dispatch(startLnd()));
+    dispatch(startLnd());
     dispatch(checkBiometricSupport());
     dispatch(checkInternetReachable());
-    // dispatch(startLnd());
     dispatch(subscribeAppState());
   }, [dispatch, isOnboarded]);
 
@@ -62,7 +60,6 @@ const Loading: React.FC<Props> = props => {
     };
 
     handleNavigation();
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

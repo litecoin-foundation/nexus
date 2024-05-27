@@ -1,4 +1,3 @@
-import {lnrpc} from '@litecoinfoundation/react-native-lndltc';
 import React from 'react';
 import {
   StyleSheet,
@@ -7,6 +6,7 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
+import {lnrpc} from '../../lib/lightning/proto/lightning';
 
 interface Props {
   onPress: () => void;

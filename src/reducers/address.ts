@@ -1,5 +1,5 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
-import lnd from '@litecoinfoundation/react-native-lndltc';
+import * as Lnd from '../lib/lightning/onchain';
 import {AppThunk} from './types';
 
 // types
@@ -19,15 +19,11 @@ const getAddressAction = createAction<string>('address/getAddressAction');
 export const getAddress =
   (mwebAddress?: boolean): AppThunk =>
   async dispatch => {
-    const rpc = await lnd.getAddress(mwebAddress ? 7 : undefined);
-
-    if (rpc.isErr()) {
-      console.error(`getAddress error: ${rpc.error}`);
-    }
-
-    if (rpc.isOk()) {
-      const {address} = rpc.value;
+    try {
+      const {address} = await Lnd.newAddress(mwebAddress ? 7 : undefined);
       dispatch(getAddressAction(address));
+    } catch (error) {
+      console.error(`getAddress error: ${error}`);
     }
   };
 

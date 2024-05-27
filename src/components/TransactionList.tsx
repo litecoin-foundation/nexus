@@ -83,10 +83,22 @@ const TransactionList = forwardRef((props: Props, ref) => {
   }, [dispatch]);
 
   const EmptySectionList = (
-    <View style={styles.emptySectionListContainer}>
-      <Text style={styles.emptySectionListText}>
-        Your transactions will appear here.
-      </Text>
+    <View style={{marginTop: 17}}>
+      <View
+        style={{
+          paddingBottom: 6,
+          borderBottomWidth: 1,
+          borderBottomColor: 'rgba(214, 216, 218, 0.3)',
+          backgroundColor: 'white',
+          paddingLeft: 20,
+        }}>
+        <Text style={styles.sectionHeaderText}>LOADING TRANSACTIONS...</Text>
+      </View>
+      {/* <View style={styles.emptySectionListContainer}>
+        <Text style={styles.emptySectionListText}>
+          Your transactions will appear here.
+        </Text>
+      </View> */}
     </View>
   );
 

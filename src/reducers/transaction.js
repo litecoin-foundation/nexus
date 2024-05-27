@@ -1,8 +1,9 @@
-import lnd from '@litecoinfoundation/react-native-lndltc';
+import * as LndOnchain from '../lib/lightning/onchain';
 import {createSelector} from '@reduxjs/toolkit';
 
 import {formatDate, formatTime} from '../lib/utils/date';
 import {getBalance} from './balance';
+import {LndMobileEventEmitter} from '../lib/utils/event-listener';
 
 // initial state
 const initialState = {
@@ -18,15 +19,22 @@ export const SEND_ONCHAIN_PAYMENT = 'SEND_ONCHAIN_PAYMENT';
 export const ESTIMATE_ONCHAIN_FEE = 'ESTIMATE_ONCHAIN_FEE';
 
 // actions
-export const subscribeTransactions = () => dispatch => {
-  lnd.subscribeToOnChainTransactions(res => {
-    if (res.isErr()) {
-      return console.error(res.error);
-    }
+export const subscribeTransactions = () => async dispatch => {
+  try {
+    await LndOnchain.subscribeTransactions();
+    LndMobileEventEmitter.addListener('SubscribeTransactions', async event => {
+      const transaction = LndOnchain.decodeSubscribeTransactionsResult(
+        event.data,
+      );
 
-    dispatch(updateTransactions());
-    dispatch(getBalance());
-  });
+      if (transaction) {
+        dispatch(updateTransactions());
+        dispatch(getBalance());
+      }
+    });
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 export const subscribeInvoices = () => dispatch => {
@@ -41,32 +49,32 @@ export const subscribeInvoices = () => dispatch => {
 };
 
 export const getTransactions = () => async dispatch => {
-  const rpc = await lnd.getTransactions();
-  const {transactions} = rpc.value;
-  let txs = [];
+  try {
+    const {transactions} = await LndOnchain.getTransactions();
+    let txs = [];
 
-  transactions.forEach(tx => {
-    let obj = {
-      txHash: tx.txHash,
-      amount: tx.amount,
-      numConfirmations: tx.numConfirmations,
-      blockHash: tx.blockHash,
-      blockHeight: tx.blockHeight,
-      timeStamp: tx.timeStamp,
-      fee: tx.total_fees,
-      destAddresses: tx.destAddresses,
-      label: tx.label,
-    };
-    txs.push(obj);
-  });
+    transactions.forEach(tx => {
+      let obj = {
+        txHash: tx.txHash,
+        amount: tx.amount,
+        numConfirmations: tx.numConfirmations,
+        blockHash: tx.blockHash,
+        blockHeight: tx.blockHeight,
+        timeStamp: tx.timeStamp,
+        fee: tx.totalFees,
+        destAddresses: tx.destAddresses,
+        label: tx.label,
+      };
+      txs.push(obj);
+    });
 
-  console.log('LOSHY: got some txs!!!');
-  console.log(transactions);
-
-  dispatch({
-    type: GET_TRANSACTIONS,
-    transactions: txs,
-  });
+    dispatch({
+      type: GET_TRANSACTIONS,
+      transactions: txs,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const getInvoices = () => async dispatch => {
@@ -90,26 +98,25 @@ export const sendOnchainPayment =
         const {confirmedBalance} = getState().balance;
         const sendAll = confirmedBalance === amount ? true : false;
 
-        const rpc = await lnd.sendCoins(
-          address,
-          amount,
-          undefined,
-          undefined,
-          sendAll,
-          label,
-        );
-        if (rpc.isErr()) {
-          reject(rpc.error);
-        }
+        try {
+          let txid;
+          if (sendAll) {
+            txid = (await LndOnchain.sendCoinsAll(address, undefined, label))
+              .txid;
+          } else {
+            txid = (
+              await LndOnchain.sendCoins(address, amount, undefined, label)
+            ).txid;
+          }
 
-        if (rpc.isOk()) {
-          const {txid} = rpc.value;
           dispatch({
             type: SEND_ONCHAIN_PAYMENT,
             txid,
             label,
           });
           resolve();
+        } catch (error) {
+          reject(error);
         }
       } catch (error) {
         reject(error);
@@ -119,30 +126,29 @@ export const sendOnchainPayment =
 
 export const estimateOnchainFee =
   (address, amount, targetConf) => async dispatch => {
-    try {
-      const parsedAmount = parseFloat(amount) * 1000000;
-      const rpc = await lnd.feeEstimate({address, parsedAmount, targetConf});
-
-      if (rpc.isErr()) {
-        console.error(`feeEstimate error: ${rpc.error}`);
-      }
-
-      if (rpc.isOk()) {
-        const {feeSat, feerateSatPerByte} = rpc.value;
-        dispatch({
-          type: ESTIMATE_ONCHAIN_FEE,
-          feeSat,
-          feerateSatPerByte,
-        });
-      }
-    } catch (error) {
-      console.error(`feeEstimate error: ${error}`);
-    }
+    // try {
+    //   const parsedAmount = parseFloat(amount) * 1000000;
+    //   const rpc = await lnd.feeEstimate({address, parsedAmount, targetConf});
+    //   const f = await LndOnchain.
+    //   if (rpc.isErr()) {
+    //     console.error(`feeEstimate error: ${rpc.error}`);
+    //   }
+    //   if (rpc.isOk()) {
+    //     const {feeSat, feerateSatPerByte} = rpc.value;
+    //     dispatch({
+    //       type: ESTIMATE_ONCHAIN_FEE,
+    //       feeSat,
+    //       feerateSatPerByte,
+    //     });
+    //   }
+    // } catch (error) {
+    //   console.error(`feeEstimate error: ${error}`);
+    // }
   };
 
 export const decodePaymentRequest = async payReqString => {
-  const rpc = await lnd.decodeInvoice(payReqString);
-  return rpc.value;
+  // const rpc = await lnd.decodeInvoice(payReqString);
+  // return rpc.value;
 };
 
 export const sendLightningPayment = paymentreq => async dispatch => {

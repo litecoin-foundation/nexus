@@ -1,10 +1,11 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
-import lnd, {lnrpc} from '@litecoinfoundation/react-native-lndltc';
 import NetInfo from '@react-native-community/netinfo';
 
 import {AppThunk} from './types';
 import {poll} from '../lib/utils/poll';
 import {RootState} from '../store';
+import * as Lnd from '../lib/lightning';
+import { lnrpc } from '../lib/lightning/proto/lightning';
 
 // types
 interface IInfo {
@@ -15,7 +16,7 @@ interface IInfo {
   syncedToGraph: boolean;
   blockHeight: number;
   blockHash: string;
-  bestHeaderTimestamp: number | Long;
+  bestHeaderTimestamp: number;
   uris: string[];
   chains: lnrpc.IChain[];
   numPeers: number;
@@ -24,7 +25,7 @@ interface IInfo {
   numInactiveChannels: number;
   testnet: boolean;
   isInternetReachable: boolean | null;
-  startingSyncTimestamp: number | undefined;
+  startingSyncTimestamp: number;
   percentSynced: number | undefined;
 }
 
@@ -61,14 +62,11 @@ const checkInternetReachableAction = createAction<boolean | null>(
 
 // functions
 const getInfo = (): AppThunk => async (dispatch, getState) => {
-  const rpc = await lnd.getInfo();
-  if (rpc.isErr()) {
-    console.error(`getInfo error: ${rpc.error}`);
-  }
+  try {
+    const infoRpc = await Lnd.getInfo();
 
-  if (rpc.isOk()) {
     let info = {
-      ...rpc.value,
+      ...infoRpc,
       startingSyncTimestamp: 0,
       percentSynced: 0,
     };
@@ -77,7 +75,7 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
     const chains: lnrpc.IChain[] = [];
     const features: {[key: string]: lnrpc.IFeature} = {};
 
-    for (const chainOption of rpc.value.chains) {
+    for (const chainOption of infoRpc.chains) {
       let serializedChain = {
         chain: chainOption.chain,
         network: chainOption.network,
@@ -85,8 +83,8 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
       chains.push(serializedChain);
     }
 
-    for (const featureKey in rpc.value.features) {
-      const val = rpc.value.features[featureKey];
+    for (const featureKey in infoRpc.features) {
+      const val = infoRpc.features[featureKey];
       let serializedFeature = {
         name: val.name,
         isRequired: val.isRequired,
@@ -102,7 +100,7 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
     // TODO: refactor required
     // first get neutrino cache before initwallet
     // then only calculate actual sync progress
-    const {startingSyncTimestamp} = getState().info;
+    const {startingSyncTimestamp} = getState().info!;
 
     // calculate % synced
     if (startingSyncTimestamp === undefined) {
@@ -123,6 +121,8 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
     }
 
     dispatch(getInfoAction(info));
+  } catch (error) {
+    console.error(`getInfo error: ${error}`);
   }
 };
 
@@ -165,8 +165,8 @@ export const infoSlice = createSlice({
 
 // selectors
 export const percentSyncedSelector = (state: RootState) =>
-  state.info.percentSynced;
+  state.info!.percentSynced;
 export const syncStatusSelector = (state: RootState) =>
-  state.info.syncedToChain;
+  state.info!.syncedToChain;
 
 export default infoSlice.reducer;

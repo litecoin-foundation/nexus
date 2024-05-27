@@ -1,11 +1,8 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {AppThunk} from './types';
-import lnd, {
-  ENetworks,
-  ICachedNeutrinoDBDownloadState,
-} from '@litecoinfoundation/react-native-lndltc';
-import lndCache from '@litecoinfoundation/react-native-lndltc/dist/utils/neutrino-cache';
 import shajs from 'sha.js';
+
+import * as Lnd from '../lib/lightning/wallet';
 
 // types
 interface IOnboardingState {
@@ -52,13 +49,13 @@ const setSeedRecoveryAction = createAction<string[]>(
 export const setRecoveryMode = createAction<boolean>(
   'onboarding/setRecoveryMode',
 );
-const getNeutrinoCacheAction = createAction<neutrinoCacheState>(
-  'onboarding/getNeutrinoCacheAction',
-);
+// const getNeutrinoCacheAction = createAction<neutrinoCacheState>(
+//   'onboarding/getNeutrinoCacheAction',
+// );
 
 // actions
 export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
-  const {seed} = getState().onboarding;
+  const {seed} = getState().onboarding!;
   const uniqueId: string = shajs('sha256').update(seed.join('')).digest('hex');
 
   dispatch(finishOnboardingAction(uniqueId));
@@ -67,19 +64,17 @@ export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
 // generates a seed on initial startup
 // not necessarily used if wallet is recovered
 export const genSeed = (): AppThunk => async dispatch => {
-  const rpc = await lnd.walletUnlocker.genSeed();
-  if (rpc.isErr()) {
-    console.error(rpc.error);
-  }
-
-  if (rpc.isOk()) {
-    dispatch(genSeedAction(rpc.value));
+  try {
+    const seed = await (await Lnd.genSeed(undefined)).cipherSeedMnemonic;
+    dispatch(genSeedAction(seed));
+  } catch (error) {
+    console.error(error);
   }
 };
 
 // sets users wallet seed
 export const setSeed = (): AppThunk => (dispatch, getState) => {
-  const {generatedSeed, beingRecovered} = getState().onboarding;
+  const {generatedSeed, beingRecovered} = getState().onboarding!;
   // if wallet is being recovered, there is not generated seed to set!
   if (beingRecovered) {
     return;
@@ -93,19 +88,19 @@ export const setSeedRecovery =
     dispatch(setSeedRecoveryAction(seedPhrase));
   };
 
-export const getNeutrinoCache = (): AppThunk => async dispatch => {
-  lndCache.addStateListener((state: ICachedNeutrinoDBDownloadState) => {
-    const {task, downloadProgress, unzipProgress} = state;
-    dispatch(
-      getNeutrinoCacheAction({
-        task,
-        downloadProgress,
-        unzipProgress,
-      }),
-    );
-  });
-  await lndCache.downloadCache(ENetworks.mainnet);
-};
+// export const getNeutrinoCache = (): AppThunk => async dispatch => {
+//   lndCache.addStateListener((state: ICachedNeutrinoDBDownloadState) => {
+//     const {task, downloadProgress, unzipProgress} = state;
+//     dispatch(
+//       getNeutrinoCacheAction({
+//         task,
+//         downloadProgress,
+//         unzipProgress,
+//       }),
+//     );
+//   });
+//   await lndCache.downloadCache(ENetworks.mainnet);
+// };
 
 // slicer
 export const onboardingSlice = createSlice({

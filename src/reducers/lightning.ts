@@ -1,21 +1,20 @@
-import lnd, {
-  ENetworks,
-  LndConf,
-  ss_lnrpc,
-} from '@litecoinfoundation/react-native-lndltc';
+import * as Lnd from '../lib/lightning';
+import * as LndWallet from '../lib/lightning/wallet';
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import RNFS from 'react-native-fs';
+import {NativeModules} from 'react-native';
 
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
 import {setItem, getItem} from '../lib/utils/keychain';
 import {deleteWalletDB} from '../lib/utils/file';
-
 import {finishOnboarding, setRecoveryMode} from './onboarding';
-import {subscribeTransactions, subscribeInvoices} from './transaction';
+import {subscribeTransactions} from './transaction';
 import {pollInfo} from './info';
 import {pollTicker} from './ticker';
-import {backupChannels} from './channels';
+import {LndMobileEventEmitter} from '../lib/utils/event-listener';
+import {lnrpc} from '../lib/lightning/proto/lightning';
+import {createConfig} from '../lib/utils/config';
 
 const PASS = 'PASSWORD';
 
@@ -35,30 +34,31 @@ const lndState = createAction<boolean>('lightning/lndState');
 // functions
 export const startLnd = (): AppThunk => async dispatch => {
   try {
-    const lndConf = new LndConf(ENetworks.mainnet);
-
+    await createConfig();
     // start LND
-    await lnd.start(lndConf);
+    await Lnd.startLnd(false, '--nolisten');
     dispatch(lndState(true));
+    // TODO: lockup wallet init/unlock until lnd is alive!
   } catch (err) {
-    console.error(err.error);
-    // console.error('CANT start LND');
+    console.error('CANT start LND');
+    console.error(err);
     // TODO: handle this
   }
 };
 
 export const stopLnd = (): AppThunk => async dispatch => {
   try {
-    await lnd.stop();
+    await NativeModules.LndMobile.stopLnd();
     dispatch(lndState(false));
   } catch (err) {
     console.error('CANT stop LND');
+    console.error(err);
     // TODO: handle this
   }
 };
 
 export const initWallet = (): AppThunk => async (dispatch, getState) => {
-  const {seed, beingRecovered} = getState().onboarding;
+  const {seed, beingRecovered} = getState().onboarding!;
 
   const password: string = uuidv4();
   await setItem(PASS, password);
@@ -66,30 +66,30 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
   try {
     await deleteWalletDB();
 
-    await lnd.walletUnlocker.initWallet(
-      password,
+    await LndWallet.initWallet(
       seed,
-      undefined,
+      password,
       beingRecovered === true ? 3000 : 0,
     );
+    await Lnd.subscribeState();
 
-    lnd.stateService.subscribeToStateChanges(
-      res => {
-        if (res.isOk()) {
-          if (res.value === ss_lnrpc.WalletState.RPC_ACTIVE) {
-            // dispatch pollers
-            dispatch(pollInfo());
-            dispatch(subscribeTransactions());
-            dispatch(subscribeInvoices());
-            dispatch(pollTicker());
-            dispatch(backupChannels());
-            dispatch(finishOnboarding());
-            return;
-          }
+    LndMobileEventEmitter.addListener('SubscribeState', async event => {
+      try {
+        const {state} = Lnd.decodeState(event.data);
+        if (state === lnrpc.WalletState.RPC_ACTIVE) {
+          // dispatch pollers
+          dispatch(pollInfo());
+          dispatch(subscribeTransactions());
+          dispatch(pollTicker());
+          dispatch(finishOnboarding());
+          // dispatch(subscribeInvoices());
+          // dispatch(backupChannels());
+          return;
         }
-      },
-      () => console.log('LND: onDone'),
-    );
+      } catch (error) {
+        console.error(error);
+      }
+    });
   } catch (error) {
     console.error(error);
   }
@@ -101,53 +101,49 @@ export const unlockWallet = (): AppThunk => async dispatch => {
 
     try {
       if (password !== null) {
-        const res = await lnd.walletUnlocker.unlockWallet(password);
-
-        if (res.isErr()) {
-          throw new Error(String(res.error));
-        }
+        await LndWallet.unlockWallet(password);
       } else {
         throw new Error('wallet password is null');
       }
 
-      lnd.stateService.subscribeToStateChanges(
-        res => {
-          if (res.isErr()) {
-            throw new Error(String(res.error));
-          }
-          if (res.isOk()) {
-            if (res.value === ss_lnrpc.WalletState.RPC_ACTIVE) {
-              // dispatch pollers
-              dispatch(pollInfo());
-              dispatch(subscribeTransactions());
-              dispatch(subscribeInvoices());
-              dispatch(pollTicker());
-              dispatch(backupChannels());
+      LndMobileEventEmitter.addListener('SubscribeState', async event => {
+        try {
+          const {state} = Lnd.decodeState(event.data);
 
-              resolve();
-            }
+          if (state === lnrpc.WalletState.RPC_ACTIVE) {
+            // dispatch pollers
+            dispatch(pollInfo());
+            dispatch(subscribeTransactions());
+            dispatch(pollTicker());
+            // dispatch(subscribeInvoices());
+            // dispatch(backupChannels());
+
+            resolve();
           }
-        },
-        () => console.log('LND: onDone'),
-      );
+        } catch (error) {
+          const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+
+          if ((await RNFS.exists(dbPath)) === false) {
+            // if no wallet db exists, user has likely uninstalled the app previously
+            // in this case, seed exists in keychain. initialise wallet from seed
+            // enabling recovery mode to scan for addresses
+            dispatch(setRecoveryMode(true));
+            dispatch(initWallet());
+            dispatch(setRecoveryMode(false));
+
+            // TODO: addtional handling here required
+            // TODO: also need to check if seed exist prior to attempting recovery
+
+            resolve();
+          } else {
+            throw new Error(String(error));
+          }
+        }
+      });
+
+      await Lnd.subscribeState();
     } catch (error: unknown) {
-      const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
-
-      if ((await RNFS.exists(dbPath)) === false) {
-        // if no wallet db exists, user has likely uninstalled the app previously
-        // in this case, seed exists in keychain. initialise wallet from seed
-        // enabling recovery mode to scan for addresses
-        await dispatch(setRecoveryMode(true));
-        await dispatch(initWallet());
-        await dispatch(setRecoveryMode(false));
-
-        // TODO: addtional handling here required
-        // TODO: also need to check if seed exist prior to attempting recovery
-
-        resolve();
-      } else {
-        throw new Error(String(error));
-      }
+      throw new Error(String(error));
     }
   });
 };
