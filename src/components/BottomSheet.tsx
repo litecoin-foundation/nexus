@@ -18,20 +18,26 @@ const FULLY_OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
 const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 
 interface Props {
-  children: React.ReactNode;
+  txViewComponent: React.ReactNode;
+  sendViewComponent: React.ReactNode;
+  receiveViewComponent: React.ReactNode;
   headerComponent: React.ReactNode;
   translationY: SharedValue<number>;
   scrollOffset: SharedValue<number>;
   handleSwipeDown: () => void;
+  activeTab: number;
 }
 
 const BottomSheet: React.FC<Props> = props => {
   const {
-    children,
+    txViewComponent,
+    sendViewComponent,
+    receiveViewComponent,
     headerComponent,
     translationY,
     scrollOffset,
     handleSwipeDown,
+    activeTab,
   } = props;
   const panGestureRef = useRef(Gesture.Pan());
   const blockScrollUntilAtTheTopRef = useRef(Gesture.Tap());
@@ -126,10 +132,24 @@ const BottomSheet: React.FC<Props> = props => {
         <GestureDetector gesture={headerGesture}>
           {headerComponent}
         </GestureDetector>
-        <GestureDetector
-          gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
-          {children}
-        </GestureDetector>
+        {activeTab === 0 ? (
+          <GestureDetector
+            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            {txViewComponent}
+          </GestureDetector>
+        ) : null}
+        {activeTab === 4 ? (
+          <GestureDetector
+            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            {sendViewComponent}
+          </GestureDetector>
+        ) : null}
+        {activeTab === 5 ? (
+          <GestureDetector
+            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            {receiveViewComponent}
+          </GestureDetector>
+        ) : null}
       </Animated.View>
     </GestureDetector>
   );

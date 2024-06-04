@@ -7,7 +7,6 @@ import {
   View,
   Platform,
 } from 'react-native';
-import {Shadow} from 'react-native-shadow-2';
 
 interface Props {
   imageSource: ImageSourcePropType;
@@ -17,11 +16,9 @@ const NewButton: React.FC<Props> = props => {
   const {imageSource} = props;
   return (
     <TouchableHighlight>
-      <Shadow offset={[0, 2]} distance={4} startColor={'#00000007'}>
-        <View style={styles.container}>
-          <Image source={imageSource} />
-        </View>
-      </Shadow>
+      <View style={styles.container}>
+        <Image source={imageSource} />
+      </View>
     </TouchableHighlight>
   );
 };

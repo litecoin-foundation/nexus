@@ -50,7 +50,6 @@ const Main: React.FC<Props> = props => {
   const scrollOffset = useSharedValue(0);
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
-    console.log(translationY.value);
     return {
       opacity: interpolate(-translationY.value, [0, 90], [1, 0]),
     };
@@ -114,20 +113,6 @@ const Main: React.FC<Props> = props => {
       transactions={displayedTxs}
     />
   );
-
-  let renderedCard;
-
-  switch (activeTab) {
-    case 0:
-      renderedCard = txListComponent;
-      break;
-    case 4:
-      renderedCard = <Send route={route} />;
-      break;
-    case 5:
-      renderedCard = <Receive />;
-      break;
-  }
 
   const HeaderComponent = (
     <View
@@ -200,9 +185,12 @@ const Main: React.FC<Props> = props => {
         headerComponent={HeaderComponent}
         translationY={translationY}
         scrollOffset={scrollOffset}
-        handleSwipeDown={() => setActiveTab(0)}>
-        {renderedCard}
-      </BottomSheet>
+        handleSwipeDown={() => setActiveTab(0)}
+        activeTab={activeTab}
+        txViewComponent={txListComponent}
+        sendViewComponent={<Send route={route} />}
+        receiveViewComponent={<Receive />}
+      />
 
       <TransactionDetailModal
         close={() => {

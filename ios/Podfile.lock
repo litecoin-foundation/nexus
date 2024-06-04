@@ -1002,7 +1002,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-netinfo (9.5.0):
+  - react-native-netinfo (11.3.2):
     - React-Core
   - react-native-quick-base64 (2.1.2):
     - DoubleConversion
@@ -1073,8 +1073,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webview (11.26.1):
+  - react-native-webview (13.10.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - React-nativeconfig (0.74.1)
   - React-NativeModulesApple (0.74.1):
     - glog
@@ -1308,9 +1327,9 @@ PODS:
     - React-Core
   - RNCClipboard (1.14.1):
     - React-Core
-  - RNCMaskedView (0.2.9):
+  - RNCMaskedView (0.3.1):
     - React-Core
-  - RNDeviceInfo (10.13.2):
+  - RNDeviceInfo (10.14.0):
     - React-Core
   - RNFS (2.20.0):
     - React-Core
@@ -1339,11 +1358,11 @@ PODS:
     - React
   - RNKeychain (8.2.0):
     - React-Core
-  - RNLocalize (2.2.6):
+  - RNLocalize (3.1.0):
     - React-Core
-  - RNReactNativeHapticFeedback (1.14.0):
+  - RNReactNativeHapticFeedback (2.2.0):
     - React-Core
-  - RNReanimated (3.8.1):
+  - RNReanimated (3.12.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1386,22 +1405,16 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (13.14.1):
+  - RNSVG (15.3.0):
     - React-Core
-  - RNZipArchive (6.1.2):
-    - React-Core
-    - RNZipArchive/Core (= 6.1.2)
-    - SSZipArchive (~> 2.2)
-  - RNZipArchive/Core (6.1.2):
-    - React-Core
-    - SSZipArchive (~> 2.2)
   - SocketRocket (0.7.0)
-  - SSZipArchive (2.4.3)
   - TouchID (4.4.1):
     - React
-  - VisionCamera (3.9.2):
-    - React
-    - React-callinvoker
+  - VisionCamera (4.0.5):
+    - VisionCamera/Core (= 4.0.5)
+    - VisionCamera/React (= 4.0.5)
+  - VisionCamera/Core (4.0.5)
+  - VisionCamera/React (4.0.5):
     - React-Core
   - Yoga (0.0.0)
 
@@ -1492,7 +1505,6 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - RNZipArchive (from `../node_modules/react-native-zip-archive`)
   - TouchID (from `../node_modules/react-native-touch-id`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -1503,7 +1515,6 @@ SPEC REPOS:
     - MMKVCore
     - OpenSSL-Universal
     - SocketRocket
-    - SSZipArchive
 
 EXTERNAL SOURCES:
   boost:
@@ -1675,8 +1686,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNZipArchive:
-    :path: "../node_modules/react-native-zip-archive"
   TouchID:
     :path: "../node_modules/react-native-touch-id"
   VisionCamera:
@@ -1729,13 +1738,13 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 11029dcd47c5c9e057a4092ab9c2a8d10a496a33
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-mmkv: 8c9a677e64a1ac89b0c6cf240feea528318b3074
-  react-native-netinfo: 48c5f79a84fbc3ba1d28a8b0d04adeda72885fa8
+  react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
   react-native-quick-base64: a74c4b2607b9de016877a8edb776b6ac59785809
   react-native-quick-crypto: 31104a167cd5b975a454f2314a568962098bd32f
   react-native-safe-area-context: dcab599c527c2d7de2d76507a523d20a0b83823d
   react-native-segmented-control: 65df6cd0619b780b3843d574a72d4c7cec396097
   react-native-slider: ce295d2bf830a7990af05b0bd70ab28c133e230c
-  react-native-webview: 9f111dfbcfc826084d6c507f569e5e03342ee1c1
+  react-native-webview: 2905d1455be11bcbd909ef33472d8fcdf7abcc41
   React-nativeconfig: b0073a590774e8b35192fead188a36d1dca23dec
   React-NativeModulesApple: df46ff3e3de5b842b30b4ca8a6caae6d7c8ab09f
   React-perflogger: 3d31e0d1e8ad891e43a09ac70b7b17a79773003a
@@ -1761,22 +1770,20 @@ SPEC CHECKSUMS:
   ReactCommon: f42444e384d82ab89184aed5d6f3142748b54768
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNCClipboard: 0a720adef5ec193aa0e3de24c3977222c7e52a37
-  RNCMaskedView: 949696f25ec596bfc697fc88e6f95cf0c79669b6
-  RNDeviceInfo: 42aadf1282ffa0a88dc38a504a7be145eb010dfa
+  RNCMaskedView: 090213d32d8b3bb83a4dcb7d12c18f0152591906
+  RNDeviceInfo: 59344c19152c4b2b32283005f9737c5c64b42fba
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 2282cfbcf86c360d29f44ace393203afd5c6cff7
   RNICloudStore: 7ac4f2630e2a7e90a4b059b92e8483828bbacd2b
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
-  RNLocalize: d4b8af4e442d4bcca54e68fc687a2129b4d71a81
-  RNReactNativeHapticFeedback: 1e3efeca9628ff9876ee7cdd9edec1b336913f8c
-  RNReanimated: fe4defa06b4fd74169321336788982dbd0674a79
+  RNLocalize: e8694475db034bf601e17bd3dfa8986565e769eb
+  RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
+  RNReanimated: 8978449b2a511388ea71faf1e66f669134e87658
   RNScreens: b32a9ff15bea7fcdbe5dff6477bc503f792b1208
-  RNSVG: af3907ac5d4fa26a862b75a16d8f15bc74f2ceda
-  RNZipArchive: 6d736ee4e286dbbd9d81206b7a4da355596ca04a
+  RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
-  SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
-  VisionCamera: 36c460338692788a0d377dce7d32f8ba049fb4f2
+  VisionCamera: 59949b04a51c00a52a6d7125425d01664792c9bd
   Yoga: 348f8b538c3ed4423eb58a8e5730feec50bce372
 
 PODFILE CHECKSUM: 8a7f5f3169b08a52260fba2fb3412f3a8ae4cfdd
