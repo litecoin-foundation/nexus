@@ -17,6 +17,7 @@ import HeaderButton from '../components/Buttons/HeaderButton';
 import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';
 import Send from '../components/Cards/Send';
+import Buy from '../components/Cards/Buy';
 import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
@@ -128,7 +129,10 @@ const Main: React.FC<Props> = props => {
       <DashboardButton
         title="Buy"
         imageSource={require('../assets/icons/buy-icon.png')}
-        handlePress={() => console.warn('Buy')}
+        handlePress={() => {
+          shrinkHeaderOnButtonPress();
+          setActiveTab(1);
+        }}
         active={activeTab === 1}
         imageContainerStyle={{paddingTop: 17}}
       />
@@ -188,6 +192,7 @@ const Main: React.FC<Props> = props => {
         handleSwipeDown={() => setActiveTab(0)}
         activeTab={activeTab}
         txViewComponent={txListComponent}
+        buyViewComponent={<Buy />}
         sendViewComponent={<Send route={route} />}
         receiveViewComponent={<Receive />}
       />

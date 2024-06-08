@@ -44,6 +44,8 @@ const handleAmountConversion = () => (dispatch, getState) => {
   const {fiatAmount} = getState().input;
   const {paymentRate} = getState().ticker;
 
+  console.log(paymentRate);
+
   dispatch({
     type: UPDATE_AMOUNT,
     amount: `${(parseFloat(fiatAmount) / paymentRate).toFixed(4)}`,

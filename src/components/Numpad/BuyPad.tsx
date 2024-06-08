@@ -1,11 +1,12 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
-import Button from './Button';
+import BuyButton from './BuyButton';
 
-const Pad = props => {
-  const {currentValue, onChange, children, dotDisabled, noBackgroundColor} =
-    props;
+interface Props {}
+
+const BuyPad: React.FC<Props> = props => {
+  const {currentValue, onChange, dotDisabled} = props;
 
   const handlePress = input => {
     let response;
@@ -45,7 +46,7 @@ const Pad = props => {
   const buttons = values.map(value => {
     if (value === '.') {
       return (
-        <Button
+        <BuyButton
           key="dot-button-key"
           value={value}
           disabled={dotDisabled}
@@ -54,36 +55,20 @@ const Pad = props => {
       );
     }
     return (
-      <Button key={value} value={value} onPress={() => handlePress(value)} />
+      <BuyButton key={value} value={value} onPress={() => handlePress(value)} />
     );
   });
-  return (
-    <View
-      style={[
-        styles.container,
-        noBackgroundColor ? styles.noBackgroundColor : null,
-      ]}>
-      <View style={styles.area}>{buttons}</View>
-      {children}
-    </View>
-  );
+  return <View style={styles.container}>{buttons}</View>;
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F8FBFD',
+    height: 329,
     justifyContent: 'space-evenly',
-  },
-  area: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    width: '80%',
-    alignSelf: 'center',
-  },
-  noBackgroundColor: {
-    backgroundColor: null,
+    paddingVertical: 20,
   },
 });
 
-export default Pad;
+export default BuyPad;

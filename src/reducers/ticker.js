@@ -23,27 +23,16 @@ export const UPDATE_HISTORIC_RATE_MONTH = 'UPDATE_HISTORIC_RATE_MONTH';
 const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 
 // actions
-export const getPaymentRate = (exchange) => async (dispatch, getState) => {
+export const getPaymentRate = () => async (dispatch, getState) => {
   const {currencyCode} = getState().settings;
-  let url = '';
-  switch (exchange) {
-    case 'moonpay':
-      url =
-        'https://api.moonpay.io/v3/currencies/ltc/quote/' +
-        `?apiKey=${publishableKey}` +
-        '&baseCurrencyAmount=1' +
-        `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
-        '&paymentMethod=credit_debit_card';
-      break;
-    default:
-      url =
-        'https://api.moonpay.io/v3/currencies/ltc/quote/' +
-        `?apiKey=${publishableKey}` +
-        '&baseCurrencyAmount=1' +
-        `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
-        '&paymentMethod=credit_debit_card';
-      break;
-  }
+  const url =
+    'https://api.moonpay.io/v3/currencies/ltc/quote/' +
+    `?apiKey=${publishableKey}` +
+    '&baseCurrencyAmount=1' +
+    `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
+    '&paymentMethod=credit_debit_card';
+
+  console.log(url);
   try {
     const {data} = await axios.get(url);
     let paymentRate = null;
@@ -62,7 +51,6 @@ export const getPaymentRate = (exchange) => async (dispatch, getState) => {
   } catch (error) {
     console.log(error);
   }
-
 };
 
 export const getTicker = () => async dispatch => {
@@ -78,7 +66,7 @@ export const getTicker = () => async dispatch => {
 };
 
 export const pollPaymentRate = () => async dispatch => {
-  await poll(() => dispatch(getPaymentRate('moonpay')), 15000);
+  await poll(() => dispatch(getPaymentRate()), 15000);
 };
 
 export const pollTicker = () => async dispatch => {

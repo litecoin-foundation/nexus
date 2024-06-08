@@ -44,3 +44,4 @@ ios/Plasma.xcworkspace
 lndmobile-*-v*.tar.gz
 ios/.xcode.env.local
 vendor/
+.cxx/

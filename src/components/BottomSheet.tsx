@@ -19,6 +19,7 @@ const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 
 interface Props {
   txViewComponent: React.ReactNode;
+  buyViewComponent: React.ReactNode;
   sendViewComponent: React.ReactNode;
   receiveViewComponent: React.ReactNode;
   headerComponent: React.ReactNode;
@@ -31,6 +32,7 @@ interface Props {
 const BottomSheet: React.FC<Props> = props => {
   const {
     txViewComponent,
+    buyViewComponent,
     sendViewComponent,
     receiveViewComponent,
     headerComponent,
@@ -136,6 +138,12 @@ const BottomSheet: React.FC<Props> = props => {
           <GestureDetector
             gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
             {txViewComponent}
+          </GestureDetector>
+        ) : null}
+        {activeTab === 1 ? (
+          <GestureDetector
+            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            {buyViewComponent}
           </GestureDetector>
         ) : null}
         {activeTab === 4 ? (

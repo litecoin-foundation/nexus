@@ -1,7 +1,6 @@
 import React from 'react';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 
-import Buy from '../screens/Buy/Buy';
 import Confirm from '../screens/Buy/Confirm';
 import WebPage from '../screens/WebPage';
 import History from '../screens/Buy/History';
@@ -54,11 +53,6 @@ function BuyStack() {
         headerBackTitleVisible: false,
         headerTintColor: 'white',
       }}>
-      <Stack.Screen
-        name="Buy"
-        component={Buy}
-        options={Buy.navigationOptions}
-      />
       <Stack.Screen
         name="ConfirmStack"
         component={ConfirmWebPageModalStack}

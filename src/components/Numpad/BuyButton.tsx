@@ -1,0 +1,81 @@
+import React from 'react';
+import {
+  TouchableWithoutFeedback,
+  Text,
+  StyleSheet,
+  Platform,
+} from 'react-native';
+
+import {triggerSelectionFeedback} from '../../lib/utils/haptic';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+
+interface Props {
+  value: string;
+  onPress: () => void;
+  disabled?: boolean;
+}
+
+const BuyButton: React.FC<Props> = props => {
+  const {value, onPress, disabled} = props;
+  const scaler = useSharedValue(1);
+
+  const motionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scaler.value}],
+    };
+  });
+
+  const onPressIn = () => {
+    scaler.value = withSpring(0.85, {mass: 1});
+  };
+
+  const onPressOut = () => {
+    scaler.value = withSpring(1, {mass: 1});
+  };
+
+  return (
+    <TouchableWithoutFeedback
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      disabled={disabled}
+      onPress={() => {
+        triggerSelectionFeedback();
+        onPress();
+      }}>
+      <Animated.View style={[styles.button, motionStyle]}>
+        <Text style={styles.text}>{value}</Text>
+      </Animated.View>
+    </TouchableWithoutFeedback>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    width: '33%',
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  button: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 125,
+    height: 72,
+  },
+  text: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#293C62',
+    fontSize: 24,
+  },
+});
+
+export default BuyButton;
