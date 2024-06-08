@@ -137,7 +137,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'violet',
     height: 400,
   },
   sectionHeaderContainer: {

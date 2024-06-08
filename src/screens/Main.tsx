@@ -120,11 +120,11 @@ const Main: React.FC<Props> = props => {
       style={{
         marginLeft: 20,
         marginRight: 20,
-        marginTop: 18,
-        marginBottom: 42,
+        marginTop: 5,
         flexDirection: 'row',
         justifyContent: 'space-evenly',
-        height: 50,
+        height: 110,
+        backgroundColor: '#fcfcfc',
       }}>
       <DashboardButton
         title="Buy"
@@ -134,14 +134,14 @@ const Main: React.FC<Props> = props => {
           setActiveTab(1);
         }}
         active={activeTab === 1}
-        imageContainerStyle={{paddingTop: 17}}
+        textPadding={28}
       />
       <DashboardButton
         title="Sell"
         imageSource={require('../assets/icons/sell-icon.png')}
         handlePress={() => console.warn('Sell')}
         active={activeTab === 2}
-        imageContainerStyle={{paddingTop: 17}}
+        textPadding={30}
       />
       <DashboardButton
         title="Convert"
@@ -152,7 +152,7 @@ const Main: React.FC<Props> = props => {
           console.log(transactions);
         }}
         active={activeTab === 3}
-        imageContainerStyle={{paddingTop: 15}}
+        textPadding={18}
       />
       <DashboardButton
         title="Send"
@@ -162,7 +162,7 @@ const Main: React.FC<Props> = props => {
           setActiveTab(4);
         }}
         active={activeTab === 4}
-        imageContainerStyle={{paddingTop: 14}}
+        textPadding={25}
       />
       <DashboardButton
         title="Receive"
@@ -172,7 +172,7 @@ const Main: React.FC<Props> = props => {
           setActiveTab(5);
         }}
         active={activeTab === 5}
-        imageContainerStyle={{paddingTop: 15}}
+        textPadding={18}
       />
     </View>
   );

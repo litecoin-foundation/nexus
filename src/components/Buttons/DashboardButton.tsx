@@ -1,16 +1,26 @@
+import {
+  Canvas,
+  Image,
+  Mask,
+  Rect,
+  RoundedRect,
+  Shadow,
+  Text,
+  interpolateColors,
+  matchFont,
+  rect,
+  useImage,
+} from '@shopify/react-native-skia';
 import React, {useEffect} from 'react';
 import {
   ImageSourcePropType,
+  Platform,
+  Pressable,
   StyleSheet,
   View,
-  Platform,
-  StyleProp,
-  ViewStyle,
-  Pressable,
 } from 'react-native';
-import Animated, {
-  interpolateColor,
-  useAnimatedStyle,
+import {
+  useDerivedValue,
   useSharedValue,
   withSpring,
   withTiming,
@@ -21,92 +31,119 @@ interface Props {
   title: string;
   handlePress: () => void;
   active: boolean;
-  imageContainerStyle: StyleProp<ViewStyle>;
+  textPadding: number;
 }
 
 const DashboardButton: React.FC<Props> = props => {
-  const {imageSource, title, handlePress, active, imageContainerStyle} = props;
+  const {active, handlePress, title, imageSource, textPadding} = props;
+  const fontFamily =
+    Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
+  const fontStyle = {
+    fontFamily,
+    fontSize: 12,
+    fontStyle: 'normal',
+    fontWeight: '700',
+  };
+  const font = matchFont(fontStyle);
 
-  // animates when active prop changes
+  const image = useImage(imageSource);
+
+  // animation
+  const buttonHeight = useSharedValue(49);
+  const borderOpacity = useSharedValue(1);
+
   useEffect(() => {
-    buttonHeight.value = active ? 88 : 50;
-    progress.value = withTiming(1 - progress.value, {duration: 200});
+    buttonHeight.value = withSpring(active ? 88 : 49, {mass: 0.5});
+    borderOpacity.value = withTiming(active ? 0 : 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
-  const buttonHeight = useSharedValue(active ? 88 : 49);
-  const progress = useSharedValue(active ? 0 : 1);
+  const interpolatedButtonColour = useDerivedValue(
+    () =>
+      interpolateColors(buttonHeight.value, [49, 88], ['#fefefe', '#2C72FF']),
+    [buttonHeight],
+  );
 
-  const animatedButtonContainerStyle = useAnimatedStyle(() => {
-    return {
-      height: withSpring(buttonHeight.value, {mass: 0.5}),
-      backgroundColor: interpolateColor(
-        progress.value,
-        [0, 1],
-        ['#fefefe', '#2C72FF'],
+  const interpolatedColour = useDerivedValue(
+    () => interpolateColors(buttonHeight.value, [49, 88], ['black', 'white']),
+    [buttonHeight],
+  );
+
+  const interpolatedShadowColour = useDerivedValue(
+    () =>
+      interpolateColors(
+        buttonHeight.value,
+        [49, 88],
+        ['rgba(0, 0, 0, 0.11)', 'rgba(0, 0, 0, 0)'],
       ),
-      borderColor: interpolateColor(
-        progress.value,
-        [0, 1],
-        ['rgba(216, 210, 210, 0.75)', 'rgba(0,0,0,0)'],
+    [buttonHeight],
+  );
+
+  const interpolatedInnerShadowColour = useDerivedValue(
+    () =>
+      interpolateColors(
+        buttonHeight.value,
+        [49, 88],
+        ['rgba(0, 0, 0, 0.07)', 'rgba(0, 0, 0, 0)'],
       ),
-    };
-  });
-
-  const animatedImageStyle = useAnimatedStyle(() => {
-    return {
-      tintColor: interpolateColor(progress.value, [0, 1], ['black', 'white']),
-    };
-  });
-
-  const animatedTextStyle = useAnimatedStyle(() => {
-    return {
-      color: interpolateColor(progress.value, [0, 1], ['black', 'white']),
-    };
-  });
+    [buttonHeight],
+  );
 
   return (
-    <Pressable onPress={handlePress}>
-      <Animated.View
-        style={[
-          styles.container,
-          animatedButtonContainerStyle,
-          imageContainerStyle,
-        ]}>
-        <Animated.Image style={animatedImageStyle} source={imageSource} />
-      </Animated.View>
-      <View style={styles.textContainer}>
-        <Animated.Text style={[styles.text, animatedTextStyle]}>
-          {title}
-        </Animated.Text>
-      </View>
-    </Pressable>
+    <View style={styles.width}>
+      <Pressable style={{height: 110}} onPress={handlePress}>
+        <Canvas style={styles.container}>
+          <RoundedRect
+            x={10}
+            y={10}
+            width={60}
+            height={buttonHeight}
+            r={12}
+            color={interpolatedButtonColour}>
+            <Shadow
+              dx={0}
+              dy={-1}
+              blur={3}
+              color={interpolatedInnerShadowColour}
+              inner
+            />
+            <Shadow dx={0} dy={2} blur={4} color={interpolatedShadowColour} />
+          </RoundedRect>
+          <RoundedRect
+            x={10}
+            y={10}
+            width={60}
+            height={buttonHeight}
+            r={12}
+            color="rgba(216, 210, 210, 0.75)"
+            strokeWidth={1}
+            style="stroke"
+            opacity={borderOpacity}
+          />
+
+          <Mask
+            mode="alpha"
+            mask={<Image image={image} x={30} y={10} width={21} height={50} />}>
+            <Rect rect={rect(0, 0, 300, 300)} color={interpolatedColour} />
+          </Mask>
+
+          <Text
+            text={title}
+            x={textPadding}
+            y={82}
+            font={font}
+            color={interpolatedColour}
+          />
+        </Canvas>
+      </Pressable>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  width: {width: 82},
   container: {
-    borderRadius: 12,
-    borderWidth: 1,
-    backgroundColor: '#fefefe',
-    width: 60,
-    alignItems: 'center',
-  },
-  textContainer: {
-    position: 'absolute',
-    width: '100%',
-    marginTop: 60,
-  },
-  text: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-    fontSize: 12,
-    textAlign: 'center',
+    flex: 1,
   },
 });
 

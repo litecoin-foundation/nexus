@@ -1052,6 +1052,29 @@ PODS:
     - React-Core
   - react-native-segmented-control (2.2.2):
     - React-Core
+  - react-native-skia (1.3.3):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React
+    - React-callinvoker
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-slider (4.5.2):
     - DoubleConversion
     - glog
@@ -1467,6 +1490,7 @@ DEPENDENCIES:
   - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-segmented-control (from `../node_modules/@react-native-community/segmented-control`)"
+  - "react-native-skia (from `../node_modules/@shopify/react-native-skia`)"
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
@@ -1610,6 +1634,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-segmented-control:
     :path: "../node_modules/@react-native-community/segmented-control"
+  react-native-skia:
+    :path: "../node_modules/@shopify/react-native-skia"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
   react-native-webview:
@@ -1743,6 +1769,7 @@ SPEC CHECKSUMS:
   react-native-quick-crypto: 31104a167cd5b975a454f2314a568962098bd32f
   react-native-safe-area-context: dcab599c527c2d7de2d76507a523d20a0b83823d
   react-native-segmented-control: 65df6cd0619b780b3843d574a72d4c7cec396097
+  react-native-skia: fe38efae026a4bacc8e9793c741f02062ff0acbf
   react-native-slider: ce295d2bf830a7990af05b0bd70ab28c133e230c
   react-native-webview: 2905d1455be11bcbd909ef33472d8fcdf7abcc41
   React-nativeconfig: b0073a590774e8b35192fead188a36d1dca23dec
