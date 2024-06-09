@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FCFCFC',
     flexDirection: 'column',
-    maxHeight: 680,
+    maxHeight: 530,
   },
   subcontainer: {
     marginHorizontal: 24,
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 248,
     flex: 1,
-    marginBottom: 50,
-    maxHeight: 296,
+    // marginBottom: 50,
+    // maxHeight: 260,
   },
   titleText: {
     fontFamily:

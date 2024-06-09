@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Text} from 'react-native';
 import {useSelector} from 'react-redux';
 import Animated, {
   Extrapolation,
   interpolate,
+  interpolateColor,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
@@ -48,21 +49,49 @@ const Main: React.FC<Props> = props => {
 
   // Animation
   const translationY = useSharedValue(0);
+  const bottomSheetTranslateY = useSharedValue(350);
   const scrollOffset = useSharedValue(0);
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
+    const translateY = bottomSheetTranslateY.value + translationY.value;
+
+    const minTranslateY = Math.max(250, translateY);
+    const clampedTranslateY = Math.min(350, minTranslateY);
     return {
-      opacity: interpolate(-translationY.value, [0, 90], [1, 0]),
+      opacity: interpolate(clampedTranslateY, [250, 350], [0, 1]),
     };
   });
 
   const animatedHeaderHeight = useAnimatedProps(() => {
+    const translateY = bottomSheetTranslateY.value + translationY.value;
+
+    const minTranslateY = Math.max(250, translateY);
+    const clampedTranslateY = Math.min(350, minTranslateY);
     return {
-      height: interpolate(
-        -translationY.value,
-        [0, 180],
-        [350, 180],
-        Extrapolation.CLAMP,
+      height: clampedTranslateY,
+      borderBottomLeftRadius: interpolate(
+        clampedTranslateY,
+        [250, 350],
+        [0, 40],
+      ),
+      borderBottomRightRadius: interpolate(
+        clampedTranslateY,
+        [250, 350],
+        [1, 40],
+      ),
+    };
+  });
+
+  const animatedHeaderContainerBackground = useAnimatedStyle(() => {
+    const translateY = bottomSheetTranslateY.value + translationY.value;
+
+    const minTranslateY = Math.max(250, translateY);
+    const clampedTranslateY = Math.min(350, minTranslateY);
+    return {
+      backgroundColor: interpolateColor(
+        clampedTranslateY,
+        [250, 350],
+        ['#1162E6', '#fcfcfc'],
       ),
     };
   });
@@ -72,7 +101,7 @@ const Main: React.FC<Props> = props => {
   };
 
   const expandHeaderOnButtonPress = () => {
-    translationY.value = withSpring(-10, {mass: 0.5});
+    translationY.value = withSpring(-12, {mass: 0.5});
   };
 
   // change headerLeft button based on if card is open
@@ -116,16 +145,7 @@ const Main: React.FC<Props> = props => {
   );
 
   const HeaderComponent = (
-    <View
-      style={{
-        marginLeft: 20,
-        marginRight: 20,
-        marginTop: 5,
-        flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        height: 110,
-        backgroundColor: '#fcfcfc',
-      }}>
+    <View style={styles.headerContainer}>
       <DashboardButton
         title="Buy"
         imageSource={require('../assets/icons/buy-icon.png')}
@@ -149,7 +169,6 @@ const Main: React.FC<Props> = props => {
         handlePress={() => {
           console.log('dispatching gettxs');
           dispatch(getTransactions());
-          console.log(transactions);
         }}
         active={activeTab === 3}
         textPadding={18}
@@ -178,7 +197,8 @@ const Main: React.FC<Props> = props => {
   );
 
   return (
-    <View style={styles.container}>
+    <Animated.View
+      style={[styles.container, animatedHeaderContainerBackground]}>
       <NewAmountView animatedProps={animatedHeaderHeight}>
         <Animated.View style={animatedHeaderStyle}>
           <LineChart />
@@ -188,6 +208,7 @@ const Main: React.FC<Props> = props => {
       <BottomSheet
         headerComponent={HeaderComponent}
         translationY={translationY}
+        bottomSheetTranslateY={bottomSheetTranslateY}
         scrollOffset={scrollOffset}
         handleSwipeDown={() => setActiveTab(0)}
         activeTab={activeTab}
@@ -205,20 +226,29 @@ const Main: React.FC<Props> = props => {
         transaction={selectedTransaction}
         navigate={navigation.navigate}
       />
-    </View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    // backgroundColor: '#fcfcfc',
   },
   cardContainer: {
     flexGrow: 1,
     alignSelf: 'stretch',
     marginTop: 25,
     bottom: 0,
+  },
+  headerContainer: {
+    marginLeft: 20,
+    marginRight: 20,
+    marginTop: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    height: 110,
+    backgroundColor: '#fcfcfc',
   },
 });
 

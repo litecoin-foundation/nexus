@@ -7,6 +7,7 @@ import {
 } from 'react-native-gesture-handler';
 import Animated, {
   SharedValue,
+  interpolate,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -24,6 +25,7 @@ interface Props {
   receiveViewComponent: React.ReactNode;
   headerComponent: React.ReactNode;
   translationY: SharedValue<number>;
+  bottomSheetTranslateY: SharedValue<number>;
   scrollOffset: SharedValue<number>;
   handleSwipeDown: () => void;
   activeTab: number;
@@ -37,6 +39,7 @@ const BottomSheet: React.FC<Props> = props => {
     receiveViewComponent,
     headerComponent,
     translationY,
+    bottomSheetTranslateY,
     scrollOffset,
     handleSwipeDown,
     activeTab,
@@ -44,13 +47,11 @@ const BottomSheet: React.FC<Props> = props => {
   const panGestureRef = useRef(Gesture.Pan());
   const blockScrollUntilAtTheTopRef = useRef(Gesture.Tap());
   const [snapPoint, setSnapPoint] = useState(CLOSED_SNAP_POINT);
-  const bottomSheetTranslateY = useSharedValue(CLOSED_SNAP_POINT);
 
   const onHandlerEndOnJS = (point: number) => {
     setSnapPoint(point);
     // check if BottomSheet is being swiped away
     // if true, close open tab and show tx history!
-    // TODO: fix slowdown
     if (point === 350) {
       runOnJS(handleSwipeDown)();
     }
