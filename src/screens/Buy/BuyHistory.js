@@ -6,8 +6,9 @@ import {HeaderBackButton} from '@react-navigation/elements';
 import Header from '../../components/Header';
 import {getTransactionHistory} from '../../reducers/buy';
 import BuyTransactionCell from '../../components/Cells/BuyTransactionCell';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
-const History = () => {
+const BuyHistory = () => {
   const dispatch = useDispatch();
   const {history} = useSelector(state => state.buy);
 
@@ -42,7 +43,7 @@ const History = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgb(238,244,249)',
+    backgroundColor: '#FAFAFA',
   },
   descriptionText: {
     color: '#7C96AE',
@@ -58,28 +59,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptySectionListText: {
-    color: '#7C96AE',
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#484859',
     fontSize: 12,
-    fontWeight: '600',
   },
   headerLeftMargin: {
     marginLeft: 22,
   },
+  headerTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: 'white',
+    fontSize: 17,
+  },
 });
 
-History.navigationOptions = ({navigation}) => {
+export const BuyHistoryNavigationOptions = navigation => {
   return {
-    headerTitle: 'History',
+    headerTitle: () => <Text style={styles.headerTitle}>Purchase History</Text>,
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
     headerLeft: () => (
-      <View style={styles.headerLeftMargin}>
-        <HeaderBackButton
-          tintColor="white"
-          labelVisible={false}
-          onPress={() => navigation.goBack()}
-        />
-      </View>
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
     ),
   };
 };
 
-export default History;
+export default BuyHistory;

@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
     height: 248,
     flex: 1,
     marginBottom: 50,
+    maxHeight: 296,
   },
   titleText: {
     fontFamily:

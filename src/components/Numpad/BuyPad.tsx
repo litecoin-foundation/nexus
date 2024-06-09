@@ -1,14 +1,19 @@
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Dimensions} from 'react-native';
 
 import BuyButton from './BuyButton';
+import {Canvas, LinearGradient, Rect, vec} from '@shopify/react-native-skia';
 
-interface Props {}
+interface Props {
+  currentValue: string;
+  dotDisabled?: boolean;
+  onChange: (value: string) => void;
+}
 
 const BuyPad: React.FC<Props> = props => {
   const {currentValue, onChange, dotDisabled} = props;
 
-  const handlePress = input => {
+  const handlePress = (input: string) => {
     let response;
     switch (input) {
       case '.':
@@ -54,16 +59,70 @@ const BuyPad: React.FC<Props> = props => {
         />
       );
     }
+    if (value === '⌫') {
+      return (
+        <BuyButton
+          key="back-arrow-button-key"
+          value={value}
+          onPress={() => handlePress(value)}
+          imageSource={require('../../assets/icons/back-arrow.png')}
+        />
+      );
+    }
     return (
       <BuyButton key={value} value={value} onPress={() => handlePress(value)} />
     );
   });
-  return <View style={styles.container}>{buttons}</View>;
+
+  const h = [115, 210, 310];
+  const v = [140, 290];
+
+  return (
+    <>
+      <Canvas
+        style={{
+          position: 'absolute',
+          height: 410,
+          width: Dimensions.get('screen').width,
+        }}>
+        {h.map(y => (
+          <Rect x={0} y={y} width={Dimensions.get('screen').width} height={1}>
+            <LinearGradient
+              start={vec(0, 0)}
+              end={vec(Dimensions.get('screen').width, 1)}
+              colors={[
+                'rgba(223,223,223,0)',
+                '#E0E0E0',
+                '#E1E1E1',
+                'rgba(219,219,219,0)',
+              ]}
+            />
+          </Rect>
+        ))}
+
+        {v.map(x => (
+          <Rect x={x} y={30} width={1} height={360}>
+            <LinearGradient
+              start={vec(30, 0)}
+              end={vec(0, 380)}
+              colors={[
+                'rgba(223,223,223,0)',
+                '#E0E0E0',
+                '#E1E1E1',
+                'rgba(219,219,219,0)',
+              ]}
+            />
+          </Rect>
+        ))}
+      </Canvas>
+      <View style={styles.container}>{buttons}</View>
+    </>
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: 329,
+    height: 390,
     justifyContent: 'space-evenly',
     flexDirection: 'row',
     flexWrap: 'wrap',

@@ -89,7 +89,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
           paddingBottom: 6,
           borderBottomWidth: 1,
           borderBottomColor: 'rgba(214, 216, 218, 0.3)',
-          backgroundColor: 'white',
           paddingLeft: 20,
         }}>
         <Text style={styles.sectionHeaderText}>LOADING TRANSACTIONS...</Text>

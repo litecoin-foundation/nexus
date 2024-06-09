@@ -192,7 +192,7 @@ const Main: React.FC<Props> = props => {
         handleSwipeDown={() => setActiveTab(0)}
         activeTab={activeTab}
         txViewComponent={txListComponent}
-        buyViewComponent={<Buy />}
+        buyViewComponent={<Buy route={route} />}
         sendViewComponent={<Send route={route} />}
         receiveViewComponent={<Receive />}
       />

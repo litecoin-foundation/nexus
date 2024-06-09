@@ -32,18 +32,10 @@ export const getPaymentRate = () => async (dispatch, getState) => {
     `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
     '&paymentMethod=credit_debit_card';
 
-  console.log(url);
   try {
     const {data} = await axios.get(url);
-    let paymentRate = null;
-    switch (exchange) {
-      case 'moonpay':
-        paymentRate = data['quoteCurrencyPrice'];
-        break;
-      default:
-        paymentRate = data['quoteCurrencyPrice'];
-        break;
-    }
+    let paymentRate = data['quoteCurrencyPrice'];
+
     dispatch({
       type: GET_PAYMENT_RATE,
       paymentRate,

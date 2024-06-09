@@ -1,5 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+  Image,
+  Platform,
+} from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getQuote} from '../../reducers/buy';
@@ -11,24 +19,31 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
+import {RouteProp, useNavigation} from '@react-navigation/native';
 
-interface Props {}
+interface Props {
+  route: RouteProp<RootStackParamList, 'Main'>;
+}
+
+type RootStackParamList = {
+  Main: undefined;
+  ConfirmBuy: undefined;
+};
 
 const Receive: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
+  const navigation = useNavigation();
 
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
-  const paymentRate = useAppSelector(state => state.ticker.paymentRate);
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
 
-  const [leftToggled, toggleLeft] = useState(true);
   const [toggleLTC, setToggleLTC] = useState(true);
 
   useEffect(() => {
     dispatch(getQuote());
-    dispatch(getPaymentRate('moonpay'));
-  });
+    dispatch(getPaymentRate());
+  }, []);
 
   useEffect(() => {
     dispatch(pollPaymentRate());
@@ -50,58 +65,68 @@ const Receive: React.FC<Props> = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{flexDirection: 'row'}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          paddingLeft: 23.5,
+          marginTop: 9,
+        }}>
         <View style={{flexDirection: 'column'}}>
-          <Text>Buy {amount === '' ? '0.00' : amount} LTC</Text>
-          <Text>
-            for {currencySymbol}
-            {leftToggled
-              ? paymentRate === ''
-                ? '0.00'
-                : parseFloat(paymentRate * amount).toFixed(2)
-              : fiatAmount}
-          </Text>
+          <View style={{flexDirection: 'row'}}>
+            <Text style={styles.buyText}>Buy </Text>
+            <Text style={[styles.buyText, {color: '#2C72FF'}]}>
+              {amount === '' ? '0.00' : amount}
+            </Text>
+            <Text style={styles.buyText}> LTC</Text>
+          </View>
+
+          <View style={{flexDirection: 'row'}}>
+            <Text style={styles.buyText}>for </Text>
+            <Text style={[styles.buyText, {color: '#20BB74'}]}>
+              {currencySymbol}
+              {fiatAmount === '' ? '0.00' : fiatAmount}
+            </Text>
+          </View>
         </View>
 
         <View style={{flexDirection: 'row', gap: 8}}>
           <TouchableOpacity
-            onPress={() => setToggleLTC(!toggleLTC)}
-            style={{
-              borderRadius: 10,
-              backgroundColor: '#F3F3F3',
-              width: 44,
-              height: 44,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text>x</Text>
+            onPress={() => {
+              console.log(amount);
+              if (amount === '0.0000' && !toggleLTC) {
+                console.log('toggled back to LTC, and amount is zero');
+                dispatch(resetInputs());
+              }
+              setToggleLTC(!toggleLTC);
+            }}
+            style={styles.switchButton}>
+            <Image source={require('../../assets/icons/switch-arrow.png')} />
           </TouchableOpacity>
 
-          <View
-            style={{
-              borderTopLeftRadius: 10,
-              borderBottomLeftRadius: 10,
-              backgroundColor: '#F3F3F3',
-              width: 84,
-              height: 44,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text>x</Text>
-          </View>
+          <TouchableOpacity
+            style={styles.historyButton}
+            onPress={() => navigation.navigate('BuyHistory')}>
+            <Image source={require('../../assets/icons/history-icon.png')} />
+            <Text style={styles.buttonText}>History</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      <BuyPad
-        onChange={(value: string) => onChange(value)}
-        currentValue={leftToggled ? amount : fiatAmount}
-      />
+      <View style={styles.numpadContainer}>
+        <BuyPad
+          onChange={(value: string) => onChange(value)}
+          currentValue={toggleLTC ? amount : fiatAmount}
+        />
+      </View>
 
-      <BlueButton
-        disabled={false}
-        value="Preview Buy"
-        onPress={() => console.log('pressed preview buy')}
-      />
+      <View style={styles.confirmButtonContainer}>
+        <BlueButton
+          disabled={false}
+          value="Preview Buy"
+          onPress={() => navigation.navigate('ConfirmBuy')}
+        />
+      </View>
     </View>
   );
 };
@@ -112,6 +137,55 @@ const styles = StyleSheet.create({
     backgroundColor: '#FCFCFC',
     flexDirection: 'column',
     maxHeight: 680,
+  },
+  numpadContainer: {
+    position: 'absolute',
+    bottom: 218,
+  },
+  confirmButtonContainer: {
+    marginHorizontal: 24,
+    bottom: 147,
+    position: 'absolute',
+    width: Dimensions.get('screen').width - 48,
+  },
+  switchButton: {
+    borderRadius: 10,
+    backgroundColor: '#F3F3F3',
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyButton: {
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    backgroundColor: '#F3F3F3',
+    width: 98,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 7,
+  },
+  buyText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#2E2E2E',
+    fontSize: 24,
+  },
+  buttonText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#2E2E2E',
+    fontSize: 12,
   },
 });
 

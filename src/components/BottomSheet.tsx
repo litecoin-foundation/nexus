@@ -13,7 +13,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-const SNAP_POINTS_FROM_TOP = [150, 350];
+const SNAP_POINTS_FROM_TOP = [250, 350];
 const FULLY_OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
 const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 
@@ -166,7 +166,7 @@ const BottomSheet: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   bottomSheet: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fcfcfc',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
   },

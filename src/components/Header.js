@@ -1,20 +1,20 @@
 import React, {PureComponent} from 'react';
-import {StyleSheet, SafeAreaView} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import {StyleSheet, SafeAreaView, View, Dimensions} from 'react-native';
 
 export default class Header extends PureComponent {
   render() {
     const {children} = this.props;
     return (
-      <LinearGradient colors={['#5A4FE7', '#2C44C8']} style={styles.container}>
+      <View style={styles.container}>
         <SafeAreaView>{children}</SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 54,
+    height: Dimensions.get('screen').height * 0.13,
+    backgroundColor: '#1162E6',
   },
 });

@@ -16,7 +16,7 @@ import BlueButton from '../../components/Buttons/BlueButton';
 import {getSignedUrl} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 
-const Confirm = props => {
+const ConfirmBuy = props => {
   const {navigation} = props;
   const dispatch = useDispatch();
 
@@ -43,7 +43,10 @@ const Confirm = props => {
     const {urlWithSignature} = await getSignedUrl(
       address,
       parseFloat(
-        quoteCurrencyAmount*paymentRate + feeAmount + extraFeeAmount + networkFeeAmount
+        quoteCurrencyAmount * paymentRate +
+          feeAmount +
+          extraFeeAmount +
+          networkFeeAmount,
       ).toFixed(2),
       uniqueId,
     );
@@ -85,22 +88,23 @@ const Confirm = props => {
         />
         <TableCell
           title="1 LTC PRICE"
-          value={`${currencySymbol}${parseFloat(paymentRate).toFixed(
-            2,
-          )}`}
+          value={`${currencySymbol}${parseFloat(paymentRate).toFixed(2)}`}
           valueStyle={styles.ltcText}
         />
         <TableCell
           title="PAYMENT FEE"
           value={`${currencySymbol}${parseFloat(
-            feeAmount + extraFeeAmount + networkFeeAmount
+            feeAmount + extraFeeAmount + networkFeeAmount,
           ).toFixed(2)}`}
           valueStyle={styles.feeText}
         />
         <TableCell
           title="YOU WILL SPEND"
           value={`${currencySymbol}${parseFloat(
-            quoteCurrencyAmount*paymentRate + feeAmount + extraFeeAmount + networkFeeAmount
+            quoteCurrencyAmount * paymentRate +
+              feeAmount +
+              extraFeeAmount +
+              networkFeeAmount,
           ).toFixed(2)}`}
           valueStyle={styles.totalText}
         />
@@ -194,7 +198,7 @@ const styles = StyleSheet.create({
   },
 });
 
-Confirm.navigationOptions = ({navigation}) => {
+ConfirmBuy.navigationOptions = ({navigation}) => {
   return {
     headerTitle: 'Buy',
     headerTitleStyle: {
@@ -216,4 +220,4 @@ Confirm.navigationOptions = ({navigation}) => {
   };
 };
 
-export default Confirm;
+export default ConfirmBuy;

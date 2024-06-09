@@ -4,6 +4,8 @@ import {
   Text,
   StyleSheet,
   Platform,
+  Image,
+  ImageSourcePropType,
 } from 'react-native';
 
 import {triggerSelectionFeedback} from '../../lib/utils/haptic';
@@ -17,10 +19,11 @@ interface Props {
   value: string;
   onPress: () => void;
   disabled?: boolean;
+  imageSource?: ImageSourcePropType;
 }
 
 const BuyButton: React.FC<Props> = props => {
-  const {value, onPress, disabled} = props;
+  const {value, onPress, disabled, imageSource} = props;
   const scaler = useSharedValue(1);
 
   const motionStyle = useAnimatedStyle(() => {
@@ -47,7 +50,11 @@ const BuyButton: React.FC<Props> = props => {
         onPress();
       }}>
       <Animated.View style={[styles.button, motionStyle]}>
-        <Text style={styles.text}>{value}</Text>
+        {imageSource ? (
+          <Image source={imageSource} />
+        ) : (
+          <Text style={styles.text}>{value}</Text>
+        )}
       </Animated.View>
     </TouchableWithoutFeedback>
   );
@@ -64,7 +71,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: 125,
-    height: 72,
+    height: 96,
   },
   text: {
     fontFamily:
