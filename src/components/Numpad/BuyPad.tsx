@@ -74,8 +74,8 @@ const BuyPad: React.FC<Props> = props => {
     );
   });
 
-  const h = [115, 210, 310];
-  const v = [140, 290];
+  const h = [115, 210, 306];
+  const v = [147, 277];
 
   return (
     <>

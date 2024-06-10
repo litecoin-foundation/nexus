@@ -20,6 +20,7 @@ import {
   updateFiatAmount,
 } from '../../reducers/input';
 import {RouteProp, useNavigation} from '@react-navigation/native';
+import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
 interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
@@ -39,6 +40,8 @@ const Receive: React.FC<Props> = () => {
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
 
   const [toggleLTC, setToggleLTC] = useState(true);
+  const ltcFontSize = useSharedValue(24);
+  const fiatFontSize = useSharedValue(18);
 
   useEffect(() => {
     dispatch(getQuote());
@@ -63,6 +66,16 @@ const Receive: React.FC<Props> = () => {
     };
   }, [dispatch]);
 
+  const handleFontSizeChange = () => {
+    if (toggleLTC) {
+      ltcFontSize.value = withTiming(18);
+      fiatFontSize.value = withTiming(24);
+    } else {
+      ltcFontSize.value = withTiming(24);
+      fiatFontSize.value = withTiming(18);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View
@@ -74,31 +87,45 @@ const Receive: React.FC<Props> = () => {
         }}>
         <View style={{flexDirection: 'column'}}>
           <View style={{flexDirection: 'row'}}>
-            <Text style={styles.buyText}>Buy </Text>
-            <Text style={[styles.buyText, {color: '#2C72FF'}]}>
+            <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
+              Buy{' '}
+            </Animated.Text>
+            <Animated.Text
+              style={[
+                styles.buyText,
+                {color: '#2C72FF', fontSize: ltcFontSize},
+              ]}>
               {amount === '' ? '0.00' : amount}
-            </Text>
-            <Text style={styles.buyText}> LTC</Text>
+            </Animated.Text>
+            <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
+              {' '}
+              LTC
+            </Animated.Text>
           </View>
 
           <View style={{flexDirection: 'row'}}>
-            <Text style={styles.buyText}>for </Text>
-            <Text style={[styles.buyText, {color: '#20BB74'}]}>
+            <Animated.Text style={[styles.buyText, {fontSize: fiatFontSize}]}>
+              for{' '}
+            </Animated.Text>
+            <Animated.Text
+              style={[
+                styles.buyText,
+                {color: '#20BB74', fontSize: fiatFontSize},
+              ]}>
               {currencySymbol}
               {fiatAmount === '' ? '0.00' : fiatAmount}
-            </Text>
+            </Animated.Text>
           </View>
         </View>
 
         <View style={{flexDirection: 'row', gap: 8}}>
           <TouchableOpacity
             onPress={() => {
-              console.log(amount);
               if (amount === '0.0000' && !toggleLTC) {
-                console.log('toggled back to LTC, and amount is zero');
                 dispatch(resetInputs());
               }
               setToggleLTC(!toggleLTC);
+              handleFontSizeChange();
             }}
             style={styles.switchButton}>
             <Image source={require('../../assets/icons/switch-arrow.png')} />
