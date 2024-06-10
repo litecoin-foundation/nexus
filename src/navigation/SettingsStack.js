@@ -1,15 +1,15 @@
 import React from 'react';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 
-import Settings from '../screens/Settings/Settings';
+import Settings, {
+  SettingsNavigationOptions,
+} from '../screens/Settings/Settings';
 import Channel from '../screens/Settings/Channel';
 import OpenChannel from '../screens/Settings/OpenChannel';
-import General from '../screens/Settings/General';
 import Explorer from '../screens/Settings/Explorer';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed from '../screens/Settings/Seed';
 import About from '../screens/Settings/About';
-import Wallet from '../screens/Settings/Wallet';
 import Currency from '../screens/Settings/Currency';
 import Scan from '../screens/Scan';
 import Import from '../screens/Settings/Import';
@@ -33,7 +33,7 @@ function SettingsStack() {
       <Stack.Screen
         name="Settings"
         component={Settings}
-        options={Settings.navigationOptions}
+        options={({navigation}) => SettingsNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Channel"
@@ -55,16 +55,6 @@ function SettingsStack() {
         }}
       />
       <Stack.Screen
-        name="General"
-        component={General}
-        options={{
-          headerLeftContainerStyle: {
-            paddingLeft: 15,
-            marginRight: -15,
-          },
-        }}
-      />
-      <Stack.Screen
         name="ChangePincode"
         component={ChangePincode}
         options={ChangePincode.navigationOptions}
@@ -78,20 +68,6 @@ function SettingsStack() {
         name="About"
         component={About}
         options={About.navigationOptions}
-      />
-      <Stack.Screen
-        name="Wallets"
-        component={Wallet}
-        options={{
-          headerTitle: 'Wallet',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-        }}
       />
       <Stack.Screen
         name="Currency"

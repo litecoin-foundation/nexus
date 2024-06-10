@@ -1,27 +1,35 @@
 import React, {useState} from 'react';
 import {
-  ScrollView,
   StyleSheet,
+  ScrollView,
   DeviceEventEmitter,
   Alert,
   View,
   Text,
+  Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import SegmentedControl from '@react-native-community/segmented-control';
-import {StackScreenProps} from '@react-navigation/stack';
+import SegmentedControl from '@react-native-segmented-control/segmented-control';
 
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
+import {resetPincode, setBiometricEnabled} from '../../reducers/authentication';
 import PinModal from '../../components/Modals/PinModal';
-import {updateSubunit} from '../../reducers/settings';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {startLnd, stopLnd} from '../../reducers/lightning';
+import {poll, sleep} from '../../lib/utils/poll';
 import {purgeStore} from '../../store';
-import {resetPincode} from '../../reducers/authentication';
 import {deleteLNDDir} from '../../lib/utils/file';
-import {sleep} from '../../lib/utils/poll';
+import {updateSubunit} from '../../reducers/settings';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
 type RootStackParamList = {
+  General: undefined;
+  About: undefined;
+  ChangePincode: {
+    type: null;
+  };
   Wallet: undefined;
   Explorer: undefined;
   Currency: undefined;
@@ -31,13 +39,29 @@ type RootStackParamList = {
   Loading: undefined;
 };
 
-type Props = StackScreenProps<RootStackParamList, 'Wallet'>;
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'General'>;
+}
 
-const Wallet: React.FC<Props> = props => {
+const Settings: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
   const [isPinModalTriggered, triggerPinModal] = useState(false);
+
+  const biometricsAvailable = useAppSelector(
+    state => state.authentication.biometricsAvailable,
+  );
+  const biometricsEnabled = useAppSelector(
+    state => state.authentication.biometricsEnabled,
+  );
+  const faceIDSupported = useAppSelector(
+    state => state.authentication.faceIDSupported,
+  );
   const {subunit} = useAppSelector(state => state.settings);
+
+  const handleBiometricSwitch = () => {
+    dispatch(setBiometricEnabled(!biometricsEnabled));
+  };
 
   const handleAuthenticationRequired = () => {
     return new Promise<void>((resolve, reject) => {
@@ -75,6 +99,37 @@ const Wallet: React.FC<Props> = props => {
         <Header />
         <ScrollView>
           <SettingCell
+            title="About"
+            onPress={() => navigation.navigate('About')}
+            forward
+          />
+          <SettingCell
+            title="Change Wallet Pin"
+            onPress={() => navigation.navigate('ChangePincode', {type: null})}
+            forward
+          />
+          {biometricsAvailable ? (
+            <SettingCell
+              title={`Enable ${faceIDSupported ? 'Face ID' : 'Touch ID'}`}
+              switchEnabled
+              switchValue={biometricsEnabled}
+              handleSwitch={handleBiometricSwitch}
+            />
+          ) : null}
+
+          <SettingCell
+            title="Rescan for missing coins?"
+            onPress={() => {
+              dispatch(stopLnd());
+              sleep(10000).then(() => {
+                console.warn('LOSHY: looking to start lnd');
+                poll(dispatch(startLnd()), 1000, 1000);
+              });
+            }}
+            forward
+          />
+
+          <SettingCell
             title="Import Private Key"
             onPress={() => navigation.navigate('Import')}
             forward
@@ -94,19 +149,6 @@ const Wallet: React.FC<Props> = props => {
             onPress={() => navigation.navigate('Currency')}
             forward
           />
-          <View style={styles.cellContainer}>
-            <Text style={styles.title}>Litecoin Denomination</Text>
-            <SegmentedControl
-              values={['LTC', 'Lites', 'Photons']}
-              selectedIndex={subunit}
-              tintColor="#20BB74"
-              activeFontStyle={styles.text}
-              backgroundColor="#FFFFFF"
-              onChange={event =>
-                dispatch(updateSubunit(event.nativeEvent.selectedSegmentIndex))
-              }
-            />
-          </View>
 
           <SettingCell
             title="View Paper Key"
@@ -125,6 +167,19 @@ const Wallet: React.FC<Props> = props => {
             }}
             forward
           />
+
+          <View>
+            <Text>Litecoin Denomination</Text>
+            <SegmentedControl
+              values={['LTC', 'Lites', 'Photons']}
+              selectedIndex={subunit}
+              tintColor="#20BB74"
+              backgroundColor="white"
+              onChange={event =>
+                dispatch(updateSubunit(event.nativeEvent.selectedSegmentIndex))
+              }
+            />
+          </View>
 
           <SettingCell
             title="RESET"
@@ -163,26 +218,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgb(238,244,249)',
   },
-  cellContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    height: 90,
-    justifyContent: 'space-between',
-    paddingHorizontal: 25,
-    paddingVertical: 14,
-    borderTopWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderColor: '#9797974d',
-    backgroundColor: 'white',
-  },
-  title: {
-    color: '#7c96ae',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  text: {
+  headerTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
     color: 'white',
+    fontSize: 17,
   },
 });
 
-export default Wallet;
+export const SettingsNavigationOptions = navigation => {
+  return {
+    headerTitle: () => <Text style={styles.headerTitle}>Settings</Text>,
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+  };
+};
+
+export default Settings;

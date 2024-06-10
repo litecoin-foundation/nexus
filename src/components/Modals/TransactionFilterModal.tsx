@@ -1,7 +1,7 @@
 import {StyleSheet, Text, View, KeyboardAvoidingView} from 'react-native';
 import React, {useState} from 'react';
 import Modal from 'react-native-modal';
-import SegmentedControl from '@react-native-community/segmented-control';
+import SegmentedControl from '@react-native-segmented-control/segmented-control';
 
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import VerticalTableCell from '../Cells/VerticalTableCell';
