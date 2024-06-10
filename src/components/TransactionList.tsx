@@ -22,6 +22,7 @@ import {SharedValue} from 'react-native-reanimated';
 import {useAppDispatch} from '../store/hooks';
 import {getTransactions} from '../reducers/transaction';
 import TransactionCell from './Cells/TransactionCell';
+import TransactionListEmpty from './TransactionListEmpty';
 
 interface Props {
   onPress(item: ItemType): void;
@@ -82,25 +83,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
     setRefreshing(false);
   }, [dispatch]);
 
-  const EmptySectionList = (
-    <View style={{marginTop: 17}}>
-      <View
-        style={{
-          paddingBottom: 6,
-          borderBottomWidth: 1,
-          borderBottomColor: 'rgba(214, 216, 218, 0.3)',
-          paddingLeft: 20,
-        }}>
-        <Text style={styles.sectionHeaderText}>LOADING TRANSACTIONS...</Text>
-      </View>
-      {/* <View style={styles.emptySectionListContainer}>
-        <Text style={styles.emptySectionListText}>
-          Your transactions will appear here.
-        </Text>
-      </View> */}
-    </View>
-  );
-
   const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
     item,
   }) => <TransactionCell item={item} onPress={() => onPress(item)} />;
@@ -124,7 +106,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
       )}
       keyExtractor={item => item.hash}
       initialNumToRender={9}
-      ListEmptyComponent={EmptySectionList}
+      ListEmptyComponent={<TransactionListEmpty />}
       ListFooterComponent={<View style={styles.emptyView} />}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -154,20 +136,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#747E87',
     fontSize: 12,
-  },
-  emptySectionListContainer: {
-    marginTop: 30,
-  },
-  emptySectionListText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: 12,
-    color: '#747E87',
-    textAlign: 'center',
   },
   emptyView: {
     height: 350,
