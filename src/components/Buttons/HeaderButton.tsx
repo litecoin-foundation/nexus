@@ -1,29 +1,29 @@
 import React from 'react';
 import {
   StyleSheet,
-  TouchableHighlight,
   Image,
   ImageSourcePropType,
   Text,
   Platform,
   View,
+  TouchableOpacity,
 } from 'react-native';
 
 interface Props {
   onPress: () => void;
-  imageSource: ImageSourcePropType;
+  imageSource?: ImageSourcePropType;
   title?: string;
 }
 
 const HeaderButton: React.FC<Props> = props => {
   const {onPress, imageSource, title} = props;
   return (
-    <TouchableHighlight style={styles.container} onPress={onPress}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.subcontainer}>
-        <Image source={imageSource} />
+        {imageSource ? <Image source={imageSource} /> : null}
         {title ? <Text style={styles.title}>{title}</Text> : null}
       </View>
-    </TouchableHighlight>
+    </TouchableOpacity>
   );
 };
 
@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 20,
+    marginRight: 20,
   },
   subcontainer: {
     flexDirection: 'row',

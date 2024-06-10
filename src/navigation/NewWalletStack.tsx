@@ -12,6 +12,7 @@ import ConfirmBuy, {
 import BuyHistory, {
   BuyHistoryNavigationOptions,
 } from '../screens/Buy/BuyHistory';
+import AlertsStack from './AlertsStack';
 
 const Stack = createStackNavigator();
 
@@ -26,6 +27,11 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="SettingsStack"
         component={SettingsStack}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="AlertsStack"
+        component={AlertsStack}
         options={{headerShown: false}}
       />
       <Stack.Screen

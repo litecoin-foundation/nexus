@@ -260,6 +260,12 @@ export const navigationOptions = navigation => {
         imageSource={require('../assets/icons/settings-cog.png')}
       />
     ),
+    headerRight: () => (
+      <HeaderButton
+        onPress={() => navigation.navigate('AlertsStack')}
+        imageSource={require('../assets/icons/charts-icon.png')}
+      />
+    ),
   };
 };
 

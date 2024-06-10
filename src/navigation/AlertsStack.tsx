@@ -1,7 +1,7 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import Alert from '../screens/Alert/Alert';
+import Alert, {AlertNavigationOptions} from '../screens/Alert/Alert';
 import Dial from '../screens/Alert/Dial';
 
 const Stack = createStackNavigator();
@@ -22,7 +22,7 @@ function AlertsStack() {
       <Stack.Screen
         name="Alert"
         component={Alert}
-        options={Alert.navigationOptions}
+        options={({navigation}) => AlertNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Dial"
