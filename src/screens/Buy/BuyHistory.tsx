@@ -1,16 +1,15 @@
 import React, {useEffect} from 'react';
-import {StyleSheet, Text, View, FlatList} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-import {HeaderBackButton} from '@react-navigation/elements';
+import {StyleSheet, Text, View, FlatList, Platform} from 'react-native';
 
 import Header from '../../components/Header';
 import {getTransactionHistory} from '../../reducers/buy';
 import BuyTransactionCell from '../../components/Cells/BuyTransactionCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-const BuyHistory = () => {
-  const dispatch = useDispatch();
-  const {history} = useSelector(state => state.buy);
+const BuyHistory: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const {history} = useAppSelector(state => state.buy);
 
   useEffect(() => {
     dispatch(getTransactionHistory());

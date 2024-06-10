@@ -6,7 +6,9 @@ import Scan from '../screens/Scan';
 import SettingsStack from './SettingsStack';
 import WebPage from '../screens/WebPage';
 import ConfirmSend from '../screens/Wallet/ConfirmSend';
-import ConfirmBuy from '../screens/Buy/ConfirmBuy';
+import ConfirmBuy, {
+  ConfirmBuyNavigationOptions,
+} from '../screens/Buy/ConfirmBuy';
 import BuyHistory, {
   BuyHistoryNavigationOptions,
 } from '../screens/Buy/BuyHistory';
@@ -54,16 +56,7 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="ConfirmBuy"
         component={ConfirmBuy}
-        options={{
-          headerTitle: 'Buy',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-        }}
+        options={({navigation}) => ConfirmBuyNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="BuyHistory"

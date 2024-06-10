@@ -167,7 +167,7 @@ const BottomSheet: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   bottomSheet: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#fcfcfc',
+    backgroundColor: '#f7f7f7',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
   },

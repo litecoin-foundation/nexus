@@ -91,7 +91,7 @@ const Main: React.FC<Props> = props => {
       backgroundColor: interpolateColor(
         clampedTranslateY,
         [250, 350],
-        ['#1162E6', '#fcfcfc'],
+        ['#1162E6', '#f7f7f7'],
       ),
     };
   });
@@ -233,7 +233,6 @@ const Main: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#fcfcfc',
   },
   cardContainer: {
     flexGrow: 1,
@@ -248,7 +247,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     height: 110,
-    backgroundColor: '#fcfcfc',
   },
 });
 

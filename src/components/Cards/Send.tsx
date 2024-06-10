@@ -147,7 +147,7 @@ const Send: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FCFCFC',
+    backgroundColor: '#f7f7f7',
   },
   subcontainer: {
     flex: 1,
