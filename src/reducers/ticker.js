@@ -34,7 +34,7 @@ export const getPaymentRate = () => async (dispatch, getState) => {
 
   try {
     const {data} = await axios.get(url);
-    let paymentRate = data['quoteCurrencyPrice'];
+    let paymentRate = data.quoteCurrencyPrice;
 
     dispatch({
       type: GET_PAYMENT_RATE,

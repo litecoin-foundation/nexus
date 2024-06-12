@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {checkAllowed, getLimits, getQuote} from '../../reducers/buy';
+import {checkAllowed, getQuote} from '../../reducers/buy';
 import {getPaymentRate, pollPaymentRate} from '../../reducers/ticker';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
@@ -31,15 +31,14 @@ type RootStackParamList = {
   ConfirmBuy: undefined;
 };
 
-const Buy: React.FC<Props> = () => {
+const Sell: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
 
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
-  const isBuyAllowed = useAppSelector(state => state.buy.isBuyAllowed);
-  const minBuyAmount = useAppSelector(state => state.buy.minBuyAmount);
+  const isSellAllowed = useAppSelector(state => state.buy.isSellAllowed);
 
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(24);
@@ -47,7 +46,6 @@ const Buy: React.FC<Props> = () => {
 
   useEffect(() => {
     dispatch(checkAllowed());
-    dispatch(getLimits());
     dispatch(getQuote(1));
     dispatch(getPaymentRate());
   }, []);
@@ -92,7 +90,7 @@ const Buy: React.FC<Props> = () => {
         <View style={{flexDirection: 'column'}}>
           <View style={{flexDirection: 'row'}}>
             <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
-              Buy{' '}
+              Sell{' '}
             </Animated.Text>
             <Animated.Text
               style={[
@@ -155,7 +153,7 @@ const Buy: React.FC<Props> = () => {
 
   return (
     <View style={styles.container}>
-      {isBuyAllowed ? (
+      {isSellAllowed ? (
         BuyContainer
       ) : (
         <Text style={styles.disabledBuyText}>
@@ -164,14 +162,10 @@ const Buy: React.FC<Props> = () => {
       )}
       <View style={styles.confirmButtonContainer}>
         <BlueButton
-          disabled={isBuyAllowed ? false : true}
-          value="Preview Buy"
-          onPress={() => navigation.navigate('ConfirmBuy')}
+          disabled={isSellAllowed ? false : true}
+          value="Sell LTC"
+          onPress={() => console.log('sell button pressed')}
         />
-        <Text>
-          Minimum purchase size of {currencySymbol}
-          {minBuyAmount}
-        </Text>
       </View>
     </View>
   );
@@ -247,4 +241,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Buy;
+export default Sell;

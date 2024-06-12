@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import {useSelector} from 'react-redux';
 import Animated, {
-  Extrapolation,
   interpolate,
   interpolateColor,
   useAnimatedProps,
@@ -19,6 +18,7 @@ import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';
 import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
+import Sell from '../components/Cards/Sell';
 import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
@@ -159,7 +159,10 @@ const Main: React.FC<Props> = props => {
       <DashboardButton
         title="Sell"
         imageSource={require('../assets/icons/sell-icon.png')}
-        handlePress={() => console.warn('Sell')}
+        handlePress={() => {
+          shrinkHeaderOnButtonPress();
+          setActiveTab(2);
+        }}
         active={activeTab === 2}
         textPadding={30}
       />
@@ -214,6 +217,7 @@ const Main: React.FC<Props> = props => {
         activeTab={activeTab}
         txViewComponent={txListComponent}
         buyViewComponent={<Buy route={route} />}
+        sellViewComponent={<Sell route={route} />}
         sendViewComponent={<Send route={route} />}
         receiveViewComponent={<Receive />}
       />
