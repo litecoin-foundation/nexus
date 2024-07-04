@@ -7,6 +7,9 @@ import {getSignedUrl} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {useMoonPaySdk} from '@moonpay/react-native-moonpay-sdk';
+
+import Constants from 'expo-constants';
 
 type RootStackParamList = {
   ConfirmBuy: undefined;
@@ -40,7 +43,40 @@ const ConfirmBuy: React.FC<Props> = props => {
 
   useEffect(() => {
     dispatch(getAddress());
+    console.log('poopy');
+    console.log(Constants.expoVersion);
   }, [dispatch]);
+
+  const {openWithInAppBrowser, generateUrlForSigning, updateSignature} =
+    useMoonPaySdk({
+      sdkConfig: {
+        flow: 'buy',
+        environment: 'sandbox',
+        params: {
+          apiKey: 'pk_test_123',
+        },
+      },
+    });
+
+  useEffect(() => {
+    // construct buy widget url and send to plasma backend to be signed
+    // server responds with signature
+    fetch('http://192.168.1.60:3001/api/buy/moonpay/sign', {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        unsignedURL: generateUrlForSigning({variant: 'inapp-browser'}),
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        const signature = data.signature;
+        console.log(data);
+        updateSignature(signature);
+      });
+  }, []);
 
   const onPress = async () => {
     const {urlWithSignature} = await getSignedUrl(
