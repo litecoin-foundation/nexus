@@ -45,7 +45,6 @@ const DashboardButton: React.FC<Props> = props => {
     fontWeight: '700',
   };
   const font = matchFont(fontStyle);
-
   const image = useImage(imageSource);
 
   // animation

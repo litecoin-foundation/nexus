@@ -1,14 +1,13 @@
 import React, {useEffect} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Text, SafeAreaView, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import Button from './Button';
-import BiometricButton from './BiometricButton';
-import OnboardingHeader from '../OnboardingHeader';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
-import {unlockWalletWithBiometric} from '../../reducers/authentication';
-import Dots from '../Dots';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import PadGrid from './PadGrid';
+import BuyButton from './BuyButton';
+import BlueButton from '../Buttons/BlueButton';
+import PasscodeInput from '../PasscodeInput';
 
 interface Props {
   handleCompletion(): void;
@@ -59,7 +58,6 @@ const OnboardingAuthPad: React.FC<Props> = props => {
       (pin.length === 6 && passcodeInitialSet === true)
     ) {
       // runs when initial passcode is set
-
       if (pin === newPasscode) {
         handleValidationSuccess();
         clear();
@@ -98,52 +96,116 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   const buttons = values.map(value => {
     if (value === '.') {
       return (
-        <BiometricButton
-          key="biometric-button-key"
-          onPress={() => dispatch(unlockWalletWithBiometric())}
+        <BuyButton
+          key="disabled"
+          value=""
+          onPress={() => console.log('void')}
+        />
+      );
+    }
+    if (value === '⌫') {
+      return (
+        <BuyButton
+          key="back-arrow-button-key"
+          value={value}
+          onPress={() => handlePress(value)}
+          imageSource={require('../../assets/icons/back-arrow.png')}
         />
       );
     }
     return (
-      <Button key={value} value={value} onPress={() => handlePress(value)} />
+      <BuyButton key={value} value={value} onPress={() => handlePress(value)} />
     );
   });
 
   return (
-    <View style={styles.container}>
-      <OnboardingHeader description={headerDescriptionText}>
-        <Dots
-          dotsLength={6}
-          activeDotIndex={pin.length - 1}
-          dashLineEnabled={true}
-        />
-      </OnboardingHeader>
-      <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
-        <View style={styles.buttonContainer}>
-          <View style={styles.area}>{buttons}</View>
-        </View>
+    <>
+      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+        <SafeAreaView>
+          <View style={styles.headerSubContainer}>
+            <Text style={styles.descriptionText}>{headerDescriptionText}</Text>
+          </View>
+        </SafeAreaView>
       </LinearGradient>
-    </View>
+
+      <View style={styles.bottomSheet}>
+        <Text style={styles.bottomSheetTitle}>Enter your PIN</Text>
+
+        <View style={styles.bottomSheetSubContainer}>
+          <PasscodeInput dotsLength={6} activeDotIndex={pin.length} />
+          <PadGrid />
+          <View style={styles.buttonContainer}>{buttons}</View>
+        </View>
+        <View style={styles.confirmButtonContainer}>
+          <BlueButton
+            disabled={pin.length !== 6 ? true : false}
+            value="Confirm PIN"
+            onPress={() => console.log('handle press')}
+          />
+        </View>
+      </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
   },
   gradient: {
     flexGrow: 1,
   },
   buttonContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  area: {
+    height: 390,
+    justifyContent: 'space-evenly',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    width: '80%',
-    alignSelf: 'center',
+    paddingVertical: 20,
+  },
+  confirmButtonContainer: {
+    paddingHorizontal: 34,
+    position: 'absolute',
+    bottom: 28,
+    width: '100%',
+  },
+  descriptionText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '600',
+    color: 'white',
+    fontSize: 18,
+    paddingLeft: 67,
+  },
+  bottomSheetTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: 'bold',
+    color: '#2e2e2e',
+    fontSize: 26,
+    textAlign: 'center',
+    paddingTop: 18,
+  },
+  bottomSheet: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    height: '70%',
+    bottom: 0,
+    position: 'absolute',
+    width: '100%',
+  },
+  bottomSheetSubContainer: {
+    position: 'absolute',
+    bottom: 100,
+  },
+  headerSubContainer: {
+    marginTop: 50,
   },
 });
 

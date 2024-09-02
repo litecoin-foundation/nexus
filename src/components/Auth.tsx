@@ -24,11 +24,7 @@ const Auth: React.FC<Props> = props => {
   return (
     <View style={styles.container}>
       <OnboardingHeader description={headerDescriptionText}>
-        <Dots
-          dotsLength={6}
-          activeDotIndex={pin.length - 1}
-          dashLineEnabled={true}
-        />
+        <Dots dotsLength={6} activeDotIndex={pin.length - 1} />
       </OnboardingHeader>
       <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
         <AuthPad
