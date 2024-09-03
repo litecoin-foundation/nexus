@@ -1,5 +1,4 @@
 import React, {useState, useLayoutEffect} from 'react';
-import {HeaderBackButton} from '@react-navigation/elements';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
@@ -7,6 +6,8 @@ import {addPincode} from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {resetPincode} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import {Platform, StyleSheet, Text} from 'react-native';
 
 type RootStackParamList = {
   Pin: undefined;
@@ -30,13 +31,12 @@ const Pin: React.FC<Props> = props => {
 
     navigation.setOptions({
       headerTransparent: true,
-      headerBackTitleVisible: false,
+      headerTitleAlign: 'left',
       headerTintColor: 'white',
       headerLeft: () => (
-        <HeaderBackButton
-          tintColor="white"
-          labelVisible={false}
+        <HeaderButton
           onPress={() => handleBackNavigation()}
+          imageSource={require('../../assets/images/back-icon.png')}
         />
       ),
     });
@@ -50,9 +50,11 @@ const Pin: React.FC<Props> = props => {
   const [passcodeInitialSet, setPasscodeInitialSet] = useState(false);
 
   navigation.setOptions({
-    headerTitle: passcodeInitialSet
-      ? 'Verify your Passcode'
-      : 'Create a Passcode',
+    headerTitle: () => (
+      <Text style={styles.headerTitle}>
+        {passcodeInitialSet ? 'Verify your Passcode' : 'Create Passcode'}
+      </Text>
+    ),
   });
 
   const handleCompletion = () => {
@@ -84,7 +86,7 @@ const Pin: React.FC<Props> = props => {
       headerDescriptionText={
         passcodeInitialSet
           ? 'Enter your passcode again.'
-          : 'Please enter a secure passcode'
+          : 'Please create a secure passcode.'
       }
       handleCompletion={handleCompletion}
       handleValidationFailure={handleValidationFailure}
@@ -94,5 +96,18 @@ const Pin: React.FC<Props> = props => {
     />
   );
 };
+
+const styles = StyleSheet.create({
+  headerTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 22,
+  },
+});
 
 export default Pin;

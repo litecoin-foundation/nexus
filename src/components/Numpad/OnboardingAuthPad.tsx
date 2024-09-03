@@ -40,43 +40,6 @@ const OnboardingAuthPad: React.FC<Props> = props => {
     clear();
   }, [dispatch]);
 
-  // handles when AuthPad inputs are filled
-  useEffect(() => {
-    const clear = async () => {
-      await dispatch(clearValues());
-    };
-    if (
-      pin.length === 6 &&
-      passcodeSet === false &&
-      passcodeInitialSet === false
-    ) {
-      // runs when no initial passcode set yet
-      handleCompletion();
-      clear();
-    } else if (
-      (pin.length === 6 && passcodeSet === true) ||
-      (pin.length === 6 && passcodeInitialSet === true)
-    ) {
-      // runs when initial passcode is set
-      if (pin === newPasscode) {
-        handleValidationSuccess();
-        clear();
-      } else {
-        handleValidationFailure();
-        clear();
-      }
-    }
-  }, [
-    dispatch,
-    handleCompletion,
-    handleValidationFailure,
-    handleValidationSuccess,
-    newPasscode,
-    passcodeInitialSet,
-    passcodeSet,
-    pin,
-  ]);
-
   const handlePress = (input: string) => {
     switch (input) {
       case '.':
@@ -88,6 +51,30 @@ const OnboardingAuthPad: React.FC<Props> = props => {
       default:
         dispatch(inputValue(input));
         break;
+    }
+  };
+
+  const handleSetPin = () => {
+    if (
+      pin.length === 6 &&
+      passcodeSet === false &&
+      passcodeInitialSet === false
+    ) {
+      // runs when no initial passcode set yet
+      handleCompletion();
+      dispatch(clearValues());
+    } else if (
+      (pin.length === 6 && passcodeSet === true) ||
+      (pin.length === 6 && passcodeInitialSet === true)
+    ) {
+      // runs when initial passcode is set
+      if (pin === newPasscode) {
+        handleValidationSuccess();
+        dispatch(clearValues());
+      } else {
+        handleValidationFailure();
+        dispatch(clearValues());
+      }
     }
   };
 
@@ -140,7 +127,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
           <BlueButton
             disabled={pin.length !== 6 ? true : false}
             value="Confirm PIN"
-            onPress={() => console.log('handle press')}
+            onPress={handleSetPin}
           />
         </View>
       </View>
