@@ -29,7 +29,7 @@ const Initial = (props: Props) => {
   }, [dispatch]);
 
   return (
-    <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
+    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
       <WhiteButton
         value="Create Wallet"
         small={false}

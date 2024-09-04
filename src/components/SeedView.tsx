@@ -1,5 +1,5 @@
-import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
+import {Platform, StyleSheet, Text, View} from 'react-native';
 
 interface Props {
   index: number;
@@ -21,11 +21,10 @@ const SeedView: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 65,
+    height: 70,
     width: 335,
     backgroundColor: 'white',
     borderRadius: 7,
-    marginTop: 10,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
@@ -37,6 +36,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   number: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
     color: '#3873FF',
     fontSize: 20,
     fontWeight: 'bold',
@@ -44,7 +47,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   text: {
-    color: '#000000',
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontWeight: '500',
+    color: '#2e2e2e',
     fontSize: 24,
     flexGrow: 4,
     paddingLeft: 20,

@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {View, StyleSheet, Text, SafeAreaView, Platform} from 'react-native';
+import {View, StyleSheet, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
@@ -8,6 +8,7 @@ import PadGrid from './PadGrid';
 import BuyButton from './BuyButton';
 import BlueButton from '../Buttons/BlueButton';
 import PasscodeInput from '../PasscodeInput';
+import OnboardingHeader from '../OnboardingHeader';
 
 interface Props {
   handleCompletion(): void;
@@ -108,11 +109,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   return (
     <>
       <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
-        <SafeAreaView>
-          <View style={styles.headerSubContainer}>
-            <Text style={styles.descriptionText}>{headerDescriptionText}</Text>
-          </View>
-        </SafeAreaView>
+        <OnboardingHeader description={headerDescriptionText} />
       </LinearGradient>
 
       <View style={styles.bottomSheet}>
@@ -155,17 +152,6 @@ const styles = StyleSheet.create({
     bottom: 28,
     width: '100%',
   },
-  descriptionText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '600',
-    color: 'white',
-    fontSize: 18,
-    paddingLeft: 67,
-  },
   bottomSheetTitle: {
     fontFamily:
       Platform.OS === 'ios'
@@ -190,9 +176,6 @@ const styles = StyleSheet.create({
   bottomSheetSubContainer: {
     position: 'absolute',
     bottom: 100,
-  },
-  headerSubContainer: {
-    marginTop: 50,
   },
 });
 

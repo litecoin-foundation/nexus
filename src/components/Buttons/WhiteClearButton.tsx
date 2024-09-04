@@ -1,4 +1,4 @@
-import {StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {Platform, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import React from 'react';
 
 interface Props {
@@ -54,14 +54,19 @@ const styles = StyleSheet.create({
   selectedContainer: {
     backgroundColor: 'white',
   },
-
   smallContainer: {
     height: 50,
-    borderRadius: 25,
+    borderRadius: 9,
   },
   text: {
-    fontSize: 24,
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
     color: 'white',
+    fontSize: 17,
   },
   selectedText: {
     color: '#1341BE',

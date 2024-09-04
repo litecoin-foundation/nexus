@@ -1,5 +1,5 @@
 import React from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
+import {TouchableOpacity, Text, StyleSheet, Platform} from 'react-native';
 
 interface Props {
   value: string;
@@ -61,11 +61,17 @@ const styles = StyleSheet.create({
   big: {
     height: 50,
     width: 335,
-    borderRadius: 25,
+    borderRadius: 9,
   },
   text: {
-    color: '#183CB0',
-    fontWeight: 'bold',
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#2E2E2E',
+    fontSize: 17,
   },
   disabled: {
     opacity: 0.5,

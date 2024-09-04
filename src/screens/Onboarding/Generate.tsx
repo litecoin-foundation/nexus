@@ -1,17 +1,24 @@
-import React, {useState, useRef} from 'react';
-import {View, Text, Dimensions, StyleSheet, Image} from 'react-native';
+import React, {useState, useRef, useLayoutEffect} from 'react';
+import {
+  View,
+  Text,
+  Dimensions,
+  StyleSheet,
+  Image,
+  Platform,
+} from 'react-native';
 import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
-import {HeaderBackButton} from '@react-navigation/elements';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import {useAppSelector} from '../../store/hooks';
 import SeedView from '../../components/SeedView';
-import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import chunk from '../../lib/utils/chunk';
 import Dots from '../../components/Dots';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import OnboardingHeader from '../../components/OnboardingHeader';
 
 const {width} = Dimensions.get('window');
 
@@ -35,6 +42,25 @@ const Generate: React.FC<Props> = props => {
   const seed = useAppSelector(state => seedSelector(state));
 
   const [activePage, setActivePage] = useState(0);
+
+  useLayoutEffect(() => {
+    const handleBackNavigation = () => {
+      navigation.goBack();
+    };
+
+    navigation.setOptions({
+      headerTransparent: true,
+      headerTitleAlign: 'left',
+      headerTintColor: 'white',
+      headerLeft: () => (
+        <HeaderButton
+          onPress={() => handleBackNavigation()}
+          imageSource={require('../../assets/images/back-icon.png')}
+        />
+      ),
+      headerTitle: () => <Text style={styles.headerTitle}>Seed Phrase</Text>,
+    });
+  }, [navigation]);
 
   const list = (
     <Carousel
@@ -70,24 +96,18 @@ const Generate: React.FC<Props> = props => {
 
   return (
     <View style={styles.container}>
-      <OnboardingHeader description="Please write down your paper-key and place it somewhere secure. " />
-      <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.header}>
+      <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.header}>
+        <OnboardingHeader
+          description={
+            'The 24 words below is your seed phrase. \n\nYour seed phrase is your password to your Litecoin & Wallet. Write it down and place it somewhere secure!'
+          }
+        />
         <View style={styles.seedContainer}>
           {!seed ? <Text>Loading...</Text> : list}
         </View>
 
-        <View
-          style={{
-            alignSelf: 'center',
-            position: 'absolute',
-            bottom: 0,
-            paddingBottom: 180,
-          }}>
-          <Dots
-            dotsLength={seed.length}
-            activeDotIndex={activePage}
-            dashLineEnabled={false}
-          />
+        <View style={styles.dotContainer}>
+          <Dots dotsLength={seed.length} activeDotIndex={activePage} />
         </View>
 
         <View style={styles.bottomContainer}>
@@ -97,7 +117,7 @@ const Generate: React.FC<Props> = props => {
               source={require('../../assets/images/attention.png')}
             />
             <Text style={styles.warningText}>
-              Without these words you won't be able to access your wallet!
+              WITHOUT THESE WORDS YOU WILL NOT BE ABLE TO ACCESS YOUR WALLET!
             </Text>
           </View>
 
@@ -121,14 +141,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   seedContainer: {
-    paddingTop: 60,
+    paddingTop: 24,
+    height: 400,
+    position: 'absolute',
+    bottom: 250,
   },
   carouselItem: {
     alignItems: 'center',
+    gap: 24,
   },
   warningText: {
     color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 15,
+    fontSize: 12,
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: 'bold',
+    paddingRight: 38,
   },
   bottomContainer: {
     alignSelf: 'center',
@@ -138,26 +169,29 @@ const styles = StyleSheet.create({
   },
   bottomTextContainer: {
     flexDirection: 'row',
-    width: 335,
-    paddingBottom: 19,
-    alignItems: 'baseline',
+    width: 300,
+    paddingBottom: 38,
+    alignSelf: 'center',
   },
   image: {
-    marginRight: 18,
+    marginRight: 17,
+    alignSelf: 'center',
+  },
+  headerTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 26,
+  },
+  dotContainer: {
+    alignSelf: 'center',
+    position: 'absolute',
+    bottom: 220,
   },
 });
-
-Generate.navigationOptions = ({navigation}) => {
-  return {
-    headerTitle: 'Paper Key',
-    headerLeft: () => (
-      <HeaderBackButton
-        tintColor="white"
-        labelVisible={false}
-        onPress={() => navigation.goBack()}
-      />
-    ),
-  };
-};
 
 export default Generate;
