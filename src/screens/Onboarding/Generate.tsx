@@ -1,19 +1,19 @@
-import React, {useState, useRef} from 'react';
-import {View, Text, Dimensions, StyleSheet, Image} from 'react-native';
-import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
+import React, { useState, useRef } from 'react';
+import { View, Text, Dimensions, StyleSheet, Image } from 'react-native';
+import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 import LinearGradient from 'react-native-linear-gradient';
-import {createSelector} from '@reduxjs/toolkit';
-import {HeaderBackButton} from '@react-navigation/elements';
-import {StackNavigationProp} from '@react-navigation/stack';
+import { createSelector } from '@reduxjs/toolkit';
+import { HeaderBackButton } from '@react-navigation/elements';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-import {useAppSelector} from '../../store/hooks';
+import { useAppSelector } from '../../store/hooks';
 import SeedView from '../../components/SeedView';
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import chunk from '../../lib/utils/chunk';
 import Dots from '../../components/Dots';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 type RootStackParamList = {
   Generate: undefined;
@@ -26,7 +26,7 @@ interface Props {
 
 const Generate: React.FC<Props> = props => {
   const carousel = useRef<ICarouselInstance>(null);
-  const {navigation} = props;
+  const { navigation } = props;
 
   const seedSelector = createSelector(
     state => state.onboarding.generatedSeed,
@@ -48,7 +48,7 @@ const Generate: React.FC<Props> = props => {
         parallaxScrollingScale: 1,
         parallaxScrollingOffset: 70,
       }}
-      renderItem={({item, index}) => (
+      renderItem={({ item, index }) => (
         <View style={styles.carouselItem}>
           <SeedView index={4 * (index + 1) - 3} value={item[0]} />
           <SeedView index={4 * (index + 1) - 2} value={item[1]} />
@@ -121,6 +121,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   seedContainer: {
+    width: '100%',
+    height: '100%',
     paddingTop: 60,
   },
   carouselItem: {
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
   },
 });
 
-Generate.navigationOptions = ({navigation}) => {
+Generate.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: 'Paper Key',
     headerLeft: () => (

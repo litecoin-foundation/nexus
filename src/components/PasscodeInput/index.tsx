@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Box from './Box';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 type ButtonStateType = 'active' | 'inactive' | 'used';
 
 const PasscodeInput: React.FC<Props> = props => {
-  const {dotsLength, activeDotIndex} = props;
+  const { dotsLength, activeDotIndex } = props;
   const dotsArray = [...Array(dotsLength)];
 
   const boxes = dotsArray.map((_, index) => {
@@ -23,7 +23,7 @@ const PasscodeInput: React.FC<Props> = props => {
       buttonStateValue = 'used';
     }
 
-    return <Box buttonState={buttonStateValue} />;
+    return <Box buttonState={buttonStateValue} key={index} />;
   });
 
   return <View style={styles.container}>{boxes}</View>;

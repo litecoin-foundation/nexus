@@ -1,13 +1,13 @@
-import React, {useState, useLayoutEffect} from 'react';
-import {StackNavigationProp} from '@react-navigation/stack';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
-import {addPincode} from '../../reducers/authentication';
-import {clearValues} from '../../reducers/authpad';
-import {resetPincode} from '../../reducers/authentication';
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import { addPincode } from '../../reducers/authentication';
+import { clearValues } from '../../reducers/authpad';
+import { resetPincode } from '../../reducers/authentication';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import {Platform, StyleSheet, Text} from 'react-native';
+import { Platform, StyleSheet, Text } from 'react-native';
 
 type RootStackParamList = {
   Pin: undefined;
@@ -21,7 +21,7 @@ interface Props {
 
 const Pin: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
-  const {navigation} = props;
+  const { navigation } = props;
 
   useLayoutEffect(() => {
     const handleBackNavigation = () => {
@@ -49,13 +49,15 @@ const Pin: React.FC<Props> = props => {
   const [newPasscode, setNewPasscode] = useState('');
   const [passcodeInitialSet, setPasscodeInitialSet] = useState(false);
 
-  navigation.setOptions({
-    headerTitle: () => (
-      <Text style={styles.headerTitle}>
-        {passcodeInitialSet ? 'Verify your Passcode' : 'Create Passcode'}
-      </Text>
-    ),
-  });
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <Text style={styles.headerTitle}>
+          {passcodeInitialSet ? 'Verify your Passcode' : 'Create Passcode'}
+        </Text>
+      ),
+    });
+  }, [passcodeInitialSet]);
 
   const handleCompletion = () => {
     setNewPasscode(pin);

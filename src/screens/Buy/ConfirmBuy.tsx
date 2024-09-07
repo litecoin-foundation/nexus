@@ -1,13 +1,13 @@
-import React, {useEffect} from 'react';
-import {View, Text, SafeAreaView, StyleSheet, Platform} from 'react-native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import React, { useEffect } from 'react';
+import { View, Text, SafeAreaView, StyleSheet, Platform } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 import TableCell from '../../components/Cells/TableCell';
-import {getSignedUrl} from '../../reducers/buy';
-import {getAddress} from '../../reducers/address';
+import { getSignedUrl } from '../../reducers/buy';
+import { getAddress } from '../../reducers/address';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {useMoonPaySdk} from '@moonpay/react-native-moonpay-sdk';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+// import { useMoonPaySdk } from '@moonpay/react-native-moonpay-sdk';
 
 import Constants from 'expo-constants';
 
@@ -23,11 +23,11 @@ interface Props {
 }
 
 const ConfirmBuy: React.FC<Props> = props => {
-  const {navigation} = props;
+  const { navigation } = props;
   const dispatch = useAppDispatch();
 
-  const {quote} = useAppSelector(state => state.buy);
-  const {currencySymbol} = useAppSelector(state => state.settings);
+  const { quote } = useAppSelector(state => state.buy);
+  const { currencySymbol } = useAppSelector(state => state.settings);
   const {
     quoteCurrencyAmount,
     quoteCurrencyPrice,
@@ -38,8 +38,8 @@ const ConfirmBuy: React.FC<Props> = props => {
   } = quote;
   const paymentRate = useAppSelector(state => state.ticker.paymentRate);
 
-  const {address} = useAppSelector(state => state.address);
-  const {uniqueId} = useAppSelector(state => state.onboarding);
+  const { address } = useAppSelector(state => state.address);
+  const { uniqueId } = useAppSelector(state => state.onboarding);
 
   useEffect(() => {
     dispatch(getAddress());
@@ -47,45 +47,45 @@ const ConfirmBuy: React.FC<Props> = props => {
     console.log(Constants.expoVersion);
   }, [dispatch]);
 
-  const {openWithInAppBrowser, generateUrlForSigning, updateSignature} =
-    useMoonPaySdk({
-      sdkConfig: {
-        flow: 'buy',
-        environment: 'sandbox',
-        params: {
-          apiKey: 'pk_test_123',
-        },
-      },
-    });
+  // const { openWithInAppBrowser, generateUrlForSigning, updateSignature } =
+  //   useMoonPaySdk({
+  //     sdkConfig: {
+  //       flow: 'buy',
+  //       environment: 'sandbox',
+  //       params: {
+  //         apiKey: 'pk_test_123',
+  //       },
+  //     },
+  //   });
 
-  useEffect(() => {
-    // construct buy widget url and send to plasma backend to be signed
-    // server responds with signature
-    fetch('http://192.168.1.60:3001/api/buy/moonpay/sign', {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify({
-        unsignedURL: generateUrlForSigning({variant: 'inapp-browser'}),
-      }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        const signature = data.signature;
-        console.log(data);
-        updateSignature(signature);
-      });
-  }, []);
+  // useEffect(() => {
+  //   // construct buy widget url and send to plasma backend to be signed
+  //   // server responds with signature
+  //   fetch('http://192.168.1.60:3001/api/buy/moonpay/sign', {
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     method: 'POST',
+  //     body: JSON.stringify({
+  //       unsignedURL: generateUrlForSigning({ variant: 'inapp-browser' }),
+  //     }),
+  //   })
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       const signature = data.signature;
+  //       console.log(data);
+  //       updateSignature(signature);
+  //     });
+  // }, []);
 
   const onPress = async () => {
-    const {urlWithSignature} = await getSignedUrl(
+    const { urlWithSignature } = await getSignedUrl(
       address,
       parseFloat(
         quoteCurrencyAmount * paymentRate +
-          feeAmount +
-          extraFeeAmount +
-          networkFeeAmount,
+        feeAmount +
+        extraFeeAmount +
+        networkFeeAmount,
       ).toFixed(2),
       uniqueId,
     );
@@ -95,9 +95,9 @@ const ConfirmBuy: React.FC<Props> = props => {
   };
 
   return (
-    <View style={{flex: 1, backgroundColor: '#1162E6'}}>
+    <View style={{ flex: 1, backgroundColor: '#1162E6' }}>
       <SafeAreaView>
-        <View style={{paddingTop: 108, paddingLeft: 20}}>
+        <View style={{ paddingTop: 108, paddingLeft: 20 }}>
           <Text style={styles.titleText}>You are purchasing</Text>
           <Text style={styles.amountText}>10 LTC</Text>
           <View>
@@ -107,7 +107,7 @@ const ConfirmBuy: React.FC<Props> = props => {
       </SafeAreaView>
 
       <View style={styles.bottomSheetContainer}>
-        <View style={{height: 180, paddingTop: 20}}>
+        <View style={{ height: 180, paddingTop: 20 }}>
           <TableCell title="AVAILABLE" value="INSTANTLY" />
           <TableCell title="RATE" value="$84/1LTC" />
           <TableCell title="FEE" value="$3.99" />
