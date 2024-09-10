@@ -45,3 +45,4 @@ lndmobile-*-v*.tar.gz
 ios/.xcode.env.local
 vendor/
 .cxx/
+bun.lockb

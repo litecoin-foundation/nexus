@@ -24,7 +24,7 @@ const PasscodeInput: React.FC<Props> = props => {
       buttonStateValue = 'used';
     }
 
-    return <Box buttonState={buttonStateValue} />;
+    return <Box buttonState={buttonStateValue} key={index} />;
   });
 
   return <View style={styles.container}>{boxes}</View>;
