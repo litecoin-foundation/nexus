@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect} from 'react';
+import React, {useState, useLayoutEffect, useEffect} from 'react';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
@@ -49,13 +49,15 @@ const Pin: React.FC<Props> = props => {
   const [newPasscode, setNewPasscode] = useState('');
   const [passcodeInitialSet, setPasscodeInitialSet] = useState(false);
 
-  navigation.setOptions({
-    headerTitle: () => (
-      <Text style={styles.headerTitle}>
-        {passcodeInitialSet ? 'Verify your Passcode' : 'Create Passcode'}
-      </Text>
-    ),
-  });
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <Text style={styles.headerTitle}>
+          {passcodeInitialSet ? 'Verify your Passcode' : 'Create Passcode'}
+        </Text>
+      ),
+    });
+  }, [passcodeInitialSet]);
 
   const handleCompletion = () => {
     setNewPasscode(pin);
