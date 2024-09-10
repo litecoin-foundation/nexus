@@ -1,11 +1,8 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import {useAppSelector} from '../store/hooks';
-import Dots from './Dots';
 import AuthPad from './Numpad/AuthPad';
-import OnboardingHeader from './OnboardingHeader';
 
 interface Props {
   headerDescriptionText: string;
@@ -19,27 +16,22 @@ const Auth: React.FC<Props> = props => {
     handleValidationSuccess,
     handleValidationFailure,
   } = props;
-  const pin = useAppSelector(state => state.authpad.pin);
 
   return (
-    <View style={styles.container}>
-      <OnboardingHeader description={headerDescriptionText}>
-        <Dots dotsLength={6} activeDotIndex={pin.length - 1} />
-      </OnboardingHeader>
-      <LinearGradient colors={['#544FE6', '#003DB3']} style={styles.gradient}>
+    <>
+      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
         <AuthPad
           handleValidationSuccess={handleValidationSuccess}
           handleValidationFailure={handleValidationFailure}
         />
       </LinearGradient>
-    </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
   },
   headerContainer: {
     flex: 1,

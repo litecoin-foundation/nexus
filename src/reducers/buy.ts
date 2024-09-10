@@ -3,7 +3,7 @@ import axios from 'axios';
 import {AppThunk} from './types';
 import {getLocales} from 'react-native-localize';
 
-const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
+const publishableKey = 'pk_test_RPbBRvEyfEh2h5KOKPwRhwDlwokr4Nv';
 
 // types
 interface IBuy {
@@ -131,21 +131,34 @@ export const getSignedUrl = async (
   fiatAmount: number,
   id: string,
 ) => {
-  const url =
-    `https://buy.moonpay.io?apiKey=${publishableKey}` +
+  const unsignedURL =
+    `https://buy-sandbox.moonpay.com?apiKey=${publishableKey}` +
     '&currencyCode=ltc' +
     `&externalCustomerId=${id}` +
     `&walletAddress=${address}` +
     `&baseCurrencyAmount=${fiatAmount}`;
 
-  const {data} = await axios.post(
-    'https://lndmobile.loshan.co.uk/api/buy/moonpay/sign',
-    {
-      url,
-    },
-  );
+  try {
+    const res = await fetch('http://192.168.1.60:3001/api/buy/moonpay/sign', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({unsignedURL}),
+    });
 
-  return data;
+    if (!res.ok) {
+      const {message} = await res.json();
+      return Error(message);
+    }
+
+    const signature = await res.json();
+    return `${unsignedURL}&signature=${encodeURIComponent(signature)}`;
+  } catch (error) {
+    // handle error
+    console.error(error);
+  }
 };
 
 // slice

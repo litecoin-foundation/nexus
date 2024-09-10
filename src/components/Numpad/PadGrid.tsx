@@ -1,6 +1,7 @@
 import React from 'react';
 import {Dimensions, View} from 'react-native';
 import {Canvas, LinearGradient, Rect, vec} from '@shopify/react-native-skia';
+import {v4 as uuidv4} from 'uuid';
 
 interface Props {}
 
@@ -16,7 +17,12 @@ const PadGrid: React.FC<Props> = () => {
           width: Dimensions.get('screen').width,
         }}>
         {h.map(y => (
-          <Rect x={0} y={y} width={Dimensions.get('screen').width} height={1}>
+          <Rect
+            key={uuidv4()}
+            x={0}
+            y={y}
+            width={Dimensions.get('screen').width}
+            height={1}>
             <LinearGradient
               start={vec(0, 0)}
               end={vec(Dimensions.get('screen').width, 1)}
@@ -31,7 +37,7 @@ const PadGrid: React.FC<Props> = () => {
         ))}
 
         {v.map(x => (
-          <Rect x={x} y={30} width={1} height={360}>
+          <Rect key={uuidv4()} x={x} y={30} width={1} height={360}>
             <LinearGradient
               start={vec(30, 0)}
               end={vec(0, 380)}

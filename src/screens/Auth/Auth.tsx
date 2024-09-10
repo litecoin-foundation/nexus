@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {Alert, ActivityIndicator, StyleSheet, View} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 
@@ -36,6 +36,12 @@ const AuthScreen: React.FC<Props> = props => {
   const walletUnlocked = useAppSelector(
     state => state.authentication.walletUnlocked,
   );
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: '',
+    });
+  });
 
   // Presents Biometric authentication on launch
   // If biometricEnabled & lnd is ready, present Biometric auth request
