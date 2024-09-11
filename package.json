@@ -17,7 +17,8 @@
     "fetch:ios": "curl https://api.getplasma.org/files/lnd/lndmobile-ios-v0.17.3.tar.gz --output lndmobile-ios-v0.17.3.tar.gz && bun run extract:ios",
     "extract:ios": "tar xzvf lndmobile-ios-v0.17.3.tar.gz -C ./ios/plasma/LndMobile",
     "fetch:android": "cd ./lightning && curl https://api.getplasma.org/files/lnd/lndmobile-android-v0.17.3.tar.gz --output lndmobile-android-v0.17.3.tar.gz && bun run extract:android",
-    "extract:android": "cd ./lightning && tar xzvf lndmobile-android-v0.17.3.tar.gz"
+    "extract:android": "cd ./lightning && tar xzvf lndmobile-android-v0.17.3.tar.gz",
+    "patch": "git apply ./patches/@react-native-clipboard+clipboard+1.14.1.patch"
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.1.1",

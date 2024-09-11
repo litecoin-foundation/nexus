@@ -1,0 +1,13 @@
+diff --git a/node_modules/@react-native-clipboard/clipboard/RNCClipboard.podspec b/node_modules/@react-native-clipboard/clipboard/RNCClipboard.podspec
+index 2e47ccf..35a670b 100644
+--- a/node_modules/@react-native-clipboard/clipboard/RNCClipboard.podspec
++++ b/node_modules/@react-native-clipboard/clipboard/RNCClipboard.podspec
+@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
+   s.source           = { :git => "https://github.com/react-native-clipboard/clipboard", :tag => "v#{s.version}" }
+   s.ios.source_files = "ios/**/*.{h,m,mm}"
+   s.osx.source_files = "macos/**/*.{h,m,mm}"
+-  s.visionos.source_files = "ios/**/*.{h,m,mm}"
++  # s.visionos.source_files = "ios/**/*.{h,m,mm}"
+ 
+   if fabric_enabled
+     folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
