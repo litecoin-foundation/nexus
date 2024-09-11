@@ -15,6 +15,7 @@ import {pollTicker} from './ticker';
 import {LndMobileEventEmitter} from '../lib/utils/event-listener';
 import {lnrpc} from '../lib/lightning/proto/lightning';
 import {createConfig} from '../lib/utils/config';
+import {pollBalance} from './balance';
 
 const PASS = 'PASSWORD';
 
@@ -115,8 +116,7 @@ export const unlockWallet = (): AppThunk => async dispatch => {
             dispatch(pollInfo());
             dispatch(subscribeTransactions());
             dispatch(pollTicker());
-            // dispatch(subscribeInvoices());
-            // dispatch(backupChannels());
+            dispatch(pollBalance());
 
             resolve();
           }

@@ -53,7 +53,7 @@ export const setRecoveryMode = createAction<boolean>(
 //   'onboarding/getNeutrinoCacheAction',
 // );
 
-// actions
+// functions
 export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
   const {seed} = getState().onboarding!;
   const uniqueId: string = shajs('sha256').update(seed.join('')).digest('hex');

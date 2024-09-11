@@ -16,6 +16,9 @@ import AlertsStack from './AlertsStack';
 import ConfirmSell, {
   ConfirmSellNavigationOptions,
 } from '../screens/Buy/ConfirmSell';
+import SearchTransaction, {
+  SearchTransactionNavigationOptions,
+} from '../screens/Wallet/SearchTransaction';
 
 const Stack = createStackNavigator();
 
@@ -71,6 +74,13 @@ function NewWalletStack(): React.JSX.Element {
         name="BuyHistory"
         component={BuyHistory}
         options={({navigation}) => BuyHistoryNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="SearchTransaction"
+        component={SearchTransaction}
+        options={({navigation}) =>
+          SearchTransactionNavigationOptions(navigation)
+        }
       />
     </Stack.Navigator>
   );

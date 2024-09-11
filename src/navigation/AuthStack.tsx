@@ -1,15 +1,20 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import Auth from '../screens/Auth/Auth';
 import Forgot from '../screens/Auth/Forgot';
 import ChangePincode from '../screens/Settings/ChangePincode';
-import WhiteButton from '../components/Buttons/WhiteButton';
+import HeaderButton from '../components/Buttons/HeaderButton';
 
 const Stack = createStackNavigator();
 
 function AuthStack(): React.JSX.Element {
+  const headerRightComponent = (navigation: any) => (
+    <HeaderButton
+      title="Forgot Pincode?"
+      onPress={() => navigation.navigate('Forgot')}
+    />
+  );
   return (
     <Stack.Navigator
       initialRouteName="Auth"
@@ -24,16 +29,7 @@ function AuthStack(): React.JSX.Element {
         component={Auth}
         options={({navigation}) => ({
           headerTitle: 'Unlock Wallet',
-          headerRight: () => (
-            <View style={styles.headerRight}>
-              <WhiteButton
-                value="FORGOT?"
-                small={true}
-                onPress={() => navigation.navigate('Forgot')}
-                active={true}
-              />
-            </View>
-          ),
+          headerRight: () => headerRightComponent(navigation),
         })}
       />
       <Stack.Screen
@@ -59,11 +55,5 @@ function AuthStack(): React.JSX.Element {
     </Stack.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  headerRight: {
-    paddingRight: 18,
-  },
-});
 
 export default AuthStack;

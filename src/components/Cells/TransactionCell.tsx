@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   left: {
     flexGrow: 1,
-    paddingLeft: 8,
+    paddingLeft: 12,
   },
   right: {
     // flexGrow: 1,

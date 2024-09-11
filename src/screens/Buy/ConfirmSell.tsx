@@ -1,5 +1,5 @@
 import React from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {useMoonPaySdk} from '@moonpay/react-native-moonpay-sdk';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
@@ -42,21 +42,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerTitleText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 17,
-  },
 });
 
 export const ConfirmSellNavigationOptions = navigation => {
   return {
-    headerTitle: () => <Text style={styles.headerTitleText}>Price Alerts</Text>,
+    headerTitle: '',
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',

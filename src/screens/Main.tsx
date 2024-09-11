@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Text, Platform, Pressable} from 'react-native';
 import {useSelector} from 'react-redux';
 import Animated, {
   interpolate,
@@ -12,7 +12,7 @@ import Animated, {
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
-import {getTransactions, txDetailSelector} from '../reducers/transaction';
+import {txDetailSelector} from '../reducers/transaction';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';
@@ -25,11 +25,27 @@ import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import {useAppDispatch} from '../store/hooks';
+import {
+  Canvas,
+  RoundedRect,
+  Text as SkiaText,
+  matchFont,
+} from '@shopify/react-native-skia';
+
+const fontFamily =
+  Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
+const fontStyle = {
+  fontFamily,
+  fontStyle: 'normal',
+  fontWeight: '700',
+};
+const font = matchFont(fontStyle);
 
 type RootStackParamList = {
   Main: {
     scanData?: string;
   };
+  SearchTransaction: undefined;
 };
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
@@ -134,14 +150,53 @@ const Main: React.FC<Props> = props => {
   }, [activeTab]);
 
   const txListComponent = (
-    <TransactionList
-      scrollOffset={scrollOffset}
-      onPress={data => {
-        selectTransaction(data);
-        setTxDetailModalVisible(true);
-      }}
-      transactions={displayedTxs}
-    />
+    <View>
+      <View
+        style={{
+          height: 70,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}>
+        <Text
+          style={{
+            paddingLeft: 19,
+            paddingBottom: 12,
+            paddingTop: 5,
+            fontFamily:
+              Platform.OS === 'ios'
+                ? 'Satoshi Variable'
+                : 'SatoshiVariable-Regular.ttf',
+            fontStyle: 'bold',
+            fontWeight: '700',
+            color: '#2E2E2E',
+            fontSize: 24,
+          }}>
+          Latest Transactions
+        </Text>
+
+        <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
+          <Canvas style={{height: 50, width: 80}}>
+            <RoundedRect
+              x={0}
+              y={0}
+              width={90}
+              height={50}
+              color="white"
+              r={10}
+            />
+            <SkiaText x={10} y={16} text="All" font={font} color={'#2E2E2E'} />
+          </Canvas>
+        </Pressable>
+      </View>
+      <TransactionList
+        scrollOffset={scrollOffset}
+        onPress={data => {
+          selectTransaction(data);
+          setTxDetailModalVisible(true);
+        }}
+        transactions={displayedTxs}
+      />
+    </View>
   );
 
   const HeaderComponent = (
@@ -170,8 +225,7 @@ const Main: React.FC<Props> = props => {
         title="Convert"
         imageSource={require('../assets/icons/convert-icon.png')}
         handlePress={() => {
-          console.log('dispatching gettxs');
-          dispatch(getTransactions());
+          console.log('nothing to do');
         }}
         active={activeTab === 3}
         textPadding={18}

@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Text, TouchableHighlight, Platform} from 'react-native';
+import {StyleSheet, Text, Platform, TouchableOpacity} from 'react-native';
 
 interface Props {
   title: string;
@@ -10,13 +10,13 @@ interface Props {
 const NewBlueButton: React.FC<Props> = props => {
   const {title, active, onPress} = props;
   return (
-    <TouchableHighlight
+    <TouchableOpacity
       onPress={onPress}
       style={[styles.container, active ? styles.active : null]}>
       <Text style={[styles.text, active ? styles.activeText : null]}>
         {title}
       </Text>
-    </TouchableHighlight>
+    </TouchableOpacity>
   );
 };
 

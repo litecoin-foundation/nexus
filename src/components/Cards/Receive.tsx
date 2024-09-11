@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View, Platform} from 'react-native';
+import {StyleSheet, Text, View, Platform, Pressable} from 'react-native';
 import NewBlueButton from '../Buttons/NewBlueButton';
 import NewButton from '../Buttons/NewButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -63,8 +63,10 @@ const Receive: React.FC<Props> = () => {
 
         <Text style={styles.subtitleText}>MY LTC ADDRESS</Text>
         <View style={styles.addressContainer}>
-          <Text style={styles.addressText}>{address}</Text>
-          <TouchableOpacity onPress={handleCopy}>
+          <Pressable onPress={() => handleCopy()}>
+            <Text style={styles.addressText}>{address}</Text>
+          </Pressable>
+          <TouchableOpacity onPress={() => handleCopy()}>
             <NewButton
               imageSource={require('../../assets/icons/share-icon.png')}
             />
@@ -118,8 +120,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 248,
     flex: 1,
-    // marginBottom: 50,
-    // maxHeight: 260,
   },
   titleText: {
     fontFamily:

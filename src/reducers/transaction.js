@@ -38,14 +38,13 @@ export const subscribeTransactions = () => async dispatch => {
 };
 
 export const subscribeInvoices = () => dispatch => {
-  lnd.subscribeToInvoices(res => {
-    if (res.isErr()) {
-      return console.log(res.error);
-    }
-
-    dispatch(updateTransactions());
-    dispatch(getBalance());
-  });
+  // lnd.subscribeToInvoices(res => {
+  //   if (res.isErr()) {
+  //     return console.log(res.error);
+  //   }
+  //   dispatch(updateTransactions());
+  //   dispatch(getBalance());
+  // });
 };
 
 export const getTransactions = () => async dispatch => {

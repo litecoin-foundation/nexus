@@ -5,7 +5,7 @@ import {AppThunk} from './types';
 import {poll} from '../lib/utils/poll';
 import {RootState} from '../store';
 import * as Lnd from '../lib/lightning';
-import { lnrpc } from '../lib/lightning/proto/lightning';
+import {lnrpc} from '../lib/lightning/proto/lightning';
 
 // types
 interface IInfo {
