@@ -73,11 +73,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 125,
     height: 96,
-    backgroundColor: 'purple',
   },
   image: {
     height: 30,
     width: 30,
+    tintColor: '#293C62',
+    marginLeft: 14,
+    marginBottom: 20,
   },
   disabled: {
     opacity: 0,

@@ -7,6 +7,7 @@ import {
   Platform,
   Button,
   Alert,
+  Dimensions,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 
@@ -15,6 +16,7 @@ import {getSignedUrl} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import GreenButton from '../../components/Buttons/GreenButton';
 
 type RootStackParamList = {
   ConfirmBuy: undefined;
@@ -50,56 +52,45 @@ const ConfirmBuy: React.FC<Props> = props => {
     dispatch(getAddress());
   }, [dispatch]);
 
-  // const onPress = async () => {
-  //   const {urlWithSignature} = await getSignedUrl(
-  //     address,
-  //     parseFloat(
-  //       quoteCurrencyAmount * paymentRate +
-  //         feeAmount +
-  //         extraFeeAmount +
-  //         networkFeeAmount,
-  //     ).toFixed(2),
-  //     uniqueId,
-  //   );
-  //   navigation.navigate('WebPage', {
-  //     uri: urlWithSignature,
-  //   });
-  // };
+  const onPress = async () => {
+    try {
+      const url = await getSignedUrl(address, 69, uniqueId);
+      if (typeof url === 'string') {
+        navigation.navigate('WebPage', {uri: url});
+      } else {
+        Alert.alert("Something's wrong!", `${url}`);
+      }
+    } catch (error) {
+      Alert.alert("Something's wrong!", `err: ${error}`);
+    }
+  };
 
   return (
     <View style={{flex: 1, backgroundColor: '#1162E6'}}>
       <SafeAreaView>
         <View style={{paddingTop: 108, paddingLeft: 20}}>
           <Text style={styles.titleText}>You are purchasing</Text>
-          <Text style={styles.amountText}>10 LTC</Text>
+          <Text style={styles.amountText}>{quoteCurrencyAmount} LTC</Text>
           <View>
-            <Text>{currencySymbol}69.42</Text>
+            <Text>
+              {currencySymbol}
+              {quoteCurrencyPrice.toFixed(2)}
+            </Text>
           </View>
         </View>
       </SafeAreaView>
 
       <View style={styles.bottomSheetContainer}>
-        <View style={{height: 180, paddingTop: 20}}>
-          <TableCell title="AVAILABLE" value="INSTANTLY" />
+        <View style={{height: 220, paddingTop: 26}}>
           <TableCell title="RATE" value="$84/1LTC" />
-          <TableCell title="FEE" value="$3.99" />
-          <TableCell title="YOU WILL SPEND" value="$155.32" />
+          <TableCell title="FEE" value={feeAmount + extraFeeAmount} />
+          <TableCell title="NETWORK FEE" value={networkFeeAmount} />
+          <TableCell title="YOU WILL SPEND" value={totalAmount} />
         </View>
-        <Button
-          title="Open In app"
-          onPress={async () => {
-            try {
-              const url = await getSignedUrl(address, 69, uniqueId);
-              if (typeof url === 'string') {
-                navigation.navigate('WebPage', {uri: url});
-              } else {
-                Alert.alert("Something's wrong!", `${url}`);
-              }
-            } catch (error) {
-              Alert.alert("Something's wrong!", `err: ${error}`);
-            }
-          }}
-        />
+
+        <View style={styles.confirmButtonContainer}>
+          <GreenButton value="Confirm Purchase" onPress={() => onPress()} />
+        </View>
       </View>
     </View>
   );
@@ -140,6 +131,12 @@ const styles = StyleSheet.create({
   },
   headerLeftMargin: {
     marginLeft: 22,
+  },
+  confirmButtonContainer: {
+    marginHorizontal: 24,
+    bottom: 44,
+    position: 'absolute',
+    width: Dimensions.get('screen').width - 48,
   },
 });
 

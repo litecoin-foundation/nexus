@@ -4,7 +4,7 @@ import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import Main, {navigationOptions} from '../screens/Main';
 import Scan from '../screens/Scan';
 import SettingsStack from './SettingsStack';
-import WebPage from '../screens/WebPage';
+import WebPage, {WebPageNavigationOptions} from '../screens/WebPage';
 import ConfirmSend from '../screens/Wallet/ConfirmSend';
 import ConfirmBuy, {
   ConfirmBuyNavigationOptions,
@@ -13,6 +13,9 @@ import BuyHistory, {
   BuyHistoryNavigationOptions,
 } from '../screens/Buy/BuyHistory';
 import AlertsStack from './AlertsStack';
+import ConfirmSell, {
+  ConfirmSellNavigationOptions,
+} from '../screens/Buy/ConfirmSell';
 
 const Stack = createStackNavigator();
 
@@ -51,18 +54,18 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="WebPage"
         component={WebPage}
-        options={{
-          ...TransitionPresets.ModalPresentationIOS,
-          headerBackTitleVisible: false,
-          headerTransparent: true,
-          headerTitle: '',
-        }}
+        options={({navigation}) => WebPageNavigationOptions(navigation)}
       />
       <Stack.Screen name="ConfirmSend" component={ConfirmSend} />
       <Stack.Screen
         name="ConfirmBuy"
         component={ConfirmBuy}
         options={({navigation}) => ConfirmBuyNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="ConfirmSell"
+        component={ConfirmSell}
+        options={({navigation}) => ConfirmSellNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="BuyHistory"

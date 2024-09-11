@@ -2,10 +2,21 @@ import React, {useRef, useState} from 'react';
 import {View, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
+import {TransitionPresets} from '@react-navigation/stack';
+import {RouteProp} from '@react-navigation/native';
 
 import Header from '../components/Header';
+import HeaderButton from '../components/Buttons/HeaderButton';
 
-const WebPage = props => {
+type RootStackParamList = {
+  WebPage: undefined;
+};
+
+interface Props {
+  route: RouteProp<RootStackParamList, 'WebPage'>;
+}
+
+const WebPage: React.FC<Props> = props => {
   const {route} = props;
   const WebPageRef = useRef();
   const [canGoBack, setCanGoBack] = useState(false);
@@ -88,6 +99,28 @@ const styles = StyleSheet.create({
   opacity: {
     opacity: 0.4,
   },
+  headerButtonContainer: {
+    paddingTop: 30,
+  },
 });
+
+export const WebPageNavigationOptions = navigation => {
+  return {
+    ...TransitionPresets.ModalPresentationIOS,
+    headerTitle: '',
+    headerTransparent: true,
+    headerBackTitleVisible: false,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <View style={styles.headerButtonContainer}>
+        <HeaderButton
+          onPress={() => navigation.goBack()}
+          imageSource={require('../assets/images/back-icon.png')}
+          title="BACK"
+        />
+      </View>
+    ),
+  };
+};
 
 export default WebPage;

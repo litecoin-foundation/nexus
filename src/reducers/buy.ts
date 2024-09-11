@@ -3,7 +3,7 @@ import axios from 'axios';
 import {AppThunk} from './types';
 import {getLocales} from 'react-native-localize';
 
-const publishableKey = 'pk_test_RPbBRvEyfEh2h5KOKPwRhwDlwokr4Nv';
+const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 
 // types
 interface IBuy {
@@ -39,7 +39,7 @@ export const getTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
     const {uniqueId} = getState().onboarding;
     const {data} = await axios.post(
-      'https://lndmobile.loshan.co.uk/api/buy/moonpay/transactions',
+      'http://192.168.1.60:3001/api/buy/moonpay/transactions',
       {
         id: uniqueId,
       },
@@ -132,7 +132,7 @@ export const getSignedUrl = async (
   id: string,
 ) => {
   const unsignedURL =
-    `https://buy-sandbox.moonpay.com?apiKey=${publishableKey}` +
+    `https://buy.moonpay.com?apiKey=${publishableKey}` +
     '&currencyCode=ltc' +
     `&externalCustomerId=${id}` +
     `&walletAddress=${address}` +

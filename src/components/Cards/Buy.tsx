@@ -40,6 +40,7 @@ const Buy: React.FC<Props> = () => {
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const isBuyAllowed = useAppSelector(state => state.buy.isBuyAllowed);
   const minBuyAmount = useAppSelector(state => state.buy.minBuyAmount);
+  const maxBuyAmount = useAppSelector(state => state.buy.maxBuyAmount);
 
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(24);
@@ -164,11 +165,18 @@ const Buy: React.FC<Props> = () => {
       )}
       <View style={styles.confirmButtonContainer}>
         <BlueButton
-          disabled={isBuyAllowed ? false : true}
+          disabled={
+            !isBuyAllowed ||
+            fiatAmount <= minBuyAmount ||
+            fiatAmount === '' ||
+            fiatAmount > maxBuyAmount
+              ? true
+              : false
+          }
           value="Preview Buy"
           onPress={() => navigation.navigate('ConfirmBuy')}
         />
-        <Text>
+        <Text style={styles.minText}>
           Minimum purchase size of {currencySymbol}
           {minBuyAmount}
         </Text>
@@ -190,9 +198,10 @@ const styles = StyleSheet.create({
   },
   confirmButtonContainer: {
     marginHorizontal: 24,
-    bottom: 147,
+    bottom: 141,
     position: 'absolute',
     width: Dimensions.get('screen').width - 48,
+    gap: 6,
   },
   switchButton: {
     borderRadius: 10,
@@ -235,6 +244,17 @@ const styles = StyleSheet.create({
   },
   disabledBuyText: {
     marginTop: 30,
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    fontSize: 12,
+    color: '#747E87',
+    textAlign: 'center',
+  },
+  minText: {
     fontFamily:
       Platform.OS === 'ios'
         ? 'Satoshi Variable'

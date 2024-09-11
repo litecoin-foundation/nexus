@@ -51,7 +51,7 @@ const BuyButton: React.FC<Props> = props => {
       }}>
       <Animated.View style={[styles.button, motionStyle]}>
         {imageSource ? (
-          <Image source={imageSource} />
+          <Image style={styles.image} source={imageSource} />
         ) : (
           <Text style={styles.text}>{value}</Text>
         )}
@@ -82,6 +82,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#293C62',
     fontSize: 24,
+  },
+  image: {
+    tintColor: '#293C62',
   },
 });
 

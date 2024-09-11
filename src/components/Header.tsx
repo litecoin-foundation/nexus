@@ -1,11 +1,20 @@
 import React, {PureComponent} from 'react';
 import {StyleSheet, SafeAreaView, View, Dimensions} from 'react-native';
 
-export default class Header extends PureComponent {
+interface Props {
+  children?: React.ReactNode;
+  modal?: boolean;
+}
+
+export default class Header extends PureComponent<Props> {
   render() {
-    const {children} = this.props;
+    const {children, modal} = this.props;
     return (
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          modal ? {height: Dimensions.get('screen').height * 0.09} : null,
+        ]}>
         <SafeAreaView>{children}</SafeAreaView>
       </View>
     );

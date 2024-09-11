@@ -52,7 +52,7 @@ const Receive: React.FC<Props> = () => {
             }}
           />
           <NewBlueButton
-            title="Stealth Litecoin"
+            title="MWEB Litecoin"
             active={mwebAddress}
             onPress={() => {
               dispatch(getAddress(true));

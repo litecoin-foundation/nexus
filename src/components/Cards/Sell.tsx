@@ -28,7 +28,7 @@ interface Props {
 
 type RootStackParamList = {
   Main: undefined;
-  ConfirmBuy: undefined;
+  ConfirmSell: undefined;
 };
 
 const Sell: React.FC<Props> = () => {
@@ -164,7 +164,7 @@ const Sell: React.FC<Props> = () => {
         <BlueButton
           disabled={isSellAllowed ? false : true}
           value="Sell LTC"
-          onPress={() => console.log('sell button pressed')}
+          onPress={() => navigation.navigate('ConfirmSell')}
         />
       </View>
     </View>
