@@ -1,4 +1,4 @@
-import RNFS from 'react-native-fs';
+import RNFS from '@dr.pogodin/react-native-fs';
 
 const lndDir = RNFS.DocumentDirectoryPath;
 

@@ -16,7 +16,6 @@ import {lnrpc} from '../../lib/lightning/proto/lightning';
 
 type RootStackParamList = {
   Auth: undefined;
-  AppStack: undefined;
   NewWalletStack: undefined;
 };
 

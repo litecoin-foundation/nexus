@@ -4,10 +4,13 @@ import {useMoonPaySdk} from '@moonpay/react-native-moonpay-sdk';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import Header from '../../components/Header';
+import {useAppSelector} from '../../store/hooks';
 
 interface Props {}
 
 const ConfirmSell: React.FC<Props> = props => {
+  const {uniqueId} = useAppSelector(state => state.onboarding);
+
   const {MoonPayWebViewComponent} = useMoonPaySdk({
     sdkConfig: {
       flow: 'sell',
@@ -15,6 +18,7 @@ const ConfirmSell: React.FC<Props> = props => {
       params: {
         apiKey: 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr',
         baseCurrencyCode: 'ltc',
+        externalCustomerId: uniqueId,
       },
       handlers: {
         async onInitiateDeposit(properties: OnInitiateDepositProps) {

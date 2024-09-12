@@ -5,7 +5,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 import OnboardingStack from './OnboardingStack';
 import Loading from '../screens/Loading';
 import AuthStack from './AuthStack';
-import AppStack from './AppStack';
 import NewWalletStack from './NewWalletStack';
 
 const Stack = createStackNavigator();
@@ -53,11 +52,6 @@ function RootNavigator() {
             headerShown: false,
             animationEnabled: false,
           }}
-        />
-        <Stack.Screen
-          name="AppStack"
-          component={AppStack}
-          options={{headerTransparent: true, headerShown: false}}
         />
         <Stack.Screen
           name="NewWalletStack"

@@ -3,6 +3,29 @@ PODS:
   - BVLinearGradient (2.8.3):
     - React-Core
   - DoubleConversion (1.1.6)
+  - dr-pogodin-react-native-fs (2.28.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - EXApplication (5.9.1):
+    - ExpoModulesCore
   - EXConstants (16.0.1):
     - ExpoModulesCore
   - Expo (51.0.5):
@@ -38,7 +61,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - ExpoSecureStore (12.8.1):
+  - ExpoSecureStore (13.0.2):
     - ExpoModulesCore
   - FBLazyVector (0.74.1)
   - fmt (9.1.0)
@@ -1025,7 +1048,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-quick-crypto (0.7.0-rc.5):
+  - react-native-quick-crypto (0.7.4):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1048,11 +1071,11 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context (4.10.1):
+  - react-native-safe-area-context (4.11.0):
     - React-Core
   - react-native-segmented-control (2.5.2):
     - React-Core
-  - react-native-skia (1.3.3):
+  - react-native-skia (1.3.13):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1096,7 +1119,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webview (13.10.3):
+  - react-native-webview (13.12.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1346,17 +1369,15 @@ PODS:
     - React-logger (= 0.74.1)
     - React-perflogger (= 0.74.1)
     - React-utils (= 0.74.1)
-  - RNCAsyncStorage (1.23.1):
+  - RNCAsyncStorage (1.24.0):
     - React-Core
   - RNCClipboard (1.14.1):
     - React-Core
   - RNCMaskedView (0.3.1):
     - React-Core
-  - RNDeviceInfo (10.14.0):
+  - RNDeviceInfo (11.1.0):
     - React-Core
-  - RNFS (2.20.0):
-    - React-Core
-  - RNGestureHandler (2.16.2):
+  - RNGestureHandler (2.19.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1383,11 +1404,30 @@ PODS:
     - React-Core
   - RNKeychain (8.2.0):
     - React-Core
-  - RNLocalize (3.1.0):
+  - RNLocalize (3.2.1):
     - React-Core
-  - RNReactNativeHapticFeedback (2.2.0):
+  - RNReactNativeHapticFeedback (2.3.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
     - React-Core
-  - RNReanimated (3.12.0):
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - RNReanimated (3.12.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1430,16 +1470,16 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (15.3.0):
+  - RNSVG (15.6.0):
     - React-Core
   - SocketRocket (0.7.0)
   - TouchID (4.4.1):
     - React
-  - VisionCamera (4.0.5):
-    - VisionCamera/Core (= 4.0.5)
-    - VisionCamera/React (= 4.0.5)
-  - VisionCamera/Core (4.0.5)
-  - VisionCamera/React (4.0.5):
+  - VisionCamera (4.5.3):
+    - VisionCamera/Core (= 4.5.3)
+    - VisionCamera/React (= 4.5.3)
+  - VisionCamera/Core (4.5.3)
+  - VisionCamera/React (4.5.3):
     - React-Core
   - Yoga (0.0.0)
 
@@ -1447,6 +1487,8 @@ DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - "dr-pogodin-react-native-fs (from `../node_modules/@dr.pogodin/react-native-fs`)"
+  - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
@@ -1522,7 +1564,6 @@ DEPENDENCIES:
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
-  - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNICloudStore (from `../node_modules/react-native-icloudstore`)
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
@@ -1550,6 +1591,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-linear-gradient"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
+  dr-pogodin-react-native-fs:
+    :path: "../node_modules/@dr.pogodin/react-native-fs"
+  EXApplication:
+    :path: "../node_modules/expo-application/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
   Expo:
@@ -1697,8 +1742,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-masked-view/masked-view"
   RNDeviceInfo:
     :path: "../node_modules/react-native-device-info"
-  RNFS:
-    :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNICloudStore:
@@ -1728,6 +1771,8 @@ SPEC CHECKSUMS:
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
+  dr-pogodin-react-native-fs: 7a01ed6843632c5b70ef1c9d1d72d0f0a55a9986
+  EXApplication: c08200c34daca7af7fd76ac4b9d606077410e8ad
   EXConstants: 9a008dbf262550884e6280dea95b81b51f65ea6f
   Expo: a3177f18e97260de9ec29802d28d29c130871e94
   ExpoAsset: 9b7433ecc5f1b608ccbb823492e062bde944abd2
@@ -1735,7 +1780,7 @@ SPEC CHECKSUMS:
   ExpoFont: 690b76008be824e47907f200cb0764870108dfd1
   ExpoKeepAwake: f3a7b0ff4b4911957264dad8cb584ef688326a22
   ExpoModulesCore: 4c5576eec261d09549d78b751ccd62d94d4506ac
-  ExpoSecureStore: c84ae37d1c36f38524d289c67c3a2e3fc56f1108
+  ExpoSecureStore: 060cebcb956b80ddae09821610ac1aa9e1ac74cd
   FBLazyVector: 898d14d17bf19e2435cafd9ea2a1033efe445709
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
@@ -1771,12 +1816,12 @@ SPEC CHECKSUMS:
   react-native-mmkv: 8c9a677e64a1ac89b0c6cf240feea528318b3074
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
   react-native-quick-base64: a74c4b2607b9de016877a8edb776b6ac59785809
-  react-native-quick-crypto: 31104a167cd5b975a454f2314a568962098bd32f
-  react-native-safe-area-context: dcab599c527c2d7de2d76507a523d20a0b83823d
+  react-native-quick-crypto: 5bface18aeadc0cf0bed298a004063a7d19b0085
+  react-native-safe-area-context: 851c62c48dce80ccaa5637b6aa5991a1bc36eca9
   react-native-segmented-control: b92809e9111013dfa266e1168ba366d62898d9a4
-  react-native-skia: fe38efae026a4bacc8e9793c741f02062ff0acbf
+  react-native-skia: dca6ed315f74bd4ae2b26368f7029dc8d17ba7e7
   react-native-slider: ce295d2bf830a7990af05b0bd70ab28c133e230c
-  react-native-webview: 66c0e45a5aa931d7deada77e69042020a86f1aaa
+  react-native-webview: 8d746f921964c87b87b190bf6a46fa148d40cd0f
   React-nativeconfig: b0073a590774e8b35192fead188a36d1dca23dec
   React-NativeModulesApple: df46ff3e3de5b842b30b4ca8a6caae6d7c8ab09f
   React-perflogger: 3d31e0d1e8ad891e43a09ac70b7b17a79773003a
@@ -1800,23 +1845,22 @@ SPEC CHECKSUMS:
   React-runtimescheduler: e2152ed146b6a35c07386fc2ac4827b27e6aad12
   React-utils: 3285151c9d1e3a28a9586571fc81d521678c196d
   ReactCommon: f42444e384d82ab89184aed5d6f3142748b54768
-  RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
-  RNCClipboard: 806a2c9ed0c0166d78721ee6eac202a8c1cffb36
+  RNCAsyncStorage: ec53e44dc3e75b44aa2a9f37618a49c3bc080a7a
+  RNCClipboard: 0a720adef5ec193aa0e3de24c3977222c7e52a37
   RNCMaskedView: 090213d32d8b3bb83a4dcb7d12c18f0152591906
-  RNDeviceInfo: 59344c19152c4b2b32283005f9737c5c64b42fba
-  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
-  RNGestureHandler: 2282cfbcf86c360d29f44ace393203afd5c6cff7
+  RNDeviceInfo: b899ce37a403a4dea52b7cb85e16e49c04a5b88e
+  RNGestureHandler: 67e78f16895947f7e57ab91e75e914d3e9ef7239
   RNICloudStore: 7ac4f2630e2a7e90a4b059b92e8483828bbacd2b
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
-  RNLocalize: e8694475db034bf601e17bd3dfa8986565e769eb
-  RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
-  RNReanimated: 8978449b2a511388ea71faf1e66f669134e87658
+  RNLocalize: 4f22418187ecd5ca693231093ff1d912d1b3c9bc
+  RNReactNativeHapticFeedback: 6d6363faa31a6cb23e467e02304b585ec59f0930
+  RNReanimated: f9192536fa8a312c737eaf15c905f78831193ef1
   RNScreens: b32a9ff15bea7fcdbe5dff6477bc503f792b1208
-  RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
+  RNSVG: 5da7a24f31968ec74f0b091e3440080f347e279b
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
-  VisionCamera: 59949b04a51c00a52a6d7125425d01664792c9bd
+  VisionCamera: cb84d0d8485b3e67c91b62931d3aa88f49747c92
   Yoga: 348f8b538c3ed4423eb58a8e5730feec50bce372
 
 PODFILE CHECKSUM: 8a7f5f3169b08a52260fba2fb3412f3a8ae4cfdd

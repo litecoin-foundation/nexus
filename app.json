@@ -1,4 +1,7 @@
 {
   "name": "plasma",
-  "displayName": "plasma"
+  "displayName": "plasma",
+  "plugins": [
+    "expo-secure-store"
+  ]
 }

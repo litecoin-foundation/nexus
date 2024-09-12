@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useLayoutEffect} from 'react';
 import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {HeaderBackButton} from '@react-navigation/elements';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';

@@ -11,7 +11,7 @@ import ProgressBar from '../../components/ProgressBar';
 
 type RootStackParamList = {
   Welcome: undefined;
-  AppStack: undefined;
+  NewWalletStack: undefined;
 };
 
 interface Props {
@@ -32,7 +32,7 @@ const Welcome: React.FC<Props> = props => {
 
     navigation.reset({
       index: 0,
-      routes: [{name: 'AppStack'}],
+      routes: [{name: 'NewWalletStack'}],
     });
   };
 

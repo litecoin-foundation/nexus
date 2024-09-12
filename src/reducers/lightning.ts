@@ -1,7 +1,7 @@
 import * as Lnd from '../lib/lightning';
 import * as LndWallet from '../lib/lightning/wallet';
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import RNFS from 'react-native-fs';
+import RNFS from '@dr.pogodin/react-native-fs';
 import {NativeModules} from 'react-native';
 
 import {AppThunk} from './types';
