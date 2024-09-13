@@ -2,6 +2,8 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+apply plugin: "com.google.protobuf"
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -102,16 +104,50 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    sourceSets {
+        main {
+            proto {
+                srcDir '../../proto'
+            }
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation(name:"Lndmobile", ext:"aar")
+    implementation "androidx.work:work-runtime:2.7.1"
+    implementation "androidx.concurrent:concurrent-futures:1.1.0"
+    implementation "javax.annotation:javax.annotation-api:1.3.2"
+    implementation "io.grpc:grpc-stub:1.30.0"
+    implementation "io.grpc:grpc-protobuf-lite:1.30.0"
+
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:21.0-rc-1"
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option "lite"
+                }
+            }
+        }
     }
 }
 
