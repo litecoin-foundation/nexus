@@ -1,6 +1,5 @@
-import RNFS from '@dr.pogodin/react-native-fs';
-
-const lndDir = RNFS.DocumentDirectoryPath;
+import * as FileSystem from 'expo-file-system';
+import {fileExists} from './file';
 
 const mainnetConfig = `
   [Application Options]
@@ -28,11 +27,19 @@ const mainnetConfig = `
 `;
 
 export const createConfig = () => {
-  return new Promise((resolve, reject) => {
-    RNFS.mkdir(`${lndDir}/lndltc`);
-    const lndConfPath = `${lndDir}/lndltc/lnd.conf`;
+  return new Promise(async (resolve, reject) => {
+    const lndConfPath = `${FileSystem.documentDirectory}/lndltc/lnd.conf`;
+
     try {
-      RNFS.writeFile(lndConfPath, mainnetConfig).then(() => {
+      // check if config exists
+      if (await fileExists(lndConfPath)) {
+        resolve(true);
+      }
+      // otherwise continues...
+      await FileSystem.makeDirectoryAsync(
+        `${FileSystem.documentDirectory}/lndltc`,
+      );
+      FileSystem.writeAsStringAsync(lndConfPath, mainnetConfig).then(() => {
         resolve(true);
       });
     } catch (error) {

@@ -1,13 +1,13 @@
 import * as Lnd from '../lib/lightning';
 import * as LndWallet from '../lib/lightning/wallet';
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import RNFS from '@dr.pogodin/react-native-fs';
+import * as FileSystem from 'expo-file-system';
 import {NativeModules} from 'react-native';
 
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
 import {setItem, getItem} from '../lib/utils/keychain';
-import {deleteWalletDB} from '../lib/utils/file';
+import {deleteWalletDB, fileExists} from '../lib/utils/file';
 import {finishOnboarding, setRecoveryMode} from './onboarding';
 import {subscribeTransactions} from './transaction';
 import {pollInfo} from './info';
@@ -121,9 +121,9 @@ export const unlockWallet = (): AppThunk => async dispatch => {
             resolve();
           }
         } catch (error) {
-          const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+          const dbPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
 
-          if ((await RNFS.exists(dbPath)) === false) {
+          if ((await fileExists(dbPath)) === false) {
             // if no wallet db exists, user has likely uninstalled the app previously
             // in this case, seed exists in keychain. initialise wallet from seed
             // enabling recovery mode to scan for addresses
