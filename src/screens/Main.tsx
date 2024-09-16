@@ -24,7 +24,7 @@ import {groupTransactions} from '../lib/utils/groupTransactions';
 import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
-import {useAppDispatch} from '../store/hooks';
+import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {
   Canvas,
   RoundedRect,
@@ -52,13 +52,13 @@ interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
+  const {isInternetReachable} = useAppSelector(state => state.info);
   const transactions = useSelector(state => txDetailSelector(state));
   const groupedTransactions = groupTransactions(transactions);
 
-  const [activeTab, setActiveTab] = useState(0);
-
   const dispatch = useAppDispatch();
 
+  const [activeTab, setActiveTab] = useState(0);
   const [selectedTransaction, selectTransaction] = useState(null);
   const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
@@ -107,7 +107,7 @@ const Main: React.FC<Props> = props => {
       backgroundColor: interpolateColor(
         clampedTranslateY,
         [250, 350],
-        ['#1162E6', '#f7f7f7'],
+        [isInternetReachable ? '#1162E6' : '#F36F56', '#f7f7f7'],
       ),
     };
   });
@@ -210,6 +210,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 1}
         textPadding={28}
+        disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Sell"
@@ -220,6 +221,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 2}
         textPadding={30}
+        disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Convert"
@@ -229,6 +231,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 3}
         textPadding={18}
+        disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Send"
@@ -239,6 +242,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 4}
         textPadding={25}
+        disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Receive"
@@ -249,6 +253,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 5}
         textPadding={18}
+        disabled={false}
       />
     </View>
   );

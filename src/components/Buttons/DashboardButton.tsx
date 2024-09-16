@@ -17,7 +17,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  View,
 } from 'react-native';
 import {
   useDerivedValue,
@@ -32,10 +31,12 @@ interface Props {
   handlePress: () => void;
   active: boolean;
   textPadding: number;
+  disabled: boolean;
 }
 
 const DashboardButton: React.FC<Props> = props => {
-  const {active, handlePress, title, imageSource, textPadding} = props;
+  const {active, handlePress, title, imageSource, textPadding, disabled} =
+    props;
   const fontFamily =
     Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
   const fontStyle = {
@@ -89,60 +90,70 @@ const DashboardButton: React.FC<Props> = props => {
   );
 
   return (
-    <View style={styles.width}>
-      <Pressable style={{height: 110}} onPress={handlePress}>
-        <Canvas style={styles.container}>
-          <RoundedRect
-            x={10}
-            y={10}
-            width={60}
-            height={buttonHeight}
-            r={12}
-            color={interpolatedButtonColour}>
-            <Shadow
-              dx={0}
-              dy={-1}
-              blur={3}
-              color={interpolatedInnerShadowColour}
-              inner
-            />
-            <Shadow dx={0} dy={2} blur={4} color={interpolatedShadowColour} />
-          </RoundedRect>
-          <RoundedRect
-            x={10}
-            y={10}
-            width={60}
-            height={buttonHeight}
-            r={12}
-            color="rgba(216, 210, 210, 0.75)"
-            strokeWidth={1}
-            style="stroke"
-            opacity={borderOpacity}
+    <Pressable
+      style={[styles.button, disabled ? styles.disabled : null]}
+      onPress={() => {
+        if (!disabled) {
+          handlePress();
+        }
+      }}>
+      <Canvas style={styles.container}>
+        <RoundedRect
+          x={10}
+          y={10}
+          width={60}
+          height={buttonHeight}
+          r={12}
+          color={interpolatedButtonColour}>
+          <Shadow
+            dx={0}
+            dy={-1}
+            blur={3}
+            color={interpolatedInnerShadowColour}
+            inner
           />
+          <Shadow dx={0} dy={2} blur={4} color={interpolatedShadowColour} />
+        </RoundedRect>
+        <RoundedRect
+          x={10}
+          y={10}
+          width={60}
+          height={buttonHeight}
+          r={12}
+          color="rgba(216, 210, 210, 0.75)"
+          strokeWidth={1}
+          style="stroke"
+          opacity={borderOpacity}
+        />
 
-          <Mask
-            mode="alpha"
-            mask={<Image image={image} x={30} y={10} width={21} height={50} />}>
-            <Rect rect={rect(0, 0, 300, 300)} color={interpolatedColour} />
-          </Mask>
+        <Mask
+          mode="alpha"
+          mask={<Image image={image} x={30} y={10} width={21} height={50} />}>
+          <Rect rect={rect(0, 0, 300, 300)} color={interpolatedColour} />
+        </Mask>
 
-          <Text
-            text={title}
-            x={textPadding}
-            y={82}
-            font={font}
-            color={interpolatedColour}
-          />
-        </Canvas>
-      </Pressable>
-    </View>
+        <Text
+          text={title}
+          x={textPadding}
+          y={82}
+          font={font}
+          color={interpolatedColour}
+        />
+      </Canvas>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  width: {width: 82},
+  button: {
+    width: 82,
+    height: 110,
+  },
   container: {
     flex: 1,
+  },
+  disabled: {
+    opacity: 0.2,
   },
 });
 

@@ -29,8 +29,15 @@ const NewAmountView: React.FC<Props> = props => {
 
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(totalBalance);
+
+  const {isInternetReachable} = useAppSelector(state => state.info);
   return (
-    <Animated.View style={[styles.container, animatedProps]}>
+    <Animated.View
+      style={[
+        styles.container,
+        animatedProps,
+        !isInternetReachable ? styles.internetBackground : null,
+      ]}>
       <SafeAreaView>
         <View style={styles.subview}>
           {!chartCursorSelected ? (
@@ -50,7 +57,17 @@ const NewAmountView: React.FC<Props> = props => {
             </>
           )}
         </View>
-        <View style={styles.childrenContainer}>{children}</View>
+        {isInternetReachable ? (
+          <View style={styles.childrenContainer}>{children}</View>
+        ) : (
+          <View style={styles.internetContainer}>
+            <Text style={styles.internetText}>
+              You are offline.
+              {'\n'}
+              Connect to the internet.
+            </Text>
+          </View>
+        )}
       </SafeAreaView>
     </Animated.View>
   );
@@ -105,6 +122,23 @@ const styles = StyleSheet.create({
   },
   margin: {
     marginTop: 10,
+  },
+  internetContainer: {
+    paddingTop: 60,
+  },
+  internetText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '500',
+    color: 'white',
+    fontSize: 24,
+    textAlign: 'center',
+  },
+  internetBackground: {
+    backgroundColor: '#F36F56',
   },
 });
 
