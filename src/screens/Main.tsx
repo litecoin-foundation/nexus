@@ -322,6 +322,7 @@ export const navigationOptions = navigation => {
       <HeaderButton
         onPress={() => navigation.navigate('AlertsStack')}
         imageSource={require('../assets/icons/charts-icon.png')}
+        rightPadding={true}
       />
     ),
   };

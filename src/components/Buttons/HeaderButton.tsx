@@ -13,12 +13,15 @@ interface Props {
   onPress: () => void;
   imageSource?: ImageSourcePropType;
   title?: string;
+  rightPadding?: boolean;
 }
 
 const HeaderButton: React.FC<Props> = props => {
-  const {onPress, imageSource, title} = props;
+  const {onPress, imageSource, title, rightPadding} = props;
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.container, rightPadding ? styles.padRight : null]}
+      onPress={onPress}>
       <View style={styles.subcontainer}>
         {imageSource ? <Image source={imageSource} /> : null}
         {title ? <Text style={styles.title}>{title}</Text> : null}
@@ -36,7 +39,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 20,
-    marginRight: 20,
   },
   subcontainer: {
     flexDirection: 'row',
@@ -52,6 +54,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'white',
     fontSize: 12,
+  },
+  padRight: {
+    marginRight: 20,
   },
 });
 

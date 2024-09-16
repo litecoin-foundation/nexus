@@ -5,7 +5,6 @@ import {
   SafeAreaView,
   StyleSheet,
   Platform,
-  Button,
   Alert,
   Dimensions,
 } from 'react-native';
@@ -89,7 +88,7 @@ const ConfirmBuy: React.FC<Props> = props => {
         </View>
 
         <View style={styles.confirmButtonContainer}>
-          <GreenButton value="Confirm Purchase" onPress={() => onPress()} />
+          <GreenButton value="Continue Purchase" onPress={() => onPress()} />
         </View>
       </View>
     </View>

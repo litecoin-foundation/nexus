@@ -13,6 +13,7 @@ function AuthStack(): React.JSX.Element {
     <HeaderButton
       title="Forgot Pincode?"
       onPress={() => navigation.navigate('Forgot')}
+      rightPadding={true}
     />
   );
   return (

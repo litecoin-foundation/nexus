@@ -1,4 +1,4 @@
-import React, {createRef, useRef, useEffect, useState, RefObject} from 'react';
+import React, {createRef, useRef, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -23,15 +23,15 @@ const RecoveryField: React.FC<Props> = props => {
   const n = [...Array(24).keys()];
 
   const [phrase, setPhrasePosition] = useState(0);
-  const [seed, setSeed] = useState([]);
+  const [seed, setSeed] = useState<string[]>([]);
   const phraseRef = useRef(n.map(() => createRef<TextInput>()));
-  const listRef = useRef(null);
+  const listRef = useRef<FlatList>();
 
   useEffect(() => {
     phraseRef.current[phrase].current!.focus();
   });
 
-  const handleSubmit = async index => {
+  const handleSubmit = async (index: number) => {
     if (checkBIP39Word(seed[index]) === false) {
       await Alert.alert(
         'Invalid Word',
@@ -77,13 +77,13 @@ const RecoveryField: React.FC<Props> = props => {
     }
 
     if (index >= 1) {
-      listRef.current.scrollToIndex({index: index});
+      listRef.current!.scrollToIndex({index: index});
     }
 
     setPhrasePosition(phrase + 1);
   };
 
-  const handleChange = (input, index) => {
+  const handleChange = (input: string, index: number) => {
     if (index !== phrase) {
       setPhrasePosition(index);
     }
@@ -103,7 +103,7 @@ const RecoveryField: React.FC<Props> = props => {
           ref={listRef}
           keyExtractor={item => item.toString()}
           ListFooterComponent={<View style={styles.emptyView} />}
-          renderItem={({item, index}) => (
+          renderItem={({index}) => (
             <View
               style={[
                 styles.wordContainer,

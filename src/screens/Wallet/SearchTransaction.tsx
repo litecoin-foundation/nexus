@@ -4,9 +4,9 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppSelector} from '../../store/hooks';
 import {groupTransactions} from '../../lib/utils/groupTransactions';
 import {txDetailSelector} from '../../reducers/transaction';
-import TransactionFilterModal from '../../components/Modals/TransactionFilterModal';
 import TransactionDetailModal from '../../components/Modals/TransactionDetailModal';
 import TransactionList from '../../components/TransactionList';
+import FilterButton from '../../components/Buttons/FilterButton';
 
 interface Props {}
 
@@ -17,38 +17,35 @@ const SearchTransaction: React.FC<Props> = props => {
   const transactions = useAppSelector(state => txDetailSelector(state));
   const groupedTransactions = groupTransactions(transactions);
 
-  const [isTxTypeModalVisible, setTxTypeModalVisible] = useState(false);
+  const [txType, setTxType] = useState('All');
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
-  const [isTxFilterModalVisible, setTxFilterModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
   const [diplayedTxs, setDisplayedTxs] = useState(groupedTransactions);
   const [sectionHeader, setSectionHeader] = useState(null);
 
-  const filterTransactions = (transactionType, lightning, searchQuery) => {
+  const filterTransactions = transactionType => {
     const txArray = [];
 
-    if (transactionType === 0) {
-      txArray.push(...transactions);
-    }
-    if (transactionType === 1) {
-      txArray.push(
-        ...transactions.filter(tx => Math.sign(parseFloat(tx.amount)) === -1),
-      );
-    }
-    if (transactionType === 2) {
-      txArray.push(
-        ...transactions.filter(tx => Math.sign(parseFloat(tx.amount)) === 1),
-      );
-    }
-    if (lightning) {
-      // currently unhandled
-    }
-    if (searchQuery) {
-      // currently unhandled
+    switch (transactionType) {
+      case 'Send':
+        txArray.push(
+          ...transactions.filter(tx => Math.sign(parseFloat(tx.amount)) === -1),
+        );
+        break;
+      case 'Receive':
+        txArray.push(
+          ...transactions.filter(tx => Math.sign(parseFloat(tx.amount)) === 1),
+        );
+        break;
+      case 'All':
+        txArray.push(...transactions);
+        break;
+      default:
+        txArray.push(...transactions);
+        break;
     }
 
     setDisplayedTxs(groupTransactions(txArray));
-    setTxFilterModalVisible(false);
   };
 
   const handleDatePick = (hash, timestamp) => {
@@ -61,12 +58,25 @@ const SearchTransaction: React.FC<Props> = props => {
     setSectionHeader(timestamp);
   };
 
+  const filters = ['All', 'Buy', 'Sell', 'Convert', 'Send', 'Receive'];
+
+  const Filter = filters.map(value => (
+    <FilterButton
+      title={value}
+      active={txType === value ? true : false}
+      onPress={() => {
+        setTxType(value);
+        filterTransactions(txType);
+      }}
+      key={value}
+    />
+  ));
+
   return (
     <View style={styles.container}>
       <SafeAreaView>
-        <Text>SearchTransaction</Text>
-
-        <View>
+        <View style={styles.filterContainer}>{Filter}</View>
+        <View style={styles.txListContainer}>
           <TransactionList
             ref={TransactionListRef}
             onPress={data => {
@@ -96,16 +106,6 @@ const SearchTransaction: React.FC<Props> = props => {
           transaction={selectedTransaction}
           navigate={navigation.navigate}
         />
-
-        <TransactionFilterModal
-          close={() => {
-            setTxFilterModalVisible(false);
-          }}
-          isVisible={isTxFilterModalVisible}
-          onPress={(txType, lightning, searchField) =>
-            filterTransactions(txType, lightning, searchField)
-          }
-        />
       </SafeAreaView>
     </View>
   );
@@ -125,6 +125,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'white',
     fontSize: 17,
+  },
+  txListContainer: {
+    height: 900,
+    width: '100%',
+    position: 'absolute',
+    top: 200,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 19,
+  },
+  filterContainer: {
+    paddingTop: 86,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-between',
   },
 });
 
