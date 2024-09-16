@@ -1,4 +1,4 @@
-import React, {createRef, useRef, useEffect, useState} from 'react';
+import React, {createRef, useRef, useEffect, useState, RefObject} from 'react';
 import {
   View,
   Text,
@@ -13,20 +13,25 @@ import {
 import {checkBIP39Word} from '../lib/utils/bip39';
 import {checkSeedChecksum} from '../lib/utils/aezeed';
 
-const RecoveryField = (props) => {
+interface Props {
+  handleLogin: (seed: string[]) => void;
+  headerText: string;
+}
+
+const RecoveryField: React.FC<Props> = props => {
   const {handleLogin, headerText} = props;
   const n = [...Array(24).keys()];
 
   const [phrase, setPhrasePosition] = useState(0);
   const [seed, setSeed] = useState([]);
-  const phraseRef = useRef(n.map(() => createRef()));
+  const phraseRef = useRef(n.map(() => createRef<TextInput>()));
   const listRef = useRef(null);
 
   useEffect(() => {
-    phraseRef.current[phrase].current.focus();
+    phraseRef.current[phrase].current!.focus();
   });
 
-  const handleSubmit = async (index) => {
+  const handleSubmit = async index => {
     if (checkBIP39Word(seed[index]) === false) {
       await Alert.alert(
         'Invalid Word',
@@ -34,8 +39,8 @@ const RecoveryField = (props) => {
         [
           {
             text: 'Try Again',
-            onPress: null,
-            style: 'cancel',
+            onPress: undefined,
+            style: undefined,
           },
         ],
         {cancelable: false},
@@ -49,11 +54,11 @@ const RecoveryField = (props) => {
       } catch (error) {
         await Alert.alert(
           'Incorrect Paper-Key',
-          error,
+          String(error),
           [
             {
               text: 'Try Again',
-              onPress: null,
+              onPress: undefined,
               style: 'cancel',
             },
           ],
@@ -66,7 +71,7 @@ const RecoveryField = (props) => {
       // reset seed list inputs in state and ui
       setSeed([]);
       for (let i = 0; i < 24; i++) {
-        phraseRef.current[i].current.clear();
+        phraseRef.current[i].current!.clear();
       }
       return;
     }
@@ -96,7 +101,7 @@ const RecoveryField = (props) => {
         <FlatList
           data={n}
           ref={listRef}
-          keyExtractor={(item) => item.toString()}
+          keyExtractor={item => item.toString()}
           ListFooterComponent={<View style={styles.emptyView} />}
           renderItem={({item, index}) => (
             <View
@@ -108,21 +113,6 @@ const RecoveryField = (props) => {
                 <Text style={styles.wordNumber}>{index + 1}</Text>
               </View>
 
-              {/*
-              hack until fixed on android
-              https://github.com/facebook/react-native/issues/29804
-              */}
-              {Platform.OS === 'android' && index !== phrase ? (
-                <Text
-                  style={
-                    index === phrase
-                      ? styles.wordTextActive
-                      : styles.wordTextInactive
-                  }>
-                  {seed[index]}
-                </Text>
-              ) : null}
-
               <TextInput
                 autoCorrect={false}
                 blurOnSubmit={false}
@@ -131,7 +121,7 @@ const RecoveryField = (props) => {
                 keyboardAppearance="dark"
                 ref={phraseRef.current[index]}
                 onSubmitEditing={() => handleSubmit(index)}
-                onChangeText={(text) => handleChange(text, index)}
+                onChangeText={text => handleChange(text, index)}
                 onFocus={() => setPhrasePosition(index)}
                 style={[
                   styles.wordText,
@@ -162,7 +152,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderColor: '#979797',
+    borderColor: '#E8E8E8',
     height: 44,
     color: 'transparent',
   },
