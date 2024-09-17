@@ -58,19 +58,29 @@ const SearchTransaction: React.FC<Props> = props => {
     setSectionHeader(timestamp);
   };
 
-  const filters = ['All', 'Buy', 'Sell', 'Convert', 'Send', 'Receive'];
+  const filters = [
+    {value: 'All', imgSrc: require('../../assets/icons/sell-icon.png')},
+    {value: 'Buy', imgSrc: require('../../assets/icons/buy-icon.png')},
+    {value: 'Sell', imgSrc: require('../../assets/icons/sell-icon.png')},
+    {value: 'Convert', imgSrc: require('../../assets/icons/convert-icon.png')},
+    {value: 'Send', imgSrc: require('../../assets/icons/send-icon.png')},
+    {value: 'Receive', imgSrc: require('../../assets/icons/receive-icon.png')},
+  ];
 
-  const Filter = filters.map(value => (
-    <FilterButton
-      title={value}
-      active={txType === value ? true : false}
-      onPress={() => {
-        setTxType(value);
-        filterTransactions(txType);
-      }}
-      key={value}
-    />
-  ));
+  const Filter = filters.map(element => {
+    return (
+      <FilterButton
+        title={element.value}
+        active={txType === element.value ? true : false}
+        onPress={() => {
+          setTxType(element.value);
+          filterTransactions(txType);
+        }}
+        key={element.value}
+        imageSource={element.imgSrc}
+      />
+    );
+  });
 
   return (
     <View style={styles.container}>

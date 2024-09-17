@@ -1,19 +1,29 @@
 import React from 'react';
-import {Platform, Pressable, StyleSheet, Text, View} from 'react-native';
+import {
+  Image,
+  ImageSourcePropType,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 interface Props {
   active: boolean;
   title: string;
   onPress: () => void;
+  imageSource: ImageSourcePropType;
 }
 
 const FilterButton: React.FC<Props> = props => {
-  const {active, title, onPress} = props;
+  const {active, title, onPress, imageSource} = props;
   return (
     <Pressable
       style={[styles.container, active ? styles.activeButton : null]}
       onPress={onPress}>
-      <View>
+      <View style={styles.innerContainer}>
+        <Image style={styles.image} source={imageSource} />
         <Text style={styles.text}>{title}</Text>
       </View>
     </Pressable>
@@ -22,11 +32,16 @@ const FilterButton: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 57,
-    width: 52,
+    height: 62,
+    width: 58,
     borderRadius: 11,
     backgroundColor: undefined,
     alignItems: 'center',
+  },
+  innerContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
   },
   text: {
     fontFamily:
@@ -40,6 +55,10 @@ const styles = StyleSheet.create({
   },
   activeButton: {
     backgroundColor: '#0A429B',
+  },
+  image: {
+    tintColor: 'white',
+    marginTop: 10,
   },
 });
 
