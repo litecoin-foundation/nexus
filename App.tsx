@@ -6,6 +6,7 @@ import {PersistGate} from 'redux-persist/integration/react';
 
 import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
+import Error from './src/components/Error';
 
 type RootStackParamList = {
   Scan: {
@@ -28,6 +29,7 @@ const App: React.FC = () => (
       <PersistGate loading={null} persistor={pStore}>
         <GestureHandlerRootView style={{flex: 1}}>
           <RootNavigator />
+          <Error />
         </GestureHandlerRootView>
       </PersistGate>
     </Provider>
