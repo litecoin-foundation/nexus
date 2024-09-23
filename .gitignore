@@ -48,3 +48,4 @@ vendor/
 bun.lockb
 ios/Plasma.xcodeproj/project.pbxproj
 ios/Podfile.lock
+package-lock.json
