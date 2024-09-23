@@ -95,14 +95,21 @@ export const sendOnchainPayment =
 export const publishTransaction = (txHex: string) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await LndWallet.publishTransaction(txHex);
-      console.log('LOSHY');
-      console.log(response.toJSON());
+      const request = await fetch('https://litecoinspace.org/api/tx', {
+        method: 'POST',
+        body: txHex,
+      });
 
-      if (response.publishError) {
-        reject(response.publishError);
+      if (!request.ok) {
+        const error = await request.text();
+        reject(`Tx Broadcast failed: ${error}`);
       }
-      resolve('');
+
+      const response = await request.text();
+      console.log(response);
+      // TODO: verify this reponse is just txid
+
+      resolve(response);
     } catch (error) {
       reject(String(error));
     }
