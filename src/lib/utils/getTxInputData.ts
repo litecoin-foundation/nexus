@@ -30,7 +30,7 @@ function getWitnessUtxo(utxoHex: string, value: number): any {
   return out;
 }
 
-export default function getInputData(
+export default function ƒ(
   txId: string,
   vout: number,
   utxoHex: string,

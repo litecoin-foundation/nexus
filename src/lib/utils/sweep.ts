@@ -1,87 +1,130 @@
 import ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
-import bip39 from 'bip39';
 import axios from 'axios';
-import {BIP32Factory} from 'bip32';
 import {ECPairFactory, ECPairInterface} from 'ecpair';
 import wif from 'wif';
 
 import {LITECOIN} from './litecoin';
+import getTxInputData from './getTxInputData';
 import {estimateTxSize} from './estimateTxSize';
-import getInputData from './getInputData';
-
-bitcoin.initEccLib(ecc);
+import {getDerivedKeyPairsWithBalance} from './hdWallets';
 
 const ECPair = ECPairFactory(ecc);
-const bip32 = BIP32Factory(ecc);
-const GAP_LIMIT = 20;
 
 type IMnemonic = string[];
 
-const fetchAddressData = (address: string, index: number) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const response = await axios.get(
-        `https://sochain.com/api/v2/address/LTC/${address}`,
-      );
-      const {data} = response.data;
+interface AddressWithKeyPair {
+  address: string;
+  keyPair: any;
+}
 
-      // check if address was used (received_value > 0)
-      if (parseFloat(data.received_value) === 0) {
-        reject(false);
-      }
+interface SweptAdddress {
+  inputsArr: any;
+  addressBalance: number;
+  addressUnspentsLength: number;
+}
 
-      resolve({
-        address,
-        index,
-        balance: data.balance,
-        txs: data.txs,
-      });
-    } catch (err) {
-      reject(err);
-    }
-  });
-};
+export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
+  const startPath = "m/0'/0/";
+  const isChildHardened = false;
 
-export const scanAccount = async (mnemonic: IMnemonic) => {
-  const mnemonicString = mnemonic.join(' ');
-  const seed = bip39.mnemonicToSeedSync(mnemonicString);
-  const root = bip32.fromSeed(seed, LITECOIN);
-
-  // loop through child addresses with max gap of GAP_LIMIT
-  let currentIndex = 0;
-  let currentGap = 0;
-  const sweepableAddr = [];
-
-  while (currentGap < GAP_LIMIT) {
-    // generate address
-    const child = root.derivePath(`m/0'/0/${currentIndex}`);
-    const {address} = bitcoin.payments.p2pkh({
-      pubkey: child.publicKey,
-      network: LITECOIN,
-    });
-
-    if (address === undefined) {
-      throw new Error('error: address derivation');
-    }
-
-    // check address for txs
-    try {
-      const response = await fetchAddressData(address, currentIndex);
-      currentIndex++;
-      sweepableAddr.push(response);
-    } catch (error) {
-      if (error === false) {
-        currentIndex++;
-        currentGap++;
-      }
-    }
+  if (qrKey.indexOf('Ltpv') !== -1) {
+    await sweepBase58Ltpv(qrKey, receiveAddress, startPath, isChildHardened);
+  } else {
+    await sweepWIF(qrKey, receiveAddress);
   }
-
-  return sweepableAddr;
 };
 
-// utils for sweeping WIF keys
+const sweepBase58Ltpv = async (
+  seedBase58: string,
+  receiveAddress: string,
+  startPath: string,
+  isChildHardened: boolean,
+) => {
+  try {
+    const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
+      startPath,
+      isChildHardened,
+      undefined,
+      seedBase58,
+    );
+
+    const rawTopUpTxs = createRawTxsFromHDWallet(
+      keyPairsWithBalance,
+      receiveAddress,
+    );
+
+    console.log(rawTopUpTxs);
+  } catch (error) {
+    throw new Error(String(error));
+  }
+};
+
+export const sweepMnemonic = async (
+  mnemonic: IMnemonic,
+  receiveAddress: string,
+  startPath: string,
+  isChildHardened: boolean,
+) => {
+  // const phrase =
+  //   'wheat stage drop afraid hammer amateur knock ice subject find walk lobster rough infant bamboo guitar skin attract long then mail artist relax robot';
+  // const phraseArr = phrase.split(' ');
+  try {
+    const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
+      startPath,
+      isChildHardened,
+      mnemonic,
+    );
+
+    const rawTopUpTxs = createRawTxsFromHDWallet(
+      keyPairsWithBalance,
+      receiveAddress,
+    );
+
+    console.log(rawTopUpTxs);
+  } catch (error) {
+    throw new Error(String(error));
+  }
+};
+
+const createRawTxsFromHDWallet = async (
+  keyPairsWithBalance: AddressWithKeyPair[],
+  receiveAddress: string,
+) => {
+  const rawTxs: any[] = [];
+  const inputsFromAllAddressesWithBalance: any[] = [];
+  let totalBalance = 0;
+  let unspentsLength = 0;
+
+  await Promise.all(
+    keyPairsWithBalance.map(async addressWithKeyPair => {
+      const {inputsArr, addressBalance, addressUnspentsLength} =
+        await sweepAddress(
+          addressWithKeyPair.address,
+          addressWithKeyPair.keyPair,
+          'P2PKH',
+        );
+      inputsFromAllAddressesWithBalance.push(...inputsArr);
+      totalBalance += addressBalance;
+      unspentsLength += addressUnspentsLength;
+
+      const rawTx = createTopUpTx(
+        inputsFromAllAddressesWithBalance,
+        receiveAddress,
+        0,
+        totalBalance,
+        unspentsLength,
+        addressWithKeyPair.keyPair,
+        'P2PKH',
+      );
+
+      rawTxs.push(rawTx);
+    }),
+  );
+
+  return rawTxs;
+};
+
 export const sweepWIF = async (wifString: string, receiveAddress: string) => {
   let compressed;
 
@@ -99,7 +142,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
   // let bech32mAddress;
   let address, inputScript;
 
-  let inputsFromAllAdressesWithBalance: any[] = [];
+  const inputsFromAllAddressesWithBalance: any[] = [];
   let totalBalance = 0;
   let unspentsLength = 0;
 
@@ -112,12 +155,9 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
   if (legacyAddress !== undefined) {
     address = legacyAddress;
     inputScript = 'P2PKH';
-    // sweepAddress(String(address), keyPair, String(inputScript))
-    //   .then(data => console.log(data))
-    //   .catch(err => console.log(err));
     const {inputsArr, addressBalance, addressUnspentsLength} =
       await sweepAddress(String(address), keyPair, String(inputScript));
-    inputsFromAllAdressesWithBalance.push(...inputsArr);
+    inputsFromAllAddressesWithBalance.push(...inputsArr);
     totalBalance += addressBalance;
     unspentsLength += addressUnspentsLength;
   }
@@ -136,12 +176,9 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
     if (p2shAddress !== undefined) {
       address = p2shAddress;
       inputScript = 'P2SH-P2WPKH';
-      // sweepAddress(String(address), keyPair, String(inputScript))
-      //   .then(data => console.log(data))
-      //   .catch(err => console.log(err));
       const {inputsArr, addressBalance, addressUnspentsLength} =
         await sweepAddress(String(address), keyPair, String(inputScript));
-      inputsFromAllAdressesWithBalance.push(...inputsArr);
+      inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
     }
@@ -155,12 +192,9 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
     if (bech32Address !== undefined) {
       address = bech32Address;
       inputScript = 'P2WPKH';
-      // sweepAddress(String(address), keyPair, String(inputScript))
-      //   .then(data => console.log(data))
-      //   .catch(err => console.log(err));
       const {inputsArr, addressBalance, addressUnspentsLength} =
         await sweepAddress(String(address), keyPair, String(inputScript));
-      inputsFromAllAdressesWithBalance.push(...inputsArr);
+      inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
     }
@@ -173,25 +207,26 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
     // }).address;
   }
 
-  console.log(inputsFromAllAdressesWithBalance);
-  console.log(totalBalance);
-  console.log(unspentsLength);
-  console.log(legacyAddress);
-  console.log(p2shAddress);
-  console.log(bech32Address);
+  // console.log(inputsFromAllAddressesWithBalance);
+  // console.log(totalBalance);
+  // console.log(unspentsLength);
+  // console.log(legacyAddress);
+  // console.log(p2shAddress);
+  // console.log(bech32Address);
   // console.log(bech32mAddress);
 
   if (totalBalance > 0) {
     try {
       const rawTx = createTopUpTx(
-        inputsFromAllAdressesWithBalance,
+        inputsFromAllAddressesWithBalance,
         receiveAddress,
         0,
         totalBalance,
-        0,
+        unspentsLength,
         keyPair,
         'P2PKH',
       );
+
       return rawTx;
     } catch (error) {
       throw new Error(String(error));
@@ -205,7 +240,7 @@ const sweepAddress = (
   address: string,
   keyPair: ECPairInterface,
   inputScript: string,
-) => {
+): Promise<SweptAdddress> => {
   return new Promise(async (resolve, reject) => {
     try {
       const {data: unspents} = await axios.get(
@@ -216,7 +251,7 @@ const sweepAddress = (
       let addressBalance = 0;
 
       await Promise.all(
-        unspents.map(async utxo => {
+        unspents.map(async (utxo: any) => {
           addressBalance += utxo.value;
 
           const {data: utxoHex} = await axios.get(
@@ -226,7 +261,7 @@ const sweepAddress = (
           switch (inputScript) {
             case 'P2PKH':
               inputsArr.push(
-                getInputData(
+                getTxInputData(
                   utxo.txid,
                   utxo.vout,
                   utxoHex,
@@ -243,7 +278,7 @@ const sweepAddress = (
             case 'P2WSH':
             case 'P2SH-P2WSH':
               inputsArr.push(
-                getInputData(
+                getTxInputData(
                   utxo.txid,
                   utxo.vout,
                   utxoHex,
