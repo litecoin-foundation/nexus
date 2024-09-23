@@ -1,7 +1,7 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, Platform} from 'react-native';
 
-const Card = (props) => {
+const Card = props => {
   const {titleText, descriptionText, imageSource} = props;
   return (
     <View style={styles.cardContainer}>
@@ -55,6 +55,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#4A4A4A',
     fontSize: 15,
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
   },
   imageContainer: {
     height: 128,
@@ -64,6 +70,7 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     width: 128,
+    tintColor: '#2C72FF',
   },
   flex: {
     flex: 1,

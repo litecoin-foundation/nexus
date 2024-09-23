@@ -12,7 +12,7 @@ import Animated, {
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
-import {txDetailSelector} from '../reducers/transaction';
+import {getTransactions, txDetailSelector} from '../reducers/transaction';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';

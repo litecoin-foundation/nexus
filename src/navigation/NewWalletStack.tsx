@@ -2,7 +2,7 @@ import React from 'react';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 
 import Main, {navigationOptions} from '../screens/Main';
-import Scan from '../screens/Scan';
+import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import SettingsStack from './SettingsStack';
 import WebPage, {WebPageNavigationOptions} from '../screens/WebPage';
 import ConfirmSend from '../screens/Wallet/ConfirmSend';
@@ -43,16 +43,7 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="Scan"
         component={Scan}
-        options={{
-          ...TransitionPresets.ModalPresentationIOS,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-        }}
+        options={({navigation}) => ScanNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="WebPage"
