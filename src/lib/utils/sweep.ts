@@ -5,7 +5,6 @@ import axios from 'axios';
 import {BIP32Factory} from 'bip32';
 import {ECPairFactory, ECPairInterface} from 'ecpair';
 import wif from 'wif';
-import {Buffer} from '@craftzdog/react-native-buffer';
 
 import {LITECOIN} from './litecoin';
 import {estimateTxSize} from './estimateTxSize';
@@ -83,7 +82,6 @@ export const scanAccount = async (mnemonic: IMnemonic) => {
 };
 
 // utils for sweeping WIF keys
-
 export const sweepWIF = async (wifString: string, receiveAddress: string) => {
   let compressed;
 
@@ -185,7 +183,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
 
   if (totalBalance > 0) {
     try {
-      createTopUpTx(
+      const rawTx = createTopUpTx(
         inputsFromAllAdressesWithBalance,
         receiveAddress,
         0,
@@ -194,6 +192,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
         keyPair,
         'P2PKH',
       );
+      return rawTx;
     } catch (error) {
       throw new Error(String(error));
     }
@@ -209,9 +208,6 @@ const sweepAddress = (
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // const testA = 'LXstsyaNZD1mHi21gJD3NtA364hxJsrfVk';
-      // const testA = 'ltc1q4m23k6sqqe0p3dy79r80ec6rywh7w8vc04ng5u';
-
       const {data: unspents} = await axios.get(
         `https://litecoinspace.org/api/address/${address}/utxo`,
       );
@@ -262,8 +258,6 @@ const sweepAddress = (
         }),
       );
 
-      // console.log('addressBalance-' + addressBalance);
-
       if (addressBalance !== 0) {
         resolve({
           inputsArr,
@@ -301,7 +295,6 @@ const createTopUpTx = (
   });
 
   // single output
-  // console.log(estimateTxSize('P2PKH', unspentsLength));
   psbt.addOutput({
     address: receiveAddress,
     value: Math.floor(

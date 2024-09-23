@@ -11,12 +11,17 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {showError} from '../../reducers/errors';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import {publishTransaction} from '../../reducers/transaction';
+import {txHashFromRaw} from '../../lib/utils/txHashFromRaw';
 
 type RootStackParamList = {
   Import: {
     scanData?: string;
   };
   Scan: {returnRoute: string};
+  ImportSuccess: {
+    txHash: string;
+  };
 };
 
 interface Props {
@@ -36,11 +41,17 @@ const Import: React.FC<Props> = props => {
   // handle scanned QR code
   useEffect(() => {
     if (route.params?.scanData) {
-      console.log(route.params?.scanData);
       sweepWIF(route.params.scanData, address)
         .then(rawTx => {
-          console.log('successfully created raw tx, time to broadcast!');
           console.log(rawTx);
+          publishTransaction(rawTx)
+            .then(() => {
+              // handle successful publish!
+              navigation.replace('ImportSuccess', {
+                txHash: txHashFromRaw(rawTx),
+              });
+            })
+            .catch(error => dispatch(showError(String(error))));
         })
         .catch(error => dispatch(showError(String(error))));
     }

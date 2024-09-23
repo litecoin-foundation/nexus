@@ -83,7 +83,6 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
           dispatch(subscribeTransactions());
           dispatch(pollTicker());
           dispatch(finishOnboarding());
-          // dispatch(subscribeInvoices());
           // dispatch(backupChannels());
           return;
         }
