@@ -55,7 +55,7 @@ export const checkSeedChecksum = async seed => {
       const checksum = words.slice(CHECKSUM_OFFSET);
       const newChecksum = crc32c(words.slice(0, CHECKSUM_OFFSET));
 
-      if (newChecksum !== Buffer.from(checksum).readInt32BE(0)) {
+      if (newChecksum !== Buffer.from(checksum).readUInt32BE(0)) {
         reject('Mnemonic checksum invalid!');
         return;
       } else {
