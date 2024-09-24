@@ -1,11 +1,14 @@
 import ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
 import {BIP32Factory, BIP32Interface} from 'bip32';
+import {ECPairFactory, ECPairInterface} from 'ecpair';
 import {LITECOIN} from './litecoin';
 
 const bip39 = require('bip39');
 const bip32 = BIP32Factory(ecc);
-const GAP_LIMIT = 3;
+const GAP_LIMIT = 20;
+
+const ECPair = ECPairFactory(ecc);
 
 type IMnemonic = string[];
 
@@ -20,7 +23,7 @@ interface SweepableAddress {
 
 interface AddressWithKeyPair {
   address: string;
-  keyPair: any;
+  keyPair: ECPairInterface;
 }
 
 export async function getDerivedKeyPairsWithBalance(
@@ -40,9 +43,13 @@ export async function getDerivedKeyPairsWithBalance(
 
   sweepableAddresses.map(sweepableAddress => {
     if (sweepableAddress.addressData.balance > 0) {
+      // BIP32Interface to ECPairInterface
+      const wifString = sweepableAddress.keyPair.toWIF();
+      const keyPair = ECPair.fromWIF(wifString, LITECOIN);
+
       keyPairsWithBalance.push({
         address: sweepableAddress.addressData.address,
-        keyPair: sweepableAddress.keyPair,
+        keyPair: keyPair,
       });
     }
   });
@@ -144,13 +151,13 @@ function getPubKeyFromExtendedKey(extendedKey: BIP32Interface) {
   return address;
 }
 
-const fetchAddressData = (address: string, index: number) => {
+async function fetchAddressData(address: string, index: number) {
   return new Promise(async (resolve, reject) => {
     try {
       const req = await fetch(
         `https://litecoinspace.org/api/address/${address}`,
       );
-      const data = await req.json();
+      const data: any = await req.json();
 
       if (data.hasOwnProperty('chain_stats')) {
         // check if address was used (received_value > 0)
@@ -171,4 +178,4 @@ const fetchAddressData = (address: string, index: number) => {
       reject(err);
     }
   });
-};
+}

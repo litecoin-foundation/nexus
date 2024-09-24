@@ -35,7 +35,7 @@ type RootStackParamList = {
   Currency: undefined;
   Seed: undefined;
   Import: undefined;
-  Litewallet: undefined;
+  RecoverLitewallet: undefined;
   Loading: undefined;
 };
 
@@ -136,7 +136,7 @@ const Settings: React.FC<Props> = props => {
           />
           <SettingCell
             title="Import Litewallet"
-            onPress={() => navigation.navigate('Litewallet')}
+            onPress={() => navigation.navigate('RecoverLitewallet')}
             forward
           />
           <SettingCell
