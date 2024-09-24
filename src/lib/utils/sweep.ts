@@ -15,23 +15,74 @@ type IMnemonic = string[];
 
 interface AddressWithKeyPair {
   address: string;
-  keyPair: any;
+  keyPair: ECPairInterface;
 }
 
-interface SweptAdddress {
+interface SweptAddress {
   inputsArr: any;
   addressBalance: number;
   addressUnspentsLength: number;
 }
 
-export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
+function isArrayEmpty(obj: any[]) {
+  if (obj.length >= 1) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+export const sweepLitewallet = async (mnemonic: IMnemonic, receiveAddress: string) => {
   const startPath = "m/0'/0/";
+  const changePath = "m/0'/1/";
   const isChildHardened = false;
 
-  if (qrKey.indexOf('Ltpv') !== -1) {
-    await sweepBase58Ltpv(qrKey, receiveAddress, startPath, isChildHardened);
-  } else {
-    await sweepWIF(qrKey, receiveAddress);
+  const rawTopUpTxs: any[] = [];
+
+  try {
+    const mainTxs = await sweepMnemonic(mnemonic, receiveAddress, startPath, isChildHardened);
+    const changeTxs = await sweepMnemonic(mnemonic, receiveAddress, changePath, isChildHardened);
+
+    if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
+      throw new Error('No derived addresses with balance.');
+    }
+
+    rawTopUpTxs.push(mainTxs);
+    rawTopUpTxs.push(changeTxs);
+
+    return rawTopUpTxs;
+  } catch (error) {
+    throw new Error(String(error));
+  }
+};
+
+export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
+  const startPath = "m/0'/0/";
+  const changePath = "m/0'/1/";
+  const isChildHardened = false;
+
+  const rawTopUpTxs: any[] = [];
+
+  try {
+    if (qrKey.indexOf('Ltpv') !== -1) {
+      const mainTxs = await sweepBase58Ltpv(qrKey, receiveAddress, startPath, isChildHardened);
+      const changeTxs = await sweepBase58Ltpv(qrKey, receiveAddress, changePath, isChildHardened);
+
+      if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
+        throw new Error('No derived addresses with balance.');
+      }
+
+      rawTopUpTxs.push(mainTxs);
+      rawTopUpTxs.push(changeTxs);
+    } else {
+      const txs = await sweepWIF(qrKey, receiveAddress);
+
+      rawTopUpTxs.push(txs);
+    }
+
+    return rawTopUpTxs;
+  } catch (error) {
+    throw new Error(String(error));
   }
 };
 
@@ -49,18 +100,18 @@ const sweepBase58Ltpv = async (
       seedBase58,
     );
 
-    const rawTopUpTxs = createRawTxsFromHDWallet(
+    const rawTopUpTxs = await createRawTxsFromHDWallet(
       keyPairsWithBalance,
       receiveAddress,
     );
 
-    console.log(rawTopUpTxs);
+    return rawTopUpTxs;
   } catch (error) {
     throw new Error(String(error));
   }
 };
 
-export const sweepMnemonic = async (
+const sweepMnemonic = async (
   mnemonic: IMnemonic,
   receiveAddress: string,
   startPath: string,
@@ -76,12 +127,12 @@ export const sweepMnemonic = async (
       mnemonic,
     );
 
-    const rawTopUpTxs = createRawTxsFromHDWallet(
+    const rawTopUpTxs = await createRawTxsFromHDWallet(
       keyPairsWithBalance,
       receiveAddress,
     );
 
-    console.log(rawTopUpTxs);
+    return rawTopUpTxs;
   } catch (error) {
     throw new Error(String(error));
   }
@@ -227,7 +278,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
         'P2PKH',
       );
 
-      return rawTx;
+      return [rawTx];
     } catch (error) {
       throw new Error(String(error));
     }
@@ -240,7 +291,7 @@ const sweepAddress = (
   address: string,
   keyPair: ECPairInterface,
   inputScript: string,
-): Promise<SweptAdddress> => {
+): Promise<SweptAddress> => {
   return new Promise(async (resolve, reject) => {
     try {
       const {data: unspents} = await axios.get(

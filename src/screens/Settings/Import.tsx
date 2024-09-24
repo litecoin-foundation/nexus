@@ -6,22 +6,17 @@ import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
-import {sweepWIF} from '../../lib/utils/sweep';
+import {sweepQrKey} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {showError} from '../../reducers/errors';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import {publishTransaction} from '../../reducers/transaction';
-import {txHashFromRaw} from '../../lib/utils/txHashFromRaw';
 
 type RootStackParamList = {
   Import: {
     scanData?: string;
   };
   Scan: {returnRoute: string};
-  ImportSuccess: {
-    txHash: string;
-  };
 };
 
 interface Props {
@@ -41,19 +36,15 @@ const Import: React.FC<Props> = props => {
   // handle scanned QR code
   useEffect(() => {
     if (route.params?.scanData) {
-      sweepWIF(route.params.scanData, address)
-        .then(rawTx => {
-          console.log(rawTx);
-          publishTransaction(rawTx)
-            .then(() => {
-              // handle successful publish!
-              navigation.replace('ImportSuccess', {
-                txHash: txHashFromRaw(rawTx),
-              });
-            })
-            .catch(error => dispatch(showError(String(error))));
+      console.log(route.params?.scanData);
+      sweepQrKey(route.params.scanData, address)
+        .then(rawTxs => {
+          console.log('successfully created raw txs, time to broadcast!');
+          console.log(rawTxs);
         })
-        .catch(error => dispatch(showError(String(error))));
+        .catch(error => {
+          dispatch(showError(String(error)));
+        });
     }
   }, [address, route.params?.scanData, dispatch]);
 

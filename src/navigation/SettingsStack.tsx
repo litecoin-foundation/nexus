@@ -13,6 +13,7 @@ import About from '../screens/Settings/About';
 import Currency from '../screens/Settings/Currency';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import Import, {ImportNavigationOptions} from '../screens/Settings/Import';
+import RecoverLitewallet from '../screens/Settings/RecoverLitewallet';
 import ImportSuccess, {
   ImportSuccessNavigationOptions,
 } from '../screens/Settings/ImportSuccess';
@@ -109,6 +110,11 @@ function SettingsStack() {
         name="Import"
         component={Import}
         options={({navigation}) => ImportNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="RecoverLitewallet"
+        component={RecoverLitewallet}
+        options={RecoverLitewallet.navigationOptions}
       />
       <Stack.Screen
         name="ImportSuccess"

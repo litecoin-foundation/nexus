@@ -16,11 +16,13 @@ import {checkSeedChecksum} from '../lib/utils/aezeed';
 interface Props {
   handleLogin: (seed: string[]) => void;
   headerText: string;
+  isLitewalletRecovery: boolean;
+  handleLWRecovery: (seed: string[]) => void;
 }
 
 const RecoveryField: React.FC<Props> = props => {
-  const {handleLogin, headerText} = props;
-  const n = [...Array(24).keys()];
+  const {handleLogin, headerText, isLitewalletRecovery, handleLWRecovery} = props;
+  const n = isLitewalletRecovery ? [...Array(12).keys()] : [...Array(24).keys()];
 
   const [phrase, setPhrasePosition] = useState(0);
   const [seed, setSeed] = useState<string[]>([]);
@@ -48,32 +50,45 @@ const RecoveryField: React.FC<Props> = props => {
       return;
     }
 
-    if (index === 23) {
-      try {
-        await checkSeedChecksum(seed);
-      } catch (error) {
-        await Alert.alert(
-          'Incorrect Paper-Key',
-          String(error),
-          [
-            {
-              text: 'Try Again',
-              onPress: undefined,
-              style: 'cancel',
-            },
-          ],
-          {cancelable: false},
-        );
+    if (isLitewalletRecovery) {
+      if (index === 11) {
+        await handleLWRecovery(seed);
+
+        // reset seed list inputs in state and ui
+        setSeed([]);
+        for (let i = 0; i < 24; i++) {
+          phraseRef.current[i].current!.clear();
+        }
         return;
       }
-      await handleLogin(seed);
+    } else {
+      if (index === 23) {
+        try {
+          await checkSeedChecksum(seed);
+        } catch (error) {
+          await Alert.alert(
+            'Incorrect Paper-Key',
+            String(error),
+            [
+              {
+                text: 'Try Again',
+                onPress: undefined,
+                style: 'cancel',
+              },
+            ],
+            {cancelable: false},
+          );
+          return;
+        }
+        await handleLogin(seed);
 
-      // reset seed list inputs in state and ui
-      setSeed([]);
-      for (let i = 0; i < 24; i++) {
-        phraseRef.current[i].current!.clear();
+        // reset seed list inputs in state and ui
+        setSeed([]);
+        for (let i = 0; i < 24; i++) {
+          phraseRef.current[i].current!.clear();
+        }
+        return;
       }
-      return;
     }
 
     if (index >= 1) {

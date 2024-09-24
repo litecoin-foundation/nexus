@@ -20,6 +20,7 @@ const Recover = props => {
         <RecoveryField
           handleLogin={seed => attemptLogin(seed)}
           headerText="Enter your paper-key words below."
+          isLitewalletRecovery={false}
         />
       </SafeAreaView>
     </LinearGradient>
