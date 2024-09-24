@@ -11,12 +11,17 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {showError} from '../../reducers/errors';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import {publishTransaction} from '../../reducers/transaction';
+import {txHashFromRaw} from '../../lib/utils/txHashFromRaw';
 
 type RootStackParamList = {
   Import: {
     scanData?: string;
   };
   Scan: {returnRoute: string};
+  ImportSuccess: {
+    txHash: string;
+  };
 };
 
 interface Props {
@@ -39,8 +44,18 @@ const Import: React.FC<Props> = props => {
       console.log(route.params?.scanData);
       sweepQrKey(route.params.scanData, address)
         .then(rawTxs => {
-          console.log('successfully created raw txs, time to broadcast!');
-          console.log(rawTxs);
+          rawTxs.map((rawTx, index) => {
+            // console.log(rawTx);
+            publishTransaction(rawTx)
+            .then(() => {
+              // handle successful publish!
+              if (index === rawTxs.length - 1){
+                navigation.replace('ImportSuccess', {
+                  txHash: txHashFromRaw(rawTx),
+                });
+              }
+            });
+          });
         })
         .catch(error => {
           dispatch(showError(String(error)));

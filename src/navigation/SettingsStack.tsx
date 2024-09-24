@@ -114,7 +114,7 @@ function SettingsStack() {
       <Stack.Screen
         name="RecoverLitewallet"
         component={RecoverLitewallet}
-        options={RecoverLitewallet.navigationOptions}
+        options={({navigation}) => RecoverLitewalletNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="ImportSuccess"
