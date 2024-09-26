@@ -37,31 +37,30 @@ const RecoverLitewallet: React.FC<Props> = props => {
 
   const handleLWRecovery = async (seed: string[]) => {
     sweepLitewallet(seed, address)
-    .then(rawTxs => {
-      rawTxs.map((rawTx, index) => {
-        // console.log(rawTx);
-        publishTransaction(rawTx)
-        .then(() => {
-          // handle successful publish!
-          if (index === rawTxs.length - 1){
-            navigation.replace('ImportSuccess', {
-              txHash: txHashFromRaw(rawTx),
-            });
-          }
+      .then(rawTxs => {
+        rawTxs.map((rawTx, index) => {
+          // console.log(rawTx);
+          publishTransaction(rawTx).then(() => {
+            // handle successful publish!
+            if (index === rawTxs.length - 1) {
+              navigation.replace('ImportSuccess', {
+                txHash: txHashFromRaw(rawTx),
+              });
+            }
+          });
         });
+      })
+      .catch(error => {
+        dispatch(showError(String(error)));
       });
-    })
-    .catch(error => {
-      dispatch(showError(String(error)));
-    });
   };
 
   return (
-    <LinearGradient colors={['#7E58FF', '#3649DF', '#003DB3']}>
+    <LinearGradient colors={['#1162E6', '#0F55C7']}>
       <SafeAreaView>
         <RecoveryField
           handleLogin={() => {}}
-          headerText="Enter your paper-key words below."
+          headerText="Litewallet users can import their coins into Plasma Wallet. Entering your paper key below will permanently move your coins from Litewallet into Plasma."
           isLitewalletRecovery={true}
           handleLWRecovery={seed => handleLWRecovery(seed)}
         />
@@ -91,7 +90,7 @@ const styles = StyleSheet.create({
 export const RecoverLitewalletNavigationOptions = navigation => {
   return {
     headerTitle: () => (
-      <Text style={styles.headerTitle}>Recover Litewallet Seed</Text>
+      <Text style={styles.headerTitle}>Import Litewallet Paper Key</Text>
     ),
     headerTitleAlign: 'left',
     headerTransparent: true,

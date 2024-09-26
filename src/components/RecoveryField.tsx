@@ -17,12 +17,15 @@ interface Props {
   handleLogin: (seed: string[]) => void;
   headerText: string;
   isLitewalletRecovery: boolean;
-  handleLWRecovery: (seed: string[]) => void;
+  handleLWRecovery?: (seed: string[]) => void;
 }
 
 const RecoveryField: React.FC<Props> = props => {
-  const {handleLogin, headerText, isLitewalletRecovery, handleLWRecovery} = props;
-  const n = isLitewalletRecovery ? [...Array(12).keys()] : [...Array(24).keys()];
+  const {handleLogin, headerText, isLitewalletRecovery, handleLWRecovery} =
+    props;
+  const n = isLitewalletRecovery
+    ? [...Array(12).keys()]
+    : [...Array(24).keys()];
 
   const [phrase, setPhrasePosition] = useState(0);
   const [seed, setSeed] = useState<string[]>([]);
@@ -50,7 +53,7 @@ const RecoveryField: React.FC<Props> = props => {
       return;
     }
 
-    if (isLitewalletRecovery) {
+    if (isLitewalletRecovery && handleLWRecovery !== undefined) {
       if (index === 11) {
         await handleLWRecovery(seed);
 
@@ -158,9 +161,16 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: 'white',
-    fontSize: 15,
-    textAlign: 'center',
     paddingBottom: 25,
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '600',
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   wordContainer: {
     flex: 1,

@@ -5,7 +5,7 @@ import Initial from '../screens/Onboarding/Initial';
 import Pin from '../screens/Onboarding/Pin';
 import Generate from '../screens/Onboarding/Generate';
 import Verify from '../screens/Onboarding/Verify';
-import Recover from '../screens/Onboarding/Recover';
+import Recover, {RecoverNavigationOptions} from '../screens/Onboarding/Recover';
 import ChannelBackup from '../screens/Onboarding/ChannelBackup';
 import Biometric from '../screens/Onboarding/Biometric';
 import Welcome from '../screens/Onboarding/Welcome';
@@ -45,7 +45,7 @@ function OnboardingStack() {
       <Stack.Screen
         name="Recover"
         component={Recover}
-        options={Recover.navigationOptions}
+        options={({navigation}) => RecoverNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="ChannelBackup"

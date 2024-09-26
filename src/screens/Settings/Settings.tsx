@@ -145,13 +145,13 @@ const Settings: React.FC<Props> = props => {
             forward
           />
           <SettingCell
-            title="Currency Code"
+            title="Change Currency"
             onPress={() => navigation.navigate('Currency')}
             forward
           />
 
           <SettingCell
-            title="View Paper Key"
+            title="View Seed Phrase"
             onPress={() => {
               handleAuthenticationRequired()
                 .then(() => props.navigation.navigate('Seed'))
@@ -168,8 +168,8 @@ const Settings: React.FC<Props> = props => {
             forward
           />
 
-          <View>
-            <Text>Litecoin Denomination</Text>
+          <View style={styles.switchContainer}>
+            <Text style={styles.switchTitleText}>Litecoin Denomination</Text>
             <SegmentedControl
               values={['LTC', 'Lites', 'Photons']}
               selectedIndex={subunit}
@@ -216,7 +216,7 @@ const Settings: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgb(238,244,249)',
+    backgroundColor: '#F7F7F7',
   },
   headerTitle: {
     fontFamily:
@@ -227,6 +227,29 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'white',
     fontSize: 17,
+  },
+  switchContainer: {
+    flex: 1,
+    gap: 8,
+    paddingLeft: 25,
+    paddingTop: 10,
+    paddingRight: 25,
+    paddingBottom: 14,
+
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    borderColor: '#9797974d',
+    backgroundColor: 'white',
+  },
+  switchTitleText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
   },
 });
 

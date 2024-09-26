@@ -304,9 +304,9 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   headerContainer: {
-    marginLeft: 20,
-    marginRight: 20,
     marginTop: 5,
+    paddingLeft: 10,
+    paddingRight: 20,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     height: 110,
