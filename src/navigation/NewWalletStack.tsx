@@ -1,5 +1,5 @@
 import React from 'react';
-import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
+import {createStackNavigator} from '@react-navigation/stack';
 
 import Main, {navigationOptions} from '../screens/Main';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';

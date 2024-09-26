@@ -44,7 +44,7 @@ const Receive: React.FC<Props> = () => {
 
         <View style={styles.txTypeContainer}>
           <NewBlueButton
-            title="Regular Litecoin"
+            title="Litecoin"
             active={!mwebAddress}
             onPress={() => {
               dispatch(getAddress(false));
@@ -52,7 +52,7 @@ const Receive: React.FC<Props> = () => {
             }}
           />
           <NewBlueButton
-            title="MWEB Litecoin"
+            title="Send Privately"
             active={mwebAddress}
             onPress={() => {
               dispatch(getAddress(true));
@@ -76,6 +76,12 @@ const Receive: React.FC<Props> = () => {
       <View style={styles.qrContainer}>
         {uri ? <QRCode value={uri} size={200} /> : null}
       </View>
+      {mwebAddress ? (
+        <Text style={styles.minText}>
+          Sending privately hides the sender and receiver addresses, and amount
+          being sent.
+        </Text>
+      ) : null}
 
       <InfoModal
         isVisible={isInfoModalVisible}
@@ -151,6 +157,19 @@ const styles = StyleSheet.create({
     color: '#20BB74',
     fontSize: 18,
     width: 300,
+  },
+  minText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    fontSize: 12,
+    color: '#747E87',
+    textAlign: 'center',
+    paddingHorizontal: 60,
+    paddingTop: 8,
   },
 });
 

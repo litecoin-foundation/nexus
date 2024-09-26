@@ -1,9 +1,15 @@
 import React from 'react';
-import {TouchableOpacity, Text, StyleSheet, Image} from 'react-native';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Image,
+  Platform,
+} from 'react-native';
 
 import Switch from '../Buttons/Switch';
 
-const SettingCell = (props) => {
+const SettingCell = props => {
   const {
     title,
     children,
@@ -42,9 +48,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   title: {
-    color: '#7c96ae',
-    fontSize: 16,
-    fontWeight: '500',
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
   },
 });
 
