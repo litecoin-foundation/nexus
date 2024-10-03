@@ -1,16 +1,19 @@
 import React, {useEffect} from 'react';
-import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
+import {View, StyleSheet, Text, SafeAreaView, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {useDispatch, useSelector} from 'react-redux';
 import {v4 as uuidv4} from 'uuid';
 
 import {updateLastViewSeed} from '../../reducers/settings';
 import {formatDate, formatTime} from '../../lib/utils/date';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
-const Seed = () => {
-  const dispatch = useDispatch();
-  const seedArray = useSelector(state => state.onboarding.seed);
-  const lastViewSeed = useSelector(state => state.settings.lastViewSeed);
+interface Props {}
+
+const Seed: React.FC<Props> = () => {
+  const dispatch = useAppDispatch();
+  const seedArray = useAppSelector(state => state.onboarding.seed);
+  const lastViewSeed = useAppSelector(state => state.settings.lastViewSeed);
   const formatedTime =
     lastViewSeed !== null
       ? `${formatDate(lastViewSeed)}, ${formatTime(new Date(lastViewSeed))}`
@@ -93,16 +96,41 @@ const styles = StyleSheet.create({
     paddingRight: 37 / 2,
   },
   descriptionText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
     color: 'white',
     fontSize: 15,
-    letterSpacing: -0.24,
-    textAlign: 'center',
+    paddingLeft: 18,
+    textAlign: 'left',
+  },
+  headerTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: 'white',
+    fontSize: 17,
   },
 });
 
-Seed.navigationOptions = () => {
+export const SeedNavigationOptions = navigation => {
   return {
-    headerTitle: 'View Paper Key',
+    headerTitle: () => <Text style={styles.headerTitle}>View Paper Key</Text>,
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
   };
 };
 

@@ -53,14 +53,12 @@ const ConfirmBuy: React.FC<Props> = props => {
   const onPress = async () => {
     try {
       const url = await dispatch(getSignedUrl(address, 69));
-      console.log(url);
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {uri: url});
       } else {
         Alert.alert("Something's wrong!", `${url}`);
       }
     } catch (error) {
-      console.warn(error);
       Alert.alert("Something's wrong!", `err: ${error}`);
     }
   };

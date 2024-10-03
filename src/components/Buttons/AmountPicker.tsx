@@ -1,34 +1,52 @@
-import React, {useState} from 'react';
-import {
-  Image,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
+import React, {useState, useEffect} from 'react';
+import {Platform, Pressable, StyleSheet} from 'react-native';
+import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
 import {useAppSelector} from '../../store/hooks';
 import {subunitSymbolSelector} from '../../reducers/settings';
+import {
+  Canvas,
+  Image,
+  matchFont,
+  RoundedRect,
+  Text,
+  useImage,
+} from '@shopify/react-native-skia';
+import {defaultButtonSpring} from '../../theme/spring';
 
 interface Props {
   amount: number;
+  fiatAmount: string;
+  active: boolean;
+  handlePress: () => void;
+  handleToggle: () => void;
 }
 
 const AmountPicker: React.FC<Props> = props => {
-  const {amount} = props;
+  const {amount, active, handlePress, fiatAmount, handleToggle} = props;
   const [toggleLTC, setToggleLTC] = useState(true);
 
   const ltcFontSize = useSharedValue(24);
+  const ltcFontY = useSharedValue(27);
   const fiatFontSize = useSharedValue(16);
+  const fiatFontY = useSharedValue(60);
+  const switchX = useSharedValue(44);
+  const switchIconX = useSharedValue(42);
+
+  const fontFamily =
+    Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
+  const fontStyle = {
+    fontFamily,
+    fontSize: 18,
+    fontStyle: 'normal',
+    fontWeight: '700',
+  };
+  const font = matchFont(fontStyle);
 
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
 
-  //   TEST HARDCODED
-  const fiatAmount = '5498.24';
-
   const handleFontSizeChange = () => {
-    if (toggleLTC) {
+    if (toggleLTC && active) {
       ltcFontSize.value = withTiming(18);
       fiatFontSize.value = withTiming(20);
     } else {
@@ -37,31 +55,72 @@ const AmountPicker: React.FC<Props> = props => {
     }
   };
 
+  useEffect(() => {
+    if (active) {
+      switchX.value = withSpring(0, defaultButtonSpring);
+      switchIconX.value = withSpring(11, defaultButtonSpring);
+      fiatFontY.value = withTiming(40);
+      ltcFontY.value = withTiming(18);
+    } else {
+      switchX.value = withSpring(44);
+      switchIconX.value = withSpring(42);
+    }
+  }, [active, fiatFontSize, fiatFontY, ltcFontY, switchIconX, switchX]);
+
+  const switchImage = useImage(require('../../assets/icons/switch-arrow.png'));
+
   return (
-    <View style={styles.container}>
-      <View style={styles.amountsContainer}>
-        <Animated.Text
-          style={[styles.buyText, {color: '#2C72FF', fontSize: ltcFontSize}]}>
-          {amount === '' ? '0.00' : amount}
-          {amountSymbol}
-        </Animated.Text>
+    <Pressable style={styles.container} onPress={handlePress}>
+      <Canvas style={styles.amountsContainer}>
+        <Text
+          font={font}
+          color={'#2C72FF'}
+          x={4}
+          y={ltcFontY}
+          text={
+            String(amount) === '' ? '0.00' : `${String(amount)}${amountSymbol}`
+          }
+        />
+        <Text
+          font={font}
+          color={'#747E87'}
+          x={4}
+          y={fiatFontY}
+          text={
+            String(fiatAmount) === ''
+              ? '0.00'
+              : `${currencySymbol}${String(fiatAmount)}`
+          }
+        />
+      </Canvas>
 
-        <Animated.Text
-          style={[styles.buyText, {color: '#747E87', fontSize: fiatFontSize}]}>
-          {currencySymbol}
-          {fiatAmount === '' ? '0.00' : fiatAmount}
-        </Animated.Text>
-      </View>
-
-      <TouchableOpacity
+      <Pressable
+        style={{alignSelf: 'center'}}
         onPress={() => {
           setToggleLTC(!toggleLTC);
+          handleToggle();
           handleFontSizeChange();
-        }}
-        style={styles.switchButton}>
-        <Image source={require('../../assets/icons/switch-arrow.png')} />
-      </TouchableOpacity>
-    </View>
+        }}>
+        <Canvas style={{width: 44, height: 44}}>
+          <RoundedRect
+            x={switchX}
+            y={0}
+            width={44}
+            height={44}
+            r={10}
+            color="#F3F3F3"
+          />
+          <Image
+            image={switchImage}
+            fit="contain"
+            x={switchIconX}
+            y={11}
+            width={20}
+            height={20}
+          />
+        </Canvas>
+      </Pressable>
+    </Pressable>
   );
 };
 
@@ -94,17 +153,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#2E2E2E',
   },
-  switchButton: {
-    borderRadius: 10,
-    backgroundColor: '#F3F3F3',
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
   amountsContainer: {
-    flexDirection: 'column',
+    flex: 1,
   },
 });
 

@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   closeContainer: {
     right: 0,
     position: 'absolute',
-    paddingRight: 25,
+    marginRight: 25,
   },
 });
 

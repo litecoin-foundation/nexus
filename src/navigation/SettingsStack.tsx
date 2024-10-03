@@ -8,7 +8,7 @@ import Channel from '../screens/Settings/Channel';
 import OpenChannel from '../screens/Settings/OpenChannel';
 import Explorer from '../screens/Settings/Explorer';
 import ChangePincode from '../screens/Settings/ChangePincode';
-import Seed from '../screens/Settings/Seed';
+import Seed, {SeedNavigationOptions} from '../screens/Settings/Seed';
 import About from '../screens/Settings/About';
 import Currency from '../screens/Settings/Currency';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
@@ -68,7 +68,7 @@ function SettingsStack() {
       <Stack.Screen
         name="Seed"
         component={Seed}
-        options={Seed.navigationOptions}
+        options={({navigation}) => SeedNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="About"
