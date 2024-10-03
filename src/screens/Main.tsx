@@ -20,6 +20,7 @@ import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
 import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
+import WalletsModal from '../components/Modals/WalletsModal';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 import BottomSheet from '../components/BottomSheet';
@@ -63,6 +64,8 @@ const Main: React.FC<Props> = props => {
   const [selectedTransaction, selectTransaction] = useState(null);
   const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
+  const [isWalletsModalVisible, setWalletsModalVisible] = useState(false);
+  const [currentWallet, setCurrentWallet] = useState('Main wallet');
 
   // Animation
   const translationY = useSharedValue(0);
@@ -266,7 +269,7 @@ const Main: React.FC<Props> = props => {
   return (
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
-      <NewAmountView animatedProps={animatedHeaderHeight}>
+      <NewAmountView animatedProps={animatedHeaderHeight} currentWallet={currentWallet} openWallets={() => {setWalletsModalVisible(true);}}>
         <Animated.View style={animatedHeaderStyle}>
           <LineChart />
         </Animated.View>
@@ -293,6 +296,14 @@ const Main: React.FC<Props> = props => {
         isVisible={isTxDetailModalVisible}
         transaction={selectedTransaction}
         navigate={navigation.navigate}
+      />
+
+      <WalletsModal
+        close={() => {
+          setWalletsModalVisible(false);
+        }}
+        isVisible={isWalletsModalVisible}
+        currentWallet={currentWallet}
       />
     </Animated.View>
   );
