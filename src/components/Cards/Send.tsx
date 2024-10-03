@@ -9,6 +9,7 @@ import {decodeBIP21} from '../../lib/utils/bip21';
 import {validate as validateLtcAddress} from '../../lib/utils/validate';
 import {useAppDispatch} from '../../store/hooks';
 import {updateAmount} from '../../reducers/input';
+import AmountPicker from '../Buttons/AmountPicker';
 
 type RootStackParamList = {
   Main: {
@@ -95,8 +96,10 @@ const Send: React.FC<Props> = props => {
       <View style={styles.subcontainer}>
         <Text style={styles.titleText}>Send LTC</Text>
 
-        <Text style={styles.subtitleText}>AMOUNT</Text>
-        <Text>{amount}</Text>
+        <View style={styles.amountContainer}>
+          <Text style={styles.subtitleText}>AMOUNT</Text>
+          <AmountPicker amount={amount} />
+        </View>
 
         <View style={{paddingTop: 24}}>
           <Text style={styles.subtitleText}>TO ADDRESS</Text>
@@ -175,6 +178,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#747E87',
     fontSize: 12,
+  },
+  amountContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });
 

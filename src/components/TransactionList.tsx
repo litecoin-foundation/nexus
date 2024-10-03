@@ -108,9 +108,9 @@ const TransactionList = forwardRef((props: Props, ref) => {
       initialNumToRender={9}
       ListEmptyComponent={<TransactionListEmpty />}
       ListFooterComponent={<View style={styles.emptyView} />}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      // refreshControl={
+      //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      // }
       onViewableItemsChanged={onViewableItemsChanged}
     />
   );

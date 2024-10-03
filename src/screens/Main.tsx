@@ -31,6 +31,7 @@ import {
   Text as SkiaText,
   matchFont,
 } from '@shopify/react-native-skia';
+import {finishOnboarding} from '../reducers/onboarding';
 
 const fontFamily =
   Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
@@ -119,6 +120,10 @@ const Main: React.FC<Props> = props => {
   const expandHeaderOnButtonPress = () => {
     translationY.value = withSpring(-12, {mass: 0.5});
   };
+
+  useEffect(() => {
+    dispatch(getTransactions());
+  }, []);
 
   // change headerLeft button based on if card is open
   // if transaction list is shown, show settings button
