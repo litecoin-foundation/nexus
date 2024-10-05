@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text, Platform, Pressable} from 'react-native';
+import React, {useEffect, useState, useRef} from 'react';
+import {View, StyleSheet, Text, Platform, Pressable, Dimensions} from 'react-native';
 import {useSelector} from 'react-redux';
 import Animated, {
   interpolate,
@@ -33,6 +33,8 @@ import {
   matchFont,
 } from '@shopify/react-native-skia';
 import {finishOnboarding} from '../reducers/onboarding';
+
+import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
 
 const fontFamily =
   Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
@@ -156,6 +158,43 @@ const Main: React.FC<Props> = props => {
       });
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (isWalletsModalVisible) {
+      navigation.setOptions({
+          headerLeft: () => (<></>),
+          headerRight: () => (<></>),
+      });
+    } else {
+      navigation.setOptions({
+        headerLeft: () => (
+          <HeaderButton
+            onPress={() => navigation.navigate('SettingsStack')}
+            imageSource={require('../assets/icons/settings-cog.png')}
+          />
+        ),
+        headerRight: () => (
+          <HeaderButton
+            onPress={() => navigation.navigate('AlertsStack')}
+            imageSource={require('../assets/icons/charts-icon.png')}
+            rightPadding={true}
+          />
+        ),
+      });
+    }
+    navigation.setOptions({
+      headerTitle: () => (
+        <ChooseWalletButton
+          value={currentWallet}
+          onPress={() => {setWalletsModalVisible(!isWalletsModalVisible);}}
+          disabled={false}
+          customStyles={isWalletsModalVisible ? styles.chooseWalletButton : {}}
+          isBottomCurvesEnabled={isWalletsModalVisible}
+          isModalOpened={isWalletsModalVisible}
+        />
+      ),
+    });
+  }, [currentWallet, isWalletsModalVisible]);
 
   const txListComponent = (
     <View>
@@ -327,11 +366,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     height: 110,
   },
+  chooseWalletButton: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderTopLeftRadius: Dimensions.get('screen').height * 0.01,
+    borderTopRightRadius: Dimensions.get('screen').height * 0.01,
+  },
 });
 
-export const navigationOptions = navigation => {
+export const navigationOptions = (navigation) => {
   return {
-    headerTitle: '',
+    headerTitle: () => (
+      <ChooseWalletButton
+        value="Wallet Title"
+        onPress={() => {}}
+        disabled={false}
+      />
+    ),
     headerTransparent: true,
     headerLeft: () => (
       <HeaderButton

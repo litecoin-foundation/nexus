@@ -8,17 +8,14 @@ import {useAppSelector} from '../store/hooks';
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
 import Animated from 'react-native-reanimated';
 
-import ChooseWalletButton from './Buttons/ChooseWalletButton';
-
 interface Props {
   children: React.ReactNode;
   animatedProps: any; // TODO
-  currentWallet: string,
-  openWallets: () => void
+  currentWallet: string
 }
 
 const NewAmountView: React.FC<Props> = props => {
-  const {children, animatedProps, currentWallet, openWallets} = props;
+  const {children, animatedProps, currentWallet} = props;
   const chartCursorSelected = useAppSelector(
     state => state.chart.cursorSelected,
   );
@@ -46,11 +43,6 @@ const NewAmountView: React.FC<Props> = props => {
         <View style={styles.subview}>
           {!chartCursorSelected ? (
             <>
-              <ChooseWalletButton
-                value={currentWallet}
-                onPress={() => openWallets()}
-                disabled={false}
-              />
               <Text style={styles.amountText}>{subunitAmount}</Text>
               <View style={styles.fiat}>
                 <Text style={styles.fiatText}>{fiatAmount}</Text>
@@ -91,6 +83,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 40,
   },
   subview: {
+    top: 40,
     flexDirection: 'column',
     alignItems: 'center',
   },
