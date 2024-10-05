@@ -20,7 +20,8 @@ import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
 import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
-import WalletsModal from '../components/Modals/WalletsModal';
+import PlasmaModal from '../components/Modals/PlasmaModal';
+import WalletsModalContent from '../components/Modals/WalletsModalContent';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 import BottomSheet from '../components/BottomSheet';
@@ -159,6 +160,7 @@ const Main: React.FC<Props> = props => {
     }
   }, [activeTab]);
 
+  const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
   useEffect(() => {
     if (isWalletsModalVisible) {
       navigation.setOptions({
@@ -184,6 +186,13 @@ const Main: React.FC<Props> = props => {
     }
     navigation.setOptions({
       headerTitle: () => (
+        <View
+        onLayout={event => {
+          event.target.measure((x, y, width, height, pageX, pageY) => {
+            setPlasmaModalGapInPixels(height + pageY);
+          });
+        }}
+        >
         <ChooseWalletButton
           value={currentWallet}
           onPress={() => {setWalletsModalVisible(!isWalletsModalVisible);}}
@@ -192,6 +201,7 @@ const Main: React.FC<Props> = props => {
           isBottomCurvesEnabled={isWalletsModalVisible}
           isModalOpened={isWalletsModalVisible}
         />
+        </View>
       ),
     });
   }, [currentWallet, isWalletsModalVisible]);
@@ -337,13 +347,23 @@ const Main: React.FC<Props> = props => {
         navigate={navigation.navigate}
       />
 
-      <WalletsModal
+      <PlasmaModal
+        isVisible={isWalletsModalVisible}
+        isFromBottomToTop={false}
         close={() => {
           setWalletsModalVisible(false);
         }}
-        isVisible={isWalletsModalVisible}
-        currentWallet={currentWallet}
-      />
+        gapInPixels={plasmaModalGapInPixels}
+        contentBodySpecifiedStyle={{borderTopLeftRadius: 30, borderTopRightRadius: 30}}
+      >
+        <WalletsModalContent
+          // isVisible={isWalletsModalVisible}
+          // close={() => {
+          //   setWalletsModalVisible(false);
+          // }}
+          currentWallet={currentWallet}
+        />
+      </PlasmaModal>
     </Animated.View>
   );
 };

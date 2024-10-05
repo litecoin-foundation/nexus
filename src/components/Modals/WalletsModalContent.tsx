@@ -15,8 +15,8 @@ import WhiteButton from '../Buttons/WhiteButton';
 import WalletTab from '../Tabs/WalletTab';
 
 interface Props {
-  isVisible: boolean;
-  close: () => void;
+  // isVisible: boolean;
+  // close: () => void;
   currentWallet: string,
 }
 
@@ -30,8 +30,9 @@ const fontStyle = {
 };
 const font = matchFont(fontStyle);
 
-const WalletsModal: React.FC<Props> = props => {
-  const {isVisible, close, currentWallet} = props;
+export default function WalletsModalContent(props:Props) {
+  // const {isVisible, close, currentWallet} = props;
+  const {currentWallet} = props;
   // const navigation = useNavigation<any>();
 
   const wallets = (
@@ -56,36 +57,48 @@ const WalletsModal: React.FC<Props> = props => {
   );
 
   return (
-    <>
-      {isVisible ? (
-        <View style={styles.container}>
-          <Canvas style={styles.gap} >
-            <SkiaText x={100} y={200} text="Hello Test Blur 1234" font={font} color={'#fff'} />
-            <BackdropBlur blur={10}>
-              <Fill color="rgba(0, 0, 0, 0.1)" />
-            </BackdropBlur>
-          </Canvas>
-          <View style={styles.modal}>
-            <View style={styles.body}>
-              <View style={styles.bodyItems}>
-                {wallets}
-              </View>
-              <WhiteButton
-                value="ADD A NEW WALLET"
-                onPress={() => {}}
-                disabled={true}
-                small={false}
-                active={true}
-              />
-            </View>
-          </View>
-        </View>
-      ) : (
-        <></>
-      )}
-    </>
+    <View style={styles.body}>
+      <View style={styles.bodyItems}>
+        {wallets}
+      </View>
+      <WhiteButton
+        value="ADD A NEW WALLET"
+        onPress={() => {}}
+        disabled={true}
+        small={false}
+        active={true}
+      />
+    </View>
+    // <>
+    //   {isVisible ? (
+    //     <View style={styles.container}>
+    //       <Canvas style={styles.gap} >
+    //         <SkiaText x={100} y={200} text="Hello Test Blur 1234" font={font} color={'#fff'} />
+    //         <BackdropBlur blur={10}>
+    //           <Fill color="rgba(0, 0, 0, 0.1)" />
+    //         </BackdropBlur>
+    //       </Canvas>
+    //       <View style={styles.modal}>
+    //         <View style={styles.body}>
+    //           <View style={styles.bodyItems}>
+    //             {wallets}
+    //           </View>
+    //           <WhiteButton
+    //             value="ADD A NEW WALLET"
+    //             onPress={() => {}}
+    //             disabled={true}
+    //             small={false}
+    //             active={true}
+    //           />
+    //         </View>
+    //       </View>
+    //     </View>
+    //   ) : (
+    //     <></>
+    //   )}
+    // </>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -152,5 +165,3 @@ const styles = StyleSheet.create({
     margin: 0,
   },
 });
-
-export default WalletsModal;
