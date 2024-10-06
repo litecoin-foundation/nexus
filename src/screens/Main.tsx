@@ -67,7 +67,7 @@ const Main: React.FC<Props> = props => {
   const [selectedTransaction, selectTransaction] = useState(null);
   const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
-  const [isWalletsModalVisible, setWalletsModalVisible] = useState(false);
+  const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main wallet');
 
   // Animation
@@ -162,7 +162,7 @@ const Main: React.FC<Props> = props => {
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
   useEffect(() => {
-    if (isWalletsModalVisible) {
+    if (isWalletsModalOpened) {
       navigation.setOptions({
           headerLeft: () => (<></>),
           headerRight: () => (<></>),
@@ -194,17 +194,17 @@ const Main: React.FC<Props> = props => {
         }}
         >
         <ChooseWalletButton
-          value={currentWallet}
-          onPress={() => {setWalletsModalVisible(!isWalletsModalVisible);}}
+          title={currentWallet}
+          onPress={() => {setWalletsModalOpened(!isWalletsModalOpened);}}
           disabled={false}
-          customStyles={isWalletsModalVisible ? styles.chooseWalletButton : {}}
-          isBottomCurvesEnabled={isWalletsModalVisible}
-          isModalOpened={isWalletsModalVisible}
+          isModalOpened={isWalletsModalOpened}
+          isFromBottomToTop={false}
+          animDuration={200}
         />
         </View>
       ),
     });
-  }, [currentWallet, isWalletsModalVisible]);
+  }, [currentWallet, isWalletsModalOpened]);
 
   const txListComponent = (
     <View>
@@ -318,7 +318,7 @@ const Main: React.FC<Props> = props => {
   return (
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
-      <NewAmountView animatedProps={animatedHeaderHeight} currentWallet={currentWallet} openWallets={() => {setWalletsModalVisible(true);}}>
+      <NewAmountView animatedProps={animatedHeaderHeight} currentWallet={currentWallet} openWallets={() => {setWalletsModalOpened(true);}}>
         <Animated.View style={animatedHeaderStyle}>
           <LineChart />
         </Animated.View>
@@ -339,28 +339,25 @@ const Main: React.FC<Props> = props => {
       />
 
       <TransactionDetailModal
+        isVisible={isTxDetailModalVisible}
         close={() => {
           setTxDetailModalVisible(false);
         }}
-        isVisible={isTxDetailModalVisible}
         transaction={selectedTransaction}
         navigate={navigation.navigate}
       />
 
       <PlasmaModal
-        isVisible={isWalletsModalVisible}
-        isFromBottomToTop={false}
+        isOpened={isWalletsModalOpened}
         close={() => {
-          setWalletsModalVisible(false);
+          setWalletsModalOpened(false);
         }}
+        isFromBottomToTop={false}
+        animDuration={250}
         gapInPixels={plasmaModalGapInPixels}
         contentBodySpecifiedStyle={{borderTopLeftRadius: 30, borderTopRightRadius: 30}}
       >
         <WalletsModalContent
-          // isVisible={isWalletsModalVisible}
-          // close={() => {
-          //   setWalletsModalVisible(false);
-          // }}
           currentWallet={currentWallet}
         />
       </PlasmaModal>
@@ -385,12 +382,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     height: 110,
-  },
-  chooseWalletButton: {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    borderTopLeftRadius: Dimensions.get('screen').height * 0.01,
-    borderTopRightRadius: Dimensions.get('screen').height * 0.01,
   },
 });
 
