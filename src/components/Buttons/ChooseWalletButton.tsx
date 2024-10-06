@@ -1,33 +1,33 @@
-import React, {useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, TouchableOpacity, Text, StyleSheet, Platform, Dimensions, Image, Animated} from 'react-native';
 import Svg, {Path} from 'react-native-svg';
 
 interface Props {
-  value: string;
+  title: string;
   onPress(): void;
   disabled?: boolean;
-  customStyles?: {};
   customFontStyles?: {};
-  isBottomCurvesEnabled?: boolean;
-  isModalOpened?: boolean;
+  isModalOpened: boolean;
+  isFromBottomToTop: boolean;
+  animDuration: number;
 }
 
 const ChooseWalletButton: React.FC<Props> = props => {
   const {
-    value,
+    title,
     onPress,
     disabled,
-    customStyles,
     customFontStyles,
-    isBottomCurvesEnabled,
     isModalOpened,
+    isFromBottomToTop,
+    animDuration,
   } = props;
 
   const rotateArrowAnim = useRef(new Animated.Value(0)).current;
   const rotateArrow = () => {
     Animated.timing(rotateArrowAnim, {
       toValue: isModalOpened ? 0 : 1,
-      duration: 250,
+      duration: animDuration,
       useNativeDriver: true,
     }).start();
   };
@@ -36,6 +36,15 @@ const ChooseWalletButton: React.FC<Props> = props => {
     inputRange: [0, 1],
     outputRange: ['270deg', '90deg'],
   });
+
+  const [isCurvesVisible, setCurvesVisible] = useState(false);
+  useEffect(() => {
+    var timeout = setTimeout(() => {
+      setCurvesVisible(isModalOpened);
+    }, isFromBottomToTop ? (isModalOpened ? animDuration : 0) : (isModalOpened ? 0 : animDuration));
+
+    return () => clearTimeout(timeout);
+  }, [isModalOpened]);
 
   const styles = StyleSheet.create({
     container: {
@@ -47,7 +56,10 @@ const ChooseWalletButton: React.FC<Props> = props => {
     },
     buttonBox: {
       height: '100%',
-      borderRadius: Dimensions.get('screen').height * 0.01,
+      borderBottomLeftRadius: isCurvesVisible ? 0 : Dimensions.get('screen').height * 0.01,
+      borderBottomRightRadius: isCurvesVisible ? 0 : Dimensions.get('screen').height * 0.01,
+      borderTopLeftRadius: Dimensions.get('screen').height * 0.01,
+      borderTopRightRadius: Dimensions.get('screen').height * 0.01,
       backgroundColor: '#0d3d8a',
       flexDirection: 'row',
       alignItems: 'center',
@@ -104,13 +116,13 @@ const ChooseWalletButton: React.FC<Props> = props => {
         disabled ? styles.disabled : null,
       ]}
       onPress={() => {onPress(); rotateArrow();}}>
-        <View style={[styles.buttonBox, customStyles]}>
+        <View style={styles.buttonBox}>
           <Text
             style={[
               styles.boxText,
               customFontStyles,
             ]}>
-            {value}
+            {title}
           </Text>
           <Animated.View
             style={[
@@ -121,7 +133,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
             ]}>
             <Image style={styles.boxArrowIcon} source={require('../../assets/images/back-icon.png')} />
           </Animated.View>
-          {isBottomCurvesEnabled ? (
+          {isCurvesVisible ? (
             <>
               <Svg
                 style={styles.boxLeftCurve}

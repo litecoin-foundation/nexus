@@ -1,13 +1,7 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Dimensions, Platform} from 'react-native';
 import {
   Canvas,
-  Circle,
-  Group,
-  Fill,
-  Image,
-  BackdropBlur,
-  useImage,
   Text as SkiaText,
   matchFont,
 } from '@shopify/react-native-skia';
@@ -23,10 +17,12 @@ import Animated, {
 
 interface Props {
   children: React.ReactNode;
-  isVisible: boolean;
-  isFromBottomToTop: boolean,
+  isOpened: boolean;
   close: () => void;
+  isFromBottomToTop: boolean,
+  animDuration: number,
   gapInPixels: number,
+  backSpecifiedStyle?: {};
   contentBodySpecifiedStyle?: {};
 }
 
@@ -41,7 +37,7 @@ const fontStyle = {
 const font = matchFont(fontStyle);
 
 export default function PlasmaModal(props:Props) {
-  const {children, isVisible, isFromBottomToTop, close, gapInPixels, contentBodySpecifiedStyle} = props;
+  const {children, isOpened, close, isFromBottomToTop, animDuration, gapInPixels, backSpecifiedStyle, contentBodySpecifiedStyle} = props;
 
   const styles = StyleSheet.create({
     container: {
@@ -51,7 +47,6 @@ export default function PlasmaModal(props:Props) {
       width: '100%',
       flexDirection: 'column',
       justifyContent: isFromBottomToTop ? 'flex-end' : 'flex-start',
-      // justifyContent: 'flex-end',
       margin: 0,
       zIndex: 10,
     },
@@ -63,70 +58,95 @@ export default function PlasmaModal(props:Props) {
       zIndex: 0,
     },
     gap: {
-      // flexBasis: gapInPixels,
+      flexBasis: gapInPixels,
+      backgroundColor: '#1162E6',
+      zIndex: 2,
     },
     contentBody: {
-      // flex: 1,
+      flex: isFromBottomToTop ? 1 : 0,
+      height: Dimensions.get('screen').height - gapInPixels,
       width: '100%',
       backgroundColor: '#0d3d8a',
+      zIndex: 1,
     },
   });
 
-  const gapShrink = useSharedValue(Dimensions.get('screen').height);
-  const contentBodyHeight = useSharedValue(0);
+  // const gapShrink = useSharedValue(0);
+  // const contentBodyHeight = useSharedValue(0);
+  const contentBodyYPos = useSharedValue(0);
 
-  const animatedGapShrinkStyle = useAnimatedStyle(() => {
+  // const animatedGapShrinkStyle = useAnimatedStyle(() => {
+  //   return {
+  //     flexBasis: gapShrink.value,
+  //   };
+  // });
+  // const animatedContentBodyHeightStyle = useAnimatedStyle(() => {
+  //   return {
+  //     height: contentBodyHeight.value,
+  //   };
+  // });
+  const animatedContentBodyYPosStyle = useAnimatedStyle(() => {
     return {
-      flexBasis: gapShrink.value,
+      transform: [{translateY: contentBodyYPos.value}],
     };
   });
 
-  const animatedContentBodyHeightStyle = useAnimatedStyle(() => {
-    return isFromBottomToTop ? {
-      flex: 1,
-    } : {
-      height: contentBodyHeight.value,
-    };
-  });
+  const [isVisible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (isFromBottomToTop) {
-      if (isVisible) {
-        gapShrink.value = withTiming(gapInPixels,  { duration: 500 });
-        contentBodyHeight.value = Dimensions.get('screen').height - gapInPixels;
-      } else {
-        gapShrink.value = Dimensions.get('screen').height;
-        contentBodyHeight.value = 0;
-      }
+    if (isOpened) {
+      setVisible(isOpened);
     } else {
-      if (isVisible) {
-        gapShrink.value = gapInPixels;
-        contentBodyHeight.value = withTiming(Dimensions.get('screen').height - gapInPixels,  { duration: 500 });
-      } else {
-        gapShrink.value = Dimensions.get('screen').height;
-        contentBodyHeight.value = 0;
-      }
+      var timeout = setTimeout(() => {
+        setVisible(isOpened);
+      }, animDuration);
     }
-  }, [isVisible, isFromBottomToTop]);
+
+    // if (isFromBottomToTop) {
+    //   // contentBodyHeight.value = Dimensions.get('screen').height - gapInPixels;
+    //   contentBodyYPos.value = 0;
+    //   if (isOpened) {
+    //     gapShrink.value = withTiming(gapInPixels,  { duration: animDuration });
+    //   } else {
+    //     // gapShrink.value = Dimensions.get('screen').height;
+    //     gapShrink.value = withTiming(Dimensions.get('screen').height,  { duration: animDuration });
+    //   }
+    // } else {
+    //   gapShrink.value = gapInPixels;
+    //   if (isOpened) {
+    //     // contentBodyHeight.value = withTiming(Dimensions.get('screen').height - gapInPixels,  { duration: animDuration });
+    //     contentBodyYPos.value = withTiming(0,  { duration: animDuration });
+    //   } else {
+    //     // contentBodyHeight.value = 0;
+    //     contentBodyYPos.value = withTiming((Dimensions.get('screen').height - gapInPixels) * -1,  { duration: animDuration });
+    //   }
+    // }
+
+    if (isOpened) {
+      contentBodyYPos.value = withTiming(0,  { duration: animDuration });
+    } else {
+
+      contentBodyYPos.value = withTiming((Dimensions.get('screen').height - gapInPixels) * (isFromBottomToTop ? 1 : -1),  { duration: animDuration });
+    }
+
+    return () => clearTimeout(timeout);
+  }, [isOpened]);
 
   return (
     <>
       {isVisible ? (
         <View style={styles.container}>
-          <Canvas style={styles.back} >
-            <BackdropBlur blur={10}>
-              <Fill color="rgba(0, 0, 0, 0.2)" />
-            </BackdropBlur>
-          </Canvas>
+          <View style={[styles.back, backSpecifiedStyle]} />
           <Animated.View style={[
               styles.gap,
-              animatedGapShrinkStyle,
+              // animatedGapShrinkStyle,
             ]}
           />
           <Animated.View style={[
             styles.contentBody,
             contentBodySpecifiedStyle,
-            animatedContentBodyHeightStyle,
+            // animatedContentBodyHeightStyle,
+            animatedContentBodyYPosStyle,
             ]}>
             {children}
           </Animated.View>
