@@ -40,6 +40,7 @@ const Send: React.FC<Props> = props => {
   const [amountPickerActive, setAmountPickerActive] = useState(false);
 
   const padOpacity = useSharedValue(0);
+  const detailsOpacity = useSharedValue(1);
 
   useEffect(() => {
     if (route.params?.scanData) {
@@ -52,7 +53,9 @@ const Send: React.FC<Props> = props => {
     if (amountPickerActive) {
       padOpacity.value = withTiming(1, {duration: 400});
     } else {
-      padOpacity.value = withTiming(0);
+      padOpacity.value = withTiming(0, {}, () => {
+        detailsOpacity.value = withTiming(1, {duration: 200});
+      });
     }
   }, [amountPickerActive, padOpacity]);
 
@@ -127,13 +130,16 @@ const Send: React.FC<Props> = props => {
             amount={amount}
             fiatAmount={fiatAmount}
             active={amountPickerActive}
-            handlePress={() => setAmountPickerActive(true)}
+            handlePress={() => {
+              detailsOpacity.value = withTiming(0, {duration: 200});
+              setAmountPickerActive(true);
+            }}
             handleToggle={() => setToggleLTC(!toggleLTC)}
           />
         </View>
 
         {amountPickerActive ? null : (
-          <>
+          <Animated.View style={{flex: 1, opacity: detailsOpacity}}>
             <View style={{paddingTop: 24}}>
               <Text style={styles.subtitleText}>TO ADDRESS</Text>
               <View style={styles.inputFieldContainer}>
@@ -155,14 +161,7 @@ const Send: React.FC<Props> = props => {
               </View>
             </View>
 
-            <View
-              style={{
-                position: 'absolute',
-                bottom: 150,
-                flexDirection: 'row',
-                alignSelf: 'center',
-                gap: 8,
-              }}>
+            <View style={styles.bottomButtonContainer}>
               <BlueButton
                 value={'Fee'}
                 onPress={() => console.log('pressed fee')}
@@ -175,7 +174,7 @@ const Send: React.FC<Props> = props => {
                 }}
               />
             </View>
-          </>
+          </Animated.View>
         )}
       </View>
 
@@ -243,6 +242,13 @@ const styles = StyleSheet.create({
   numpadContainer: {
     position: 'absolute',
     bottom: 162,
+  },
+  bottomButtonContainer: {
+    position: 'absolute',
+    bottom: 150,
+    flexDirection: 'row',
+    alignSelf: 'center',
+    gap: 8,
   },
 });
 

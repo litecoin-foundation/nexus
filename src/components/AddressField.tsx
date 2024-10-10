@@ -21,13 +21,15 @@ const AddressField: React.FC<Props> = props => {
     <View style={styles.container}>
       <TextInput
         placeholderTextColor="#dbdbdb"
-        placeholder="Address to send Litecoin"
+        placeholder="Enter a Litecoin Address"
         style={styles.text}
         value={address}
         autoCorrect={false}
         autoComplete="off"
         onChangeText={onChangeText}
-        blurOnSubmit={false}
+        blurOnSubmit={true}
+        enterKeyHint={'done'}
+        multiline={true}
       />
 
       <TouchableHighlight style={styles.closeContainer} onPress={onScanPress}>
@@ -39,7 +41,7 @@ const AddressField: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 63,
+    minHeight: 53,
     borderRadius: 8,
     borderColor: '#E8E8E8',
     borderWidth: 1,
@@ -49,6 +51,7 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
     paddingLeft: 11.5,
+    paddingRight: 11.5,
     fontFamily:
       Platform.OS === 'ios'
         ? 'Satoshi Variable'

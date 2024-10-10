@@ -31,6 +31,7 @@ const AmountPicker: React.FC<Props> = props => {
   const fiatFontY = useSharedValue(60);
   const switchX = useSharedValue(44);
   const switchIconX = useSharedValue(42);
+  const switchOpacity = useSharedValue(0);
 
   const fontFamily =
     Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
@@ -61,9 +62,11 @@ const AmountPicker: React.FC<Props> = props => {
       switchIconX.value = withSpring(11, defaultButtonSpring);
       fiatFontY.value = withTiming(40);
       ltcFontY.value = withTiming(18);
+      switchOpacity.value = withTiming(1);
     } else {
       switchX.value = withSpring(44);
       switchIconX.value = withSpring(42);
+      switchOpacity.value = withTiming(0);
     }
   }, [active, fiatFontSize, fiatFontY, ltcFontY, switchIconX, switchX]);
 
@@ -109,6 +112,7 @@ const AmountPicker: React.FC<Props> = props => {
             height={44}
             r={10}
             color="#F3F3F3"
+            opacity={switchOpacity}
           />
           <Image
             image={switchImage}

@@ -135,6 +135,7 @@ const RecoveryField: React.FC<Props> = props => {
                 autoCorrect={false}
                 blurOnSubmit={false}
                 autoCapitalize="none"
+                autoComplete="off"
                 clearTextOnFocus
                 keyboardAppearance="dark"
                 ref={phraseRef.current[index]}
