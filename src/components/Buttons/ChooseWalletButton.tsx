@@ -46,9 +46,17 @@ const ChooseWalletButton: React.FC<Props> = props => {
     return () => clearTimeout(timeout);
   }, [isModalOpened]);
 
+  const fontSize = Math.round(Dimensions.get('screen').height * 0.018) - 1;
+  const arrowHeight = Math.round(Dimensions.get('screen').height * 0.012);
+  const boxPadding = Math.round(Dimensions.get('screen').height * 0.015);
+  const boxHeight = Math.round(Dimensions.get('screen').height * 0.035);
+  let boxWidth = Math.round(fontSize * title.length / 3) + arrowHeight * 3 + boxPadding * 2;
+
+  if (isCurvesVisible) {boxWidth = Math.round(boxWidth * 1.14);}
+
   const styles = StyleSheet.create({
     container: {
-      height: Dimensions.get('screen').height * 0.035,
+      height: boxHeight,
       width: '100%',
       backgroundColor: 'transparent',
       justifyContent: 'center',
@@ -56,16 +64,9 @@ const ChooseWalletButton: React.FC<Props> = props => {
     },
     buttonBox: {
       height: '100%',
-      borderBottomLeftRadius: isCurvesVisible ? 0 : Dimensions.get('screen').height * 0.01,
-      borderBottomRightRadius: isCurvesVisible ? 0 : Dimensions.get('screen').height * 0.01,
-      borderTopLeftRadius: Dimensions.get('screen').height * 0.01,
-      borderTopRightRadius: Dimensions.get('screen').height * 0.01,
-      backgroundColor: '#0d3d8a',
       flexDirection: 'row',
+      justifyContent: 'center',
       alignItems: 'center',
-      paddingLeft: Dimensions.get('screen').height * 0.015,
-      paddingRight: Dimensions.get('screen').height * 0.015,
-      position: 'relative',
     },
     boxText: {
       fontFamily:
@@ -75,32 +76,24 @@ const ChooseWalletButton: React.FC<Props> = props => {
       color: '#fff',
       fontStyle: 'normal',
       fontWeight: '500',
-      fontSize: 15,
+      fontSize: fontSize,
     },
     boxArrow: {
-      height: Dimensions.get('screen').height * 0.012,
+      height: arrowHeight,
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 2,
-      marginLeft: 10,
+      marginLeft: 8,
     },
     boxArrowIcon: {
       height: '100%',
       objectFit: 'contain',
     },
-    boxLeftCurve: {
+    boxSvg: {
       position: 'absolute',
-      bottom: 0,
-      left: (Dimensions.get('screen').height * 0.02 * -1) + 1,
-      height: Dimensions.get('screen').height * 0.02,
-      width: Dimensions.get('screen').height * 0.02,
-    },
-    boxRightCurve: {
-      position: 'absolute',
-      bottom: 0,
-      right: (Dimensions.get('screen').height * 0.02 * -1) + 1,
-      height: Dimensions.get('screen').height * 0.02,
-      width: Dimensions.get('screen').height * 0.02,
+      height: boxHeight,
+      width: boxWidth,
+      zIndex: -1,
     },
     disabled: {
       opacity: 0.5,
@@ -116,7 +109,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
         disabled ? styles.disabled : null,
       ]}
       onPress={() => {onPress(); rotateArrow();}}>
-        <View style={styles.buttonBox}>
+        <View style={styles.buttonBox} >
           <Text
             style={[
               styles.boxText,
@@ -135,27 +128,19 @@ const ChooseWalletButton: React.FC<Props> = props => {
           </Animated.View>
           {isCurvesVisible ? (
             <>
-              <Svg
-                style={styles.boxLeftCurve}
-                viewBox="0 0 15 15"
-                fill="#0d3d8a"
-              >
+              <Svg style={styles.boxSvg} viewBox="0 0 114 20" preserveAspectRatio="none" fill="#0d3d8a">
                 <Path
-                  d="M 0 15 q 15 0 15 -15 l 0 15"
-                />
-              </Svg>
-              <Svg
-                style={styles.boxRightCurve}
-                viewBox="0 0 15 15"
-                fill="#0d3d8a"
-              >
-                <Path
-                  d="M 0 0 q 0 15 15 15 l -15 0"
+                  d="M 0 20 q 7 0 7 -7 l 0 -6 q 0 -7 7 -7 l 86 0 q 7 0 7 7 l 0 6 q 0 7 7 7 l -114 0"
                 />
               </Svg>
             </>
           ) : (
             <>
+              <Svg style={styles.boxSvg} viewBox="0 0 100 20" preserveAspectRatio="none" fill="#0d3d8a">
+                <Path
+                  d="M 10 20 l -3 0 q -7 0 -7 -7 l 0 -6 q 0 -7 7 -7 l 13 0 l 60 0 l 13 0 q 7 0 7 7 l 0 6 q 0 7 -7 7 l -73 0"
+                />
+              </Svg>
             </>
           )}
         </View>

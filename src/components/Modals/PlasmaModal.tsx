@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Dimensions, Platform} from 'react-native';
+import React, {ReactNode, useEffect, useState, useRef} from 'react';
+import {View, StyleSheet, Dimensions, Platform} from 'react-native';
 import {
   Canvas,
   Text as SkiaText,
@@ -7,16 +7,13 @@ import {
 } from '@shopify/react-native-skia';
 import Animated, {
   useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
-  withRepeat,
   withTiming,
   withSpring,
   interpolate,
 } from 'react-native-reanimated';
 
 interface Props {
-  children: React.ReactNode;
   isOpened: boolean;
   close: () => void;
   isFromBottomToTop: boolean,
@@ -24,6 +21,7 @@ interface Props {
   gapInPixels: number,
   backSpecifiedStyle?: {};
   contentBodySpecifiedStyle?: {};
+  renderBody: (isOpened: boolean, showAnim: boolean, animDelay: number, animDuration: number) => ReactNode;
 }
 
 const fontFamily =
@@ -37,7 +35,7 @@ const fontStyle = {
 const font = matchFont(fontStyle);
 
 export default function PlasmaModal(props:Props) {
-  const {children, isOpened, close, isFromBottomToTop, animDuration, gapInPixels, backSpecifiedStyle, contentBodySpecifiedStyle} = props;
+  const {isOpened, close, isFromBottomToTop, animDuration, gapInPixels, backSpecifiedStyle, contentBodySpecifiedStyle, renderBody} = props;
 
   const styles = StyleSheet.create({
     container: {
@@ -93,13 +91,27 @@ export default function PlasmaModal(props:Props) {
 
   const [isVisible, setVisible] = useState(false);
 
+  const contentBodyAnimDelay = animDuration - 50;
+  const [startContentBodyAnim, setStartContentBodyAnim] = useState(true);
+
+  const animTimeout = useRef();
+  const contentBodyAnimTimeout = useRef();
+  // let animTimeout: null | ReturnType<typeof setTimeout> = null;
+  // let contentBodyAnimTimeout: null | ReturnType<typeof setTimeout> = null;
+
   useEffect(() => {
     if (isOpened) {
       setVisible(isOpened);
+
+      // contentBodyAnimTimeout.current = setTimeout(() => {
+      //   setStartContentBodyAnim(true);
+      // }, 5000);
     } else {
-      var timeout = setTimeout(() => {
+      animTimeout.current = setTimeout(() => {
         setVisible(isOpened);
       }, animDuration);
+
+      // setStartContentBodyAnim(true);
     }
 
     // if (isFromBottomToTop) {
@@ -129,7 +141,10 @@ export default function PlasmaModal(props:Props) {
       contentBodyYPos.value = withTiming((Dimensions.get('screen').height - gapInPixels) * (isFromBottomToTop ? 1 : -1),  { duration: animDuration });
     }
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(animTimeout.current);
+      clearTimeout(contentBodyAnimTimeout.current);
+    };
   }, [isOpened]);
 
   return (
@@ -148,7 +163,7 @@ export default function PlasmaModal(props:Props) {
             // animatedContentBodyHeightStyle,
             animatedContentBodyYPosStyle,
             ]}>
-            {children}
+            {renderBody(isOpened, startContentBodyAnim, contentBodyAnimDelay, animDuration - 50)}
           </Animated.View>
         </View>
       ) : (

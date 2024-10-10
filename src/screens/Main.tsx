@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useMemo} from 'react';
 import {View, StyleSheet, Text, Platform, Pressable, Dimensions} from 'react-native';
 import {useSelector} from 'react-redux';
 import Animated, {
@@ -19,9 +19,9 @@ import Receive from '../components/Cards/Receive';
 import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
-import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
-import PlasmaModal from '../components/Modals/PlasmaModal';
-import WalletsModalContent from '../components/Modals/WalletsModalContent';
+import TransactionDetailModal from './../components/Modals/TransactionDetailModal';
+import PlasmaModal from './../components/Modals/PlasmaModal';
+import WalletsModalContent from './../components/Modals/WalletsModalContent';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 import BottomSheet from '../components/BottomSheet';
@@ -57,7 +57,7 @@ interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
-  const {isInternetReachable} = useAppSelector(state => state.info);
+  const isInternetReachable = useAppSelector(state => state.info.isInternetReachable);
   const transactions = useSelector(state => txDetailSelector(state));
   const groupedTransactions = groupTransactions(transactions);
 
@@ -161,6 +161,36 @@ const Main: React.FC<Props> = props => {
   }, [activeTab]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
+
+  const leftHeaderButton = useMemo(() =>
+    <HeaderButton
+      onPress={() => navigation.navigate('SettingsStack')}
+      imageSource={require('../assets/icons/settings-cog.png')}
+    />, [navigation]);
+
+  const rightHeaderButton = useMemo(() =>
+    <HeaderButton
+      onPress={() => navigation.navigate('AlertsStack')}
+      imageSource={require('../assets/icons/charts-icon.png')}
+      rightPadding={true}
+    />, [navigation]);
+
+  const walletButton = useMemo(() =>
+    <View
+    onLayout={event => {
+      event.target.measure((x, y, width, height, pageX, pageY) => {
+        setPlasmaModalGapInPixels(height + pageY);
+      });
+    }}>
+      <ChooseWalletButton
+        title={currentWallet}
+        onPress={() => {setWalletsModalOpened(!isWalletsModalOpened);}}
+        disabled={false}
+        isModalOpened={isWalletsModalOpened}
+        isFromBottomToTop={false}
+        animDuration={200} />
+    </View>, [navigation, currentWallet, isWalletsModalOpened]);
+
   useEffect(() => {
     if (isWalletsModalOpened) {
       navigation.setOptions({
@@ -169,42 +199,14 @@ const Main: React.FC<Props> = props => {
       });
     } else {
       navigation.setOptions({
-        headerLeft: () => (
-          <HeaderButton
-            onPress={() => navigation.navigate('SettingsStack')}
-            imageSource={require('../assets/icons/settings-cog.png')}
-          />
-        ),
-        headerRight: () => (
-          <HeaderButton
-            onPress={() => navigation.navigate('AlertsStack')}
-            imageSource={require('../assets/icons/charts-icon.png')}
-            rightPadding={true}
-          />
-        ),
+        headerLeft: () => (leftHeaderButton),
+        headerRight: () => (rightHeaderButton),
       });
     }
     navigation.setOptions({
-      headerTitle: () => (
-        <View
-        onLayout={event => {
-          event.target.measure((x, y, width, height, pageX, pageY) => {
-            setPlasmaModalGapInPixels(height + pageY);
-          });
-        }}
-        >
-        <ChooseWalletButton
-          title={currentWallet}
-          onPress={() => {setWalletsModalOpened(!isWalletsModalOpened);}}
-          disabled={false}
-          isModalOpened={isWalletsModalOpened}
-          isFromBottomToTop={false}
-          animDuration={200}
-        />
-        </View>
-      ),
+      headerTitle: () => (walletButton),
     });
-  }, [currentWallet, isWalletsModalOpened]);
+  }, [leftHeaderButton, rightHeaderButton, walletButton, navigation, isWalletsModalOpened]);
 
   const txListComponent = (
     <View>
@@ -356,11 +358,16 @@ const Main: React.FC<Props> = props => {
         animDuration={250}
         gapInPixels={plasmaModalGapInPixels}
         contentBodySpecifiedStyle={{borderTopLeftRadius: 30, borderTopRightRadius: 30}}
-      >
-        <WalletsModalContent
+        renderBody={(isOpened: boolean, showAnim: boolean, animDelay: number, animDuration: number) =>
+          <WalletsModalContent
           currentWallet={currentWallet}
+          isOpened={isOpened}
+          showAnim={showAnim}
+          animDelay={animDelay}
+          animDuration={animDuration}
         />
-      </PlasmaModal>
+        }
+      />
     </Animated.View>
   );
 };
@@ -385,14 +392,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export const navigationOptions = (navigation) => {
+export const navigationOptions = (navigation: any) => {
   return {
     headerTitle: () => (
       <ChooseWalletButton
-        value="Wallet Title"
-        onPress={() => {}}
-        disabled={false}
-      />
+      title={'Wallet Title'}
+      onPress={() => {}}
+      disabled={false}
+      isModalOpened={false}
+      isFromBottomToTop={false}
+      animDuration={200} />
     ),
     headerTransparent: true,
     headerLeft: () => (
