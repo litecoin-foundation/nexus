@@ -2,18 +2,18 @@ import React from 'react';
 import {View, Text, StyleSheet, Dimensions, Platform} from 'react-native';
 
 interface Props {
-  colorStyle: string
-  walletName: string,
-  balance: number,
-  priceRate: number,
-  prevRate: number,
+  colorStyle: string;
+  walletName: string;
+  balance: number;
+  priceRate: number;
+  prevRate: number;
 }
 
-export default function WalletTab(props:Props) {
+export default function WalletTab(props: Props) {
   const {colorStyle, walletName, balance, priceRate, prevRate} = props;
 
   let isWhiteStyle = true;
-  switch(colorStyle) {
+  switch (colorStyle) {
     case 'White':
       isWhiteStyle = true;
       break;
@@ -50,9 +50,9 @@ export default function WalletTab(props:Props) {
     tabLeftBalance: {
       color: isWhiteStyle ? '#000' : '#fff',
       fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
       fontStyle: 'normal',
       fontWeight: '400',
       fontSize: Dimensions.get('screen').height * 0.04,
@@ -105,38 +105,34 @@ export default function WalletTab(props:Props) {
   });
 
   const worth: any = balance * priceRate;
-  const worthText = '$' + String(parseFloat(worth).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+  const worthText =
+    '$' +
+    String(parseFloat(worth).toFixed(2)).replace(
+      /(\d)(?=(\d{3})+(?!\d))/g,
+      '$1,',
+    );
   const change: any = (priceRate / prevRate) * 100 - 100;
-  const changeText = change < 0 ? '' : '+' + parseFloat(change).toFixed(2) + '%';
+  const changeText =
+    change < 0 ? '' : '+' + parseFloat(change).toFixed(2) + '%';
 
   return (
     <View style={styles.walletTab}>
-      <View style={styles.tabLeft} >
-        <Text style={styles.tabLeftTitle}>
-          {walletName}
-        </Text>
-        <Text style={styles.tabLeftBalance}>
-          {balance + ' LTC'}
-        </Text>
+      <View style={styles.tabLeft}>
+        <Text style={styles.tabLeftTitle}>{walletName}</Text>
+        <Text style={styles.tabLeftBalance}>{balance + ' LTC'}</Text>
         <View style={styles.tabLeftWorthContainer}>
-          <Text style={styles.tabLeftWorth}>
-            {worthText}
-          </Text>
+          <Text style={styles.tabLeftWorth}>{worthText}</Text>
           {change < 0 ? (
             <View style={styles.tabLeftWorthChangeIcon} />
           ) : (
             <View style={styles.tabLeftWorthChangeIcon} />
           )}
-          <Text style={styles.tabLeftWorthChange}>
-            {changeText}
-          </Text>
+          <Text style={styles.tabLeftWorthChange}>{changeText}</Text>
         </View>
       </View>
       <View style={styles.tabRight}>
         <View style={styles.tabRightCopyIcon} />
-        <Text style={styles.tabRightTitle}>
-          copy address
-        </Text>
+        <Text style={styles.tabRightTitle}>copy address</Text>
       </View>
     </View>
   );
