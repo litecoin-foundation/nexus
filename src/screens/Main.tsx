@@ -1,5 +1,5 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
-import {View, StyleSheet, Text, Platform, Pressable, Dimensions} from 'react-native';
+import React, {useEffect, useState, useMemo} from 'react';
+import {View, StyleSheet, Text, Platform, Pressable} from 'react-native';
 import {useSelector} from 'react-redux';
 import Animated, {
   interpolate,
@@ -9,6 +9,12 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import {
+  Canvas,
+  RoundedRect,
+  Text as SkiaText,
+  matchFont,
+} from '@shopify/react-native-skia';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -27,13 +33,6 @@ import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
-import {
-  Canvas,
-  RoundedRect,
-  Text as SkiaText,
-  matchFont,
-} from '@shopify/react-native-skia';
-import {finishOnboarding} from '../reducers/onboarding';
 
 import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
 
@@ -57,7 +56,9 @@ interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
-  const isInternetReachable = useAppSelector(state => state.info.isInternetReachable);
+  const isInternetReachable = useAppSelector(
+    state => state.info.isInternetReachable,
+  );
   const transactions = useSelector(state => txDetailSelector(state));
   const groupedTransactions = groupTransactions(transactions);
 
@@ -162,76 +163,77 @@ const Main: React.FC<Props> = props => {
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
-  const leftHeaderButton = useMemo(() =>
-    <HeaderButton
-      onPress={() => navigation.navigate('SettingsStack')}
-      imageSource={require('../assets/icons/settings-cog.png')}
-    />, [navigation]);
+  const leftHeaderButton = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => navigation.navigate('SettingsStack')}
+        imageSource={require('../assets/icons/settings-cog.png')}
+      />
+    ),
+    [navigation],
+  );
 
-  const rightHeaderButton = useMemo(() =>
-    <HeaderButton
-      onPress={() => navigation.navigate('AlertsStack')}
-      imageSource={require('../assets/icons/charts-icon.png')}
-      rightPadding={true}
-    />, [navigation]);
+  const rightHeaderButton = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => navigation.navigate('AlertsStack')}
+        imageSource={require('../assets/icons/charts-icon.png')}
+        rightPadding={true}
+      />
+    ),
+    [navigation],
+  );
 
-  const walletButton = useMemo(() =>
-    <View
-    onLayout={event => {
-      event.target.measure((x, y, width, height, pageX, pageY) => {
-        setPlasmaModalGapInPixels(height + pageY);
-      });
-    }}>
-      <ChooseWalletButton
-        title={currentWallet}
-        onPress={() => {setWalletsModalOpened(!isWalletsModalOpened);}}
-        disabled={false}
-        isModalOpened={isWalletsModalOpened}
-        isFromBottomToTop={false}
-        animDuration={200} />
-    </View>, [navigation, currentWallet, isWalletsModalOpened]);
+  const walletButton = useMemo(
+    () => (
+      <View
+        onLayout={event => {
+          event.target.measure((x, y, width, height, pageX, pageY) => {
+            setPlasmaModalGapInPixels(height + pageY);
+          });
+        }}>
+        <ChooseWalletButton
+          title={currentWallet}
+          onPress={() => {
+            setWalletsModalOpened(!isWalletsModalOpened);
+          }}
+          disabled={false}
+          isModalOpened={isWalletsModalOpened}
+          isFromBottomToTop={false}
+          animDuration={200}
+        />
+      </View>
+    ),
+    [currentWallet, isWalletsModalOpened],
+  );
 
   useEffect(() => {
     if (isWalletsModalOpened) {
       navigation.setOptions({
-          headerLeft: () => (<></>),
-          headerRight: () => (<></>),
+        headerLeft: undefined,
+        headerRight: () => <></>,
       });
     } else {
       navigation.setOptions({
-        headerLeft: () => (leftHeaderButton),
-        headerRight: () => (rightHeaderButton),
+        headerLeft: () => leftHeaderButton,
+        headerRight: () => rightHeaderButton,
       });
     }
     navigation.setOptions({
-      headerTitle: () => (walletButton),
+      headerTitle: () => walletButton,
     });
-  }, [leftHeaderButton, rightHeaderButton, walletButton, navigation, isWalletsModalOpened]);
+  }, [
+    leftHeaderButton,
+    rightHeaderButton,
+    walletButton,
+    navigation,
+    isWalletsModalOpened,
+  ]);
 
   const txListComponent = (
     <View>
-      <View
-        style={{
-          height: 70,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
-        <Text
-          style={{
-            paddingLeft: 19,
-            paddingBottom: 12,
-            paddingTop: 5,
-            fontFamily:
-              Platform.OS === 'ios'
-                ? 'Satoshi Variable'
-                : 'SatoshiVariable-Regular.ttf',
-            fontStyle: 'bold',
-            fontWeight: '700',
-            color: '#2E2E2E',
-            fontSize: 24,
-          }}>
-          Latest Transactions
-        </Text>
+      <View style={styles.txTitleContainer}>
+        <Text style={styles.txTitleText}>Latest Transactions</Text>
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
           <Canvas style={{height: 50, width: 80}}>
@@ -320,7 +322,12 @@ const Main: React.FC<Props> = props => {
   return (
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
-      <NewAmountView animatedProps={animatedHeaderHeight} currentWallet={currentWallet} openWallets={() => {setWalletsModalOpened(true);}}>
+      <NewAmountView
+        animatedProps={animatedHeaderHeight}
+        currentWallet={currentWallet}
+        openWallets={() => {
+          setWalletsModalOpened(true);
+        }}>
         <Animated.View style={animatedHeaderStyle}>
           <LineChart />
         </Animated.View>
@@ -357,16 +364,19 @@ const Main: React.FC<Props> = props => {
         isFromBottomToTop={false}
         animDuration={250}
         gapInPixels={plasmaModalGapInPixels}
-        contentBodySpecifiedStyle={{borderTopLeftRadius: 30, borderTopRightRadius: 30}}
-        renderBody={(isOpened: boolean, showAnim: boolean, animDelay: number, animDuration: number) =>
+        renderBody={(
+          isOpened: boolean,
+          showAnim: boolean,
+          animDelay: number,
+          animDuration: number,
+        ) => (
           <WalletsModalContent
-          currentWallet={currentWallet}
-          isOpened={isOpened}
-          showAnim={showAnim}
-          animDelay={animDelay}
-          animDuration={animDuration}
-        />
-        }
+            isOpened={isOpened}
+            showAnim={showAnim}
+            animDelay={animDelay}
+            animDuration={animDuration}
+          />
+        )}
       />
     </Animated.View>
   );
@@ -390,18 +400,36 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     height: 110,
   },
+  txTitleContainer: {
+    height: 70,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  txTitleText: {
+    paddingLeft: 19,
+    paddingBottom: 12,
+    paddingTop: 5,
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontWeight: '700',
+    color: '#2E2E2E',
+    fontSize: 24,
+  },
 });
 
 export const navigationOptions = (navigation: any) => {
   return {
     headerTitle: () => (
       <ChooseWalletButton
-      title={'Wallet Title'}
-      onPress={() => {}}
-      disabled={false}
-      isModalOpened={false}
-      isFromBottomToTop={false}
-      animDuration={200} />
+        title={'Wallet Title'}
+        onPress={() => {}}
+        disabled={false}
+        isModalOpened={false}
+        isFromBottomToTop={false}
+        animDuration={200}
+      />
     ),
     headerTransparent: true,
     headerLeft: () => (
