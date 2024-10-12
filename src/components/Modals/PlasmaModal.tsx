@@ -1,5 +1,5 @@
 import React, {ReactNode, useEffect, useState, useRef} from 'react';
-import {View, StyleSheet, Dimensions} from 'react-native';
+import {View, TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,6 +8,8 @@ import Animated, {
   ReduceMotion,
 } from 'react-native-reanimated';
 
+import {useAppSelector} from '../../store/hooks';
+
 interface Props {
   isOpened: boolean;
   close: () => void;
@@ -15,6 +17,7 @@ interface Props {
   animDuration: number;
   gapInPixels: number;
   backSpecifiedStyle?: {};
+  gapSpecifiedStyle?: {};
   contentBodySpecifiedStyle?: {};
   renderBody: (
     isOpened: boolean,
@@ -32,9 +35,14 @@ export default function PlasmaModal(props: Props) {
     animDuration,
     gapInPixels,
     backSpecifiedStyle,
+    gapSpecifiedStyle,
     contentBodySpecifiedStyle,
     renderBody,
   } = props;
+
+  const isInternetReachable = useAppSelector(
+    state => state.info.isInternetReachable,
+  );
 
   const contentBodyYPos = useSharedValue(0);
 
@@ -90,16 +98,32 @@ export default function PlasmaModal(props: Props) {
             {justifyContent: isFromBottomToTop ? 'flex-end' : 'flex-start'},
           ]}>
           <View style={[styles.back, backSpecifiedStyle]} />
-          <Animated.View style={[styles.gap, {flexBasis: gapInPixels}]} />
+          <Animated.View
+            style={[
+              styles.gap,
+              {
+                flexBasis: gapInPixels,
+                backgroundColor: isInternetReachable ? '#1162e6' : '#f36f56',
+              },
+              gapSpecifiedStyle,
+            ]}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{width: '100%', height: '100%'}}
+              onPress={() => close()}
+            />
+          </Animated.View>
           <Animated.View
             style={[
               styles.contentBody,
-              contentBodySpecifiedStyle,
               animatedContentBodyYPosStyle,
               {
                 flex: isFromBottomToTop ? 1 : 0,
                 height: Dimensions.get('screen').height - gapInPixels,
+                backgroundColor: isInternetReachable ? '#0d3d8a' : '#e06852',
               },
+              contentBodySpecifiedStyle,
             ]}>
             {renderBody(
               isOpened,
@@ -123,7 +147,6 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
     flexDirection: 'column',
-
     margin: 0,
     zIndex: 10,
   },
@@ -132,15 +155,17 @@ const styles = StyleSheet.create({
     top: 0,
     height: '100%',
     width: '100%',
+    backgroundColor: '#1162e6',
     zIndex: 0,
   },
   gap: {
-    backgroundColor: '#1162E6',
+    backgroundColor: '#1162e6',
     zIndex: 2,
   },
   contentBody: {
     width: '100%',
     backgroundColor: '#0d3d8a',
+    overflow: 'hidden',
     zIndex: 1,
   },
 });

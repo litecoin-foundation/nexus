@@ -8,6 +8,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
+  withDelay,
 } from 'react-native-reanimated';
 import {
   Canvas,
@@ -25,9 +27,9 @@ import Receive from '../components/Cards/Receive';
 import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
-import TransactionDetailModal from './../components/Modals/TransactionDetailModal';
 import PlasmaModal from './../components/Modals/PlasmaModal';
 import WalletsModalContent from './../components/Modals/WalletsModalContent';
+import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 import BottomSheet from '../components/BottomSheet';
@@ -67,9 +69,14 @@ const Main: React.FC<Props> = props => {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedTransaction, selectTransaction] = useState(null);
   const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
-  const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
+  // const [displayedTxs, setDisplayedTxs] = useState(transactions);
+  const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main wallet');
+
+  // console.log('Main');
+  // console.log(transactions);
+  // console.log(groupedTransactions);
 
   // Animation
   const translationY = useSharedValue(0);
@@ -163,30 +170,49 @@ const Main: React.FC<Props> = props => {
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
+  const buttonOpacity = useSharedValue(0);
+  const walletButtonOpacity = useSharedValue(0);
+
+  const animatedButton = useAnimatedStyle(() => {
+    return {
+      opacity: buttonOpacity.value,
+    };
+  });
+
+  const animatedWalletButton = useAnimatedStyle(() => {
+    return {
+      opacity: walletButtonOpacity.value,
+    };
+  });
+
   const leftHeaderButton = useMemo(
     () => (
-      <HeaderButton
-        onPress={() => navigation.navigate('SettingsStack')}
-        imageSource={require('../assets/icons/settings-cog.png')}
-      />
+      <Animated.View style={[{width: 'auto', height: 'auto'}, animatedButton]}>
+        <HeaderButton
+          onPress={() => navigation.navigate('SettingsStack')}
+          imageSource={require('../assets/icons/settings-cog.png')}
+        />
+      </Animated.View>
     ),
     [navigation],
   );
 
   const rightHeaderButton = useMemo(
     () => (
-      <HeaderButton
-        onPress={() => navigation.navigate('AlertsStack')}
-        imageSource={require('../assets/icons/charts-icon.png')}
-        rightPadding={true}
-      />
+      <Animated.View style={[{width: 'auto', height: 'auto'}, animatedButton]}>
+        <HeaderButton
+          onPress={() => navigation.navigate('AlertsStack')}
+          imageSource={require('../assets/icons/charts-icon.png')}
+          rightPadding={true}
+        />
+      </Animated.View>
     ),
     [navigation],
   );
 
   const walletButton = useMemo(
     () => (
-      <View
+      <Animated.View style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}
         onLayout={event => {
           event.target.measure((x, y, width, height, pageX, pageY) => {
             setPlasmaModalGapInPixels(height + pageY);
@@ -202,32 +228,66 @@ const Main: React.FC<Props> = props => {
           isFromBottomToTop={false}
           animDuration={200}
         />
-      </View>
+      </Animated.View>
     ),
     [currentWallet, isWalletsModalOpened],
   );
 
   useEffect(() => {
-    if (isWalletsModalOpened) {
-      navigation.setOptions({
-        headerLeft: undefined,
-        headerRight: () => <></>,
-      });
+    if (isWalletsModalOpened || isTxDetailModalOpened) {
+      buttonOpacity.value = withTiming(0, {duration: 150});
+
+      var fadingTimeout = setTimeout(() => {
+        navigation.setOptions({
+          headerLeft: undefined,
+          headerRight: undefined,
+        });
+      }, 150);
+
     } else {
+      buttonOpacity.value = withDelay(
+        150,
+        withTiming(1, {duration: 250}),
+      );
+
       navigation.setOptions({
         headerLeft: () => leftHeaderButton,
         headerRight: () => rightHeaderButton,
       });
     }
-    navigation.setOptions({
-      headerTitle: () => walletButton,
-    });
+
+    if (isTxDetailModalOpened) {
+      walletButtonOpacity.value = withTiming(0, {duration: 150});
+
+      var walletButtonFadingTimeout = setTimeout(() => {
+        navigation.setOptions({
+          headerTitle: () => <></>,
+        });
+      }, 150);
+    } else {
+
+      walletButtonOpacity.value = withDelay(
+        150,
+        withTiming(1, {duration: 250}),
+      );
+
+      navigation.setOptions({
+        headerTitle: () => walletButton,
+      });
+    }
+
+    return () => {
+      clearTimeout(fadingTimeout);
+      clearTimeout(walletButtonFadingTimeout);
+    };
   }, [
     leftHeaderButton,
     rightHeaderButton,
     walletButton,
     navigation,
     isWalletsModalOpened,
+    isTxDetailModalOpened,
+    buttonOpacity,
   ]);
 
   const txListComponent = (
@@ -253,7 +313,7 @@ const Main: React.FC<Props> = props => {
         scrollOffset={scrollOffset}
         onPress={data => {
           selectTransaction(data);
-          setTxDetailModalVisible(true);
+          setTxDetailModalOpened(true);
         }}
         transactions={displayedTxs}
       />
@@ -347,13 +407,34 @@ const Main: React.FC<Props> = props => {
         receiveViewComponent={<Receive />}
       />
 
-      <TransactionDetailModal
-        isVisible={isTxDetailModalVisible}
+      <PlasmaModal
+        isOpened={isTxDetailModalOpened}
         close={() => {
-          setTxDetailModalVisible(false);
+          setTxDetailModalOpened(false);
         }}
-        transaction={selectedTransaction}
-        navigate={navigation.navigate}
+        isFromBottomToTop={true}
+        animDuration={250}
+        gapInPixels={200}
+        backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
+        gapSpecifiedStyle={{backgroundColor: 'transparent'}}
+        contentBodySpecifiedStyle={{borderTopLeftRadius: 30, borderTopRightRadius: 30}}
+        renderBody={(
+          isOpened: boolean,
+          showAnim: boolean,
+          animDelay: number,
+          animDuration: number,
+        ) => (
+          <TxDetailModalContent
+            isOpened={isOpened}
+            close={() => {
+              setTxDetailModalOpened(false);
+            }}
+            showAnim={showAnim}
+            animDelay={animDelay}
+            animDuration={animDuration}
+            transaction={selectedTransaction}
+          />
+        )}
       />
 
       <PlasmaModal
@@ -364,6 +445,7 @@ const Main: React.FC<Props> = props => {
         isFromBottomToTop={false}
         animDuration={250}
         gapInPixels={plasmaModalGapInPixels}
+        backSpecifiedStyle={{backgroundColor: 'transparent'}}
         renderBody={(
           isOpened: boolean,
           showAnim: boolean,

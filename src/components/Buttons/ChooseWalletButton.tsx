@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import Svg, {Path} from 'react-native-svg';
 
+import {useAppSelector} from '../../store/hooks';
+
 interface Props {
   title: string;
   onPress(): void;
@@ -31,6 +33,11 @@ const ChooseWalletButton: React.FC<Props> = props => {
     isFromBottomToTop,
     animDuration,
   } = props;
+
+  const isInternetReachable = useAppSelector(
+    state => state.info.isInternetReachable,
+  );
+  const buttonColor = isInternetReachable ? '#0d3d8a' : '#e06852';
 
   const rotateArrowAnim = useRef(new Animated.Value(0)).current;
   const rotateArrow = () => {
@@ -152,7 +159,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
               style={styles.boxSvg}
               viewBox="0 0 114 20"
               preserveAspectRatio="none"
-              fill="#0d3d8a">
+              fill={buttonColor}>
               <Path d="M 0 20 q 7 0 7 -7 l 0 -6 q 0 -7 7 -7 l 86 0 q 7 0 7 7 l 0 6 q 0 7 7 7 l -114 0" />
             </Svg>
           </>
@@ -162,7 +169,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
               style={styles.boxSvg}
               viewBox="0 0 100 20"
               preserveAspectRatio="none"
-              fill="#0d3d8a">
+              fill={buttonColor}>
               <Path d="M 10 20 l -3 0 q -7 0 -7 -7 l 0 -6 q 0 -7 7 -7 l 13 0 l 60 0 l 13 0 q 7 0 7 7 l 0 6 q 0 7 -7 7 l -73 0" />
             </Svg>
           </>
