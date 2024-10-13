@@ -42,22 +42,13 @@ const Send: React.FC<Props> = props => {
   const padOpacity = useSharedValue(0);
   const detailsOpacity = useSharedValue(1);
 
+  // qr code scanner result handler
   useEffect(() => {
     if (route.params?.scanData) {
       handleScanCallback(route.params?.scanData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.params?.scanData]);
-
-  useEffect(() => {
-    if (amountPickerActive) {
-      padOpacity.value = withTiming(1, {duration: 400});
-    } else {
-      padOpacity.value = withTiming(0, {}, () => {
-        detailsOpacity.value = withTiming(1, {duration: 200});
-      });
-    }
-  }, [amountPickerActive, padOpacity]);
 
   const handleScan = () => {
     navigation.navigate('Scan', {returnRoute: 'Main'});
@@ -72,6 +63,7 @@ const Send: React.FC<Props> = props => {
     }
   };
 
+  // validates data before sending!
   const validate = async data => {
     try {
       // handle BIP21 litecoin URI
@@ -118,6 +110,17 @@ const Send: React.FC<Props> = props => {
       dispatch(updateFiatAmount(value));
     }
   };
+
+  // animation
+  useEffect(() => {
+    if (amountPickerActive) {
+      padOpacity.value = withTiming(1, {duration: 400});
+    } else {
+      padOpacity.value = withTiming(0, {}, () => {
+        detailsOpacity.value = withTiming(1, {duration: 200});
+      });
+    }
+  }, [amountPickerActive, detailsOpacity, padOpacity]);
 
   return (
     <View style={styles.container}>

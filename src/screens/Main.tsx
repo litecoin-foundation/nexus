@@ -1,6 +1,5 @@
 import React, {useEffect, useState, useMemo} from 'react';
-import {View, StyleSheet, Text, Platform, Pressable} from 'react-native';
-import {useSelector} from 'react-redux';
+import {View, StyleSheet, Text, Platform, Pressable, Alert} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -35,8 +34,12 @@ import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
-
 import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
+import {decodeBIP21} from '../lib/utils/bip21';
+import {unsetDeeplink} from '../reducers/deeplinks';
+import {validate as validateLtcAddress} from '../lib/utils/validate';
+import {updateAmount} from '../reducers/input';
+import SendModal from '../components/Modals/SendModal';
 
 const fontFamily =
   Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
@@ -61,22 +64,71 @@ const Main: React.FC<Props> = props => {
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
-  const transactions = useSelector(state => txDetailSelector(state));
+
+  const transactions = useAppSelector(state => txDetailSelector(state));
+  const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks);
   const groupedTransactions = groupTransactions(transactions);
 
   const dispatch = useAppDispatch();
 
   const [activeTab, setActiveTab] = useState(0);
+  const [isSendModalTriggered, triggerSendModal] = useState<boolean>(false);
   const [selectedTransaction, selectTransaction] = useState(null);
   const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
-  // const [displayedTxs, setDisplayedTxs] = useState(transactions);
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main wallet');
 
-  // console.log('Main');
-  // console.log(transactions);
-  // console.log(groupedTransactions);
+  // Deeplink handler
+  useEffect(() => {
+    if (deeplinkSet) {
+      validate(uri);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Deeplink validator
+  const validate = async data => {
+    try {
+      // handle BIP21 litecoin URI
+      if (data.startsWith('litecoin:')) {
+        const decoded = decodeBIP21(data);
+        const valid = await validateLtcAddress(decoded.address);
+
+        // BIP21 validation
+        if (!valid) {
+          throw new Error('URI');
+        }
+
+        // If additional data included, set amount/address
+        if (decoded.options.amount) {
+          // setAmount(decoded.options.amount);
+          dispatch(updateAmount(decoded.options.amount));
+        }
+        if (decoded.options.message) {
+          // setDescription(decoded.options.message);
+        }
+        // setAddress(decoded.address);
+
+        return;
+      }
+    } catch (error) {
+      throw new Error(String(error));
+    }
+  };
+
+  // Deeplink payment logic
+  const handleConfirmSend: () => void = async () => {
+    try {
+      // await dispatch(sendOnchainPayment(address, amount));
+      // dispatch(unsetDeeplink());
+      // triggerSendModal(false);
+      // navigation.navigate('Sent', {amount, address});
+    } catch (error: unknown) {
+      Alert.alert('Payment Failed', String(error));
+      return;
+    }
+  };
 
   // Animation
   const translationY = useSharedValue(0);
@@ -166,7 +218,7 @@ const Main: React.FC<Props> = props => {
         ),
       });
     }
-  }, [activeTab]);
+  }, [activeTab, expandHeaderOnButtonPress, navigation]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
@@ -194,7 +246,7 @@ const Main: React.FC<Props> = props => {
         />
       </Animated.View>
     ),
-    [navigation],
+    [animatedButton, navigation],
   );
 
   const rightHeaderButton = useMemo(
@@ -207,12 +259,13 @@ const Main: React.FC<Props> = props => {
         />
       </Animated.View>
     ),
-    [navigation],
+    [animatedButton, navigation],
   );
 
   const walletButton = useMemo(
     () => (
-      <Animated.View style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}
+      <Animated.View
+        style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}
         onLayout={event => {
           event.target.measure((x, y, width, height, pageX, pageY) => {
             setPlasmaModalGapInPixels(height + pageY);
@@ -230,7 +283,7 @@ const Main: React.FC<Props> = props => {
         />
       </Animated.View>
     ),
-    [currentWallet, isWalletsModalOpened],
+    [animatedWalletButton, currentWallet, isWalletsModalOpened],
   );
 
   useEffect(() => {
@@ -243,12 +296,8 @@ const Main: React.FC<Props> = props => {
           headerRight: undefined,
         });
       }, 150);
-
     } else {
-      buttonOpacity.value = withDelay(
-        150,
-        withTiming(1, {duration: 250}),
-      );
+      buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
 
       navigation.setOptions({
         headerLeft: () => leftHeaderButton,
@@ -265,7 +314,6 @@ const Main: React.FC<Props> = props => {
         });
       }, 150);
     } else {
-
       walletButtonOpacity.value = withDelay(
         150,
         withTiming(1, {duration: 250}),
@@ -288,6 +336,7 @@ const Main: React.FC<Props> = props => {
     isWalletsModalOpened,
     isTxDetailModalOpened,
     buttonOpacity,
+    walletButtonOpacity,
   ]);
 
   const txListComponent = (
@@ -417,7 +466,10 @@ const Main: React.FC<Props> = props => {
         gapInPixels={200}
         backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
         gapSpecifiedStyle={{backgroundColor: 'transparent'}}
-        contentBodySpecifiedStyle={{borderTopLeftRadius: 30, borderTopRightRadius: 30}}
+        contentBodySpecifiedStyle={{
+          borderTopLeftRadius: 30,
+          borderTopRightRadius: 30,
+        }}
         renderBody={(
           isOpened: boolean,
           showAnim: boolean,
@@ -459,6 +511,17 @@ const Main: React.FC<Props> = props => {
             animDuration={animDuration}
           />
         )}
+      />
+
+      <SendModal
+        isVisible={isSendModalTriggered}
+        handleConfirm={() => handleConfirmSend()}
+        close={() => {
+          triggerSendModal(false);
+          dispatch(unsetDeeplink());
+        }}
+        amount={32}
+        address={'fdsfdsfdsfds'}
       />
     </Animated.View>
   );

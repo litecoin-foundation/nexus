@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   TextInput,
@@ -17,8 +17,10 @@ interface Props {
 const AddressField: React.FC<Props> = props => {
   const {address, onScanPress, onChangeText} = props;
 
+  const [height, setHeight] = useState(53);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {height: Math.max(53, height)}]}>
       <TextInput
         placeholderTextColor="#dbdbdb"
         placeholder="Enter a Litecoin Address"
@@ -30,6 +32,9 @@ const AddressField: React.FC<Props> = props => {
         blurOnSubmit={true}
         enterKeyHint={'done'}
         multiline={true}
+        onContentSizeChange={event => {
+          setHeight(event.nativeEvent.contentSize.height + 20);
+        }}
       />
 
       <TouchableHighlight style={styles.closeContainer} onPress={onScanPress}>
@@ -61,6 +66,8 @@ const styles = StyleSheet.create({
     color: '#20BB74',
     fontSize: 18,
     maxWidth: 310,
+
+    paddingVertical: 13,
   },
   closeContainer: {
     right: 0,
