@@ -38,6 +38,7 @@ interface ITransactions {
 
 interface IData {
   hash: string;
+  blockHeight: number,
   amount: number;
   confs: number;
   day: string;
@@ -46,6 +47,7 @@ interface IData {
   sent: boolean;
   time: Date;
   addresses: string[];
+  inputTxs: string[];
   timestamp: number;
 }
 

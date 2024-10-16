@@ -39,6 +39,15 @@ const explorers = [
     tx: 'https://litecoinblockexplorer.net/tx/',
     address: 'https://litecoinblockexplorer.net/address/',
   },
+  {
+    key: 'MWEB Explorer',
+    name: 'MWEB Explorer',
+    url: 'https://www.mwebexplorer.com/',
+    base_url: 'https://litecoinspace.org/',
+    tx: 'https://litecoinspace.org/tx/',
+    address: 'https://litecoinspace.org/address/',
+    block: 'https://www.mwebexplorer.com/blocks/block/',
+  },
 ];
 
 export default explorers;

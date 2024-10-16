@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useMemo} from 'react';
+import React, {useEffect, useState, useRef, useMemo} from 'react';
 import {View, StyleSheet, Text, Platform, Pressable, Alert} from 'react-native';
 import Animated, {
   interpolate,
@@ -9,6 +9,7 @@ import Animated, {
   withSpring,
   withTiming,
   withDelay,
+  // concat,
 } from 'react-native-reanimated';
 import {
   Canvas,
@@ -73,11 +74,29 @@ const Main: React.FC<Props> = props => {
 
   const [activeTab, setActiveTab] = useState(0);
   const [isSendModalTriggered, triggerSendModal] = useState<boolean>(false);
-  const [selectedTransaction, selectTransaction] = useState(null);
+  const [selectedTransaction, selectTransaction] = useState<any>({});
   const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main wallet');
+
+  function swipeToPrevTx() {
+    if (selectedTransaction) {
+      if (selectedTransaction.hasOwnProperty('index')) {
+        const newTxIndex = selectedTransaction.index > 0 ? selectedTransaction.index - 1 : transactions.length - 1;
+        selectTransaction(transactions[newTxIndex]);
+      }
+    }
+  }
+
+  function swipeToNextTx() {
+    if (selectedTransaction) {
+      if (selectedTransaction.hasOwnProperty('index')) {
+        const newTxIndex = selectedTransaction.index < transactions.length - 1 ? selectedTransaction.index + 1 : 0;
+        selectTransaction(transactions[newTxIndex]);
+      }
+    }
+  }
 
   // Deeplink handler
   useEffect(() => {
@@ -194,8 +213,9 @@ const Main: React.FC<Props> = props => {
   // change headerLeft button based on if card is open
   // if transaction list is shown, show settings button
   // if < arrow shown, pressing closes the active card
-  useEffect(() => {
-    const navigationBarPress = (
+
+  const navigationBarPress = useMemo(
+    () => (
       <HeaderButton
         onPress={() => {
           expandHeaderOnButtonPress();
@@ -203,22 +223,34 @@ const Main: React.FC<Props> = props => {
         }}
         imageSource={require('../assets/images/back-icon.png')}
       />
-    );
+    ),
+    /* eslint-disable react-hooks/exhaustive-deps */
+    [],
+  );
+
+  const settingsBarPress = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => navigation.navigate('SettingsStack')}
+        imageSource={require('../assets/icons/settings-cog.png')}
+      />
+    ),
+    /* eslint-disable react-hooks/exhaustive-deps */
+    [],
+  );
+
+  useEffect(() => {
     if (activeTab !== 0) {
       navigation.setOptions({
         headerLeft: () => navigationBarPress,
       });
     } else {
       navigation.setOptions({
-        headerLeft: () => (
-          <HeaderButton
-            onPress={() => navigation.navigate('SettingsStack')}
-            imageSource={require('../assets/icons/settings-cog.png')}
-          />
-        ),
+        headerLeft: () => settingsBarPress,
       });
     }
-  }, [activeTab, expandHeaderOnButtonPress, navigation]);
+  /* eslint-disable react-hooks/exhaustive-deps */
+  }, [activeTab, navigation]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
@@ -262,6 +294,18 @@ const Main: React.FC<Props> = props => {
     [animatedButton, navigation],
   );
 
+  const walletButtonAnimDuration = 200;
+  const rotateArrowAnim = useSharedValue(0);
+  const rotateArrow = () => {
+    rotateArrowAnim.value = withTiming(isWalletsModalOpened ? 0 : 1, {duration: walletButtonAnimDuration});
+  };
+  const animatedWalletButtonArrowStyle = useAnimatedProps(() => {
+    const spinIterpolation = interpolate(rotateArrowAnim.value, [0, 1], [270, 90]);
+    return {
+      transform: [{rotate: `${spinIterpolation}deg`}],
+    };
+  });
+
   const walletButton = useMemo(
     () => (
       <Animated.View
@@ -279,18 +323,24 @@ const Main: React.FC<Props> = props => {
           disabled={false}
           isModalOpened={isWalletsModalOpened}
           isFromBottomToTop={false}
-          animDuration={200}
+          animDuration={walletButtonAnimDuration}
+          rotateArrow={rotateArrow}
+          arrowSpinAnim={animatedWalletButtonArrowStyle}
         />
       </Animated.View>
     ),
     [animatedWalletButton, currentWallet, isWalletsModalOpened],
   );
 
+  const fadingTimeout = useRef<NodeJS.Timeout>();
+  const walletButtonFadingTimeout = useRef<NodeJS.Timeout>();
+
   useEffect(() => {
     if (isWalletsModalOpened || isTxDetailModalOpened) {
+
       buttonOpacity.value = withTiming(0, {duration: 150});
 
-      var fadingTimeout = setTimeout(() => {
+      fadingTimeout.current = setTimeout(() => {
         navigation.setOptions({
           headerLeft: undefined,
           headerRight: undefined,
@@ -308,7 +358,7 @@ const Main: React.FC<Props> = props => {
     if (isTxDetailModalOpened) {
       walletButtonOpacity.value = withTiming(0, {duration: 150});
 
-      var walletButtonFadingTimeout = setTimeout(() => {
+      walletButtonFadingTimeout.current = setTimeout(() => {
         navigation.setOptions({
           headerTitle: () => <></>,
         });
@@ -325,8 +375,8 @@ const Main: React.FC<Props> = props => {
     }
 
     return () => {
-      clearTimeout(fadingTimeout);
-      clearTimeout(walletButtonFadingTimeout);
+      clearTimeout(fadingTimeout.current);
+      clearTimeout(walletButtonFadingTimeout.current);
     };
   }, [
     leftHeaderButton,
@@ -433,10 +483,7 @@ const Main: React.FC<Props> = props => {
       style={[styles.container, animatedHeaderContainerBackground]}>
       <NewAmountView
         animatedProps={animatedHeaderHeight}
-        currentWallet={currentWallet}
-        openWallets={() => {
-          setWalletsModalOpened(true);
-        }}>
+        currentWallet={currentWallet}>
         <Animated.View style={animatedHeaderStyle}>
           <LineChart />
         </Animated.View>
@@ -462,19 +509,21 @@ const Main: React.FC<Props> = props => {
           setTxDetailModalOpened(false);
         }}
         isFromBottomToTop={true}
+        isSwiperActive={true}
         animDuration={250}
         gapInPixels={200}
         backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
         gapSpecifiedStyle={{backgroundColor: 'transparent'}}
-        contentBodySpecifiedStyle={{
-          borderTopLeftRadius: 30,
-          borderTopRightRadius: 30,
-        }}
+        contentBodySpecifiedStyle={{backgroundColor: 'transparent'}}
+        swipeToPrevTx={swipeToPrevTx}
+        swipeToNextTx={swipeToNextTx}
         renderBody={(
           isOpened: boolean,
           showAnim: boolean,
           animDelay: number,
           animDuration: number,
+          cardOpacityAnim: any,
+          prevNextCardOpacityAnim: any,
         ) => (
           <TxDetailModalContent
             isOpened={isOpened}
@@ -485,6 +534,8 @@ const Main: React.FC<Props> = props => {
             animDelay={animDelay}
             animDuration={animDuration}
             transaction={selectedTransaction}
+            cardOpacityAnim={cardOpacityAnim}
+            prevNextCardOpacityAnim={prevNextCardOpacityAnim}
           />
         )}
       />
@@ -498,6 +549,7 @@ const Main: React.FC<Props> = props => {
         animDuration={250}
         gapInPixels={plasmaModalGapInPixels}
         backSpecifiedStyle={{backgroundColor: 'transparent'}}
+        rotateWalletButtonArrow={rotateArrow}
         renderBody={(
           isOpened: boolean,
           showAnim: boolean,
@@ -574,6 +626,8 @@ export const navigationOptions = (navigation: any) => {
         isModalOpened={false}
         isFromBottomToTop={false}
         animDuration={200}
+        rotateArrow={() => {}}
+        arrowSpinAnim={undefined}
       />
     ),
     headerTransparent: true,

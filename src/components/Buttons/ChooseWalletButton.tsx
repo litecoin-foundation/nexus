@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -7,8 +7,8 @@ import {
   Platform,
   Dimensions,
   Image,
-  Animated,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import Svg, {Path} from 'react-native-svg';
 
 import {useAppSelector} from '../../store/hooks';
@@ -21,6 +21,8 @@ interface Props {
   isModalOpened: boolean;
   isFromBottomToTop: boolean;
   animDuration: number;
+  rotateArrow(): void;
+  arrowSpinAnim: any;
 }
 
 const ChooseWalletButton: React.FC<Props> = props => {
@@ -32,26 +34,14 @@ const ChooseWalletButton: React.FC<Props> = props => {
     isModalOpened,
     isFromBottomToTop,
     animDuration,
+    rotateArrow,
+    arrowSpinAnim,
   } = props;
 
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
   const buttonColor = isInternetReachable ? '#0d3d8a' : '#e06852';
-
-  const rotateArrowAnim = useRef(new Animated.Value(0)).current;
-  const rotateArrow = () => {
-    Animated.timing(rotateArrowAnim, {
-      toValue: isModalOpened ? 0 : 1,
-      duration: animDuration,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const spin = rotateArrowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['270deg', '90deg'],
-  });
 
   const [isCurvesVisible, setCurvesVisible] = useState(false);
   useEffect(() => {
@@ -144,9 +134,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
         <Animated.View
           style={[
             styles.boxArrow,
-            {
-              transform: [{rotate: spin}],
-            },
+            arrowSpinAnim,
           ]}>
           <Image
             style={styles.boxArrowIcon}
