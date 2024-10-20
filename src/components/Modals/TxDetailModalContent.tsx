@@ -1,10 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Dimensions} from 'react-native';
-import Animated from 'react-native-reanimated';
+import React, {useEffect, useLayoutEffect, useState, useCallback} from 'react';
+import {View, Text, StyleSheet, Dimensions, TouchableOpacity} from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import {useNavigation} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
-import {formatTxDate} from '../../lib/utils/date';
+import {v4 as uuidv4} from 'uuid';
 
+import {formatTxDate} from '../../lib/utils/date';
 import {
   subunitSelector,
   subunitSymbolSelector,
@@ -17,18 +22,17 @@ import TableCell from '../Cells/TableCell';
 import BlueButton from '../Buttons/BlueButton';
 
 interface Props {
-    isOpened: boolean;
     close: () => void;
-    showAnim: boolean;
-    animDelay: number;
-    animDuration: number;
     transaction: any;
+    txsNum: number;
+    setTransactionIndex: (txIndex: number) => void;
+    cardTranslateAnim: any;
     cardOpacityAnim: any;
     prevNextCardOpacityAnim: any;
 }
 
 export default function TxDetailModalContent(props: Props) {
-  const {isOpened, close, showAnim, animDelay, animDuration, transaction, cardOpacityAnim, prevNextCardOpacityAnim} = props;
+  const {close, transaction, txsNum, setTransactionIndex, cardTranslateAnim, cardOpacityAnim, prevNextCardOpacityAnim} = props;
   const navigation = useNavigation<any>();
 
   // when no txs has been selected the transaction prop is null
@@ -94,64 +98,130 @@ export default function TxDetailModalContent(props: Props) {
     if (!fromAddress) {
       getSender();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromAddress]);
 
   const toAddress = transaction.addresses[0];
   const toAddressSize = toAddress.length <= 75 ? Dimensions.get('screen').height * 0.025 : Dimensions.get('screen').height * 0.02;
 
+  const fadeNewDetailsOpacity = useSharedValue(1);
+  const fadeNewDetailsIn = useAnimatedStyle(() => {
+    return {
+      opacity: fadeNewDetailsOpacity.value,
+    };
+  });
+  useLayoutEffect(() => {
+    fadeNewDetailsOpacity.value = 0;
+  }, [transaction, fadeNewDetailsOpacity]);
+  useEffect(() => {
+    fadeNewDetailsOpacity.value = withTiming(1, {duration: 500});
+  }, [transaction, fadeNewDetailsOpacity]);
+
+  // const [activeBulletNum, setActiveBulletNum] = useState(transaction.index + 1);
+  const activeBulletNum = transaction.index + 1;
+
+  const RenderPagination = useCallback(() => {
+
+    const buttons: any = [];
+    const maxBulletsNum = 5;
+    const bulletsNum = txsNum > maxBulletsNum ? maxBulletsNum : txsNum;
+
+    // const maxOffset = txsNum > maxBulletsNum ? txsNum - maxBulletsNum : 0;
+    const middleRightOffset = txsNum > maxBulletsNum ? Math.ceil(maxBulletsNum / 2) - 1 : 0;
+    // const middleLeftOffset = maxBulletsNum - 1 - middleRightOffset;
+    let leftOffset = activeBulletNum > maxBulletsNum - middleRightOffset ? activeBulletNum - maxBulletsNum + middleRightOffset : 0;
+    if (activeBulletNum === txsNum) {
+      leftOffset = leftOffset - middleRightOffset;
+    }
+
+    for (let i = 1 + leftOffset; i <= bulletsNum + leftOffset; i++) {
+      const offsetOpacity = (1 / bulletsNum) * (txsNum - Math.abs(i - activeBulletNum));
+
+      let size = 0.65;
+      if (i === activeBulletNum) {
+        size = 0.9;
+      }
+      buttons.push(
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            // setActiveBulletNum(i);
+            setTransactionIndex(i - 1);
+          }}
+          style={styles.bulletTouchContainer}
+          key={uuidv4()}>
+          <View style={[styles.bullet, {opacity: offsetOpacity, transform: [{scale: size}]}]} />
+        </TouchableOpacity>
+      );
+    }
+
+    return buttons;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBulletNum]);
+
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.fakeCardLeft, prevNextCardOpacityAnim]} />
-      <Animated.View style={[styles.fakeCardRight, prevNextCardOpacityAnim]} />
-      <Animated.View style={[styles.body, cardOpacityAnim]}>
-        <View style={styles.modalHeaderContainer}>
-          <Text style={styles.modalHeaderTitle}>
-            Sent
-            <Text style={styles.modalHeaderSubtitle}>{' ' + cryptoAmount + amountSymbol}</Text>
-          </Text>
-          <GreyRoundButton onPress={() => close()} />
-        </View>
-        <View style={styles.fromToContainer}>
-          <View style={styles.fromContainer}>
-            <View style={styles.fromAndToIconContainer}>
-              <View style={styles.fromAndToIcon} />
-              <View style={styles.sentLine} />
-            </View>
-            <View style={styles.fromAndToTitlesContainer}>
-              <Text style={styles.fromAndToTitle}>From</Text>
-              <Text style={{...styles.fromAddressTitle, fontSize: fromAddressSize}}>{fromAddress}</Text>
-            </View>
-          </View>
-          <View style={styles.toContainer}>
-            <View style={styles.fromAndToIconContainer}>
-              <View style={styles.fromAndToIcon} />
-            </View>
-            <View style={styles.fromAndToTitlesContainer}>
-              <Text style={styles.fromAndToTitle}>To</Text>
-              <Text style={{...styles.toAddressTitle, fontSize: toAddressSize}}>{toAddress}</Text>
-            </View>
-          </View>
-        </View>
-        <TableCell
-          title="TIME & DATE"
-          value={dateString}
-        />
-        <TableCell title="AMOUNT IN FIAT" value={`${fiatAmount}`} />
-        <TableCell title="AMOUNT IN LTC" value={`${cryptoAmount}${amountSymbol}`} valueStyle={{color: '#2c72ff'}} />
-        <TableCell title="FEE" value={`${fee}${amountSymbol}`}/>
-        <View style={styles.buttonContainer}>
-          <BlueButton
-              value="View on Blockchain"
-              onPress={() => {
-                // close();
-                navigation.navigate('WebPage', {
-                  uri: currentExplorer,
-                });
-              }}
-          />
+    <>
+      <Animated.View style={styles.pagination} >
+        <View style={styles.paginationBullets}>
+          <RenderPagination />
         </View>
       </Animated.View>
-    </View>
+      <Animated.View style={[styles.container, cardTranslateAnim]}>
+        <Animated.View style={[styles.fakeCardLeft, prevNextCardOpacityAnim]} />
+        <Animated.View style={[styles.fakeCardRight, prevNextCardOpacityAnim]} />
+        <Animated.View style={[styles.body,cardOpacityAnim]}>
+          <Animated.View style={[styles.fadingContent, fadeNewDetailsIn]}>
+            <View style={styles.modalHeaderContainer}>
+              <Text style={styles.modalHeaderTitle}>
+                Sent
+                <Text style={styles.modalHeaderSubtitle}>{' ' + cryptoAmount + amountSymbol}</Text>
+              </Text>
+              <GreyRoundButton onPress={() => close()} />
+            </View>
+            <View style={styles.fromToContainer}>
+              <View style={styles.fromContainer}>
+                <View style={styles.fromAndToIconContainer}>
+                  <View style={styles.fromAndToIcon} />
+                  <View style={styles.sentLine} />
+                </View>
+                <View style={styles.fromAndToTitlesContainer}>
+                  <Text style={styles.fromAndToTitle}>From</Text>
+                  <Text style={{...styles.fromAddressTitle, fontSize: fromAddressSize}}>{fromAddress}</Text>
+                </View>
+              </View>
+              <View style={styles.toContainer}>
+                <View style={styles.fromAndToIconContainer}>
+                  <View style={styles.fromAndToIcon} />
+                </View>
+                <View style={styles.fromAndToTitlesContainer}>
+                  <Text style={styles.fromAndToTitle}>To</Text>
+                  <Text style={{...styles.toAddressTitle, fontSize: toAddressSize}}>{toAddress}</Text>
+                </View>
+              </View>
+            </View>
+            <TableCell
+              title="TIME & DATE"
+              value={dateString}
+            />
+            <TableCell title="AMOUNT IN FIAT" value={`${fiatAmount}`} />
+            <TableCell title="AMOUNT IN LTC" value={`${cryptoAmount}${amountSymbol}`} valueStyle={styles.ltcNumColor} />
+            <TableCell title="FEE" value={`${fee}${amountSymbol}`}/>
+            <View style={styles.buttonContainer}>
+              <BlueButton
+                  value="View on Blockchain"
+                  onPress={() => {
+                    // close();
+                    navigation.navigate('WebPage', {
+                      uri: currentExplorer,
+                    });
+                  }}
+              />
+            </View>
+            <View style={styles.paginationTape} />
+          </Animated.View>
+        </Animated.View>
+      </Animated.View>
+    </>
   );
 }
 
@@ -165,8 +235,10 @@ const styles = StyleSheet.create({
   body: {
     height: '100%',
     width: '100%',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
+    borderTopRightRadius: Dimensions.get('screen').height * 0.04,
+    borderBottomLeftRadius: Dimensions.get('screen').height * 0.02,
+    borderBottomRightRadius: Dimensions.get('screen').height * 0.02,
     backgroundColor: 'white',
     overflow: 'hidden',
   },
@@ -176,8 +248,10 @@ const styles = StyleSheet.create({
     right: '100%',
     height: '100%',
     width: '100%',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
+    borderTopRightRadius: Dimensions.get('screen').height * 0.04,
+    borderBottomLeftRadius: Dimensions.get('screen').height * 0.02,
+    borderBottomRightRadius: Dimensions.get('screen').height * 0.02,
     backgroundColor: 'white',
     overflow: 'hidden',
     zIndex: 1,
@@ -188,11 +262,51 @@ const styles = StyleSheet.create({
     left: '100%',
     height: '100%',
     width: '100%',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
+    borderTopRightRadius: Dimensions.get('screen').height * 0.04,
+    borderBottomLeftRadius: Dimensions.get('screen').height * 0.02,
+    borderBottomRightRadius: Dimensions.get('screen').height * 0.02,
     backgroundColor: 'white',
     overflow: 'hidden',
     zIndex: 1,
+  },
+  pagination: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    height: Dimensions.get('screen').height * 0.06,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  paginationTape: {
+    height: Dimensions.get('screen').height * 0.06,
+    width: '100%',
+    backgroundColor: '#f7f7f7',
+  },
+  paginationBullets: {
+    height: '100%',
+    width: '50%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  bulletTouchContainer: {
+    height: Dimensions.get('screen').height * 0.06,
+    width: Dimensions.get('screen').height * 0.04,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  bullet: {
+    height: Dimensions.get('screen').height * 0.02,
+    width: Dimensions.get('screen').height * 0.02,
+    borderRadius: Dimensions.get('screen').height * 0.01,
+    backgroundColor: '#2c72ff',
+  },
+  fadingContent: {
+    height: '100%',
+    width: '100%',
   },
   modalHeaderContainer: {
     backgroundColor: '#f7f7f7',
@@ -280,5 +394,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'center',
     padding: Dimensions.get('screen').height * 0.03,
+  },
+  ltcNumColor: {
+    color: '#2c72ff',
   },
 });

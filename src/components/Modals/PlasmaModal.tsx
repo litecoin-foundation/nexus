@@ -1,5 +1,5 @@
 import React, {ReactNode, useEffect, useState, useRef} from 'react';
-import {View, TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
+import {TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedProps,
@@ -37,6 +37,7 @@ interface Props {
     showAnim: boolean,
     animDelay: number,
     animDuration: number,
+    cardTranslateAnim: any,
     cardOpacityAnim: any,
     prevNextCardOpacityAnim: any,
   ) => ReactNode;
@@ -87,19 +88,23 @@ export default function PlasmaModal(props: Props) {
   const prevNextCardOpacity = useSharedValue(0);
   const prevNextCardScale = useSharedValue(0.7);
 
-  function goPrevNextCard(isPrev) {
+  function goPrevNextCard(isPrev: boolean) {
     bodyTranslateX.value = withTiming(isPrev ? SCREEN_WIDTH : SCREEN_WIDTH * -1, {duration: SWIPE_CARDS_ANIM_DURATION});
     cardOpacity.value = withTiming(0, {duration: SWIPE_CARDS_ANIM_DURATION});
     prevNextCardOpacity.value = withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION});
     cardScale.value = withTiming(0.7, {duration: SWIPE_CARDS_ANIM_DURATION});
     prevNextCardScale.value = withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION});
 
+    // Error when using multiple withSequence so have to use setTimeout instead
+    // cardOpacity.value = withSequence(withTiming(0, {duration: SWIPE_CARDS_ANIM_DURATION}), 1);
+    // prevNextCardOpacity.value = withSequence(withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION}), 0);
+    // cardScale.value = withSequence(withTiming(0.7, {duration: SWIPE_CARDS_ANIM_DURATION}), 1);
+    // prevNextCardScale.value = withSequence(withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION}), 0.7);
+
     setTimeout(() => {
       bodyTranslateX.value = 0;
       cardOpacity.value = 1;
-      // cardOpacity.value = withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION});
       prevNextCardOpacity.value = 0;
-      // prevNextCardOpacity.value = withTiming(0, {duration: SWIPE_CARDS_ANIM_DURATION});
       cardScale.value = 1;
       prevNextCardScale.value = 0.7;
     }, SWIPE_CARDS_ANIM_DURATION);
@@ -137,7 +142,7 @@ export default function PlasmaModal(props: Props) {
 
   const swipeToNextTxTrigger = ({translationX, velocityX}: PanGestureHandlerEventPayload) => {
     'worklet';
-    const dragToss = 0.05;
+    const dragToss = 0.1;
     const destSnapPoint = translationX + bodyTranslateXStart.value + velocityX * dragToss;
 
     bodyTranslateX.value = withSpring(destSnapPoint, {
@@ -209,7 +214,7 @@ export default function PlasmaModal(props: Props) {
     })
     .simultaneousWithExternalGesture(panYGesture);
 
-  const animatedContentBodyTranslateStyle = useAnimatedStyle(() => {
+  const animatedContentBodyTranslateStyle = useAnimatedProps(() => {
     return {
       transform: [
         {translateX: bodyTranslateX.value},
@@ -305,7 +310,7 @@ export default function PlasmaModal(props: Props) {
               <Animated.View
                 style={[
                   styles.contentBody,
-                  animatedContentBodyTranslateStyle,
+                  // animatedContentBodyTranslateStyle,
                   {
                     flex: isFromBottomToTop ? 1 : 0,
                     height: Dimensions.get('screen').height - gapInPixels,
@@ -318,6 +323,7 @@ export default function PlasmaModal(props: Props) {
                   true,
                   contentBodyAnimDelay,
                   animDuration - 50,
+                  animatedContentBodyTranslateStyle,
                   animatedCardOpacityStyle,
                   animatedPrevNextCardOpacityStyle,
                 )}

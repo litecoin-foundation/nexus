@@ -80,6 +80,10 @@ const Main: React.FC<Props> = props => {
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main wallet');
 
+  function setTransactionIndex(newTxIndex: number) {
+    selectTransaction(transactions[newTxIndex]);
+  }
+
   function swipeToPrevTx() {
     if (selectedTransaction) {
       if (selectedTransaction.hasOwnProperty('index')) {
@@ -509,7 +513,7 @@ const Main: React.FC<Props> = props => {
           setTxDetailModalOpened(false);
         }}
         isFromBottomToTop={true}
-        isSwiperActive={true}
+        isSwiperActive={transactions.length > 1 ? true : false}
         animDuration={250}
         gapInPixels={200}
         backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
@@ -518,22 +522,24 @@ const Main: React.FC<Props> = props => {
         swipeToPrevTx={swipeToPrevTx}
         swipeToNextTx={swipeToNextTx}
         renderBody={(
-          isOpened: boolean,
-          showAnim: boolean,
-          animDelay: number,
-          animDuration: number,
+          _,
+          __,
+          ___,
+          ____,
+          cardTranslateAnim: any,
           cardOpacityAnim: any,
           prevNextCardOpacityAnim: any,
         ) => (
           <TxDetailModalContent
-            isOpened={isOpened}
             close={() => {
               setTxDetailModalOpened(false);
             }}
-            showAnim={showAnim}
-            animDelay={animDelay}
-            animDuration={animDuration}
             transaction={selectedTransaction}
+            txsNum={transactions.length}
+            setTransactionIndex={(txIndex: number) => {
+              setTransactionIndex(txIndex);
+            }}
+            cardTranslateAnim={cardTranslateAnim}
             cardOpacityAnim={cardOpacityAnim}
             prevNextCardOpacityAnim={prevNextCardOpacityAnim}
           />
