@@ -117,25 +117,21 @@ export default function TxDetailModalContent(props: Props) {
     fadeNewDetailsOpacity.value = withTiming(1, {duration: 500});
   }, [transaction, fadeNewDetailsOpacity]);
 
-  // const [activeBulletNum, setActiveBulletNum] = useState(transaction.index + 1);
   const activeBulletNum = transaction.index + 1;
 
   const RenderPagination = useCallback(() => {
-
     const buttons: any = [];
     const maxBulletsNum = 5;
     const bulletsNum = txsNum > maxBulletsNum ? maxBulletsNum : txsNum;
 
-    // const maxOffset = txsNum > maxBulletsNum ? txsNum - maxBulletsNum : 0;
     const middleRightOffset = txsNum > maxBulletsNum ? Math.ceil(maxBulletsNum / 2) - 1 : 0;
-    // const middleLeftOffset = maxBulletsNum - 1 - middleRightOffset;
     let leftOffset = activeBulletNum > maxBulletsNum - middleRightOffset ? activeBulletNum - maxBulletsNum + middleRightOffset : 0;
-    if (activeBulletNum === txsNum) {
-      leftOffset = leftOffset - middleRightOffset;
+    if (activeBulletNum > txsNum - middleRightOffset) {
+      leftOffset = txsNum - maxBulletsNum;
     }
 
     for (let i = 1 + leftOffset; i <= bulletsNum + leftOffset; i++) {
-      const offsetOpacity = (1 / bulletsNum) * (txsNum - Math.abs(i - activeBulletNum));
+      const offsetOpacity = (1 / bulletsNum) * (bulletsNum - Math.abs(i - activeBulletNum));
 
       let size = 0.65;
       if (i === activeBulletNum) {
@@ -145,7 +141,6 @@ export default function TxDetailModalContent(props: Props) {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            // setActiveBulletNum(i);
             setTransactionIndex(i - 1);
           }}
           style={styles.bulletTouchContainer}
@@ -210,7 +205,6 @@ export default function TxDetailModalContent(props: Props) {
               <BlueButton
                   value="View on Blockchain"
                   onPress={() => {
-                    // close();
                     navigation.navigate('WebPage', {
                       uri: currentExplorer,
                     });
