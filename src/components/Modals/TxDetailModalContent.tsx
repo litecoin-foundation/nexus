@@ -89,7 +89,7 @@ export default function TxDetailModalContent(props: Props) {
         if (prevoutAddress.length <= 75) {
           setFromAddressSize(Dimensions.get('screen').height * 0.025);
         } else {
-          setFromAddressSize(Dimensions.get('screen').height * 0.02);
+          setFromAddressSize(Dimensions.get('screen').height * 0.019);
         }
 
         setFromAddress(prevoutAddress);
