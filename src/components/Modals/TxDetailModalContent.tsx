@@ -169,7 +169,7 @@ export default function TxDetailModalContent(props: Props) {
       <Animated.View style={[styles.container, cardTranslateAnim]}>
         <Animated.View style={[styles.fakeCardLeft, prevNextCardOpacityAnim]} />
         <Animated.View style={[styles.fakeCardRight, prevNextCardOpacityAnim]} />
-        <Animated.View style={[styles.body,cardOpacityAnim]}>
+        <Animated.View style={[styles.body, cardOpacityAnim]}>
           <Animated.View style={[styles.fadingContent, fadeNewDetailsIn]}>
             <View style={styles.modalHeaderContainer}>
               <Text style={styles.modalHeaderTitle}>
@@ -206,12 +206,12 @@ export default function TxDetailModalContent(props: Props) {
             <TableCell title="FEE" value={`${fee}${amountSymbol}`}/>
             <View style={styles.buttonContainer}>
               <BlueButton
-                  value="View on Blockchain"
-                  onPress={() => {
-                    navigation.navigate('WebPage', {
-                      uri: currentExplorer,
-                    });
-                  }}
+                value="View on Blockchain"
+                onPress={() => {
+                  navigation.navigate('WebPage', {
+                    uri: currentExplorer,
+                  });
+                }}
               />
             </View>
             <View style={styles.paginationTape} />
@@ -234,6 +234,8 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
     borderTopRightRadius: Dimensions.get('screen').height * 0.04,
+    borderBottomLeftRadius: Dimensions.get('screen').height * 0.01,
+    borderBottomRightRadius: Dimensions.get('screen').height * 0.01,
     backgroundColor: 'white',
     overflow: 'hidden',
   },
@@ -245,8 +247,9 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
     borderTopRightRadius: Dimensions.get('screen').height * 0.04,
-    backgroundColor: 'white',
-    overflow: 'hidden',
+    borderBottomLeftRadius: Dimensions.get('screen').height * 0.01,
+    borderBottomRightRadius: Dimensions.get('screen').height * 0.01,
+    backgroundColor: '#fff',
     zIndex: 1,
   },
   fakeCardRight: {
@@ -257,8 +260,9 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
     borderTopRightRadius: Dimensions.get('screen').height * 0.04,
-    backgroundColor: 'white',
-    overflow: 'hidden',
+    borderBottomLeftRadius: Dimensions.get('screen').height * 0.01,
+    borderBottomRightRadius: Dimensions.get('screen').height * 0.01,
+    backgroundColor: '#fff',
     zIndex: 1,
   },
   pagination: {
