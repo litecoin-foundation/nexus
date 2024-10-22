@@ -515,10 +515,9 @@ const Main: React.FC<Props> = props => {
         isFromBottomToTop={true}
         isSwiperActive={transactions.length > 1 ? true : false}
         animDuration={250}
-        gapInPixels={200}
+        gapInPixels={250}
         backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
         gapSpecifiedStyle={{backgroundColor: 'transparent'}}
-        contentBodySpecifiedStyle={{backgroundColor: 'transparent'}}
         swipeToPrevTx={swipeToPrevTx}
         swipeToNextTx={swipeToNextTx}
         renderBody={(
@@ -529,6 +528,7 @@ const Main: React.FC<Props> = props => {
           cardTranslateAnim: any,
           cardOpacityAnim: any,
           prevNextCardOpacityAnim: any,
+          paginationOpacityAnim: any,
         ) => (
           <TxDetailModalContent
             close={() => {
@@ -542,6 +542,7 @@ const Main: React.FC<Props> = props => {
             cardTranslateAnim={cardTranslateAnim}
             cardOpacityAnim={cardOpacityAnim}
             prevNextCardOpacityAnim={prevNextCardOpacityAnim}
+            paginationOpacityAnim={paginationOpacityAnim}
           />
         )}
       />
@@ -561,12 +562,14 @@ const Main: React.FC<Props> = props => {
           showAnim: boolean,
           animDelay: number,
           animDuration: number,
+          cardTranslateAnim: any,
         ) => (
           <WalletsModalContent
             isOpened={isOpened}
             showAnim={showAnim}
             animDelay={animDelay}
             animDuration={animDuration}
+            cardTranslateAnim={cardTranslateAnim}
           />
         )}
       />

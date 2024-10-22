@@ -29,10 +29,11 @@ interface Props {
     cardTranslateAnim: any;
     cardOpacityAnim: any;
     prevNextCardOpacityAnim: any;
+    paginationOpacityAnim: any;
 }
 
 export default function TxDetailModalContent(props: Props) {
-  const {close, transaction, txsNum, setTransactionIndex, cardTranslateAnim, cardOpacityAnim, prevNextCardOpacityAnim} = props;
+  const {close, transaction, txsNum, setTransactionIndex, cardTranslateAnim, cardOpacityAnim, prevNextCardOpacityAnim, paginationOpacityAnim} = props;
   const navigation = useNavigation<any>();
 
   // when no txs has been selected the transaction prop is null
@@ -76,33 +77,37 @@ export default function TxDetailModalContent(props: Props) {
   const [fromAddress, setFromAddress] = useState(null);
 
   async function getSender() {
-    const req = await fetch(
-      `https://litecoinspace.org/api/tx/${transaction.hash}`,
-    );
-    const data: any = await req.json();
+    try {
+      const req = await fetch(
+        `https://litecoinspace.org/api/tx/${transaction.hash}`,
+      );
+      const data: any = await req.json();
 
-    if (data.hasOwnProperty('vin')) {
-      const prevoutAddress = data.vin[0].prevout.scriptpubkey_address;
+      if (data.hasOwnProperty('vin')) {
+        const prevoutAddress = data.vin[0].prevout.scriptpubkey_address;
 
-      if (prevoutAddress.length <= 75) {
-        setFromAddressSize(Dimensions.get('screen').height * 0.025);
+        if (prevoutAddress.length <= 75) {
+          setFromAddressSize(Dimensions.get('screen').height * 0.025);
+        } else {
+          setFromAddressSize(Dimensions.get('screen').height * 0.02);
+        }
+
+        setFromAddress(prevoutAddress);
       } else {
-        setFromAddressSize(Dimensions.get('screen').height * 0.02);
+        throw new Error('No vin found.');
       }
-
-      setFromAddress(prevoutAddress);
+    } catch {
+      setFromAddress(null);
     }
   }
 
   useEffect(() => {
-    if (!fromAddress) {
-      getSender();
-    }
+    getSender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromAddress]);
+  }, [transaction]);
 
   const toAddress = transaction.addresses[0];
-  const toAddressSize = toAddress.length <= 75 ? Dimensions.get('screen').height * 0.025 : Dimensions.get('screen').height * 0.02;
+  const toAddressSize = toAddress.length <= 75 ? Dimensions.get('screen').height * 0.025 : Dimensions.get('screen').height * 0.019;
 
   const fadeNewDetailsOpacity = useSharedValue(1);
   const fadeNewDetailsIn = useAnimatedStyle(() => {
@@ -156,7 +161,7 @@ export default function TxDetailModalContent(props: Props) {
 
   return (
     <>
-      <Animated.View style={styles.pagination} >
+      <Animated.View style={[styles.pagination, paginationOpacityAnim]}>
         <View style={styles.paginationBullets}>
           <RenderPagination />
         </View>
@@ -169,7 +174,7 @@ export default function TxDetailModalContent(props: Props) {
             <View style={styles.modalHeaderContainer}>
               <Text style={styles.modalHeaderTitle}>
                 Sent
-                <Text style={styles.modalHeaderSubtitle}>{' ' + cryptoAmount + amountSymbol}</Text>
+                <Text style={styles.modalHeaderSubtitle}>{' ' + parseFloat(cryptoAmount).toFixed(2) + amountSymbol + ' (' + fiatAmount + ')'}</Text>
               </Text>
               <GreyRoundButton onPress={() => close()} />
             </View>
@@ -198,8 +203,6 @@ export default function TxDetailModalContent(props: Props) {
               title="TIME & DATE"
               value={dateString}
             />
-            <TableCell title="AMOUNT IN FIAT" value={`${fiatAmount}`} />
-            <TableCell title="AMOUNT IN LTC" value={`${cryptoAmount}${amountSymbol}`} valueStyle={styles.ltcNumColor} />
             <TableCell title="FEE" value={`${fee}${amountSymbol}`}/>
             <View style={styles.buttonContainer}>
               <BlueButton
@@ -231,8 +234,6 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
     borderTopRightRadius: Dimensions.get('screen').height * 0.04,
-    borderBottomLeftRadius: Dimensions.get('screen').height * 0.02,
-    borderBottomRightRadius: Dimensions.get('screen').height * 0.02,
     backgroundColor: 'white',
     overflow: 'hidden',
   },
@@ -244,8 +245,6 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
     borderTopRightRadius: Dimensions.get('screen').height * 0.04,
-    borderBottomLeftRadius: Dimensions.get('screen').height * 0.02,
-    borderBottomRightRadius: Dimensions.get('screen').height * 0.02,
     backgroundColor: 'white',
     overflow: 'hidden',
     zIndex: 1,
@@ -258,8 +257,6 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
     borderTopRightRadius: Dimensions.get('screen').height * 0.04,
-    borderBottomLeftRadius: Dimensions.get('screen').height * 0.02,
-    borderBottomRightRadius: Dimensions.get('screen').height * 0.02,
     backgroundColor: 'white',
     overflow: 'hidden',
     zIndex: 1,

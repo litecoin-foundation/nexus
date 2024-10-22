@@ -40,6 +40,7 @@ interface Props {
     cardTranslateAnim: any,
     cardOpacityAnim: any,
     prevNextCardOpacityAnim: any,
+    paginationOpacityAnim: any,
   ) => ReactNode;
 }
 
@@ -87,6 +88,7 @@ export default function PlasmaModal(props: Props) {
   const cardScale = useSharedValue(1);
   const prevNextCardOpacity = useSharedValue(0);
   const prevNextCardScale = useSharedValue(0.7);
+  const paginationOpacity = useSharedValue(1);
 
   function goPrevNextCard(isPrev: boolean) {
     bodyTranslateX.value = withTiming(isPrev ? SCREEN_WIDTH : SCREEN_WIDTH * -1, {duration: SWIPE_CARDS_ANIM_DURATION});
@@ -94,12 +96,6 @@ export default function PlasmaModal(props: Props) {
     prevNextCardOpacity.value = withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION});
     cardScale.value = withTiming(0.7, {duration: SWIPE_CARDS_ANIM_DURATION});
     prevNextCardScale.value = withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION});
-
-    // Error when using multiple withSequence so have to use setTimeout instead
-    // cardOpacity.value = withSequence(withTiming(0, {duration: SWIPE_CARDS_ANIM_DURATION}), 1);
-    // prevNextCardOpacity.value = withSequence(withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION}), 0);
-    // cardScale.value = withSequence(withTiming(0.7, {duration: SWIPE_CARDS_ANIM_DURATION}), 1);
-    // prevNextCardScale.value = withSequence(withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION}), 0.7);
 
     setTimeout(() => {
       bodyTranslateX.value = 0;
@@ -243,6 +239,12 @@ export default function PlasmaModal(props: Props) {
     };
   });
 
+  const animatedPaginationOpacityStyle = useAnimatedProps(() => {
+    return {
+      opacity: paginationOpacity.value,
+    };
+  });
+
   const [isVisible, setVisible] = useState(false);
 
   const contentBodyAnimDelay = animDuration - 50;
@@ -266,6 +268,7 @@ export default function PlasmaModal(props: Props) {
       });
 
       backOpacity.value = withTiming(1, {duration: animDuration});
+      paginationOpacity.value = withTiming(1, {duration: animDuration});
     } else {
       bodyTranslateY.value = withTiming(
         (Dimensions.get('screen').height - gapInPixels) *
@@ -274,12 +277,21 @@ export default function PlasmaModal(props: Props) {
       );
 
       backOpacity.value = withTiming(0, {duration: animDuration - 50});
+      paginationOpacity.value = withTiming(0, {duration: animDuration - 50});
     }
 
     return () => {
       clearTimeout(animTimeout.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bodyTranslateY, backOpacity, animDuration, gapInPixels, isFromBottomToTop, isOpened]);
+
+  const containerJustifyContent = isFromBottomToTop ? 'flex-end' : 'flex-start';
+  const gapBgColor = isInternetReachable ? '#1162e6' : '#f36f56';
+  const contentBodyConditionStyle = {
+    flex: isFromBottomToTop ? 1 : 0,
+    height: Dimensions.get('screen').height - gapInPixels,
+  };
 
   return (
     <>
@@ -288,7 +300,7 @@ export default function PlasmaModal(props: Props) {
           <Animated.View
             style={[
               styles.container,
-              {justifyContent: isFromBottomToTop ? 'flex-end' : 'flex-start'},
+              {justifyContent: containerJustifyContent},
             ]}>
             <Animated.View style={[styles.back, backSpecifiedStyle, animatedBackOpacityStyle]} />
             <Animated.View
@@ -296,26 +308,26 @@ export default function PlasmaModal(props: Props) {
                 styles.gap,
                 {
                   flexBasis: gapInPixels,
-                  backgroundColor: isInternetReachable ? '#1162e6' : '#f36f56',
+                  backgroundColor: gapBgColor,
                 },
                 gapSpecifiedStyle,
               ]}
             >
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{width: '100%', height: '100%'}}
-                onPress={() => close()}
-              />
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.closeArea}
+              onPress={() => {
+                if (typeof rotateWalletButtonArrow === 'function') {
+                  rotateWalletButtonArrow();
+                }
+                close();
+              }}
+            />
             </Animated.View>
               <Animated.View
                 style={[
                   styles.contentBody,
-                  // animatedContentBodyTranslateStyle,
-                  {
-                    flex: isFromBottomToTop ? 1 : 0,
-                    height: Dimensions.get('screen').height - gapInPixels,
-                    backgroundColor: isInternetReachable ? '#0d3d8a' : '#e06852',
-                  },
+                  contentBodyConditionStyle,
                   contentBodySpecifiedStyle,
                 ]}>
                 {renderBody(
@@ -326,6 +338,7 @@ export default function PlasmaModal(props: Props) {
                   animatedContentBodyTranslateStyle,
                   animatedCardOpacityStyle,
                   animatedPrevNextCardOpacityStyle,
+                  animatedPaginationOpacityStyle,
                 )}
               </Animated.View>
           </Animated.View>
@@ -359,9 +372,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#1162e6',
     zIndex: 2,
   },
+  closeArea: {
+    height: '100%',
+    width: '100%',
+  },
   contentBody: {
     width: '100%',
-    backgroundColor: '#0d3d8a',
+    backgroundColor: 'transparent',
     zIndex: 1,
   },
 });
