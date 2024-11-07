@@ -15,6 +15,7 @@ interface ISettings {
   currencySymbol: string;
   defaultExplorer: string;
   mwebDefaultExplorer: string;
+  deviceNotificationToken: string;
 }
 type CurrencyCodeType = {
   currencyCode: string;
@@ -29,6 +30,7 @@ const initialState = {
   currencySymbol: '$',
   defaultExplorer: 'Litecoin Space',
   mwebDefaultExplorer: 'MWEB Explorer',
+  deviceNotificationToken: '',
 } as ISettings;
 
 // actions
@@ -43,6 +45,7 @@ const setCurrencyCodeAction = createAction<CurrencyCodeType>(
 );
 const setExplorerAction = createAction<string>('settings/setExplorerAction');
 const setMWEBExplorerAction = createAction<string>('settings/setMWEBExplorerAction');
+const setDeviceNotificationTokenAction = createAction<string>('settings/setDeviceNotificationTokenAction');
 
 // functions
 export const updateLastViewSeed = (): AppThunk => dispatch => {
@@ -76,6 +79,12 @@ export const setExplorer =
     dispatch(setMWEBExplorerAction('MWEB Explorer'));
   };
 
+export const setDeviceNotificationToken =
+  (deviceToken: string): AppThunk =>
+  dispatch => {
+    dispatch(setDeviceNotificationTokenAction(deviceToken));
+  };
+
 // slice
 export const settingsSlice = createSlice({
   name: 'settings',
@@ -101,6 +110,10 @@ export const settingsSlice = createSlice({
     setMWEBExplorerAction: (state, action) => ({
       ...state,
       mwebDefaultExplorer: action.payload,
+    }),
+    setDeviceNotificationTokenAction: (state, action) => ({
+      ...state,
+      deviceNotificationToken: action.payload,
     }),
   },
 });

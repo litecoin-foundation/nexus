@@ -14,7 +14,7 @@ const AlertCell = props => {
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
 
   const handleSwitch = value => {
-    dispatch(setAlertAvailability(item.id, value));
+    dispatch(setAlertAvailability(item._id, value));
   };
 
   return (
@@ -25,8 +25,7 @@ const AlertCell = props => {
           <View>
             <Text style={styles.text}>Litecoin (LTC) is above</Text>
             <Text style={styles.valueText}>
-              {currencySymbol}
-              {item.value}
+              {'$' + item.value}
             </Text>
           </View>
         </View>

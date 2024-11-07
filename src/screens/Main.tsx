@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
+import React, {useLayoutEffect, useEffect, useState, useRef, useMemo} from 'react';
 import {View, StyleSheet, Text, Platform, Pressable, Alert} from 'react-native';
 import Animated, {
   interpolate,
@@ -41,6 +41,16 @@ import {unsetDeeplink} from '../reducers/deeplinks';
 import {validate as validateLtcAddress} from '../lib/utils/validate';
 import {updateAmount} from '../reducers/input';
 import SendModal from '../components/Modals/SendModal';
+import {
+  Notifications,
+  Registered,
+  RegistrationError,
+  Notification,
+  // NotificationActionResponse,
+  NotificationCompletion,
+  NotificationBackgroundFetchResult,
+} from 'react-native-notifications';
+import {setDeviceNotificationToken} from '../reducers/settings';
 
 const fontFamily =
   Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
@@ -79,6 +89,45 @@ const Main: React.FC<Props> = props => {
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main wallet');
+
+  useLayoutEffect(() => {
+    Notifications.registerRemoteNotifications();
+
+    Notifications.events().registerRemoteNotificationsRegistered((event: Registered) => {
+        // TODO: Send the token to my server so it could send back push notifications...
+        // console.log('Device Token Received', event.deviceToken);
+        dispatch(setDeviceNotificationToken(event.deviceToken));
+    });
+    Notifications.events().registerRemoteNotificationsRegistrationFailed((event: RegistrationError) => {
+        // console.error(event);
+    });
+
+    Notifications.events().registerNotificationReceivedForeground((notification: Notification, completion: (response: NotificationCompletion) => void) => {
+      // console.log('Notification Received - Foreground', notification.payload);
+
+      // Calling completion on iOS with `alert: true` will present the native iOS inApp notification.
+      completion({alert: true, sound: true, badge: false});
+    });
+
+    Notifications.events().registerNotificationOpened((notification: Notification, completion: () => void, action: any) => {
+      // console.log('Notification opened by device user', notification.payload);
+      // console.log(`Notification opened with an action identifier: ${action.identifier} and response text: ${action.text}`);
+      completion();
+    });
+
+    Notifications.events().registerNotificationReceivedBackground((notification: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
+      // console.log('Notification Received - Background', notification.payload);
+
+      // Calling completion on iOS with `alert: true` will present the native iOS inApp notification.
+      completion({alert: true, sound: true, badge: false});
+    });
+
+    Notifications.getInitialNotification()
+      .then((notification) => {
+        // console.log('Initial notification was:', (notification ? notification.payload : 'N/A'));
+        })
+      .catch((err) => console.error('getInitialNotifiation() failed', err));
+  }, [dispatch]);
 
   function setTransactionIndex(newTxIndex: number) {
     selectTransaction(transactions[newTxIndex]);

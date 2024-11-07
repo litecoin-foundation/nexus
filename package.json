@@ -64,6 +64,7 @@
     "react-native-localize": "^3.2.1",
     "react-native-mmkv": "^2.12.2",
     "react-native-modal": "^13.0.1",
+    "react-native-notifications": "^5.1.0",
     "react-native-qrcode-svg": "6.3.2",
     "react-native-quick-base64": "2.1.2",
     "react-native-quick-crypto": "0.7.5",

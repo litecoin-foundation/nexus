@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useDispatch, useSelector} from 'react-redux';
 
@@ -47,7 +47,7 @@ const Dial = props => {
       <View style={styles.buttonContainer}>
         <BlueButton
           value="Create alert"
-          onPress={async () => {
+          onPress={() => {
             dispatch(
               addAlert({
                 id: uuidv4(),
@@ -55,6 +55,7 @@ const Dial = props => {
                 enabled: true,
                 value,
                 originalValue: rates.USD,
+                isIOS: Platform.OS === 'ios',
               }),
             );
             props.navigation.goBack();
