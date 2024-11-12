@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, Dimensions} from 'react-native';
 import React from 'react';
 
 interface CommonProps {
@@ -38,23 +38,25 @@ const TableCell: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    height: 50,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    backgroundColor: '#fff',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingLeft: 25,
     paddingRight: 25,
-    height: 50,
-    backgroundColor: 'white',
   },
   title: {
-    color: 'rgb(124,150,174)',
-    fontSize: 12,
+    color: '#747e87',
+    fontSize: Dimensions.get('screen').height * 0.015,
     fontWeight: '600',
   },
   text: {
     color: '#4A4A4A',
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: Dimensions.get('screen').height * 0.018,
+    fontWeight: '700',
   },
 });
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
+import {createStackNavigator} from '@react-navigation/stack';
 
 import Settings, {
   SettingsNavigationOptions,
@@ -8,11 +8,17 @@ import Channel from '../screens/Settings/Channel';
 import OpenChannel from '../screens/Settings/OpenChannel';
 import Explorer from '../screens/Settings/Explorer';
 import ChangePincode from '../screens/Settings/ChangePincode';
-import Seed from '../screens/Settings/Seed';
+import Seed, {SeedNavigationOptions} from '../screens/Settings/Seed';
 import About from '../screens/Settings/About';
 import Currency from '../screens/Settings/Currency';
-import Scan from '../screens/Scan';
-import Import from '../screens/Settings/Import';
+import Scan, {ScanNavigationOptions} from '../screens/Scan';
+import Import, {ImportNavigationOptions} from '../screens/Settings/Import';
+import RecoverLitewallet, {
+  RecoverLitewalletNavigationOptions,
+} from '../screens/Settings/RecoverLitewallet';
+import ImportSuccess, {
+  ImportSuccessNavigationOptions,
+} from '../screens/Settings/ImportSuccess';
 
 const Stack = createStackNavigator();
 
@@ -62,7 +68,7 @@ function SettingsStack() {
       <Stack.Screen
         name="Seed"
         component={Seed}
-        options={Seed.navigationOptions}
+        options={({navigation}) => SeedNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="About"
@@ -100,30 +106,24 @@ function SettingsStack() {
       <Stack.Screen
         name="Scan"
         component={Scan}
-        options={{
-          ...TransitionPresets.ModalPresentationIOS,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-        }}
+        options={({navigation}) => ScanNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Import"
         component={Import}
-        options={{
-          headerTitle: 'Import Private Key',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-        }}
+        options={({navigation}) => ImportNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="RecoverLitewallet"
+        component={RecoverLitewallet}
+        options={({navigation}) =>
+          RecoverLitewalletNavigationOptions(navigation)
+        }
+      />
+      <Stack.Screen
+        name="ImportSuccess"
+        component={ImportSuccess}
+        options={({navigation}) => ImportSuccessNavigationOptions(navigation)}
       />
     </Stack.Navigator>
   );

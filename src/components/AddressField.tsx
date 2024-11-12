@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   TextInput,
@@ -17,17 +17,24 @@ interface Props {
 const AddressField: React.FC<Props> = props => {
   const {address, onScanPress, onChangeText} = props;
 
+  const [height, setHeight] = useState(53);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {height: Math.max(53, height)}]}>
       <TextInput
         placeholderTextColor="#dbdbdb"
-        placeholder="Address to send Litecoin"
+        placeholder="Enter a Litecoin Address"
         style={styles.text}
         value={address}
         autoCorrect={false}
         autoComplete="off"
         onChangeText={onChangeText}
-        blurOnSubmit={false}
+        blurOnSubmit={true}
+        enterKeyHint={'done'}
+        multiline={true}
+        onContentSizeChange={event => {
+          setHeight(event.nativeEvent.contentSize.height + 20);
+        }}
       />
 
       <TouchableHighlight style={styles.closeContainer} onPress={onScanPress}>
@@ -39,16 +46,17 @@ const AddressField: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 63,
+    minHeight: 53,
     borderRadius: 8,
-    borderColor: '#DEDEDE',
-    borderWidth: 1.5,
+    borderColor: '#E8E8E8',
+    borderWidth: 1,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
   },
   text: {
     flex: 1,
     paddingLeft: 11.5,
+    paddingRight: 11.5,
     fontFamily:
       Platform.OS === 'ios'
         ? 'Satoshi Variable'
@@ -58,11 +66,13 @@ const styles = StyleSheet.create({
     color: '#20BB74',
     fontSize: 18,
     maxWidth: 310,
+
+    paddingVertical: 13,
   },
   closeContainer: {
     right: 0,
     position: 'absolute',
-    paddingRight: 25,
+    marginRight: 25,
   },
 });
 

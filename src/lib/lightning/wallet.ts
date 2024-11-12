@@ -2,7 +2,7 @@ import * as base64 from 'base64-js';
 
 import {sendCommand, sendStreamCommand, decodeStreamResult} from './utils';
 import {stringToUint8Array} from '../utils';
-import {lnrpc, signrpc} from './proto/lightning';
+import {lnrpc, signrpc, walletrpc} from './proto/lightning';
 
 /**
  * @throws
@@ -235,4 +235,18 @@ export const decodeInvoiceResult = (data: string): lnrpc.Invoice => {
     response: lnrpc.Invoice,
     base64Result: data,
   });
+};
+
+export const publishTransaction = async (
+  txHex: string,
+): Promise<walletrpc.PublishResponse> => {
+  const response = await sendCommand({
+    request: walletrpc.Transaction,
+    response: walletrpc.PublishResponse,
+    method: 'PublishTransaction',
+    options: {
+      txHex: stringToUint8Array(txHex),
+    },
+  });
+  return response;
 };

@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import OptionCell from '../../components/Cells/OptionCell';
 import Header from '../../components/Header';
-import explorer from '../../assets/explorers';
+import explorers from '../../assets/explorers';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setExplorer} from '../../reducers/settings';
 
@@ -38,7 +38,7 @@ const Explorer: React.FC = () => {
         style={styles.container}
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
-        <FlatList data={explorer} renderItem={renderItem} />
+        <FlatList data={explorers} renderItem={renderItem} />
       </LinearGradient>
     </>
   );

@@ -83,7 +83,6 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
           dispatch(subscribeTransactions());
           dispatch(pollTicker());
           dispatch(finishOnboarding());
-          // dispatch(subscribeInvoices());
           // dispatch(backupChannels());
           return;
         }
@@ -142,7 +141,13 @@ export const unlockWallet = (): AppThunk => async dispatch => {
       });
 
       await Lnd.subscribeState();
-    } catch (error: unknown) {
+    } catch (error: any) {
+      if (
+        error.message ===
+        'rpc error: code = Unknown desc = wallet already unlocked, WalletUnlocker service is no longer available'
+      ) {
+        console.log('wallet unlocked already!');
+      }
       throw new Error(String(error));
     }
   });

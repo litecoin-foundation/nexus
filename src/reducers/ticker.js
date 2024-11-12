@@ -70,21 +70,37 @@ export const getDayHistoricalRates = () => async dispatch => {
   const lastDay = new Date();
   lastDay.setDate(lastDay.getDate() - 1);
 
-  const {data} = await axios.get(
-    'https://api.pro.coinbase.com/products/LTC-USD/candles',
-    {
-      params: {
-        start: lastDay.toISOString(),
-        end: date.toISOString(),
-        granularity: 300,
+  try {
+    const res = await fetch(
+      'https://api.pro.coinbase.com/products/LTC-USD/candles',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        params: {
+          start: lastDay.toISOString(),
+          end: date.toISOString(),
+          granularity: 300,
+        },
       },
-    },
-  );
+    );
 
-  dispatch({
-    type: UPDATE_HISTORIC_RATE_DAY,
-    data,
-  });
+    if (!res.ok) {
+      const {message} = await res.json();
+      console.error(message);
+    }
+
+    const data = await res.json();
+
+    dispatch({
+      type: UPDATE_HISTORIC_RATE_DAY,
+      data,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const getWeekHistoricalRates = () => async dispatch => {
@@ -92,21 +108,37 @@ export const getWeekHistoricalRates = () => async dispatch => {
   const lastWeek = new Date();
   lastWeek.setDate(lastWeek.getDate() - 7);
 
-  const {data} = await axios.get(
-    'https://api.pro.coinbase.com/products/LTC-USD/candles',
-    {
-      params: {
-        start: lastWeek.toISOString(),
-        end: date.toISOString(),
-        granularity: 3600,
+  try {
+    const res = await fetch(
+      'https://api.pro.coinbase.com/products/LTC-USD/candles',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        params: {
+          start: lastWeek.toISOString(),
+          end: date.toISOString(),
+          granularity: 3600,
+        },
       },
-    },
-  );
+    );
 
-  dispatch({
-    type: UPDATE_HISTORIC_RATE_WEEK,
-    data,
-  });
+    if (!res.ok) {
+      const {message} = await res.json();
+      console.error(message);
+    }
+
+    const data = await res.json();
+
+    dispatch({
+      type: UPDATE_HISTORIC_RATE_WEEK,
+      data,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const getMonthHistoricalRates = () => async dispatch => {
@@ -114,21 +146,37 @@ export const getMonthHistoricalRates = () => async dispatch => {
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
 
-  const {data} = await axios.get(
-    'https://api.pro.coinbase.com/products/LTC-USD/candles',
-    {
-      params: {
-        start: lastMonth.toISOString(),
-        end: date.toISOString(),
-        granularity: 21600,
+  try {
+    const res = await fetch(
+      'https://api.pro.coinbase.com/products/LTC-USD/candles',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        params: {
+          start: lastMonth.toISOString(),
+          end: date.toISOString(),
+          granularity: 21600,
+        },
       },
-    },
-  );
+    );
 
-  dispatch({
-    type: UPDATE_HISTORIC_RATE_MONTH,
-    data,
-  });
+    if (!res.ok) {
+      const {message} = await res.json();
+      console.error(message);
+    }
+
+    const data = await res.json();
+
+    dispatch({
+      type: UPDATE_HISTORIC_RATE_MONTH,
+      data,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const updateHistoricalRates = () => (dispatch, getStore) => {

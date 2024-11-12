@@ -1,88 +1,184 @@
 import ecc from '@bitcoinerlab/secp256k1';
-import {payments, Psbt} from 'bitcoinjs-lib';
-import bip39 from 'bip39';
+import * as bitcoin from 'bitcoinjs-lib';
 import axios from 'axios';
-import {BIP32Factory} from 'bip32';
 import {ECPairFactory, ECPairInterface} from 'ecpair';
 import wif from 'wif';
-import {Buffer} from '@craftzdog/react-native-buffer';
 
 import {LITECOIN} from './litecoin';
+import getTxInputData from './getTxInputData';
 import {estimateTxSize} from './estimateTxSize';
+import {getDerivedKeyPairsWithBalance} from './hdWallets';
 
 const ECPair = ECPairFactory(ecc);
-const bip32 = BIP32Factory(ecc);
-const GAP_LIMIT = 20;
 
 type IMnemonic = string[];
 
-const fetchAddressData = (address: string, index: number) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const response = await axios.get(
-        `https://sochain.com/api/v2/address/LTC/${address}`,
-      );
-      const {data} = response.data;
+interface AddressWithKeyPair {
+  address: string;
+  keyPair: ECPairInterface;
+}
 
-      // check if address was used (received_value > 0)
-      if (parseFloat(data.received_value) === 0) {
-        reject(false);
-      }
+interface SweptAddress {
+  inputsArr: any;
+  addressBalance: number;
+  addressUnspentsLength: number;
+}
 
-      resolve({
-        address,
-        index,
-        balance: data.balance,
-        txs: data.txs,
-      });
-    } catch (err) {
-      reject(err);
-    }
-  });
-};
-
-export const scanAccount = async (mnemonic: IMnemonic) => {
-  const mnemonicString = mnemonic.join(' ');
-  const seed = bip39.mnemonicToSeedSync(mnemonicString);
-  const root = bip32.fromSeed(seed, LITECOIN);
-
-  // loop through child addresses with max gap of GAP_LIMIT
-  let currentIndex = 0;
-  let currentGap = 0;
-  const sweepableAddr = [];
-
-  while (currentGap < GAP_LIMIT) {
-    // generate address
-    const child = root.derivePath(`m/0'/0/${currentIndex}`);
-    const {address} = payments.p2pkh({
-      pubkey: child.publicKey,
-      network: LITECOIN,
-    });
-
-    if (address === undefined) {
-      throw new Error('error: address derivation');
-    }
-
-    // check address for txs
-    try {
-      const response = await fetchAddressData(address, currentIndex);
-      currentIndex++;
-      sweepableAddr.push(response);
-    } catch (error) {
-      if (error === false) {
-        currentIndex++;
-        currentGap++;
-      }
-    }
+function isArrayEmpty(obj: any[]) {
+  if (obj.length >= 1) {
+    return false;
+  } else {
+    return true;
   }
+}
 
-  return sweepableAddr;
+export const sweepLitewallet = async (mnemonic: IMnemonic, receiveAddress: string) => {
+  const startPath = "m/0'/0/";
+  const changePath = "m/0'/1/";
+  const isChildHardened = false;
+
+  const rawTopUpTxs: any[] = [];
+
+  try {
+    const mainTxs = await sweepMnemonic(mnemonic, receiveAddress, startPath, isChildHardened);
+    const changeTxs = await sweepMnemonic(mnemonic, receiveAddress, changePath, isChildHardened);
+
+    if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
+      throw new Error('No derived addresses with balance.');
+    }
+
+    rawTopUpTxs.push(mainTxs);
+    rawTopUpTxs.push(changeTxs);
+
+    return rawTopUpTxs;
+  } catch (error) {
+    throw new Error(String(error));
+  }
 };
 
-// utils for sweeping WIF keys
+export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
+  const startPath = "m/0'/0/";
+  const changePath = "m/0'/1/";
+  const isChildHardened = false;
 
-export const sweepWIF = (wifString: string, receiveAddress: string) => {
+  const rawTopUpTxs: any[] = [];
+
+  try {
+    if (qrKey.indexOf('Ltpv') !== -1) {
+      const mainTxs = await sweepBase58Ltpv(qrKey, receiveAddress, startPath, isChildHardened);
+      const changeTxs = await sweepBase58Ltpv(qrKey, receiveAddress, changePath, isChildHardened);
+
+      if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
+        throw new Error('No derived addresses with balance.');
+      }
+
+      rawTopUpTxs.push(mainTxs);
+      rawTopUpTxs.push(changeTxs);
+    } else {
+      const txs = await sweepWIF(qrKey, receiveAddress);
+
+      rawTopUpTxs.push(txs);
+    }
+
+    return rawTopUpTxs;
+  } catch (error) {
+    throw new Error(String(error));
+  }
+};
+
+const sweepBase58Ltpv = async (
+  seedBase58: string,
+  receiveAddress: string,
+  startPath: string,
+  isChildHardened: boolean,
+) => {
+  try {
+    const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
+      startPath,
+      isChildHardened,
+      undefined,
+      seedBase58,
+    );
+
+    const rawTopUpTxs = await createRawTxsFromHDWallet(
+      keyPairsWithBalance,
+      receiveAddress,
+    );
+
+    return rawTopUpTxs;
+  } catch (error) {
+    throw new Error(String(error));
+  }
+};
+
+const sweepMnemonic = async (
+  mnemonic: IMnemonic,
+  receiveAddress: string,
+  startPath: string,
+  isChildHardened: boolean,
+) => {
+  // const phrase =
+  //   'wheat stage drop afraid hammer amateur knock ice subject find walk lobster rough infant bamboo guitar skin attract long then mail artist relax robot';
+  // const phraseArr = phrase.split(' ');
+  try {
+    const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
+      startPath,
+      isChildHardened,
+      mnemonic,
+    );
+
+    const rawTopUpTxs = await createRawTxsFromHDWallet(
+      keyPairsWithBalance,
+      receiveAddress,
+    );
+
+    return rawTopUpTxs;
+  } catch (error) {
+    throw new Error(String(error));
+  }
+};
+
+const createRawTxsFromHDWallet = async (
+  keyPairsWithBalance: AddressWithKeyPair[],
+  receiveAddress: string,
+) => {
+  const rawTxs: any[] = [];
+  const inputsFromAllAddressesWithBalance: any[] = [];
+  let totalBalance = 0;
+  let unspentsLength = 0;
+
+  await Promise.all(
+    keyPairsWithBalance.map(async addressWithKeyPair => {
+      const {inputsArr, addressBalance, addressUnspentsLength} =
+        await sweepAddress(
+          addressWithKeyPair.address,
+          addressWithKeyPair.keyPair,
+          'P2PKH',
+        );
+      inputsFromAllAddressesWithBalance.push(...inputsArr);
+      totalBalance += addressBalance;
+      unspentsLength += addressUnspentsLength;
+
+      const rawTx = createTopUpTx(
+        inputsFromAllAddressesWithBalance,
+        receiveAddress,
+        0,
+        totalBalance,
+        unspentsLength,
+        addressWithKeyPair.keyPair,
+        'P2PKH',
+      );
+
+      rawTxs.push(rawTx);
+    }),
+  );
+
+  return rawTxs;
+};
+
+export const sweepWIF = async (wifString: string, receiveAddress: string) => {
   let compressed;
+
   try {
     const key = wif.decode(wifString);
     compressed = key.compressed;
@@ -94,102 +190,208 @@ export const sweepWIF = (wifString: string, receiveAddress: string) => {
 
   let p2shAddress;
   let bech32Address;
+  // let bech32mAddress;
+  let address, inputScript;
+
+  const inputsFromAllAddressesWithBalance: any[] = [];
+  let totalBalance = 0;
+  let unspentsLength = 0;
 
   // build p2pkh address
-  const legacyAddress = payments.p2pkh({
+  const legacyAddress = bitcoin.payments.p2pkh({
     pubkey: keyPair.publicKey,
     network: LITECOIN,
   }).address;
-  // sweep p2pkh address
+
   if (legacyAddress !== undefined) {
-    sweepAddress(legacyAddress, receiveAddress, 0, keyPair, 'P2PKH');
+    address = legacyAddress;
+    inputScript = 'P2PKH';
+    const {inputsArr, addressBalance, addressUnspentsLength} =
+      await sweepAddress(String(address), keyPair, String(inputScript));
+    inputsFromAllAddressesWithBalance.push(...inputsArr);
+    totalBalance += addressBalance;
+    unspentsLength += addressUnspentsLength;
   }
 
   // only compressed WIFs can generate p2sh/bech32
   if (compressed) {
     // build p2sh segwit address
-    p2shAddress = payments.p2sh({
-      redeem: payments.p2wpkh({
+    p2shAddress = bitcoin.payments.p2sh({
+      redeem: bitcoin.payments.p2wpkh({
         pubkey: keyPair.publicKey,
         network: LITECOIN,
       }),
       network: LITECOIN,
     }).address;
+
+    if (p2shAddress !== undefined) {
+      address = p2shAddress;
+      inputScript = 'P2SH-P2WPKH';
+      const {inputsArr, addressBalance, addressUnspentsLength} =
+        await sweepAddress(String(address), keyPair, String(inputScript));
+      inputsFromAllAddressesWithBalance.push(...inputsArr);
+      totalBalance += addressBalance;
+      unspentsLength += addressUnspentsLength;
+    }
+
     // build bech32 address
-    bech32Address = payments.p2wpkh({
+    bech32Address = bitcoin.payments.p2wpkh({
       pubkey: keyPair.publicKey,
       network: LITECOIN,
     }).address;
+
+    if (bech32Address !== undefined) {
+      address = bech32Address;
+      inputScript = 'P2WPKH';
+      const {inputsArr, addressBalance, addressUnspentsLength} =
+        await sweepAddress(String(address), keyPair, String(inputScript));
+      inputsFromAllAddressesWithBalance.push(...inputsArr);
+      totalBalance += addressBalance;
+      unspentsLength += addressUnspentsLength;
+    }
+
+    // build bech32m address
+    // const internalPubkey = keyPair.publicKey.slice(1, 33);
+    // bech32mAddress = bitcoin.payments.p2tr({
+    //   internalPubkey: internalPubkey,
+    //   network: LITECOIN,
+    // }).address;
   }
 
-  console.log(legacyAddress);
-  console.log(p2shAddress);
-  console.log(bech32Address);
+  // console.log(inputsFromAllAddressesWithBalance);
+  // console.log(totalBalance);
+  // console.log(unspentsLength);
+  // console.log(legacyAddress);
+  // console.log(p2shAddress);
+  // console.log(bech32Address);
+  // console.log(bech32mAddress);
 
-  // sweep legacyAddress
+  if (totalBalance > 0) {
+    try {
+      const rawTx = createTopUpTx(
+        inputsFromAllAddressesWithBalance,
+        receiveAddress,
+        0,
+        totalBalance,
+        unspentsLength,
+        keyPair,
+        'P2PKH',
+      );
+
+      return [rawTx];
+    } catch (error) {
+      throw new Error(String(error));
+    }
+  } else {
+    throw new Error('No funds in this key.');
+  }
 };
 
 const sweepAddress = (
   address: string,
-  receiveAddress: string,
-  feeRate: number,
   keyPair: ECPairInterface,
   inputScript: string,
-) => {
+): Promise<SweptAddress> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const {data} = await axios.get(
-        `https://api.blockcypher.com/v1/ltc/main/addrs/${address}/full?unspentOnly=true&includeHex=true`,
+      const {data: unspents} = await axios.get(
+        `https://litecoinspace.org/api/address/${address}/utxo`,
       );
 
-      // construct psbt tx
-      const psbt = new Psbt({network: LITECOIN});
-      const unspents = data.txs;
-      let totalBalance = 0;
+      let inputsArr: any[] = [];
+      let addressBalance = 0;
 
-      // loops through all utxos
-      for (let utxo = 0; utxo < unspents.length; utxo++) {
-        // calculate total unspents
-        // loops through all outputs to look for address associated to WIF
-        for (let output = 0; output < unspents[utxo].outputs.length; output++) {
-          if (unspents[utxo].outputs[output].addresses.includes(address)) {
-            totalBalance += unspents[utxo].outputs[output].value;
+      await Promise.all(
+        unspents.map(async (utxo: any) => {
+          addressBalance += utxo.value;
+
+          const {data: utxoHex} = await axios.get(
+            `https://litecoinspace.org/api/tx/${utxo.txid}/hex`,
+          );
+
+          switch (inputScript) {
+            case 'P2PKH':
+              inputsArr.push(
+                getTxInputData(
+                  utxo.txid,
+                  utxo.vout,
+                  utxoHex,
+                  utxo.value,
+                  false,
+                  inputScript,
+                  keyPair.publicKey,
+                ),
+              );
+              break;
+            case 'P2SH':
+            case 'P2WPKH':
+            case 'P2SH-P2WPKH':
+            case 'P2WSH':
+            case 'P2SH-P2WSH':
+              inputsArr.push(
+                getTxInputData(
+                  utxo.txid,
+                  utxo.vout,
+                  utxoHex,
+                  utxo.value,
+                  true,
+                  inputScript,
+                  keyPair.publicKey,
+                ),
+              );
+              break;
           }
-        }
+        }),
+      );
 
-        const outputIndex = unspents[utxo].outputs.findIndex(
-          (output: {addresses: string | string[]}) =>
-            output.addresses.includes(address),
-        );
-
-        // multiple inputs
-        psbt.addInput({
-          hash: unspents[utxo].hash,
-          index: outputIndex,
-          nonWitnessUtxo: Buffer.from(unspents[utxo].hex, 'hex'),
+      if (addressBalance !== 0) {
+        resolve({
+          inputsArr,
+          addressBalance,
+          addressUnspentsLength: unspents.length,
+        });
+      } else {
+        // throw new Error('No funds in this address.');
+        resolve({
+          inputsArr,
+          addressBalance,
+          addressUnspentsLength: unspents.length,
         });
       }
-
-      // single output
-      psbt.addOutput({
-        address: receiveAddress,
-        value: Math.floor(
-          totalBalance -
-            Math.ceil(estimateTxSize(inputScript, unspents.length) * 18.8),
-        ),
-      });
-
-      console.log(estimateTxSize('P2PKH', unspents.length));
-
-      psbt.signInput(0, keyPair);
-      psbt.finalizeAllInputs();
-
-      const finalTx = psbt.extractTransaction(false);
-
-      console.log(finalTx.toHex());
-      resolve(finalTx.toHex());
     } catch (error) {
       reject(error);
     }
   });
+};
+
+const createTopUpTx = (
+  inputsArr: any[],
+  receiveAddress: string,
+  feeRate: number,
+  totalSum: number,
+  unspentsLength: number,
+  keyPair: ECPairInterface,
+  inputScript: string,
+): string => {
+  // construct psbt tx
+  const psbt = new bitcoin.Psbt({network: LITECOIN});
+
+  inputsArr.map(input => {
+    psbt.addInput(input);
+  });
+
+  // single output
+  psbt.addOutput({
+    address: receiveAddress,
+    value: Math.floor(
+      totalSum - Math.ceil(estimateTxSize(inputScript, unspentsLength) * 18.8),
+    ),
+  });
+
+  psbt.signInput(0, keyPair);
+  psbt.finalizeAllInputs();
+
+  const finalTx = psbt.extractTransaction(false);
+
+  return finalTx.toHex();
 };

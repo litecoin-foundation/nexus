@@ -1,5 +1,5 @@
 import React from 'react';
-import {TouchableOpacity, Image, StyleSheet} from 'react-native';
+import {TouchableOpacity, Image, StyleSheet, Dimensions} from 'react-native';
 
 interface Props {
   onPress: () => void;
@@ -16,19 +16,10 @@ const GreyRoundButton: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 29,
-    width: 39,
-    borderRadius: 14.5,
-    backgroundColor: '#D4D3DA',
-    shadowColor: 'black',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-    shadowOffset: {
-      height: 0,
-      width: 0,
-    },
-
+    height: Dimensions.get('screen').height * 0.045,
+    width: Dimensions.get('screen').height * 0.045,
+    borderRadius: Dimensions.get('screen').height * 0.015,
+    backgroundColor: '#f0f0f0',
     alignItems: 'center',
     justifyContent: 'center',
   },

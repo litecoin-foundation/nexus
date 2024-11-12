@@ -8,7 +8,7 @@ import {percentSyncedSelector, syncStatusSelector} from '../reducers/info';
 
 interface Props {}
 
-const TransactionListEmpty: React.FC<Props> = props => {
+const TransactionListEmpty: React.FC<Props> = () => {
   const progress = useAppSelector(state => percentSyncedSelector(state));
   const synced = useAppSelector(state => syncStatusSelector(state));
 

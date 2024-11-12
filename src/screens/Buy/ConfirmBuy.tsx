@@ -5,7 +5,6 @@ import {
   SafeAreaView,
   StyleSheet,
   Platform,
-  Button,
   Alert,
   Dimensions,
 } from 'react-native';
@@ -46,7 +45,6 @@ const ConfirmBuy: React.FC<Props> = props => {
   const paymentRate = useAppSelector(state => state.ticker.paymentRate);
 
   const {address} = useAppSelector(state => state.address);
-  const {uniqueId} = useAppSelector(state => state.onboarding);
 
   useEffect(() => {
     dispatch(getAddress());
@@ -54,7 +52,7 @@ const ConfirmBuy: React.FC<Props> = props => {
 
   const onPress = async () => {
     try {
-      const url = await getSignedUrl(address, 69, uniqueId);
+      const url = await dispatch(getSignedUrl(address, 69));
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {uri: url});
       } else {
@@ -89,7 +87,7 @@ const ConfirmBuy: React.FC<Props> = props => {
         </View>
 
         <View style={styles.confirmButtonContainer}>
-          <GreenButton value="Confirm Purchase" onPress={() => onPress()} />
+          <GreenButton value="Continue Purchase" onPress={() => onPress()} />
         </View>
       </View>
     </View>

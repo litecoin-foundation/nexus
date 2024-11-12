@@ -39,7 +39,7 @@ export const getTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
     const {uniqueId} = getState().onboarding;
     const {data} = await axios.post(
-      'http://192.168.1.60:3001/api/buy/moonpay/transactions',
+      'https://mobile.litecoin.comapi/buy/moonpay/transactions',
       {
         id: uniqueId,
       },
@@ -126,40 +126,45 @@ export const getLimits = (): AppThunk => async (dispatch, getState) => {
   }
 };
 
-export const getSignedUrl = async (
-  address: string,
-  fiatAmount: number,
-  id: string,
-) => {
-  const unsignedURL =
-    `https://buy.moonpay.com?apiKey=${publishableKey}` +
-    '&currencyCode=ltc' +
-    `&externalCustomerId=${id}` +
-    `&walletAddress=${address}` +
-    `&baseCurrencyAmount=${fiatAmount}`;
+export const getSignedUrl =
+  (address: string, fiatAmount: number): AppThunk =>
+  async (_, getState) => {
+    const {currencyCode} = getState().settings;
+    const {uniqueId} = getState().onboarding;
+    const unsignedURL =
+      `https://buy.moonpay.com?apiKey=${publishableKey}` +
+      '&currencyCode=ltc' +
+      `&externalCustomerId=${uniqueId}` +
+      `&walletAddress=${address}` +
+      `&baseCurrencyAmount=${fiatAmount}` +
+      `&baseCurrencyCode=${String(currencyCode).toLowerCase()}`;
 
-  try {
-    const res = await fetch('http://192.168.1.60:3001/api/buy/moonpay/sign', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({unsignedURL}),
-    });
+    try {
+      const res = await fetch(
+        'https://mobile.litecoin.com/api/buy/moonpay/sign',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({unsignedURL}),
+        },
+      );
 
-    if (!res.ok) {
-      const {message} = await res.json();
-      return Error(message);
+      if (!res.ok) {
+        console.log(res.status);
+        const {message} = await res.json();
+        return Error(message);
+      }
+
+      const {urlWithSignature} = await res.json();
+      return urlWithSignature;
+    } catch (error) {
+      // handle error
+      console.error(error);
     }
-
-    const signature = await res.json();
-    return `${unsignedURL}&signature=${encodeURIComponent(signature)}`;
-  } catch (error) {
-    // handle error
-    console.error(error);
-  }
-};
+  };
 
 // slice
 export const buySlice = createSlice({

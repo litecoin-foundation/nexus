@@ -1,20 +1,27 @@
 import React, {useEffect} from 'react';
-import {StyleSheet, View, SafeAreaView} from 'react-native';
+import {StyleSheet, View, SafeAreaView, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
-import {sweepWIF} from '../../lib/utils/sweep';
+import {sweepQrKey} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
+import {showError} from '../../reducers/errors';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import {publishTransaction} from '../../reducers/transaction';
+import {txHashFromRaw} from '../../lib/utils/txHashFromRaw';
 
 type RootStackParamList = {
   Import: {
     scanData?: string;
   };
   Scan: {returnRoute: string};
+  ImportSuccess: {
+    txHash: string;
+  };
 };
 
 interface Props {
@@ -34,19 +41,36 @@ const Import: React.FC<Props> = props => {
   // handle scanned QR code
   useEffect(() => {
     if (route.params?.scanData) {
-      console.warn(route.params?.scanData);
-      sweepWIF(route.params.scanData, address);
+      console.log(route.params?.scanData);
+      sweepQrKey(route.params.scanData, address)
+        .then(rawTxs => {
+          rawTxs.map((rawTx, index) => {
+            // console.log(rawTx);
+            publishTransaction(rawTx)
+            .then(() => {
+              // handle successful publish!
+              if (index === rawTxs.length - 1){
+                navigation.replace('ImportSuccess', {
+                  txHash: txHashFromRaw(rawTx),
+                });
+              }
+            });
+          });
+        })
+        .catch(error => {
+          dispatch(showError(String(error)));
+        });
     }
-  }, [address, route.params?.scanData]);
+  }, [address, route.params?.scanData, dispatch]);
 
   return (
-    <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
+    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
       <SafeAreaView />
 
       <Card
         titleText="Import Private Key"
         descriptionText={
-          'Importing a Litecoin private key transfers all the Litecoin from that wallet into Plasma.\n\nYou will no longer be able to access Litecoin using this private key.'
+          'Importing a Litecoin private key moves any Litecoin in that wallet into Plasma.\n\nYou will no longer be able to access Litecoin using the private key.'
         }
         imageSource={require('../../assets/images/qr-frame.png')}
       />
@@ -57,11 +81,7 @@ const Import: React.FC<Props> = props => {
           small={false}
           active={true}
           onPress={() => {
-            // navigation.navigate('Scan', {returnRoute: 'Import'});
-            sweepWIF(
-              'T9AGGdbPB8awSweFqjnmhTnLLLwfoZvDgqvZq74S3QqnudmGUfvg',
-              address,
-            );
+            navigation.navigate('Scan', {returnRoute: 'Import'});
           }}
         />
       </View>
@@ -75,6 +95,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
   },
+  headerTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: 'white',
+    fontSize: 17,
+  },
 });
+
+export const ImportNavigationOptions = navigation => {
+  return {
+    headerTitle: () => (
+      <Text style={styles.headerTitle}>Import Private Key</Text>
+    ),
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+  };
+};
 
 export default Import;

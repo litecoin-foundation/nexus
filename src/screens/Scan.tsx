@@ -1,15 +1,24 @@
 import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, Vibration, Text, Image, Alert} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Vibration,
+  Text,
+  Image,
+  Alert,
+  Platform,
+} from 'react-native';
 import {
   Camera,
   useCameraDevice,
   useCodeScanner,
 } from 'react-native-vision-camera';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackScreenProps} from '@react-navigation/stack';
+import {StackScreenProps, TransitionPresets} from '@react-navigation/stack';
 
 import Switch from '../components/Buttons/Switch';
 import Header from '../components/Header';
+import HeaderButton from '../components/Buttons/HeaderButton';
 
 type RootStackParamList = {
   Scan: {
@@ -97,7 +106,7 @@ const Scan = ({
         </View>
       </Camera>
       <LinearGradient
-        colors={['#7E58FFF2', '#003DB3F2']}
+        colors={['#1162E6', '#0F55C7']}
         start={{x: 0, y: 0}}
         end={{x: 1, y: 0}}
         style={styles.bottomContainer}>
@@ -124,6 +133,7 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
+    marginTop: -42,
   },
   bottomContainer: {
     height: 90,
@@ -135,8 +145,12 @@ const styles = StyleSheet.create({
   bottomText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: 'bold',
-    letterSpacing: -0.39,
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
   },
   textAlign: {
     textAlign: 'center',
@@ -158,6 +172,33 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
   },
+  headerTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: 'white',
+    fontSize: 17,
+  },
 });
+
+export const ScanNavigationOptions = navigation => {
+  return {
+    ...TransitionPresets.ModalPresentationIOS,
+    headerTitle: () => <Text style={styles.headerTitle}>Scan QR Code</Text>,
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../assets/images/close-white.png')}
+        title="Close"
+      />
+    ),
+  };
+};
 
 export default Scan;

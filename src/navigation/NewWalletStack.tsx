@@ -1,11 +1,13 @@
 import React from 'react';
-import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
+import {createStackNavigator} from '@react-navigation/stack';
 
 import Main, {navigationOptions} from '../screens/Main';
-import Scan from '../screens/Scan';
+import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import SettingsStack from './SettingsStack';
 import WebPage, {WebPageNavigationOptions} from '../screens/WebPage';
-import ConfirmSend from '../screens/Wallet/ConfirmSend';
+import ConfirmSend, {
+  ConfirmSendNavigationOptions,
+} from '../screens/Wallet/ConfirmSend';
 import ConfirmBuy, {
   ConfirmBuyNavigationOptions,
 } from '../screens/Buy/ConfirmBuy';
@@ -43,23 +45,18 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="Scan"
         component={Scan}
-        options={{
-          ...TransitionPresets.ModalPresentationIOS,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-        }}
+        options={({navigation}) => ScanNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="WebPage"
         component={WebPage}
         options={({navigation}) => WebPageNavigationOptions(navigation)}
       />
-      <Stack.Screen name="ConfirmSend" component={ConfirmSend} />
+      <Stack.Screen
+        name="ConfirmSend"
+        component={ConfirmSend}
+        options={({navigation}) => ConfirmSendNavigationOptions(navigation)}
+      />
       <Stack.Screen
         name="ConfirmBuy"
         component={ConfirmBuy}

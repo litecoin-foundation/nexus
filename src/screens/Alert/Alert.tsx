@@ -108,6 +108,7 @@ export const AlertNavigationOptions = navigation => {
       <HeaderButton
         title="Create Alert"
         onPress={() => navigation.navigate('Dial')}
+        rightPadding={true}
       />
     ),
   };

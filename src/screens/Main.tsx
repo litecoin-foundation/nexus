@@ -1,6 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text, Platform, Pressable} from 'react-native';
-import {useSelector} from 'react-redux';
+import React, {useEffect, useState, useMemo} from 'react';
+import {View, StyleSheet, Text, Platform, Pressable, Alert} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -8,29 +7,39 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
+  withDelay,
 } from 'react-native-reanimated';
-
-import NewAmountView from '../components/NewAmountView';
-import LineChart from '../components/Chart/Chart';
-import {txDetailSelector} from '../reducers/transaction';
-import HeaderButton from '../components/Buttons/HeaderButton';
-import DashboardButton from '../components/Buttons/DashboardButton';
-import Receive from '../components/Cards/Receive';
-import Send from '../components/Cards/Send';
-import Buy from '../components/Cards/Buy';
-import Sell from '../components/Cards/Sell';
-import TransactionDetailModal from '../components/Modals/TransactionDetailModal';
-import {groupTransactions} from '../lib/utils/groupTransactions';
-import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
-import BottomSheet from '../components/BottomSheet';
-import TransactionList from '../components/TransactionList';
-import {useAppDispatch} from '../store/hooks';
 import {
   Canvas,
   RoundedRect,
   Text as SkiaText,
   matchFont,
 } from '@shopify/react-native-skia';
+
+import NewAmountView from '../components/NewAmountView';
+import LineChart from '../components/Chart/Chart';
+import {getTransactions, txDetailSelector} from '../reducers/transaction';
+import HeaderButton from '../components/Buttons/HeaderButton';
+import DashboardButton from '../components/Buttons/DashboardButton';
+import Receive from '../components/Cards/Receive';
+import Send from '../components/Cards/Send';
+import Buy from '../components/Cards/Buy';
+import Sell from '../components/Cards/Sell';
+import PlasmaModal from './../components/Modals/PlasmaModal';
+import WalletsModalContent from './../components/Modals/WalletsModalContent';
+import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
+import {groupTransactions} from '../lib/utils/groupTransactions';
+import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
+import BottomSheet from '../components/BottomSheet';
+import TransactionList from '../components/TransactionList';
+import {useAppDispatch, useAppSelector} from '../store/hooks';
+import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
+import {decodeBIP21} from '../lib/utils/bip21';
+import {unsetDeeplink} from '../reducers/deeplinks';
+import {validate as validateLtcAddress} from '../lib/utils/validate';
+import {updateAmount} from '../reducers/input';
+import SendModal from '../components/Modals/SendModal';
 
 const fontFamily =
   Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
@@ -52,16 +61,74 @@ interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
-  const transactions = useSelector(state => txDetailSelector(state));
-  const groupedTransactions = groupTransactions(transactions);
+  const isInternetReachable = useAppSelector(
+    state => state.info.isInternetReachable,
+  );
 
-  const [activeTab, setActiveTab] = useState(0);
+  const transactions = useAppSelector(state => txDetailSelector(state));
+  const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks);
+  const groupedTransactions = groupTransactions(transactions);
 
   const dispatch = useAppDispatch();
 
+  const [activeTab, setActiveTab] = useState(0);
+  const [isSendModalTriggered, triggerSendModal] = useState<boolean>(false);
   const [selectedTransaction, selectTransaction] = useState(null);
   const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
-  const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
+  const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
+  const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
+  const [currentWallet, setCurrentWallet] = useState('Main wallet');
+
+  // Deeplink handler
+  useEffect(() => {
+    if (deeplinkSet) {
+      validate(uri);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Deeplink validator
+  const validate = async data => {
+    try {
+      // handle BIP21 litecoin URI
+      if (data.startsWith('litecoin:')) {
+        const decoded = decodeBIP21(data);
+        const valid = await validateLtcAddress(decoded.address);
+
+        // BIP21 validation
+        if (!valid) {
+          throw new Error('URI');
+        }
+
+        // If additional data included, set amount/address
+        if (decoded.options.amount) {
+          // setAmount(decoded.options.amount);
+          dispatch(updateAmount(decoded.options.amount));
+        }
+        if (decoded.options.message) {
+          // setDescription(decoded.options.message);
+        }
+        // setAddress(decoded.address);
+
+        return;
+      }
+    } catch (error) {
+      throw new Error(String(error));
+    }
+  };
+
+  // Deeplink payment logic
+  const handleConfirmSend: () => void = async () => {
+    try {
+      // await dispatch(sendOnchainPayment(address, amount));
+      // dispatch(unsetDeeplink());
+      // triggerSendModal(false);
+      // navigation.navigate('Sent', {amount, address});
+    } catch (error: unknown) {
+      Alert.alert('Payment Failed', String(error));
+      return;
+    }
+  };
 
   // Animation
   const translationY = useSharedValue(0);
@@ -107,7 +174,7 @@ const Main: React.FC<Props> = props => {
       backgroundColor: interpolateColor(
         clampedTranslateY,
         [250, 350],
-        ['#1162E6', '#f7f7f7'],
+        [isInternetReachable ? '#1162E6' : '#F36F56', '#f7f7f7'],
       ),
     };
   });
@@ -119,6 +186,10 @@ const Main: React.FC<Props> = props => {
   const expandHeaderOnButtonPress = () => {
     translationY.value = withSpring(-12, {mass: 0.5});
   };
+
+  useEffect(() => {
+    dispatch(getTransactions());
+  }, []);
 
   // change headerLeft button based on if card is open
   // if transaction list is shown, show settings button
@@ -147,32 +218,131 @@ const Main: React.FC<Props> = props => {
         ),
       });
     }
-  }, [activeTab]);
+  }, [activeTab, expandHeaderOnButtonPress, navigation]);
+
+  const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
+
+  const buttonOpacity = useSharedValue(0);
+  const walletButtonOpacity = useSharedValue(0);
+
+  const animatedButton = useAnimatedStyle(() => {
+    return {
+      opacity: buttonOpacity.value,
+    };
+  });
+
+  const animatedWalletButton = useAnimatedStyle(() => {
+    return {
+      opacity: walletButtonOpacity.value,
+    };
+  });
+
+  const leftHeaderButton = useMemo(
+    () => (
+      <Animated.View style={[{width: 'auto', height: 'auto'}, animatedButton]}>
+        <HeaderButton
+          onPress={() => navigation.navigate('SettingsStack')}
+          imageSource={require('../assets/icons/settings-cog.png')}
+        />
+      </Animated.View>
+    ),
+    [animatedButton, navigation],
+  );
+
+  const rightHeaderButton = useMemo(
+    () => (
+      <Animated.View style={[{width: 'auto', height: 'auto'}, animatedButton]}>
+        <HeaderButton
+          onPress={() => navigation.navigate('AlertsStack')}
+          imageSource={require('../assets/icons/charts-icon.png')}
+          rightPadding={true}
+        />
+      </Animated.View>
+    ),
+    [animatedButton, navigation],
+  );
+
+  const walletButton = useMemo(
+    () => (
+      <Animated.View
+        style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}
+        onLayout={event => {
+          event.target.measure((x, y, width, height, pageX, pageY) => {
+            setPlasmaModalGapInPixels(height + pageY);
+          });
+        }}>
+        <ChooseWalletButton
+          title={currentWallet}
+          onPress={() => {
+            setWalletsModalOpened(!isWalletsModalOpened);
+          }}
+          disabled={false}
+          isModalOpened={isWalletsModalOpened}
+          isFromBottomToTop={false}
+          animDuration={200}
+        />
+      </Animated.View>
+    ),
+    [animatedWalletButton, currentWallet, isWalletsModalOpened],
+  );
+
+  useEffect(() => {
+    if (isWalletsModalOpened || isTxDetailModalOpened) {
+      buttonOpacity.value = withTiming(0, {duration: 150});
+
+      var fadingTimeout = setTimeout(() => {
+        navigation.setOptions({
+          headerLeft: undefined,
+          headerRight: undefined,
+        });
+      }, 150);
+    } else {
+      buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
+
+      navigation.setOptions({
+        headerLeft: () => leftHeaderButton,
+        headerRight: () => rightHeaderButton,
+      });
+    }
+
+    if (isTxDetailModalOpened) {
+      walletButtonOpacity.value = withTiming(0, {duration: 150});
+
+      var walletButtonFadingTimeout = setTimeout(() => {
+        navigation.setOptions({
+          headerTitle: () => <></>,
+        });
+      }, 150);
+    } else {
+      walletButtonOpacity.value = withDelay(
+        150,
+        withTiming(1, {duration: 250}),
+      );
+
+      navigation.setOptions({
+        headerTitle: () => walletButton,
+      });
+    }
+
+    return () => {
+      clearTimeout(fadingTimeout);
+      clearTimeout(walletButtonFadingTimeout);
+    };
+  }, [
+    leftHeaderButton,
+    rightHeaderButton,
+    walletButton,
+    navigation,
+    isWalletsModalOpened,
+    isTxDetailModalOpened,
+    buttonOpacity,
+    walletButtonOpacity,
+  ]);
 
   const txListComponent = (
     <View>
-      <View
-        style={{
-          height: 70,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
-        <Text
-          style={{
-            paddingLeft: 19,
-            paddingBottom: 12,
-            paddingTop: 5,
-            fontFamily:
-              Platform.OS === 'ios'
-                ? 'Satoshi Variable'
-                : 'SatoshiVariable-Regular.ttf',
-            fontStyle: 'bold',
-            fontWeight: '700',
-            color: '#2E2E2E',
-            fontSize: 24,
-          }}>
-          Latest Transactions
-        </Text>
+      <View style={styles.txTitleContainer}>
+        <Text style={styles.txTitleText}>Latest Transactions</Text>
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
           <Canvas style={{height: 50, width: 80}}>
@@ -192,7 +362,7 @@ const Main: React.FC<Props> = props => {
         scrollOffset={scrollOffset}
         onPress={data => {
           selectTransaction(data);
-          setTxDetailModalVisible(true);
+          setTxDetailModalOpened(true);
         }}
         transactions={displayedTxs}
       />
@@ -210,6 +380,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 1}
         textPadding={28}
+        disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Sell"
@@ -220,6 +391,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 2}
         textPadding={30}
+        disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Convert"
@@ -229,6 +401,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 3}
         textPadding={18}
+        disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Send"
@@ -239,6 +412,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 4}
         textPadding={25}
+        disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Receive"
@@ -249,6 +423,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 5}
         textPadding={18}
+        disabled={false}
       />
     </View>
   );
@@ -256,7 +431,12 @@ const Main: React.FC<Props> = props => {
   return (
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
-      <NewAmountView animatedProps={animatedHeaderHeight}>
+      <NewAmountView
+        animatedProps={animatedHeaderHeight}
+        currentWallet={currentWallet}
+        openWallets={() => {
+          setWalletsModalOpened(true);
+        }}>
         <Animated.View style={animatedHeaderStyle}>
           <LineChart />
         </Animated.View>
@@ -276,13 +456,72 @@ const Main: React.FC<Props> = props => {
         receiveViewComponent={<Receive />}
       />
 
-      <TransactionDetailModal
+      <PlasmaModal
+        isOpened={isTxDetailModalOpened}
         close={() => {
-          setTxDetailModalVisible(false);
+          setTxDetailModalOpened(false);
         }}
-        isVisible={isTxDetailModalVisible}
-        transaction={selectedTransaction}
-        navigate={navigation.navigate}
+        isFromBottomToTop={true}
+        animDuration={250}
+        gapInPixels={200}
+        backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
+        gapSpecifiedStyle={{backgroundColor: 'transparent'}}
+        contentBodySpecifiedStyle={{
+          borderTopLeftRadius: 30,
+          borderTopRightRadius: 30,
+        }}
+        renderBody={(
+          isOpened: boolean,
+          showAnim: boolean,
+          animDelay: number,
+          animDuration: number,
+        ) => (
+          <TxDetailModalContent
+            isOpened={isOpened}
+            close={() => {
+              setTxDetailModalOpened(false);
+            }}
+            showAnim={showAnim}
+            animDelay={animDelay}
+            animDuration={animDuration}
+            transaction={selectedTransaction}
+          />
+        )}
+      />
+
+      <PlasmaModal
+        isOpened={isWalletsModalOpened}
+        close={() => {
+          setWalletsModalOpened(false);
+        }}
+        isFromBottomToTop={false}
+        animDuration={250}
+        gapInPixels={plasmaModalGapInPixels}
+        backSpecifiedStyle={{backgroundColor: 'transparent'}}
+        renderBody={(
+          isOpened: boolean,
+          showAnim: boolean,
+          animDelay: number,
+          animDuration: number,
+        ) => (
+          <WalletsModalContent
+            isOpened={isOpened}
+            showAnim={showAnim}
+            animDelay={animDelay}
+            animDuration={animDuration}
+          />
+        )}
+      />
+
+      <SendModal
+        isVisible={isSendModalTriggered}
+        handleConfirm={() => handleConfirmSend()}
+        close={() => {
+          triggerSendModal(false);
+          dispatch(unsetDeeplink());
+        }}
+        amount={32}
+        address={'fdsfdsfdsfds'}
       />
     </Animated.View>
   );
@@ -299,18 +538,44 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   headerContainer: {
-    marginLeft: 20,
-    marginRight: 20,
     marginTop: 5,
+    paddingLeft: 10,
+    paddingRight: 20,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     height: 110,
   },
+  txTitleContainer: {
+    height: 70,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  txTitleText: {
+    paddingLeft: 19,
+    paddingBottom: 12,
+    paddingTop: 5,
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontWeight: '700',
+    color: '#2E2E2E',
+    fontSize: 24,
+  },
 });
 
-export const navigationOptions = navigation => {
+export const navigationOptions = (navigation: any) => {
   return {
-    headerTitle: '',
+    headerTitle: () => (
+      <ChooseWalletButton
+        title={'Wallet Title'}
+        onPress={() => {}}
+        disabled={false}
+        isModalOpened={false}
+        isFromBottomToTop={false}
+        animDuration={200}
+      />
+    ),
     headerTransparent: true,
     headerLeft: () => (
       <HeaderButton
@@ -322,6 +587,7 @@ export const navigationOptions = navigation => {
       <HeaderButton
         onPress={() => navigation.navigate('AlertsStack')}
         imageSource={require('../assets/icons/charts-icon.png')}
+        rightPadding={true}
       />
     ),
   };

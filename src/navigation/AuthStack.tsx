@@ -2,7 +2,7 @@ import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import Auth from '../screens/Auth/Auth';
-import Forgot from '../screens/Auth/Forgot';
+import Forgot, {ForgotNavigationOptions} from '../screens/Auth/Forgot';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import HeaderButton from '../components/Buttons/HeaderButton';
 
@@ -13,6 +13,7 @@ function AuthStack(): React.JSX.Element {
     <HeaderButton
       title="Forgot Pincode?"
       onPress={() => navigation.navigate('Forgot')}
+      rightPadding={true}
     />
   );
   return (
@@ -35,7 +36,7 @@ function AuthStack(): React.JSX.Element {
       <Stack.Screen
         name="Forgot"
         component={Forgot}
-        options={Forgot.navigationOptions}
+        options={({navigation}) => ForgotNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="ChangePincode"

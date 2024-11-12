@@ -1,6 +1,6 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {AppThunk} from './types';
-import shajs from 'sha.js';
+import Crypto from 'react-native-quick-crypto';
 
 import * as Lnd from '../lib/lightning/wallet';
 
@@ -56,7 +56,10 @@ export const setRecoveryMode = createAction<boolean>(
 // functions
 export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
   const {seed} = getState().onboarding!;
-  const uniqueId: string = shajs('sha256').update(seed.join('')).digest('hex');
+  console.log(seed.join(''));
+  const uniqueId: string = Crypto.createHash('sha256')
+    .update(seed.join(''))
+    .digest('hex');
 
   dispatch(finishOnboardingAction(uniqueId));
 };
