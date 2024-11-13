@@ -94,17 +94,21 @@ const Scan = ({
   return (
     <View style={styles.container}>
       <Header modal={true} />
-      <Camera
-        codeScanner={codeScanner}
-        style={styles.camera}
-        device={device}
-        isActive={true}
-        torch={flashEnabled === false ? 'off' : 'on'}
-        audio={false}>
-        <View style={styles.qrFrameContainer}>
-          <Image source={require('../assets/images/qr-frame.png')} />
-        </View>
-      </Camera>
+      <View style={styles.container}>
+        <Camera
+          codeScanner={codeScanner}
+          style={styles.camera}
+          device={device}
+          isActive={true}
+          torch={flashEnabled === false ? 'off' : 'on'}
+          audio={false}
+        />
+      </View>
+      <Image
+        style={styles.qrFrameContainer}
+        source={require('../assets/images/qr-frame.png')}
+      />
+
       <LinearGradient
         colors={['#1162E6', '#0F55C7']}
         start={{x: 0, y: 0}}
@@ -125,7 +129,6 @@ const Scan = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
   },
   noMargin: {
     margin: 0,
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
-    marginTop: -42,
+    marginTop: -37,
   },
   bottomContainer: {
     height: 90,
@@ -161,10 +164,10 @@ const styles = StyleSheet.create({
     left: 15,
   },
   qrFrameContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 140,
+    position: 'absolute',
+    top: 270,
+    left: 70,
+    backgroundColor: 'rgba(0,0,0,0)',
   },
   bottomContentContainer: {
     flexDirection: 'row',
