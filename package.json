@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.1.1",
+    "@chatwoot/react-native-widget": "^0.0.21",
     "@craftzdog/react-native-buffer": "^6.0.5",
     "@moonpay/react-native-moonpay-sdk": "^0.9.1",
     "@noble/secp256k1": "^1.7.1",
