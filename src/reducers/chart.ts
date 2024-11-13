@@ -66,9 +66,16 @@ export const setCursorSelected =
 const chartPercentageDaySelector = createSelector(
   state => state.ticker.day,
   dayRates => {
-    if (dayRates.length === 0) {
+    console.log('LOSHY');
+    if (dayRates === undefined) {
+      console.log('LOSHY: dayRATES UNDEFINED');
       return 0;
     }
+    if (dayRates.length === 0) {
+      console.log('LOSHY: dayRATES LENGTH 0');
+      return 0;
+    }
+    console.log(dayRates);
     return percentageDiff(dayRates[0][3], dayRates[dayRates.length - 1][3]);
   },
 );

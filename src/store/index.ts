@@ -20,19 +20,26 @@ const persistConfig = {
   timeout: 0,
 };
 
+// uses Redux Action Logger (whilst devtools gets redux support)
+const actionLogger =
+  (_store: any) => (next: (arg0: any) => any) => (action: any) => {
+    console.log('Dispatched action:', action);
+    return next(action);
+  };
+
 const pReducer = persistReducer(persistConfig, reducer);
 
 export const store = configureStore({
   reducer: pReducer,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
-      immutableCheck: { 
-        warnAfter: 128 
+      immutableCheck: {
+        warnAfter: 128,
       },
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(actionLogger),
 });
 export const pStore = persistStore(store);
 
