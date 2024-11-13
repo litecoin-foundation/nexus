@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
@@ -30,22 +30,24 @@ const Initial = (props: Props) => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
-      <WhiteButton
-        value="Create Wallet"
-        small={false}
-        onPress={() => {
-          dispatch(genSeed());
-          navigation.navigate('Pin');
-        }}
-        active={true}
-      />
-      <WhiteClearButton
-        value="Already have a wallet? Log In"
-        small={true}
-        onPress={() => {
-          navigation.navigate('Recover');
-        }}
-      />
+      <View style={styles.subcontainer}>
+        <WhiteButton
+          value="Create Wallet"
+          small={false}
+          onPress={() => {
+            dispatch(genSeed());
+            navigation.navigate('Pin');
+          }}
+          active={true}
+        />
+        <WhiteClearButton
+          value="Already have a wallet? Log In"
+          small={true}
+          onPress={() => {
+            navigation.navigate('Recover');
+          }}
+        />
+      </View>
     </LinearGradient>
   );
 };
@@ -56,31 +58,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+  },
+  subcontainer: {
     paddingBottom: 50,
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-  neutrinoCacheContainer: {
-    height: 100,
-    marginBottom: 70,
-    justifyContent: 'center',
-  },
-  text: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  normalText: {
-    fontWeight: 'normal',
   },
 });
 

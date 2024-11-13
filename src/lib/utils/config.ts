@@ -29,7 +29,6 @@ const mainnetConfig = `
 export const createConfig = () => {
   return new Promise(async (resolve, reject) => {
     const lndConfPath = `${FileSystem.documentDirectory}/lndltc/lnd.conf`;
-
     try {
       // check if config exists
       if (await fileExists(lndConfPath)) {
