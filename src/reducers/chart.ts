@@ -66,16 +66,12 @@ export const setCursorSelected =
 const chartPercentageDaySelector = createSelector(
   state => state.ticker.day,
   dayRates => {
-    console.log('LOSHY');
-    if (dayRates === undefined) {
-      console.log('LOSHY: dayRATES UNDEFINED');
+    if (dayRates === undefined || null) {
       return 0;
     }
     if (dayRates.length === 0) {
-      console.log('LOSHY: dayRATES LENGTH 0');
       return 0;
     }
-    console.log(dayRates);
     return percentageDiff(dayRates[0][3], dayRates[dayRates.length - 1][3]);
   },
 );
@@ -103,12 +99,48 @@ const chartPercentageMonthSelector = createSelector(
   },
 );
 
+const chartPercentageQuarterSelector = createSelector(
+  state => state.ticker.quarter,
+  quarterRate => {
+    if (quarterRate.length === 0) {
+      return 0;
+    }
+    return percentageDiff(
+      quarterRate[0][3],
+      quarterRate[quarterRate.length - 1][3],
+    );
+  },
+);
+
+const chartPercentageYearSelector = createSelector(
+  state => state.ticker.year,
+  yearRate => {
+    if (yearRate.length === 0) {
+      return 0;
+    }
+    return percentageDiff(yearRate[0][3], yearRate[yearRate.length - 1][3]);
+  },
+);
+
+const chartPercentageAllSelector = createSelector(
+  state => state.ticker.year,
+  allRate => {
+    if (allRate.length === 0) {
+      return 0;
+    }
+    return percentageDiff(allRate[0][3], allRate[allRate.length - 1][3]);
+  },
+);
+
 export const chartPercentageChangeSelector = createSelector(
   chartPercentageDaySelector,
   chartPercentageWeekSelector,
   chartPercentageMonthSelector,
+  chartPercentageQuarterSelector,
+  chartPercentageYearSelector,
+  chartPercentageAllSelector,
   (state: RootState) => state.chart.graphPeriod,
-  (day, week, month, graphPeriod) => {
+  (day, week, month, quarter, year, all, graphPeriod) => {
     switch (graphPeriod) {
       case '1D':
         return day;
@@ -116,6 +148,12 @@ export const chartPercentageChangeSelector = createSelector(
         return week;
       case '1M':
         return month;
+      case '3M':
+        return quarter;
+      case '1Y':
+        return year;
+      case 'ALL':
+        return all;
     }
   },
 );

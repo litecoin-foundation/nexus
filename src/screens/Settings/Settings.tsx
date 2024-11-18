@@ -11,7 +11,6 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import ChatWootWidget from '@chatwoot/react-native-widget';
-import {NativeStackNavigationProp} from 'react-native-screens/lib/typescript/native-stack/types';
 
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
@@ -286,13 +285,7 @@ const styles = StyleSheet.create({
   },
 });
 
-type SettingsNavigationProps = {
-  navigation: NativeStackNavigationProp<any>;
-};
-
-export const SettingsNavigationOptions = ({
-  navigation,
-}: SettingsNavigationProps) => {
+export const SettingsNavigationOptions = navigation => {
   return {
     headerTitle: () => <Text style={styles.headerTitle}>Settings</Text>,
     headerTitleAlign: 'left',

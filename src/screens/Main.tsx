@@ -40,6 +40,7 @@ import {unsetDeeplink} from '../reducers/deeplinks';
 import {validate as validateLtcAddress} from '../lib/utils/validate';
 import {updateAmount} from '../reducers/input';
 import SendModal from '../components/Modals/SendModal';
+import DatePicker from '../components/DatePicker';
 
 const fontFamily =
   Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
@@ -439,6 +440,7 @@ const Main: React.FC<Props> = props => {
         }}>
         <Animated.View style={animatedHeaderStyle}>
           <LineChart />
+          <DatePicker />
         </Animated.View>
       </NewAmountView>
 

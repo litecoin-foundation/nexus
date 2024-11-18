@@ -15,6 +15,9 @@ const initialState = {
   day: [],
   week: [],
   month: [],
+  quarter: [],
+  year: [],
+  all: [],
 } as ITicker;
 
 // actions
@@ -28,6 +31,15 @@ const updateHistoricRateWeekAction = createAction(
 );
 const updateHistoricRateMonthAction = createAction(
   'ticker/updateHistoricRateMonthAction',
+);
+const updateHistoricRateQuarterAction = createAction(
+  'ticker/updateHistoricRateQuarterAction',
+);
+const updateHistoricRateYearAction = createAction(
+  'ticker/updateHistoricRateYearAction',
+);
+const updateHistoricRateAllAction = createAction(
+  'ticker/updateHistoricRateAllAction',
 );
 
 const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
@@ -70,124 +82,85 @@ export const pollTicker = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getTicker()), 15000);
 };
 
+const fetchHistoricalRates = async (interval: string): Promise<any[]> => {
+  const url = `https://mobile.litecoin.com/api/prices/${interval}`;
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  };
+
+  const res = await fetch(url, {method: 'GET', headers});
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to fetch historical rates');
+  }
+
+  const {data} = await res.json();
+
+  return data.map((candle: any) => [
+    Number(candle.start),
+    Number(candle.low),
+    Number(candle.high),
+    Number(candle.open),
+    Number(candle.close),
+    Number(candle.volume),
+  ]);
+};
+
 export const getDayHistoricalRates = (): AppThunk => async dispatch => {
-  const date = new Date();
-  const lastDay = new Date();
-  lastDay.setDate(lastDay.getDate() - 1);
-
-  const lastDayUnix = Math.floor(lastDay / 1000);
-  const dateUnix = Math.floor(date / 1000);
-
   try {
-    const res = await fetch(
-      `https://api.coinbase.com/api/v3/brokerage/market/products/LTC-USD/candles?start=${lastDayUnix}&end=${dateUnix}&granularity=FIVE_MINUTE&limit=350`,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      },
-    );
-
-    if (!res.ok) {
-      const {message} = await res.json();
-      console.error(message);
-    }
-
-    const data = await res.json();
-    const {candles} = data;
-
-    const result = candles.map(candle => [
-      Number(candle.start),
-      Number(candle.low),
-      Number(candle.high),
-      Number(candle.open),
-      Number(candle.close),
-      Number(candle.volume),
-    ]);
-
+    const result = await fetchHistoricalRates('1D');
     dispatch(updateHistoricRateDayAction(result));
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching day historical rates:', error);
   }
 };
 
-// export const getWeekHistoricalRates = () => async dispatch => {
-//   const date = new Date();
-//   const lastWeek = new Date();
-//   lastWeek.setDate(lastWeek.getDate() - 7);
+export const getWeekHistoricalRates = (): AppThunk => async dispatch => {
+  try {
+    const result = await fetchHistoricalRates('1W');
+    dispatch(updateHistoricRateWeekAction(result));
+  } catch (error) {
+    console.error('Error fetching week historical rates:', error);
+  }
+};
 
-//   try {
-//     const res = await fetch(
-//       'https://api.pro.coinbase.com/products/LTC-USD/candles',
-//       {
-//         method: 'GET',
-//         headers: {
-//           Accept: 'application/json',
-//           'Content-Type': 'application/json',
-//         },
-//         params: {
-//           start: lastWeek.toISOString(),
-//           end: date.toISOString(),
-//           granularity: 3600,
-//         },
-//       },
-//     );
+export const getMonthHistoricalRates = (): AppThunk => async dispatch => {
+  try {
+    const result = await fetchHistoricalRates('1M');
+    dispatch(updateHistoricRateMonthAction(result));
+  } catch (error) {
+    console.error('Error fetching month historical rates:', error);
+  }
+};
 
-//     if (!res.ok) {
-//       const {message} = await res.json();
-//       console.error(message);
-//     }
+export const getQuarterHistoricalRates = (): AppThunk => async dispatch => {
+  try {
+    const result = await fetchHistoricalRates('3M');
+    dispatch(updateHistoricRateQuarterAction(result));
+  } catch (error) {
+    console.error('Error fetching 3-month historical rates:', error);
+  }
+};
 
-//     const data = await res.json();
+export const getYearHistoricalRates = (): AppThunk => async dispatch => {
+  try {
+    const result = await fetchHistoricalRates('1Y');
+    dispatch(updateHistoricRateYearAction(result));
+  } catch (error) {
+    console.error('Error fetching 1-year historical rates:', error);
+  }
+};
 
-//     dispatch({
-//       type: UPDATE_HISTORIC_RATE_WEEK,
-//       data,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
-// export const getMonthHistoricalRates = () => async dispatch => {
-//   const date = new Date();
-//   const lastMonth = new Date();
-//   lastMonth.setMonth(lastMonth.getMonth() - 1);
-
-//   try {
-//     const res = await fetch(
-//       'https://api.pro.coinbase.com/products/LTC-USD/candles',
-//       {
-//         method: 'GET',
-//         headers: {
-//           Accept: 'application/json',
-//           'Content-Type': 'application/json',
-//         },
-//         params: {
-//           start: lastMonth.toISOString(),
-//           end: date.toISOString(),
-//           granularity: 21600,
-//         },
-//       },
-//     );
-
-//     if (!res.ok) {
-//       const {message} = await res.json();
-//       console.error(message);
-//     }
-
-//     const data = await res.json();
-
-//     dispatch({
-//       type: UPDATE_HISTORIC_RATE_MONTH,
-//       data,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
+export const getAllHistoricalRates = (): AppThunk => async dispatch => {
+  try {
+    const result = await fetchHistoricalRates('ALL');
+    dispatch(updateHistoricRateAllAction(result));
+  } catch (error) {
+    console.error('Error fetching All historical rates:', error);
+  }
+};
 
 export const updateHistoricalRates = (): AppThunk => (dispatch, getStore) => {
   const graphPeriod = getStore().chart.graphPeriod;
@@ -197,10 +170,19 @@ export const updateHistoricalRates = (): AppThunk => (dispatch, getStore) => {
       dispatch(getDayHistoricalRates());
       break;
     case '1W':
-      // dispatch(getWeekHistoricalRates());
+      dispatch(getWeekHistoricalRates());
       break;
     case '1M':
-      // dispatch(getMonthHistoricalRates());
+      dispatch(getMonthHistoricalRates());
+      break;
+    case '3M':
+      dispatch(getQuarterHistoricalRates());
+      break;
+    case '1Y':
+      dispatch(getYearHistoricalRates());
+      break;
+    case 'ALL':
+      dispatch(getAllHistoricalRates());
       break;
     default:
       dispatch(getDayHistoricalRates());
@@ -225,6 +207,26 @@ export const tickerSlice = createSlice({
       ...state,
       day: action.payload,
     }),
+    updateHistoricRateWeekAction: (state, action) => ({
+      ...state,
+      week: action.payload,
+    }),
+    updateHistoricRateMonthAction: (state, action) => ({
+      ...state,
+      month: action.payload,
+    }),
+    updateHistoricRateQuarterAction: (state, action) => ({
+      ...state,
+      quarter: action.payload,
+    }),
+    updateHistoricRateYearAction: (state, action) => ({
+      ...state,
+      year: action.payload,
+    }),
+    updateHistoricRateAllAction: (state, action) => ({
+      ...state,
+      all: action.payload,
+    }),
   },
 });
 
@@ -248,7 +250,9 @@ export const monthSelector = createSelector(
   state => state.ticker.day,
   state => state.ticker.week,
   state => state.ticker.month,
-  (graphPeriod, dayData, weekData, monthData) => {
+  state => state.ticker.quarter,
+  state => state.ticker.year,
+  (graphPeriod, dayData, weekData, monthData, quarterData, yearData) => {
     let data;
 
     if (graphPeriod === '1D') {
@@ -257,6 +261,12 @@ export const monthSelector = createSelector(
       data = weekData;
     } else if (graphPeriod === '1M') {
       data = monthData;
+    } else if (graphPeriod === '3M') {
+      data = quarterData;
+    } else if (graphPeriod === '1Y') {
+      data = yearData;
+    } else if (graphPeriod === 'ALL') {
+      data = yearData;
     }
 
     if (data === undefined || data === null) {

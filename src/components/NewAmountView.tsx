@@ -7,11 +7,12 @@ import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
 import Animated from 'react-native-reanimated';
+import {formatDate, formatTime} from '../lib/utils/date';
 
 interface Props {
   children: React.ReactNode;
   animatedProps: any; // TODO
-  currentWallet: string
+  currentWallet: string;
 }
 
 const NewAmountView: React.FC<Props> = props => {
@@ -20,6 +21,7 @@ const NewAmountView: React.FC<Props> = props => {
     state => state.chart.cursorSelected,
   );
   const chartCursorValue = useAppSelector(state => state.chart.cursorValue);
+  const chartCursorDate = useAppSelector(state => state.chart.cursorDate);
   const chartPercentageChange = useAppSelector(state =>
     chartPercentageChangeSelector(state),
   );
@@ -52,8 +54,11 @@ const NewAmountView: React.FC<Props> = props => {
             </>
           ) : (
             <>
-              <View style={[styles.amount, styles.margin]}>
-                <Text style={styles.amountText}>${chartCursorValue}</Text>
+              <Text style={styles.amountText}>${chartCursorValue}</Text>
+              <View style={styles.fiat}>
+                <Text style={[styles.fiatText, {paddingBottom: 2}]}>
+                  {formatDate(chartCursorDate)} {formatTime(chartCursorDate)}
+                </Text>
               </View>
             </>
           )}
