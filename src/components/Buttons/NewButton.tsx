@@ -3,23 +3,44 @@ import {
   Image,
   ImageSourcePropType,
   StyleSheet,
-  TouchableHighlight,
-  View,
   Platform,
+  Pressable,
 } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 interface Props {
   imageSource: ImageSourcePropType;
+  onPress: () => void;
 }
 
 const NewButton: React.FC<Props> = props => {
-  const {imageSource} = props;
+  const {imageSource, onPress} = props;
+  const scaler = useSharedValue(1);
+
+  const motionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scaler.value}],
+    };
+  });
+
+  const onPressIn = () => {
+    scaler.value = withSpring(0.9, {mass: 1});
+  };
+
+  const onPressOut = () => {
+    scaler.value = withSpring(1, {mass: 0.7});
+  };
+
   return (
-    <TouchableHighlight>
-      <View style={styles.container}>
+    <Pressable onPressIn={onPressIn} onPressOut={onPressOut} onPress={onPress}>
+      <Animated.View style={[styles.container, motionStyle]}>
         <Image source={imageSource} />
-      </View>
-    </TouchableHighlight>
+      </Animated.View>
+    </Pressable>
   );
 };
 
