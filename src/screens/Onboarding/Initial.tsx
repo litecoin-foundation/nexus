@@ -7,7 +7,7 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {useAppDispatch} from '../../store/hooks';
 import {detectCurrencyCode, setExplorer} from '../../reducers/settings';
-import {genSeed} from '../../reducers/onboarding';
+import {genSeed, getNeutrinoCache} from '../../reducers/onboarding';
 
 type RootStackParamList = {
   Initial: undefined;
@@ -26,6 +26,11 @@ const Initial = (props: Props) => {
   useEffect(() => {
     dispatch(detectCurrencyCode());
     dispatch(setExplorer('Litecoin Space'));
+  }, [dispatch]);
+
+  // fetch neutrino cache!
+  useEffect(() => {
+    dispatch(getNeutrinoCache());
   }, [dispatch]);
 
   return (

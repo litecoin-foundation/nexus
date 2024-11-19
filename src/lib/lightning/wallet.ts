@@ -70,6 +70,7 @@ export const initWallet = async (
  */
 export const unlockWallet = async (
   password: string,
+  recoveryWindow?: number,
 ): Promise<lnrpc.UnlockWalletResponse> => {
   const start = new Date().getTime();
   // await NativeModules.LndMobile.unlockWallet(password);
@@ -83,6 +84,7 @@ export const unlockWallet = async (
     method: 'UnlockWallet',
     options: {
       walletPassword: stringToUint8Array(password),
+      recoveryWindow: recoveryWindow ? recoveryWindow : null,
     },
   });
   console.log('unlock time: ' + (new Date().getTime() - start) / 1000 + 's');

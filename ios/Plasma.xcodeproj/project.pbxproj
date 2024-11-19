@@ -24,12 +24,12 @@
 		1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C12BF5022900EDCA9B /* SwiftProtobuf */; };
 		1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C32BF5022900EDCA9B /* SwiftProtobufPluginLibrary */; };
 		1BED719F2BF4CE8E00098E26 /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */; };
+		30403D1781E46E18DE47036C /* libPods-plasma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FD1976B16DEFB2D268E332DC /* libPods-plasma.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8E76C575CF0DFA1F37AA5EE5 /* libPods-plasma-plasmaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A161D6D1C199D17BD47C7632 /* libPods-plasma-plasmaTests.a */; };
 		964D5BC014578B7A3FA31EBC /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC18D45C582850A19CA3EB95 /* ExpoModulesProvider.swift */; };
-		A383DC83A18A89B164A1E434 /* libPods-plasma-plasmaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0FDE829A6C03C1487A6141B /* libPods-plasma-plasmaTests.a */; };
 		B7539F0800979BDF26A41213 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2075DC22F2454F65CC20E21D /* ExpoModulesProvider.swift */; };
 		DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */; };
-		F8EFA9107E5590CAECF3249B /* libPods-plasma.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18485A624FF44B2CA1FEF157 /* libPods-plasma.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +60,7 @@
 		00E356EE1AD99517003FC87E /* plasmaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = plasmaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* plasmaTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = plasmaTests.m; sourceTree = "<group>"; };
+		06A08EE9C51D9BF7DDB0F7FE /* Pods-plasma.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma.release.xcconfig"; path = "Target Support Files/Pods-plasma/Pods-plasma.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* plasma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = plasma.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = plasma/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = plasma/AppDelegate.mm; sourceTree = "<group>"; };
@@ -67,7 +68,6 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = plasma/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = plasma/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = plasma/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		18485A624FF44B2CA1FEF157 /* libPods-plasma.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-plasma.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:67RAULRX93:Marcin Krzyzanowski"; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		1BBB01A02BF4FF2800EDCA9B /* Satoshi-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Variable.ttf"; sourceTree = "<group>"; };
 		1BBB01A12BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-VariableItalic.ttf"; sourceTree = "<group>"; };
@@ -81,15 +81,15 @@
 		1BBB01BF2BF501F200EDCA9B /* plasma-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "plasma-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		2075DC22F2454F65CC20E21D /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-plasma/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		38B857622068AA00B927DD24 /* Pods-plasma.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma.debug.xcconfig"; path = "Target Support Files/Pods-plasma/Pods-plasma.debug.xcconfig"; sourceTree = "<group>"; };
 		6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = plasma/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = plasma/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8F92323C29E0A2EA3E441B49 /* Pods-plasma.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma.release.xcconfig"; path = "Target Support Files/Pods-plasma/Pods-plasma.release.xcconfig"; sourceTree = "<group>"; };
+		894BCCC3646CA04647F5A3EC /* Pods-plasma-plasmaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.release.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.release.xcconfig"; sourceTree = "<group>"; };
+		8D219BB03B399206D01A6D23 /* Pods-plasma-plasmaTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.debug.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.debug.xcconfig"; sourceTree = "<group>"; };
+		A161D6D1C199D17BD47C7632 /* libPods-plasma-plasmaTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-plasma-plasmaTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC18D45C582850A19CA3EB95 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-plasma-plasmaTests/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		B0FDE829A6C03C1487A6141B /* libPods-plasma-plasmaTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-plasma-plasmaTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		B9929E75B8AF81829E1660DB /* Pods-plasma-plasmaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.release.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.release.xcconfig"; sourceTree = "<group>"; };
-		EA7162CC926632686960A55E /* Pods-plasma-plasmaTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma-plasmaTests.debug.xcconfig"; path = "Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests.debug.xcconfig"; sourceTree = "<group>"; };
-		EADEC926D2F2B77D43D7107B /* Pods-plasma.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-plasma.debug.xcconfig"; path = "Target Support Files/Pods-plasma/Pods-plasma.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		FD1976B16DEFB2D268E332DC /* libPods-plasma.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-plasma.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +97,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A383DC83A18A89B164A1E434 /* libPods-plasma-plasmaTests.a in Frameworks */,
+				8E76C575CF0DFA1F37AA5EE5 /* libPods-plasma-plasmaTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,7 +109,7 @@
 				1BED719F2BF4CE8E00098E26 /* libresolv.9.tbd in Frameworks */,
 				1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */,
 				1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */,
-				F8EFA9107E5590CAECF3249B /* libPods-plasma.a in Frameworks */,
+				30403D1781E46E18DE47036C /* libPods-plasma.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,8 +198,8 @@
 				1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */,
 				1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				18485A624FF44B2CA1FEF157 /* libPods-plasma.a */,
-				B0FDE829A6C03C1487A6141B /* libPods-plasma-plasmaTests.a */,
+				FD1976B16DEFB2D268E332DC /* libPods-plasma.a */,
+				A161D6D1C199D17BD47C7632 /* libPods-plasma-plasmaTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -248,10 +248,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				EADEC926D2F2B77D43D7107B /* Pods-plasma.debug.xcconfig */,
-				8F92323C29E0A2EA3E441B49 /* Pods-plasma.release.xcconfig */,
-				EA7162CC926632686960A55E /* Pods-plasma-plasmaTests.debug.xcconfig */,
-				B9929E75B8AF81829E1660DB /* Pods-plasma-plasmaTests.release.xcconfig */,
+				38B857622068AA00B927DD24 /* Pods-plasma.debug.xcconfig */,
+				06A08EE9C51D9BF7DDB0F7FE /* Pods-plasma.release.xcconfig */,
+				8D219BB03B399206D01A6D23 /* Pods-plasma-plasmaTests.debug.xcconfig */,
+				894BCCC3646CA04647F5A3EC /* Pods-plasma-plasmaTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -271,13 +271,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "plasmaTests" */;
 			buildPhases = (
-				77CCC8D45FF33C65B82A84F1 /* [CP] Check Pods Manifest.lock */,
+				915FA40B82C6ED772E70A744 /* [CP] Check Pods Manifest.lock */,
 				E14DD3D270AFDF7376EC2B1F /* [Expo] Configure project */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				63AC57159DEB6A0BCBB01285 /* [CP] Embed Pods Frameworks */,
-				A4972C0CD99FBBFF89512786 /* [CP] Copy Pods Resources */,
+				B3DA45FE61D4EE6E76C79031 /* [CP] Embed Pods Frameworks */,
+				DE480FD88164DBE03B27CC39 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -293,15 +293,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "plasma" */;
 			buildPhases = (
-				AFC746C3859E2F110227DCF4 /* [CP] Check Pods Manifest.lock */,
+				75E369BBB6C0569FA7DAD9C0 /* [CP] Check Pods Manifest.lock */,
 				3EEE2EBA49D854351DE52355 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				1BBB01B82BF4FF5500EDCA9B /* Embed Frameworks */,
-				6B307A6EAE3566DE6AD0E0F8 /* [CP] Embed Pods Frameworks */,
-				08AC667DEA8DB752507973EE /* [CP] Copy Pods Resources */,
+				39C26FF503F37FF68CEE9238 /* [CP] Embed Pods Frameworks */,
+				FC61384529A58FF34DDE4DB0 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -396,21 +396,21 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		08AC667DEA8DB752507973EE /* [CP] Copy Pods Resources */ = {
+		39C26FF503F37FF68CEE9238 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Copy Pods Resources";
+			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		3EEE2EBA49D854351DE52355 /* [Expo] Configure project */ = {
@@ -432,80 +432,7 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-plasma/expo-configure-project.sh\"\n";
 		};
-		63AC57159DEB6A0BCBB01285 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		6B307A6EAE3566DE6AD0E0F8 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		77CCC8D45FF33C65B82A84F1 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-plasma-plasmaTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		A4972C0CD99FBBFF89512786 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		AFC746C3859E2F110227DCF4 /* [CP] Check Pods Manifest.lock */ = {
+		75E369BBB6C0569FA7DAD9C0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -527,6 +454,62 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		915FA40B82C6ED772E70A744 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-plasma-plasmaTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B3DA45FE61D4EE6E76C79031 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DE480FD88164DBE03B27CC39 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma-plasmaTests/Pods-plasma-plasmaTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		E14DD3D270AFDF7376EC2B1F /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -545,6 +528,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-plasma-plasmaTests/expo-configure-project.sh\"\n";
+		};
+		FC61384529A58FF34DDE4DB0 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-plasma/Pods-plasma-resources.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -586,7 +586,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EA7162CC926632686960A55E /* Pods-plasma-plasmaTests.debug.xcconfig */;
+			baseConfigurationReference = 8D219BB03B399206D01A6D23 /* Pods-plasma-plasmaTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -615,7 +615,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B9929E75B8AF81829E1660DB /* Pods-plasma-plasmaTests.release.xcconfig */;
+			baseConfigurationReference = 894BCCC3646CA04647F5A3EC /* Pods-plasma-plasmaTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -641,7 +641,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EADEC926D2F2B77D43D7107B /* Pods-plasma.debug.xcconfig */;
+			baseConfigurationReference = 38B857622068AA00B927DD24 /* Pods-plasma.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -664,7 +664,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.litecoin.--PRODUCT-NAME-rfc1034identifier-";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.litecoin.plasma.onboarding;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.litecoin.plasma;
 				PRODUCT_NAME = plasma;
 				SWIFT_OBJC_BRIDGING_HEADER = "plasma-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -675,7 +675,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8F92323C29E0A2EA3E441B49 /* Pods-plasma.release.xcconfig */;
+			baseConfigurationReference = 06A08EE9C51D9BF7DDB0F7FE /* Pods-plasma.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -697,7 +697,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.litecoin.--PRODUCT-NAME-rfc1034identifier-";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.litecoin.plasma.onboarding;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.litecoin.plasma;
 				PRODUCT_NAME = plasma;
 				SWIFT_OBJC_BRIDGING_HEADER = "plasma-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

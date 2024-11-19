@@ -1,13 +1,14 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import {initWallet} from '../../reducers/lightning';
+import {initWallet, startLnd} from '../../reducers/lightning';
 import {setSeed} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import ProgressBar from '../../components/ProgressBar';
+import {sleep} from '../../lib/utils/poll';
 
 type RootStackParamList = {
   Welcome: undefined;
@@ -22,48 +23,59 @@ const Welcome: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
 
-  const {task, downloadProgress, unzipProgress, seed} = useAppSelector(
+  const {task, downloadProgress, unzipProgress} = useAppSelector(
     state => state.onboarding,
   );
 
+  // TODO (LOSHY!)
   const handlePress = () => {
     dispatch(setSeed());
-    dispatch(initWallet());
-
-    navigation.reset({
-      index: 0,
-      routes: [{name: 'NewWalletStack'}],
+    dispatch(startLnd());
+    sleep(4000).then(() => {
+      dispatch(initWallet());
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'NewWalletStack'}],
+      });
     });
   };
 
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
-      <Text style={styles.text}>Your wallet is currently Presyncing.</Text>
-      <Text style={styles.text}>{task}</Text>
-      <ProgressBar
-        progress={
-          task === 'downloading'
-            ? Number(downloadProgress)
-            : Number(unzipProgress)
-        }
-      />
+      <>
+        <Text style={styles.text}>
+          Your wallet is currently {task} Presyncing. {downloadProgress}{' '}
+          {unzipProgress}
+        </Text>
+        <Text>{downloadProgress}</Text>
+        <ProgressBar
+          progress={
+            task === 'downloading'
+              ? Number(downloadProgress)
+              : Number(unzipProgress)
+          }
+        />
+      </>
     </View>
   );
 
   return (
     <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
-      {/* <Text style={styles.text}>Welcome!</Text> */}
-      <Text style={styles.text}>{seed}</Text>
-      {/* {task !== 'complete' ? cacheProgress : null} */}
-      {/* {cacheProgress} */}
+      <SafeAreaView style={{flex: 1}}>
+        <Text style={styles.text}>Welcome!</Text>
 
-      <WhiteButton
-        value="Tap Anywhere to Start"
-        small={false}
-        onPress={() => handlePress()}
-        active={true}
-        // disabled={task === 'complete' ? false : true}
-      />
+        {cacheProgress}
+
+        <View style={styles.buttonContainer}>
+          <WhiteButton
+            value="Tap Anywhere to Start"
+            small={false}
+            onPress={() => handlePress()}
+            active={true}
+            disabled={task === 'complete' ? false : true}
+          />
+        </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 };
@@ -71,14 +83,11 @@ const Welcome: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: 50,
   },
   neutrinoCacheContainer: {
-    height: 100,
-    marginBottom: 70,
-    justifyContent: 'center',
+    // height: 300,
+    // marginBottom: 70,
+    // justifyContent: 'center',
   },
   text: {
     color: 'white',
@@ -87,9 +96,12 @@ const styles = StyleSheet.create({
     letterSpacing: -0.18,
     lineHeight: 34,
     paddingBottom: 556,
-    textShadowColor: 'rgba(0, 0, 0, 0.11)',
-    textShadowOffset: {width: 0, height: 3},
-    textShadowRadius: 2,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 100,
+    alignSelf: 'center',
   },
 });
 

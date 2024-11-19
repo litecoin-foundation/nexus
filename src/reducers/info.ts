@@ -56,12 +56,17 @@ const initialState = {
 // actions
 const getInfoAction =
   createAction<InfoWithoutInternetReachable>('info/getInfoAction');
+const getRecoveryInfoAction = createAction('info/getRecoveryInfoAction');
 const checkInternetReachableAction = createAction<boolean | null>(
   'info/checkInternetReachableAction',
 );
 
 // functions
 const getInfo = (): AppThunk => async (dispatch, getState) => {
+  const {lndActive} = getState().lightning;
+  if (!lndActive) {
+    return;
+  }
   try {
     const infoRpc = await Lnd.getInfo();
 
@@ -128,6 +133,18 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
 
 export const pollInfo = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getInfo()));
+};
+
+export const getRecoveryInfo = (): AppThunk => async dispatch => {
+  try {
+    const recoveryRpc = await Lnd.getRecoveryInfo();
+    console.log(recoveryRpc);
+    const rpc = await Lnd.getInfo();
+    console.log(rpc);
+    // TODO
+  } catch (error) {
+    console.error(`getRecoveryInfo error: ${error}`);
+  }
 };
 
 export const checkInternetReachable = (): AppThunk => async dispatch => {

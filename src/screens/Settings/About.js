@@ -1,10 +1,12 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import {useSelector} from 'react-redux';
 
 import TableCell from '../../components/Cells/TableCell';
 import VerticalTableCell from '../../components/Cells/VerticalTableCell';
 import Header from '../../components/Header';
+import {useAppDispatch} from '../../store/hooks';
+import {getRecoveryInfo} from '../../reducers/info';
 
 const About = () => {
   const {
@@ -15,12 +17,23 @@ const About = () => {
     bestHeaderTimestamp,
     version,
   } = useSelector(state => state.info);
+  const {lndActive} = useSelector(state => state.lightning);
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(getRecoveryInfo());
+  }, []);
 
   return (
     <View style={styles.container}>
       <Header />
       <Text style={styles.titleText}>DEBUG INFO</Text>
       <ScrollView>
+        <TableCell
+          title="LND Active"
+          value={`${lndActive === true ? 'true' : 'false'}`}
+        />
         <TableCell
           title="Synced to Chain?"
           value={`${syncedToChain === true ? 'true' : 'false'}`}

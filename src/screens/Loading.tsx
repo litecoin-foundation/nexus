@@ -27,8 +27,14 @@ const Loading: React.FC<Props> = props => {
   const onboarding = useAppSelector(state => state.onboarding.onboarding);
   const isOnboarded = useAppSelector(state => state.onboarding.isOnboarded);
 
+  // only start LND if wallet isOnboarded
   useEffect(() => {
-    dispatch(startLnd());
+    if (isOnboarded) {
+      dispatch(startLnd());
+    }
+  }, [dispatch, isOnboarded]);
+
+  useEffect(() => {
     dispatch(checkBiometricSupport());
     dispatch(checkInternetReachable());
     dispatch(subscribeAppState());
