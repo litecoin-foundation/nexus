@@ -98,14 +98,7 @@ const fetchHistoricalRates = async (interval: string): Promise<any[]> => {
 
   const {data} = await res.json();
 
-  return data.map((candle: any) => [
-    Number(candle.start),
-    Number(candle.low),
-    Number(candle.high),
-    Number(candle.open),
-    Number(candle.close),
-    Number(candle.volume),
-  ]);
+  return data;
 };
 
 export const getDayHistoricalRates = (): AppThunk => async dispatch => {
@@ -252,7 +245,16 @@ export const monthSelector = createSelector(
   state => state.ticker.month,
   state => state.ticker.quarter,
   state => state.ticker.year,
-  (graphPeriod, dayData, weekData, monthData, quarterData, yearData) => {
+  state => state.ticker.all,
+  (
+    graphPeriod,
+    dayData,
+    weekData,
+    monthData,
+    quarterData,
+    yearData,
+    allData,
+  ) => {
     let data;
 
     if (graphPeriod === '1D') {
@@ -266,7 +268,7 @@ export const monthSelector = createSelector(
     } else if (graphPeriod === '1Y') {
       data = yearData;
     } else if (graphPeriod === 'ALL') {
-      data = yearData;
+      data = allData;
     }
 
     if (data === undefined || data === null) {
