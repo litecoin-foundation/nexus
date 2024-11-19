@@ -1,14 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View, Platform} from 'react-native';
+import {StyleSheet, Text, View, Platform, Dimensions} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
+import GreenButton from '../Buttons/GreenButton';
 import {decodeBIP21} from '../../lib/utils/bip21';
 import {validate as validateLtcAddress} from '../../lib/utils/validate';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {updateAmount, updateFiatAmount} from '../../reducers/input';
+import {updateAmount, updateFiatAmount, updateToAddress, updateMessage, updateFee} from '../../reducers/input';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
@@ -39,6 +40,8 @@ const Send: React.FC<Props> = props => {
   const [description, setDescription] = useState('');
   const [amountPickerActive, setAmountPickerActive] = useState(false);
 
+  const [recommendedFeeInSatsVByte, setRecommendedFeeInSatsVByte] = useState(1);
+
   const padOpacity = useSharedValue(0);
   const detailsOpacity = useSharedValue(1);
 
@@ -49,6 +52,24 @@ const Send: React.FC<Props> = props => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.params?.scanData]);
+
+  // change address handler
+  useEffect(() => {
+    dispatch(updateToAddress(address));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]);
+
+  // change description handler
+  useEffect(() => {
+    dispatch(updateMessage(description));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [description]);
+
+  // change fee handler
+  useEffect(() => {
+    dispatch(updateFee(recommendedFeeInSatsVByte));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recommendedFeeInSatsVByte]);
 
   const handleScan = () => {
     navigation.navigate('Scan', {returnRoute: 'Main'});
@@ -122,6 +143,27 @@ const Send: React.FC<Props> = props => {
     }
   }, [amountPickerActive, detailsOpacity, padOpacity]);
 
+  async function getRecommendedFee() {
+    try {
+      const req = await fetch(
+        'https://litecoinspace.org/api/v1/fees/recommended',
+      );
+      const data: any = await req.json();
+
+      if (data.hasOwnProperty('fastestFee')) {
+        setRecommendedFeeInSatsVByte(data.fastestFee);
+      } else {
+        throw new Error('Could not find recommended fees.');
+      }
+    } catch {
+      setRecommendedFeeInSatsVByte(1);
+    }
+  }
+
+  useEffect(() => {
+    getRecommendedFee();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.subcontainer}>
@@ -165,14 +207,13 @@ const Send: React.FC<Props> = props => {
             </View>
 
             <View style={styles.bottomButtonContainer}>
-              <BlueButton
-                value={'Fee'}
+              <GreenButton
+                value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
                 onPress={() => console.log('pressed fee')}
               />
               <BlueButton
                 value={`Send ${amount} LTC`}
                 onPress={() => {
-                  console.log('pressed send');
                   navigation.navigate('ConfirmSend');
                 }}
               />
@@ -225,7 +266,7 @@ const styles = StyleSheet.create({
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#2E2E2E',
-    fontSize: 24,
+    fontSize: Dimensions.get('screen').height * 0.025,
   },
   subtitleText: {
     fontFamily:
@@ -235,7 +276,7 @@ const styles = StyleSheet.create({
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#747E87',
-    fontSize: 12,
+    fontSize: Dimensions.get('screen').height * 0.012,
   },
   amountContainer: {
     flexDirection: 'row',
@@ -244,11 +285,11 @@ const styles = StyleSheet.create({
   },
   numpadContainer: {
     position: 'absolute',
-    bottom: 162,
+    bottom: Dimensions.get('screen').height * 0.17,
   },
   bottomButtonContainer: {
     position: 'absolute',
-    bottom: 150,
+    bottom: Dimensions.get('screen').height * 0.16,
     flexDirection: 'row',
     alignSelf: 'center',
     gap: 8,

@@ -1,14 +1,16 @@
 import React, {useState, useEffect} from 'react';
-import {Platform, Pressable, StyleSheet} from 'react-native';
+import {Platform, Pressable, StyleSheet, Dimensions} from 'react-native';
 import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
+import {useSelector} from 'react-redux';
 import {useAppSelector} from '../../store/hooks';
 import {subunitSymbolSelector} from '../../reducers/settings';
+import {fiatValueSelector} from '../../reducers/ticker';
 import {
   Canvas,
   Image,
   matchFont,
   RoundedRect,
-  Text,
+  Text as SkiaText,
   useImage,
 } from '@shopify/react-native-skia';
 import {defaultButtonSpring} from '../../theme/spring';
@@ -75,24 +77,24 @@ const AmountPicker: React.FC<Props> = props => {
   return (
     <Pressable style={styles.container} onPress={handlePress}>
       <Canvas style={styles.amountsContainer}>
-        <Text
+        <SkiaText
           font={font}
-          color={'#2C72FF'}
+          color={toggleLTC ? '#2C72FF' : '#747E87'}
           x={4}
           y={ltcFontY}
           text={
             String(amount) === '' ? '0.00' : `${String(amount)}${amountSymbol}`
           }
         />
-        <Text
+        <SkiaText
           font={font}
-          color={'#747E87'}
+          color={toggleLTC ? '#747E87' : '#2C72FF'}
           x={4}
           y={fiatFontY}
           text={
             String(fiatAmount) === ''
               ? '0.00'
-              : `${currencySymbol}${String(fiatAmount)}`
+              : `${String(currencySymbol)}${String(fiatAmount)}`
           }
         />
       </Canvas>
@@ -153,6 +155,16 @@ const styles = StyleSheet.create({
       Platform.OS === 'ios'
         ? 'Satoshi Variable'
         : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#2E2E2E',
+  },
+  amountText: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontSize: Dimensions.get('screen').height * 0.028,
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#2E2E2E',

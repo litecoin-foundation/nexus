@@ -10,7 +10,7 @@ const ADD_ALERT = 'ADD_ALERT';
 const REMOVE_ALERT = 'REMOVE_ALERT';
 const SET_ALERT_AVAILABILITY = 'SET_ALERT_AVAILABILITY';
 
-const alertProviderUrl = 'http://localhost:3000/alert';
+const alertProviderUrl = 'https://mobile.litecoin.com/alert';
 
 // actions
 export const addAlert = (data): AppThunk => async (dispatch, getState) => {
