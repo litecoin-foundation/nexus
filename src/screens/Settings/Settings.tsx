@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import ChatWootWidget from '@chatwoot/react-native-widget';
 
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
@@ -23,6 +24,7 @@ import {purgeStore} from '../../store';
 import {deleteLNDDir} from '../../lib/utils/file';
 import {updateSubunit} from '../../reducers/settings';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import SupportCell from '../../components/Cells/SupportCell';
 
 type RootStackParamList = {
   General: undefined;
@@ -47,6 +49,7 @@ const Settings: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
   const [isPinModalTriggered, triggerPinModal] = useState(false);
+  const [isSupportWidgetTriggered, toggleSupportWidget] = useState(false);
 
   const biometricsAvailable = useAppSelector(
     state => state.authentication.biometricsAvailable,
@@ -58,6 +61,7 @@ const Settings: React.FC<Props> = props => {
     state => state.authentication.faceIDSupported,
   );
   const {subunit} = useAppSelector(state => state.settings);
+  const {uniqueId} = useAppSelector(state => state.onboarding);
 
   const handleBiometricSwitch = () => {
     dispatch(setBiometricEnabled(!biometricsEnabled));
@@ -79,7 +83,6 @@ const Settings: React.FC<Props> = props => {
     });
   };
 
-  // TODO: prompt and confirm if reset is wanted
   const handleReset = async () => {
     dispatch(resetPincode());
     purgeStore();
@@ -102,6 +105,21 @@ const Settings: React.FC<Props> = props => {
       console.log('err');
     }
   }
+        
+  // LOSHY: Support temp
+  const user = {
+    identifier: `${uniqueId}`,
+    // name: '',
+    // avatar_url: '',
+    email: 'john@gmail.com',
+    identifier_hash: '',
+  };
+  const customAttributes = {
+    pricingPlan: 'paid',
+  };
+  const websiteToken = 'SH4YF5fA3sHFqhHvKt23aQzz';
+  const baseUrl = 'https://chat-mobile.litecoin.com';
+  const locale = 'en';
 
   return (
     <>
@@ -110,6 +128,8 @@ const Settings: React.FC<Props> = props => {
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
         <ScrollView>
+          <SupportCell onPress={() => toggleSupportWidget(true)} />
+
           <SettingCell
             title="About"
             onPress={() => navigation.navigate('About')}
@@ -128,18 +148,6 @@ const Settings: React.FC<Props> = props => {
               handleSwitch={handleBiometricSwitch}
             />
           ) : null}
-
-          <SettingCell
-            title="Rescan for missing coins?"
-            onPress={() => {
-              dispatch(stopLnd());
-              sleep(10000).then(() => {
-                console.warn('LOSHY: looking to start lnd');
-                poll(dispatch(startLnd()), 1000, 1000);
-              });
-            }}
-            forward
-          />
 
           <SettingCell
             title="Import Private Key"
@@ -194,7 +202,19 @@ const Settings: React.FC<Props> = props => {
           </View>
 
           <SettingCell
-            title="RESET"
+            title="Rescan for missing coins?"
+            onPress={() => {
+              dispatch(stopLnd());
+              sleep(10000).then(() => {
+                console.warn('LOSHY: looking to start lnd');
+                poll(dispatch(startLnd()), 1000, 1000);
+              });
+            }}
+            forward
+          />
+
+          <SettingCell
+            title="RESET WALLET?"
             onPress={() => {
               handleAuthenticationRequired().then(() =>
                 Alert.alert(
@@ -226,6 +246,19 @@ const Settings: React.FC<Props> = props => {
         handleValidationFailure={() => DeviceEventEmitter.emit('auth', false)}
         handleValidationSuccess={() => DeviceEventEmitter.emit('auth', true)}
       />
+
+      {isSupportWidgetTriggered && (
+        <ChatWootWidget
+          websiteToken={websiteToken}
+          locale={locale}
+          baseUrl={baseUrl}
+          closeModal={() => toggleSupportWidget(false)}
+          isModalVisible={isSupportWidgetTriggered}
+          user={user}
+          customAttributes={customAttributes}
+          colorScheme="light"
+        />
+      )}
     </>
   );
 };
@@ -252,7 +285,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingRight: 25,
     paddingBottom: 14,
-
     borderTopWidth: 0.5,
     borderBottomWidth: 0.5,
     borderColor: '#9797974d',

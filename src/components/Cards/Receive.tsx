@@ -1,13 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, Platform, Pressable} from 'react-native';
-import NewBlueButton from '../Buttons/NewBlueButton';
-import NewButton from '../Buttons/NewButton';
+import Clipboard from '@react-native-clipboard/clipboard';
+import QRCode from 'react-native-qrcode-svg';
+import Share from 'react-native-share';
+
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
-import QRCode from 'react-native-qrcode-svg';
+import NewBlueButton from '../Buttons/NewBlueButton';
+import NewButton from '../Buttons/NewButton';
 import InfoModal from '../Modals/InfoModal';
-import Clipboard from '@react-native-clipboard/clipboard';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 
 interface Props {}
 
@@ -35,6 +36,10 @@ const Receive: React.FC<Props> = () => {
   const handleCopy = async () => {
     setInfoModalVisible(true);
     await Clipboard.setString(address);
+  };
+
+  const handleShare = () => {
+    Share.open({message: 'hello'});
   };
 
   return (
@@ -66,11 +71,11 @@ const Receive: React.FC<Props> = () => {
           <Pressable onPress={() => handleCopy()}>
             <Text style={styles.addressText}>{address}</Text>
           </Pressable>
-          <TouchableOpacity onPress={() => handleCopy()}>
-            <NewButton
-              imageSource={require('../../assets/icons/share-icon.png')}
-            />
-          </TouchableOpacity>
+
+          <NewButton
+            onPress={() => handleShare()}
+            imageSource={require('../../assets/icons/share-icon.png')}
+          />
         </View>
       </View>
       <View style={styles.qrContainer}>

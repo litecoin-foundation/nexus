@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
 import {
   Gesture,
   GestureDetector,
@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-const SNAP_POINTS_FROM_TOP = [250, 350];
+const SNAP_POINTS_FROM_TOP = [240, Dimensions.get('screen').height * 0.47];
 const FULLY_OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
 const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 
@@ -52,7 +52,7 @@ const BottomSheet: React.FC<Props> = props => {
     setSnapPoint(point);
     // check if BottomSheet is being swiped away
     // if true, close open tab and show tx history!
-    if (point === 350) {
+    if (point === 366) {
       runOnJS(handleSwipeDown)();
     }
   };

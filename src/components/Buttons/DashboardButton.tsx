@@ -112,7 +112,7 @@ const DashboardButton: React.FC<Props> = props => {
             color={interpolatedInnerShadowColour}
             inner
           />
-          <Shadow dx={0} dy={2} blur={4} color={interpolatedShadowColour} />
+          <Shadow dx={0} dy={2.4} blur={5} color={interpolatedShadowColour} />
         </RoundedRect>
         <RoundedRect
           x={10}

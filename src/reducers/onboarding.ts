@@ -1,8 +1,13 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {AppThunk} from './types';
+import * as FileSystem from 'expo-file-system';
+import {unzip, subscribe} from 'react-native-zip-archive';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import Crypto from 'react-native-quick-crypto';
 
 import * as Lnd from '../lib/lightning/wallet';
+import {AppThunk} from './types';
+import {fileExists} from '../lib/utils/file';
+import {showError} from './errors';
 
 // types
 interface IOnboardingState {
@@ -16,12 +21,6 @@ interface IOnboardingState {
   downloadProgress?: number;
   unzipProgress?: number;
 }
-
-type neutrinoCacheState = {
-  task: undefined | 'downloading' | 'unzipping' | 'complete' | 'failed';
-  downloadProgress?: number;
-  unzipProgress?: number;
-};
 
 // initial state
 const initialState = {
@@ -49,9 +48,18 @@ const setSeedRecoveryAction = createAction<string[]>(
 export const setRecoveryMode = createAction<boolean>(
   'onboarding/setRecoveryMode',
 );
-// const getNeutrinoCacheAction = createAction<neutrinoCacheState>(
-//   'onboarding/getNeutrinoCacheAction',
-// );
+const updateNeutrinoCacheDownloadProgress = createAction<number>(
+  'onboarding/updateNeutrinoCacheDownloadProgress',
+);
+const updateNeutrinoCacheUnzipProgress = createAction<number>(
+  'onboarding/updateNeutrinoCacheUnzipProgress',
+);
+const getNeutrinoCacheFailedAction = createAction(
+  'onboarding/getNeutrinoCacheFailedAction',
+);
+const getNeutrinoCacheSuccessAction = createAction(
+  'onboarding/getNeutrinoCacheSuccessAction',
+);
 
 // functions
 export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
@@ -91,19 +99,106 @@ export const setSeedRecovery =
     dispatch(setSeedRecoveryAction(seedPhrase));
   };
 
-// export const getNeutrinoCache = (): AppThunk => async dispatch => {
-//   lndCache.addStateListener((state: ICachedNeutrinoDBDownloadState) => {
-//     const {task, downloadProgress, unzipProgress} = state;
-//     dispatch(
-//       getNeutrinoCacheAction({
-//         task,
-//         downloadProgress,
-//         unzipProgress,
-//       }),
-//     );
-//   });
-//   await lndCache.downloadCache(ENetworks.mainnet);
-// };
+const test = () => {
+  return new Promise((resolve, reject) => {
+    FileSystem.readDirectoryAsync(`${FileSystem.documentDirectory}`)
+      .then(files => {
+        // Log the names of all the files
+        console.log('Files in the Documents Directory:', files);
+        files.forEach(file => {
+          console.log(`File: ${file}`);
+        });
+        resolve(true);
+      })
+      .catch(error => {
+        console.log('Error reading files:', error);
+        reject();
+      });
+  });
+};
+
+export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
+  const {task} = getState().onboarding;
+  await test();
+  // download neutrino cache from server
+  if (task === 'complete') {
+    // neutrino cache already fetched & extracted
+    // user has likely failed to finish onboarding
+    console.log('neutrino cache ready!');
+    return;
+  } else {
+    // neutrino cache archive doesn't exist
+    // download, then extract
+    console.log('fetching mainnet.zip');
+    ReactNativeBlobUtil.config({
+      fileCache: true,
+      appendExt: 'zip',
+      path: `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/mainnet.zip`,
+    })
+      .fetch('GET', 'https://static-mobile.litecoin.com/mainnet.zip')
+      .progress((received, total) => {
+        dispatch(
+          updateNeutrinoCacheDownloadProgress(Number(received) / Number(total)),
+        );
+      })
+      .then(async response => {
+        const {status} = response.info();
+        if (status === 200) {
+          // successful download
+          await test();
+          dispatch(extractNeutrinoCache());
+        } else {
+          dispatch(getNeutrinoCacheFailedAction());
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        dispatch(showError(String(error)));
+        dispatch(getNeutrinoCacheFailedAction());
+        return;
+      });
+  }
+};
+
+const extractNeutrinoCache = (): AppThunk => async dispatch => {
+  try {
+    console.log('starting extraction!');
+    // delete any preexisting filter files if any exists
+    const blkHeaderPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/block_headers.bin`;
+    const neutrinodbPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/neutrino.db`;
+    const filterHeaderPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/reg_filter_headers.bin`;
+    if (await fileExists(blkHeaderPath)) {
+      await FileSystem.deleteAsync(blkHeaderPath);
+    }
+    if (await fileExists(neutrinodbPath)) {
+      await FileSystem.deleteAsync(neutrinodbPath);
+    }
+    if (await fileExists(filterHeaderPath)) {
+      await FileSystem.deleteAsync(filterHeaderPath);
+    }
+    // extract cache
+    await subscribe(({progress}) => {
+      console.log(progress);
+      dispatch(updateNeutrinoCacheUnzipProgress(Math.floor(progress * 100)));
+    });
+    await unzip(
+      `${FileSystem.documentDirectory}/mainnet.zip`,
+      `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/`,
+    );
+    // clean up
+    await FileSystem.deleteAsync(`${FileSystem.documentDirectory}/mainnet.zip`);
+    await test();
+    console.log('finished');
+    ReactNativeBlobUtil.fs.unlink(
+      `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/mainnet.zip`,
+    );
+    await test();
+    dispatch(getNeutrinoCacheSuccessAction());
+  } catch (error) {
+    console.error(error);
+    dispatch(getNeutrinoCacheFailedAction());
+  }
+};
 
 // slicer
 export const onboardingSlice = createSlice({
@@ -141,14 +236,33 @@ export const onboardingSlice = createSlice({
       ...state,
       beingRecovered: action.payload,
     }),
-    getNeutrinoCacheAction: (
+    updateNeutrinoCacheDownloadProgress: (
       state,
-      action: PayloadAction<neutrinoCacheState>,
+      action: PayloadAction<number>,
     ) => ({
       ...state,
-      task: action.payload.task,
-      downloadProgress: action.payload.downloadProgress,
-      unzipProgress: action.payload.unzipProgress,
+      task: 'downloading',
+      downloadProgress: action.payload,
+    }),
+    getNeutrinoCacheFailedAction: state => ({
+      ...state,
+      task: 'failed',
+      downloadProgress: 0,
+      unzipProgress: 0,
+    }),
+    updateNeutrinoCacheUnzipProgress: (
+      state,
+      action: PayloadAction<number>,
+    ) => ({
+      ...state,
+      task: 'unzipping',
+      downloadProgress: 0,
+      unzipProgress: action.payload,
+    }),
+    getNeutrinoCacheSuccessAction: state => ({
+      ...state,
+      task: 'complete',
+      unzipProgress: 0,
     }),
   },
 });

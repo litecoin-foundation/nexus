@@ -13,7 +13,7 @@ export default class Header extends PureComponent<Props> {
       <View
         style={[
           styles.container,
-          modal ? {height: Dimensions.get('screen').height * 0.09} : null,
+          modal ? {height: Dimensions.get('screen').height * 0.1} : null,
         ]}>
         <SafeAreaView>{children}</SafeAreaView>
       </View>

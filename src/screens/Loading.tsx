@@ -27,8 +27,14 @@ const Loading: React.FC<Props> = props => {
   const onboarding = useAppSelector(state => state.onboarding.onboarding);
   const isOnboarded = useAppSelector(state => state.onboarding.isOnboarded);
 
+  // only start LND if wallet isOnboarded
   useEffect(() => {
-    dispatch(startLnd());
+    if (isOnboarded) {
+      dispatch(startLnd());
+    }
+  }, [dispatch, isOnboarded]);
+
+  useEffect(() => {
     dispatch(checkBiometricSupport());
     dispatch(checkInternetReachable());
     dispatch(subscribeAppState());
@@ -53,9 +59,14 @@ const Loading: React.FC<Props> = props => {
 
       if (onboarding === false && isOnboarded === true) {
         navigation.replace('AuthStack');
-      } else {
+      } else if (isOnboarded === false) {
         dispatch(startOnboarding());
         navigation.navigate('Onboarding');
+      } else {
+        console.log('LOSHYPOOPY!!!!');
+        console.log('SOMETHING WENT WRONG!');
+        console.log(`onboarding: ${onboarding} isOnboarded: ${isOnboarded}`);
+        // TODO (LOSHY!)
       }
     };
 

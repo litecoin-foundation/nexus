@@ -1,15 +1,15 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Platform, SafeAreaView, StyleSheet, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {StackNavigationProp} from '@react-navigation/stack';
 
 import {setSeedRecovery} from '../../reducers/onboarding';
 import RecoveryField from '../../components/RecoveryField';
-import {RouteProp} from '@react-navigation/native';
 import {useAppDispatch} from '../../store/hooks';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
 interface Props {
-  navigation: RouteProp<RootStackParamList, 'Recover'>;
+  navigation: StackNavigationProp<RootStackParamList, 'Recover'>;
 }
 
 type RootStackParamList = {
@@ -17,9 +17,53 @@ type RootStackParamList = {
   Pin: undefined;
 };
 
+const debugSeed = [
+  'abandon',
+  'clock',
+  'civil',
+  'uphold',
+  'february',
+  'liberty',
+  'tray',
+  'item',
+  'kiwi',
+  'adult',
+  'casino',
+  'force',
+  'check',
+  'brick',
+  'nerve',
+  'digital',
+  'lawsuit',
+  'describe',
+  'lecture',
+  'leopard',
+  'figure',
+  'season',
+  'unaware',
+  'sick',
+];
+
 const Recover: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (__DEV__) {
+      navigation.setOptions({
+        // eslint-disable-next-line react/no-unstable-nested-components
+        headerRight: () => (
+          <HeaderButton
+            title="skip"
+            onPress={() => {
+              dispatch(setSeedRecovery(debugSeed));
+              navigation.navigate('Pin');
+            }}
+          />
+        ),
+      });
+    }
+  });
 
   const attemptLogin = async (seed: string[]) => {
     await dispatch(setSeedRecovery(seed));

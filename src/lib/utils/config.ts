@@ -29,16 +29,16 @@ const mainnetConfig = `
 export const createConfig = () => {
   return new Promise(async (resolve, reject) => {
     const lndConfPath = `${FileSystem.documentDirectory}/lndltc/lnd.conf`;
-
     try {
       // check if config exists
       if (await fileExists(lndConfPath)) {
         resolve(true);
       }
       // otherwise continues...
-      await FileSystem.makeDirectoryAsync(
-        `${FileSystem.documentDirectory}/lndltc`,
-      );
+      const lndDir = `${FileSystem.documentDirectory}/lndltc`;
+      if (!fileExists(lndDir)) {
+        await FileSystem.makeDirectoryAsync(lndDir);
+      }
       FileSystem.writeAsStringAsync(lndConfPath, mainnetConfig).then(() => {
         resolve(true);
       });

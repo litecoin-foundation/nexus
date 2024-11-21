@@ -11,7 +11,6 @@ import {
   Text,
   View,
   SectionList,
-  RefreshControl,
   SectionListRenderItem,
   Platform,
   NativeSyntheticEvent,

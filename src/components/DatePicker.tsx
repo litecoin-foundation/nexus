@@ -1,17 +1,21 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
 
+import {useAppDispatch, useAppSelector} from '../store/hooks';
 import WhiteButton from './Buttons/WhiteButton';
 import {changeGraphPeriod} from '../reducers/chart';
 
-const DatePicker = () => {
-  const dispatch = useDispatch();
-  const currentGraphPeriod = useSelector((state) => state.chart.graphPeriod);
+interface Props {}
 
-  const options = ['1D', '1W', '1M', '3M', '1Y', 'ALL'];
+type GraphPeriodType = ('1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL')[];
 
-  const buttons = options.map((value) => {
+const DatePicker: React.FC<Props> = () => {
+  const dispatch = useAppDispatch();
+  const currentGraphPeriod = useAppSelector(state => state.chart.graphPeriod);
+
+  const options: GraphPeriodType = ['1D', '1W', '1M', '3M', '1Y', 'ALL'];
+
+  const buttons = options.map(value => {
     return (
       <WhiteButton
         value={value}
@@ -29,7 +33,6 @@ const DatePicker = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     marginLeft: 30,

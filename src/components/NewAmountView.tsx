@@ -7,19 +7,20 @@ import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
 import Animated from 'react-native-reanimated';
+import {formatDate, formatTime} from '../lib/utils/date';
 
 interface Props {
   children: React.ReactNode;
-  animatedProps: any; // TODO
-  currentWallet: string
+  animatedProps: any;
 }
 
 const NewAmountView: React.FC<Props> = props => {
-  const {children, animatedProps, currentWallet} = props;
+  const {children, animatedProps} = props;
   const chartCursorSelected = useAppSelector(
     state => state.chart.cursorSelected,
   );
   const chartCursorValue = useAppSelector(state => state.chart.cursorValue);
+  const chartCursorDate = useAppSelector(state => state.chart.cursorDate);
   const chartPercentageChange = useAppSelector(state =>
     chartPercentageChangeSelector(state),
   );
@@ -52,8 +53,11 @@ const NewAmountView: React.FC<Props> = props => {
             </>
           ) : (
             <>
-              <View style={[styles.amount, styles.margin]}>
-                <Text style={styles.amountText}>${chartCursorValue}</Text>
+              <Text style={styles.amountText}>${chartCursorValue}</Text>
+              <View style={styles.fiat}>
+                <Text style={[styles.fiatText, {paddingBottom: 2}]}>
+                  {formatDate(chartCursorDate)} {formatTime(chartCursorDate)}
+                </Text>
               </View>
             </>
           )}
@@ -79,8 +83,8 @@ const styles = StyleSheet.create({
     top: 0,
     width: '100%',
     backgroundColor: '#1162E6',
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   subview: {
     top: 40,
@@ -115,15 +119,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
   },
-  gradient: {
-    height: '100%',
-  },
   childrenContainer: {
-    paddingTop: 29,
+    paddingTop: 41,
     flex: 1,
-  },
-  margin: {
-    marginTop: 10,
   },
   internetContainer: {
     paddingTop: 60,
