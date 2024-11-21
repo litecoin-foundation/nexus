@@ -59,9 +59,14 @@ const Loading: React.FC<Props> = props => {
 
       if (onboarding === false && isOnboarded === true) {
         navigation.replace('AuthStack');
-      } else {
+      } else if (isOnboarded === false) {
         dispatch(startOnboarding());
         navigation.navigate('Onboarding');
+      } else {
+        console.log('LOSHYPOOPY!!!!');
+        console.log('SOMETHING WENT WRONG!');
+        console.log(`onboarding: ${onboarding} isOnboarded: ${isOnboarded}`);
+        // TODO (LOSHY!)
       }
     };
 

@@ -8,7 +8,7 @@ import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
 import {setItem, getItem} from '../lib/utils/keychain';
 import {deleteWalletDB, fileExists} from '../lib/utils/file';
-import {finishOnboarding, setRecoveryMode} from './onboarding';
+import {finishOnboarding} from './onboarding';
 import {subscribeTransactions} from './transaction';
 import {pollInfo} from './info';
 import {pollTicker} from './ticker';
@@ -39,10 +39,10 @@ export const startLnd = (): AppThunk => async dispatch => {
     // start LND
     await Lnd.startLnd(false, '--nolisten');
     dispatch(lndState(true));
-    // TODO: lockup wallet init/unlock until lnd is alive!
   } catch (err) {
     console.error('CANT start LND');
     console.error(err);
+
     // TODO: handle this
   }
 };
@@ -60,6 +60,7 @@ export const stopLnd = (): AppThunk => async dispatch => {
 
 export const initWallet = (): AppThunk => async (dispatch, getState) => {
   const {seed, beingRecovered} = getState().onboarding!;
+  console.time();
 
   const password: string = uuidv4();
   await setItem(PASS, password);
@@ -67,29 +68,52 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
   try {
     await deleteWalletDB();
 
-    await LndWallet.initWallet(
-      seed,
-      password,
-      beingRecovered === true ? 3000 : 0,
-    );
-    await Lnd.subscribeState();
+    console.log('LPOOPY initWallet being');
+    console.timeLog();
+    try {
+      await LndWallet.initWallet(
+        seed,
+        password,
+        beingRecovered === true ? 3000 : 0,
+      );
+    } catch (error) {
+      console.error(error);
+    }
 
-    LndMobileEventEmitter.addListener('SubscribeState', async event => {
-      try {
-        const {state} = Lnd.decodeState(event.data);
-        if (state === lnrpc.WalletState.RPC_ACTIVE) {
-          // dispatch pollers
-          dispatch(pollInfo());
-          dispatch(subscribeTransactions());
-          dispatch(pollTicker());
-          dispatch(finishOnboarding());
-          // dispatch(backupChannels());
-          return;
+    console.log('LPOOPY initWallet end');
+    console.timeLog();
+
+    const subscription = LndMobileEventEmitter.addListener(
+      'SubscribeState',
+      async event => {
+        try {
+          const {state} = Lnd.decodeState(event.data);
+          console.log(`POOPY: LND STATE UPDATE ${state}`);
+          if (state === lnrpc.WalletState.UNLOCKED) {
+            // UNLOCKED is before RPC_ACTIVE
+            // we know that onboarding is finished by now!
+            // when isOnboarded, the Welcome screen will initWallet()
+            // and handle navigation
+            console.log('LPOOPY finishOnboarding init');
+            dispatch(finishOnboarding());
+            console.log('LPOOPY finishOnboarding end');
+          } else if (state === lnrpc.WalletState.RPC_ACTIVE) {
+            // RPC_ACTIVE so we are ready to dispatch pollers
+            dispatch(pollInfo());
+            dispatch(pollTicker());
+
+            dispatch(subscribeTransactions());
+
+            subscription.remove();
+            return;
+          }
+        } catch (error) {
+          console.error(error);
         }
-      } catch (error) {
-        console.error(error);
-      }
-    });
+      },
+    );
+    console.log('LPOOPY: subscribeStateLND');
+    await Lnd.subscribeState();
   } catch (error) {
     console.error(error);
   }
@@ -106,39 +130,51 @@ export const unlockWallet = (): AppThunk => async dispatch => {
         throw new Error('wallet password is null');
       }
 
-      LndMobileEventEmitter.addListener('SubscribeState', async event => {
-        try {
-          const {state} = Lnd.decodeState(event.data);
+      const unlockSubscription = LndMobileEventEmitter.addListener(
+        'SubscribeState',
+        async event => {
+          try {
+            const {state} = Lnd.decodeState(event.data);
 
-          if (state === lnrpc.WalletState.RPC_ACTIVE) {
-            // dispatch pollers
-            dispatch(pollInfo());
-            dispatch(subscribeTransactions());
-            dispatch(pollTicker());
-            dispatch(pollBalance());
+            if (state === lnrpc.WalletState.RPC_ACTIVE) {
+              // dispatch pollers
+              dispatch(pollInfo());
+              dispatch(subscribeTransactions());
+              dispatch(pollTicker());
+              dispatch(pollBalance());
 
-            resolve();
+              unlockSubscription.remove();
+              resolve();
+            }
+          } catch (error) {
+            const dbPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+
+            if ((await fileExists(dbPath)) === false) {
+              // TODO: users seedphrase is no longer saved to keychain as seed is in mmkv db
+              // we should on initWallet() save the seedphrase to keychain
+              // then if in reinstall fetch the seed from keychain to recover from seedphrase!
+
+              // if no wallet db exists, user has likely uninstalled the app previously
+              // in this case, seed exists in keychain. initialise wallet from seed
+              // enabling recovery mode to scan for addresses
+              // dispatch(setRecoveryMode(true));
+              // console.log('LOSHY: UNLOCKER STARTS INITWALLET!');
+              // dispatch(initWallet());
+              // dispatch(setRecoveryMode(false));
+
+              // TODO: addtional handling here required
+              // TODO: also need to check if seed exist prior to attempting recovery
+
+              // resolve();
+              throw new Error(
+                `UNLOCKWALLET() wallet.db doesn't exist, error: ${error}`,
+              );
+            } else {
+              throw new Error(String(error));
+            }
           }
-        } catch (error) {
-          const dbPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
-
-          if ((await fileExists(dbPath)) === false) {
-            // if no wallet db exists, user has likely uninstalled the app previously
-            // in this case, seed exists in keychain. initialise wallet from seed
-            // enabling recovery mode to scan for addresses
-            dispatch(setRecoveryMode(true));
-            dispatch(initWallet());
-            dispatch(setRecoveryMode(false));
-
-            // TODO: addtional handling here required
-            // TODO: also need to check if seed exist prior to attempting recovery
-
-            resolve();
-          } else {
-            throw new Error(String(error));
-          }
-        }
-      });
+        },
+      );
 
       await Lnd.subscribeState();
     } catch (error: any) {

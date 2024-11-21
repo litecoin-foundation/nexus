@@ -11,12 +11,11 @@ import {formatDate, formatTime} from '../lib/utils/date';
 
 interface Props {
   children: React.ReactNode;
-  animatedProps: any; // TODO
-  currentWallet: string;
+  animatedProps: any;
 }
 
 const NewAmountView: React.FC<Props> = props => {
-  const {children, animatedProps, currentWallet} = props;
+  const {children, animatedProps} = props;
   const chartCursorSelected = useAppSelector(
     state => state.chart.cursorSelected,
   );
@@ -84,8 +83,8 @@ const styles = StyleSheet.create({
     top: 0,
     width: '100%',
     backgroundColor: '#1162E6',
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   subview: {
     top: 40,
@@ -120,15 +119,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
   },
-  gradient: {
-    height: '100%',
-  },
   childrenContainer: {
-    paddingTop: 29,
+    paddingTop: 41,
     flex: 1,
-  },
-  margin: {
-    marginTop: 10,
   },
   internetContainer: {
     paddingTop: 60,

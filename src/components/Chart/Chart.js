@@ -3,6 +3,11 @@ import {Dimensions} from 'react-native';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
 import Svg, {Path, Line, G, Defs, LinearGradient, Stop} from 'react-native-svg';
+import Animated, {
+  useSharedValue,
+  useAnimatedProps,
+  withTiming,
+} from 'react-native-reanimated';
 import * as scale from 'd3-scale';
 import {useDispatch, useSelector} from 'react-redux';
 
@@ -15,6 +20,8 @@ const d3 = {shape};
 const height = 130;
 const {width} = Dimensions.get('window');
 
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+
 const Chart = () => {
   const dispatch = useDispatch();
   const data = useSelector(state => monthSelector(state));
@@ -23,6 +30,8 @@ const Chart = () => {
   const [area, setArea] = useState('');
   const x = useRef(null);
   const y = useRef(null);
+
+  const animationValue = useSharedValue(0);
 
   useEffect(() => {
     dispatch(updateHistoricalRates());
@@ -59,7 +68,12 @@ const Chart = () => {
 
     setArea(areaPath);
     setLine(calcLine);
-  }, [data, line]);
+  }, [data]);
+
+  useEffect(() => {
+    animationValue.value = 0;
+    animationValue.value = withTiming(1, {duration: 1000});
+  }, [line]);
 
   const gradientId = 'areaGradient';
   const gradientStops = [
@@ -67,6 +81,12 @@ const Chart = () => {
     {offset: '40%', color: '#EEEEEE', opacity: 0.2},
     {offset: '100%', color: '#EEEEEE', opacity: 0},
   ];
+
+  const animatedProps = useAnimatedProps(() => {
+    return {
+      strokeDashoffset: 2000 * (1 - animationValue.value),
+    };
+  });
 
   const Graph = (
     <Svg height={height} width={width}>
@@ -83,7 +103,14 @@ const Chart = () => {
         </LinearGradient>
       </Defs>
       <Path d={area} fill={`url(#${gradientId})`} stroke="none" />
-      <Path d={line} fill="none" stroke="white" strokeWidth={3} />
+      <AnimatedPath
+        d={line}
+        fill="none"
+        stroke="white"
+        strokeWidth={3}
+        strokeDasharray={2000}
+        animatedProps={animatedProps}
+      />
     </Svg>
   );
 

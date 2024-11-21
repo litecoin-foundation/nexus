@@ -19,6 +19,9 @@ const About = () => {
   } = useSelector(state => state.info);
   const {lndActive} = useSelector(state => state.lightning);
 
+  const onboarding = useSelector(state => state.onboarding.onboarding);
+  const isOnboarded = useSelector(state => state.onboarding.isOnboarded);
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -30,6 +33,8 @@ const About = () => {
       <Header />
       <Text style={styles.titleText}>DEBUG INFO</Text>
       <ScrollView>
+        <TableCell title="onboarding" value={`${onboarding}`} />
+        <TableCell title="isOnboarded" value={`${isOnboarded}`} />
         <TableCell
           title="LND Active"
           value={`${lndActive === true ? 'true' : 'false'}`}

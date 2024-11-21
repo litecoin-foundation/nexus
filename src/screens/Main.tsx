@@ -1,5 +1,13 @@
 import React, {useEffect, useState, useMemo} from 'react';
-import {View, StyleSheet, Text, Platform, Pressable, Alert} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Platform,
+  Pressable,
+  Alert,
+  Dimensions,
+} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -50,6 +58,10 @@ const fontStyle = {
   fontWeight: '700',
 };
 const font = matchFont(fontStyle);
+
+const SNAP_POINTS_FROM_TOP = [240, Dimensions.get('screen').height * 0.47];
+const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
+const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 
 type RootStackParamList = {
   Main: {
@@ -133,34 +145,38 @@ const Main: React.FC<Props> = props => {
 
   // Animation
   const translationY = useSharedValue(0);
-  const bottomSheetTranslateY = useSharedValue(350);
+  const bottomSheetTranslateY = useSharedValue(CLOSED_SNAP_POINT);
   const scrollOffset = useSharedValue(0);
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
     const translateY = bottomSheetTranslateY.value + translationY.value;
 
-    const minTranslateY = Math.max(250, translateY);
-    const clampedTranslateY = Math.min(350, minTranslateY);
+    const minTranslateY = Math.max(OPEN_SNAP_POINT, translateY);
+    const clampedTranslateY = Math.min(CLOSED_SNAP_POINT, minTranslateY);
     return {
-      opacity: interpolate(clampedTranslateY, [250, 350], [0, 1]),
+      opacity: interpolate(
+        clampedTranslateY,
+        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
+        [0, 1],
+      ),
     };
   });
 
   const animatedHeaderHeight = useAnimatedProps(() => {
     const translateY = bottomSheetTranslateY.value + translationY.value;
 
-    const minTranslateY = Math.max(250, translateY);
-    const clampedTranslateY = Math.min(350, minTranslateY);
+    const minTranslateY = Math.max(OPEN_SNAP_POINT, translateY);
+    const clampedTranslateY = Math.min(CLOSED_SNAP_POINT, minTranslateY);
     return {
       height: clampedTranslateY,
       borderBottomLeftRadius: interpolate(
         clampedTranslateY,
-        [250, 350],
+        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
         [0, 40],
       ),
       borderBottomRightRadius: interpolate(
         clampedTranslateY,
-        [250, 350],
+        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
         [1, 40],
       ),
     };
@@ -169,12 +185,12 @@ const Main: React.FC<Props> = props => {
   const animatedHeaderContainerBackground = useAnimatedStyle(() => {
     const translateY = bottomSheetTranslateY.value + translationY.value;
 
-    const minTranslateY = Math.max(250, translateY);
-    const clampedTranslateY = Math.min(350, minTranslateY);
+    const minTranslateY = Math.max(OPEN_SNAP_POINT, translateY);
+    const clampedTranslateY = Math.min(CLOSED_SNAP_POINT, minTranslateY);
     return {
       backgroundColor: interpolateColor(
         clampedTranslateY,
-        [250, 350],
+        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
         [isInternetReachable ? '#1162E6' : '#F36F56', '#f7f7f7'],
       ),
     };
@@ -541,11 +557,8 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginTop: 5,
-    paddingLeft: 10,
-    paddingRight: 20,
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    height: 110,
+    alignSelf: 'center',
   },
   txTitleContainer: {
     height: 70,
