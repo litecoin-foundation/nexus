@@ -40,3 +40,19 @@ export const formatMonths = date => {
     year: 'numeric',
   });
 };
+
+export const formatTxDate = timestamp => {
+  const jsDate = new Date(timestamp * 1000);
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const year = jsDate.getFullYear();
+  const month = months[jsDate.getMonth()];
+  const date = jsDate.getDate();
+
+  const time = jsDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+
+  const dateString = date + ' ' + month + ' ' + year + ', ' + time;
+
+  return dateString;
+};

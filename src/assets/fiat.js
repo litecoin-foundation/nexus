@@ -923,7 +923,7 @@ const fiat = [
     key: 'RUB',
     symbol: 'RUB',
     name: 'Russian Ruble',
-    symbol_native: 'руб.',
+    symbol_native: 'rub.',
     decimal_digits: 2,
     rounding: 0,
     code: 'RUB',

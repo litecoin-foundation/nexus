@@ -8,6 +8,9 @@ import WebPage, {WebPageNavigationOptions} from '../screens/WebPage';
 import ConfirmSend, {
   ConfirmSendNavigationOptions,
 } from '../screens/Wallet/ConfirmSend';
+import SuccessSend, {
+  SuccessSendNavigationOptions,
+} from '../screens/Wallet/SuccessSend';
 import ConfirmBuy, {
   ConfirmBuyNavigationOptions,
 } from '../screens/Buy/ConfirmBuy';
@@ -56,6 +59,11 @@ function NewWalletStack(): React.JSX.Element {
         name="ConfirmSend"
         component={ConfirmSend}
         options={({navigation}) => ConfirmSendNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="SuccessSend"
+        component={SuccessSend}
+        options={({navigation}) => SuccessSendNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="ConfirmBuy"

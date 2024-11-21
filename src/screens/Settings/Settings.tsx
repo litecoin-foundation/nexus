@@ -94,6 +94,18 @@ const Settings: React.FC<Props> = props => {
     });
   };
 
+  async function testFetch() {
+    try {
+      const req = await fetch(
+        'https://mobile.litecoin.com/api/prices/1Y',
+      );
+      const data: any = await req.json();
+      console.log(data);
+    } catch {
+      console.log('err');
+    }
+  }
+        
   // LOSHY: Support temp
   const user = {
     identifier: `${uniqueId}`,
@@ -219,6 +231,11 @@ const Settings: React.FC<Props> = props => {
                 ),
               );
             }}
+          />
+
+          <SettingCell
+            title="Test Fetch"
+            onPress={() => testFetch()}
           />
         </ScrollView>
       </LinearGradient>

@@ -10,17 +10,24 @@ import Animated, {
 import WhiteButton from '../Buttons/WhiteButton';
 import WalletTab from '../Tabs/WalletTab';
 
+import {useAppSelector} from '../../store/hooks';
+
 interface Props {
   // currentWallet: string;
   isOpened: boolean;
   showAnim: boolean;
   animDelay: number;
   animDuration: number;
+  cardTranslateAnim: any;
 }
 
 export default function WalletsModalContent(props: Props) {
-  const {isOpened, showAnim, animDelay, animDuration} = props;
+  const {isOpened, showAnim, animDelay, animDuration, cardTranslateAnim} = props;
   // const navigation = useNavigation<any>();
+
+  const isInternetReachable = useAppSelector(
+    state => state.info.isInternetReachable,
+  );
 
   const buttonOpacity = useSharedValue(0);
 
@@ -66,8 +73,14 @@ export default function WalletsModalContent(props: Props) {
     </>
   );
 
+  const onlineOfflineBgColor = isInternetReachable ? '#0d3d8a' : '#e06852';
+
   return (
-    <View style={styles.body}>
+    <Animated.View style={[
+      styles.body,
+      cardTranslateAnim,
+      {backgroundColor: onlineOfflineBgColor},
+    ]}>
       <View style={styles.bodyItems}>{wallets}</View>
       <Animated.View style={animatedButton}>
         <WhiteButton
@@ -78,7 +91,7 @@ export default function WalletsModalContent(props: Props) {
           active={true}
         />
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 

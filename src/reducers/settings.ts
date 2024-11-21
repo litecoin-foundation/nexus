@@ -14,6 +14,8 @@ interface ISettings {
   currencyCode: string;
   currencySymbol: string;
   defaultExplorer: string;
+  mwebDefaultExplorer: string;
+  deviceNotificationToken: string;
 }
 type CurrencyCodeType = {
   currencyCode: string;
@@ -27,6 +29,8 @@ const initialState = {
   currencyCode: 'USD',
   currencySymbol: '$',
   defaultExplorer: 'Litecoin Space',
+  mwebDefaultExplorer: 'MWEB Explorer',
+  deviceNotificationToken: '',
 } as ISettings;
 
 // actions
@@ -40,6 +44,8 @@ const setCurrencyCodeAction = createAction<CurrencyCodeType>(
   'settings/setCurrencyCodeAction',
 );
 const setExplorerAction = createAction<string>('settings/setExplorerAction');
+const setMWEBExplorerAction = createAction<string>('settings/setMWEBExplorerAction');
+const setDeviceNotificationTokenAction = createAction<string>('settings/setDeviceNotificationTokenAction');
 
 // functions
 export const updateLastViewSeed = (): AppThunk => dispatch => {
@@ -70,6 +76,13 @@ export const setExplorer =
   (explorer: string): AppThunk =>
   dispatch => {
     dispatch(setExplorerAction(explorer));
+    dispatch(setMWEBExplorerAction('MWEB Explorer'));
+  };
+
+export const setDeviceNotificationToken =
+  (deviceToken: string): AppThunk =>
+  dispatch => {
+    dispatch(setDeviceNotificationTokenAction(deviceToken));
   };
 
 // slice
@@ -93,6 +106,14 @@ export const settingsSlice = createSlice({
     setExplorerAction: (state, action) => ({
       ...state,
       defaultExplorer: action.payload,
+    }),
+    setMWEBExplorerAction: (state, action) => ({
+      ...state,
+      mwebDefaultExplorer: action.payload,
+    }),
+    setDeviceNotificationTokenAction: (state, action) => ({
+      ...state,
+      deviceNotificationToken: action.payload,
     }),
   },
 });
@@ -143,9 +164,24 @@ export const defaultExplorerSelector = createSelector(
       case 'Bitinfocharts':
       case 'Blockcypher':
       case 'Litecoinblockexplorer':
+      case 'MWEB Explorer':
         return explorerObject!.tx + txHash;
       default:
         return explorerObject!.tx + txHash;
+    }
+  },
+);
+
+export const mwebDefaultExplorerSelector = createSelector(
+  [state => state.settings.mwebDefaultExplorer, (state, blockHeight) => blockHeight],
+  (mwebDefaultExplorer, blockHeight) => {
+    const explorerObject = explorers.find(e => e.key === mwebDefaultExplorer);
+
+    switch (mwebDefaultExplorer) {
+      case 'MWEB Explorer':
+        return explorerObject!.block + blockHeight;
+      default:
+        return explorerObject!.block + blockHeight;
     }
   },
 );

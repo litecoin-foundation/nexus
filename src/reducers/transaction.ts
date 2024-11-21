@@ -52,6 +52,8 @@ export const getTransactions = (): AppThunk => async dispatch => {
         timeStamp: tx.timeStamp,
         fee: tx.totalFees,
         destAddresses: tx.destAddresses,
+        outputDetails: tx.outputDetails,
+        previousOutpoints: tx.previousOutpoints,
         label: tx.label,
       };
       txs.push(obj);
@@ -117,12 +119,19 @@ export const publishTransaction = (txHex: string) => {
 };
 
 // selectors
-const txSelector = state => state.transaction.transactions;
+const txSelector = (state: any) => state.transaction.transactions;
 
 export const txDetailSelector = createSelector(txSelector, tx =>
-  tx.map(data => {
+  tx.map((data: any) => {
+
+    const addresses: string[] = [];
+    data.outputDetails?.forEach((outputDetail: any) => {
+      addresses.push(outputDetail.address);
+    });
+
     return {
       hash: data.txHash,
+      blockHeight: data.blockHeight,
       amount: data.amount,
       day: formatDate(data.timeStamp * 1000),
       time: formatTime(data.timeStamp * 1000),
@@ -130,7 +139,8 @@ export const txDetailSelector = createSelector(txSelector, tx =>
       fee: data.fee,
       confs: data.numConfirmations,
       lightning: false,
-      addresses: data.destAddresses,
+      addresses: addresses,
+      inputTxs: data.previousOutpoints,
       sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
     };
   }),
