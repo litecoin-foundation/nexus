@@ -52,7 +52,7 @@ const BottomSheet: React.FC<Props> = props => {
     setSnapPoint(point);
     // check if BottomSheet is being swiped away
     // if true, close open tab and show tx history!
-    if (point === 366) {
+    if (point === SNAP_POINTS_FROM_TOP[1]) {
       runOnJS(handleSwipeDown)();
     }
   };

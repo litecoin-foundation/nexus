@@ -1,16 +1,19 @@
 import React from 'react';
 import {View, Text, StyleSheet, Dimensions, Platform} from 'react-native';
+import PriceIndicatorButton from '../Buttons/PriceIndictorButton';
 
 interface Props {
   colorStyle: string;
   walletName: string;
   balance: number;
+  fiatBalance: number;
   priceRate: number;
   prevRate: number;
 }
 
 export default function WalletTab(props: Props) {
-  const {colorStyle, walletName, balance, priceRate, prevRate} = props;
+  const {colorStyle, walletName, balance, fiatBalance, priceRate, prevRate} =
+    props;
 
   let isWhiteStyle = true;
   switch (colorStyle) {
@@ -68,11 +71,6 @@ export default function WalletTab(props: Props) {
       fontWeight: '500',
       fontSize: Dimensions.get('screen').height * 0.016,
     },
-    tabLeftWorthChangeIcon: {
-      height: Dimensions.get('screen').height * 0.02,
-      width: Dimensions.get('screen').height * 0.02,
-      backgroundColor: 'red',
-    },
     tabLeftWorthChange: {
       color: isWhiteStyle ? '#000' : '#fff',
       fontStyle: 'normal',
@@ -104,13 +102,6 @@ export default function WalletTab(props: Props) {
     },
   });
 
-  const worth: any = balance * priceRate;
-  const worthText =
-    '$' +
-    String(parseFloat(worth).toFixed(2)).replace(
-      /(\d)(?=(\d{3})+(?!\d))/g,
-      '$1,',
-    );
   const change: any = (priceRate / prevRate) * 100 - 100;
   const changeText =
     change < 0 ? '' : '+' + parseFloat(change).toFixed(2) + '%';
@@ -121,12 +112,8 @@ export default function WalletTab(props: Props) {
         <Text style={styles.tabLeftTitle}>{walletName}</Text>
         <Text style={styles.tabLeftBalance}>{balance + ' LTC'}</Text>
         <View style={styles.tabLeftWorthContainer}>
-          <Text style={styles.tabLeftWorth}>{worthText}</Text>
-          {change < 0 ? (
-            <View style={styles.tabLeftWorthChangeIcon} />
-          ) : (
-            <View style={styles.tabLeftWorthChangeIcon} />
-          )}
+          <Text style={styles.tabLeftWorth}>{fiatBalance}</Text>
+          <PriceIndicatorButton value={Number(change)} />
           <Text style={styles.tabLeftWorthChange}>{changeText}</Text>
         </View>
       </View>

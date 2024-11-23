@@ -91,7 +91,7 @@ const Main: React.FC<Props> = props => {
   const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
-  const [currentWallet, setCurrentWallet] = useState('Main wallet');
+  const [currentWallet, setCurrentWallet] = useState('Main Wallet');
 
   function setTransactionIndex(newTxIndex: number) {
     selectTransaction(transactions[newTxIndex]);
@@ -100,7 +100,10 @@ const Main: React.FC<Props> = props => {
   function swipeToPrevTx() {
     if (selectedTransaction) {
       if (selectedTransaction.hasOwnProperty('index')) {
-        const newTxIndex = selectedTransaction.index > 0 ? selectedTransaction.index - 1 : transactions.length - 1;
+        const newTxIndex =
+          selectedTransaction.index > 0
+            ? selectedTransaction.index - 1
+            : transactions.length - 1;
         selectTransaction(transactions[newTxIndex]);
       }
     }
@@ -109,7 +112,10 @@ const Main: React.FC<Props> = props => {
   function swipeToNextTx() {
     if (selectedTransaction) {
       if (selectedTransaction.hasOwnProperty('index')) {
-        const newTxIndex = selectedTransaction.index < transactions.length - 1 ? selectedTransaction.index + 1 : 0;
+        const newTxIndex =
+          selectedTransaction.index < transactions.length - 1
+            ? selectedTransaction.index + 1
+            : 0;
         selectTransaction(transactions[newTxIndex]);
       }
     }
@@ -270,7 +276,7 @@ const Main: React.FC<Props> = props => {
         headerLeft: () => settingsBarPress,
       });
     }
-  /* eslint-disable react-hooks/exhaustive-deps */
+    /* eslint-disable react-hooks/exhaustive-deps */
   }, [activeTab, navigation]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
@@ -318,10 +324,16 @@ const Main: React.FC<Props> = props => {
   const walletButtonAnimDuration = 200;
   const rotateArrowAnim = useSharedValue(0);
   const rotateArrow = () => {
-    rotateArrowAnim.value = withTiming(isWalletsModalOpened ? 0 : 1, {duration: walletButtonAnimDuration});
+    rotateArrowAnim.value = withTiming(isWalletsModalOpened ? 0 : 1, {
+      duration: walletButtonAnimDuration,
+    });
   };
   const animatedWalletButtonArrowStyle = useAnimatedProps(() => {
-    const spinIterpolation = interpolate(rotateArrowAnim.value, [0, 1], [270, 90]);
+    const spinIterpolation = interpolate(
+      rotateArrowAnim.value,
+      [0, 1],
+      [270, 90],
+    );
     return {
       transform: [{rotate: `${spinIterpolation}deg`}],
     };
@@ -358,7 +370,6 @@ const Main: React.FC<Props> = props => {
 
   useEffect(() => {
     if (isWalletsModalOpened || isTxDetailModalOpened) {
-
       buttonOpacity.value = withTiming(0, {duration: 150});
 
       fadingTimeout.current = setTimeout(() => {
@@ -502,10 +513,9 @@ const Main: React.FC<Props> = props => {
   return (
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
-      <NewAmountView
-        animatedProps={animatedHeaderHeight}
-        currentWallet={currentWallet}>
-        <Animated.View style={animatedHeaderStyle}>
+      <NewAmountView animatedProps={animatedHeaderHeight}>
+        <Animated.View
+          style={[animatedHeaderStyle, styles.amountViewContainer]}>
           <LineChart />
           <DatePicker />
         </Animated.View>
@@ -637,6 +647,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#2E2E2E',
     fontSize: 24,
+  },
+  amountViewContainer: {
+    paddingTop: 30,
+    gap: 50,
   },
 });
 

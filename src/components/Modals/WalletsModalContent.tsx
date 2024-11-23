@@ -9,11 +9,11 @@ import Animated, {
 
 import WhiteButton from '../Buttons/WhiteButton';
 import WalletTab from '../Tabs/WalletTab';
-
 import {useAppSelector} from '../../store/hooks';
+import {subunitSelector} from '../../reducers/settings';
+import {fiatValueSelector} from '../../reducers/ticker';
 
 interface Props {
-  // currentWallet: string;
   isOpened: boolean;
   showAnim: boolean;
   animDelay: number;
@@ -22,13 +22,19 @@ interface Props {
 }
 
 export default function WalletsModalContent(props: Props) {
-  const {isOpened, showAnim, animDelay, animDuration, cardTranslateAnim} = props;
-  // const navigation = useNavigation<any>();
+  const {isOpened, showAnim, animDelay, animDuration, cardTranslateAnim} =
+    props;
+  const totalBalance = useAppSelector(state => state.balance.totalBalance);
+  const convertToSubunit = useAppSelector(state => subunitSelector(state));
+  const balanceAmount = convertToSubunit(totalBalance);
 
+  const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
+  const fiatAmount = calculateFiatAmount(totalBalance);
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
 
+  // animation
   const buttonOpacity = useSharedValue(0);
 
   const animatedButton = useAnimatedStyle(() => {
@@ -55,8 +61,9 @@ export default function WalletsModalContent(props: Props) {
       <Animated.View style={[styles.bodyItem, animatedButton]}>
         <WalletTab
           colorStyle="White"
-          walletName="Main wallet"
-          balance={2136.3}
+          walletName="Main Wallet"
+          balance={balanceAmount}
+          fiatBalance={fiatAmount}
           priceRate={65}
           prevRate={55}
         />
@@ -76,11 +83,12 @@ export default function WalletsModalContent(props: Props) {
   const onlineOfflineBgColor = isInternetReachable ? '#0d3d8a' : '#e06852';
 
   return (
-    <Animated.View style={[
-      styles.body,
-      cardTranslateAnim,
-      {backgroundColor: onlineOfflineBgColor},
-    ]}>
+    <Animated.View
+      style={[
+        styles.body,
+        cardTranslateAnim,
+        {backgroundColor: onlineOfflineBgColor},
+      ]}>
       <View style={styles.bodyItems}>{wallets}</View>
       <Animated.View style={animatedButton}>
         <WhiteButton

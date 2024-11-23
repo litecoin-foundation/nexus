@@ -37,7 +37,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     marginLeft: 30,
     marginRight: 30,
-    paddingTop: 15,
   },
   smallFont: {
     fontSize: 11,
