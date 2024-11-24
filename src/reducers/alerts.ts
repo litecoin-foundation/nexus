@@ -1,3 +1,4 @@
+import {showError} from './errors';
 import {AppThunk} from './types';
 
 // initial state
@@ -13,11 +14,11 @@ const SET_ALERT_AVAILABILITY = 'SET_ALERT_AVAILABILITY';
 const alertProviderUrl = 'https://mobile.litecoin.com/alert';
 
 // actions
-export const addAlert = (data): AppThunk => async (dispatch, getState) => {
-  try {
-    const req = await fetch(
-      `${alertProviderUrl}/add`,
-      {
+export const addAlert =
+  (data): AppThunk =>
+  async (dispatch, getState) => {
+    try {
+      const req = await fetch(`${alertProviderUrl}/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,34 +29,33 @@ export const addAlert = (data): AppThunk => async (dispatch, getState) => {
           isPositive: data.value > data.originalValue,
           isIOS: data.isIOS,
         }),
-      }
-    );
-
-    const res = await req.json();
-
-    if (res.hasOwnProperty('deviceToken')) {
-      const newAlert = JSON.parse(JSON.stringify(res));
-
-      const {alerts} = getState().alerts;
-
-      const alertsBuf = alerts ? JSON.parse(JSON.stringify(alerts)) : [];
-
-      alertsBuf.push(newAlert);
-      dispatch({
-        type: ADD_ALERT,
-        alerts: alertsBuf,
       });
-    }
-  } catch (error) {
-    // console.error(error);
-  }
-};
 
-export const removeAlert = (index): AppThunk  => async (dispatch, getState) => {
-  try {
-    const req = await fetch(
-      `${alertProviderUrl}/delete`,
-      {
+      const res = await req.json();
+
+      if (res.hasOwnProperty('deviceToken')) {
+        const newAlert = JSON.parse(JSON.stringify(res));
+
+        const {alerts} = getState().alerts;
+
+        const alertsBuf = alerts ? JSON.parse(JSON.stringify(alerts)) : [];
+
+        alertsBuf.push(newAlert);
+        dispatch({
+          type: ADD_ALERT,
+          alerts: alertsBuf,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+export const removeAlert =
+  (index): AppThunk =>
+  async (dispatch, getState) => {
+    try {
+      const req = await fetch(`${alertProviderUrl}/delete`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -64,62 +64,74 @@ export const removeAlert = (index): AppThunk  => async (dispatch, getState) => {
           deviceToken: getState().settings.deviceNotificationToken,
           index: Number(index),
         }),
-      }
-    );
-
-    const res = await req.json();
-
-    if (res.hasOwnProperty('deviceToken')) {
-      const alert = JSON.parse(JSON.stringify(res));
-
-      dispatch({
-        type: REMOVE_ALERT,
-        id: alert._id,
       });
-    }
-  } catch (error) {
-    // console.error(error);
-  }
-};
 
-export const setAlertAvailability = (index, availability): AppThunk  => async (dispatch, getState) => {
-  try {
-    const req = await fetch(
-      `${alertProviderUrl}/${availability ? 'reset' : 'set-fired'}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
+      if (!req.ok) {
+        const res = await req.text();
+        dispatch(showError(res));
+        return;
+      }
+
+      const res = await req.json();
+
+      if (res.hasOwnProperty('deviceToken')) {
+        const alert = JSON.parse(JSON.stringify(res));
+
+        dispatch({
+          type: REMOVE_ALERT,
+          id: alert._id,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+export const setAlertAvailability =
+  (index, availability): AppThunk =>
+  async (dispatch, getState) => {
+    try {
+      const req = await fetch(
+        `${alertProviderUrl}/${availability ? 'reset' : 'set-fired'}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            deviceToken: getState().settings.deviceNotificationToken,
+            index: Number(index),
+          }),
         },
-        body: JSON.stringify({
-          deviceToken: getState().settings.deviceNotificationToken,
-          index: Number(index),
-        }),
+      );
+
+      if (!req.ok) {
+        const {message} = await req.json();
+        return dispatch(showError(message));
       }
-    );
 
-    const res = await req.json();
+      const res = await req.json();
 
-    if (res.hasOwnProperty('deviceToken')) {
-      const alert = JSON.parse(JSON.stringify(res));
+      if (res.hasOwnProperty('deviceToken')) {
+        const alert = JSON.parse(JSON.stringify(res));
 
-      dispatch({
-        type: SET_ALERT_AVAILABILITY,
-        id: alert._id,
-        availability: !alert.isFired,
-      });
+        dispatch({
+          type: SET_ALERT_AVAILABILITY,
+          id: alert._id,
+          availability: !alert.isFired,
+        });
+      }
+    } catch (error) {
+      console.error(error);
     }
-  } catch (error) {
-    // console.error(error);
-  }
-};
+  };
 
 // action handlers
 const actionHandler = {
   [ADD_ALERT]: (state, {alerts}) => ({...state, alerts}),
   [REMOVE_ALERT]: (state, {id}) => ({
     ...state,
-    alerts: state.alerts.filter((obj) => obj._id !== id),
+    alerts: state.alerts.filter(obj => obj._id !== id),
   }),
   [SET_ALERT_AVAILABILITY]: (state, {id, availability}) => ({
     ...state,
@@ -127,7 +139,11 @@ const actionHandler = {
       const updatedAlerts = JSON.parse(JSON.stringify(state.alerts));
       updatedAlerts.map((alert, i) => {
         if (alert._id === id) {
-          const alertBuf = {...alert, isFired: !availability, enabled: availability};
+          const alertBuf = {
+            ...alert,
+            isFired: !availability,
+            enabled: availability,
+          };
           alert = alertBuf;
           return alert;
         } else {
