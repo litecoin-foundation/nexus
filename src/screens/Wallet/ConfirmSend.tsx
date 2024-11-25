@@ -16,7 +16,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
-import { toArrayBuffer } from 'react-native-quick-crypto/lib/typescript/src/Utils';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import PinModal from '../../components/Modals/PinModal';
 import GreenButton from '../../components/Buttons/GreenButton';
@@ -82,10 +81,16 @@ const ConfirmSend: React.FC<Props> = () => {
   const walletButtonAnimDuration = 200;
   const rotateArrowAnim = useSharedValue(0);
   const rotateArrow = () => {
-    rotateArrowAnim.value = withTiming(isWalletsModalOpened ? 0 : 1, {duration: walletButtonAnimDuration});
+    rotateArrowAnim.value = withTiming(isWalletsModalOpened ? 0 : 1, {
+      duration: walletButtonAnimDuration,
+    });
   };
   const animatedWalletButtonArrowStyle = useAnimatedStyle(() => {
-    const spinIterpolation = interpolate(rotateArrowAnim.value, [0, 1], [270, 90]);
+    const spinIterpolation = interpolate(
+      rotateArrowAnim.value,
+      [0, 1],
+      [270, 90],
+    );
     return {
       transform: [{rotate: `${spinIterpolation}deg`}],
     };
@@ -114,12 +119,16 @@ const ConfirmSend: React.FC<Props> = () => {
           <Text style={styles.sendText}>Send</Text>
           <Text style={styles.amountText}>{amount + ' LTC'}</Text>
           <View style={styles.fiatAmount}>
-            <Text style={styles.fiatAmountText}>{currencySymbol + '' + fiatAmount}</Text>
+            <Text style={styles.fiatAmountText}>
+              {currencySymbol + '' + fiatAmount}
+            </Text>
           </View>
           <Text style={styles.valueSubtitle}>To Recipient Address</Text>
           <Text style={styles.valueTitle}>{toAddress}</Text>
           <Text style={styles.valueSubtitle}>Fee</Text>
-          <Text style={styles.valueTitle}>{totalFeeInLTC + '' + amountSymbol}</Text>
+          <Text style={styles.valueTitle}>
+            {totalFeeInLTC + '' + amountSymbol}
+          </Text>
           <Text style={styles.valueSubtitle}>Will be delivered</Text>
           <Text style={styles.valueTitle}>Within 3 minutes</Text>
         </View>

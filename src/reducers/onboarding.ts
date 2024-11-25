@@ -8,6 +8,7 @@ import * as Lnd from '../lib/lightning/wallet';
 import {AppThunk} from './types';
 import {fileExists} from '../lib/utils/file';
 import {showError} from './errors';
+import {generateMnemonic} from '../lib/utils/aezeed';
 
 // types
 interface IOnboardingState {
@@ -76,7 +77,7 @@ export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
 // not necessarily used if wallet is recovered
 export const genSeed = (): AppThunk => async dispatch => {
   try {
-    const seed = await (await Lnd.genSeed(undefined)).cipherSeedMnemonic;
+    const seed = await generateMnemonic();
     dispatch(genSeedAction(seed));
   } catch (error) {
     console.error(error);

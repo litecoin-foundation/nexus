@@ -18,7 +18,7 @@ const BuyHistory: React.FC = () => {
   const EmptySectionList = (
     <View style={styles.emptySectionListContainer}>
       <Text style={styles.emptySectionListText}>
-        Litecoin purchased with Plasma will appear here.
+        Litecoin purchased with Nexus will appear here.
       </Text>
     </View>
   );

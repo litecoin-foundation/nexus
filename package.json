@@ -1,11 +1,11 @@
 {
-  "name": "plasma",
+  "name": "nexus",
   "version": "0.0.3",
   "description": "Mobile Litecoin wallet built with React-Native + Redux",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/litecoin-foundation/plasma.git"
+    "url": "https://github.com/litecoin-foundation/nexus.git"
   },
   "scripts": {
     "android": "react-native run-android",
@@ -36,6 +36,8 @@
     "@react-navigation/stack": "^6.4.1",
     "@reduxjs/toolkit": "^1.9.7",
     "@shopify/react-native-skia": "^1.3.13",
+    "aez": "^1.0.1",
+    "aezeed": "^0.0.5",
     "axios": "^1.7.7",
     "base58-js": "1.0.5",
     "bech32": "2.0.0",
@@ -57,6 +59,7 @@
     "react-native": "0.76.1",
     "react-native-blob-util": "^0.19.11",
     "react-native-device-info": "^11.1.0",
+    "react-native-fast-crypto": "^2.2.0",
     "react-native-gesture-handler": "^2.19.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-icloudstore": "github:manicakes/react-native-icloudstore#20f20106d5c52adcef68ebb5b8833c5160eb4b50",

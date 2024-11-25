@@ -46,10 +46,9 @@ const Import: React.FC<Props> = props => {
         .then(rawTxs => {
           rawTxs.map((rawTx, index) => {
             // console.log(rawTx);
-            publishTransaction(rawTx)
-            .then(() => {
+            publishTransaction(rawTx).then(() => {
               // handle successful publish!
-              if (index === rawTxs.length - 1){
+              if (index === rawTxs.length - 1) {
                 navigation.replace('ImportSuccess', {
                   txHash: txHashFromRaw(rawTx),
                 });
@@ -70,7 +69,7 @@ const Import: React.FC<Props> = props => {
       <Card
         titleText="Import Private Key"
         descriptionText={
-          'Importing a Litecoin private key moves any Litecoin in that wallet into Plasma.\n\nYou will no longer be able to access Litecoin using the private key.'
+          'Importing a Litecoin private key moves any Litecoin in that wallet into Nexus.\n\nYou will no longer be able to access Litecoin using the private key.'
         }
         imageSource={require('../../assets/images/qr-frame.png')}
       />

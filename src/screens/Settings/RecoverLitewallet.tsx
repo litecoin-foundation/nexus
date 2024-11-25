@@ -60,7 +60,7 @@ const RecoverLitewallet: React.FC<Props> = props => {
       <SafeAreaView>
         <RecoveryField
           handleLogin={() => {}}
-          headerText="Litewallet users can import their coins into Plasma Wallet. Entering your paper key below will permanently move your coins from Litewallet into Plasma."
+          headerText="Litewallet users can import their coins into Nexus Wallet. Entering your paper key below will permanently move your coins from Litewallet into Plasma."
           isLitewalletRecovery={true}
           handleLWRecovery={seed => handleLWRecovery(seed)}
         />

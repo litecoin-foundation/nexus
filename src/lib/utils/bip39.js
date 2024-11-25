@@ -1,6 +1,6 @@
 import getRandomInt from './getRandomInt';
 
-const wordlist = [
+export const wordlist = [
   'abandon',
   'ability',
   'able',
@@ -2055,10 +2055,10 @@ export const getBIP39Word = () => {
   return wordlist[getRandomInt(0, 2047)];
 };
 
-export const checkBIP39Word = (word) => {
+export const checkBIP39Word = word => {
   return wordlist.includes(word);
 };
 
-export const getBIP39Index = (word) => {
+export const getBIP39Index = word => {
   return wordlist.indexOf(word);
 };
