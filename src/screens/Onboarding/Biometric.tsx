@@ -1,6 +1,5 @@
 import React from 'react';
-import {View, StyleSheet, SafeAreaView} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
+import {View, StyleSheet, SafeAreaView, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -8,16 +7,30 @@ import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import Card from '../../components/Card';
 import {authenticate} from '../../lib/utils/biometric';
 import {setBiometricEnabled} from '../../reducers/authentication';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {StackNavigationProp} from '@react-navigation/stack';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
-const Biometric = (props) => {
-  const dispatch = useDispatch();
-  const faceIDSupported = useSelector(
-    (state) => state.authentication.faceIDSupported,
+type RootStackParamList = {
+  Biometric: undefined;
+  Welcome: undefined;
+};
+
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'Biometric'>;
+}
+
+const Biometric: React.FC<Props> = props => {
+  const {navigation} = props;
+  const dispatch = useAppDispatch();
+
+  const faceIDSupported = useAppSelector(
+    state => state.authentication.faceIDSupported,
   );
   const biometryType = faceIDSupported ? 'Face ID' : 'Touch ID';
 
   return (
-    <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
+    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
       <SafeAreaView />
 
       <Card
@@ -39,7 +52,7 @@ const Biometric = (props) => {
             try {
               await authenticate(`Enable ${biometryType}`);
               dispatch(setBiometricEnabled(true));
-              props.navigation.navigate('Welcome');
+              navigation.navigate('Welcome');
             } catch (error) {
               console.log(error);
               return;
@@ -51,7 +64,7 @@ const Biometric = (props) => {
           small={true}
           onPress={() => {
             dispatch(setBiometricEnabled(false));
-            props.navigation.navigate('Welcome');
+            navigation.navigate('Welcome');
           }}
         />
       </View>
@@ -65,14 +78,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
   },
+  headerTitle: {
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: 'white',
+    fontSize: 17,
+  },
 });
 
-Biometric.navigationOptions = {
-  headerTitle: 'Enable Biometrics',
-  headerTitleStyle: {
-    fontWeight: 'bold',
-    color: 'white',
-  },
+export const BiometricNavigationOptions = navigation => {
+  return {
+    headerTitle: () => (
+      <Text style={styles.headerTitle}>Enable Biometric Login?</Text>
+    ),
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+        title="Back"
+      />
+    ),
+  };
 };
 
 export default Biometric;

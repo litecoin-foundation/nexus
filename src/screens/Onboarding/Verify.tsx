@@ -14,7 +14,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 
 type RootStackParamList = {
   Verify: undefined;
-  ChannelBackup: undefined;
+  Biometric: undefined;
 };
 
 interface Props {
@@ -53,7 +53,7 @@ const Verify: React.FC<Props> = props => {
 
   const handlePress = async () => {
     if (multiplier === 8) {
-      navigation.navigate('ChannelBackup');
+      navigation.navigate('Biometric');
       return;
     }
     setMultiplier(multiplier + 1);

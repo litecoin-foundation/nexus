@@ -7,8 +7,8 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import {initWallet, startLnd} from '../../reducers/lightning';
 import {setSeed} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import ProgressBar from '../../components/ProgressBar';
 import {sleep} from '../../lib/utils/poll';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
 type RootStackParamList = {
   Welcome: undefined;
@@ -23,16 +23,12 @@ const Welcome: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
 
-  const {task, downloadProgress, unzipProgress, isOnboarded} = useAppSelector(
-    state => state.onboarding,
-  );
+  const {task, isOnboarded} = useAppSelector(state => state.onboarding);
   const {lndActive} = useAppSelector(state => state.lightning);
 
   // calls initWallet() when LND has started!
   useEffect(() => {
-    console.log(`MPOOPY: lndActive is ${lndActive ? 'true' : 'false'}`);
     if (lndActive === true) {
-      console.log('LOSHY: INIT WALLET! BELOW');
       // TODO
       // ATM we sleep for 1500ms to make sure LND returns valid subscribeState
       // values. This should hopefully be fixed in the future.
@@ -60,30 +56,15 @@ const Welcome: React.FC<Props> = props => {
 
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
-      <>
-        <Text style={styles.text}>
-          Your wallet is currently {task} Presyncing. {downloadProgress}{' '}
-          {unzipProgress}
-        </Text>
-        <Text>{downloadProgress}</Text>
-        <ProgressBar
-          progress={
-            task === 'downloading'
-              ? Number(downloadProgress)
-              : Number(unzipProgress)
-          }
-        />
-      </>
+      <Text style={styles.text}>Presyncing: {task}</Text>
     </View>
   );
 
   return (
     <>
-      <LinearGradient colors={['#544FE6', '#1c44b4']} style={styles.container}>
+      <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
         <SafeAreaView style={{flex: 1}}>
-          <Text style={styles.text}>Welcome!</Text>
-
-          {cacheProgress}
+          {task !== 'complete' ? cacheProgress : null}
 
           <View style={styles.buttonContainer}>
             <WhiteButton
@@ -105,9 +86,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   neutrinoCacheContainer: {
-    // height: 300,
-    // marginBottom: 70,
-    // justifyContent: 'center',
+    position: 'absolute',
+    bottom: 200,
+    width: '100%',
   },
   text: {
     color: 'white',
@@ -125,8 +106,20 @@ const styles = StyleSheet.create({
   },
 });
 
-Welcome.navigationOptions = {
-  headerTitle: null,
+export const WelcomeNavigationOptions = navigation => {
+  return {
+    headerTitle: () => null,
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+        title="Back"
+      />
+    ),
+  };
 };
 
 export default Welcome;

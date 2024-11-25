@@ -12,7 +12,7 @@ import {Platform, StyleSheet, Text} from 'react-native';
 type RootStackParamList = {
   Pin: undefined;
   Generate: undefined;
-  ChannelBackup: undefined;
+  Biometric: undefined;
 };
 
 interface Props {
@@ -79,7 +79,7 @@ const Pin: React.FC<Props> = props => {
     if (!beingRecovered) {
       navigation.navigate('Generate');
     } else {
-      navigation.navigate('ChannelBackup');
+      navigation.navigate('Biometric');
     }
   };
 

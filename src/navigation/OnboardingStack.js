@@ -6,9 +6,10 @@ import Pin from '../screens/Onboarding/Pin';
 import Generate from '../screens/Onboarding/Generate';
 import Verify from '../screens/Onboarding/Verify';
 import Recover, {RecoverNavigationOptions} from '../screens/Onboarding/Recover';
-import ChannelBackup from '../screens/Onboarding/ChannelBackup';
-import Biometric from '../screens/Onboarding/Biometric';
-import Welcome from '../screens/Onboarding/Welcome';
+import Biometric, {
+  BiometricNavigationOptions,
+} from '../screens/Onboarding/Biometric';
+import Welcome, {WelcomeNavigationOptions} from '../screens/Onboarding/Welcome';
 
 const Stack = createStackNavigator();
 
@@ -48,19 +49,14 @@ function OnboardingStack() {
         options={({navigation}) => RecoverNavigationOptions(navigation)}
       />
       <Stack.Screen
-        name="ChannelBackup"
-        component={ChannelBackup}
-        options={ChannelBackup.navigationOptions}
-      />
-      <Stack.Screen
         name="Biometric"
         component={Biometric}
-        options={Biometric.navigationOptions}
+        options={({navigation}) => BiometricNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Welcome"
         component={Welcome}
-        options={Welcome.navigationOptions}
+        options={({navigation}) => WelcomeNavigationOptions(navigation)}
       />
     </Stack.Navigator>
   );
