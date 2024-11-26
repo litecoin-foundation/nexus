@@ -1,21 +1,20 @@
 import React from 'react';
-import {Dimensions, View} from 'react-native';
+import {Dimensions, StyleSheet, View} from 'react-native';
 import {Canvas, LinearGradient, Rect, vec} from '@shopify/react-native-skia';
 import {v4 as uuidv4} from 'uuid';
 
 interface Props {}
 
+const thirdOfWidth = Math.ceil(Dimensions.get('screen').width / 3);
+const twoThirdOfWidth = thirdOfWidth * 2;
+
 const PadGrid: React.FC<Props> = () => {
+  console.log();
   const h = [115, 210, 306];
-  const v = [147, 277];
+  const v = [thirdOfWidth, twoThirdOfWidth];
   return (
     <View>
-      <Canvas
-        style={{
-          position: 'absolute',
-          height: 410,
-          width: Dimensions.get('screen').width,
-        }}>
+      <Canvas style={styles.container}>
         {h.map(y => (
           <Rect
             key={uuidv4()}
@@ -54,5 +53,13 @@ const PadGrid: React.FC<Props> = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    height: 410,
+    width: Dimensions.get('screen').width,
+  },
+});
 
 export default PadGrid;

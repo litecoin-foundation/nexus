@@ -1,6 +1,23 @@
-import React from 'react';
-import {View, Text, StyleSheet, Dimensions, Platform} from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Platform,
+  Pressable,
+  Image,
+} from 'react-native';
 import PriceIndicatorButton from '../Buttons/PriceIndictorButton';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {getAddress} from '../../reducers/address';
+import Clipboard from '@react-native-clipboard/clipboard';
+import InfoModal from '../Modals/InfoModal';
 
 interface Props {
   colorStyle: string;
@@ -11,9 +28,10 @@ interface Props {
   prevRate: number;
 }
 
-export default function WalletTab(props: Props) {
+const WalletTab: React.FC<Props> = (props: Props) => {
   const {colorStyle, walletName, balance, fiatBalance, priceRate, prevRate} =
     props;
+  const dispatch = useAppDispatch();
 
   let isWhiteStyle = true;
   switch (colorStyle) {
@@ -27,7 +45,73 @@ export default function WalletTab(props: Props) {
       break;
   }
 
-  const styles = StyleSheet.create({
+  const change: any = (priceRate / prevRate) * 100 - 100;
+  const changeText =
+    change < 0 ? '' : '+' + parseFloat(change).toFixed(2) + '%';
+
+  // animation
+  const scaler = useSharedValue(1);
+
+  const motionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scaler.value}],
+    };
+  });
+
+  const onPressIn = () => {
+    scaler.value = withSpring(0.9, {mass: 1});
+  };
+
+  const onPressOut = () => {
+    scaler.value = withSpring(1, {mass: 0.7});
+  };
+
+  // copy address handler
+  const [isInfoModalVisible, setInfoModalVisible] = useState(false);
+  const address = useAppSelector(state => state.address.address);
+  const handleCopy = () => {
+    dispatch(getAddress());
+    setInfoModalVisible(true);
+    Clipboard.setString(address);
+  };
+
+  return (
+    <View style={styles(isWhiteStyle).walletTab}>
+      <View style={styles(isWhiteStyle).tabLeft}>
+        <Text style={styles(isWhiteStyle).tabLeftTitle}>{walletName}</Text>
+        <Text style={styles(isWhiteStyle).tabLeftBalance}>
+          {balance + ' LTC'}
+        </Text>
+        <View style={styles(isWhiteStyle).tabLeftWorthContainer}>
+          <Text style={styles(isWhiteStyle).tabLeftWorth}>{fiatBalance}</Text>
+          <PriceIndicatorButton value={Number(change)} />
+          <Text style={styles(isWhiteStyle).tabLeftWorthChange}>
+            {changeText}
+          </Text>
+        </View>
+      </View>
+      <Pressable
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onPress={handleCopy}>
+        <Animated.View style={[styles(isWhiteStyle).tabRight, motionStyle]}>
+          <Image source={require('../../assets/icons/copy-icon.png')} />
+          <Text style={styles(isWhiteStyle).tabRightTitle}>copy address</Text>
+        </Animated.View>
+      </Pressable>
+
+      <InfoModal
+        isVisible={isInfoModalVisible}
+        close={() => setInfoModalVisible(false)}
+        textColor="green"
+        text="COPIED TO CLIPBOARD!"
+      />
+    </View>
+  );
+};
+
+const styles = (isWhiteStyle?: boolean) =>
+  StyleSheet.create({
     walletTab: {
       height: Dimensions.get('screen').height * 0.14,
       minHeight: 100,
@@ -78,11 +162,11 @@ export default function WalletTab(props: Props) {
       fontSize: Dimensions.get('screen').height * 0.016,
     },
     tabRight: {
-      flexBasis: '25%',
-      flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
       height: '100%',
+      minHeight: 94,
+      minWidth: 80,
       borderRadius: Dimensions.get('screen').height * 0.016,
       backgroundColor: isWhiteStyle ? '#eee' : '#061A39',
     },
@@ -99,28 +183,8 @@ export default function WalletTab(props: Props) {
       textTransform: 'uppercase',
       textAlign: 'center',
       marginTop: Dimensions.get('screen').height * 0.01,
+      width: 57,
     },
   });
 
-  const change: any = (priceRate / prevRate) * 100 - 100;
-  const changeText =
-    change < 0 ? '' : '+' + parseFloat(change).toFixed(2) + '%';
-
-  return (
-    <View style={styles.walletTab}>
-      <View style={styles.tabLeft}>
-        <Text style={styles.tabLeftTitle}>{walletName}</Text>
-        <Text style={styles.tabLeftBalance}>{balance + ' LTC'}</Text>
-        <View style={styles.tabLeftWorthContainer}>
-          <Text style={styles.tabLeftWorth}>{fiatBalance}</Text>
-          <PriceIndicatorButton value={Number(change)} />
-          <Text style={styles.tabLeftWorthChange}>{changeText}</Text>
-        </View>
-      </View>
-      <View style={styles.tabRight}>
-        <View style={styles.tabRightCopyIcon} />
-        <Text style={styles.tabRightTitle}>copy address</Text>
-      </View>
-    </View>
-  );
-}
+export default WalletTab;

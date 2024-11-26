@@ -35,7 +35,7 @@ const Receive: React.FC<Props> = () => {
 
   const handleCopy = async () => {
     setInfoModalVisible(true);
-    await Clipboard.setString(address);
+    Clipboard.setString(address);
   };
 
   const handleShare = () => {
