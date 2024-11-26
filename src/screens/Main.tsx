@@ -461,7 +461,7 @@ const Main: React.FC<Props> = props => {
           setActiveTab(1);
         }}
         active={activeTab === 1}
-        textPadding={28}
+        textPadding={8}
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
@@ -472,11 +472,12 @@ const Main: React.FC<Props> = props => {
           setActiveTab(2);
         }}
         active={activeTab === 2}
-        textPadding={30}
+        textPadding={7}
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
         title="Convert"
+        wider={true}
         imageSource={require('../assets/icons/convert-icon.png')}
         handlePress={() => {
           console.log('nothing to do');
@@ -493,7 +494,7 @@ const Main: React.FC<Props> = props => {
           setActiveTab(4);
         }}
         active={activeTab === 4}
-        textPadding={25}
+        textPadding={11}
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
@@ -629,7 +630,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     marginTop: 5,
     flexDirection: 'row',
-    alignSelf: 'center',
+    justifyContent: 'center',
   },
   txTitleContainer: {
     height: 70,

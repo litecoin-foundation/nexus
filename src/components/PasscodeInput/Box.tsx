@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
 import {
   Canvas,
   Circle,
@@ -14,11 +14,16 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
+const screenHeight = Dimensions.get('screen').height;
+const screenWidth = Dimensions.get('screen').width;
+const width = screenWidth * 0.106;
+
 interface Props {
   buttonState: 'active' | 'inactive' | 'used';
 }
 
 const Box: React.FC<Props> = props => {
+  console.log(470 / screenHeight);
   const {buttonState} = props;
 
   // animation
@@ -26,7 +31,7 @@ const Box: React.FC<Props> = props => {
   const strokeWidth = useSharedValue(0);
   const circleRadius = useSharedValue(0);
   const yHeight = useSharedValue(7);
-  const yCircleHeight = useSharedValue(35);
+  const yCircleHeight = useSharedValue(width - 7);
 
   const interpolatedColour = useDerivedValue(() =>
     interpolateColors(
@@ -51,7 +56,7 @@ const Box: React.FC<Props> = props => {
       strokeWidth.value = withTiming(1);
       circleRadius.value = withSpring(6);
       yHeight.value = withSpring(22);
-      yCircleHeight.value = withSpring(35 + 7);
+      yCircleHeight.value = withSpring(width);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buttonState]);
@@ -63,12 +68,12 @@ const Box: React.FC<Props> = props => {
       strokeWidth.value = withTiming(2);
       circleRadius.value = withSpring(0);
       yHeight.value = withSpring(22);
-      yCircleHeight.value = withSpring(35 + 7);
+      yCircleHeight.value = withSpring(width);
     }
     if (buttonState === 'active') {
       circleRadius.value = withSpring(0);
       yHeight.value = withSpring(7);
-      yCircleHeight.value = withSpring(35);
+      yCircleHeight.value = withSpring(width - 7);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buttonState]);
@@ -76,8 +81,8 @@ const Box: React.FC<Props> = props => {
   return (
     <Canvas style={styles.container}>
       <RoundedRect
-        width={40}
-        height={40}
+        width={width}
+        height={width}
         r={10}
         color={interpolatedColour}
         x={7}
@@ -89,23 +94,28 @@ const Box: React.FC<Props> = props => {
         <RoundedRect
           x={7}
           y={yHeight}
-          width={40}
-          height={40}
+          width={width}
+          height={width}
           r={10}
           color={interpolatedStrokeColour}
           strokeWidth={strokeWidth}
           style="stroke"
         />
       )}
-      <Circle cx={27} cy={yCircleHeight} r={circleRadius} color="#1564E7" />
+      <Circle
+        cx={width / 2 + 7}
+        cy={yCircleHeight}
+        r={circleRadius}
+        color="#1564E7"
+      />
     </Canvas>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: 90,
-    width: 53,
+    height: 470 / screenHeight > 0.51 ? 70 : 90,
+    width: width + 12,
   },
 });
 

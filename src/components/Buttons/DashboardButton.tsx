@@ -13,6 +13,7 @@ import {
 } from '@shopify/react-native-skia';
 import React, {useEffect} from 'react';
 import {
+  Dimensions,
   ImageSourcePropType,
   Platform,
   Pressable,
@@ -32,11 +33,22 @@ interface Props {
   active: boolean;
   textPadding: number;
   disabled: boolean;
+  wider?: boolean;
 }
 
+const screenWidth = Dimensions.get('screen').width;
+
 const DashboardButton: React.FC<Props> = props => {
-  const {active, handlePress, title, imageSource, textPadding, disabled} =
-    props;
+  const {
+    active,
+    handlePress,
+    title,
+    imageSource,
+    textPadding,
+    disabled,
+    wider,
+  } = props;
+  const width = wider ? screenWidth * 0.18 : screenWidth * 0.16;
   const fontFamily =
     Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
   const fontStyle = {
@@ -90,71 +102,82 @@ const DashboardButton: React.FC<Props> = props => {
   );
 
   return (
-    <Pressable
-      style={[styles.button, disabled ? styles.disabled : null]}
-      onPress={() => {
-        if (!disabled) {
-          handlePress();
-        }
-      }}>
-      <Canvas style={styles.container}>
-        <RoundedRect
-          x={10}
-          y={10}
-          width={60}
-          height={buttonHeight}
-          r={12}
-          color={interpolatedButtonColour}>
-          <Shadow
-            dx={0}
-            dy={-1}
-            blur={3}
-            color={interpolatedInnerShadowColour}
-            inner
+    <>
+      <Pressable
+        style={[styles(width).button, disabled ? styles(width).disabled : null]}
+        onPress={() => {
+          if (!disabled) {
+            handlePress();
+          }
+        }}>
+        <Canvas style={styles(width).container}>
+          <RoundedRect
+            x={4}
+            y={10}
+            width={width}
+            height={buttonHeight}
+            r={12}
+            color={interpolatedButtonColour}>
+            <Shadow
+              dx={0}
+              dy={-1}
+              blur={3}
+              color={interpolatedInnerShadowColour}
+              inner
+            />
+            <Shadow dx={0} dy={2.4} blur={5} color={interpolatedShadowColour} />
+          </RoundedRect>
+          <RoundedRect
+            x={4}
+            y={10}
+            width={width}
+            height={buttonHeight}
+            r={12}
+            color="rgba(216, 210, 210, 0.75)"
+            strokeWidth={1}
+            style="stroke"
+            opacity={borderOpacity}
           />
-          <Shadow dx={0} dy={2.4} blur={5} color={interpolatedShadowColour} />
-        </RoundedRect>
-        <RoundedRect
-          x={10}
-          y={10}
-          width={60}
-          height={buttonHeight}
-          r={12}
-          color="rgba(216, 210, 210, 0.75)"
-          strokeWidth={1}
-          style="stroke"
-          opacity={borderOpacity}
-        />
 
-        <Mask
-          mode="alpha"
-          mask={<Image image={image} x={30} y={10} width={21} height={50} />}>
-          <Rect rect={rect(0, 0, 300, 300)} color={interpolatedColour} />
-        </Mask>
+          <Mask
+            mode="alpha"
+            mask={
+              <Image
+                image={image}
+                x={width / 2 - 8}
+                y={10}
+                width={21}
+                height={50}
+              />
+            }>
+            <Rect rect={rect(0, 0, 300, 300)} color={interpolatedColour} />
+          </Mask>
 
-        <Text
-          text={title}
-          x={textPadding}
-          y={82}
-          font={font}
-          color={interpolatedColour}
-        />
-      </Canvas>
-    </Pressable>
+          <Text
+            text={title}
+            x={width / 2 - textPadding}
+            y={82}
+            font={font}
+            color={interpolatedColour}
+          />
+        </Canvas>
+      </Pressable>
+    </>
   );
 };
 
-const styles = StyleSheet.create({
-  button: {
-    width: 82,
-    height: 110,
-  },
-  container: {
-    flex: 1,
-  },
-  disabled: {
-    opacity: 0.2,
-  },
-});
+const styles = (width: number) =>
+  StyleSheet.create({
+    button: {
+      width: width + 8,
+      height: 110,
+    },
+    container: {
+      flex: 1,
+    },
+    disabled: {
+      opacity: 0.2,
+    },
+  });
 
 export default DashboardButton;

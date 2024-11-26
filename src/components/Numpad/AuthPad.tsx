@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {View, StyleSheet, Text, Platform} from 'react-native';
+import {View, StyleSheet, Text, Platform, Dimensions} from 'react-native';
 
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
@@ -9,6 +9,8 @@ import PasscodeInput from '../PasscodeInput';
 import PadGrid from './PadGrid';
 import BuyButton from './BuyButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+
+const screenHeight = Dimensions.get('screen').height;
 
 interface Props {
   handleValidationFailure: () => void;
@@ -127,14 +129,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    height: '70%',
+    height: 470 / screenHeight > 0.51 ? '83%' : '70%',
     bottom: 0,
     position: 'absolute',
     width: '100%',
   },
   bottomSheetSubContainer: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 470 / screenHeight > 0.51 ? 20 : 100,
   },
   buttonContainer: {
     height: 390,
