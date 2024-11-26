@@ -152,7 +152,7 @@ const ConfirmSend: React.FC<Props> = () => {
         }}
         isFromBottomToTop={false}
         animDuration={250}
-        gapInPixels={Dimensions.get('screen').height * 0.17}
+        gapInPixels={Dimensions.get('screen').height * 0.17 - 1}
         backSpecifiedStyle={{backgroundColor: 'transparent'}}
         rotateWalletButtonArrow={rotateArrow}
         renderBody={(
@@ -178,10 +178,6 @@ const ConfirmSend: React.FC<Props> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Dimensions.get('screen').height * 0.12,
-    paddingBottom: Dimensions.get('screen').height * 0.03,
-    paddingLeft: Dimensions.get('screen').height * 0.02,
-    paddingRight: Dimensions.get('screen').height * 0.02,
   },
   body: {
     width: '100%',
@@ -190,6 +186,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-start',
     position: 'relative',
+    paddingTop: Dimensions.get('screen').height * 0.12,
+    paddingLeft: Dimensions.get('screen').height * 0.02,
+    paddingRight: Dimensions.get('screen').height * 0.02,
   },
   chooseWalletBtnContainer: {
     position: 'absolute',
@@ -298,8 +297,12 @@ const styles = StyleSheet.create({
     fontSize: Dimensions.get('screen').height * 0.025,
   },
   confirmButtonContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    position: 'absolute',
+    bottom: Dimensions.get('screen').height * 0.03,
+    width: '100%',
+    height: Dimensions.get('screen').height * 0.05,
+    paddingLeft: Dimensions.get('screen').height * 0.02,
+    paddingRight: Dimensions.get('screen').height * 0.02,
   },
 });
 

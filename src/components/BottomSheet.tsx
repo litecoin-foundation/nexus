@@ -12,7 +12,10 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-const SNAP_POINTS_FROM_TOP = [240, Dimensions.get('screen').height * 0.47];
+const SNAP_POINTS_FROM_TOP = [
+  Dimensions.get('screen').height * 0.24,
+  Dimensions.get('screen').height * 0.47,
+];
 const FULLY_OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
 const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 
