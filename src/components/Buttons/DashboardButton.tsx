@@ -2,6 +2,7 @@ import {
   Canvas,
   Image,
   Mask,
+  Paint,
   Rect,
   RoundedRect,
   Shadow,
@@ -143,6 +144,7 @@ const DashboardButton: React.FC<Props> = props => {
             mode="alpha"
             mask={
               <Image
+                antiAlias={true}
                 image={image}
                 x={width / 2 - 8}
                 y={10}

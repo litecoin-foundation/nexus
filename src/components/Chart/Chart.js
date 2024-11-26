@@ -88,6 +88,12 @@ const Chart = () => {
     };
   });
 
+  const animatedAreaProps = useAnimatedProps(() => {
+    return {
+      opacity: animationValue.value,
+    };
+  });
+
   const Graph = (
     <Svg height={height} width={width}>
       <Defs>
@@ -102,7 +108,12 @@ const Chart = () => {
           ))}
         </LinearGradient>
       </Defs>
-      <Path d={area} fill={`url(#${gradientId})`} stroke="none" />
+      <AnimatedPath
+        d={area}
+        fill={`url(#${gradientId})`}
+        stroke="none"
+        animatedProps={animatedAreaProps}
+      />
       <AnimatedPath
         d={line}
         fill="none"

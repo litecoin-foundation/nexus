@@ -21,9 +21,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import {
   Canvas,
+  Image,
   RoundedRect,
   Text as SkiaText,
   matchFont,
+  useImage,
 } from '@shopify/react-native-skia';
 
 import NewAmountView from '../components/NewAmountView';
@@ -95,6 +97,8 @@ const Main: React.FC<Props> = props => {
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main Wallet');
+
+  const image = useImage(require('../assets/icons/search-icon.png'));
 
   function setTransactionIndex(newTxIndex: number) {
     selectTransaction(transactions[newTxIndex]);
@@ -430,7 +434,7 @@ const Main: React.FC<Props> = props => {
         <Text style={styles.txTitleText}>Latest Transactions</Text>
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={{height: 50, width: 80}}>
+          <Canvas style={{height: 50, width: 60}}>
             <RoundedRect
               x={0}
               y={0}
@@ -439,7 +443,7 @@ const Main: React.FC<Props> = props => {
               color="white"
               r={10}
             />
-            <SkiaText x={10} y={16} text="All" font={font} color={'#2E2E2E'} />
+            <Image image={image} x={20} y={16} width={17} height={16} />
           </Canvas>
         </Pressable>
       </View>
