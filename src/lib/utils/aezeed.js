@@ -4,7 +4,7 @@
 import {Buffer} from 'buffer';
 import Crypto from 'react-native-quick-crypto';
 import aez from 'aez';
-import {scrypt} from 'react-native-fast-crypto';
+import {scrypt} from 'crypto';
 
 import {checkBIP39Word, getBIP39Index, wordlist} from './bip39';
 import lpad from './lpad';
