@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "616133023637",
+    "project_id": "nexus-10f8d",
+    "storage_bucket": "nexus-10f8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616133023637:android:d12d105948e9d08359489c",
+        "android_client_info": {
+          "package_name": "com.plasma"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxFV3UZbaNPrQ_2Zhr-7sJevWwE2vCnBs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
