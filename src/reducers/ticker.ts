@@ -1,5 +1,4 @@
 import {createAction, createSlice, createSelector} from '@reduxjs/toolkit';
-import axios from 'axios';
 import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
@@ -55,7 +54,19 @@ export const getPaymentRate = (): AppThunk => async (dispatch, getState) => {
     '&paymentMethod=credit_debit_card';
 
   try {
-    const {data} = await axios.get(url);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error);
+    }
+    const {data} = await res.json();
+
     let paymentRate = data.quoteCurrencyPrice;
 
     dispatch(getPaymentRateAction(paymentRate));
@@ -65,11 +76,24 @@ export const getPaymentRate = (): AppThunk => async (dispatch, getState) => {
 };
 
 export const getTicker = (): AppThunk => async dispatch => {
-  const {
-    data: {data: {rates} = {}},
-  } = await axios.get(
+  const res = await fetch(
     'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    },
   );
+  if (!res.ok) {
+    const error = await res.json();
+    console.error(error);
+  }
+
+  const {
+    data: {rates},
+  } = await res.json();
 
   dispatch(getTickerAction(rates));
 };

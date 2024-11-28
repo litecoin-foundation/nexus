@@ -1,4 +1,4 @@
-package com.plasma
+package com.nexus
 import android.content.res.Configuration
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
@@ -22,8 +22,6 @@ class MainApplication : Application(), ReactApplication {
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
-
-              add(LndMobilePackage())
             }
 
         override fun getJSMainModuleName(): String = "index"

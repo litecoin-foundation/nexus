@@ -1,4 +1,4 @@
-package com.plasma
+package com.nexus
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity

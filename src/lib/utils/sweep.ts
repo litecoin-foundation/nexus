@@ -1,6 +1,5 @@
 import ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
-import axios from 'axios';
 import {ECPairFactory, ECPairInterface} from 'ecpair';
 import wif from 'wif';
 
@@ -32,7 +31,10 @@ function isArrayEmpty(obj: any[]) {
   }
 }
 
-export const sweepLitewallet = async (mnemonic: IMnemonic, receiveAddress: string) => {
+export const sweepLitewallet = async (
+  mnemonic: IMnemonic,
+  receiveAddress: string,
+) => {
   const startPath = "m/0'/0/";
   const changePath = "m/0'/1/";
   const isChildHardened = false;
@@ -40,8 +42,18 @@ export const sweepLitewallet = async (mnemonic: IMnemonic, receiveAddress: strin
   const rawTopUpTxs: any[] = [];
 
   try {
-    const mainTxs = await sweepMnemonic(mnemonic, receiveAddress, startPath, isChildHardened);
-    const changeTxs = await sweepMnemonic(mnemonic, receiveAddress, changePath, isChildHardened);
+    const mainTxs = await sweepMnemonic(
+      mnemonic,
+      receiveAddress,
+      startPath,
+      isChildHardened,
+    );
+    const changeTxs = await sweepMnemonic(
+      mnemonic,
+      receiveAddress,
+      changePath,
+      isChildHardened,
+    );
 
     if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
       throw new Error('No derived addresses with balance.');
@@ -65,8 +77,18 @@ export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
 
   try {
     if (qrKey.indexOf('Ltpv') !== -1) {
-      const mainTxs = await sweepBase58Ltpv(qrKey, receiveAddress, startPath, isChildHardened);
-      const changeTxs = await sweepBase58Ltpv(qrKey, receiveAddress, changePath, isChildHardened);
+      const mainTxs = await sweepBase58Ltpv(
+        qrKey,
+        receiveAddress,
+        startPath,
+        isChildHardened,
+      );
+      const changeTxs = await sweepBase58Ltpv(
+        qrKey,
+        receiveAddress,
+        changePath,
+        isChildHardened,
+      );
 
       if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
         throw new Error('No derived addresses with balance.');
@@ -293,10 +315,27 @@ const sweepAddress = (
   inputScript: string,
 ): Promise<SweptAddress> => {
   return new Promise(async (resolve, reject) => {
+    const headers = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+
     try {
-      const {data: unspents} = await axios.get(
+      const utxoRes = await fetch(
         `https://litecoinspace.org/api/address/${address}/utxo`,
+        {
+          method: 'GET',
+          headers,
+        },
       );
+
+      if (!utxoRes.ok) {
+        const error = await utxoRes.json();
+        reject(error);
+        return;
+      }
+
+      const {unspents} = await utxoRes.json();
 
       let inputsArr: any[] = [];
       let addressBalance = 0;
@@ -305,9 +344,20 @@ const sweepAddress = (
         unspents.map(async (utxo: any) => {
           addressBalance += utxo.value;
 
-          const {data: utxoHex} = await axios.get(
+          const txHexRes = await fetch(
             `https://litecoinspace.org/api/tx/${utxo.txid}/hex`,
+            {
+              method: 'GET',
+              headers,
+            },
           );
+
+          if (!txHexRes.ok) {
+            const error = await txHexRes.json();
+            reject(error);
+          }
+
+          const utxoHex = await txHexRes.json();
 
           switch (inputScript) {
             case 'P2PKH':
@@ -351,7 +401,6 @@ const sweepAddress = (
           addressUnspentsLength: unspents.length,
         });
       } else {
-        // throw new Error('No funds in this address.');
         resolve({
           inputsArr,
           addressBalance,
