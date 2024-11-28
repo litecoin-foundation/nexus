@@ -4,7 +4,6 @@ import {unzip, subscribe} from 'react-native-zip-archive';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Crypto from 'react-native-quick-crypto';
 
-import * as Lnd from '../lib/lightning/wallet';
 import {AppThunk} from './types';
 import {fileExists} from '../lib/utils/file';
 import {showError} from './errors';
@@ -100,27 +99,8 @@ export const setSeedRecovery =
     dispatch(setSeedRecoveryAction(seedPhrase));
   };
 
-const test = () => {
-  return new Promise((resolve, reject) => {
-    FileSystem.readDirectoryAsync(`${FileSystem.documentDirectory}`)
-      .then(files => {
-        // Log the names of all the files
-        console.log('Files in the Documents Directory:', files);
-        files.forEach(file => {
-          console.log(`File: ${file}`);
-        });
-        resolve(true);
-      })
-      .catch(error => {
-        console.log('Error reading files:', error);
-        reject();
-      });
-  });
-};
-
 export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
   const {task} = getState().onboarding;
-  await test();
   // download neutrino cache from server
   if (task === 'complete') {
     // neutrino cache already fetched & extracted
@@ -146,7 +126,6 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
         const {status} = response.info();
         if (status === 200) {
           // successful download
-          await test();
           dispatch(extractNeutrinoCache());
         } else {
           dispatch(getNeutrinoCacheFailedAction());
@@ -188,12 +167,9 @@ const extractNeutrinoCache = (): AppThunk => async dispatch => {
     );
     // clean up
     await FileSystem.deleteAsync(`${FileSystem.documentDirectory}/mainnet.zip`);
-    await test();
-    console.log('finished');
     ReactNativeBlobUtil.fs.unlink(
       `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/mainnet.zip`,
     );
-    await test();
     dispatch(getNeutrinoCacheSuccessAction());
   } catch (error) {
     console.error(error);

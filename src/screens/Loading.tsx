@@ -63,9 +63,7 @@ const Loading: React.FC<Props> = props => {
         dispatch(startOnboarding());
         navigation.navigate('Onboarding');
       } else {
-        console.log('LOSHYPOOPY!!!!');
         console.log('SOMETHING WENT WRONG!');
-        console.log(`onboarding: ${onboarding} isOnboarded: ${isOnboarded}`);
         // TODO (LOSHY!)
       }
     };

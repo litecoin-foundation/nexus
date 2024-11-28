@@ -36,7 +36,8 @@ export const createConfig = () => {
       }
       // otherwise continues...
       const lndDir = `${FileSystem.documentDirectory}/lndltc`;
-      if (!fileExists(lndDir)) {
+      const lndDirExists = await fileExists(lndDir);
+      if (!lndDirExists) {
         await FileSystem.makeDirectoryAsync(lndDir);
       }
       FileSystem.writeAsStringAsync(lndConfPath, mainnetConfig).then(() => {

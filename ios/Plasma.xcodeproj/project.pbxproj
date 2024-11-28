@@ -12,19 +12,12 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1B772B682CF8102B009C0FB4 /* liblnd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B672CF8102B009C0FB4 /* liblnd.a */; };
+		1B772B6A2CF81E57009C0FB4 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B692CF81E4E009C0FB4 /* libresolv.tbd */; };
 		1BBB01A42BF4FF2800EDCA9B /* Satoshi-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A02BF4FF2800EDCA9B /* Satoshi-Variable.ttf */; };
 		1BBB01A52BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A12BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf */; };
 		1BBB01A62BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A22BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf */; };
-		1BBB01B02BF4FF3900EDCA9B /* lightning.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BBB01A72BF4FF3900EDCA9B /* lightning.pb.swift */; };
-		1BBB01B12BF4FF3900EDCA9B /* walletunlocker.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BBB01A82BF4FF3900EDCA9B /* walletunlocker.pb.swift */; };
-		1BBB01B22BF4FF3900EDCA9B /* Lnd.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BBB01AA2BF4FF3900EDCA9B /* Lnd.swift */; };
-		1BBB01B32BF4FF3900EDCA9B /* LndMobile.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BBB01AB2BF4FF3900EDCA9B /* LndMobile.m */; };
-		1BBB01B42BF4FF3900EDCA9B /* Lndmobile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BBB01AC2BF4FF3900EDCA9B /* Lndmobile.swift */; };
-		1BBB01B62BF4FF5500EDCA9B /* Lndmobile.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BBB01AD2BF4FF3900EDCA9B /* Lndmobile.xcframework */; };
-		1BBB01B72BF4FF5500EDCA9B /* Lndmobile.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1BBB01AD2BF4FF3900EDCA9B /* Lndmobile.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C12BF5022900EDCA9B /* SwiftProtobuf */; };
 		1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C32BF5022900EDCA9B /* SwiftProtobufPluginLibrary */; };
-		1BED719F2BF4CE8E00098E26 /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		964D5BC014578B7A3FA31EBC /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC18D45C582850A19CA3EB95 /* ExpoModulesProvider.swift */; };
 		B7539F0800979BDF26A41213 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2075DC22F2454F65CC20E21D /* ExpoModulesProvider.swift */; };
@@ -50,7 +43,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				1BBB01B72BF4FF5500EDCA9B /* Lndmobile.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -71,16 +63,11 @@
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = plasma/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:67RAULRX93:Marcin Krzyzanowski"; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		1B772B672CF8102B009C0FB4 /* liblnd.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblnd.a; sourceTree = "<group>"; };
+		1B772B692CF81E4E009C0FB4 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		1B772B6B2CF81EC8009C0FB4 /* plasma-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "plasma-Bridging-Header.h"; sourceTree = "<group>"; };
 		1BBB01A02BF4FF2800EDCA9B /* Satoshi-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Variable.ttf"; sourceTree = "<group>"; };
 		1BBB01A12BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-VariableItalic.ttf"; sourceTree = "<group>"; };
 		1BBB01A22BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SugarstyleMillenial-Regular.ttf"; sourceTree = "<group>"; };
-		1BBB01A72BF4FF3900EDCA9B /* lightning.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = lightning.pb.swift; sourceTree = "<group>"; };
-		1BBB01A82BF4FF3900EDCA9B /* walletunlocker.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = walletunlocker.pb.swift; sourceTree = "<group>"; };
-		1BBB01AA2BF4FF3900EDCA9B /* Lnd.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lnd.swift; sourceTree = "<group>"; };
-		1BBB01AB2BF4FF3900EDCA9B /* LndMobile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LndMobile.m; sourceTree = "<group>"; };
-		1BBB01AC2BF4FF3900EDCA9B /* Lndmobile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lndmobile.swift; sourceTree = "<group>"; };
-		1BBB01AD2BF4FF3900EDCA9B /* Lndmobile.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Lndmobile.xcframework; sourceTree = "<group>"; };
-		1BBB01BF2BF501F200EDCA9B /* plasma-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "plasma-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		1BC3AB132CD547B00024FD9C /* plasma.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = plasma.entitlements; path = plasma/plasma.entitlements; sourceTree = "<group>"; };
 		1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		2075DC22F2454F65CC20E21D /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-plasma/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
@@ -108,10 +95,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1BBB01B62BF4FF5500EDCA9B /* Lndmobile.xcframework in Frameworks */,
-				1BED719F2BF4CE8E00098E26 /* libresolv.9.tbd in Frameworks */,
 				1B772B682CF8102B009C0FB4 /* liblnd.a in Frameworks */,
 				1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */,
+				1B772B6A2CF81E57009C0FB4 /* libresolv.tbd in Frameworks */,
 				1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */,
 				EB1E4916B8B1E0647AEF00C7 /* libPods-plasma.a in Frameworks */,
 			);
@@ -140,8 +126,9 @@
 		13B07FAE1A68108700A75B9A /* plasma */ = {
 			isa = PBXGroup;
 			children = (
+				1B772B672CF8102B009C0FB4 /* liblnd.a */,
+				1B772B6B2CF81EC8009C0FB4 /* plasma-Bridging-Header.h */,
 				1BC3AB132CD547B00024FD9C /* plasma.entitlements */,
-				1BBB01AF2BF4FF3900EDCA9B /* LndMobile */,
 				1BBB01A32BF4FF2800EDCA9B /* fonts */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
@@ -174,32 +161,10 @@
 			path = plasma/fonts;
 			sourceTree = "<group>";
 		};
-		1BBB01A92BF4FF3900EDCA9B /* bindings */ = {
-			isa = PBXGroup;
-			children = (
-				1BBB01A72BF4FF3900EDCA9B /* lightning.pb.swift */,
-				1BBB01A82BF4FF3900EDCA9B /* walletunlocker.pb.swift */,
-			);
-			path = bindings;
-			sourceTree = "<group>";
-		};
-		1BBB01AF2BF4FF3900EDCA9B /* LndMobile */ = {
-			isa = PBXGroup;
-			children = (
-				1BBB01A92BF4FF3900EDCA9B /* bindings */,
-				1BBB01AA2BF4FF3900EDCA9B /* Lnd.swift */,
-				1BBB01AB2BF4FF3900EDCA9B /* LndMobile.m */,
-				1BBB01AC2BF4FF3900EDCA9B /* Lndmobile.swift */,
-				1BBB01AD2BF4FF3900EDCA9B /* Lndmobile.xcframework */,
-				1BBB01BF2BF501F200EDCA9B /* plasma-Bridging-Header.h */,
-			);
-			name = LndMobile;
-			path = plasma/LndMobile;
-			sourceTree = "<group>";
-		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1B772B692CF81E4E009C0FB4 /* libresolv.tbd */,
 				1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */,
 				1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
@@ -219,7 +184,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				1B772B672CF8102B009C0FB4 /* liblnd.a */,
 				13B07FAE1A68108700A75B9A /* plasma */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* plasmaTests */,
@@ -568,12 +532,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1BBB01B42BF4FF3900EDCA9B /* Lndmobile.swift in Sources */,
-				1BBB01B32BF4FF3900EDCA9B /* LndMobile.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
-				1BBB01B12BF4FF3900EDCA9B /* walletunlocker.pb.swift in Sources */,
-				1BBB01B22BF4FF3900EDCA9B /* Lnd.swift in Sources */,
-				1BBB01B02BF4FF3900EDCA9B /* lightning.pb.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B7539F0800979BDF26A41213 /* ExpoModulesProvider.swift in Sources */,
 			);
@@ -664,6 +623,7 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
+					"$(SDKROOT)/usr/lib/swift",
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
@@ -702,6 +662,7 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
+					"$(SDKROOT)/usr/lib/swift",
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
@@ -795,7 +756,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -869,7 +833,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;

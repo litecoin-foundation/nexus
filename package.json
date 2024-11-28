@@ -1,6 +1,6 @@
 {
   "name": "nexus",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Mobile Litecoin wallet built with React-Native + Redux",
   "license": "MIT",
   "repository": {
@@ -12,14 +12,15 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "reset": "rm -rf node_modules/ && npm cache clear && watchman watch-del-all && bun install",
+    "reset": "rm -rf node_modules/ && npm cache clear && watchman watch-del-all && npm install",
     "test": "jest",
-    "fetch:ios": "curl https://static-mobile.litecoin.com/lndmobile/lndmobile-ios-v0.17.3.tar.gz --output lndmobile-ios-v0.17.3.tar.gz && bun run extract:ios",
-    "extract:ios": "tar xzvf lndmobile-ios-v0.17.3.tar.gz -C ./ios/plasma/LndMobile",
-    "fetch:android": "curl https://static-mobile.litecoin.com/lndmobile/lndmobile-android-v0.17.3.tar.gz --output lndmobile-android-v0.17.3.tar.gz && bun run extract:android",
-    "extract:android": "tar xzvf lndmobile-android-v0.17.3.tar.gz -C ./android/app/lndmobile/",
+    "fetch:ios": "curl https://static-mobile.litecoin.com/lndmobile/lndmobile-ios-v0.17.3-cshared.tar.gz --output lndmobile-ios-v0.17.3-cshared.tar.gz && npm run extract:ios",
+    "extract:ios": "tar xzvf lndmobile-ios-v0.17.3-cshared.tar.gz ./ios/liblnd-fat.a && mv ./ios/liblnd-fat.a ./ios/liblnd.a",
+    "fetch:android": "curl https://static-mobile.litecoin.com/lndmobile/lndmobile-android-v0.17.3-cshared.tar.gz --output lndmobile-android-v0.17.3-cshared.tar.gz && npm run extract:android",
+    "extract:android": "tar xzvf lndmobile-android-v0.17.3-cshared.tar.gz --strip-components=1 -C ./android/app/src/main/jniLibs",
     "postinstall": "bunx patch-package",
-    "generate-protos": "@bufbuild/buf generate"
+    "generate-protos": "@bufbuild/buf generate",
+    "pod-install": "RCT_NEW_ARCH_ENABLED=1 pod install"
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.1.1",

@@ -1,5 +1,3 @@
-#import <React/RCTBridgeModule.h>
-#import <Expo/Expo.h>
-#import <React/RCTEventEmitter.h>
-#import <RNKeychainManager.h>
-#import <RNCAsyncStorage.h>
+//
+//  Use this file to import your target's public headers that you would like to expose to Swift.
+//

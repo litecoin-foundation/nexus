@@ -2,7 +2,8 @@ import * as Lnd from '../lib/lightning';
 import * as LndWallet from '../lib/lightning/wallet';
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import * as FileSystem from 'expo-file-system';
-import {NativeModules} from 'react-native';
+import {NativeModules, Platform} from 'react-native';
+import {start} from 'react-native-turbo-lnd';
 
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
@@ -36,8 +37,23 @@ const lndState = createAction<boolean>('lightning/lndState');
 export const startLnd = (): AppThunk => async dispatch => {
   try {
     await createConfig();
+
+    // lnd dir path
+    let appFolderPath: string;
+    if (Platform.OS === 'android') {
+      appFolderPath = '/data/user/0/com.plasma/files/';
+    } else if (Platform.OS === 'ios') {
+      appFolderPath = FileSystem.documentDirectory!.replace(
+        'file://',
+        '',
+      ).replace(/%20/g, ' ');
+      appFolderPath += 'lndltc/';
+    } else {
+      throw new Error('LND running on Unknown OS!');
+    }
+
     // start LND
-    await Lnd.startLnd(false, '--nolisten');
+    await start(` --lnddir=${appFolderPath}`);
     dispatch(lndState(true));
   } catch (err) {
     console.error('CANT start LND');
@@ -68,8 +84,6 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
   try {
     await deleteWalletDB();
 
-    console.log('LPOOPY initWallet being');
-    console.timeLog();
     try {
       await LndWallet.initWallet(
         seed,
@@ -79,9 +93,6 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
     } catch (error) {
       console.error(error);
     }
-
-    console.log('LPOOPY initWallet end');
-    console.timeLog();
 
     const subscription = LndMobileEventEmitter.addListener(
       'SubscribeState',
@@ -94,9 +105,7 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
             // we know that onboarding is finished by now!
             // when isOnboarded, the Welcome screen will initWallet()
             // and handle navigation
-            console.log('LPOOPY finishOnboarding init');
             dispatch(finishOnboarding());
-            console.log('LPOOPY finishOnboarding end');
           } else if (state === lnrpc.WalletState.RPC_ACTIVE) {
             // RPC_ACTIVE so we are ready to dispatch pollers
             dispatch(pollInfo());
@@ -112,7 +121,6 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
         }
       },
     );
-    console.log('LPOOPY: subscribeStateLND');
     await Lnd.subscribeState();
   } catch (error) {
     console.error(error);
