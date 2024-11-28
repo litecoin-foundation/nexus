@@ -1,22 +1,40 @@
 import * as LndOnchain from '../lib/lightning/onchain';
-import * as LndWallet from '../lib/lightning/wallet';
 import {createAction, createSelector, createSlice} from '@reduxjs/toolkit';
 import {AppThunk} from './types';
 import {LndMobileEventEmitter} from '../lib/utils/event-listener';
 import {formatDate, formatTime} from '../lib/utils/date';
+import {lnrpc} from '../lib/lightning/proto/lightning';
 
 // types
-interface ITransaction {}
+type IDecodedTx = {
+  txHash: lnrpc.ITransaction['txHash'];
+  amount: lnrpc.ITransaction['amount'];
+  numConfirmations: lnrpc.ITransaction['numConfirmations'];
+  blockHash: lnrpc.ITransaction['blockHash'];
+  blockHeight: lnrpc.ITransaction['blockHeight'];
+  timeStamp: lnrpc.ITransaction['timeStamp'];
+  fee: lnrpc.ITransaction['totalFees'];
+  destAddresses: lnrpc.ITransaction['destAddresses'];
+  outputDetails: lnrpc.ITransaction['outputDetails'];
+  previousOutpoints: lnrpc.ITransaction['previousOutpoints'];
+  label: lnrpc.ITransaction['label'];
+};
+
+interface ITx {
+  transactions: IDecodedTx[];
+}
 
 // initial state
 const initialState = {
   transactions: [],
   invoices: [],
   memos: [],
-} as ITransaction;
+} as ITx;
 
 // actions
-const getTransactionsAction = createAction('transaction/getTransactionsAction');
+const getTransactionsAction = createAction<IDecodedTx[]>(
+  'transaction/getTransactionsAction',
+);
 
 // functions
 export const subscribeTransactions = (): AppThunk => async dispatch => {
@@ -40,10 +58,24 @@ export const subscribeTransactions = (): AppThunk => async dispatch => {
 export const getTransactions = (): AppThunk => async dispatch => {
   try {
     const {transactions} = await LndOnchain.getTransactions();
-    let txs = [];
+    let txs: IDecodedTx[] = [];
 
     transactions.forEach(tx => {
-      let obj = {
+      // deserialisation
+      const destAddresses: string[] = [];
+      tx.destAddresses?.forEach(addresses => {
+        destAddresses.push(addresses);
+      });
+      const outputDetails: lnrpc.IOutputDetail[] = [];
+      tx.outputDetails?.forEach(outputDetail => {
+        outputDetails.push(outputDetail);
+      });
+      const previousOutpoints: lnrpc.IPreviousOutPoint[] = [];
+      tx.previousOutpoints?.forEach(prevOutpoint => {
+        previousOutpoints.push(prevOutpoint);
+      });
+
+      let decodedTx = {
         txHash: tx.txHash,
         amount: tx.amount,
         numConfirmations: tx.numConfirmations,
@@ -51,12 +83,12 @@ export const getTransactions = (): AppThunk => async dispatch => {
         blockHeight: tx.blockHeight,
         timeStamp: tx.timeStamp,
         fee: tx.totalFees,
-        destAddresses: tx.destAddresses,
-        outputDetails: tx.outputDetails,
-        previousOutpoints: tx.previousOutpoints,
+        destAddresses,
+        outputDetails,
+        previousOutpoints,
         label: tx.label,
       };
-      txs.push(obj);
+      txs.push(decodedTx);
     });
 
     dispatch(getTransactionsAction(txs));
@@ -123,7 +155,6 @@ const txSelector = (state: any) => state.transaction.transactions;
 
 export const txDetailSelector = createSelector(txSelector, tx =>
   tx.map((data: any) => {
-
     const addresses: string[] = [];
     data.outputDetails?.forEach((outputDetail: any) => {
       addresses.push(outputDetail.address);

@@ -11,6 +11,7 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		1B772B682CF8102B009C0FB4 /* liblnd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B672CF8102B009C0FB4 /* liblnd.a */; };
 		1BBB01A42BF4FF2800EDCA9B /* Satoshi-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A02BF4FF2800EDCA9B /* Satoshi-Variable.ttf */; };
 		1BBB01A52BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A12BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf */; };
 		1BBB01A62BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A22BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf */; };
@@ -69,6 +70,7 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = plasma/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = plasma/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:67RAULRX93:Marcin Krzyzanowski"; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
+		1B772B672CF8102B009C0FB4 /* liblnd.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblnd.a; sourceTree = "<group>"; };
 		1BBB01A02BF4FF2800EDCA9B /* Satoshi-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Variable.ttf"; sourceTree = "<group>"; };
 		1BBB01A12BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-VariableItalic.ttf"; sourceTree = "<group>"; };
 		1BBB01A22BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SugarstyleMillenial-Regular.ttf"; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 			files = (
 				1BBB01B62BF4FF5500EDCA9B /* Lndmobile.xcframework in Frameworks */,
 				1BED719F2BF4CE8E00098E26 /* libresolv.9.tbd in Frameworks */,
+				1B772B682CF8102B009C0FB4 /* liblnd.a in Frameworks */,
 				1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */,
 				1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */,
 				EB1E4916B8B1E0647AEF00C7 /* libPods-plasma.a in Frameworks */,
@@ -216,6 +219,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				1B772B672CF8102B009C0FB4 /* liblnd.a */,
 				13B07FAE1A68108700A75B9A /* plasma */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* plasmaTests */,
@@ -659,6 +663,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -692,6 +700,10 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
@@ -783,10 +795,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -860,10 +869,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;

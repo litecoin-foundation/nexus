@@ -23,7 +23,6 @@ interface Props {
 }
 
 const Box: React.FC<Props> = props => {
-  console.log(470 / screenHeight);
   const {buttonState} = props;
 
   // animation

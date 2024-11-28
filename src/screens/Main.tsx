@@ -23,7 +23,6 @@ import {
   Canvas,
   Image,
   RoundedRect,
-  Text as SkiaText,
   matchFont,
   useImage,
 } from '@shopify/react-native-skia';
@@ -142,7 +141,7 @@ const Main: React.FC<Props> = props => {
       // handle BIP21 litecoin URI
       if (data.startsWith('litecoin:')) {
         const decoded = decodeBIP21(data);
-        const valid = await validateLtcAddress(decoded.address);
+        const valid = validateLtcAddress(decoded.address);
 
         // BIP21 validation
         if (!valid) {

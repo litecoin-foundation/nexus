@@ -86,7 +86,7 @@ export const getQuote =
         console.error(error);
       }
 
-      const {data} = await res.json();
+      const data = await res.json();
 
       dispatch(getQuoteAction(data));
     } catch (error: any) {
@@ -120,7 +120,7 @@ export const checkAllowed = (): AppThunk => async dispatch => {
     }
 
     const ipResponse = await res.json();
-    const {isBuyAllowed, isSellAllowed} = ipResponse.data;
+    const {isBuyAllowed, isSellAllowed} = ipResponse;
     canBuyIP = isBuyAllowed;
     canSellIP = isSellAllowed;
 
@@ -132,7 +132,7 @@ export const checkAllowed = (): AppThunk => async dispatch => {
       const error = await res2.json();
       throw new Error(error);
     }
-    const {data} = await res2.json();
+    const data = await res2.json();
 
     const country = data.find((c: any) => c.alpha2 === countryCode);
     if (!country) {
@@ -175,7 +175,7 @@ export const getLimits = (): AppThunk => async (dispatch, getState) => {
       throw new Error(error);
     }
 
-    const {data} = await res.json();
+    const data = await res.json();
 
     dispatch(getLimitsAction(data));
   } catch (error) {

@@ -9,7 +9,6 @@ const thirdOfWidth = Math.ceil(Dimensions.get('screen').width / 3);
 const twoThirdOfWidth = thirdOfWidth * 2;
 
 const PadGrid: React.FC<Props> = () => {
-  console.log();
   const h = [115, 210, 306];
   const v = [thirdOfWidth, twoThirdOfWidth];
   return (

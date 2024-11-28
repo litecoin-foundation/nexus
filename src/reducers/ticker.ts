@@ -65,7 +65,7 @@ export const getPaymentRate = (): AppThunk => async (dispatch, getState) => {
       const error = await res.json();
       throw new Error(error);
     }
-    const {data} = await res.json();
+    const data = await res.json();
 
     let paymentRate = data.quoteCurrencyPrice;
 

@@ -183,6 +183,10 @@ export const unlockWallet = (): AppThunk => async dispatch => {
         'rpc error: code = Unknown desc = wallet already unlocked, WalletUnlocker service is no longer available'
       ) {
         console.log('wallet unlocked already!');
+        dispatch({
+          type: 'UNLOCK_WALLET',
+          payload: true,
+        });
       }
       throw new Error(String(error));
     }
