@@ -1,11 +1,10 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import NetInfo from '@react-native-community/netinfo';
+import {getInfo as getLndInfo} from 'react-native-turbo-lnd';
 
 import {AppThunk} from './types';
 import {poll} from '../lib/utils/poll';
 import {RootState} from '../store';
-import * as Lnd from '../lib/lightning';
-import {lnrpc} from '../lib/lightning/proto/lightning';
 
 // types
 interface IInfo {
@@ -16,16 +15,15 @@ interface IInfo {
   syncedToGraph: boolean;
   blockHeight: number;
   blockHash: string;
-  bestHeaderTimestamp: number;
+  bestHeaderTimestamp: string;
   uris: string[];
-  chains: lnrpc.IChain[];
   numPeers: number;
   numActiveChannels: number;
   numPendingChannels: number;
   numInactiveChannels: number;
   testnet: boolean;
   isInternetReachable: boolean | null;
-  startingSyncTimestamp: number;
+  startingSyncTimestamp: string;
   percentSynced: number | undefined;
 }
 
@@ -40,23 +38,21 @@ const initialState = {
   syncedToGraph: false,
   blockHeight: 0,
   blockHash: '',
-  bestHeaderTimestamp: 0,
+  bestHeaderTimestamp: '',
   uris: [],
-  chains: [{chain: null, network: null}],
   numPeers: 0,
   numActiveChannels: 0,
   numPendingChannels: 0,
   numInactiveChannels: 0,
   testnet: false,
   isInternetReachable: null,
-  startingSyncTimestamp: 0,
+  startingSyncTimestamp: '0',
   percentSynced: 0,
 } as IInfo;
 
 // actions
 const getInfoAction =
   createAction<InfoWithoutInternetReachable>('info/getInfoAction');
-const getRecoveryInfoAction = createAction('info/getRecoveryInfoAction');
 const checkInternetReachableAction = createAction<boolean | null>(
   'info/checkInternetReachableAction',
 );
@@ -68,39 +64,15 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
     return;
   }
   try {
-    const infoRpc = await Lnd.getInfo();
+    const infoRpc = await getLndInfo({});
 
     let info = {
       ...infoRpc,
-      startingSyncTimestamp: 0,
+      startingSyncTimestamp: '0',
       percentSynced: 0,
     };
 
-    // RTK complains if values aren't correctly serialised
-    const chains: lnrpc.IChain[] = [];
-    const features: {[key: string]: lnrpc.IFeature} = {};
-
-    for (const chainOption of infoRpc.chains) {
-      let serializedChain = {
-        chain: chainOption.chain,
-        network: chainOption.network,
-      };
-      chains.push(serializedChain);
-    }
-
-    for (const featureKey in infoRpc.features) {
-      const val = infoRpc.features[featureKey];
-      let serializedFeature = {
-        name: val.name,
-        isRequired: val.isRequired,
-        isKnown: val.isKnown,
-      };
-
-      features[featureKey] = serializedFeature;
-    }
-
-    info.chains = chains;
-    info.features = features;
+    info.bestHeaderTimestamp = info.bestHeaderTimestamp.toString();
 
     // TODO: refactor required
     // first get neutrino cache before initwallet
@@ -109,10 +81,11 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
 
     // calculate % synced
     if (startingSyncTimestamp === undefined) {
-      info.startingSyncTimestamp = Number(info.bestHeaderTimestamp) || 0;
+      info.startingSyncTimestamp =
+        String(info.bestHeaderTimestamp) || String(0);
     }
     const syncPercentage = await calculateSyncProgress(
-      info,
+      String(info.bestHeaderTimestamp),
       startingSyncTimestamp,
     );
     if (syncPercentage < 0.9) {
@@ -120,7 +93,7 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
     }
     if (!info.syncedToChain) {
       info.percentSynced = await calculateSyncProgress(
-        info,
+        String(info.bestHeaderTimestamp),
         startingSyncTimestamp,
       );
     }
@@ -135,17 +108,17 @@ export const pollInfo = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getInfo()));
 };
 
-export const getRecoveryInfo = (): AppThunk => async dispatch => {
-  try {
-    const recoveryRpc = await Lnd.getRecoveryInfo();
-    console.log(recoveryRpc);
-    const rpc = await Lnd.getInfo();
-    console.log(rpc);
-    // TODO
-  } catch (error) {
-    console.error(`getRecoveryInfo error: ${error}`);
-  }
-};
+// export const getRecoveryInfo = (): AppThunk => async dispatch => {
+//   try {
+//     const recoveryRpc = await Lnd.getRecoveryInfo();
+//     console.log(recoveryRpc);
+//     const rpc = await Lnd.getInfo();
+//     console.log(rpc);
+//     // TODO
+//   } catch (error) {
+//     console.error(`getRecoveryInfo error: ${error}`);
+//   }
+// };
 
 export const checkInternetReachable = (): AppThunk => async dispatch => {
   NetInfo.addEventListener(state => {
@@ -154,16 +127,15 @@ export const checkInternetReachable = (): AppThunk => async dispatch => {
 };
 
 const calculateSyncProgress = async (
-  info: InfoWithoutInternetReachable,
+  bestHeaderTimestamp: string,
   startingSyncTimestamp: IInfo['startingSyncTimestamp'],
 ) => {
-  const {bestHeaderTimestamp} = info;
   const currentTimestamp = new Date().getTime() / 1000;
   const progressSoFar = bestHeaderTimestamp
-    ? Number(bestHeaderTimestamp) - startingSyncTimestamp!
+    ? BigInt(bestHeaderTimestamp) - BigInt(startingSyncTimestamp)!
     : 0;
   const totalProgress = currentTimestamp - startingSyncTimestamp! || 0.001;
-  const percentSynced = (progressSoFar * 1.0) / totalProgress;
+  const percentSynced = (Number(progressSoFar) * 1.0) / totalProgress;
   return percentSynced;
 };
 

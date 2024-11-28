@@ -37,7 +37,7 @@ export const generateMnemonic = () => {
       const salt = Buffer.from(Crypto.randomBytes(5).toString('hex'), 'hex');
       const entropy = Crypto.randomBytes(16).toString('hex');
 
-      const key = await scrypt(
+      const key = scrypt(
         password,
         salt,
         SCRYPT_N,

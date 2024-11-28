@@ -1,9 +1,16 @@
 import * as LndOnchain from '../lib/lightning/onchain';
 import {createAction, createSelector, createSlice} from '@reduxjs/toolkit';
+import {
+  getTransactions as getLndTransactions,
+  subscribeTransactions as subscribeLndTransactions,
+} from 'react-native-turbo-lnd';
+import {GetTransactionsRequestSchema} from 'react-native-turbo-lnd/protos/lightning_pb';
+import {create} from '@bufbuild/protobuf';
+
 import {AppThunk} from './types';
-import {LndMobileEventEmitter} from '../lib/utils/event-listener';
 import {formatDate, formatTime} from '../lib/utils/date';
 import {lnrpc} from '../lib/lightning/proto/lightning';
+import {getBalance} from './balance';
 
 // types
 type IDecodedTx = {
@@ -21,11 +28,13 @@ type IDecodedTx = {
 };
 
 interface ITx {
+  txSubscriptionStarted: boolean;
   transactions: IDecodedTx[];
 }
 
 // initial state
 const initialState = {
+  txSubscriptionStarted: false,
   transactions: [],
   invoices: [],
   memos: [],
@@ -35,32 +44,52 @@ const initialState = {
 const getTransactionsAction = createAction<IDecodedTx[]>(
   'transaction/getTransactionsAction',
 );
+const txSubscriptionStartedAction = createAction<boolean>(
+  'transaction/txSubscriptionStartedAction',
+);
 
 // functions
-export const subscribeTransactions = (): AppThunk => async dispatch => {
-  try {
-    await LndOnchain.subscribeTransactions();
-    LndMobileEventEmitter.addListener('SubscribeTransactions', async event => {
-      const transaction = LndOnchain.decodeSubscribeTransactionsResult(
-        event.data,
-      );
+export const subscribeTransactions =
+  (): AppThunk => async (dispatch, getState) => {
+    const {txSubscriptionStarted} = getState().transaction;
+    try {
+      if (!txSubscriptionStarted) {
+        dispatch(txSubscriptionStartedAction(true));
 
-      if (transaction) {
-        //
-        dispatch(getTransactions());
+        subscribeLndTransactions(
+          {},
+          async transaction => {
+            try {
+              console.log(`new tx detected!: ${transaction}`);
+              dispatch(getTransactions());
+              dispatch(getBalance());
+            } catch (error) {
+              dispatch(txSubscriptionStartedAction(false));
+              throw new Error(String(error));
+            }
+          },
+          error => {
+            console.error(error);
+          },
+        );
       }
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
 export const getTransactions = (): AppThunk => async dispatch => {
   try {
-    const {transactions} = await LndOnchain.getTransactions();
+    const transactions = await getLndTransactions(
+      create(GetTransactionsRequestSchema),
+    );
+
     let txs: IDecodedTx[] = [];
 
-    transactions.forEach(tx => {
+    // TODO: decode and add metadata on transaction info.
+    // If Buy/Sell transaction, this must be labelled as such
+
+    transactions.transactions.forEach(tx => {
       // deserialisation
       const destAddresses: string[] = [];
       tx.destAddresses?.forEach(addresses => {
@@ -103,7 +132,7 @@ export const sendOnchainPayment =
     return new Promise(async (resolve, reject) => {
       try {
         const {confirmedBalance} = getState().balance;
-        const sendAll = confirmedBalance === amount ? true : false;
+        const sendAll = Number(confirmedBalance) === amount ? true : false;
 
         try {
           let txid;
@@ -185,6 +214,10 @@ export const transactionSlice = createSlice({
     getTransactionsAction: (state, action) => ({
       ...state,
       transactions: action.payload,
+    }),
+    txSubscriptionStartedAction: (state, action) => ({
+      ...state,
+      txSubscriptionStarted: action.payload,
     }),
   },
 });

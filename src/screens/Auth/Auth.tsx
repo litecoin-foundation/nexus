@@ -1,6 +1,8 @@
 import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {Alert, ActivityIndicator, StyleSheet, View} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {subscribeState} from 'react-native-turbo-lnd';
+import {WalletState} from 'react-native-turbo-lnd/protos/lightning_pb';
 
 import Auth from '../../components/Auth';
 import {
@@ -10,9 +12,6 @@ import {
 } from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {LndMobileEventEmitter} from '../../lib/utils/event-listener';
-import * as Lnd from '../../lib/lightning';
-import {lnrpc} from '../../lib/lightning/proto/lightning';
 
 type RootStackParamList = {
   Auth: undefined;
@@ -46,17 +45,21 @@ const AuthScreen: React.FC<Props> = props => {
   // If biometricEnabled & lnd is ready, present Biometric auth request
   useEffect(() => {
     if (biometricsEnabled) {
-      LndMobileEventEmitter.addListener('SubscribeState', async event => {
-        try {
-          const {state} = Lnd.decodeState(event.data);
-          if (state === lnrpc.WalletState.WAITING_TO_START) {
-            dispatch(unlockWalletWithBiometric());
+      subscribeState(
+        {},
+        async state => {
+          try {
+            if (state.state === WalletState.WAITING_TO_START) {
+              dispatch(unlockWalletWithBiometric());
+            }
+          } catch (error) {
+            throw new Error(String(error));
           }
-        } catch (error) {
+        },
+        error => {
           console.error(error);
-        }
-      });
-      Lnd.subscribeState();
+        },
+      );
     }
   }, [biometricsEnabled, dispatch]);
 

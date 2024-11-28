@@ -1,9 +1,14 @@
-import * as Lnd from '../lib/lightning';
-import * as LndWallet from '../lib/lightning/wallet';
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import * as FileSystem from 'expo-file-system';
-import {NativeModules, Platform} from 'react-native';
-import {start} from 'react-native-turbo-lnd';
+import {Platform} from 'react-native';
+import {
+  start,
+  initWallet as initLndWallet,
+  unlockWallet as unlockLndWallet,
+  subscribeState,
+  stopDaemon,
+} from 'react-native-turbo-lnd';
+import {WalletState} from 'react-native-turbo-lnd/protos/lightning_pb';
 
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
@@ -13,10 +18,9 @@ import {finishOnboarding} from './onboarding';
 import {subscribeTransactions} from './transaction';
 import {pollInfo} from './info';
 import {pollTicker} from './ticker';
-import {LndMobileEventEmitter} from '../lib/utils/event-listener';
-import {lnrpc} from '../lib/lightning/proto/lightning';
-import {createConfig} from '../lib/utils/config';
 import {pollBalance} from './balance';
+import {createConfig} from '../lib/utils/config';
+import {stringToUint8Array} from '../lib/utils';
 
 const PASS = 'PASSWORD';
 
@@ -65,7 +69,7 @@ export const startLnd = (): AppThunk => async dispatch => {
 
 export const stopLnd = (): AppThunk => async dispatch => {
   try {
-    await NativeModules.LndMobile.stopLnd();
+    await stopDaemon({});
     dispatch(lndState(false));
   } catch (err) {
     console.error('CANT stop LND');
@@ -85,43 +89,41 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
     await deleteWalletDB();
 
     try {
-      await LndWallet.initWallet(
-        seed,
-        password,
-        beingRecovered === true ? 3000 : 0,
-      );
+      await initLndWallet({
+        cipherSeedMnemonic: seed,
+        walletPassword: stringToUint8Array(password),
+        recoveryWindow: beingRecovered === true ? 3000 : 0,
+      });
     } catch (error) {
       console.error(error);
     }
 
-    const subscription = LndMobileEventEmitter.addListener(
-      'SubscribeState',
-      async event => {
+    subscribeState(
+      {},
+      async state => {
         try {
-          const {state} = Lnd.decodeState(event.data);
-          console.log(`POOPY: LND STATE UPDATE ${state}`);
-          if (state === lnrpc.WalletState.UNLOCKED) {
+          if (state.state === WalletState.UNLOCKED) {
             // UNLOCKED is before RPC_ACTIVE
             // we know that onboarding is finished by now!
             // when isOnboarded, the Welcome screen will initWallet()
             // and handle navigation
             dispatch(finishOnboarding());
-          } else if (state === lnrpc.WalletState.RPC_ACTIVE) {
+          } else if (state.state === WalletState.RPC_ACTIVE) {
             // RPC_ACTIVE so we are ready to dispatch pollers
             dispatch(pollInfo());
             dispatch(pollTicker());
-
             dispatch(subscribeTransactions());
 
-            subscription.remove();
             return;
           }
         } catch (error) {
-          console.error(error);
+          throw new Error(String(error));
         }
       },
+      error => {
+        console.error(error);
+      },
     );
-    await Lnd.subscribeState();
   } catch (error) {
     console.error(error);
   }
@@ -133,25 +135,24 @@ export const unlockWallet = (): AppThunk => async dispatch => {
 
     try {
       if (password !== null) {
-        await LndWallet.unlockWallet(password);
+        await unlockLndWallet({
+          walletPassword: stringToUint8Array(password),
+        });
       } else {
         throw new Error('wallet password is null');
       }
 
-      const unlockSubscription = LndMobileEventEmitter.addListener(
-        'SubscribeState',
-        async event => {
+      subscribeState(
+        {},
+        async state => {
           try {
-            const {state} = Lnd.decodeState(event.data);
-
-            if (state === lnrpc.WalletState.RPC_ACTIVE) {
+            if (state.state === WalletState.RPC_ACTIVE) {
               // dispatch pollers
               dispatch(pollInfo());
               dispatch(subscribeTransactions());
               dispatch(pollTicker());
               dispatch(pollBalance());
 
-              unlockSubscription.remove();
               resolve();
             }
           } catch (error) {
@@ -182,9 +183,10 @@ export const unlockWallet = (): AppThunk => async dispatch => {
             }
           }
         },
+        error => {
+          console.error(String(error));
+        },
       );
-
-      await Lnd.subscribeState();
     } catch (error: any) {
       if (
         error.message ===

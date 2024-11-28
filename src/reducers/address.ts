@@ -1,5 +1,6 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
-import * as Lnd from '../lib/lightning/onchain';
+import {newAddress} from 'react-native-turbo-lnd';
+import {NewAddressResponse} from 'react-native-turbo-lnd/protos/lightning_pb';
 import {AppThunk} from './types';
 
 // types
@@ -13,14 +14,23 @@ const initialState = {
 } as IAddress;
 
 // actions
-const getAddressAction = createAction<string>('address/getAddressAction');
+const getAddressAction = createAction<NewAddressResponse>(
+  'address/getAddressAction',
+);
 
 // functions
 export const getAddress =
   (mwebAddress?: boolean): AppThunk =>
   async dispatch => {
     try {
-      const {address} = await Lnd.newAddress(mwebAddress ? 7 : undefined);
+      let type;
+      if (mwebAddress) {
+        type = 7;
+      } else {
+        type = 2;
+      }
+      const address = await newAddress({type});
+
       dispatch(getAddressAction(address));
     } catch (error) {
       console.error(`getAddress error: ${error}`);

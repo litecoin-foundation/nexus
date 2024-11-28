@@ -1,46 +1,53 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {walletBalance} from 'react-native-turbo-lnd';
 
 import {AppThunk} from './types';
-import * as Lnd from '../lib/lightning/onchain';
 import {poll} from '../lib/utils/poll';
 
 // types
 interface IBalanceState {
-  totalBalance: number;
-  confirmedBalance: number;
-  unconfirmedBalance: number;
-  balance: number;
-  pendingOpenBalance: number;
+  totalBalance: string;
+  confirmedBalance: string;
+  unconfirmedBalance: string;
+  lockedBalance: string;
+  reservedBalanceAnchorChan: string;
 }
-
-type GetBalanceType = {
-  totalBalance: number;
-  confirmedBalance: number;
-  unconfirmedBalance: number;
-};
 
 // initial state
 const initialState = {
-  totalBalance: 0,
-  confirmedBalance: 0,
-  unconfirmedBalance: 0,
-  balance: 0,
-  pendingOpenBalance: 0,
+  totalBalance: '',
+  confirmedBalance: '',
+  unconfirmedBalance: '',
+  lockedBalance: '',
+  reservedBalanceAnchorChan: '',
 } as IBalanceState;
 
 // actions
-const getBalanceAction = createAction<GetBalanceType>(
+const getBalanceAction = createAction<IBalanceState>(
   'balance/getBalanceAction',
 );
 
 // functions
 export const getBalance = (): AppThunk => async dispatch => {
   try {
-    const {totalBalance, confirmedBalance, unconfirmedBalance} =
-      await Lnd.walletBalance();
+    const walletBalanceResponse = await walletBalance({});
+
+    const {
+      confirmedBalance,
+      unconfirmedBalance,
+      lockedBalance,
+      reservedBalanceAnchorChan,
+      totalBalance,
+    } = walletBalanceResponse;
 
     dispatch(
-      getBalanceAction({totalBalance, confirmedBalance, unconfirmedBalance}),
+      getBalanceAction({
+        confirmedBalance: String(confirmedBalance),
+        unconfirmedBalance: String(unconfirmedBalance),
+        lockedBalance: String(lockedBalance),
+        reservedBalanceAnchorChan: String(reservedBalanceAnchorChan),
+        totalBalance: String(totalBalance),
+      }),
     );
   } catch (error) {
     console.error(error);
@@ -56,11 +63,13 @@ export const balanceSlice = createSlice({
   name: 'balance',
   initialState,
   reducers: {
-    getBalanceAction: (state, action: PayloadAction<GetBalanceType>) => ({
+    getBalanceAction: (state, action: PayloadAction<IBalanceState>) => ({
       ...state,
       totalBalance: action.payload.totalBalance,
       confirmedBalance: action.payload.confirmedBalance,
       unconfirmedBalance: action.payload.unconfirmedBalance,
+      lockedBalance: action.payload.lockedBalance,
+      reservedBalanceAnchorChan: action.payload.reservedBalanceAnchorChan,
     }),
   },
 });
