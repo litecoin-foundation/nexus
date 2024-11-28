@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect} from 'react';
 import {Dimensions, StyleSheet} from 'react-native';
 import {
   Gesture,
@@ -10,14 +10,17 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
-const SNAP_POINTS_FROM_TOP = [
-  Dimensions.get('screen').height * 0.24,
-  Dimensions.get('screen').height * 0.47,
-];
-const FULLY_OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
-const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
+const ANIM_DURATION = 200;
+const SPRING_BACK_ANIM_DURATION = 100;
+
+const SWIPE_TRIGGER_Y_RANGE = Dimensions.get('screen').height * 0.15;
+const UNFOLD_SHEET_POINT = Dimensions.get('screen').height * 0.24;
+const FOLD_SHEET_POINT = Dimensions.get('screen').height * 0.47;
+const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
+const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 
 interface Props {
   txViewComponent: React.ReactNode;
@@ -26,10 +29,10 @@ interface Props {
   sendViewComponent: React.ReactNode;
   receiveViewComponent: React.ReactNode;
   headerComponent: React.ReactNode;
-  translationY: SharedValue<number>;
-  bottomSheetTranslateY: SharedValue<number>;
-  scrollOffset: SharedValue<number>;
-  handleSwipeDown: () => void;
+  mainSheetsTranslationY: SharedValue<number>;
+  mainSheetsTranslationYStart: SharedValue<number>;
+  folded: boolean;
+  foldUnfold: (isFolded: boolean) => void;
   activeTab: number;
 }
 
@@ -41,135 +44,124 @@ const BottomSheet: React.FC<Props> = props => {
     sendViewComponent,
     receiveViewComponent,
     headerComponent,
-    translationY,
-    bottomSheetTranslateY,
-    scrollOffset,
-    handleSwipeDown,
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
+    folded,
+    foldUnfold,
     activeTab,
   } = props;
-  const panGestureRef = useRef(Gesture.Pan());
-  const blockScrollUntilAtTheTopRef = useRef(Gesture.Tap());
-  const [snapPoint, setSnapPoint] = useState(CLOSED_SNAP_POINT);
 
-  const onHandlerEndOnJS = (point: number) => {
-    setSnapPoint(point);
-    // check if BottomSheet is being swiped away
-    // if true, close open tab and show tx history!
-    if (point === SNAP_POINTS_FROM_TOP[1]) {
-      runOnJS(handleSwipeDown)();
-    }
+  const openMenuBarTabOnJS = () => {
+    foldUnfold(true);
   };
-  const onHandlerEnd = ({velocityY}: PanGestureHandlerEventPayload) => {
+
+  const closeMenuBarTabOnJS = () => {
+    foldUnfold(false);
+  };
+
+  const onHandlerEnd = ({translationY, velocityY}: PanGestureHandlerEventPayload) => {
     'worklet';
     const dragToss = 0.05;
-    const endOffsetY =
-      bottomSheetTranslateY.value + translationY.value + velocityY * dragToss;
+    const destSnapPoint = translationY + mainSheetsTranslationYStart.value + velocityY * dragToss;
 
-    // calculate nearest snap point
-    let destSnapPoint = FULLY_OPEN_SNAP_POINT;
-
-    if (
-      snapPoint === FULLY_OPEN_SNAP_POINT &&
-      endOffsetY < FULLY_OPEN_SNAP_POINT
-    ) {
-      return;
-    }
-
-    for (const snapPointComputed of SNAP_POINTS_FROM_TOP) {
-      const distFromSnap = Math.abs(snapPointComputed - endOffsetY);
-      if (distFromSnap < Math.abs(destSnapPoint - endOffsetY)) {
-        destSnapPoint = snapPointComputed;
-      }
-    }
-
-    // update current translation to be able to animate withSpring to snapPoint
-    bottomSheetTranslateY.value =
-      bottomSheetTranslateY.value + translationY.value;
-    translationY.value = 0;
-
-    bottomSheetTranslateY.value = withSpring(destSnapPoint, {
-      mass: 0.5,
+    mainSheetsTranslationY.value = withSpring(destSnapPoint, {
+      mass: 0.1,
     });
-    runOnJS(onHandlerEndOnJS)(destSnapPoint);
-  };
-  const panGesture = Gesture.Pan()
-    .onUpdate(e => {
-      // when bottom sheet is not fully opened scroll offset should not influence
-      // its position (prevents random snapping when opening bottom sheet when
-      // the content is already scrolled)
-      if (snapPoint === FULLY_OPEN_SNAP_POINT) {
-        translationY.value = e.translationY - scrollOffset.value;
-      } else {
-        translationY.value = e.translationY;
-      }
-    })
-    .onEnd(onHandlerEnd)
-    .withRef(panGestureRef);
 
-  const blockScrollUntilAtTheTop = Gesture.Tap()
-    .maxDeltaY(snapPoint - FULLY_OPEN_SNAP_POINT)
-    .maxDuration(100000)
-    .simultaneousWithExternalGesture(panGesture)
-    .withRef(blockScrollUntilAtTheTopRef);
+    if (folded) {
+      runOnJS(openMenuBarTabOnJS)();
+    } else {
+      runOnJS(closeMenuBarTabOnJS)();
+    }
+  };
+
+  function onEndTrigger(e: any) {
+    if (folded) {
+      if (e.translationY + mainSheetsTranslationYStart.value < UNFOLD_SNAP_POINT) {
+        onHandlerEnd(e);
+      } else {
+        mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {duration: SPRING_BACK_ANIM_DURATION});
+      }
+    } else {
+      if (e.translationY + mainSheetsTranslationYStart.value > FOLD_SNAP_POINT) {
+        onHandlerEnd(e);
+      } else {
+        mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {duration: SPRING_BACK_ANIM_DURATION});
+      }
+    }
+  }
 
   const headerGesture = Gesture.Pan()
     .onUpdate(e => {
-      translationY.value = e.translationY;
+      mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
     })
-    .onEnd(onHandlerEnd);
+    .onEnd(onEndTrigger);
 
-  const scrollViewGesture = Gesture.Native().requireExternalGestureToFail(
-    blockScrollUntilAtTheTop,
-  );
+  const panGesture = Gesture.Pan()
+    .onUpdate(e => {
+      mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+    })
+    .onEnd(onEndTrigger);
 
   const bottomSheetAnimatedStyle = useAnimatedStyle(() => {
-    const translateY = bottomSheetTranslateY.value + translationY.value;
-
-    const minTranslateY = Math.max(FULLY_OPEN_SNAP_POINT, translateY);
-    const clampedTranslateY = Math.min(CLOSED_SNAP_POINT, minTranslateY);
     return {
-      transform: [{translateY: clampedTranslateY}],
+      transform: [{translateY: mainSheetsTranslationY.value}],
     };
   });
 
+  useEffect(() => {
+    if (folded) {
+      mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {duration: ANIM_DURATION});
+      // set Y offset
+      setTimeout(() => {
+        mainSheetsTranslationYStart.value = FOLD_SHEET_POINT;
+      }, ANIM_DURATION);
+    } else {
+      mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {duration: ANIM_DURATION});
+      // set Y offset
+      setTimeout(() => {
+        mainSheetsTranslationYStart.value = UNFOLD_SHEET_POINT;
+      }, ANIM_DURATION);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folded, mainSheetsTranslationY]);
+
   return (
-    <GestureDetector gesture={blockScrollUntilAtTheTop}>
       <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
         <GestureDetector gesture={headerGesture}>
           {headerComponent}
         </GestureDetector>
         {activeTab === 0 ? (
           <GestureDetector
-            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            gesture={panGesture}>
             {txViewComponent}
           </GestureDetector>
         ) : null}
         {activeTab === 1 ? (
           <GestureDetector
-            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            gesture={panGesture}>
             {buyViewComponent}
           </GestureDetector>
         ) : null}
         {activeTab === 2 ? (
           <GestureDetector
-            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            gesture={panGesture}>
             {sellViewComponent}
           </GestureDetector>
         ) : null}
         {activeTab === 4 ? (
           <GestureDetector
-            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            gesture={panGesture}>
             {sendViewComponent}
           </GestureDetector>
         ) : null}
         {activeTab === 5 ? (
           <GestureDetector
-            gesture={Gesture.Simultaneous(panGesture, scrollViewGesture)}>
+            gesture={panGesture}>
             {receiveViewComponent}
           </GestureDetector>
         ) : null}
       </Animated.View>
-    </GestureDetector>
   );
 };
 
