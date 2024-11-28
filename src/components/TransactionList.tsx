@@ -29,6 +29,7 @@ interface Props {
   transactions: ITransactions[];
   onViewableItemsChanged(): void;
   folded: boolean;
+  foldUnfold: (isFolded: boolean) => void;
 }
 
 interface ITransactions {
@@ -77,7 +78,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     },
   }));
 
-  const {onPress, transactions, onViewableItemsChanged, folded} = props;
+  const {onPress, transactions, onViewableItemsChanged, folded, foldUnfold} = props;
   const dispatch = useAppDispatch();
 
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -102,6 +103,9 @@ const TransactionList = forwardRef((props: Props, ref) => {
       <SectionList
         bounces={false}
         scrollEventThrottle={1}
+        onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          foldUnfold(true);
+        }}
         ref={transactionListRef}
         sections={transactions}
         stickySectionHeadersEnabled={true}
@@ -126,9 +130,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
 });
 
 const styles = StyleSheet.create({
-  container: {
-    height: 400,
-  },
   sectionHeaderContainer: {
     paddingBottom: 6,
     borderBottomWidth: 1,
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   emptyView: {
-    height: 350,
+    height: 200,
   },
   item: {
     backgroundColor: '#f9c2ff',

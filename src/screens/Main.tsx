@@ -444,6 +444,7 @@ const Main: React.FC<Props> = props => {
         }}
         transactions={displayedTxs}
         folded={isBottomSheetFolded}
+        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
       />
     </View>
   );
