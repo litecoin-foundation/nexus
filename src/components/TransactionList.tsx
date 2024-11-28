@@ -98,13 +98,26 @@ const TransactionList = forwardRef((props: Props, ref) => {
     Dimensions.get('screen').height - FOLD_SHEET_POINT - 110 - 70 :
     Dimensions.get('screen').height - UNFOLD_SHEET_POINT - 110 - 70;
 
+  let curFrameY = -1;
+
   return (
     <View style={{height: scrollContainerHeight}}>
       <SectionList
         bounces={false}
         scrollEventThrottle={1}
+        onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          const direction = e.nativeEvent.contentOffset.y > curFrameY ? 'down' : 'up';
+          const maxOffset = Math.floor(Number(e.nativeEvent.contentSize.height) - Number(e.nativeEvent.layoutMeasurement.height));
+          if (direction === 'up' && curFrameY === maxOffset) {
+            foldUnfold(false);
+          }
+        }}
         onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          foldUnfold(true);
+          const maxOffset = Math.floor(Number(e.nativeEvent.contentSize.height) - Number(e.nativeEvent.layoutMeasurement.height));
+          if (curFrameY !== maxOffset) {
+            foldUnfold(true);
+          }
+          curFrameY = e.nativeEvent.contentOffset.y;
         }}
         ref={transactionListRef}
         sections={transactions}
