@@ -15,16 +15,16 @@ interface ICursorValue {
 
 interface IChart {
   cursorSelected: boolean;
-  cursorDate: null;
-  cursorValue: null;
+  cursorDate: number;
+  cursorValue: number;
   graphPeriod: GraphPeriodType;
 }
 
 // initial state
 const initialState = {
   cursorSelected: false,
-  cursorDate: null,
-  cursorValue: null,
+  cursorDate: 0,
+  cursorValue: 0,
   graphPeriod: '1D',
 } as IChart;
 

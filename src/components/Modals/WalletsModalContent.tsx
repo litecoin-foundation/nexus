@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'red',
     borderStyle: 'dashed',
-    backgroundColor: 'trasnparent',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },
