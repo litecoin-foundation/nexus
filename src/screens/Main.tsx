@@ -61,6 +61,8 @@ const fontStyle = {
 };
 const font = matchFont(fontStyle);
 
+const UNFOLD_SHEET_POINT = Dimensions.get('screen').height * 0.24;
+const FOLD_SHEET_POINT = Dimensions.get('screen').height * 0.47;
 const SNAP_POINTS_FROM_TOP = [
   Dimensions.get('screen').height * 0.24,
   Dimensions.get('screen').height * 0.47,
@@ -179,18 +181,22 @@ const Main: React.FC<Props> = props => {
   };
 
   // Animation
-  const translationY = useSharedValue(0);
-  const bottomSheetTranslateY = useSharedValue(CLOSED_SNAP_POINT);
-  const scrollOffset = useSharedValue(0);
+  const mainSheetsTranslationY = useSharedValue(0);
+  const mainSheetsTranslationYStart = useSharedValue(0);
+  const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
+  function foldUnfoldBottomSheet(isFolded: boolean) {
+    if (isFolded) {
+      setBottomSheetFolded(false);
+    } else {
+      setBottomSheetFolded(true);
+      setActiveTab(0);
+    }
+  }
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
-    const translateY = bottomSheetTranslateY.value + translationY.value;
-
-    const minTranslateY = Math.max(OPEN_SNAP_POINT, translateY);
-    const clampedTranslateY = Math.min(CLOSED_SNAP_POINT, minTranslateY);
     return {
       opacity: interpolate(
-        clampedTranslateY,
+        mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
         [0, 1],
       ),
@@ -198,19 +204,15 @@ const Main: React.FC<Props> = props => {
   });
 
   const animatedHeaderHeight = useAnimatedProps(() => {
-    const translateY = bottomSheetTranslateY.value + translationY.value;
-
-    const minTranslateY = Math.max(OPEN_SNAP_POINT, translateY);
-    const clampedTranslateY = Math.min(CLOSED_SNAP_POINT, minTranslateY);
     return {
-      height: clampedTranslateY,
+      height: mainSheetsTranslationY.value,
       borderBottomLeftRadius: interpolate(
-        clampedTranslateY,
+        mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
         [0, 40],
       ),
       borderBottomRightRadius: interpolate(
-        clampedTranslateY,
+        mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
         [1, 40],
       ),
@@ -218,26 +220,14 @@ const Main: React.FC<Props> = props => {
   });
 
   const animatedHeaderContainerBackground = useAnimatedStyle(() => {
-    const translateY = bottomSheetTranslateY.value + translationY.value;
-
-    const minTranslateY = Math.max(OPEN_SNAP_POINT, translateY);
-    const clampedTranslateY = Math.min(CLOSED_SNAP_POINT, minTranslateY);
     return {
       backgroundColor: interpolateColor(
-        clampedTranslateY,
+        mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
         [isInternetReachable ? '#1162E6' : '#F36F56', '#f7f7f7'],
       ),
     };
   });
-
-  const shrinkHeaderOnButtonPress = () => {
-    translationY.value = withSpring(-300, {mass: 0.5});
-  };
-
-  const expandHeaderOnButtonPress = () => {
-    translationY.value = withSpring(-12, {mass: 0.5});
-  };
 
   useEffect(() => {
     dispatch(getTransactions());
@@ -251,13 +241,13 @@ const Main: React.FC<Props> = props => {
     () => (
       <HeaderButton
         onPress={() => {
-          expandHeaderOnButtonPress();
+          setBottomSheetFolded(true);
           setActiveTab(0);
         }}
         imageSource={require('../assets/images/back-icon.png')}
       />
     ),
-    /* eslint-disable react-hooks/exhaustive-deps */
+
     [],
   );
 
@@ -447,12 +437,13 @@ const Main: React.FC<Props> = props => {
         </Pressable>
       </View>
       <TransactionList
-        scrollOffset={scrollOffset}
         onPress={data => {
           selectTransaction(data);
           setTxDetailModalOpened(true);
         }}
         transactions={displayedTxs}
+        folded={isBottomSheetFolded}
+        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
       />
     </View>
   );
@@ -463,7 +454,7 @@ const Main: React.FC<Props> = props => {
         title="Buy"
         imageSource={require('../assets/icons/buy-icon.png')}
         handlePress={() => {
-          shrinkHeaderOnButtonPress();
+          setBottomSheetFolded(false);
           setActiveTab(1);
         }}
         active={activeTab === 1}
@@ -474,7 +465,7 @@ const Main: React.FC<Props> = props => {
         title="Sell"
         imageSource={require('../assets/icons/sell-icon.png')}
         handlePress={() => {
-          shrinkHeaderOnButtonPress();
+          setBottomSheetFolded(false);
           setActiveTab(2);
         }}
         active={activeTab === 2}
@@ -496,7 +487,7 @@ const Main: React.FC<Props> = props => {
         title="Send"
         imageSource={require('../assets/icons/send-icon.png')}
         handlePress={() => {
-          shrinkHeaderOnButtonPress();
+          setBottomSheetFolded(false);
           setActiveTab(4);
         }}
         active={activeTab === 4}
@@ -507,7 +498,7 @@ const Main: React.FC<Props> = props => {
         title="Receive"
         imageSource={require('../assets/icons/receive-icon.png')}
         handlePress={() => {
-          shrinkHeaderOnButtonPress();
+          setBottomSheetFolded(false);
           setActiveTab(5);
         }}
         active={activeTab === 5}
@@ -530,10 +521,10 @@ const Main: React.FC<Props> = props => {
 
       <BottomSheet
         headerComponent={HeaderComponent}
-        translationY={translationY}
-        bottomSheetTranslateY={bottomSheetTranslateY}
-        scrollOffset={scrollOffset}
-        handleSwipeDown={() => setActiveTab(0)}
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+        folded={isBottomSheetFolded}
+        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
         activeTab={activeTab}
         txViewComponent={txListComponent}
         buyViewComponent={<Buy route={route} />}

@@ -7,6 +7,7 @@ import React, {
   MutableRefObject,
 } from 'react';
 import {
+  Dimensions,
   StyleSheet,
   Text,
   View,
@@ -27,7 +28,8 @@ interface Props {
   onPress(item: ItemType): void;
   transactions: ITransactions[];
   onViewableItemsChanged(): void;
-  scrollOffset: SharedValue<number>;
+  folded: boolean;
+  foldUnfold: (isFolded: boolean) => void;
 }
 
 interface ITransactions {
@@ -57,6 +59,9 @@ type ItemType = {
   hash: string;
 };
 
+const UNFOLD_SHEET_POINT = Dimensions.get('screen').height * 0.24;
+const FOLD_SHEET_POINT = Dimensions.get('screen').height * 0.47;
+
 const TransactionList = forwardRef((props: Props, ref) => {
   const transactionListRef = useRef() as MutableRefObject<
     SectionList<any, ITransactions>
@@ -73,7 +78,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     },
   }));
 
-  const {onPress, transactions, onViewableItemsChanged, scrollOffset} = props;
+  const {onPress, transactions, onViewableItemsChanged, folded, foldUnfold} = props;
   const dispatch = useAppDispatch();
 
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -88,39 +93,56 @@ const TransactionList = forwardRef((props: Props, ref) => {
     item,
   }) => <TransactionCell item={item} onPress={() => onPress(item)} />;
 
+  // DashboardButton is 110, txTitleContainer is 70
+  const scrollContainerHeight = folded ?
+    Dimensions.get('screen').height - FOLD_SHEET_POINT - 110 - 70 :
+    Dimensions.get('screen').height - UNFOLD_SHEET_POINT - 110 - 70;
+
+  let curFrameY = -1;
+
   return (
-    <SectionList
-      bounces={false}
-      scrollEventThrottle={1}
-      onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-        scrollOffset.value = e.nativeEvent.contentOffset.y;
-      }}
-      ref={transactionListRef}
-      sections={transactions}
-      stickySectionHeadersEnabled={true}
-      renderItem={renderItem}
-      viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
-      renderSectionHeader={({section}) => (
-        <View style={styles.sectionHeaderContainer}>
-          <Text style={styles.sectionHeaderText}>{section.title}</Text>
-        </View>
-      )}
-      keyExtractor={item => item.hash}
-      initialNumToRender={9}
-      ListEmptyComponent={<TransactionListEmpty />}
-      ListFooterComponent={<View style={styles.emptyView} />}
-      // refreshControl={
-      //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      // }
-      onViewableItemsChanged={onViewableItemsChanged}
-    />
+    <View style={{height: scrollContainerHeight}}>
+      <SectionList
+        bounces={false}
+        scrollEventThrottle={1}
+        onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          const direction = e.nativeEvent.contentOffset.y > curFrameY ? 'down' : 'up';
+          const maxOffset = Math.floor(Number(e.nativeEvent.contentSize.height) - Number(e.nativeEvent.layoutMeasurement.height));
+          if (direction === 'up' && curFrameY === maxOffset) {
+            foldUnfold(false);
+          }
+        }}
+        onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          const maxOffset = Math.floor(Number(e.nativeEvent.contentSize.height) - Number(e.nativeEvent.layoutMeasurement.height));
+          if (curFrameY !== maxOffset) {
+            foldUnfold(true);
+          }
+          curFrameY = e.nativeEvent.contentOffset.y;
+        }}
+        ref={transactionListRef}
+        sections={transactions}
+        stickySectionHeadersEnabled={true}
+        renderItem={renderItem}
+        viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
+        renderSectionHeader={({section}) => (
+          <View style={styles.sectionHeaderContainer}>
+            <Text style={styles.sectionHeaderText}>{section.title}</Text>
+          </View>
+        )}
+        keyExtractor={item => item.hash}
+        initialNumToRender={9}
+        ListEmptyComponent={<TransactionListEmpty />}
+        ListFooterComponent={<View style={styles.emptyView} />}
+        // refreshControl={
+        //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        // }
+        onViewableItemsChanged={onViewableItemsChanged}
+      />
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: {
-    height: 400,
-  },
   sectionHeaderContainer: {
     paddingBottom: 6,
     borderBottomWidth: 1,
@@ -138,7 +160,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   emptyView: {
-    height: 350,
+    height: 200,
   },
   item: {
     backgroundColor: '#f9c2ff',
