@@ -207,6 +207,21 @@ export const updateHistoricalRates = (): AppThunk => (dispatch, getStore) => {
   }
 };
 
+export const updateHistoricalRatesForAllPeriods = (): AppThunk => async dispatch => {
+  let result = await fetchHistoricalRates('1D');
+  dispatch(updateHistoricRateDayAction(result));
+  result = await fetchHistoricalRates('1W');
+  dispatch(updateHistoricRateWeekAction(result));
+  result = await fetchHistoricalRates('1M');
+  dispatch(updateHistoricRateMonthAction(result));
+  result = await fetchHistoricalRates('3M');
+  dispatch(updateHistoricRateQuarterAction(result));
+  result = await fetchHistoricalRates('1Y');
+  dispatch(updateHistoricRateYearAction(result));
+  result = await fetchHistoricalRates('ALL');
+  dispatch(updateHistoricRateAllAction(result));
+};
+
 // slice
 export const tickerSlice = createSlice({
   name: 'ticker',

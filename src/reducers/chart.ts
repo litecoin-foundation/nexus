@@ -44,7 +44,6 @@ export const changeGraphPeriod =
   (graphPeriod: GraphPeriodType): AppThunk =>
   dispatch => {
     dispatch(changeGraphPeriodAction(graphPeriod));
-    dispatch(updateHistoricalRates());
   };
 
 export const updateCursorValue =

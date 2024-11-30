@@ -13,6 +13,7 @@ import {
 } from 'react-native-notifications';
 import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';
+import {updateHistoricalRatesForAllPeriods} from './src/reducers/ticker';
 
 import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
@@ -33,6 +34,7 @@ declare global {
 function ContextExecutable(props: any) {
   const dispatch = useAppDispatch();
   dispatch(setDeviceNotificationToken(props.deviceToken));
+  dispatch(updateHistoricalRatesForAllPeriods());
   return <></>;
 }
 
