@@ -12,6 +12,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import WalletsInblockContent from '../../components/Modals/WalletsInblockContent';
 
 interface Props {
   title: string;
@@ -30,35 +31,53 @@ const boxWidth =
 const ChooseWalletLargeButton: React.FC<Props> = props => {
   const {title, onPress, arrowSpinAnim, isOpen} = props;
 
-  const height = useSharedValue(boxHeight);
+  const [unfoldHeight, setUnfoldHeight] = useState(0);
+
+  const heightSharedValue = useSharedValue(boxHeight);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      height: height.value,
+      height: heightSharedValue.value,
     };
   });
 
-  const handlePress = () => {
-    height.value = withSpring(isOpen ? 500 : 200, {
+  function calcUnfoldHeight(offset: number) {
+    setUnfoldHeight(Dimensions.get('screen').height - offset - Dimensions.get('screen').height * 0.025);
+  }
+
+  useEffect(() => {
+    heightSharedValue.value = withSpring(isOpen ? unfoldHeight : boxHeight, {
       overshootClamping: true,
     });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, unfoldHeight]);
 
   return (
     <Pressable
       style={styles.container}
       onPress={() => {
         onPress();
-        handlePress();
+      }}
+      onLayout={event => {
+        event.target.measure((x, y, width, height, pageX, pageY) => {
+          calcUnfoldHeight(pageY);
+        });
       }}>
       <Animated.View style={[styles.buttonLargeBox, animatedStyle]}>
-        <Text style={styles.boxText}>{title}</Text>
-        <Animated.View style={[styles.boxArrow, arrowSpinAnim]}>
-          <Image
-            style={styles.boxArrowIcon}
-            source={require('../../assets/images/back-icon.png')}
-          />
+        <Animated.View style={styles.boxTitleContainer}>
+          <Text style={styles.boxText}>{title}</Text>
+          <Animated.View style={[styles.boxArrow, arrowSpinAnim]}>
+            <Image
+              style={styles.boxArrowIcon}
+              source={require('../../assets/images/back-icon.png')}
+            />
+          </Animated.View>
         </Animated.View>
+        <WalletsInblockContent
+          isOpened={isOpen}
+          animDelay={100}
+          animDuration={200}
+        />
       </Animated.View>
     </Pressable>
   );
@@ -73,13 +92,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonLargeBox: {
-    height: '100%',
     width: boxWidth,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    paddingTop: Dimensions.get('screen').height * 0.01,
     paddingLeft: Dimensions.get('screen').height * 0.02,
     paddingRight: Dimensions.get('screen').height * 0.02,
+  },
+  boxTitleContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   boxText: {
     fontFamily:
@@ -90,12 +114,13 @@ const styles = StyleSheet.create({
     fontStyle: 'normal',
     fontWeight: '500',
     fontSize: fontSize,
+    lineHeight: Dimensions.get('screen').height * 0.03,
   },
   boxArrow: {
     height: arrowHeight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 2,
+    marginTop: 8,
     marginLeft: 8,
   },
   boxArrowIcon: {

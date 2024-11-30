@@ -166,61 +166,65 @@ const Send: React.FC<Props> = props => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.subcontainer}>
-        <Text style={styles.titleText}>Send LTC</Text>
+      <Text style={styles.titleText}>Send LTC</Text>
 
-        <View style={styles.amountContainer}>
-          <Text style={styles.subtitleText}>AMOUNT</Text>
-          <AmountPicker
-            amount={amount}
-            fiatAmount={fiatAmount}
-            active={amountPickerActive}
-            handlePress={() => {
-              detailsOpacity.value = withTiming(0, {duration: 200});
-              setAmountPickerActive(true);
-            }}
-            handleToggle={() => setToggleLTC(!toggleLTC)}
-          />
-        </View>
-
-        {amountPickerActive ? null : (
-          <Animated.View style={{flex: 1, opacity: detailsOpacity}}>
-            <View style={{paddingTop: 24}}>
-              <Text style={styles.subtitleText}>TO ADDRESS</Text>
-              <View style={styles.inputFieldContainer}>
-                <AddressField
-                  address={address}
-                  onChangeText={setAddress}
-                  onScanPress={handleScan}
-                />
-              </View>
-            </View>
-
-            <View style={{paddingTop: 24}}>
-              <Text style={styles.subtitleText}>DESCRIPTION</Text>
-              <View style={styles.inputFieldContainer}>
-                <InputField
-                  value={description}
-                  onChangeText={text => setDescription(text)}
-                />
-              </View>
-            </View>
-
-            <View style={styles.bottomButtonContainer}>
-              <GreenButton
-                value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
-                onPress={() => console.log('pressed fee')}
-              />
-              <BlueButton
-                value={`Send ${amount} LTC`}
-                onPress={() => {
-                  navigation.navigate('ConfirmSend');
-                }}
-              />
-            </View>
-          </Animated.View>
-        )}
+      <View style={styles.amountContainer}>
+        <Text style={styles.subtitleText}>AMOUNT</Text>
+        <AmountPicker
+          amount={amount}
+          fiatAmount={fiatAmount}
+          active={amountPickerActive}
+          handlePress={() => {
+            detailsOpacity.value = withTiming(0, {duration: 200});
+            setAmountPickerActive(true);
+          }}
+          handleToggle={() => setToggleLTC(!toggleLTC)}
+        />
       </View>
+
+      {amountPickerActive ? null : (
+        <Animated.View style={{...styles.subContainer, opacity: detailsOpacity}}>
+          <View style={styles.cellContainer}>
+            <Text style={styles.subtitleText}>TO ADDRESS</Text>
+            <View style={styles.inputFieldContainer}>
+              <AddressField
+                address={address}
+                onChangeText={setAddress}
+                onScanPress={handleScan}
+              />
+            </View>
+          </View>
+
+          <View style={styles.cellContainer}>
+            <Text style={styles.subtitleText}>DESCRIPTION</Text>
+            <View style={styles.inputFieldContainer}>
+              <InputField
+                value={description}
+                onChangeText={text => setDescription(text)}
+              />
+            </View>
+          </View>
+
+          <View style={styles.bottomBtnsContainer}>
+            <View style={styles.bottomBtns}>
+              <View style={styles.greenBtnContainer}>
+                <GreenButton
+                  value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
+                  onPress={() => console.log('pressed fee')}
+                />
+              </View>
+              <View style={styles.blueBtnContainer}>
+                <BlueButton
+                  value={`Send ${amount} LTC`}
+                  onPress={() => {
+                    navigation.navigate('ConfirmSend');
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+        </Animated.View>
+      )}
 
       {amountPickerActive ? (
         <Animated.View style={[styles.numpadContainer, {opacity: padOpacity}]}>
@@ -228,7 +232,7 @@ const Send: React.FC<Props> = props => {
             onChange={(value: string) => onChange(value)}
             currentValue={toggleLTC ? String(amount) : String(fiatAmount)}
           />
-          <View style={{paddingHorizontal: 24, paddingTop: 7}}>
+          <View style={{paddingHorizontal: 20, paddingTop: 7}}>
             <BlueButton
               disabled={false}
               value="Confirm"
@@ -247,16 +251,11 @@ const Send: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // DashboardButton is 110
+    height: Dimensions.get('screen').height * 0.76 - 110,
     backgroundColor: '#f7f7f7',
-    maxHeight: 680,
-  },
-  subcontainer: {
-    flex: 1,
-    marginHorizontal: 24,
-  },
-  inputFieldContainer: {
-    paddingTop: 5,
+    paddingLeft: Dimensions.get('screen').width * 0.06,
+    paddingRight: Dimensions.get('screen').width * 0.06,
   },
   titleText: {
     fontFamily:
@@ -268,6 +267,17 @@ const styles = StyleSheet.create({
     color: '#2E2E2E',
     fontSize: Dimensions.get('screen').height * 0.025,
   },
+  cellContainer: {
+    marginTop: Dimensions.get('screen').height * 0.03,
+  },
+  amountContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  subContainer: {
+    flex: 1,
+  },
   subtitleText: {
     fontFamily:
       Platform.OS === 'ios'
@@ -278,21 +288,31 @@ const styles = StyleSheet.create({
     color: '#747E87',
     fontSize: Dimensions.get('screen').height * 0.012,
   },
-  amountContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  inputFieldContainer: {
+    paddingTop: 5,
   },
   numpadContainer: {
     position: 'absolute',
-    bottom: Dimensions.get('screen').height * 0.17,
+    width: Dimensions.get('screen').width,
+    bottom: Dimensions.get('screen').height * 0.03,
   },
-  bottomButtonContainer: {
-    position: 'absolute',
-    bottom: Dimensions.get('screen').height * 0.16,
+  bottomBtnsContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    paddingBottom: Dimensions.get('screen').height * 0.03,
+  },
+  bottomBtns: {
+    width: '100%',
+    display: 'flex',
     flexDirection: 'row',
-    alignSelf: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+  },
+  greenBtnContainer: {
+    flexBasis: '37%',
+  },
+  blueBtnContainer: {
+    flexBasis: '60%',
   },
 });
 

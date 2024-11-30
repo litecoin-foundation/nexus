@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     width: '100%',
-    height: Dimensions.get('screen').height * 0.05,
+    height: 'auto',
     paddingLeft: Dimensions.get('screen').height * 0.02,
     paddingRight: Dimensions.get('screen').height * 0.02,
     marginTop: Dimensions.get('screen').height * 0.12,
