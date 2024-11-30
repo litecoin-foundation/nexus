@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, SafeAreaView, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-
 import {StackNavigationProp} from '@react-navigation/stack';
+
 import {sweepLitewallet} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
@@ -39,7 +39,6 @@ const RecoverLitewallet: React.FC<Props> = props => {
     sweepLitewallet(seed, address)
       .then(rawTxs => {
         rawTxs.map((rawTx, index) => {
-          // console.log(rawTx);
           publishTransaction(rawTx).then(() => {
             // handle successful publish!
             if (index === rawTxs.length - 1) {

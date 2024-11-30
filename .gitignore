@@ -51,3 +51,4 @@ ios/Podfile.lock
 package-lock.json
 liblnd.a
 jniLibs/
+*.tgz

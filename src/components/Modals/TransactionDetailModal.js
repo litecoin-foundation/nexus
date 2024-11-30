@@ -46,9 +46,9 @@ const TransactionDetailModal = props => {
   });
 
   const onLongPress = async item => {
-    await Alert.alert('Copied', null, [], {cancelable: true});
+    Alert.alert('Copied', null, [], {cancelable: true});
     triggerMediumFeedback();
-    await Clipboard.setString(item);
+    Clipboard.setString(item);
   };
 
   return (

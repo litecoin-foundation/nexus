@@ -69,8 +69,8 @@ const ConfirmBuy: React.FC<Props> = props => {
         <View style={{paddingTop: 108, paddingLeft: 20}}>
           <Text style={styles.titleText}>You are purchasing</Text>
           <Text style={styles.amountText}>{quoteCurrencyAmount} LTC</Text>
-          <View>
-            <Text>
+          <View style={styles.fiatAmount}>
+            <Text style={styles.fiatAmountText}>
               {currencySymbol}
               {quoteCurrencyPrice.toFixed(2)}
             </Text>
@@ -135,6 +135,25 @@ const styles = StyleSheet.create({
     bottom: 44,
     position: 'absolute',
     width: Dimensions.get('screen').width - 48,
+  },
+  fiatAmount: {
+    borderRadius: Dimensions.get('screen').height * 0.01,
+    backgroundColor: '#0F4CAD',
+    paddingTop: Dimensions.get('screen').height * 0.01,
+    paddingBottom: Dimensions.get('screen').height * 0.01,
+    paddingLeft: Dimensions.get('screen').height * 0.015,
+    paddingRight: Dimensions.get('screen').height * 0.015,
+  },
+  fiatAmountText: {
+    color: '#fff',
+    fontFamily:
+      Platform.OS === 'ios'
+        ? 'Satoshi Variable'
+        : 'SatoshiVariable-Regular.ttf',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    fontSize: Dimensions.get('screen').height * 0.02,
+    opacity: 0.4,
   },
 });
 

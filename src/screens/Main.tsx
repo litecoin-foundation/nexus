@@ -17,15 +17,9 @@ import Animated, {
   withSpring,
   withTiming,
   withDelay,
-  // concat,
 } from 'react-native-reanimated';
-import {
-  Canvas,
-  Image,
-  RoundedRect,
-  matchFont,
-  useImage,
-} from '@shopify/react-native-skia';
+import {Canvas, Image, RoundedRect, useImage} from '@shopify/react-native-skia';
+import {payment, TransactionRequest} from '@flexa/flexa-react-native';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -52,17 +46,6 @@ import {updateAmount} from '../reducers/input';
 import SendModal from '../components/Modals/SendModal';
 import DatePicker from '../components/DatePicker';
 
-const fontFamily =
-  Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
-const fontStyle = {
-  fontFamily,
-  fontStyle: 'normal',
-  fontWeight: '700',
-};
-const font = matchFont(fontStyle);
-
-const UNFOLD_SHEET_POINT = Dimensions.get('screen').height * 0.24;
-const FOLD_SHEET_POINT = Dimensions.get('screen').height * 0.47;
 const SNAP_POINTS_FROM_TOP = [
   Dimensions.get('screen').height * 0.24,
   Dimensions.get('screen').height * 0.47,

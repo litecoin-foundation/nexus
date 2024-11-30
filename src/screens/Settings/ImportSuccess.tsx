@@ -3,7 +3,6 @@ import {Platform, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 

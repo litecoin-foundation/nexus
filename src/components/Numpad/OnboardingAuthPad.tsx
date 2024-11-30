@@ -36,7 +36,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   // clear all inputs in AuthPad on initial render
   useEffect(() => {
     const clear = async () => {
-      await dispatch(clearValues());
+      dispatch(clearValues());
     };
     clear();
   }, [dispatch]);
