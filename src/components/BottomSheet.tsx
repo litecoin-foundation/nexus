@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Dimensions, StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet, View} from 'react-native';
 import {
   Gesture,
   GestureDetector,
@@ -76,6 +76,7 @@ const BottomSheet: React.FC<Props> = props => {
   };
 
   function onEndTrigger(e: any) {
+    'worklet';
     if (folded) {
       if (e.translationY + mainSheetsTranslationYStart.value < UNFOLD_SNAP_POINT) {
         onHandlerEnd(e);
@@ -129,36 +130,43 @@ const BottomSheet: React.FC<Props> = props => {
   return (
       <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
         <GestureDetector gesture={headerGesture}>
-          {headerComponent}
+          <View collapsable={false}>
+            {headerComponent}
+          </View>
         </GestureDetector>
         {activeTab === 0 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {txViewComponent}
+          <GestureDetector gesture={panGesture}>
+            <View collapsable={false}>
+              {txViewComponent}
+            </View>
           </GestureDetector>
         ) : null}
         {activeTab === 1 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {buyViewComponent}
+          <GestureDetector gesture={panGesture}>
+            <View collapsable={false}>
+              {buyViewComponent}
+            </View>
           </GestureDetector>
         ) : null}
         {activeTab === 2 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {sellViewComponent}
+          <GestureDetector gesture={panGesture}>
+            <View collapsable={false}>
+              {sellViewComponent}
+            </View>
           </GestureDetector>
         ) : null}
         {activeTab === 4 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {sendViewComponent}
+          <GestureDetector gesture={panGesture}>
+            <View collapsable={false}>
+              {sendViewComponent}
+            </View>
           </GestureDetector>
         ) : null}
         {activeTab === 5 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {receiveViewComponent}
+          <GestureDetector gesture={panGesture}>
+            <View collapsable={false}>
+              {receiveViewComponent}
+            </View>
           </GestureDetector>
         ) : null}
       </Animated.View>

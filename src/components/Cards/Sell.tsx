@@ -173,10 +173,11 @@ const Sell: React.FC<Props> = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // DashboardButton is 110
+    height: Dimensions.get('screen').height * 0.76 - 110,
+    maxHeight: 680,
     backgroundColor: '#f7f7f7',
     flexDirection: 'column',
-    maxHeight: 680,
   },
   numpadContainer: {
     position: 'absolute',
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
   },
   confirmButtonContainer: {
     marginHorizontal: 24,
-    bottom: 147,
+    bottom: Dimensions.get('screen').height * 0.03,
     position: 'absolute',
     width: Dimensions.get('screen').width - 48,
   },
