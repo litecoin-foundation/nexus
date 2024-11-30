@@ -7,7 +7,7 @@ import Settings, {
 import Explorer from '../screens/Settings/Explorer';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed, {SeedNavigationOptions} from '../screens/Settings/Seed';
-import About from '../screens/Settings/About';
+import About, {AboutNavigationOptions} from '../screens/Settings/About';
 import Currency from '../screens/Settings/Currency';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import Import, {ImportNavigationOptions} from '../screens/Settings/Import';
@@ -52,7 +52,7 @@ function SettingsStack() {
       <Stack.Screen
         name="About"
         component={About}
-        options={About.navigationOptions}
+        options={({navigation}) => AboutNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Currency"

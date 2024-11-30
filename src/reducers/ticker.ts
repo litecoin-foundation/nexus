@@ -248,6 +248,27 @@ export const tickerSlice = createSlice({
 });
 
 // selectors
+export const ltcRateSelector = createSelector(
+  state => state.ticker.rates,
+  state => state.settings.currencyCode,
+  (rates, currencyCode) => {
+    if (rates[currencyCode] === undefined) {
+      return rates.USD;
+    } else {
+      return rates[currencyCode];
+    }
+  },
+);
+
+export const convertLocalFiatToUSD = createSelector(
+  state => state.settings.currencyCode,
+  state => state.ticker.rates,
+  (currencyCode: string, rates) => {
+    const localToUSD = rates.USD / rates[currencyCode];
+    return localToUSD;
+  },
+);
+
 export const fiatValueSelector = createSelector(
   state => state.ticker.rates,
   state => state.settings.currencyCode,

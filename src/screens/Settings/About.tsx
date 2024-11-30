@@ -1,14 +1,25 @@
 import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
-import {useSelector} from 'react-redux';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  Dimensions,
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 import TableCell from '../../components/Cells/TableCell';
 import VerticalTableCell from '../../components/Cells/VerticalTableCell';
-import Header from '../../components/Header';
-import {useAppDispatch} from '../../store/hooks';
-import {getRecoveryInfo} from '../../reducers/info';
 
-const About = () => {
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {getRecoveryInfo} from '../../reducers/info';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import Card from '../../components/Card';
+
+interface Props {}
+
+const About: React.FC<Props> = () => {
   const {
     syncedToChain,
     syncedToGraph,
@@ -16,11 +27,10 @@ const About = () => {
     blockHash,
     bestHeaderTimestamp,
     version,
-  } = useSelector(state => state.info);
-  const {lndActive} = useSelector(state => state.lightning);
-
-  const onboarding = useSelector(state => state.onboarding.onboarding);
-  const isOnboarded = useSelector(state => state.onboarding.isOnboarded);
+  } = useAppSelector(state => state.info);
+  const {lndActive} = useAppSelector(state => state.lightning);
+  const onboarding = useAppSelector(state => state.onboarding.onboarding);
+  const isOnboarded = useAppSelector(state => state.onboarding.isOnboarded);
 
   const dispatch = useAppDispatch();
 
@@ -29,10 +39,20 @@ const About = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Header />
-      <Text style={styles.titleText}>DEBUG INFO</Text>
+    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
+      <SafeAreaView />
       <ScrollView>
+        <View style={styles.creditsContainer}>
+          <Card
+            descriptionText={
+              'Dreamt up & brought to life with love and care by'
+            }
+            imageSource={require('../../assets/images/collab.png')}
+            largeImg={true}
+          />
+        </View>
+
+        <Text style={styles.titleText}>DEBUG INFO</Text>
         <TableCell title="onboarding" value={`${onboarding}`} />
         <TableCell title="isOnboarded" value={`${isOnboarded}`} />
         <TableCell
@@ -44,13 +64,13 @@ const About = () => {
           value={`${syncedToChain === true ? 'true' : 'false'}`}
         />
         <TableCell title="Synced to Graph?" value={`${syncedToGraph}`} />
-        <TableCell title="Block Height" value={blockHeight} />
+        <TableCell title="Block Height" value={String(blockHeight)} />
         <VerticalTableCell title="Blockhash">
           <Text style={styles.text}>{blockHash}</Text>
         </VerticalTableCell>
         <VerticalTableCell title="bestHeaderTimestamp">
           <Text style={styles.text}>{`${new Date(
-            bestHeaderTimestamp * 1000,
+            Number(bestHeaderTimestamp) * 1000,
           )}`}</Text>
         </VerticalTableCell>
 
@@ -58,7 +78,7 @@ const About = () => {
           <Text style={styles.text}>{version}</Text>
         </VerticalTableCell>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -68,7 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(238,244,249)',
   },
   titleText: {
-    color: '#7C96AE',
+    color: 'white',
     fontSize: 12,
     fontWeight: '600',
     paddingLeft: 10,
@@ -80,11 +100,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  creditsContainer: {
+    height: Dimensions.get('screen').height,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
-About.navigationOptions = () => {
+export const AboutNavigationOptions = navigation => {
   return {
-    headerTitle: 'General',
+    headerTitle: '',
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
   };
 };
 

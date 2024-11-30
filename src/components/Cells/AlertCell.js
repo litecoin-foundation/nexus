@@ -25,7 +25,8 @@ const AlertCell = props => {
           <View>
             <Text style={styles.text}>Litecoin (LTC) is above</Text>
             <Text style={styles.valueText}>
-              {'$' + item.value}
+              {currencySymbol}
+              {item.value}
             </Text>
           </View>
         </View>

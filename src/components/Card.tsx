@@ -1,22 +1,36 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image, Platform} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Platform,
+  ImageSourcePropType,
+} from 'react-native';
 
-const Card = props => {
-  const {titleText, descriptionText, imageSource} = props;
+interface Props {
+  titleText?: string;
+  descriptionText: string;
+  imageSource: ImageSourcePropType;
+  largeImg?: boolean;
+}
+
+const Card: React.FC<Props> = props => {
+  const {titleText, descriptionText, imageSource, largeImg} = props;
   return (
     <View style={styles.cardContainer}>
       <View style={styles.internalCardContainer}>
-        <Text style={styles.titleText}>{titleText}</Text>
+        {titleText ? <Text style={styles.titleText}>{titleText}</Text> : null}
+
         <Text style={styles.descriptionText}>{descriptionText}</Text>
       </View>
-      <View style={styles.flex}>
-        <View style={styles.imageContainer}>
-          <Image
-            resizeMode="contain"
-            source={imageSource}
-            style={styles.image}
-          />
-        </View>
+      <View
+        style={largeImg ? styles.largeImageContainer : styles.imageContainer}>
+        <Image
+          resizeMode="contain"
+          source={imageSource}
+          style={largeImg ? styles.largeImage : styles.image}
+        />
       </View>
     </View>
   );
@@ -42,7 +56,6 @@ const styles = StyleSheet.create({
     paddingLeft: 25,
     paddingRight: 25,
     paddingTop: 25,
-    flex: 1,
   },
   titleText: {
     textAlign: 'center',
@@ -63,14 +76,25 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   imageContainer: {
-    height: 128,
+    flex: 1,
     width: 128,
+    alignSelf: 'center',
+    backgroundColor: 'red',
+  },
+  largeImageContainer: {
+    flex: 1,
+    height: 200,
+    width: 200,
     alignSelf: 'center',
   },
   image: {
     flex: 1,
     width: 128,
     tintColor: '#2C72FF',
+  },
+  largeImage: {
+    flex: 1,
+    width: 200,
   },
   flex: {
     flex: 1,

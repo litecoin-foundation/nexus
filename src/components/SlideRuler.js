@@ -6,6 +6,11 @@ import React, {
   Fragment,
 } from 'react';
 import {FlatList, View, StyleSheet, Text, Dimensions} from 'react-native';
+import {
+  triggerHeavyFeedback,
+  triggerLightFeedback,
+  triggerMediumFeedback,
+} from '../lib/utils/haptic';
 
 class Item extends PureComponent {
   render() {
@@ -28,7 +33,7 @@ class Item extends PureComponent {
   }
 }
 
-const SlideRuler = (props) => {
+const SlideRuler = props => {
   const itemAmountPerScreen = 30;
   const flatList = useRef();
 
@@ -44,7 +49,18 @@ const SlideRuler = (props) => {
   const [items, setItems] = useState(null);
   const [width, setWidth] = useState(0);
   const [oneItemWidth, setOneItemWidth] = useState(0);
-  const [value, setValueState] = useState(0);
+  const [value, setValueState] = useState(Number(initialValue));
+
+  useEffect(() => {
+    console.log(value);
+    if (value % 5 === 0) {
+      // multiple of 5
+      console.log('slider moved');
+      triggerHeavyFeedback();
+    } else {
+      triggerLightFeedback();
+    }
+  }, [value]);
 
   useEffect(() => {
     let length = arrayLength;
@@ -63,7 +79,7 @@ const SlideRuler = (props) => {
     setOneItemWidth(Math.round(width / itemAmountPerScreen));
   };
 
-  const onSliderMoved = (event) => {
+  const onSliderMoved = event => {
     let newValue =
       Math.floor(event.nativeEvent.contentOffset.x / oneItemWidth) *
       multiplicity;
@@ -86,7 +102,7 @@ const SlideRuler = (props) => {
       animated: true,
     });
 
-  const renderItem = (element) => (
+  const renderItem = element => (
     <Item oneColumnSize={oneItemWidth} index={element.index} />
   );
 

@@ -44,8 +44,12 @@ const setCurrencyCodeAction = createAction<CurrencyCodeType>(
   'settings/setCurrencyCodeAction',
 );
 const setExplorerAction = createAction<string>('settings/setExplorerAction');
-const setMWEBExplorerAction = createAction<string>('settings/setMWEBExplorerAction');
-const setDeviceNotificationTokenAction = createAction<string>('settings/setDeviceNotificationTokenAction');
+const setMWEBExplorerAction = createAction<string>(
+  'settings/setMWEBExplorerAction',
+);
+const setDeviceNotificationTokenAction = createAction<string>(
+  'settings/setDeviceNotificationTokenAction',
+);
 
 // functions
 export const updateLastViewSeed = (): AppThunk => dispatch => {
@@ -173,7 +177,10 @@ export const defaultExplorerSelector = createSelector(
 );
 
 export const mwebDefaultExplorerSelector = createSelector(
-  [state => state.settings.mwebDefaultExplorer, (state, blockHeight) => blockHeight],
+  [
+    state => state.settings.mwebDefaultExplorer,
+    (state, blockHeight) => blockHeight,
+  ],
   (mwebDefaultExplorer, blockHeight) => {
     const explorerObject = explorers.find(e => e.key === mwebDefaultExplorer);
 
