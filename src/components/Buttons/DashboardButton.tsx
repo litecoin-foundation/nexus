@@ -2,7 +2,6 @@ import {
   Canvas,
   Image,
   Mask,
-  Paint,
   Rect,
   RoundedRect,
   Shadow,

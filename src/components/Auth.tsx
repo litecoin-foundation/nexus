@@ -5,17 +5,12 @@ import LinearGradient from 'react-native-linear-gradient';
 import AuthPad from './Numpad/AuthPad';
 
 interface Props {
-  headerDescriptionText: string;
   handleValidationSuccess: () => Promise<void>;
   handleValidationFailure: () => void;
 }
 
 const Auth: React.FC<Props> = props => {
-  const {
-    headerDescriptionText,
-    handleValidationSuccess,
-    handleValidationFailure,
-  } = props;
+  const {handleValidationSuccess, handleValidationFailure} = props;
 
   return (
     <>

@@ -1,10 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import {Platform, Pressable, StyleSheet, Dimensions} from 'react-native';
 import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
-import {useSelector} from 'react-redux';
 import {useAppSelector} from '../../store/hooks';
 import {subunitSymbolSelector} from '../../reducers/settings';
-import {fiatValueSelector} from '../../reducers/ticker';
 import {
   Canvas,
   Image,
