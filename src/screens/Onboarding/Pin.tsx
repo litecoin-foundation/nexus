@@ -13,6 +13,7 @@ type RootStackParamList = {
   Pin: undefined;
   Generate: undefined;
   Biometric: undefined;
+  Welcome: undefined;
 };
 
 interface Props {
@@ -22,6 +23,10 @@ interface Props {
 const Pin: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
   const {navigation} = props;
+
+  const biometricsAvailable = useAppSelector(
+    state => state.authentication.biometricsAvailable,
+  );
 
   useLayoutEffect(() => {
     const handleBackNavigation = () => {
@@ -79,7 +84,11 @@ const Pin: React.FC<Props> = props => {
     if (!beingRecovered) {
       navigation.navigate('Generate');
     } else {
-      navigation.navigate('Biometric');
+      if (biometricsAvailable) {
+        navigation.navigate('Biometric');
+      } else {
+        navigation.navigate('Welcome');
+      }
     }
   };
 
