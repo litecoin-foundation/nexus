@@ -1,6 +1,9 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import NetInfo from '@react-native-community/netinfo';
-import {getInfo as getLndInfo} from 'react-native-turbo-lnd';
+import {
+  getInfo as getLndInfo,
+  getRecoveryInfo as getLndRecoveryInfo,
+} from 'react-native-turbo-lnd';
 
 import {AppThunk} from './types';
 import {poll} from '../lib/utils/poll';
@@ -21,13 +24,27 @@ interface IInfo {
   numActiveChannels: number;
   numPendingChannels: number;
   numInactiveChannels: number;
-  testnet: boolean;
   isInternetReachable: boolean | null;
   startingSyncTimestamp: string;
   percentSynced: number | undefined;
+  recoveryProgress: number;
+  recoveryFinished: boolean;
+  recoveryMode: boolean;
 }
 
-type InfoWithoutInternetReachable = Omit<IInfo, 'isInternetReachable'>;
+type GetInfoType = Omit<
+  IInfo,
+  | 'isInternetReachable'
+  | 'recoveryProgress'
+  | 'recoveryFinished'
+  | 'recoveryMode'
+>;
+
+interface IGetRecoveryType {
+  recoveryProgress: number;
+  recoveryFinished: boolean;
+  recoveryMode: boolean;
+}
 
 // initial state
 const initialState = {
@@ -44,15 +61,19 @@ const initialState = {
   numActiveChannels: 0,
   numPendingChannels: 0,
   numInactiveChannels: 0,
-  testnet: false,
   isInternetReachable: null,
   startingSyncTimestamp: '0',
   percentSynced: 0,
+  recoveryProgress: 0,
+  recoveryMode: false,
+  recoveryFinished: false,
 } as IInfo;
 
 // actions
-const getInfoAction =
-  createAction<InfoWithoutInternetReachable>('info/getInfoAction');
+const getInfoAction = createAction<GetInfoType>('info/getInfoAction');
+const getRecoveryInfoAction = createAction<IGetRecoveryType>(
+  'info/getRecoveryInfoAction',
+);
 const checkInternetReachableAction = createAction<boolean | null>(
   'info/checkInternetReachableAction',
 );
@@ -67,12 +88,22 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
     const infoRpc = await getLndInfo({});
 
     let info = {
-      ...infoRpc,
+      identityPubkey: infoRpc.identityPubkey,
+      alias: infoRpc.alias,
+      version: infoRpc.version,
+      syncedToChain: infoRpc.syncedToChain,
+      syncedToGraph: infoRpc.syncedToGraph,
+      blockHeight: infoRpc.blockHeight,
+      blockHash: infoRpc.blockHash,
+      bestHeaderTimestamp: infoRpc.bestHeaderTimestamp.toString(),
+      uris: infoRpc.uris,
+      numPeers: infoRpc.numPeers,
+      numActiveChannels: infoRpc.numActiveChannels,
+      numPendingChannels: infoRpc.numPendingChannels,
+      numInactiveChannels: infoRpc.numInactiveChannels,
       startingSyncTimestamp: '0',
       percentSynced: 0,
     };
-
-    info.bestHeaderTimestamp = info.bestHeaderTimestamp.toString();
 
     // TODO: refactor required
     // first get neutrino cache before initwallet
@@ -108,17 +139,21 @@ export const pollInfo = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getInfo()));
 };
 
-// export const getRecoveryInfo = (): AppThunk => async dispatch => {
-//   try {
-//     const recoveryRpc = await Lnd.getRecoveryInfo();
-//     console.log(recoveryRpc);
-//     const rpc = await Lnd.getInfo();
-//     console.log(rpc);
-//     // TODO
-//   } catch (error) {
-//     console.error(`getRecoveryInfo error: ${error}`);
-//   }
-// };
+export const getRecoveryInfo = (): AppThunk => async dispatch => {
+  try {
+    const response = await getLndRecoveryInfo({});
+
+    dispatch(
+      getRecoveryInfoAction({
+        recoveryProgress: response.progress,
+        recoveryFinished: response.recoveryFinished,
+        recoveryMode: response.recoveryMode,
+      }),
+    );
+  } catch (error) {
+    console.error(`getRecoveryInfo error: ${error}`);
+  }
+};
 
 export const checkInternetReachable = (): AppThunk => async dispatch => {
   NetInfo.addEventListener(state => {
@@ -134,7 +169,8 @@ const calculateSyncProgress = async (
   const progressSoFar = bestHeaderTimestamp
     ? BigInt(bestHeaderTimestamp) - BigInt(startingSyncTimestamp)!
     : 0;
-  const totalProgress = currentTimestamp - startingSyncTimestamp! || 0.001;
+  const totalProgress =
+    currentTimestamp - Number(startingSyncTimestamp)! || 0.001;
   const percentSynced = (Number(progressSoFar) * 1.0) / totalProgress;
   return percentSynced;
 };
@@ -149,6 +185,7 @@ export const infoSlice = createSlice({
       ...state,
       isInternetReachable: action.payload,
     }),
+    getRecoveryInfoAction: (state, action) => ({...state, ...action.payload}),
   },
 });
 

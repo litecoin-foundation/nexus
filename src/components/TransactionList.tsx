@@ -1,10 +1,9 @@
 import React, {
-  useCallback,
-  useState,
   forwardRef,
   useRef,
   useImperativeHandle,
   MutableRefObject,
+  useEffect,
 } from 'react';
 import {
   Dimensions,
@@ -17,12 +16,11 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
-import {SharedValue} from 'react-native-reanimated';
 
-import {useAppDispatch} from '../store/hooks';
-import {getTransactions} from '../reducers/transaction';
 import TransactionCell from './Cells/TransactionCell';
 import TransactionListEmpty from './TransactionListEmpty';
+import {getTransactions} from '../reducers/transaction';
+import {useAppDispatch} from '../store/hooks';
 
 interface Props {
   onPress(item: ItemType): void;
@@ -39,7 +37,7 @@ interface ITransactions {
 
 interface IData {
   hash: string;
-  blockHeight: number,
+  blockHeight: number;
   amount: number;
   confs: number;
   day: string;
@@ -78,27 +76,25 @@ const TransactionList = forwardRef((props: Props, ref) => {
     },
   }));
 
-  const {onPress, transactions, onViewableItemsChanged, folded, foldUnfold} = props;
-  const dispatch = useAppDispatch();
-
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    dispatch(getTransactions());
-    setRefreshing(false);
-  }, [dispatch]);
+  const {onPress, transactions, onViewableItemsChanged, folded, foldUnfold} =
+    props;
 
   const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
     item,
   }) => <TransactionCell item={item} onPress={() => onPress(item)} />;
 
   // DashboardButton is 110, txTitleContainer is 70
-  const scrollContainerHeight = folded ?
-    Dimensions.get('screen').height - FOLD_SHEET_POINT - 110 - 70 :
-    Dimensions.get('screen').height - UNFOLD_SHEET_POINT - 110 - 70;
+  const scrollContainerHeight = folded
+    ? Dimensions.get('screen').height - FOLD_SHEET_POINT - 110 - 70
+    : Dimensions.get('screen').height - UNFOLD_SHEET_POINT - 110 - 70;
 
   let curFrameY = -1;
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(getTransactions());
+  }, []);
 
   return (
     <View style={{height: scrollContainerHeight}}>
@@ -106,14 +102,21 @@ const TransactionList = forwardRef((props: Props, ref) => {
         bounces={false}
         scrollEventThrottle={1}
         onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          const direction = e.nativeEvent.contentOffset.y > curFrameY ? 'down' : 'up';
-          const maxOffset = Math.floor(Number(e.nativeEvent.contentSize.height) - Number(e.nativeEvent.layoutMeasurement.height));
+          const direction =
+            e.nativeEvent.contentOffset.y > curFrameY ? 'down' : 'up';
+          const maxOffset = Math.floor(
+            Number(e.nativeEvent.contentSize.height) -
+              Number(e.nativeEvent.layoutMeasurement.height),
+          );
           if (direction === 'up' && curFrameY === maxOffset) {
             foldUnfold(false);
           }
         }}
         onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          const maxOffset = Math.floor(Number(e.nativeEvent.contentSize.height) - Number(e.nativeEvent.layoutMeasurement.height));
+          const maxOffset = Math.floor(
+            Number(e.nativeEvent.contentSize.height) -
+              Number(e.nativeEvent.layoutMeasurement.height),
+          );
           if (curFrameY !== maxOffset) {
             foldUnfold(true);
           }

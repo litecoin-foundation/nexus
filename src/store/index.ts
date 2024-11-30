@@ -20,7 +20,7 @@ const persistConfig = {
   timeout: 0,
 };
 
-// uses Redux Action Logger (whilst devtools gets redux support)
+// uses Redux Action Logger (until devtools gets redux support)
 const actionLogger =
   (_store: any) => (next: (arg0: any) => any) => (action: any) => {
     console.log('Dispatched action:', action);
@@ -28,6 +28,27 @@ const actionLogger =
   };
 
 const pReducer = persistReducer(persistConfig, reducer);
+
+// Redux cannot serialise BigInt so instead we convert BigInt to string
+// All strings containing Integer-likes will be deserialised as BigInt!
+const bigIntSerializer = {
+  serializableTransform: {
+    in: (value: any) => {
+      // Serialize BigInt as string
+      if (typeof value === 'bigint') {
+        return value.toString();
+      }
+      return value;
+    },
+    out: (value: any) => {
+      // convert string back to BigInt when reading from the store
+      if (typeof value === 'string' && /^-?\d+$/.test(value)) {
+        return BigInt(value);
+      }
+      return value;
+    },
+  },
+};
 
 export const store = configureStore({
   reducer: pReducer,
@@ -38,6 +59,7 @@ export const store = configureStore({
       },
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        ...bigIntSerializer,
       },
     }).concat(actionLogger),
 });

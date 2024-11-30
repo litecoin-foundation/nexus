@@ -14,7 +14,7 @@ const initialState = {
 } as IAddress;
 
 // actions
-const getAddressAction = createAction<NewAddressResponse>(
+const getAddressAction = createAction<NewAddressResponse['address']>(
   'address/getAddressAction',
 );
 
@@ -23,7 +23,7 @@ export const getAddress =
   (mwebAddress?: boolean): AppThunk =>
   async dispatch => {
     try {
-      let type;
+      let type: number;
       if (mwebAddress) {
         type = 7;
       } else {
@@ -31,7 +31,7 @@ export const getAddress =
       }
       const address = await newAddress({type});
 
-      dispatch(getAddressAction(address));
+      dispatch(getAddressAction(address.address));
     } catch (error) {
       console.error(`getAddress error: ${error}`);
     }

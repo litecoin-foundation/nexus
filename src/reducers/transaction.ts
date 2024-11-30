@@ -1,30 +1,42 @@
-import * as LndOnchain from '../lib/lightning/onchain';
 import {createAction, createSelector, createSlice} from '@reduxjs/toolkit';
 import {
   getTransactions as getLndTransactions,
+  sendCoins,
   subscribeTransactions as subscribeLndTransactions,
 } from 'react-native-turbo-lnd';
-import {GetTransactionsRequestSchema} from 'react-native-turbo-lnd/protos/lightning_pb';
+import {
+  GetTransactionsRequestSchema,
+  OutputScriptType,
+  PreviousOutPoint,
+} from 'react-native-turbo-lnd/protos/lightning_pb';
 import {create} from '@bufbuild/protobuf';
 
 import {AppThunk} from './types';
 import {formatDate, formatTime} from '../lib/utils/date';
-import {lnrpc} from '../lib/lightning/proto/lightning';
 import {getBalance} from './balance';
 
 // types
 type IDecodedTx = {
-  txHash: lnrpc.ITransaction['txHash'];
-  amount: lnrpc.ITransaction['amount'];
-  numConfirmations: lnrpc.ITransaction['numConfirmations'];
-  blockHash: lnrpc.ITransaction['blockHash'];
-  blockHeight: lnrpc.ITransaction['blockHeight'];
-  timeStamp: lnrpc.ITransaction['timeStamp'];
-  fee: lnrpc.ITransaction['totalFees'];
-  destAddresses: lnrpc.ITransaction['destAddresses'];
-  outputDetails: lnrpc.ITransaction['outputDetails'];
-  previousOutpoints: lnrpc.ITransaction['previousOutpoints'];
-  label: lnrpc.ITransaction['label'];
+  txHash: string;
+  amount: Number;
+  numConfirmations: number;
+  blockHash: string;
+  blockHeight: number;
+  timeStamp: string;
+  fee: Number;
+  destAddresses: string[];
+  outputDetails: IOutputDetails[];
+  previousOutpoints: PreviousOutPoint[];
+  label: string | null | undefined;
+};
+
+type IOutputDetails = {
+  address: string;
+  amount: Number;
+  isOurAddress: boolean;
+  outputIndex: number;
+  outputType: OutputScriptType;
+  pkScript: string;
 };
 
 interface ITx {
@@ -95,23 +107,31 @@ export const getTransactions = (): AppThunk => async dispatch => {
       tx.destAddresses?.forEach(addresses => {
         destAddresses.push(addresses);
       });
-      const outputDetails: lnrpc.IOutputDetail[] = [];
+      const outputDetails: IOutputDetails[] = [];
       tx.outputDetails?.forEach(outputDetail => {
-        outputDetails.push(outputDetail);
+        const output: IOutputDetails = {
+          address: outputDetail.address,
+          amount: Number(outputDetail.amount),
+          isOurAddress: outputDetail.isOurAddress,
+          outputIndex: Number(outputDetail.outputIndex),
+          outputType: outputDetail.outputType,
+          pkScript: outputDetail.pkScript,
+        };
+        outputDetails.push(output);
       });
-      const previousOutpoints: lnrpc.IPreviousOutPoint[] = [];
+      const previousOutpoints: PreviousOutPoint[] = [];
       tx.previousOutpoints?.forEach(prevOutpoint => {
         previousOutpoints.push(prevOutpoint);
       });
 
       let decodedTx = {
         txHash: tx.txHash,
-        amount: tx.amount,
+        amount: Number(tx.amount),
         numConfirmations: tx.numConfirmations,
         blockHash: tx.blockHash,
         blockHeight: tx.blockHeight,
-        timeStamp: tx.timeStamp,
-        fee: tx.totalFees,
+        timeStamp: String(tx.timeStamp),
+        fee: Number(tx.totalFees),
         destAddresses,
         outputDetails,
         previousOutpoints,
@@ -127,7 +147,12 @@ export const getTransactions = (): AppThunk => async dispatch => {
 };
 
 export const sendOnchainPayment =
-  (address: string, amount: number, label = ''): AppThunk =>
+  (
+    address: string,
+    amount: number,
+    label: string | undefined = undefined,
+    fee: number | undefined = undefined,
+  ): AppThunk =>
   (dispatch, getState) => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -135,17 +160,24 @@ export const sendOnchainPayment =
         const sendAll = Number(confirmedBalance) === amount ? true : false;
 
         try {
-          let txid;
           if (sendAll) {
-            txid = (await LndOnchain.sendCoinsAll(address, undefined, label))
-              .txid;
+            const response = await sendCoins({
+              sendAll: true,
+              addr: address,
+              satPerVbyte: fee ? BigInt(fee) : undefined,
+            });
+            resolve(response.txid);
+            return;
           } else {
-            txid = (
-              await LndOnchain.sendCoins(address, amount, undefined, label)
-            ).txid;
+            const response = await sendCoins({
+              addr: address,
+              amount: BigInt(amount),
+              satPerVbyte: fee ? BigInt(fee) : undefined,
+              label: label ? label : undefined,
+            });
+            resolve(response.txid);
+            return;
           }
-
-          resolve(txid);
         } catch (error) {
           reject(String(error));
         }
@@ -193,8 +225,8 @@ export const txDetailSelector = createSelector(txSelector, tx =>
       hash: data.txHash,
       blockHeight: data.blockHeight,
       amount: data.amount,
-      day: formatDate(data.timeStamp * 1000),
-      time: formatTime(data.timeStamp * 1000),
+      day: formatDate(Number(data.timeStamp) * 1000),
+      time: formatTime(Number(data.timeStamp) * 1000),
       timestamp: data.timeStamp,
       fee: data.fee,
       confs: data.numConfirmations,

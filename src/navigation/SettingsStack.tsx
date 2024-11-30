@@ -4,8 +4,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Settings, {
   SettingsNavigationOptions,
 } from '../screens/Settings/Settings';
-import Channel from '../screens/Settings/Channel';
-import OpenChannel from '../screens/Settings/OpenChannel';
 import Explorer from '../screens/Settings/Explorer';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed, {SeedNavigationOptions} from '../screens/Settings/Seed';
@@ -40,25 +38,6 @@ function SettingsStack() {
         name="Settings"
         component={Settings}
         options={({navigation}) => SettingsNavigationOptions(navigation)}
-      />
-      <Stack.Screen
-        name="Channel"
-        component={Channel}
-        options={Channel.navigationOptions}
-      />
-      <Stack.Screen
-        name="OpenChannel"
-        component={OpenChannel}
-        options={{
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-          headerTitle: 'Open Channel',
-          headerLeftContainerStyle: {
-            paddingLeft: 15,
-            marginRight: -15,
-          },
-        }}
       />
       <Stack.Screen
         name="ChangePincode"
