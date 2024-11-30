@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Image,
 } from 'react-native';
 import React from 'react';
 
@@ -35,13 +36,23 @@ const TransactionCell: React.FC<Props> = props => {
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.circle} />
+      <View
+        style={[styles.circle, !sent ? {backgroundColor: '#1162E6'} : null]}>
+        <Image
+          source={
+            sent
+              ? require('../../assets/icons/sendtx.png')
+              : require('../../assets/icons/receivetx.png')
+          }
+        />
+      </View>
       <View style={styles.left}>
         <Text style={styles.labelText}>{name}</Text>
         <Text style={styles.timeText}>{String(time)}</Text>
       </View>
       <View style={styles.right}>
-        <Text style={styles.cryptoText}>
+        <Text
+          style={[styles.cryptoText, !sent ? styles.receivedCryptoText : null]}>
           {cryptoAmount}
           {amountSymbol}
         </Text>
@@ -55,25 +66,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    height: 70,
+    height: 74,
     width: Dimensions.get('window').width,
     backgroundColor: '#ffffff',
     alignItems: 'center',
-    paddingHorizontal: 19,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(214, 216, 218, 0.3)',
   },
   left: {
     flexGrow: 1,
-    paddingLeft: 12,
+    paddingLeft: 16,
   },
   right: {
     // flexGrow: 1,
   },
   circle: {
-    width: 32,
-    height: 32,
-    borderRadius: 32 / 2,
+    width: 35,
+    height: 35,
+    borderRadius: 35 / 2,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'black',
@@ -97,7 +108,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#747E87',
     fontSize: 12,
-    paddingTop: 2,
+    paddingTop: 3,
   },
   cryptoText: {
     fontFamily:
@@ -107,8 +118,11 @@ const styles = StyleSheet.create({
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#212124',
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'right',
+  },
+  receivedCryptoText: {
+    color: '#1162E6',
   },
   fiatText: {
     fontFamily:
