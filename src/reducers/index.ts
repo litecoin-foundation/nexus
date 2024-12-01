@@ -8,6 +8,7 @@ import address from './address';
 import ticker from './ticker';
 import authpad from './authpad';
 import buy from './buy';
+import sell from './sell';
 import authentication from './authentication';
 import chart from './chart';
 import input from './input';
@@ -26,6 +27,7 @@ export default combineReducers({
   ticker,
   authpad,
   buy,
+  sell,
   authentication,
   chart,
   input,

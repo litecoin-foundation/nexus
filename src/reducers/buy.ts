@@ -39,7 +39,7 @@ export const getTransactionHistory =
     const {uniqueId} = getState().onboarding;
 
     const res = await fetch(
-      'https://mobile.litecoin.comapi/buy/moonpay/transactions',
+      'https://mobile.litecoin.com/api/buy/moonpay/transactions',
       {
         method: 'POST',
         headers: {

@@ -90,7 +90,10 @@ export const subscribeTransactions =
     }
   };
 
-export const getTransactions = (): AppThunk => async dispatch => {
+export const getTransactions = (): AppThunk => async (dispatch, getState) => {
+  const {history: buyHistory} = getState().buy;
+  const {history: sellHistory} = getState().sell;
+
   try {
     const transactions = await getLndTransactions(
       create(GetTransactionsRequestSchema),
@@ -124,6 +127,18 @@ export const getTransactions = (): AppThunk => async dispatch => {
         previousOutpoints.push(prevOutpoint);
       });
 
+      let metaLabel = '';
+
+      if (buyHistory && buyHistory.length >= 1) {
+        if (buyHistory.filter((buyTx) => buyTx === tx.txHash)) {
+          metaLabel = 'Buy';
+        }
+      } else if (sellHistory && sellHistory.length >= 1) {
+        if (sellHistory.filter((selTx) => selTx === tx.txHash)) {
+          metaLabel = 'Sell';
+        }
+      }
+
       let decodedTx = {
         txHash: tx.txHash,
         amount: Number(tx.amount),
@@ -136,6 +151,7 @@ export const getTransactions = (): AppThunk => async dispatch => {
         outputDetails,
         previousOutpoints,
         label: tx.label,
+        metaLabel: metaLabel,
       };
       txs.push(decodedTx);
     });
@@ -234,6 +250,7 @@ export const txDetailSelector = createSelector(txSelector, tx =>
       addresses: addresses,
       inputTxs: data.previousOutpoints,
       sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
+      label: data.label,
     };
   }),
 );
