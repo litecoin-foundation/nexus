@@ -144,13 +144,6 @@ const Buy: React.FC<Props> = () => {
           </TouchableOpacity>
         </View>
       </View>
-
-      <View style={styles.numpadContainer}>
-        <BuyPad
-          onChange={(value: string) => onChange(value)}
-          currentValue={toggleLTC ? amount : fiatAmount}
-        />
-      </View>
     </>
   );
 
@@ -163,23 +156,35 @@ const Buy: React.FC<Props> = () => {
           Buy Litecoin is currently not available in your country/state.
         </Text>
       )}
-      <View style={styles.confirmButtonContainer}>
-        <BlueButton
-          disabled={
-            !isBuyAllowed ||
-            fiatAmount <= minBuyAmount ||
-            fiatAmount === '' ||
-            fiatAmount > maxBuyAmount
-              ? true
-              : false
-          }
-          value="Preview Buy"
-          onPress={() => navigation.navigate('ConfirmBuy')}
-        />
-        <Text style={styles.minText}>
-          Minimum purchase size of {currencySymbol}
-          {minBuyAmount}
-        </Text>
+      <View style={styles.bottom}>
+        {isBuyAllowed ? (
+          <View style={styles.numpadContainer}>
+            <BuyPad
+              onChange={(value: string) => onChange(value)}
+              currentValue={toggleLTC ? amount : fiatAmount}
+            />
+          </View>
+        ) : (
+          <></>
+        )}
+        <View style={styles.confirmButtonContainer}>
+          <BlueButton
+            disabled={
+              !isBuyAllowed ||
+              fiatAmount <= minBuyAmount ||
+              fiatAmount === '' ||
+              fiatAmount > maxBuyAmount
+                ? true
+                : false
+            }
+            value="Preview Buy"
+            onPress={() => navigation.navigate('ConfirmBuy')}
+          />
+          <Text style={styles.minText}>
+            Minimum purchase size of {currencySymbol}
+            {minBuyAmount}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -192,15 +197,20 @@ const styles = StyleSheet.create({
     maxHeight: 680,
     backgroundColor: '#f7f7f7',
     flexDirection: 'column',
+    justifyContent: 'space-between',
+    paddingBottom: Dimensions.get('screen').height * 0.03,
+  },
+  bottom: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
   },
   numpadContainer: {
-    position: 'absolute',
-    bottom: 218,
+    width: 'auto',
+    height: 'auto',
   },
   confirmButtonContainer: {
     marginHorizontal: 24,
-    bottom: Dimensions.get('screen').height * 0.03,
-    position: 'absolute',
     width: Dimensions.get('screen').width - 48,
     gap: 6,
   },
