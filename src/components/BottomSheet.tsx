@@ -61,8 +61,20 @@ const BottomSheet: React.FC<Props> = props => {
 
   const onHandlerEnd = ({translationY, velocityY}: PanGestureHandlerEventPayload) => {
     'worklet';
-    const dragToss = 0.05;
-    const destSnapPoint = translationY + mainSheetsTranslationYStart.value + velocityY * dragToss;
+    const dragToss = 0.03;
+    let destSnapPoint = 0;
+    if (
+      translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+      translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
+    ) {
+      destSnapPoint = translationY + mainSheetsTranslationYStart.value + velocityY * dragToss;
+    } else {
+      if (folded) {
+        destSnapPoint = UNFOLD_SHEET_POINT;
+      } else {
+        destSnapPoint = FOLD_SHEET_POINT;
+      }
+    }
 
     mainSheetsTranslationY.value = withSpring(destSnapPoint, {
       mass: 0.1,
@@ -94,13 +106,25 @@ const BottomSheet: React.FC<Props> = props => {
 
   const headerGesture = Gesture.Pan()
     .onUpdate(e => {
-      mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      if (
+        e.translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+        e.translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
+      )
+      {
+        mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      }
     })
     .onEnd(onEndTrigger);
 
   const panGesture = Gesture.Pan()
     .onUpdate(e => {
-      mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      if (
+        e.translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+        e.translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
+      )
+      {
+        mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      }
     })
     .onEnd(onEndTrigger);
 
