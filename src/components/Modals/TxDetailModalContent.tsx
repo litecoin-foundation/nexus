@@ -1,5 +1,5 @@
 import React, {useEffect, useLayoutEffect, useState, useCallback} from 'react';
-import {View, Text, StyleSheet, Dimensions, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, Platform, Dimensions, TouchableOpacity} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -232,10 +232,9 @@ const styles = StyleSheet.create({
   body: {
     height: '100%',
     width: '100%',
-    borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
-    borderTopRightRadius: Dimensions.get('screen').height * 0.04,
-    borderBottomLeftRadius: Dimensions.get('screen').height * 0.01,
-    borderBottomRightRadius: Dimensions.get('screen').height * 0.01,
+    borderRadius: Platform.OS === 'ios'
+      ? Dimensions.get('screen').height * 0.04
+      : 0,
     backgroundColor: 'white',
     overflow: 'hidden',
   },
@@ -245,10 +244,9 @@ const styles = StyleSheet.create({
     right: '100%',
     height: '100%',
     width: '100%',
-    borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
-    borderTopRightRadius: Dimensions.get('screen').height * 0.04,
-    borderBottomLeftRadius: Dimensions.get('screen').height * 0.01,
-    borderBottomRightRadius: Dimensions.get('screen').height * 0.01,
+    borderRadius: Platform.OS === 'ios'
+      ? Dimensions.get('screen').height * 0.04
+      : 0,
     backgroundColor: '#fff',
     zIndex: 1,
   },
@@ -258,10 +256,9 @@ const styles = StyleSheet.create({
     left: '100%',
     height: '100%',
     width: '100%',
-    borderTopLeftRadius: Dimensions.get('screen').height * 0.04,
-    borderTopRightRadius: Dimensions.get('screen').height * 0.04,
-    borderBottomLeftRadius: Dimensions.get('screen').height * 0.01,
-    borderBottomRightRadius: Dimensions.get('screen').height * 0.01,
+    borderRadius: Platform.OS === 'ios'
+      ? Dimensions.get('screen').height * 0.04
+      : 0,
     backgroundColor: '#fff',
     zIndex: 1,
   },
