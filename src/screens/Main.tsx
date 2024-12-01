@@ -164,8 +164,8 @@ const Main: React.FC<Props> = props => {
   };
 
   // Animation
-  const mainSheetsTranslationY = useSharedValue(0);
-  const mainSheetsTranslationYStart = useSharedValue(0);
+  const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
+  const mainSheetsTranslationYStart = useSharedValue(CLOSED_SNAP_POINT);
   const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
   function foldUnfoldBottomSheet(isFolded: boolean) {
     if (isFolded) {
