@@ -14,11 +14,11 @@ const AlertCell = props => {
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
 
   const handleSwitch = value => {
-    dispatch(setAlertAvailability(item._id, value));
+    dispatch(setAlertAvailability(item.index, value));
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={() => onPress(item.id)}>
+    <TouchableOpacity style={styles.container} onPress={() => onPress(item.index)}>
       <View style={styles.topContainer}>
         <View style={styles.subContainer}>
           <LitecoinIcon size={44} />
@@ -31,7 +31,7 @@ const AlertCell = props => {
           </View>
         </View>
         <View style={styles.switchContainer}>
-          <Switch initialValue={item.enabled} onPress={handleSwitch} />
+          <Switch initialValue={!item.isFired} onPress={handleSwitch} />
         </View>
       </View>
       <View style={styles.bottomContainer}>

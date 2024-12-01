@@ -17,6 +17,11 @@ const alertProviderUrl = 'https://mobile.litecoin.com/alert';
 export const addAlert =
   (data): AppThunk =>
   async (dispatch, getState) => {
+    const {rates} = getState().ticker;
+    if (!rates) {
+      return;
+    }
+
     try {
       const req = await fetch(`${alertProviderUrl}/add`, {
         method: 'POST',
@@ -25,8 +30,8 @@ export const addAlert =
         },
         body: JSON.stringify({
           deviceToken: getState().settings.deviceNotificationToken,
-          value: Number(data.value),
-          isPositive: data.value > data.originalValue,
+          value: Number(data.originalValue),
+          isPositive: data.originalValue > rates.USD,
           isIOS: data.isIOS,
         }),
       });
@@ -35,6 +40,7 @@ export const addAlert =
 
       if (res.hasOwnProperty('deviceToken')) {
         const newAlert = JSON.parse(JSON.stringify(res));
+        newAlert.enabled = !newAlert.isFired;
 
         const {alerts} = getState().alerts;
 
@@ -54,6 +60,7 @@ export const addAlert =
 export const removeAlert =
   (index): AppThunk =>
   async (dispatch, getState) => {
+
     try {
       const req = await fetch(`${alertProviderUrl}/delete`, {
         method: 'DELETE',
@@ -90,6 +97,7 @@ export const removeAlert =
 export const setAlertAvailability =
   (index, availability): AppThunk =>
   async (dispatch, getState) => {
+
     try {
       const req = await fetch(
         `${alertProviderUrl}/${availability ? 'reset' : 'set-fired'}`,
@@ -135,23 +143,18 @@ const actionHandler = {
   }),
   [SET_ALERT_AVAILABILITY]: (state, {id, availability}) => ({
     ...state,
-    alerts: () => {
-      const updatedAlerts = JSON.parse(JSON.stringify(state.alerts));
-      updatedAlerts.map((alert, i) => {
-        if (alert._id === id) {
-          const alertBuf = {
-            ...alert,
-            isFired: !availability,
-            enabled: availability,
-          };
-          alert = alertBuf;
-          return alert;
-        } else {
-          return alert;
-        }
-      });
-      return updatedAlerts;
-    },
+    alerts: state.alerts.map((alert: any) => {
+      if (alert._id === id) {
+        const alertBuf = {
+          ...alert,
+          isFired: !availability,
+          enabled: availability,
+        };
+        return alertBuf;
+      } else {
+        return alert;
+      }
+    }),
   }),
 };
 
