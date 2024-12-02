@@ -23,13 +23,15 @@ interface Props {
 const Dial: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
-  const currentRate = useAppSelector(state => ltcRateSelector(state));
+  const currentRate = Number(useAppSelector(state => ltcRateSelector(state)));
   const localFiatToUSDRate = useAppSelector(state =>
     convertLocalFiatToUSD(state),
   );
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const [value, setValue] = useState(0);
   const [usdValue, setUSDValue] = useState(0);
+
+  const maximumValue = currentRate > 1000 ? currentRate + 500 : 1000;
 
   return (
     <LinearGradient
@@ -66,6 +68,7 @@ const Dial: React.FC<Props> = props => {
               }}
               multiplicity={1}
               initialValue={currentRate}
+              maximumValue={maximumValue}
             />
           </View>
         </View>

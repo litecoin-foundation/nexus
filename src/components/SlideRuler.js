@@ -52,10 +52,9 @@ const SlideRuler = props => {
   const [value, setValueState] = useState(Number(initialValue));
 
   useEffect(() => {
-    console.log(value);
     if (value % 5 === 0) {
       // multiple of 5
-      console.log('slider moved');
+      // console.log('slider moved');
       triggerHeavyFeedback();
     } else {
       triggerLightFeedback();
@@ -66,7 +65,7 @@ const SlideRuler = props => {
     let length = arrayLength;
 
     if (maximumValue) {
-      length = maximumValue / multiplicity;
+      length = parseInt(maximumValue / multiplicity, 10);
       length += itemAmountPerScreen;
     }
 
