@@ -2,17 +2,17 @@ import React, {useEffect} from 'react';
 import {StyleSheet, Text, View, FlatList, Platform} from 'react-native';
 
 import Header from '../../components/Header';
-import {getTransactionHistory} from '../../reducers/buy';
+import {getBuyTransactionHistory} from '../../reducers/buy';
 import BuyTransactionCell from '../../components/Cells/BuyTransactionCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 const BuyHistory: React.FC = () => {
   const dispatch = useAppDispatch();
-  const {history} = useAppSelector(state => state.buy);
+  const {buyHistory} = useAppSelector(state => state.buy);
 
   useEffect(() => {
-    dispatch(getTransactionHistory());
+    dispatch(getBuyTransactionHistory());
   }, [dispatch]);
 
   const EmptySectionList = (
@@ -28,7 +28,7 @@ const BuyHistory: React.FC = () => {
       <Header />
       <View style={styles.listContainer}>
         <FlatList
-          data={history}
+          data={buyHistory}
           renderItem={({item}) => (
             <BuyTransactionCell data={item} onPress={null} />
           )}

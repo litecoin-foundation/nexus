@@ -7,7 +7,8 @@ const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 // types
 interface IBuy {
   quote: 'string' | null;
-  history: string[];
+  buyHistory: string[];
+  sellHistory: string[];
   isBuyAllowed: boolean | null;
   isSellAllowed: boolean | null;
   minBuyAmount: number;
@@ -17,7 +18,8 @@ interface IBuy {
 // initial state
 const initialState = {
   quote: null,
-  history: [],
+  buyHistory: [],
+  sellHistory: [],
   isBuyAllowed: null,
   isSellAllowed: null,
   minBuyAmount: 0,
@@ -25,7 +27,8 @@ const initialState = {
 } as IBuy;
 
 // actions
-const getTxHistoryAction = createAction('buy/getTxHistoryAction');
+const getBuyTxHistoryAction = createAction('buy/getBuyTxHistoryAction');
+const getSellTxHistoryAction = createAction('buy/getSellTxHistoryAction');
 const getQuoteAction = createAction('buy/getQuoteAction');
 const checkAllowedAction = createAction<{
   isBuyAllowed: boolean;
@@ -34,7 +37,7 @@ const checkAllowedAction = createAction<{
 const getLimitsAction = createAction('buy/getLimitsAction');
 
 // functions
-export const getTransactionHistory =
+export const getBuyTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
     const {uniqueId} = getState().onboarding;
 
@@ -58,7 +61,35 @@ export const getTransactionHistory =
 
     const {data} = await res.json();
 
-    dispatch(getTxHistoryAction(data));
+    dispatch(getBuyTxHistoryAction(data));
+  };
+
+export const getSellTransactionHistory =
+  (): AppThunk => async (dispatch, getState) => {
+    const {uniqueId} = getState().onboarding;
+
+    const res = await fetch(
+      // TODO: create endpoint in nexus-api
+      'https://mobile.litecoin.com/api/sell/moonpay/transactions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: uniqueId,
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error);
+    }
+
+    const {data} = await res.json();
+
+    dispatch(getSellTxHistoryAction(data));
   };
 
 export const getQuote =
@@ -228,9 +259,13 @@ export const buySlice = createSlice({
   name: 'buy',
   initialState,
   reducers: {
-    getTxHistoryAction: (state, action) => ({
+    getBuyTxHistoryAction: (state, action) => ({
       ...state,
-      history: action.payload,
+      buyHistory: action.payload,
+    }),
+    getSellTxHistoryAction: (state, action) => ({
+      ...state,
+      sellHistory: action.payload,
     }),
     getQuoteAction: (state, action) => ({
       ...state,

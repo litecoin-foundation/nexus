@@ -91,8 +91,7 @@ export const subscribeTransactions =
   };
 
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
-  const {history: buyHistory} = getState().buy;
-  const {history: sellHistory} = getState().sell;
+  const {buyHistory, sellHistory} = getState().buy;
 
   try {
     const transactions = await getLndTransactions(

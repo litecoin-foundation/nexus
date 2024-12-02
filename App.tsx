@@ -14,8 +14,7 @@ import {
 import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';
 import {updateHistoricalRatesForAllPeriods} from './src/reducers/ticker';
-import {getTransactionHistory} from './src/reducers/buy';
-import {getSellTransactionHistory} from './src/reducers/sell';
+import {getBuyTransactionHistory, getSellTransactionHistory} from './src/reducers/buy';
 
 import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
@@ -37,7 +36,7 @@ function ContextExecutable(props: any) {
   const dispatch = useAppDispatch();
   dispatch(setDeviceNotificationToken(props.deviceToken));
   dispatch(updateHistoricalRatesForAllPeriods());
-  dispatch(getTransactionHistory());
+  dispatch(getBuyTransactionHistory());
   dispatch(getSellTransactionHistory());
   return <></>;
 }
