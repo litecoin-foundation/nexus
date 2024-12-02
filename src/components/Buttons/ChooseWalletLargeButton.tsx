@@ -77,6 +77,9 @@ const ChooseWalletLargeButton: React.FC<Props> = props => {
           isOpened={isOpen}
           animDelay={100}
           animDuration={200}
+          close={() => {
+            onPress();
+          }}
         />
       </Animated.View>
     </Pressable>

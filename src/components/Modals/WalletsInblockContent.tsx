@@ -7,7 +7,7 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 
-import WhiteButton from '../Buttons/WhiteButton';
+import WhiteClearButton from '../Buttons/WhiteClearButton';
 import WalletTabSimple from '../Tabs/WalletTabSimple';
 import {useAppSelector} from '../../store/hooks';
 import {subunitSelector} from '../../reducers/settings';
@@ -17,10 +17,11 @@ interface Props {
   isOpened: boolean;
   animDelay: number;
   animDuration: number;
+  close(): void;
 }
 
 export default function WalletsInblockContent(props: Props) {
-  const {isOpened, animDelay, animDuration} =
+  const {isOpened, animDelay, animDuration, close} =
     props;
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const convertToSubunit = useAppSelector(state => subunitSelector(state));
@@ -86,12 +87,10 @@ export default function WalletsInblockContent(props: Props) {
       ]}>
       <View style={styles.bodyItems}>{wallets}</View>
       <Animated.View style={animatedButton}>
-        <WhiteButton
-          value="ADD A NEW WALLET"
-          onPress={() => {}}
-          disabled={true}
-          small={false}
-          active={true}
+        <WhiteClearButton
+          small={true}
+          value="Close"
+          onPress={() => close()}
         />
       </Animated.View>
     </Animated.View>
@@ -107,7 +106,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: Dimensions.get('screen').height * 0.03,
-    paddingBottom: Dimensions.get('screen').height * 0.03,
+    paddingBottom: Dimensions.get('screen').height * 0.02,
   },
   bodyItems: {
     width: '100%',
