@@ -58,7 +58,25 @@ export const startLnd = (): AppThunk => async dispatch => {
 
     // start LND
     await start(` --lnddir=${appFolderPath}`);
-    dispatch(lndState(true));
+
+    // set lndActive when RPC is ready!
+    subscribeState(
+      {},
+      async state => {
+        if (state.state === WalletState.NON_EXISTING) {
+          dispatch(lndState(true));
+        } else if (state.state === WalletState.RPC_ACTIVE) {
+          dispatch(lndState(true));
+        }
+        try {
+        } catch (error) {
+          throw new Error(String(error));
+        }
+      },
+      error => {
+        console.error('LOSHY: ', error);
+      },
+    );
   } catch (err) {
     console.error('CANT start LND');
     console.error(err);
@@ -70,12 +88,30 @@ export const startLnd = (): AppThunk => async dispatch => {
 export const stopLnd = (): AppThunk => async dispatch => {
   try {
     await stopDaemon({});
-    dispatch(lndState(false));
+    subscribeState(
+      {},
+      async _ => {
+        try {
+        } catch (error) {
+          throw new Error(String(error));
+        }
+      },
+      error => {
+        if (error.includes('error reading from server')) {
+          dispatch(lndState(false));
+          return;
+        }
+      },
+    );
   } catch (err) {
     console.error('CANT stop LND');
     console.error(err);
     // TODO: handle this
   }
+};
+
+export const resetLndState = (): AppThunk => async dispatch => {
+  dispatch(lndState(false));
 };
 
 export const initWallet = (): AppThunk => async (dispatch, getState) => {

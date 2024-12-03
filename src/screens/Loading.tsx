@@ -3,7 +3,7 @@ import {StyleSheet, Linking, View} from 'react-native';
 import type {StackNavigationProp} from '@react-navigation/stack';
 
 import {startOnboarding} from '../reducers/onboarding';
-import {startLnd} from '../reducers/lightning';
+import {resetLndState, startLnd} from '../reducers/lightning';
 import {checkBiometricSupport} from '../lib/utils/biometric';
 import {checkInternetReachable} from '../reducers/info';
 import {subscribeAppState} from '../reducers/authentication';
@@ -29,6 +29,7 @@ const Loading: React.FC<Props> = props => {
 
   // only start LND if wallet isOnboarded
   useEffect(() => {
+    dispatch(resetLndState());
     if (isOnboarded) {
       dispatch(startLnd());
     }
