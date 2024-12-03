@@ -1,6 +1,7 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import {AppThunk} from './types';
 import {getLocales} from 'react-native-localize';
+import {poll} from '../lib/utils/poll';
 
 const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 
@@ -13,7 +14,11 @@ interface IBuy {
   isSellAllowed: boolean | null;
   minBuyAmount: number;
   maxBuyAmount: number;
+  minLTCBuyAmount: number;
+  maxLTCBuyAmount: number;
 }
+
+interface IQuote {}
 
 // initial state
 const initialState = {
@@ -24,6 +29,8 @@ const initialState = {
   isSellAllowed: null,
   minBuyAmount: 0,
   maxBuyAmount: 0,
+  minLTCBuyAmount: 0,
+  maxLTCBuyAmount: 0,
 } as IBuy;
 
 // actions
@@ -93,13 +100,16 @@ export const getSellTransactionHistory =
   };
 
 export const getQuote =
-  (cryptoAmount: number): AppThunk =>
+  (cryptoAmount?: number, fiatAmount?: number): AppThunk =>
   async (dispatch, getState) => {
     const {currencyCode} = getState().settings;
+    const currencyAmountURL = fiatAmount
+      ? `&baseCurrencyAmount=${fiatAmount}`
+      : `&quoteCurrencyAmount=${cryptoAmount}`;
     const url =
       'https://api.moonpay.io/v3/currencies/ltc/quote/' +
       `?apiKey=${publishableKey}` +
-      `&quoteCurrencyAmount=${cryptoAmount}` +
+      currencyAmountURL +
       `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
       '&paymentMethod=credit_debit_card';
 
@@ -216,42 +226,43 @@ export const getLimits = (): AppThunk => async (dispatch, getState) => {
 
 export const getSignedUrl =
   (address: string, fiatAmount: number): AppThunk =>
-  async (_, getState) => {
-    const {currencyCode} = getState().settings;
-    const {uniqueId} = getState().onboarding;
-    const unsignedURL =
-      `https://buy.moonpay.com?apiKey=${publishableKey}` +
-      '&currencyCode=ltc' +
-      `&externalCustomerId=${uniqueId}` +
-      `&walletAddress=${address}` +
-      `&baseCurrencyAmount=${fiatAmount}` +
-      `&baseCurrencyCode=${String(currencyCode).toLowerCase()}`;
+  (_, getState) => {
+    return new Promise(async (resolve, reject) => {
+      const {currencyCode} = getState().settings;
+      const {uniqueId} = getState().onboarding;
+      const unsignedURL =
+        `https://buy.moonpay.com?apiKey=${publishableKey}` +
+        '&currencyCode=ltc' +
+        `&externalCustomerId=${uniqueId}` +
+        `&walletAddress=${address}` +
+        `&baseCurrencyAmount=${fiatAmount}` +
+        `&baseCurrencyCode=${String(currencyCode).toLowerCase()}`;
 
-    try {
-      const res = await fetch(
-        'https://mobile.litecoin.com/api/buy/moonpay/sign',
-        {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
+      try {
+        const res = await fetch(
+          'https://mobile.litecoin.com/api/buy/moonpay/sign',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({unsignedURL}),
           },
-          body: JSON.stringify({unsignedURL}),
-        },
-      );
+        );
 
-      if (!res.ok) {
-        console.log(res.status);
-        const {message} = await res.json();
-        return Error(message);
+        if (!res.ok) {
+          const {message} = await res.json();
+          reject(String(message));
+        }
+
+        const response = await res.json();
+        const {urlWithSignature} = response;
+        resolve(urlWithSignature);
+      } catch (error) {
+        // handle error
+        reject(error);
       }
-
-      const {urlWithSignature} = await res.json();
-      return urlWithSignature;
-    } catch (error) {
-      // handle error
-      console.error(error);
-    }
+    });
   };
 
 // slice
@@ -280,6 +291,8 @@ export const buySlice = createSlice({
       ...state,
       minBuyAmount: action.payload.baseCurrency.minBuyAmount,
       maxBuyAmount: action.payload.baseCurrency.maxBuyAmount,
+      minLTCBuyAmount: action.payload.quoteCurrency.minBuyAmount,
+      maxLTCBuyAmount: action.payload.quoteCurrency.maxBuyAmount,
     }),
   },
 });

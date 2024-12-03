@@ -8,6 +8,7 @@ import {AppThunk} from './types';
 import {fileExists} from '../lib/utils/file';
 import {showError} from './errors';
 import {generateMnemonic} from '../lib/utils/aezeed';
+import {setItem} from '../lib/utils/keychain';
 
 // types
 interface IOnboardingState {
@@ -77,6 +78,8 @@ export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
 export const genSeed = (): AppThunk => async dispatch => {
   try {
     const seed = await generateMnemonic();
+    console.log(seed.join(''));
+    await setItem('SEEDPHRASE', seed.join(''));
     dispatch(genSeedAction(seed));
   } catch (error) {
     console.error(error);
@@ -157,8 +160,7 @@ const extractNeutrinoCache = (): AppThunk => async dispatch => {
       await FileSystem.deleteAsync(filterHeaderPath);
     }
     // extract cache
-    await subscribe(({progress}) => {
-      console.log(progress);
+    subscribe(({progress}) => {
       dispatch(updateNeutrinoCacheUnzipProgress(Math.floor(progress * 100)));
     });
     await unzip(

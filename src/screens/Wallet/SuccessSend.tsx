@@ -1,12 +1,6 @@
 import React from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {
-  StyleSheet,
-  Text,
-  View,
-  Dimensions,
-  Platform,
-} from 'react-native';
+import {StyleSheet, Text, View, Dimensions, Platform} from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -157,7 +151,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 'auto',
     flexDirection: 'column',
-    justifyContent: 'flex-end',
+    // justifyContent: 'flex-end',
     alignItems: 'center',
   },
 });

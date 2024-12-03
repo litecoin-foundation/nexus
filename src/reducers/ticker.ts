@@ -20,7 +20,6 @@ const initialState = {
 } as ITicker;
 
 // actions
-const getPaymentRateAction = createAction('ticker/getPaymentRateAction');
 const getTickerAction = createAction('ticker/getTickerAction');
 const updateHistoricRateDayAction = createAction(
   'ticker/updateHistoricRateDayAction',
@@ -41,39 +40,7 @@ const updateHistoricRateAllAction = createAction(
   'ticker/updateHistoricRateAllAction',
 );
 
-const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
-
 // functions
-export const getPaymentRate = (): AppThunk => async (dispatch, getState) => {
-  const {currencyCode} = getState().settings;
-  const url =
-    'https://api.moonpay.io/v3/currencies/ltc/quote/' +
-    `?apiKey=${publishableKey}` +
-    '&baseCurrencyAmount=1' +
-    `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
-    '&paymentMethod=credit_debit_card';
-
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error);
-    }
-    const data = await res.json();
-
-    let paymentRate = data.quoteCurrencyPrice;
-
-    dispatch(getPaymentRateAction(paymentRate));
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 export const getTicker = (): AppThunk => async dispatch => {
   const res = await fetch(
@@ -96,10 +63,6 @@ export const getTicker = (): AppThunk => async dispatch => {
   } = await res.json();
 
   dispatch(getTickerAction(rates));
-};
-
-export const pollPaymentRate = (): AppThunk => async dispatch => {
-  await poll(() => dispatch(getPaymentRate()), 15000);
 };
 
 export const pollTicker = (): AppThunk => async dispatch => {
@@ -207,30 +170,27 @@ export const updateHistoricalRates = (): AppThunk => (dispatch, getStore) => {
   }
 };
 
-export const updateHistoricalRatesForAllPeriods = (): AppThunk => async dispatch => {
-  let result = await fetchHistoricalRates('1D');
-  dispatch(updateHistoricRateDayAction(result));
-  result = await fetchHistoricalRates('1W');
-  dispatch(updateHistoricRateWeekAction(result));
-  result = await fetchHistoricalRates('1M');
-  dispatch(updateHistoricRateMonthAction(result));
-  result = await fetchHistoricalRates('3M');
-  dispatch(updateHistoricRateQuarterAction(result));
-  result = await fetchHistoricalRates('1Y');
-  dispatch(updateHistoricRateYearAction(result));
-  result = await fetchHistoricalRates('ALL');
-  dispatch(updateHistoricRateAllAction(result));
-};
+export const updateHistoricalRatesForAllPeriods =
+  (): AppThunk => async dispatch => {
+    let result = await fetchHistoricalRates('1D');
+    dispatch(updateHistoricRateDayAction(result));
+    result = await fetchHistoricalRates('1W');
+    dispatch(updateHistoricRateWeekAction(result));
+    result = await fetchHistoricalRates('1M');
+    dispatch(updateHistoricRateMonthAction(result));
+    result = await fetchHistoricalRates('3M');
+    dispatch(updateHistoricRateQuarterAction(result));
+    result = await fetchHistoricalRates('1Y');
+    dispatch(updateHistoricRateYearAction(result));
+    result = await fetchHistoricalRates('ALL');
+    dispatch(updateHistoricRateAllAction(result));
+  };
 
 // slice
 export const tickerSlice = createSlice({
   name: 'ticker',
   initialState,
   reducers: {
-    getPaymentRateAction: (state, action) => ({
-      ...state,
-      paymentRate: action.payload,
-    }),
     getTickerAction: (state, action) => ({
       ...state,
       rates: action.payload,

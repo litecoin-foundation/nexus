@@ -37,14 +37,11 @@ const ConfirmBuy: React.FC<Props> = props => {
   const {
     quoteCurrencyAmount,
     quoteCurrencyPrice,
-    feeAmount,
-    extraFeeAmount,
-    networkFeeAmount,
     totalAmount,
+    baseCurrencyAmount,
   } = quote;
-  const paymentRate = useAppSelector(state => state.ticker.paymentRate);
 
-  const {address} = useAppSelector(state => state.address);
+  const address = useAppSelector(state => state.address.address);
 
   useEffect(() => {
     dispatch(getAddress());
@@ -52,10 +49,13 @@ const ConfirmBuy: React.FC<Props> = props => {
 
   const onPress = async () => {
     try {
-      const url = await dispatch(getSignedUrl(address, 69));
+      // await is important!
+      const url = await dispatch(getSignedUrl(address, baseCurrencyAmount));
+
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {uri: url});
       } else {
+        console.log(url);
         Alert.alert("Something's wrong!", `${url}`);
       }
     } catch (error) {
@@ -72,7 +72,7 @@ const ConfirmBuy: React.FC<Props> = props => {
           <View style={styles.fiatAmount}>
             <Text style={styles.fiatAmountText}>
               {currencySymbol}
-              {quoteCurrencyPrice.toFixed(2)}
+              {totalAmount}
             </Text>
           </View>
         </View>
@@ -80,14 +80,27 @@ const ConfirmBuy: React.FC<Props> = props => {
 
       <View style={styles.bottomSheetContainer}>
         <View style={{height: 220, paddingTop: 26}}>
-          <TableCell title="RATE" value="$84/1LTC" />
-          <TableCell title="FEE" value={feeAmount + extraFeeAmount} />
-          <TableCell title="NETWORK FEE" value={networkFeeAmount} />
-          <TableCell title="YOU WILL SPEND" value={totalAmount} />
+          <TableCell
+            title="RATE"
+            value={`${currencySymbol}${quoteCurrencyPrice.toFixed(
+              2,
+            )} per 1 LTC`}
+            noBorder
+          />
+          {/* <TableCell title="FEE" value={feeAmount + extraFeeAmount} />
+          <TableCell title="NETWORK FEE" value={networkFeeAmount} /> */}
+          <TableCell
+            title="YOU WILL SPEND"
+            value={`${currencySymbol}${totalAmount}`}
+            noBorder
+            valueStyle={{color: '#20BB74'}}
+          />
         </View>
 
+        <View style={{height: 30}} />
+
         <View style={styles.confirmButtonContainer}>
-          <GreenButton value="Continue Purchase" onPress={() => onPress()} />
+          <GreenButton value="Continue Purchase" onPress={onPress} />
         </View>
       </View>
     </View>
@@ -104,7 +117,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    height: '40%',
     width: '100%',
   },
   titleText: {
@@ -143,6 +155,9 @@ const styles = StyleSheet.create({
     paddingBottom: Dimensions.get('screen').height * 0.01,
     paddingLeft: Dimensions.get('screen').height * 0.015,
     paddingRight: Dimensions.get('screen').height * 0.015,
+    height: 42,
+    alignSelf: 'flex-start',
+    marginTop: 10,
   },
   fiatAmountText: {
     color: '#fff',

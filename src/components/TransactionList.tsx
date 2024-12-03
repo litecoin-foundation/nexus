@@ -94,7 +94,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   useEffect(() => {
     dispatch(getTransactions());
-  }, []);
+  }, [dispatch]);
 
   return (
     <View style={{height: scrollContainerHeight}}>

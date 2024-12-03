@@ -8,10 +8,11 @@ import {
   Image,
   Platform,
 } from 'react-native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
+import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, getQuote} from '../../reducers/buy';
-import {getPaymentRate, pollPaymentRate} from '../../reducers/ticker';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
 import {
@@ -19,8 +20,6 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
-import {RouteProp, useNavigation} from '@react-navigation/native';
-import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
 interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
@@ -47,12 +46,7 @@ const Sell: React.FC<Props> = () => {
   useEffect(() => {
     dispatch(checkAllowed());
     dispatch(getQuote(1));
-    dispatch(getPaymentRate());
   }, []);
-
-  useEffect(() => {
-    dispatch(pollPaymentRate());
-  }, [dispatch]);
 
   const onChange = (value: string) => {
     if (toggleLTC) {
@@ -160,12 +154,14 @@ const Sell: React.FC<Props> = () => {
           Buy Litecoin is currently not available in your country/state.
         </Text>
       )}
-      <View style={styles.confirmButtonContainer}>
-        <BlueButton
-          disabled={isSellAllowed ? false : true}
-          value="Sell LTC"
-          onPress={() => navigation.navigate('ConfirmSell')}
-        />
+      <View style={styles.bottom}>
+        <View style={styles.confirmButtonContainer}>
+          <BlueButton
+            disabled={isSellAllowed ? false : true}
+            value="Sell LTC"
+            onPress={() => navigation.navigate('ConfirmSell')}
+          />
+        </View>
       </View>
     </View>
   );
@@ -178,16 +174,21 @@ const styles = StyleSheet.create({
     maxHeight: 680,
     backgroundColor: '#f7f7f7',
     flexDirection: 'column',
+    paddingBottom: Dimensions.get('screen').height * 0.03,
   },
   numpadContainer: {
-    position: 'absolute',
-    bottom: 218,
+    width: 'auto',
+    height: 'auto',
   },
   confirmButtonContainer: {
     marginHorizontal: 24,
     bottom: Dimensions.get('screen').height * 0.03,
     position: 'absolute',
     width: Dimensions.get('screen').width - 48,
+  },
+  bottom: {
+    flex: 1,
+    flexDirection: 'column',
   },
   switchButton: {
     borderRadius: 10,
