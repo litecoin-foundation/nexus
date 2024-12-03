@@ -40,13 +40,13 @@ shim.js
 /ios/Pods/
 storyLoader.js
 android/app/release/
-ios/Plasma.xcworkspace
+ios/Nexus.xcworkspace
 lndmobile-*-v*.tar.gz
 ios/.xcode.env.local
 vendor/
 .cxx/
 bun.lockb
-ios/Plasma.xcodeproj/project.pbxproj
+ios/Nexus.xcodeproj/project.pbxproj
 ios/Podfile.lock
 package-lock.json
 liblnd.a

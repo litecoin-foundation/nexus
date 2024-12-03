@@ -45,7 +45,7 @@ export const startLnd = (): AppThunk => async dispatch => {
     // lnd dir path
     let appFolderPath: string;
     if (Platform.OS === 'android') {
-      appFolderPath = '/data/user/0/com.plasma/files/';
+      appFolderPath = '/data/user/0/com.nexus/files/lndltc';
     } else if (Platform.OS === 'ios') {
       appFolderPath = FileSystem.documentDirectory!.replace(
         'file://',

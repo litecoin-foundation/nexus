@@ -3,6 +3,8 @@ import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
+import * as FileSystem from 'expo-file-system';
+
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {useAppDispatch} from '../../store/hooks';
@@ -22,6 +24,8 @@ interface Props {
 const Initial = (props: Props) => {
   const dispatch = useAppDispatch();
   const {navigation} = props;
+
+  console.log(FileSystem.documentDirectory);
 
   useEffect(() => {
     dispatch(detectCurrencyCode());

@@ -15,7 +15,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'plasma' do
+target 'nexus' do
   use_expo_modules!
   post_integrate do |installer|
     begin
@@ -32,7 +32,7 @@ target 'plasma' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'plasmaTests' do
+  target 'nexusTests' do
     inherit! :complete
     # Pods for testing
   end
