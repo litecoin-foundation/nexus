@@ -1,14 +1,7 @@
 import React from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {StyleSheet, Text, View, Dimensions, Platform} from 'react-native';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 
@@ -49,7 +42,7 @@ const SuccessSend: React.FC<Props> = () => {
             active={true}
             value="Back to wallets"
             onPress={() => {
-              navigation.navigate('Main');
+              navigation.navigate('Main', {isInitial: true});
             }}
           />
         </View>
@@ -151,22 +144,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 'auto',
     flexDirection: 'column',
-    // justifyContent: 'flex-end',
     alignItems: 'center',
   },
 });
 
-export const SuccessSendNavigationOptions = (navigation: any) => {
+export const SuccessSendNavigationOptions = () => {
   return {
     headerTitle: '',
     headerTransparent: true,
     headerTintColor: 'white',
     headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-      />
+      <></>
     ),
+    gestureEnabled: false,
   };
 };
 

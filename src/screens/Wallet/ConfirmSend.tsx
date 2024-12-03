@@ -17,8 +17,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 
+import PlasmaModal from '../../components/Modals/PlasmaModal';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import PinModal from '../../components/Modals/PinModal';
+import PinModalContent from '../../components/Modals/PinModalContent';
 import GreenButton from '../../components/Buttons/GreenButton';
 import ChooseWalletLargeButton from '../../components/Buttons/ChooseWalletLargeButton';
 import {subunitSymbolSelector} from '../../reducers/settings';
@@ -40,15 +41,15 @@ const ConfirmSend: React.FC<Props> = () => {
   // Todo: get total fee for the tx
   const totalFeeInLTC = 'undefined ';
 
-  const [isPinModalTriggered, triggerPinModal] = useState(false);
+  const [isPinModalTriggered, setPinModalTriggered] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
 
   const handleAuthenticationRequired = () => {
     return new Promise<void>((resolve, reject) => {
-      triggerPinModal(true);
+      setPinModalTriggered(true);
       const subscription = DeviceEventEmitter.addListener('auth', bool => {
         if (bool === true) {
-          triggerPinModal(false);
+          setPinModalTriggered(false);
           subscription.remove();
           resolve();
         } else if (bool === false) {
@@ -69,7 +70,7 @@ const ConfirmSend: React.FC<Props> = () => {
         Alert.alert('Incorrect Pincode', undefined, [
           {
             text: 'Dismiss',
-            onPress: () => triggerPinModal(false),
+            onPress: () => setPinModalTriggered(false),
             style: 'cancel',
           },
         ]),
@@ -133,11 +134,30 @@ const ConfirmSend: React.FC<Props> = () => {
         </View>
       </LinearGradient>
 
-      <PinModal
-        isVisible={isPinModalTriggered}
-        close={() => triggerPinModal(false)}
-        handleValidationFailure={() => DeviceEventEmitter.emit('auth', false)}
-        handleValidationSuccess={() => DeviceEventEmitter.emit('auth', true)}
+      <PlasmaModal
+        isOpened={isPinModalTriggered}
+        close={() => {
+          setPinModalTriggered(false);
+        }}
+        isFromBottomToTop={true}
+        animDuration={250}
+        gapInPixels={0}
+        backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
+        rotateWalletButtonArrow={rotateArrow}
+        renderBody={(
+          _,
+          __,
+          ___,
+          ____,
+          cardTranslateAnim: any,
+        ) => (
+          <PinModalContent
+            cardTranslateAnim={cardTranslateAnim}
+            close={() => setPinModalTriggered(false)}
+            handleValidationFailure={() => DeviceEventEmitter.emit('auth', false)}
+            handleValidationSuccess={() => DeviceEventEmitter.emit('auth', true)}
+          />
+        )}
       />
     </>
   );
@@ -166,7 +186,7 @@ const styles = StyleSheet.create({
     paddingLeft: Dimensions.get('screen').height * 0.02,
     paddingRight: Dimensions.get('screen').height * 0.02,
     marginTop: Dimensions.get('screen').height * 0.12,
-    zIndex: 11,
+    zIndex: 2,
   },
   chooseWalletBtn: {
     width: '100%',

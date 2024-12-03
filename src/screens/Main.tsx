@@ -18,6 +18,7 @@ import Animated, {
   withTiming,
   withDelay,
 } from 'react-native-reanimated';
+import {RouteProp} from '@react-navigation/native';
 import {Canvas, Image, RoundedRect, useImage} from '@shopify/react-native-skia';
 import {payment, TransactionRequest} from '@flexa/flexa-react-native';
 
@@ -56,11 +57,17 @@ const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 type RootStackParamList = {
   Main: {
     scanData?: string;
+    isInitial?: boolean;
   };
   SearchTransaction: undefined;
 };
 
-interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
+// interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
+
+interface Props {
+  navigation: any,
+  route: RouteProp<RootStackParamList, 'Main'>;
+}
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
@@ -175,6 +182,12 @@ const Main: React.FC<Props> = props => {
       setActiveTab(0);
     }
   }
+
+  useEffect(() => {
+    if (route.params?.isInitial) {
+      foldUnfoldBottomSheet(false);
+    }
+  }, [route]);
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
     return {
