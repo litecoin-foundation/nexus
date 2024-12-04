@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {checkAllowed, getLimits, getQuote} from '../../reducers/buy';
+import {checkAllowed, getLimits, getBuyQuote} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
 import {
@@ -51,23 +51,23 @@ const Buy: React.FC<Props> = () => {
   useEffect(() => {
     dispatch(checkAllowed());
     dispatch(getLimits());
-    dispatch(getQuote(1));
+    dispatch(getBuyQuote(1));
   }, []);
 
   const onChange = (value: string) => {
     if (toggleLTC) {
-      dispatch(updateAmount(value));
+      dispatch(updateAmount(value, 'buy'));
       // fetch quote from moonpay
       if (
         Number(value) >= minLTCBuyAmount &&
         Number(value) <= maxLTCBuyAmount
       ) {
-        dispatch(getQuote(Number(value)));
+        dispatch(getBuyQuote(Number(value)));
       }
     } else if (!toggleLTC) {
-      dispatch(updateFiatAmount(value));
+      dispatch(updateFiatAmount(value, 'buy'));
       if (Number(value) >= minBuyAmount && Number(value) <= maxBuyAmount) {
-        dispatch(getQuote(undefined, Number(value)));
+        dispatch(getBuyQuote(undefined, Number(value)));
       }
     }
   };
@@ -178,9 +178,9 @@ const Buy: React.FC<Props> = () => {
           <BlueButton
             disabled={
               !isBuyAllowed ||
-              fiatAmount <= minBuyAmount ||
+              Number(fiatAmount) <= minBuyAmount ||
               fiatAmount === '' ||
-              fiatAmount > maxBuyAmount
+              Number(fiatAmount) > maxBuyAmount
                 ? true
                 : false
             }

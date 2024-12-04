@@ -3,13 +3,16 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
+import {getBuyQuoteData, getSellQuoteData} from './buy';
 
 // types
 interface ITicker {}
 
 // initial state
 const initialState = {
-  paymentRate: null,
+  ltcRate: null,
+  buyRate: null,
+  sellRate: null,
   rates: [],
   day: [],
   week: [],
@@ -21,6 +24,11 @@ const initialState = {
 
 // actions
 const getTickerAction = createAction('ticker/getTickerAction');
+const updateRatesAction = createAction<{
+  buy: number;
+  sell: number;
+  ltc: number;
+}>('ticker/updateRatesAction');
 const updateHistoricRateDayAction = createAction(
   'ticker/updateHistoricRateDayAction',
 );
@@ -42,31 +50,55 @@ const updateHistoricRateAllAction = createAction(
 
 // functions
 
-export const getTicker = (): AppThunk => async dispatch => {
-  const res = await fetch(
-    'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
-    {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    },
-  );
-  if (!res.ok) {
-    const error = await res.json();
-    console.error(error);
-  }
+const getTickerData = () => {
+  return new Promise<{[key: string]: string}>(async (resolve, reject) => {
+    try {
+      const res = await fetch(
+        'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        reject(error);
+      }
 
-  const {
-    data: {rates},
-  } = await res.json();
+      const {
+        data: {rates},
+      } = await res.json();
 
-  dispatch(getTickerAction(rates));
+      resolve(rates);
+    } catch (error) {
+      reject(error);
+    }
+  });
 };
 
-export const pollTicker = (): AppThunk => async dispatch => {
-  await poll(() => dispatch(getTicker()), 15000);
+export const pollRates = (): AppThunk => async (dispatch, getState) => {
+  await poll(async () => {
+    const {currencyCode} = getState().settings;
+    try {
+      // fetch buy quote
+      const buyQuote: any = await getBuyQuoteData(currencyCode, 1);
+      const buy = Number(buyQuote.quoteCurrencyPrice);
+      // fetch sell quote
+      const sellQuote: any = await getSellQuoteData(currencyCode, 1);
+      const sell = Number(sellQuote.baseCurrencyPrice);
+      // fetch ltc rates
+      const rates = await getTickerData();
+      const ltc = Number(rates[currencyCode]);
+
+      dispatch(updateRatesAction({buy, sell, ltc}));
+      dispatch(getTickerAction(rates));
+    } catch (error) {
+      console.warn(error);
+    }
+  });
 };
 
 const fetchHistoricalRates = async (interval: string): Promise<any[]> => {
@@ -218,6 +250,12 @@ export const tickerSlice = createSlice({
     updateHistoricRateAllAction: (state, action) => ({
       ...state,
       all: action.payload,
+    }),
+    updateRatesAction: (state, action) => ({
+      ...state,
+      ltcRate: action.payload.ltc,
+      buyRate: action.payload.buy,
+      sellRate: action.payload.sell,
     }),
   },
 });

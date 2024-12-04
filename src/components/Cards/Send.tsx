@@ -9,12 +9,21 @@ import GreenButton from '../Buttons/GreenButton';
 import {decodeBIP21} from '../../lib/utils/bip21';
 import {validate as validateLtcAddress} from '../../lib/utils/validate';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {updateAmount, updateFiatAmount, updateToAddress, updateMessage, updateFee} from '../../reducers/input';
+import {
+  updateAmount,
+  updateFiatAmount,
+  updateSendToAddress,
+  updateSendFee,
+  updateSendAmount,
+  updateSendLabel,
+} from '../../reducers/input';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 import {sleep} from '../../lib/utils/poll';
 import {showError} from '../../reducers/errors';
+import {} from '../../reducers/input';
+import {} from '../../reducers/input';
 
 type RootStackParamList = {
   Main: {
@@ -55,19 +64,19 @@ const Send: React.FC<Props> = props => {
 
   // change address handler
   useEffect(() => {
-    dispatch(updateToAddress(address));
+    dispatch(updateSendToAddress(address));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   // change description handler
   useEffect(() => {
-    dispatch(updateMessage(description));
+    dispatch(updateSendLabel(description));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [description]);
 
   // change fee handler
   useEffect(() => {
-    dispatch(updateFee(recommendedFeeInSatsVByte));
+    dispatch(updateSendFee(recommendedFeeInSatsVByte));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recommendedFeeInSatsVByte]);
 
@@ -100,7 +109,7 @@ const Send: React.FC<Props> = props => {
         // If additional data included, set amount/address
         if (decoded.options.amount) {
           // setAmount(decoded.options.amount);
-          dispatch(updateAmount(decoded.options.amount));
+          dispatch(updateSendAmount(decoded.options.amount));
         }
         if (decoded.options.message) {
           setDescription(decoded.options.message);
@@ -126,9 +135,9 @@ const Send: React.FC<Props> = props => {
 
   const onChange = (value: string) => {
     if (toggleLTC) {
-      dispatch(updateAmount(value));
+      dispatch(updateAmount(value, 'ltc'));
     } else if (!toggleLTC) {
-      dispatch(updateFiatAmount(value));
+      dispatch(updateFiatAmount(value, 'ltc'));
     }
   };
 
@@ -183,7 +192,8 @@ const Send: React.FC<Props> = props => {
       </View>
 
       {amountPickerActive ? null : (
-        <Animated.View style={{...styles.subContainer, opacity: detailsOpacity}}>
+        <Animated.View
+          style={{...styles.subContainer, opacity: detailsOpacity}}>
           <View style={styles.cellContainer}>
             <Text style={styles.subtitleText}>TO ADDRESS</Text>
             <View style={styles.inputFieldContainer}>

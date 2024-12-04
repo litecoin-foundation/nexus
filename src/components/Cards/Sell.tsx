@@ -12,7 +12,7 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {checkAllowed, getQuote} from '../../reducers/buy';
+import {checkAllowed} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
 import {
@@ -45,14 +45,13 @@ const Sell: React.FC<Props> = () => {
 
   useEffect(() => {
     dispatch(checkAllowed());
-    dispatch(getQuote(1));
   }, []);
 
   const onChange = (value: string) => {
     if (toggleLTC) {
-      dispatch(updateAmount(value));
+      dispatch(updateAmount(value, 'sell'));
     } else if (!toggleLTC) {
-      dispatch(updateFiatAmount(value));
+      dispatch(updateFiatAmount(value, 'sell'));
     }
   };
 

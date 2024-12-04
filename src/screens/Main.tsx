@@ -14,13 +14,11 @@ import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
   withDelay,
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {Canvas, Image, RoundedRect, useImage} from '@shopify/react-native-skia';
-import {payment, TransactionRequest} from '@flexa/flexa-react-native';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -35,7 +33,6 @@ import PlasmaModal from './../components/Modals/PlasmaModal';
 import WalletsModalContent from './../components/Modals/WalletsModalContent';
 import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
 import {groupTransactions} from '../lib/utils/groupTransactions';
-import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
@@ -62,10 +59,8 @@ type RootStackParamList = {
   SearchTransaction: undefined;
 };
 
-// interface Props extends NativeStackScreenProps<RootStackParamList, 'Main'> {}
-
 interface Props {
-  navigation: any,
+  navigation: any;
   route: RouteProp<RootStackParamList, 'Main'>;
 }
 

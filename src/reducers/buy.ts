@@ -1,7 +1,6 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import {AppThunk} from './types';
 import {getLocales} from 'react-native-localize';
-import {poll} from '../lib/utils/poll';
 
 const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 
@@ -36,7 +35,7 @@ const initialState = {
 // actions
 const getBuyTxHistoryAction = createAction('buy/getBuyTxHistoryAction');
 const getSellTxHistoryAction = createAction('buy/getSellTxHistoryAction');
-const getQuoteAction = createAction('buy/getQuoteAction');
+const getBuyQuoteAction = createAction('buy/getBuyQuoteAction');
 const checkAllowedAction = createAction<{
   isBuyAllowed: boolean;
   isSellAllowed: boolean;
@@ -99,10 +98,12 @@ export const getSellTransactionHistory =
     dispatch(getSellTxHistoryAction(data));
   };
 
-export const getQuote =
-  (cryptoAmount?: number, fiatAmount?: number): AppThunk =>
-  async (dispatch, getState) => {
-    const {currencyCode} = getState().settings;
+export const getBuyQuoteData = (
+  currencyCode: string,
+  cryptoAmount?: number,
+  fiatAmount?: number,
+) => {
+  return new Promise(async (resolve, reject) => {
     const currencyAmountURL = fiatAmount
       ? `&baseCurrencyAmount=${fiatAmount}`
       : `&quoteCurrencyAmount=${cryptoAmount}`;
@@ -123,16 +124,72 @@ export const getQuote =
       });
 
       if (!res.ok) {
-        const error = res.json();
-        console.error(error);
+        const error = await res.json();
+        reject(error);
       }
 
       const data = await res.json();
-
-      dispatch(getQuoteAction(data));
+      resolve(data);
     } catch (error: any) {
-      console.error(error.response.data.message);
+      reject(error.response.data.message);
     }
+  });
+};
+
+export const getBuyQuote =
+  (cryptoAmount?: number, fiatAmount?: number): AppThunk =>
+  async (dispatch, getState) => {
+    const {currencyCode} = getState().settings;
+    const quote: any = await getBuyQuoteData(
+      currencyCode,
+      cryptoAmount,
+      fiatAmount,
+    );
+
+    dispatch(getBuyQuoteAction(quote));
+  };
+
+export const getSellQuoteData = (
+  currencyCode: string,
+  cryptoAmount: number,
+) => {
+  return new Promise(async (resolve, reject) => {
+    const url =
+      'https://api.moonpay.com/v3/currencies/ltc/sell_quote/' +
+      `?apiKey=${publishableKey}` +
+      `&baseCurrencyAmount=${cryptoAmount}` +
+      `&quoteCurrencyCode=${String(currencyCode).toLowerCase()}` +
+      '&paymentMethod=credit_debit_card';
+
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        reject(error);
+      }
+
+      const data = await res.json();
+      resolve(data);
+    } catch (error: any) {
+      reject(error.response.data.message);
+    }
+  });
+};
+
+export const getSellQuote =
+  (cryptoAmount: number): AppThunk =>
+  async (dispatch, getState) => {
+    const {currencyCode} = getState().settings;
+    const quote: any = await getSellQuoteData(currencyCode, cryptoAmount);
+
+    // dispatch(getSellQuoteAction(quote));
   };
 
 export const checkAllowed = (): AppThunk => async dispatch => {
@@ -278,7 +335,7 @@ export const buySlice = createSlice({
       ...state,
       sellHistory: action.payload,
     }),
-    getQuoteAction: (state, action) => ({
+    getBuyQuoteAction: (state, action) => ({
       ...state,
       quote: action.payload,
     }),
