@@ -21,14 +21,16 @@ import {
   updateFiatAmount,
 } from '../../reducers/input';
 
+type RootStackParamList = {
+  Main: {
+    scanData?: string;
+  };
+  ConfirmSell: undefined;
+};
+
 interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
 }
-
-type RootStackParamList = {
-  Main: undefined;
-  ConfirmSell: undefined;
-};
 
 const Sell: React.FC<Props> = () => {
   const dispatch = useAppDispatch();

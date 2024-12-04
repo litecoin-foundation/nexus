@@ -21,15 +21,17 @@ import {
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
-interface Props {
-  route: RouteProp<RootStackParamList, 'Main'>;
-}
-
 type RootStackParamList = {
-  Main: undefined;
+  Main: {
+    scanData?: string;
+  };
   ConfirmBuy: undefined;
   BuyHistory: undefined;
 };
+
+interface Props {
+  route: RouteProp<RootStackParamList, 'Main'>;
+}
 
 const Buy: React.FC<Props> = () => {
   const dispatch = useAppDispatch();

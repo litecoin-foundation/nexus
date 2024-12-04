@@ -75,7 +75,6 @@ export const getSellTransactionHistory =
     const {uniqueId} = getState().onboarding;
 
     const res = await fetch(
-      // TODO: create endpoint in nexus-api
       'https://mobile.litecoin.com/api/sell/moonpay/transactions',
       {
         method: 'POST',

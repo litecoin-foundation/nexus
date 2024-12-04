@@ -100,9 +100,6 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
     let txs: IDecodedTx[] = [];
 
-    // TODO: decode and add metadata on transaction info.
-    // If Buy/Sell transaction, this must be labelled as such
-
     transactions.transactions.forEach(tx => {
       // deserialisation
       const destAddresses: string[] = [];

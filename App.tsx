@@ -15,6 +15,7 @@ import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';
 import {updateHistoricalRatesForAllPeriods} from './src/reducers/ticker';
 import {getBuyTransactionHistory, getSellTransactionHistory} from './src/reducers/buy';
+import {getTransactions} from './src/reducers/transaction';
 
 import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
@@ -38,6 +39,7 @@ function ContextExecutable(props: any) {
   dispatch(updateHistoricalRatesForAllPeriods());
   dispatch(getBuyTransactionHistory());
   dispatch(getSellTransactionHistory());
+  dispatch(getTransactions());
   return <></>;
 }
 
@@ -50,7 +52,7 @@ const App: React.FC = () => {
 
     Notifications.events().registerRemoteNotificationsRegistered((event: Registered) => {
         // TODO: Send the token to my server so it could send back push notifications...
-        console.log('Device Token Received', event.deviceToken);
+        // console.log('Device Token Received', event.deviceToken);
         setDeviceToken(event.deviceToken);
     });
     Notifications.events().registerRemoteNotificationsRegistrationFailed((event: RegistrationError) => {

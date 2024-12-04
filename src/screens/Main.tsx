@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
+import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -22,7 +22,7 @@ import {Canvas, Image, RoundedRect, useImage} from '@shopify/react-native-skia';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
-import {getTransactions, txDetailSelector} from '../reducers/transaction';
+import {txDetailSelector} from '../reducers/transaction';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';
@@ -72,14 +72,12 @@ const Main: React.FC<Props> = props => {
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks);
-  const groupedTransactions = groupTransactions(transactions);
 
   const dispatch = useAppDispatch();
 
   const [activeTab, setActiveTab] = useState(0);
   const [isSendModalTriggered, triggerSendModal] = useState<boolean>(false);
   const [selectedTransaction, selectTransaction] = useState<any>({});
-  const [displayedTxs, setDisplayedTxs] = useState(groupedTransactions);
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main Wallet');
@@ -219,10 +217,6 @@ const Main: React.FC<Props> = props => {
       ),
     };
   });
-
-  useEffect(() => {
-    dispatch(getTransactions());
-  }, []);
 
   // change headerLeft button based on if card is open
   // if transaction list is shown, show settings button
@@ -408,96 +402,101 @@ const Main: React.FC<Props> = props => {
     walletButtonOpacity,
   ]);
 
-  const txListComponent = (
-    <View>
-      <View style={styles.txTitleContainer}>
-        <Text style={styles.txTitleText}>Latest Transactions</Text>
+  const TxListComponent = useCallback(() => {
+      return <>
+        <View>
+          <View style={styles.txTitleContainer}>
+            <Text style={styles.txTitleText}>Latest Transactions</Text>
 
-        <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={{height: 50, width: 60}}>
-            <RoundedRect
-              x={0}
-              y={0}
-              width={90}
-              height={50}
-              color="white"
-              r={10}
-            />
-            <Image image={image} x={20} y={16} width={17} height={16} />
-          </Canvas>
-        </Pressable>
+            <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
+              <Canvas style={{height: 50, width: 60}}>
+                <RoundedRect
+                  x={0}
+                  y={0}
+                  width={90}
+                  height={50}
+                  color="white"
+                  r={10}
+                />
+                <Image image={image} x={20} y={16} width={17} height={16} />
+              </Canvas>
+            </Pressable>
+          </View>
+          <TransactionList
+            onPress={data => {
+              selectTransaction(data);
+              setTxDetailModalOpened(true);
+            }}
+            folded={isBottomSheetFolded}
+            foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
+          />
+        </View>
+      </>;
+    },
+    [isBottomSheetFolded]
+  );
+
+  const HeaderComponent = useCallback(() => {
+    return <>
+      <View style={styles.headerContainer}>
+        <DashboardButton
+          title="Buy"
+          imageSource={require('../assets/icons/buy-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(1);
+          }}
+          active={activeTab === 1}
+          textPadding={8}
+          disabled={!isInternetReachable ? true : false}
+        />
+        <DashboardButton
+          title="Sell"
+          imageSource={require('../assets/icons/sell-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(2);
+          }}
+          active={activeTab === 2}
+          textPadding={7}
+          disabled={!isInternetReachable ? true : false}
+        />
+        <DashboardButton
+          title="Convert"
+          wider={true}
+          imageSource={require('../assets/icons/convert-icon.png')}
+          handlePress={() => {
+            console.log('nothing to do');
+          }}
+          active={activeTab === 3}
+          textPadding={18}
+          disabled={!isInternetReachable ? true : false}
+        />
+        <DashboardButton
+          title="Send"
+          imageSource={require('../assets/icons/send-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(4);
+          }}
+          active={activeTab === 4}
+          textPadding={11}
+          disabled={!isInternetReachable ? true : false}
+        />
+        <DashboardButton
+          title="Receive"
+          imageSource={require('../assets/icons/receive-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(5);
+          }}
+          active={activeTab === 5}
+          textPadding={18}
+          disabled={false}
+        />
       </View>
-      <TransactionList
-        onPress={data => {
-          selectTransaction(data);
-          setTxDetailModalOpened(true);
-        }}
-        transactions={displayedTxs}
-        folded={isBottomSheetFolded}
-        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
-      />
-    </View>
-  );
-
-  const HeaderComponent = (
-    <View style={styles.headerContainer}>
-      <DashboardButton
-        title="Buy"
-        imageSource={require('../assets/icons/buy-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(1);
-        }}
-        active={activeTab === 1}
-        textPadding={8}
-        disabled={!isInternetReachable ? true : false}
-      />
-      <DashboardButton
-        title="Sell"
-        imageSource={require('../assets/icons/sell-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(2);
-        }}
-        active={activeTab === 2}
-        textPadding={7}
-        disabled={!isInternetReachable ? true : false}
-      />
-      <DashboardButton
-        title="Convert"
-        wider={true}
-        imageSource={require('../assets/icons/convert-icon.png')}
-        handlePress={() => {
-          console.log('nothing to do');
-        }}
-        active={activeTab === 3}
-        textPadding={18}
-        disabled={!isInternetReachable ? true : false}
-      />
-      <DashboardButton
-        title="Send"
-        imageSource={require('../assets/icons/send-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(4);
-        }}
-        active={activeTab === 4}
-        textPadding={11}
-        disabled={!isInternetReachable ? true : false}
-      />
-      <DashboardButton
-        title="Receive"
-        imageSource={require('../assets/icons/receive-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(5);
-        }}
-        active={activeTab === 5}
-        textPadding={18}
-        disabled={false}
-      />
-    </View>
-  );
+    </>;
+  }, [activeTab, isInternetReachable]);
 
   return (
     <Animated.View
@@ -511,13 +510,13 @@ const Main: React.FC<Props> = props => {
       </NewAmountView>
 
       <BottomSheet
-        headerComponent={HeaderComponent}
+        txViewComponent={<TxListComponent />}
+        headerComponent={<HeaderComponent />}
         mainSheetsTranslationY={mainSheetsTranslationY}
         mainSheetsTranslationYStart={mainSheetsTranslationYStart}
         folded={isBottomSheetFolded}
         foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
         activeTab={activeTab}
-        txViewComponent={txListComponent}
         buyViewComponent={<Buy route={route} />}
         sellViewComponent={<Sell route={route} />}
         sendViewComponent={<Send route={route} />}

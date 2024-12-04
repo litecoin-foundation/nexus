@@ -93,7 +93,8 @@ const SearchTransaction: React.FC<Props> = props => {
               selectTransaction(data);
               setTxDetailModalVisible(true);
             }}
-            transactions={diplayedTxs}
+            // TODO: Move filter logic into this child component
+            // transactions={diplayedTxs}
             onViewableItemsChanged={viewableItems => {
               if (
                 viewableItems.viewableItems !== undefined &&

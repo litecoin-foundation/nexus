@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   MutableRefObject,
   useEffect,
+  useState,
 } from 'react';
 import {
   Dimensions,
@@ -20,14 +21,17 @@ import {
 import TransactionCell from './Cells/TransactionCell';
 import TransactionListEmpty from './TransactionListEmpty';
 import {getTransactions} from '../reducers/transaction';
-import {useAppDispatch} from '../store/hooks';
+import {useAppDispatch, useAppSelector} from '../store/hooks';
+
+import {txDetailSelector} from '../reducers/transaction';
+import {groupTransactions} from '../lib/utils/groupTransactions';
 
 interface Props {
   onPress(item: ItemType): void;
-  transactions: ITransactions[];
-  onViewableItemsChanged(): void;
-  folded: boolean;
-  foldUnfold: (isFolded: boolean) => void;
+  // transactions: ITransactions[];
+  onViewableItemsChanged?(): void;
+  folded?: boolean;
+  foldUnfold?: (isFolded: boolean) => void;
 }
 
 interface ITransactions {
@@ -76,8 +80,15 @@ const TransactionList = forwardRef((props: Props, ref) => {
     },
   }));
 
-  const {onPress, transactions, onViewableItemsChanged, folded, foldUnfold} =
+  const {onPress, onViewableItemsChanged, folded, foldUnfold} =
     props;
+
+  const transactions = useAppSelector(state => txDetailSelector(state));
+  const [displayedTxs, setDisplayedTxs] = useState<any[]>([]);
+
+  useEffect(() => {
+    setDisplayedTxs(groupTransactions(transactions));
+  }, [transactions]);
 
   const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
     item,
@@ -90,11 +101,11 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   let curFrameY = -1;
 
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(getTransactions());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getTransactions());
+  // }, [dispatch]);
 
   return (
     <View style={{height: scrollContainerHeight}}>
@@ -123,7 +134,8 @@ const TransactionList = forwardRef((props: Props, ref) => {
           curFrameY = e.nativeEvent.contentOffset.y;
         }}
         ref={transactionListRef}
-        sections={transactions}
+        // sections={transactions}
+        sections={displayedTxs}
         stickySectionHeadersEnabled={true}
         renderItem={renderItem}
         viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
