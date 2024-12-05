@@ -28,10 +28,10 @@ import {groupTransactions} from '../lib/utils/groupTransactions';
 
 interface Props {
   onPress(item: ItemType): void;
-  // transactions: ITransactions[];
   onViewableItemsChanged?(): void;
   folded?: boolean;
   foldUnfold?: (isFolded: boolean) => void;
+  transactionType?: string;
 }
 
 interface ITransactions {
@@ -80,15 +80,46 @@ const TransactionList = forwardRef((props: Props, ref) => {
     },
   }));
 
-  const {onPress, onViewableItemsChanged, folded, foldUnfold} =
+  const {onPress, onViewableItemsChanged, folded, foldUnfold, transactionType} =
     props;
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const [displayedTxs, setDisplayedTxs] = useState<any[]>([]);
 
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(getTransactions());
+  }, [dispatch]);
+
   useEffect(() => {
     setDisplayedTxs(groupTransactions(transactions));
   }, [transactions]);
+
+  const filterTransactions = (transactionTypeProp: string | undefined) => {
+    const txArray = [];
+
+    switch (transactionTypeProp) {
+      case 'Buy':
+      case 'Sell':
+      case 'Send':
+      case 'Receive':
+        txArray.push(
+          ...transactions.filter((tx: any) => tx.metaLabel === transactionTypeProp),
+        );
+        break;
+      case 'All':
+      default:
+        txArray.push(...transactions);
+        break;
+    }
+
+    setDisplayedTxs(groupTransactions(txArray));
+  };
+
+  useEffect(() => {
+    filterTransactions(transactionType);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transactionType]);
 
   const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
     item,
@@ -100,12 +131,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
     : Dimensions.get('screen').height - UNFOLD_SHEET_POINT - 110 - 70;
 
   let curFrameY = -1;
-
-  // const dispatch = useAppDispatch();
-
-  // useEffect(() => {
-  //   dispatch(getTransactions());
-  // }, [dispatch]);
 
   return (
     <View style={{height: scrollContainerHeight}}>
@@ -120,7 +145,9 @@ const TransactionList = forwardRef((props: Props, ref) => {
               Number(e.nativeEvent.layoutMeasurement.height),
           );
           if (direction === 'up' && curFrameY === maxOffset) {
-            foldUnfold(false);
+            if (typeof foldUnfold === 'function') {
+              foldUnfold(false);
+            }
           }
         }}
         onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -129,12 +156,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
               Number(e.nativeEvent.layoutMeasurement.height),
           );
           if (curFrameY !== maxOffset) {
-            foldUnfold(true);
+            if (typeof foldUnfold === 'function') {
+              foldUnfold(true);
+            }
           }
           curFrameY = e.nativeEvent.contentOffset.y;
         }}
         ref={transactionListRef}
-        // sections={transactions}
         sections={displayedTxs}
         stickySectionHeadersEnabled={true}
         renderItem={renderItem}

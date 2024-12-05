@@ -123,9 +123,13 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         previousOutpoints.push(prevOutpoint);
       });
 
-      let metaLabel = '';
+      let metaLabel = 'All';
 
-      if (buyHistory && buyHistory.length >= 1) {
+      if (Math.sign(parseFloat(String(tx.amount))) === -1) {
+        metaLabel = 'Send';
+      } else if (Math.sign(parseFloat(String(tx.amount))) === 1) {
+        metaLabel = 'Receive';
+      } else if (buyHistory && buyHistory.length >= 1) {
         if (buyHistory.filter((buyTx) => buyTx === tx.txHash)) {
           metaLabel = 'Buy';
         }
@@ -247,6 +251,7 @@ export const txDetailSelector = createSelector(txSelector, tx =>
       inputTxs: data.previousOutpoints,
       sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
       label: data.label,
+      metaLabel: data.metaLabel,
     };
   }),
 );
