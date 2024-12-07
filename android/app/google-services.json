@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:616133023637:android:d12d105948e9d08359489c",
+        "mobilesdk_app_id": "1:616133023637:android:c7cb117ebf1615df59489c",
         "android_client_info": {
-          "package_name": "com.plasma"
+          "package_name": "com.nexus"
         }
       },
       "oauth_client": [],

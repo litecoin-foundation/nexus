@@ -17,7 +17,7 @@ import {deleteWalletDB, fileExists} from '../lib/utils/file';
 import {finishOnboarding} from './onboarding';
 import {subscribeTransactions} from './transaction';
 import {pollInfo} from './info';
-import {pollTicker} from './ticker';
+import {pollRates} from './ticker';
 import {pollBalance} from './balance';
 import {createConfig} from '../lib/utils/config';
 import {stringToUint8Array} from '../lib/utils';
@@ -45,7 +45,7 @@ export const startLnd = (): AppThunk => async dispatch => {
     // lnd dir path
     let appFolderPath: string;
     if (Platform.OS === 'android') {
-      appFolderPath = '/data/user/0/com.plasma/files/';
+      appFolderPath = '/data/user/0/com.nexus/files/lndltc';
     } else if (Platform.OS === 'ios') {
       appFolderPath = FileSystem.documentDirectory!.replace(
         'file://',
@@ -58,7 +58,25 @@ export const startLnd = (): AppThunk => async dispatch => {
 
     // start LND
     await start(` --lnddir=${appFolderPath}`);
-    dispatch(lndState(true));
+
+    // set lndActive when RPC is ready!
+    subscribeState(
+      {},
+      async state => {
+        if (state.state === WalletState.NON_EXISTING) {
+          dispatch(lndState(true));
+        } else if (state.state === WalletState.RPC_ACTIVE) {
+          dispatch(lndState(true));
+        }
+        try {
+        } catch (error) {
+          throw new Error(String(error));
+        }
+      },
+      error => {
+        console.error('LOSHY: ', error);
+      },
+    );
   } catch (err) {
     console.error('CANT start LND');
     console.error(err);
@@ -70,12 +88,30 @@ export const startLnd = (): AppThunk => async dispatch => {
 export const stopLnd = (): AppThunk => async dispatch => {
   try {
     await stopDaemon({});
-    dispatch(lndState(false));
+    subscribeState(
+      {},
+      async _ => {
+        try {
+        } catch (error) {
+          throw new Error(String(error));
+        }
+      },
+      error => {
+        if (error.includes('error reading from server')) {
+          dispatch(lndState(false));
+          return;
+        }
+      },
+    );
   } catch (err) {
     console.error('CANT stop LND');
     console.error(err);
     // TODO: handle this
   }
+};
+
+export const resetLndState = (): AppThunk => async dispatch => {
+  dispatch(lndState(false));
 };
 
 export const initWallet = (): AppThunk => async (dispatch, getState) => {
@@ -111,7 +147,7 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
           } else if (state.state === WalletState.RPC_ACTIVE) {
             // RPC_ACTIVE so we are ready to dispatch pollers
             dispatch(pollInfo());
-            dispatch(pollTicker());
+            dispatch(pollRates());
             dispatch(subscribeTransactions());
 
             return;
@@ -150,7 +186,7 @@ export const unlockWallet = (): AppThunk => async dispatch => {
               // dispatch pollers
               dispatch(pollInfo());
               dispatch(subscribeTransactions());
-              dispatch(pollTicker());
+              dispatch(pollRates());
               dispatch(pollBalance());
 
               resolve();

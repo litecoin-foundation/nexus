@@ -7,26 +7,35 @@ const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 // types
 interface IBuy {
   quote: 'string' | null;
-  history: string[];
+  buyHistory: string[];
+  sellHistory: string[];
   isBuyAllowed: boolean | null;
   isSellAllowed: boolean | null;
   minBuyAmount: number;
   maxBuyAmount: number;
+  minLTCBuyAmount: number;
+  maxLTCBuyAmount: number;
 }
+
+interface IQuote {}
 
 // initial state
 const initialState = {
   quote: null,
-  history: [],
+  buyHistory: [],
+  sellHistory: [],
   isBuyAllowed: null,
   isSellAllowed: null,
   minBuyAmount: 0,
   maxBuyAmount: 0,
+  minLTCBuyAmount: 0,
+  maxLTCBuyAmount: 0,
 } as IBuy;
 
 // actions
-const getTxHistoryAction = createAction('buy/getTxHistoryAction');
-const getQuoteAction = createAction('buy/getQuoteAction');
+const getBuyTxHistoryAction = createAction('buy/getBuyTxHistoryAction');
+const getSellTxHistoryAction = createAction('buy/getSellTxHistoryAction');
+const getBuyQuoteAction = createAction('buy/getBuyQuoteAction');
 const checkAllowedAction = createAction<{
   isBuyAllowed: boolean;
   isSellAllowed: boolean;
@@ -34,12 +43,12 @@ const checkAllowedAction = createAction<{
 const getLimitsAction = createAction('buy/getLimitsAction');
 
 // functions
-export const getTransactionHistory =
+export const getBuyTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
     const {uniqueId} = getState().onboarding;
 
     const res = await fetch(
-      'https://mobile.litecoin.comapi/buy/moonpay/transactions',
+      'https://mobile.litecoin.com/api/buy/moonpay/transactions',
       {
         method: 'POST',
         headers: {
@@ -58,17 +67,49 @@ export const getTransactionHistory =
 
     const {data} = await res.json();
 
-    dispatch(getTxHistoryAction(data));
+    dispatch(getBuyTxHistoryAction(data));
   };
 
-export const getQuote =
-  (cryptoAmount: number): AppThunk =>
-  async (dispatch, getState) => {
-    const {currencyCode} = getState().settings;
+export const getSellTransactionHistory =
+  (): AppThunk => async (dispatch, getState) => {
+    const {uniqueId} = getState().onboarding;
+
+    const res = await fetch(
+      'https://mobile.litecoin.com/api/sell/moonpay/transactions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: uniqueId,
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error);
+    }
+
+    const {data} = await res.json();
+
+    dispatch(getSellTxHistoryAction(data));
+  };
+
+export const getBuyQuoteData = (
+  currencyCode: string,
+  cryptoAmount?: number,
+  fiatAmount?: number,
+) => {
+  return new Promise(async (resolve, reject) => {
+    const currencyAmountURL = fiatAmount
+      ? `&baseCurrencyAmount=${fiatAmount}`
+      : `&quoteCurrencyAmount=${cryptoAmount}`;
     const url =
       'https://api.moonpay.io/v3/currencies/ltc/quote/' +
       `?apiKey=${publishableKey}` +
-      `&quoteCurrencyAmount=${cryptoAmount}` +
+      currencyAmountURL +
       `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
       '&paymentMethod=credit_debit_card';
 
@@ -82,16 +123,72 @@ export const getQuote =
       });
 
       if (!res.ok) {
-        const error = res.json();
-        console.error(error);
+        const error = await res.json();
+        reject(error);
       }
 
       const data = await res.json();
-
-      dispatch(getQuoteAction(data));
+      resolve(data);
     } catch (error: any) {
-      console.error(error.response.data.message);
+      reject(error.response.data.message);
     }
+  });
+};
+
+export const getBuyQuote =
+  (cryptoAmount?: number, fiatAmount?: number): AppThunk =>
+  async (dispatch, getState) => {
+    const {currencyCode} = getState().settings;
+    const quote: any = await getBuyQuoteData(
+      currencyCode,
+      cryptoAmount,
+      fiatAmount,
+    );
+
+    dispatch(getBuyQuoteAction(quote));
+  };
+
+export const getSellQuoteData = (
+  currencyCode: string,
+  cryptoAmount: number,
+) => {
+  return new Promise(async (resolve, reject) => {
+    const url =
+      'https://api.moonpay.com/v3/currencies/ltc/sell_quote/' +
+      `?apiKey=${publishableKey}` +
+      `&baseCurrencyAmount=${cryptoAmount}` +
+      `&quoteCurrencyCode=${String(currencyCode).toLowerCase()}` +
+      '&paymentMethod=credit_debit_card';
+
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        reject(error);
+      }
+
+      const data = await res.json();
+      resolve(data);
+    } catch (error: any) {
+      reject(error.response.data.message);
+    }
+  });
+};
+
+export const getSellQuote =
+  (cryptoAmount: number): AppThunk =>
+  async (dispatch, getState) => {
+    const {currencyCode} = getState().settings;
+    const quote: any = await getSellQuoteData(currencyCode, cryptoAmount);
+
+    // dispatch(getSellQuoteAction(quote));
   };
 
 export const checkAllowed = (): AppThunk => async dispatch => {
@@ -185,42 +282,43 @@ export const getLimits = (): AppThunk => async (dispatch, getState) => {
 
 export const getSignedUrl =
   (address: string, fiatAmount: number): AppThunk =>
-  async (_, getState) => {
-    const {currencyCode} = getState().settings;
-    const {uniqueId} = getState().onboarding;
-    const unsignedURL =
-      `https://buy.moonpay.com?apiKey=${publishableKey}` +
-      '&currencyCode=ltc' +
-      `&externalCustomerId=${uniqueId}` +
-      `&walletAddress=${address}` +
-      `&baseCurrencyAmount=${fiatAmount}` +
-      `&baseCurrencyCode=${String(currencyCode).toLowerCase()}`;
+  (_, getState) => {
+    return new Promise(async (resolve, reject) => {
+      const {currencyCode} = getState().settings;
+      const {uniqueId} = getState().onboarding;
+      const unsignedURL =
+        `https://buy.moonpay.com?apiKey=${publishableKey}` +
+        '&currencyCode=ltc' +
+        `&externalCustomerId=${uniqueId}` +
+        `&walletAddress=${address}` +
+        `&baseCurrencyAmount=${fiatAmount}` +
+        `&baseCurrencyCode=${String(currencyCode).toLowerCase()}`;
 
-    try {
-      const res = await fetch(
-        'https://mobile.litecoin.com/api/buy/moonpay/sign',
-        {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
+      try {
+        const res = await fetch(
+          'https://mobile.litecoin.com/api/buy/moonpay/sign',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({unsignedURL}),
           },
-          body: JSON.stringify({unsignedURL}),
-        },
-      );
+        );
 
-      if (!res.ok) {
-        console.log(res.status);
-        const {message} = await res.json();
-        return Error(message);
+        if (!res.ok) {
+          const {message} = await res.json();
+          reject(String(message));
+        }
+
+        const response = await res.json();
+        const {urlWithSignature} = response;
+        resolve(urlWithSignature);
+      } catch (error) {
+        // handle error
+        reject(error);
       }
-
-      const {urlWithSignature} = await res.json();
-      return urlWithSignature;
-    } catch (error) {
-      // handle error
-      console.error(error);
-    }
+    });
   };
 
 // slice
@@ -228,11 +326,15 @@ export const buySlice = createSlice({
   name: 'buy',
   initialState,
   reducers: {
-    getTxHistoryAction: (state, action) => ({
+    getBuyTxHistoryAction: (state, action) => ({
       ...state,
-      history: action.payload,
+      buyHistory: action.payload,
     }),
-    getQuoteAction: (state, action) => ({
+    getSellTxHistoryAction: (state, action) => ({
+      ...state,
+      sellHistory: action.payload,
+    }),
+    getBuyQuoteAction: (state, action) => ({
       ...state,
       quote: action.payload,
     }),
@@ -245,6 +347,8 @@ export const buySlice = createSlice({
       ...state,
       minBuyAmount: action.payload.baseCurrency.minBuyAmount,
       maxBuyAmount: action.payload.baseCurrency.maxBuyAmount,
+      minLTCBuyAmount: action.payload.quoteCurrency.minBuyAmount,
+      maxLTCBuyAmount: action.payload.quoteCurrency.maxBuyAmount,
     }),
   },
 });

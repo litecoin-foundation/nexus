@@ -1,0 +1,151 @@
+import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {AppThunk} from './types';
+
+// types
+interface IInputState {
+  amount: string;
+  fiatAmount: string;
+  send: {
+    toAddress: string;
+    label: string;
+    amount: Number;
+    fee: Number | null;
+  };
+}
+
+type InputType = 'buy' | 'sell' | 'ltc';
+
+// initial state
+const initialState = {
+  amount: '',
+  fiatAmount: '',
+  send: {
+    toAddress: '',
+    label: '',
+    amount: 0,
+    fee: null,
+  },
+} as IInputState;
+
+// actions
+const updateAmountAction = createAction<string>('input/updateAmountAction');
+const updateFiatAmountAction = createAction<string>(
+  'input/updateFiatAmountAction',
+);
+const updateSendAmountAction = createAction<Number>('input/updateSendAmount');
+const updateToAddressAction = createAction<string>(
+  'input/updateToAddressAction',
+);
+const updateFeeAction = createAction<Number>('input/updateFeeAction');
+export const resetInputs = createAction('input/resetInputs');
+
+// functions
+export const updateAmount =
+  (amount: string, type: InputType): AppThunk =>
+  dispatch => {
+    dispatch(updateAmountAction(amount));
+    dispatch(handleFiatConversion(amount, type));
+  };
+
+export const updateFiatAmount =
+  (fiatAmount: string, type: InputType): AppThunk =>
+  dispatch => {
+    dispatch(updateFiatAmountAction(fiatAmount));
+    dispatch(handleAmountConversion(fiatAmount, type));
+  };
+
+const handleFiatConversion =
+  (amount: string, type: InputType): AppThunk =>
+  (dispatch, getState) => {
+    if (type === 'buy') {
+      const rate = getState().ticker.buyRate;
+      const fiatAmount = rate
+        ? `${(parseFloat(amount) * rate).toFixed(2)}`
+        : '0';
+      dispatch(updateFiatAmountAction(fiatAmount));
+    } else if (type === 'sell') {
+      const rate = getState().ticker.sellRate;
+      const fiatAmount = rate
+        ? `${(parseFloat(amount) * rate).toFixed(2)}`
+        : '0';
+      dispatch(updateFiatAmountAction(fiatAmount));
+    } else if (type === 'ltc') {
+      const rate = getState().ticker.ltcRate;
+      const fiatAmount = rate
+        ? `${(parseFloat(amount) * rate).toFixed(2)}`
+        : '0';
+      dispatch(updateFiatAmountAction(fiatAmount));
+    }
+  };
+
+const handleAmountConversion =
+  (fiatAmount: string, type: InputType): AppThunk =>
+  (dispatch, getState) => {
+    if (type === 'buy') {
+      const rate = getState().ticker.buyRate;
+      const amount = rate
+        ? `${(parseFloat(fiatAmount) / rate).toFixed(4)}`
+        : '0';
+      dispatch(updateAmountAction(amount));
+      dispatch(updateFiatAmountAction(fiatAmount));
+    } else if (type === 'sell') {
+      const rate = getState().ticker.sellRate;
+      const amount = rate
+        ? `${(parseFloat(fiatAmount) / rate).toFixed(4)}`
+        : '0';
+      dispatch(updateAmountAction(amount));
+      dispatch(updateFiatAmountAction(fiatAmount));
+    } else if (type === 'ltc') {
+      const rate = getState().ticker.ltcRate;
+      const amount = rate
+        ? `${(parseFloat(fiatAmount) / rate).toFixed(4)}`
+        : '0';
+      dispatch(updateAmountAction(amount));
+      dispatch(updateFiatAmountAction(fiatAmount));
+    }
+  };
+
+export const updateSendAmount =
+  (amount: Number): AppThunk =>
+  dispatch => {};
+
+export const updateSendToAddress =
+  (address: string): AppThunk =>
+  dispatch => {};
+
+export const updateSendLabel =
+  (label: string): AppThunk =>
+  dispatch => {};
+
+export const updateSendFee =
+  (fee: Number): AppThunk =>
+  dispatch => {};
+
+// slice
+export const inputSlice = createSlice({
+  name: 'input',
+  initialState,
+  reducers: {
+    resetInputs: state => ({
+      ...state,
+      amount: '',
+      fiatAmount: '',
+      send: {
+        toAddress: '',
+        label: '',
+        amount: 0,
+        fee: 0,
+      },
+    }),
+    updateAmountAction: (state, action: PayloadAction<string>) => ({
+      ...state,
+      amount: action.payload,
+    }),
+    updateFiatAmountAction: (state, action: PayloadAction<string>) => ({
+      ...state,
+      fiatAmount: action.payload,
+    }),
+  },
+});
+
+export default inputSlice.reducer;

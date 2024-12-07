@@ -113,6 +113,15 @@ const AuthPad: React.FC<Props> = props => {
 };
 
 const styles = StyleSheet.create({
+  bottomSheet: {
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    width: '100%',
+    height: 470 / screenHeight > 0.51 ? '83%' : '70%',
+  },
   bottomSheetTitle: {
     fontFamily:
       Platform.OS === 'ios'
@@ -124,15 +133,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     textAlign: 'center',
     paddingTop: 18,
-  },
-  bottomSheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    height: 470 / screenHeight > 0.51 ? '83%' : '70%',
-    bottom: 0,
-    position: 'absolute',
-    width: '100%',
   },
   bottomSheetSubContainer: {
     position: 'absolute',

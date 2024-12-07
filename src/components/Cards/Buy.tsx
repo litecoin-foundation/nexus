@@ -10,8 +10,7 @@ import {
 } from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {checkAllowed, getLimits, getQuote} from '../../reducers/buy';
-import {getPaymentRate, pollPaymentRate} from '../../reducers/ticker';
+import {checkAllowed, getLimits, getBuyQuote} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
 import {
@@ -22,14 +21,17 @@ import {
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
+type RootStackParamList = {
+  Main: {
+    scanData?: string;
+  };
+  ConfirmBuy: undefined;
+  BuyHistory: undefined;
+};
+
 interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
 }
-
-type RootStackParamList = {
-  Main: undefined;
-  ConfirmBuy: undefined;
-};
 
 const Buy: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
@@ -41,6 +43,8 @@ const Buy: React.FC<Props> = () => {
   const isBuyAllowed = useAppSelector(state => state.buy.isBuyAllowed);
   const minBuyAmount = useAppSelector(state => state.buy.minBuyAmount);
   const maxBuyAmount = useAppSelector(state => state.buy.maxBuyAmount);
+  const minLTCBuyAmount = useAppSelector(state => state.buy.minLTCBuyAmount);
+  const maxLTCBuyAmount = useAppSelector(state => state.buy.maxLTCBuyAmount);
 
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(24);
@@ -49,19 +53,24 @@ const Buy: React.FC<Props> = () => {
   useEffect(() => {
     dispatch(checkAllowed());
     dispatch(getLimits());
-    dispatch(getQuote(1));
-    dispatch(getPaymentRate());
+    dispatch(getBuyQuote(1));
   }, []);
-
-  useEffect(() => {
-    dispatch(pollPaymentRate());
-  }, [dispatch]);
 
   const onChange = (value: string) => {
     if (toggleLTC) {
-      dispatch(updateAmount(value));
+      dispatch(updateAmount(value, 'buy'));
+      // fetch quote from moonpay
+      if (
+        Number(value) >= minLTCBuyAmount &&
+        Number(value) <= maxLTCBuyAmount
+      ) {
+        dispatch(getBuyQuote(Number(value)));
+      }
     } else if (!toggleLTC) {
-      dispatch(updateFiatAmount(value));
+      dispatch(updateFiatAmount(value, 'buy'));
+      if (Number(value) >= minBuyAmount && Number(value) <= maxBuyAmount) {
+        dispatch(getBuyQuote(undefined, Number(value)));
+      }
     }
   };
 
@@ -144,13 +153,6 @@ const Buy: React.FC<Props> = () => {
           </TouchableOpacity>
         </View>
       </View>
-
-      <View style={styles.numpadContainer}>
-        <BuyPad
-          onChange={(value: string) => onChange(value)}
-          currentValue={toggleLTC ? amount : fiatAmount}
-        />
-      </View>
     </>
   );
 
@@ -163,23 +165,37 @@ const Buy: React.FC<Props> = () => {
           Buy Litecoin is currently not available in your country/state.
         </Text>
       )}
-      <View style={styles.confirmButtonContainer}>
-        <BlueButton
-          disabled={
-            !isBuyAllowed ||
-            fiatAmount <= minBuyAmount ||
-            fiatAmount === '' ||
-            fiatAmount > maxBuyAmount
-              ? true
-              : false
-          }
-          value="Preview Buy"
-          onPress={() => navigation.navigate('ConfirmBuy')}
-        />
-        <Text style={styles.minText}>
-          Minimum purchase size of {currencySymbol}
-          {minBuyAmount}
-        </Text>
+      <View style={styles.bottom}>
+        {isBuyAllowed ? (
+          <View style={styles.numpadContainer}>
+            <BuyPad
+              onChange={(value: string) => onChange(value)}
+              currentValue={toggleLTC ? amount : fiatAmount}
+            />
+          </View>
+        ) : (
+          <></>
+        )}
+        <View style={styles.confirmButtonContainer}>
+          <BlueButton
+            disabled={
+              !isBuyAllowed ||
+              Number(fiatAmount) <= minBuyAmount ||
+              fiatAmount === '' ||
+              Number(fiatAmount) > maxBuyAmount
+                ? true
+                : false
+            }
+            value="Preview Buy"
+            onPress={() => {
+              navigation.navigate('ConfirmBuy');
+            }}
+          />
+          <Text style={styles.minText}>
+            Minimum purchase size of {currencySymbol}
+            {minBuyAmount}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -187,18 +203,24 @@ const Buy: React.FC<Props> = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // DashboardButton is 110
+    height: Dimensions.get('screen').height * 0.76 - 110,
+    maxHeight: 680,
     backgroundColor: '#f7f7f7',
     flexDirection: 'column',
-    maxHeight: 680,
+    paddingBottom: Dimensions.get('screen').height * 0.03,
+  },
+  bottom: {
+    flex: 1,
+    flexDirection: 'column',
   },
   numpadContainer: {
-    position: 'absolute',
-    bottom: 218,
+    width: 'auto',
+    height: 'auto',
   },
   confirmButtonContainer: {
     marginHorizontal: 24,
-    bottom: 141,
+    bottom: Dimensions.get('screen').height * 0.03,
     position: 'absolute',
     width: Dimensions.get('screen').width - 48,
     gap: 6,

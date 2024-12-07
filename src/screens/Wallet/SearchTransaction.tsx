@@ -1,62 +1,39 @@
 import React, {useRef, useState} from 'react';
 import {Platform, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import {useAppSelector} from '../../store/hooks';
-import {groupTransactions} from '../../lib/utils/groupTransactions';
-import {txDetailSelector} from '../../reducers/transaction';
+// import {useAppSelector} from '../../store/hooks';
+// import {groupTransactions} from '../../lib/utils/groupTransactions';
+// import {txDetailSelector} from '../../reducers/transaction';
 import TransactionDetailModal from '../../components/Modals/TransactionDetailModal';
 import TransactionList from '../../components/TransactionList';
 import FilterButton from '../../components/Buttons/FilterButton';
 
-interface Props {}
+interface Props {
+  navigation: any;
+}
 
 const SearchTransaction: React.FC<Props> = props => {
   const {navigation} = props;
   const TransactionListRef = useRef();
 
-  const transactions = useAppSelector(state => txDetailSelector(state));
-  const groupedTransactions = groupTransactions(transactions);
+  // const transactions = useAppSelector(state => txDetailSelector(state));
+  // const groupedTransactions = groupTransactions(transactions);
 
   const [txType, setTxType] = useState('All');
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
-  const [diplayedTxs, setDisplayedTxs] = useState(groupedTransactions);
-  const [sectionHeader, setSectionHeader] = useState(null);
+  // const [diplayedTxs, setDisplayedTxs] = useState(groupedTransactions);
+  // const [sectionHeader, setSectionHeader] = useState(null);
 
-  const filterTransactions = transactionType => {
-    const txArray = [];
+  // const handleDatePick = (hash, timestamp) => {
+  //   const dateIndex = diplayedTxs.findIndex(sections => {
+  //     const {data} = sections;
+  //     return data[0].hash === hash;
+  //   });
+  //   TransactionListRef.current.scrollToLocation(dateIndex);
 
-    switch (transactionType) {
-      case 'Send':
-        txArray.push(
-          ...transactions.filter(tx => Math.sign(parseFloat(tx.amount)) === -1),
-        );
-        break;
-      case 'Receive':
-        txArray.push(
-          ...transactions.filter(tx => Math.sign(parseFloat(tx.amount)) === 1),
-        );
-        break;
-      case 'All':
-        txArray.push(...transactions);
-        break;
-      default:
-        txArray.push(...transactions);
-        break;
-    }
-
-    setDisplayedTxs(groupTransactions(txArray));
-  };
-
-  const handleDatePick = (hash, timestamp) => {
-    const dateIndex = diplayedTxs.findIndex(sections => {
-      const {data} = sections;
-      return data[0].hash === hash;
-    });
-    TransactionListRef.current.scrollToLocation(dateIndex);
-
-    setSectionHeader(timestamp);
-  };
+  //   setSectionHeader(timestamp);
+  // };
 
   const filters = [
     {value: 'All', imgSrc: require('../../assets/icons/sell-icon.png')},
@@ -74,7 +51,7 @@ const SearchTransaction: React.FC<Props> = props => {
         active={txType === element.value ? true : false}
         onPress={() => {
           setTxType(element.value);
-          filterTransactions(txType);
+          // filterTransactions(txType);
         }}
         key={element.value}
         imageSource={element.imgSrc}
@@ -89,22 +66,22 @@ const SearchTransaction: React.FC<Props> = props => {
         <View style={styles.txListContainer}>
           <TransactionList
             ref={TransactionListRef}
-            onPress={data => {
+            onPress={(data: any) => {
               selectTransaction(data);
               setTxDetailModalVisible(true);
             }}
-            transactions={diplayedTxs}
-            onViewableItemsChanged={viewableItems => {
-              if (
-                viewableItems.viewableItems !== undefined &&
-                viewableItems.viewableItems.length >= 1
-              ) {
-                const {timestamp} = viewableItems.viewableItems[0].item;
-                if (timestamp !== undefined) {
-                  setSectionHeader(timestamp);
-                }
-              }
-            }}
+            // onViewableItemsChanged={viewableItems => {
+            //   if (
+            //     viewableItems.viewableItems !== undefined &&
+            //     viewableItems.viewableItems.length >= 1
+            //   ) {
+            //     const {timestamp} = viewableItems.viewableItems[0].item;
+            //     if (timestamp !== undefined) {
+            //       setSectionHeader(timestamp);
+            //     }
+            //   }
+            // }}
+            transactionType={txType}
           />
         </View>
 
@@ -155,7 +132,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const SearchTransactionNavigationOptions = navigation => {
+export const SearchTransactionNavigationOptions = (navigation: any) => {
   return {
     headerTitle: () => <Text style={styles.headerTitle}>Transactions</Text>,
     headerTitleAlign: 'left',

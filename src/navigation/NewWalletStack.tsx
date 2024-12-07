@@ -63,7 +63,7 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="SuccessSend"
         component={SuccessSend}
-        options={({navigation}) => SuccessSendNavigationOptions(navigation)}
+        options={({}) => SuccessSendNavigationOptions()}
       />
       <Stack.Screen
         name="ConfirmBuy"

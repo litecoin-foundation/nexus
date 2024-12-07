@@ -7,22 +7,21 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 
-import WhiteButton from '../Buttons/WhiteButton';
-import WalletTab from '../Tabs/WalletTab';
+import WhiteClearButton from '../Buttons/WhiteClearButton';
+import WalletTabSimple from '../Tabs/WalletTabSimple';
 import {useAppSelector} from '../../store/hooks';
 import {subunitSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 
 interface Props {
   isOpened: boolean;
-  showAnim: boolean;
   animDelay: number;
   animDuration: number;
-  cardTranslateAnim: any;
+  close(): void;
 }
 
-export default function WalletsModalContent(props: Props) {
-  const {isOpened, showAnim, animDelay, animDuration, cardTranslateAnim} =
+export default function WalletsInblockContent(props: Props) {
+  const {isOpened, animDelay, animDuration, close} =
     props;
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const convertToSubunit = useAppSelector(state => subunitSelector(state));
@@ -44,22 +43,20 @@ export default function WalletsModalContent(props: Props) {
   });
 
   useEffect(() => {
-    if (showAnim) {
-      if (isOpened) {
-        buttonOpacity.value = withDelay(
-          animDelay + 100,
-          withTiming(1, {duration: animDuration + 100}),
-        );
-      } else {
-        buttonOpacity.value = 0;
-      }
+    if (isOpened) {
+      buttonOpacity.value = withDelay(
+        animDelay + 100,
+        withTiming(1, {duration: animDuration + 100}),
+      );
+    } else {
+      buttonOpacity.value = 0;
     }
-  }, [animDelay, animDuration, buttonOpacity, isOpened, showAnim]);
+  }, [animDelay, animDuration, buttonOpacity, isOpened]);
 
   const wallets = (
     <>
       <Animated.View style={[styles.bodyItem, animatedButton]}>
-        <WalletTab
+        <WalletTabSimple
           colorStyle="White"
           walletName="Main Wallet"
           balance={balanceAmount}
@@ -69,7 +66,7 @@ export default function WalletsModalContent(props: Props) {
         />
       </Animated.View>
       {/* <Animated.View style={[styles.bodyItem, animatedButton]}>
-        <WalletTab
+        <WalletTabSimple
           colorStyle="Blue"
           walletName="Online Payments Wallet"
           balance={3}
@@ -82,38 +79,41 @@ export default function WalletsModalContent(props: Props) {
 
   const onlineOfflineBgColor = isInternetReachable ? '#0d3d8a' : '#e06852';
 
-  return (
+  return isOpened ? (
     <Animated.View
       style={[
         styles.body,
-        cardTranslateAnim,
         {backgroundColor: onlineOfflineBgColor},
       ]}>
       <View style={styles.bodyItems}>{wallets}</View>
       <Animated.View style={animatedButton}>
-        <WhiteButton
-          value="ADD A NEW WALLET"
-          onPress={() => {}}
-          disabled={true}
-          small={false}
-          active={true}
+        <WhiteClearButton
+          small={true}
+          value="Close"
+          onPress={() => close()}
         />
       </Animated.View>
     </Animated.View>
+  ) : (
+    <></>
   );
 }
 
 const styles = StyleSheet.create({
   body: {
-    height: '100%',
+    flex: 1,
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: Dimensions.get('screen').height * 0.03,
+    paddingTop: Dimensions.get('screen').height * 0.03,
+    paddingBottom: Dimensions.get('screen').height * 0.02,
   },
   bodyItems: {
-    flex: 1,
     width: '100%',
+    height: 'auto',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   bodyItem: {
     height: 'auto',

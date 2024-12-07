@@ -19,16 +19,16 @@ export const formatDate = (date: number) => {
   });
 };
 
-export const formatTime = time => {
-  const jsTime = new Date(Number(time));
+export const formatTime = (time: number) => {
+  const jsTime = new Date(time);
   return jsTime.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: 'numeric',
   });
 };
 
-export const formatMonths = date => {
-  const jsDate = new Date(Number(date));
+export const formatMonths = (date: number) => {
+  const jsDate = new Date(date);
   const time = new Date();
 
   if (jsDate.getFullYear() === time.getFullYear()) {
@@ -41,7 +41,7 @@ export const formatMonths = date => {
   });
 };
 
-export const formatTxDate = timestamp => {
+export const formatTxDate = (timestamp: number) => {
   const jsDate = new Date(timestamp * 1000);
 
   const months = [

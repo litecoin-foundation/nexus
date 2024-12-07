@@ -17,8 +17,8 @@ const Alert: React.FC<Props> = () => {
   const [selectedID, setSelectedID] = useState('');
   const {alerts} = useAppSelector(state => state.alerts);
 
-  const handleAlertPress = (id: string) => {
-    setSelectedID(id);
+  const handleAlertPress = (index: string) => {
+    setSelectedID(index);
     setAlertModalVisible(true);
   };
 

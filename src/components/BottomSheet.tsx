@@ -1,11 +1,12 @@
-import React, {useEffect} from 'react';
-import {Dimensions, StyleSheet} from 'react-native';
+import React, {useEffect, useCallback} from 'react';
+import {Dimensions, StyleSheet, View} from 'react-native';
 import {
   Gesture,
   GestureDetector,
   PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler';
 import Animated, {
+  useSharedValue,
   SharedValue,
   runOnJS,
   useAnimatedStyle,
@@ -61,8 +62,20 @@ const BottomSheet: React.FC<Props> = props => {
 
   const onHandlerEnd = ({translationY, velocityY}: PanGestureHandlerEventPayload) => {
     'worklet';
-    const dragToss = 0.05;
-    const destSnapPoint = translationY + mainSheetsTranslationYStart.value + velocityY * dragToss;
+    const dragToss = 0.03;
+    let destSnapPoint = 0;
+    if (
+      translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+      translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
+    ) {
+      destSnapPoint = translationY + mainSheetsTranslationYStart.value + velocityY * dragToss;
+    } else {
+      if (folded) {
+        destSnapPoint = UNFOLD_SHEET_POINT;
+      } else {
+        destSnapPoint = FOLD_SHEET_POINT;
+      }
+    }
 
     mainSheetsTranslationY.value = withSpring(destSnapPoint, {
       mass: 0.1,
@@ -76,6 +89,7 @@ const BottomSheet: React.FC<Props> = props => {
   };
 
   function onEndTrigger(e: any) {
+    'worklet';
     if (folded) {
       if (e.translationY + mainSheetsTranslationYStart.value < UNFOLD_SNAP_POINT) {
         onHandlerEnd(e);
@@ -93,13 +107,25 @@ const BottomSheet: React.FC<Props> = props => {
 
   const headerGesture = Gesture.Pan()
     .onUpdate(e => {
-      mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      if (
+        e.translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+        e.translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
+      )
+      {
+        mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      }
     })
     .onEnd(onEndTrigger);
 
   const panGesture = Gesture.Pan()
     .onUpdate(e => {
-      mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      if (
+        e.translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+        e.translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
+      )
+      {
+        mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      }
     })
     .onEnd(onEndTrigger);
 
@@ -126,41 +152,72 @@ const BottomSheet: React.FC<Props> = props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folded, mainSheetsTranslationY]);
 
+  const RenderTab = useCallback(() => {
+    switch(activeTab) {
+      case 0:
+        return <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {txViewComponent}
+          </View>
+        </GestureDetector>;
+      case 1:
+        return <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {buyViewComponent}
+          </View>
+        </GestureDetector>;
+      case 2:
+        return <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {sellViewComponent}
+          </View>
+        </GestureDetector>;
+      case 4:
+        return <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {sendViewComponent}
+          </View>
+        </GestureDetector>;
+      case 5:
+        return <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {receiveViewComponent}
+          </View>
+        </GestureDetector>;
+      default:
+        return <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {txViewComponent}
+          </View>
+        </GestureDetector>;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  const cardOpacity = useSharedValue(0);
+
+  const animatedCardOpacityStyle = useAnimatedStyle(() => {
+    return {
+      opacity: cardOpacity.value,
+    };
+  });
+
+  useEffect(() => {
+    cardOpacity.value = 0;
+    cardOpacity.value = withTiming(1, {duration: 400});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
   return (
       <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
         <GestureDetector gesture={headerGesture}>
-          {headerComponent}
+          <View collapsable={false}>
+            {headerComponent}
+          </View>
         </GestureDetector>
-        {activeTab === 0 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {txViewComponent}
-          </GestureDetector>
-        ) : null}
-        {activeTab === 1 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {buyViewComponent}
-          </GestureDetector>
-        ) : null}
-        {activeTab === 2 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {sellViewComponent}
-          </GestureDetector>
-        ) : null}
-        {activeTab === 4 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {sendViewComponent}
-          </GestureDetector>
-        ) : null}
-        {activeTab === 5 ? (
-          <GestureDetector
-            gesture={panGesture}>
-            {receiveViewComponent}
-          </GestureDetector>
-        ) : null}
+        <Animated.View style={animatedCardOpacityStyle}>
+          <RenderTab />
+        </Animated.View>
       </Animated.View>
   );
 };

@@ -90,16 +90,15 @@ export const subscribeTransactions =
     }
   };
 
-export const getTransactions = (): AppThunk => async dispatch => {
+export const getTransactions = (): AppThunk => async (dispatch, getState) => {
+  const {buyHistory, sellHistory} = getState().buy;
+
   try {
     const transactions = await getLndTransactions(
       create(GetTransactionsRequestSchema),
     );
 
     let txs: IDecodedTx[] = [];
-
-    // TODO: decode and add metadata on transaction info.
-    // If Buy/Sell transaction, this must be labelled as such
 
     transactions.transactions.forEach(tx => {
       // deserialisation
@@ -124,6 +123,22 @@ export const getTransactions = (): AppThunk => async dispatch => {
         previousOutpoints.push(prevOutpoint);
       });
 
+      let metaLabel = 'All';
+
+      if (Math.sign(parseFloat(String(tx.amount))) === -1) {
+        metaLabel = 'Send';
+      } else if (Math.sign(parseFloat(String(tx.amount))) === 1) {
+        metaLabel = 'Receive';
+      } else if (buyHistory && buyHistory.length >= 1) {
+        if (buyHistory.filter((buyTx) => buyTx === tx.txHash)) {
+          metaLabel = 'Buy';
+        }
+      } else if (sellHistory && sellHistory.length >= 1) {
+        if (sellHistory.filter((selTx) => selTx === tx.txHash)) {
+          metaLabel = 'Sell';
+        }
+      }
+
       let decodedTx = {
         txHash: tx.txHash,
         amount: Number(tx.amount),
@@ -136,6 +151,7 @@ export const getTransactions = (): AppThunk => async dispatch => {
         outputDetails,
         previousOutpoints,
         label: tx.label,
+        metaLabel: metaLabel,
       };
       txs.push(decodedTx);
     });
@@ -234,6 +250,8 @@ export const txDetailSelector = createSelector(txSelector, tx =>
       addresses: addresses,
       inputTxs: data.previousOutpoints,
       sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
+      label: data.label,
+      metaLabel: data.metaLabel,
     };
   }),
 );

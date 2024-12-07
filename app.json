@@ -1,7 +1,5 @@
 {
-  "name": "plasma",
-  "displayName": "plasma",
-  "plugins": [
-    "expo-secure-store"
-  ]
+  "name": "nexus",
+  "displayName": "Nexus",
+  "plugins": ["expo-secure-store"]
 }

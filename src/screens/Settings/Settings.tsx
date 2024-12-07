@@ -18,8 +18,8 @@ import {resetPincode, setBiometricEnabled} from '../../reducers/authentication';
 import PinModal from '../../components/Modals/PinModal';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {startLnd, stopLnd} from '../../reducers/lightning';
-import {poll, sleep} from '../../lib/utils/poll';
+import {stopLnd} from '../../reducers/lightning';
+import {sleep} from '../../lib/utils/poll';
 import {purgeStore} from '../../store';
 import {deleteLNDDir} from '../../lib/utils/file';
 import {updateSubunit} from '../../reducers/settings';
@@ -190,18 +190,6 @@ const Settings: React.FC<Props> = props => {
           </View>
 
           <SettingCell
-            title="Rescan for missing coins?"
-            onPress={() => {
-              dispatch(stopLnd());
-              sleep(10000).then(() => {
-                console.warn('LOSHY: looking to start lnd');
-                poll(dispatch(startLnd()), 1000, 1000);
-              });
-            }}
-            forward
-          />
-
-          <SettingCell
             title="RESET WALLET?"
             onPress={() => {
               handleAuthenticationRequired().then(() =>
@@ -220,6 +208,16 @@ const Settings: React.FC<Props> = props => {
               );
             }}
           />
+
+          {!__DEV__ ? null : (
+            <SettingCell
+              title="stopLnd()"
+              onPress={() => {
+                dispatch(stopLnd());
+              }}
+              forward
+            />
+          )}
         </ScrollView>
       </LinearGradient>
 

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {
   Alert,
@@ -16,14 +16,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import PinModal from '../../components/Modals/PinModal';
-import GreenButton from '../../components/Buttons/GreenButton';
-import PlasmaModal from '../../components/Modals/PlasmaModal';
-import WalletsModalContent from '../../components/Modals/WalletsModalContent';
-import ChooseWalletButton from '../../components/Buttons/ChooseWalletButton';
-import {subunitSymbolSelector} from '../../reducers/settings';
 
+import PlasmaModal from '../../components/Modals/PlasmaModal';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import PinModalContent from '../../components/Modals/PinModalContent';
+import GreenButton from '../../components/Buttons/GreenButton';
+import ChooseWalletLargeButton from '../../components/Buttons/ChooseWalletLargeButton';
+import {subunitSymbolSelector} from '../../reducers/settings';
 import {useAppSelector} from '../../store/hooks';
 
 interface Props {}
@@ -42,15 +41,15 @@ const ConfirmSend: React.FC<Props> = () => {
   // Todo: get total fee for the tx
   const totalFeeInLTC = 'undefined ';
 
-  const [isPinModalTriggered, triggerPinModal] = useState(false);
+  const [isPinModalTriggered, setPinModalTriggered] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
 
   const handleAuthenticationRequired = () => {
     return new Promise<void>((resolve, reject) => {
-      triggerPinModal(true);
+      setPinModalTriggered(true);
       const subscription = DeviceEventEmitter.addListener('auth', bool => {
         if (bool === true) {
-          triggerPinModal(false);
+          setPinModalTriggered(false);
           subscription.remove();
           resolve();
         } else if (bool === false) {
@@ -71,13 +70,14 @@ const ConfirmSend: React.FC<Props> = () => {
         Alert.alert('Incorrect Pincode', undefined, [
           {
             text: 'Dismiss',
-            onPress: () => triggerPinModal(false),
+            onPress: () => setPinModalTriggered(false),
             style: 'cancel',
           },
         ]),
       );
   };
 
+  // animation
   const walletButtonAnimDuration = 200;
   const rotateArrowAnim = useSharedValue(0);
   const rotateArrow = () => {
@@ -99,22 +99,18 @@ const ConfirmSend: React.FC<Props> = () => {
   return (
     <>
       <Animated.View style={styles.chooseWalletBtnContainer}>
-        <ChooseWalletButton
-          title={'Wallet Name'}
+        <ChooseWalletLargeButton
+          title={'Main Wallet (2.574LTC)'}
           onPress={() => {
+            rotateArrow();
             setWalletsModalOpened(!isWalletsModalOpened);
           }}
-          disabled={false}
-          isModalOpened={isWalletsModalOpened}
-          isFromBottomToTop={false}
-          animDuration={walletButtonAnimDuration}
-          rotateArrow={rotateArrow}
           arrowSpinAnim={animatedWalletButtonArrowStyle}
-          isLarge
+          isOpen={isWalletsModalOpened}
         />
       </Animated.View>
 
-      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+      <LinearGradient style={styles.background} colors={['#1162E6', '#0F55C7']}>
         <View style={styles.body}>
           <Text style={styles.sendText}>Send</Text>
           <Text style={styles.amountText}>{amount + ' LTC'}</Text>
@@ -138,36 +134,28 @@ const ConfirmSend: React.FC<Props> = () => {
         </View>
       </LinearGradient>
 
-      <PinModal
-        isVisible={isPinModalTriggered}
-        close={() => triggerPinModal(false)}
-        handleValidationFailure={() => DeviceEventEmitter.emit('auth', false)}
-        handleValidationSuccess={() => DeviceEventEmitter.emit('auth', true)}
-      />
-
       <PlasmaModal
-        isOpened={isWalletsModalOpened}
+        isOpened={isPinModalTriggered}
         close={() => {
-          setWalletsModalOpened(false);
+          setPinModalTriggered(false);
         }}
-        isFromBottomToTop={false}
+        isFromBottomToTop={true}
         animDuration={250}
-        gapInPixels={Dimensions.get('screen').height * 0.17 - 1}
-        backSpecifiedStyle={{backgroundColor: 'transparent'}}
+        gapInPixels={0}
+        backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
         rotateWalletButtonArrow={rotateArrow}
         renderBody={(
-          isOpened: boolean,
-          showAnim: boolean,
-          animDelay: number,
-          animDuration: number,
+          _,
+          __,
+          ___,
+          ____,
           cardTranslateAnim: any,
         ) => (
-          <WalletsModalContent
-            isOpened={isOpened}
-            showAnim={showAnim}
-            animDelay={animDelay}
-            animDuration={animDuration}
+          <PinModalContent
             cardTranslateAnim={cardTranslateAnim}
+            close={() => setPinModalTriggered(false)}
+            handleValidationFailure={() => DeviceEventEmitter.emit('auth', false)}
+            handleValidationSuccess={() => DeviceEventEmitter.emit('auth', true)}
           />
         )}
       />
@@ -194,11 +182,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     width: '100%',
-    height: Dimensions.get('screen').height * 0.05,
+    height: 'auto',
     paddingLeft: Dimensions.get('screen').height * 0.02,
     paddingRight: Dimensions.get('screen').height * 0.02,
     marginTop: Dimensions.get('screen').height * 0.12,
-    zIndex: 11,
+    zIndex: 2,
   },
   chooseWalletBtn: {
     width: '100%',
@@ -303,6 +291,35 @@ const styles = StyleSheet.create({
     height: Dimensions.get('screen').height * 0.05,
     paddingLeft: Dimensions.get('screen').height * 0.02,
     paddingRight: Dimensions.get('screen').height * 0.02,
+  },
+
+  blurContainer: {
+    flex: 1,
+    padding: 20,
+    margin: 16,
+    textAlign: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: 20,
+  },
+  background: {
+    flex: 1,
+    flexWrap: 'wrap',
+    ...StyleSheet.absoluteFill,
+  },
+  box: {
+    width: '25%',
+    height: '20%',
+  },
+  boxEven: {
+    backgroundColor: 'orangered',
+  },
+  boxOdd: {
+    backgroundColor: 'gold',
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: '600',
   },
 });
 

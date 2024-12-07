@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View, Platform, Pressable} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+  Pressable,
+  Dimensions,
+} from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import Share from 'react-native-share';
@@ -39,7 +46,7 @@ const Receive: React.FC<Props> = () => {
   };
 
   const handleShare = () => {
-    Share.open({message: 'hello'});
+    Share.open({message: address});
   };
 
   return (
@@ -100,10 +107,11 @@ const Receive: React.FC<Props> = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // DashboardButton is 110
+    height: Dimensions.get('screen').height * 0.76 - 110,
+    maxHeight: 530,
     backgroundColor: '#f7f7f7',
     flexDirection: 'column',
-    maxHeight: 530,
   },
   subcontainer: {
     marginHorizontal: 24,

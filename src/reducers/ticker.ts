@@ -3,13 +3,16 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
+import {getBuyQuoteData, getSellQuoteData} from './buy';
 
 // types
 interface ITicker {}
 
 // initial state
 const initialState = {
-  paymentRate: null,
+  ltcRate: null,
+  buyRate: null,
+  sellRate: null,
   rates: [],
   day: [],
   week: [],
@@ -20,8 +23,12 @@ const initialState = {
 } as ITicker;
 
 // actions
-const getPaymentRateAction = createAction('ticker/getPaymentRateAction');
 const getTickerAction = createAction('ticker/getTickerAction');
+const updateRatesAction = createAction<{
+  buy: number;
+  sell: number;
+  ltc: number;
+}>('ticker/updateRatesAction');
 const updateHistoricRateDayAction = createAction(
   'ticker/updateHistoricRateDayAction',
 );
@@ -41,69 +48,57 @@ const updateHistoricRateAllAction = createAction(
   'ticker/updateHistoricRateAllAction',
 );
 
-const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
-
 // functions
-export const getPaymentRate = (): AppThunk => async (dispatch, getState) => {
-  const {currencyCode} = getState().settings;
-  const url =
-    'https://api.moonpay.io/v3/currencies/ltc/quote/' +
-    `?apiKey=${publishableKey}` +
-    '&baseCurrencyAmount=1' +
-    `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
-    '&paymentMethod=credit_debit_card';
 
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error);
+const getTickerData = () => {
+  return new Promise<{[key: string]: string}>(async (resolve, reject) => {
+    try {
+      const res = await fetch(
+        'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        reject(error);
+      }
+
+      const {
+        data: {rates},
+      } = await res.json();
+
+      resolve(rates);
+    } catch (error) {
+      reject(error);
     }
-    const data = await res.json();
-
-    let paymentRate = data.quoteCurrencyPrice;
-
-    dispatch(getPaymentRateAction(paymentRate));
-  } catch (error) {
-    console.log(error);
-  }
+  });
 };
 
-export const getTicker = (): AppThunk => async dispatch => {
-  const res = await fetch(
-    'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
-    {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    },
-  );
-  if (!res.ok) {
-    const error = await res.json();
-    console.error(error);
-  }
+export const pollRates = (): AppThunk => async (dispatch, getState) => {
+  await poll(async () => {
+    const {currencyCode} = getState().settings;
+    try {
+      // fetch buy quote
+      const buyQuote: any = await getBuyQuoteData(currencyCode, 1);
+      const buy = Number(buyQuote.quoteCurrencyPrice);
+      // fetch sell quote
+      const sellQuote: any = await getSellQuoteData(currencyCode, 1);
+      const sell = Number(sellQuote.baseCurrencyPrice);
+      // fetch ltc rates
+      const rates = await getTickerData();
+      const ltc = Number(rates[currencyCode]);
 
-  const {
-    data: {rates},
-  } = await res.json();
-
-  dispatch(getTickerAction(rates));
-};
-
-export const pollPaymentRate = (): AppThunk => async dispatch => {
-  await poll(() => dispatch(getPaymentRate()), 15000);
-};
-
-export const pollTicker = (): AppThunk => async dispatch => {
-  await poll(() => dispatch(getTicker()), 15000);
+      dispatch(updateRatesAction({buy, sell, ltc}));
+      dispatch(getTickerAction(rates));
+    } catch (error) {
+      console.warn(error);
+    }
+  });
 };
 
 const fetchHistoricalRates = async (interval: string): Promise<any[]> => {
@@ -207,15 +202,27 @@ export const updateHistoricalRates = (): AppThunk => (dispatch, getStore) => {
   }
 };
 
+export const updateHistoricalRatesForAllPeriods =
+  (): AppThunk => async dispatch => {
+    let result = await fetchHistoricalRates('1D');
+    dispatch(updateHistoricRateDayAction(result));
+    result = await fetchHistoricalRates('1W');
+    dispatch(updateHistoricRateWeekAction(result));
+    result = await fetchHistoricalRates('1M');
+    dispatch(updateHistoricRateMonthAction(result));
+    result = await fetchHistoricalRates('3M');
+    dispatch(updateHistoricRateQuarterAction(result));
+    result = await fetchHistoricalRates('1Y');
+    dispatch(updateHistoricRateYearAction(result));
+    result = await fetchHistoricalRates('ALL');
+    dispatch(updateHistoricRateAllAction(result));
+  };
+
 // slice
 export const tickerSlice = createSlice({
   name: 'ticker',
   initialState,
   reducers: {
-    getPaymentRateAction: (state, action) => ({
-      ...state,
-      paymentRate: action.payload,
-    }),
     getTickerAction: (state, action) => ({
       ...state,
       rates: action.payload,
@@ -243,6 +250,12 @@ export const tickerSlice = createSlice({
     updateHistoricRateAllAction: (state, action) => ({
       ...state,
       all: action.payload,
+    }),
+    updateRatesAction: (state, action) => ({
+      ...state,
+      ltcRate: action.payload.ltc,
+      buyRate: action.payload.buy,
+      sellRate: action.payload.sell,
     }),
   },
 });
