@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    paddingTop: 19,
+    paddingTop: 30,
   },
   filterContainer: {
     paddingTop: 86,

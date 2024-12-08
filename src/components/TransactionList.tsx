@@ -125,9 +125,12 @@ const TransactionList = forwardRef((props: Props, ref) => {
     item,
   }) => <TransactionCell item={item} onPress={() => onPress(item)} />;
 
-  // DashboardButton is 110, txTitleContainer is 70
+  // DashboardButton is 110, txTitleContainer is 70 in Main component
+  // Gap in SearchTransaction component is 200 + 30 padding
   const scrollContainerHeight = folded
     ? Dimensions.get('screen').height - FOLD_SHEET_POINT - 110 - 70
+    : folded === undefined
+    ? Dimensions.get('screen').height - 230
     : Dimensions.get('screen').height - UNFOLD_SHEET_POINT - 110 - 70;
 
   let curFrameY = -1;

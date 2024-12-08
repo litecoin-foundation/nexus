@@ -204,17 +204,19 @@ export default function TxDetailModalContent(props: Props) {
               value={dateString}
             />
             <TableCell title="FEE" value={`${fee}${amountSymbol}`}/>
-            <View style={styles.buttonContainer}>
-              <BlueButton
-                value="View on Blockchain"
-                onPress={() => {
-                  navigation.navigate('WebPage', {
-                    uri: currentExplorer,
-                  });
-                }}
-              />
+            <View style={styles.bottomContainer}>
+              <View style={styles.buttonContainer}>
+                <BlueButton
+                  value="View on Blockchain"
+                  onPress={() => {
+                    navigation.navigate('WebPage', {
+                      uri: currentExplorer,
+                    });
+                  }}
+                />
+              </View>
+              <View style={styles.paginationStrip} />
             </View>
-            <View style={styles.paginationTape} />
           </Animated.View>
         </Animated.View>
       </Animated.View>
@@ -272,10 +274,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 2,
   },
-  paginationTape: {
+  paginationStrip: {
     height: Dimensions.get('screen').height * 0.06,
     width: '100%',
-    backgroundColor: '#f7f7f7',
   },
   paginationBullets: {
     height: '100%',
@@ -380,9 +381,13 @@ const styles = StyleSheet.create({
     fontSize: Dimensions.get('screen').height * 0.025,
     fontWeight: '600',
   },
+  bottomContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+  },
   buttonContainer: {
     width: '100%',
-    backgroundColor: '#f7f7f7',
     justifyContent: 'center',
     alignSelf: 'center',
     padding: Dimensions.get('screen').height * 0.03,
