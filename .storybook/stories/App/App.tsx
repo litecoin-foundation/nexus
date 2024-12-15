@@ -11,15 +11,16 @@ import {
   NotificationCompletion,
   NotificationBackgroundFetchResult,
 } from 'react-native-notifications';
-import {useAppDispatch} from './src/store/hooks';
-import {setDeviceNotificationToken} from './src/reducers/settings';
-import {updateHistoricalRatesForAllPeriods} from './src/reducers/ticker';
-import {getBuyTransactionHistory, getSellTransactionHistory} from './src/reducers/buy';
-import {getTransactions} from './src/reducers/transaction';
 
-import RootNavigator from './src/navigation/RootNavigator';
-import {store, pStore} from './src/store';
-import Error from './src/components/Error';
+import {useAppDispatch} from '../../../src/store/hooks';
+import {setDeviceNotificationToken} from '../../../src/reducers/settings';
+import {updateHistoricalRatesForAllPeriods} from '../../../src/reducers/ticker';
+import {getBuyTransactionHistory, getSellTransactionHistory} from '../../../src/reducers/buy';
+import {getTransactions} from '../../../src/reducers/transaction';
+
+import RootNavigator from '../../../src/navigation/RootNavigator';
+import {store, pStore} from '../../../src/store';
+import Error from '../../../src/components/Error';
 
 type RootStackParamList = {
   Scan: {
@@ -104,6 +105,4 @@ const App: React.FC = () => {
   </>;
 };
 
-// export default App;
-
-export { default } from './.storybook';
+export default App;
