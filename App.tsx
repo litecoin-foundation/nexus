@@ -104,6 +104,4 @@ const App: React.FC = () => {
   </>;
 };
 
-// export default App;
-
-export { default } from './.storybook';
+export default App;
