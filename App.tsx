@@ -1,5 +1,5 @@
-import React, {useLayoutEffect, useState} from 'react';
-import {Platform, StatusBar} from 'react-native';
+import React, {useLayoutEffect, useState, useContext} from 'react';
+import {View, Platform, StatusBar} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
@@ -12,6 +12,7 @@ import {
   NotificationBackgroundFetchResult,
 } from 'react-native-notifications';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import { ScreenSizeProvider, ScreenSizeContext } from './src/context/screenSize';
 
 import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';
@@ -35,6 +36,14 @@ declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}
   }
+}
+
+function ResizedView(props: any) {
+  const { children } = props;
+  const { width, height, isDeviceRotated } = useContext(ScreenSizeContext);
+  return <View style={{width: width, height: height}}>
+    {children}
+  </View>;
 }
 
 function ContextExecutable(props: any) {
@@ -108,18 +117,22 @@ const App: React.FC = () => {
   return (
     <>
       <SafeAreaProvider>
-        <Provider store={store}>
-          {Platform.OS === 'android' ? (
-            <StatusBar hidden={true} backgroundColor="transparent" />
-          ) : null}
-          <PersistGate loading={null} persistor={pStore}>
-            <ContextExecutable deviceToken={deviceToken} />
-            <GestureHandlerRootView style={{flex: 1}}>
-              <RootNavigator deviceToken={deviceToken} />
-              <Error />
-            </GestureHandlerRootView>
-          </PersistGate>
-        </Provider>
+        <ScreenSizeProvider specifiedWidth={300} specifiedHeight={700} deviceName="iphone 13">
+          <ResizedView>
+            <Provider store={store}>
+              {Platform.OS === 'android' ? (
+                <StatusBar hidden={true} backgroundColor="transparent" />
+              ) : null}
+              <PersistGate loading={null} persistor={pStore}>
+                <ContextExecutable deviceToken={deviceToken} />
+                <GestureHandlerRootView style={{flex: 1}}>
+                  <RootNavigator deviceToken={deviceToken} />
+                  <Error />
+                </GestureHandlerRootView>
+              </PersistGate>
+            </Provider>
+          </ResizedView>
+        </ScreenSizeProvider>
       </SafeAreaProvider>
     </>
   );
