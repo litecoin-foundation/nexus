@@ -84,6 +84,17 @@ function getDeviceScreenLayout(deviceName: string | undefined) {
 
   // iphone sizes are in CGSize format
   switch (deviceName) {
+    case 'iphone 7':
+    case 'iphone 8':
+    case 'iphone SE':
+      width = 375;
+      height = 667;
+      break;
+    case 'iphone 7 Plus':
+    case 'iphone 8 Plus':
+      width = 414;
+      height = 736;
+      break;
     case 'iphone X':
     case 'iphone XS':
     case 'iphone 11 Pro':
@@ -133,3 +144,35 @@ function getDeviceScreenLayout(deviceName: string | undefined) {
 
   return {width: width, height: height};
 }
+
+export const deviceList = [
+  'original',
+  'iphone 7',
+  // 'iphone 8',
+  // 'iphone SE',
+  'iphone 7 Plus',
+  // 'iphone 8 Plus',
+  'iphone X',
+  // 'iphone XS',
+  // 'iphone 11 Pro',
+  'iphone XS Max',
+  // 'iphone 11 Pro Max',
+  // 'iphone XR',
+  // 'iphone 11',
+  'iphone 12 Mini',
+  // 'iphone 13 Mini',
+  'iphone 12',
+  // 'iphone 12 Pro',
+  // 'iphone 13',
+  // 'iphone 13 Pro',
+  // 'iphone 14',
+  // 'iphone 15',
+  'iphone 12 Pro Max',
+  // 'iphone 13 Pro Max',
+  // 'iphone 14 Plus',
+  // 'iphone 14 Pro Max',
+  // 'iphone 15 Plus',
+  // 'iphone 15 Pro Max',
+  'iphone 14 Pro',
+  // 'iphone 15 Pro',
+];

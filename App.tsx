@@ -1,5 +1,5 @@
 import React, {useLayoutEffect, useState, useContext} from 'react';
-import {View, Platform, StatusBar} from 'react-native';
+import {View, Platform, StatusBar, StyleSheet, TouchableOpacity, Text} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
@@ -12,7 +12,7 @@ import {
   NotificationBackgroundFetchResult,
 } from 'react-native-notifications';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {ScreenSizeProvider, ScreenSizeContext} from './src/context/screenSize';
+import {ScreenSizeProvider, ScreenSizeContext, deviceList} from './src/context/screenSize';
 
 import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';
@@ -37,6 +37,8 @@ declare global {
     interface RootParamList extends RootStackParamList {}
   }
 }
+
+const RESIZE_DEACTIVATED = false;
 
 function ResizedView(props: any) {
   const { children } = props;
@@ -114,10 +116,26 @@ const App: React.FC = () => {
       .catch(err => console.error('getInitialNotifiation() failed', err));
   }, []);
 
+  const [deviceIndex, setDeviceIndex] = useState(0);
+
   return (
     <>
       <SafeAreaProvider>
-        <ScreenSizeProvider specifiedWidth={300} specifiedHeight={700} deviceName="iphone 13">
+        <TouchableOpacity
+          style={styles.floatBtn}
+          onPress={() => {
+            if (deviceIndex === deviceList.length - 1) {
+              setDeviceIndex(0);
+            } else {
+              setDeviceIndex(deviceIndex + 1);
+            }
+          }}
+        >
+          <Text style={styles.btnText}>
+            {deviceList[deviceIndex]}
+          </Text>
+        </TouchableOpacity>
+        <ScreenSizeProvider specifiedWidth={300} specifiedHeight={700} deviceName={deviceList[deviceIndex]}>
           <ResizedView>
             <Provider store={store}>
               {Platform.OS === 'android' ? (
@@ -125,7 +143,7 @@ const App: React.FC = () => {
               ) : null}
               <PersistGate loading={null} persistor={pStore}>
                 <ContextExecutable deviceToken={deviceToken} />
-                <GestureHandlerRootView style={{flex: 1}}>
+                <GestureHandlerRootView style={styles.gestureView}>
                   <RootNavigator deviceToken={deviceToken} />
                   <Error />
                 </GestureHandlerRootView>
@@ -139,3 +157,29 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+const styles = StyleSheet.create({
+  floatBtn: {
+    display: RESIZE_DEACTIVATED ? 'none' : 'flex',
+    position: 'absolute',
+    bottom: 20,
+    left: '50%',
+    transform: [{
+      translateX: -100,
+    }],
+    width: 200,
+    height: 35,
+    borderRadius: 10,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  btnText: {
+    color: '#fff',
+    fontSize: 15,
+  },
+  gestureView: {
+    flex: 1,
+  },
+});
