@@ -12,7 +12,7 @@ import {
   NotificationBackgroundFetchResult,
 } from 'react-native-notifications';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import { ScreenSizeProvider, ScreenSizeContext } from './src/context/screenSize';
+import {ScreenSizeProvider, ScreenSizeContext} from './src/context/screenSize';
 
 import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';

@@ -15,7 +15,6 @@ const ScreenSizeContext = createContext({
 });
 
 const ScreenSizeProvider: React.FC<Props> = props => {
-
   const { width: deviceWidth, height: deviceHeight } = useWindowDimensions();
 
   const { specifiedWidth, specifiedHeight, deviceName } = props;
@@ -25,7 +24,6 @@ const ScreenSizeProvider: React.FC<Props> = props => {
   const [isDeviceRotated, setIsDeviceRotated] = useState(false);
 
   function getOrientation(deviceNameProp: string | undefined) {
-
     const shouldRotate = deviceWidth > deviceHeight;
 
     if (isDeviceRotated !== shouldRotate) {
@@ -82,7 +80,6 @@ const ScreenSizeProvider: React.FC<Props> = props => {
 export { ScreenSizeProvider, ScreenSizeContext };
 
 function getDeviceScreenLayout(deviceName: string | undefined) {
-
   let width = 0, height = 0;
 
   // iphone sizes are in CGSize format
