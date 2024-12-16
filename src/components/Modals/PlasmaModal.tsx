@@ -1,5 +1,5 @@
-import React, {ReactNode, useEffect, useState, useRef} from 'react';
-import {TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
+import React, {ReactNode, useEffect, useState, useRef, useContext} from 'react';
+import {TouchableOpacity, StyleSheet} from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedProps,
@@ -18,6 +18,8 @@ import {
 } from 'react-native-gesture-handler';
 
 import {useAppSelector} from '../../store/hooks';
+
+import { ScreenSizeContext } from '../../context/screenSize';
 
 interface Props {
   isOpened: boolean;
@@ -46,8 +48,6 @@ interface Props {
 
 const SPRING_BACK_ANIM_DURATION = 100;
 const SWIPE_CARDS_ANIM_DURATION = 200;
-const SCREEN_WIDTH = Dimensions.get('screen').width;
-const SCREEN_HEIGHT = Dimensions.get('screen').height;
 
 export default function PlasmaModal(props: Props) {
   const {
@@ -65,6 +65,8 @@ export default function PlasmaModal(props: Props) {
     swipeToNextTx,
     renderBody,
   } = props;
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
 
   const swipeTriggerHeightRange = SCREEN_HEIGHT * 0.15;
   const swipeTriggerWidthRange = SCREEN_WIDTH * 0.15;
@@ -271,7 +273,7 @@ export default function PlasmaModal(props: Props) {
       paginationOpacity.value = withTiming(1, {duration: animDuration});
     } else {
       bodyTranslateY.value = withTiming(
-        (Dimensions.get('screen').height - gapInPixels) *
+        (SCREEN_HEIGHT - gapInPixels) *
           (isFromBottomToTop ? 1 : -1),
         {duration: animDuration},
       );
@@ -290,7 +292,7 @@ export default function PlasmaModal(props: Props) {
   const gapBgColor = isInternetReachable ? '#1162e6' : '#f36f56';
   const contentBodyConditionStyle = {
     flex: isFromBottomToTop ? 1 : 0,
-    height: Dimensions.get('screen').height - gapInPixels,
+    height: SCREEN_HEIGHT - gapInPixels,
   };
 
   return (
