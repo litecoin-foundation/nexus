@@ -7,6 +7,7 @@ import {setSeedRecovery} from '../../reducers/onboarding';
 import RecoveryField from '../../components/RecoveryField';
 import {useAppDispatch} from '../../store/hooks';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'Recover'>;
@@ -47,6 +48,7 @@ const debugSeed = [
 const Recover: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (__DEV__) {
@@ -71,7 +73,9 @@ const Recover: React.FC<Props> = props => {
   };
 
   return (
-    <LinearGradient colors={['#1162E6', '#0F55C7']}>
+    <LinearGradient
+      colors={['#1162E6', '#0F55C7']}
+      style={{paddingTop: insets.top}}>
       <SafeAreaView>
         <RecoveryField
           handleLogin={seed => attemptLogin(seed)}

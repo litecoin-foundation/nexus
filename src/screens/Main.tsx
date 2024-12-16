@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
+import React, {useEffect, useState, useRef, useMemo} from 'react';
 import {
   View,
   StyleSheet,
@@ -42,6 +42,7 @@ import {validate as validateLtcAddress} from '../lib/utils/validate';
 import {updateAmount} from '../reducers/input';
 import SendModal from '../components/Modals/SendModal';
 import DatePicker from '../components/DatePicker';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const SNAP_POINTS_FROM_TOP = [
   Dimensions.get('screen').height * 0.24,
@@ -73,6 +74,7 @@ const Main: React.FC<Props> = props => {
   const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks);
 
   const dispatch = useAppDispatch();
+  const insets = useSafeAreaInsets();
 
   const [activeTab, setActiveTab] = useState(0);
   const [isSendModalTriggered, triggerSendModal] = useState<boolean>(false);
@@ -493,7 +495,11 @@ const Main: React.FC<Props> = props => {
 
   return (
     <Animated.View
-      style={[styles.container, animatedHeaderContainerBackground]}>
+      style={[
+        styles.container,
+        animatedHeaderContainerBackground,
+        {paddingTop: insets.top},
+      ]}>
       <NewAmountView animatedProps={animatedHeaderHeight}>
         <Animated.View
           style={[animatedHeaderStyle, styles.amountViewContainer]}>

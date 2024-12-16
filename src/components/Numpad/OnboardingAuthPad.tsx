@@ -9,6 +9,7 @@ import BuyButton from './BuyButton';
 import BlueButton from '../Buttons/BlueButton';
 import PasscodeInput from '../PasscodeInput';
 import OnboardingHeader from '../OnboardingHeader';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 interface Props {
   handleCompletion(): void;
@@ -30,6 +31,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   } = props;
 
   const dispatch = useAppDispatch();
+  const insets = useSafeAreaInsets();
   const pin = useAppSelector(state => state.authpad.pin);
   const passcodeSet = useAppSelector(state => state.authentication.passcodeSet);
 
@@ -108,7 +110,9 @@ const OnboardingAuthPad: React.FC<Props> = props => {
 
   return (
     <>
-      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+      <LinearGradient
+        style={{flex: 1, paddingTop: insets.top}}
+        colors={['#1162E6', '#0F55C7']}>
         <OnboardingHeader description={headerDescriptionText} />
       </LinearGradient>
 
@@ -133,9 +137,6 @@ const OnboardingAuthPad: React.FC<Props> = props => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   gradient: {
     flexGrow: 1,
   },
