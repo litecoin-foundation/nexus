@@ -11,9 +11,8 @@ import {
   rect,
   useImage,
 } from '@shopify/react-native-skia';
-import React, {useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {
-  Dimensions,
   ImageSourcePropType,
   Platform,
   Pressable,
@@ -26,6 +25,8 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
+import { ScreenSizeContext } from '../../context/screenSize';
+
 interface Props {
   imageSource: ImageSourcePropType;
   title: string;
@@ -35,8 +36,6 @@ interface Props {
   disabled: boolean;
   wider?: boolean;
 }
-
-const screenWidth = Dimensions.get('screen').width;
 
 const DashboardButton: React.FC<Props> = props => {
   const {
@@ -48,7 +47,11 @@ const DashboardButton: React.FC<Props> = props => {
     disabled,
     wider,
   } = props;
-  const width = wider ? screenWidth * 0.18 : screenWidth * 0.16;
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const width = wider ? SCREEN_WIDTH * 0.18 : SCREEN_WIDTH * 0.16;
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, width);
+
   const fontFamily =
     Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
   const fontStyle = {
@@ -104,13 +107,13 @@ const DashboardButton: React.FC<Props> = props => {
   return (
     <>
       <Pressable
-        style={[styles(width).button, disabled ? styles(width).disabled : null]}
+        style={[styles.button, disabled ? styles.disabled : null]}
         onPress={() => {
           if (!disabled) {
             handlePress();
           }
         }}>
-        <Canvas style={styles(width).container}>
+        <Canvas style={styles.container}>
           <RoundedRect
             x={4}
             y={10}
@@ -167,10 +170,10 @@ const DashboardButton: React.FC<Props> = props => {
   );
 };
 
-const styles = (width: number) =>
+const getStyles = (screenWidth: number, screenHeight: number, buttonWidth: number) =>
   StyleSheet.create({
     button: {
-      width: width + 8,
+      width: buttonWidth + 8,
       height: 110,
     },
     container: {

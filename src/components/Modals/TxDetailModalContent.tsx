@@ -1,10 +1,9 @@
-import React, {useEffect, useLayoutEffect, useState, useCallback} from 'react';
+import React, {useEffect, useLayoutEffect, useState, useCallback, useContext} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Platform,
-  Dimensions,
   TouchableOpacity,
 } from 'react-native';
 import Animated, {
@@ -27,6 +26,8 @@ import {fiatValueSelector} from '../../reducers/ticker';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import BlueButton from '../Buttons/BlueButton';
+
+import { ScreenSizeContext } from '../../context/screenSize';
 
 interface Props {
   close: () => void;
@@ -51,6 +52,9 @@ export default function TxDetailModalContent(props: Props) {
     paginationOpacityAnim,
   } = props;
   const navigation = useNavigation<any>();
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // when no txs has been selected the transaction prop is null
   // to prevent errors return empty view
@@ -90,7 +94,7 @@ export default function TxDetailModalContent(props: Props) {
   // const recipient = transaction.sign ? 'Them' : 'Me';
 
   const [fromAddressSize, setFromAddressSize] = useState(
-    Dimensions.get('screen').height * 0.025,
+    SCREEN_HEIGHT * 0.025,
   );
   const [fromAddress, setFromAddress] = useState(null);
 
@@ -105,9 +109,9 @@ export default function TxDetailModalContent(props: Props) {
         const prevoutAddress = data.vin[0].prevout.scriptpubkey_address;
 
         if (prevoutAddress.length <= 75) {
-          setFromAddressSize(Dimensions.get('screen').height * 0.025);
+          setFromAddressSize(SCREEN_HEIGHT * 0.025);
         } else {
-          setFromAddressSize(Dimensions.get('screen').height * 0.019);
+          setFromAddressSize(SCREEN_HEIGHT * 0.019);
         }
 
         setFromAddress(prevoutAddress);
@@ -127,8 +131,8 @@ export default function TxDetailModalContent(props: Props) {
   const toAddress = transaction.addresses[0];
   const toAddressSize =
     toAddress.length <= 75
-      ? Dimensions.get('screen').height * 0.025
-      : Dimensions.get('screen').height * 0.019;
+      ? SCREEN_HEIGHT * 0.025
+      : SCREEN_HEIGHT * 0.019;
 
   const fadeNewDetailsOpacity = useSharedValue(1);
   const fadeNewDetailsIn = useAnimatedStyle(() => {
@@ -270,171 +274,172 @@ export default function TxDetailModalContent(props: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: 0,
-    height: '100%',
-    width: '100%',
-  },
-  body: {
-    height: '100%',
-    width: '100%',
-    borderRadius:
-      Platform.OS === 'ios' ? Dimensions.get('screen').height * 0.04 : 0,
-    backgroundColor: 'white',
-    overflow: 'hidden',
-  },
-  fakeCardLeft: {
-    position: 'absolute',
-    bottom: 0,
-    right: '100%',
-    height: '100%',
-    width: '100%',
-    borderRadius:
-      Platform.OS === 'ios' ? Dimensions.get('screen').height * 0.04 : 0,
-    backgroundColor: '#fff',
-    zIndex: 1,
-  },
-  fakeCardRight: {
-    position: 'absolute',
-    bottom: 0,
-    left: '100%',
-    height: '100%',
-    width: '100%',
-    borderRadius:
-      Platform.OS === 'ios' ? Dimensions.get('screen').height * 0.04 : 0,
-    backgroundColor: '#fff',
-    zIndex: 1,
-  },
-  pagination: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    height: Dimensions.get('screen').height * 0.06,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    zIndex: 2,
-  },
-  paginationStrip: {
-    height: Dimensions.get('screen').height * 0.06,
-    width: '100%',
-  },
-  paginationBullets: {
-    height: '100%',
-    width: '50%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  bulletTouchContainer: {
-    height: Dimensions.get('screen').height * 0.06,
-    width: Dimensions.get('screen').height * 0.04,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  bullet: {
-    height: Dimensions.get('screen').height * 0.02,
-    width: Dimensions.get('screen').height * 0.02,
-    borderRadius: Dimensions.get('screen').height * 0.01,
-    backgroundColor: '#2c72ff',
-  },
-  fadingContent: {
-    height: '100%',
-    width: '100%',
-  },
-  modalHeaderContainer: {
-    backgroundColor: '#f7f7f7',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: Dimensions.get('screen').height * 0.025,
-    paddingRight: Dimensions.get('screen').height * 0.025,
-    paddingTop: Dimensions.get('screen').height * 0.025,
-    paddingBottom: Dimensions.get('screen').height * 0.025,
-  },
-  modalHeaderTitle: {
-    color: '#3b3b3b',
-    fontSize: Dimensions.get('screen').height * 0.028,
-    fontWeight: '600',
-    flexDirection: 'row',
-  },
-  modalHeaderSubtitle: {
-    color: '#2c72ff',
-    fontSize: Dimensions.get('screen').height * 0.03,
-    fontWeight: '600',
-  },
-  fromToContainer: {
-    height: Dimensions.get('screen').height * 0.3,
-    width: '100%',
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    padding: Dimensions.get('screen').height * 0.03,
-  },
-  fromContainer: {
-    flexBasis: '60%',
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-  },
-  toContainer: {
-    flex: 1,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-  },
-  fromAndToIconContainer: {
-    height: '100%',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginRight: Dimensions.get('screen').height * 0.03,
-  },
-  fromAndToIcon: {
-    height: Dimensions.get('screen').height * 0.035,
-    width: Dimensions.get('screen').height * 0.035,
-    borderRadius: Dimensions.get('screen').height * 0.012,
-    overflow: 'hidden',
-  },
-  sentLine: {
-    flex: 1,
-    width: 1,
-    backgroundColor: '#ccc',
-    margin: Dimensions.get('screen').height * 0.01,
-  },
-  fromAndToTitlesContainer: {
-    height: '100%',
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
-  fromAndToTitle: {
-    color: '#3b3b3b',
-    fontSize: Dimensions.get('screen').height * 0.02,
-    fontWeight: '600',
-  },
-  fromAddressTitle: {
-    color: '#2c72ff',
-    fontSize: Dimensions.get('screen').height * 0.025,
-    fontWeight: '600',
-  },
-  toAddressTitle: {
-    color: '#1ebc73',
-    fontSize: Dimensions.get('screen').height * 0.025,
-    fontWeight: '600',
-  },
-  bottomContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-  },
-  buttonContainer: {
-    width: '100%',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    padding: Dimensions.get('screen').height * 0.03,
-  },
-  ltcNumColor: {
-    color: '#2c72ff',
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      position: 'absolute',
+      bottom: 0,
+      height: '100%',
+      width: '100%',
+    },
+    body: {
+      height: '100%',
+      width: '100%',
+      borderRadius:
+        Platform.OS === 'ios' ? screenHeight * 0.04 : 0,
+      backgroundColor: 'white',
+      overflow: 'hidden',
+    },
+    fakeCardLeft: {
+      position: 'absolute',
+      bottom: 0,
+      right: '100%',
+      height: '100%',
+      width: '100%',
+      borderRadius:
+        Platform.OS === 'ios' ? screenHeight * 0.04 : 0,
+      backgroundColor: '#fff',
+      zIndex: 1,
+    },
+    fakeCardRight: {
+      position: 'absolute',
+      bottom: 0,
+      left: '100%',
+      height: '100%',
+      width: '100%',
+      borderRadius:
+        Platform.OS === 'ios' ? screenHeight * 0.04 : 0,
+      backgroundColor: '#fff',
+      zIndex: 1,
+    },
+    pagination: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      height: screenHeight * 0.06,
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      zIndex: 2,
+    },
+    paginationStrip: {
+      height: screenHeight * 0.06,
+      width: '100%',
+    },
+    paginationBullets: {
+      height: '100%',
+      width: '50%',
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    bulletTouchContainer: {
+      height: screenHeight * 0.06,
+      width: screenHeight * 0.04,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+    },
+    bullet: {
+      height: screenHeight * 0.02,
+      width: screenHeight * 0.02,
+      borderRadius: screenHeight * 0.01,
+      backgroundColor: '#2c72ff',
+    },
+    fadingContent: {
+      height: '100%',
+      width: '100%',
+    },
+    modalHeaderContainer: {
+      backgroundColor: '#f7f7f7',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingLeft: screenHeight * 0.025,
+      paddingRight: screenHeight * 0.025,
+      paddingTop: screenHeight * 0.025,
+      paddingBottom: screenHeight * 0.025,
+    },
+    modalHeaderTitle: {
+      color: '#3b3b3b',
+      fontSize: screenHeight * 0.028,
+      fontWeight: '600',
+      flexDirection: 'row',
+    },
+    modalHeaderSubtitle: {
+      color: '#2c72ff',
+      fontSize: screenHeight * 0.03,
+      fontWeight: '600',
+    },
+    fromToContainer: {
+      height: screenHeight * 0.3,
+      width: '100%',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      padding: screenHeight * 0.03,
+    },
+    fromContainer: {
+      flexBasis: '60%',
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+    },
+    toContainer: {
+      flex: 1,
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+    },
+    fromAndToIconContainer: {
+      height: '100%',
+      flexDirection: 'column',
+      alignItems: 'center',
+      marginRight: screenHeight * 0.03,
+    },
+    fromAndToIcon: {
+      height: screenHeight * 0.035,
+      width: screenHeight * 0.035,
+      borderRadius: screenHeight * 0.012,
+      overflow: 'hidden',
+    },
+    sentLine: {
+      flex: 1,
+      width: 1,
+      backgroundColor: '#ccc',
+      margin: screenHeight * 0.01,
+    },
+    fromAndToTitlesContainer: {
+      height: '100%',
+      flex: 1,
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+    },
+    fromAndToTitle: {
+      color: '#3b3b3b',
+      fontSize: screenHeight * 0.02,
+      fontWeight: '600',
+    },
+    fromAddressTitle: {
+      color: '#2c72ff',
+      fontSize: screenHeight * 0.025,
+      fontWeight: '600',
+    },
+    toAddressTitle: {
+      color: '#1ebc73',
+      fontSize: screenHeight * 0.025,
+      fontWeight: '600',
+    },
+    bottomContainer: {
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+    },
+    buttonContainer: {
+      width: '100%',
+      justifyContent: 'center',
+      alignSelf: 'center',
+      padding: screenHeight * 0.03,
+    },
+    ltcNumColor: {
+      color: '#2c72ff',
+    },
+  });

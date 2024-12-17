@@ -1,9 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   Platform,
   Pressable,
   Image,
@@ -18,6 +17,8 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import Clipboard from '@react-native-clipboard/clipboard';
 import InfoModal from '../Modals/InfoModal';
+
+import { ScreenSizeContext } from '../../context/screenSize';
 
 interface Props {
   colorStyle: string;
@@ -44,6 +45,9 @@ const WalletTab: React.FC<Props> = (props: Props) => {
     default:
       break;
   }
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, isWhiteStyle);
 
   const change: any = (priceRate / prevRate) * 100 - 100;
   const changeText =
@@ -78,22 +82,22 @@ const WalletTab: React.FC<Props> = (props: Props) => {
   const balanceTextSizeStyle = {
     fontSize:
       String(balance).length > 7
-        ? Dimensions.get('screen').height * 0.03
-        : Dimensions.get('screen').height * 0.04,
+        ? SCREEN_HEIGHT * 0.03
+        : SCREEN_HEIGHT * 0.04,
   };
 
   return (
-    <View style={styles(isWhiteStyle).walletTab}>
-      <View style={styles(isWhiteStyle).tabLeft}>
-        <Text style={styles(isWhiteStyle).tabLeftTitle}>{walletName}</Text>
+    <View style={styles.walletTab}>
+      <View style={styles.tabLeft}>
+        <Text style={styles.tabLeftTitle}>{walletName}</Text>
         <Text
-          style={[styles(isWhiteStyle).tabLeftBalance, balanceTextSizeStyle]}>
+          style={[styles.tabLeftBalance, balanceTextSizeStyle]}>
           {balance + ' LTC'}
         </Text>
-        <View style={styles(isWhiteStyle).tabLeftWorthContainer}>
-          <Text style={styles(isWhiteStyle).tabLeftWorth}>{fiatBalance}</Text>
+        <View style={styles.tabLeftWorthContainer}>
+          <Text style={styles.tabLeftWorth}>{fiatBalance}</Text>
           <PriceIndicatorButton value={Number(change)} />
-          <Text style={styles(isWhiteStyle).tabLeftWorthChange}>
+          <Text style={styles.tabLeftWorthChange}>
             {changeText}
           </Text>
         </View>
@@ -102,9 +106,9 @@ const WalletTab: React.FC<Props> = (props: Props) => {
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         onPress={handleCopy}>
-        <Animated.View style={[styles(isWhiteStyle).tabRight, motionStyle]}>
+        <Animated.View style={[styles.tabRight, motionStyle]}>
           <Image source={require('../../assets/icons/copy-icon.png')} />
-          <Text style={styles(isWhiteStyle).tabRightTitle}>copy address</Text>
+          <Text style={styles.tabRightTitle}>copy address</Text>
         </Animated.View>
       </Pressable>
 
@@ -118,17 +122,18 @@ const WalletTab: React.FC<Props> = (props: Props) => {
   );
 };
 
-const styles = (isWhiteStyle?: boolean) =>
+const getStyles = (screenWidth: number, screenHeight: number, isWhiteStyle?: boolean) =>
   StyleSheet.create({
     walletTab: {
-      height: Dimensions.get('screen').height * 0.14,
+      height: screenHeight * 0.14,
       minHeight: 100,
       width: '100%',
-      borderRadius: Dimensions.get('screen').height * 0.02,
+      borderRadius: screenHeight * 0.02,
       backgroundColor: isWhiteStyle ? '#fff' : '#193A72',
       flexDirection: 'row',
       alignItems: 'center',
-      padding: Dimensions.get('screen').height * 0.015,
+      justifyContent: 'space-between',
+      padding: screenHeight * 0.015,
     },
     tabLeft: {
       flexBasis: '75%',
@@ -140,7 +145,7 @@ const styles = (isWhiteStyle?: boolean) =>
       color: isWhiteStyle ? '#555' : '#ddd',
       fontStyle: 'normal',
       fontWeight: '600',
-      fontSize: Dimensions.get('screen').height * 0.018,
+      fontSize: screenHeight * 0.018,
     },
     tabLeftBalance: {
       color: isWhiteStyle ? '#000' : '#fff',
@@ -150,46 +155,47 @@ const styles = (isWhiteStyle?: boolean) =>
           : 'SatoshiVariable-Regular.ttf',
       fontStyle: 'normal',
       fontWeight: '400',
-      fontSize: Dimensions.get('screen').height * 0.04,
-      marginTop: Dimensions.get('screen').height * 0.008 * -1,
+      fontSize: screenHeight * 0.04,
+      marginTop: screenHeight * 0.008 * -1,
     },
     tabLeftWorthContainer: {
       flexDirection: 'row',
-      gap: Dimensions.get('screen').height * 0.012,
+      gap: screenHeight * 0.012,
     },
     tabLeftWorth: {
       color: isWhiteStyle ? '#000' : '#fff',
       fontStyle: 'normal',
       fontWeight: '500',
-      fontSize: Dimensions.get('screen').height * 0.016,
+      fontSize: screenHeight * 0.016,
     },
     tabLeftWorthChange: {
       color: isWhiteStyle ? '#000' : '#fff',
       fontStyle: 'normal',
       fontWeight: '500',
-      fontSize: Dimensions.get('screen').height * 0.016,
+      fontSize: screenHeight * 0.016,
     },
     tabRight: {
       justifyContent: 'center',
       alignItems: 'center',
       height: '100%',
-      minHeight: 94,
-      minWidth: 80,
-      borderRadius: Dimensions.get('screen').height * 0.016,
+      width: screenHeight * 0.09,
+      minHeight: 84,
+      minWidth: 74,
+      borderRadius: screenHeight * 0.016,
       backgroundColor: isWhiteStyle ? '#eee' : '#061A39',
     },
     tabRightCopyIcon: {
-      height: Dimensions.get('screen').height * 0.035,
-      width: Dimensions.get('screen').height * 0.035,
+      height: screenHeight * 0.035,
+      width: screenHeight * 0.035,
     },
     tabRightTitle: {
       color: isWhiteStyle ? '#000' : '#ddd',
       fontStyle: 'normal',
       fontWeight: '500',
-      fontSize: Dimensions.get('screen').height * 0.012,
+      fontSize: screenHeight * 0.012,
       textTransform: 'uppercase',
       textAlign: 'center',
-      marginTop: Dimensions.get('screen').height * 0.01,
+      marginTop: screenHeight * 0.01,
       width: 57,
     },
   });

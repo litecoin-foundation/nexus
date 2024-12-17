@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
+import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
 import {
   View,
   StyleSheet,
@@ -6,7 +6,6 @@ import {
   Platform,
   Pressable,
   Alert,
-  Dimensions,
 } from 'react-native';
 import Animated, {
   interpolate,
@@ -43,12 +42,7 @@ import {updateAmount} from '../reducers/input';
 import SendModal from '../components/Modals/SendModal';
 import DatePicker from '../components/DatePicker';
 
-const SNAP_POINTS_FROM_TOP = [
-  Dimensions.get('screen').height * 0.24,
-  Dimensions.get('screen').height * 0.47,
-];
-const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
-const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
+import { ScreenSizeContext } from '../context/screenSize';
 
 type RootStackParamList = {
   Main: {
@@ -65,6 +59,17 @@ interface Props {
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const SNAP_POINTS_FROM_TOP = [
+    SCREEN_HEIGHT * 0.24,
+    SCREEN_HEIGHT * 0.47,
+  ];
+  const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
+  const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
+
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
@@ -597,43 +602,44 @@ const Main: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  cardContainer: {
-    flexGrow: 1,
-    alignSelf: 'stretch',
-    marginTop: 25,
-    bottom: 0,
-  },
-  headerContainer: {
-    marginTop: 5,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  txTitleContainer: {
-    height: 70,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  txTitleText: {
-    paddingLeft: 19,
-    paddingBottom: 12,
-    paddingTop: 5,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontWeight: '700',
-    color: '#2E2E2E',
-    fontSize: 24,
-  },
-  amountViewContainer: {
-    paddingTop: 30,
-    gap: 50,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    cardContainer: {
+      flexGrow: 1,
+      alignSelf: 'stretch',
+      marginTop: 25,
+      bottom: 0,
+    },
+    headerContainer: {
+      marginTop: 5,
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    txTitleContainer: {
+      height: 70,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    txTitleText: {
+      paddingLeft: 19,
+      paddingBottom: 12,
+      paddingTop: 5,
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: 24,
+    },
+    amountViewContainer: {
+      paddingTop: 30,
+      gap: 50,
+    },
+  });
 
 export const navigationOptions = (navigation: any) => {
   return {
