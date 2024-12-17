@@ -1,5 +1,12 @@
 import React, {useEffect, useLayoutEffect, useState, useCallback} from 'react';
-import {View, Text, StyleSheet, Platform, Dimensions, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -22,18 +29,27 @@ import TableCell from '../Cells/TableCell';
 import BlueButton from '../Buttons/BlueButton';
 
 interface Props {
-    close: () => void;
-    transaction: any;
-    txsNum: number;
-    setTransactionIndex: (txIndex: number) => void;
-    cardTranslateAnim: any;
-    cardOpacityAnim: any;
-    prevNextCardOpacityAnim: any;
-    paginationOpacityAnim: any;
+  close: () => void;
+  transaction: any;
+  txsNum: number;
+  setTransactionIndex: (txIndex: number) => void;
+  cardTranslateAnim: any;
+  cardOpacityAnim: any;
+  prevNextCardOpacityAnim: any;
+  paginationOpacityAnim: any;
 }
 
 export default function TxDetailModalContent(props: Props) {
-  const {close, transaction, txsNum, setTransactionIndex, cardTranslateAnim, cardOpacityAnim, prevNextCardOpacityAnim, paginationOpacityAnim} = props;
+  const {
+    close,
+    transaction,
+    txsNum,
+    setTransactionIndex,
+    cardTranslateAnim,
+    cardOpacityAnim,
+    prevNextCardOpacityAnim,
+    paginationOpacityAnim,
+  } = props;
   const navigation = useNavigation<any>();
 
   // when no txs has been selected the transaction prop is null
@@ -73,7 +89,9 @@ export default function TxDetailModalContent(props: Props) {
   // TODO
   // const recipient = transaction.sign ? 'Them' : 'Me';
 
-  const [fromAddressSize, setFromAddressSize] = useState(Dimensions.get('screen').height * 0.025);
+  const [fromAddressSize, setFromAddressSize] = useState(
+    Dimensions.get('screen').height * 0.025,
+  );
   const [fromAddress, setFromAddress] = useState(null);
 
   async function getSender() {
@@ -107,7 +125,10 @@ export default function TxDetailModalContent(props: Props) {
   }, [transaction]);
 
   const toAddress = transaction.addresses[0];
-  const toAddressSize = toAddress.length <= 75 ? Dimensions.get('screen').height * 0.025 : Dimensions.get('screen').height * 0.019;
+  const toAddressSize =
+    toAddress.length <= 75
+      ? Dimensions.get('screen').height * 0.025
+      : Dimensions.get('screen').height * 0.019;
 
   const fadeNewDetailsOpacity = useSharedValue(1);
   const fadeNewDetailsIn = useAnimatedStyle(() => {
@@ -129,14 +150,19 @@ export default function TxDetailModalContent(props: Props) {
     const maxBulletsNum = 5;
     const bulletsNum = txsNum > maxBulletsNum ? maxBulletsNum : txsNum;
 
-    const middleRightOffset = txsNum > maxBulletsNum ? Math.ceil(maxBulletsNum / 2) - 1 : 0;
-    let leftOffset = activeBulletNum > maxBulletsNum - middleRightOffset ? activeBulletNum - maxBulletsNum + middleRightOffset : 0;
+    const middleRightOffset =
+      txsNum > maxBulletsNum ? Math.ceil(maxBulletsNum / 2) - 1 : 0;
+    let leftOffset =
+      activeBulletNum > maxBulletsNum - middleRightOffset
+        ? activeBulletNum - maxBulletsNum + middleRightOffset
+        : 0;
     if (activeBulletNum > txsNum - middleRightOffset) {
       leftOffset = txsNum - maxBulletsNum;
     }
 
     for (let i = 1 + leftOffset; i <= bulletsNum + leftOffset; i++) {
-      const offsetOpacity = (1 / bulletsNum) * (bulletsNum - Math.abs(i - activeBulletNum));
+      const offsetOpacity =
+        (1 / bulletsNum) * (bulletsNum - Math.abs(i - activeBulletNum));
 
       let size = 0.65;
       if (i === activeBulletNum) {
@@ -150,8 +176,13 @@ export default function TxDetailModalContent(props: Props) {
           }}
           style={styles.bulletTouchContainer}
           key={uuidv4()}>
-          <View style={[styles.bullet, {opacity: offsetOpacity, transform: [{scale: size}]}]} />
-        </TouchableOpacity>
+          <View
+            style={[
+              styles.bullet,
+              {opacity: offsetOpacity, transform: [{scale: size}]},
+            ]}
+          />
+        </TouchableOpacity>,
       );
     }
 
@@ -168,13 +199,22 @@ export default function TxDetailModalContent(props: Props) {
       </Animated.View>
       <Animated.View style={[styles.container, cardTranslateAnim]}>
         <Animated.View style={[styles.fakeCardLeft, prevNextCardOpacityAnim]} />
-        <Animated.View style={[styles.fakeCardRight, prevNextCardOpacityAnim]} />
+        <Animated.View
+          style={[styles.fakeCardRight, prevNextCardOpacityAnim]}
+        />
         <Animated.View style={[styles.body, cardOpacityAnim]}>
           <Animated.View style={[styles.fadingContent, fadeNewDetailsIn]}>
             <View style={styles.modalHeaderContainer}>
               <Text style={styles.modalHeaderTitle}>
                 Sent
-                <Text style={styles.modalHeaderSubtitle}>{' ' + parseFloat(cryptoAmount).toFixed(2) + amountSymbol + ' (' + fiatAmount + ')'}</Text>
+                <Text style={styles.modalHeaderSubtitle}>
+                  {' ' +
+                    parseFloat(cryptoAmount).toFixed(2) +
+                    amountSymbol +
+                    ' (' +
+                    fiatAmount +
+                    ')'}
+                </Text>
               </Text>
               <GreyRoundButton onPress={() => close()} />
             </View>
@@ -186,7 +226,13 @@ export default function TxDetailModalContent(props: Props) {
                 </View>
                 <View style={styles.fromAndToTitlesContainer}>
                   <Text style={styles.fromAndToTitle}>From</Text>
-                  <Text style={{...styles.fromAddressTitle, fontSize: fromAddressSize}}>{fromAddress}</Text>
+                  <Text
+                    style={{
+                      ...styles.fromAddressTitle,
+                      fontSize: fromAddressSize,
+                    }}>
+                    {fromAddress}
+                  </Text>
                 </View>
               </View>
               <View style={styles.toContainer}>
@@ -195,26 +241,28 @@ export default function TxDetailModalContent(props: Props) {
                 </View>
                 <View style={styles.fromAndToTitlesContainer}>
                   <Text style={styles.fromAndToTitle}>To</Text>
-                  <Text style={{...styles.toAddressTitle, fontSize: toAddressSize}}>{toAddress}</Text>
+                  <Text
+                    style={{...styles.toAddressTitle, fontSize: toAddressSize}}>
+                    {toAddress}
+                  </Text>
                 </View>
               </View>
             </View>
-            <TableCell
-              title="TIME & DATE"
-              value={dateString}
-            />
-            <TableCell title="FEE" value={`${fee}${amountSymbol}`}/>
-            <View style={styles.buttonContainer}>
-              <BlueButton
-                value="View on Blockchain"
-                onPress={() => {
-                  navigation.navigate('WebPage', {
-                    uri: currentExplorer,
-                  });
-                }}
-              />
+            <TableCell title="TIME & DATE" value={dateString} />
+            <TableCell title="FEE" value={`${fee}${amountSymbol}`} />
+            <View style={styles.bottomContainer}>
+              <View style={styles.buttonContainer}>
+                <BlueButton
+                  value="View on Blockchain"
+                  onPress={() => {
+                    navigation.navigate('WebPage', {
+                      uri: currentExplorer,
+                    });
+                  }}
+                />
+              </View>
+              <View style={styles.paginationStrip} />
             </View>
-            <View style={styles.paginationTape} />
           </Animated.View>
         </Animated.View>
       </Animated.View>
@@ -232,9 +280,8 @@ const styles = StyleSheet.create({
   body: {
     height: '100%',
     width: '100%',
-    borderRadius: Platform.OS === 'ios'
-      ? Dimensions.get('screen').height * 0.04
-      : 0,
+    borderRadius:
+      Platform.OS === 'ios' ? Dimensions.get('screen').height * 0.04 : 0,
     backgroundColor: 'white',
     overflow: 'hidden',
   },
@@ -244,9 +291,8 @@ const styles = StyleSheet.create({
     right: '100%',
     height: '100%',
     width: '100%',
-    borderRadius: Platform.OS === 'ios'
-      ? Dimensions.get('screen').height * 0.04
-      : 0,
+    borderRadius:
+      Platform.OS === 'ios' ? Dimensions.get('screen').height * 0.04 : 0,
     backgroundColor: '#fff',
     zIndex: 1,
   },
@@ -256,9 +302,8 @@ const styles = StyleSheet.create({
     left: '100%',
     height: '100%',
     width: '100%',
-    borderRadius: Platform.OS === 'ios'
-      ? Dimensions.get('screen').height * 0.04
-      : 0,
+    borderRadius:
+      Platform.OS === 'ios' ? Dimensions.get('screen').height * 0.04 : 0,
     backgroundColor: '#fff',
     zIndex: 1,
   },
@@ -272,10 +317,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 2,
   },
-  paginationTape: {
+  paginationStrip: {
     height: Dimensions.get('screen').height * 0.06,
     width: '100%',
-    backgroundColor: '#f7f7f7',
   },
   paginationBullets: {
     height: '100%',
@@ -350,7 +394,6 @@ const styles = StyleSheet.create({
     height: Dimensions.get('screen').height * 0.035,
     width: Dimensions.get('screen').height * 0.035,
     borderRadius: Dimensions.get('screen').height * 0.012,
-    backgroundColor: 'red',
     overflow: 'hidden',
   },
   sentLine: {
@@ -380,9 +423,13 @@ const styles = StyleSheet.create({
     fontSize: Dimensions.get('screen').height * 0.025,
     fontWeight: '600',
   },
+  bottomContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+  },
   buttonContainer: {
     width: '100%',
-    backgroundColor: '#f7f7f7',
     justifyContent: 'center',
     alignSelf: 'center',
     padding: Dimensions.get('screen').height * 0.03,

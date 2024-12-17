@@ -76,14 +76,18 @@ const WalletTab: React.FC<Props> = (props: Props) => {
   };
 
   const balanceTextSizeStyle = {
-    fontSize: String(balance).length > 7 ? Dimensions.get('screen').height * 0.03 : Dimensions.get('screen').height * 0.04,
+    fontSize:
+      String(balance).length > 7
+        ? Dimensions.get('screen').height * 0.03
+        : Dimensions.get('screen').height * 0.04,
   };
 
   return (
     <View style={styles(isWhiteStyle).walletTab}>
       <View style={styles(isWhiteStyle).tabLeft}>
         <Text style={styles(isWhiteStyle).tabLeftTitle}>{walletName}</Text>
-        <Text style={[styles(isWhiteStyle).tabLeftBalance, balanceTextSizeStyle]}>
+        <Text
+          style={[styles(isWhiteStyle).tabLeftBalance, balanceTextSizeStyle]}>
           {balance + ' LTC'}
         </Text>
         <View style={styles(isWhiteStyle).tabLeftWorthContainer}>
@@ -177,7 +181,6 @@ const styles = (isWhiteStyle?: boolean) =>
     tabRightCopyIcon: {
       height: Dimensions.get('screen').height * 0.035,
       width: Dimensions.get('screen').height * 0.035,
-      backgroundColor: 'red',
     },
     tabRightTitle: {
       color: isWhiteStyle ? '#000' : '#ddd',

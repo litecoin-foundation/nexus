@@ -19,6 +19,7 @@ import chunk from '../../lib/utils/chunk';
 import Dots from '../../components/Dots';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import OnboardingHeader from '../../components/OnboardingHeader';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
@@ -34,6 +35,7 @@ interface Props {
 const Generate: React.FC<Props> = props => {
   const carousel = useRef<ICarouselInstance>(null);
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
 
   const seedSelector = createSelector(
     state => state.onboarding.generatedSeed,
@@ -95,41 +97,44 @@ const Generate: React.FC<Props> = props => {
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.header}>
-        <OnboardingHeader
-          description={
-            'The 24 words below is your seed phrase. \n\nYour seed phrase is your password to your Litecoin & Wallet. Write it down and place it somewhere secure!'
-          }
-        />
-        <View style={styles.seedContainer}>
-          {!seed ? <Text>Loading...</Text> : list}
-        </View>
+    <LinearGradient
+      colors={['#1162E6', '#0F55C7']}
+      style={[
+        styles.header,
+        Platform.OS === 'android' ? {paddingTop: insets.top} : null,
+      ]}>
+      <OnboardingHeader
+        description={
+          'The 24 words below is your seed phrase. \n\nYour seed phrase is your password to your Litecoin & Wallet. Write it down and place it somewhere secure!'
+        }
+      />
+      <View style={styles.seedContainer}>
+        {!seed ? <Text>Loading...</Text> : list}
+      </View>
 
-        <View style={styles.dotContainer}>
-          <Dots dotsLength={seed.length} activeDotIndex={activePage} />
-        </View>
+      <View style={styles.dotContainer}>
+        <Dots dotsLength={seed.length} activeDotIndex={activePage} />
+      </View>
 
-        <View style={styles.bottomContainer}>
-          <View style={styles.bottomTextContainer}>
-            <Image
-              style={styles.image}
-              source={require('../../assets/images/attention.png')}
-            />
-            <Text style={styles.warningText}>
-              WITHOUT THESE WORDS YOU WILL NOT BE ABLE TO ACCESS YOUR WALLET!
-            </Text>
-          </View>
-
-          <WhiteButton
-            value={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
-            onPress={() => handlePress()}
-            small={false}
-            active={true}
+      <View style={styles.bottomContainer}>
+        <View style={styles.bottomTextContainer}>
+          <Image
+            style={styles.image}
+            source={require('../../assets/images/attention.png')}
           />
+          <Text style={styles.warningText}>
+            WITHOUT THESE WORDS YOU WILL NOT BE ABLE TO ACCESS YOUR WALLET!
+          </Text>
         </View>
-      </LinearGradient>
-    </View>
+
+        <WhiteButton
+          value={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
+          onPress={() => handlePress()}
+          small={false}
+          active={true}
+        />
+      </View>
+    </LinearGradient>
   );
 };
 

@@ -1,8 +1,9 @@
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Dimensions, StyleSheet, View} from 'react-native';
 import {
   Gesture,
   GestureDetector,
+  PanGesture,
   PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler';
 import Animated, {
@@ -12,6 +13,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
+  withSequence,
 } from 'react-native-reanimated';
 
 const ANIM_DURATION = 200;
@@ -35,6 +37,16 @@ interface Props {
   folded: boolean;
   foldUnfold: (isFolded: boolean) => void;
   activeTab: number;
+}
+
+interface CardProps {
+  txView: React.ReactNode;
+  buyView: React.ReactNode;
+  sellView: React.ReactNode;
+  sendView: React.ReactNode;
+  receiveView: React.ReactNode;
+  activeTab: number;
+  panGesture: PanGesture;
 }
 
 const BottomSheet: React.FC<Props> = props => {
@@ -149,50 +161,7 @@ const BottomSheet: React.FC<Props> = props => {
         mainSheetsTranslationYStart.value = UNFOLD_SHEET_POINT;
       }, ANIM_DURATION);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folded, mainSheetsTranslationY]);
-
-  const RenderTab = useCallback(() => {
-    switch(activeTab) {
-      case 0:
-        return <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {txViewComponent}
-          </View>
-        </GestureDetector>;
-      case 1:
-        return <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {buyViewComponent}
-          </View>
-        </GestureDetector>;
-      case 2:
-        return <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {sellViewComponent}
-          </View>
-        </GestureDetector>;
-      case 4:
-        return <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {sendViewComponent}
-          </View>
-        </GestureDetector>;
-      case 5:
-        return <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {receiveViewComponent}
-          </View>
-        </GestureDetector>;
-      default:
-        return <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {txViewComponent}
-          </View>
-        </GestureDetector>;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [folded, mainSheetsTranslationY, mainSheetsTranslationYStart]);
 
   const cardOpacity = useSharedValue(0);
 
@@ -202,23 +171,94 @@ const BottomSheet: React.FC<Props> = props => {
     };
   });
 
+  const [dalayedActiveTab, setDalayedActiveTab] = useState(activeTab);
+
+  const animTimeout = useRef<NodeJS.Timeout>();
+
   useEffect(() => {
-    cardOpacity.value = 0;
-    cardOpacity.value = withTiming(1, {duration: 400});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+    animTimeout.current = setTimeout(() => {
+      setDalayedActiveTab(activeTab);
+    }, 155);
+    cardOpacity.value = withSequence(
+      withTiming(0, {duration: 150}),
+      withTiming(1, {duration: 300})
+    );
+    return () => {
+      clearTimeout(animTimeout.current);
+    };
+  }, [activeTab, cardOpacity]);
 
   return (
-      <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
-        <GestureDetector gesture={headerGesture}>
+    <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
+      <GestureDetector gesture={headerGesture}>
+        <View collapsable={false}>
+          {headerComponent}
+        </View>
+      </GestureDetector>
+      <Animated.View style={animatedCardOpacityStyle}>
+        <RenderCard
+          txView={txViewComponent}
+          buyView={buyViewComponent}
+          sellView={sellViewComponent}
+          sendView={sendViewComponent}
+          receiveView={receiveViewComponent}
+          activeTab={dalayedActiveTab}
+          panGesture={panGesture}
+        />
+      </Animated.View>
+    </Animated.View>
+  );
+};
+
+const RenderCard: React.FC<CardProps> = props => {
+  const {
+    txView,
+    buyView,
+    sellView,
+    sendView,
+    receiveView,
+    activeTab,
+    panGesture,
+  } = props;
+
+  return (
+    <Animated.View>
+      {activeTab === 0 ? (
+        <GestureDetector gesture={panGesture}>
           <View collapsable={false}>
-            {headerComponent}
+            {txView}
           </View>
         </GestureDetector>
-        <Animated.View style={animatedCardOpacityStyle}>
-          <RenderTab />
-        </Animated.View>
-      </Animated.View>
+      ) : null}
+      {activeTab === 1 ? (
+        <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {buyView}
+          </View>
+        </GestureDetector>
+      ) : null}
+      {activeTab === 2 ? (
+        <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {sellView}
+          </View>
+        </GestureDetector>
+      ) : null}
+      {activeTab === 4 ? (
+        <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {sendView}
+          </View>
+        </GestureDetector>
+      ) : null}
+      {activeTab === 5 ? (
+        <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>
+            {receiveView}
+          </View>
+        </GestureDetector>
+      ) : null}
+    </Animated.View>
   );
 };
 

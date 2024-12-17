@@ -14,12 +14,11 @@
 		1B2F1D362CFFBB9400521F85 /* NexusTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B2F1D352CFFBB9400521F85 /* NexusTests.m */; };
 		1B772B682CF8102B009C0FB4 /* liblnd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B672CF8102B009C0FB4 /* liblnd.a */; };
 		1B772B6A2CF81E57009C0FB4 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B692CF81E4E009C0FB4 /* libresolv.tbd */; };
-		1BBB01A42BF4FF2800EDCA9B /* Satoshi-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A02BF4FF2800EDCA9B /* Satoshi-Variable.ttf */; };
-		1BBB01A52BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A12BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf */; };
-		1BBB01A62BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BBB01A22BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf */; };
 		1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C12BF5022900EDCA9B /* SwiftProtobuf */; };
 		1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C32BF5022900EDCA9B /* SwiftProtobufPluginLibrary */; };
+		5DC3C87AFE8D411CA6859504 /* Satoshi-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */; };
 		5F28ECA63CF0AF8B340E5F7C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67568FE7C600BF5DAAF50801 /* ExpoModulesProvider.swift */; };
+		9A0111261B1D4E508EDDE1B7 /* Satoshi-VariableItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 078B541C0FC948D0AD794F68 /* Satoshi-VariableItalic.ttf */; };
 		A3C99BABFCA3F08177A6A821 /* libPods-nexus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 562159733ED286A63E8A2D13 /* libPods-nexus.a */; };
 		BDFAED61002727AD53812A22 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62BBC85FD6F04675ADBD3FF0 /* ExpoModulesProvider.swift */; };
 		DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */; };
@@ -52,6 +51,7 @@
 /* Begin PBXFileReference section */
 		00E356EE1AD99517003FC87E /* nexusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nexusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		078B541C0FC948D0AD794F68 /* Satoshi-VariableItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Satoshi-VariableItalic.ttf"; path = "../src/fonts/Satoshi-VariableItalic.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* nexus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nexus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Nexus/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = Nexus/AppDelegate.mm; sourceTree = "<group>"; };
@@ -65,11 +65,9 @@
 		1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:67RAULRX93:Marcin Krzyzanowski"; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		1B772B672CF8102B009C0FB4 /* liblnd.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblnd.a; sourceTree = "<group>"; };
 		1B772B692CF81E4E009C0FB4 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
-		1BBB01A02BF4FF2800EDCA9B /* Satoshi-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Variable.ttf"; sourceTree = "<group>"; };
-		1BBB01A12BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-VariableItalic.ttf"; sourceTree = "<group>"; };
-		1BBB01A22BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SugarstyleMillenial-Regular.ttf"; sourceTree = "<group>"; };
 		1BC3AB132CD547B00024FD9C /* nexus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = nexus.entitlements; path = Nexus/nexus.entitlements; sourceTree = "<group>"; };
 		1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
+		1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Satoshi-Variable.ttf"; path = "../src/fonts/Satoshi-Variable.ttf"; sourceTree = "<group>"; };
 		2F2E83A6529EFFAEC829F130 /* Pods-nexus-nexusTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus-nexusTests.release.xcconfig"; path = "Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests.release.xcconfig"; sourceTree = "<group>"; };
 		562159733ED286A63E8A2D13 /* libPods-nexus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-nexus.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		597631ED5F3B99021A056A97 /* Pods-nexus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus.release.xcconfig"; path = "Target Support Files/Pods-nexus/Pods-nexus.release.xcconfig"; sourceTree = "<group>"; };
@@ -137,7 +135,6 @@
 				1B772B672CF8102B009C0FB4 /* liblnd.a */,
 				1B1549572CFFB8A100CC5912 /* nexus-Bridging-Header.h */,
 				1BC3AB132CD547B00024FD9C /* nexus.entitlements */,
-				1BBB01A32BF4FF2800EDCA9B /* fonts */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				1B1549382CFFB7F200CC5912 /* Images.xcassets */,
@@ -148,17 +145,6 @@
 				6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */,
 			);
 			name = nexus;
-			sourceTree = "<group>";
-		};
-		1BBB01A32BF4FF2800EDCA9B /* fonts */ = {
-			isa = PBXGroup;
-			children = (
-				1BBB01A02BF4FF2800EDCA9B /* Satoshi-Variable.ttf */,
-				1BBB01A12BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf */,
-				1BBB01A22BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf */,
-			);
-			name = fonts;
-			path = Nexus/fonts;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -172,6 +158,15 @@
 				FE51FB821DCFA08BBB15F7FF /* libPods-nexus-nexusTests.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4C55AA314A8640F689A56045 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */,
+				078B541C0FC948D0AD794F68 /* Satoshi-VariableItalic.ttf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -191,6 +186,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				8C54316E0E457D37601B2E3C /* ExpoModulesProviders */,
+				4C55AA314A8640F689A56045 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -338,12 +334,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1BBB01A62BF4FF2800EDCA9B /* SugarstyleMillenial-Regular.ttf in Resources */,
-				1BBB01A52BF4FF2800EDCA9B /* Satoshi-VariableItalic.ttf in Resources */,
 				1B1549392CFFB7F200CC5912 /* Images.xcassets in Resources */,
 				1B15493B2CFFB7FC00CC5912 /* LaunchScreen.storyboard in Resources */,
-				1BBB01A42BF4FF2800EDCA9B /* Satoshi-Variable.ttf in Resources */,
 				DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */,
+				5DC3C87AFE8D411CA6859504 /* Satoshi-Variable.ttf in Resources */,
+				9A0111261B1D4E508EDDE1B7 /* Satoshi-VariableItalic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

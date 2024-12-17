@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '',
     width: '100%',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,

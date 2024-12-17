@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     width: '100%',
-    height: 470 / screenHeight > 0.51 ? '83%' : '70%',
+    height: 470 / screenHeight > 0.57 ? '83%' : '70%',
   },
   bottomSheetTitle: {
     fontFamily:
@@ -135,8 +135,8 @@ const styles = StyleSheet.create({
     paddingTop: 18,
   },
   bottomSheetSubContainer: {
-    position: 'absolute',
-    bottom: 470 / screenHeight > 0.51 ? 20 : 100,
+    flex: 1,
+    justifyContent: 'center',
   },
   buttonContainer: {
     height: 390,
