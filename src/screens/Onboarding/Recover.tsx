@@ -75,7 +75,7 @@ const Recover: React.FC<Props> = props => {
   return (
     <LinearGradient
       colors={['#1162E6', '#0F55C7']}
-      style={{paddingTop: insets.top}}>
+      style={Platform.OS === 'android' ? {paddingTop: insets.top} : null}>
       <SafeAreaView>
         <RecoveryField
           handleLogin={seed => attemptLogin(seed)}

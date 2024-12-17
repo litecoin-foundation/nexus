@@ -99,7 +99,10 @@ const Generate: React.FC<Props> = props => {
   return (
     <LinearGradient
       colors={['#1162E6', '#0F55C7']}
-      style={[styles.header, {paddingTop: insets.top}]}>
+      style={[
+        styles.header,
+        Platform.OS === 'android' ? {paddingTop: insets.top} : null,
+      ]}>
       <OnboardingHeader
         description={
           'The 24 words below is your seed phrase. \n\nYour seed phrase is your password to your Litecoin & Wallet. Write it down and place it somewhere secure!'

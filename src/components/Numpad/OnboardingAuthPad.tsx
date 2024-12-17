@@ -111,7 +111,10 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   return (
     <>
       <LinearGradient
-        style={{flex: 1, paddingTop: insets.top}}
+        style={[
+          {flex: 1},
+          Platform.OS === 'android' ? {paddingTop: insets.top} : null,
+        ]}
         colors={['#1162E6', '#0F55C7']}>
         <OnboardingHeader description={headerDescriptionText} />
       </LinearGradient>

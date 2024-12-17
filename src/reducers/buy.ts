@@ -47,27 +47,32 @@ export const getBuyTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
     const {uniqueId} = getState().onboarding;
 
-    const res = await fetch(
-      'https://mobile.litecoin.com/api/buy/moonpay/transactions',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    try {
+      const res = await fetch(
+        'https://mobile.litecoin.com/api/buy/moonpay/transactions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            id: uniqueId,
+          }),
         },
-        body: JSON.stringify({
-          id: uniqueId,
-        }),
-      },
-    );
+      );
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error);
+      }
+
+      const data = await res.json();
+
+      dispatch(getBuyTxHistoryAction(data));
+    } catch (error) {
+      console.error(error);
     }
-
-    const {data} = await res.json();
-
-    dispatch(getBuyTxHistoryAction(data));
   };
 
 export const getSellTransactionHistory =
@@ -92,7 +97,7 @@ export const getSellTransactionHistory =
       throw new Error(error);
     }
 
-    const {data} = await res.json();
+    const data = await res.json();
 
     dispatch(getSellTxHistoryAction(data));
   };

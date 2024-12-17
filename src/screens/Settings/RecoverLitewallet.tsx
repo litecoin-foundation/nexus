@@ -2,6 +2,7 @@ import React, {useEffect} from 'react';
 import {StyleSheet, SafeAreaView, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {sweepLitewallet} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -29,6 +30,7 @@ interface Props {
 const RecoverLitewallet: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
+  const insets = useSafeAreaInsets();
   const {address} = useAppSelector(state => state.address);
 
   useEffect(() => {
@@ -55,7 +57,9 @@ const RecoverLitewallet: React.FC<Props> = props => {
   };
 
   return (
-    <LinearGradient colors={['#1162E6', '#0F55C7']}>
+    <LinearGradient
+      colors={['#1162E6', '#0F55C7']}
+      style={Platform.OS === 'android' ? {paddingTop: insets.top} : null}>
       <SafeAreaView>
         <RecoveryField
           handleLogin={() => {}}
@@ -69,11 +73,6 @@ const RecoverLitewallet: React.FC<Props> = props => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-around',
-  },
   headerTitle: {
     fontFamily:
       Platform.OS === 'ios'

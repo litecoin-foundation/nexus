@@ -8,6 +8,7 @@ import {useAppSelector} from '../store/hooks';
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
 import Animated from 'react-native-reanimated';
 import {formatDate, formatTime} from '../lib/utils/date';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 interface Props {
   children: React.ReactNode;
@@ -16,6 +17,8 @@ interface Props {
 
 const NewAmountView: React.FC<Props> = props => {
   const {children, animatedProps} = props;
+  const insets = useSafeAreaInsets();
+
   const chartCursorSelected = useAppSelector(
     state => state.chart.cursorSelected,
   );
@@ -41,7 +44,11 @@ const NewAmountView: React.FC<Props> = props => {
         !isInternetReachable ? styles.internetBackground : null,
       ]}>
       <SafeAreaView>
-        <View style={styles.subview}>
+        <View
+          style={[
+            styles.subview,
+            Platform.OS === 'android' ? {paddingTop: insets.top} : null,
+          ]}>
           {!chartCursorSelected ? (
             <>
               <Text style={styles.amountText}>{subunitAmount}</Text>
