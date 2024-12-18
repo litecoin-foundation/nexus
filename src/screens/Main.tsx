@@ -614,7 +614,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
     },
     chartContainer: {
-      paddingTop: screenHeight * 0.03,
+      paddingTop: screenHeight < 701 ? screenHeight * 0.03 : screenHeight * 0.04,
       gap: screenHeight < 701 ? screenHeight * 0.035 : screenHeight * 0.05,
     },
     headerContainer: {

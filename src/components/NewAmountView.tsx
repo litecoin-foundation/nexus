@@ -101,7 +101,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderBottomRightRadius: screenHeight * 0.03,
     },
     subview: {
-      top: screenHeight * 0.04,
+      top: screenHeight * 0.045,
       flexDirection: 'column',
       alignItems: 'center',
     },

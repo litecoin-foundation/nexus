@@ -55,7 +55,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
     },
     image: {
-      marginRight: 5,
     },
     title: {
       fontFamily:
@@ -66,6 +65,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       color: 'white',
       fontSize: screenHeight * 0.013,
+      marginLeft: 5,
+      marginRight: 5,
     },
     padRight: {
       marginRight: screenHeight * 0.02,

@@ -49,7 +49,7 @@ const Chart = () => {
 
     x.current = scale
       .scaleTime()
-      .range([0, width - 5])
+      .range([0, width])
       .domain([xExtent[0], xExtent[1]]);
     y.current = scale
       .scaleLinear()
@@ -84,7 +84,7 @@ const Chart = () => {
 
   const animatedProps = useAnimatedProps(() => {
     return {
-      strokeDashoffset: 2000 * (1 - animationValue.value),
+      strokeDashoffset: 2400 * (1 - animationValue.value),
     };
   });
 
@@ -119,7 +119,7 @@ const Chart = () => {
         fill="none"
         stroke="white"
         strokeWidth={3}
-        strokeDasharray={2000}
+        strokeDasharray={2400}
         animatedProps={animatedProps}
       />
     </Svg>

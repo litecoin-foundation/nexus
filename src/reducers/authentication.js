@@ -108,6 +108,17 @@ export const unlockWalletWithPin = pincodeAttempt => async (dispatch, getState) 
         }
       }
     } else {
+      if (timeLock) {
+        const timeLeftInSec = TIME_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - timeLockAt);
+        // console.log(`Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`);
+        throw new Error(`Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`);
+      }
+      if (dayLockAt) {
+        const timeLeftInSec = DAY_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - dayLockAt);
+        // console.log(`Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`);
+        throw new Error(`Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`);
+      }
+
       dispatch(unlockWallet());
 
       subscribeState(
@@ -246,6 +257,8 @@ const actionHandler = {
     failedLoginAttempts: 0,
     timeLock: false,
     timeLockAt: 0,
+    dayLock: false,
+    dayLockAt: 0,
     permaLock: false,
   }),
   [CLEAR_UNLOCK]: state => ({

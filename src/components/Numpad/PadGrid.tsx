@@ -1,16 +1,24 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {Dimensions, StyleSheet, View} from 'react-native';
 import {Canvas, LinearGradient, Rect, vec} from '@shopify/react-native-skia';
 import {v4 as uuidv4} from 'uuid';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface Props {}
 
-const thirdOfWidth = Math.ceil(Dimensions.get('screen').width / 3);
-const twoThirdOfWidth = thirdOfWidth * 2;
-
 const PadGrid: React.FC<Props> = () => {
-  const h = [115, 210, 306];
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const thirdOfWidth = Math.ceil(SCREEN_WIDTH / 3);
+  const twoThirdOfWidth = thirdOfWidth * 2;
+
+  // const h = [SCREEN_HEIGHT * 0.115, SCREEN_HEIGHT * 0.210, SCREEN_HEIGHT * 0.306];
+  const h = [SCREEN_HEIGHT * 0.1, SCREEN_HEIGHT * 0.2, SCREEN_HEIGHT * 0.3];
   const v = [thirdOfWidth, twoThirdOfWidth];
+
   return (
     <View>
       <Canvas style={styles.container}>
@@ -53,12 +61,13 @@ const PadGrid: React.FC<Props> = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    height: 410,
-    width: Dimensions.get('screen').width,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      position: 'absolute',
+      width: screenWidth,
+      height: screenHeight * 0.4,
+    },
+  });
 
 export default PadGrid;
