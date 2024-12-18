@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-import { ScreenSizeContext } from '../../context/screenSize';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   onPress: () => void;

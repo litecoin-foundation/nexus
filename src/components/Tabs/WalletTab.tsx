@@ -18,7 +18,7 @@ import {getAddress} from '../../reducers/address';
 import Clipboard from '@react-native-clipboard/clipboard';
 import InfoModal from '../Modals/InfoModal';
 
-import { ScreenSizeContext } from '../../context/screenSize';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   colorStyle: string;

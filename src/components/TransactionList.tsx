@@ -26,7 +26,7 @@ import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {txDetailSelector} from '../reducers/transaction';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 
-import { ScreenSizeContext } from '../context/screenSize';
+import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
   onPress(item: ItemType): void;

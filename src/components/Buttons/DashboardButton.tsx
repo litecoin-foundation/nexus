@@ -25,7 +25,7 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
-import { ScreenSizeContext } from '../../context/screenSize';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   imageSource: ImageSourcePropType;

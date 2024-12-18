@@ -1,15 +1,20 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import WhiteButton from './Buttons/WhiteButton';
 import {changeGraphPeriod} from '../reducers/chart';
 
+import {ScreenSizeContext} from '../context/screenSize';
+
 interface Props {}
 
 type GraphPeriodType = ('1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL')[];
 
 const DatePicker: React.FC<Props> = () => {
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const dispatch = useAppDispatch();
   const currentGraphPeriod = useAppSelector(state => state.chart.graphPeriod);
 
@@ -31,16 +36,17 @@ const DatePicker: React.FC<Props> = () => {
   return <View style={styles.container}>{buttons}</View>;
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginLeft: 30,
-    marginRight: 30,
-  },
-  smallFont: {
-    fontSize: 11,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      justifyContent: 'space-evenly',
+      marginLeft: screenHeight * 0.03,
+      marginRight: screenHeight * 0.03,
+    },
+    smallFont: {
+      fontSize: screenHeight * 0.011,
+    },
+  });
 
 export default DatePicker;

@@ -13,6 +13,7 @@ const ScreenSizeContext = createContext({
   width: Dimensions.get('screen').width,
   height: Dimensions.get('screen').height,
   isDeviceRotated: false,
+  testDeviceHeaderHeight: 103,
 });
 
 const ScreenSizeProvider: React.FC<Props> = props => {
@@ -31,9 +32,8 @@ const ScreenSizeProvider: React.FC<Props> = props => {
 
   function setHeaderHeight(screenHeight: number) {
     const testDeviceCropFactor = Dimensions.get('screen').height / screenHeight;
-    const newHeaderHeight = originalDeviceHeaderHeight / testDeviceCropFactor;
+    const newHeaderHeight = parseInt(String(originalDeviceHeaderHeight / testDeviceCropFactor), 10);
     setTestDeviceHeaderHeight(newHeaderHeight);
-    console.log(newHeaderHeight);
   }
 
   function getOrientation(deviceNameProp: string | undefined) {
@@ -88,6 +88,7 @@ const ScreenSizeProvider: React.FC<Props> = props => {
         width: width,
         height: height,
         isDeviceRotated: isDeviceRotated,
+        testDeviceHeaderHeight: testDeviceHeaderHeight,
       }}
       {...props}
     />

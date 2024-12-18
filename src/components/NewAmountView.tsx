@@ -10,7 +10,7 @@ import Animated from 'react-native-reanimated';
 import {formatDate, formatTime} from '../lib/utils/date';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import { ScreenSizeContext } from '../context/screenSize';
+import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
   children: React.ReactNode;
@@ -68,7 +68,7 @@ const NewAmountView: React.FC<Props> = props => {
             <>
               <Text style={styles.amountText}>${chartCursorValue}</Text>
               <View style={styles.fiat}>
-                <Text style={[styles.fiatText, {paddingBottom: 2}]}>
+                <Text style={styles.fiatText}>
                   {formatDate(chartCursorDate)} {formatTime(chartCursorDate)}
                 </Text>
               </View>
@@ -119,9 +119,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.05,
     },
     fiat: {
+      height: screenHeight * 0.02,
+      flexDirection: 'row',
       alignItems: 'center',
       gap: 7,
-      flexDirection: 'row',
     },
     fiatText: {
       fontFamily:
@@ -134,8 +135,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.015,
     },
     childrenContainer: {
-      paddingTop: screenHeight * 0.04,
-      flex: 1,
+      paddingTop: screenHeight * 0.03,
     },
     internetContainer: {
       paddingTop: screenHeight * 0.06,

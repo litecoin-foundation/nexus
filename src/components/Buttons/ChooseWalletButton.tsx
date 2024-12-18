@@ -12,7 +12,7 @@ import Svg, {Path} from 'react-native-svg';
 
 import {useAppSelector} from '../../store/hooks';
 
-import { ScreenSizeContext } from '../../context/screenSize';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   title: string;

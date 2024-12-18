@@ -13,7 +13,7 @@ import {useAppSelector} from '../../store/hooks';
 import {subunitSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 
-import { ScreenSizeContext } from '../../context/screenSize';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   isOpened: boolean;

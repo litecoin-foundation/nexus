@@ -16,7 +16,7 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 
-import { ScreenSizeContext } from '../context/screenSize';
+import {ScreenSizeContext} from '../context/screenSize';
 
 const ANIM_DURATION = 200;
 const SPRING_BACK_ANIM_DURATION = 100;

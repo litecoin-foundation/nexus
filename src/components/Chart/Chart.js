@@ -13,7 +13,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import Cursor from './Cursor';
 import {monthSelector} from '../../reducers/ticker';
 
-import { ScreenSizeContext } from '../../context/screenSize';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 const d3 = {shape};
 
@@ -25,7 +25,7 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 const Chart = () => {
 
   const { width, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
-  const height = SCREEN_HEIGHT * 0.13;
+  const height = SCREEN_HEIGHT * 0.15;
 
   const dispatch = useDispatch();
   const data = useSelector(state => monthSelector(state));
