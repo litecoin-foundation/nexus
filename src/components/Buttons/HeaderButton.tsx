@@ -41,7 +41,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       borderRadius: screenHeight * 0.01,
       backgroundColor: 'rgba(216,216,216,0.2)',
-      width: screenHeight * 0.035,
       height: screenHeight * 0.035,
       minWidth: 25,
       minHeight: 25,
@@ -52,8 +51,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     subcontainer: {
       paddingHorizontal: screenHeight * 0.01,
       paddingVertical: screenHeight * 0.005,
+      flexDirection: 'row',
+      alignItems: 'center',
     },
     image: {
+      marginRight: 5,
     },
     title: {
       fontFamily:
@@ -63,7 +65,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: 'white',
-      fontSize: screenHeight * 0.012,
+      fontSize: screenHeight * 0.013,
     },
     padRight: {
       marginRight: screenHeight * 0.02,

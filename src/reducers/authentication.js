@@ -16,11 +16,25 @@ const initialState = {
   faceIDSupported: false,
   timeLastUnlocked: null,
   appState: null,
+  failedLoginAttempts: 0,
+  timeLock: false,
+  timeLockAt: 0,
+  dayLock: false,
+  dayLockAt: 0,
+  permaLock: false,
 };
+
+const MAX_LOGIN_ATTEMPTS = 10;
+const TIME_LOCK_IN_SEC = 3600;
+const DAY_LOCK_IN_SEC = 86400;
 
 // constants
 export const ADD_PASSCODE = 'ADD_PASSCODE';
 export const RESET_PASSCODE = 'RESET_PASSCODE';
+export const LOCK_WALLET = 'LOCK_WALLET';
+export const TIME_LOCK_WALLET = 'TIME_LOCK_WALLET';
+export const DAY_LOCK_WALLET = 'DAY_LOCK_WALLET';
+export const PERMA_LOCK_WALLET = 'PERMA_LOCK_WALLET';
 export const UNLOCK_WALLET = 'UNLOCK_WALLET';
 export const CLEAR_UNLOCK = 'CLEAR_UNLOCK';
 export const SET_BIOMETRIC_AVAILABILITY = 'SET_BIOMETRIC_AVAILABILITY';
@@ -45,34 +59,78 @@ export const resetPincode = () => async dispatch => {
   });
 };
 
-export const unlockWalletWithPin = pincodeAttempt => async dispatch => {
-  const pincode = await getItem('PINCODE');
-  if (pincodeAttempt !== pincode) {
-    dispatch({
-      type: UNLOCK_WALLET,
-      payload: false,
-    });
-  } else {
-    dispatch(unlockWallet());
+export const unlockWalletWithPin = pincodeAttempt => async (dispatch, getState) => {
+  const {failedLoginAttempts, timeLock, timeLockAt, dayLock, dayLockAt, permaLock} = getState().authentication;
 
-    subscribeState(
-      {},
-      async state => {
-        try {
-          if (state.state === WalletState.UNLOCKED) {
-            dispatch({
-              type: UNLOCK_WALLET,
-              payload: true,
-            });
-          }
-        } catch (error) {
-          throw new Error(String(error));
+  const pincode = await getItem('PINCODE');
+
+  if (failedLoginAttempts === undefined || !permaLock) {
+    if (pincodeAttempt !== pincode) {
+      if (failedLoginAttempts + 1 >= MAX_LOGIN_ATTEMPTS) {
+        if (dayLock) {
+          dispatch({
+            type: PERMA_LOCK_WALLET,
+          });
+        } else if (timeLock) {
+          dispatch({
+            type: DAY_LOCK_WALLET,
+          });
+        } else {
+          dispatch({
+            type: TIME_LOCK_WALLET,
+          });
         }
-      },
-      error => {
-        console.error(error);
-      },
-    );
+      } else {
+        if (dayLock) {
+          if (Number(dayLockAt || 0) + DAY_LOCK_IN_SEC < Math.floor(Date.now() / 1000)) {
+            dispatch({
+              type: LOCK_WALLET,
+            });
+          } else {
+            const timeLeftInSec = DAY_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - dayLockAt);
+            // console.log(`Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`);
+            throw new Error(`Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`);
+          }
+        } else if (timeLock) {
+          if (Number(timeLockAt || 0) + TIME_LOCK_IN_SEC < Math.floor(Date.now() / 1000)) {
+            dispatch({
+              type: LOCK_WALLET,
+            });
+          } else {
+            const timeLeftInSec = TIME_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - timeLockAt);
+            // console.log(`Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`);
+            throw new Error(`Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`);
+          }
+        } else {
+          dispatch({
+            type: LOCK_WALLET,
+          });
+        }
+      }
+    } else {
+      dispatch(unlockWallet());
+
+      subscribeState(
+        {},
+        async state => {
+          try {
+            if (state.state === WalletState.UNLOCKED) {
+              dispatch({
+                type: UNLOCK_WALLET,
+              });
+            }
+          } catch (error) {
+            throw new Error(String(error));
+          }
+        },
+        error => {
+          console.error(error);
+        },
+      );
+    }
+  } else {
+    // console.log('Maxed out pin attempts. Recover with seed.');
+    throw new Error('Maxed out pin attempts. Recover with seed.');
   }
 };
 
@@ -88,7 +146,6 @@ export const unlockWalletWithBiometric = () => async dispatch => {
           if (state.state === WalletState.UNLOCKED) {
             dispatch({
               type: UNLOCK_WALLET,
-              payload: true,
             });
           }
         } catch (error) {
@@ -161,7 +218,36 @@ export const subscribeAppState = () => (dispatch, getState) => {
 
 // action handlers
 const actionHandler = {
-  [UNLOCK_WALLET]: (state, {payload}) => ({...state, walletUnlocked: payload}),
+  [LOCK_WALLET]: state => ({...state,
+    walletUnlocked: false,
+    failedLoginAttempts: state.failedLoginAttempts === undefined ? 1 : state.failedLoginAttempts + 1,
+  }),
+  [TIME_LOCK_WALLET]: state => ({...state,
+    timeLock: true,
+    permaLock: false,
+    walletUnlocked: false,
+    failedLoginAttempts: 0,
+    timeLockAt: Math.floor(Date.now() / 1000),
+  }),
+  [DAY_LOCK_WALLET]: state => ({...state,
+    dayLock: true,
+    permaLock: false,
+    walletUnlocked: false,
+    failedLoginAttempts: 0,
+    dayLockAt: Math.floor(Date.now() / 1000),
+  }),
+  [PERMA_LOCK_WALLET]: state => ({...state,
+    permaLock: true,
+    walletUnlocked: false,
+    failedLoginAttempts: MAX_LOGIN_ATTEMPTS,
+  }),
+  [UNLOCK_WALLET]: state => ({...state,
+    walletUnlocked: true,
+    failedLoginAttempts: 0,
+    timeLock: false,
+    timeLockAt: 0,
+    permaLock: false,
+  }),
   [CLEAR_UNLOCK]: state => ({
     ...state,
     walletUnlocked: null,

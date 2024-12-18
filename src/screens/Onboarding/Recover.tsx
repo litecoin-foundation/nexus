@@ -61,6 +61,7 @@ const Recover: React.FC<Props> = props => {
               dispatch(setSeedRecovery(debugSeed));
               navigation.navigate('Pin');
             }}
+            rightPadding={true}
           />
         ),
       });

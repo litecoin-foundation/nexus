@@ -2,6 +2,7 @@ import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import Auth from '../screens/Auth/Auth';
+import Recover, {RecoverNavigationOptions} from '../screens/Onboarding/Recover';
 import Forgot, {ForgotNavigationOptions} from '../screens/Auth/Forgot';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import HeaderButton from '../components/Buttons/HeaderButton';
@@ -9,6 +10,13 @@ import HeaderButton from '../components/Buttons/HeaderButton';
 const Stack = createStackNavigator();
 
 function AuthStack(): React.JSX.Element {
+  const headerLeftComponent = (navigation: any) => (
+    <HeaderButton
+      title="Recover Seed"
+      onPress={() => navigation.navigate('Recover')}
+      rightPadding={true}
+    />
+  );
   const headerRightComponent = (navigation: any) => (
     <HeaderButton
       title="Forgot Pincode?"
@@ -30,8 +38,14 @@ function AuthStack(): React.JSX.Element {
         component={Auth}
         options={({navigation}) => ({
           headerTitle: 'Unlock Wallet',
+          headerLeft: () => headerLeftComponent(navigation),
           headerRight: () => headerRightComponent(navigation),
         })}
+      />
+      <Stack.Screen
+        name="Recover"
+        component={Recover}
+        options={({navigation}) => RecoverNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Forgot"

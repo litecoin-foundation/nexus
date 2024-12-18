@@ -92,22 +92,25 @@ const AuthScreen: React.FC<Props> = props => {
 
   const unlockWallet = async () => {
     setLoading(true);
-    await dispatch(unlockWalletWithPin(pin));
+    dispatch(unlockWalletWithPin(pin));
     dispatch(clearValues());
+    setLoading(false);
   };
 
-  const handleValidationFailure = () => {
-    Alert.alert('Incorrect PIN', 'Try Again', [{text: 'OK'}], {
-      cancelable: false,
-    });
-  };
+  // Failure is handled in auth resolver
+  // const handleValidationFailure = () => {
+  //   Alert.alert('Incorrect PIN', 'Try Again', [{text: 'OK'}], {
+  //     cancelable: false,
+  //   });
+  // };
 
   return (
     <>
       <Auth
         headerDescriptionText="Use your PIN to unlock your Wallet"
         handleValidationSuccess={() => unlockWallet()}
-        handleValidationFailure={handleValidationFailure}
+        handleValidationFailure={() => unlockWallet()}
+        // handleValidationFailure={handleValidationFailure}
       />
       {loading ? (
         <View style={styles.activity}>
