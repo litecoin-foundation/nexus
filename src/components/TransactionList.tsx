@@ -5,9 +5,9 @@ import React, {
   MutableRefObject,
   useEffect,
   useState,
+  useContext,
 } from 'react';
 import {
-  Dimensions,
   StyleSheet,
   Text,
   View,
@@ -25,6 +25,8 @@ import {useAppDispatch, useAppSelector} from '../store/hooks';
 
 import {txDetailSelector} from '../reducers/transaction';
 import {groupTransactions} from '../lib/utils/groupTransactions';
+
+import { ScreenSizeContext } from '../context/screenSize';
 
 interface Props {
   onPress(item: ItemType): void;
@@ -61,9 +63,6 @@ type ItemType = {
   hash: string;
 };
 
-const UNFOLD_SHEET_POINT = Dimensions.get('screen').height * 0.24;
-const FOLD_SHEET_POINT = Dimensions.get('screen').height * 0.47;
-
 const TransactionList = forwardRef((props: Props, ref) => {
   const transactionListRef = useRef() as MutableRefObject<
     SectionList<any, ITransactions>
@@ -82,6 +81,12 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   const {onPress, onViewableItemsChanged, folded, foldUnfold, transactionType} =
     props;
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24;
+  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const [displayedTxs, setDisplayedTxs] = useState<any[]>([]);
@@ -128,10 +133,10 @@ const TransactionList = forwardRef((props: Props, ref) => {
   // DashboardButton is 110, txTitleContainer is 70 in Main component
   // Gap in SearchTransaction component is 200 + 30 padding
   const scrollContainerHeight = folded
-    ? Dimensions.get('screen').height - FOLD_SHEET_POINT - 110 - 70
+    ? SCREEN_HEIGHT - FOLD_SHEET_POINT - 110 - 70
     : folded === undefined
-    ? Dimensions.get('screen').height - 230
-    : Dimensions.get('screen').height - UNFOLD_SHEET_POINT - 110 - 70;
+    ? SCREEN_HEIGHT - 230
+    : SCREEN_HEIGHT - UNFOLD_SHEET_POINT - 110 - 70;
 
   let curFrameY = -1;
 
@@ -188,39 +193,40 @@ const TransactionList = forwardRef((props: Props, ref) => {
   );
 });
 
-const styles = StyleSheet.create({
-  sectionHeaderContainer: {
-    paddingTop: 6,
-    paddingBottom: 6,
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(214, 216, 218, 0.3)',
-    paddingLeft: 20,
-  },
-  sectionHeaderText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#747E87',
-    fontSize: 12,
-  },
-  emptyView: {
-    height: 200,
-  },
-  item: {
-    backgroundColor: '#f9c2ff',
-    padding: 20,
-    marginVertical: 8,
-  },
-  header: {
-    fontSize: 32,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    sectionHeaderContainer: {
+      paddingTop: 6,
+      paddingBottom: 6,
+      borderBottomWidth: 0.5,
+      borderBottomColor: 'rgba(214, 216, 218, 0.3)',
+      paddingLeft: 20,
+    },
+    sectionHeaderText: {
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#747E87',
+      fontSize: 12,
+    },
+    emptyView: {
+      height: 200,
+    },
+    item: {
+      backgroundColor: '#f9c2ff',
+      padding: 20,
+      marginVertical: 8,
+    },
+    header: {
+      fontSize: 32,
+      backgroundColor: '#fff',
+    },
+    title: {
+      fontSize: 24,
+    },
+  });
 
 export default TransactionList;

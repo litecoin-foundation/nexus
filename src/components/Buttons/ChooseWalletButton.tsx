@@ -83,6 +83,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
   const styles = StyleSheet.create({
     container: {
       height: boxHeight,
+      minHeight: 25,
       width: '100%',
       backgroundColor: 'transparent',
       justifyContent: 'center',

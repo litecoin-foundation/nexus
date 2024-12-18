@@ -1,5 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {Dimensions} from 'react-native';
+import React, {useEffect, useState, useRef, useContext} from 'react';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
 import Svg, {Path, Line, G, Defs, LinearGradient, Stop} from 'react-native-svg';
@@ -14,14 +13,20 @@ import {useDispatch, useSelector} from 'react-redux';
 import Cursor from './Cursor';
 import {monthSelector} from '../../reducers/ticker';
 
+import { ScreenSizeContext } from '../../context/screenSize';
+
 const d3 = {shape};
 
-const height = 130;
-const {width} = Dimensions.get('window');
+// const height = 130;
+// const {width} = Dimensions.get('window');
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 const Chart = () => {
+
+  const { width, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const height = SCREEN_HEIGHT * 0.13;
+
   const dispatch = useDispatch();
   const data = useSelector(state => monthSelector(state));
 

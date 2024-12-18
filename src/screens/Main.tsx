@@ -202,12 +202,12 @@ const Main: React.FC<Props> = props => {
       borderBottomLeftRadius: interpolate(
         mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [0, 40],
+        [0, SCREEN_HEIGHT * 0.05],
       ),
       borderBottomRightRadius: interpolate(
         mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [1, 40],
+        [1, SCREEN_HEIGHT * 0.05],
       ),
     };
   });
