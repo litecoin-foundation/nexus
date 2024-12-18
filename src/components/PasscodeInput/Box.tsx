@@ -13,7 +13,6 @@ import {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
 
 const screenHeight = Dimensions.get('screen').height;
 const screenWidth = Dimensions.get('screen').width;
