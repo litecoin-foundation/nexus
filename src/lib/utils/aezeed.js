@@ -4,11 +4,12 @@
 import {Buffer} from 'buffer';
 import Crypto from 'react-native-quick-crypto';
 import aez from 'aez';
-import {scrypt} from 'crypto';
+import {Scrypt} from 'react-native-turbo-scrypt';
 
 import {checkBIP39Word, getBIP39Index, wordlist} from './bip39';
 import lpad from './lpad';
 import crc32c from './crc32c';
+import {hexStringToHexArray} from './hexStringToHexArray';
 
 const AEZEED_VERSION = 0;
 const BITCOIN_GENESIS_BLOCK_TIMESTAMP = 1231006505;
@@ -31,14 +32,22 @@ const SALT_OFFSET = CHECKSUM_OFFSET - SALT_LENGTH;
 //
 
 export const generateMnemonic = () => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      const password = Buffer.from('aezeed', 'utf8');
-      const salt = Buffer.from(Crypto.randomBytes(5).toString('hex'), 'hex');
+      const passwordString = 'aezeed';
+      const passwordBuffer = new TextEncoder().encode(passwordString).buffer;
+
+      const s = Crypto.randomBytes(5).toString('hex');
+      const saltBytes = hexStringToHexArray(s);
+
+      const salt = new ArrayBuffer(5);
+      const saltView = new Uint8Array(salt);
+      saltView.set(saltBytes);
+
       const entropy = Crypto.randomBytes(16).toString('hex');
 
-      const key = scrypt(
-        password,
+      const key = Scrypt.scrypt(
+        passwordBuffer,
         salt,
         SCRYPT_N,
         SCRYPT_R,
@@ -46,14 +55,18 @@ export const generateMnemonic = () => {
         SCRYPT_KEY_LENGTH,
       );
 
+      const keyUInt8Array = new Uint8Array(key);
+      const saltBuffer = Buffer.from(salt);
+
       const cipherText = aez.encrypt(
-        key,
+        keyUInt8Array,
         null,
-        [getAD(salt)],
+        [getAD(saltBuffer)],
         AEZ_TAU,
         getSeedBytes(entropy),
       );
-      const mnemonicBytes = getMnemonicBytes(cipherText, salt);
+
+      const mnemonicBytes = getMnemonicBytes(cipherText, saltBuffer);
       const mnemonic = seedToMnemonic(mnemonicBytes);
       const mnemonicArray = mnemonic.split(' ');
       resolve(mnemonicArray);
