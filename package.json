@@ -84,7 +84,7 @@
     "react-native-svg": "^15.9.0",
     "react-native-touch-id": "^4.4.1",
     "react-native-turbo-lnd": "github:hsjoberg/react-native-turbo-lnd#f9c563aeefe06e789940331045e7fcbc4a194870",
-    "react-native-turbo-scrypt": "^0.0.3",
+    "react-native-turbo-scrypt": "^0.0.4",
     "react-native-vision-camera": "^4.6.3",
     "react-native-webview": "^13.12.4",
     "react-native-zip-archive": "^7.0.1",

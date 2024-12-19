@@ -8960,10 +8960,10 @@ react-native-touch-id@^4.4.1:
   version "0.1.2"
   resolved "https://codeload.github.com/hsjoberg/react-native-turbo-lnd/tar.gz/f9c563aeefe06e789940331045e7fcbc4a194870"
 
-react-native-turbo-scrypt@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/react-native-turbo-scrypt/-/react-native-turbo-scrypt-0.0.3.tgz#2d1cc111f86c4b6f96bf053af2cd72906213df7f"
-  integrity sha512-uPNQ35wi01re2tAx7qDaJb0excWGqNQeU2ysbaQ4Mhfu//FHScglAbrwWH2nscI1mRFFswYa48u7Blw6/pQm5Q==
+react-native-turbo-scrypt@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/react-native-turbo-scrypt/-/react-native-turbo-scrypt-0.0.4.tgz#d00cbc0955163d05c709820e65f46829171772bd"
+  integrity sha512-8UfjQYhrd8dfeIKRPRogk8KLfnY6s+dK2YYe8GXNk73cPMquYCpDwlI9M+i7G0ASQr3CRFBpUuncinGMSRzM/A==
 
 react-native-url-polyfill@^2.0.0:
   version "2.0.0"
