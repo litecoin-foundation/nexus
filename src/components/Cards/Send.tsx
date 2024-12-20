@@ -22,8 +22,6 @@ import BuyPad from '../Numpad/BuyPad';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 import {sleep} from '../../lib/utils/poll';
 import {showError} from '../../reducers/errors';
-import {} from '../../reducers/input';
-import {} from '../../reducers/input';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -64,6 +62,7 @@ const Send: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params?.scanData) {
       handleScanCallback(route.params?.scanData);
+      navigation.setParams({scanData: undefined});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.params?.scanData]);

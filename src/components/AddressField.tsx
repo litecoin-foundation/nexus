@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   TextInput,
@@ -6,6 +6,7 @@ import {
   Image,
   TouchableHighlight,
   Platform,
+  Text,
 } from 'react-native';
 
 interface Props {
@@ -17,10 +18,58 @@ interface Props {
 const AddressField: React.FC<Props> = props => {
   const {address, onScanPress, onChangeText} = props;
 
+  useEffect(() => {
+    hiddenTextRef.current = address;
+  }, [address]);
+
+  // logic below to calculate and resize height of container
   const [height, setHeight] = useState(53);
+  const textInputWidth = useRef(310);
+  const hiddenTextRef = useRef<string>('');
+  const textLayoutRef = useRef<any>(null);
+
+  const handleTextChange = (text: string) => {
+    hiddenTextRef.current = text;
+    onChangeText(text);
+  };
+
+  const onMeasuredTextLayout = (event: any) => {
+    const {height: measuredHeight} = event.nativeEvent.layout;
+    const lines = measuredHeight / 22;
+    const newHeight = lines * 37;
+    if (newHeight !== height) {
+      setHeight(newHeight);
+    }
+  };
+
+  const onLayout = (event: any) => {
+    textInputWidth.current = event.nativeEvent.layout.width;
+  };
+
+  useEffect(() => {
+    // updates height based on address prop
+    if (textLayoutRef.current) {
+      textLayoutRef.current.measure(
+        (_: number, __: number, ___: number, textHeight: number) => {
+          const lines = textHeight / 22;
+          const newHeight = lines * 32;
+          setHeight(newHeight);
+        },
+      );
+    }
+  }, [address]);
 
   return (
-    <View style={[styles.container, {height: Math.max(53, height)}]}>
+    <View style={[styles.container, {height}]} onLayout={onLayout}>
+      <View style={styles.hiddenContainer}>
+        <Text
+          ref={textLayoutRef}
+          style={[styles.hiddenText, {width: textInputWidth.current}]}
+          onLayout={onMeasuredTextLayout}>
+          {hiddenTextRef.current}
+        </Text>
+      </View>
+
       <TextInput
         placeholderTextColor="#dbdbdb"
         placeholder="Enter a Litecoin Address"
@@ -28,13 +77,12 @@ const AddressField: React.FC<Props> = props => {
         value={address}
         autoCorrect={false}
         autoComplete="off"
-        onChangeText={onChangeText}
+        onChangeText={handleTextChange}
         blurOnSubmit={true}
         enterKeyHint={'done'}
         multiline={true}
-        onContentSizeChange={event => {
-          setHeight(event.nativeEvent.contentSize.height + 20);
-        }}
+        scrollEnabled={false}
+        maxLength={121}
       />
 
       <TouchableHighlight style={styles.closeContainer} onPress={onScanPress}>
@@ -46,12 +94,14 @@ const AddressField: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 53,
+    minHeight: 49,
     borderRadius: 8,
     borderColor: '#E8E8E8',
     borderWidth: 1,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
+    paddingHorizontal: 11.5,
+    paddingTop: 7,
   },
   text: {
     flex: 1,
@@ -63,13 +113,24 @@ const styles = StyleSheet.create({
     color: '#20BB74',
     fontSize: 18,
     maxWidth: 310,
-
-    paddingVertical: 13,
+    textAlignVertical: 'top',
   },
   closeContainer: {
     right: 0,
     position: 'absolute',
     marginRight: 25,
+  },
+  hiddenContainer: {
+    position: 'absolute',
+    opacity: 0,
+  },
+  hiddenText: {
+    fontSize: 18,
+    lineHeight: 22,
+    fontFamily: 'Satoshi Variable',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    maxWidth: 310,
   },
 });
 
