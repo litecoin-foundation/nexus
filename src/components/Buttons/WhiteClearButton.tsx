@@ -22,7 +22,7 @@ const WhiteClearButton = (props: Props): React.JSX.Element => {
     <TouchableOpacity
       style={[
         styles.container,
-        small ? styles.smallContainer : null,
+        small ? styles.small : styles.big,
         selected ? styles.selectedContainer : null,
       ]}
       disabled={disabled}
@@ -42,11 +42,8 @@ const WhiteClearButton = (props: Props): React.JSX.Element => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
-      height: screenHeight * 0.07,
-      width: screenHeight * 0.335,
       borderColor: 'white',
       borderWidth: 2,
-      borderRadius: screenHeight * 0.014,
       justifyContent: 'center',
       alignItems: 'center',
       shadowColor: 'black',
@@ -56,22 +53,26 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
         height: 0,
         width: 0,
       },
-      marginTop: 10,
-      marginBottom: 10,
+    },
+    small: {
+      width: screenWidth * 0.7,
+      height: screenHeight * 0.055,
+      borderRadius: screenHeight * 0.01,
+    },
+    big: {
+      width: '100%',
+      height: screenHeight * 0.07,
+      borderRadius: screenHeight * 0.014,
     },
     selectedContainer: {
       backgroundColor: 'white',
-    },
-    smallContainer: {
-      height: screenHeight * 0.055,
-      borderRadius: screenHeight * 0.01,
     },
     text: {
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: 'white',
-      fontSize: screenHeight * 0.17,
+      fontSize: screenHeight * 0.018,
     },
     selectedText: {
       color: '#1341BE',

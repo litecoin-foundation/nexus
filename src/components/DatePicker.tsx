@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../store/hooks';
-import WhiteButton from './Buttons/WhiteButton';
+import DateButton from './Buttons/DateButton';
 import {changeGraphPeriod} from '../reducers/chart';
 
 import {ScreenSizeContext} from '../context/screenSize';
@@ -22,9 +22,8 @@ const DatePicker: React.FC<Props> = () => {
 
   const buttons = options.map(value => {
     return (
-      <WhiteButton
+      <DateButton
         value={value}
-        small={true}
         onPress={() => dispatch(changeGraphPeriod(value))}
         customFontStyles={styles.smallFont}
         active={currentGraphPeriod === value ? true : false}

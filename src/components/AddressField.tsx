@@ -1,13 +1,14 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useContext} from 'react';
 import {
   View,
   TextInput,
   StyleSheet,
   Image,
   TouchableHighlight,
-  Platform,
   Text,
 } from 'react-native';
+
+import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
   address: string;
@@ -18,32 +19,34 @@ interface Props {
 const AddressField: React.FC<Props> = props => {
   const {address, onScanPress, onChangeText} = props;
 
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const lineHeight = SCREEN_HEIGHT * 0.033;
+  const fontLineHeight = SCREEN_HEIGHT * 0.022;
+
   useEffect(() => {
     hiddenTextRef.current = address;
   }, [address]);
 
   // logic below to calculate and resize height of container
-  const [height, setHeight] = useState(53);
-  const textInputWidth = useRef(310);
+  const [height, setHeight] = useState(SCREEN_HEIGHT * 0.06);
   const hiddenTextRef = useRef<string>('');
   const textLayoutRef = useRef<any>(null);
 
   const handleTextChange = (text: string) => {
-    hiddenTextRef.current = text;
     onChangeText(text);
   };
 
   const onMeasuredTextLayout = (event: any) => {
     const {height: measuredHeight} = event.nativeEvent.layout;
-    const lines = measuredHeight / 22;
-    const newHeight = lines * 37;
+    const lines = measuredHeight / fontLineHeight;
+    // Plus padding
+    const newHeight = lines * lineHeight + SCREEN_HEIGHT * 0.02;
     if (newHeight !== height) {
       setHeight(newHeight);
     }
-  };
-
-  const onLayout = (event: any) => {
-    textInputWidth.current = event.nativeEvent.layout.width;
   };
 
   useEffect(() => {
@@ -51,8 +54,9 @@ const AddressField: React.FC<Props> = props => {
     if (textLayoutRef.current) {
       textLayoutRef.current.measure(
         (_: number, __: number, ___: number, textHeight: number) => {
-          const lines = textHeight / 22;
-          const newHeight = lines * 32;
+          const lines = textHeight / fontLineHeight;
+          // Plus padding
+          const newHeight = lines * lineHeight + SCREEN_HEIGHT * 0.02;
           setHeight(newHeight);
         },
       );
@@ -60,13 +64,13 @@ const AddressField: React.FC<Props> = props => {
   }, [address]);
 
   return (
-    <View style={[styles.container, {height}]} onLayout={onLayout}>
+    <View style={[styles.container, {height}]}>
       <View style={styles.hiddenContainer}>
         <Text
           ref={textLayoutRef}
-          style={[styles.hiddenText, {width: textInputWidth.current}]}
+          style={styles.hiddenText}
           onLayout={onMeasuredTextLayout}>
-          {hiddenTextRef.current}
+          {address}
         </Text>
       </View>
 
@@ -92,46 +96,52 @@ const AddressField: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    minHeight: 49,
-    borderRadius: 8,
-    borderColor: '#E8E8E8',
-    borderWidth: 1,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    paddingHorizontal: 11.5,
-    paddingTop: 7,
-  },
-  text: {
-    flex: 1,
-    paddingLeft: 11.5,
-    paddingRight: 11.5,
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#20BB74',
-    fontSize: 18,
-    maxWidth: 310,
-    textAlignVertical: 'top',
-  },
-  closeContainer: {
-    right: 0,
-    position: 'absolute',
-    marginRight: 25,
-  },
-  hiddenContainer: {
-    position: 'absolute',
-    opacity: 0,
-  },
-  hiddenText: {
-    fontSize: 18,
-    lineHeight: 22,
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    maxWidth: 310,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      minHeight: screenHeight * 0.06,
+      borderRadius: screenHeight * 0.01,
+      borderColor: '#E8E8E8',
+      borderWidth: 1,
+      backgroundColor: '#FFFFFF',
+      justifyContent: 'center',
+      paddingHorizontal: screenHeight * 0.02,
+      paddingVertical: screenHeight * 0.01,
+    },
+    text: {
+      flex: 1,
+      width: screenWidth * 0.7,
+      maxWidth: screenWidth * 0.7,
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#20BB74',
+      fontSize: screenHeight * 0.022,
+      textAlignVertical: 'top',
+    },
+    closeContainer: {
+      right: 0,
+      position: 'absolute',
+      marginRight: 25,
+    },
+    hiddenContainer: {
+      position: 'absolute',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'flex-start',
+      paddingHorizontal: screenHeight * 0.02,
+      paddingVertical: screenHeight * 0.01,
+      opacity: 0,
+    },
+    hiddenText: {
+      width: screenWidth * 0.7,
+      maxWidth: screenWidth * 0.7,
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.022,
+      textAlignVertical: 'top',
+    },
+  });
 
 export default AddressField;
