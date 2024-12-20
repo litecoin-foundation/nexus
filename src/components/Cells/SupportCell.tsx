@@ -30,10 +30,7 @@ const styles = StyleSheet.create({
     marginBottom: 27,
   },
   title: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#484859',
@@ -48,10 +45,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   questionText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: 'white',

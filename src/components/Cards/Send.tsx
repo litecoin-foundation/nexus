@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {StyleSheet, Text, View, Platform} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 
 import InputField from '../InputField';
@@ -46,7 +46,8 @@ const Send: React.FC<Props> = props => {
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [address, setAddress] = useState('');
@@ -274,10 +275,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingRight: screenWidth * 0.06,
     },
     titleText: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#2E2E2E',
@@ -295,10 +293,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
     },
     subtitleText: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#747E87',

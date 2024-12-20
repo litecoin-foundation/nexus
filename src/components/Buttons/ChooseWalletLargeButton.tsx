@@ -1,11 +1,5 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {
-  Text,
-  StyleSheet,
-  Platform,
-  Image,
-  Pressable,
-} from 'react-native';
+import {Text, StyleSheet, Image, Pressable} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -26,12 +20,20 @@ interface Props {
 const ChooseWalletLargeButton: React.FC<Props> = props => {
   const {title, onPress, arrowSpinAnim, isOpen} = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const fontSize = Math.round(SCREEN_HEIGHT * 0.018) - 1;
   const arrowHeight = Math.round(SCREEN_HEIGHT * 0.012);
   const boxHeight = Math.round(SCREEN_HEIGHT * 0.05);
   const boxWidth = SCREEN_WIDTH - SCREEN_HEIGHT * 0.04;
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, fontSize, arrowHeight, boxHeight, boxWidth);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    fontSize,
+    arrowHeight,
+    boxHeight,
+    boxWidth,
+  );
 
   const [unfoldHeight, setUnfoldHeight] = useState(0);
 
@@ -88,7 +90,14 @@ const ChooseWalletLargeButton: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, fontSize: number, arrowHeight: number, boxHeight: number, boxWidth: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  fontSize: number,
+  arrowHeight: number,
+  boxHeight: number,
+  boxWidth: number,
+) =>
   StyleSheet.create({
     container: {
       width: '100%',
@@ -112,10 +121,7 @@ const getStyles = (screenWidth: number, screenHeight: number, fontSize: number, 
       alignItems: 'flex-start',
     },
     boxText: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       color: '#fff',
       fontStyle: 'normal',
       fontWeight: '500',

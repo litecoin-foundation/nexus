@@ -141,30 +141,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   titleText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#2E2E2E',
     fontSize: 24,
   },
   subtitleText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#747E87',
     fontSize: 12,
   },
   addressText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#20BB74',
@@ -172,10 +163,7 @@ const styles = StyleSheet.create({
     width: 300,
   },
   minText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     fontSize: 12,

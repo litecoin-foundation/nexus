@@ -120,20 +120,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   titleText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: 'white',
     fontSize: 24,
   },
   amountText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '400',
     color: 'white',
@@ -161,10 +155,7 @@ const styles = StyleSheet.create({
   },
   fiatAmountText: {
     color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     fontSize: Dimensions.get('screen').height * 0.02,

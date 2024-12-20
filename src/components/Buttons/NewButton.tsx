@@ -56,10 +56,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#2E2E2E',

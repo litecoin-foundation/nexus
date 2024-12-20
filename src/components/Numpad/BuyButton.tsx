@@ -27,7 +27,8 @@ interface Props {
 const BuyButton: React.FC<Props> = props => {
   const {value, onPress, disabled, imageSource} = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const scaler = useSharedValue(1);
@@ -77,10 +78,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
     },
     text: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#293C62',
@@ -89,6 +87,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     image: {
       tintColor: '#293C62',
     },
-});
+  });
 
 export default BuyButton;

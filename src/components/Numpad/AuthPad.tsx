@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, Text, Platform, Dimensions} from 'react-native';
+import {View, StyleSheet, Text, Platform} from 'react-native';
 
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
@@ -32,14 +32,17 @@ const AuthPad: React.FC<Props> = props => {
   const pin = useAppSelector(state => state.authpad.pin);
   const passcode = useAppSelector(state => state.authentication.passcode);
 
-  const failedLoginAttempts = useAppSelector(state => state.authentication.failedLoginAttempts);
+  const failedLoginAttempts = useAppSelector(
+    state => state.authentication.failedLoginAttempts,
+  );
   const timeLock = useAppSelector(state => state.authentication.timeLock);
   const timeLockAt = useAppSelector(state => state.authentication.timeLockAt);
   const dayLock = useAppSelector(state => state.authentication.dayLock);
   const dayLockAt = useAppSelector(state => state.authentication.dayLockAt);
   const permaLock = useAppSelector(state => state.authentication.permaLock);
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // clear all inputs in AuthPad on initial render
@@ -88,26 +91,38 @@ const AuthPad: React.FC<Props> = props => {
         pinInactive = true;
         return 'Maxed out pin attempts. Recover with seed.';
       } else if (dayLock) {
-        if (Number(dayLockAt || 0) + DAY_LOCK_IN_SEC < Math.floor(Date.now() / 1000)) {
+        if (
+          Number(dayLockAt || 0) + DAY_LOCK_IN_SEC <
+          Math.floor(Date.now() / 1000)
+        ) {
           pinInactive = false;
           if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
             return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} left.`;
           }
         } else {
           pinInactive = true;
-          const timeLeftInSec = DAY_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - dayLockAt);
-          return `Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`;
+          const timeLeftInSec =
+            DAY_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - dayLockAt);
+          return `Maxed out pin attempts. Try again in ${Math.ceil(
+            timeLeftInSec / 60,
+          )} minutes.`;
         }
       } else if (timeLock) {
-        if (Number(timeLockAt || 0) + TIME_LOCK_IN_SEC < Math.floor(Date.now() / 1000)) {
+        if (
+          Number(timeLockAt || 0) + TIME_LOCK_IN_SEC <
+          Math.floor(Date.now() / 1000)
+        ) {
           pinInactive = false;
           if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
             return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} left.`;
           }
         } else {
           pinInactive = true;
-          const timeLeftInSec = TIME_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - timeLockAt);
-          return `Maxed out pin attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`;
+          const timeLeftInSec =
+            TIME_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - timeLockAt);
+          return `Maxed out pin attempts. Try again in ${Math.ceil(
+            timeLeftInSec / 60,
+          )} minutes.`;
         }
       } else {
         pinInactive = false;
@@ -150,14 +165,17 @@ const AuthPad: React.FC<Props> = props => {
       );
     }
     return (
-      <BuyButton disabled={pinInactive} key={value} value={value} onPress={() => handlePress(value)} />
+      <BuyButton
+        disabled={pinInactive}
+        key={value}
+        value={value}
+        onPress={() => handlePress(value)}
+      />
     );
   });
 
   const RenderStatusText = (
-    <Text style={styles.bottomSheetStatus}>
-      {status}
-    </Text>
+    <Text style={styles.bottomSheetStatus}>{status}</Text>
   );
 
   return (
@@ -165,7 +183,11 @@ const AuthPad: React.FC<Props> = props => {
       <Text style={styles.bottomSheetTitle}>Enter your PIN</Text>
       {RenderStatusText}
       <View style={styles.bottomSheetSubContainer}>
-        <PasscodeInput pinInactive={pinInactive} dotsLength={6} activeDotIndex={pin.length} />
+        <PasscodeInput
+          pinInactive={pinInactive}
+          dotsLength={6}
+          activeDotIndex={pin.length}
+        />
         <PadGrid />
         <View style={styles.buttonContainer}>{buttons}</View>
       </View>
@@ -185,10 +207,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.65,
     },
     bottomSheetTitle: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: 'bold',
       color: '#2e2e2e',
@@ -197,16 +216,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingTop: screenHeight * 0.02,
     },
     bottomSheetStatus: {
-      fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    color: 'red',
-    fontSize: screenHeight * 0.015,
-    fontWeight: 300,
-    textAlign: 'center',
-    paddingTop: screenHeight * 0.01,
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      color: 'red',
+      fontSize: screenHeight * 0.015,
+      fontWeight: 300,
+      textAlign: 'center',
+      paddingTop: screenHeight * 0.01,
     },
     bottomSheetSubContainer: {
       paddingTop: screenHeight * 0.01,

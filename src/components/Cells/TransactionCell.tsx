@@ -90,20 +90,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   labelText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#484859',
     fontSize: 14,
   },
   timeText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#747E87',
@@ -111,10 +105,7 @@ const styles = StyleSheet.create({
     paddingTop: 3,
   },
   cryptoText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#212124',
@@ -125,10 +116,7 @@ const styles = StyleSheet.create({
     color: '#1162E6',
   },
   fiatText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#747E87',

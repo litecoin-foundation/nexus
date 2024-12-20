@@ -55,20 +55,14 @@ const styles = StyleSheet.create({
     color: '#747e87',
     fontSize: Dimensions.get('screen').height * 0.015,
     fontWeight: '600',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
   },
   text: {
     color: '#4A4A4A',
     fontSize: Dimensions.get('screen').height * 0.018,
     fontWeight: '700',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
   },
 });

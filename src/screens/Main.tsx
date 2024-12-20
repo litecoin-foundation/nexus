@@ -1,12 +1,5 @@
 import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  Platform,
-  Pressable,
-  Alert,
-} from 'react-native';
+import {View, StyleSheet, Text, Platform, Pressable, Alert} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -60,22 +53,24 @@ interface Props {
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT, testDeviceHeaderHeight } = useContext(ScreenSizeContext);
+  const {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    testDeviceHeaderHeight,
+  } = useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   useEffect(() => {
     navigation.setOptions({
-      headerStyle: { height: testDeviceHeaderHeight },
+      headerStyle: {height: testDeviceHeaderHeight},
     });
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [testDeviceHeaderHeight]);
 
-  const SNAP_POINTS_FROM_TOP = [
-    SCREEN_HEIGHT * 0.24,
-    SCREEN_HEIGHT * 0.47,
-  ];
+  const SNAP_POINTS_FROM_TOP = [SCREEN_HEIGHT * 0.24, SCREEN_HEIGHT * 0.47];
   const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
-  const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
+  const CLOSED_SNAP_POINT =
+    SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
 
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
@@ -427,7 +422,13 @@ const Main: React.FC<Props> = props => {
               color="white"
               r={SCREEN_HEIGHT * 0.01}
             />
-            <Image image={image} x={SCREEN_HEIGHT * 0.020} y={SCREEN_HEIGHT * 0.016} width={SCREEN_HEIGHT * 0.017} height={SCREEN_HEIGHT * 0.016} />
+            <Image
+              image={image}
+              x={SCREEN_HEIGHT * 0.02}
+              y={SCREEN_HEIGHT * 0.016}
+              width={SCREEN_HEIGHT * 0.017}
+              height={SCREEN_HEIGHT * 0.016}
+            />
           </Canvas>
         </Pressable>
       </View>
@@ -506,8 +507,7 @@ const Main: React.FC<Props> = props => {
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
       <NewAmountView animatedProps={animatedHeaderHeight}>
-        <Animated.View
-          style={[animatedChartStyle, styles.chartContainer]}>
+        <Animated.View style={[animatedChartStyle, styles.chartContainer]}>
           <LineChart />
           <DatePicker />
         </Animated.View>
@@ -614,7 +614,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
     },
     chartContainer: {
-      paddingTop: screenHeight < 701 ? screenHeight * 0.03 : screenHeight * 0.04,
+      paddingTop:
+        screenHeight < 701 ? screenHeight * 0.03 : screenHeight * 0.04,
       gap: screenHeight < 701 ? screenHeight * 0.035 : screenHeight * 0.05,
     },
     headerContainer: {
@@ -631,10 +632,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingLeft: screenHeight * 0.019,
       paddingBottom: screenHeight * 0.012,
       paddingTop: screenHeight * 0.005,
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontWeight: '700',
       color: '#2E2E2E',
       fontSize: screenHeight * 0.024,
@@ -647,7 +645,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
 
 export const navigationOptions = (navigation: any) => {
   return {
-    headerStyle: { height: 103 },
+    headerStyle: {height: 103},
     headerTitle: () => (
       <ChooseWalletButton
         title={'Wallet Title'}

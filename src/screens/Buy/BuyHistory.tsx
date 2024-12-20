@@ -58,10 +58,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptySectionListText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#484859',
@@ -71,10 +68,7 @@ const styles = StyleSheet.create({
     marginLeft: 22,
   },
   headerTitle: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: 'white',

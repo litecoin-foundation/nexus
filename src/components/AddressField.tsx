@@ -57,10 +57,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingLeft: 11.5,
     paddingRight: 11.5,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#20BB74',

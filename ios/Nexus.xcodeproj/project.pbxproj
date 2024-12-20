@@ -20,7 +20,6 @@
 		5F28ECA63CF0AF8B340E5F7C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67568FE7C600BF5DAAF50801 /* ExpoModulesProvider.swift */; };
 		71218B02A5CF5B190927EAEC /* libPods-nexus-nexusTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EAC81D6E2451D06997B0FECC /* libPods-nexus-nexusTests.a */; };
 		96E7592DEDB766A034332C04 /* libPods-nexus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CA5AD9DD1B276C6564CCD12C /* libPods-nexus.a */; };
-		9A0111261B1D4E508EDDE1B7 /* Satoshi-VariableItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 078B541C0FC948D0AD794F68 /* Satoshi-VariableItalic.ttf */; };
 		BDFAED61002727AD53812A22 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62BBC85FD6F04675ADBD3FF0 /* ExpoModulesProvider.swift */; };
 		DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -51,7 +50,6 @@
 /* Begin PBXFileReference section */
 		00E356EE1AD99517003FC87E /* nexusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nexusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		078B541C0FC948D0AD794F68 /* Satoshi-VariableItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Satoshi-VariableItalic.ttf"; path = "../src/fonts/Satoshi-VariableItalic.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* nexus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nexus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Nexus/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = Nexus/AppDelegate.mm; sourceTree = "<group>"; };
@@ -164,7 +162,6 @@
 			isa = PBXGroup;
 			children = (
 				1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */,
-				078B541C0FC948D0AD794F68 /* Satoshi-VariableItalic.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -338,7 +335,6 @@
 				1B15493B2CFFB7FC00CC5912 /* LaunchScreen.storyboard in Resources */,
 				DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */,
 				5DC3C87AFE8D411CA6859504 /* Satoshi-Variable.ttf in Resources */,
-				9A0111261B1D4E508EDDE1B7 /* Satoshi-VariableItalic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

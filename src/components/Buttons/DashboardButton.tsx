@@ -48,14 +48,13 @@ const DashboardButton: React.FC<Props> = props => {
     wider,
   } = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const width = wider ? SCREEN_WIDTH * 0.18 : SCREEN_WIDTH * 0.16;
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, width);
 
-  const fontFamily =
-    Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
   const fontStyle = {
-    fontFamily,
+    fontFamily: 'Satoshi Variable',
     fontSize: 12,
     fontStyle: 'normal',
     fontWeight: '700',
@@ -170,7 +169,11 @@ const DashboardButton: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, buttonWidth: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  buttonWidth: number,
+) =>
   StyleSheet.create({
     button: {
       width: buttonWidth + 8,

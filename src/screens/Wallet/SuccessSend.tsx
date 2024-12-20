@@ -67,10 +67,7 @@ const styles = StyleSheet.create({
   title: {
     width: '100%',
     color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     fontSize: Dimensions.get('screen').height * 0.07,
@@ -80,10 +77,7 @@ const styles = StyleSheet.create({
   subtitle: {
     width: '100%',
     color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     fontSize: Dimensions.get('screen').height * 0.016,
@@ -95,10 +89,7 @@ const styles = StyleSheet.create({
   amount: {
     width: '100%',
     color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     fontSize: Dimensions.get('screen').height * 0.05,
@@ -129,10 +120,7 @@ const styles = StyleSheet.create({
   },
   toAddressText: {
     color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '500',
     fontSize: Dimensions.get('screen').height * 0.03,
@@ -153,9 +141,7 @@ export const SuccessSendNavigationOptions = () => {
     headerTitle: '',
     headerTransparent: true,
     headerTintColor: 'white',
-    headerLeft: () => (
-      <></>
-    ),
+    headerLeft: () => <></>,
     gestureEnabled: false,
   };
 };

@@ -157,10 +157,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   bottomSheetTitle: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: 'bold',
     color: '#2e2e2e',

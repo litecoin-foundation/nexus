@@ -42,7 +42,8 @@ const ConfirmSend: React.FC<Props> = () => {
   // Todo: get total fee for the tx
   const totalFeeInLTC = 'undefined ';
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [isPinModalTriggered, setPinModalTriggered] = useState(false);
@@ -147,18 +148,16 @@ const ConfirmSend: React.FC<Props> = () => {
         animDuration={250}
         gapInPixels={0}
         backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
-        renderBody={(
-          _,
-          __,
-          ___,
-          ____,
-          cardTranslateAnim: any,
-        ) => (
+        renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
           <PinModalContent
             cardTranslateAnim={cardTranslateAnim}
             close={() => setPinModalTriggered(false)}
-            handleValidationFailure={() => DeviceEventEmitter.emit('auth', false)}
-            handleValidationSuccess={() => DeviceEventEmitter.emit('auth', true)}
+            handleValidationFailure={() =>
+              DeviceEventEmitter.emit('auth', false)
+            }
+            handleValidationSuccess={() =>
+              DeviceEventEmitter.emit('auth', true)
+            }
           />
         )}
       />
@@ -205,10 +204,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     chooseWalletBtnText: {
       color: '#fff',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '500',
       fontSize: screenHeight * 0.017,
@@ -226,10 +222,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     sendText: {
       color: '#fff',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       fontSize: screenHeight * 0.025,
@@ -237,10 +230,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     amountText: {
       color: '#fff',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '400',
       fontSize: screenHeight * 0.05,
@@ -256,10 +246,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     fiatAmountText: {
       color: '#fff',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       fontSize: screenHeight * 0.02,
@@ -267,10 +254,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     valueSubtitle: {
       color: '#fff',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       fontSize: screenHeight * 0.017,
@@ -280,10 +264,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     valueTitle: {
       color: '#fff',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       fontSize: screenHeight * 0.025,
@@ -296,7 +277,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingLeft: screenHeight * 0.02,
       paddingRight: screenHeight * 0.02,
     },
-
     blurContainer: {
       flex: 1,
       padding: 20,

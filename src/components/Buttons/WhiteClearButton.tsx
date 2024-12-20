@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {Platform, StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity} from 'react-native';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -14,7 +14,8 @@ interface Props {
 const WhiteClearButton = (props: Props): React.JSX.Element => {
   const {onPress, value, small, selected, disabled} = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return (
@@ -66,10 +67,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.01,
     },
     text: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: 'white',

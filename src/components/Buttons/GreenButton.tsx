@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {Text, TouchableOpacity, StyleSheet, Platform} from 'react-native';
+import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -12,7 +12,8 @@ interface Props {
 const GreenButton: React.FC<Props> = props => {
   const {value, onPress, disabled} = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return (
@@ -38,10 +39,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     text: {
       color: '#FFFFFF',
       fontSize: screenHeight * 0.017,
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
     },

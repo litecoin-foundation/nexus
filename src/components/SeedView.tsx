@@ -36,10 +36,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   number: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     color: '#3873FF',
     fontSize: 20,
     fontWeight: 'bold',
@@ -47,10 +44,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   text: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontWeight: '500',
     color: '#2e2e2e',
     fontSize: 24,

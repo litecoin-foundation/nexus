@@ -44,10 +44,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   text: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: 'white',

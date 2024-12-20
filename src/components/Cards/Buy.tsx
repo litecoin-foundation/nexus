@@ -245,20 +245,14 @@ const styles = StyleSheet.create({
     gap: 7,
   },
   buyText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#2E2E2E',
     fontSize: 24,
   },
   buttonText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#2E2E2E',
@@ -266,10 +260,7 @@ const styles = StyleSheet.create({
   },
   disabledBuyText: {
     marginTop: 30,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     fontSize: 12,
@@ -277,10 +268,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   minText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     fontSize: 12,
