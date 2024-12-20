@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {Platform, Pressable, StyleSheet, Dimensions} from 'react-native';
+import React, {useState, useEffect, useContext} from 'react';
+import {Pressable, StyleSheet} from 'react-native';
 import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
 import {useAppSelector} from '../../store/hooks';
 import {subunitSymbolSelector} from '../../reducers/settings';
@@ -13,6 +13,8 @@ import {
 } from '@shopify/react-native-skia';
 import {defaultButtonSpring} from '../../theme/spring';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface Props {
   amount: number;
   fiatAmount: string;
@@ -23,19 +25,24 @@ interface Props {
 
 const AmountPicker: React.FC<Props> = props => {
   const {amount, active, handlePress, fiatAmount, handleToggle} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const [toggleLTC, setToggleLTC] = useState(true);
 
-  const ltcFontSize = useSharedValue(24);
-  const ltcFontY = useSharedValue(27);
-  const fiatFontSize = useSharedValue(16);
-  const fiatFontY = useSharedValue(60);
-  const switchX = useSharedValue(44);
-  const switchIconX = useSharedValue(42);
+  const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
+  const ltcFontY = useSharedValue(SCREEN_HEIGHT * 0.027);
+  const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.016);
+  const fiatFontY = useSharedValue(SCREEN_HEIGHT * 0.060);
+  const switchX = useSharedValue(SCREEN_HEIGHT * 0.044);
+  const switchIconX = useSharedValue(SCREEN_HEIGHT * 0.042);
   const switchOpacity = useSharedValue(0);
 
   const fontStyle = {
     fontFamily: 'Satoshi Variable',
-    fontSize: 18,
+    fontSize: SCREEN_HEIGHT * 0.018,
     fontStyle: 'normal',
     fontWeight: '700',
   };
@@ -46,24 +53,24 @@ const AmountPicker: React.FC<Props> = props => {
 
   const handleFontSizeChange = () => {
     if (toggleLTC && active) {
-      ltcFontSize.value = withTiming(18);
-      fiatFontSize.value = withTiming(20);
+      ltcFontSize.value = withTiming(SCREEN_HEIGHT * 0.018);
+      fiatFontSize.value = withTiming(SCREEN_HEIGHT * 0.020);
     } else {
-      ltcFontSize.value = withTiming(24);
-      fiatFontSize.value = withTiming(16);
+      ltcFontSize.value = withTiming(SCREEN_HEIGHT * 0.024);
+      fiatFontSize.value = withTiming(SCREEN_HEIGHT * 0.016);
     }
   };
 
   useEffect(() => {
     if (active) {
       switchX.value = withSpring(0, defaultButtonSpring);
-      switchIconX.value = withSpring(11, defaultButtonSpring);
-      fiatFontY.value = withTiming(40);
-      ltcFontY.value = withTiming(18);
+      switchIconX.value = withSpring(SCREEN_HEIGHT * 0.011, defaultButtonSpring);
+      fiatFontY.value = withTiming(SCREEN_HEIGHT * 0.040);
+      ltcFontY.value = withTiming(SCREEN_HEIGHT * 0.018);
       switchOpacity.value = withTiming(1);
     } else {
-      switchX.value = withSpring(44);
-      switchIconX.value = withSpring(42);
+      switchX.value = withSpring(SCREEN_HEIGHT * 0.044);
+      switchIconX.value = withSpring(SCREEN_HEIGHT * 0.042);
       switchOpacity.value = withTiming(0);
     }
   }, [active, fiatFontSize, fiatFontY, ltcFontY, switchIconX, switchX]);
@@ -102,13 +109,13 @@ const AmountPicker: React.FC<Props> = props => {
           handleToggle();
           handleFontSizeChange();
         }}>
-        <Canvas style={{width: 44, height: 44}}>
+        <Canvas style={{width: SCREEN_HEIGHT * 0.044, height: SCREEN_HEIGHT * 0.044}}>
           <RoundedRect
             x={switchX}
             y={0}
-            width={44}
-            height={44}
-            r={10}
+            width={SCREEN_HEIGHT * 0.044}
+            height={SCREEN_HEIGHT * 0.044}
+            r={SCREEN_HEIGHT * 0.010}
             color="#F3F3F3"
             opacity={switchOpacity}
           />
@@ -116,9 +123,9 @@ const AmountPicker: React.FC<Props> = props => {
             image={switchImage}
             fit="contain"
             x={switchIconX}
-            y={11}
-            width={20}
-            height={20}
+            y={SCREEN_HEIGHT * 0.011}
+            width={SCREEN_HEIGHT * 0.020}
+            height={SCREEN_HEIGHT * 0.020}
           />
         </Canvas>
       </Pressable>
@@ -126,39 +133,40 @@ const AmountPicker: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    borderRadius: 11,
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-    flexDirection: 'row',
-    padding: 10,
-    width: 190,
-    justifyContent: 'space-between',
-  },
-  ltcFontSize: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-  },
-  buyText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-  },
-  amountText: {
-    fontFamily: 'Satoshi Variable',
-    fontSize: Dimensions.get('screen').height * 0.028,
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-  },
-  amountsContainer: {
-    flex: 1,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: 'white',
+      borderRadius: 11,
+      borderWidth: 1,
+      borderColor: '#e5e5e5',
+      flexDirection: 'row',
+      padding: 10,
+      width: 190,
+      justifyContent: 'space-between',
+    },
+    ltcFontSize: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+    },
+    buyText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+    },
+    amountText: {
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.028,
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+    },
+    amountsContainer: {
+      flex: 1,
+    },
+  });
 
 export default AmountPicker;

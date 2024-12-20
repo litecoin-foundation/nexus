@@ -6,18 +6,16 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface Props {
   value: string;
   onPress(): void;
-  small: boolean;
   disabled?: boolean;
   customStyles?: {};
   customFontStyles?: {};
   active: boolean;
 }
 
-const WhiteButton: React.FC<Props> = props => {
+const DateButton: React.FC<Props> = props => {
   const {
     value,
     onPress,
-    small,
     disabled,
     customStyles,
     customFontStyles,
@@ -33,7 +31,6 @@ const WhiteButton: React.FC<Props> = props => {
       disabled={disabled || false}
       style={[
         styles.container,
-        small ? styles.small : styles.big,
         disabled ? styles.disabled : null,
         customStyles,
         active ? styles.active : null,
@@ -44,7 +41,6 @@ const WhiteButton: React.FC<Props> = props => {
           styles.text,
           customFontStyles,
           active ? null : styles.inactiveText,
-          small ? styles.smallText : null,
         ]}>
         {value}
       </Text>
@@ -55,26 +51,21 @@ const WhiteButton: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
+      width: screenWidth * 0.11,
+      maxWidth: screenHeight * 0.05,
+      height: screenHeight * 0.03,
+      borderRadius: (screenHeight * 0.03) / 2,
       backgroundColor: 'transparent',
       justifyContent: 'center',
       alignItems: 'center',
-    },
-    small: {
-      width: screenWidth * 0.7,
-      height: screenHeight * 0.055,
-      borderRadius: screenHeight * 0.01,
-    },
-    big: {
-      width: '100%',
-      height: screenHeight * 0.07,
-      borderRadius: screenHeight * 0.014,
+      paddingHorizontal: screenWidth * 0.02,
     },
     text: {
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#2E2E2E',
-      fontSize: screenHeight * 0.018,
+      fontSize: screenHeight * 0.012,
     },
     disabled: {
       opacity: 0.5,
@@ -85,9 +76,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     inactiveText: {
       color: 'white',
     },
-    smallText: {
-      fontSize: screenHeight * 0.015,
-    },
   });
 
-export default WhiteButton;
+export default DateButton;

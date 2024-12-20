@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import BuyButton from './BuyButton';
 import PadGrid from './PadGrid';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   currentValue: string;
@@ -12,6 +14,10 @@ interface Props {
 
 const BuyPad: React.FC<Props> = props => {
   const {currentValue, onChange, dotDisabled} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const handlePress = (input: string) => {
     let response;
@@ -82,14 +88,14 @@ const BuyPad: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    height: 390,
-    justifyContent: 'space-evenly',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingVertical: 20,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      height: screenHeight * 0.4,
+      flexDirection: 'row',
+      justifyContent: 'space-evenly',
+      flexWrap: 'wrap',
+    },
+  });
 
 export default BuyPad;
