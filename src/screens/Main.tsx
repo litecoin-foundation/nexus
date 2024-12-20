@@ -1,13 +1,5 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  Platform,
-  Pressable,
-  Alert,
-  Dimensions,
-} from 'react-native';
+import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
+import {View, StyleSheet, Text, Platform, Pressable, Alert} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -43,12 +35,7 @@ import {updateAmount} from '../reducers/input';
 import SendModal from '../components/Modals/SendModal';
 import DatePicker from '../components/DatePicker';
 
-const SNAP_POINTS_FROM_TOP = [
-  Dimensions.get('screen').height * 0.24,
-  Dimensions.get('screen').height * 0.47,
-];
-const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
-const CLOSED_SNAP_POINT = SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
+import {ScreenSizeContext} from '../context/screenSize';
 
 type RootStackParamList = {
   Main: {
@@ -65,6 +52,26 @@ interface Props {
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
+
+  const {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    testDeviceHeaderHeight,
+  } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerStyle: {height: testDeviceHeaderHeight},
+    });
+    /* eslint-disable react-hooks/exhaustive-deps */
+  }, [testDeviceHeaderHeight]);
+
+  const SNAP_POINTS_FROM_TOP = [SCREEN_HEIGHT * 0.24, SCREEN_HEIGHT * 0.47];
+  const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
+  const CLOSED_SNAP_POINT =
+    SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
+
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
@@ -116,7 +123,6 @@ const Main: React.FC<Props> = props => {
     if (deeplinkSet) {
       validate(uri);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Deeplink validator
@@ -181,7 +187,7 @@ const Main: React.FC<Props> = props => {
     }
   }, [route]);
 
-  const animatedHeaderStyle = useAnimatedStyle(() => {
+  const animatedChartStyle = useAnimatedStyle(() => {
     return {
       opacity: interpolate(
         mainSheetsTranslationY.value,
@@ -197,12 +203,12 @@ const Main: React.FC<Props> = props => {
       borderBottomLeftRadius: interpolate(
         mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [0, 40],
+        [0, SCREEN_HEIGHT * 0.05],
       ),
       borderBottomRightRadius: interpolate(
         mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [1, 40],
+        [1, SCREEN_HEIGHT * 0.05],
       ),
     };
   });
@@ -407,16 +413,22 @@ const Main: React.FC<Props> = props => {
         <Text style={styles.txTitleText}>Latest Transactions</Text>
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={{height: 50, width: 60}}>
+          <Canvas style={styles.txSearchBtnCanvas}>
             <RoundedRect
               x={0}
               y={0}
-              width={90}
-              height={50}
+              width={SCREEN_HEIGHT * 0.09}
+              height={SCREEN_HEIGHT * 0.05}
               color="white"
-              r={10}
+              r={SCREEN_HEIGHT * 0.01}
             />
-            <Image image={image} x={20} y={16} width={17} height={16} />
+            <Image
+              image={image}
+              x={SCREEN_HEIGHT * 0.02}
+              y={SCREEN_HEIGHT * 0.016}
+              width={SCREEN_HEIGHT * 0.017}
+              height={SCREEN_HEIGHT * 0.016}
+            />
           </Canvas>
         </Pressable>
       </View>
@@ -495,8 +507,7 @@ const Main: React.FC<Props> = props => {
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
       <NewAmountView animatedProps={animatedHeaderHeight}>
-        <Animated.View
-          style={[animatedHeaderStyle, styles.amountViewContainer]}>
+        <Animated.View style={[animatedChartStyle, styles.chartContainer]}>
           <LineChart />
           <DatePicker />
         </Animated.View>
@@ -597,46 +608,44 @@ const Main: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  cardContainer: {
-    flexGrow: 1,
-    alignSelf: 'stretch',
-    marginTop: 25,
-    bottom: 0,
-  },
-  headerContainer: {
-    marginTop: 5,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  txTitleContainer: {
-    height: 70,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  txTitleText: {
-    paddingLeft: 19,
-    paddingBottom: 12,
-    paddingTop: 5,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontWeight: '700',
-    color: '#2E2E2E',
-    fontSize: 24,
-  },
-  amountViewContainer: {
-    paddingTop: 30,
-    gap: 50,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    chartContainer: {
+      paddingTop:
+        screenHeight < 701 ? screenHeight * 0.03 : screenHeight * 0.04,
+      gap: screenHeight < 701 ? screenHeight * 0.035 : screenHeight * 0.05,
+    },
+    headerContainer: {
+      marginTop: 5,
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    txTitleContainer: {
+      height: screenHeight * 0.07,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    txTitleText: {
+      paddingLeft: screenHeight * 0.019,
+      paddingBottom: screenHeight * 0.012,
+      paddingTop: screenHeight * 0.005,
+      fontFamily: 'Satoshi Variable',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: screenHeight * 0.024,
+    },
+    txSearchBtnCanvas: {
+      width: screenHeight * 0.06,
+      height: screenHeight * 0.05,
+    },
+  });
 
 export const navigationOptions = (navigation: any) => {
   return {
+    headerStyle: {height: 103},
     headerTitle: () => (
       <ChooseWalletButton
         title={'Wallet Title'}

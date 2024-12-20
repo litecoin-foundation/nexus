@@ -11,6 +11,7 @@ import {
 import {
   Camera,
   useCameraDevice,
+  useCameraPermission,
   useCodeScanner,
 } from 'react-native-vision-camera';
 import LinearGradient from 'react-native-linear-gradient';
@@ -19,6 +20,7 @@ import {StackScreenProps, TransitionPresets} from '@react-navigation/stack';
 import Switch from '../components/Buttons/Switch';
 import Header from '../components/Header';
 import HeaderButton from '../components/Buttons/HeaderButton';
+import BlueButton from '../components/Buttons/BlueButton';
 
 type RootStackParamList = {
   Scan: {
@@ -86,7 +88,23 @@ const Scan = ({
   }, []);
 
   const device = useCameraDevice('back');
+  const {hasPermission, requestPermission} = useCameraPermission();
 
+  const PermissionsView = (
+    <View style={styles.container}>
+      <Header modal={true} />
+      <View style={styles.permissionsContainer}>
+        <BlueButton
+          value="Enable Camera to Scan QR Codes"
+          onPress={() => requestPermission()}
+        />
+      </View>
+    </View>
+  );
+
+  if (!hasPermission) {
+    return PermissionsView;
+  }
   if (device == null) {
     return <View />;
   }
@@ -148,10 +166,7 @@ const styles = StyleSheet.create({
   bottomText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
   },
@@ -176,14 +191,17 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   headerTitle: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: 'white',
     fontSize: 17,
+  },
+  permissionsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    width: '80%',
   },
 });
 

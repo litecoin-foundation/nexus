@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View, Platform, Dimensions} from 'react-native';
+import React, {useEffect, useState, useContext} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 
 import InputField from '../InputField';
@@ -23,6 +23,8 @@ import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 import {sleep} from '../../lib/utils/poll';
 import {showError} from '../../reducers/errors';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 type RootStackParamList = {
   Main: {
     scanData?: string;
@@ -41,6 +43,10 @@ const Send: React.FC<Props> = props => {
 
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [address, setAddress] = useState('');
   const [toggleLTC, setToggleLTC] = useState<boolean>(true);
@@ -258,71 +264,66 @@ const Send: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    // DashboardButton is 110
-    height: Dimensions.get('screen').height * 0.76 - 110,
-    backgroundColor: '#f7f7f7',
-    paddingLeft: Dimensions.get('screen').width * 0.06,
-    paddingRight: Dimensions.get('screen').width * 0.06,
-  },
-  titleText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-    fontSize: Dimensions.get('screen').height * 0.025,
-  },
-  cellContainer: {
-    marginTop: Dimensions.get('screen').height * 0.03,
-  },
-  amountContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  subContainer: {
-    flex: 1,
-  },
-  subtitleText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#747E87',
-    fontSize: Dimensions.get('screen').height * 0.012,
-  },
-  inputFieldContainer: {
-    paddingTop: 5,
-  },
-  numpadContainer: {
-    position: 'absolute',
-    width: Dimensions.get('screen').width,
-    bottom: Dimensions.get('screen').height * 0.03,
-  },
-  bottomBtnsContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-    paddingBottom: Dimensions.get('screen').height * 0.03,
-  },
-  bottomBtns: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  greenBtnContainer: {
-    flexBasis: '37%',
-  },
-  blueBtnContainer: {
-    flexBasis: '60%',
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      // DashboardButton is 110
+      height: screenHeight * 0.76 - 110,
+      backgroundColor: '#f7f7f7',
+      paddingLeft: screenWidth * 0.06,
+      paddingRight: screenWidth * 0.06,
+    },
+    titleText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: screenHeight * 0.025,
+    },
+    cellContainer: {
+      marginTop: screenHeight * 0.03,
+    },
+    amountContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    subContainer: {
+      flex: 1,
+    },
+    subtitleText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#747E87',
+      fontSize: screenHeight * 0.012,
+    },
+    inputFieldContainer: {
+      paddingTop: 5,
+    },
+    numpadContainer: {
+      position: 'absolute',
+      width: screenWidth,
+      bottom: screenHeight * 0.03,
+    },
+    bottomBtnsContainer: {
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+      paddingBottom: screenHeight * 0.03,
+    },
+    bottomBtns: {
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    greenBtnContainer: {
+      flexBasis: '37%',
+    },
+    blueBtnContainer: {
+      flexBasis: '60%',
+    },
+  });
 
 export default Send;

@@ -110,10 +110,7 @@ const Pin: React.FC<Props> = props => {
 
 const styles = StyleSheet.create({
   headerTitle: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: 'bold',
     color: 'white',

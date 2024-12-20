@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {View, StyleSheet, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -10,6 +10,8 @@ import BlueButton from '../Buttons/BlueButton';
 import PasscodeInput from '../PasscodeInput';
 import OnboardingHeader from '../OnboardingHeader';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   handleCompletion(): void;
@@ -34,6 +36,9 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
   const pin = useAppSelector(state => state.authpad.pin);
   const passcodeSet = useAppSelector(state => state.authentication.passcodeSet);
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // clear all inputs in AuthPad on initial render
   useEffect(() => {
@@ -127,6 +132,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
           <PadGrid />
           <View style={styles.buttonContainer}>{buttons}</View>
         </View>
+
         <View style={styles.confirmButtonContainer}>
           <BlueButton
             disabled={pin.length !== 6 ? true : false}
@@ -139,48 +145,44 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  gradient: {
-    flexGrow: 1,
-  },
-  buttonContainer: {
-    height: 390,
-    justifyContent: 'space-evenly',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingVertical: 20,
-  },
-  confirmButtonContainer: {
-    paddingHorizontal: 34,
-    position: 'absolute',
-    bottom: 28,
-    width: '100%',
-  },
-  bottomSheetTitle: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    color: '#2e2e2e',
-    fontSize: 26,
-    textAlign: 'center',
-    paddingTop: 18,
-  },
-  bottomSheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    height: '70%',
-    bottom: 0,
-    position: 'absolute',
-    width: '100%',
-  },
-  bottomSheetSubContainer: {
-    position: 'absolute',
-    bottom: 100,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    gradient: {
+      flexGrow: 1,
+    },
+    bottomSheet: {
+      position: 'absolute',
+      bottom: 0,
+      backgroundColor: '#ffffff',
+      borderTopLeftRadius: screenHeight * 0.03,
+      borderTopRightRadius: screenHeight * 0.03,
+      width: screenWidth,
+      height: screenHeight * 0.7,
+    },
+    confirmButtonContainer: {
+      paddingHorizontal: 34,
+      position: 'absolute',
+      bottom: 28,
+      width: '100%',
+    },
+    bottomSheetTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: 'bold',
+      color: '#2e2e2e',
+      fontSize: screenHeight * 0.026,
+      textAlign: 'center',
+      paddingTop: screenHeight * 0.02,
+    },
+    bottomSheetSubContainer: {
+      paddingTop: screenHeight * 0.01,
+    },
+    buttonContainer: {
+      width: screenWidth,
+      height: screenHeight * 0.4,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+  });
 
 export default OnboardingAuthPad;

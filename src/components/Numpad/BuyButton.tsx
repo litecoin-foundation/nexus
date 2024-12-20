@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   TouchableWithoutFeedback,
   Text,
@@ -15,6 +15,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface Props {
   value: string;
   onPress: () => void;
@@ -24,6 +26,11 @@ interface Props {
 
 const BuyButton: React.FC<Props> = props => {
   const {value, onPress, disabled, imageSource} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const scaler = useSharedValue(1);
 
   const motionStyle = useAnimatedStyle(() => {
@@ -46,8 +53,10 @@ const BuyButton: React.FC<Props> = props => {
       onPressOut={onPressOut}
       disabled={disabled}
       onPress={() => {
-        triggerSelectionFeedback();
-        onPress();
+        if (!disabled) {
+          triggerSelectionFeedback();
+          onPress();
+        }
       }}>
       <Animated.View style={[styles.button, motionStyle]}>
         {imageSource ? (
@@ -60,32 +69,24 @@ const BuyButton: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    width: '33%',
-    alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
-  button: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 125,
-    height: 96,
-  },
-  text: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#293C62',
-    fontSize: 24,
-  },
-  image: {
-    tintColor: '#293C62',
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    button: {
+      width: screenWidth / 3,
+      height: screenHeight * 0.1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    text: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#293C62',
+      fontSize: screenHeight * 0.024,
+    },
+    image: {
+      tintColor: '#293C62',
+    },
+  });
 
 export default BuyButton;

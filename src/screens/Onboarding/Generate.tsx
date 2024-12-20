@@ -158,10 +158,7 @@ const styles = StyleSheet.create({
   warningText: {
     color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 12,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: 'bold',
     paddingRight: 38,
@@ -183,10 +180,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   headerTitle: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: 'bold',
     color: 'white',

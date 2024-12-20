@@ -23,10 +23,7 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   headerDescriptionText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '600',
     color: 'white',

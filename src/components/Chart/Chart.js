@@ -1,5 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {Dimensions} from 'react-native';
+import React, {useEffect, useState, useRef, useContext} from 'react';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
 import Svg, {Path, Line, G, Defs, LinearGradient, Stop} from 'react-native-svg';
@@ -14,14 +13,20 @@ import {useDispatch, useSelector} from 'react-redux';
 import Cursor from './Cursor';
 import {monthSelector} from '../../reducers/ticker';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 const d3 = {shape};
 
-const height = 130;
-const {width} = Dimensions.get('window');
+// const height = 130;
+// const {width} = Dimensions.get('window');
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 const Chart = () => {
+
+  const { width, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const height = SCREEN_HEIGHT * 0.15;
+
   const dispatch = useDispatch();
   const data = useSelector(state => monthSelector(state));
 
@@ -44,7 +49,7 @@ const Chart = () => {
 
     x.current = scale
       .scaleTime()
-      .range([0, width - 5])
+      .range([0, width])
       .domain([xExtent[0], xExtent[1]]);
     y.current = scale
       .scaleLinear()
@@ -79,7 +84,7 @@ const Chart = () => {
 
   const animatedProps = useAnimatedProps(() => {
     return {
-      strokeDashoffset: 2000 * (1 - animationValue.value),
+      strokeDashoffset: 2400 * (1 - animationValue.value),
     };
   });
 
@@ -114,7 +119,7 @@ const Chart = () => {
         fill="none"
         stroke="white"
         strokeWidth={3}
-        strokeDasharray={2000}
+        strokeDasharray={2400}
         animatedProps={animatedProps}
       />
     </Svg>

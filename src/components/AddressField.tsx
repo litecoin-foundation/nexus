@@ -105,10 +105,9 @@ const styles = StyleSheet.create({
   },
   text: {
     flex: 1,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    paddingLeft: 11.5,
+    paddingRight: 11.5,
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#20BB74',
@@ -128,10 +127,7 @@ const styles = StyleSheet.create({
   hiddenText: {
     fontSize: 18,
     lineHeight: 22,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     maxWidth: 310,

@@ -1,5 +1,7 @@
-import React from 'react';
-import {TouchableOpacity, Image, StyleSheet, Dimensions} from 'react-native';
+import React, {useContext} from 'react';
+import {TouchableOpacity, Image, StyleSheet} from 'react-native';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   onPress: () => void;
@@ -7,6 +9,10 @@ interface Props {
 
 const GreyRoundButton: React.FC<Props> = props => {
   const {onPress} = props;
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image source={require('../../assets/images/close.png')} />
@@ -14,15 +20,16 @@ const GreyRoundButton: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    height: Dimensions.get('screen').height * 0.045,
-    width: Dimensions.get('screen').height * 0.045,
-    borderRadius: Dimensions.get('screen').height * 0.015,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      height: screenHeight * 0.045,
+      width: screenHeight * 0.045,
+      borderRadius: screenHeight * 0.015,
+      backgroundColor: '#f0f0f0',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });
 
 export default GreyRoundButton;

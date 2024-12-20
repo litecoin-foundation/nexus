@@ -1,5 +1,5 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Dimensions, StyleSheet, View} from 'react-native';
+import React, {useEffect, useRef, useState, useContext} from 'react';
+import {StyleSheet, View} from 'react-native';
 import {
   Gesture,
   GestureDetector,
@@ -16,14 +16,10 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 
+import {ScreenSizeContext} from '../context/screenSize';
+
 const ANIM_DURATION = 200;
 const SPRING_BACK_ANIM_DURATION = 100;
-
-const SWIPE_TRIGGER_Y_RANGE = Dimensions.get('screen').height * 0.15;
-const UNFOLD_SHEET_POINT = Dimensions.get('screen').height * 0.24;
-const FOLD_SHEET_POINT = Dimensions.get('screen').height * 0.47;
-const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
-const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 
 interface Props {
   txViewComponent: React.ReactNode;
@@ -63,6 +59,15 @@ const BottomSheet: React.FC<Props> = props => {
     foldUnfold,
     activeTab,
   } = props;
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
+  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24;
+  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
+  const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
+  const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 
   const openMenuBarTabOnJS = () => {
     foldUnfold(true);
@@ -161,6 +166,7 @@ const BottomSheet: React.FC<Props> = props => {
         mainSheetsTranslationYStart.value = UNFOLD_SHEET_POINT;
       }, ANIM_DURATION);
     }
+    /* eslint-disable react-hooks/exhaustive-deps */
   }, [folded, mainSheetsTranslationY, mainSheetsTranslationYStart]);
 
   const cardOpacity = useSharedValue(0);
@@ -262,13 +268,14 @@ const RenderCard: React.FC<CardProps> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  bottomSheet: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#f7f7f7',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    bottomSheet: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: '#f7f7f7',
+      borderTopLeftRadius: screenHeight * 0.030,
+      borderTopRightRadius: screenHeight * 0.030,
+    },
+  });
 
 export default BottomSheet;

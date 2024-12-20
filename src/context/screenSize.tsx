@@ -1,5 +1,6 @@
 import React, {createContext, useState, useEffect} from 'react';
 import {Dimensions, useWindowDimensions} from 'react-native';
+// import {useHeaderHeight} from '@react-navigation/elements';
 
 interface Props {
   children: React.ReactElement;
@@ -12,16 +13,28 @@ const ScreenSizeContext = createContext({
   width: Dimensions.get('screen').width,
   height: Dimensions.get('screen').height,
   isDeviceRotated: false,
+  testDeviceHeaderHeight: 103,
 });
 
 const ScreenSizeProvider: React.FC<Props> = props => {
   const { width: deviceWidth, height: deviceHeight } = useWindowDimensions();
+
+  // const originalDeviceHeaderHeight = useHeaderHeight();
+  // iphone 15 Pro Max header size
+  const originalDeviceHeaderHeight = 103;
 
   const { specifiedWidth, specifiedHeight, deviceName } = props;
 
   const [width, setWidth] = useState(specifiedWidth || deviceWidth);
   const [height, setHeight] = useState(specifiedHeight || deviceHeight);
   const [isDeviceRotated, setIsDeviceRotated] = useState(false);
+  const [testDeviceHeaderHeight, setTestDeviceHeaderHeight] = useState(originalDeviceHeaderHeight);
+
+  function setHeaderHeight(screenHeight: number) {
+    const testDeviceCropFactor = Dimensions.get('screen').height / screenHeight;
+    const newHeaderHeight = parseInt(String(originalDeviceHeaderHeight / testDeviceCropFactor), 10);
+    setTestDeviceHeaderHeight(newHeaderHeight);
+  }
 
   function getOrientation(deviceNameProp: string | undefined) {
     const shouldRotate = deviceWidth > deviceHeight;
@@ -33,14 +46,17 @@ const ScreenSizeProvider: React.FC<Props> = props => {
       if (deviceNameProp) {
         setWidth(height);
         setHeight(width);
+        setHeaderHeight(width);
       } else {
         setWidth(specifiedHeight || deviceWidth);
         setHeight(specifiedWidth || deviceHeight);
+        setHeaderHeight(specifiedWidth || deviceHeight);
       }
     } else {
       // If no rotation needed, just set dimensions
       setWidth(specifiedWidth || deviceWidth);
       setHeight(specifiedHeight || deviceHeight);
+      setHeaderHeight(specifiedHeight || deviceHeight);
     }
   }
 
@@ -48,6 +64,7 @@ const ScreenSizeProvider: React.FC<Props> = props => {
     const newScreenLayout = getDeviceScreenLayout(deviceNameProp);
     setWidth(newScreenLayout.width);
     setHeight(newScreenLayout.height);
+    setHeaderHeight(newScreenLayout.height);
     setIsDeviceRotated(false);
   }
 
@@ -71,6 +88,7 @@ const ScreenSizeProvider: React.FC<Props> = props => {
         width: width,
         height: height,
         isDeviceRotated: isDeviceRotated,
+        testDeviceHeaderHeight: testDeviceHeaderHeight,
       }}
       {...props}
     />

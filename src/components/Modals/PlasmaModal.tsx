@@ -19,7 +19,7 @@ import {
 
 import {useAppSelector} from '../../store/hooks';
 
-import { ScreenSizeContext } from '../../context/screenSize';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   isOpened: boolean;

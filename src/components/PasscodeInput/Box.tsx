@@ -19,7 +19,7 @@ const screenWidth = Dimensions.get('screen').width;
 const width = screenWidth * 0.106;
 
 interface Props {
-  buttonState: 'active' | 'inactive' | 'used';
+  buttonState: 'active' | 'inactive' | 'used' | 'disabled';
 }
 
 const Box: React.FC<Props> = props => {
@@ -31,6 +31,10 @@ const Box: React.FC<Props> = props => {
   const circleRadius = useSharedValue(0);
   const yHeight = useSharedValue(7);
   const yCircleHeight = useSharedValue(width - 7);
+
+  const opacityStyle = {
+    opacity: buttonState === 'disabled' ? 0.2 : 1,
+  };
 
   const interpolatedColour = useDerivedValue(() =>
     interpolateColors(
@@ -78,7 +82,7 @@ const Box: React.FC<Props> = props => {
   }, [buttonState]);
 
   return (
-    <Canvas style={styles.container}>
+    <Canvas style={[styles.container, opacityStyle]}>
       <RoundedRect
         width={width}
         height={width}

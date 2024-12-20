@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {View, StyleSheet, Text, Platform, Dimensions} from 'react-native';
+import React, {useEffect, useContext} from 'react';
+import {View, StyleSheet, Text, Platform} from 'react-native';
 
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
@@ -10,7 +10,11 @@ import PadGrid from './PadGrid';
 import BuyButton from './BuyButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-const screenHeight = Dimensions.get('screen').height;
+import {ScreenSizeContext} from '../../context/screenSize';
+
+const MAX_LOGIN_ATTEMPTS = 10;
+const TIME_LOCK_IN_SEC = 3600;
+const DAY_LOCK_IN_SEC = 86400;
 
 interface Props {
   handleValidationFailure: () => void;
@@ -27,6 +31,19 @@ const AuthPad: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
   const pin = useAppSelector(state => state.authpad.pin);
   const passcode = useAppSelector(state => state.authentication.passcode);
+
+  const failedLoginAttempts = useAppSelector(
+    state => state.authentication.failedLoginAttempts,
+  );
+  const timeLock = useAppSelector(state => state.authentication.timeLock);
+  const timeLockAt = useAppSelector(state => state.authentication.timeLockAt);
+  const dayLock = useAppSelector(state => state.authentication.dayLock);
+  const dayLockAt = useAppSelector(state => state.authentication.dayLockAt);
+  const permaLock = useAppSelector(state => state.authentication.permaLock);
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // clear all inputs in AuthPad on initial render
   useEffect(() => {
@@ -66,12 +83,64 @@ const AuthPad: React.FC<Props> = props => {
     }
   };
 
+  let pinInactive = false;
+
+  const status = {
+    status: function () {
+      if (permaLock) {
+        pinInactive = true;
+        return 'Maxed out pin attempts. Recover with seed.';
+      } else if (dayLock) {
+        if (
+          Number(dayLockAt || 0) + DAY_LOCK_IN_SEC <
+          Math.floor(Date.now() / 1000)
+        ) {
+          pinInactive = false;
+          if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
+            return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} left.`;
+          }
+        } else {
+          pinInactive = true;
+          const timeLeftInSec =
+            DAY_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - dayLockAt);
+          return `Maxed out pin attempts. Try again in ${Math.ceil(
+            timeLeftInSec / 60,
+          )} minutes.`;
+        }
+      } else if (timeLock) {
+        if (
+          Number(timeLockAt || 0) + TIME_LOCK_IN_SEC <
+          Math.floor(Date.now() / 1000)
+        ) {
+          pinInactive = false;
+          if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
+            return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} left.`;
+          }
+        } else {
+          pinInactive = true;
+          const timeLeftInSec =
+            TIME_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - timeLockAt);
+          return `Maxed out pin attempts. Try again in ${Math.ceil(
+            timeLeftInSec / 60,
+          )} minutes.`;
+        }
+      } else {
+        pinInactive = false;
+        if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
+          return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} left.`;
+        }
+      }
+      return '';
+    },
+  }.status();
+
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 
   const buttons = values.map(value => {
     if (value === '.') {
       return (
         <BiometricButton
+          disabled={pinInactive}
           key="biometric-button-key"
           onPress={async () => {
             if (handleBiometricPress) {
@@ -87,6 +156,7 @@ const AuthPad: React.FC<Props> = props => {
     if (value === '⌫') {
       return (
         <BuyButton
+          disabled={pinInactive}
           key="back-arrow-button-key"
           value={value}
           onPress={() => handlePress(value)}
@@ -95,16 +165,29 @@ const AuthPad: React.FC<Props> = props => {
       );
     }
     return (
-      <BuyButton key={value} value={value} onPress={() => handlePress(value)} />
+      <BuyButton
+        disabled={pinInactive}
+        key={value}
+        value={value}
+        onPress={() => handlePress(value)}
+      />
     );
   });
+
+  const RenderStatusText = (
+    <Text style={styles.bottomSheetStatus}>{status}</Text>
+  );
 
   return (
     <View style={styles.bottomSheet}>
       <Text style={styles.bottomSheetTitle}>Enter your PIN</Text>
-
+      {RenderStatusText}
       <View style={styles.bottomSheetSubContainer}>
-        <PasscodeInput dotsLength={6} activeDotIndex={pin.length} />
+        <PasscodeInput
+          pinInactive={pinInactive}
+          dotsLength={6}
+          activeDotIndex={pin.length}
+        />
         <PadGrid />
         <View style={styles.buttonContainer}>{buttons}</View>
       </View>
@@ -112,39 +195,44 @@ const AuthPad: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  bottomSheet: {
-    position: 'absolute',
-    bottom: 0,
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    width: '100%',
-    height: 470 / screenHeight > 0.57 ? '83%' : '70%',
-  },
-  bottomSheetTitle: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    color: '#2e2e2e',
-    fontSize: 26,
-    textAlign: 'center',
-    paddingTop: 18,
-  },
-  bottomSheetSubContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  buttonContainer: {
-    height: 390,
-    justifyContent: 'space-evenly',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingVertical: 20,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    bottomSheet: {
+      position: 'absolute',
+      bottom: 0,
+      backgroundColor: '#ffffff',
+      borderTopLeftRadius: screenHeight * 0.03,
+      borderTopRightRadius: screenHeight * 0.03,
+      width: screenWidth,
+      height: screenHeight * 0.65,
+    },
+    bottomSheetTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: 'bold',
+      color: '#2e2e2e',
+      fontSize: screenHeight * 0.026,
+      textAlign: 'center',
+      paddingTop: screenHeight * 0.02,
+    },
+    bottomSheetStatus: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      color: 'red',
+      fontSize: screenHeight * 0.015,
+      fontWeight: 300,
+      textAlign: 'center',
+      paddingTop: screenHeight * 0.01,
+    },
+    bottomSheetSubContainer: {
+      paddingTop: screenHeight * 0.01,
+    },
+    buttonContainer: {
+      width: screenWidth,
+      height: screenHeight * 0.4,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+  });
 
 export default AuthPad;

@@ -33,10 +33,8 @@ const AmountPicker: React.FC<Props> = props => {
   const switchIconX = useSharedValue(42);
   const switchOpacity = useSharedValue(0);
 
-  const fontFamily =
-    Platform.OS === 'ios' ? 'Satoshi Variable' : 'SatoshiVariable-Regular.ttf';
   const fontStyle = {
-    fontFamily,
+    fontFamily: 'Satoshi Variable',
     fontSize: 18,
     fontStyle: 'normal',
     fontWeight: '700',
@@ -140,28 +138,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   ltcFontSize: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#2E2E2E',
   },
   buyText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontStyle: 'normal',
     fontWeight: '700',
     color: '#2E2E2E',
   },
   amountText: {
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
+    fontFamily: 'Satoshi Variable',
     fontSize: Dimensions.get('screen').height * 0.028,
     fontStyle: 'normal',
     fontWeight: '700',

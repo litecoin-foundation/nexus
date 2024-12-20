@@ -1,9 +1,11 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {View, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import AuthPad from '../Numpad/AuthPad';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   cardTranslateAnim: any;
@@ -15,6 +17,10 @@ interface Props {
 const PinModalContent: React.FC<Props> = props => {
   const {cardTranslateAnim, close, handleValidationFailure, handleValidationSuccess} =
     props;
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return (
     <Animated.View style={[styles.container, cardTranslateAnim]}>
       <AuthPad
@@ -29,17 +35,20 @@ const PinModalContent: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: 0,
-    height: '100%',
-    width: '100%',
-  },
-  closeContainer: {
-    position: 'absolute',
-    top: '31.5%',
-    right: 20,
-  },
-});
+// AuthPad height os screenHeight * 0.65
+// Close button is screenHeight * 0.045
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      position: 'absolute',
+      bottom: 0,
+      height: '100%',
+      width: '100%',
+    },
+    closeContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.65 - screenHeight * 0.045 - 15,
+      right: 15,
+    },
+  });
 export default PinModalContent;

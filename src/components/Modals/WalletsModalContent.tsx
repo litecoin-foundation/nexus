@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {View, StyleSheet, Dimensions} from 'react-native';
+import React, {useEffect, useContext} from 'react';
+import {View, StyleSheet} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -13,6 +13,8 @@ import {useAppSelector} from '../../store/hooks';
 import {subunitSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface Props {
   isOpened: boolean;
   showAnim: boolean;
@@ -24,6 +26,10 @@ interface Props {
 export default function WalletsModalContent(props: Props) {
   const {isOpened, showAnim, animDelay, animDuration, cardTranslateAnim} =
     props;
+
+  const { width, height } = useContext(ScreenSizeContext);
+  const styles = getStyles(width, height);
+
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const convertToSubunit = useAppSelector(state => subunitSelector(state));
   const balanceAmount = convertToSubunit(totalBalance);
@@ -103,50 +109,51 @@ export default function WalletsModalContent(props: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  body: {
-    height: '100%',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: Dimensions.get('screen').height * 0.03,
-  },
-  bodyItems: {
-    flex: 1,
-    width: '100%',
-  },
-  bodyItem: {
-    height: 'auto',
-    width: '100%',
-    marginBottom: Dimensions.get('screen').height * 0.03,
-  },
-  notificationTab: {
-    height: Dimensions.get('screen').height * 0.1,
-    width: '100%',
-    borderRadius: Dimensions.get('screen').height * 0.02,
-    borderWidth: 2,
-    borderColor: 'red',
-    borderStyle: 'dashed',
-    backgroundColor: 'transparent',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notificationText: {
-    color: 'red',
-    fontStyle: 'normal',
-    fontWeight: '400',
-    fontSize: Dimensions.get('screen').height * 0.018,
-  },
-  button: {
-    height: 50,
-    width: 150,
-    borderRadius: 25,
-    backgroundColor: 'white',
-    shadowColor: '#393e53',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-  },
-  noMargin: {
-    margin: 0,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    body: {
+      height: '100%',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: screenHeight * 0.03,
+    },
+    bodyItems: {
+      flex: 1,
+      width: '100%',
+    },
+    bodyItem: {
+      height: 'auto',
+      width: '100%',
+      marginBottom: screenHeight * 0.03,
+    },
+    notificationTab: {
+      height: screenHeight * 0.1,
+      width: '100%',
+      borderRadius: screenHeight * 0.02,
+      borderWidth: 2,
+      borderColor: 'red',
+      borderStyle: 'dashed',
+      backgroundColor: 'transparent',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    notificationText: {
+      color: 'red',
+      fontStyle: 'normal',
+      fontWeight: '400',
+      fontSize: screenHeight * 0.018,
+    },
+    button: {
+      height: 50,
+      width: 150,
+      borderRadius: 25,
+      backgroundColor: 'white',
+      shadowColor: '#393e53',
+      shadowOpacity: 0.25,
+      shadowRadius: 14,
+    },
+    noMargin: {
+      margin: 0,
+    },
+  });

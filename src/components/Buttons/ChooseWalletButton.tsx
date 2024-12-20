@@ -1,17 +1,18 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   View,
   TouchableOpacity,
   Text,
   StyleSheet,
   Platform,
-  Dimensions,
   Image,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import Svg, {Path} from 'react-native-svg';
 
 import {useAppSelector} from '../../store/hooks';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   title: string;
@@ -38,6 +39,8 @@ const ChooseWalletButton: React.FC<Props> = props => {
     arrowSpinAnim,
   } = props;
 
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
@@ -61,10 +64,10 @@ const ChooseWalletButton: React.FC<Props> = props => {
     return () => clearTimeout(timeout);
   }, [animDuration, isFromBottomToTop, isModalOpened]);
 
-  const fontSize = Math.round(Dimensions.get('screen').height * 0.018) - 1;
-  const arrowHeight = Math.round(Dimensions.get('screen').height * 0.012);
-  const boxPadding = Math.round(Dimensions.get('screen').height * 0.015);
-  const boxHeight = Math.round(Dimensions.get('screen').height * 0.035);
+  const fontSize = Math.round(SCREEN_HEIGHT * 0.018) - 1;
+  const arrowHeight = Math.round(SCREEN_HEIGHT * 0.012);
+  const boxPadding = Math.round(SCREEN_HEIGHT * 0.015);
+  const boxHeight = Math.round(SCREEN_HEIGHT * 0.035);
 
   const boxWidth =
     Math.round((fontSize * title.length) / 3) +
@@ -80,6 +83,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
   const styles = StyleSheet.create({
     container: {
       height: boxHeight,
+      minHeight: 25,
       width: '100%',
       backgroundColor: 'transparent',
       justifyContent: 'center',
