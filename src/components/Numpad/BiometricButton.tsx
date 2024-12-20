@@ -79,8 +79,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.03,
       width: screenHeight * 0.03,
       tintColor: '#293C62',
-      marginLeft: screenHeight * 0.014,
-      marginBottom: screenHeight * 0.02,
+      marginLeft: screenHeight * 0.005,
     },
     disabled: {
       opacity: 0,

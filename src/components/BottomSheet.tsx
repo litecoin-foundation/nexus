@@ -166,6 +166,7 @@ const BottomSheet: React.FC<Props> = props => {
         mainSheetsTranslationYStart.value = UNFOLD_SHEET_POINT;
       }, ANIM_DURATION);
     }
+    /* eslint-disable react-hooks/exhaustive-deps */
   }, [folded, mainSheetsTranslationY, mainSheetsTranslationYStart]);
 
   const cardOpacity = useSharedValue(0);

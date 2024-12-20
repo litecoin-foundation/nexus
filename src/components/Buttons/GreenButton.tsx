@@ -1,5 +1,7 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {Text, TouchableOpacity, StyleSheet, Platform} from 'react-native';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   value: string;
@@ -9,6 +11,10 @@ interface Props {
 
 const GreenButton: React.FC<Props> = props => {
   const {value, onPress, disabled} = props;
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return (
     <TouchableOpacity
       style={[styles.container, disabled ? styles.disabled : null]}
@@ -19,28 +25,29 @@ const GreenButton: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    height: 50,
-    backgroundColor: '#20BB74',
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 25,
-  },
-  text: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-  },
-  disabled: {
-    opacity: 0.4,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      height: screenHeight * 0.055,
+      backgroundColor: '#20BB74',
+      borderRadius: screenHeight * 0.01,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: screenHeight * 0.025,
+    },
+    text: {
+      color: '#FFFFFF',
+      fontSize: screenHeight * 0.017,
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontStyle: 'normal',
+      fontWeight: '700',
+    },
+    disabled: {
+      opacity: 0.4,
+    },
+  });
 
 export default GreenButton;

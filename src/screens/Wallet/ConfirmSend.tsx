@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {
   Alert,
@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Dimensions,
   Platform,
 } from 'react-native';
 import Animated, {
@@ -25,6 +24,8 @@ import ChooseWalletLargeButton from '../../components/Buttons/ChooseWalletLargeB
 import {subunitSymbolSelector} from '../../reducers/settings';
 import {useAppSelector} from '../../store/hooks';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface Props {}
 
 const ConfirmSend: React.FC<Props> = () => {
@@ -40,6 +41,9 @@ const ConfirmSend: React.FC<Props> = () => {
   const fee = useAppSelector(state => state.input.fee);
   // Todo: get total fee for the tx
   const totalFeeInLTC = 'undefined ';
+
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [isPinModalTriggered, setPinModalTriggered] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
@@ -143,7 +147,6 @@ const ConfirmSend: React.FC<Props> = () => {
         animDuration={250}
         gapInPixels={0}
         backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
-        rotateWalletButtonArrow={rotateArrow}
         renderBody={(
           _,
           __,
@@ -163,165 +166,166 @@ const ConfirmSend: React.FC<Props> = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  body: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    position: 'relative',
-    paddingTop: Dimensions.get('screen').height * 0.12,
-    paddingLeft: Dimensions.get('screen').height * 0.02,
-    paddingRight: Dimensions.get('screen').height * 0.02,
-  },
-  chooseWalletBtnContainer: {
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    height: 'auto',
-    paddingLeft: Dimensions.get('screen').height * 0.02,
-    paddingRight: Dimensions.get('screen').height * 0.02,
-    marginTop: Dimensions.get('screen').height * 0.12,
-    zIndex: 2,
-  },
-  chooseWalletBtn: {
-    width: '100%',
-    height: '100%',
-    borderRadius: Dimensions.get('screen').height * 0.01,
-    backgroundColor: '#0d3d8a',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: Dimensions.get('screen').height * 0.02,
-    paddingRight: Dimensions.get('screen').height * 0.02,
-  },
-  chooseWalletBtnText: {
-    color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '500',
-    fontSize: Dimensions.get('screen').height * 0.017,
-  },
-  btnArrow: {
-    height: Dimensions.get('screen').height * 0.012,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-    marginLeft: 8,
-  },
-  btnArrowIcon: {
-    height: '100%',
-    objectFit: 'contain',
-  },
-  sendText: {
-    color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: Dimensions.get('screen').height * 0.025,
-    marginTop: Dimensions.get('screen').height * 0.08,
-  },
-  amountText: {
-    color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '400',
-    fontSize: Dimensions.get('screen').height * 0.05,
-  },
-  fiatAmount: {
-    width: 'auto',
-    borderRadius: Dimensions.get('screen').height * 0.01,
-    backgroundColor: '#0F4CAD',
-    paddingTop: Dimensions.get('screen').height * 0.01,
-    paddingBottom: Dimensions.get('screen').height * 0.01,
-    paddingLeft: Dimensions.get('screen').height * 0.015,
-    paddingRight: Dimensions.get('screen').height * 0.015,
-  },
-  fiatAmountText: {
-    color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: Dimensions.get('screen').height * 0.02,
-    opacity: 0.4,
-  },
-  valueSubtitle: {
-    color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: Dimensions.get('screen').height * 0.017,
-    textTransform: 'uppercase',
-    opacity: 0.6,
-    marginTop: Dimensions.get('screen').height * 0.05,
-  },
-  valueTitle: {
-    color: '#fff',
-    fontFamily:
-      Platform.OS === 'ios'
-        ? 'Satoshi Variable'
-        : 'SatoshiVariable-Regular.ttf',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: Dimensions.get('screen').height * 0.025,
-  },
-  confirmButtonContainer: {
-    position: 'absolute',
-    bottom: Dimensions.get('screen').height * 0.03,
-    width: '100%',
-    height: Dimensions.get('screen').height * 0.05,
-    paddingLeft: Dimensions.get('screen').height * 0.02,
-    paddingRight: Dimensions.get('screen').height * 0.02,
-  },
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    body: {
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      position: 'relative',
+      paddingTop: screenHeight * 0.12,
+      paddingLeft: screenHeight * 0.02,
+      paddingRight: screenHeight * 0.02,
+    },
+    chooseWalletBtnContainer: {
+      position: 'absolute',
+      top: 0,
+      width: '100%',
+      height: 'auto',
+      paddingLeft: screenHeight * 0.02,
+      paddingRight: screenHeight * 0.02,
+      marginTop: screenHeight * 0.12,
+      zIndex: 2,
+    },
+    chooseWalletBtn: {
+      width: '100%',
+      height: '100%',
+      borderRadius: screenHeight * 0.01,
+      backgroundColor: '#0d3d8a',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingLeft: screenHeight * 0.02,
+      paddingRight: screenHeight * 0.02,
+    },
+    chooseWalletBtnText: {
+      color: '#fff',
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontStyle: 'normal',
+      fontWeight: '500',
+      fontSize: screenHeight * 0.017,
+    },
+    btnArrow: {
+      height: screenHeight * 0.012,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+      marginLeft: 8,
+    },
+    btnArrowIcon: {
+      height: '100%',
+      objectFit: 'contain',
+    },
+    sendText: {
+      color: '#fff',
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.025,
+      marginTop: screenHeight * 0.08,
+    },
+    amountText: {
+      color: '#fff',
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontStyle: 'normal',
+      fontWeight: '400',
+      fontSize: screenHeight * 0.05,
+    },
+    fiatAmount: {
+      width: 'auto',
+      borderRadius: screenHeight * 0.01,
+      backgroundColor: '#0F4CAD',
+      paddingTop: screenHeight * 0.01,
+      paddingBottom: screenHeight * 0.01,
+      paddingLeft: screenHeight * 0.015,
+      paddingRight: screenHeight * 0.015,
+    },
+    fiatAmountText: {
+      color: '#fff',
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.02,
+      opacity: 0.4,
+    },
+    valueSubtitle: {
+      color: '#fff',
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.017,
+      textTransform: 'uppercase',
+      opacity: 0.6,
+      marginTop: screenHeight * 0.05,
+    },
+    valueTitle: {
+      color: '#fff',
+      fontFamily:
+        Platform.OS === 'ios'
+          ? 'Satoshi Variable'
+          : 'SatoshiVariable-Regular.ttf',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.025,
+    },
+    confirmButtonContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.03,
+      width: '100%',
+      height: screenHeight * 0.05,
+      paddingLeft: screenHeight * 0.02,
+      paddingRight: screenHeight * 0.02,
+    },
 
-  blurContainer: {
-    flex: 1,
-    padding: 20,
-    margin: 16,
-    textAlign: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderRadius: 20,
-  },
-  background: {
-    flex: 1,
-    flexWrap: 'wrap',
-    ...StyleSheet.absoluteFill,
-  },
-  box: {
-    width: '25%',
-    height: '20%',
-  },
-  boxEven: {
-    backgroundColor: 'orangered',
-  },
-  boxOdd: {
-    backgroundColor: 'gold',
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-});
+    blurContainer: {
+      flex: 1,
+      padding: 20,
+      margin: 16,
+      textAlign: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      borderRadius: 20,
+    },
+    background: {
+      flex: 1,
+      flexWrap: 'wrap',
+      ...StyleSheet.absoluteFill,
+    },
+    box: {
+      width: '25%',
+      height: '20%',
+    },
+    boxEven: {
+      backgroundColor: 'orangered',
+    },
+    boxOdd: {
+      backgroundColor: 'gold',
+    },
+    text: {
+      fontSize: 24,
+      fontWeight: '600',
+    },
+  });
 
 export const ConfirmSendNavigationOptions = (navigation: any) => {
   return {

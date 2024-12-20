@@ -194,7 +194,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#2e2e2e',
       fontSize: screenHeight * 0.026,
       textAlign: 'center',
-      paddingTop: screenHeight * 0.018,
+      paddingTop: screenHeight * 0.02,
     },
     bottomSheetStatus: {
       fontFamily:
