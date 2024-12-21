@@ -72,14 +72,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: 'white',
-      fontSize: screenHeight * 0.018,
+      fontSize: screenHeight * 0.02,
     },
     selectedText: {
       color: '#1341BE',
       fontWeight: 'bold',
     },
     smallText: {
-      fontSize: screenHeight * 0.015,
+      fontSize: screenHeight * 0.017,
     },
   });
 

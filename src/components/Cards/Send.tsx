@@ -270,8 +270,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       // DashboardButton is 110
       height: screenHeight * 0.76 - 110,
       backgroundColor: '#f7f7f7',
-      paddingLeft: screenWidth * 0.06,
-      paddingRight: screenWidth * 0.06,
+      paddingHorizontal: screenWidth * 0.06,
+    },
+    subContainer: {
+      flex: 1,
     },
     titleText: {
       fontFamily: 'Satoshi Variable',
@@ -287,9 +289,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-    },
-    subContainer: {
-      flex: 1,
     },
     subtitleText: {
       fontFamily: 'Satoshi Variable',

@@ -1,9 +1,8 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   Image,
   ImageSourcePropType,
   StyleSheet,
-  Platform,
   Pressable,
 } from 'react-native';
 import Animated, {
@@ -12,6 +11,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface Props {
   imageSource: ImageSourcePropType;
   onPress: () => void;
@@ -19,6 +20,11 @@ interface Props {
 
 const NewButton: React.FC<Props> = props => {
   const {imageSource, onPress} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const scaler = useSharedValue(1);
 
   const motionStyle = useAnimatedStyle(() => {
@@ -44,26 +50,18 @@ const NewButton: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(216, 210, 210, 0.75)',
-    backgroundColor: '#fefefe',
-    width: 60,
-    height: 49,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 12,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      borderRadius: screenHeight * 0.012,
+      borderWidth: 1,
+      borderColor: 'rgba(216, 210, 210, 0.75)',
+      backgroundColor: '#fefefe',
+      width: screenHeight * 0.067,
+      height: screenHeight * 0.055,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  });
 
 export default NewButton;

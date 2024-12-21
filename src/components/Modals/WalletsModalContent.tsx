@@ -96,7 +96,7 @@ export default function WalletsModalContent(props: Props) {
         {backgroundColor: onlineOfflineBgColor},
       ]}>
       <View style={styles.bodyItems}>{wallets}</View>
-      <Animated.View style={animatedButton}>
+      <Animated.View style={[styles.buttonContainer, animatedButton]}>
         <WhiteButton
           value="ADD A NEW WALLET"
           onPress={() => {}}
@@ -144,16 +144,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '400',
       fontSize: screenHeight * 0.018,
     },
-    button: {
-      height: 50,
-      width: 150,
-      borderRadius: 25,
-      backgroundColor: 'white',
-      shadowColor: '#393e53',
-      shadowOpacity: 0.25,
-      shadowRadius: 14,
-    },
-    noMargin: {
-      margin: 0,
+    buttonContainer: {
+      width: '100%',
     },
   });

@@ -1,11 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   StyleSheet,
   Text,
   View,
-  Platform,
   Pressable,
-  Dimensions,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
@@ -17,11 +15,17 @@ import NewBlueButton from '../Buttons/NewBlueButton';
 import NewButton from '../Buttons/NewButton';
 import InfoModal from '../Modals/InfoModal';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface Props {}
 
 const Receive: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const address = useAppSelector(state => state.address.address);
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, address.length);
 
   const [mwebAddress, setMwebAddress] = useState(false);
   const [uri, setURI] = useState('');
@@ -51,43 +55,44 @@ const Receive: React.FC<Props> = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.subcontainer}>
-        <Text style={styles.titleText}>Receive LTC</Text>
+      <Text style={styles.titleText}>Receive LTC</Text>
 
-        <View style={styles.txTypeContainer}>
-          <NewBlueButton
-            title="Litecoin"
-            active={!mwebAddress}
-            onPress={() => {
-              dispatch(getAddress(false));
-              setMwebAddress(false);
-            }}
-          />
-          <NewBlueButton
-            title="Send Privately"
-            active={mwebAddress}
-            onPress={() => {
-              dispatch(getAddress(true));
-              setMwebAddress(true);
-            }}
-          />
-        </View>
-
-        <Text style={styles.subtitleText}>MY LTC ADDRESS</Text>
-        <View style={styles.addressContainer}>
-          <Pressable onPress={() => handleCopy()}>
-            <Text style={styles.addressText}>{address}</Text>
-          </Pressable>
-
-          <NewButton
-            onPress={() => handleShare()}
-            imageSource={require('../../assets/icons/share-icon.png')}
-          />
-        </View>
+      <View style={styles.txTypeContainer}>
+        <NewBlueButton
+          title="Litecoin"
+          active={!mwebAddress}
+          onPress={() => {
+            dispatch(getAddress(false));
+            setMwebAddress(false);
+          }}
+        />
+        <NewBlueButton
+          title="Send Privately"
+          active={mwebAddress}
+          onPress={() => {
+            dispatch(getAddress(true));
+            setMwebAddress(true);
+          }}
+        />
       </View>
+
+      <Text style={styles.subtitleText}>MY LTC ADDRESS</Text>
+
+      <View style={styles.addressContainer}>
+        <Pressable style={styles.pressableContainer} onPress={() => handleCopy()}>
+          <Text style={styles.addressText}>{address}</Text>
+        </Pressable>
+
+        <NewButton
+          onPress={() => handleShare()}
+          imageSource={require('../../assets/icons/share-icon.png')}
+        />
+      </View>
+
       <View style={styles.qrContainer}>
-        {uri ? <QRCode value={uri} size={200} /> : null}
+        {uri ? <QRCode value={uri} size={address.length < 64 ? SCREEN_HEIGHT * 0.25 : SCREEN_HEIGHT * 0.18} /> : null}
       </View>
+
       {mwebAddress ? (
         <Text style={styles.minText}>
           Sending privately hides the sender and receiver addresses, and amount
@@ -105,73 +110,71 @@ const Receive: React.FC<Props> = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    // DashboardButton is 110
-    height: Dimensions.get('screen').height * 0.76 - 110,
-    maxHeight: 530,
-    backgroundColor: '#f7f7f7',
-    flexDirection: 'column',
-  },
-  subcontainer: {
-    marginHorizontal: 24,
-    flex: 1,
-  },
-  addressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 7,
-  },
-  txTypeContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingTop: 19,
-    paddingBottom: 22,
-  },
-  qrContainer: {
-    backgroundColor: '#FEFEFE',
-    borderWidth: 1,
-    borderColor: 'rgba(217,217,217,0.45)',
-    borderRadius: 12,
-    marginHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 248,
-    flex: 1,
-  },
-  titleText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-    fontSize: 24,
-  },
-  subtitleText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#747E87',
-    fontSize: 12,
-  },
-  addressText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#20BB74',
-    fontSize: 18,
-    width: 300,
-  },
-  minText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: 12,
-    color: '#747E87',
-    textAlign: 'center',
-    paddingHorizontal: 60,
-    paddingTop: 8,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number, addressLength: number) =>
+  StyleSheet.create({
+    container: {
+      // DashboardButton is 110
+      height: screenHeight * 0.76 - 110,
+      backgroundColor: '#f7f7f7',
+      paddingHorizontal: screenWidth * 0.06,
+    },
+    titleText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: screenHeight * 0.025,
+    },
+    txTypeContainer: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingTop: screenHeight * 0.019,
+      paddingBottom: screenHeight * 0.022,
+    },
+    subtitleText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#747E87',
+      fontSize: screenHeight * 0.017,
+    },
+    addressContainer: {
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingTop: screenHeight * 0.007,
+    },
+    pressableContainer: {
+      flexBasis: '80%',
+    },
+    addressText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#20BB74',
+      fontSize: addressLength < 64 ? screenHeight * 0.027 : screenHeight * 0.022,
+    },
+    qrContainer: {
+      backgroundColor: '#FEFEFE',
+      borderWidth: 1,
+      borderColor: 'rgba(217,217,217,0.45)',
+      borderRadius: screenHeight * 0.012,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: screenWidth * 0.06,
+      paddingVertical: screenHeight * 0.03,
+    },
+    minText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.012,
+      color: '#747E87',
+      textAlign: 'center',
+      marginTop: screenWidth * 0.03,
+      paddingHorizontal: screenWidth * 0.15,
+    },
+  });
 
 export default Receive;
