@@ -74,7 +74,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#2E2E2E',
-      fontSize: screenHeight * 0.018,
+      fontSize: screenHeight * 0.02,
     },
     disabled: {
       opacity: 0.5,
@@ -86,7 +86,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: 'white',
     },
     smallText: {
-      fontSize: screenHeight * 0.015,
+      fontSize: screenHeight * 0.017,
     },
   });
 
