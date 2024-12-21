@@ -1,12 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  Dimensions,
   Image,
-  Platform,
 } from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -20,6 +18,8 @@ import {
 } from '../../reducers/input';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Main: {
@@ -46,9 +46,13 @@ const Buy: React.FC<Props> = () => {
   const minLTCBuyAmount = useAppSelector(state => state.buy.minLTCBuyAmount);
   const maxLTCBuyAmount = useAppSelector(state => state.buy.maxLTCBuyAmount);
 
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const [toggleLTC, setToggleLTC] = useState(true);
-  const ltcFontSize = useSharedValue(24);
-  const fiatFontSize = useSharedValue(18);
+  const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
+  const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
 
   useEffect(() => {
     dispatch(checkAllowed());
@@ -82,75 +86,78 @@ const Buy: React.FC<Props> = () => {
 
   const handleFontSizeChange = () => {
     if (toggleLTC) {
-      ltcFontSize.value = withTiming(18);
-      fiatFontSize.value = withTiming(24);
+      ltcFontSize.value = withTiming(SCREEN_HEIGHT * 0.018);
+      fiatFontSize.value = withTiming(SCREEN_HEIGHT * 0.024);
     } else {
-      ltcFontSize.value = withTiming(24);
-      fiatFontSize.value = withTiming(18);
+      ltcFontSize.value = withTiming(SCREEN_HEIGHT * 0.024);
+      fiatFontSize.value = withTiming(SCREEN_HEIGHT * 0.018);
     }
   };
 
   const BuyContainer = (
     <>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          paddingLeft: 23.5,
-          marginTop: 9,
-        }}>
-        <View style={{flexDirection: 'column'}}>
-          <View style={{flexDirection: 'row'}}>
-            <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
-              Buy{' '}
-            </Animated.Text>
-            <Animated.Text
-              style={[
-                styles.buyText,
-                {color: '#2C72FF', fontSize: ltcFontSize},
-              ]}>
-              {amount === '' ? '0.00' : amount}
-            </Animated.Text>
-            <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
-              {' '}
-              LTC
-            </Animated.Text>
+      <View style={styles.sellContainer}>
+        <View style={styles.sellControls}>
+          <View style={styles.flexCol}>
+            <View style={styles.flexRow}>
+              <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
+                Buy{' '}
+              </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.buyText,
+                  {color: '#2C72FF', fontSize: ltcFontSize},
+                ]}>
+                {amount === '' ? '0.00' : amount}
+              </Animated.Text>
+              <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
+                {' '}
+                LTC
+              </Animated.Text>
+            </View>
+
+            <View style={styles.flexRow}>
+              <Animated.Text style={[styles.buyText, {fontSize: fiatFontSize}]}>
+                for{' '}
+              </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.buyText,
+                  {color: '#20BB74', fontSize: fiatFontSize},
+                ]}>
+                {currencySymbol}
+                {fiatAmount === '' ? '0.00' : fiatAmount}
+              </Animated.Text>
+            </View>
           </View>
 
-          <View style={{flexDirection: 'row'}}>
-            <Animated.Text style={[styles.buyText, {fontSize: fiatFontSize}]}>
-              for{' '}
-            </Animated.Text>
-            <Animated.Text
-              style={[
-                styles.buyText,
-                {color: '#20BB74', fontSize: fiatFontSize},
-              ]}>
-              {currencySymbol}
-              {fiatAmount === '' ? '0.00' : fiatAmount}
-            </Animated.Text>
+          <View style={styles.controlBtns}>
+            <TouchableOpacity
+              onPress={() => {
+                if (amount === '0.0000' && !toggleLTC) {
+                  dispatch(resetInputs());
+                }
+                setToggleLTC(!toggleLTC);
+                handleFontSizeChange();
+              }}
+              style={styles.switchButton}>
+              <Image source={require('../../assets/icons/switch-arrow.png')} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.historyButton}
+              onPress={() => navigation.navigate('BuyHistory')}>
+              <Image source={require('../../assets/icons/history-icon.png')} />
+              <Text style={styles.buttonText}>History</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={{flexDirection: 'row', gap: 8}}>
-          <TouchableOpacity
-            onPress={() => {
-              if (amount === '0.0000' && !toggleLTC) {
-                dispatch(resetInputs());
-              }
-              setToggleLTC(!toggleLTC);
-              handleFontSizeChange();
-            }}
-            style={styles.switchButton}>
-            <Image source={require('../../assets/icons/switch-arrow.png')} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.historyButton}
-            onPress={() => navigation.navigate('BuyHistory')}>
-            <Image source={require('../../assets/icons/history-icon.png')} />
-            <Text style={styles.buttonText}>History</Text>
-          </TouchableOpacity>
+        <View style={styles.numpadContainer}>
+          <BuyPad
+            onChange={(value: string) => onChange(value)}
+            currentValue={toggleLTC ? amount : fiatAmount}
+          />
         </View>
       </View>
     </>
@@ -165,116 +172,133 @@ const Buy: React.FC<Props> = () => {
           Buy Litecoin is currently not available in your country/state.
         </Text>
       )}
-      <View style={styles.bottom}>
-        {isBuyAllowed ? (
-          <View style={styles.numpadContainer}>
-            <BuyPad
-              onChange={(value: string) => onChange(value)}
-              currentValue={toggleLTC ? amount : fiatAmount}
-            />
-          </View>
-        ) : (
-          <></>
-        )}
-        <View style={styles.confirmButtonContainer}>
-          <BlueButton
-            disabled={
-              !isBuyAllowed ||
-              Number(fiatAmount) <= minBuyAmount ||
-              fiatAmount === '' ||
-              Number(fiatAmount) > maxBuyAmount
-                ? true
-                : false
-            }
-            value="Preview Buy"
-            onPress={() => {
-              navigation.navigate('ConfirmBuy');
-            }}
-          />
-          <Text style={styles.minText}>
-            Minimum purchase size of {currencySymbol}
-            {minBuyAmount}
-          </Text>
-        </View>
+      <View style={isBuyAllowed ? styles.bottom : styles.bottomStandalone}>
+        <BlueButton
+          disabled={
+            !isBuyAllowed ||
+            Number(fiatAmount) <= minBuyAmount ||
+            fiatAmount === '' ||
+            Number(fiatAmount) > maxBuyAmount
+              ? true
+              : false
+          }
+          value="Preview Buy"
+          onPress={() => {
+            navigation.navigate('ConfirmBuy');
+          }}
+        />
+        <Text style={isBuyAllowed ? styles.minText : {display: 'none'}}>
+          Minimum purchase size of {currencySymbol}
+          {minBuyAmount}
+        </Text>
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    // DashboardButton is 110
-    height: Dimensions.get('screen').height * 0.76 - 110,
-    maxHeight: 680,
-    backgroundColor: '#f7f7f7',
-    flexDirection: 'column',
-    paddingBottom: Dimensions.get('screen').height * 0.03,
-  },
-  bottom: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  numpadContainer: {
-    width: 'auto',
-    height: 'auto',
-  },
-  confirmButtonContainer: {
-    marginHorizontal: 24,
-    bottom: Dimensions.get('screen').height * 0.03,
-    position: 'absolute',
-    width: Dimensions.get('screen').width - 48,
-    gap: 6,
-  },
-  switchButton: {
-    borderRadius: 10,
-    backgroundColor: '#F3F3F3',
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  historyButton: {
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    backgroundColor: '#F3F3F3',
-    width: 98,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 7,
-  },
-  buyText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-    fontSize: 24,
-  },
-  buttonText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#2E2E2E',
-    fontSize: 12,
-  },
-  disabledBuyText: {
-    marginTop: 30,
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: 12,
-    color: '#747E87',
-    textAlign: 'center',
-  },
-  minText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: 12,
-    color: '#747E87',
-    textAlign: 'center',
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      // DashboardButton is 110
+      width: screenWidth,
+      height: screenHeight * 0.76 - 110,
+      backgroundColor: '#f7f7f7',
+      paddingHorizontal: screenWidth * 0.06,
+    },
+    sellContainer: {
+      flex: 1,
+      width: '100%',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    sellControls: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: screenHeight * 0.01,
+    },
+    flexCol: {
+      flexDirection: 'column',
+    },
+    flexRow: {
+      flexDirection: 'row',
+    },
+    controlBtns: {
+      flexDirection: 'row',
+      gap: 8,
+      // History button's border is 1
+      marginRight: screenWidth * 0.06 * -1 - 1,
+    },
+    numpadContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      width: screenWidth,
+    },
+    bottom: {
+      width: '100%',
+      marginVertical: screenHeight * 0.03,
+    },
+    bottomStandalone: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      width: '100%',
+      marginVertical: screenHeight * 0.03,
+    },
+    switchButton: {
+      borderRadius: screenHeight * 0.01,
+      borderWidth: 1,
+      borderColor: '#e5e5e5',
+      backgroundColor: '#fff',
+      width: screenHeight * 0.05,
+      height: screenHeight * 0.05,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    historyButton: {
+      borderTopLeftRadius: screenHeight * 0.01,
+      borderBottomLeftRadius: screenHeight * 0.01,
+      borderWidth: 1,
+      borderColor: '#e5e5e5',
+      backgroundColor: '#fff',
+      width: screenHeight * 0.1,
+      height: screenHeight * 0.05,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+      gap: 7,
+    },
+    buyText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: screenHeight * 0.024,
+    },
+    buttonText: {
+      color: '#2E2E2E',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.012,
+    },
+    disabledBuyText: {
+      color: '#747E87',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.012,
+      textAlign: 'center',
+      marginTop: screenHeight * 0.03,
+    },
+    minText: {
+      color: '#747E87',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.012,
+      textAlign: 'center',
+      marginTop: screenHeight * 0.01,
+    },
+  });
 
 export default Buy;
