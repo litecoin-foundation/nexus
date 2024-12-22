@@ -130,13 +130,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
     item,
   }) => <TransactionCell item={item} onPress={() => onPress(item)} />;
 
-  // DashboardButton is 110, txTitleContainer is 70 in Main component
+  // DashboardButton is 110, txTitleContainer is screenHeight * 0.07 in Main component
   // Gap in SearchTransaction component is 200 + 30 padding
   const scrollContainerHeight = folded
-    ? SCREEN_HEIGHT - FOLD_SHEET_POINT - 110 - 70
+    ? SCREEN_HEIGHT - FOLD_SHEET_POINT - 110 - SCREEN_HEIGHT * 0.07
     : folded === undefined
     ? SCREEN_HEIGHT - 230
-    : SCREEN_HEIGHT - UNFOLD_SHEET_POINT - 110 - 70;
+    : SCREEN_HEIGHT - UNFOLD_SHEET_POINT - 110 - SCREEN_HEIGHT * 0.07;
 
   let curFrameY = -1;
 
@@ -196,11 +196,10 @@ const TransactionList = forwardRef((props: Props, ref) => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     sectionHeaderContainer: {
-      paddingTop: 6,
-      paddingBottom: 6,
+      paddingVertical: screenHeight * 0.006,
       borderBottomWidth: 0.5,
       borderBottomColor: 'rgba(214, 216, 218, 0.3)',
-      paddingLeft: 20,
+      paddingLeft: screenHeight * 0.02,
     },
     sectionHeaderText: {
       fontFamily:
@@ -210,22 +209,22 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#747E87',
-      fontSize: 12,
+      fontSize: screenHeight * 0.012,
     },
     emptyView: {
-      height: 200,
+      height: screenHeight * 0.2,
     },
     item: {
       backgroundColor: '#f9c2ff',
-      padding: 20,
-      marginVertical: 8,
+      padding: screenHeight * 0.02,
+      marginVertical: screenHeight * 0.008,
     },
     header: {
-      fontSize: 32,
+      fontSize: screenHeight * 0.032,
       backgroundColor: '#fff',
     },
     title: {
-      fontSize: 24,
+      fontSize: screenHeight * 0.024,
     },
   });
 

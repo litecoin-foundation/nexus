@@ -42,7 +42,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.01,
       backgroundColor: 'rgba(216,216,216,0.2)',
       height: screenHeight * 0.035,
-      minWidth: 25,
+      minWidth: screenHeight * 0.035,
       minHeight: 25,
       alignItems: 'center',
       justifyContent: 'center',

@@ -1,13 +1,14 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   Image,
   ImageSourcePropType,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   active: boolean;
@@ -18,45 +19,49 @@ interface Props {
 
 const FilterButton: React.FC<Props> = props => {
   const {active, title, onPress, imageSource} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return (
     <Pressable
-      style={[styles.container, active ? styles.activeButton : null]}
+      style={[styles.button, active ? styles.activeButton : null]}
       onPress={onPress}>
-      <View style={styles.innerContainer}>
         <Image style={styles.image} source={imageSource} />
         <Text style={styles.text}>{title}</Text>
-      </View>
     </Pressable>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    height: 62,
-    width: 58,
-    borderRadius: 11,
-    backgroundColor: undefined,
-    alignItems: 'center',
-  },
-  innerContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 8,
-  },
-  text: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 12,
-  },
-  activeButton: {
-    backgroundColor: '#0A429B',
-  },
-  image: {
-    tintColor: 'white',
-    marginTop: 10,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    button: {
+      height: screenHeight * 0.065,
+      width: screenHeight * 0.06,
+      borderRadius: screenHeight * 0.01,
+      backgroundColor: undefined,
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'space-around',
+      paddingVertical: screenHeight * 0.01,
+    },
+    activeButton: {
+      backgroundColor: '#0A429B',
+    },
+    text: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#fff',
+      fontSize: screenHeight * 0.012,
+    },
+    image: {
+      height: screenHeight * 0.025,
+      width: screenHeight * 0.025,
+      objectFit: 'scale-down',
+      tintColor: '#fff',
+    },
+  });
 
 export default FilterButton;
