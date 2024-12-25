@@ -155,6 +155,10 @@ export const getRecoveryInfo = (): AppThunk => async dispatch => {
   }
 };
 
+export const pollRecoveryInfo = (): AppThunk => async dispatch => {
+  await poll(() => dispatch(getRecoveryInfo()));
+};
+
 export const checkInternetReachable = (): AppThunk => async dispatch => {
   NetInfo.addEventListener(state => {
     dispatch(checkInternetReachableAction(state.isInternetReachable));
@@ -194,5 +198,7 @@ export const percentSyncedSelector = (state: RootState) =>
   state.info!.percentSynced;
 export const syncStatusSelector = (state: RootState) =>
   state.info!.syncedToChain;
+export const recoveryProgressSelector = (state: RootState) =>
+  state.info!.recoveryProgress;
 
 export default infoSlice.reducer;
