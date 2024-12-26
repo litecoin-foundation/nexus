@@ -63,19 +63,17 @@ const Welcome: React.FC<Props> = props => {
   return (
     <>
       <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
-        <SafeAreaView style={{flex: 1}}>
-          {task !== 'complete' ? cacheProgress : null}
+        {task !== 'complete' ? cacheProgress : null}
 
-          <View style={styles.buttonContainer}>
-            <WhiteButton
-              value="Tap Anywhere to Start"
-              small={false}
-              onPress={() => handlePress()}
-              active={true}
-              disabled={task === 'complete' ? false : true}
-            />
-          </View>
-        </SafeAreaView>
+        <View style={styles.buttonContainer}>
+          <WhiteButton
+            value="Tap Anywhere to Start"
+            small={false}
+            onPress={() => handlePress()}
+            active={true}
+            disabled={task === 'complete' ? false : true}
+          />
+        </View>
       </LinearGradient>
     </>
   );
@@ -84,6 +82,8 @@ const Welcome: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   neutrinoCacheContainer: {
     position: 'absolute',
@@ -100,9 +100,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonContainer: {
-    position: 'absolute',
-    bottom: 100,
-    alignSelf: 'center',
+    width: '100%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 15,
+    paddingHorizontal: 30,
+    paddingBottom: 50,
   },
 });
 
