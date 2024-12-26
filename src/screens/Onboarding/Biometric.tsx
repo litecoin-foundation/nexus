@@ -43,7 +43,7 @@ const Biometric: React.FC<Props> = props => {
         }
       />
 
-      <View>
+      <View style={styles.subContainer}>
         <WhiteButton
           value={`Enable ${biometryType}`}
           small={false}
@@ -61,7 +61,7 @@ const Biometric: React.FC<Props> = props => {
         />
         <WhiteClearButton
           value="Maybe later"
-          small={true}
+          small={false}
           onPress={() => {
             dispatch(setBiometricEnabled(false));
             navigation.navigate('Welcome');
@@ -76,7 +76,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+  },
+  subContainer: {
+    width: '100%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 15,
+    paddingHorizontal: 30,
+    paddingBottom: 50,
   },
   headerTitle: {
     fontFamily: 'Satoshi Variable',

@@ -39,7 +39,7 @@ const Initial = (props: Props) => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
-      <View style={styles.subcontainer}>
+      <View style={styles.subContainer}>
         <WhiteButton
           value="Create Wallet"
           small={false}
@@ -51,7 +51,7 @@ const Initial = (props: Props) => {
         />
         <WhiteClearButton
           value="Already have a wallet? Log In"
-          small={true}
+          small={false}
           onPress={() => {
             navigation.navigate('Recover');
           }}
@@ -68,7 +68,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  subcontainer: {
+  subContainer: {
+    width: '100%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 15,
+    paddingHorizontal: 30,
     paddingBottom: 50,
   },
 });
