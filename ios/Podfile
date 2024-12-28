@@ -1,3 +1,6 @@
+source 'git@github.com:flexa/flexa-cocoapods.git'
+source 'https://github.com/CocoaPods/Specs.git'
+
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
@@ -16,6 +19,7 @@ if linkage != nil
 end
 
 target 'nexus' do
+  # use_modular_headers!
   use_expo_modules!
   post_integrate do |installer|
     begin
@@ -25,6 +29,9 @@ target 'nexus' do
     end
   end
   config = use_native_modules!
+
+  pod 'Base32', :modular_headers => true;
+  pod 'FlexaSpend', :modular_headers => true;
 
   use_react_native!(
     :path => config[:reactNativePath],
