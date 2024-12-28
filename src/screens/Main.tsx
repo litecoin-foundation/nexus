@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {Canvas, Image, RoundedRect, useImage} from '@shopify/react-native-skia';
+import { payment, TransactionRequest, FlexaButton } from '@flexahq/flexa-react-native';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -36,6 +37,62 @@ import SendModal from '../components/Modals/SendModal';
 import DatePicker from '../components/DatePicker';
 
 import {ScreenSizeContext} from '../context/screenSize';
+
+const paymentCallback = (transactionRequest: TransactionRequest) => {
+  //execute the transaction depending on parent app logic here
+  const {transaction, transactionSent, transactionFailed } = transactionRequest;
+
+  /* transaction contains
+    destinationAddress: string; eip155:1:0x123... destination address for payment
+    amount: string; // the fee price in decimals string representation
+    feePriorityPrice: string; the fee priority price in decimals string representation
+    feePrice: string; the fee price in decimals string representation
+    size: string; // transaction size bigint (i.e. gasLimit)
+    assetId: string; // assetId CAIP19 notation of the asset that is to be sent
+    accountId: string; // which accountId was used for the payment (i.e which wallet to send from)
+  */
+
+  // const TX_SIGNATURE = yourTransactionSendFunction({ ...transaction });
+  const TX_SIGNATURE = null;
+
+  // This helps Flexa confirm the transaction quickly for self-custody wallets. It is a callback sent back to the SDK with the transaction signature i.e hash
+  transactionSent(TX_SIGNATURE);
+
+  // Or call transactionFailed to close the commerce session initiated in the Flexa SDK
+  transactionFailed();
+};
+
+const flexaAssetAccounts = [
+  {
+    displayName: 'Wallet 1',
+    accountId: '0x1..', // this can be a uuid or a sha256 of the wallet address
+    // custodyModel: CUSTODY_MODEL.LOCAL,
+    custodyModel: 'LOCAL',
+    availableAssets: [
+      {
+        assetId: 'eip155:1/slip44:60',
+        symbol: 'ETH',
+        displayName: 'Ether',
+        balance: 0.5,
+        balanceAvailable: 0.5, // add it if different from the balance due to pending transactions etc.
+        icon: undefined,
+      },
+      { assetId: 'eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7', symbol: 'USDT', displayName: 'USDT', balance: 200, icon: undefined },
+      { assetId: 'eip155:1/erc20:0xff20817765cb7f73d4bde2e66e067e58d11095c2', symbol: 'AMP', displayName: 'AMP', balance: 300, icon: undefined },
+    ],
+  },
+  {
+    displayName: 'Wallet 2',
+    accountId: '0x2..',
+    custodyModel: 'LOCAL', // this can be LOCAL or MANAGED depending on the wallet type (self custody, or custodial)
+    availableAssets: [
+      { assetId: 'eip155:1/slip44:60', symbol: 'ETH', displayName: 'Ether', balance: 0.25, icon: 'https://cdn.myweb/ethLogoURL.png' },
+      { assetId: 'eip155:1/erc20:0x6b175474e89094c44da98b954eedeac495271d0f', symbol: 'DAI', displayName: 'DAI', balance: 120, icon: undefined },
+      { assetId: 'eip155:1/erc20:0x0d8775f648430679a709e98d2b0cb6250d2887ef', symbol: 'BAT', displayName: 'BAT', balance: 4000, icon: undefined },
+    ],
+  },
+];
+
 
 type RootStackParamList = {
   Main: {
@@ -223,48 +280,6 @@ const Main: React.FC<Props> = props => {
     };
   });
 
-  // change headerLeft button based on if card is open
-  // if transaction list is shown, show settings button
-  // if < arrow shown, pressing closes the active card
-
-  const navigationBarPress = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => {
-          setBottomSheetFolded(true);
-          setActiveTab(0);
-        }}
-        imageSource={require('../assets/images/back-icon.png')}
-      />
-    ),
-
-    [],
-  );
-
-  const settingsBarPress = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => navigation.navigate('SettingsStack')}
-        imageSource={require('../assets/icons/settings-cog.png')}
-      />
-    ),
-    /* eslint-disable react-hooks/exhaustive-deps */
-    [],
-  );
-
-  useEffect(() => {
-    if (activeTab !== 0) {
-      navigation.setOptions({
-        headerLeft: () => navigationBarPress,
-      });
-    } else {
-      navigation.setOptions({
-        headerLeft: () => settingsBarPress,
-      });
-    }
-    /* eslint-disable react-hooks/exhaustive-deps */
-  }, [activeTab, navigation]);
-
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
   const buttonOpacity = useSharedValue(0);
@@ -282,12 +297,34 @@ const Main: React.FC<Props> = props => {
     };
   });
 
+  const navigationBarPress = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => {
+          setBottomSheetFolded(true);
+          setActiveTab(0);
+        }}
+        imageSource={require('../assets/images/back-icon.png')}
+      />
+    ),
+    [],
+  );
+
+  const manualPayment = async () => {
+    payment(flexaAssetAccounts, paymentCallback);
+  };
+
   const leftHeaderButton = useMemo(
     () => (
-      <Animated.View style={[{width: 'auto', height: 'auto'}, animatedButton]}>
+      <Animated.View style={[styles.leftHeaderBtns, animatedButton]}>
         <HeaderButton
           onPress={() => navigation.navigate('SettingsStack')}
           imageSource={require('../assets/icons/settings-cog.png')}
+        />
+        <HeaderButton
+          onPress={() => manualPayment()}
+          imageSource={require('../assets/icons/shop.png')}
+          marginLeft={SCREEN_WIDTH * 0.02 * -1}
         />
       </Animated.View>
     ),
@@ -306,6 +343,19 @@ const Main: React.FC<Props> = props => {
     ),
     [animatedButton, navigation],
   );
+
+  useEffect(() => {
+    if (activeTab !== 0) {
+      navigation.setOptions({
+        headerLeft: () => navigationBarPress,
+      });
+    } else {
+      navigation.setOptions({
+        headerLeft: () => leftHeaderButton,
+      });
+    }
+    /* eslint-disable react-hooks/exhaustive-deps */
+  }, [activeTab, navigation]);
 
   const walletButtonAnimDuration = 200;
   const rotateArrowAnim = useSharedValue(0);
@@ -622,6 +672,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginTop: 5,
       flexDirection: 'row',
       justifyContent: 'center',
+    },
+    leftHeaderBtns: {
+      width: 'auto',
+      height: 'auto',
+      flexDirection: 'row',
     },
     txTitleContainer: {
       height: screenHeight * 0.07,

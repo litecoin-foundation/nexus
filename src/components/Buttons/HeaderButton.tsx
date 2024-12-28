@@ -16,13 +16,18 @@ interface Props {
   imageSource?: ImageSourcePropType;
   title?: string;
   rightPadding?: boolean;
+  marginLeft?: number;
+  marginRight?: number;
 }
 
 const HeaderButton: React.FC<Props> = props => {
-  const {onPress, imageSource, title, rightPadding} = props;
+  const {onPress, imageSource, title, rightPadding, marginLeft, marginRight} = props;
+
+  const MARGIN_LEFT = marginLeft || 0;
+  const MARGIN_RIGHT = marginRight || 0;
 
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, MARGIN_LEFT, MARGIN_RIGHT);
 
   return (
     <TouchableOpacity
@@ -36,7 +41,7 @@ const HeaderButton: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number, marginLeft: number, marginRight: number) =>
   StyleSheet.create({
     container: {
       borderRadius: screenHeight * 0.01,
@@ -46,7 +51,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       minHeight: 25,
       alignItems: 'center',
       justifyContent: 'center',
-      marginLeft: screenHeight * 0.02,
+      marginLeft: screenWidth * 0.04 + marginLeft,
     },
     subcontainer: {
       paddingHorizontal: screenHeight * 0.01,
@@ -69,7 +74,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginRight: 5,
     },
     padRight: {
-      marginRight: screenHeight * 0.02,
+      marginRight: screenWidth * 0.04 + marginRight,
     },
   });
 
