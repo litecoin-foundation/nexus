@@ -11,7 +11,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {Canvas, Image, RoundedRect, useImage} from '@shopify/react-native-skia';
-import { payment, TransactionRequest, FlexaButton } from '@flexahq/flexa-react-native';
+import {
+  payment,
+  TransactionRequest,
+  FlexaButton,
+} from '@flexahq/flexa-react-native';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -40,7 +44,7 @@ import {ScreenSizeContext} from '../context/screenSize';
 
 const paymentCallback = (transactionRequest: TransactionRequest) => {
   //execute the transaction depending on parent app logic here
-  const {transaction, transactionSent, transactionFailed } = transactionRequest;
+  const {transaction, transactionSent, transactionFailed} = transactionRequest;
 
   /* transaction contains
     destinationAddress: string; eip155:1:0x123... destination address for payment
@@ -77,8 +81,20 @@ const flexaAssetAccounts = [
         balanceAvailable: 0.5, // add it if different from the balance due to pending transactions etc.
         icon: undefined,
       },
-      { assetId: 'eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7', symbol: 'USDT', displayName: 'USDT', balance: 200, icon: undefined },
-      { assetId: 'eip155:1/erc20:0xff20817765cb7f73d4bde2e66e067e58d11095c2', symbol: 'AMP', displayName: 'AMP', balance: 300, icon: undefined },
+      {
+        assetId: 'eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7',
+        symbol: 'USDT',
+        displayName: 'USDT',
+        balance: 200,
+        icon: undefined,
+      },
+      {
+        assetId: 'eip155:1/erc20:0xff20817765cb7f73d4bde2e66e067e58d11095c2',
+        symbol: 'AMP',
+        displayName: 'AMP',
+        balance: 300,
+        icon: undefined,
+      },
     ],
   },
   {
@@ -86,13 +102,30 @@ const flexaAssetAccounts = [
     accountId: '0x2..',
     custodyModel: 'LOCAL', // this can be LOCAL or MANAGED depending on the wallet type (self custody, or custodial)
     availableAssets: [
-      { assetId: 'eip155:1/slip44:60', symbol: 'ETH', displayName: 'Ether', balance: 0.25, icon: 'https://cdn.myweb/ethLogoURL.png' },
-      { assetId: 'eip155:1/erc20:0x6b175474e89094c44da98b954eedeac495271d0f', symbol: 'DAI', displayName: 'DAI', balance: 120, icon: undefined },
-      { assetId: 'eip155:1/erc20:0x0d8775f648430679a709e98d2b0cb6250d2887ef', symbol: 'BAT', displayName: 'BAT', balance: 4000, icon: undefined },
+      {
+        assetId: 'eip155:1/slip44:60',
+        symbol: 'ETH',
+        displayName: 'Ether',
+        balance: 0.25,
+        icon: 'https://cdn.myweb/ethLogoURL.png',
+      },
+      {
+        assetId: 'eip155:1/erc20:0x6b175474e89094c44da98b954eedeac495271d0f',
+        symbol: 'DAI',
+        displayName: 'DAI',
+        balance: 120,
+        icon: undefined,
+      },
+      {
+        assetId: 'eip155:1/erc20:0x0d8775f648430679a709e98d2b0cb6250d2887ef',
+        symbol: 'BAT',
+        displayName: 'BAT',
+        balance: 4000,
+        icon: undefined,
+      },
     ],
   },
 ];
-
 
 type RootStackParamList = {
   Main: {
@@ -297,65 +330,9 @@ const Main: React.FC<Props> = props => {
     };
   });
 
-  const navigationBarPress = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => {
-          setBottomSheetFolded(true);
-          setActiveTab(0);
-        }}
-        imageSource={require('../assets/images/back-icon.png')}
-      />
-    ),
-    [],
-  );
-
   const manualPayment = async () => {
     payment(flexaAssetAccounts, paymentCallback);
   };
-
-  const leftHeaderButton = useMemo(
-    () => (
-      <Animated.View style={[styles.leftHeaderBtns, animatedButton]}>
-        <HeaderButton
-          onPress={() => navigation.navigate('SettingsStack')}
-          imageSource={require('../assets/icons/settings-cog.png')}
-        />
-        <HeaderButton
-          onPress={() => manualPayment()}
-          imageSource={require('../assets/icons/shop.png')}
-          marginLeft={SCREEN_WIDTH * 0.02 * -1}
-        />
-      </Animated.View>
-    ),
-    [animatedButton, navigation],
-  );
-
-  const rightHeaderButton = useMemo(
-    () => (
-      <Animated.View style={[{width: 'auto', height: 'auto'}, animatedButton]}>
-        <HeaderButton
-          onPress={() => navigation.navigate('AlertsStack')}
-          imageSource={require('../assets/icons/charts-icon.png')}
-          rightPadding={true}
-        />
-      </Animated.View>
-    ),
-    [animatedButton, navigation],
-  );
-
-  useEffect(() => {
-    if (activeTab !== 0) {
-      navigation.setOptions({
-        headerLeft: () => navigationBarPress,
-      });
-    } else {
-      navigation.setOptions({
-        headerLeft: () => leftHeaderButton,
-      });
-    }
-    /* eslint-disable react-hooks/exhaustive-deps */
-  }, [activeTab, navigation]);
 
   const walletButtonAnimDuration = 200;
   const rotateArrowAnim = useSharedValue(0);
@@ -404,6 +381,49 @@ const Main: React.FC<Props> = props => {
   const fadingTimeout = useRef<NodeJS.Timeout>();
   const walletButtonFadingTimeout = useRef<NodeJS.Timeout>();
 
+  const backHeaderButton = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => {
+          setBottomSheetFolded(true);
+          setActiveTab(0);
+        }}
+        imageSource={require('../assets/images/back-icon.png')}
+      />
+    ),
+    [],
+  );
+
+  const leftHeaderButton = useMemo(
+    () => (
+      <Animated.View style={[styles.headerBtns, animatedButton]}>
+        <HeaderButton
+          onPress={() => navigation.navigate('SettingsStack')}
+          imageSource={require('../assets/icons/settings-cog.png')}
+        />
+        <HeaderButton
+          onPress={() => manualPayment()}
+          imageSource={require('../assets/icons/shop.png')}
+          marginLeft={SCREEN_WIDTH * 0.02 * -1}
+        />
+      </Animated.View>
+    ),
+    [animatedButton, navigation],
+  );
+
+  const rightHeaderButton = useMemo(
+    () => (
+      <Animated.View style={[styles.headerBtns, animatedButton]}>
+        <HeaderButton
+          onPress={() => navigation.navigate('AlertsStack')}
+          imageSource={require('../assets/icons/charts-icon.png')}
+          rightPadding={true}
+        />
+      </Animated.View>
+    ),
+    [animatedButton, navigation],
+  );
+
   useEffect(() => {
     if (isWalletsModalOpened || isTxDetailModalOpened) {
       buttonOpacity.value = withTiming(0, {duration: 150});
@@ -418,7 +438,8 @@ const Main: React.FC<Props> = props => {
       buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
 
       navigation.setOptions({
-        headerLeft: () => leftHeaderButton,
+        headerLeft: () =>
+          activeTab !== 0 ? backHeaderButton : leftHeaderButton,
         headerRight: () => rightHeaderButton,
       });
     }
@@ -447,6 +468,8 @@ const Main: React.FC<Props> = props => {
       clearTimeout(walletButtonFadingTimeout.current);
     };
   }, [
+    activeTab,
+    backHeaderButton,
     leftHeaderButton,
     rightHeaderButton,
     walletButton,
@@ -673,7 +696,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       justifyContent: 'center',
     },
-    leftHeaderBtns: {
+    headerBtns: {
       width: 'auto',
       height: 'auto',
       flexDirection: 'row',
