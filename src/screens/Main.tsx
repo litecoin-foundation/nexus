@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
-import {View, StyleSheet, Text, Platform, Pressable, Alert} from 'react-native';
+import {View, StyleSheet, Text, Pressable, Alert} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -11,11 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {Canvas, Image, RoundedRect, useImage} from '@shopify/react-native-skia';
-import {
-  payment,
-  TransactionRequest,
-  FlexaButton,
-} from '@flexahq/flexa-react-native';
+import {payment, TransactionRequest} from '@flexahq/flexa-react-native';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -68,60 +64,17 @@ const paymentCallback = (transactionRequest: TransactionRequest) => {
 
 const flexaAssetAccounts = [
   {
-    displayName: 'Wallet 1',
-    accountId: '0x1..', // this can be a uuid or a sha256 of the wallet address
-    // custodyModel: CUSTODY_MODEL.LOCAL,
+    displayName: 'Main Wallet',
+    accountId: 'flexa_uuid_here', // TODO
     custodyModel: 'LOCAL',
     availableAssets: [
       {
-        assetId: 'eip155:1/slip44:60',
-        symbol: 'ETH',
-        displayName: 'Ether',
+        assetId: 'bip122:12a765e31ffd4059bada1e25190f6e98',
+        symbol: 'LTC',
+        displayName: 'Litecoin',
         balance: 0.5,
-        balanceAvailable: 0.5, // add it if different from the balance due to pending transactions etc.
-        icon: undefined,
-      },
-      {
-        assetId: 'eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7',
-        symbol: 'USDT',
-        displayName: 'USDT',
-        balance: 200,
-        icon: undefined,
-      },
-      {
-        assetId: 'eip155:1/erc20:0xff20817765cb7f73d4bde2e66e067e58d11095c2',
-        symbol: 'AMP',
-        displayName: 'AMP',
-        balance: 300,
-        icon: undefined,
-      },
-    ],
-  },
-  {
-    displayName: 'Wallet 2',
-    accountId: '0x2..',
-    custodyModel: 'LOCAL', // this can be LOCAL or MANAGED depending on the wallet type (self custody, or custodial)
-    availableAssets: [
-      {
-        assetId: 'eip155:1/slip44:60',
-        symbol: 'ETH',
-        displayName: 'Ether',
-        balance: 0.25,
+        balanceAvailable: 0.5,
         icon: 'https://cdn.myweb/ethLogoURL.png',
-      },
-      {
-        assetId: 'eip155:1/erc20:0x6b175474e89094c44da98b954eedeac495271d0f',
-        symbol: 'DAI',
-        displayName: 'DAI',
-        balance: 120,
-        icon: undefined,
-      },
-      {
-        assetId: 'eip155:1/erc20:0x0d8775f648430679a709e98d2b0cb6250d2887ef',
-        symbol: 'BAT',
-        displayName: 'BAT',
-        balance: 4000,
-        icon: undefined,
       },
     ],
   },

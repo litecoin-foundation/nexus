@@ -1,8 +1,10 @@
 PODS:
+  - Base32 (1.1.2)
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
   - CryptoSwift (1.8.3)
+  - DeviceKit (5.0.0)
   - DoubleConversion (1.1.6)
   - EXApplication (6.0.1):
     - ExpoModulesCore
@@ -45,12 +47,52 @@ PODS:
     - Yoga
   - ExpoSecureStore (14.0.0):
     - ExpoModulesCore
+  - Factory (2.4.3)
   - FBLazyVector (0.76.1)
+  - Flexa (1.0.9):
+    - Flexa/Complete (= 1.0.9)
+  - flexa-react-native (1.0.9):
+    - Flexa (~> 1.0.9)
+    - RCT-Folly
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - ReactCommon/turbomodule/core
+  - Flexa/Complete (1.0.9):
+    - FlexaCore (~> 1.0.9)
+    - FlexaLoad (~> 1.0.9)
+    - FlexaNetworking (~> 1.0.9)
+    - FlexaScan (~> 1.0.9)
+    - FlexaSpend (~> 1.0.9)
+    - FlexaUICore (~> 1.0.9)
+  - FlexaCore (1.0.9):
+    - DeviceKit (~> 5.0.0)
+    - Factory (~> 2.4.3)
+    - FlexaNetworking (~> 1.0.9)
+    - KeychainAccess (~> 4.2.2)
+    - SwiftUIIntrospect (~> 0.12.0)
+  - FlexaLoad (1.0.9):
+    - FlexaCore (~> 1.0.9)
+  - FlexaNetworking (1.0.9):
+    - Factory (~> 2.4.3)
+  - FlexaScan (1.0.9):
+    - FlexaCore (~> 1.0.9)
+  - FlexaSpend (1.0.9):
+    - Base32 (~> 1.1.2)
+    - Factory (~> 2.4.3)
+    - FlexaCore (~> 1.0.9)
+    - FlexaUICore (~> 1.0.9)
+    - SVGView (~> 1.0.4)
+  - FlexaUICore (1.0.9):
+    - FlexaCore (~> 1.0.9)
+    - SwiftUIIntrospect (~> 0.12.0)
   - fmt (9.1.0)
   - glog (0.3.5)
   - hermes-engine (0.76.1):
     - hermes-engine/Pre-built (= 0.76.1)
   - hermes-engine/Pre-built (0.76.1)
+  - KeychainAccess (4.2.2)
   - NitroModules (0.19.0):
     - DoubleConversion
     - glog
@@ -111,6 +153,7 @@ PODS:
     - React-RCTText (= 0.76.1)
     - React-RCTVibration (= 0.76.1)
   - React-callinvoker (0.76.1)
+  - React-Codegen (0.1.0)
   - React-Core (0.76.1):
     - glog
     - hermes-engine
@@ -2184,9 +2227,11 @@ PODS:
     - SSZipArchive (~> 2.5.5)
   - SocketRocket (0.7.1)
   - SSZipArchive (2.5.5)
+  - SVGView (1.0.6)
+  - SwiftUIIntrospect (0.12.0)
   - TouchID (4.4.1):
     - React
-  - TurboScryptiOS (0.0.3):
+  - TurboScryptiOS (0.0.4):
     - CryptoSwift
     - DoubleConversion
     - glog
@@ -2218,6 +2263,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
+  - Base32
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
@@ -2232,6 +2278,8 @@ DEPENDENCIES:
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoSecureStore (from `../node_modules/expo-secure-store/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
+  - "flexa-react-native (from `../node_modules/@flexahq/flexa-react-native`)"
+  - FlexaSpend
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
@@ -2328,11 +2376,26 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
+  "git@github.com:flexa/flexa-cocoapods.git":
+    - Flexa
+    - FlexaCore
+    - FlexaLoad
+    - FlexaNetworking
+    - FlexaScan
+    - FlexaUICore
   trunk:
+    - Base32
     - CryptoSwift
+    - DeviceKit
+    - Factory
+    - FlexaSpend
+    - KeychainAccess
     - OpenSSL-Universal
+    - React-Codegen
     - SocketRocket
     - SSZipArchive
+    - SVGView
+    - SwiftUIIntrospect
 
 EXTERNAL SOURCES:
   boost:
@@ -2363,6 +2426,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-secure-store/ios"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
+  flexa-react-native:
+    :path: "../node_modules/@flexahq/flexa-react-native"
   fmt:
     :podspec: "../node_modules/react-native/third-party-podspecs/fmt.podspec"
   glog:
@@ -2550,9 +2615,11 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  Base32: 163c298644d184e89ca4e00a996bad6bf5166390
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   CryptoSwift: 967f37cea5a3294d9cce358f78861652155be483
+  DeviceKit: 0fd016a2cb67aca17c33dc23171cac270131eb88
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXApplication: e1ad9c950c98b2b134578092c948b10b403f3ea7
   EXConstants: dd2fe64c6cdb1383b694c309a63028a8e9f2be6d
@@ -2564,10 +2631,20 @@ SPEC CHECKSUMS:
   ExpoKeepAwake: 783e68647b969b210a786047c3daa7b753dcac1f
   ExpoModulesCore: bb3f481a7912159f2289a653e4195146170f0a00
   ExpoSecureStore: 06c3192d58ed167f619af3d53797c055f5ada785
+  Factory: 9d20d8cb56fc44b341d6dad1cf67dc93e9ae7788
   FBLazyVector: 7075bb12898bc3998fd60f4b7ca422496cc2cdf7
+  Flexa: fd77aea51d7da843b21b6745e63a904c592ff6bf
+  flexa-react-native: 1bcee10fe95e5c8600068ed09ef80f135408939e
+  FlexaCore: 3586fd15543ae78729c7aaeb1fb141ef47e64bad
+  FlexaLoad: ffec731a10f0ee00da0e112e266606e24aa5d6a0
+  FlexaNetworking: c6dd47a7275f98a70b48eb624fd079882209410c
+  FlexaScan: fc8ea69dfb5e7b397c8b20c200c4ba9c227831a9
+  FlexaSpend: 773564a77c43e2e16c95ad74b376c506b2fd8f28
+  FlexaUICore: 7890ba788a58109e00637f6a208127a06c2ff49c
   fmt: 10c6e61f4be25dc963c36bd73fc7b1705fe975be
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 46f1ffbf0297f4298862068dd4c274d4ac17a1fd
+  KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
   NitroModules: 470228966dc3549ff8c2e7e32530cfc9bf0eb6db
   OpenSSL-Universal: 57f92a826947ee3183556bf5e22d7dff8d55f834
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
@@ -2576,6 +2653,7 @@ SPEC CHECKSUMS:
   RCTTypeSafety: 7e6fe47bfb693c50d4669db1a480ca5331795f5b
   React: 8e73704cdd5c7f801936776d2fc434c605a7827b
   React-callinvoker: fa27d1e091e683de88f576e6a5d4efc171929a4c
+  React-Codegen: 4b8b4817cea7a54b83851d4c1f91f79aa73de30a
   React-Core: 8dd14bffcc9b877091b698e45701160669a31f91
   React-CoreModules: b4437acf2ef25ce3689c84df661dc5d806559b35
   React-cxxreact: 6125cd820da7e18f9ca8343b3c42ee61634a4e0d
@@ -2656,11 +2734,13 @@ SPEC CHECKSUMS:
   RNZipArchive: 7bb4c70d6aa2dd235212c0a4a3de0a4e237e2569
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SSZipArchive: c69881e8ac5521f0e622291387add5f60f30f3c4
+  SVGView: 4a9fa6296a5fdb6232dec7450aa98f169d0e274f
+  SwiftUIIntrospect: 89f443402f701a9197e9e54e3c2ed00b10c32e6d
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
-  TurboScryptiOS: c3d37803f32fc8a269badd0248f629b852ce37d8
+  TurboScryptiOS: f558baf4e3d172091e0db428f5195fed4b3ee757
   VisionCamera: 598ab83c6bf4d65f5c32ec54361eed866505d388
   Yoga: db69236006b8b1c6d55ab453390c882306cbf219
 
-PODFILE CHECKSUM: ed7ac4d3e4d88dd025bc558bd3d6dcdbf0dee94d
+PODFILE CHECKSUM: 808c95a58720d2b10c766d55c4c1eb5d4a4f674c
 
 COCOAPODS: 1.15.2
