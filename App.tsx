@@ -1,5 +1,12 @@
 import React, {useLayoutEffect, useEffect, useState, useContext} from 'react';
-import {View, Platform, StatusBar, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import {
+  View,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
@@ -12,8 +19,12 @@ import {
   NotificationBackgroundFetchResult,
 } from 'react-native-notifications';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import { FlexaContext } from '@flexahq/flexa-react-native';
-import {ScreenSizeProvider, ScreenSizeContext, deviceList} from './src/context/screenSize';
+import {FlexaContext} from '@flexahq/flexa-react-native';
+import {
+  ScreenSizeProvider,
+  ScreenSizeContext,
+  deviceList,
+} from './src/context/screenSize';
 
 import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';
@@ -27,9 +38,13 @@ import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
 import Error from './src/components/Error';
 
-const flexaPublishableTestKey = 'publishable_test_5xJh36PJj2xw97G9MGgMpfW82QPvp2jPjp4r6925XQgpr9QWp2WWjjc9J8h665mHfHr6pXx4fwm674w83H2x44';
-const flexaPublishableLiveKey = 'publishable_live_5gXmfxGQ65vqcv99W6XqPg3HGR8CvGw8cpMpPwp7Hfcrr7jRM5MrF425gcCw4mg33Wwww2gmMRpXC4PM67VjWM';
-const flexaPublishableKey = __DEV__ ? flexaPublishableTestKey : flexaPublishableLiveKey;
+const flexaPublishableTestKey =
+  'publishable_test_5xJh36PJj2xw97G9MGgMpfW82QPvp2jPjp4r6925XQgpr9QWp2WWjjc9J8h665mHfHr6pXx4fwm674w83H2x44';
+const flexaPublishableLiveKey =
+  'publishable_live_5gXmfxGQ65vqcv99W6XqPg3HGR8CvGw8cpMpPwp7Hfcrr7jRM5MrF425gcCw4mg33Wwww2gmMRpXC4PM67VjWM';
+const flexaPublishableKey = __DEV__
+  ? flexaPublishableTestKey
+  : flexaPublishableLiveKey;
 
 type RootStackParamList = {
   Scan: {
@@ -46,11 +61,9 @@ declare global {
 const RESIZE_DEACTIVATED = false;
 
 function ResizedView(props: any) {
-  const { children } = props;
-  const { width, height, isDeviceRotated } = useContext(ScreenSizeContext);
-  return <View style={{width: width, height: height}}>
-    {children}
-  </View>;
+  const {children} = props;
+  const {width, height, isDeviceRotated} = useContext(ScreenSizeContext);
+  return <View style={{width: width, height: height}}>{children}</View>;
 }
 
 function ContextExecutable(props: any) {
@@ -124,11 +137,13 @@ const App: React.FC = () => {
   // seamless Flexa login requires extra libs
   // useEffect(() => {
   //   const handleUrlEvents = (urlEvent: any) => {
-  //     if (urlEvent.url) {processUniversalLink(urlEvent.url);}
+  //     if (urlEvent.url) {
+  //       processUniversalLink(urlEvent.url);
+  //     }
   //   };
   //   const linkSubscription = Linking.addEventListener('url', handleUrlEvents);
 
-  //   Linking.getInitialURL().then((url) => url && processUniversalLink(url));
+  //   Linking.getInitialURL().then(url => url && processUniversalLink(url));
   //   return () => linkSubscription.remove();
   // }, []);
 
@@ -145,13 +160,13 @@ const App: React.FC = () => {
             } else {
               setDeviceIndex(deviceIndex + 1);
             }
-          }}
-        >
-          <Text style={styles.btnText}>
-            {deviceList[deviceIndex]}
-          </Text>
+          }}>
+          <Text style={styles.btnText}>{deviceList[deviceIndex]}</Text>
         </TouchableOpacity>
-        <ScreenSizeProvider specifiedWidth={300} specifiedHeight={700} deviceName={deviceList[deviceIndex]}>
+        <ScreenSizeProvider
+          specifiedWidth={300}
+          specifiedHeight={700}
+          deviceName={deviceList[deviceIndex]}>
           <ResizedView>
             <Provider store={store}>
               {Platform.OS === 'android' ? (
@@ -159,8 +174,7 @@ const App: React.FC = () => {
               ) : null}
               <PersistGate loading={null} persistor={pStore}>
                 <FlexaContext.FlexaContextProvider
-                  publishableKey={flexaPublishableKey}
-                >
+                  publishableKey={flexaPublishableKey}>
                   <ContextExecutable deviceToken={deviceToken} />
                   <GestureHandlerRootView style={styles.gestureView}>
                     <RootNavigator deviceToken={deviceToken} />
@@ -184,9 +198,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     left: '50%',
-    transform: [{
-      translateX: -100,
-    }],
+    transform: [
+      {
+        translateX: -100,
+      },
+    ],
     width: 200,
     height: 35,
     borderRadius: 10,

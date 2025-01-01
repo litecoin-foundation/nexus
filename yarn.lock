@@ -1818,6 +1818,11 @@
     find-up "^5.0.0"
     js-yaml "^4.1.0"
 
+"@flexahq/flexa-react-native@^1.0.9":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@flexahq/flexa-react-native/-/flexa-react-native-1.0.9.tgz#317d81933c387a499f17d85ace44e48c5c35882a"
+  integrity sha512-w28CusH+eiskFuK/WN+rPLEe39fDgCk15Bqxrkk1wqWM7nlsNtML1e7JGjI9vsREuuc/HfrQSgeOOJz7Njczzg==
+
 "@gorhom/bottom-sheet@^5.0.6":
   version "5.0.6"
   resolved "https://registry.yarnpkg.com/@gorhom/bottom-sheet/-/bottom-sheet-5.0.6.tgz#f20736502399c7bcf8c73ea09e6b571dc07fe0eb"
