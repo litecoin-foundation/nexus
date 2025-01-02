@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -6,16 +6,16 @@ import {
   Alert,
   View,
   Text,
-  Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import ChatWootWidget from '@chatwoot/react-native-widget';
 
+import PlasmaModal from '../../components/Modals/PlasmaModal';
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
 import {resetPincode, setBiometricEnabled} from '../../reducers/authentication';
-import PinModal from '../../components/Modals/PinModal';
+import PinModalContent from '../../components/Modals/PinModalContent';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {stopLnd} from '../../reducers/lightning';
@@ -48,8 +48,15 @@ interface Props {
 const Settings: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
-  const [isPinModalTriggered, triggerPinModal] = useState(false);
+
   const [isSupportWidgetTriggered, toggleSupportWidget] = useState(false);
+
+  const [isPinModalOpened, setIsPinModalOpened] = useState(false);
+  const pinModalAction = useRef<string>('view-seed-auth');
+  function openPinModal(action: string) {
+    pinModalAction.current = action;
+    setIsPinModalOpened(true);
+  }
 
   const biometricsAvailable = useAppSelector(
     state => state.authentication.biometricsAvailable,
@@ -67,12 +74,12 @@ const Settings: React.FC<Props> = props => {
     dispatch(setBiometricEnabled(!biometricsEnabled));
   };
 
-  const handleAuthenticationRequired = () => {
+  const handleAuthenticationRequired = (action: string) => {
     return new Promise<void>((resolve, reject) => {
-      triggerPinModal(true);
-      const subscription = DeviceEventEmitter.addListener('auth', bool => {
+      openPinModal(action);
+      const subscription = DeviceEventEmitter.addListener(action, bool => {
         if (bool === true) {
-          triggerPinModal(false);
+          setIsPinModalOpened(false);
           subscription.remove();
           resolve();
         } else if (bool === false) {
@@ -161,13 +168,13 @@ const Settings: React.FC<Props> = props => {
           <SettingCell
             title="View Seed Phrase"
             onPress={() => {
-              handleAuthenticationRequired()
+              handleAuthenticationRequired('view-seed-auth')
                 .then(() => props.navigation.navigate('Seed'))
                 .catch(() =>
                   Alert.alert('Incorrect Pincode', undefined, [
                     {
                       text: 'Dismiss',
-                      onPress: () => triggerPinModal(false),
+                      onPress: () => setIsPinModalOpened(false),
                       style: 'cancel',
                     },
                   ]),
@@ -192,14 +199,14 @@ const Settings: React.FC<Props> = props => {
           <SettingCell
             title="RESET WALLET?"
             onPress={() => {
-              handleAuthenticationRequired().then(() =>
+              handleAuthenticationRequired('reset-wallet-auth').then(() =>
                 Alert.alert(
                   'Reset Wallet?',
                   'Are you absolutely sure you would like to reset your wallet? Backup your seed phrase before resetting.',
                   [
                     {
                       text: 'Cancel',
-                      onPress: () => triggerPinModal(false),
+                      onPress: () => setIsPinModalOpened(false),
                       style: 'cancel',
                     },
                     {text: 'OK', onPress: () => handleReset()},
@@ -221,11 +228,25 @@ const Settings: React.FC<Props> = props => {
         </ScrollView>
       </LinearGradient>
 
-      <PinModal
-        isVisible={isPinModalTriggered}
-        close={() => triggerPinModal(false)}
-        handleValidationFailure={() => DeviceEventEmitter.emit('auth', false)}
-        handleValidationSuccess={() => DeviceEventEmitter.emit('auth', true)}
+      <PlasmaModal
+        isOpened={isPinModalOpened}
+        close={() => setIsPinModalOpened(false)}
+        isFromBottomToTop={true}
+        animDuration={250}
+        gapInPixels={0}
+        backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
+        renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
+          <PinModalContent
+            cardTranslateAnim={cardTranslateAnim}
+            close={() => setIsPinModalOpened(false)}
+            handleValidationFailure={() =>
+              DeviceEventEmitter.emit(pinModalAction.current, false)
+            }
+            handleValidationSuccess={() =>
+              DeviceEventEmitter.emit(pinModalAction.current, true)
+            }
+          />
+        )}
       />
 
       {isSupportWidgetTriggered && (
@@ -277,7 +298,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const SettingsNavigationOptions = navigation => {
+export const SettingsNavigationOptions = (navigation: any) => {
   return {
     headerTitle: () => <Text style={styles.headerTitle}>Settings</Text>,
     headerTitleAlign: 'left',

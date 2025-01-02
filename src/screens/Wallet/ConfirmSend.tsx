@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {
   Alert,
@@ -46,15 +46,21 @@ const ConfirmSend: React.FC<Props> = () => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const [isPinModalTriggered, setPinModalTriggered] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
 
-  const handleAuthenticationRequired = () => {
+  const [isPinModalOpened, setIsPinModalOpened] = useState(false);
+  const pinModalAction = useRef<string>('send-auth');
+  function openPinModal(action: string) {
+    pinModalAction.current = action;
+    setIsPinModalOpened(true);
+  }
+
+  const handleAuthenticationRequired = (action: string) => {
     return new Promise<void>((resolve, reject) => {
-      setPinModalTriggered(true);
-      const subscription = DeviceEventEmitter.addListener('auth', bool => {
+      openPinModal(action);
+      const subscription = DeviceEventEmitter.addListener(action, bool => {
         if (bool === true) {
-          setPinModalTriggered(false);
+          setIsPinModalOpened(false);
           subscription.remove();
           resolve();
         } else if (bool === false) {
@@ -66,7 +72,7 @@ const ConfirmSend: React.FC<Props> = () => {
   };
 
   const handleSend = () => {
-    handleAuthenticationRequired()
+    handleAuthenticationRequired('send-auth')
       .then(() => {
         console.log('successfully authentication, handle sending');
         navigation.navigate('SuccessSend');
@@ -75,7 +81,7 @@ const ConfirmSend: React.FC<Props> = () => {
         Alert.alert('Incorrect Pincode', undefined, [
           {
             text: 'Dismiss',
-            onPress: () => setPinModalTriggered(false),
+            onPress: () => setIsPinModalOpened(false),
             style: 'cancel',
           },
         ]),
@@ -140,9 +146,9 @@ const ConfirmSend: React.FC<Props> = () => {
       </LinearGradient>
 
       <PlasmaModal
-        isOpened={isPinModalTriggered}
+        isOpened={isPinModalOpened}
         close={() => {
-          setPinModalTriggered(false);
+          setIsPinModalOpened(false);
         }}
         isFromBottomToTop={true}
         animDuration={250}
@@ -151,12 +157,12 @@ const ConfirmSend: React.FC<Props> = () => {
         renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
           <PinModalContent
             cardTranslateAnim={cardTranslateAnim}
-            close={() => setPinModalTriggered(false)}
+            close={() => setIsPinModalOpened(false)}
             handleValidationFailure={() =>
-              DeviceEventEmitter.emit('auth', false)
+              DeviceEventEmitter.emit(pinModalAction.current, false)
             }
             handleValidationSuccess={() =>
-              DeviceEventEmitter.emit('auth', true)
+              DeviceEventEmitter.emit(pinModalAction.current, true)
             }
           />
         )}
