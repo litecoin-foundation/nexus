@@ -1,12 +1,5 @@
-import React, {useState, useRef, useLayoutEffect} from 'react';
-import {
-  View,
-  Text,
-  Dimensions,
-  StyleSheet,
-  Image,
-  Platform,
-} from 'react-native';
+import React, {useState, useRef, useLayoutEffect, useContext} from 'react';
+import {View, Text, StyleSheet, Image, Platform} from 'react-native';
 import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
@@ -21,7 +14,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import OnboardingHeader from '../../components/OnboardingHeader';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-const {width} = Dimensions.get('window');
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Generate: undefined;
@@ -33,8 +26,13 @@ interface Props {
 }
 
 const Generate: React.FC<Props> = props => {
-  const carousel = useRef<ICarouselInstance>(null);
   const {navigation} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const carousel = useRef<ICarouselInstance>(null);
   const insets = useSafeAreaInsets();
 
   const seedSelector = createSelector(
@@ -67,14 +65,14 @@ const Generate: React.FC<Props> = props => {
   const list = (
     <Carousel
       loop={false}
-      width={width}
+      width={SCREEN_WIDTH}
       onSnapToItem={index => setActivePage(index)}
       data={seed}
       ref={carousel}
       mode="parallax"
       modeConfig={{
         parallaxScrollingScale: 1,
-        parallaxScrollingOffset: 70,
+        parallaxScrollingOffset: SCREEN_WIDTH * 0.16,
       }}
       renderItem={({item, index}) => (
         <View style={styles.carouselItem}>
@@ -138,59 +136,68 @@ const Generate: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flex: 1,
-  },
-  seedContainer: {
-    paddingTop: 24,
-    height: 400,
-    position: 'absolute',
-    bottom: 250,
-  },
-  carouselItem: {
-    alignItems: 'center',
-    gap: 24,
-  },
-  warningText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 12,
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    paddingRight: 38,
-  },
-  bottomContainer: {
-    alignSelf: 'center',
-    position: 'absolute',
-    bottom: 0,
-    paddingBottom: 40,
-  },
-  bottomTextContainer: {
-    flexDirection: 'row',
-    width: 300,
-    paddingBottom: 38,
-    alignSelf: 'center',
-  },
-  image: {
-    marginRight: 17,
-    alignSelf: 'center',
-  },
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    color: 'white',
-    fontSize: 26,
-  },
-  dotContainer: {
-    alignSelf: 'center',
-    position: 'absolute',
-    bottom: 220,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    header: {
+      flex: 1,
+    },
+    seedContainer: {
+      // paddingTop: screenHeight * 0.024,
+      height: screenHeight * 0.4,
+      position: 'absolute',
+      bottom: screenHeight * 0.25,
+    },
+    carouselItem: {
+      // alignItems: 'center',
+      gap: screenHeight * 0.024,
+      paddingLeft: 30,
+    },
+    bottomContainer: {
+      position: 'absolute',
+      bottom: 0,
+      width: '100%',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 15,
+      paddingHorizontal: 30,
+      paddingBottom: 50,
+    },
+    bottomTextContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.18,
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    warningText: {
+      flex: 1,
+      color: 'rgba(255, 255, 255, 0.6)',
+      fontSize: screenHeight * 0.012,
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: 'bold',
+    },
+    image: {
+      width: screenWidth * 0.08,
+      alignSelf: 'center',
+      objectFit: 'contain',
+      marginRight: screenWidth * 0.04,
+    },
+    headerTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: 'bold',
+      color: 'white',
+      fontSize: screenHeight * 0.026,
+    },
+    dotContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.25,
+      alignSelf: 'center',
+    },
+  });
 
 export default Generate;

@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useLayoutEffect} from 'react';
-import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
+import React, {useState, useEffect, useLayoutEffect, useContext} from 'react';
+import {View, Text, StyleSheet, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
@@ -12,6 +12,8 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import randomShuffle from '../../lib/utils/randomShuffle';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 type RootStackParamList = {
   Verify: undefined;
   Biometric: undefined;
@@ -23,6 +25,10 @@ interface Props {
 
 const Verify: React.FC<Props> = props => {
   const {navigation} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const seed = useAppSelector(state => state.onboarding.generatedSeed);
   const [multiplier, setMultiplier] = useState(1);
@@ -146,66 +152,72 @@ const Verify: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gradientContainer: {
-    flex: 1,
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    alignSelf: 'center',
-    gap: 36,
-    paddingTop: 60,
-    paddingBottom: 80,
-  },
-  optionBox: {
-    height: 30,
-    width: 80,
-    backgroundColor: 'white',
-    borderRadius: 9,
-    marginBottom: 5,
-  },
-  optionSubContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingLeft: 4,
-    paddingRight: 4,
-  },
-  bottomContainer: {
-    alignSelf: 'center',
-    position: 'absolute',
-    bottom: 0,
-    paddingBottom: 40,
-  },
-  optionText: {
-    fontSize: 18,
-    color: 'white',
-    height: 40,
-    paddingTop: 10,
-  },
-  buttonContainer: {
-    alignItems: 'center',
-  },
-  optionValueText: {
-    color: 'white',
-    opacity: 0.2,
-    fontSize: 15,
-  },
-  optionValueTextActual: {
-    color: 'white',
-    opacity: 0.5,
-    fontSize: 15,
-  },
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    color: 'white',
-    fontSize: 26,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    headerTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: 'bold',
+      color: 'white',
+      fontSize: screenHeight * 0.026,
+    },
+    container: {
+      flex: 1,
+    },
+    gradientContainer: {
+      flex: 1,
+    },
+    optionsContainer: {
+      flexDirection: 'row',
+      alignSelf: 'center',
+      gap: screenWidth * 0.1,
+      paddingVertical: screenHeight * 0.1,
+    },
+    optionSubContainer: {
+      height: screenHeight * 0.08,
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    optionBox: {
+      height: screenHeight * 0.035,
+      width: screenWidth * 0.22,
+      backgroundColor: 'white',
+      borderRadius: screenHeight * 0.01,
+      marginBottom: screenHeight * 0.01,
+    },
+    optionText: {
+      height: screenHeight * 0.035,
+      color: 'white',
+      fontSize: screenHeight * 0.02,
+      paddingTop: screenHeight * 0.006,
+      marginBottom: screenHeight * 0.01,
+    },
+    optionValueText: {
+      color: 'white',
+      opacity: 0.2,
+      fontSize: screenHeight * 0.02,
+    },
+    optionValueTextActual: {
+      color: 'white',
+      opacity: 0.8,
+      fontSize: screenHeight * 0.02,
+    },
+    bottomContainer: {
+      width: '100%',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 15,
+      paddingHorizontal: 30,
+      paddingBottom: 50,
+    },
+    buttonContainer: {
+      flex: 1,
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 30,
+      paddingBottom: 30,
+    },
+  });
 
 export default Verify;
