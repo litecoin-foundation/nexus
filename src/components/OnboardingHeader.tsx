@@ -1,5 +1,7 @@
-import React from 'react';
-import {View, Text, StyleSheet, SafeAreaView, Platform} from 'react-native';
+import React, {useContext} from 'react';
+import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
+
+import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
   description: string;
@@ -8,6 +10,11 @@ interface Props {
 
 const OnboardingHeader: React.FC<Props> = props => {
   const {description, children} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return (
     <SafeAreaView>
       <View style={styles.headerContainer}>
@@ -18,19 +25,19 @@ const OnboardingHeader: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  headerContainer: {
-    marginTop: 50,
-  },
-  headerDescriptionText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '600',
-    color: 'white',
-    fontSize: 18,
-    paddingLeft: 67,
-    paddingRight: 29,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    headerContainer: {
+      marginTop: screenHeight * 0.07,
+    },
+    headerDescriptionText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '600',
+      color: 'white',
+      fontSize: screenHeight * 0.02,
+      paddingHorizontal: 30,
+    },
+  });
 
 export default OnboardingHeader;
