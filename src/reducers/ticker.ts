@@ -6,6 +6,10 @@ import {AppThunk} from './types';
 import {getBuyQuoteData, getSellQuoteData} from './buy';
 
 // types
+type IRates = {
+  [key: string]: string;
+};
+
 interface ITicker {}
 
 // initial state
@@ -23,7 +27,7 @@ const initialState = {
 } as ITicker;
 
 // actions
-const getTickerAction = createAction('ticker/getTickerAction');
+const getTickerAction = createAction<IRates>('ticker/getTickerAction');
 const updateRatesAction = createAction<{
   buy: number;
   sell: number;
@@ -82,6 +86,7 @@ const getTickerData = () => {
 export const pollRates = (): AppThunk => async (dispatch, getState) => {
   await poll(async () => {
     const {currencyCode} = getState().settings;
+
     try {
       // fetch buy quote
       const buyQuote: any = await getBuyQuoteData(currencyCode, 1);
@@ -118,6 +123,15 @@ const fetchHistoricalRates = async (interval: string): Promise<any[]> => {
   const {data} = await res.json();
 
   return data;
+};
+
+export const updatedRatesInFiat = (): AppThunk => async dispatch => {
+  try {
+    const rates = await getTickerData();
+    dispatch(getTickerAction(rates));
+  } catch (error) {
+    console.error('Error fetching day historical rates:', error);
+  }
 };
 
 export const getDayHistoricalRates = (): AppThunk => async dispatch => {

@@ -27,7 +27,10 @@ import {
 
 import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';
-import {updateHistoricalRatesForAllPeriods} from './src/reducers/ticker';
+import {
+  updatedRatesInFiat,
+  updateHistoricalRatesForAllPeriods,
+} from './src/reducers/ticker';
 import {
   getBuyTransactionHistory,
   getSellTransactionHistory,
@@ -68,6 +71,9 @@ function ResizedView(props: any) {
 function ContextExecutable(props: any) {
   const dispatch = useAppDispatch();
   dispatch(setDeviceNotificationToken(props.deviceToken));
+  // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
+  // resulting in missing rates even if the app is being used already.
+  dispatch(updatedRatesInFiat());
   dispatch(updateHistoricalRatesForAllPeriods());
   dispatch(getBuyTransactionHistory());
   dispatch(getSellTransactionHistory());
