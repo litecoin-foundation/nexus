@@ -7,10 +7,11 @@ interface Props {
   value: string;
   onPress: () => void;
   disabled?: boolean;
+  small?: boolean;
 }
 
 const GreenButton: React.FC<Props> = props => {
-  const {value, onPress, disabled} = props;
+  const {value, onPress, disabled, small} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -18,7 +19,11 @@ const GreenButton: React.FC<Props> = props => {
 
   return (
     <TouchableOpacity
-      style={[styles.container, disabled ? styles.disabled : null]}
+      style={[
+        styles.container,
+        small ? styles.small : styles.big,
+        disabled ? styles.disabled : null,
+      ]}
       onPress={onPress}
       disabled={disabled}>
       <Text style={styles.text}>{value}</Text>
@@ -36,15 +41,28 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       paddingHorizontal: screenHeight * 0.025,
     },
+    small: {
+      width: screenWidth * 0.7,
+      height: screenHeight * 0.055,
+      borderRadius: screenHeight * 0.01,
+    },
+    big: {
+      width: '100%',
+      height: screenHeight * 0.06,
+      borderRadius: screenHeight * 0.012,
+    },
     text: {
-      color: '#FFFFFF',
-      fontSize: screenHeight * 0.017,
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
+      color: '#fff',
+      fontSize: screenHeight * 0.02,
     },
     disabled: {
-      opacity: 0.4,
+      opacity: 0.5,
+    },
+    smallText: {
+      fontSize: screenHeight * 0.017,
     },
   });
 
