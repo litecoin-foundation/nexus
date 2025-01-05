@@ -8,6 +8,7 @@ import {checkBiometricSupport} from '../lib/utils/biometric';
 import {checkInternetReachable} from '../reducers/info';
 import {subscribeAppState} from '../reducers/authentication';
 import {setDeeplink} from '../reducers/deeplinks';
+import {syncAlerts} from '../reducers/alerts';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 
 type RootStackParamList = {
@@ -32,6 +33,8 @@ const Loading: React.FC<Props> = props => {
     dispatch(resetLndState());
     if (isOnboarded) {
       dispatch(startLnd());
+      // sync alerts with nexus-api server
+      dispatch(syncAlerts());
     }
   }, [dispatch, isOnboarded]);
 

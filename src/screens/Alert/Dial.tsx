@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {v4 as uuidv4} from 'uuid';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import Header from '../../components/Header';
@@ -79,9 +78,6 @@ const Dial: React.FC<Props> = props => {
           onPress={() => {
             dispatch(
               addAlert({
-                id: uuidv4(),
-                date: Date.now(),
-                enabled: true,
                 value,
                 originalValue: usdValue,
                 isIOS: Platform.OS === 'ios',
@@ -155,7 +151,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const DialNavigationOptions = navigation => {
+export const DialNavigationOptions = (navigation: any) => {
   return {
     headerTitle: () => (
       <Text style={styles.headerTitle}>Create Price Alert</Text>

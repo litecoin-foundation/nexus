@@ -145,13 +145,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
     },
     seedContainer: {
-      // paddingTop: screenHeight * 0.024,
       height: screenHeight * 0.4,
       position: 'absolute',
       bottom: screenHeight * 0.25,
     },
     carouselItem: {
-      // alignItems: 'center',
       gap: screenHeight * 0.024,
       paddingLeft: 30,
     },
