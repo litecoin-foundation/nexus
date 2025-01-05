@@ -21,27 +21,41 @@ interface Props {
 }
 
 const HeaderButton: React.FC<Props> = props => {
-  const {onPress, imageSource, title, rightPadding, marginLeft, marginRight} = props;
+  const {onPress, imageSource, title, rightPadding, marginLeft, marginRight} =
+    props;
 
   const MARGIN_LEFT = marginLeft || 0;
   const MARGIN_RIGHT = marginRight || 0;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, MARGIN_LEFT, MARGIN_RIGHT);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    MARGIN_LEFT,
+    MARGIN_RIGHT,
+  );
 
   return (
     <TouchableOpacity
       style={[styles.container, rightPadding ? styles.padRight : null]}
       onPress={onPress}>
       <View style={styles.subcontainer}>
-        {imageSource ? <Image source={imageSource} style={styles.image} /> : null}
+        {imageSource ? (
+          <Image source={imageSource} style={styles.image} />
+        ) : null}
         {title ? <Text style={styles.title}>{title}</Text> : null}
       </View>
     </TouchableOpacity>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, marginLeft: number, marginRight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  marginLeft: number,
+  marginRight: number,
+) =>
   StyleSheet.create({
     container: {
       borderRadius: screenHeight * 0.01,
@@ -59,8 +73,7 @@ const getStyles = (screenWidth: number, screenHeight: number, marginLeft: number
       flexDirection: 'row',
       alignItems: 'center',
     },
-    image: {
-    },
+    image: {},
     title: {
       fontFamily:
         Platform.OS === 'ios'
@@ -70,8 +83,7 @@ const getStyles = (screenWidth: number, screenHeight: number, marginLeft: number
       fontWeight: '700',
       color: 'white',
       fontSize: screenHeight * 0.013,
-      marginLeft: 5,
-      marginRight: 5,
+      marginHorizontal: 10,
     },
     padRight: {
       marginRight: screenWidth * 0.04 + marginRight,
