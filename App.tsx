@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useEffect, useState, useContext} from 'react';
+import React, {useLayoutEffect, useState, useContext} from 'react';
 import {
   View,
   Platform,
@@ -16,7 +16,6 @@ import {
   RegistrationError,
   Notification,
   NotificationCompletion,
-  NotificationBackgroundFetchResult,
 } from 'react-native-notifications';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {FlexaContext} from '@flexahq/flexa-react-native';
@@ -62,7 +61,7 @@ const RESIZE_DEACTIVATED = __DEV__ ? false : true;
 
 function ResizedView(props: any) {
   const {children} = props;
-  const {width, height, isDeviceRotated} = useContext(ScreenSizeContext);
+  const {width, height} = useContext(ScreenSizeContext);
   return <View style={{width: width, height: height}}>{children}</View>;
 }
 
@@ -84,8 +83,7 @@ const App: React.FC = () => {
 
     Notifications.events().registerRemoteNotificationsRegistered(
       (event: Registered) => {
-        // TODO: Send the token to my server so it could send back push notifications...
-        // console.log('Device Token Received', event.deviceToken);
+        console.log('Device Token Received', event.deviceToken);
         setDeviceToken(event.deviceToken);
       },
     );
@@ -101,7 +99,6 @@ const App: React.FC = () => {
         completion: (response: NotificationCompletion) => void,
       ) => {
         // console.log('Notification Received - Foreground', notification.payload);
-
         // Calling completion on iOS with `alert: true` will present the native iOS inApp notification.
         completion({alert: true, sound: true, badge: false});
       },
@@ -116,22 +113,19 @@ const App: React.FC = () => {
     );
 
     Notifications.events().registerNotificationReceivedBackground(
-      (
-        notification: Notification,
-        completion: (response: NotificationBackgroundFetchResult) => void,
-      ) => {
+      (notification: Notification, completion: (response: any) => void) => {
         // console.log('Notification Received - Background', notification.payload);
-
         // Calling completion on iOS with `alert: true` will present the native iOS inApp notification.
         completion({alert: true, sound: true, badge: false});
       },
     );
 
-    Notifications.getInitialNotification()
-      .then(notification => {
-        // console.log('Initial notification was:', (notification ? notification.payload : 'N/A'));
-      })
-      .catch(err => console.error('getInitialNotifiation() failed', err));
+    // Not supported on Android
+    // Notifications.getInitialNotification()
+    //   .then(notification => {
+    //     // console.log('Initial notification was:', (notification ? notification.payload : 'N/A'));
+    //   })
+    //   .catch(err => console.error('getInitialNotifiation() failed', err));
   }, []);
 
   // seamless Flexa login requires extra libs
@@ -177,7 +171,7 @@ const App: React.FC = () => {
                   publishableKey={flexaPublishableKey}>
                   <ContextExecutable deviceToken={deviceToken} />
                   <GestureHandlerRootView style={styles.gestureView}>
-                    <RootNavigator deviceToken={deviceToken} />
+                    <RootNavigator />
                     <Error />
                   </GestureHandlerRootView>
                 </FlexaContext.FlexaContextProvider>
