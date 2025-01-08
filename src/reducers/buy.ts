@@ -7,8 +7,8 @@ const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 // types
 interface IBuy {
   quote: 'string' | null;
-  buyHistory: string[];
-  sellHistory: string[];
+  buyHistory: any[];
+  sellHistory: any[];
   isBuyAllowed: boolean | null;
   isSellAllowed: boolean | null;
   minBuyAmount: number;

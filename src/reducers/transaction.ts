@@ -18,16 +18,68 @@ import {getBalance} from './balance';
 // types
 type IDecodedTx = {
   txHash: string;
-  amount: Number;
-  numConfirmations: number;
   blockHash: string;
   blockHeight: number;
+  amount: Number;
+  numConfirmations: number;
   timeStamp: string;
   fee: Number;
   destAddresses: string[];
   outputDetails: IOutputDetails[];
   previousOutpoints: PreviousOutPoint[];
   label: string | null | undefined;
+  metaLabel: string;
+  priceOnDateMeta: number | null;
+  moonpayMeta: {
+    status: string | null;
+    baseCurrency: string | null;
+    currency: string | null;
+    areFeesIncluded: boolean | null;
+    networkFeeAmount: number | null;
+    feeAmount: number | null;
+    feeAmountDiscount: number | null;
+    extraFeeAmount: number | null;
+    extraFeeAmountDiscount: number | null;
+    baseCurrencyAmount: number | null;
+    quoteCurrencyAmount: number | null;
+    usdRate: number | null;
+    eurRate: number | null;
+    gbpRate: number | null;
+  } | null;
+};
+
+export type IDisplayedTx = {
+  hash: string;
+  blockHash: string;
+  blockHeight: number;
+  amount: number;
+  confs: number;
+  day: string;
+  time: Date;
+  timestamp: number;
+  fee: undefined;
+  lightning: boolean;
+  addresses: string[];
+  inputTxs: string[];
+  label: string | null | undefined;
+  metaLabel: string;
+  priceOnDateMeta: number | null;
+  moonpayMeta: {
+    status: string | null;
+    baseCurrency: string | null;
+    currency: string | null;
+    areFeesIncluded: boolean | null;
+    networkFeeAmount: number | null;
+    feeAmount: number | null;
+    feeAmountDiscount: number | null;
+    extraFeeAmount: number | null;
+    extraFeeAmountDiscount: number | null;
+    baseCurrencyAmount: number | null;
+    quoteCurrencyAmount: number | null;
+    usdRate: number | null;
+    eurRate: number | null;
+    gbpRate: number | null;
+  } | null;
 };
 
 type IOutputDetails = {
@@ -61,6 +113,42 @@ const txSubscriptionStartedAction = createAction<boolean>(
 );
 
 // functions
+const getPriceOnDate = (timestamp: number): Promise<number | null> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await fetch(
+        'https://mobile.litecoin.com/api/prices/dateprice',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            timestamp,
+          }),
+        },
+      );
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error);
+      }
+
+      const data = await res.json();
+
+      if (data.hasOwnProperty('datePrice')) {
+        resolve(data.datePrice);
+      } else {
+        resolve(null);
+      }
+    } catch (error) {
+      // console.error(error);
+      reject(error);
+    }
+  });
+};
+
 export const subscribeTransactions =
   (): AppThunk => async (dispatch, getState) => {
     const {txSubscriptionStarted} = getState().transaction;
@@ -100,7 +188,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
     let txs: IDecodedTx[] = [];
 
-    transactions.transactions.forEach(tx => {
+    for await (const tx of transactions.transactions) {
       // deserialisation
       const destAddresses: string[] = [];
       tx.destAddresses?.forEach(addresses => {
@@ -124,37 +212,70 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       });
 
       let metaLabel = 'All';
+      const priceOnDateMeta = await getPriceOnDate(Number(tx.timeStamp));
+      let moonpayMeta = null;
 
       if (Math.sign(parseFloat(String(tx.amount))) === -1) {
         metaLabel = 'Send';
-      } else if (Math.sign(parseFloat(String(tx.amount))) === 1) {
+      }
+
+      if (Math.sign(parseFloat(String(tx.amount))) === 1) {
         metaLabel = 'Receive';
-      } else if (buyHistory && buyHistory.length >= 1) {
-        if (buyHistory.filter((buyTx) => buyTx === tx.txHash)) {
+      }
+
+      if (buyHistory && buyHistory.length >= 1) {
+        const buyTxs = buyHistory.filter(
+          buyTx => buyTx.cryptoTransactionId === tx.txHash,
+        );
+        if (buyTxs && buyTxs.length > 0) {
+          const buyTx = buyTxs[0];
+          moonpayMeta = {
+            status: buyTx.status || null,
+            baseCurrency: buyTx.baseCurrency.code || null,
+            currency: buyTx.currency.code || null,
+            areFeesIncluded: buyTx.areFeesIncluded || null,
+            networkFeeAmount: buyTx.networkFeeAmount || null,
+            feeAmount: buyTx.feeAmount || null,
+            feeAmountDiscount: buyTx.feeAmountDiscount || null,
+            extraFeeAmount: buyTx.extraFeeAmount || null,
+            extraFeeAmountDiscount: buyTx.extraFeeAmountDiscount || null,
+            baseCurrencyAmount: buyTx.baseCurrencyAmount || null,
+            quoteCurrencyAmount: buyTx.quoteCurrencyAmount || null,
+            usdRate: buyTx.usdRate || null,
+            eurRate: buyTx.eurRate || null,
+            gbpRate: buyTx.gbpRate || null,
+          };
           metaLabel = 'Buy';
         }
-      } else if (sellHistory && sellHistory.length >= 1) {
-        if (sellHistory.filter((selTx) => selTx === tx.txHash)) {
+      }
+
+      if (sellHistory && sellHistory.length >= 1) {
+        if (
+          sellHistory.filter(sellTx => sellTx.cryptoTransactionId === tx.txHash)
+            .length > 0
+        ) {
           metaLabel = 'Sell';
         }
       }
 
       let decodedTx = {
         txHash: tx.txHash,
-        amount: Number(tx.amount),
-        numConfirmations: tx.numConfirmations,
         blockHash: tx.blockHash,
         blockHeight: tx.blockHeight,
+        amount: Number(tx.amount),
+        numConfirmations: tx.numConfirmations,
         timeStamp: String(tx.timeStamp),
         fee: Number(tx.totalFees),
         destAddresses,
         outputDetails,
         previousOutpoints,
         label: tx.label,
-        metaLabel: metaLabel,
+        metaLabel,
+        priceOnDateMeta,
+        moonpayMeta,
       };
       txs.push(decodedTx);
-    });
+    }
 
     dispatch(getTransactionsAction(txs));
   } catch (error) {
@@ -228,10 +349,13 @@ export const publishTransaction = (txHex: string) => {
 };
 
 // selectors
-const txSelector = (state: any) => state.transaction.transactions;
+const txSelector = (state: any): any => state.transaction.transactions;
 
-export const txDetailSelector = createSelector(txSelector, tx =>
-  tx.map((data: any) => {
+export const txDetailSelector = createSelector<
+  [(state: any) => any],
+  IDisplayedTx[]
+>(txSelector, (txs: any) =>
+  txs.map((data: any) => {
     const addresses: string[] = [];
     data.outputDetails?.forEach((outputDetail: any) => {
       addresses.push(outputDetail.address);
@@ -239,19 +363,21 @@ export const txDetailSelector = createSelector(txSelector, tx =>
 
     return {
       hash: data.txHash,
+      blockHash: data.blockHash,
       blockHeight: data.blockHeight,
       amount: data.amount,
+      confs: data.numConfirmations,
       day: formatDate(Number(data.timeStamp) * 1000),
       time: formatTime(Number(data.timeStamp) * 1000),
       timestamp: data.timeStamp,
       fee: data.fee,
-      confs: data.numConfirmations,
       lightning: false,
-      addresses: addresses,
+      addresses,
       inputTxs: data.previousOutpoints,
-      sent: Math.sign(parseFloat(data.amount)) === -1 ? true : false,
       label: data.label,
       metaLabel: data.metaLabel,
+      priceOnDateMeta: data.priceOnDateMeta,
+      moonpayMeta: data.moonpayMeta,
     };
   }),
 );
