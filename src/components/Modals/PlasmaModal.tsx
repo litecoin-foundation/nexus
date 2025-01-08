@@ -16,6 +16,7 @@ import {
   GestureDetector,
   PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler';
+import {BlurView} from 'expo-blur';
 
 import {useAppSelector} from '../../store/hooks';
 
@@ -66,13 +67,18 @@ export default function PlasmaModal(props: Props) {
     renderBody,
   } = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+
+  const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
   const swipeTriggerHeightRange = SCREEN_HEIGHT * 0.15;
   const swipeTriggerWidthRange = SCREEN_WIDTH * 0.15;
   const snapPoints = [
     isFromBottomToTop ? gapInPixels : SCREEN_HEIGHT,
-    isFromBottomToTop ? gapInPixels + swipeTriggerHeightRange : SCREEN_HEIGHT - swipeTriggerHeightRange,
+    isFromBottomToTop
+      ? gapInPixels + swipeTriggerHeightRange
+      : SCREEN_HEIGHT - swipeTriggerHeightRange,
   ];
   const fullyOpenSnapPoint = snapPoints[0];
   const closedSnapPoint = snapPoints[snapPoints.length - 1];
@@ -93,11 +99,18 @@ export default function PlasmaModal(props: Props) {
   const paginationOpacity = useSharedValue(1);
 
   function goPrevNextCard(isPrev: boolean) {
-    bodyTranslateX.value = withTiming(isPrev ? SCREEN_WIDTH : SCREEN_WIDTH * -1, {duration: SWIPE_CARDS_ANIM_DURATION});
+    bodyTranslateX.value = withTiming(
+      isPrev ? SCREEN_WIDTH : SCREEN_WIDTH * -1,
+      {duration: SWIPE_CARDS_ANIM_DURATION},
+    );
     cardOpacity.value = withTiming(0, {duration: SWIPE_CARDS_ANIM_DURATION});
-    prevNextCardOpacity.value = withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION});
+    prevNextCardOpacity.value = withTiming(1, {
+      duration: SWIPE_CARDS_ANIM_DURATION,
+    });
     cardScale.value = withTiming(0.7, {duration: SWIPE_CARDS_ANIM_DURATION});
-    prevNextCardScale.value = withTiming(1, {duration: SWIPE_CARDS_ANIM_DURATION});
+    prevNextCardScale.value = withTiming(1, {
+      duration: SWIPE_CARDS_ANIM_DURATION,
+    });
 
     setTimeout(() => {
       bodyTranslateX.value = 0;
@@ -108,10 +121,14 @@ export default function PlasmaModal(props: Props) {
     }, SWIPE_CARDS_ANIM_DURATION);
   }
 
-  const closeTrigger = ({translationY, velocityY}: PanGestureHandlerEventPayload) => {
+  const closeTrigger = ({
+    translationY,
+    velocityY,
+  }: PanGestureHandlerEventPayload) => {
     'worklet';
     const dragToss = 0.05;
-    const destSnapPoint = translationY + bodyTranslateYStart.value + velocityY * dragToss;
+    const destSnapPoint =
+      translationY + bodyTranslateYStart.value + velocityY * dragToss;
 
     bodyTranslateY.value = withSpring(destSnapPoint, {
       mass: 0.1,
@@ -123,10 +140,14 @@ export default function PlasmaModal(props: Props) {
     runOnJS(close)();
   };
 
-  const swipeToPrevTxTrigger = ({translationX, velocityX}: PanGestureHandlerEventPayload) => {
+  const swipeToPrevTxTrigger = ({
+    translationX,
+    velocityX,
+  }: PanGestureHandlerEventPayload) => {
     'worklet';
     const dragToss = 0.1;
-    const destSnapPoint = translationX + bodyTranslateXStart.value + velocityX * dragToss;
+    const destSnapPoint =
+      translationX + bodyTranslateXStart.value + velocityX * dragToss;
 
     bodyTranslateX.value = withSpring(destSnapPoint, {
       mass: 0.1,
@@ -138,10 +159,14 @@ export default function PlasmaModal(props: Props) {
     }
   };
 
-  const swipeToNextTxTrigger = ({translationX, velocityX}: PanGestureHandlerEventPayload) => {
+  const swipeToNextTxTrigger = ({
+    translationX,
+    velocityX,
+  }: PanGestureHandlerEventPayload) => {
     'worklet';
     const dragToss = 0.1;
-    const destSnapPoint = translationX + bodyTranslateXStart.value + velocityX * dragToss;
+    const destSnapPoint =
+      translationX + bodyTranslateXStart.value + velocityX * dragToss;
 
     bodyTranslateX.value = withSpring(destSnapPoint, {
       mass: 0.1,
@@ -154,7 +179,7 @@ export default function PlasmaModal(props: Props) {
   };
 
   const panYGesture = Gesture.Pan()
-    .onUpdate((e) => {
+    .onUpdate(e => {
       if (bodyTranslateX.value === 0 || !isSwiperActive) {
         if (isFromBottomToTop) {
           if (e.translationY > 0) {
@@ -167,46 +192,76 @@ export default function PlasmaModal(props: Props) {
         }
       }
     })
-    .onEnd((e) => {
+    .onEnd(e => {
       if (bodyTranslateX.value === 0 || !isSwiperActive) {
         if (isFromBottomToTop) {
           if (e.translationY + fullyOpenSnapPoint > closedSnapPoint) {
             closeTrigger(e);
           } else {
-            bodyTranslateY.value = withTiming(bodyTranslateYStart.value, {duration: SPRING_BACK_ANIM_DURATION});
+            bodyTranslateY.value = withTiming(bodyTranslateYStart.value, {
+              duration: SPRING_BACK_ANIM_DURATION,
+            });
           }
         } else {
           if (e.translationY + fullyOpenSnapPoint < closedSnapPoint) {
             closeTrigger(e);
           } else {
-            bodyTranslateY.value = withTiming(bodyTranslateYStart.value, {duration: SPRING_BACK_ANIM_DURATION});
+            bodyTranslateY.value = withTiming(bodyTranslateYStart.value, {
+              duration: SPRING_BACK_ANIM_DURATION,
+            });
           }
         }
       }
     });
 
   const panXGesture = Gesture.Pan()
-    .onUpdate((e) => {
+    .onUpdate(e => {
       if (bodyTranslateY.value === 0) {
         bodyTranslateX.value = e.translationX + bodyTranslateXStart.value;
-        cardOpacity.value = interpolate(e.translationX, [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH], [0, 1, 0]);
-        prevNextCardOpacity.value = interpolate(e.translationX, [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH], [1, 0, 1]);
-        cardScale.value = interpolate(e.translationX, [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH], [0.7, 1, 0.7]);
-        prevNextCardScale.value = interpolate(e.translationX, [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH], [1, 0.7, 1]);
+        cardOpacity.value = interpolate(
+          e.translationX,
+          [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH],
+          [0, 1, 0],
+        );
+        prevNextCardOpacity.value = interpolate(
+          e.translationX,
+          [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH],
+          [1, 0, 1],
+        );
+        cardScale.value = interpolate(
+          e.translationX,
+          [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH],
+          [0.7, 1, 0.7],
+        );
+        prevNextCardScale.value = interpolate(
+          e.translationX,
+          [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH],
+          [1, 0.7, 1],
+        );
       }
     })
-    .onEnd((e) => {
+    .onEnd(e => {
       if (bodyTranslateY.value === 0) {
         if (e.translationX > swipeTriggerWidthRange) {
           swipeToPrevTxTrigger(e);
         } else if (Math.abs(e.translationX) > swipeTriggerWidthRange) {
           swipeToNextTxTrigger(e);
         } else {
-          bodyTranslateX.value = withTiming(bodyTranslateXStart.value, {duration: SPRING_BACK_ANIM_DURATION});
-          cardOpacity.value = withTiming(1, {duration: SPRING_BACK_ANIM_DURATION});
-          prevNextCardOpacity.value = withTiming(0, {duration: SPRING_BACK_ANIM_DURATION});
-          cardScale.value = withTiming(1, {duration: SPRING_BACK_ANIM_DURATION});
-          prevNextCardScale.value = withTiming(0.7, {duration: SPRING_BACK_ANIM_DURATION});
+          bodyTranslateX.value = withTiming(bodyTranslateXStart.value, {
+            duration: SPRING_BACK_ANIM_DURATION,
+          });
+          cardOpacity.value = withTiming(1, {
+            duration: SPRING_BACK_ANIM_DURATION,
+          });
+          prevNextCardOpacity.value = withTiming(0, {
+            duration: SPRING_BACK_ANIM_DURATION,
+          });
+          cardScale.value = withTiming(1, {
+            duration: SPRING_BACK_ANIM_DURATION,
+          });
+          prevNextCardScale.value = withTiming(0.7, {
+            duration: SPRING_BACK_ANIM_DURATION,
+          });
         }
       }
     })
@@ -273,8 +328,7 @@ export default function PlasmaModal(props: Props) {
       paginationOpacity.value = withTiming(1, {duration: animDuration});
     } else {
       bodyTranslateY.value = withTiming(
-        (SCREEN_HEIGHT - gapInPixels) *
-          (isFromBottomToTop ? 1 : -1),
+        (SCREEN_HEIGHT - gapInPixels) * (isFromBottomToTop ? 1 : -1),
         {duration: animDuration},
       );
 
@@ -286,7 +340,14 @@ export default function PlasmaModal(props: Props) {
       clearTimeout(animTimeout.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bodyTranslateY, backOpacity, animDuration, gapInPixels, isFromBottomToTop, isOpened]);
+  }, [
+    bodyTranslateY,
+    backOpacity,
+    animDuration,
+    gapInPixels,
+    isFromBottomToTop,
+    isOpened,
+  ]);
 
   const containerJustifyContent = isFromBottomToTop ? 'flex-end' : 'flex-start';
   const gapBgColor = isInternetReachable ? '#1162e6' : '#f36f56';
@@ -298,13 +359,25 @@ export default function PlasmaModal(props: Props) {
   return (
     <>
       {isVisible ? (
-        <GestureDetector gesture={isSwiperActive ? Gesture.Simultaneous(panYGesture, panXGesture) : panYGesture}>
+        <GestureDetector
+          gesture={
+            isSwiperActive
+              ? Gesture.Simultaneous(panYGesture, panXGesture)
+              : panYGesture
+          }>
           <Animated.View
             style={[
               styles.container,
               {justifyContent: containerJustifyContent},
             ]}>
-            <Animated.View style={[styles.back, backSpecifiedStyle, animatedBackOpacityStyle]} />
+            <AnimatedBlurView
+              intensity={14}
+              style={[
+                styles.back,
+                backSpecifiedStyle,
+                animatedBackOpacityStyle,
+              ]}
+            />
             <Animated.View
               style={[
                 styles.gap,
@@ -313,36 +386,35 @@ export default function PlasmaModal(props: Props) {
                   backgroundColor: gapBgColor,
                 },
                 gapSpecifiedStyle,
-              ]}
-            >
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.closeArea}
-              onPress={() => {
-                if (typeof rotateWalletButtonArrow === 'function') {
-                  rotateWalletButtonArrow();
-                }
-                close();
-              }}
-            />
+              ]}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.closeArea}
+                onPress={() => {
+                  if (typeof rotateWalletButtonArrow === 'function') {
+                    rotateWalletButtonArrow();
+                  }
+                  close();
+                }}
+              />
             </Animated.View>
-              <Animated.View
-                style={[
-                  styles.contentBody,
-                  contentBodyConditionStyle,
-                  contentBodySpecifiedStyle,
-                ]}>
-                {renderBody(
-                  isOpened,
-                  true,
-                  contentBodyAnimDelay,
-                  animDuration - 50,
-                  animatedContentBodyTranslateStyle,
-                  animatedCardOpacityStyle,
-                  animatedPrevNextCardOpacityStyle,
-                  animatedPaginationOpacityStyle,
-                )}
-              </Animated.View>
+            <Animated.View
+              style={[
+                styles.contentBody,
+                contentBodyConditionStyle,
+                contentBodySpecifiedStyle,
+              ]}>
+              {renderBody(
+                isOpened,
+                true,
+                contentBodyAnimDelay,
+                animDuration - 50,
+                animatedContentBodyTranslateStyle,
+                animatedCardOpacityStyle,
+                animatedPrevNextCardOpacityStyle,
+                animatedPaginationOpacityStyle,
+              )}
+            </Animated.View>
           </Animated.View>
         </GestureDetector>
       ) : (
