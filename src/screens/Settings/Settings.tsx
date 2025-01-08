@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import ChatWootWidget from '@chatwoot/react-native-widget';
 
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import Header from '../../components/Header';
@@ -39,6 +38,7 @@ type RootStackParamList = {
   Import: undefined;
   RecoverLitewallet: undefined;
   Loading: undefined;
+  Support: undefined;
 };
 
 interface Props {
@@ -48,8 +48,6 @@ interface Props {
 const Settings: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
-
-  const [isSupportWidgetTriggered, toggleSupportWidget] = useState(false);
 
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('view-seed-auth');
@@ -68,7 +66,6 @@ const Settings: React.FC<Props> = props => {
     state => state.authentication.faceIDSupported,
   );
   const {subunit} = useAppSelector(state => state.settings);
-  const {uniqueId} = useAppSelector(state => state.onboarding);
 
   const handleBiometricSwitch = () => {
     dispatch(setBiometricEnabled(!biometricsEnabled));
@@ -101,21 +98,6 @@ const Settings: React.FC<Props> = props => {
     });
   };
 
-  // LOSHY: Support temp
-  const user = {
-    identifier: `${uniqueId}`,
-    // name: '',
-    // avatar_url: '',
-    email: 'john@gmail.com',
-    identifier_hash: '',
-  };
-  const customAttributes = {
-    pricingPlan: 'paid',
-  };
-  const websiteToken = 'SH4YF5fA3sHFqhHvKt23aQzz';
-  const baseUrl = 'https://chat-mobile.litecoin.com';
-  const locale = 'en';
-
   return (
     <>
       <LinearGradient
@@ -123,7 +105,7 @@ const Settings: React.FC<Props> = props => {
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
         <ScrollView>
-          <SupportCell onPress={() => toggleSupportWidget(true)} />
+          <SupportCell onPress={() => navigation.navigate('Support')} />
 
           <SettingCell
             title="About"
@@ -248,19 +230,6 @@ const Settings: React.FC<Props> = props => {
           />
         )}
       />
-
-      {isSupportWidgetTriggered && (
-        <ChatWootWidget
-          websiteToken={websiteToken}
-          locale={locale}
-          baseUrl={baseUrl}
-          closeModal={() => toggleSupportWidget(false)}
-          isModalVisible={isSupportWidgetTriggered}
-          user={user}
-          customAttributes={customAttributes}
-          colorScheme="light"
-        />
-      )}
     </>
   );
 };

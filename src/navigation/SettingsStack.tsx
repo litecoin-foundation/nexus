@@ -17,6 +17,7 @@ import RecoverLitewallet, {
 import ImportSuccess, {
   ImportSuccessNavigationOptions,
 } from '../screens/Settings/ImportSuccess';
+import Support, {SupportNavigationOptions} from '../screens/Settings/Support';
 
 const Stack = createStackNavigator();
 
@@ -103,6 +104,11 @@ function SettingsStack() {
         name="ImportSuccess"
         component={ImportSuccess}
         options={({navigation}) => ImportSuccessNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="Support"
+        component={Support}
+        options={({navigation}) => SupportNavigationOptions(navigation)}
       />
     </Stack.Navigator>
   );
