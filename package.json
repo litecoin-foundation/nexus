@@ -53,6 +53,7 @@
     "ecpair": "2.1.0",
     "expo": "^52.0.4",
     "expo-application": "~6.0.1",
+    "expo-blur": "^14.0.1",
     "expo-file-system": "^18.0.2",
     "expo-haptics": "~14.0.0",
     "expo-secure-store": "~14.0.0",
