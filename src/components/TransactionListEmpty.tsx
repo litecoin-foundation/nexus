@@ -20,9 +20,12 @@ const TransactionListEmpty: React.FC<Props> = () => {
   const progress = useAppSelector(state => percentSyncedSelector(state));
   const synced = useAppSelector(state => syncStatusSelector(state));
   const recoveryMode = useAppSelector(state => state.info.recoveryMode);
-  const recoveryProgress = useAppSelector(state => recoveryProgressSelector(state));
+  const recoveryProgress = useAppSelector(state =>
+    recoveryProgressSelector(state),
+  );
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();
@@ -53,11 +56,9 @@ const TransactionListEmpty: React.FC<Props> = () => {
     <>
       <View style={styles.headerContainer}>
         <Text style={styles.sectionHeaderText}>
-          {recoveryMode ? (
-            'RECOVERING TRANSACTIONS...'
-          ) : (
-            'LOADING TRANSACTIONS...'
-          )}
+          {recoveryMode
+            ? 'RECOVERING TRANSACTIONS...'
+            : 'LOADING TRANSACTIONS...'}
         </Text>
       </View>
       {recoveryMode ? (

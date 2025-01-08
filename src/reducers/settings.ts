@@ -158,6 +158,13 @@ export const subunitSymbolSelector = createSelector(
   },
 );
 
+export const currencySymbolSelector = createSelector(
+  state => state.settings.currencySymbol,
+  currencySymbol => {
+    return currencySymbol;
+  },
+);
+
 export const defaultExplorerSelector = createSelector(
   [state => state.settings.defaultExplorer, (state, txHash) => txHash],
   (defaultExplorer, txHash) => {

@@ -20,7 +20,7 @@ import {
 
 import TransactionCell from './Cells/TransactionCell';
 import TransactionListEmpty from './TransactionListEmpty';
-import {getTransactions} from '../reducers/transaction';
+import {getTransactions, IDisplayedTx} from '../reducers/transaction';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 
 import {txDetailSelector} from '../reducers/transaction';
@@ -38,28 +38,14 @@ interface Props {
 
 interface ITransactions {
   title: string;
-  data: IData[];
-}
-
-interface IData {
-  hash: string;
-  blockHeight: number;
-  amount: number;
-  confs: number;
-  day: string;
-  fee: undefined;
-  lightning: boolean;
-  sent: boolean;
-  time: Date;
-  addresses: string[];
-  inputTxs: string[];
-  timestamp: number;
+  data: IDisplayedTx[];
 }
 
 type ItemType = {
   time: Date;
   amount: number;
-  sent: boolean;
+  metaLabel: string;
+  priceOnDateMeta: number;
   hash: string;
 };
 
@@ -82,7 +68,8 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const {onPress, onViewableItemsChanged, folded, foldUnfold, transactionType} =
     props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24;
@@ -109,7 +96,9 @@ const TransactionList = forwardRef((props: Props, ref) => {
       case 'Send':
       case 'Receive':
         txArray.push(
-          ...transactions.filter((tx: any) => tx.metaLabel === transactionTypeProp),
+          ...transactions.filter(
+            (tx: any) => tx.metaLabel === transactionTypeProp,
+          ),
         );
         break;
       case 'All':
@@ -202,14 +191,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingLeft: screenHeight * 0.02,
     },
     sectionHeaderText: {
+      color: '#747E87',
       fontFamily:
         Platform.OS === 'ios'
           ? 'Satoshi Variable'
           : 'SatoshiVariable-Regular.ttf',
+      fontSize: screenHeight * 0.014,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: '#747E87',
-      fontSize: screenHeight * 0.012,
+      letterSpacing: -0.28,
     },
     emptyView: {
       height: screenHeight * 0.2,
