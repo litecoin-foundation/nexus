@@ -34,7 +34,7 @@ const updateFiatAmountAction = createAction<string>(
 );
 export const updateSendAmount = createAction<Number>('input/updateSendAmount');
 export const updateSendAddress = createAction<string>(
-  'input/updateToAddressAction',
+  'input/updateSendAddress',
 );
 // const updateSendFeeAction = createAction<Number>('input/updateFeeAction');
 export const resetInputs = createAction('input/resetInputs');
@@ -136,7 +136,7 @@ export const inputSlice = createSlice({
     updateSendAmount(state, action: PayloadAction<number>) {
       state.send.amount = action.payload;
     },
-    updateSendToAddress(state, action: PayloadAction<string>) {
+    updateSendAddress(state, action: PayloadAction<string>) {
       state.send.toAddress = action.payload;
     },
   },

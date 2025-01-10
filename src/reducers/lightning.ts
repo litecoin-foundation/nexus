@@ -116,7 +116,6 @@ export const resetLndState = (): AppThunk => async dispatch => {
 
 export const initWallet = (): AppThunk => async (dispatch, getState) => {
   const {seed, beingRecovered} = getState().onboarding!;
-  console.time();
 
   const password: string = uuidv4();
   await setItem(PASS, password);
