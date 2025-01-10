@@ -116,14 +116,14 @@ export default function TxDetailModalContent(props: Props) {
         case 'Buy':
           return {
             label: 'Bought',
-            txIcon: require('../../assets/icons/blue-bought.png'),
+            txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
             mathSign: '+',
           };
         case 'Sell':
           return {
             label: 'Spent',
-            txIcon: require('../../assets/icons/blue-sold.png'),
+            txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
             mathSign: '-',
           };
