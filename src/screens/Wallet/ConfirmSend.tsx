@@ -1,13 +1,6 @@
 import React, {useState, useContext, useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {
-  Alert,
-  DeviceEventEmitter,
-  StyleSheet,
-  Text,
-  View,
-  Platform,
-} from 'react-native';
+import {Alert, DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -34,9 +27,9 @@ const ConfirmSend: React.FC<Props> = () => {
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
 
-  const amount = useAppSelector(state => state.input.amount);
+  const amount = useAppSelector(state => state.input.send.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
-  const toAddress = useAppSelector(state => state.input.toAddress);
+  const toAddress = useAppSelector(state => state.input.send.toAddress);
   const message = useAppSelector(state => state.input.message);
   const fee = useAppSelector(state => state.input.fee);
   // Todo: get total fee for the tx
@@ -328,7 +321,7 @@ export const ConfirmSendNavigationOptions = (navigation: any) => {
     headerRight: () => (
       <HeaderButton
         title="CANCEL"
-        onPress={() => navigation.reset('Main')}
+        onPress={() => navigation.navigate('Main', {isInitial: true})}
         rightPadding={true}
       />
     ),

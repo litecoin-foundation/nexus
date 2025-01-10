@@ -5,17 +5,16 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
-import GreenButton from '../Buttons/GreenButton';
 import {decodeBIP21} from '../../lib/utils/bip21';
 import {validate as validateLtcAddress} from '../../lib/utils/validate';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {
   updateAmount,
   updateFiatAmount,
-  updateSendToAddress,
   updateSendFee,
   updateSendAmount,
   updateSendLabel,
+  updateSendAddress,
 } from '../../reducers/input';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
@@ -24,6 +23,7 @@ import {sleep} from '../../lib/utils/poll';
 import {showError} from '../../reducers/errors';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {resetInputs} from '../../reducers/input';
 
 type RootStackParamList = {
   Main: {
@@ -43,20 +43,48 @@ const Send: React.FC<Props> = props => {
 
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
+  const confirmedBalance = useAppSelector(
+    state => state.balance.confirmedBalance,
+  );
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [address, setAddress] = useState('');
+  const [addressValid, setAddressValid] = useState<boolean | null>(null);
   const [toggleLTC, setToggleLTC] = useState<boolean>(true);
   const [description, setDescription] = useState('');
   const [amountPickerActive, setAmountPickerActive] = useState(false);
+  const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
+  // const [recommendedFeeInSatsVByte, setRecommendedFeeInSatsVByte] = useState(1);
 
-  const [recommendedFeeInSatsVByte, setRecommendedFeeInSatsVByte] = useState(1);
+  // check if ready to send
+  useEffect(() => {
+    const check = async () => {
+      // check user balance
+      if (Number(amount) > Number(confirmedBalance)) {
+        setSendDisabled(true);
+        return;
+      }
 
-  const padOpacity = useSharedValue(0);
-  const detailsOpacity = useSharedValue(1);
+      // validate address
+      if (address !== '') {
+        const valid = await validateLtcAddress(address);
+        if (!valid) {
+          setSendDisabled(true);
+          return;
+        }
+      } else {
+        setSendDisabled(true);
+        return;
+      }
+
+      // otherwise enable send
+      setSendDisabled(false);
+    };
+    check();
+  }, [address, description, amount, confirmedBalance]);
 
   // qr code scanner result handler
   useEffect(() => {
@@ -67,24 +95,6 @@ const Send: React.FC<Props> = props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.params?.scanData]);
 
-  // change address handler
-  useEffect(() => {
-    dispatch(updateSendToAddress(address));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address]);
-
-  // change description handler
-  useEffect(() => {
-    dispatch(updateSendLabel(description));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [description]);
-
-  // change fee handler
-  useEffect(() => {
-    dispatch(updateSendFee(recommendedFeeInSatsVByte));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recommendedFeeInSatsVByte]);
-
   const handleScan = () => {
     navigation.navigate('Scan', {returnRoute: 'Main'});
   };
@@ -93,7 +103,7 @@ const Send: React.FC<Props> = props => {
     try {
       await validate(data);
     } catch (error) {
-      dispatch(showError(`QR Code has invalid ${error}`));
+      dispatch(showError('Invalid Litecoin Address in QR Code'));
       return;
     }
   };
@@ -147,6 +157,9 @@ const Send: React.FC<Props> = props => {
   };
 
   // animation
+  const padOpacity = useSharedValue(0);
+  const detailsOpacity = useSharedValue(1);
+
   useEffect(() => {
     if (amountPickerActive) {
       padOpacity.value = withTiming(1, {duration: 400});
@@ -157,26 +170,53 @@ const Send: React.FC<Props> = props => {
     }
   }, [amountPickerActive, detailsOpacity, padOpacity]);
 
-  async function getRecommendedFee() {
-    try {
-      const req = await fetch(
-        'https://litecoinspace.org/api/v1/fees/recommended',
-      );
-      const data: any = await req.json();
+  // async function getRecommendedFee() {
+  //   try {
+  //     const req = await fetch(
+  //       'https://litecoinspace.org/api/v1/fees/recommended',
+  //     );
+  //     const data: any = await req.json();
 
-      if (data.hasOwnProperty('fastestFee')) {
-        setRecommendedFeeInSatsVByte(data.fastestFee);
-      } else {
-        throw new Error('Could not find recommended fees.');
-      }
-    } catch {
-      setRecommendedFeeInSatsVByte(1);
+  //     if (data.hasOwnProperty('fastestFee')) {
+  //       setRecommendedFeeInSatsVByte(data.fastestFee);
+  //     } else {
+  //       throw new Error('Could not find recommended fees.');
+  //     }
+  //   } catch {
+  //     setRecommendedFeeInSatsVByte(1);
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   getRecommendedFee();
+  // }, []);
+
+  const validateAddress = async (endAddress: string) => {
+    const valid = await validateLtcAddress(endAddress);
+
+    if (address === '') {
+      setAddressValid(null);
+    } else if (!valid) {
+      setAddressValid(false);
+    } else {
+      setAddressValid(true);
     }
-  }
+  };
+
+  const handleSend = () => {
+    dispatch(updateSendAmount(Number(amount)));
+    dispatch(updateSendAddress(address));
+    // dispatch(updateSendLabel(description));
+    // dispatch(updateSendFee(recommendedFeeInSatsVByte));
+    //
+    navigation.navigate('ConfirmSend');
+  };
 
   useEffect(() => {
-    getRecommendedFee();
-  }, []);
+    return function cleanup() {
+      dispatch(resetInputs());
+    };
+  }, [dispatch]);
 
   return (
     <View style={styles.container}>
@@ -185,7 +225,7 @@ const Send: React.FC<Props> = props => {
       <View style={styles.amountContainer}>
         <Text style={styles.subtitleText}>AMOUNT</Text>
         <AmountPicker
-          amount={amount}
+          amount={Number(amount)}
           fiatAmount={fiatAmount}
           active={amountPickerActive}
           handlePress={() => {
@@ -200,12 +240,16 @@ const Send: React.FC<Props> = props => {
         <Animated.View
           style={{...styles.subContainer, opacity: detailsOpacity}}>
           <View style={styles.cellContainer}>
-            <Text style={styles.subtitleText}>TO ADDRESS</Text>
+            <Text style={styles.subtitleText}>
+              SEND TO ADDRESS{' '}
+              {!addressValid && addressValid !== null ? '(IS INVALID)' : null}
+            </Text>
             <View style={styles.inputFieldContainer}>
               <AddressField
                 address={address}
                 onChangeText={setAddress}
                 onScanPress={handleScan}
+                validateAddress={endAddress => validateAddress(endAddress)}
               />
             </View>
           </View>
@@ -222,18 +266,19 @@ const Send: React.FC<Props> = props => {
 
           <View style={styles.bottomBtnsContainer}>
             <View style={styles.bottomBtns}>
-              <View style={styles.greenBtnContainer}>
+              {/* <View style={styles.greenBtnContainer}>
                 <GreenButton
                   value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
                   onPress={() => console.log('pressed fee')}
                 />
-              </View>
+              </View> */}
               <View style={styles.blueBtnContainer}>
                 <BlueButton
                   value={`Send ${amount} LTC`}
                   onPress={() => {
-                    navigation.navigate('ConfirmSend');
+                    handleSend();
                   }}
+                  disabled={isSendDisabled}
                 />
               </View>
             </View>
@@ -321,7 +366,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexBasis: '37%',
     },
     blueBtnContainer: {
-      flexBasis: '60%',
+      // flexBasis: '60%',
+      flex: 1,
     },
   });
 

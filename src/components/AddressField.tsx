@@ -1,12 +1,10 @@
 import React, {useEffect, useRef, useState, useContext} from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Image,
-  TouchableHighlight,
-  Text,
-} from 'react-native';
+import {View, TextInput, StyleSheet, Text, Pressable} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -14,10 +12,11 @@ interface Props {
   address: string;
   onScanPress: () => void;
   onChangeText: (text: string) => void;
+  validateAddress: (text: string) => void;
 }
 
 const AddressField: React.FC<Props> = props => {
-  const {address, onScanPress, onChangeText} = props;
+  const {address, onScanPress, onChangeText, validateAddress} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -63,6 +62,24 @@ const AddressField: React.FC<Props> = props => {
     }
   }, [address]);
 
+  // animation
+
+  const scaler = useSharedValue(1);
+
+  const motionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scaler.value}],
+    };
+  });
+
+  const onPressIn = () => {
+    scaler.value = withSpring(0.9, {mass: 1});
+  };
+
+  const onPressOut = () => {
+    scaler.value = withSpring(1, {mass: 0.7});
+  };
+
   return (
     <View style={[styles.container, {height}]}>
       <View style={styles.hiddenContainer}>
@@ -87,11 +104,19 @@ const AddressField: React.FC<Props> = props => {
         multiline={true}
         scrollEnabled={false}
         maxLength={121}
+        onEndEditing={e => validateAddress(e.nativeEvent.text)}
       />
 
-      <TouchableHighlight style={styles.closeContainer} onPress={onScanPress}>
-        <Image source={require('../assets/images/qrcode-btn.png')} />
-      </TouchableHighlight>
+      <Pressable
+        style={styles.closeContainer}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onPress={onScanPress}>
+        <Animated.Image
+          style={motionStyle}
+          source={require('../assets/images/qrcode-btn.png')}
+        />
+      </Pressable>
     </View>
   );
 };
@@ -122,7 +147,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     closeContainer: {
       right: 0,
       position: 'absolute',
-      marginRight: 25,
+      marginRight: 12,
+      height: '100%',
+      width: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     hiddenContainer: {
       position: 'absolute',

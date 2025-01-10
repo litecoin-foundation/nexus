@@ -32,11 +32,11 @@ const updateAmountAction = createAction<string>('input/updateAmountAction');
 const updateFiatAmountAction = createAction<string>(
   'input/updateFiatAmountAction',
 );
-const updateSendAmountAction = createAction<Number>('input/updateSendAmount');
-const updateToAddressAction = createAction<string>(
+export const updateSendAmount = createAction<Number>('input/updateSendAmount');
+export const updateSendAddress = createAction<string>(
   'input/updateToAddressAction',
 );
-const updateFeeAction = createAction<Number>('input/updateFeeAction');
+// const updateSendFeeAction = createAction<Number>('input/updateFeeAction');
 export const resetInputs = createAction('input/resetInputs');
 
 // functions
@@ -105,20 +105,8 @@ const handleAmountConversion =
     }
   };
 
-export const updateSendAmount =
-  (amount: Number): AppThunk =>
-  dispatch => {};
-
-export const updateSendToAddress =
-  (address: string): AppThunk =>
-  dispatch => {};
-
 export const updateSendLabel =
   (label: string): AppThunk =>
-  dispatch => {};
-
-export const updateSendFee =
-  (fee: Number): AppThunk =>
   dispatch => {};
 
 // slice
@@ -145,6 +133,12 @@ export const inputSlice = createSlice({
       ...state,
       fiatAmount: action.payload,
     }),
+    updateSendAmount(state, action: PayloadAction<number>) {
+      state.send.amount = action.payload;
+    },
+    updateSendToAddress(state, action: PayloadAction<string>) {
+      state.send.toAddress = action.payload;
+    },
   },
 });
 

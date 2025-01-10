@@ -1,10 +1,5 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-} from 'react-native';
+import {StyleSheet, Text, View, Pressable} from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import Share from 'react-native-share';
@@ -54,63 +49,80 @@ const Receive: React.FC<Props> = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titleText}>Receive LTC</Text>
+    <>
+      <View style={styles.container}>
+        <Text style={styles.titleText}>Receive LTC</Text>
 
-      <View style={styles.txTypeContainer}>
-        <NewBlueButton
-          title="Litecoin"
-          active={!mwebAddress}
-          onPress={() => {
-            dispatch(getAddress(false));
-            setMwebAddress(false);
-          }}
-        />
-        <NewBlueButton
-          title="Send Privately"
-          active={mwebAddress}
-          onPress={() => {
-            dispatch(getAddress(true));
-            setMwebAddress(true);
-          }}
-        />
+        <View style={styles.txTypeContainer}>
+          <NewBlueButton
+            title="Litecoin"
+            active={!mwebAddress}
+            onPress={() => {
+              dispatch(getAddress(false));
+              setMwebAddress(false);
+            }}
+          />
+          <NewBlueButton
+            title="Send Privately"
+            active={mwebAddress}
+            onPress={() => {
+              dispatch(getAddress(true));
+              setMwebAddress(true);
+            }}
+          />
+        </View>
+
+        <Text style={styles.subtitleText}>MY LTC ADDRESS</Text>
+
+        <View style={styles.addressContainer}>
+          <Pressable
+            style={styles.pressableContainer}
+            onPress={() => handleCopy()}>
+            <Text style={styles.addressText}>{address}</Text>
+          </Pressable>
+
+          <NewButton
+            onPress={() => handleShare()}
+            imageSource={require('../../assets/icons/share-icon.png')}
+          />
+        </View>
+
+        <View style={styles.qrContainer}>
+          {uri ? (
+            <QRCode
+              value={uri}
+              size={
+                address.length < 64
+                  ? SCREEN_HEIGHT * 0.25
+                  : SCREEN_HEIGHT * 0.18
+              }
+            />
+          ) : null}
+        </View>
+
+        {mwebAddress ? (
+          <Text style={styles.minText}>
+            Sending privately hides the sender and receiver addresses, and
+            amount being sent.
+          </Text>
+        ) : null}
       </View>
-
-      <Text style={styles.subtitleText}>MY LTC ADDRESS</Text>
-
-      <View style={styles.addressContainer}>
-        <Pressable style={styles.pressableContainer} onPress={() => handleCopy()}>
-          <Text style={styles.addressText}>{address}</Text>
-        </Pressable>
-
-        <NewButton
-          onPress={() => handleShare()}
-          imageSource={require('../../assets/icons/share-icon.png')}
-        />
-      </View>
-
-      <View style={styles.qrContainer}>
-        {uri ? <QRCode value={uri} size={address.length < 64 ? SCREEN_HEIGHT * 0.25 : SCREEN_HEIGHT * 0.18} /> : null}
-      </View>
-
-      {mwebAddress ? (
-        <Text style={styles.minText}>
-          Sending privately hides the sender and receiver addresses, and amount
-          being sent.
-        </Text>
-      ) : null}
-
       <InfoModal
         isVisible={isInfoModalVisible}
         close={() => setInfoModalVisible(false)}
         textColor="green"
         text="COPIED TO CLIPBOARD!"
+        disableBlur={true}
       />
-    </View>
+    </>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, addressLength: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  addressLength: number,
+) =>
   StyleSheet.create({
     container: {
       // DashboardButton is 110
@@ -153,7 +165,8 @@ const getStyles = (screenWidth: number, screenHeight: number, addressLength: num
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#20BB74',
-      fontSize: addressLength < 64 ? screenHeight * 0.027 : screenHeight * 0.022,
+      fontSize:
+        addressLength < 64 ? screenHeight * 0.027 : screenHeight * 0.022,
     },
     qrContainer: {
       backgroundColor: '#FEFEFE',
