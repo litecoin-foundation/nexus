@@ -561,7 +561,7 @@ const Main: React.FC<Props> = props => {
         isFromBottomToTop={true}
         isSwiperActive={transactions.length > 1 ? true : false}
         animDuration={250}
-        gapInPixels={250}
+        gapInPixels={SCREEN_HEIGHT * 0.27}
         backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
         gapSpecifiedStyle={{backgroundColor: 'transparent'}}
         swipeToPrevTx={swipeToPrevTx}

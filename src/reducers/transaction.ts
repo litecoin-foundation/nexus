@@ -20,10 +20,10 @@ type IDecodedTx = {
   txHash: string;
   blockHash: string;
   blockHeight: number;
-  amount: Number;
+  amount: number;
   numConfirmations: number;
   timeStamp: string;
-  fee: Number;
+  fee: number;
   destAddresses: string[];
   outputDetails: IOutputDetails[];
   previousOutpoints: PreviousOutPoint[];
@@ -31,20 +31,28 @@ type IDecodedTx = {
   metaLabel: string;
   priceOnDateMeta: number | null;
   moonpayMeta: {
-    status: string | null;
+    id: string;
+    cryptoTransactionId: string | null;
+    createdAt: string;
+    updatedAt: string | null;
+    walletAddress: string | null;
     baseCurrency: string | null;
     currency: string | null;
+    baseCurrencyAmount: number | null;
+    quoteCurrencyAmount: number | null;
+    usdRate: number | null;
+    eurRate: number | null;
+    gbpRate: number | null;
     areFeesIncluded: boolean | null;
     networkFeeAmount: number | null;
     feeAmount: number | null;
     feeAmountDiscount: number | null;
     extraFeeAmount: number | null;
     extraFeeAmountDiscount: number | null;
-    baseCurrencyAmount: number | null;
-    quoteCurrencyAmount: number | null;
-    usdRate: number | null;
-    eurRate: number | null;
-    gbpRate: number | null;
+    returnUrl: string | null;
+    status: string | null;
+    country: string | null;
+    cardType: string | null;
   } | null;
 };
 
@@ -57,29 +65,36 @@ export type IDisplayedTx = {
   day: string;
   time: Date;
   timestamp: number;
-  fee: undefined;
+  fee: number;
   lightning: boolean;
   addresses: string[];
   inputTxs: string[];
   label: string | null | undefined;
   metaLabel: string;
-  priceOnDateMeta: number | null;
+  priceOnDateMeta: number;
   moonpayMeta: {
-    status: string | null;
-    baseCurrency: string | null;
-    currency: string | null;
-    areFeesIncluded: boolean | null;
-    networkFeeAmount: number | null;
-    feeAmount: number | null;
-    feeAmountDiscount: number | null;
-    extraFeeAmount: number | null;
-    extraFeeAmountDiscount: number | null;
-    baseCurrencyAmount: number | null;
-    quoteCurrencyAmount: number | null;
-    usdRate: number | null;
-    eurRate: number | null;
-    gbpRate: number | null;
+    moonpayTxId: string;
+    cryptoTxId: string;
+    createdAt: string;
+    updatedAt: string;
+    walletAddress: string;
+    cryptoCurrency: string;
+    fiatCurrency: string;
+    cryptoCurrencyAmount: number;
+    fiatCurrencyAmount: number;
+    usdRate: number;
+    eurRate: number;
+    gbpRate: number;
+    totalFee: number;
+    blockchainFee: number;
+    tipLFFee: number;
+    moonpayFee: number;
+    txDetailsUrl: string;
+    status: string;
+    country: string;
+    paymentMethod: string;
   } | null;
+  renderIndex: number;
 };
 
 type IOutputDetails = {
@@ -230,20 +245,28 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         if (buyTxs && buyTxs.length > 0) {
           const buyTx = buyTxs[0];
           moonpayMeta = {
-            status: buyTx.status || null,
+            id: buyTx.id,
+            cryptoTransactionId: buyTx.cryptoTransactionId || null,
+            createdAt: buyTx.createdAt,
+            updatedAt: buyTx.updatedAt || null,
+            walletAddress: buyTx.walletAddress || null,
             baseCurrency: buyTx.baseCurrency.code || null,
             currency: buyTx.currency.code || null,
+            baseCurrencyAmount: buyTx.baseCurrencyAmount || null,
+            quoteCurrencyAmount: buyTx.quoteCurrencyAmount || null,
+            usdRate: buyTx.usdRate || null,
+            eurRate: buyTx.eurRate || null,
+            gbpRate: buyTx.gbpRate || null,
             areFeesIncluded: buyTx.areFeesIncluded || null,
             networkFeeAmount: buyTx.networkFeeAmount || null,
             feeAmount: buyTx.feeAmount || null,
             feeAmountDiscount: buyTx.feeAmountDiscount || null,
             extraFeeAmount: buyTx.extraFeeAmount || null,
             extraFeeAmountDiscount: buyTx.extraFeeAmountDiscount || null,
-            baseCurrencyAmount: buyTx.baseCurrencyAmount || null,
-            quoteCurrencyAmount: buyTx.quoteCurrencyAmount || null,
-            usdRate: buyTx.usdRate || null,
-            eurRate: buyTx.eurRate || null,
-            gbpRate: buyTx.gbpRate || null,
+            returnUrl: buyTx.returnUrl,
+            status: buyTx.status || null,
+            country: buyTx.country || null,
+            cardType: buyTx.cardType || null,
           };
           metaLabel = 'Buy';
         }
@@ -271,7 +294,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         previousOutpoints,
         label: tx.label,
         metaLabel,
-        priceOnDateMeta,
+        priceOnDateMeta: Number(priceOnDateMeta) || 0,
         moonpayMeta,
       };
       txs.push(decodedTx);
@@ -355,7 +378,7 @@ export const txDetailSelector = createSelector<
   [(state: any) => any],
   IDisplayedTx[]
 >(txSelector, (txs: any) =>
-  txs.map((data: any) => {
+  txs.map((data: any, index: number) => {
     const addresses: string[] = [];
     data.outputDetails?.forEach((outputDetail: any) => {
       addresses.push(outputDetail.address);
@@ -377,7 +400,34 @@ export const txDetailSelector = createSelector<
       label: data.label,
       metaLabel: data.metaLabel,
       priceOnDateMeta: data.priceOnDateMeta,
-      moonpayMeta: data.moonpayMeta,
+      moonpayMeta: data.moonpayMeta
+        ? {
+            moonpayTxId: data.moonpayMeta.id,
+            cryptoTxId: data.moonpayMeta.cryptoTransactionId || '',
+            createdAt: data.moonpayMeta.createdAt,
+            updatedAt: data.moonpayMeta.updatedAt,
+            walletAddress: data.moonpayMeta.walletAddress || '',
+            cryptoCurrency: data.moonpayMeta.currency || 'ltc',
+            fiatCurrency: data.moonpayMeta.baseCurrency || 'unknown',
+            cryptoCurrencyAmount: data.moonpayMeta.quoteCurrencyAmount || 0,
+            fiatCurrencyAmount: data.moonpayMeta.baseCurrencyAmount || 0,
+            usdRate: data.moonpayMeta.usdRate || 0,
+            eurRate: data.moonpayMeta.eurRate || 0,
+            gbpRate: data.moonpayMeta.gbpRate || 0,
+            totalFee:
+              Number(data.moonpayMeta.networkFeeAmount) +
+              Number(data.moonpayMeta.extraFeeAmount) +
+              Number(data.moonpayMeta.feeAmount),
+            blockchainFee: Number(data.moonpayMeta.networkFeeAmount),
+            tipLFFee: Number(data.moonpayMeta.extraFeeAmount),
+            moonpayFee: Number(data.moonpayMeta.feeAmount),
+            txDetailsUrl: `${data.moonpayMeta.returnUrl}?transactionId=${data.moonpayMeta.id}`,
+            status: data.moonpayMeta.status || 'unknown',
+            country: data.moonpayMeta.country || 'unknown',
+            paymentMethod: data.moonpayMeta.cardType || 'unknown',
+          }
+        : null,
+      renderIndex: index,
     };
   }),
 );
