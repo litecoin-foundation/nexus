@@ -87,7 +87,7 @@
     "react-native-turbo-lnd": "github:hsjoberg/react-native-turbo-lnd#f9c563aeefe06e789940331045e7fcbc4a194870",
     "react-native-turbo-scrypt": "^0.0.4",
     "react-native-vision-camera": "^4.6.3",
-    "react-native-webview": "^13.12.4",
+    "react-native-webview": "13.12.5",
     "react-native-zip-archive": "^7.0.1",
     "react-redux": "^8.1.3",
     "redux-persist": "^6.0.0",

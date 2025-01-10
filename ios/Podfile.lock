@@ -1602,7 +1602,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webview (13.12.4):
+  - react-native-webview (13.12.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2695,7 +2695,7 @@ SPEC CHECKSUMS:
   react-native-skia: a3c899c5b95053ac04dd173f5ae559cf8e6ca657
   react-native-slider: 124ce99f9cd2d04c79f020da6dee9f8d38a6b8c7
   react-native-turbo-lnd: ddb8d220d36a0b986a69e4c81c48682a1dad4950
-  react-native-webview: 0bd56be54d01756f20eb942dad37a2cd22a6def2
+  react-native-webview: 40b8823be3fac70f0404016e6aed754ef4307517
   React-nativeconfig: 93fe8c85a8c40820c57814e30f3e44b94c995a7b
   React-NativeModulesApple: b3e076fd0d7b73417fe1e8c8b26e3c57ae9b74aa
   React-perflogger: 1c55bcd3c392137cbaf0d21d8bb87ce9a0cebb15
