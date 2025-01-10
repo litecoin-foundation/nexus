@@ -35,6 +35,7 @@ interface Props {
   rotateWalletButtonArrow?: () => void;
   swipeToPrevTx?: () => void;
   swipeToNextTx?: () => void;
+  disableBlur?: boolean;
   renderBody: (
     isOpened: boolean,
     showAnim: boolean,
@@ -64,6 +65,7 @@ export default function PlasmaModal(props: Props) {
     rotateWalletButtonArrow,
     swipeToPrevTx,
     swipeToNextTx,
+    disableBlur,
     renderBody,
   } = props;
 
@@ -371,7 +373,7 @@ export default function PlasmaModal(props: Props) {
               {justifyContent: containerJustifyContent},
             ]}>
             <AnimatedBlurView
-              intensity={14}
+              intensity={disableBlur ? 0 : 14}
               style={[
                 styles.back,
                 backSpecifiedStyle,

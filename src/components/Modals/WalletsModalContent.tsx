@@ -27,7 +27,7 @@ export default function WalletsModalContent(props: Props) {
   const {isOpened, showAnim, animDelay, animDuration, cardTranslateAnim} =
     props;
 
-  const { width, height } = useContext(ScreenSizeContext);
+  const {width, height} = useContext(ScreenSizeContext);
   const styles = getStyles(width, height);
 
   const totalBalance = useAppSelector(state => state.balance.totalBalance);

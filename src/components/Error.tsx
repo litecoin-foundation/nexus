@@ -10,14 +10,12 @@ const Error: React.FC<Props> = () => {
   const {visible, message} = useAppSelector(state => state.errors);
 
   return (
-    <>
-      <InfoModal
-        isVisible={visible}
-        text={message}
-        textColor="red"
-        close={() => dispatch(hideError())}
-      />
-    </>
+    <InfoModal
+      isVisible={visible}
+      text={message}
+      textColor="red"
+      close={() => dispatch(hideError())}
+    />
   );
 };
 

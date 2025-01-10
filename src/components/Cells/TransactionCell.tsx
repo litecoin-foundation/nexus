@@ -46,16 +46,14 @@ const TransactionCell: React.FC<Props> = props => {
         case 'Buy':
           return {
             name: 'Purchased Litecoin',
-            // txIcon: require('../../assets/icons/buytx.png'),
-            txIcon: require('../../assets/icons/receivetx.png'),
+            txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
             mathSign: '+',
           };
         case 'Sell':
           return {
             name: 'Spent Litecoin',
-            // txIcon: require('../../assets/icons/selltx.png'),
-            txIcon: require('../../assets/icons/sendtx.png'),
+            txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
             mathSign: '-',
           };

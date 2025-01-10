@@ -1,11 +1,20 @@
 import React, {useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import Modal from 'react-native-modal';
+import Animated from 'react-native-reanimated';
 
 import {triggerHeavyFeedback} from '../../lib/utils/haptic';
+import PlasmaModal from './PlasmaModal';
 
-const InfoModal = (props) => {
-  const {isVisible, close, textColor, text} = props;
+interface Props {
+  isVisible: boolean;
+  close: () => void;
+  textColor: string;
+  text: string;
+  disableBlur?: boolean;
+}
+
+const InfoModal: React.FC<Props> = props => {
+  const {isVisible, close, textColor, text, disableBlur} = props;
 
   useEffect(() => {
     if (isVisible) {
@@ -20,13 +29,16 @@ const InfoModal = (props) => {
   });
 
   return (
-    <Modal
-      isVisible={isVisible}
-      swipeDirection="down"
-      backdropOpacity={0}
-      style={styles.noMargin}>
-      <View style={styles.container}>
-        <View style={styles.modal}>
+    <PlasmaModal
+      isOpened={isVisible}
+      close={() => close()}
+      isFromBottomToTop={true}
+      animDuration={250}
+      gapInPixels={0}
+      backSpecifiedStyle={{backgroundColor: 'transparent'}}
+      disableBlur={disableBlur}
+      renderBody={(_, __, ___, ____, cardTranslateAnim) => (
+        <Animated.View style={[styles.modal, cardTranslateAnim]}>
           <View style={styles.textContainer}>
             <Text
               style={[
@@ -40,17 +52,13 @@ const InfoModal = (props) => {
               {text}
             </Text>
           </View>
-        </View>
-      </View>
-    </Modal>
+        </Animated.View>
+      )}
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    margin: 0,
-  },
   modal: {
     flex: 1,
     backgroundColor: 'white',

@@ -1,10 +1,5 @@
 import React, {useContext} from 'react';
-import {
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  Pressable,
-} from 'react-native';
+import {Image, ImageSourcePropType, StyleSheet, Pressable} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
