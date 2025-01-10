@@ -1,9 +1,16 @@
-import {StyleSheet, Text, View, Dimensions, Platform} from 'react-native';
-import React from 'react';
+import React, {Fragment, useContext} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
+import Share from 'react-native-share';
+
+import NewButton from '../Buttons/NewButton';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface CommonProps {
   title: string;
+  valueFontSize?: number;
   noBorder?: boolean;
+  copyButton?: boolean;
 }
 
 type ConditionalProps =
@@ -21,50 +28,86 @@ type ConditionalProps =
 type Props = CommonProps & ConditionalProps;
 
 const TableCell: React.FC<Props> = props => {
-  const {title, value, valueStyle, children, noBorder} = props;
+  const {
+    title,
+    value,
+    valueStyle,
+    children,
+    valueFontSize,
+    noBorder,
+    copyButton,
+  } = props;
+
+  const {width, height} = useContext(ScreenSizeContext);
+  const styles = getStyles(width, height, valueFontSize, noBorder, copyButton);
+
+  const handleShare = () => {
+    Share.open({message: value || 'unknown'});
+  };
+
   return (
-    <View
-      style={[
-        styles.container,
-        noBorder ? {borderTopWidth: 0} : {borderTopWidth: 1},
-      ]}>
+    <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       {children ? (
         children
       ) : (
-        <Text style={[styles.text, valueStyle ? valueStyle : null]}>
-          {value}
-        </Text>
+        <Fragment>
+          <Text
+            style={[styles.text, valueStyle ? valueStyle : null]}
+            numberOfLines={1}>
+            {value}
+          </Text>
+          {copyButton ? (
+            <NewButton
+              onPress={() => handleShare()}
+              imageSource={require('../../assets/icons/share-icon.png')}
+              small
+            />
+          ) : (
+            <Fragment />
+          )}
+        </Fragment>
       )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    height: 52,
-    borderTopColor: '#eee',
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: 25,
-    paddingRight: 25,
-  },
-  title: {
-    color: '#747e87',
-    fontSize: Dimensions.get('screen').height * 0.015,
-    fontWeight: '600',
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-  },
-  text: {
-    color: '#4A4A4A',
-    fontSize: Dimensions.get('screen').height * 0.018,
-    fontWeight: '700',
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-  },
-});
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  valueFontSize: number | undefined,
+  noBorder: boolean | undefined,
+  copyButton: boolean | undefined,
+) =>
+  StyleSheet.create({
+    container: {
+      width: '100%',
+      height: screenHeight * 0.055,
+      borderTopWidth: noBorder ? 0 : 1,
+      borderTopColor: '#eee',
+      backgroundColor: '#fff',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: screenWidth * 0.05,
+    },
+    title: {
+      flexBasis: '30%',
+      color: '#747e87',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+    },
+    text: {
+      flexBasis: copyButton ? '50%' : '70%',
+      color: '#4A4A4A',
+      fontSize: valueFontSize ? valueFontSize : screenHeight * 0.018,
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      textAlign: 'right',
+    },
+  });
 
 export default TableCell;

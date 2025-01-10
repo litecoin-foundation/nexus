@@ -52,6 +52,13 @@ const setDeviceNotificationTokenAction = createAction<string>(
 );
 
 // functions
+export const getCurrencySymbol = (code: string): string => {
+  const codeFormatted = code.toUpperCase();
+  const currencySymbolObject = fiat.find(e => e.code === codeFormatted);
+  const currencySymbol = currencySymbolObject!.symbol_native;
+  return currencySymbol;
+};
+
 export const updateLastViewSeed = (): AppThunk => dispatch => {
   const time = new Date().toJSON();
   dispatch(updateLastViewSeedAction(time));
