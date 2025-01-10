@@ -16,10 +16,10 @@
 		1B772B6A2CF81E57009C0FB4 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B692CF81E4E009C0FB4 /* libresolv.tbd */; };
 		1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C12BF5022900EDCA9B /* SwiftProtobuf */; };
 		1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C32BF5022900EDCA9B /* SwiftProtobufPluginLibrary */; };
+		5DC1BEEFC231326EA68A76B2 /* libPods-nexus-nexusTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 98DED04B33978FEEA0019F25 /* libPods-nexus-nexusTests.a */; };
 		5DC3C87AFE8D411CA6859504 /* Satoshi-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */; };
 		5F28ECA63CF0AF8B340E5F7C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67568FE7C600BF5DAAF50801 /* ExpoModulesProvider.swift */; };
-		71218B02A5CF5B190927EAEC /* libPods-nexus-nexusTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EAC81D6E2451D06997B0FECC /* libPods-nexus-nexusTests.a */; };
-		96E7592DEDB766A034332C04 /* libPods-nexus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CA5AD9DD1B276C6564CCD12C /* libPods-nexus.a */; };
+		66C5245886A3C603BA34E74D /* libPods-nexus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E6299BF0DA5B240E3BA97DB /* libPods-nexus.a */; };
 		BDFAED61002727AD53812A22 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62BBC85FD6F04675ADBD3FF0 /* ExpoModulesProvider.swift */; };
 		DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -50,6 +50,7 @@
 /* Begin PBXFileReference section */
 		00E356EE1AD99517003FC87E /* nexusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nexusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0E6299BF0DA5B240E3BA97DB /* libPods-nexus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-nexus.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* nexus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nexus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Nexus/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = Nexus/AppDelegate.mm; sourceTree = "<group>"; };
@@ -66,15 +67,14 @@
 		1BC3AB132CD547B00024FD9C /* nexus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = nexus.entitlements; path = Nexus/nexus.entitlements; sourceTree = "<group>"; };
 		1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Satoshi-Variable.ttf"; path = "../src/fonts/Satoshi-Variable.ttf"; sourceTree = "<group>"; };
-		3BBDD27E9ADE6D6BED05ADA5 /* Pods-nexus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus.release.xcconfig"; path = "Target Support Files/Pods-nexus/Pods-nexus.release.xcconfig"; sourceTree = "<group>"; };
+		37650495EC4795C54AB55F62 /* Pods-nexus-nexusTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus-nexusTests.debug.xcconfig"; path = "Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests.debug.xcconfig"; sourceTree = "<group>"; };
 		62BBC85FD6F04675ADBD3FF0 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-nexus/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Nexus/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		67568FE7C600BF5DAAF50801 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-nexus-nexusTests/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		8CA26F54FF34BBC75F31A105 /* Pods-nexus-nexusTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus-nexusTests.release.xcconfig"; path = "Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests.release.xcconfig"; sourceTree = "<group>"; };
-		B80F917C0F1963A3DBAD74AB /* Pods-nexus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus.debug.xcconfig"; path = "Target Support Files/Pods-nexus/Pods-nexus.debug.xcconfig"; sourceTree = "<group>"; };
-		CA5AD9DD1B276C6564CCD12C /* libPods-nexus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-nexus.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E8AE5CABBB90E442C8C1DA4E /* Pods-nexus-nexusTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus-nexusTests.debug.xcconfig"; path = "Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests.debug.xcconfig"; sourceTree = "<group>"; };
-		EAC81D6E2451D06997B0FECC /* libPods-nexus-nexusTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-nexus-nexusTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		98DED04B33978FEEA0019F25 /* libPods-nexus-nexusTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-nexus-nexusTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABB758771C7E36D0FBE86BE7 /* Pods-nexus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus.release.xcconfig"; path = "Target Support Files/Pods-nexus/Pods-nexus.release.xcconfig"; sourceTree = "<group>"; };
+		C08770B1E55F84E58C4E40A3 /* Pods-nexus-nexusTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus-nexusTests.release.xcconfig"; path = "Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests.release.xcconfig"; sourceTree = "<group>"; };
+		CDCA83A09C5F78CCCE3D96B0 /* Pods-nexus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus.debug.xcconfig"; path = "Target Support Files/Pods-nexus/Pods-nexus.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -83,7 +83,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				71218B02A5CF5B190927EAEC /* libPods-nexus-nexusTests.a in Frameworks */,
+				5DC1BEEFC231326EA68A76B2 /* libPods-nexus-nexusTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,7 +95,7 @@
 				1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */,
 				1B772B6A2CF81E57009C0FB4 /* libresolv.tbd in Frameworks */,
 				1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */,
-				96E7592DEDB766A034332C04 /* libPods-nexus.a in Frameworks */,
+				66C5245886A3C603BA34E74D /* libPods-nexus.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,8 +152,8 @@
 				1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */,
 				1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				CA5AD9DD1B276C6564CCD12C /* libPods-nexus.a */,
-				EAC81D6E2451D06997B0FECC /* libPods-nexus-nexusTests.a */,
+				0E6299BF0DA5B240E3BA97DB /* libPods-nexus.a */,
+				98DED04B33978FEEA0019F25 /* libPods-nexus-nexusTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -211,10 +211,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				B80F917C0F1963A3DBAD74AB /* Pods-nexus.debug.xcconfig */,
-				3BBDD27E9ADE6D6BED05ADA5 /* Pods-nexus.release.xcconfig */,
-				E8AE5CABBB90E442C8C1DA4E /* Pods-nexus-nexusTests.debug.xcconfig */,
-				8CA26F54FF34BBC75F31A105 /* Pods-nexus-nexusTests.release.xcconfig */,
+				CDCA83A09C5F78CCCE3D96B0 /* Pods-nexus.debug.xcconfig */,
+				ABB758771C7E36D0FBE86BE7 /* Pods-nexus.release.xcconfig */,
+				37650495EC4795C54AB55F62 /* Pods-nexus-nexusTests.debug.xcconfig */,
+				C08770B1E55F84E58C4E40A3 /* Pods-nexus-nexusTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -234,13 +234,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "nexusTests" */;
 			buildPhases = (
-				6D5ACCE7D0A781CF23D81EFE /* [CP] Check Pods Manifest.lock */,
+				62478F90297F86ABBAEC73B5 /* [CP] Check Pods Manifest.lock */,
 				E14DD3D270AFDF7376EC2B1F /* [Expo] Configure project */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				28313BB41577F43BB9E3BD8F /* [CP] Embed Pods Frameworks */,
-				9CB99A67A2107D9703C101BE /* [CP] Copy Pods Resources */,
+				EC0D1CE616E57EC158828394 /* [CP] Embed Pods Frameworks */,
+				C9722D21B254A072ABFE84D6 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -256,15 +256,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "nexus" */;
 			buildPhases = (
-				460C538B53210F213F67C016 /* [CP] Check Pods Manifest.lock */,
+				ECBC574408D6F5066DEB1651 /* [CP] Check Pods Manifest.lock */,
 				3EEE2EBA49D854351DE52355 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				1BBB01B82BF4FF5500EDCA9B /* Embed Frameworks */,
-				8568E00C575C47462D898211 /* [CP] Embed Pods Frameworks */,
-				14D4AE8256036580D9A32BB6 /* [CP] Copy Pods Resources */,
+				2D607B27AAB464C615B4B86E /* [CP] Embed Pods Frameworks */,
+				B0E43DA71CBC2CEDC6F79D54 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -357,38 +357,21 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		14D4AE8256036580D9A32BB6 /* [CP] Copy Pods Resources */ = {
+		2D607B27AAB464C615B4B86E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		28313BB41577F43BB9E3BD8F /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		3EEE2EBA49D854351DE52355 /* [Expo] Configure project */ = {
@@ -410,29 +393,7 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-nexus/expo-configure-project.sh\"\n";
 		};
-		460C538B53210F213F67C016 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-nexus-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		6D5ACCE7D0A781CF23D81EFE /* [CP] Check Pods Manifest.lock */ = {
+		62478F90297F86ABBAEC73B5 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -454,24 +415,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8568E00C575C47462D898211 /* [CP] Embed Pods Frameworks */ = {
+		B0E43DA71CBC2CEDC6F79D54 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Embed Pods Frameworks";
+			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		9CB99A67A2107D9703C101BE /* [CP] Copy Pods Resources */ = {
+		C9722D21B254A072ABFE84D6 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -506,6 +467,45 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-nexus-nexusTests/expo-configure-project.sh\"\n";
+		};
+		EC0D1CE616E57EC158828394 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nexus-nexusTests/Pods-nexus-nexusTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		ECBC574408D6F5066DEB1651 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-nexus-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -542,7 +542,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E8AE5CABBB90E442C8C1DA4E /* Pods-nexus-nexusTests.debug.xcconfig */;
+			baseConfigurationReference = 37650495EC4795C54AB55F62 /* Pods-nexus-nexusTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -574,7 +574,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8CA26F54FF34BBC75F31A105 /* Pods-nexus-nexusTests.release.xcconfig */;
+			baseConfigurationReference = C08770B1E55F84E58C4E40A3 /* Pods-nexus-nexusTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -603,7 +603,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B80F917C0F1963A3DBAD74AB /* Pods-nexus.debug.xcconfig */;
+			baseConfigurationReference = CDCA83A09C5F78CCCE3D96B0 /* Pods-nexus.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -634,16 +634,19 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.litecoin.--PRODUCT-NAME-rfc1034identifier-";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.litecoin.nexus;
 				PRODUCT_NAME = nexus;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "nexus-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3BBDD27E9ADE6D6BED05ADA5 /* Pods-nexus.release.xcconfig */;
+			baseConfigurationReference = ABB758771C7E36D0FBE86BE7 /* Pods-nexus.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -673,8 +676,11 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.litecoin.--PRODUCT-NAME-rfc1034identifier-";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.litecoin.nexus;
 				PRODUCT_NAME = nexus;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "nexus-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -753,10 +759,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -830,10 +833,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
