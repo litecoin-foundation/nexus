@@ -281,7 +281,12 @@ export default function TxDetailModalContent(props: Props) {
         );
         moonpayTxIdProp = transaction.moonpayMeta.moonpayTxId;
         cryptoTxIdProp = transaction.moonpayMeta.cryptoTxId;
-        createdAtProp = transaction.moonpayMeta.createdAt;
+        createdAtProp = formatTxDate(
+          parseInt(
+            String(Date.parse(transaction.moonpayMeta.createdAt) / 1000),
+            10,
+          ),
+        );
         // fiatCurrencyProp = transaction.moonpayMeta.fiatCurrency;
         fiatCurrencyAmountProp = transaction.moonpayMeta.fiatCurrencyAmount;
         totalFeeProp = transaction.moonpayMeta.totalFee;

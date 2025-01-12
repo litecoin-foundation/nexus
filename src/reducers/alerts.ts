@@ -51,6 +51,10 @@ export const syncAlerts = (): AppThunk => async (dispatch, getState) => {
       }),
     });
 
+    if (!req.ok) {
+      return;
+    }
+
     const res = await req.json();
 
     if (res && res.length > 0) {
@@ -90,6 +94,12 @@ export const addAlert =
           isIOS: data.isIOS,
         }),
       });
+
+      if (!req.ok) {
+        const res = await req.text();
+        dispatch(showError(res));
+        return;
+      }
 
       const res = await req.json();
 
@@ -169,8 +179,9 @@ export const setAlertAvailability =
       );
 
       if (!req.ok) {
-        const {message} = await req.json();
-        return dispatch(showError(message));
+        const res = await req.text();
+        dispatch(showError(res));
+        return;
       }
 
       const res = await req.json();

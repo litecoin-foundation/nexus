@@ -41,8 +41,8 @@ export const formatMonths = (date: number) => {
   });
 };
 
-export const formatTxDate = (timestamp: number) => {
-  const jsDate = new Date(timestamp * 1000);
+export const formatTxDate = (timestampInSec: number) => {
+  const jsDate = new Date(timestampInSec * 1000);
 
   const months = [
     'Jan',
