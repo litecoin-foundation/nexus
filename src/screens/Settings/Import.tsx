@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {StyleSheet, View, SafeAreaView, Text, Platform} from 'react-native';
+import React, {useEffect, useContext} from 'react';
+import {StyleSheet, View, SafeAreaView, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Card from '../../components/Card';
@@ -13,6 +13,8 @@ import {showError} from '../../reducers/errors';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {publishTransaction} from '../../reducers/transaction';
 import {txHashFromRaw} from '../../lib/utils/txHashFromRaw';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Import: {
@@ -31,6 +33,11 @@ interface Props {
 
 const Import: React.FC<Props> = props => {
   const {navigation, route} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const dispatch = useAppDispatch();
   const {address} = useAppSelector(state => state.address);
 
@@ -66,15 +73,17 @@ const Import: React.FC<Props> = props => {
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
       <SafeAreaView />
 
-      <Card
-        titleText="Import Private Key"
-        descriptionText={
-          'Importing a Litecoin private key moves any Litecoin in that wallet into Nexus.\n\nYou will no longer be able to access Litecoin using the private key.'
-        }
-        imageSource={require('../../assets/images/qr-frame.png')}
-      />
+      <View style={styles.cardContainer}>
+        <Card
+          titleText="Import Private Key"
+          descriptionText={
+            'Importing a Litecoin private key moves any Litecoin in that wallet into Nexus.\n\nYou will no longer be able to access Litecoin using the private key.'
+          }
+          imageSource={require('../../assets/images/qr-frame.png')}
+        />
+      </View>
 
-      <View>
+      <View style={styles.buttonContainer}>
         <WhiteButton
           value="Scan Private Key"
           small={false}
@@ -88,22 +97,36 @@ const Import: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 17,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+    },
+    headerTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: 'white',
+      fontSize: 17,
+    },
+    cardContainer: {
+      paddingBottom: screenHeight * 0.15,
+    },
+    buttonContainer: {
+      width: '100%',
+      paddingHorizontal: 30,
+      paddingBottom: 50,
+    },
+  });
 
-export const ImportNavigationOptions = navigation => {
+export const ImportNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return {
     headerTitle: () => (
       <Text style={styles.headerTitle}>Import Private Key</Text>

@@ -17,22 +17,27 @@ const ScreenSizeContext = createContext({
 });
 
 const ScreenSizeProvider: React.FC<Props> = props => {
-  const { width: deviceWidth, height: deviceHeight } = useWindowDimensions();
+  const {width: deviceWidth, height: deviceHeight} = useWindowDimensions();
 
   // const originalDeviceHeaderHeight = useHeaderHeight();
   // iphone 15 Pro Max header size
   const originalDeviceHeaderHeight = 103;
 
-  const { specifiedWidth, specifiedHeight, deviceName } = props;
+  const {specifiedWidth, specifiedHeight, deviceName} = props;
 
   const [width, setWidth] = useState(specifiedWidth || deviceWidth);
   const [height, setHeight] = useState(specifiedHeight || deviceHeight);
   const [isDeviceRotated, setIsDeviceRotated] = useState(false);
-  const [testDeviceHeaderHeight, setTestDeviceHeaderHeight] = useState(originalDeviceHeaderHeight);
+  const [testDeviceHeaderHeight, setTestDeviceHeaderHeight] = useState(
+    originalDeviceHeaderHeight,
+  );
 
   function setHeaderHeight(screenHeight: number) {
     const testDeviceCropFactor = Dimensions.get('screen').height / screenHeight;
-    const newHeaderHeight = parseInt(String(originalDeviceHeaderHeight / testDeviceCropFactor), 10);
+    const newHeaderHeight = parseInt(
+      String(originalDeviceHeaderHeight / testDeviceCropFactor),
+      10,
+    );
     setTestDeviceHeaderHeight(newHeaderHeight);
   }
 
@@ -95,10 +100,11 @@ const ScreenSizeProvider: React.FC<Props> = props => {
   );
 };
 
-export { ScreenSizeProvider, ScreenSizeContext };
+export {ScreenSizeProvider, ScreenSizeContext};
 
 function getDeviceScreenLayout(deviceName: string | undefined) {
-  let width = 0, height = 0;
+  let width = 0,
+    height = 0;
 
   // iphone sizes are in CGSize format
   switch (deviceName) {

@@ -39,7 +39,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
     arrowSpinAnim,
   } = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
 
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
@@ -139,11 +139,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
       }}>
       <View style={styles.buttonBox}>
         <Text style={[styles.boxText, customFontStyles]}>{title}</Text>
-        <Animated.View
-          style={[
-            styles.boxArrow,
-            arrowSpinAnim,
-          ]}>
+        <Animated.View style={[styles.boxArrow, arrowSpinAnim]}>
           <Image
             style={styles.boxArrowIcon}
             source={require('../../assets/images/back-icon.png')}

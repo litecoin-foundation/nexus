@@ -50,7 +50,7 @@ const DashboardButton: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const width = wider ? SCREEN_WIDTH * 0.18 : SCREEN_WIDTH * 0.16;
+  const width = wider ? SCREEN_WIDTH * 0.165 : SCREEN_WIDTH * 0.15;
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, width);
 
   const fontStyle = {
@@ -79,21 +79,11 @@ const DashboardButton: React.FC<Props> = props => {
   );
 
   const interpolatedColour = useDerivedValue(
-    () => interpolateColors(buttonHeight.value, [49, 88], ['black', 'white']),
+    () => interpolateColors(buttonHeight.value, [49, 88], ['#47516B', '#fff']),
     [buttonHeight],
   );
 
   const interpolatedShadowColour = useDerivedValue(
-    () =>
-      interpolateColors(
-        buttonHeight.value,
-        [49, 88],
-        ['rgba(0, 0, 0, 0.11)', 'rgba(0, 0, 0, 0)'],
-      ),
-    [buttonHeight],
-  );
-
-  const interpolatedInnerShadowColour = useDerivedValue(
     () =>
       interpolateColors(
         buttonHeight.value,
@@ -103,10 +93,20 @@ const DashboardButton: React.FC<Props> = props => {
     [buttonHeight],
   );
 
+  const interpolatedInnerShadowColour = useDerivedValue(
+    () =>
+      interpolateColors(
+        buttonHeight.value,
+        [49, 88],
+        ['rgba(0, 0, 0, 0.11)', 'rgba(0, 0, 0, 0)'],
+      ),
+    [buttonHeight],
+  );
+
   return (
     <>
       <Pressable
-        style={[styles.button, disabled ? styles.disabled : null]}
+        style={[styles.buttonContainer, disabled ? styles.disabled : null]}
         onPress={() => {
           if (!disabled) {
             handlePress();
@@ -127,7 +127,7 @@ const DashboardButton: React.FC<Props> = props => {
               color={interpolatedInnerShadowColour}
               inner
             />
-            <Shadow dx={0} dy={2.4} blur={5} color={interpolatedShadowColour} />
+            <Shadow dx={0} dy={2} blur={4} color={interpolatedShadowColour} />
           </RoundedRect>
           <RoundedRect
             x={4}
@@ -147,7 +147,7 @@ const DashboardButton: React.FC<Props> = props => {
               <Image
                 antiAlias={true}
                 image={image}
-                x={width / 2 - 8}
+                x={width / 2 - SCREEN_WIDTH * 0.015}
                 y={10}
                 width={21}
                 height={50}
@@ -175,8 +175,8 @@ const getStyles = (
   buttonWidth: number,
 ) =>
   StyleSheet.create({
-    button: {
-      width: buttonWidth + 8,
+    buttonContainer: {
+      width: buttonWidth + screenWidth * 0.02,
       height: 110,
     },
     container: {
