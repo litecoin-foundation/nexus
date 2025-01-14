@@ -145,10 +145,10 @@ const Main: React.FC<Props> = props => {
 
   function swipeToPrevTx() {
     if (selectedTransaction) {
-      if (selectedTransaction.hasOwnProperty('index')) {
+      if (selectedTransaction.hasOwnProperty('renderIndex')) {
         const newTxIndex =
-          selectedTransaction.index > 0
-            ? selectedTransaction.index - 1
+          selectedTransaction.renderIndex > 0
+            ? selectedTransaction.renderIndex - 1
             : transactions.length - 1;
         selectTransaction(transactions[newTxIndex]);
       }
@@ -157,10 +157,10 @@ const Main: React.FC<Props> = props => {
 
   function swipeToNextTx() {
     if (selectedTransaction) {
-      if (selectedTransaction.hasOwnProperty('index')) {
+      if (selectedTransaction.hasOwnProperty('renderIndex')) {
         const newTxIndex =
-          selectedTransaction.index < transactions.length - 1
-            ? selectedTransaction.index + 1
+          selectedTransaction.renderIndex < transactions.length - 1
+            ? selectedTransaction.renderIndex + 1
             : 0;
         selectTransaction(transactions[newTxIndex]);
       }
