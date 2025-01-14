@@ -147,7 +147,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
   useEffect(() => {
     filterTransactions(transactionType, searchFilter, mwebFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactionType, searchFilter, mwebFilter]);
+  }, [transactions, transactionType, searchFilter, mwebFilter]);
 
   const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
     item,
