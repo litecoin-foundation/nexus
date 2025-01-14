@@ -9,7 +9,6 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {publishTransaction} from '../../reducers/transaction';
-import {txHashFromRaw} from '../../lib/utils/txHashFromRaw';
 import RecoveryField from '../../components/RecoveryField';
 
 type RootStackParamList = {
@@ -37,28 +36,20 @@ const RecoverLitewallet: React.FC<Props> = props => {
   }, [dispatch]);
 
   const handleLWRecovery = async (seed: string[]) => {
-    sweepLitewallet(seed, address)
-      .then(rawTxs => {
-        rawTxs.map((rawTx, index) => {
-          if (rawTx.length === 0) {
-            // no utxo to sweep
-          } else {
-            publishTransaction(rawTx[0])
-              .then(() => {
-                // handle successful publish!
-                if (index === rawTxs.length - 1) {
-                  navigation.replace('ImportSuccess', {
-                    txHash: txHashFromRaw(rawTx[0]),
-                  });
-                }
-              })
-              .catch(error => Alert.alert(String(error.message)));
-          }
+    try {
+      const rawTxs = await sweepLitewallet(seed, address);
+      rawTxs.map(rawTx => {
+        rawTx.map(async (tx: string) => {
+          await publishTransaction(tx);
         });
-      })
-      .catch(error => {
-        Alert.alert(String(error.message));
       });
+
+      navigation.replace('ImportSuccess', {
+        txHash: 'IMPORTED LITEWALLET!',
+      });
+    } catch (error: any) {
+      Alert.alert(String(error.message));
+    }
   };
 
   return (
