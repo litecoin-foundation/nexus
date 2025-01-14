@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {StyleSheet, View, SafeAreaView, Text} from 'react-native';
+import {StyleSheet, View, SafeAreaView, Text, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Card from '../../components/Card';
@@ -9,10 +9,8 @@ import {RouteProp} from '@react-navigation/native';
 import {sweepQrKey} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
-import {showError} from '../../reducers/errors';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {publishTransaction} from '../../reducers/transaction';
-import {txHashFromRaw} from '../../lib/utils/txHashFromRaw';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -47,25 +45,25 @@ const Import: React.FC<Props> = props => {
 
   // handle scanned QR code
   useEffect(() => {
-    if (route.params?.scanData) {
-      console.log(route.params?.scanData);
-      sweepQrKey(route.params.scanData, address)
-        .then(rawTxs => {
-          rawTxs.map((rawTx, index) => {
-            // console.log(rawTx);
-            publishTransaction(rawTx).then(() => {
-              // handle successful publish!
-              if (index === rawTxs.length - 1) {
-                navigation.replace('ImportSuccess', {
-                  txHash: txHashFromRaw(rawTx),
-                });
-              }
-            });
+    const handleScan = async (scanPayload: string) => {
+      try {
+        const rawTxs = await sweepQrKey(scanPayload, address);
+        rawTxs.map(rawTx => {
+          rawTx.map(async (txHex: string) => {
+            await publishTransaction(txHex);
           });
-        })
-        .catch(error => {
-          dispatch(showError(String(error)));
         });
+
+        navigation.replace('ImportSuccess', {
+          txHash: 'SUCCESS',
+        });
+      } catch (error) {
+        Alert.alert(String(error));
+      }
+    };
+
+    if (route.params?.scanData) {
+      handleScan(route.params?.scanData);
     }
   }, [address, route.params?.scanData, dispatch]);
 

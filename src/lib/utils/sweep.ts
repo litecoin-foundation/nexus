@@ -56,11 +56,18 @@ export const sweepLitewallet = async (
     );
 
     if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
-      throw new Error('No derived addresses with balance.');
+      throw new Error(
+        'No balances detected in addresses derived from seed phrase.',
+      );
     }
 
-    rawTopUpTxs.push(mainTxs);
-    rawTopUpTxs.push(changeTxs);
+    // we don't push empty arrays!
+    if (!isArrayEmpty(mainTxs)) {
+      rawTopUpTxs.push(mainTxs);
+    }
+    if (!isArrayEmpty(changeTxs)) {
+      rawTopUpTxs.push(changeTxs);
+    }
 
     return rawTopUpTxs;
   } catch (error) {
@@ -94,8 +101,13 @@ export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
         throw new Error('No derived addresses with balance.');
       }
 
-      rawTopUpTxs.push(mainTxs);
-      rawTopUpTxs.push(changeTxs);
+      // we don't push empty arrays!
+      if (!isArrayEmpty(mainTxs)) {
+        rawTopUpTxs.push(mainTxs);
+      }
+      if (!isArrayEmpty(changeTxs)) {
+        rawTopUpTxs.push(changeTxs);
+      }
     } else {
       const txs = await sweepWIF(qrKey, receiveAddress);
 
@@ -303,7 +315,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
       throw new Error(String(error));
     }
   } else {
-    throw new Error('No funds in this key.');
+    throw new Error('Private Key is empty.');
   }
 };
 
