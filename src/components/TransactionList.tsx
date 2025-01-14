@@ -3,6 +3,7 @@ import React, {
   useRef,
   useImperativeHandle,
   MutableRefObject,
+  useLayoutEffect,
   useEffect,
   useState,
   useContext,
@@ -34,6 +35,8 @@ interface Props {
   folded?: boolean;
   foldUnfold?: (isFolded: boolean) => void;
   transactionType?: string;
+  searchFilter?: string;
+  mwebFilter?: boolean;
 }
 
 interface ITransactions {
@@ -65,8 +68,15 @@ const TransactionList = forwardRef((props: Props, ref) => {
     },
   }));
 
-  const {onPress, onViewableItemsChanged, folded, foldUnfold, transactionType} =
-    props;
+  const {
+    onPress,
+    onViewableItemsChanged,
+    folded,
+    foldUnfold,
+    transactionType,
+    searchFilter,
+    mwebFilter,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -79,15 +89,20 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const [displayedTxs, setDisplayedTxs] = useState<any[]>([]);
 
   const dispatch = useAppDispatch();
-  useEffect(() => {
+  useLayoutEffect(() => {
     dispatch(getTransactions());
   }, [dispatch]);
 
-  useEffect(() => {
-    setDisplayedTxs(groupTransactions(transactions));
-  }, [transactions]);
+  // Set by filter function
+  // useEffect(() => {
+  //   setDisplayedTxs(groupTransactions(transactions));
+  // }, [transactions]);
 
-  const filterTransactions = (transactionTypeProp: string | undefined) => {
+  const filterTransactions = (
+    transactionTypeProp: string | undefined,
+    searchFilterProp: string | undefined,
+    mwebFilterProp: boolean | undefined,
+  ) => {
     const txArray = [];
 
     switch (transactionTypeProp) {
@@ -107,13 +122,32 @@ const TransactionList = forwardRef((props: Props, ref) => {
         break;
     }
 
-    setDisplayedTxs(groupTransactions(txArray));
+    let txArrayFiltered = txArray;
+
+    if (searchFilterProp) {
+      txArrayFiltered = txArrayFiltered.filter(
+        (tx: any) => tx.label.indexOf(searchFilterProp) > -1,
+      );
+    }
+
+    if (mwebFilterProp === undefined) {
+    } else if (mwebFilterProp) {
+      txArrayFiltered = txArrayFiltered.filter(
+        (tx: any) => tx.addresses[0].substring(0, 7) === 'ltcmweb',
+      );
+    } else {
+      txArrayFiltered = txArrayFiltered.filter(
+        (tx: any) => tx.addresses[0].substring(0, 7) !== 'ltcmweb',
+      );
+    }
+
+    setDisplayedTxs(groupTransactions(txArrayFiltered));
   };
 
   useEffect(() => {
-    filterTransactions(transactionType);
+    filterTransactions(transactionType, searchFilter, mwebFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactionType]);
+  }, [transactionType, searchFilter, mwebFilter]);
 
   const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
     item,

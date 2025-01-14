@@ -10,7 +10,13 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
-import {Canvas, Image, RoundedRect, useImage} from '@shopify/react-native-skia';
+import {
+  Canvas,
+  Image,
+  RoundedRect,
+  useImage,
+  Shadow,
+} from '@shopify/react-native-skia';
 import {payment, TransactionRequest} from '@flexahq/flexa-react-native';
 
 import NewAmountView from '../components/NewAmountView';
@@ -441,19 +447,21 @@ const Main: React.FC<Props> = props => {
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
           <Canvas style={styles.txSearchBtnCanvas}>
             <RoundedRect
-              x={0}
-              y={0}
-              width={SCREEN_HEIGHT * 0.09}
+              x={SCREEN_HEIGHT * 0.02}
+              y={SCREEN_HEIGHT * 0.01}
+              width={SCREEN_HEIGHT * 0.1}
               height={SCREEN_HEIGHT * 0.05}
               color="white"
-              r={SCREEN_HEIGHT * 0.01}
-            />
+              r={SCREEN_HEIGHT * 0.01}>
+              <Shadow dx={0} dy={2} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
+            </RoundedRect>
             <Image
               image={image}
-              x={SCREEN_HEIGHT * 0.02}
-              y={SCREEN_HEIGHT * 0.016}
-              width={SCREEN_HEIGHT * 0.017}
-              height={SCREEN_HEIGHT * 0.016}
+              x={SCREEN_HEIGHT * 0.035}
+              y={SCREEN_HEIGHT * 0.025}
+              width={SCREEN_HEIGHT * 0.02}
+              height={SCREEN_HEIGHT * 0.02}
+              fit="scaleDown"
             />
           </Canvas>
         </Pressable>
@@ -655,22 +663,23 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
     },
     txTitleContainer: {
+      width: '100%',
       height: screenHeight * 0.07,
       flexDirection: 'row',
       justifyContent: 'space-between',
+      alignItems: 'center',
     },
     txTitleText: {
-      paddingLeft: screenHeight * 0.019,
-      paddingBottom: screenHeight * 0.012,
-      paddingTop: screenHeight * 0.005,
-      fontFamily: 'Satoshi Variable',
-      fontWeight: '700',
       color: '#2E2E2E',
-      fontSize: screenHeight * 0.024,
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.025,
+      fontWeight: '500',
+      letterSpacing: -0.59,
+      paddingLeft: screenWidth * 0.04,
     },
     txSearchBtnCanvas: {
-      width: screenHeight * 0.06,
-      height: screenHeight * 0.05,
+      width: screenHeight * 0.07,
+      height: screenHeight * 0.07,
     },
   });
 
