@@ -361,7 +361,6 @@ export const publishTransaction = (txHex: string) => {
       }
 
       const response = await request.text();
-      console.log(response);
       // TODO: verify this reponse is just txid
 
       resolve(response);
