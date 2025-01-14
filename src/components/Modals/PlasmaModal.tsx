@@ -306,11 +306,15 @@ export default function PlasmaModal(props: Props) {
 
   const [isVisible, setVisible] = useState(false);
 
-  const contentBodyAnimDelay = animDuration - 50;
+  // Make content render after modal starts rendering
+  const contentBodyAnimDelay = animDuration - 100;
+  // Make conter render a bit faster than modal
+  const contentBodyAnimDuration = animDuration - 50;
 
   const animTimeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
+    // Wait for animation to finish before hiding modal
     if (isOpened) {
       setVisible(isOpened);
     } else {
@@ -319,11 +323,12 @@ export default function PlasmaModal(props: Props) {
       }, animDuration);
     }
 
+    // Play opening/closing animation
     if (isOpened) {
       bodyTranslateY.value = withTiming(0, {
-        duration: animDuration + 200,
-        easing: Easing.out(Easing.cubic),
-        reduceMotion: ReduceMotion.System,
+        duration: animDuration + 100,
+        easing: Easing.inOut(Easing.ease),
+        reduceMotion: ReduceMotion.Never,
       });
 
       backOpacity.value = withTiming(1, {duration: animDuration});
@@ -410,7 +415,7 @@ export default function PlasmaModal(props: Props) {
                 isOpened,
                 true,
                 contentBodyAnimDelay,
-                animDuration - 50,
+                contentBodyAnimDuration,
                 animatedContentBodyTranslateStyle,
                 animatedCardOpacityStyle,
                 animatedPrevNextCardOpacityStyle,

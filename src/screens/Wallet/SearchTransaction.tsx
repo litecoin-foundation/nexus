@@ -150,7 +150,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       alignSelf: 'flex-end',
       marginHorizontal: screenWidth * 0.04,
-      marginBottom: screenHeight * 0.012,
+      marginBottom: screenHeight * 0.011,
     },
     mwebFilterBtnText: {
       color: '#fff',
