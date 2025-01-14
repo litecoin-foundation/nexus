@@ -73,6 +73,7 @@ export const syncAlerts = (): AppThunk => async (dispatch, getState) => {
     console.error(error);
   }
 };
+
 export const addAlert =
   (data: PostedAlert): AppThunk =>
   async (dispatch, getState) => {

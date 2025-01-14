@@ -1,5 +1,5 @@
 import React, {useRef, useState, useContext} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, Pressable} from 'react-native';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 // import {useAppSelector} from '../../store/hooks';
 // import {groupTransactions} from '../../lib/utils/groupTransactions';
@@ -7,6 +7,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import TransactionDetailModal from '../../components/Modals/TransactionDetailModal';
 import TransactionList from '../../components/TransactionList';
 import FilterButton from '../../components/Buttons/FilterButton';
+import SearchBar from '../../components/SearchBar';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -23,15 +24,14 @@ const SearchTransaction: React.FC<Props> = props => {
 
   const TransactionListRef = useRef();
 
-  // const transactions = useAppSelector(state => txDetailSelector(state));
-  // const groupedTransactions = groupTransactions(transactions);
-
   const [txType, setTxType] = useState('All');
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
+
+  // const transactions = useAppSelector(state => txDetailSelector(state));
+  // const groupedTransactions = groupTransactions(transactions);
   // const [diplayedTxs, setDisplayedTxs] = useState(groupedTransactions);
   // const [sectionHeader, setSectionHeader] = useState(null);
-
   // const handleDatePick = (hash, timestamp) => {
   //   const dateIndex = diplayedTxs.findIndex(sections => {
   //     const {data} = sections;
@@ -43,7 +43,7 @@ const SearchTransaction: React.FC<Props> = props => {
   // };
 
   const filters = [
-    {value: 'All', imgSrc: require('../../assets/icons/sell-icon.png')},
+    {value: 'All', imgSrc: require('../../assets/icons/blue-tick-oval.png')},
     {value: 'Buy', imgSrc: require('../../assets/icons/buy-icon.png')},
     {value: 'Sell', imgSrc: require('../../assets/icons/sell-icon.png')},
     {value: 'Convert', imgSrc: require('../../assets/icons/convert-icon.png')},
@@ -58,20 +58,36 @@ const SearchTransaction: React.FC<Props> = props => {
         active={txType === element.value ? true : false}
         onPress={() => {
           setTxType(element.value);
-          // filterTransactions(txType);
         }}
         key={element.value}
         imageSource={element.imgSrc}
+        tint={element.value === 'All' ? false : true}
       />
     );
   });
 
+  const [searchFilter, setSearchFilter] = useState('');
+  const [mwebFilter, setMwebFilter] = useState(false);
+
   return (
     <View style={styles.container}>
       <View style={styles.filters}>
-        <View style={styles.filterContainer}>
-          {Filter}
+        <Pressable
+          style={styles.mwebFilterBtn}
+          onPress={() => setMwebFilter(!mwebFilter)}>
+          <Text style={styles.mwebFilterBtnText}>
+            {mwebFilter ? 'MWEB' : 'Regular'}
+          </Text>
+        </Pressable>
+        <View style={styles.search}>
+          <SearchBar
+            value={searchFilter}
+            placeholder={'Find a transaction'}
+            onChangeText={text => setSearchFilter(text)}
+          />
         </View>
+
+        <View style={styles.filterContainer}>{Filter}</View>
       </View>
 
       <View style={styles.txListContainer}>
@@ -93,6 +109,8 @@ const SearchTransaction: React.FC<Props> = props => {
           //   }
           // }}
           transactionType={txType}
+          searchFilter={searchFilter}
+          mwebFilter={mwebFilter}
         />
       </View>
 
@@ -116,11 +134,36 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'column',
     },
     headerTitle: {
+      color: 'white',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
+    },
+    mwebFilterBtn: {
+      width: screenWidth * 0.35,
+      height: screenHeight * 0.035,
+      minHeight: 25,
+      borderRadius: screenHeight * 0.01,
+      backgroundColor: '#0F4CAD',
+      justifyContent: 'center',
+      alignItems: 'center',
+      alignSelf: 'flex-end',
+      marginHorizontal: screenWidth * 0.04,
+      marginBottom: screenHeight * 0.012,
+    },
+    mwebFilterBtnText: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
       fontSize: screenHeight * 0.02,
+      fontStyle: 'normal',
+      fontWeight: '500',
+      letterSpacing: -0.39,
+    },
+    search: {
+      width: '100%',
+      paddingBottom: screenHeight * 0.01,
+      paddingHorizontal: screenWidth * 0.04,
     },
     filters: {
       flexBasis: '25%',
@@ -131,7 +174,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     filterContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      paddingHorizontal: screenWidth * 0.05,
+      paddingHorizontal: screenWidth * 0.04,
     },
     txListContainer: {
       flexBasis: '75%',
@@ -144,7 +187,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   });
 
 export const SearchTransactionNavigationOptions = (navigation: any) => {
-
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

@@ -50,7 +50,7 @@ const DashboardButton: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const width = wider ? SCREEN_WIDTH * 0.165 : SCREEN_WIDTH * 0.15;
+  const width = wider ? SCREEN_WIDTH * 0.168 : SCREEN_WIDTH * 0.152;
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, width);
 
   const fontStyle = {
@@ -147,9 +147,13 @@ const DashboardButton: React.FC<Props> = props => {
               <Image
                 antiAlias={true}
                 image={image}
-                x={width / 2 - SCREEN_WIDTH * 0.015}
+                x={
+                  wider
+                    ? width / 2 - SCREEN_WIDTH * 0.015 - 2.1
+                    : width / 2 - SCREEN_WIDTH * 0.015
+                }
                 y={10}
-                width={21}
+                width={wider ? 25.2 : 21}
                 height={50}
               />
             }>
@@ -176,7 +180,7 @@ const getStyles = (
 ) =>
   StyleSheet.create({
     buttonContainer: {
-      width: buttonWidth + screenWidth * 0.02,
+      width: buttonWidth + screenWidth * 0.024,
       height: 110,
     },
     container: {
