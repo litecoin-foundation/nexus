@@ -21,18 +21,14 @@ const Support: React.FC<Props> = props => {
   const {uniqueId} = useAppSelector(state => state.onboarding);
 
   const user = {
-    identifier: `${uniqueId}`,
-    name: 'bruh man',
-    avatar_url: 'poopy@gmail.com',
-    email: 'john@gmail.com',
-
-    // name: string;
-    //     avatar_url: string;
-    //     email: string;
-    //     identifier: string;
+    identifier: uniqueId,
+    name: '',
+    email: '',
+    identifier_hash:
+      'c4c5fb643a6b94c7ba2a2d691a522c630b30e89e72c12d1c7bc323c54f23212f',
   };
   const customAttributes = {
-    deviceos: 'ppoyooyp',
+    nexusversion: 3,
   };
   const websiteToken = 'SH4YF5fA3sHFqhHvKt23aQzz';
   const baseUrl = 'https://chat-mobile.litecoin.com';

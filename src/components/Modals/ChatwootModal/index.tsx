@@ -9,9 +9,10 @@ interface ChatwootModalProps {
   cwCookie?: string;
   user?: {
     name: string;
-    avatar_url: string;
+    avatar_url?: string;
     email: string;
     identifier: string;
+    identifier_hash: string;
   };
   locale?: string;
   colorScheme?: 'light' | 'auto' | 'dark';
