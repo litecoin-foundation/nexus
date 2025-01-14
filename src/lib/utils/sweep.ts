@@ -139,9 +139,6 @@ const sweepMnemonic = async (
   startPath: string,
   isChildHardened: boolean,
 ) => {
-  // const phrase =
-  //   'wheat stage drop afraid hammer amateur knock ice subject find walk lobster rough infant bamboo guitar skin attract long then mail artist relax robot';
-  // const phraseArr = phrase.split(' ');
   try {
     const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
       startPath,
@@ -171,12 +168,13 @@ const createRawTxsFromHDWallet = async (
 
   await Promise.all(
     keyPairsWithBalance.map(async addressWithKeyPair => {
-      const {inputsArr, addressBalance, addressUnspentsLength} =
-        await sweepAddress(
-          addressWithKeyPair.address,
-          addressWithKeyPair.keyPair,
-          'P2PKH',
-        );
+      const sweepy = await sweepAddress(
+        addressWithKeyPair.address,
+        addressWithKeyPair.keyPair,
+        'P2PKH',
+      );
+
+      const {inputsArr, addressBalance, addressUnspentsLength} = sweepy;
       inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
@@ -335,8 +333,7 @@ const sweepAddress = (
         return;
       }
 
-      const {unspents} = await utxoRes.json();
-
+      const unspents = await utxoRes.json();
       let inputsArr: any[] = [];
       let addressBalance = 0;
 
@@ -353,11 +350,11 @@ const sweepAddress = (
           );
 
           if (!txHexRes.ok) {
-            const error = await txHexRes.json();
+            const error = await txHexRes.text();
             reject(error);
           }
 
-          const utxoHex = await txHexRes.json();
+          const utxoHex = await txHexRes.text();
 
           switch (inputScript) {
             case 'P2PKH':
