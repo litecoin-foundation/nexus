@@ -53,11 +53,11 @@ export default function WalletsModalContent(props: Props) {
     if (showAnim) {
       if (isOpened) {
         buttonOpacity.value = withDelay(
-          animDelay + 100,
-          withTiming(1, {duration: animDuration + 100}),
+          animDelay,
+          withTiming(1, {duration: animDuration}),
         );
       } else {
-        buttonOpacity.value = 0;
+        buttonOpacity.value = withTiming(0, {duration: animDuration});
       }
     }
   }, [animDelay, animDuration, buttonOpacity, isOpened, showAnim]);
