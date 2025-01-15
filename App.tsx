@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useState, useContext} from 'react';
+import React, {useEffect, useLayoutEffect, useState, useContext} from 'react';
 import {
   View,
   Platform,
@@ -25,7 +25,8 @@ import {
   deviceList,
 } from './src/context/screenSize';
 
-import {useAppDispatch} from './src/store/hooks';
+import {useAppDispatch, useAppSelector} from './src/store/hooks';
+import {signupSigninToApi} from './src/reducers/onboarding';
 import {setDeviceNotificationToken} from './src/reducers/settings';
 import {
   updatedRatesInFiat,
@@ -78,6 +79,17 @@ function ContextExecutable(props: any) {
   dispatch(getBuyTransactionHistory());
   dispatch(getSellTransactionHistory());
   dispatch(getTransactions());
+
+  const {isOnboarded} = useAppSelector(state => state.onboarding);
+  const {deviceNotificationToken} = useAppSelector(state => state.settings);
+
+  useEffect(() => {
+    if (isOnboarded === true && deviceNotificationToken) {
+      // signup/signin to nexus api
+      dispatch(signupSigninToApi());
+    }
+  }, [isOnboarded, deviceNotificationToken]);
+
   return <></>;
 }
 
