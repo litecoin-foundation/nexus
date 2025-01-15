@@ -1,4 +1,4 @@
-import {StyleSheet, FlatList} from 'react-native';
+import {StyleSheet, FlatList, Text} from 'react-native';
 import React, {useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -7,6 +7,7 @@ import Header from '../../components/Header';
 import explorers from '../../assets/explorers';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setExplorer} from '../../reducers/settings';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
 type ExplorerType = {
   name: string;
@@ -38,6 +39,9 @@ const Explorer: React.FC = () => {
         style={styles.container}
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
+        <Text style={styles.headerText}>
+          You can select your preferred block explorer to view transactions.
+        </Text>
         <FlatList data={explorers} renderItem={renderItem} />
       </LinearGradient>
     </>
@@ -47,8 +51,43 @@ const Explorer: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgb(238,244,249)',
+    backgroundColor: '#F7F7F7',
+  },
+  headerTitle: {
+    fontFamily: 'Satoshi Variable',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: 'white',
+    fontSize: 17,
+  },
+  headerText: {
+    color: '#484859',
+    paddingTop: 10,
+    paddingBottom: 10,
+    fontFamily: 'Satoshi Variable',
+    fontStyle: 'normal',
+    fontWeight: '600',
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });
+
+export const ExplorerNavigationOptions = navigation => {
+  return {
+    headerTitle: () => (
+      <Text style={styles.headerTitle}>Select Block Explorer</Text>
+    ),
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+  };
+};
 
 export default Explorer;

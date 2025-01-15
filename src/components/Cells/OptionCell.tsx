@@ -36,15 +36,16 @@ const styles = StyleSheet.create({
     paddingLeft: 25,
     paddingRight: 25,
     height: 50,
-    borderTopWidth: 0.5,
-    borderBottomWidth: 0.5,
+    borderTopWidth: 1,
     borderColor: '#9797974d',
     backgroundColor: 'white',
   },
   title: {
-    color: '#7c96ae',
+    fontFamily: 'Satoshi Variable',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: '#484859',
     fontSize: 16,
-    fontWeight: '500',
   },
 });
 

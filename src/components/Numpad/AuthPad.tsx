@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, Text, Platform} from 'react-native';
+import {View, StyleSheet, Text} from 'react-native';
 
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
@@ -19,7 +19,7 @@ const DAY_LOCK_IN_SEC = 86400;
 interface Props {
   handleValidationFailure: () => void;
   handleValidationSuccess: () => void;
-  handleBiometricPress: () => void;
+  handleBiometricPress?: () => void;
 }
 
 const AuthPad: React.FC<Props> = props => {
@@ -97,7 +97,7 @@ const AuthPad: React.FC<Props> = props => {
         ) {
           pinInactive = false;
           if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
-            return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} left.`;
+            return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} attempts left.`;
           }
         } else {
           pinInactive = true;
@@ -114,7 +114,7 @@ const AuthPad: React.FC<Props> = props => {
         ) {
           pinInactive = false;
           if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
-            return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} left.`;
+            return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} attempts left.`;
           }
         } else {
           pinInactive = true;
@@ -127,7 +127,7 @@ const AuthPad: React.FC<Props> = props => {
       } else {
         pinInactive = false;
         if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
-          return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} left.`;
+          return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} attempts left.`;
         }
       }
       return '';

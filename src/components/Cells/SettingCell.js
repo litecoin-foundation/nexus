@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Image,
-  Platform,
-} from 'react-native';
+import {TouchableOpacity, Text, StyleSheet, Image} from 'react-native';
 
 import Switch from '../Buttons/Switch';
 

@@ -4,11 +4,15 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Settings, {
   SettingsNavigationOptions,
 } from '../screens/Settings/Settings';
-import Explorer from '../screens/Settings/Explorer';
+import Explorer, {
+  ExplorerNavigationOptions,
+} from '../screens/Settings/Explorer';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed, {SeedNavigationOptions} from '../screens/Settings/Seed';
 import About, {AboutNavigationOptions} from '../screens/Settings/About';
-import Currency from '../screens/Settings/Currency';
+import Currency, {
+  CurrencyNavigationOptions,
+} from '../screens/Settings/Currency';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import Import, {ImportNavigationOptions} from '../screens/Settings/Import';
 import RecoverLitewallet, {
@@ -58,30 +62,12 @@ function SettingsStack() {
       <Stack.Screen
         name="Currency"
         component={Currency}
-        options={{
-          headerTitle: 'Currency',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-        }}
+        options={({navigation}) => CurrencyNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Explorer"
         component={Explorer}
-        options={{
-          headerTitle: 'Select Default Explorer',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            color: 'white',
-          },
-          headerTransparent: true,
-          headerBackTitleVisible: false,
-          headerTintColor: 'white',
-        }}
+        options={({navigation}) => ExplorerNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Scan"

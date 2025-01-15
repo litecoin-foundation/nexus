@@ -1,4 +1,4 @@
-import {StyleSheet, FlatList} from 'react-native';
+import {StyleSheet, FlatList, Text} from 'react-native';
 import React, {useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -7,6 +7,7 @@ import Header from '../../components/Header';
 import fiat from '../../assets/fiat';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setCurrencyCode} from '../../reducers/settings';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
 type CurrencyCodeType = {
   name: string;
@@ -50,6 +51,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgb(238,244,249)',
   },
+  headerTitle: {
+    fontFamily: 'Satoshi Variable',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    color: 'white',
+    fontSize: 17,
+  },
 });
+
+export const CurrencyNavigationOptions = navigation => {
+  return {
+    headerTitle: () => (
+      <Text style={styles.headerTitle}>Select Fiat Currency</Text>
+    ),
+    headerTitleAlign: 'left',
+    headerTransparent: true,
+    headerTintColor: 'white',
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+  };
+};
 
 export default Currency;

@@ -37,6 +37,7 @@ interface Props {
   transactionType?: string;
   searchFilter?: string;
   mwebFilter?: boolean;
+  headerBackgroundColor: string;
 }
 
 interface ITransactions {
@@ -76,6 +77,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     transactionType,
     searchFilter,
     mwebFilter,
+    headerBackgroundColor,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -199,7 +201,11 @@ const TransactionList = forwardRef((props: Props, ref) => {
         renderItem={renderItem}
         viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
         renderSectionHeader={({section}) => (
-          <View style={styles.sectionHeaderContainer}>
+          <View
+            style={[
+              styles.sectionHeaderContainer,
+              {backgroundColor: headerBackgroundColor},
+            ]}>
             <Text style={styles.sectionHeaderText}>{section.title}</Text>
           </View>
         )}

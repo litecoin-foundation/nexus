@@ -1,14 +1,17 @@
-import React, {useState} from 'react';
+import React, {useContext, useLayoutEffect, useState} from 'react';
 import {View, Text, StyleSheet, Alert} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import {useNavigation} from '@react-navigation/native';
 
-import Pad from '../../components/Numpad/Pad';
 import Header from '../../components/Header';
 import {addPincode} from '../../reducers/authentication';
 import {setItem} from '../../lib/utils/keychain';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {useNavigation} from '@react-navigation/native';
-import Dots from '../../components/Dots';
+import PasscodeInput from '../../components/PasscodeInput';
+import PadGrid from '../../components/Numpad/PadGrid';
+import BuyButton from '../../components/Numpad/BuyButton';
+import {ScreenSizeContext} from '../../context/screenSize';
+import LinearGradient from 'react-native-linear-gradient';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
 interface Props {
   route: any; // TODO
@@ -19,6 +22,27 @@ const ChangePincode: React.FC<Props> = props => {
   const {route} = props;
   const dispatch = useAppDispatch();
   const pin = useAppSelector(state => state.authentication.passcode);
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitleAlign: 'left',
+      headerTransparent: true,
+      headerTintColor: 'white',
+      headerLeft: () => (
+        <HeaderButton
+          onPress={() => navigation.goBack()}
+          imageSource={require('../../assets/images/back-icon.png')}
+        />
+      ),
+      headerTitle: () => (
+        <Text style={styles.headerTitle}>Change Login Pincode</Text>
+      ),
+    });
+  });
 
   const [currentPin, setCurrentPin] = useState(
     route.params.type === 'RESET' ? false : true,
@@ -32,16 +56,21 @@ const ChangePincode: React.FC<Props> = props => {
 
   const handleInput = (pincode: string) => {
     if (padValue.length === 5) {
-      handleCompletion(pincode);
+      const value = padValue + pincode;
+      handleCompletion(value);
     } else {
-      setPadValue(pincode);
+      const value = padValue + pincode;
+      setPadValue(value);
     }
   };
 
-  const handleCompletion = (passcodeAttempt: string) => {
+  const handleCompletion = (value: string) => {
     setPadValue('');
     if (currentPin) {
-      if (passcodeAttempt === pin) {
+      console.log(pin);
+      console.log(value);
+
+      if (value === pin) {
         setCurrentPin(false);
         setNewPin(true);
       } else {
@@ -56,11 +85,11 @@ const ChangePincode: React.FC<Props> = props => {
         return;
       }
     } else if (newPin) {
-      setNewPinCodeValue(passcodeAttempt);
+      setNewPinCodeValue(value);
       setNewPin(false);
       setRepeatPin(true);
     } else if (repeatPin) {
-      if (passcodeAttempt === newPinCodeValue) {
+      if (value === newPinCodeValue) {
         dispatch(addPincode(newPinCodeValue));
         setPincodeToKeychain(newPinCodeValue);
         Alert.alert(
@@ -93,30 +122,58 @@ const ChangePincode: React.FC<Props> = props => {
     }
   };
 
+  const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
+
+  const buttons = values.map(value => {
+    if (value === '.') {
+      return <View style={styles.emptyBuyButton} />;
+    }
+    if (value === '⌫') {
+      return (
+        <BuyButton
+          disabled={false}
+          key="back-arrow-button-key"
+          value={value}
+          onPress={() => {
+            const padVal = padValue.slice(0, -1);
+            setPadValue(padVal);
+          }}
+          imageSource={require('../../assets/icons/back-arrow.png')}
+        />
+      );
+    }
+    return (
+      <BuyButton
+        disabled={false}
+        key={value}
+        value={value}
+        onPress={() => handleInput(value)}
+      />
+    );
+  });
+
   return (
-    <View style={styles.flex}>
+    <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
       <Header />
-      <View style={styles.pinContainer}>
-        <Text style={styles.text}>
+
+      <View style={styles.bottomSheet}>
+        <Text style={styles.bottomSheetTitle}>
           {currentPin
             ? 'Enter your Old PIN'
             : newPin
             ? 'Enter a New PIN'
             : 'Repeat your New PIN'}
         </Text>
-        <Dots dotsLength={6} activeDotIndex={padValue.length - 1} />
-      </View>
 
-      <LinearGradient style={styles.flex} colors={['#F2F8FD', '#d2e1ef00']}>
-        <Pad
-          currentValue={padValue}
-          onChange={(value: string) => handleInput(value)}
-          maxLength={6}
-          dotDisabled={true}
-          noBackgroundColor={true}
+        <PasscodeInput
+          dotsLength={6}
+          activeDotIndex={padValue.length}
+          pinInactive={false}
         />
-      </LinearGradient>
-    </View>
+        <PadGrid />
+        <View style={styles.buttonContainer}>{buttons}</View>
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -124,23 +181,53 @@ async function setPincodeToKeychain(pin: string) {
   await setItem('PINCODE', pin);
 }
 
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  pinContainer: {
-    height: 162,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    color: '#2F2F2F',
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: -0.46,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    bottomSheet: {
+      position: 'absolute',
+      bottom: 0,
+      backgroundColor: '#ffffff',
+      borderTopLeftRadius: screenHeight * 0.03,
+      borderTopRightRadius: screenHeight * 0.03,
+      width: screenWidth,
+      height: screenHeight * 0.65,
+    },
+    bottomSheetTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: 'bold',
+      color: '#2e2e2e',
+      fontSize: screenHeight * 0.026,
+      textAlign: 'center',
+      paddingTop: screenHeight * 0.02,
+      paddingBottom: screenHeight * 0.02,
+    },
+    text: {
+      color: '#2F2F2F',
+      fontSize: 20,
+      fontWeight: 'bold',
+      letterSpacing: -0.46,
+    },
+    buttonContainer: {
+      width: screenWidth,
+      height: screenHeight * 0.4,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    emptyBuyButton: {
+      width: screenWidth / 3,
+      height: screenHeight * 0.1,
+    },
+    headerTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: 'white',
+      fontSize: 17,
+    },
+  });
 
 export default ChangePincode;

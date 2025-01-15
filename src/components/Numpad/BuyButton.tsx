@@ -3,7 +3,6 @@ import {
   TouchableWithoutFeedback,
   Text,
   StyleSheet,
-  Platform,
   Image,
   ImageSourcePropType,
 } from 'react-native';

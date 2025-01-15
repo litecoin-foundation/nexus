@@ -19,7 +19,7 @@ const SuccessSend: React.FC<Props> = () => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const amount = useAppSelector(state => state.input.amount);
-  const toAddress = useAppSelector(state => state.input.toAddress);
+  const toAddress = useAppSelector(state => state.input.send.toAddress);
 
   return (
     <>

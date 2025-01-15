@@ -471,6 +471,7 @@ const Main: React.FC<Props> = props => {
           selectTransaction(data);
           setTxDetailModalOpened(true);
         }}
+        headerBackgroundColor="#F7F7F7"
         folded={isBottomSheetFolded}
         foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
       />

@@ -1,9 +1,6 @@
 import React, {useRef, useState, useContext} from 'react';
 import {StyleSheet, Text, View, Pressable} from 'react-native';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-// import {useAppSelector} from '../../store/hooks';
-// import {groupTransactions} from '../../lib/utils/groupTransactions';
-// import {txDetailSelector} from '../../reducers/transaction';
 import TransactionDetailModal from '../../components/Modals/TransactionDetailModal';
 import TransactionList from '../../components/TransactionList';
 import FilterButton from '../../components/Buttons/FilterButton';
@@ -27,20 +24,6 @@ const SearchTransaction: React.FC<Props> = props => {
   const [txType, setTxType] = useState('All');
   const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
   const [selectedTransaction, selectTransaction] = useState(null);
-
-  // const transactions = useAppSelector(state => txDetailSelector(state));
-  // const groupedTransactions = groupTransactions(transactions);
-  // const [diplayedTxs, setDisplayedTxs] = useState(groupedTransactions);
-  // const [sectionHeader, setSectionHeader] = useState(null);
-  // const handleDatePick = (hash, timestamp) => {
-  //   const dateIndex = diplayedTxs.findIndex(sections => {
-  //     const {data} = sections;
-  //     return data[0].hash === hash;
-  //   });
-  //   TransactionListRef.current.scrollToLocation(dateIndex);
-
-  //   setSectionHeader(timestamp);
-  // };
 
   const filters = [
     {value: 'All', imgSrc: require('../../assets/icons/blue-tick-oval.png')},
@@ -93,21 +76,11 @@ const SearchTransaction: React.FC<Props> = props => {
       <View style={styles.txListContainer}>
         <TransactionList
           ref={TransactionListRef}
+          headerBackgroundColor="white"
           onPress={(data: any) => {
             selectTransaction(data);
             setTxDetailModalVisible(true);
           }}
-          // onViewableItemsChanged={viewableItems => {
-          //   if (
-          //     viewableItems.viewableItems !== undefined &&
-          //     viewableItems.viewableItems.length >= 1
-          //   ) {
-          //     const {timestamp} = viewableItems.viewableItems[0].item;
-          //     if (timestamp !== undefined) {
-          //       setSectionHeader(timestamp);
-          //     }
-          //   }
-          // }}
           transactionType={txType}
           searchFilter={searchFilter}
           mwebFilter={mwebFilter}

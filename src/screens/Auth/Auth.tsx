@@ -1,5 +1,4 @@
-import React, {useEffect, useLayoutEffect, useState} from 'react';
-import {Alert, ActivityIndicator, StyleSheet, View} from 'react-native';
+import React, {useEffect, useLayoutEffect} from 'react';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {subscribeState} from 'react-native-turbo-lnd';
 import {WalletState} from 'react-native-turbo-lnd/protos/lightning_pb';
@@ -25,7 +24,6 @@ interface Props {
 const AuthScreen: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState(false);
 
   const pin = useAppSelector(state => state.authpad!.pin);
   const biometricsEnabled = useAppSelector(
@@ -86,61 +84,22 @@ const AuthScreen: React.FC<Props> = props => {
     };
     return () => {
       clear();
-      setLoading(false);
     };
   }, []);
 
   const unlockWallet = async () => {
-    setLoading(true);
     dispatch(unlockWalletWithPin(pin));
     dispatch(clearValues());
-    setLoading(false);
   };
-
-  // Failure is handled in auth resolver
-  // const handleValidationFailure = () => {
-  //   Alert.alert('Incorrect PIN', 'Try Again', [{text: 'OK'}], {
-  //     cancelable: false,
-  //   });
-  // };
 
   return (
     <>
       <Auth
-        headerDescriptionText="Use your PIN to unlock your Wallet"
         handleValidationSuccess={() => unlockWallet()}
         handleValidationFailure={() => unlockWallet()}
-        // handleValidationFailure={handleValidationFailure}
       />
-      {loading ? (
-        <View style={styles.activity}>
-          <View style={styles.container}>
-            <ActivityIndicator size="large" />
-          </View>
-        </View>
-      ) : null}
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  activity: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  container: {
-    backgroundColor: 'rgba(10,10,10,0.8)',
-    height: 100,
-    width: 100,
-    borderRadius: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
 
 export default AuthScreen;

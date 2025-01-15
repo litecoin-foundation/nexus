@@ -30,8 +30,8 @@ const ConfirmSend: React.FC<Props> = () => {
   const amount = useAppSelector(state => state.input.send.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const toAddress = useAppSelector(state => state.input.send.toAddress);
-  const message = useAppSelector(state => state.input.message);
-  const fee = useAppSelector(state => state.input.fee);
+  const label = useAppSelector(state => state.input.send.label);
+  const fee = useAppSelector(state => state.input.send.fee);
   // Todo: get total fee for the tx
   const totalFeeInLTC = 'undefined ';
 
