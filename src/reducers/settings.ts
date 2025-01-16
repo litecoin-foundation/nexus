@@ -6,6 +6,7 @@ import {getCurrencies} from 'react-native-localize';
 import {AppThunk} from './types';
 import fiat from '../assets/fiat';
 import explorers from '../assets/explorers';
+import {satsToSubunit, subunitToSats} from '../lib/utils/satoshis';
 
 // types
 interface ISettings {
@@ -130,21 +131,19 @@ export const settingsSlice = createSlice({
 });
 
 // selectors
-export const subunitSelector = createSelector(
+export const subunitToSatsSelector = createSelector(
   state => state.settings.subunit,
   subunit =>
-    memoize(satoshi => {
-      switch (subunit) {
-        case 0: // litecoin
-          return satoshi / 100000000;
-        case 1: // lites
-          return satoshi / 100000;
-        case 2: // photons
-          return satoshi / 100;
-        default:
-          // always default litecoin
-          return satoshi / 100000000;
-      }
+    memoize((satoshi: number) => {
+      return subunitToSats(satoshi, subunit);
+    }),
+);
+
+export const satsToSubunitSelector = createSelector(
+  state => state.settings.subunit,
+  subunit =>
+    memoize((satoshi: number) => {
+      return satsToSubunit(satoshi, subunit);
     }),
 );
 
@@ -161,6 +160,23 @@ export const subunitSymbolSelector = createSelector(
       default:
         // always default litecoin
         return 'Ł';
+    }
+  },
+);
+
+export const subunitCodeSelector = createSelector(
+  state => state.settings.subunit,
+  subunit => {
+    switch (subunit) {
+      case 0: // litecoin
+        return 'LTC';
+      case 1: // lites
+        return 'lites';
+      case 2: // photons
+        return 'photons';
+      default:
+        // always default litecoin
+        return 'LTC';
     }
   },
 );

@@ -5,7 +5,7 @@ import {useSelector} from 'react-redux';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import {
-  subunitSelector,
+  satsToSubunitSelector,
   subunitSymbolSelector,
   defaultExplorerSelector,
 } from '../../reducers/settings';
@@ -27,7 +27,7 @@ const TransactionDetailModal = props => {
   }
 
   /* eslint-disable react-hooks/rules-of-hooks */
-  const convertToSubunit = useSelector(state => subunitSelector(state));
+  const convertToSubunit = useSelector(state => satsToSubunitSelector(state));
   const cryptoAmount = convertToSubunit(transaction.amount);
   const amountSymbol = useSelector(state => subunitSymbolSelector(state));
   const explorerUrl = useSelector(state =>

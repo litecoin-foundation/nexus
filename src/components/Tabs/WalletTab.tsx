@@ -1,12 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Platform,
-  Pressable,
-  Image,
-} from 'react-native';
+import {View, Text, StyleSheet, Platform, Pressable, Image} from 'react-native';
 import PriceIndicatorButton from '../Buttons/PriceIndictorButton';
 import Animated, {
   useAnimatedStyle,
@@ -19,6 +12,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import InfoModal from '../Modals/InfoModal';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {subunitCodeSelector} from '../../reducers/settings';
 
 interface Props {
   colorStyle: string;
@@ -34,6 +28,8 @@ const WalletTab: React.FC<Props> = (props: Props) => {
     props;
   const dispatch = useAppDispatch();
 
+  const amountCode = useAppSelector(state => subunitCodeSelector(state));
+
   let isWhiteStyle = true;
   switch (colorStyle) {
     case 'White':
@@ -46,7 +42,8 @@ const WalletTab: React.FC<Props> = (props: Props) => {
       break;
   }
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, isWhiteStyle);
 
   const change: any = (priceRate / prevRate) * 100 - 100;
@@ -81,25 +78,20 @@ const WalletTab: React.FC<Props> = (props: Props) => {
 
   const balanceTextSizeStyle = {
     fontSize:
-      String(balance).length > 7
-        ? SCREEN_HEIGHT * 0.03
-        : SCREEN_HEIGHT * 0.04,
+      String(balance).length > 7 ? SCREEN_HEIGHT * 0.03 : SCREEN_HEIGHT * 0.04,
   };
 
   return (
     <View style={styles.walletTab}>
       <View style={styles.tabLeft}>
         <Text style={styles.tabLeftTitle}>{walletName}</Text>
-        <Text
-          style={[styles.tabLeftBalance, balanceTextSizeStyle]}>
-          {balance + ' LTC'}
+        <Text style={[styles.tabLeftBalance, balanceTextSizeStyle]}>
+          {balance + ' ' + amountCode}
         </Text>
         <View style={styles.tabLeftWorthContainer}>
           <Text style={styles.tabLeftWorth}>{fiatBalance}</Text>
           <PriceIndicatorButton value={Number(change)} />
-          <Text style={styles.tabLeftWorthChange}>
-            {changeText}
-          </Text>
+          <Text style={styles.tabLeftWorthChange}>{changeText}</Text>
         </View>
       </View>
       <Pressable
@@ -122,7 +114,11 @@ const WalletTab: React.FC<Props> = (props: Props) => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, isWhiteStyle?: boolean) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  isWhiteStyle?: boolean,
+) =>
   StyleSheet.create({
     walletTab: {
       height: screenHeight * 0.14,

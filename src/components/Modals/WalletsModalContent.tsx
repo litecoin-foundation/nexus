@@ -10,7 +10,7 @@ import Animated, {
 import WhiteButton from '../Buttons/WhiteButton';
 import WalletTab from '../Tabs/WalletTab';
 import {useAppSelector} from '../../store/hooks';
-import {subunitSelector} from '../../reducers/settings';
+import {satsToSubunitSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -31,7 +31,9 @@ export default function WalletsModalContent(props: Props) {
   const styles = getStyles(width, height);
 
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
-  const convertToSubunit = useAppSelector(state => subunitSelector(state));
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
   const balanceAmount = convertToSubunit(totalBalance);
 
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));

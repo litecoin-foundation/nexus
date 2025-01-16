@@ -14,7 +14,11 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import GreenButton from '../../components/Buttons/GreenButton';
 import ChooseWalletLargeButton from '../../components/Buttons/ChooseWalletLargeButton';
-import {subunitSymbolSelector} from '../../reducers/settings';
+import {
+  satsToSubunitSelector,
+  subunitCodeSelector,
+  subunitSymbolSelector,
+} from '../../reducers/settings';
 import {useAppSelector} from '../../store/hooks';
 
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -25,7 +29,11 @@ const ConfirmSend: React.FC<Props> = () => {
   const navigation = useNavigation();
 
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
+  const amountCode = useAppSelector(state => subunitCodeSelector(state));
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
 
   const amount = useAppSelector(state => state.input.send.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
@@ -34,6 +42,8 @@ const ConfirmSend: React.FC<Props> = () => {
   const fee = useAppSelector(state => state.input.send.fee);
   // Todo: get total fee for the tx
   const totalFeeInLTC = 'undefined ';
+
+  const amountInSubunit = convertToSubunit(amount);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -117,7 +127,10 @@ const ConfirmSend: React.FC<Props> = () => {
       <LinearGradient style={styles.background} colors={['#1162E6', '#0F55C7']}>
         <View style={styles.body}>
           <Text style={styles.sendText}>Send</Text>
-          <Text style={styles.amountText}>{amount + ' LTC'}</Text>
+          <Text>{String(amount)}</Text>
+          <Text style={styles.amountText}>
+            {amountInSubunit + ' ' + amountCode}
+          </Text>
           <View style={styles.fiatAmount}>
             <Text style={styles.fiatAmountText}>
               {currencySymbol + '' + fiatAmount}
@@ -129,8 +142,6 @@ const ConfirmSend: React.FC<Props> = () => {
           <Text style={styles.valueTitle}>
             {totalFeeInLTC + '' + amountSymbol}
           </Text>
-          <Text style={styles.valueSubtitle}>Will be delivered</Text>
-          <Text style={styles.valueTitle}>Within 3 minutes</Text>
         </View>
 
         <View style={styles.confirmButtonContainer}>

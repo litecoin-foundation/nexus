@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {View, Text, StyleSheet, Platform, SafeAreaView} from 'react-native';
 
 import {chartPercentageChangeSelector} from '../reducers/chart';
-import {subunitSelector} from '../reducers/settings';
+import {satsToSubunitSelector} from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
@@ -20,7 +20,8 @@ interface Props {
 const NewAmountView: React.FC<Props> = props => {
   const {children, animatedProps} = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const insets = useSafeAreaInsets();
@@ -35,7 +36,9 @@ const NewAmountView: React.FC<Props> = props => {
   );
 
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
-  const convertToSubunit = useAppSelector(state => subunitSelector(state));
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
   const subunitAmount = convertToSubunit(totalBalance);
 
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));

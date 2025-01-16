@@ -3,7 +3,7 @@ import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
 
 import {useAppSelector} from '../../store/hooks';
 import {
-  subunitSelector,
+  satsToSubunitSelector,
   subunitSymbolSelector,
   currencySymbolSelector,
 } from '../../reducers/settings';
@@ -77,7 +77,9 @@ const TransactionCell: React.FC<Props> = props => {
     amountColor,
   );
 
-  const convertToSubunit = useAppSelector(state => subunitSelector(state));
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const currencySymbol = useAppSelector(state => currencySymbolSelector(state));
   const cryptoAmount = convertToSubunit(amount);

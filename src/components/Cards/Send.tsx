@@ -24,6 +24,7 @@ import {showError} from '../../reducers/errors';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 import {resetInputs} from '../../reducers/input';
+import {subunitToSatsSelector} from '../../reducers/settings';
 
 type RootStackParamList = {
   Main: {
@@ -41,6 +42,7 @@ const Send: React.FC<Props> = props => {
   const navigation = useNavigation();
   const {route} = props;
 
+  const convertToSats = useAppSelector(state => subunitToSatsSelector(state));
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const confirmedBalance = useAppSelector(
@@ -63,7 +65,14 @@ const Send: React.FC<Props> = props => {
   useEffect(() => {
     const check = async () => {
       // check user balance
-      if (Number(amount) > Number(confirmedBalance)) {
+      if (!amount) {
+        setSendDisabled(true);
+        return;
+      }
+
+      const amountInSats = convertToSats(Number(amount));
+
+      if (amountInSats > Number(confirmedBalance)) {
         setSendDisabled(true);
         return;
       }
@@ -101,7 +110,7 @@ const Send: React.FC<Props> = props => {
 
   const handleScanCallback = async data => {
     try {
-      await validate(data);
+      await validateQR(data);
     } catch (error) {
       dispatch(showError('Invalid Litecoin Address in QR Code'));
       return;
@@ -109,7 +118,7 @@ const Send: React.FC<Props> = props => {
   };
 
   // validates data before sending!
-  const validate = async data => {
+  const validateQR = async data => {
     try {
       // handle BIP21 litecoin URI
       if (data.startsWith('litecoin:')) {
@@ -123,8 +132,9 @@ const Send: React.FC<Props> = props => {
 
         // If additional data included, set amount/address
         if (decoded.options.amount) {
-          // setAmount(decoded.options.amount);
-          dispatch(updateSendAmount(decoded.options.amount));
+          // BIP21 uses decimal Litecoin subunit
+          // convert Litecoin to Sats
+          dispatch(updateSendAmount(decoded.options.amount * 100000000));
         }
         if (decoded.options.message) {
           setDescription(decoded.options.message);
@@ -204,7 +214,8 @@ const Send: React.FC<Props> = props => {
   };
 
   const handleSend = () => {
-    dispatch(updateSendAmount(Number(amount)));
+    const amountInSats = convertToSats(Number(amount));
+    dispatch(updateSendAmount(amountInSats));
     dispatch(updateSendAddress(address));
     // dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
@@ -225,7 +236,7 @@ const Send: React.FC<Props> = props => {
       <View style={styles.amountContainer}>
         <Text style={styles.subtitleText}>AMOUNT</Text>
         <AmountPicker
-          amount={Number(amount)}
+          amount={convertToSats(Number(amount))}
           fiatAmount={fiatAmount}
           active={amountPickerActive}
           handlePress={() => {

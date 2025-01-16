@@ -8,7 +8,10 @@ import VerticalTableCell from '../Cells/VerticalTableCell';
 import BlueButton from '../Buttons/BlueButton';
 import {useAppSelector} from '../../store/hooks';
 import {fiatValueSelector} from '../../reducers/ticker';
-import {subunitSelector, subunitSymbolSelector} from '../../reducers/settings';
+import {
+  satsToSubunitSelector,
+  subunitSymbolSelector,
+} from '../../reducers/settings';
 
 interface Props {
   handleConfirm(): void;
@@ -23,7 +26,9 @@ const SendModal: React.FC<Props> = props => {
   const {handleConfirm, close, isVisible, amount, address, memo} = props;
 
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
-  const convertToSubunit = useAppSelector(state => subunitSelector(state));
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
   const subunitAmount = convertToSubunit(amount);
   const subunitSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const fiatAmount = calculateFiatAmount(amount);

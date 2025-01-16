@@ -23,7 +23,7 @@ const AddressField: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const lineHeight = SCREEN_HEIGHT * 0.033;
-  const fontLineHeight = SCREEN_HEIGHT * 0.022;
+  const fontLineHeight = SCREEN_HEIGHT * 0.026;
 
   useEffect(() => {
     hiddenTextRef.current = address;

@@ -1,5 +1,6 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {AppThunk} from './types';
+import {satsToSubunit, subunitToSats} from '../lib/utils/satoshis';
 
 // types
 interface IInputState {
@@ -57,6 +58,12 @@ export const updateFiatAmount =
 const handleFiatConversion =
   (amount: string, type: InputType): AppThunk =>
   (dispatch, getState) => {
+    // subunit to sats
+    // sats -> litecoin
+    const subunit = getState().settings.subunit;
+    const satoshis = subunitToSats(Number(amount), subunit);
+    const litecoin = satoshis / 100000000;
+
     if (type === 'buy') {
       const rate = getState().ticker.buyRate;
       const fiatAmount = rate
@@ -71,9 +78,7 @@ const handleFiatConversion =
       dispatch(updateFiatAmountAction(fiatAmount));
     } else if (type === 'ltc') {
       const rate = getState().ticker.ltcRate;
-      const fiatAmount = rate
-        ? `${(parseFloat(amount) * rate).toFixed(2)}`
-        : '0';
+      const fiatAmount = rate ? (litecoin * rate).toFixed(2) : '0';
       dispatch(updateFiatAmountAction(fiatAmount));
     }
   };
@@ -81,27 +86,27 @@ const handleFiatConversion =
 const handleAmountConversion =
   (fiatAmount: string, type: InputType): AppThunk =>
   (dispatch, getState) => {
+    const subunit = getState().settings.subunit;
     if (type === 'buy') {
       const rate = getState().ticker.buyRate;
       const amount = rate
         ? `${(parseFloat(fiatAmount) / rate).toFixed(4)}`
         : '0';
       dispatch(updateAmountAction(amount));
-      dispatch(updateFiatAmountAction(fiatAmount));
     } else if (type === 'sell') {
       const rate = getState().ticker.sellRate;
       const amount = rate
         ? `${(parseFloat(fiatAmount) / rate).toFixed(4)}`
         : '0';
       dispatch(updateAmountAction(amount));
-      dispatch(updateFiatAmountAction(fiatAmount));
     } else if (type === 'ltc') {
       const rate = getState().ticker.ltcRate;
-      const amount = rate
-        ? `${(parseFloat(fiatAmount) / rate).toFixed(4)}`
-        : '0';
-      dispatch(updateAmountAction(amount));
-      dispatch(updateFiatAmountAction(fiatAmount));
+      const amount = rate ? parseFloat(fiatAmount) / rate : 0;
+
+      // convert litecoin to correct subunit
+      const amountInSats = amount * 100000000;
+      const amountInSubunit = satsToSubunit(amountInSats, subunit);
+      dispatch(updateAmountAction(amountInSubunit.toFixed(4)));
     }
   };
 

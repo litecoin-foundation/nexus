@@ -10,7 +10,7 @@ import Animated, {
 import WhiteClearButton from '../Buttons/WhiteClearButton';
 import WalletTabSimple from '../Tabs/WalletTabSimple';
 import {useAppSelector} from '../../store/hooks';
-import {subunitSelector} from '../../reducers/settings';
+import {satsToSubunitSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
 
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -23,14 +23,15 @@ interface Props {
 }
 
 export default function WalletsInblockContent(props: Props) {
-  const {isOpened, animDelay, animDuration, close} =
-    props;
+  const {isOpened, animDelay, animDuration, close} = props;
 
-  const { width, height } = useContext(ScreenSizeContext);
+  const {width, height} = useContext(ScreenSizeContext);
   const styles = getStyles(width, height);
 
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
-  const convertToSubunit = useAppSelector(state => subunitSelector(state));
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
   const balanceAmount = convertToSubunit(totalBalance);
 
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
@@ -87,17 +88,10 @@ export default function WalletsInblockContent(props: Props) {
 
   return isOpened ? (
     <Animated.View
-      style={[
-        styles.body,
-        {backgroundColor: onlineOfflineBgColor},
-      ]}>
+      style={[styles.body, {backgroundColor: onlineOfflineBgColor}]}>
       <View style={styles.bodyItems}>{wallets}</View>
       <Animated.View style={animatedButton}>
-        <WhiteClearButton
-          small={true}
-          value="Close"
-          onPress={() => close()}
-        />
+        <WhiteClearButton small={true} value="Close" onPress={() => close()} />
       </Animated.View>
     </Animated.View>
   ) : (

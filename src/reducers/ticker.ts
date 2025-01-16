@@ -10,13 +10,17 @@ type IRates = {
   [key: string]: string;
 };
 
-interface ITicker {}
+interface ITicker {
+  ltcRate: number;
+  buyRate: number;
+  sellRate: number;
+}
 
 // initial state
 const initialState = {
-  ltcRate: null,
-  buyRate: null,
-  sellRate: null,
+  ltcRate: 0,
+  buyRate: 0,
+  sellRate: 0,
   rates: [],
   day: [],
   week: [],
@@ -103,7 +107,7 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
     } catch (error) {
       console.warn(error);
     }
-  });
+  }, 15000);
 };
 
 const fetchHistoricalRates = async (interval: string): Promise<any[]> => {

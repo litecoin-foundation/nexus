@@ -18,6 +18,7 @@ enum AddressType {
   p2wpkh = 'p2wpkh',
   p2wsh = 'p2wsh',
   p2tr = 'p2tr',
+  mweb = 'mweb',
 }
 
 type AddressInfo = {
@@ -95,16 +96,60 @@ const parseBech32 = (address: string): AddressInfo => {
   };
 };
 
+const parseMweb = (address: string): AddressInfo => {
+  let decoded;
+
+  try {
+    decoded = bech32.decode(address, 121);
+  } catch (error) {
+    throw new Error('Invalid address');
+  }
+
+  const mapPrefixToNetwork: {[key: string]: Network} = {
+    ltcmweb: Network.mainnet,
+    tmweb: Network.testnet,
+    rmweb: Network.regtest,
+  };
+
+  const network: Network = mapPrefixToNetwork[decoded.prefix];
+
+  if (network === undefined) {
+    throw new Error('Invalid address');
+  }
+
+  const data = bech32.fromWords(decoded.words.slice(1));
+  if (data.length !== 66) {
+    throw new Error('Invalid address');
+  }
+
+  return {
+    bech32: true,
+    network,
+    address,
+    type: AddressType.mweb,
+  };
+};
+
 const getAddressInfo = (address: string): AddressInfo => {
   let decoded: Uint8Array;
-  const prefix = address.substring(0, 4).toLowerCase();
 
+  // check and handle bech32 address
+  const prefix = address.substring(0, 4).toLowerCase();
   if (prefix === 'ltc1' || prefix === 'tltc') {
     if (address.length === 33 || 34) {
       return parseBech32(address);
+    } else {
+      throw new Error('Invalid bech32 address');
     }
   }
 
+  // check and handle mweb address
+  const mwebPrefix = address.substring(0, 6).toLowerCase();
+  if (mwebPrefix === 'ltcmwe' || mwebPrefix === 'tmweb1') {
+    return parseMweb(address);
+  }
+
+  // else handle base58 addresses
   try {
     decoded = base58_to_binary(address);
   } catch (error) {

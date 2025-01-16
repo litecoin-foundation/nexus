@@ -19,7 +19,7 @@ import {v4 as uuidv4} from 'uuid';
 import {formatTxDate} from '../../lib/utils/date';
 import {IDisplayedTx} from '../../reducers/transaction';
 import {
-  subunitSelector,
+  satsToSubunitSelector,
   subunitSymbolSelector,
   defaultExplorerSelector,
   mwebDefaultExplorerSelector,
@@ -139,7 +139,7 @@ export default function TxDetailModalContent(props: Props) {
   }.current();
 
   /* eslint-disable react-hooks/rules-of-hooks */
-  const convertToSubunit = useSelector(state => subunitSelector(state));
+  const convertToSubunit = useSelector(state => satsToSubunitSelector(state));
   const cryptoAmount = convertToSubunit(transaction.amount);
   const amountSymbol = useSelector(state => subunitSymbolSelector(state));
   const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
