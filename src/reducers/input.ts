@@ -9,8 +9,8 @@ interface IInputState {
   send: {
     toAddress: string;
     label: string;
-    amount: Number;
-    fee: Number | null;
+    amount: number;
+    fee: number | null;
   };
 }
 
@@ -33,11 +33,12 @@ const updateAmountAction = createAction<string>('input/updateAmountAction');
 const updateFiatAmountAction = createAction<string>(
   'input/updateFiatAmountAction',
 );
-export const updateSendAmount = createAction<Number>('input/updateSendAmount');
+export const updateSendAmount = createAction<number>('input/updateSendAmount');
 export const updateSendAddress = createAction<string>(
   'input/updateSendAddress',
 );
-// const updateSendFeeAction = createAction<Number>('input/updateFeeAction');
+export const updateSendLabel = createAction<string>('input/updateSendLabel');
+// const updateSendFeeAction = createAction<number>('input/updateFeeAction');
 export const resetInputs = createAction('input/resetInputs');
 
 // functions
@@ -110,10 +111,6 @@ const handleAmountConversion =
     }
   };
 
-export const updateSendLabel =
-  (label: string): AppThunk =>
-  dispatch => {};
-
 // slice
 export const inputSlice = createSlice({
   name: 'input',
@@ -143,6 +140,9 @@ export const inputSlice = createSlice({
     },
     updateSendAddress(state, action: PayloadAction<string>) {
       state.send.toAddress = action.payload;
+    },
+    updateSendLabel(state, action: PayloadAction<string>) {
+      state.send.label = action.payload;
     },
   },
 });

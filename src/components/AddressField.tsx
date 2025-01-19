@@ -13,10 +13,13 @@ interface Props {
   onScanPress: () => void;
   onChangeText: (text: string) => void;
   validateAddress: (text: string) => void;
+  onFocus: () => void;
+  onBlur: () => void;
 }
 
 const AddressField: React.FC<Props> = props => {
-  const {address, onScanPress, onChangeText, validateAddress} = props;
+  const {address, onScanPress, onChangeText, validateAddress, onFocus, onBlur} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -105,6 +108,8 @@ const AddressField: React.FC<Props> = props => {
         scrollEnabled={false}
         maxLength={121}
         onEndEditing={e => validateAddress(e.nativeEvent.text)}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
 
       <Pressable

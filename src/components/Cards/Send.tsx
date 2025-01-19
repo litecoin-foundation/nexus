@@ -1,5 +1,5 @@
-import React, {useEffect, useState, useContext} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React, {useEffect, useState, useContext, useRef} from 'react';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 
 import InputField from '../InputField';
@@ -41,6 +41,8 @@ const Send: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
   const {route} = props;
+
+  const scrollViewRef = useRef<ScrollView | null>(null);
 
   const convertToSats = useAppSelector(state => subunitToSatsSelector(state));
   const amount = useAppSelector(state => state.input.amount);
@@ -217,7 +219,7 @@ const Send: React.FC<Props> = props => {
     const amountInSats = convertToSats(Number(amount));
     dispatch(updateSendAmount(amountInSats));
     dispatch(updateSendAddress(address));
-    // dispatch(updateSendLabel(description));
+    dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
     //
     navigation.navigate('ConfirmSend');
@@ -229,60 +231,79 @@ const Send: React.FC<Props> = props => {
     };
   }, [dispatch]);
 
+  const scrollToInput = (y: number) => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({y, animated: true});
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.titleText}>Send LTC</Text>
+      <ScrollView
+        scrollEnabled={false}
+        ref={scrollViewRef}
+        contentContainerStyle={styles.scrollViewContent}>
+        <Text style={styles.titleText}>Send LTC</Text>
 
-      <View style={styles.amountContainer}>
-        <Text style={styles.subtitleText}>AMOUNT</Text>
-        <AmountPicker
-          amount={convertToSats(Number(amount))}
-          fiatAmount={fiatAmount}
-          active={amountPickerActive}
-          handlePress={() => {
-            detailsOpacity.value = withTiming(0, {duration: 200});
-            setAmountPickerActive(true);
-          }}
-          handleToggle={() => setToggleLTC(!toggleLTC)}
-        />
-      </View>
+        <View style={styles.amountContainer}>
+          <Text style={styles.subtitleText}>AMOUNT</Text>
+          <AmountPicker
+            amount={convertToSats(Number(amount))}
+            fiatAmount={fiatAmount}
+            active={amountPickerActive}
+            handlePress={() => {
+              detailsOpacity.value = withTiming(0, {duration: 200});
+              setAmountPickerActive(true);
+            }}
+            handleToggle={() => setToggleLTC(!toggleLTC)}
+          />
+        </View>
+
+        {amountPickerActive ? null : (
+          <Animated.View
+            style={{...styles.subContainer, opacity: detailsOpacity}}>
+            <View style={styles.cellContainer}>
+              <Text style={styles.subtitleText}>
+                SEND TO ADDRESS{' '}
+                {!addressValid && addressValid !== null ? '(IS INVALID)' : null}
+              </Text>
+              <View style={styles.inputFieldContainer}>
+                <AddressField
+                  address={address}
+                  onChangeText={setAddress}
+                  onScanPress={handleScan}
+                  validateAddress={endAddress => validateAddress(endAddress)}
+                  onBlur={() => scrollToInput(0)}
+                  onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.13)}
+                />
+              </View>
+            </View>
+
+            <View style={styles.cellContainer}>
+              <Text style={styles.subtitleText}>DESCRIPTION</Text>
+              <View style={styles.inputFieldContainer}>
+                <InputField
+                  value={description}
+                  onChangeText={text => setDescription(text)}
+                  onBlur={() => scrollToInput(0)}
+                  onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
+                />
+              </View>
+            </View>
+          </Animated.View>
+        )}
+      </ScrollView>
 
       {amountPickerActive ? null : (
-        <Animated.View
-          style={{...styles.subContainer, opacity: detailsOpacity}}>
-          <View style={styles.cellContainer}>
-            <Text style={styles.subtitleText}>
-              SEND TO ADDRESS{' '}
-              {!addressValid && addressValid !== null ? '(IS INVALID)' : null}
-            </Text>
-            <View style={styles.inputFieldContainer}>
-              <AddressField
-                address={address}
-                onChangeText={setAddress}
-                onScanPress={handleScan}
-                validateAddress={endAddress => validateAddress(endAddress)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.cellContainer}>
-            <Text style={styles.subtitleText}>DESCRIPTION</Text>
-            <View style={styles.inputFieldContainer}>
-              <InputField
-                value={description}
-                onChangeText={text => setDescription(text)}
-              />
-            </View>
-          </View>
-
+        <Animated.View style={{opacity: detailsOpacity}}>
           <View style={styles.bottomBtnsContainer}>
             <View style={styles.bottomBtns}>
               {/* <View style={styles.greenBtnContainer}>
-                <GreenButton
-                  value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
-                  onPress={() => console.log('pressed fee')}
-                />
-              </View> */}
+          <GreenButton
+            value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
+            onPress={() => console.log('pressed fee')}
+          />
+        </View> */}
               <View style={styles.blueBtnContainer}>
                 <BlueButton
                   value={`Send ${amount} LTC`}
@@ -328,6 +349,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
     },
+    scrollViewContent: {
+      minHeight: screenHeight,
+    },
     subContainer: {
       flex: 1,
     },
@@ -365,7 +389,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
       flexDirection: 'column',
       justifyContent: 'flex-end',
-      paddingBottom: screenHeight * 0.03,
+      paddingBottom: screenHeight * 0.1,
     },
     bottomBtns: {
       width: '100%',

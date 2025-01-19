@@ -1,6 +1,6 @@
 import React, {useState, useContext, useRef} from 'react';
-import {useNavigation} from '@react-navigation/native';
-import {Alert, DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
+import {DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -19,14 +19,25 @@ import {
   subunitCodeSelector,
   subunitSymbolSelector,
 } from '../../reducers/settings';
-import {useAppSelector} from '../../store/hooks';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {sendOnchainPayment} from '../../reducers/transaction';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+type RootStackParamList = {
+  ConfirmSend: undefined;
+  SuccessSend: {
+    txid: string;
+  };
+};
+
+interface Props {
+  route: RouteProp<RootStackParamList, 'ConfirmSend'>;
+}
 
 const ConfirmSend: React.FC<Props> = () => {
   const navigation = useNavigation();
+  const dispatch = useAppDispatch();
 
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const amountCode = useAppSelector(state => subunitCodeSelector(state));
@@ -74,21 +85,17 @@ const ConfirmSend: React.FC<Props> = () => {
     });
   };
 
-  const handleSend = () => {
-    handleAuthenticationRequired('send-auth')
-      .then(() => {
-        console.log('successfully authentication, handle sending');
-        navigation.navigate('SuccessSend');
-      })
-      .catch(() =>
-        Alert.alert('Incorrect Pincode', undefined, [
-          {
-            text: 'Dismiss',
-            onPress: () => setIsPinModalOpened(false),
-            style: 'cancel',
-          },
-        ]),
+  const handleSend = async () => {
+    try {
+      // await is required!
+      const txid = await dispatch(
+        sendOnchainPayment(toAddress, amount, label ? 'label' : label),
       );
+      console.log(txid);
+      navigation.navigate('SuccessSend', {txid});
+    } catch (error) {
+      // send failed
+    }
   };
 
   // animation
@@ -127,7 +134,6 @@ const ConfirmSend: React.FC<Props> = () => {
       <LinearGradient style={styles.background} colors={['#1162E6', '#0F55C7']}>
         <View style={styles.body}>
           <Text style={styles.sendText}>Send</Text>
-          <Text>{String(amount)}</Text>
           <Text style={styles.amountText}>
             {amountInSubunit + ' ' + amountCode}
           </Text>
@@ -145,7 +151,10 @@ const ConfirmSend: React.FC<Props> = () => {
         </View>
 
         <View style={styles.confirmButtonContainer}>
-          <GreenButton value="Confirm and Send" onPress={() => handleSend()} />
+          <GreenButton
+            value="Confirm and Send"
+            onPress={() => handleAuthenticationRequired('send-auth')}
+          />
         </View>
       </LinearGradient>
 
@@ -163,11 +172,10 @@ const ConfirmSend: React.FC<Props> = () => {
             cardTranslateAnim={cardTranslateAnim}
             close={() => setIsPinModalOpened(false)}
             handleValidationFailure={() =>
-              DeviceEventEmitter.emit(pinModalAction.current, false)
+              // TODO: handle pin failure
+              console.log('incorrect pin')
             }
-            handleValidationSuccess={() =>
-              DeviceEventEmitter.emit(pinModalAction.current, true)
-            }
+            handleValidationSuccess={() => handleSend()}
           />
         )}
       />

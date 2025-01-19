@@ -7,10 +7,12 @@ interface Props {
   value: string;
   placeholder?: string;
   onChangeText: (text: string) => void;
+  onFocus: () => void;
+  onBlur: () => void;
 }
 
 const InputField: React.FC<Props> = props => {
-  const {value, onChangeText, placeholder} = props;
+  const {value, onChangeText, placeholder, onFocus, onBlur} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -26,6 +28,8 @@ const InputField: React.FC<Props> = props => {
         value={value}
         autoCorrect={false}
         autoComplete="off"
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
     </View>
   );

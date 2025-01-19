@@ -6,7 +6,7 @@ const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
 
 // types
 interface IBuy {
-  quote: 'string' | null;
+  quote: any;
   buyHistory: any[];
   sellHistory: any[];
   isBuyAllowed: boolean | null;

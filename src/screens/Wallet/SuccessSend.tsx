@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -9,7 +9,15 @@ import {useAppSelector} from '../../store/hooks';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+type RootStackParamList = {
+  SuccessSend: {
+    txid: string;
+  };
+};
+
+interface Props {
+  route: RouteProp<RootStackParamList, 'SuccessSend'>;
+}
 
 const SuccessSend: React.FC<Props> = () => {
   const navigation = useNavigation();

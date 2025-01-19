@@ -312,7 +312,7 @@ export const sendOnchainPayment =
     amount: number,
     label: string | undefined = undefined,
     fee: number | undefined = undefined,
-  ): AppThunk =>
+  ): AppThunk<Promise<string>> =>
   (dispatch, getState) => {
     return new Promise(async (resolve, reject) => {
       try {

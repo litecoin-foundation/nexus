@@ -198,8 +198,11 @@ const Main: React.FC<Props> = props => {
         // setAddress(decoded.address);
 
         return;
+      } else {
+        dispatch(unsetDeeplink());
       }
     } catch (error) {
+      dispatch(unsetDeeplink());
       throw new Error(String(error));
     }
   };
