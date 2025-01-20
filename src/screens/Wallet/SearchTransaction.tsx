@@ -1,10 +1,16 @@
-import React, {useRef, useState, useContext} from 'react';
-import {StyleSheet, Text, View, Pressable} from 'react-native';
+import React, {useMemo, useRef, useState, useContext} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
+
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import TransactionDetailModal from '../../components/Modals/TransactionDetailModal';
 import TransactionList from '../../components/TransactionList';
+import DropDownButton from '../../components/Buttons/DropDownButton';
 import FilterButton from '../../components/Buttons/FilterButton';
 import SearchBar from '../../components/SearchBar';
+import PlasmaModal from '../../components/Modals/PlasmaModal';
+import TxDetailModalContent from '../../components/Modals/TxDetailModalContent';
+
+import {useAppSelector} from '../../store/hooks';
+import {txDetailSelector} from '../../reducers/transaction';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -22,8 +28,9 @@ const SearchTransaction: React.FC<Props> = props => {
   const TransactionListRef = useRef();
 
   const [txType, setTxType] = useState('All');
-  const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
-  const [selectedTransaction, selectTransaction] = useState(null);
+  // const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
+  const [selectedTransaction, selectTransaction] = useState<any>({});
+  const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
 
   const filters = [
     {value: 'All', imgSrc: require('../../assets/icons/blue-tick-oval.png')},
@@ -50,18 +57,38 @@ const SearchTransaction: React.FC<Props> = props => {
   });
 
   const [searchFilter, setSearchFilter] = useState('');
-  const [mwebFilter, setMwebFilter] = useState(false);
+  const [txPrivacyTypeFilter, setTxPrivacyTypeFilter] = useState('All');
+  const txPrivacyTypes = ['All', 'Regular', 'MWEB'];
+
+  const rightHeaderButton = useMemo(
+    () => (
+      <View style={styles.dropDownContainer}>
+        <DropDownButton
+          initial={txPrivacyTypeFilter}
+          options={txPrivacyTypes}
+          chooseOptionCallback={(option: string) =>
+            setTxPrivacyTypeFilter(option)
+          }
+          cellHeight={SCREEN_HEIGHT * 0.035}
+        />
+      </View>
+    ),
+    /* eslint-disable react-hooks/exhaustive-deps */
+    [],
+  );
+
+  navigation.setOptions({
+    headerRight: () => rightHeaderButton,
+  });
+
+  const transactions = useAppSelector(state => txDetailSelector(state));
+  function setTransactionIndex(newTxIndex: number) {
+    selectTransaction(transactions[newTxIndex]);
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.filters}>
-        <Pressable
-          style={styles.mwebFilterBtn}
-          onPress={() => setMwebFilter(!mwebFilter)}>
-          <Text style={styles.mwebFilterBtnText}>
-            {mwebFilter ? 'MWEB' : 'Regular'}
-          </Text>
-        </Pressable>
         <View style={styles.search}>
           <SearchBar
             value={searchFilter}
@@ -79,21 +106,50 @@ const SearchTransaction: React.FC<Props> = props => {
           headerBackgroundColor="white"
           onPress={(data: any) => {
             selectTransaction(data);
-            setTxDetailModalVisible(true);
+            setTxDetailModalOpened(true);
           }}
           transactionType={txType}
           searchFilter={searchFilter}
-          mwebFilter={mwebFilter}
+          txPrivacyTypeFilter={txPrivacyTypeFilter}
         />
       </View>
 
-      <TransactionDetailModal
+      <PlasmaModal
+        isOpened={isTxDetailModalOpened}
         close={() => {
-          setTxDetailModalVisible(false);
+          setTxDetailModalOpened(false);
         }}
-        isVisible={isTxDetailModalVisible}
-        transaction={selectedTransaction}
-        navigate={navigation.navigate}
+        isFromBottomToTop={true}
+        isSwiperActive={false ? true : false}
+        animDuration={250}
+        gapInPixels={SCREEN_HEIGHT * 0.27}
+        backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
+        gapSpecifiedStyle={{backgroundColor: 'transparent'}}
+        renderBody={(
+          _,
+          __,
+          ___,
+          ____,
+          cardTranslateAnim: any,
+          cardOpacityAnim: any,
+          prevNextCardOpacityAnim: any,
+          paginationOpacityAnim: any,
+        ) => (
+          <TxDetailModalContent
+            close={() => {
+              setTxDetailModalOpened(false);
+            }}
+            transaction={selectedTransaction}
+            // txsNum={transactions.length}
+            setTransactionIndex={(txIndex: number) => {
+              setTransactionIndex(txIndex);
+            }}
+            cardTranslateAnim={cardTranslateAnim}
+            cardOpacityAnim={cardOpacityAnim}
+            prevNextCardOpacityAnim={prevNextCardOpacityAnim}
+            paginationOpacityAnim={paginationOpacityAnim}
+          />
+        )}
       />
     </View>
   );
@@ -113,6 +169,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
     },
+    dropDownContainer: {
+      width: screenWidth * 0.35,
+      height: screenHeight * 0.035,
+      marginRight: screenWidth * 0.04 - 1,
+    },
     mwebFilterBtn: {
       width: screenWidth * 0.35,
       height: screenHeight * 0.035,
@@ -123,7 +184,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       alignSelf: 'flex-end',
       marginHorizontal: screenWidth * 0.04,
-      marginBottom: screenHeight * 0.011,
     },
     mwebFilterBtnText: {
       color: '#fff',

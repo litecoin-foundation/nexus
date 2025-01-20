@@ -21,9 +21,9 @@ import {
 
 import TransactionCell from './Cells/TransactionCell';
 import TransactionListEmpty from './TransactionListEmpty';
-import {getTransactions, IDisplayedTx} from '../reducers/transaction';
-import {useAppDispatch, useAppSelector} from '../store/hooks';
 
+import {useAppDispatch, useAppSelector} from '../store/hooks';
+import {getTransactions, IDisplayedTx} from '../reducers/transaction';
 import {txDetailSelector} from '../reducers/transaction';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 
@@ -37,6 +37,7 @@ interface Props {
   transactionType?: string;
   searchFilter?: string;
   mwebFilter?: boolean;
+  txPrivacyTypeFilter: string;
   headerBackgroundColor: string;
 }
 
@@ -77,6 +78,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     transactionType,
     searchFilter,
     mwebFilter,
+    txPrivacyTypeFilter,
     headerBackgroundColor,
   } = props;
 
@@ -100,22 +102,16 @@ const TransactionList = forwardRef((props: Props, ref) => {
   //   setDisplayedTxs(groupTransactions(transactions));
   // }, [transactions]);
 
-  const filterTransactions = (
-    transactionTypeProp: string | undefined,
-    searchFilterProp: string | undefined,
-    mwebFilterProp: boolean | undefined,
-  ) => {
+  const filterTransactions = () => {
     const txArray = [];
 
-    switch (transactionTypeProp) {
+    switch (transactionType) {
       case 'Buy':
       case 'Sell':
       case 'Send':
       case 'Receive':
         txArray.push(
-          ...transactions.filter(
-            (tx: any) => tx.metaLabel === transactionTypeProp,
-          ),
+          ...transactions.filter((tx: any) => tx.metaLabel === transactionType),
         );
         break;
       case 'All':
@@ -126,30 +122,53 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
     let txArrayFiltered = txArray;
 
-    if (searchFilterProp) {
+    if (searchFilter) {
       txArrayFiltered = txArrayFiltered.filter(
-        (tx: any) => tx.label.indexOf(searchFilterProp) > -1,
+        (tx: any) => tx.label.indexOf(searchFilter) > -1,
       );
     }
 
-    if (mwebFilterProp === undefined) {
-    } else if (mwebFilterProp) {
+    if (mwebFilter === undefined) {
+    } else if (mwebFilter) {
       txArrayFiltered = txArrayFiltered.filter(
-        (tx: any) => tx.addresses[0].substring(0, 7) === 'ltcmweb',
+        (tx: any) => tx.addresses[0]?.substring(0, 7) === 'ltcmweb',
       );
     } else {
       txArrayFiltered = txArrayFiltered.filter(
-        (tx: any) => tx.addresses[0].substring(0, 7) !== 'ltcmweb',
+        (tx: any) => tx.addresses[0]?.substring(0, 7) !== 'ltcmweb',
       );
+    }
+
+    switch (txPrivacyTypeFilter) {
+      case 'All':
+        break;
+      case 'Regular':
+        txArrayFiltered = txArrayFiltered.filter(
+          (tx: any) => tx.addresses[0]?.substring(0, 7) !== 'ltcmweb',
+        );
+        break;
+      case 'MWEB':
+        txArrayFiltered = txArrayFiltered.filter(
+          (tx: any) => tx.addresses[0]?.substring(0, 7) === 'ltcmweb',
+        );
+        break;
+      default:
+        break;
     }
 
     setDisplayedTxs(groupTransactions(txArrayFiltered));
   };
 
   useEffect(() => {
-    filterTransactions(transactionType, searchFilter, mwebFilter);
+    filterTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactions, transactionType, searchFilter, mwebFilter]);
+  }, [
+    transactions,
+    transactionType,
+    searchFilter,
+    mwebFilter,
+    txPrivacyTypeFilter,
+  ]);
 
   const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
     item,
