@@ -89,12 +89,15 @@ const ConfirmSend: React.FC<Props> = () => {
     try {
       // await is required!
       const txid = await dispatch(
-        sendOnchainPayment(toAddress, amount, label ? 'label' : label),
+        sendOnchainPayment(
+          toAddress,
+          Math.trunc(amount),
+          label ? 'label' : label,
+        ),
       );
-      console.log(txid);
       navigation.navigate('SuccessSend', {txid});
     } catch (error) {
-      // send failed
+      throw new Error(String(error));
     }
   };
 
