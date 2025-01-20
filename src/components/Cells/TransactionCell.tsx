@@ -26,7 +26,9 @@ const TransactionCell: React.FC<Props> = props => {
 
   const {time, amount, metaLabel, priceOnDateMeta} = item;
 
-  const {name, txIcon, amountColor, mathSign} = {
+  const mathSign = Math.sign(parseFloat(String(amount))) === -1 ? '-' : '';
+
+  const {name, txIcon, amountColor} = {
     current: function () {
       switch (metaLabel) {
         case 'Send':
@@ -34,35 +36,30 @@ const TransactionCell: React.FC<Props> = props => {
             name: 'Sent Litecoin',
             txIcon: require('../../assets/icons/sendtx.png'),
             amountColor: '#212124',
-            mathSign: '-',
           };
         case 'Receive':
           return {
             name: 'Received Litecoin',
             txIcon: require('../../assets/icons/receivetx.png'),
             amountColor: '#1162E6',
-            mathSign: '+',
           };
         case 'Buy':
           return {
             name: 'Purchased Litecoin',
             txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
-            mathSign: '+',
           };
         case 'Sell':
           return {
             name: 'Spent Litecoin',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
-            mathSign: '-',
           };
         default:
           return {
             name: 'Unknown Status',
             txIcon: null,
             amountColor: '#212124',
-            mathSign: '',
           };
       }
     },
@@ -91,6 +88,7 @@ const TransactionCell: React.FC<Props> = props => {
   const amountInFiatOnDate = parseFloat(
     String(priceOnDateInLocalFiat * (amount / 100000000)),
   ).toFixed(2);
+  const amountInFiatOnDateAbsVal = Math.abs(Number(amountInFiatOnDate));
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -107,7 +105,7 @@ const TransactionCell: React.FC<Props> = props => {
           {amountSymbol}
         </Text>
         <Text style={styles.fiatText}>
-          {`${mathSign}${currencySymbol}${amountInFiatOnDate}`}
+          {`${mathSign}${currencySymbol}${amountInFiatOnDateAbsVal}`}
         </Text>
       </View>
     </TouchableOpacity>

@@ -13,10 +13,15 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {useNavigation} from '@react-navigation/native';
-import {useSelector} from 'react-redux';
 import {v4 as uuidv4} from 'uuid';
 
+import GreyRoundButton from '../Buttons/GreyRoundButton';
+import TableCell from '../Cells/TableCell';
+import BlueButton from '../Buttons/BlueButton';
+import GreenButton from '../Buttons/GreenButton';
 import {formatTxDate} from '../../lib/utils/date';
+
+import {useAppSelector} from '../../store/hooks';
 import {IDisplayedTx} from '../../reducers/transaction';
 import {
   satsToSubunitSelector,
@@ -24,24 +29,21 @@ import {
   defaultExplorerSelector,
   mwebDefaultExplorerSelector,
   getCurrencySymbol,
+  currencySymbolSelector,
 } from '../../reducers/settings';
-import {fiatValueSelector} from '../../reducers/ticker';
-import GreyRoundButton from '../Buttons/GreyRoundButton';
-import TableCell from '../Cells/TableCell';
-import BlueButton from '../Buttons/BlueButton';
-import GreenButton from '../Buttons/GreenButton';
+import {convertLocalFiatToUSD} from '../../reducers/ticker';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   close: () => void;
   transaction: IDisplayedTx;
-  txsNum: number;
   setTransactionIndex: (txIndex: number) => void;
   cardTranslateAnim: any;
   cardOpacityAnim: any;
   prevNextCardOpacityAnim: any;
   paginationOpacityAnim: any;
+  txsNum?: number;
 }
 
 interface SendReceiveLayoutProps {
@@ -84,12 +86,12 @@ export default function TxDetailModalContent(props: Props) {
   const {
     close,
     transaction,
-    txsNum,
     setTransactionIndex,
     cardTranslateAnim,
     cardOpacityAnim,
     prevNextCardOpacityAnim,
     paginationOpacityAnim,
+    txsNum,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -104,47 +106,57 @@ export default function TxDetailModalContent(props: Props) {
             label: 'Sent',
             txIcon: require('../../assets/icons/sendtx.png'),
             amountColor: '#212124',
-            mathSign: '-',
           };
         case 'Receive':
           return {
             label: 'Received',
             txIcon: require('../../assets/icons/receivetx.png'),
             amountColor: '#1162E6',
-            mathSign: '+',
           };
         case 'Buy':
           return {
             label: 'Bought',
             txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
-            mathSign: '+',
           };
         case 'Sell':
           return {
             label: 'Spent',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
-            mathSign: '-',
           };
         default:
           return {
             label: 'Unknown',
             txIcon: null,
             amountColor: '#212124',
-            mathSign: '',
           };
       }
     },
   }.current();
 
   /* eslint-disable react-hooks/rules-of-hooks */
-  const convertToSubunit = useSelector(state => satsToSubunitSelector(state));
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
   const cryptoAmount = convertToSubunit(transaction.amount);
-  const amountSymbol = useSelector(state => subunitSymbolSelector(state));
-  const calculateFiatAmount = useSelector(state => fiatValueSelector(state));
-  const fiatAmount = calculateFiatAmount(transaction.amount);
+  let cryptoAmountFormatted = cryptoAmount.toFixed(4);
+  if (cryptoAmountFormatted.match(/\./)) {
+    cryptoAmountFormatted = cryptoAmountFormatted.replace(/\.?0+$/, '');
+  }
+  const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const dateString = formatTxDate(transaction.timestamp);
+
+  const mathSign =
+    Math.sign(parseFloat(String(transaction.amount))) === -1 ? '-' : '';
+  const currencySymbol = useAppSelector(state => currencySymbolSelector(state));
+
+  const localFiatToUSD = useAppSelector(state => convertLocalFiatToUSD(state));
+  const priceOnDateInLocalFiat = transaction.priceOnDateMeta / localFiatToUSD;
+  const amountInFiatOnDate = parseFloat(
+    String(priceOnDateInLocalFiat * (transaction.amount / 100000000)),
+  ).toFixed(2);
+  const amountInFiatOnDateAbsVal = Math.abs(Number(amountInFiatOnDate));
 
   const [fromAddressSize, setFromAddressSize] = useState(SCREEN_HEIGHT * 0.025);
   const [fromAddress, setFromAddress] = useState<string>('');
@@ -179,7 +191,7 @@ export default function TxDetailModalContent(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transaction]);
 
-  const toAddress = transaction.addresses[0];
+  const toAddress = transaction.addresses[0] || '';
   const toAddressSize =
     toAddress.length <= 75 ? SCREEN_HEIGHT * 0.025 : SCREEN_HEIGHT * 0.019;
 
@@ -201,42 +213,45 @@ export default function TxDetailModalContent(props: Props) {
   const RenderPagination = useCallback(() => {
     const buttons: any = [];
     const maxBulletsNum = 5;
-    const bulletsNum = txsNum > maxBulletsNum ? maxBulletsNum : txsNum;
 
-    const middleRightOffset =
-      txsNum > maxBulletsNum ? Math.ceil(maxBulletsNum / 2) - 1 : 0;
-    let leftOffset =
-      activeBulletNum > maxBulletsNum - middleRightOffset
-        ? activeBulletNum - maxBulletsNum + middleRightOffset
-        : 0;
-    if (activeBulletNum > txsNum - middleRightOffset) {
-      leftOffset = txsNum - maxBulletsNum;
-    }
+    if (txsNum && txsNum > 0) {
+      const bulletsNum = txsNum > maxBulletsNum ? maxBulletsNum : txsNum;
 
-    for (let i = 1 + leftOffset; i <= bulletsNum + leftOffset; i++) {
-      const offsetOpacity =
-        (1 / bulletsNum) * (bulletsNum - Math.abs(i - activeBulletNum));
-
-      let size = 0.65;
-      if (i === activeBulletNum) {
-        size = 0.9;
+      const middleRightOffset =
+        txsNum > maxBulletsNum ? Math.ceil(maxBulletsNum / 2) - 1 : 0;
+      let leftOffset =
+        activeBulletNum > maxBulletsNum - middleRightOffset
+          ? activeBulletNum - maxBulletsNum + middleRightOffset
+          : 0;
+      if (activeBulletNum > txsNum - middleRightOffset) {
+        leftOffset = txsNum - maxBulletsNum;
       }
-      buttons.push(
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            setTransactionIndex(i - 1);
-          }}
-          style={styles.bulletTouchContainer}
-          key={uuidv4()}>
-          <View
-            style={[
-              styles.bullet,
-              {opacity: offsetOpacity, transform: [{scale: size}]},
-            ]}
-          />
-        </TouchableOpacity>,
-      );
+
+      for (let i = 1 + leftOffset; i <= bulletsNum + leftOffset; i++) {
+        const offsetOpacity =
+          (1 / bulletsNum) * (bulletsNum - Math.abs(i - activeBulletNum));
+
+        let size = 0.65;
+        if (i === activeBulletNum) {
+          size = 0.9;
+        }
+        buttons.push(
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              setTransactionIndex(i - 1);
+            }}
+            style={styles.bulletTouchContainer}
+            key={uuidv4()}>
+            <View
+              style={[
+                styles.bullet,
+                {opacity: offsetOpacity, transform: [{scale: size}]},
+              ]}
+            />
+          </TouchableOpacity>,
+        );
+      }
     }
 
     return buttons;
@@ -301,12 +316,12 @@ export default function TxDetailModalContent(props: Props) {
         blockchainFeeProp = transaction.fee;
       }
 
-      if (transaction.addresses[0].substring(0, 7) === 'ltcmweb') {
-        currentExplorerProp = useSelector(state =>
+      if (transaction.addresses[0]?.substring(0, 7) === 'ltcmweb') {
+        currentExplorerProp = useAppSelector(state =>
           mwebDefaultExplorerSelector(state, transaction.blockHeight),
         );
       } else {
-        currentExplorerProp = useSelector(state =>
+        currentExplorerProp = useAppSelector(state =>
           defaultExplorerSelector(state, transaction.hash),
         );
       }
@@ -348,12 +363,8 @@ export default function TxDetailModalContent(props: Props) {
               <Text style={styles.modalHeaderTitle}>
                 {label}
                 <Text style={styles.modalHeaderSubtitle}>
-                  {' ' +
-                    parseFloat(cryptoAmount).toFixed(2) +
-                    amountSymbol +
-                    ' (' +
-                    fiatAmount +
-                    ')'}
+                  {` ${cryptoAmountFormatted}${amountSymbol}` +
+                    ` (${mathSign}${currencySymbol}${amountInFiatOnDateAbsVal})`}
                 </Text>
               </Text>
               <GreyRoundButton onPress={() => close()} />
