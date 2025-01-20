@@ -1,6 +1,8 @@
 import React, {useEffect, useState, useContext, useRef} from 'react';
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
+import Clipboard from '@react-native-clipboard/clipboard';
+import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import InputField from '../InputField';
 import AddressField from '../AddressField';
@@ -8,23 +10,21 @@ import BlueButton from '../Buttons/BlueButton';
 import {decodeBIP21} from '../../lib/utils/bip21';
 import {validate as validateLtcAddress} from '../../lib/utils/validate';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import AmountPicker from '../Buttons/AmountPicker';
+import BuyPad from '../Numpad/BuyPad';
+import {sleep} from '../../lib/utils/poll';
+import {showError} from '../../reducers/errors';
+import {resetInputs} from '../../reducers/input';
+import {subunitToSatsSelector} from '../../reducers/settings';
 import {
   updateAmount,
   updateFiatAmount,
-  updateSendFee,
   updateSendAmount,
   updateSendLabel,
   updateSendAddress,
 } from '../../reducers/input';
-import AmountPicker from '../Buttons/AmountPicker';
-import BuyPad from '../Numpad/BuyPad';
-import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
-import {sleep} from '../../lib/utils/poll';
-import {showError} from '../../reducers/errors';
 
 import {ScreenSizeContext} from '../../context/screenSize';
-import {resetInputs} from '../../reducers/input';
-import {subunitToSatsSelector} from '../../reducers/settings';
 
 type RootStackParamList = {
   Main: {
@@ -61,7 +61,6 @@ const Send: React.FC<Props> = props => {
   const [description, setDescription] = useState('');
   const [amountPickerActive, setAmountPickerActive] = useState(false);
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
-  // const [recommendedFeeInSatsVByte, setRecommendedFeeInSatsVByte] = useState(1);
 
   // check if ready to send
   useEffect(() => {
@@ -112,15 +111,20 @@ const Send: React.FC<Props> = props => {
 
   const handleScanCallback = async data => {
     try {
-      await validateQR(data);
+      await validate(data);
     } catch (error) {
       dispatch(showError('Invalid Litecoin Address in QR Code'));
       return;
     }
   };
 
+  const handlePaste = async () => {
+    const paste = await Clipboard.getString();
+    await validate(paste);
+  };
+
   // validates data before sending!
-  const validateQR = async data => {
+  const validate = async data => {
     try {
       // handle BIP21 litecoin URI
       if (data.startsWith('litecoin:')) {
@@ -182,33 +186,19 @@ const Send: React.FC<Props> = props => {
     }
   }, [amountPickerActive, detailsOpacity, padOpacity]);
 
-  // async function getRecommendedFee() {
-  //   try {
-  //     const req = await fetch(
-  //       'https://litecoinspace.org/api/v1/fees/recommended',
-  //     );
-  //     const data: any = await req.json();
-
-  //     if (data.hasOwnProperty('fastestFee')) {
-  //       setRecommendedFeeInSatsVByte(data.fastestFee);
-  //     } else {
-  //       throw new Error('Could not find recommended fees.');
-  //     }
-  //   } catch {
-  //     setRecommendedFeeInSatsVByte(1);
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   getRecommendedFee();
-  // }, []);
-
   const validateAddress = async (endAddress: string) => {
-    const valid = await validateLtcAddress(endAddress);
-
+    if (endAddress === '') {
+      setAddressValid(null);
+      return;
+    }
     if (address === '') {
       setAddressValid(null);
-    } else if (!valid) {
+      return;
+    }
+
+    const valid = await validateLtcAddress(endAddress);
+
+    if (!valid) {
       setAddressValid(false);
     } else {
       setAddressValid(true);
@@ -272,9 +262,11 @@ const Send: React.FC<Props> = props => {
                   address={address}
                   onChangeText={setAddress}
                   onScanPress={handleScan}
+                  onPastePress={handlePaste}
                   validateAddress={endAddress => validateAddress(endAddress)}
                   onBlur={() => scrollToInput(0)}
                   onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.13)}
+                  clearInput={() => setAddress('')}
                 />
               </View>
             </View>
@@ -287,6 +279,7 @@ const Send: React.FC<Props> = props => {
                   onChangeText={text => setDescription(text)}
                   onBlur={() => scrollToInput(0)}
                   onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
+                  clearInput={() => setDescription('')}
                 />
               </View>
             </View>
@@ -401,7 +394,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexBasis: '37%',
     },
     blueBtnContainer: {
-      // flexBasis: '60%',
       flex: 1,
     },
   });

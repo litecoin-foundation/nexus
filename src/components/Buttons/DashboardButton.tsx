@@ -12,12 +12,7 @@ import {
   useImage,
 } from '@shopify/react-native-skia';
 import React, {useEffect, useContext} from 'react';
-import {
-  ImageSourcePropType,
-  Platform,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
+import {ImageSourcePropType, Pressable, StyleSheet} from 'react-native';
 import {
   useDerivedValue,
   useSharedValue,

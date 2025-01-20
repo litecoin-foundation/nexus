@@ -1,9 +1,19 @@
 import React, {useEffect, useRef, useState, useContext} from 'react';
-import {View, TextInput, StyleSheet, Text, Pressable} from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Text,
+  Pressable,
+  Image,
+} from 'react-native';
 import Animated, {
+  interpolateColor,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 import {ScreenSizeContext} from '../context/screenSize';
@@ -11,15 +21,25 @@ import {ScreenSizeContext} from '../context/screenSize';
 interface Props {
   address: string;
   onScanPress: () => void;
+  onPastePress: () => void;
   onChangeText: (text: string) => void;
   validateAddress: (text: string) => void;
   onFocus: () => void;
   onBlur: () => void;
+  clearInput: () => void;
 }
 
 const AddressField: React.FC<Props> = props => {
-  const {address, onScanPress, onChangeText, validateAddress, onFocus, onBlur} =
-    props;
+  const {
+    address,
+    onScanPress,
+    onPastePress,
+    onChangeText,
+    validateAddress,
+    onFocus,
+    onBlur,
+    clearInput,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -27,6 +47,8 @@ const AddressField: React.FC<Props> = props => {
 
   const lineHeight = SCREEN_HEIGHT * 0.033;
   const fontLineHeight = SCREEN_HEIGHT * 0.026;
+
+  const [isActive, setActive] = useState(false);
 
   useEffect(() => {
     hiddenTextRef.current = address;
@@ -67,21 +89,95 @@ const AddressField: React.FC<Props> = props => {
 
   // animation
 
-  const scaler = useSharedValue(1);
+  const pasteScaler = useSharedValue(1);
+  const scanScaler = useSharedValue(1);
+  const pasteBg = useSharedValue(1);
+  const scanBg = useSharedValue(1);
+  const pasteX = useSharedValue(0);
+  const scanX = useSharedValue(0);
+  const closeX = useSharedValue(70);
+  const activeOpacity = useSharedValue(1);
 
-  const motionStyle = useAnimatedStyle(() => {
+  const pasteContainerMotionStyle = useAnimatedStyle(() => {
     return {
-      transform: [{scale: scaler.value}],
+      transform: [
+        {scale: pasteScaler.value},
+        {translateX: withSpring(pasteX.value, {stiffness: 50})},
+      ],
+      backgroundColor: interpolateColor(
+        pasteBg.value,
+        [0, 1],
+        ['#C5C5C5', '#f7f7f7'],
+      ),
+      opacity: activeOpacity.value,
     };
   });
 
-  const onPressIn = () => {
-    scaler.value = withSpring(0.9, {mass: 1});
+  const scanContainerMotionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {scale: scanScaler.value},
+        {translateX: withSpring(scanX.value, {stiffness: 50})},
+      ],
+      backgroundColor: interpolateColor(
+        scanBg.value,
+        [0, 1],
+        ['#C5C5C5', '#f7f7f7'],
+      ),
+      opacity: activeOpacity.value,
+    };
+  });
+
+  const closeContainerMotionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{translateX: withSpring(closeX.value, {stiffness: 50})}],
+    };
+  });
+
+  const onPressIn = (button: string) => {
+    switch (button) {
+      case 'paste':
+        pasteScaler.value = withSpring(0.9, {mass: 1});
+        pasteBg.value = withTiming(0);
+        break;
+      case 'scan':
+        scanScaler.value = withSpring(0.9, {mass: 1});
+        scanBg.value = withTiming(0);
+        break;
+    }
   };
 
-  const onPressOut = () => {
-    scaler.value = withSpring(1, {mass: 0.7});
+  const onPressOut = (button: string) => {
+    switch (button) {
+      case 'paste':
+        pasteScaler.value = withSpring(1, {mass: 0.7});
+        pasteBg.value = withTiming(1);
+        break;
+      case 'scan':
+        scanScaler.value = withSpring(1, {mass: 0.7});
+        scanBg.value = withTiming(1);
+        break;
+    }
   };
+
+  useEffect(() => {
+    if (address !== '') {
+      // AddressField is active
+      pasteX.value = 92;
+      scanX.value = 50;
+      closeX.value = 0;
+      activeOpacity.value = withTiming(0, {duration: 230}, () => {
+        runOnJS(setActive)(true);
+      });
+    } else {
+      // AddressField is inactive (empty)
+      pasteX.value = 0;
+      scanX.value = 0;
+      closeX.value = 80;
+      activeOpacity.value = withTiming(1, {duration: 500});
+      runOnJS(setActive)(false);
+    }
+  }, [address]);
 
   return (
     <View style={[styles.container, {height}]}>
@@ -112,16 +208,56 @@ const AddressField: React.FC<Props> = props => {
         onBlur={onBlur}
       />
 
-      <Pressable
-        style={styles.closeContainer}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        onPress={onScanPress}>
-        <Animated.Image
-          style={motionStyle}
-          source={require('../assets/images/qrcode-btn.png')}
-        />
-      </Pressable>
+      {isActive ? null : (
+        <>
+          <Pressable
+            style={[styles.pasteContainer]}
+            onPressIn={() => onPressIn('paste')}
+            onPressOut={() => onPressOut('paste')}
+            onPress={onPastePress}
+            disabled={isActive}>
+            <Animated.View
+              style={[styles.pasteSubContainer, pasteContainerMotionStyle]}>
+              <Animated.Image
+                style={styles.icon}
+                source={require('../assets/images/paste.png')}
+              />
+            </Animated.View>
+          </Pressable>
+
+          <Pressable
+            style={[styles.closeContainer]}
+            onPressIn={() => onPressIn('scan')}
+            onPressOut={() => onPressOut('scan')}
+            onPress={onScanPress}
+            disabled={isActive}>
+            <Animated.View
+              style={[styles.scanSubContainer, scanContainerMotionStyle]}>
+              <Animated.Image
+                source={require('../assets/images/qrcode-btn.png')}
+              />
+            </Animated.View>
+          </Pressable>
+        </>
+      )}
+
+      {!isActive ? null : (
+        <Pressable
+          style={styles.closeContainer}
+          disabled={!isActive}
+          onPress={() => {
+            clearInput();
+            validateAddress('');
+          }}>
+          <Animated.View
+            style={[styles.closeSubContainer, closeContainerMotionStyle]}>
+            <Image
+              style={styles.closeIcon}
+              source={require('../assets/images/close.png')}
+            />
+          </Animated.View>
+        </Pressable>
+      )}
     </View>
   );
 };
@@ -149,14 +285,46 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.022,
       textAlignVertical: 'top',
     },
+    pasteContainer: {
+      right: 54,
+      position: 'absolute',
+      height: 36,
+      width: 36,
+    },
+    pasteSubContainer: {
+      borderRadius: screenHeight * 0.007,
+      height: '100%',
+      width: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     closeContainer: {
       right: 0,
       position: 'absolute',
       marginRight: 12,
-      height: '100%',
-      width: 40,
+      height: 36,
+      width: 36,
       justifyContent: 'center',
       alignItems: 'center',
+    },
+    closeSubContainer: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: '#f0f0f0',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    closeIcon: {
+      width: 8,
+      height: 8,
+    },
+    scanSubContainer: {
+      height: '100%',
+      width: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: screenHeight * 0.007,
     },
     hiddenContainer: {
       position: 'absolute',
@@ -175,6 +343,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       fontSize: screenHeight * 0.022,
       textAlignVertical: 'top',
+    },
+    icon: {
+      width: 20,
+      height: 18,
     },
   });
 

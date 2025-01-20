@@ -184,7 +184,7 @@ const Main: React.FC<Props> = props => {
 
         // BIP21 validation
         if (!valid) {
-          throw new Error('URI');
+          throw new Error('Invalid Litecoin Address in URI');
         }
 
         // If additional data included, set amount/address
