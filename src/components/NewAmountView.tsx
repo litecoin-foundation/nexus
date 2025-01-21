@@ -1,24 +1,32 @@
 import React, {useContext} from 'react';
-import {View, Text, StyleSheet, Platform, SafeAreaView} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  SafeAreaView,
+  Image,
+} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
 
+import PriceIndicatorButton from './Buttons/PriceIndictorButton';
 import {chartPercentageChangeSelector} from '../reducers/chart';
 import {satsToSubunitSelector} from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
-import PriceIndicatorButton from './Buttons/PriceIndictorButton';
-import Animated from 'react-native-reanimated';
 import {formatDate, formatTime} from '../lib/utils/date';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
   children: React.ReactNode;
   animatedProps: any;
+  internetOpacityStyle: any;
 }
 
 const NewAmountView: React.FC<Props> = props => {
-  const {children, animatedProps} = props;
+  const {children, animatedProps, internetOpacityStyle} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -81,13 +89,21 @@ const NewAmountView: React.FC<Props> = props => {
         {isInternetReachable ? (
           <View style={styles.childrenContainer}>{children}</View>
         ) : (
-          <View style={styles.internetContainer}>
-            <Text style={styles.internetText}>
-              You are offline.
-              {'\n'}
-              Connect to the internet.
-            </Text>
-          </View>
+          <Animated.View style={internetOpacityStyle}>
+            <View style={styles.internetContainer}>
+              <View style={styles.internetImageContainer}>
+                <Image
+                  style={styles.internetImage}
+                  source={require('../assets/images/no-internet-graph.png')}
+                />
+              </View>
+              <Text style={styles.internetText}>
+                You are offline.
+                {'\n'}
+                Connect to the internet.
+              </Text>
+            </View>
+          </Animated.View>
         )}
       </SafeAreaView>
     </Animated.View>
@@ -156,6 +172,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     internetBackground: {
       backgroundColor: '#F36F56',
+    },
+    internetImageContainer: {
+      justifyContent: 'center',
+      paddingTop: screenHeight * 0.03,
+      paddingBottom: screenHeight * 0.03,
+    },
+    internetImage: {
+      justifyContent: 'center',
+      alignSelf: 'center',
     },
   });
 

@@ -325,9 +325,12 @@ export default function PlasmaModal(props: Props) {
 
     // Play opening/closing animation
     if (isOpened) {
-      bodyTranslateY.value = withTiming(0, {
-        duration: animDuration + 100,
-        easing: Easing.inOut(Easing.ease),
+      bodyTranslateY.value = withSpring(0, {
+        duration: animDuration + 900,
+        dampingRatio: 1,
+        stiffness: 80,
+        restDisplacementThreshold: 0.01,
+        restSpeedThreshold: 0.01,
         reduceMotion: ReduceMotion.Never,
       });
 

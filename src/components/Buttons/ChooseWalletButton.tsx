@@ -44,7 +44,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
-  const buttonColor = isInternetReachable ? '#0d3d8a' : '#e06852';
+  const buttonColor = isInternetReachable ? 'rgba(14,31,60,0.92)' : '#E06852';
 
   const [isCurvesVisible, setCurvesVisible] = useState(false);
   useEffect(() => {

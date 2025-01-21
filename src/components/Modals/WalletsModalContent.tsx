@@ -88,7 +88,9 @@ export default function WalletsModalContent(props: Props) {
     </>
   );
 
-  const onlineOfflineBgColor = isInternetReachable ? '#0d3d8a' : '#e06852';
+  const onlineOfflineBgColor = isInternetReachable
+    ? 'rgba(14,31,60,0.92)'
+    : 'rgba(224,104,82,0.7)';
 
   return (
     <Animated.View

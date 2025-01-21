@@ -544,7 +544,9 @@ const Main: React.FC<Props> = props => {
   return (
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
-      <NewAmountView animatedProps={animatedHeaderHeight}>
+      <NewAmountView
+        animatedProps={animatedHeaderHeight}
+        internetOpacityStyle={animatedChartStyle}>
         <Animated.View style={[animatedChartStyle, styles.chartContainer]}>
           <LineChart />
           <DatePicker />
