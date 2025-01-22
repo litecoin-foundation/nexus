@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
-import {View, StyleSheet, Text, Pressable, Alert} from 'react-native';
+import {View, StyleSheet, Text, Pressable} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -35,14 +35,16 @@ import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
-import {decodeBIP21} from '../lib/utils/bip21';
 import {unsetDeeplink} from '../reducers/deeplinks';
-import {validate as validateLtcAddress} from '../lib/utils/validate';
-import {updateAmount} from '../reducers/input';
 import SendModal from '../components/Modals/SendModal';
 import DatePicker from '../components/DatePicker';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {sleep} from '../lib/utils/poll';
+
+interface URIHandlerRef {
+  handleURI: (data: string) => void;
+}
 
 const paymentCallback = (transactionRequest: TransactionRequest) => {
   //execute the transaction depending on parent app logic here
@@ -137,6 +139,8 @@ const Main: React.FC<Props> = props => {
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main Wallet');
 
+  const sendCardRef = useRef<URIHandlerRef>(null);
+
   const image = useImage(require('../assets/icons/search-icon.png'));
 
   function setTransactionIndex(newTxIndex: number) {
@@ -170,55 +174,25 @@ const Main: React.FC<Props> = props => {
   // Deeplink handler
   useEffect(() => {
     if (deeplinkSet) {
-      validate(uri);
+      setBottomSheetFolded(false);
+      setActiveTab(4);
     }
-  }, []);
+  }, [deeplinkSet]);
 
-  // Deeplink validator
-  const validate = async data => {
-    try {
-      // handle BIP21 litecoin URI
-      if (data.startsWith('litecoin:')) {
-        const decoded = decodeBIP21(data);
-        const valid = validateLtcAddress(decoded.address);
+  useEffect(() => {
+    const callHandleURI = async () => {
+      // TODO: hacky way to ensure Send Card is mounted
+      //       before calling handleURI().
+      //       Handle this differently in the future?
+      await sleep(500);
+      sendCardRef.current?.handleURI(uri);
+    };
 
-        // BIP21 validation
-        if (!valid) {
-          throw new Error('Invalid Litecoin Address in URI');
-        }
-
-        // If additional data included, set amount/address
-        if (decoded.options.amount) {
-          // setAmount(decoded.options.amount);
-          dispatch(updateAmount(decoded.options.amount, 'ltc'));
-        }
-        if (decoded.options.message) {
-          // setDescription(decoded.options.message);
-        }
-        // setAddress(decoded.address);
-
-        return;
-      } else {
-        dispatch(unsetDeeplink());
-      }
-    } catch (error) {
+    if (activeTab === 4) {
+      callHandleURI();
       dispatch(unsetDeeplink());
-      throw new Error(String(error));
     }
-  };
-
-  // Deeplink payment logic
-  const handleConfirmSend: () => void = async () => {
-    try {
-      // await dispatch(sendOnchainPayment(address, amount));
-      // dispatch(unsetDeeplink());
-      // triggerSendModal(false);
-      // navigation.navigate('Sent', {amount, address});
-    } catch (error: unknown) {
-      Alert.alert('Payment Failed', String(error));
-      return;
-    }
-  };
+  }, [activeTab]);
 
   // Animation
   const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
@@ -291,10 +265,6 @@ const Main: React.FC<Props> = props => {
       opacity: walletButtonOpacity.value,
     };
   });
-
-  const manualPayment = async () => {
-    payment(flexaAssetAccounts, paymentCallback);
-  };
 
   const walletButtonAnimDuration = 200;
   const rotateArrowAnim = useSharedValue(0);
@@ -442,6 +412,11 @@ const Main: React.FC<Props> = props => {
     walletButtonOpacity,
   ]);
 
+  // flexa
+  const manualPayment = async () => {
+    payment(flexaAssetAccounts, paymentCallback);
+  };
+
   const TxListComponent = (
     <View>
       <View style={styles.txTitleContainer}>
@@ -563,7 +538,7 @@ const Main: React.FC<Props> = props => {
         activeTab={activeTab}
         buyViewComponent={<Buy route={route} />}
         sellViewComponent={<Sell route={route} />}
-        sendViewComponent={<Send route={route} />}
+        sendViewComponent={<Send route={route} ref={sendCardRef} />}
         receiveViewComponent={<Receive />}
       />
 
@@ -634,7 +609,7 @@ const Main: React.FC<Props> = props => {
         )}
       />
 
-      <SendModal
+      {/* <SendModal
         isVisible={isSendModalTriggered}
         handleConfirm={() => handleConfirmSend()}
         close={() => {
@@ -643,7 +618,7 @@ const Main: React.FC<Props> = props => {
         }}
         amount={32}
         address={'fdsfdsfdsfds'}
-      />
+      /> */}
     </Animated.View>
   );
 };

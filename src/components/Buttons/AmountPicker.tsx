@@ -19,7 +19,7 @@ import {defaultButtonSpring} from '../../theme/spring';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
-  amount: number;
+  amount: string;
   fiatAmount: string;
   active: boolean;
   handlePress: () => void;
@@ -110,6 +110,14 @@ const AmountPicker: React.FC<Props> = props => {
               ? '0.00'
               : `${String(currencySymbol)}${String(fiatAmount)}`
           }
+        />
+
+        <SkiaText
+          font={font}
+          color="red"
+          x={0}
+          y={10}
+          text={String(amount) === '' ? '0.00' : `${String(amount)}`}
         />
       </Canvas>
 

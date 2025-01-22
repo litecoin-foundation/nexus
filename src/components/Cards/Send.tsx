@@ -1,4 +1,11 @@
-import React, {useEffect, useState, useContext, useRef} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -37,7 +44,11 @@ interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
 }
 
-const Send: React.FC<Props> = props => {
+interface URIHandlerRef {
+  handleURI: (data: string) => void;
+}
+
+const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
   const {route} = props;
@@ -123,6 +134,13 @@ const Send: React.FC<Props> = props => {
     await validate(paste);
   };
 
+  // uri handler
+  useImperativeHandle(ref, () => ({
+    async handleURI(data) {
+      await validate(data);
+    },
+  }));
+
   // validates data before sending!
   const validate = async data => {
     try {
@@ -133,7 +151,7 @@ const Send: React.FC<Props> = props => {
 
         // BIP21 validation
         if (!valid) {
-          throw new Error('URI');
+          throw new Error('Invalid BIP21 URI.');
         }
 
         // If additional data included, set amount/address
@@ -236,9 +254,9 @@ const Send: React.FC<Props> = props => {
         <Text style={styles.titleText}>Send LTC</Text>
 
         <View style={styles.amountContainer}>
-          <Text style={styles.subtitleText}>AMOUNT</Text>
+          <Text style={styles.subtitleText}>AMOUNT {amount}</Text>
           <AmountPicker
-            amount={convertToSats(Number(amount))}
+            amount={amount}
             fiatAmount={fiatAmount}
             active={amountPickerActive}
             handlePress={() => {
@@ -332,7 +350,7 @@ const Send: React.FC<Props> = props => {
       ) : null}
     </View>
   );
-};
+});
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
