@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useRef} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 
 import BiometricButton from './BiometricButton';
@@ -22,6 +22,10 @@ interface Props {
   handleBiometricPress?: () => void;
 }
 
+interface PasscodeInputRef {
+  playIncorrectAnimation: () => void;
+}
+
 const AuthPad: React.FC<Props> = props => {
   const {
     handleValidationFailure,
@@ -40,6 +44,8 @@ const AuthPad: React.FC<Props> = props => {
   const dayLock = useAppSelector(state => state.authentication.dayLock);
   const dayLockAt = useAppSelector(state => state.authentication.dayLockAt);
   const permaLock = useAppSelector(state => state.authentication.permaLock);
+
+  const passcodeInputRef = useRef<PasscodeInputRef>(null);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -62,6 +68,7 @@ const AuthPad: React.FC<Props> = props => {
       if (pin === passcode) {
         handleValidationSuccess();
       } else {
+        passcodeInputRef.current?.playIncorrectAnimation();
         handleValidationFailure();
         dispatch(clearValues());
       }
@@ -187,6 +194,7 @@ const AuthPad: React.FC<Props> = props => {
           pinInactive={pinInactive}
           dotsLength={6}
           activeDotIndex={pin.length}
+          ref={passcodeInputRef}
         />
         <PadGrid />
         <View style={styles.buttonContainer}>{buttons}</View>

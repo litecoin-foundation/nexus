@@ -1,20 +1,24 @@
-import React, {useContext, useLayoutEffect, useState} from 'react';
+import React, {useContext, useLayoutEffect, useRef, useState} from 'react';
 import {View, Text, StyleSheet, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
 
-import Header from '../../components/Header';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {addPincode} from '../../reducers/authentication';
 import {setItem} from '../../lib/utils/keychain';
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import PasscodeInput from '../../components/PasscodeInput';
 import PadGrid from '../../components/Numpad/PadGrid';
 import BuyButton from '../../components/Numpad/BuyButton';
-import {ScreenSizeContext} from '../../context/screenSize';
-import LinearGradient from 'react-native-linear-gradient';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   route: any; // TODO
+}
+
+interface PasscodeInputRef {
+  playIncorrectAnimation: () => void;
 }
 
 const ChangePincode: React.FC<Props> = props => {
@@ -22,6 +26,8 @@ const ChangePincode: React.FC<Props> = props => {
   const {route} = props;
   const dispatch = useAppDispatch();
   const pin = useAppSelector(state => state.authentication.passcode);
+
+  const passcodeInputRef = useRef<PasscodeInputRef>(null);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -67,28 +73,23 @@ const ChangePincode: React.FC<Props> = props => {
   const handleCompletion = (value: string) => {
     setPadValue('');
     if (currentPin) {
-      console.log(pin);
-      console.log(value);
-
       if (value === pin) {
         setCurrentPin(false);
         setNewPin(true);
       } else {
+        // incorrect current pin entered
+        passcodeInputRef.current?.playIncorrectAnimation();
         setCurrentPin(true);
         setNewPin(false);
-        Alert.alert(
-          'Incorrect Pin',
-          'Failed pincode attempt.',
-          [{text: 'OK'}],
-          {cancelable: false},
-        );
         return;
       }
     } else if (newPin) {
+      // new pin
       setNewPinCodeValue(value);
       setNewPin(false);
       setRepeatPin(true);
     } else if (repeatPin) {
+      // new pin reentry
       if (value === newPinCodeValue) {
         dispatch(addPincode(newPinCodeValue));
         setPincodeToKeychain(newPinCodeValue);
@@ -154,8 +155,6 @@ const ChangePincode: React.FC<Props> = props => {
 
   return (
     <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
-      <Header />
-
       <View style={styles.bottomSheet}>
         <Text style={styles.bottomSheetTitle}>
           {currentPin
@@ -169,6 +168,7 @@ const ChangePincode: React.FC<Props> = props => {
           dotsLength={6}
           activeDotIndex={padValue.length}
           pinInactive={false}
+          ref={passcodeInputRef}
         />
         <PadGrid />
         <View style={styles.buttonContainer}>{buttons}</View>

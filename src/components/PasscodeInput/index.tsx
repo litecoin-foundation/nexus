@@ -1,7 +1,14 @@
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {forwardRef, useImperativeHandle} from 'react';
+import {StyleSheet} from 'react-native';
 
 import Box from './Box';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
 interface Props {
   pinInactive: boolean;
@@ -9,9 +16,13 @@ interface Props {
   activeDotIndex: number;
 }
 
+interface PasscodeInputRef {
+  playIncorrectAnimation: () => void;
+}
+
 type ButtonStateType = 'active' | 'inactive' | 'used' | 'disabled';
 
-const PasscodeInput: React.FC<Props> = props => {
+const PasscodeInput = forwardRef<PasscodeInputRef, Props>((props, ref) => {
   const {pinInactive, dotsLength, activeDotIndex} = props;
   const dotsArray = [...Array(dotsLength)];
 
@@ -33,8 +44,34 @@ const PasscodeInput: React.FC<Props> = props => {
     return <Box buttonState={buttonStateValue} key={index} />;
   });
 
-  return <View style={styles.container}>{boxes}</View>;
-};
+  // animation
+  const boxesX = useSharedValue(0);
+
+  const incorrectPinMotionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{translateX: boxesX.value}],
+    };
+  });
+
+  useImperativeHandle(ref, () => ({
+    playIncorrectAnimation() {
+      boxesX.value = withRepeat(
+        withSequence(
+          withTiming(-10, {duration: 100}),
+          withTiming(10, {duration: 100}),
+        ),
+        3,
+        true,
+      );
+    },
+  }));
+
+  return (
+    <Animated.View style={[styles.container, incorrectPinMotionStyle]}>
+      {boxes}
+    </Animated.View>
+  );
+});
 
 const styles = StyleSheet.create({
   container: {
