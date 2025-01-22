@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
-import {StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
@@ -8,6 +8,10 @@ import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {useAppSelector} from '../../store/hooks';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {
+  satsToSubunitSelector,
+  subunitCodeSelector,
+} from '../../reducers/settings';
 
 type RootStackParamList = {
   SuccessSend: {
@@ -26,8 +30,14 @@ const SuccessSend: React.FC<Props> = () => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const amount = useAppSelector(state => state.input.amount);
+  const amount = useAppSelector(state => state.input.send.amount);
   const toAddress = useAppSelector(state => state.input.send.toAddress);
+  const amountCode = useAppSelector(state => subunitCodeSelector(state));
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
+
+  const amountInSubunit = convertToSubunit(amount);
 
   return (
     <>
@@ -35,8 +45,13 @@ const SuccessSend: React.FC<Props> = () => {
         <View style={styles.body}>
           <Text style={styles.title}>Awesome!</Text>
           <Text style={styles.subtitle}>You just sent</Text>
-          <Text style={styles.amount}>{amount + ' LTC'}</Text>
-          <View style={styles.separator} />
+          <Text style={styles.amount}>
+            {amountInSubunit + ' ' + amountCode}
+          </Text>
+          <Image
+            source={require('../../assets/images/arrow-down.png')}
+            style={styles.image}
+          />
           <View style={styles.toAddressContainer}>
             <Text style={styles.toAddressText}>{toAddress}</Text>
           </View>
@@ -45,7 +60,7 @@ const SuccessSend: React.FC<Props> = () => {
         <View style={styles.confirmButtonContainer}>
           <WhiteClearButton
             small={true}
-            value="See transactions"
+            value="View Transaction"
             onPress={() => {
               navigation.navigate('SearchTransaction');
             }}
@@ -54,7 +69,7 @@ const SuccessSend: React.FC<Props> = () => {
             disabled={false}
             small={true}
             active={true}
-            value="Back to wallets"
+            value="Back to Wallet"
             onPress={() => {
               navigation.navigate('Main', {isInitial: true});
             }}
@@ -96,7 +111,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       fontSize: screenHeight * 0.016,
-      textTransform: 'uppercase',
       textAlign: 'center',
       opacity: 0.9,
       marginTop: screenHeight * 0.005,
@@ -108,17 +122,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       fontSize: screenHeight * 0.05,
-      textTransform: 'uppercase',
       textAlign: 'center',
       marginTop: screenHeight * 0.005,
-    },
-    separator: {
-      width: 2,
-      height: 12,
-      backgroundColor: '#fff',
-      marginTop: screenHeight * 0.015,
-      marginBottom: screenHeight * 0.015,
-      opacity: 0.9,
     },
     toAddressContainer: {
       width: 'auto',
@@ -138,7 +143,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '500',
-      fontSize: screenHeight * 0.03,
+      fontSize: screenHeight * 0.025,
       textAlign: 'center',
     },
     confirmButtonContainer: {
@@ -149,6 +154,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'space-between',
+    },
+    image: {
+      height: 16,
+      marginTop: 20,
+      marginBottom: 20,
     },
   });
 

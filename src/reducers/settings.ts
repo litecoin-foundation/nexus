@@ -6,7 +6,11 @@ import {getCurrencies} from 'react-native-localize';
 import {AppThunk} from './types';
 import fiat from '../assets/fiat';
 import explorers from '../assets/explorers';
-import {satsToSubunit, subunitToSats} from '../lib/utils/satoshis';
+import {
+  litecoinToSubunit,
+  satsToSubunit,
+  subunitToSats,
+} from '../lib/utils/satoshis';
 
 // types
 interface ISettings {
@@ -131,6 +135,14 @@ export const settingsSlice = createSlice({
 });
 
 // selectors
+export const litecoinToSubunitSelector = createSelector(
+  state => state.settings.subunit,
+  subunit =>
+    memoize((amount: number) => {
+      return litecoinToSubunit(amount, subunit);
+    }),
+);
+
 export const subunitToSatsSelector = createSelector(
   state => state.settings.subunit,
   subunit =>

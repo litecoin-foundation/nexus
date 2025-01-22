@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import {StackNavigationProp} from '@react-navigation/stack';
 
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import Header from '../../components/Header';
@@ -16,8 +17,6 @@ import SettingCell from '../../components/Cells/SettingCell';
 import {resetPincode, setBiometricEnabled} from '../../reducers/authentication';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {stopLnd} from '../../reducers/lightning';
 import {sleep} from '../../lib/utils/poll';
 import {purgeStore} from '../../store';
 import {deleteLNDDir} from '../../lib/utils/file';
@@ -197,16 +196,6 @@ const Settings: React.FC<Props> = props => {
               );
             }}
           />
-
-          {!__DEV__ ? null : (
-            <SettingCell
-              title="stopLnd()"
-              onPress={() => {
-                dispatch(stopLnd());
-              }}
-              forward
-            />
-          )}
         </ScrollView>
       </LinearGradient>
 

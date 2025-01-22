@@ -22,7 +22,10 @@ import BuyPad from '../Numpad/BuyPad';
 import {sleep} from '../../lib/utils/poll';
 import {showError} from '../../reducers/errors';
 import {resetInputs} from '../../reducers/input';
-import {subunitToSatsSelector} from '../../reducers/settings';
+import {
+  litecoinToSubunitSelector,
+  subunitToSatsSelector,
+} from '../../reducers/settings';
 import {
   updateAmount,
   updateFiatAmount,
@@ -56,6 +59,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const convertToSats = useAppSelector(state => subunitToSatsSelector(state));
+  const convertLitecoinToSubunit = useAppSelector(state =>
+    litecoinToSubunitSelector(state),
+  );
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const confirmedBalance = useAppSelector(
@@ -82,8 +88,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         return;
       }
 
+      // validate balance
       const amountInSats = convertToSats(Number(amount));
-
       if (amountInSats > Number(confirmedBalance)) {
         setSendDisabled(true);
         return;
@@ -157,8 +163,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         // If additional data included, set amount/address
         if (decoded.options.amount) {
           // BIP21 uses decimal Litecoin subunit
-          // convert Litecoin to Sats
-          dispatch(updateSendAmount(decoded.options.amount * 100000000));
+          // convert Litecoin to currently selected subunit
+          const amt = convertLitecoinToSubunit(Number(decoded.options.amount));
+          dispatch(updateAmount(amt.toString(), 'ltc'));
         }
         if (decoded.options.message) {
           setDescription(decoded.options.message);
@@ -229,7 +236,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     dispatch(updateSendAddress(address));
     dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
-    //
+
     navigation.navigate('ConfirmSend');
   };
 
@@ -254,7 +261,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         <Text style={styles.titleText}>Send LTC</Text>
 
         <View style={styles.amountContainer}>
-          <Text style={styles.subtitleText}>AMOUNT {amount}</Text>
+          <Text style={styles.subtitleText}>AMOUNT</Text>
           <AmountPicker
             amount={amount}
             fiatAmount={fiatAmount}
@@ -317,7 +324,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         </View> */}
               <View style={styles.blueBtnContainer}>
                 <BlueButton
-                  value={`Send ${amount} LTC`}
+                  value="Send Litecoin"
                   onPress={() => {
                     handleSend();
                   }}
