@@ -47,14 +47,14 @@ interface Props {
 }
 
 interface SendReceiveLayoutProps {
-  fromAddress: string;
-  fromAddressSize: number;
-  toAddress: string;
-  toAddressSize: number;
+  isSend: boolean;
+  allInputAddrs: string[];
+  myOutputAddrs: string[];
+  otherOutputAddrs: string[];
   dateString: string;
   amountSymbol: string;
   currentExplorer: string;
-  blockchainFee: number;
+  blockchainFee: number | undefined;
 }
 
 interface SellBuyLayoutProps {
@@ -71,8 +71,8 @@ interface SellBuyLayoutProps {
   // usdRate: number;
   // eurRate: number;
   // gbpRate: number;
-  totalFee: number;
-  blockchainFee: number;
+  totalFee: number | undefined;
+  blockchainFee: number | undefined;
   tipLFFee: number;
   moonpayFee: number;
   txDetailsUrl: string;
@@ -158,10 +158,15 @@ export default function TxDetailModalContent(props: Props) {
   ).toFixed(2);
   const amountInFiatOnDateAbsVal = Math.abs(Number(amountInFiatOnDate));
 
-  const [fromAddressSize, setFromAddressSize] = useState(SCREEN_HEIGHT * 0.025);
-  const [fromAddress, setFromAddress] = useState<string>('');
+  const [allInputAddrs, setAllInputAddrs] = useState<string[]>([]);
+  const [fetchedTxFee, setFetchedTxFee] = useState<number | undefined>(
+    undefined,
+  );
 
-  async function getSender() {
+  const myOutputs = transaction.myOutputs || [];
+  const otherOutputs = transaction.otherOutputs || [];
+
+  async function getSenderAndFee() {
     try {
       const req = await fetch(
         `https://litecoinspace.org/api/tx/${transaction.hash}`,
@@ -169,31 +174,32 @@ export default function TxDetailModalContent(props: Props) {
       const data: any = await req.json();
 
       if (data.hasOwnProperty('vin')) {
-        const prevoutAddress = data.vin[0].prevout.scriptpubkey_address;
+        const inputs: string[] = [];
 
-        if (prevoutAddress.length <= 75) {
-          setFromAddressSize(SCREEN_HEIGHT * 0.025);
-        } else {
-          setFromAddressSize(SCREEN_HEIGHT * 0.019);
-        }
+        data.vin.forEach((input: any) => {
+          inputs.push(input.prevout.scriptpubkey_address);
+        });
 
-        setFromAddress(prevoutAddress);
+        setAllInputAddrs(inputs);
       } else {
-        throw new Error('No vin found.');
+        setAllInputAddrs([]);
+      }
+
+      if (data.hasOwnProperty('fee')) {
+        setFetchedTxFee(data.fee / 100000000);
+      } else {
+        setFetchedTxFee(undefined);
       }
     } catch {
-      setFromAddress('');
+      setAllInputAddrs([]);
+      setFetchedTxFee(undefined);
     }
   }
 
   useEffect(() => {
-    getSender();
+    getSenderAndFee();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transaction]);
-
-  const toAddress = transaction.addresses[0] || '';
-  const toAddressSize =
-    toAddress.length <= 75 ? SCREEN_HEIGHT * 0.025 : SCREEN_HEIGHT * 0.019;
 
   const fadeNewDetailsOpacity = useSharedValue(1);
   const fadeNewDetailsIn = useAnimatedStyle(() => {
@@ -281,8 +287,8 @@ export default function TxDetailModalContent(props: Props) {
       let createdAtProp = '';
       // let fiatCurrencyProp = '';
       let fiatCurrencyAmountProp = 0;
-      let totalFeeProp = 0;
-      let blockchainFeeProp = 0;
+      let totalFeeProp: number | undefined = 0;
+      let blockchainFeeProp: number | undefined = 0;
       let tipLFFeeProp = 0;
       let moonpayFeeProp = 0;
       let txDetailsUrlProp = '';
@@ -312,11 +318,14 @@ export default function TxDetailModalContent(props: Props) {
         statusProp = transaction.moonpayMeta.status;
         // paymentMethodProp = transaction.moonpayMeta.paymentMethod;
       } else {
-        totalFeeProp = transaction.fee;
-        blockchainFeeProp = transaction.fee;
+        // Fetching fee data from explorer due to incorrect response from lnd
+        // totalFeeProp = transaction.fee;
+        // blockchainFeeProp = transaction.fee;
+        totalFeeProp = fetchedTxFee;
+        blockchainFeeProp = fetchedTxFee;
       }
 
-      if (transaction.addresses[0]?.substring(0, 7) === 'ltcmweb') {
+      if (transaction.isMweb) {
         currentExplorerProp = useAppSelector(state =>
           mwebDefaultExplorerSelector(state, transaction.blockHeight),
         );
@@ -373,10 +382,10 @@ export default function TxDetailModalContent(props: Props) {
               {transaction.metaLabel === 'Send' ||
               transaction.metaLabel === 'Receive' ? (
                 <SendReceiveLayout
-                  fromAddress={fromAddress}
-                  fromAddressSize={fromAddressSize}
-                  toAddress={toAddress}
-                  toAddressSize={toAddressSize}
+                  isSend={transaction.metaLabel === 'Send'}
+                  allInputAddrs={allInputAddrs}
+                  myOutputAddrs={myOutputs}
+                  otherOutputAddrs={otherOutputs}
                   dateString={dateString}
                   amountSymbol={amountSymbol}
                   currentExplorer={currentExplorer}
@@ -421,7 +430,7 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
     tipLFFee,
     moonpayFee,
     txDetailsUrl,
-    status,
+    // status,
     // paymentMethod,
     currentExplorer,
   } = props;
@@ -433,28 +442,53 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
 
   return (
     <Fragment>
-      <Text style={styles.statusText}>{status}</Text>
-      <TableCell title="TOTAL" value={`${fiatSymbol}${fiatCurrencyAmount}`} />
-      <TableCell title="TOTAL FEE" value={`${fiatSymbol}${totalFee}`} />
+      {/* <Text style={styles.statusText}>{status}</Text> */}
+      <TableCell
+        title="TOTAL"
+        value={`${fiatSymbol}${fiatCurrencyAmount}`}
+        blueValue
+        thick
+      />
+      <View style={styles.tableCell}>
+        <View style={styles.tableCellRow}>
+          <Text style={styles.tableCellTitle}>TOTAL FEE</Text>
+          <Text
+            style={styles.tableCellValue}>{`${fiatSymbol}${totalFee}`}</Text>
+        </View>
+        <View style={styles.tableCellRow}>
+          <View style={styles.tableCellSubRow}>
+            <View style={styles.tableCellListDot} />
+            <Text style={styles.tableCellTitle}>NETWORK FEE</Text>
+          </View>
+          <Text style={styles.tableCellSubValue}>
+            {`${fiatSymbol}${blockchainFee}`}
+          </Text>
+        </View>
+        <View style={styles.tableCellRow}>
+          <View style={styles.tableCellSubRow}>
+            <View style={styles.tableCellListDot} />
+            <Text style={styles.tableCellTitle}>PROVIDER FEE</Text>
+          </View>
+          <Text style={styles.tableCellSubValue}>
+            {`${fiatSymbol}${tipLFFee + moonpayFee}`}
+          </Text>
+        </View>
+      </View>
       <TableCell
         title="MOONPAY ID"
         value={moonpayTxId}
+        thick
         valueFontSize={height * 0.012}
         copyButton
       />
       <TableCell
         title="TX ID"
         value={cryptoTxId}
+        thick
         valueFontSize={height * 0.012}
         copyButton
       />
-      <TableCell title="DATE" value={createdAt} />
-      <TableCell title="NETWORK FEE" value={`${fiatSymbol}${blockchainFee}`} />
-      <TableCell
-        title="PROVIDER FEE"
-        value={`${fiatSymbol}${tipLFFee + moonpayFee}`}
-      />
-      {/* <TableCell title="PAID WITH" value={paymentMethod} /> */}
+      <TableCell title="TIME & DATE" value={createdAt} thick />
       <View style={styles.bottomContainer}>
         <View style={styles.bottomBtns}>
           <View style={styles.flexBtn1}>
@@ -486,10 +520,10 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
 
 const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
   const {
-    fromAddress,
-    fromAddressSize,
-    toAddress,
-    toAddressSize,
+    isSend,
+    allInputAddrs,
+    myOutputAddrs,
+    otherOutputAddrs,
     blockchainFee,
     dateString,
     amountSymbol,
@@ -498,8 +532,111 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
 
   const navigation = useNavigation<any>();
 
-  const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const calculateAddressSize = (
+    addresses: string[],
+    defaultSize: number,
+    singleThreshold: number,
+    multiThreshold: number,
+  ) => {
+    if (addresses.length > 1) {
+      return multiThreshold;
+    } else if (addresses.length === 1 && addresses[0].length > 75) {
+      return singleThreshold;
+    }
+    return defaultSize;
+  };
+
+  const fromAddressSize = calculateAddressSize(
+    allInputAddrs,
+    SCREEN_HEIGHT * 0.025,
+    SCREEN_HEIGHT * 0.019,
+    SCREEN_HEIGHT * 0.017,
+  );
+
+  let toAddressSize = SCREEN_HEIGHT * 0.025;
+
+  if (!isSend && myOutputAddrs.length > 0) {
+    toAddressSize = calculateAddressSize(
+      myOutputAddrs,
+      SCREEN_HEIGHT * 0.025,
+      SCREEN_HEIGHT * 0.019,
+      SCREEN_HEIGHT * 0.017,
+    );
+  } else if (otherOutputAddrs.length > 0) {
+    toAddressSize = calculateAddressSize(
+      otherOutputAddrs,
+      SCREEN_HEIGHT * 0.025,
+      SCREEN_HEIGHT * 0.019,
+      SCREEN_HEIGHT * 0.017,
+    );
+  }
+
+  const ADDR_ROW_LIMIT = 2;
+
+  function renderInputs() {
+    if (allInputAddrs.length > 0) {
+      return allInputAddrs.slice(0, ADDR_ROW_LIMIT).map((input, index) => (
+        <Text
+          style={{
+            ...styles.fromAddressTitle,
+            fontSize: fromAddressSize,
+          }}
+          key={'input-' + index}>
+          {input}
+        </Text>
+      ));
+    } else {
+      return (
+        <Text
+          style={{
+            ...styles.fromAddressTitle,
+            fontSize: fromAddressSize,
+          }}>
+          Undefined
+        </Text>
+      );
+    }
+  }
+
+  function renderOutputs() {
+    if (myOutputAddrs.length > 0) {
+      return myOutputAddrs.slice(0, ADDR_ROW_LIMIT).map((output, index) => (
+        <Text
+          style={{
+            ...styles.toAddressTitle,
+            fontSize: toAddressSize,
+          }}
+          key={'output-' + index}>
+          {output}
+        </Text>
+      ));
+    } else if (otherOutputAddrs.length > 0) {
+      return otherOutputAddrs.slice(0, ADDR_ROW_LIMIT).map((output, index) => (
+        <Text
+          style={{
+            ...styles.toAddressTitle,
+            fontSize: toAddressSize,
+          }}
+          key={'output-' + index}>
+          {output}
+        </Text>
+      ));
+    } else {
+      return (
+        <Text
+          style={{
+            ...styles.toAddressTitle,
+            fontSize: toAddressSize,
+          }}>
+          Undefined
+        </Text>
+      );
+    }
+  }
 
   return (
     <Fragment>
@@ -511,13 +648,18 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
           </View>
           <View style={styles.fromAndToTitlesContainer}>
             <Text style={styles.fromAndToTitle}>From</Text>
-            <Text
-              style={{
-                ...styles.fromAddressTitle,
-                fontSize: fromAddressSize,
-              }}>
-              {fromAddress}
-            </Text>
+            {renderInputs()}
+            {allInputAddrs.length > ADDR_ROW_LIMIT ? (
+              <Text style={styles.otherAddressesNote}>
+                {`+ ${allInputAddrs.length - ADDR_ROW_LIMIT} other input ${
+                  allInputAddrs.length - ADDR_ROW_LIMIT > 1
+                    ? 'addresses'
+                    : 'address'
+                }`}
+              </Text>
+            ) : (
+              <Fragment />
+            )}
           </View>
         </View>
         <View style={styles.toContainer}>
@@ -526,20 +668,34 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
           </View>
           <View style={styles.fromAndToTitlesContainer}>
             <Text style={styles.fromAndToTitle}>To</Text>
-            <Text
-              style={{
-                ...styles.toAddressTitle,
-                fontSize: toAddressSize,
-              }}>
-              {toAddress}
-            </Text>
+            {renderOutputs()}
+            {myOutputAddrs.length > ADDR_ROW_LIMIT ? (
+              <Text style={styles.otherAddressesNote}>
+                {`+ ${myOutputAddrs.length - ADDR_ROW_LIMIT} ${
+                  myOutputAddrs.length - ADDR_ROW_LIMIT > 1
+                    ? 'addresses'
+                    : 'address'
+                } not belonging to you`}
+              </Text>
+            ) : otherOutputAddrs.length > ADDR_ROW_LIMIT ? (
+              <Text style={styles.otherAddressesNote}>
+                {`+ ${otherOutputAddrs.length - ADDR_ROW_LIMIT} other input ${
+                  otherOutputAddrs.length - ADDR_ROW_LIMIT > 1
+                    ? 'addresses'
+                    : 'address'
+                }`}
+              </Text>
+            ) : (
+              <Fragment />
+            )}
           </View>
         </View>
       </View>
-      <TableCell title="TIME & DATE" value={dateString} />
+      <TableCell title="TIME & DATE" value={dateString} thick />
       <TableCell
         title="NETWORK FEE"
-        value={`${blockchainFee}${amountSymbol}`}
+        value={`${blockchainFee ? blockchainFee + amountSymbol : 'Undefined'}`}
+        thick
       />
       <View style={styles.bottomContainer}>
         <View style={styles.buttonContainer}>
@@ -635,10 +791,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingLeft: screenHeight * 0.025,
-      paddingRight: screenHeight * 0.025,
-      paddingTop: screenHeight * 0.025,
-      paddingBottom: screenHeight * 0.025,
+      padding: screenHeight * 0.025,
     },
     modalHeaderTitle: {
       color: '#3b3b3b',
@@ -695,13 +848,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     fromAndToIcon: {
       height: screenHeight * 0.035,
       width: screenHeight * 0.035,
-      borderRadius: screenHeight * 0.012,
+      borderRadius: screenHeight * 0.005,
+      backgroundColor: '#EAEBED',
       overflow: 'hidden',
     },
     sentLine: {
       flex: 1,
       width: 1,
-      backgroundColor: '#ccc',
+      backgroundColor: '#EAEBED',
       margin: screenHeight * 0.01,
     },
     fromAndToTitlesContainer: {
@@ -724,6 +878,60 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#1ebc73',
       fontSize: screenHeight * 0.025,
       fontWeight: '600',
+    },
+    otherAddressesNote: {
+      color: '#747e87',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '600',
+      paddingTop: screenHeight * 0.002,
+    },
+    tableCell: {
+      width: '100%',
+      justifyContent: 'center',
+      borderTopWidth: 1,
+      borderTopColor: '#eee',
+      paddingHorizontal: screenWidth * 0.05,
+      paddingVertical: screenHeight * 0.01,
+    },
+    tableCellRow: {
+      height: screenHeight * 0.035,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    tableCellSubRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    tableCellListDot: {
+      width: screenHeight * 0.005,
+      height: screenHeight * 0.005,
+      borderRadius: '50%',
+      backgroundColor: '#747e87',
+      margin: screenHeight * 0.01,
+    },
+    tableCellTitle: {
+      color: '#747e87',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '600',
+      fontStyle: 'normal',
+    },
+    tableCellValue: {
+      color: '#4A4A4A',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.018,
+      fontWeight: '700',
+      fontStyle: 'normal',
+      textAlign: 'right',
+    },
+    tableCellSubValue: {
+      color: '#4A4A4A',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.018,
+      fontWeight: '400',
+      fontStyle: 'normal',
+      textAlign: 'right',
     },
     bottomContainer: {
       flex: 1,

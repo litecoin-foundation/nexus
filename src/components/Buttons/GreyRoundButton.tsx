@@ -10,7 +10,8 @@ interface Props {
 const GreyRoundButton: React.FC<Props> = props => {
   const {onPress} = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return (
@@ -26,7 +27,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.045,
       width: screenHeight * 0.045,
       borderRadius: screenHeight * 0.015,
-      backgroundColor: '#f0f0f0',
+      backgroundColor: '#EAEBED',
       alignItems: 'center',
       justifyContent: 'center',
     },

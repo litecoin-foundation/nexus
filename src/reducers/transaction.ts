@@ -24,7 +24,6 @@ type IDecodedTx = {
   numConfirmations: number;
   timeStamp: string;
   fee: number;
-  destAddresses: string[];
   outputDetails: IOutputDetails[];
   previousOutpoints: PreviousOutPoint[];
   label: string | null | undefined;
@@ -58,6 +57,7 @@ type IDecodedTx = {
 
 export type IDisplayedTx = {
   hash: string;
+  isMweb: boolean;
   blockHash: string;
   blockHeight: number;
   amount: number;
@@ -67,8 +67,8 @@ export type IDisplayedTx = {
   timestamp: number;
   fee: number;
   lightning: boolean;
-  addresses: string[];
-  inputTxs: string[];
+  myOutputs: string[];
+  otherOutputs: string[];
   label: string | null | undefined;
   metaLabel: string;
   priceOnDateMeta: number;
@@ -204,11 +204,6 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
     let txs: IDecodedTx[] = [];
 
     for await (const tx of transactions.transactions) {
-      // deserialisation
-      const destAddresses: string[] = [];
-      tx.destAddresses?.forEach(addresses => {
-        destAddresses.push(addresses);
-      });
       const outputDetails: IOutputDetails[] = [];
       tx.outputDetails?.forEach(outputDetail => {
         const output: IOutputDetails = {
@@ -221,6 +216,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         };
         outputDetails.push(output);
       });
+
       const previousOutpoints: PreviousOutPoint[] = [];
       tx.previousOutpoints?.forEach(prevOutpoint => {
         previousOutpoints.push(prevOutpoint);
@@ -289,7 +285,6 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         numConfirmations: tx.numConfirmations,
         timeStamp: String(tx.timeStamp),
         fee: Number(tx.totalFees),
-        destAddresses,
         outputDetails,
         previousOutpoints,
         label: tx.label,
@@ -378,13 +373,33 @@ export const txDetailSelector = createSelector<
   IDisplayedTx[]
 >(txSelector, (txs: any) =>
   txs.map((data: any, index: number) => {
-    const addresses: string[] = [];
+    const myOutputs: string[] = [];
+    const otherOutputs: string[] = [];
+
+    // We can only determine MWEB txs by their outputs
+    // since lnd does not return valid inputs
+    let isMweb = false;
+
     data.outputDetails?.forEach((outputDetail: any) => {
-      addresses.push(outputDetail.address);
+      if (outputDetail.isOurAddress) {
+        myOutputs.push(outputDetail.address);
+      } else {
+        otherOutputs.push(outputDetail.address);
+      }
+
+      if (outputDetail.address.substring(0, 7) === 'ltcmweb') {
+        isMweb = true;
+      }
     });
+
+    // Consider tx as mweb if lnd cannot detect outputs
+    if (myOutputs.length === 0 && otherOutputs.length === 0) {
+      isMweb = true;
+    }
 
     return {
       hash: data.txHash,
+      isMweb: isMweb,
       blockHash: data.blockHash,
       blockHeight: data.blockHeight,
       amount: data.amount,
@@ -394,8 +409,8 @@ export const txDetailSelector = createSelector<
       timestamp: data.timeStamp,
       fee: data.fee,
       lightning: false,
-      addresses,
-      inputTxs: data.previousOutpoints,
+      myOutputs,
+      otherOutputs,
       label: data.label,
       metaLabel: data.metaLabel,
       priceOnDateMeta: data.priceOnDateMeta,

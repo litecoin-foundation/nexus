@@ -130,27 +130,19 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
     if (mwebFilter === undefined) {
     } else if (mwebFilter) {
-      txArrayFiltered = txArrayFiltered.filter(
-        (tx: any) => tx.addresses[0]?.substring(0, 7) === 'ltcmweb',
-      );
+      txArrayFiltered = txArrayFiltered.filter((tx: any) => tx.isMweb);
     } else {
-      txArrayFiltered = txArrayFiltered.filter(
-        (tx: any) => tx.addresses[0]?.substring(0, 7) !== 'ltcmweb',
-      );
+      txArrayFiltered = txArrayFiltered.filter((tx: any) => !tx.isMweb);
     }
 
     switch (txPrivacyTypeFilter) {
       case 'All':
         break;
       case 'Regular':
-        txArrayFiltered = txArrayFiltered.filter(
-          (tx: any) => tx.addresses[0]?.substring(0, 7) !== 'ltcmweb',
-        );
+        txArrayFiltered = txArrayFiltered.filter((tx: any) => !tx.isMweb);
         break;
       case 'MWEB':
-        txArrayFiltered = txArrayFiltered.filter(
-          (tx: any) => tx.addresses[0]?.substring(0, 7) === 'ltcmweb',
-        );
+        txArrayFiltered = txArrayFiltered.filter((tx: any) => tx.isMweb);
         break;
       default:
         break;
