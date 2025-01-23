@@ -669,12 +669,10 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
           <View style={styles.fromAndToTitlesContainer}>
             <Text style={styles.fromAndToTitle}>To</Text>
             {renderOutputs()}
-            {myOutputAddrs.length > ADDR_ROW_LIMIT ? (
+            {myOutputAddrs.length > 0 && otherOutputAddrs.length > 0 ? (
               <Text style={styles.otherAddressesNote}>
-                {`+ ${myOutputAddrs.length - ADDR_ROW_LIMIT} ${
-                  myOutputAddrs.length - ADDR_ROW_LIMIT > 1
-                    ? 'addresses'
-                    : 'address'
+                {`+ ${otherOutputAddrs.length} ${
+                  otherOutputAddrs.length > 1 ? 'addresses' : 'address'
                 } not belonging to you`}
               </Text>
             ) : otherOutputAddrs.length > ADDR_ROW_LIMIT ? (
