@@ -8,9 +8,11 @@ import {ScreenSizeContext} from '../../context/screenSize';
 
 interface CommonProps {
   title: string;
+  thick?: boolean;
   valueFontSize?: number;
   noBorder?: boolean;
   copyButton?: boolean;
+  blueValue?: boolean;
 }
 
 type ConditionalProps =
@@ -30,16 +32,26 @@ type Props = CommonProps & ConditionalProps;
 const TableCell: React.FC<Props> = props => {
   const {
     title,
+    thick,
     value,
     valueStyle,
     children,
     valueFontSize,
     noBorder,
     copyButton,
+    blueValue,
   } = props;
 
   const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height, valueFontSize, noBorder, copyButton);
+  const styles = getStyles(
+    width,
+    height,
+    thick,
+    valueFontSize,
+    noBorder,
+    copyButton,
+    blueValue,
+  );
 
   const handleShare = () => {
     Share.open({message: value || 'unknown'});
@@ -75,14 +87,16 @@ const TableCell: React.FC<Props> = props => {
 const getStyles = (
   screenWidth: number,
   screenHeight: number,
+  thick: boolean | undefined,
   valueFontSize: number | undefined,
   noBorder: boolean | undefined,
   copyButton: boolean | undefined,
+  blueValue: boolean | undefined,
 ) =>
   StyleSheet.create({
     container: {
       width: '100%',
-      height: screenHeight * 0.055,
+      height: thick ? screenHeight * 0.065 : screenHeight * 0.055,
       borderTopWidth: noBorder ? 0 : 1,
       borderTopColor: '#eee',
       backgroundColor: '#fff',
@@ -101,7 +115,7 @@ const getStyles = (
     },
     text: {
       flexBasis: copyButton ? '50%' : '70%',
-      color: '#4A4A4A',
+      color: blueValue ? '#2c72ff' : '#4a4a4a',
       fontSize: valueFontSize ? valueFontSize : screenHeight * 0.018,
       fontWeight: '700',
       fontFamily: 'Satoshi Variable',
