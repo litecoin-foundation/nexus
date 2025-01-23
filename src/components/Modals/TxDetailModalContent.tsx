@@ -48,9 +48,11 @@ interface Props {
 
 interface SendReceiveLayoutProps {
   isSend: boolean;
+  isMweb: boolean;
   allInputAddrs: string[];
   myOutputAddrs: string[];
   otherOutputAddrs: string[];
+  txId: string;
   dateString: string;
   amountSymbol: string;
   currentExplorer: string;
@@ -383,9 +385,11 @@ export default function TxDetailModalContent(props: Props) {
               transaction.metaLabel === 'Receive' ? (
                 <SendReceiveLayout
                   isSend={transaction.metaLabel === 'Send'}
+                  isMweb={transaction.isMweb}
                   allInputAddrs={allInputAddrs}
                   myOutputAddrs={myOutputs}
                   otherOutputAddrs={otherOutputs}
+                  txId={transaction.hash}
                   dateString={dateString}
                   amountSymbol={amountSymbol}
                   currentExplorer={currentExplorer}
@@ -521,9 +525,11 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
 const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
   const {
     isSend,
+    isMweb,
     allInputAddrs,
     myOutputAddrs,
     otherOutputAddrs,
+    txId,
     blockchainFee,
     dateString,
     amountSymbol,
@@ -534,7 +540,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, isMweb);
 
   const calculateAddressSize = (
     addresses: string[],
@@ -576,6 +582,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
   }
 
   const ADDR_ROW_LIMIT = 2;
+  const CHANGE_ADDR_ROW_LIMIT = 1;
 
   function renderInputs() {
     if (allInputAddrs.length > 0) {
@@ -596,15 +603,31 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
             ...styles.fromAddressTitle,
             fontSize: fromAddressSize,
           }}>
-          Undefined
+          Unknown
         </Text>
       );
     }
   }
 
   function renderOutputs() {
-    if (myOutputAddrs.length > 0) {
-      return myOutputAddrs.slice(0, ADDR_ROW_LIMIT).map((output, index) => (
+    // If it's a send tx we display one change address in blue color
+    const myOutputElements = myOutputAddrs
+      .slice(0, isSend ? CHANGE_ADDR_ROW_LIMIT : ADDR_ROW_LIMIT)
+      .map((output, index) => (
+        <Text
+          style={{
+            ...styles.toAddressTitle,
+            fontSize: toAddressSize,
+            color: isSend ? '#2c72ff' : '#1ebc73',
+          }}
+          key={'output-' + index}>
+          {output}
+        </Text>
+      ));
+
+    const otherOutputElements = otherOutputAddrs
+      .slice(0, ADDR_ROW_LIMIT)
+      .map((output, index) => (
         <Text
           style={{
             ...styles.toAddressTitle,
@@ -614,26 +637,96 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
           {output}
         </Text>
       ));
-    } else if (otherOutputAddrs.length > 0) {
-      return otherOutputAddrs.slice(0, ADDR_ROW_LIMIT).map((output, index) => (
-        <Text
-          style={{
-            ...styles.toAddressTitle,
-            fontSize: toAddressSize,
-          }}
-          key={'output-' + index}>
-          {output}
-        </Text>
-      ));
+    if (isSend) {
     } else {
+    }
+
+    if (myOutputElements.length === 0 && otherOutputElements.length === 0) {
       return (
         <Text
           style={{
             ...styles.toAddressTitle,
             fontSize: toAddressSize,
           }}>
-          Undefined
+          Unknown
         </Text>
+      );
+    } else {
+      if (isSend) {
+        return [...otherOutputElements, ...myOutputElements];
+      } else {
+        return myOutputElements;
+      }
+    }
+  }
+
+  const hiddenInputsNote = (
+    <Text style={styles.otherAddressesNote}>
+      {`+ ${allInputAddrs.length - ADDR_ROW_LIMIT} other input ${
+        allInputAddrs.length - ADDR_ROW_LIMIT > 1 ? 'addresses' : 'address'
+      }`}
+    </Text>
+  );
+
+  const strangerAddressesNote = (
+    <Text style={styles.otherAddressesNote}>
+      {`+ ${otherOutputAddrs.length} ${
+        otherOutputAddrs.length > 1 ? 'addresses' : 'address'
+      } not belonging to you`}
+    </Text>
+  );
+
+  const hiddenStrangerOutputsNote = (
+    <Text style={styles.otherAddressesNote}>
+      {`+ ${otherOutputAddrs.length - ADDR_ROW_LIMIT} other output ${
+        otherOutputAddrs.length - ADDR_ROW_LIMIT > 1 ? 'addresses' : 'address'
+      }`}
+    </Text>
+  );
+
+  const hiddenChangeAddressesNote = (
+    <Text style={styles.otherAddressesNote}>
+      {`+ ${myOutputAddrs.length - CHANGE_ADDR_ROW_LIMIT} change ${
+        myOutputAddrs.length - CHANGE_ADDR_ROW_LIMIT > 1
+          ? 'addresses'
+          : 'address'
+      }`}
+    </Text>
+  );
+
+  function renderInputNote() {
+    return (
+      <Fragment>
+        {allInputAddrs.length > ADDR_ROW_LIMIT ? (
+          hiddenInputsNote
+        ) : (
+          <Fragment />
+        )}
+      </Fragment>
+    );
+  }
+
+  function renderOutputNote() {
+    if (isSend) {
+      return (
+        <Fragment>
+          {otherOutputAddrs.length > ADDR_ROW_LIMIT ? (
+            hiddenStrangerOutputsNote
+          ) : (
+            <Fragment />
+          )}
+          {myOutputAddrs.length > CHANGE_ADDR_ROW_LIMIT ? (
+            hiddenChangeAddressesNote
+          ) : (
+            <Fragment />
+          )}
+        </Fragment>
+      );
+    } else {
+      return (
+        <Fragment>
+          {otherOutputAddrs.length > 0 ? strangerAddressesNote : <Fragment />}
+        </Fragment>
       );
     }
   }
@@ -641,27 +734,21 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
   return (
     <Fragment>
       <View style={styles.fromToContainer}>
-        <View style={styles.fromContainer}>
-          <View style={styles.fromAndToIconContainer}>
-            <View style={styles.fromAndToIcon} />
-            <View style={styles.sentLine} />
+        {isMweb ? (
+          <Fragment />
+        ) : (
+          <View style={styles.fromContainer}>
+            <View style={styles.fromAndToIconContainer}>
+              <View style={styles.fromAndToIcon} />
+              <View style={styles.sentLine} />
+            </View>
+            <View style={styles.fromAndToTitlesContainer}>
+              <Text style={styles.fromAndToTitle}>From</Text>
+              {renderInputs()}
+              {renderInputNote()}
+            </View>
           </View>
-          <View style={styles.fromAndToTitlesContainer}>
-            <Text style={styles.fromAndToTitle}>From</Text>
-            {renderInputs()}
-            {allInputAddrs.length > ADDR_ROW_LIMIT ? (
-              <Text style={styles.otherAddressesNote}>
-                {`+ ${allInputAddrs.length - ADDR_ROW_LIMIT} other input ${
-                  allInputAddrs.length - ADDR_ROW_LIMIT > 1
-                    ? 'addresses'
-                    : 'address'
-                }`}
-              </Text>
-            ) : (
-              <Fragment />
-            )}
-          </View>
-        </View>
+        )}
         <View style={styles.toContainer}>
           <View style={styles.fromAndToIconContainer}>
             <View style={styles.fromAndToIcon} />
@@ -669,32 +756,22 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
           <View style={styles.fromAndToTitlesContainer}>
             <Text style={styles.fromAndToTitle}>To</Text>
             {renderOutputs()}
-            {myOutputAddrs.length > 0 && otherOutputAddrs.length > 0 ? (
-              <Text style={styles.otherAddressesNote}>
-                {`+ ${otherOutputAddrs.length} ${
-                  otherOutputAddrs.length > 1 ? 'addresses' : 'address'
-                } not belonging to you`}
-              </Text>
-            ) : otherOutputAddrs.length > ADDR_ROW_LIMIT ? (
-              <Text style={styles.otherAddressesNote}>
-                {`+ ${otherOutputAddrs.length - ADDR_ROW_LIMIT} other input ${
-                  otherOutputAddrs.length - ADDR_ROW_LIMIT > 1
-                    ? 'addresses'
-                    : 'address'
-                }`}
-              </Text>
-            ) : (
-              <Fragment />
-            )}
+            {renderOutputNote()}
           </View>
         </View>
       </View>
-      <TableCell title="TIME & DATE" value={dateString} thick />
+      <TableCell
+        title="TX ID"
+        value={txId}
+        thick
+        valueFontSize={SCREEN_HEIGHT * 0.012}
+        copyButton
+      />
       <TableCell
         title="NETWORK FEE"
-        value={`${blockchainFee ? blockchainFee + amountSymbol : 'Undefined'}`}
-        thick
+        value={`${blockchainFee ? blockchainFee + amountSymbol : 'Unknown'}`}
       />
+      <TableCell title="TIME & DATE" value={dateString} />
       <View style={styles.bottomContainer}>
         <View style={styles.buttonContainer}>
           <BlueButton
@@ -712,7 +789,11 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  isMweb?: boolean,
+) =>
   StyleSheet.create({
     container: {
       position: 'absolute',
@@ -819,7 +900,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingBottom: screenHeight * 0.015,
     },
     fromToContainer: {
-      height: screenHeight * 0.3,
+      height: isMweb ? screenHeight * 0.2 : screenHeight * 0.3,
       width: '100%',
       flexDirection: 'column',
       justifyContent: 'flex-start',
