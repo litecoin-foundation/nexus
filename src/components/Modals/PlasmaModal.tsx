@@ -7,7 +7,6 @@ import Animated, {
   useSharedValue,
   withTiming,
   withSpring,
-  Easing,
   ReduceMotion,
   runOnJS,
 } from 'react-native-reanimated';
@@ -71,6 +70,7 @@ export default function PlasmaModal(props: Props) {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -434,35 +434,35 @@ export default function PlasmaModal(props: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 0,
-    height: '100%',
-    width: '100%',
-    flexDirection: 'column',
-    margin: 0,
-    zIndex: 10,
-  },
-  back: {
-    position: 'absolute',
-    top: 0,
-    height: '100%',
-    width: '100%',
-    backgroundColor: '#1162e6',
-    zIndex: 0,
-  },
-  gap: {
-    backgroundColor: '#1162e6',
-    zIndex: 2,
-  },
-  closeArea: {
-    height: '100%',
-    width: '100%',
-  },
-  contentBody: {
-    width: '100%',
-    backgroundColor: 'transparent',
-    zIndex: 1,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      position: 'absolute',
+      top: 0,
+      width: screenWidth,
+      height: screenHeight,
+      margin: 0,
+      zIndex: 10,
+    },
+    back: {
+      position: 'absolute',
+      top: 0,
+      height: '100%',
+      width: '100%',
+      backgroundColor: '#1162e6',
+      zIndex: 0,
+    },
+    gap: {
+      backgroundColor: '#1162e6',
+      zIndex: 2,
+    },
+    closeArea: {
+      height: '100%',
+      width: '100%',
+    },
+    contentBody: {
+      width: '100%',
+      backgroundColor: 'transparent',
+      zIndex: 1,
+    },
+  });

@@ -24,6 +24,7 @@ import {
   ScreenSizeContext,
   deviceList,
 } from './src/context/screenSize';
+import {PopUpProvider, PopUpContext} from './src/context/popUpContext';
 
 import {useAppDispatch} from './src/store/hooks';
 import {setDeviceNotificationToken} from './src/reducers/settings';
@@ -83,6 +84,11 @@ function ContextExecutable(props: any) {
 
 const App: React.FC = () => {
   const [deviceToken, setDeviceToken] = useState('');
+
+  function RenderPopUp() {
+    const {PopUp} = useContext(PopUpContext);
+    return PopUp;
+  }
 
   useLayoutEffect(() => {
     Notifications.registerRemoteNotifications();
@@ -176,10 +182,13 @@ const App: React.FC = () => {
                 <FlexaContext.FlexaContextProvider
                   publishableKey={flexaPublishableKey}>
                   <ContextExecutable deviceToken={deviceToken} />
-                  <GestureHandlerRootView style={styles.gestureView}>
-                    <RootNavigator />
-                    <Error />
-                  </GestureHandlerRootView>
+                  <PopUpProvider>
+                    <GestureHandlerRootView style={styles.gestureView}>
+                      <RenderPopUp />
+                      <RootNavigator />
+                      <Error />
+                    </GestureHandlerRootView>
+                  </PopUpProvider>
                 </FlexaContext.FlexaContextProvider>
               </PersistGate>
             </Provider>

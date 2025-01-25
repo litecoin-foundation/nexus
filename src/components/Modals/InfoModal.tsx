@@ -1,9 +1,12 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {triggerHeavyFeedback} from '../../lib/utils/haptic';
 import PlasmaModal from './PlasmaModal';
+
+import {ScreenSizeContext} from '../../context/screenSize';
+import {PopUpContext} from '../../context/popUpContext';
 
 interface Props {
   isVisible: boolean;
@@ -15,6 +18,10 @@ interface Props {
 
 const InfoModal: React.FC<Props> = props => {
   const {isVisible, close, textColor, text, disableBlur} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   useEffect(() => {
     if (isVisible) {
@@ -28,7 +35,9 @@ const InfoModal: React.FC<Props> = props => {
     }
   });
 
-  return (
+  const {showPopUp} = useContext(PopUpContext);
+
+  const modalT = (
     <PlasmaModal
       isOpened={isVisible}
       close={() => close()}
@@ -56,50 +65,54 @@ const InfoModal: React.FC<Props> = props => {
       )}
     />
   );
+
+  useEffect(() => {
+    showPopUp(modalT);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible, close, textColor, text, disableBlur]);
+
+  return <></>;
 };
 
-const styles = StyleSheet.create({
-  modal: {
-    flex: 1,
-    backgroundColor: 'white',
-    width: '100%',
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
-    position: 'absolute',
-    bottom: 0,
-    shadowColor: '#000000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
-    shadowOffset: {
-      height: -3,
-      width: 0,
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    modal: {
+      position: 'absolute',
+      bottom: 0,
+      backgroundColor: '#fff',
+      width: screenWidth,
+      height: screenHeight * 0.1,
+      borderTopLeftRadius: 35,
+      borderTopRightRadius: 35,
+      shadowColor: '#000000',
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      elevation: 2,
+      shadowOffset: {
+        height: -3,
+        width: 0,
+      },
     },
-  },
-  noMargin: {
-    margin: 0,
-  },
-  textContainer: {
-    flex: 1,
-    alignItems: 'center',
-    paddingLeft: 25,
-    paddingRight: 25,
-    paddingTop: 25,
-    paddingBottom: 25,
-    height: 95,
-  },
-  text: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    lineHeight: 15,
-    letterSpacing: -0.18,
-  },
-  redText: {
-    color: '#F04E37',
-  },
-  greenText: {
-    color: '#78C223',
-  },
-});
+    noMargin: {
+      margin: 0,
+    },
+    textContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: screenHeight * 0.025,
+    },
+    text: {
+      fontSize: screenHeight * 0.018,
+      fontWeight: 'bold',
+      letterSpacing: -0.18,
+    },
+    redText: {
+      color: '#F04E37',
+    },
+    greenText: {
+      color: '#78C223',
+    },
+  });
 
 export default InfoModal;
