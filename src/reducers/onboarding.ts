@@ -3,6 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import {unzip, subscribe} from 'react-native-zip-archive';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Crypto from 'react-native-quick-crypto';
+import RNFS from 'react-native-fs';
 
 import {AppThunk} from './types';
 import {fileExists} from '../lib/utils/file';
@@ -21,6 +22,7 @@ interface IOnboardingState {
   task: undefined | 'downloading' | 'unzipping' | 'complete' | 'failed';
   downloadProgress?: number;
   unzipProgress?: number;
+  lastLoadedCachePart: number;
 }
 
 // initial state
@@ -34,6 +36,7 @@ const initialState = {
   task: undefined,
   downloadProgress: 0,
   unzipProgress: 0,
+  lastLoadedCachePart: 0,
 } as IOnboardingState;
 
 // actions
@@ -60,6 +63,9 @@ const getNeutrinoCacheFailedAction = createAction(
 );
 const getNeutrinoCacheSuccessAction = createAction(
   'onboarding/getNeutrinoCacheSuccessAction',
+);
+const setLastLoadedCachePart = createAction<number>(
+  'onboarding/setLastLoadedCachePart',
 );
 
 // functions
@@ -143,6 +149,115 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
       });
   }
 };
+
+export const getNeutrinoCacheMultipart =
+  (): AppThunk => async (dispatch, getState) => {
+    const {task, lastLoadedCachePart} = getState().onboarding;
+
+    if (task === 'complete') {
+      console.log('neutrino cache ready!');
+      return;
+    } else {
+      // Check for free space
+      const fsInfoResult = await RNFS.getFSInfo();
+      // 700MB
+      if (fsInfoResult.freeSpace < 700 * Math.pow(2, 20)) {
+        throw new Error('No space for presync.');
+      }
+
+      console.log('multipart fetching mainnet.zip');
+
+      const partNum = 10;
+      const nextPart = lastLoadedCachePart + 1;
+
+      ReactNativeBlobUtil.config({
+        fileCache: true,
+        appendExt: 'zip',
+        path: `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/mainnet-${nextPart}.zip`,
+        IOSBackgroundTask: true,
+      })
+        .fetch(
+          'GET',
+          `https://static-mobile.litecoin.com/mainnet-${nextPart}.zip`,
+        )
+        .progress((received, total) => {
+          dispatch(
+            updateNeutrinoCacheDownloadProgress(
+              Number(received) / Number(total) / partNum,
+            ),
+          );
+        })
+        .then(async response => {
+          const {status} = response.info();
+          if (status === 200) {
+            // successful download
+            if (nextPart === partNum) {
+              // combine and extract
+              const cacheParts = [
+                'mainnet-1.zip',
+                'mainnet-2.zip',
+                'mainnet-3.zip',
+                'mainnet-4.zip',
+                'mainnet-5.zip',
+                'mainnet-6.zip',
+                'mainnet-7.zip',
+                'mainnet-8.zip',
+                'mainnet-9.zip',
+                'mainnet-10.zip',
+              ];
+              const outputFilePath = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/mainnet.zip`;
+              dispatch(combineZipPartsAndExtract(cacheParts, outputFilePath));
+            } else {
+              // download next part
+              dispatch(setLastLoadedCachePart(nextPart));
+              // recursive call, syncronous dispatch queue is crucial here
+              // as we save index of a finished part and start loading the next one
+              dispatch(getNeutrinoCacheMultipart());
+            }
+          } else {
+            dispatch(getNeutrinoCacheFailedAction());
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          dispatch(showError(String(error)));
+          dispatch(getNeutrinoCacheFailedAction());
+          return;
+        });
+    }
+  };
+
+const combineZipPartsAndExtract =
+  (fileParts: string[], outputFilePath: string): AppThunk =>
+  async dispatch => {
+    try {
+      // Ensure the output file doesn't already exist
+      if (await RNFS.exists(outputFilePath)) {
+        await RNFS.unlink(outputFilePath);
+      }
+
+      // Open output file for appending
+      await RNFS.writeFile(outputFilePath, '', 'base64');
+
+      for await (const part of fileParts) {
+        const partPath = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/${part}`;
+
+        // Check if the part exists
+        if (!(await RNFS.exists(partPath))) {
+          throw new Error(`File part ${part} not found`);
+        }
+
+        // Read part and append to the output file
+        const partData = await RNFS.readFile(partPath, 'base64'); // Read in binary format
+        await RNFS.appendFile(outputFilePath, partData, 'base64');
+      }
+
+      console.log('All parts combined successfully!');
+      dispatch(extractNeutrinoCache());
+    } catch (error) {
+      console.error('Error combining files:', error);
+    }
+  };
 
 const extractNeutrinoCache = (): AppThunk => async dispatch => {
   try {
@@ -243,6 +358,10 @@ export const onboardingSlice = createSlice({
       ...state,
       task: 'complete',
       unzipProgress: 0,
+    }),
+    setLastLoadedCachePart: (state, action: PayloadAction<number>) => ({
+      ...state,
+      lastLoadedCachePart: action.payload,
     }),
   },
 });

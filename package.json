@@ -63,6 +63,7 @@
     "react-native": "0.76.1",
     "react-native-blob-util": "^0.19.11",
     "react-native-device-info": "^11.1.0",
+    "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.21.2",
     "react-native-get-random-values": "^1.11.0",
     "react-native-icloudstore": "github:manicakes/react-native-icloudstore#20f20106d5c52adcef68ebb5b8833c5160eb4b50",
