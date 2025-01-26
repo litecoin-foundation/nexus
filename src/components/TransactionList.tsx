@@ -87,7 +87,8 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24;
-  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
+  // We never scroll folded list, therefore no need to set that height
+  // const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const [displayedTxs, setDisplayedTxs] = useState<any[]>([]);
@@ -168,15 +169,24 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   // DashboardButton is 110, txTitleContainer is screenHeight * 0.07 in Main component
   // Gap in SearchTransaction component is 200 + 30 padding
-  const scrollContainerHeight = folded
-    ? SCREEN_HEIGHT - FOLD_SHEET_POINT - 110 - SCREEN_HEIGHT * 0.07
-    : folded === undefined
-    ? SCREEN_HEIGHT - 230
-    : SCREEN_HEIGHT - UNFOLD_SHEET_POINT - 110 - SCREEN_HEIGHT * 0.07;
+  const [scrollContainerHeight, setScrollContainerHeight] = useState(
+    SCREEN_HEIGHT - 230,
+  );
+  // Wait until scroll height is set then render the list
+  const [renderTxs, setRenderTxs] = useState(false);
+
+  useLayoutEffect(() => {
+    if (folded !== undefined) {
+      setScrollContainerHeight(
+        SCREEN_HEIGHT - UNFOLD_SHEET_POINT - 110 - SCREEN_HEIGHT * 0.07,
+      );
+    }
+    setRenderTxs(true);
+  }, [folded, SCREEN_HEIGHT, UNFOLD_SHEET_POINT]);
 
   let curFrameY = -1;
 
-  return (
+  return renderTxs ? (
     <View style={{height: scrollContainerHeight}}>
       <SectionList
         bounces={false}
@@ -230,6 +240,8 @@ const TransactionList = forwardRef((props: Props, ref) => {
         onViewableItemsChanged={onViewableItemsChanged}
       />
     </View>
+  ) : (
+    <></>
   );
 });
 
