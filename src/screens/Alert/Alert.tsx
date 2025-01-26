@@ -1,23 +1,28 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, FlatList, Text, Platform} from 'react-native';
+import React, {useState, useContext} from 'react';
+import {View, StyleSheet, FlatList, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Header from '../../components/Header';
 import AlertCell from '../../components/Cells/AlertCell';
-import AlertModal from '../../components/Modals/AlertModal';
+import AlertModal from '../../components/Modals/AlertModalContent';
 import {removeAlert} from '../../reducers/alerts';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface Props {}
 
 const Alert: React.FC<Props> = () => {
+  const {width, height} = useContext(ScreenSizeContext);
+  const styles = getStyles(width, height);
+
   const dispatch = useAppDispatch();
   const [alertModalVisible, setAlertModalVisible] = useState(false);
-  const [selectedID, setSelectedID] = useState('');
+  const [selectedID, setSelectedID] = useState(-1);
   const {alerts} = useAppSelector(state => state.alerts);
 
-  const handleAlertPress = (index: string) => {
+  const handleAlertPress = (index: number) => {
     setSelectedID(index);
     setAlertModalVisible(true);
   };
@@ -28,7 +33,6 @@ const Alert: React.FC<Props> = () => {
         Create alerts to be notified when the price of Litecoin hits a target
         value.
       </Text>
-      <View style={{paddingTop: 14}} />
       <Text style={styles.emptySectionListText}>
         Your alerts will appear here.
       </Text>
@@ -45,7 +49,7 @@ const Alert: React.FC<Props> = () => {
         renderItem={({item}) => (
           <AlertCell
             data={item}
-            onPress={(id: string) => handleAlertPress(id)}
+            onPress={(index: number) => handleAlertPress(index)}
           />
         )}
         ListEmptyComponent={EmptySectionList}
@@ -59,36 +63,41 @@ const Alert: React.FC<Props> = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  headerRight: {
-    paddingRight: 18,
-  },
-  emptySectionListContainer: {
-    marginTop: 30,
-    alignItems: 'center',
-    paddingHorizontal: 34,
-  },
-  emptySectionListText: {
-    color: '#7C96AE',
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 17,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    headerRight: {
+      paddingRight: screenWidth * 0.04,
+    },
+    emptySectionListContainer: {
+      alignItems: 'center',
+      marginTop: screenHeight * 0.03,
+      paddingHorizontal: screenWidth * 0.04,
+    },
+    emptySectionListText: {
+      color: '#7C96AE',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.016,
+      fontStyle: 'normal',
+      fontWeight: '600',
+      textAlign: 'center',
+      marginBottom: screenHeight * 0.02,
+    },
+    headerTitle: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
+      fontStyle: 'normal',
+      fontWeight: '700',
+    },
+  });
 
-export const AlertNavigationOptions = navigation => {
+export const AlertNavigationOptions = (navigation: any) => {
+  const {width, height} = useContext(ScreenSizeContext);
+  const styles = getStyles(width, height);
+
   return {
     headerTitle: () => <Text style={styles.headerTitle}>Price Alerts</Text>,
     headerTitleAlign: 'left',

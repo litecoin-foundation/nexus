@@ -2,7 +2,8 @@ import React, {useEffect, useContext} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {triggerHeavyFeedback} from '../../lib/utils/haptic';
+import GreyRoundButton from '../Buttons/GreyRoundButton';
+import BlueButton from '../Buttons/BlueButton';
 import PlasmaModal from './PlasmaModal';
 
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -11,29 +12,15 @@ import {PopUpContext} from '../../context/popUpContext';
 interface Props {
   isVisible: boolean;
   close: () => void;
-  textColor: string;
-  text: string;
-  disableBlur?: boolean;
+  onPress: () => void;
 }
 
-const InfoModal: React.FC<Props> = props => {
-  const {isVisible, close, textColor, text, disableBlur} = props;
+const AlertModal: React.FC<Props> = props => {
+  const {isVisible, close, onPress} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  useEffect(() => {
-    if (isVisible) {
-      triggerHeavyFeedback();
-    }
-  });
-
-  useEffect(() => {
-    if (isVisible) {
-      setTimeout(() => close(), 2500);
-    }
-  });
 
   const {showPopUp} = useContext(PopUpContext);
 
@@ -45,21 +32,21 @@ const InfoModal: React.FC<Props> = props => {
       animDuration={250}
       gapInPixels={0}
       backSpecifiedStyle={{backgroundColor: 'transparent'}}
-      disableBlur={disableBlur}
       renderBody={(_, __, ___, ____, cardTranslateAnim) => (
         <Animated.View style={[styles.modal, cardTranslateAnim]}>
-          <View style={styles.textContainer}>
-            <Text
-              style={[
-                styles.text,
-                textColor === 'red'
-                  ? styles.redText
-                  : textColor === 'green'
-                  ? styles.greenText
-                  : null,
-              ]}>
-              {text}
-            </Text>
+          <View style={styles.modalHeaderContainer}>
+            <Text style={styles.modalHeaderTitle}>Delete</Text>
+            <GreyRoundButton onPress={() => close()} />
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <BlueButton
+              value="Delete Alert"
+              onPress={() => {
+                onPress();
+                close();
+              }}
+            />
           </View>
         </Animated.View>
       )}
@@ -69,7 +56,7 @@ const InfoModal: React.FC<Props> = props => {
   useEffect(() => {
     showPopUp(modal);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible, close, textColor, text, disableBlur]);
+  }, [isVisible, close, onPress]);
 
   return <></>;
 };
@@ -81,10 +68,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       bottom: 0,
       backgroundColor: '#fff',
       width: screenWidth,
-      height: screenHeight * 0.1,
+      height: screenHeight * 0.2,
       borderTopLeftRadius: 30,
       borderTopRightRadius: 30,
-      shadowColor: '#000000',
+      shadowColor: '#000',
       shadowOpacity: 0.1,
       shadowRadius: 5,
       elevation: 2,
@@ -93,23 +80,27 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
         width: 0,
       },
     },
-    textContainer: {
-      flex: 1,
-      justifyContent: 'center',
+    modalHeaderContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       alignItems: 'center',
-      padding: screenHeight * 0.025,
+      padding: screenWidth * 0.04,
+    },
+    modalHeaderTitle: {
+      color: '#4E6070',
+      fontSize: screenHeight * 0.028,
+      fontWeight: '700',
+    },
+    buttonContainer: {
+      width: '100%',
+      paddingHorizontal: screenWidth * 0.04,
+      paddingBottom: screenHeight * 0.03,
     },
     text: {
-      fontSize: screenHeight * 0.018,
+      color: '#4A4A4A',
+      fontSize: screenHeight * 0.015,
       fontWeight: 'bold',
-      letterSpacing: -0.18,
-    },
-    redText: {
-      color: '#F04E37',
-    },
-    greenText: {
-      color: '#78C223',
     },
   });
 
-export default InfoModal;
+export default AlertModal;
