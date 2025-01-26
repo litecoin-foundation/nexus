@@ -118,6 +118,7 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
       fileCache: true,
       appendExt: 'zip',
       path: `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/mainnet.zip`,
+      IOSBackgroundTask: true,
     })
       .fetch('GET', 'https://static-mobile.litecoin.com/mainnet.zip')
       .progress((received, total) => {

@@ -6,6 +6,7 @@ import {
   Text,
   Pressable,
   Image,
+  Platform,
 } from 'react-native';
 import Animated, {
   interpolateColor,
@@ -284,6 +285,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#20BB74',
       fontSize: screenHeight * 0.022,
       textAlignVertical: 'top',
+      paddingTop: Platform.OS === 'android' ? 0 : 3,
     },
     pasteContainer: {
       right: 54,
@@ -343,6 +345,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       fontSize: screenHeight * 0.022,
       textAlignVertical: 'top',
+      opacity: 0,
     },
     icon: {
       width: 20,
