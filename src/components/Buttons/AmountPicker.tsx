@@ -1,17 +1,15 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {Pressable, StyleSheet} from 'react-native';
+import {Platform, Pressable, StyleSheet} from 'react-native';
 import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
 import {useAppSelector} from '../../store/hooks';
-import {
-  satsToSubunitSelector,
-  subunitSymbolSelector,
-} from '../../reducers/settings';
+import {subunitSymbolSelector} from '../../reducers/settings';
 import {
   Canvas,
   Image,
   matchFont,
   RoundedRect,
   Text as SkiaText,
+  useFont,
   useImage,
 } from '@shopify/react-native-skia';
 import {defaultButtonSpring} from '../../theme/spring';
@@ -48,14 +46,15 @@ const AmountPicker: React.FC<Props> = props => {
     fontSize: SCREEN_HEIGHT * 0.018,
     fontStyle: 'normal',
     fontWeight: '700',
-  };
-  const font = matchFont(fontStyle);
+  } as const;
+
+  const font = Platform.select({
+    ios: matchFont(fontStyle),
+    default: useFont(require('../../fonts/Satoshi-Variable.ttf'), 12),
+  });
 
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
-  const convertToSubunit = useAppSelector(state =>
-    satsToSubunitSelector(state),
-  );
 
   const handleFontSizeChange = () => {
     if (toggleLTC && active) {

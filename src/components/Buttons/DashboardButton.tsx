@@ -9,10 +9,16 @@ import {
   interpolateColors,
   matchFont,
   rect,
+  useFont,
   useImage,
 } from '@shopify/react-native-skia';
 import React, {useEffect, useContext} from 'react';
-import {ImageSourcePropType, Pressable, StyleSheet} from 'react-native';
+import {
+  ImageSourcePropType,
+  Platform,
+  Pressable,
+  StyleSheet,
+} from 'react-native';
 import {
   useDerivedValue,
   useSharedValue,
@@ -53,8 +59,12 @@ const DashboardButton: React.FC<Props> = props => {
     fontSize: 12,
     fontStyle: 'normal',
     fontWeight: '700',
-  };
-  const font = matchFont(fontStyle);
+  } as const;
+
+  const font = Platform.select({
+    ios: matchFont(fontStyle),
+    default: useFont(require('../../fonts/Satoshi-Variable.ttf'), 12),
+  });
   const image = useImage(imageSource);
 
   // animation
