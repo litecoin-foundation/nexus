@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, Switch} from 'react-native';
+import {StyleSheet, View, Switch} from 'react-native';
 
 interface Props {
   onPress: (bool: boolean) => void;
@@ -16,21 +16,37 @@ const SwitchButton: React.FC<Props> = props => {
   };
 
   return (
-    <Switch
-      value={triggered}
-      onValueChange={(value: boolean) => handlePress(value)}
-      trackColor={{true: 'white'}}
-      thumbColor={triggered ? '#2C72FF' : '#C2C2C2'}
-      ios_backgroundColor="#E9E9E948"
-      style={triggered ? styles.triggered : null}
-    />
+    <View
+      style={
+        triggered
+          ? {...styles.switchContainer, ...styles.triggered}
+          : styles.switchContainer
+      }>
+      <Switch
+        value={triggered}
+        onValueChange={(value: boolean) => handlePress(value)}
+        trackColor={{true: '#fff'}}
+        thumbColor={triggered ? '#2C72FF' : '#C2C2C2'}
+        ios_backgroundColor="#E9E9E948"
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  switchContainer: {
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+  },
   triggered: {
-    borderWidth: 0.5,
-    borderColor: '#D5D5D5',
+    borderWidth: 1,
+    borderColor: '#d8d2d2c0',
   },
 });
 
