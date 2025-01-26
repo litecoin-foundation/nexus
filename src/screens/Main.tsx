@@ -17,11 +17,14 @@ import {
   useImage,
   Shadow,
 } from '@shopify/react-native-skia';
-import {payment, TransactionRequest} from '@flexahq/flexa-react-native';
+import {
+  CUSTODY_MODEL,
+  payment,
+  TransactionRequest,
+} from '@flexahq/flexa-react-native';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
-import {txDetailSelector} from '../reducers/transaction';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';
@@ -33,60 +36,19 @@ import WalletsModalContent from './../components/Modals/WalletsModalContent';
 import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
-import {useAppDispatch, useAppSelector} from '../store/hooks';
 import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
-import {unsetDeeplink} from '../reducers/deeplinks';
-import SendModal from '../components/Modals/SendModal';
 import DatePicker from '../components/DatePicker';
+import FlexaSendModalContent from '../components/Modals/FlexaSendModal';
+import {useAppDispatch, useAppSelector} from '../store/hooks';
+import {txDetailSelector} from '../reducers/transaction';
+import {unsetDeeplink} from '../reducers/deeplinks';
+import {sleep} from '../lib/utils/poll';
 
 import {ScreenSizeContext} from '../context/screenSize';
-import {sleep} from '../lib/utils/poll';
 
 interface URIHandlerRef {
   handleURI: (data: string) => void;
 }
-
-const paymentCallback = (transactionRequest: TransactionRequest) => {
-  //execute the transaction depending on parent app logic here
-  const {transaction, transactionSent, transactionFailed} = transactionRequest;
-
-  /* transaction contains
-    destinationAddress: string; eip155:1:0x123... destination address for payment
-    amount: string; // the fee price in decimals string representation
-    feePriorityPrice: string; the fee priority price in decimals string representation
-    feePrice: string; the fee price in decimals string representation
-    size: string; // transaction size bigint (i.e. gasLimit)
-    assetId: string; // assetId CAIP19 notation of the asset that is to be sent
-    accountId: string; // which accountId was used for the payment (i.e which wallet to send from)
-  */
-
-  // const TX_SIGNATURE = yourTransactionSendFunction({ ...transaction });
-  const TX_SIGNATURE = null;
-
-  // This helps Flexa confirm the transaction quickly for self-custody wallets. It is a callback sent back to the SDK with the transaction signature i.e hash
-  transactionSent(TX_SIGNATURE);
-
-  // Or call transactionFailed to close the commerce session initiated in the Flexa SDK
-  transactionFailed();
-};
-
-const flexaAssetAccounts = [
-  {
-    displayName: 'Main Wallet',
-    accountId: 'flexa_uuid_here', // TODO
-    custodyModel: 'LOCAL',
-    availableAssets: [
-      {
-        assetId: 'bip122:12a765e31ffd4059bada1e25190f6e98',
-        symbol: 'LTC',
-        displayName: 'Litecoin',
-        balance: 0.5,
-        balanceAvailable: 0.5,
-        icon: 'https://cdn.myweb/ethLogoURL.png',
-      },
-    ],
-  },
-];
 
 type RootStackParamList = {
   Main: {
@@ -138,6 +100,62 @@ const Main: React.FC<Props> = props => {
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [currentWallet, setCurrentWallet] = useState('Main Wallet');
+  const uniqueId = useAppSelector(state => state.onboarding.uniqueId);
+  const totalBalance = useAppSelector(state => state.balance.totalBalance);
+  const confirmedBalance = useAppSelector(
+    state => state.balance.confirmedBalance,
+  );
+
+  // flexa
+  const flexaAssetAccounts = [
+    {
+      displayName: 'Main Wallet',
+      assetAccountHash: uniqueId,
+      availableAssets: [
+        {
+          assetId: 'bip122:12a765e31ffd4059bada1e25190f6e98/slip44:2',
+          symbol: 'LTC',
+          displayName: 'Litecoin',
+          balance: Number(totalBalance) / 100000000, // sats -> Litecoin
+          balanceAvailable: Number(confirmedBalance) / 100000000,
+          icon: require('../assets/images/ltc-logo.png'),
+        },
+      ],
+      custodyModel: CUSTODY_MODEL.LOCAL,
+    },
+  ];
+
+  const manualPayment = async () => {
+    payment(flexaAssetAccounts, paymentCallback);
+  };
+
+  const paymentCallback = (transactionRequest: TransactionRequest) => {
+    const {transaction, transactionSent, transactionFailed} =
+      transactionRequest;
+
+    console.log('flexa paymentCallback');
+
+    console.log(transaction);
+
+    /* transaction contains
+      destinationAddress: string; eip155:1:0x123... destination address for payment
+      amount: string; // the fee price in decimals string representation
+      feePriorityPrice: string; the fee priority price in decimals string representation
+      feePrice: string; the fee price in decimals string representation
+      size: string; // transaction size bigint (i.e. gasLimit)
+      assetId: string; // assetId CAIP19 notation of the asset that is to be sent
+      accountId: string; // which accountId was used for the payment (i.e which wallet to send from)
+    */
+
+    // const TX_SIGNATURE = yourTransactionSendFunction({ ...transaction });
+    const TX_SIGNATURE = null;
+
+    // This helps Flexa confirm the transaction quickly for self-custody wallets. It is a callback sent back to the SDK with the transaction signature i.e hash
+    // transactionSent(TX_SIGNATURE);
+
+    // Or call transactionFailed to close the commerce session initiated in the Flexa SDK
+    // transactionFailed();
+  };
 
   const sendCardRef = useRef<URIHandlerRef>(null);
 
@@ -412,11 +430,6 @@ const Main: React.FC<Props> = props => {
     walletButtonOpacity,
   ]);
 
-  // flexa
-  const manualPayment = async () => {
-    payment(flexaAssetAccounts, paymentCallback);
-  };
-
   const TxListComponent = (
     <View>
       <View style={styles.txTitleContainer}>
@@ -609,16 +622,22 @@ const Main: React.FC<Props> = props => {
         )}
       />
 
-      {/* <SendModal
-        isVisible={isSendModalTriggered}
-        handleConfirm={() => handleConfirmSend()}
+      <PlasmaModal
+        isOpened={isSendModalTriggered}
         close={() => {
           triggerSendModal(false);
-          dispatch(unsetDeeplink());
         }}
-        amount={32}
-        address={'fdsfdsfdsfds'}
-      /> */}
+        isFromBottomToTop={true}
+        animDuration={250}
+        gapInPixels={0}
+        backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
+        renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
+          <FlexaSendModalContent
+            cardTranslateAnim={cardTranslateAnim}
+            close={() => triggerSendModal(false)}
+          />
+        )}
+      />
     </Animated.View>
   );
 };

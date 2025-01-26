@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import {TouchableOpacity, Text, StyleSheet} from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedProps,
@@ -19,34 +19,23 @@ import {store, pStore} from '../../../src/store';
 import Header from './Header';
 import PlasmaModal from '../../../src/components/Modals/PlasmaModal';
 import PinModalContent from '../../../src/components/Modals/PinModalContent';
-import PinModal from '../../../src/components/Modals/PinModal';
 
 interface Props {
-  activeComponent: number,
+  activeComponent: number;
 }
 
 const Screens: React.FC<Props> = props => {
-
   const [activeScreen, setActiveScreen] = useState(props.activeComponent || 0);
   const [isModalClosed, setIsModalClosed] = useState(false);
 
   const cardTranslateAnim = useAnimatedStyle(() => {
     return {
-      transform: [
-        {translateX: 0},
-        {translateY: 0},
-      ],
+      transform: [{translateX: 0}, {translateY: 0}],
     };
   });
-  
+
   const screenList = [
     <Header />,
-    <PinModal
-      isVisible={!isModalClosed}
-      close={() => setIsModalClosed(true)}
-      handleValidationFailure={() => {}}
-      handleValidationSuccess={() => {}}
-    />,
     <PlasmaModal
       isOpened={!isModalClosed}
       close={() => setIsModalClosed(true)}
@@ -54,13 +43,7 @@ const Screens: React.FC<Props> = props => {
       animDuration={250}
       gapInPixels={0}
       backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
-      renderBody={(
-        _,
-        __,
-        ___,
-        ____,
-        cardTranslateAnim: any,
-      ) => (
+      renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
         <PinModalContent
           cardTranslateAnim={cardTranslateAnim}
           close={() => {}}
@@ -68,7 +51,7 @@ const Screens: React.FC<Props> = props => {
           handleValidationSuccess={() => {}}
         />
       )}
-    />
+    />,
   ];
 
   return (
@@ -79,14 +62,12 @@ const Screens: React.FC<Props> = props => {
         </GestureHandlerRootView>
       </PersistGate>
     </Provider>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
-  container: {
-
-  },
-  text: { color: 'white' },
+  container: {},
+  text: {color: 'white'},
 });
 
 export default Screens;

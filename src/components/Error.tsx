@@ -1,5 +1,5 @@
 import React from 'react';
-import InfoModal from './Modals/InfoModal';
+import InfoModal from './Modals/InfoModalContent';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {hideError} from '../reducers/errors';
 

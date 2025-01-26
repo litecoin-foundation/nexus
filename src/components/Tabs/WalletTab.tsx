@@ -9,7 +9,7 @@ import Animated, {
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import Clipboard from '@react-native-clipboard/clipboard';
-import InfoModal from '../Modals/InfoModal';
+import InfoModal from '../Modals/InfoModalContent';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 import {subunitCodeSelector} from '../../reducers/settings';

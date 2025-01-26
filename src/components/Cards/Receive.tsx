@@ -8,7 +8,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import NewBlueButton from '../Buttons/NewBlueButton';
 import NewButton from '../Buttons/NewButton';
-import InfoModal from '../Modals/InfoModal';
+import InfoModal from '../Modals/InfoModalContent';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
