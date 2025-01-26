@@ -1811,7 +1811,7 @@
     find-up "^5.0.0"
     js-yaml "^4.1.0"
 
-"@flexahq/flexa-react-native@^1.0.9":
+"@flexahq/flexa-react-native@1.0.9":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@flexahq/flexa-react-native/-/flexa-react-native-1.0.9.tgz#317d81933c387a499f17d85ace44e48c5c35882a"
   integrity sha512-w28CusH+eiskFuK/WN+rPLEe39fDgCk15Bqxrkk1wqWM7nlsNtML1e7JGjI9vsREuuc/HfrQSgeOOJz7Njczzg==
@@ -5505,10 +5505,10 @@ expo-asset@~11.0.1:
     invariant "^2.2.4"
     md5-file "^3.2.3"
 
-expo-blur@^14.0.1:
-  version "14.0.1"
-  resolved "https://registry.yarnpkg.com/expo-blur/-/expo-blur-14.0.1.tgz#4bdbec43b5015891990e78d31d8ff2f1f5d27464"
-  integrity sha512-3Q6jFBLbY8n2vwk28ycUC+eIlVhnlqwkXUKk/Lfaj+SGV3AZMQyrixe7OYwJdUfwqETBrnYYMB6uNrJzOSbG+g==
+expo-blur@14.0.4-canary-20250124-42fe332:
+  version "14.0.4-canary-20250124-42fe332"
+  resolved "https://registry.yarnpkg.com/expo-blur/-/expo-blur-14.0.4-canary-20250124-42fe332.tgz#32ec04977c6c1b9703bf9b4073329d7ebd7ae62a"
+  integrity sha512-rnPoVBqIshYJdAAdyKsdaVdvoJURnrSKd2Qj9RIJmnnfNjaF5sYLwHawFrcRaBuk51ItAIrImIOYX9JogbEExA==
 
 expo-constants@~17.0.0, expo-constants@~17.0.3:
   version "17.0.3"
@@ -8863,10 +8863,10 @@ react-native-modal@^13.0.1:
     prop-types "^15.6.2"
     react-native-animatable "1.3.3"
 
-react-native-nitro-modules@^0.19.0:
-  version "0.19.0"
-  resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-0.19.0.tgz#30962c72c635a22052f756612825d972493e80c1"
-  integrity sha512-6aUxp+AnmHtZroY1OloFIYBC/+Ucn7zvW/KD7C5Sz4iYlPrx5Ave9GMX1Fjoa7QkZr09os7qutFVh6riaw/qlA==
+react-native-nitro-modules@0.21.0:
+  version "0.21.0"
+  resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-0.21.0.tgz#e59e095b6124247ca220d5b6cb58375bc9dfac28"
+  integrity sha512-7OQsFiApHnBmTmZj5Ge6A1FZb63v3BjI4p2Y0s6zff35Tq9LJemjB2tHdv5F/0tbjHBV4AYcZf5DMop3NdzOog==
 
 react-native-notifications@^5.1.0:
   version "5.1.0"
@@ -8963,10 +8963,10 @@ react-native-touch-id@^4.4.1:
   version "0.1.2"
   resolved "https://codeload.github.com/hsjoberg/react-native-turbo-lnd/tar.gz/f9c563aeefe06e789940331045e7fcbc4a194870"
 
-react-native-turbo-scrypt@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/react-native-turbo-scrypt/-/react-native-turbo-scrypt-0.0.4.tgz#d00cbc0955163d05c709820e65f46829171772bd"
-  integrity sha512-8UfjQYhrd8dfeIKRPRogk8KLfnY6s+dK2YYe8GXNk73cPMquYCpDwlI9M+i7G0ASQr3CRFBpUuncinGMSRzM/A==
+react-native-turbo-scrypt@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/react-native-turbo-scrypt/-/react-native-turbo-scrypt-0.0.5.tgz#d2816e08532b49ede5137e434ad3d0f8fa36396d"
+  integrity sha512-hDRVO3wIV0lO+aDtjKX8hAl6d/inqurELrPrzHQPCObwauEkPIFQirohLLhERLLa+56gOQHhcnfnH8RNkSfuYA==
 
 react-native-url-polyfill@^2.0.0:
   version "2.0.0"

@@ -14,7 +14,7 @@ PODS:
     - ExpoModulesCore
   - ExpoAsset (11.0.1):
     - ExpoModulesCore
-  - ExpoBlur (14.0.1):
+  - ExpoBlur (14.0.4-canary-20250124-42fe332):
     - ExpoModulesCore
   - ExpoFileSystem (18.0.4):
     - ExpoModulesCore
@@ -95,7 +95,7 @@ PODS:
     - hermes-engine/Pre-built (= 0.76.1)
   - hermes-engine/Pre-built (0.76.1)
   - KeychainAccess (4.2.2)
-  - NitroModules (0.19.0):
+  - NitroModules (0.21.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2233,7 +2233,7 @@ PODS:
   - SwiftUIIntrospect (0.12.0)
   - TouchID (4.4.1):
     - React
-  - TurboScryptiOS (0.0.4):
+  - TurboScryptiOS (0.0.5):
     - CryptoSwift
     - DoubleConversion
     - glog
@@ -2630,7 +2630,7 @@ SPEC CHECKSUMS:
   EXConstants: dd2fe64c6cdb1383b694c309a63028a8e9f2be6d
   Expo: 148aac4ce0da148c63447d09ae41ddb153f35506
   ExpoAsset: 8138f2a9ec55ae1ad7c3871448379f7d97692d15
-  ExpoBlur: 562b3da84d3cd79016c411671eaf71a404266415
+  ExpoBlur: ad3095fbe0682c11b3fd291528c988b0dd85c6af
   ExpoFileSystem: dc2679a2b5d4c465ca881129074da95faee943d5
   ExpoFont: 7522d869d84ee2ee8093ee997fef5b86f85d856b
   ExpoHaptics: e636188d1d5f7ccb79f3c1bfab47aaf5a1768c73
@@ -2651,7 +2651,7 @@ SPEC CHECKSUMS:
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 46f1ffbf0297f4298862068dd4c274d4ac17a1fd
   KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
-  NitroModules: 470228966dc3549ff8c2e7e32530cfc9bf0eb6db
+  NitroModules: bbe10b61d6fefce0176ba06e6a34eea92efb7704
   OpenSSL-Universal: 57f92a826947ee3183556bf5e22d7dff8d55f834
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
   RCTDeprecation: fde92935b3caa6cb65cbff9fbb7d3a9867ffb259
@@ -2743,7 +2743,7 @@ SPEC CHECKSUMS:
   SVGView: 4a9fa6296a5fdb6232dec7450aa98f169d0e274f
   SwiftUIIntrospect: 89f443402f701a9197e9e54e3c2ed00b10c32e6d
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
-  TurboScryptiOS: f558baf4e3d172091e0db428f5195fed4b3ee757
+  TurboScryptiOS: 4ee69d6127846813bf6d5ed89313d21548ca87d1
   VisionCamera: 598ab83c6bf4d65f5c32ec54361eed866505d388
   Yoga: db69236006b8b1c6d55ab453390c882306cbf219
 
