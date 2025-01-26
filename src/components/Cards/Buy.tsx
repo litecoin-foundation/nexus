@@ -1,11 +1,5 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, getLimits, getBuyQuote} from '../../reducers/buy';
@@ -16,22 +10,12 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
-import {RouteProp, useNavigation} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
-type RootStackParamList = {
-  Main: {
-    scanData?: string;
-  };
-  ConfirmBuy: undefined;
-  BuyHistory: undefined;
-};
-
-interface Props {
-  route: RouteProp<RootStackParamList, 'Main'>;
-}
+interface Props {}
 
 const Buy: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
@@ -58,7 +42,7 @@ const Buy: React.FC<Props> = () => {
     dispatch(checkAllowed());
     dispatch(getLimits());
     dispatch(getBuyQuote(1));
-  }, []);
+  }, [dispatch]);
 
   const onChange = (value: string) => {
     if (toggleLTC) {
@@ -96,8 +80,8 @@ const Buy: React.FC<Props> = () => {
 
   const BuyContainer = (
     <>
-      <View style={styles.sellContainer}>
-        <View style={styles.sellControls}>
+      <View style={styles.buyContainer}>
+        <View style={styles.buyControls}>
           <View style={styles.flexCol}>
             <View style={styles.flexRow}>
               <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
@@ -146,7 +130,9 @@ const Buy: React.FC<Props> = () => {
 
             <TouchableOpacity
               style={styles.historyButton}
-              onPress={() => navigation.navigate('BuyHistory')}>
+              onPress={() =>
+                navigation.navigate('SearchTransaction', {openFilter: 'Buy'})
+              }>
               <Image source={require('../../assets/icons/history-icon.png')} />
               <Text style={styles.buttonText}>History</Text>
             </TouchableOpacity>
@@ -205,13 +191,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
     },
-    sellContainer: {
-      flex: 1,
+    buyContainer: {
+      flexBasis: '80%',
       width: '100%',
-      flexDirection: 'column',
       alignItems: 'center',
+      justifyContent: 'space-between',
     },
-    sellControls: {
+    buyControls: {
       width: '100%',
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -230,11 +216,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginRight: screenWidth * 0.06 * -1 - 1,
     },
     numpadContainer: {
-      flex: 1,
-      justifyContent: 'center',
       width: screenWidth,
     },
     bottom: {
+      flexBasis: '20%',
       width: '100%',
       marginVertical: screenHeight * 0.03,
     },

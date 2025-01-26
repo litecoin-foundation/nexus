@@ -1,5 +1,12 @@
-import React, {useMemo, useRef, useState, useContext} from 'react';
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useContext,
+  useLayoutEffect,
+} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {RouteProp} from '@react-navigation/native';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TransactionList from '../../components/TransactionList';
@@ -14,12 +21,19 @@ import {txDetailSelector} from '../../reducers/transaction';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
+type RootStackParamList = {
+  SearchTransaction: {
+    openFilter?: string;
+  };
+};
+
 interface Props {
   navigation: any;
+  route: RouteProp<RootStackParamList, 'SearchTransaction'>;
 }
 
 const SearchTransaction: React.FC<Props> = props => {
-  const {navigation} = props;
+  const {navigation, route} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -27,10 +41,40 @@ const SearchTransaction: React.FC<Props> = props => {
 
   const TransactionListRef = useRef();
 
-  const [txType, setTxType] = useState('All');
-  // const [isTxDetailModalVisible, setTxDetailModalVisible] = useState(false);
+  const [txType, setTxType] = useState(route.params?.openFilter || 'All');
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
+
+  const [searchFilter, setSearchFilter] = useState('');
+  const [txPrivacyTypeFilter, setTxPrivacyTypeFilter] = useState('All');
+
+  const rightHeaderButton = useMemo(() => {
+    const txPrivacyTypes = ['All', 'Regular', 'MWEB'];
+
+    return (
+      <View style={styles.dropDownContainer}>
+        <DropDownButton
+          initial={txPrivacyTypeFilter}
+          options={txPrivacyTypes}
+          chooseOptionCallback={(option: string) =>
+            setTxPrivacyTypeFilter(option)
+          }
+          cellHeight={SCREEN_HEIGHT * 0.035}
+        />
+      </View>
+    );
+  }, [SCREEN_HEIGHT, styles, txPrivacyTypeFilter]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => rightHeaderButton,
+    });
+  }, [navigation, rightHeaderButton]);
+
+  const transactions = useAppSelector(state => txDetailSelector(state));
+  function setTransactionIndex(newTxIndex: number) {
+    selectTransaction(transactions[newTxIndex]);
+  }
 
   const filters = [
     {value: 'All', imgSrc: require('../../assets/icons/blue-tick-oval.png')},
@@ -55,36 +99,6 @@ const SearchTransaction: React.FC<Props> = props => {
       />
     );
   });
-
-  const [searchFilter, setSearchFilter] = useState('');
-  const [txPrivacyTypeFilter, setTxPrivacyTypeFilter] = useState('All');
-  const txPrivacyTypes = ['All', 'Regular', 'MWEB'];
-
-  const rightHeaderButton = useMemo(
-    () => (
-      <View style={styles.dropDownContainer}>
-        <DropDownButton
-          initial={txPrivacyTypeFilter}
-          options={txPrivacyTypes}
-          chooseOptionCallback={(option: string) =>
-            setTxPrivacyTypeFilter(option)
-          }
-          cellHeight={SCREEN_HEIGHT * 0.035}
-        />
-      </View>
-    ),
-    /* eslint-disable react-hooks/exhaustive-deps */
-    [],
-  );
-
-  navigation.setOptions({
-    headerRight: () => rightHeaderButton,
-  });
-
-  const transactions = useAppSelector(state => txDetailSelector(state));
-  function setTransactionIndex(newTxIndex: number) {
-    selectTransaction(transactions[newTxIndex]);
-  }
 
   return (
     <View style={styles.container}>
@@ -140,7 +154,6 @@ const SearchTransaction: React.FC<Props> = props => {
               setTxDetailModalOpened(false);
             }}
             transaction={selectedTransaction}
-            // txsNum={transactions.length}
             setTransactionIndex={(txIndex: number) => {
               setTransactionIndex(txIndex);
             }}

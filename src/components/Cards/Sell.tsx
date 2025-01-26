@@ -1,12 +1,6 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
-import {RouteProp, useNavigation} from '@react-navigation/native';
+import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -21,16 +15,7 @@ import {
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
-type RootStackParamList = {
-  Main: {
-    scanData?: string;
-  };
-  ConfirmSell: undefined;
-};
-
-interface Props {
-  route: RouteProp<RootStackParamList, 'Main'>;
-}
+interface Props {}
 
 const Sell: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
@@ -129,7 +114,9 @@ const Sell: React.FC<Props> = () => {
 
             <TouchableOpacity
               style={styles.historyButton}
-              onPress={() => navigation.navigate('BuyHistory')}>
+              onPress={() =>
+                navigation.navigate('SearchTransaction', {openFilter: 'Sell'})
+              }>
               <Image source={require('../../assets/icons/history-icon.png')} />
               <Text style={styles.buttonText}>History</Text>
             </TouchableOpacity>
@@ -176,10 +163,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenWidth * 0.06,
     },
     sellContainer: {
-      flex: 1,
+      flexBasis: '80%',
       width: '100%',
-      flexDirection: 'column',
       alignItems: 'center',
+      justifyContent: 'space-between',
     },
     sellControls: {
       width: '100%',
@@ -205,6 +192,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenWidth,
     },
     bottom: {
+      flexBasis: '20%',
       width: '100%',
       marginVertical: screenHeight * 0.03,
     },
