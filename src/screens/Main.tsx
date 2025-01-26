@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
-import {View, StyleSheet, Text, Pressable} from 'react-native';
+import {View, StyleSheet, Text, TextInput, Pressable} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -62,6 +62,29 @@ interface Props {
   navigation: any;
   route: RouteProp<RootStackParamList, 'Main'>;
 }
+
+interface TextWithDefaultProps extends Text {
+  defaultProps?: {allowFontScaling?: boolean; maxFontSizeMultiplier?: number};
+}
+
+interface TextInputWithDefaultProps extends TextInput {
+  defaultProps?: {allowFontScaling?: boolean};
+}
+
+(Text as unknown as TextWithDefaultProps).defaultProps =
+  (Text as unknown as TextWithDefaultProps).defaultProps || {};
+(Text as unknown as TextWithDefaultProps).defaultProps!.allowFontScaling =
+  false;
+(TextInput as unknown as TextInputWithDefaultProps).defaultProps =
+  (TextInput as unknown as TextInputWithDefaultProps).defaultProps || {};
+(
+  TextInput as unknown as TextInputWithDefaultProps
+).defaultProps!.allowFontScaling = false;
+
+// maxFontSizeMultiplier isn't being respected neither globally nor inline
+// (
+//   Text as unknown as TextWithDefaultProps
+// ).defaultProps!.maxFontSizeMultiplier = 1.5;
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
@@ -433,7 +456,13 @@ const Main: React.FC<Props> = props => {
   const TxListComponent = (
     <View>
       <View style={styles.txTitleContainer}>
-        <Text style={styles.txTitleText}>Latest Transactions</Text>
+        <Text
+          style={styles.txTitleText}
+          // maxFontSizeMultiplier={0.5}
+          // allowFontScaling={false}
+        >
+          Latest Transactions
+        </Text>
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
           <Canvas style={styles.txSearchBtnCanvas}>
