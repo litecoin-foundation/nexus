@@ -4,9 +4,17 @@ import React, {
   useState,
   useCallback,
   useContext,
+  useRef,
   Fragment,
 } from 'react';
-import {View, Text, StyleSheet, Platform, TouchableOpacity} from 'react-native';
+import {
+  ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  TouchableOpacity,
+} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -15,14 +23,15 @@ import Animated, {
 import {useNavigation} from '@react-navigation/native';
 import {v4 as uuidv4} from 'uuid';
 
+import InputActionField from '../InputActionField';
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import BlueButton from '../Buttons/BlueButton';
 import GreenButton from '../Buttons/GreenButton';
 import {formatTxDate} from '../../lib/utils/date';
 
-import {useAppSelector} from '../../store/hooks';
-import {IDisplayedTx} from '../../reducers/transaction';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {IDisplayedTx, labelTransaction} from '../../reducers/transaction';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
@@ -53,10 +62,12 @@ interface SendReceiveLayoutProps {
   myOutputAddrs: string[];
   otherOutputAddrs: string[];
   txId: string;
+  label: string;
   dateString: string;
   amountSymbol: string;
   currentExplorer: string;
   blockchainFee: number | undefined;
+  labelTx: (labelProp: string) => void;
 }
 
 interface SellBuyLayoutProps {
@@ -99,6 +110,8 @@ export default function TxDetailModalContent(props: Props) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const dispatch = useAppDispatch();
 
   const {label} = {
     current: function () {
@@ -356,6 +369,12 @@ export default function TxDetailModalContent(props: Props) {
     },
   }.current();
 
+  function labelTx(labelProp: string) {
+    if (transaction.label !== labelProp) {
+      dispatch(labelTransaction(transaction.hash, labelProp));
+    }
+  }
+
   return (
     <>
       <Animated.View style={[styles.pagination, paginationOpacityAnim]}>
@@ -390,10 +409,12 @@ export default function TxDetailModalContent(props: Props) {
                   myOutputAddrs={myOutputs}
                   otherOutputAddrs={otherOutputs}
                   txId={transaction.hash}
+                  label={transaction.label || ''}
                   dateString={dateString}
                   amountSymbol={amountSymbol}
                   currentExplorer={currentExplorer}
                   blockchainFee={blockchainFee}
+                  labelTx={labelTx}
                 />
               ) : (
                 <SellBuyLayout
@@ -530,10 +551,12 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
     myOutputAddrs,
     otherOutputAddrs,
     txId,
+    label,
     blockchainFee,
     dateString,
     amountSymbol,
     currentExplorer,
+    labelTx,
   } = props;
 
   const navigation = useNavigation<any>();
@@ -731,47 +754,75 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
     }
   }
 
+  const [newLabel, setNewLabel] = useState(label);
+  const scrollViewRef = useRef<ScrollView | null>(null);
+
+  const scrollToInput = (y: number) => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({y, animated: true});
+    }
+  };
+
   return (
     <Fragment>
-      <View style={styles.fromToContainer}>
-        {isMweb ? (
-          <Fragment />
-        ) : (
-          <View style={styles.fromContainer}>
-            <View style={styles.fromAndToIconContainer}>
-              <View style={styles.fromAndToIcon} />
-              <View style={styles.sentLine} />
+      <View style={styles.topContainer}>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.fromToContainer}>
+            {isMweb ? (
+              <Fragment />
+            ) : (
+              <View style={styles.fromContainer}>
+                <View style={styles.fromAndToIconContainer}>
+                  <View style={styles.fromAndToIcon} />
+                  <View style={styles.sentLine} />
+                </View>
+                <View style={styles.fromAndToTitlesContainer}>
+                  <Text style={styles.fromAndToTitle}>From</Text>
+                  {renderInputs()}
+                  {renderInputNote()}
+                </View>
+              </View>
+            )}
+            <View style={styles.toContainer}>
+              <View style={styles.fromAndToIconContainer}>
+                <View style={styles.fromAndToIcon} />
+              </View>
+              <View style={styles.fromAndToTitlesContainer}>
+                <Text style={styles.fromAndToTitle}>To</Text>
+                {renderOutputs()}
+                {renderOutputNote()}
+              </View>
             </View>
-            <View style={styles.fromAndToTitlesContainer}>
-              <Text style={styles.fromAndToTitle}>From</Text>
-              {renderInputs()}
-              {renderInputNote()}
-            </View>
           </View>
-        )}
-        <View style={styles.toContainer}>
-          <View style={styles.fromAndToIconContainer}>
-            <View style={styles.fromAndToIcon} />
+          <TableCell
+            title="TX ID"
+            value={txId}
+            thick
+            valueFontSize={SCREEN_HEIGHT * 0.012}
+            copyButton
+          />
+          <TableCell
+            title="NETWORK FEE"
+            value={`${
+              blockchainFee ? blockchainFee + amountSymbol : 'Unknown'
+            }`}
+          />
+          <TableCell title="TIME & DATE" value={dateString} />
+          <View style={styles.inputFieldContainer}>
+            <InputActionField
+              value={newLabel}
+              placeholder="Add label"
+              onChangeText={text => setNewLabel(text)}
+              onBlur={() => scrollToInput(0)}
+              onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
+              clearInput={() => setNewLabel('')}
+              onAction={() => labelTx(newLabel)}
+            />
           </View>
-          <View style={styles.fromAndToTitlesContainer}>
-            <Text style={styles.fromAndToTitle}>To</Text>
-            {renderOutputs()}
-            {renderOutputNote()}
-          </View>
-        </View>
+        </ScrollView>
       </View>
-      <TableCell
-        title="TX ID"
-        value={txId}
-        thick
-        valueFontSize={SCREEN_HEIGHT * 0.012}
-        copyButton
-      />
-      <TableCell
-        title="NETWORK FEE"
-        value={`${blockchainFee ? blockchainFee + amountSymbol : 'Unknown'}`}
-      />
-      <TableCell title="TIME & DATE" value={dateString} />
       <View style={styles.bottomContainer}>
         <View style={styles.buttonContainer}>
           <BlueButton
@@ -1012,8 +1063,19 @@ const getStyles = (
       fontStyle: 'normal',
       textAlign: 'right',
     },
-    bottomContainer: {
+    inputFieldContainer: {
+      paddingHorizontal: screenWidth * 0.05,
+      paddingVertical: screenHeight * 0.01,
+    },
+    topContainer: {
       flex: 1,
+      flexDirection: 'column',
+      overflow: 'hidden',
+    },
+    scrollViewContent: {
+      minHeight: screenHeight,
+    },
+    bottomContainer: {
       flexDirection: 'column',
       justifyContent: 'flex-end',
     },

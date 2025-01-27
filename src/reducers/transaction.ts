@@ -3,6 +3,7 @@ import {
   getTransactions as getLndTransactions,
   sendCoins,
   subscribeTransactions as subscribeLndTransactions,
+  walletKitLabelTransaction,
 } from 'react-native-turbo-lnd';
 import {
   GetTransactionsRequestSchema,
@@ -123,6 +124,9 @@ const initialState = {
 const getTransactionsAction = createAction<IDecodedTx[]>(
   'transaction/getTransactionsAction',
 );
+// const labelTransactionAction = createAction<string>(
+//   'transaction/labelTransactionAction',
+// );
 const txSubscriptionStartedAction = createAction<boolean>(
   'transaction/txSubscriptionStartedAction',
 );
@@ -163,6 +167,34 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
     }
   });
 };
+
+const changeEndianness = (string: string) => {
+  const result = [];
+  let len = string.length - 2;
+  while (len >= 0) {
+    result.push(string.substr(len, 2));
+    len -= 2;
+  }
+  return result.join('');
+};
+
+export const labelTransaction =
+  (txid: string, label: string): AppThunk =>
+  async () => {
+    try {
+      const reversedId = changeEndianness(txid);
+      const idBytes = Uint8Array.from(Buffer.from(reversedId, 'hex'));
+
+      const request = {
+        txid: idBytes,
+        label,
+        overwrite: true,
+      };
+      await walletKitLabelTransaction(request);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
 export const subscribeTransactions =
   (): AppThunk => async (dispatch, getState) => {

@@ -47,11 +47,12 @@ interface ITransactions {
 }
 
 type ItemType = {
+  hash: string;
   time: Date;
   amount: number;
+  label: string;
   metaLabel: string;
   priceOnDateMeta: number;
-  hash: string;
 };
 
 const TransactionList = forwardRef((props: Props, ref) => {

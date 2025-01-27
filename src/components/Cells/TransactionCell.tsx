@@ -15,6 +15,7 @@ interface Props {
   item: {
     time: Date;
     amount: number;
+    label: string;
     metaLabel: string;
     priceOnDateMeta: number;
   };
@@ -24,7 +25,7 @@ interface Props {
 const TransactionCell: React.FC<Props> = props => {
   const {item, onPress} = props;
 
-  const {time, amount, metaLabel, priceOnDateMeta} = item;
+  const {time, amount, label, metaLabel, priceOnDateMeta} = item;
 
   const mathSign = Math.sign(parseFloat(String(amount))) === -1 ? '-' : '';
 
@@ -96,8 +97,11 @@ const TransactionCell: React.FC<Props> = props => {
         <Image source={txIcon} />
       </View>
       <View style={styles.left}>
-        <Text style={styles.labelText}>{name}</Text>
-        <Text style={styles.timeText}>{String(time)}</Text>
+        <Text style={styles.nameText}>{name}</Text>
+        <View style={styles.timeContainer}>
+          <Text style={styles.timeText}>{String(time)}</Text>
+          <Text style={styles.labelText}>{label}</Text>
+        </View>
       </View>
       <View style={styles.right}>
         <Text style={styles.cryptoText}>
@@ -155,7 +159,7 @@ const getStyles = (
       justifyContent: 'center',
       alignItems: 'center',
     },
-    labelText: {
+    nameText: {
       color: '#484859',
       fontFamily: 'Satoshi Variable',
       fontSize: screenHeight * 0.016,
@@ -163,6 +167,9 @@ const getStyles = (
       fontWeight: '700',
       letterSpacing: -0.19,
       flexDirection: 'column',
+    },
+    timeContainer: {
+      flexDirection: 'row',
     },
     timeText: {
       color: '#747E87',
@@ -172,6 +179,16 @@ const getStyles = (
       fontWeight: '700',
       letterSpacing: -0.28,
       paddingTop: screenHeight * 0.004,
+    },
+    labelText: {
+      color: '#747E87',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.014,
+      fontStyle: 'normal',
+      fontWeight: '700',
+      letterSpacing: -0.28,
+      paddingTop: screenHeight * 0.004,
+      marginLeft: screenWidth * 0.02,
     },
     cryptoText: {
       color: amountColor,
