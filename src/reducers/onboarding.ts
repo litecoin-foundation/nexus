@@ -156,7 +156,8 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
       .progress((received, total) => {
         dispatch(
           updateNeutrinoCacheDownloadProgress(
-            Number(received) / Number(total) / partNum,
+            ((Number(total) / partNum) * (nextPart - 1)) / Number(total) +
+              Number(received) / Number(total) / partNum,
           ),
         );
       })
@@ -304,7 +305,6 @@ export const onboardingSlice = createSlice({
     getNeutrinoCacheFailedAction: state => ({
       ...state,
       task: 'failed',
-      downloadProgress: 0,
       unzipProgress: 0,
     }),
     updateNeutrinoCacheUnzipProgress: (
@@ -313,7 +313,6 @@ export const onboardingSlice = createSlice({
     ) => ({
       ...state,
       task: 'unzipping',
-      downloadProgress: 0,
       unzipProgress: action.payload,
     }),
     getNeutrinoCacheSuccessAction: state => ({

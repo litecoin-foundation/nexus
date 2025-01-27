@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -9,6 +9,10 @@ import {setSeed} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sleep} from '../../lib/utils/poll';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+
+import ProgressBar from '../../components/ProgressBar';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Welcome: undefined;
@@ -21,9 +25,15 @@ interface Props {
 
 const Welcome: React.FC<Props> = props => {
   const {navigation} = props;
+
+  const {width, height} = useContext(ScreenSizeContext);
+  const styles = getStyles(width, height);
+
   const dispatch = useAppDispatch();
 
-  const {task, isOnboarded} = useAppSelector(state => state.onboarding);
+  const {task, isOnboarded, downloadProgress, unzipProgress} = useAppSelector(
+    state => state.onboarding,
+  );
   const {lndActive} = useAppSelector(state => state.lightning);
 
   // calls initWallet() when LND has started!
@@ -57,6 +67,13 @@ const Welcome: React.FC<Props> = props => {
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
       <Text style={styles.text}>Presyncing: {task}</Text>
+      <View style={styles.progressBarContainer}>
+        {task === 'downloading' ? (
+          <ProgressBar white progress={downloadProgress! * 100} />
+        ) : (
+          <ProgressBar white progress={unzipProgress! * 100} />
+        )}
+      </View>
     </View>
   );
 
@@ -79,37 +96,40 @@ const Welcome: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  neutrinoCacheContainer: {
-    position: 'absolute',
-    bottom: 200,
-    width: '100%',
-  },
-  text: {
-    color: 'white',
-    fontSize: 28,
-    fontWeight: 'bold',
-    letterSpacing: -0.18,
-    lineHeight: 34,
-    paddingBottom: 556,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    width: '100%',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 15,
-    paddingHorizontal: 30,
-    paddingBottom: 50,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    },
+    neutrinoCacheContainer: {
+      position: 'absolute',
+      bottom: '50%',
+      width: '100%',
+    },
+    text: {
+      color: '#fff',
+      fontSize: screenHeight * 0.03,
+      fontWeight: '700',
+      textAlign: 'center',
+      letterSpacing: -0.18,
+    },
+    progressBarContainer: {
+      width: screenWidth,
+      paddingVertical: screenHeight * 0.01,
+    },
+    buttonContainer: {
+      width: '100%',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 15,
+      paddingHorizontal: 30,
+      paddingBottom: 50,
+    },
+  });
 
-export const WelcomeNavigationOptions = navigation => {
+export const WelcomeNavigationOptions = (navigation: any) => {
   return {
     headerTitle: () => null,
     headerTitleAlign: 'left',
