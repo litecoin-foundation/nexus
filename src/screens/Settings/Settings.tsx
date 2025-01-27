@@ -147,6 +147,12 @@ const Settings: React.FC<Props> = props => {
           />
 
           <SettingCell
+            title="INITIAL SCREENS TEST"
+            onPress={() => navigation.navigate('Onboarding')}
+            forward
+          />
+
+          <SettingCell
             title="View Seed Phrase"
             onPress={() => {
               handleAuthenticationRequired('view-seed-auth')

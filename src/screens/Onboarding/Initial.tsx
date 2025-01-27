@@ -1,9 +1,7 @@
 import React, {useEffect} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Image, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
-
-import * as FileSystem from 'expo-file-system';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
@@ -25,8 +23,6 @@ const Initial = (props: Props) => {
   const dispatch = useAppDispatch();
   const {navigation} = props;
 
-  console.log(FileSystem.documentDirectory);
-
   useEffect(() => {
     dispatch(detectCurrencyCode());
     dispatch(setExplorer('Litecoin Space'));
@@ -39,6 +35,13 @@ const Initial = (props: Props) => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
+      <View style={styles.logoContainer}>
+        <Image source={require('../../assets/images/big-nexus-logo.png')} />
+        <View style={styles.textContainer}>
+          <Image source={require('../../assets/images/nexus-text-logo.png')} />
+          <Text style={styles.logoText}>FOR LITECOIN</Text>
+        </View>
+      </View>
       <View style={styles.subContainer}>
         <WhiteButton
           value="Create Wallet"
@@ -64,9 +67,12 @@ const Initial = (props: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+  },
+  logoContainer: {
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    gap: 30,
+    paddingBottom: 60,
   },
   subContainer: {
     width: '100%',
@@ -75,6 +81,18 @@ const styles = StyleSheet.create({
     gap: 15,
     paddingHorizontal: 30,
     paddingBottom: 50,
+    position: 'absolute',
+    bottom: 0,
+  },
+  logoText: {
+    opacity: 0.6,
+    color: 'white',
+    fontFamily: 'Satoshi Variable',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  textContainer: {
+    alignItems: 'center',
   },
 });
 

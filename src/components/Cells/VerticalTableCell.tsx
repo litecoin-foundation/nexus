@@ -19,7 +19,7 @@ const VerticalTableCell: React.FC<Props> = props => {
 const styles = StyleSheet.create({
   container: {
     paddingTop: 15,
-    paddingLeft: 25,
+    paddingLeft: 22,
     paddingRight: 25,
     paddingBottom: 15,
     borderTopWidth: 1,
@@ -27,10 +27,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   title: {
-    color: 'rgb(124,150,174)',
-    fontSize: 12,
+    color: '#747e87',
+    fontSize: 14,
     fontWeight: '600',
-    paddingBottom: 10,
+    fontFamily: 'Satoshi Variable',
+    fontStyle: 'normal',
+    paddingBottom: 2,
   },
 });
 
