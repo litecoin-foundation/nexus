@@ -124,9 +124,6 @@ const initialState = {
 const getTransactionsAction = createAction<IDecodedTx[]>(
   'transaction/getTransactionsAction',
 );
-// const labelTransactionAction = createAction<string>(
-//   'transaction/labelTransactionAction',
-// );
 const txSubscriptionStartedAction = createAction<boolean>(
   'transaction/txSubscriptionStartedAction',
 );
