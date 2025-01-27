@@ -40,6 +40,7 @@ const TransactionListEmpty: React.FC<Props> = () => {
   useEffect(() => {
     if ((progress && progress > 0.999) || synced) {
       dispatch(getRecoveryInfo());
+      // TODO: poll periodically, otherwise updates too often
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress, synced]);
