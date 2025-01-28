@@ -118,7 +118,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-    - NitroModules (0.21.0):
+  - NitroModules (0.21.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2686,7 +2686,7 @@ SPEC CHECKSUMS:
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 3c5b7d19655d03ce1e85a2656fe4fb903b0b2013
   NitroModules: bbe10b61d6fefce0176ba06e6a34eea92efb7704
-  OpenSSL-Universal: 57f92a826947ee3183556bf5e22d7dff8d55f834
+  OpenSSL-Universal: b60a3702c9fea8b3145549d421fdb018e53ab7b4
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
   RCTDeprecation: fde92935b3caa6cb65cbff9fbb7d3a9867ffb259
   RCTRequired: 75c6cee42d21c1530a6f204ba32ff57335d19007

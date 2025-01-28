@@ -45,6 +45,7 @@ import {unsetDeeplink} from '../reducers/deeplinks';
 import {sleep} from '../lib/utils/poll';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 interface URIHandlerRef {
   handleURI: (data: string) => void;

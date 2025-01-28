@@ -23,6 +23,8 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sendOnchainPayment} from '../../reducers/transaction';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import {showError} from '../../reducers/errors';
 
 type RootStackParamList = {
   ConfirmSend: undefined;
@@ -39,13 +41,14 @@ const ConfirmSend: React.FC<Props> = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
 
+  const [loading, setLoading] = useState(false);
+
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const amountCode = useAppSelector(state => subunitCodeSelector(state));
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
-
   const amount = useAppSelector(state => state.input.send.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const toAddress = useAppSelector(state => state.input.send.toAddress);
@@ -86,6 +89,8 @@ const ConfirmSend: React.FC<Props> = () => {
   };
 
   const handleSend = async () => {
+    setIsPinModalOpened(false);
+    setLoading(true);
     try {
       // await is required!
       const txid = await dispatch(
@@ -95,9 +100,11 @@ const ConfirmSend: React.FC<Props> = () => {
           label ? 'label' : label,
         ),
       );
+      setLoading(false);
       navigation.navigate('SuccessSend', {txid});
     } catch (error) {
-      throw new Error(String(error));
+      setLoading(false);
+      dispatch(showError(String(error)));
     }
   };
 
@@ -182,6 +189,8 @@ const ConfirmSend: React.FC<Props> = () => {
           />
         )}
       />
+
+      <LoadingIndicator visible={loading} />
     </>
   );
 };

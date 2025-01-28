@@ -1,13 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  StyleSheet,
-  SafeAreaView,
-  Text,
-  Platform,
-  Alert,
-  View,
-  ActivityIndicator,
-} from 'react-native';
+import {StyleSheet, SafeAreaView, Text, Platform, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -18,6 +10,7 @@ import {getAddress} from '../../reducers/address';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {publishTransaction} from '../../reducers/transaction';
 import RecoveryField from '../../components/RecoveryField';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 type RootStackParamList = {
   Import: {
@@ -79,13 +72,8 @@ const RecoverLitewallet: React.FC<Props> = props => {
           />
         </SafeAreaView>
       </LinearGradient>
-      {loading ? (
-        <View style={styles.activity}>
-          <View style={styles.container}>
-            <ActivityIndicator size="large" />
-          </View>
-        </View>
-      ) : null}
+
+      <LoadingIndicator visible={loading} />
     </>
   );
 };
