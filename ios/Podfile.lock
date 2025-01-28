@@ -3,7 +3,7 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - CryptoSwift (1.8.3)
+  - CryptoSwift (1.8.4)
   - DeviceKit (5.0.0)
   - DoubleConversion (1.1.6)
   - EXApplication (6.0.1):
@@ -95,7 +95,30 @@ PODS:
     - hermes-engine/Pre-built (= 0.76.1)
   - hermes-engine/Pre-built (0.76.1)
   - KeychainAccess (4.2.2)
-  - NitroModules (0.21.0):
+  - lottie-ios (4.5.0)
+  - lottie-react-native (7.2.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - lottie-ios (= 4.5.0)
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+    - NitroModules (0.21.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -118,7 +141,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - OpenSSL-Universal (3.3.1000)
+  - OpenSSL-Universal (3.3.2000)
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -2288,6 +2311,7 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2396,6 +2420,7 @@ SPEC REPOS:
     - Factory
     - FlexaSpend
     - KeychainAccess
+    - lottie-ios
     - OpenSSL-Universal
     - React-Codegen
     - SocketRocket
@@ -2443,6 +2468,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-09-09-RNv0.76.0-db6d12e202e15f7a446d8848d6ca8f7abb3cfb32
+  lottie-react-native:
+    :path: "../node_modules/lottie-react-native"
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
   RCT-Folly:
@@ -2628,7 +2655,7 @@ SPEC CHECKSUMS:
   Base32: 163c298644d184e89ca4e00a996bad6bf5166390
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
-  CryptoSwift: 967f37cea5a3294d9cce358f78861652155be483
+  CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90
   DeviceKit: 0fd016a2cb67aca17c33dc23171cac270131eb88
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXApplication: e1ad9c950c98b2b134578092c948b10b403f3ea7
@@ -2656,6 +2683,8 @@ SPEC CHECKSUMS:
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 46f1ffbf0297f4298862068dd4c274d4ac17a1fd
   KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
+  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
+  lottie-react-native: 3c5b7d19655d03ce1e85a2656fe4fb903b0b2013
   NitroModules: bbe10b61d6fefce0176ba06e6a34eea92efb7704
   OpenSSL-Universal: 57f92a826947ee3183556bf5e22d7dff8d55f834
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
