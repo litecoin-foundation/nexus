@@ -14,6 +14,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import GreenButton from '../../components/Buttons/GreenButton';
 import ChooseWalletLargeButton from '../../components/Buttons/ChooseWalletLargeButton';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import {
   satsToSubunitSelector,
   subunitCodeSelector,
@@ -21,10 +22,9 @@ import {
 } from '../../reducers/settings';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sendOnchainPayment} from '../../reducers/transaction';
+import {showError} from '../../reducers/errors';
 
 import {ScreenSizeContext} from '../../context/screenSize';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import {showError} from '../../reducers/errors';
 
 type RootStackParamList = {
   ConfirmSend: undefined;

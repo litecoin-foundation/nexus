@@ -244,6 +244,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderBottomLeftRadius: screenHeight * 0.01,
       borderWidth: 1,
       borderColor: '#e5e5e5',
+      borderRightColor: 'white',
       backgroundColor: '#fff',
       width: screenHeight * 0.1,
       height: screenHeight * 0.05,

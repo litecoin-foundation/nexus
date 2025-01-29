@@ -768,33 +768,36 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
       <View style={styles.topContainer}>
         <ScrollView
           ref={scrollViewRef}
+          scrollEnabled={false}
           contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.fromToContainer}>
-            {isMweb ? (
-              <Fragment />
-            ) : (
-              <View style={styles.fromContainer}>
+          <View style={styles.fromToContainerHeight}>
+            <ScrollView contentContainerStyle={styles.fromToContainer}>
+              {isMweb ? (
+                <Fragment />
+              ) : (
+                <View style={styles.fromContainer}>
+                  <View style={styles.fromAndToIconContainer}>
+                    <View style={styles.fromAndToIcon} />
+                    <View style={styles.sentLine} />
+                  </View>
+                  <View style={styles.fromAndToTitlesContainer}>
+                    <Text style={styles.fromAndToTitle}>From</Text>
+                    {renderInputs()}
+                    {renderInputNote()}
+                  </View>
+                </View>
+              )}
+              <View style={styles.toContainer}>
                 <View style={styles.fromAndToIconContainer}>
                   <View style={styles.fromAndToIcon} />
-                  <View style={styles.sentLine} />
                 </View>
                 <View style={styles.fromAndToTitlesContainer}>
-                  <Text style={styles.fromAndToTitle}>From</Text>
-                  {renderInputs()}
-                  {renderInputNote()}
+                  <Text style={styles.fromAndToTitle}>To</Text>
+                  {renderOutputs()}
+                  {renderOutputNote()}
                 </View>
               </View>
-            )}
-            <View style={styles.toContainer}>
-              <View style={styles.fromAndToIconContainer}>
-                <View style={styles.fromAndToIcon} />
-              </View>
-              <View style={styles.fromAndToTitlesContainer}>
-                <Text style={styles.fromAndToTitle}>To</Text>
-                {renderOutputs()}
-                {renderOutputNote()}
-              </View>
-            </View>
+            </ScrollView>
           </View>
           <TableCell
             title="TX ID"
@@ -949,6 +952,9 @@ const getStyles = (
       textAlign: 'center',
       paddingTop: screenHeight * 0.04,
       paddingBottom: screenHeight * 0.015,
+    },
+    fromToContainerHeight: {
+      height: isMweb ? screenHeight * 0.2 : screenHeight * 0.3,
     },
     fromToContainer: {
       height: isMweb ? screenHeight * 0.2 : screenHeight * 0.3,

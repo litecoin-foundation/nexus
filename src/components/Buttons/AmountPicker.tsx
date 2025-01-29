@@ -93,7 +93,11 @@ const AmountPicker: React.FC<Props> = props => {
           color={toggleLTC ? '#2C72FF' : '#747E87'}
           x={4}
           y={ltcFontY}
-          text={String(amount) === '' ? '0.00' : `${amount}${amountSymbol}`}
+          text={
+            String(amount) === ''
+              ? `0.00${amountSymbol}`
+              : `${amount}${amountSymbol}`
+          }
         />
         <SkiaText
           font={font}
@@ -102,7 +106,7 @@ const AmountPicker: React.FC<Props> = props => {
           y={fiatFontY}
           text={
             String(fiatAmount) === ''
-              ? '0.00'
+              ? `${String(currencySymbol)}0.00`
               : `${String(currencySymbol)}${String(fiatAmount)}`
           }
         />
