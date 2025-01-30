@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useState, useContext} from 'react';
+import React, {useEffect, useLayoutEffect, useState, useContext} from 'react';
 import {
   View,
   Platform,
@@ -21,7 +21,8 @@ import {
 } from './src/context/screenSize';
 import {PopUpProvider, PopUpContext} from './src/context/popUpContext';
 
-import {useAppDispatch} from './src/store/hooks';
+import {useAppDispatch, useAppSelector} from './src/store/hooks';
+import {loginToNexusApi} from './src/reducers/onboarding';
 import {setDeviceNotificationToken} from './src/reducers/settings';
 import {
   updatedRatesInFiat,
@@ -74,6 +75,15 @@ function ContextExecutable(props: any) {
   dispatch(getBuyTransactionHistory());
   dispatch(getSellTransactionHistory());
   dispatch(getTransactions());
+
+  const {isOnboarded} = useAppSelector(state => state.onboarding);
+  const {deviceNotificationToken} = useAppSelector(state => state.settings);
+  useEffect(() => {
+    if (isOnboarded === true && deviceNotificationToken) {
+      dispatch(loginToNexusApi(Platform.OS === 'ios'));
+    }
+  }, [isOnboarded, deviceNotificationToken, dispatch]);
+
   return <></>;
 }
 

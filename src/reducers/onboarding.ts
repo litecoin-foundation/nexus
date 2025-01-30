@@ -40,6 +40,8 @@ const initialState = {
   lastLoadedCachePart: 0,
 } as IOnboardingState;
 
+const apiAuthUrl = 'https://mobile.litecoin.com/auth';
+
 // actions
 export const startOnboarding = createAction('onboarding/startOnboarding');
 const finishOnboardingAction = createAction<string>(
@@ -70,6 +72,35 @@ const setLastLoadedCachePart = createAction<number>(
 );
 
 // functions
+export const loginToNexusApi =
+  (isIOS: boolean): AppThunk =>
+  async (dispatch, getState) => {
+    const uniqueId = getState().onboarding.uniqueId;
+    const deviceToken = getState().settings.deviceNotificationToken;
+    if (!uniqueId && !deviceToken) {
+      return;
+    }
+    try {
+      const req = await fetch(`${apiAuthUrl}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appAuthKey: 'SOME_PRIVATE_APP_AUTH_KEY',
+          userAppUniqueId: uniqueId,
+          deviceToken: deviceToken,
+          isIOS,
+        }),
+      });
+      if (!req.ok) {
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
 export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
   const {seed} = getState().onboarding!;
   console.log(seed.join(''));
