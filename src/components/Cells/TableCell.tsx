@@ -1,8 +1,6 @@
-import React, {Fragment, useContext} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React, {useContext} from 'react';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 import Share from 'react-native-share';
-
-import NewButton from '../Buttons/NewButton';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -11,8 +9,8 @@ interface CommonProps {
   thick?: boolean;
   valueFontSize?: number;
   noBorder?: boolean;
-  copyButton?: boolean;
   blueValue?: boolean;
+  copyable?: boolean;
 }
 
 type ConditionalProps =
@@ -38,8 +36,8 @@ const TableCell: React.FC<Props> = props => {
     children,
     valueFontSize,
     noBorder,
-    copyButton,
     blueValue,
+    copyable,
   } = props;
 
   const {width, height} = useContext(ScreenSizeContext);
@@ -49,12 +47,13 @@ const TableCell: React.FC<Props> = props => {
     thick,
     valueFontSize,
     noBorder,
-    copyButton,
     blueValue,
   );
 
   const handleShare = () => {
-    Share.open({message: value || 'unknown'});
+    if (copyable) {
+      Share.open({message: value || 'unknown'});
+    }
   };
 
   return (
@@ -63,22 +62,14 @@ const TableCell: React.FC<Props> = props => {
       {children ? (
         children
       ) : (
-        <Fragment>
+        <Pressable style={{flex: 1}} onPress={handleShare}>
           <Text
             style={[styles.text, valueStyle ? valueStyle : null]}
+            ellipsizeMode="middle"
             numberOfLines={1}>
             {value}
           </Text>
-          {copyButton ? (
-            <NewButton
-              onPress={() => handleShare()}
-              imageSource={require('../../assets/icons/share-icon.png')}
-              small
-            />
-          ) : (
-            <Fragment />
-          )}
-        </Fragment>
+        </Pressable>
       )}
     </View>
   );
@@ -90,7 +81,6 @@ const getStyles = (
   thick: boolean | undefined,
   valueFontSize: number | undefined,
   noBorder: boolean | undefined,
-  copyButton: boolean | undefined,
   blueValue: boolean | undefined,
 ) =>
   StyleSheet.create({
@@ -114,7 +104,6 @@ const getStyles = (
       fontStyle: 'normal',
     },
     text: {
-      flexBasis: copyButton ? '50%' : '70%',
       color: blueValue ? '#2c72ff' : '#4a4a4a',
       fontSize: valueFontSize ? valueFontSize : screenHeight * 0.018,
       fontWeight: '700',

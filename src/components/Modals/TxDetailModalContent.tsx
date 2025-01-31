@@ -43,6 +43,7 @@ import {
 import {convertLocalFiatToUSD} from '../../reducers/ticker';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import ChangeAddress from '../ChangeAddress';
 
 interface Props {
   close: () => void;
@@ -161,17 +162,15 @@ export default function TxDetailModalContent(props: Props) {
   }
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const dateString = formatTxDate(transaction.timestamp);
-
-  const mathSign =
-    Math.sign(parseFloat(String(transaction.amount))) === -1 ? '-' : '';
   const currencySymbol = useAppSelector(state => currencySymbolSelector(state));
-
   const localFiatToUSD = useAppSelector(state => convertLocalFiatToUSD(state));
   const priceOnDateInLocalFiat = transaction.priceOnDateMeta / localFiatToUSD;
   const amountInFiatOnDate = parseFloat(
     String(priceOnDateInLocalFiat * (transaction.amount / 100000000)),
   ).toFixed(2);
-  const amountInFiatOnDateAbsVal = Math.abs(Number(amountInFiatOnDate));
+  const amountInFiatOnDateAbsVal = Math.abs(Number(amountInFiatOnDate)).toFixed(
+    2,
+  );
 
   const [allInputAddrs, setAllInputAddrs] = useState<string[]>([]);
   const [fetchedTxFee, setFetchedTxFee] = useState<number | undefined>(
@@ -394,7 +393,7 @@ export default function TxDetailModalContent(props: Props) {
                 {label}
                 <Text style={styles.modalHeaderSubtitle}>
                   {` ${cryptoAmountFormatted}${amountSymbol}` +
-                    ` (${mathSign}${currencySymbol}${amountInFiatOnDateAbsVal})`}
+                    ` (${currencySymbol}${amountInFiatOnDateAbsVal})`}
                 </Text>
               </Text>
               <GreyRoundButton onPress={() => close()} />
@@ -504,14 +503,14 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
         value={moonpayTxId}
         thick
         valueFontSize={height * 0.012}
-        copyButton
+        copyable
       />
       <TableCell
         title="TX ID"
         value={cryptoTxId}
         thick
         valueFontSize={height * 0.012}
-        copyButton
+        copyable
       />
       <TableCell title="TIME & DATE" value={createdAt} thick />
       <View style={styles.bottomContainer}>
@@ -634,6 +633,8 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
 
   function renderOutputs() {
     // If it's a send tx we display one change address in blue color
+
+    // change address
     const myOutputElements = myOutputAddrs
       .slice(0, isSend ? CHANGE_ADDR_ROW_LIMIT : ADDR_ROW_LIMIT)
       .map((output, index) => (
@@ -643,11 +644,12 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
             fontSize: toAddressSize,
             color: isSend ? '#2c72ff' : '#1ebc73',
           }}
-          key={'output-' + index}>
+          key={'output-change-' + index}>
           {output}
         </Text>
       ));
 
+    // to address
     const otherOutputElements = otherOutputAddrs
       .slice(0, ADDR_ROW_LIMIT)
       .map((output, index) => (
@@ -656,7 +658,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
             ...styles.toAddressTitle,
             fontSize: toAddressSize,
           }}
-          key={'output-' + index}>
+          key={'output-sent-' + index}>
           {output}
         </Text>
       ));
@@ -676,7 +678,11 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
       );
     } else {
       if (isSend) {
-        return [...otherOutputElements, ...myOutputElements];
+        //
+
+        const changeAddress = <ChangeAddress>{myOutputElements}</ChangeAddress>;
+
+        return [...otherOutputElements, changeAddress];
       } else {
         return myOutputElements;
       }
@@ -799,13 +805,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
               </View>
             </ScrollView>
           </View>
-          <TableCell
-            title="TX ID"
-            value={txId}
-            thick
-            valueFontSize={SCREEN_HEIGHT * 0.012}
-            copyButton
-          />
+          <TableCell title="TX ID" value={txId} copyable />
           <TableCell
             title="NETWORK FEE"
             value={`${
@@ -931,11 +931,13 @@ const getStyles = (
       fontSize: screenHeight * 0.028,
       fontWeight: '600',
       flexDirection: 'row',
+      fontFamily: 'Satoshi Variable',
     },
     modalHeaderSubtitle: {
       color: '#2c72ff',
       fontSize: screenHeight * 0.03,
       fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
     },
     modalContentContainer: {
       flex: 1,
@@ -954,14 +956,14 @@ const getStyles = (
       paddingBottom: screenHeight * 0.015,
     },
     fromToContainerHeight: {
-      height: isMweb ? screenHeight * 0.2 : screenHeight * 0.3,
+      height: isMweb ? screenHeight * 0.18 : screenHeight * 0.23,
     },
     fromToContainer: {
-      height: isMweb ? screenHeight * 0.2 : screenHeight * 0.3,
       width: '100%',
       flexDirection: 'column',
       justifyContent: 'flex-start',
-      padding: screenHeight * 0.03,
+      paddingHorizontal: screenHeight * 0.03,
+      paddingVertical: screenHeight * 0.02,
     },
     fromContainer: {
       flexBasis: '60%',
@@ -1004,22 +1006,27 @@ const getStyles = (
       color: '#3b3b3b',
       fontSize: screenHeight * 0.02,
       fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
     },
     fromAddressTitle: {
       color: '#2c72ff',
       fontSize: screenHeight * 0.025,
       fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
+      paddingBottom: 10,
     },
     toAddressTitle: {
       color: '#1ebc73',
       fontSize: screenHeight * 0.025,
       fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
     },
     otherAddressesNote: {
       color: '#747e87',
       fontSize: screenHeight * 0.015,
       fontWeight: '600',
       paddingTop: screenHeight * 0.002,
+      fontFamily: 'Satoshi Variable',
     },
     tableCell: {
       width: '100%',

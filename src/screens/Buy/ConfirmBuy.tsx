@@ -72,7 +72,7 @@ const ConfirmBuy: React.FC<Props> = props => {
           <View style={styles.fiatAmount}>
             <Text style={styles.fiatAmountText}>
               {currencySymbol}
-              {totalAmount}
+              {totalAmount.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -91,7 +91,7 @@ const ConfirmBuy: React.FC<Props> = props => {
           <TableCell title="NETWORK FEE" value={networkFeeAmount} /> */}
           <TableCell
             title="YOU WILL SPEND"
-            value={`${currencySymbol}${totalAmount}`}
+            value={`${currencySymbol}${totalAmount.toFixed(2)}`}
             noBorder
             valueStyle={{color: '#20BB74'}}
           />
