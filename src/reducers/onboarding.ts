@@ -8,6 +8,7 @@ import * as RNFS from 'react-native-fs';
 import {AppThunk} from './types';
 import {fileExists} from '../lib/utils/file';
 import {showError} from './errors';
+import {setDeviceNotificationToken} from './settings';
 import {generateMnemonic} from '../lib/utils/aezeed';
 import {setItem} from '../lib/utils/keychain';
 import {sleep} from '../lib/utils/poll';
@@ -73,14 +74,18 @@ const setLastLoadedCachePart = createAction<number>(
 
 // functions
 export const loginToNexusApi =
-  (isIOS: boolean): AppThunk =>
+  (deviceToken: string, isIOS: boolean): AppThunk =>
   async (dispatch, getState) => {
-    const uniqueId = getState().onboarding.uniqueId;
-    const deviceToken = getState().settings.deviceNotificationToken;
-    if (!uniqueId && !deviceToken) {
+    const {uniqueId, isOnboarded} = getState().onboarding;
+    const {deviceNotificationToken} = getState().settings;
+    if (isOnboarded !== true && !uniqueId && !deviceToken) {
       return;
     }
     try {
+      if (!deviceNotificationToken) {
+        dispatch(setDeviceNotificationToken(deviceToken));
+      }
+
       const req = await fetch(`${apiAuthUrl}/login`, {
         method: 'POST',
         headers: {
@@ -93,6 +98,7 @@ export const loginToNexusApi =
           isIOS,
         }),
       });
+
       if (!req.ok) {
         return;
       }

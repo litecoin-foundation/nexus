@@ -1,4 +1,4 @@
-import React, {useEffect, useLayoutEffect, useState, useContext} from 'react';
+import React, {useLayoutEffect, useState, useContext} from 'react';
 import {
   View,
   Platform,
@@ -21,9 +21,8 @@ import {
 } from './src/context/screenSize';
 import {PopUpProvider, PopUpContext} from './src/context/popUpContext';
 
-import {useAppDispatch, useAppSelector} from './src/store/hooks';
+import {useAppDispatch} from './src/store/hooks';
 import {loginToNexusApi} from './src/reducers/onboarding';
-import {setDeviceNotificationToken} from './src/reducers/settings';
 import {
   updatedRatesInFiat,
   updateHistoricalRatesForAllPeriods,
@@ -36,6 +35,9 @@ import {getTransactions} from './src/reducers/transaction';
 import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
 import Error from './src/components/Error';
+
+import i18n from './src/utils/i18n';
+const initI18n = i18n;
 
 const flexaPublishableTestKey =
   'publishable_test_5xJh36PJj2xw97G9MGgMpfW82QPvp2jPjp4r6925XQgpr9QWp2WWjjc9J8h665mHfHr6pXx4fwm674w83H2x44';
@@ -67,7 +69,7 @@ function ResizedView(props: any) {
 
 function ContextExecutable(props: any) {
   const dispatch = useAppDispatch();
-  dispatch(setDeviceNotificationToken(props.deviceToken));
+  dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
   // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
   // resulting in missing rates even if the app is being used already.
   dispatch(updatedRatesInFiat());
@@ -75,15 +77,6 @@ function ContextExecutable(props: any) {
   dispatch(getBuyTransactionHistory());
   dispatch(getSellTransactionHistory());
   dispatch(getTransactions());
-
-  const {isOnboarded} = useAppSelector(state => state.onboarding);
-  const {deviceNotificationToken} = useAppSelector(state => state.settings);
-  useEffect(() => {
-    if (isOnboarded === true && deviceNotificationToken) {
-      dispatch(loginToNexusApi(Platform.OS === 'ios'));
-    }
-  }, [isOnboarded, deviceNotificationToken, dispatch]);
-
   return <></>;
 }
 
