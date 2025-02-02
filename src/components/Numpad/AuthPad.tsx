@@ -1,5 +1,6 @@
 import React, {useEffect, useContext, useRef} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
@@ -32,6 +33,9 @@ const AuthPad: React.FC<Props> = props => {
     handleValidationSuccess,
     handleBiometricPress,
   } = props;
+
+  const {t} = useTranslation('onboarding');
+
   const dispatch = useAppDispatch();
   const pin = useAppSelector(state => state.authpad.pin);
   const passcode = useAppSelector(state => state.authentication.passcode);
@@ -104,7 +108,9 @@ const AuthPad: React.FC<Props> = props => {
         ) {
           pinInactive = false;
           if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
-            return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} attempts left.`;
+            return t('attempts_left', {
+              count: MAX_LOGIN_ATTEMPTS - failedLoginAttempts,
+            });
           }
         } else {
           pinInactive = true;
@@ -121,7 +127,9 @@ const AuthPad: React.FC<Props> = props => {
         ) {
           pinInactive = false;
           if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
-            return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} attempts left.`;
+            return t('attempts_left', {
+              count: MAX_LOGIN_ATTEMPTS - failedLoginAttempts,
+            });
           }
         } else {
           pinInactive = true;
@@ -134,7 +142,9 @@ const AuthPad: React.FC<Props> = props => {
       } else {
         pinInactive = false;
         if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
-          return `${MAX_LOGIN_ATTEMPTS - failedLoginAttempts} attempts left.`;
+          return t('attempts_left', {
+            count: MAX_LOGIN_ATTEMPTS - failedLoginAttempts,
+          });
         }
       }
       return '';
