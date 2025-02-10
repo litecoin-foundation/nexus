@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -13,6 +13,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import ProgressBar from '../../components/ProgressBar';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 type RootStackParamList = {
   Welcome: undefined;
@@ -31,6 +32,7 @@ const Welcome: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
 
+  const [loading, setLoading] = useState(false);
   const {task, isOnboarded, downloadProgress, unzipProgress} = useAppSelector(
     state => state.onboarding,
   );
@@ -52,6 +54,7 @@ const Welcome: React.FC<Props> = props => {
   // we know to navigate user to the wallet
   useEffect(() => {
     if (isOnboarded === true) {
+      setLoading(false);
       navigation.reset({
         index: 0,
         routes: [{name: 'NewWalletStack'}],
@@ -60,20 +63,30 @@ const Welcome: React.FC<Props> = props => {
   }, [isOnboarded, navigation]);
 
   const handlePress = () => {
+    setLoading(true);
     dispatch(setSeed());
     dispatch(startLnd());
   };
 
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
-      <Text style={styles.text}>Presyncing: {task}</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.titleText}>Presync in Progress</Text>
+
+        <Text style={styles.descriptionText}>
+          Your wallet is currently presyncing. This only happens once, and helps
+          speed setting up your Nexus Wallet.
+        </Text>
+      </View>
+
       <View style={styles.progressBarContainer}>
         {task === 'downloading' ? (
-          <ProgressBar white progress={downloadProgress! * 100} />
+          <ProgressBar progress={downloadProgress! * 100} />
         ) : (
-          <ProgressBar white progress={unzipProgress! * 100} />
+          <ProgressBar progress={unzipProgress! * 100} />
         )}
       </View>
+      <Text style={styles.descriptionText}>{task}</Text>
     </View>
   );
 
@@ -88,10 +101,12 @@ const Welcome: React.FC<Props> = props => {
             small={false}
             onPress={() => handlePress()}
             active={true}
-            disabled={task === 'complete' ? false : true}
+            disabled={task === 'complete' || task === 'failed' ? false : true}
           />
         </View>
       </LinearGradient>
+
+      <LoadingIndicator visible={loading} />
     </>
   );
 };
@@ -100,24 +115,29 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: 'flex-end',
-      alignItems: 'center',
+      justifyContent: 'center',
     },
     neutrinoCacheContainer: {
-      position: 'absolute',
-      bottom: '50%',
-      width: '100%',
-    },
-    text: {
-      color: '#fff',
-      fontSize: screenHeight * 0.03,
-      fontWeight: '700',
+      alignSelf: 'center',
+      height: screenHeight * 0.225,
+      width: screenWidth - 60,
+      borderRadius: screenHeight * 0.02,
+      backgroundColor: 'white',
+      shadowColor: 'rgb(82,84,103);',
+      shadowOpacity: 0.12,
+      shadowRadius: screenHeight * 0.015,
+      elevation: screenHeight * 0.015,
+      shadowOffset: {
+        height: 0,
+        width: 0,
+      },
       textAlign: 'center',
-      letterSpacing: -0.18,
     },
     progressBarContainer: {
-      width: screenWidth,
-      paddingVertical: screenHeight * 0.01,
+      width: (screenWidth - 60) * 0.8,
+      paddingHorizontal: screenHeight * 0.01,
+      paddingVertical: screenHeight * 0.015,
+      alignSelf: 'center',
     },
     buttonContainer: {
       width: '100%',
@@ -126,6 +146,29 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       gap: 15,
       paddingHorizontal: 30,
       paddingBottom: 50,
+      position: 'absolute',
+      bottom: 0,
+    },
+    titleContainer: {
+      paddingLeft: screenHeight * 0.025,
+      paddingRight: screenHeight * 0.025,
+      paddingTop: screenHeight * 0.025,
+    },
+    titleText: {
+      textAlign: 'center',
+      color: '#2C72FF',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.03,
+      fontWeight: 'bold',
+      paddingBottom: screenHeight * 0.025,
+    },
+    descriptionText: {
+      textAlign: 'center',
+      color: '#4A4A4A',
+      fontSize: screenHeight * 0.017,
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
     },
   });
 
