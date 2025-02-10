@@ -8,6 +8,7 @@ import * as RNFS from 'react-native-fs';
 import {AppThunk} from './types';
 import {fileExists} from '../lib/utils/file';
 import {showError} from './errors';
+import {setDeviceNotificationToken} from './settings';
 import {generateMnemonic} from '../lib/utils/aezeed';
 import {setItem} from '../lib/utils/keychain';
 import {sleep} from '../lib/utils/poll';
@@ -40,6 +41,8 @@ const initialState = {
   lastLoadedCachePart: 0,
 } as IOnboardingState;
 
+const apiAuthUrl = 'https://mobile.litecoin.com/auth';
+
 // actions
 export const startOnboarding = createAction('onboarding/startOnboarding');
 const finishOnboardingAction = createAction<string>(
@@ -70,6 +73,40 @@ const setLastLoadedCachePart = createAction<number>(
 );
 
 // functions
+export const loginToNexusApi =
+  (deviceToken: string, isIOS: boolean): AppThunk =>
+  async (dispatch, getState) => {
+    const {uniqueId, isOnboarded} = getState().onboarding;
+    const {deviceNotificationToken} = getState().settings;
+    if (isOnboarded !== true && !uniqueId && !deviceToken) {
+      return;
+    }
+    try {
+      if (!deviceNotificationToken) {
+        dispatch(setDeviceNotificationToken(deviceToken));
+      }
+
+      const req = await fetch(`${apiAuthUrl}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appAuthKey: 'SOME_PRIVATE_APP_AUTH_KEY',
+          userAppUniqueId: uniqueId,
+          deviceToken: deviceToken,
+          isIOS,
+        }),
+      });
+
+      if (!req.ok) {
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
 export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
   const {seed} = getState().onboarding!;
   console.log(seed.join(''));

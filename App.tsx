@@ -6,18 +6,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
+  PermissionsAndroid,
 } from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
-import {
-  Notifications,
-  Registered,
-  RegistrationError,
-  Notification,
-  NotificationCompletion,
-} from 'react-native-notifications';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import messaging from '@react-native-firebase/messaging';
 import {FlexaContext} from '@flexahq/flexa-react-native';
 import {
   ScreenSizeProvider,
@@ -27,7 +22,7 @@ import {
 import {PopUpProvider, PopUpContext} from './src/context/popUpContext';
 
 import {useAppDispatch} from './src/store/hooks';
-import {setDeviceNotificationToken} from './src/reducers/settings';
+import {loginToNexusApi} from './src/reducers/onboarding';
 import {
   updatedRatesInFiat,
   updateHistoricalRatesForAllPeriods,
@@ -40,6 +35,9 @@ import {getTransactions} from './src/reducers/transaction';
 import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
 import Error from './src/components/Error';
+
+import i18n from './src/utils/i18n';
+const initI18n = i18n;
 
 const flexaPublishableTestKey =
   'publishable_test_5xJh36PJj2xw97G9MGgMpfW82QPvp2jPjp4r6925XQgpr9QWp2WWjjc9J8h665mHfHr6pXx4fwm674w83H2x44';
@@ -71,7 +69,7 @@ function ResizedView(props: any) {
 
 function ContextExecutable(props: any) {
   const dispatch = useAppDispatch();
-  dispatch(setDeviceNotificationToken(props.deviceToken));
+  dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
   // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
   // resulting in missing rates even if the app is being used already.
   dispatch(updatedRatesInFiat());
@@ -83,61 +81,45 @@ function ContextExecutable(props: any) {
 }
 
 const App: React.FC = () => {
-  const [deviceToken, setDeviceToken] = useState('');
-
   function RenderPopUp() {
     const {PopUp} = useContext(PopUpContext);
     return PopUp;
   }
 
+  const [deviceToken, setDeviceToken] = useState('');
+
+  async function requestIOSUserPermission() {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    if (enabled) {
+      // console.log('Authorization status:', authStatus);
+    }
+
+    messaging()
+      .getAPNSToken()
+      .then(token => {
+        // console.log('APNS Device Token Received', token);
+        setDeviceToken(token || '');
+      });
+  }
+
   useLayoutEffect(() => {
-    Notifications.registerRemoteNotifications();
-
-    Notifications.events().registerRemoteNotificationsRegistered(
-      (event: Registered) => {
-        console.log('Device Token Received', event.deviceToken);
-        setDeviceToken(event.deviceToken);
-      },
-    );
-    Notifications.events().registerRemoteNotificationsRegistrationFailed(
-      (event: RegistrationError) => {
-        // console.error(event);
-      },
-    );
-
-    Notifications.events().registerNotificationReceivedForeground(
-      (
-        notification: Notification,
-        completion: (response: NotificationCompletion) => void,
-      ) => {
-        // console.log('Notification Received - Foreground', notification.payload);
-        // Calling completion on iOS with `alert: true` will present the native iOS inApp notification.
-        completion({alert: true, sound: true, badge: false});
-      },
-    );
-
-    Notifications.events().registerNotificationOpened(
-      (notification: Notification, completion: () => void, action: any) => {
-        // console.log('Notification opened by device user', notification.payload);
-        // console.log(`Notification opened with an action identifier: ${action.identifier} and response text: ${action.text}`);
-        completion();
-      },
-    );
-
-    Notifications.events().registerNotificationReceivedBackground(
-      (notification: Notification, completion: (response: any) => void) => {
-        // console.log('Notification Received - Background', notification.payload);
-        // Calling completion on iOS with `alert: true` will present the native iOS inApp notification.
-        completion({alert: true, sound: true, badge: false});
-      },
-    );
-
-    // Not supported on Android
-    // Notifications.getInitialNotification()
-    //   .then(notification => {
-    //     // console.log('Initial notification was:', (notification ? notification.payload : 'N/A'));
-    //   })
-    //   .catch(err => console.error('getInitialNotifiation() failed', err));
+    if (Platform.OS === 'ios') {
+      requestIOSUserPermission();
+    } else {
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+      messaging()
+        .getToken()
+        .then(token => {
+          // console.log('FCM Device Token Received', token);
+          setDeviceToken(token);
+        });
+    }
   }, []);
 
   // seamless Flexa login requires extra libs

@@ -30,6 +30,7 @@ import {
   payment,
   TransactionRequest,
 } from '@flexahq/flexa-react-native';
+import {useTranslation} from 'react-i18next';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -100,6 +101,8 @@ interface TextInputWithDefaultProps extends TextInput {
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
 
+  const {t} = useTranslation('main');
+
   const {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
@@ -132,7 +135,8 @@ const Main: React.FC<Props> = props => {
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
-  const [currentWallet, setCurrentWallet] = useState('Main Wallet');
+  const [currentWallet, setCurrentWallet] = useState(t('main_wallet'));
+  // const [currentWallet, setCurrentWallet] = useState('Main Wallet');
   const uniqueId = useAppSelector(state => state.onboarding.uniqueId);
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const confirmedBalance = useAppSelector(
@@ -517,13 +521,7 @@ const Main: React.FC<Props> = props => {
   const TxListComponent = (
     <View>
       <View style={styles.txTitleContainer}>
-        <Text
-          style={styles.txTitleText}
-          // maxFontSizeMultiplier={0.5}
-          // allowFontScaling={false}
-        >
-          Latest Transactions
-        </Text>
+        <Text style={styles.txTitleText}>{t('latest_txs')}</Text>
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
           <Canvas style={styles.txSearchBtnCanvas}>
