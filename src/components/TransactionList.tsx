@@ -37,7 +37,7 @@ interface Props {
   transactionType?: string;
   searchFilter?: string;
   mwebFilter?: boolean;
-  txPrivacyTypeFilter: string;
+  txPrivacyTypeFilter?: string;
   headerBackgroundColor: string;
 }
 

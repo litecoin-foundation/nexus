@@ -109,6 +109,19 @@ export const setSeedRecovery =
     dispatch(setSeedRecoveryAction(seedPhrase));
   };
 
+const cacheParts = [
+  'cache.z00',
+  'cache.z01',
+  'cache.z02',
+  'cache.z03',
+  'cache.z04',
+  'cache.z05',
+  'cache.z06',
+  'cache.z07',
+  'cache.z08',
+  'cache.z09',
+];
+
 export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
   const {task, lastLoadedCachePart} = getState().onboarding;
 
@@ -128,19 +141,6 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
 
     const partNum = 10;
     const nextPart = lastLoadedCachePart + 1;
-
-    const cacheParts = [
-      'cache.z00',
-      'cache.z01',
-      'cache.z02',
-      'cache.z03',
-      'cache.z04',
-      'cache.z05',
-      'cache.z06',
-      'cache.z07',
-      'cache.z08',
-      'cache.z09',
-    ];
 
     ReactNativeBlobUtil.config({
       fileCache: true,
@@ -218,6 +218,12 @@ const combineZipPartsAndExtract =
       // so we sleep for a few seconds to make sure we're ready.
       // Look into fixing permanently!
       await sleep(2000);
+
+      // delete cached parts
+      for (const part of cacheParts) {
+        RNFS.unlink(`${ReactNativeBlobUtil.fs.dirs.DocumentDir}/${part}`);
+      }
+
       dispatch(extractNeutrinoCache());
     } catch (error) {
       console.error('Error combining files:', error);

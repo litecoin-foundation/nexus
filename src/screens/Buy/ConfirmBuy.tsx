@@ -4,7 +4,6 @@ import {
   Text,
   SafeAreaView,
   StyleSheet,
-  Platform,
   Alert,
   Dimensions,
 } from 'react-native';
@@ -39,6 +38,8 @@ const ConfirmBuy: React.FC<Props> = props => {
     quoteCurrencyPrice,
     totalAmount,
     baseCurrencyAmount,
+    networkFeeAmount,
+    feeAmount,
   } = quote;
 
   const address = useAppSelector(state => state.address.address);
@@ -79,7 +80,7 @@ const ConfirmBuy: React.FC<Props> = props => {
       </SafeAreaView>
 
       <View style={styles.bottomSheetContainer}>
-        <View style={{height: 220, paddingTop: 26}}>
+        <View style={styles.bottomSheetSubContainer}>
           <TableCell
             title="RATE"
             value={`${currencySymbol}${quoteCurrencyPrice.toFixed(
@@ -87,12 +88,11 @@ const ConfirmBuy: React.FC<Props> = props => {
             )} per 1 LTC`}
             noBorder
           />
-          {/* <TableCell title="FEE" value={feeAmount + extraFeeAmount} />
-          <TableCell title="NETWORK FEE" value={networkFeeAmount} /> */}
+          <TableCell title="FEE" value={feeAmount} />
+          <TableCell title="NETWORK FEE" value={networkFeeAmount} />
           <TableCell
             title="YOU WILL SPEND"
             value={`${currencySymbol}${totalAmount.toFixed(2)}`}
-            noBorder
             valueStyle={{color: '#20BB74'}}
           />
         </View>
@@ -118,6 +118,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     width: '100%',
+  },
+  bottomSheetSubContainer: {
+    height: 330,
+    paddingTop: 26,
   },
   titleText: {
     fontFamily: 'Satoshi Variable',

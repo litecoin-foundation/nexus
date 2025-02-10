@@ -1,11 +1,14 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import {AppThunk} from './types';
-import {getLocales} from 'react-native-localize';
+import {getLocales, getCountry} from 'react-native-localize';
+import {uuidFromSeed} from '../lib/utils/uuid';
 
-const publishableKey = 'pk_live_oh73eavK2ZIRR7wxHjWD7HrkWk2nlSr';
+const MOONPAY_PUBLIC_KEY = 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
+const ONRAMPER_PUBLIC_KEY = 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
 
 // types
 interface IBuy {
+  isMoonpayCustomer: boolean;
   quote: any;
   buyHistory: any[];
   sellHistory: any[];
@@ -21,6 +24,7 @@ interface IQuote {}
 
 // initial state
 const initialState = {
+  isMoonpayCustomer: true,
   quote: null,
   buyHistory: [],
   sellHistory: [],
@@ -41,6 +45,7 @@ const checkAllowedAction = createAction<{
   isSellAllowed: boolean;
 }>('buy/checkAllowedAction');
 const getLimitsAction = createAction('buy/getLimitsAction');
+const setMoonpayCustomer = createAction<boolean>('buy/setMoonpayCustomer');
 
 // functions
 export const getBuyTransactionHistory =
@@ -113,7 +118,7 @@ export const getBuyQuoteData = (
       : `&quoteCurrencyAmount=${cryptoAmount}`;
     const url =
       'https://api.moonpay.io/v3/currencies/ltc/quote/' +
-      `?apiKey=${publishableKey}` +
+      `?apiKey=${MOONPAY_PUBLIC_KEY}` +
       currencyAmountURL +
       `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
       '&paymentMethod=credit_debit_card';
@@ -160,7 +165,7 @@ export const getSellQuoteData = (
   return new Promise(async (resolve, reject) => {
     const url =
       'https://api.moonpay.com/v3/currencies/ltc/sell_quote/' +
-      `?apiKey=${publishableKey}` +
+      `?apiKey=${MOONPAY_PUBLIC_KEY}` +
       `&baseCurrencyAmount=${cryptoAmount}` +
       `&quoteCurrencyCode=${String(currencyCode).toLowerCase()}` +
       '&paymentMethod=credit_debit_card';
@@ -196,8 +201,45 @@ export const getSellQuote =
     // dispatch(getSellQuoteAction(quote));
   };
 
+export const checkMoonpayCountry = (): AppThunk => dispatch => {
+  const countryCode = getCountry();
+
+  const moonpayCountries = [
+    // eurozone
+    'BE',
+    'DE',
+    'EE',
+    'IE',
+    'EL',
+    'ES',
+    'FR',
+    'HR',
+    'IT',
+    'CY',
+    'LV',
+    'LT',
+    'LU',
+    'MT',
+    'NL',
+    'AT',
+    'PT',
+    'SI',
+    'SK',
+    'FI',
+    // uk & usa
+    'GB',
+    'US',
+  ];
+
+  if (moonpayCountries.includes(countryCode)) {
+    dispatch(setMoonpayCustomer(true));
+  } else {
+    dispatch(setMoonpayCustomer(false));
+  }
+};
+
 export const checkAllowed = (): AppThunk => async dispatch => {
-  const ipCheckURL = `https://api.moonpay.com/v3/ip_address?apiKey=${publishableKey}`;
+  const ipCheckURL = `https://api.moonpay.com/v3/ip_address?apiKey=${MOONPAY_PUBLIC_KEY}`;
   const supportedCountriesURL = 'https://api.moonpay.com/v3/countries';
 
   let canBuyIP: boolean;
@@ -262,7 +304,7 @@ export const checkAllowed = (): AppThunk => async dispatch => {
 
 export const getLimits = (): AppThunk => async (dispatch, getState) => {
   const {currencyCode} = getState().settings;
-  const url = `https://api.moonpay.com/v3/currencies/ltc/limits?apiKey=${publishableKey}&baseCurrencyCode=${currencyCode}`;
+  const url = `https://api.moonpay.com/v3/currencies/ltc/limits?apiKey=${MOONPAY_PUBLIC_KEY}&baseCurrencyCode=${currencyCode}`;
 
   try {
     const res = await fetch(url, {
@@ -285,6 +327,25 @@ export const getLimits = (): AppThunk => async (dispatch, getState) => {
   }
 };
 
+export const getOnramperUrl =
+  (address: string, fiatAmount: number): AppThunk =>
+  (dispatch, getState) => {
+    const {currencyCode} = getState().settings;
+    const {uniqueId} = getState().onboarding;
+    const uniqueIdAsUUID = uuidFromSeed(uniqueId);
+
+    const url =
+      `https://buy.onramper.com/?apiKey=${ONRAMPER_PUBLIC_KEY}` +
+      '&onlyCryptos=ltc_litecoin' +
+      `&wallets=${address}` +
+      `&defaultAmount=${fiatAmount}` +
+      `&defaultFiat=${currencyCode}` +
+      `&uuid=${uniqueIdAsUUID}` +
+      'mode=buy';
+
+    return url;
+  };
+
 export const getSignedUrl =
   (address: string, fiatAmount: number): AppThunk =>
   (_, getState) => {
@@ -292,7 +353,7 @@ export const getSignedUrl =
       const {currencyCode} = getState().settings;
       const {uniqueId} = getState().onboarding;
       const unsignedURL =
-        `https://buy.moonpay.com?apiKey=${publishableKey}` +
+        `https://buy.moonpay.com?apiKey=${MOONPAY_PUBLIC_KEY}` +
         '&currencyCode=ltc' +
         `&externalCustomerId=${uniqueId}` +
         `&walletAddress=${address}` +
@@ -354,6 +415,10 @@ export const buySlice = createSlice({
       maxBuyAmount: action.payload.baseCurrency.maxBuyAmount,
       minLTCBuyAmount: action.payload.quoteCurrency.minBuyAmount,
       maxLTCBuyAmount: action.payload.quoteCurrency.maxBuyAmount,
+    }),
+    setMoonpayCustomer: (state, action) => ({
+      ...state,
+      isMoonpayCustomer: action.payload,
     }),
   },
 });

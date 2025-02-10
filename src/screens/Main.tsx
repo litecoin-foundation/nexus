@@ -1,5 +1,12 @@
 import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
-import {View, StyleSheet, Text, TextInput, Pressable} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextInput,
+  Pressable,
+  DeviceEventEmitter,
+} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -19,6 +26,7 @@ import {
 } from '@shopify/react-native-skia';
 import {
   CUSTODY_MODEL,
+  dismissAllModals,
   payment,
   TransactionRequest,
 } from '@flexahq/flexa-react-native';
@@ -38,13 +46,16 @@ import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
 import DatePicker from '../components/DatePicker';
-import FlexaSendModalContent from '../components/Modals/FlexaSendModal';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
-import {txDetailSelector} from '../reducers/transaction';
+import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
 import {unsetDeeplink} from '../reducers/deeplinks';
 import {sleep} from '../lib/utils/poll';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import PinModalContent from '../components/Modals/PinModalContent';
+import {validate as validateLtcAddress} from '../lib/utils/validate';
+import LoadingIndicator from '../components/LoadingIndicator';
+import {showError} from '../reducers/errors';
 
 interface URIHandlerRef {
   handleURI: (data: string) => void;
@@ -118,7 +129,6 @@ const Main: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
 
   const [activeTab, setActiveTab] = useState(0);
-  const [isSendModalTriggered, triggerSendModal] = useState<boolean>(false);
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
@@ -128,6 +138,9 @@ const Main: React.FC<Props> = props => {
   const confirmedBalance = useAppSelector(
     state => state.balance.confirmedBalance,
   );
+  const [isPinModalOpened, setIsPinModalOpened] = useState(false);
+  const pinModalAction = useRef<string>('view-seed-auth');
+  const [loading, setLoading] = useState(false);
 
   // flexa
   const flexaAssetAccounts = [
@@ -152,37 +165,85 @@ const Main: React.FC<Props> = props => {
     payment(flexaAssetAccounts, paymentCallback);
   };
 
-  const paymentCallback = (transactionRequest: TransactionRequest) => {
+  const paymentCallback = async (transactionRequest: TransactionRequest) => {
     const {transaction, transactionSent, transactionFailed} =
       transactionRequest;
 
-    console.log('flexa paymentCallback');
+    dismissAllModals();
+    await sleep(200);
 
     console.log(transaction);
+    const addrArray = transaction.destinationAddress.split(':');
 
-    /* transaction contains
-      destinationAddress: string; eip155:1:0x123... destination address for payment
-      amount: string; // the fee price in decimals string representation
-      feePriorityPrice: string; the fee priority price in decimals string representation
-      feePrice: string; the fee price in decimals string representation
-      size: string; // transaction size bigint (i.e. gasLimit)
-      assetId: string; // assetId CAIP19 notation of the asset that is to be sent
-      accountId: string; // which accountId was used for the payment (i.e which wallet to send from)
-    */
+    // validation of destinationAddress
+    try {
+      if (addrArray.length !== 3) {
+        throw new Error('unknown address length');
+      }
+      if (addrArray[1] !== '12a765e31ffd4059bada1e25190f6e98') {
+        throw new Error('not a litecoin address');
+      }
+      const valid = await validateLtcAddress(addrArray[2]);
+      if (!valid) {
+        throw new Error('invalid litecoin address');
+      }
+    } catch (error) {
+      transactionFailed();
+      payment(flexaAssetAccounts, paymentCallback);
+      dispatch(showError(String(error)));
+    }
 
-    // const TX_SIGNATURE = yourTransactionSendFunction({ ...transaction });
-    const TX_SIGNATURE = null;
-
-    // This helps Flexa confirm the transaction quickly for self-custody wallets. It is a callback sent back to the SDK with the transaction signature i.e hash
-    // transactionSent(TX_SIGNATURE);
-
-    // Or call transactionFailed to close the commerce session initiated in the Flexa SDK
-    // transactionFailed();
+    try {
+      // authenticate
+      await handleAuthenticationRequired('view-seed-auth');
+      setLoading(true);
+      // send coins
+      const txid = await dispatch(
+        sendOnchainPayment(
+          addrArray[2],
+          Math.trunc(Number(transaction.amount) * 100000000),
+          'Flexa Payment',
+        ),
+      );
+      console.log(txid);
+      transactionSent(txid);
+      setIsPinModalOpened(false);
+      setLoading(false);
+      // reopen flexa modal
+      payment(flexaAssetAccounts, paymentCallback);
+    } catch (error) {
+      transactionFailed();
+      setIsPinModalOpened(false);
+      setLoading(false);
+      payment(flexaAssetAccounts, paymentCallback);
+      dispatch(showError(String(error)));
+    }
   };
 
-  const sendCardRef = useRef<URIHandlerRef>(null);
+  function openPinModal(action: string) {
+    pinModalAction.current = action;
+    setIsPinModalOpened(true);
+  }
 
+  const handleAuthenticationRequired = (action: string) => {
+    return new Promise<void>((resolve, reject) => {
+      openPinModal(action);
+      const subscription = DeviceEventEmitter.addListener(action, bool => {
+        if (bool === true) {
+          setIsPinModalOpened(false);
+          subscription.remove();
+          resolve();
+        } else if (bool === false) {
+          subscription.remove();
+          reject();
+        }
+      });
+    });
+  };
+
+  // Transaction Detail Modal Swiping
   const image = useImage(require('../assets/icons/search-icon.png'));
+  const sendCardRef = useRef<URIHandlerRef>(null);
 
   function setTransactionIndex(newTxIndex: number) {
     selectTransaction(transactions[newTxIndex]);
@@ -652,21 +713,29 @@ const Main: React.FC<Props> = props => {
       />
 
       <PlasmaModal
-        isOpened={isSendModalTriggered}
-        close={() => {
-          triggerSendModal(false);
-        }}
+        isOpened={isPinModalOpened}
+        close={() => setIsPinModalOpened(false)}
         isFromBottomToTop={true}
         animDuration={250}
         gapInPixels={0}
         backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
         renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
-          <FlexaSendModalContent
+          <PinModalContent
             cardTranslateAnim={cardTranslateAnim}
-            close={() => triggerSendModal(false)}
+            close={() => setIsPinModalOpened(false)}
+            handleValidationFailure={() => {
+              setLoading(false);
+              DeviceEventEmitter.emit(pinModalAction.current, false);
+            }}
+            handleValidationSuccess={() => {
+              setLoading(false);
+              DeviceEventEmitter.emit(pinModalAction.current, true);
+            }}
           />
         )}
       />
+
+      <LoadingIndicator visible={loading} />
     </Animated.View>
   );
 };

@@ -10,6 +10,7 @@ import {subscribeAppState} from '../reducers/authentication';
 import {setDeeplink} from '../reducers/deeplinks';
 import {syncAlerts} from '../reducers/alerts';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
+import {checkMoonpayCountry} from '../reducers/buy';
 
 type RootStackParamList = {
   Loading: undefined;
@@ -42,6 +43,7 @@ const Loading: React.FC<Props> = props => {
     dispatch(checkBiometricSupport());
     dispatch(checkInternetReachable());
     dispatch(subscribeAppState());
+    dispatch(checkMoonpayCountry());
   }, [dispatch, isOnboarded]);
 
   useEffect(() => {
