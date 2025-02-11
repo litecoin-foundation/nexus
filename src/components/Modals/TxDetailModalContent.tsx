@@ -180,10 +180,13 @@ export default function TxDetailModalContent(props: Props) {
   const myOutputs = transaction.myOutputs || [];
   const otherOutputs = transaction.otherOutputs || [];
 
-  async function getSenderAndFee() {
+  async function getSenderAndFee(abortController: any) {
     try {
       const req = await fetch(
         `https://litecoinspace.org/api/tx/${transaction.hash}`,
+        {
+          signal: abortController.signal,
+        },
       );
       const data: any = await req.json();
 
@@ -211,7 +214,9 @@ export default function TxDetailModalContent(props: Props) {
   }
 
   useEffect(() => {
-    getSenderAndFee();
+    const abortController = new AbortController();
+    getSenderAndFee(abortController);
+    return () => abortController.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transaction]);
 

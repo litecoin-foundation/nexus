@@ -1,0 +1,26 @@
+import i18n from 'i18next';
+import {initReactI18next} from 'react-i18next';
+import {getLocales} from 'react-native-localize';
+
+import de_T from '../assets/locales/de.json';
+import en_T from '../assets/locales/en.json';
+import es_T from '../assets/locales/es.json';
+import it_T from '../assets/locales/it.json';
+import pl_T from '../assets/locales/pl.json';
+import ru_T from '../assets/locales/ru.json';
+
+i18n.use(initReactI18next).init({
+  //   lng: 'ru',
+  lng: getLocales()[0].languageCode,
+  fallbackLng: 'en',
+  resources: {
+    de: de_T,
+    en: en_T,
+    es: es_T,
+    it: it_T,
+    pl: pl_T,
+    ru: ru_T,
+  },
+});
+
+export default i18n;
