@@ -56,6 +56,7 @@ import PinModalContent from '../components/Modals/PinModalContent';
 import {validate as validateLtcAddress} from '../lib/utils/validate';
 import LoadingIndicator from '../components/LoadingIndicator';
 import {showError} from '../reducers/errors';
+import Convert from '../components/Cards/Convert';
 
 interface URIHandlerRef {
   handleURI: (data: string) => void;
@@ -588,7 +589,8 @@ const Main: React.FC<Props> = props => {
         wider={true}
         imageSource={require('../assets/icons/convert-icon.png')}
         handlePress={() => {
-          console.log('nothing to do');
+          setBottomSheetFolded(false);
+          setActiveTab(3);
         }}
         active={activeTab === 3}
         textPadding={18}
@@ -641,6 +643,7 @@ const Main: React.FC<Props> = props => {
         activeTab={activeTab}
         buyViewComponent={<Buy route={route} />}
         sellViewComponent={<Sell route={route} />}
+        convertViewComponent={<Convert />}
         sendViewComponent={<Send route={route} ref={sendCardRef} />}
         receiveViewComponent={<Receive />}
       />

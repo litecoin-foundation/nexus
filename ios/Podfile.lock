@@ -2024,8 +2024,6 @@ PODS:
     - Yoga
   - RNICloudStore (0.1.0):
     - React
-  - RNInAppBrowser (3.7.0):
-    - React-Core
   - RNKeychain (8.2.0):
     - React-Core
   - RNLocalize (3.3.0):
@@ -2392,7 +2390,6 @@ DEPENDENCIES:
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNICloudStore (from `../node_modules/react-native-icloudstore`)
-  - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -2626,8 +2623,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNICloudStore:
     :path: "../node_modules/react-native-icloudstore"
-  RNInAppBrowser:
-    :path: "../node_modules/react-native-inappbrowser-reborn"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
@@ -2765,7 +2760,6 @@ SPEC CHECKSUMS:
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 0e5ae8d72ef4afb855e98dcdbe60f27d938abe13
   RNICloudStore: 7ac4f2630e2a7e90a4b059b92e8483828bbacd2b
-  RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
   RNLocalize: c28a383fb73b1480d1117c3ca4402113e1772366
   RNReanimated: 006a5d3961bf09c1e96d62ed436e02b2e43b89bb

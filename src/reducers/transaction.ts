@@ -159,7 +159,6 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
         resolve(null);
       }
     } catch (error) {
-      // console.error(error);
       reject(error);
     }
   });
@@ -175,23 +174,21 @@ const changeEndianness = (string: string) => {
   return result.join('');
 };
 
-export const labelTransaction =
-  (txid: string, label: string): AppThunk =>
-  async () => {
-    try {
-      const reversedId = changeEndianness(txid);
-      const idBytes = Uint8Array.from(Buffer.from(reversedId, 'hex'));
+export const labelTransaction = (txid: string, label: string) => async () => {
+  try {
+    const reversedId = changeEndianness(txid);
+    const idBytes = Uint8Array.from(Buffer.from(reversedId, 'hex'));
 
-      const request = {
-        txid: idBytes,
-        label,
-        overwrite: true,
-      };
-      await walletKitLabelTransaction(request);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    const request = {
+      txid: idBytes,
+      label,
+      overwrite: true,
+    };
+    await walletKitLabelTransaction(request);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 export const subscribeTransactions =
   (): AppThunk => async (dispatch, getState) => {

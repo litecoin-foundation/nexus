@@ -72,7 +72,6 @@ const setLastLoadedCachePart = createAction<number>(
 // functions
 export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
   const {seed} = getState().onboarding!;
-  console.log(seed.join(''));
   const uniqueId: string = Crypto.createHash('sha256')
     .update(seed.join(''))
     .digest('hex');
@@ -85,7 +84,6 @@ export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
 export const genSeed = (): AppThunk => async dispatch => {
   try {
     const seed = await generateMnemonic();
-    console.log(seed.join(''));
     await setItem('SEEDPHRASE', seed.join(''));
     dispatch(genSeedAction(seed));
   } catch (error) {

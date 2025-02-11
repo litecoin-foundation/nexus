@@ -25,6 +25,7 @@ interface Props {
   txViewComponent: React.ReactNode;
   buyViewComponent: React.ReactNode;
   sellViewComponent: React.ReactNode;
+  convertViewComponent: React.ReactNode;
   sendViewComponent: React.ReactNode;
   receiveViewComponent: React.ReactNode;
   headerComponent: React.ReactNode;
@@ -38,6 +39,7 @@ interface Props {
 interface CardProps {
   txView: React.ReactNode;
   buyView: React.ReactNode;
+  convertView: React.ReactNode;
   sellView: React.ReactNode;
   sendView: React.ReactNode;
   receiveView: React.ReactNode;
@@ -50,6 +52,7 @@ const BottomSheet: React.FC<Props> = props => {
     txViewComponent,
     buyViewComponent,
     sellViewComponent,
+    convertViewComponent,
     sendViewComponent,
     receiveViewComponent,
     headerComponent,
@@ -60,7 +63,8 @@ const BottomSheet: React.FC<Props> = props => {
     activeTab,
   } = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
@@ -77,7 +81,10 @@ const BottomSheet: React.FC<Props> = props => {
     foldUnfold(false);
   };
 
-  const onHandlerEnd = ({translationY, velocityY}: PanGestureHandlerEventPayload) => {
+  const onHandlerEnd = ({
+    translationY,
+    velocityY,
+  }: PanGestureHandlerEventPayload) => {
     'worklet';
     const dragToss = 0.03;
     let destSnapPoint = 0;
@@ -85,7 +92,8 @@ const BottomSheet: React.FC<Props> = props => {
       translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
       translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
     ) {
-      destSnapPoint = translationY + mainSheetsTranslationYStart.value + velocityY * dragToss;
+      destSnapPoint =
+        translationY + mainSheetsTranslationYStart.value + velocityY * dragToss;
     } else {
       if (folded) {
         destSnapPoint = UNFOLD_SHEET_POINT;
@@ -108,16 +116,26 @@ const BottomSheet: React.FC<Props> = props => {
   function onEndTrigger(e: any) {
     'worklet';
     if (folded) {
-      if (e.translationY + mainSheetsTranslationYStart.value < UNFOLD_SNAP_POINT) {
+      if (
+        e.translationY + mainSheetsTranslationYStart.value <
+        UNFOLD_SNAP_POINT
+      ) {
         onHandlerEnd(e);
       } else {
-        mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {duration: SPRING_BACK_ANIM_DURATION});
+        mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {
+          duration: SPRING_BACK_ANIM_DURATION,
+        });
       }
     } else {
-      if (e.translationY + mainSheetsTranslationYStart.value > FOLD_SNAP_POINT) {
+      if (
+        e.translationY + mainSheetsTranslationYStart.value >
+        FOLD_SNAP_POINT
+      ) {
         onHandlerEnd(e);
       } else {
-        mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {duration: SPRING_BACK_ANIM_DURATION});
+        mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {
+          duration: SPRING_BACK_ANIM_DURATION,
+        });
       }
     }
   }
@@ -125,11 +143,12 @@ const BottomSheet: React.FC<Props> = props => {
   const headerGesture = Gesture.Pan()
     .onUpdate(e => {
       if (
-        e.translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+        e.translationY + mainSheetsTranslationYStart.value >
+          UNFOLD_SHEET_POINT &&
         e.translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
-      )
-      {
-        mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      ) {
+        mainSheetsTranslationY.value =
+          e.translationY + mainSheetsTranslationYStart.value;
       }
     })
     .onEnd(onEndTrigger);
@@ -137,11 +156,12 @@ const BottomSheet: React.FC<Props> = props => {
   const panGesture = Gesture.Pan()
     .onUpdate(e => {
       if (
-        e.translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+        e.translationY + mainSheetsTranslationYStart.value >
+          UNFOLD_SHEET_POINT &&
         e.translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
-      )
-      {
-        mainSheetsTranslationY.value = e.translationY + mainSheetsTranslationYStart.value;
+      ) {
+        mainSheetsTranslationY.value =
+          e.translationY + mainSheetsTranslationYStart.value;
       }
     })
     .onEnd(onEndTrigger);
@@ -154,13 +174,17 @@ const BottomSheet: React.FC<Props> = props => {
 
   useEffect(() => {
     if (folded) {
-      mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {duration: ANIM_DURATION});
+      mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {
+        duration: ANIM_DURATION,
+      });
       // set Y offset
       setTimeout(() => {
         mainSheetsTranslationYStart.value = FOLD_SHEET_POINT;
       }, ANIM_DURATION);
     } else {
-      mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {duration: ANIM_DURATION});
+      mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {
+        duration: ANIM_DURATION,
+      });
       // set Y offset
       setTimeout(() => {
         mainSheetsTranslationYStart.value = UNFOLD_SHEET_POINT;
@@ -187,7 +211,7 @@ const BottomSheet: React.FC<Props> = props => {
     }, 155);
     cardOpacity.value = withSequence(
       withTiming(0, {duration: 150}),
-      withTiming(1, {duration: 300})
+      withTiming(1, {duration: 300}),
     );
     return () => {
       clearTimeout(animTimeout.current);
@@ -197,14 +221,13 @@ const BottomSheet: React.FC<Props> = props => {
   return (
     <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
       <GestureDetector gesture={headerGesture}>
-        <View collapsable={false}>
-          {headerComponent}
-        </View>
+        <View collapsable={false}>{headerComponent}</View>
       </GestureDetector>
       <Animated.View style={animatedCardOpacityStyle}>
         <RenderCard
           txView={txViewComponent}
           buyView={buyViewComponent}
+          convertView={convertViewComponent}
           sellView={sellViewComponent}
           sendView={sendViewComponent}
           receiveView={receiveViewComponent}
@@ -221,6 +244,7 @@ const RenderCard: React.FC<CardProps> = props => {
     txView,
     buyView,
     sellView,
+    convertView,
     sendView,
     receiveView,
     activeTab,
@@ -231,37 +255,32 @@ const RenderCard: React.FC<CardProps> = props => {
     <Animated.View>
       {activeTab === 0 ? (
         <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {txView}
-          </View>
+          <View collapsable={false}>{txView}</View>
         </GestureDetector>
       ) : null}
       {activeTab === 1 ? (
         <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {buyView}
-          </View>
+          <View collapsable={false}>{buyView}</View>
         </GestureDetector>
       ) : null}
       {activeTab === 2 ? (
         <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {sellView}
-          </View>
+          <View collapsable={false}>{sellView}</View>
+        </GestureDetector>
+      ) : null}
+      {activeTab === 3 ? (
+        <GestureDetector gesture={panGesture}>
+          <View collapsable={false}>{convertView}</View>
         </GestureDetector>
       ) : null}
       {activeTab === 4 ? (
         <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {sendView}
-          </View>
+          <View collapsable={false}>{sendView}</View>
         </GestureDetector>
       ) : null}
       {activeTab === 5 ? (
         <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>
-            {receiveView}
-          </View>
+          <View collapsable={false}>{receiveView}</View>
         </GestureDetector>
       ) : null}
     </Animated.View>
@@ -273,8 +292,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     bottomSheet: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: '#f7f7f7',
-      borderTopLeftRadius: screenHeight * 0.030,
-      borderTopRightRadius: screenHeight * 0.030,
+      borderTopLeftRadius: screenHeight * 0.03,
+      borderTopRightRadius: screenHeight * 0.03,
     },
   });
 
