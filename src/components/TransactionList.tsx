@@ -256,10 +256,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     sectionHeaderText: {
       color: '#747E87',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontSize: screenHeight * 0.014,
       fontStyle: 'normal',
       fontWeight: '700',

@@ -145,10 +145,7 @@ const getStyles = (
     },
     tabLeftBalance: {
       color: isWhiteStyle ? '#000' : '#fff',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '400',
       fontSize: screenHeight * 0.04,

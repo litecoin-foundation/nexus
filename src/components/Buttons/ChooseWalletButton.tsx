@@ -97,10 +97,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
       alignItems: 'center',
     },
     boxText: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       color: '#fff',
       fontStyle: 'normal',
       fontWeight: '500',

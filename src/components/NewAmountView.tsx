@@ -64,7 +64,7 @@ const NewAmountView: React.FC<Props> = props => {
         <View
           style={[
             styles.subview,
-            Platform.OS === 'android' ? {paddingTop: insets.top} : null,
+            Platform.OS === 'android' ? {paddingTop: insets.top + 7} : null,
           ]}>
           {!chartCursorSelected ? (
             <>
@@ -128,10 +128,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.07,
     },
     amountText: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '400',
       color: 'white',
@@ -144,10 +141,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       gap: 7,
     },
     fiatText: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: 'white',
@@ -160,10 +154,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingTop: screenHeight * 0.06,
     },
     internetText: {
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '500',
       color: 'white',

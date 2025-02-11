@@ -1,10 +1,5 @@
 import React, {useContext} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Platform,
-} from 'react-native';
+import {View, Text, StyleSheet, Platform} from 'react-native';
 import PriceIndicatorButton from '../Buttons/PriceIndictorButton';
 
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -34,7 +29,8 @@ const WalletTabSimple: React.FC<Props> = (props: Props) => {
       break;
   }
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, isWhiteStyle);
 
   const change: any = (priceRate / prevRate) * 100 - 100;
@@ -42,7 +38,8 @@ const WalletTabSimple: React.FC<Props> = (props: Props) => {
     change < 0 ? '' : '+' + parseFloat(change).toFixed(2) + '%';
 
   const balanceTextSizeStyle = {
-    fontSize: String(balance).length > 7 ? SCREEN_HEIGHT * 0.03 : SCREEN_HEIGHT * 0.04,
+    fontSize:
+      String(balance).length > 7 ? SCREEN_HEIGHT * 0.03 : SCREEN_HEIGHT * 0.04,
   };
 
   return (
@@ -55,16 +52,18 @@ const WalletTabSimple: React.FC<Props> = (props: Props) => {
         <View style={styles.tabWorthContainer}>
           <Text style={styles.tabWorth}>{fiatBalance}</Text>
           <PriceIndicatorButton value={Number(change)} />
-          <Text style={styles.tabWorthChange}>
-            {changeText}
-          </Text>
+          <Text style={styles.tabWorthChange}>{changeText}</Text>
         </View>
       </View>
     </View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, isWhiteStyle?: boolean) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  isWhiteStyle?: boolean,
+) =>
   StyleSheet.create({
     walletTab: {
       height: screenHeight * 0.14,
@@ -90,10 +89,7 @@ const getStyles = (screenWidth: number, screenHeight: number, isWhiteStyle?: boo
     },
     tabBalance: {
       color: isWhiteStyle ? '#000' : '#fff',
-      fontFamily:
-        Platform.OS === 'ios'
-          ? 'Satoshi Variable'
-          : 'SatoshiVariable-Regular.ttf',
+      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '400',
       fontSize: screenHeight * 0.04,
