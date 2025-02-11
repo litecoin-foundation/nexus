@@ -2073,10 +2073,10 @@ PODS:
     - Yoga
   - RNDeviceInfo (11.1.0):
     - React-Core
-  - RNFBApp (21.7.1):
+  - RNFBApp (21.8.0):
     - Firebase/CoreOnly (= 11.7.0)
     - React-Core
-  - RNFBMessaging (21.7.1):
+  - RNFBMessaging (21.8.0):
     - Firebase/Messaging (= 11.7.0)
     - FirebaseCoreExtension
     - React-Core
@@ -2489,7 +2489,7 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  "git@github.com:flexa/flexa-cocoapods.git":
     - Flexa
     - FlexaCore
     - FlexaLoad
@@ -2770,14 +2770,14 @@ SPEC CHECKSUMS:
   FirebaseCoreInternal: d6c17dafc8dc33614733a8b52df78fcb4394c881
   FirebaseInstallations: 9347e719c3d52d8d7b9074b2c32407dd027305e9
   FirebaseMessaging: 00ece041b71ddb52a2862ffdee73fb6e9824bd0c
-  Flexa: 76eb3580d0a1f71ba1080e5c8050c78b1e020d51
+  Flexa: fd77aea51d7da843b21b6745e63a904c592ff6bf
   flexa-react-native: 1bcee10fe95e5c8600068ed09ef80f135408939e
-  FlexaCore: 6602d6abe1f5971ec80f25e551685a37ebb420fa
-  FlexaLoad: e509eae8d5d6a05954801f71ef670301cfc80d0a
-  FlexaNetworking: aa590da1b711490bce18e303e01930b8ceaccf0a
-  FlexaScan: 110053fae1777da493a99ea85481a1f98f262d4b
+  FlexaCore: 3586fd15543ae78729c7aaeb1fb141ef47e64bad
+  FlexaLoad: ffec731a10f0ee00da0e112e266606e24aa5d6a0
+  FlexaNetworking: c6dd47a7275f98a70b48eb624fd079882209410c
+  FlexaScan: fc8ea69dfb5e7b397c8b20c200c4ba9c227831a9
   FlexaSpend: 773564a77c43e2e16c95ad74b376c506b2fd8f28
-  FlexaUICore: 4cb29b31e60a792c3cea29a5ef3b34ecb2149d13
+  FlexaUICore: 7890ba788a58109e00637f6a208127a06c2ff49c
   fmt: 10c6e61f4be25dc963c36bd73fc7b1705fe975be
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
@@ -2864,8 +2864,8 @@ SPEC CHECKSUMS:
   RNCMaskedView: c22a01dd2d0744c16b56e06eb8720512b900988c
   RNDateTimePicker: 6008d74df8122d6af6d9d08096bff19a8c6ba647
   RNDeviceInfo: b899ce37a403a4dea52b7cb85e16e49c04a5b88e
-  RNFBApp: 67229e8085ab427c935defad2a6c3fc57c7f656d
-  RNFBMessaging: e485940b19e3cff5eeb0f7f095d480576cbab505
+  RNFBApp: c9a7b90058f665b77e742a7f18812664479f464a
+  RNFBMessaging: be0a99555606b2f1cf5453eb15d40af32e45c7ba
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 0e5ae8d72ef4afb855e98dcdbe60f27d938abe13
   RNICloudStore: 7ac4f2630e2a7e90a4b059b92e8483828bbacd2b
@@ -2883,7 +2883,7 @@ SPEC CHECKSUMS:
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
   TurboScryptiOS: 4ee69d6127846813bf6d5ed89313d21548ca87d1
   VisionCamera: 598ab83c6bf4d65f5c32ec54361eed866505d388
-  Yoga: 157bed1c62656587df4639d4dc29714898f8fb10
+  Yoga: db69236006b8b1c6d55ab453390c882306cbf219
 
 PODFILE CHECKSUM: c8e51d803b94059bf0cacf87a7aad026a053744b
 

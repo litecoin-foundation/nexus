@@ -95,13 +95,13 @@ const App: React.FC = () => {
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (enabled) {
-      // console.log('Authorization status:', authStatus);
+      console.log('Authorization status:', authStatus);
     }
 
     messaging()
       .getAPNSToken()
-      .then(token => {
-        // console.log('APNS Device Token Received', token);
+      .then((token: string) => {
+        console.log('APNS Device Token Received', token);
         setDeviceToken(token || '');
       });
   }
@@ -115,8 +115,8 @@ const App: React.FC = () => {
       );
       messaging()
         .getToken()
-        .then(token => {
-          // console.log('FCM Device Token Received', token);
+        .then((token: string) => {
+          console.log('FCM Device Token Received', token);
           setDeviceToken(token);
         });
     }

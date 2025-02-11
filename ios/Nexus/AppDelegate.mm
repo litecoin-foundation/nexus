@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-#import <Firebase.h>
+#import <FirebaseCore.h>
 
 #import <React/RCTBundleURLProvider.h>
 

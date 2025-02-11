@@ -20,6 +20,7 @@ interface IOnboardingState {
   generatedSeed: string[];
   seed: string[];
   uniqueId: string;
+  supportId: string;
   beingRecovered: boolean;
   task: undefined | 'downloading' | 'unzipping' | 'complete' | 'failed';
   downloadProgress?: number;
@@ -34,6 +35,7 @@ const initialState = {
   generatedSeed: [],
   seed: [],
   uniqueId: '',
+  supportId: '',
   beingRecovered: false,
   task: undefined,
   downloadProgress: 0,
@@ -71,6 +73,9 @@ const getNeutrinoCacheSuccessAction = createAction(
 const setLastLoadedCachePart = createAction<number>(
   'onboarding/setLastLoadedCachePart',
 );
+const setSupportIdAction = createAction<string>(
+  'onboarding/setSupportIdAction',
+);
 
 // functions
 export const loginToNexusApi =
@@ -92,7 +97,7 @@ export const loginToNexusApi =
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          appAuthKey: 'SOME_PRIVATE_APP_AUTH_KEY',
+          appAuthKey: '',
           userAppUniqueId: uniqueId,
           deviceToken: deviceToken,
           isIOS,
@@ -102,6 +107,25 @@ export const loginToNexusApi =
       if (!req.ok) {
         return;
       }
+
+      const req2 = await fetch('https://mobile.litecoin.com/api/support/sign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identifier: uniqueId,
+        }),
+      });
+
+      if (!req2.ok) {
+        const error = await req2.json();
+        throw new Error(String(error));
+      }
+
+      const response = await req2.json();
+      const {hash} = response;
+      dispatch(setSupportIdAction(hash));
     } catch (error) {
       console.error(error);
     }
@@ -364,6 +388,10 @@ export const onboardingSlice = createSlice({
     setLastLoadedCachePart: (state, action: PayloadAction<number>) => ({
       ...state,
       lastLoadedCachePart: action.payload,
+    }),
+    setSupportIdAction: (state, action: PayloadAction<string>) => ({
+      ...state,
+      supportId: action.payload,
     }),
   },
 });

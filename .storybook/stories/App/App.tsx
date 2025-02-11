@@ -1,21 +1,16 @@
-import React, { useLayoutEffect, useState } from 'react';
-import {Dimensions, Platform, StatusBar, View} from 'react-native';
+import React, {useLayoutEffect, useState} from 'react';
+import {Platform, StatusBar} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
-import {
-  Notifications,
-  Registered,
-  RegistrationError,
-  Notification,
-  NotificationCompletion,
-  NotificationBackgroundFetchResult,
-} from 'react-native-notifications';
 
 import {useAppDispatch} from '../../../src/store/hooks';
 import {setDeviceNotificationToken} from '../../../src/reducers/settings';
 import {updateHistoricalRatesForAllPeriods} from '../../../src/reducers/ticker';
-import {getBuyTransactionHistory, getSellTransactionHistory} from '../../../src/reducers/buy';
+import {
+  getBuyTransactionHistory,
+  getSellTransactionHistory,
+} from '../../../src/reducers/buy';
 import {getTransactions} from '../../../src/reducers/transaction';
 
 import RootNavigator from '../../../src/navigation/RootNavigator';
@@ -45,64 +40,26 @@ function ContextExecutable(props: any) {
 }
 
 const App: React.FC = () => {
-
   const [deviceToken, setDeviceToken] = useState('');
 
-  useLayoutEffect(() => {
-    Notifications.registerRemoteNotifications();
-
-    Notifications.events().registerRemoteNotificationsRegistered((event: Registered) => {
-        // TODO: Send the token to my server so it could send back push notifications...
-        // console.log('Device Token Received', event.deviceToken);
-        setDeviceToken(event.deviceToken);
-    });
-    Notifications.events().registerRemoteNotificationsRegistrationFailed((event: RegistrationError) => {
-        // console.error(event);
-    });
-
-    Notifications.events().registerNotificationReceivedForeground((notification: Notification, completion: (response: NotificationCompletion) => void) => {
-      // console.log('Notification Received - Foreground', notification.payload);
-
-      // Calling completion on iOS with `alert: true` will present the native iOS inApp notification.
-      completion({alert: true, sound: true, badge: false});
-    });
-
-    Notifications.events().registerNotificationOpened((notification: Notification, completion: () => void, action: any) => {
-      // console.log('Notification opened by device user', notification.payload);
-      // console.log(`Notification opened with an action identifier: ${action.identifier} and response text: ${action.text}`);
-      completion();
-    });
-
-    Notifications.events().registerNotificationReceivedBackground((notification: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
-      // console.log('Notification Received - Background', notification.payload);
-
-      // Calling completion on iOS with `alert: true` will present the native iOS inApp notification.
-      completion({alert: true, sound: true, badge: false});
-    });
-
-    Notifications.getInitialNotification()
-      .then((notification) => {
-        // console.log('Initial notification was:', (notification ? notification.payload : 'N/A'));
-        })
-      .catch((err) => console.error('getInitialNotifiation() failed', err));
-  }, []);
-
-  return <>
-    {/* <View style={{height: Dimensions.get('screen').height * 0.8, width: Dimensions.get('screen').width * 0.8}}> */}
+  return (
+    <>
+      {/* <View style={{height: Dimensions.get('screen').height * 0.8, width: Dimensions.get('screen').width * 0.8}}> */}
       <Provider store={store}>
         {Platform.OS === 'android' ? (
           <StatusBar hidden={true} backgroundColor="transparent" />
         ) : null}
         <PersistGate loading={null} persistor={pStore}>
-          <ContextExecutable deviceToken={deviceToken}/>
+          <ContextExecutable deviceToken={deviceToken} />
           <GestureHandlerRootView style={{flex: 1}}>
             <RootNavigator deviceToken={deviceToken} />
             <Error />
           </GestureHandlerRootView>
         </PersistGate>
       </Provider>
-    {/* </View> */}
-  </>;
+      {/* </View> */}
+    </>
+  );
 };
 
 export default App;

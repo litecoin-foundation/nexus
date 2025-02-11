@@ -18,14 +18,15 @@ interface Props {
 
 const Support: React.FC<Props> = props => {
   const {navigation} = props;
-  const {uniqueId} = useAppSelector(state => state.onboarding);
+  const {uniqueId, supportId} = useAppSelector(state => state.onboarding);
+
+  console.log(supportId);
 
   const user = {
     identifier: uniqueId,
     name: '',
     email: '',
-    identifier_hash:
-      'c4c5fb643a6b94c7ba2a2d691a522c630b30e89e72c12d1c7bc323c54f23212f',
+    identifier_hash: supportId,
   };
   const customAttributes = {
     nexusversion: 3,
