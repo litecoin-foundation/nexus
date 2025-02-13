@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Dimensions} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
 import {ScreenSizeContext} from '../context/screenSize';
@@ -28,8 +28,11 @@ const TranslateText: React.FC<Props> = props => {
   const {width, height} = useContext(ScreenSizeContext);
 
   let fontSize = textStyle ? textStyle.fontSize : DEFAULT_FONT_SIZE;
-  if (maxSizeInPixels && fontSize > maxSizeInPixels) {
-    fontSize = maxSizeInPixels;
+  if (
+    maxSizeInPixels &&
+    fontSize * Dimensions.get('window').fontScale > maxSizeInPixels
+  ) {
+    fontSize = maxSizeInPixels / Dimensions.get('window').fontScale;
   }
 
   const styles = getStyles(width, height, fontSize, maxLengthInPixels);
@@ -41,7 +44,8 @@ const TranslateText: React.FC<Props> = props => {
       <Text
         style={[styles.text, textStyle, styles.textLimits]}
         ellipsizeMode="tail"
-        numberOfLines={numberOfLines || 0}>
+        numberOfLines={numberOfLines || 0}
+        maxFontSizeMultiplier={1}>
         {t(textKey)}
       </Text>
     </View>

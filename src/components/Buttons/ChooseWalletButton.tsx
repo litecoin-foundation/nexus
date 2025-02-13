@@ -39,7 +39,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
 
   const {t} = useTranslation('main');
 
-  const MAX_FONT_SIZE = 16;
+  const MAX_FONT_SIZE = SCREEN_HEIGHT * 0.02;
   const MAX_TEXT_WIDTH = SCREEN_WIDTH * 0.4;
 
   const isInternetReachable = useAppSelector(
@@ -69,6 +69,7 @@ const ChooseWalletButton: React.FC<Props> = props => {
   if (fontSize > MAX_FONT_SIZE) {
     fontSize = MAX_FONT_SIZE;
   }
+
   const arrowHeight = Math.round(SCREEN_HEIGHT * 0.012);
   const boxPadding = Math.round(SCREEN_HEIGHT * 0.015);
   const boxHeight = Math.round(SCREEN_HEIGHT * 0.035);
@@ -80,7 +81,6 @@ const ChooseWalletButton: React.FC<Props> = props => {
   };
 
   let textWidth = Math.round(textWidthMeasure);
-
   if (textWidth > MAX_TEXT_WIDTH) {
     textWidth = MAX_TEXT_WIDTH;
   }
