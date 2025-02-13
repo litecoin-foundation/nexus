@@ -44,8 +44,7 @@ const TranslateText: React.FC<Props> = props => {
       <Text
         style={[styles.text, textStyle, styles.textLimits]}
         ellipsizeMode="tail"
-        numberOfLines={numberOfLines || 0}
-        maxFontSizeMultiplier={1}>
+        numberOfLines={numberOfLines || 0}>
         {t(textKey)}
       </Text>
     </View>
