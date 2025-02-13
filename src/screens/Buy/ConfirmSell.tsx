@@ -1,81 +1,47 @@
 import React, {useEffect} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {useMoonPaySdk} from '@moonpay/react-native-moonpay-sdk';
+import {Alert, StyleSheet, View} from 'react-native';
 import {useDispatch} from 'react-redux';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import Header from '../../components/Header';
 import {useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
-import {showError} from '../../reducers/errors';
+import {getSignedSellUrl} from '../../reducers/buy';
+import {useNavigation} from '@react-navigation/native';
 
 interface Props {}
 
 const ConfirmSell: React.FC<Props> = props => {
   const dispatch = useDispatch();
-  const {uniqueId} = useAppSelector(state => state.onboarding);
+  const navigation = useNavigation();
+
   const {amount} = useAppSelector(state => state.input);
   const {address} = useAppSelector(state => state.address);
 
+  const openSellWidget = async () => {
+    try {
+      // await is important!
+      const url = await dispatch(getSignedSellUrl(address, amount));
+
+      if (typeof url === 'string') {
+        navigation.navigate('WebPage', {uri: url});
+      } else {
+        console.log(url);
+        Alert.alert("Something's wrong!", `${url}`);
+      }
+    } catch (error) {
+      Alert.alert("Something's wrong!", `err: ${error}`);
+    }
+  };
+
   useEffect(() => {
     dispatch(getAddress(false));
+    openSellWidget();
   }, [dispatch]);
-
-  const {MoonPayWebViewComponent, generateUrlForSigning, updateSignature} =
-    useMoonPaySdk({
-      sdkConfig: {
-        flow: 'sell',
-        environment: 'production',
-        params: {
-          apiKey: 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312',
-          baseCurrencyCode: 'ltc',
-          baseCurrencyAmount: amount,
-          externalCustomerId: uniqueId,
-          refundWalletAddress: address,
-          redirectURL: 'https://api.nexuswallet.com/moonpay/success_sell/',
-        },
-      },
-    });
-
-  useEffect(() => {
-    const fetchSignedURL = async () => {
-      try {
-        const req = await fetch(
-          'https://mobile.litecoin.com/api/sell/moonpay/sign',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-            body: JSON.stringify({
-              unsignedURL: generateUrlForSigning({variant: 'webview'}),
-            }),
-          },
-        );
-
-        if (!req.ok) {
-          const error = await req.json();
-          throw new Error(error);
-        }
-
-        const data = await req.json();
-        console.log(data);
-        const {urlWithSignature} = data;
-        console.log(urlWithSignature);
-        updateSignature(urlWithSignature);
-      } catch (error) {
-        dispatch(showError(String(error)));
-      }
-    };
-
-    fetchSignedURL();
-  }, [dispatch, generateUrlForSigning, updateSignature]);
 
   return (
     <View style={styles.container}>
       <Header />
-      <MoonPayWebViewComponent />
     </View>
   );
 };

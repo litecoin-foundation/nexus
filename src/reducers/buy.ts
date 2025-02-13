@@ -387,6 +387,48 @@ export const getSignedUrl =
     });
   };
 
+export const getSignedSellUrl =
+  (address: string, ltcAmount: number): AppThunk =>
+  (dispatch, getState) => {
+    return new Promise(async (resolve, reject) => {
+      const {uniqueId} = getState().onboarding;
+      const unsignedURL =
+        `https://sell.moonpay.com/?apiKey=${MOONPAY_PUBLIC_KEY}` +
+        '&baseCurrencyCode=ltc' +
+        `&baseCurrencyAmount=${ltcAmount}` +
+        `&externalCustomerId=${uniqueId}` +
+        `&refundWalletAddress=${address}` +
+        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fmoonpay%2Fsuccess_sell%2F&mpSdk=%7B%22version%22%3A%221.0.3%22%2C%22environment%22%3A%22production%22%2C%22flow%22%3A%22sell%22%2C%22variant%22%3A%22webview%22%2C%22platform%22%3A%22rn%22%7D';
+
+      try {
+        const req = await fetch(
+          'https://mobile.litecoin.com/api/sell/moonpay/sign',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              unsignedURL: unsignedURL,
+            }),
+          },
+        );
+
+        if (!req.ok) {
+          const error = await req.text();
+          throw new Error(error);
+        }
+
+        const data = await req.json();
+        const {urlWithSignature} = data;
+        resolve(urlWithSignature);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
 // slice
 export const buySlice = createSlice({
   name: 'buy',

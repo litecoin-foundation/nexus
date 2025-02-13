@@ -2560,11 +2560,6 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@moonpay/react-native-moonpay-sdk@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@moonpay/react-native-moonpay-sdk/-/react-native-moonpay-sdk-1.0.3.tgz#5ebd274d36a1a7d8d155e3c13f3bbd5f3eb8c9dd"
-  integrity sha512-OwFAqeZ7SRgdWjIcbR/WjSA6k9wbRi3/FZREdHt4nSqU9ue1Fcz/RfcUOBLVeJTT9cOlJcQvVGizgpac7kbnUA==
-
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"
   resolved "https://registry.yarnpkg.com/@nicolo-ribaudo/eslint-scope-5-internals/-/eslint-scope-5-internals-5.1.1-v1.tgz#dbf733a965ca47b1973177dc0bb6c889edcfb129"
