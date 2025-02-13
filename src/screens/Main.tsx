@@ -136,7 +136,8 @@ const Main: React.FC<Props> = props => {
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
-  const [currentWallet, setCurrentWallet] = useState(t('main_wallet'));
+  // const [currentWallet, setCurrentWallet] = useState(t('main_wallet'));
+  const [currentWallet, setCurrentWallet] = useState('main_wallet');
   // const [currentWallet, setCurrentWallet] = useState('Main Wallet');
   const uniqueId = useAppSelector(state => state.onboarding.uniqueId);
   const totalBalance = useAppSelector(state => state.balance.totalBalance);

@@ -1,17 +1,12 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {
-  View,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Platform,
-  Image,
-} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import Animated from 'react-native-reanimated';
 import Svg, {Path} from 'react-native-svg';
+import {useTranslation} from 'react-i18next';
 
 import {useAppSelector} from '../../store/hooks';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
@@ -39,7 +34,13 @@ const ChooseWalletButton: React.FC<Props> = props => {
     arrowSpinAnim,
   } = props;
 
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+
+  const {t} = useTranslation('main');
+
+  const MAX_FONT_SIZE = 16;
+  const MAX_TEXT_WIDTH = SCREEN_WIDTH * 0.4;
 
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
@@ -64,66 +65,41 @@ const ChooseWalletButton: React.FC<Props> = props => {
     return () => clearTimeout(timeout);
   }, [animDuration, isFromBottomToTop, isModalOpened]);
 
-  const fontSize = Math.round(SCREEN_HEIGHT * 0.018) - 1;
+  let fontSize = Math.round(SCREEN_HEIGHT * 0.018) - 1;
+  if (fontSize > MAX_FONT_SIZE) {
+    fontSize = MAX_FONT_SIZE;
+  }
   const arrowHeight = Math.round(SCREEN_HEIGHT * 0.012);
   const boxPadding = Math.round(SCREEN_HEIGHT * 0.015);
   const boxHeight = Math.round(SCREEN_HEIGHT * 0.035);
 
-  const boxWidth =
-    Math.round((fontSize * title.length) / 3) +
-    arrowHeight * 3 +
-    boxPadding * 2;
+  const [textWidthMeasure, setTextWidthMeasure] = useState(0);
+  const onMeasuredTextLayout = (event: any) => {
+    const {width: textWidthLayout} = event.nativeEvent.layout;
+    setTextWidthMeasure(textWidthLayout);
+  };
 
+  let textWidth = Math.round(textWidthMeasure);
+
+  if (textWidth > MAX_TEXT_WIDTH) {
+    textWidth = MAX_TEXT_WIDTH;
+  }
+
+  const boxWidth = textWidth + arrowHeight * 2 + boxPadding * 2;
   let boxWidthSvg = boxWidth;
 
   if (isCurvesVisible) {
     boxWidthSvg = Math.round(boxWidthSvg * 1.14);
   }
 
-  const styles = StyleSheet.create({
-    container: {
-      height: boxHeight,
-      minHeight: 25,
-      width: '100%',
-      backgroundColor: 'transparent',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    buttonBox: {
-      height: '100%',
-      width: 'auto',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    boxText: {
-      fontFamily: 'Satoshi Variable',
-      color: '#fff',
-      fontStyle: 'normal',
-      fontWeight: '500',
-      fontSize: fontSize,
-    },
-    boxArrow: {
-      height: arrowHeight,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 2,
-      marginLeft: 8,
-    },
-    boxArrowIcon: {
-      height: '100%',
-      objectFit: 'contain',
-    },
-    boxSvg: {
-      position: 'absolute',
-      height: boxHeight,
-      width: boxWidthSvg,
-      zIndex: -1,
-    },
-    disabled: {
-      opacity: 0.5,
-    },
-  });
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    boxHeight,
+    fontSize,
+    arrowHeight,
+    boxWidthSvg,
+  );
 
   return (
     <TouchableOpacity
@@ -135,7 +111,17 @@ const ChooseWalletButton: React.FC<Props> = props => {
         rotateArrow();
       }}>
       <View style={styles.buttonBox}>
-        <Text style={[styles.boxText, customFontStyles]}>{title}</Text>
+        <Text style={styles.hiddenText} onLayout={onMeasuredTextLayout}>
+          {t(title)}
+        </Text>
+        <TranslateText
+          textKey={title}
+          domain={'main'}
+          maxSizeInPixels={MAX_FONT_SIZE}
+          maxLengthInPixels={MAX_TEXT_WIDTH}
+          textStyle={{...styles.boxText, ...customFontStyles}}
+          numberOfLines={1}
+        />
         <Animated.View style={[styles.boxArrow, arrowSpinAnim]}>
           <Image
             style={styles.boxArrowIcon}
@@ -167,5 +153,67 @@ const ChooseWalletButton: React.FC<Props> = props => {
     </TouchableOpacity>
   );
 };
+
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  boxHeight: number,
+  fontSize: number,
+  arrowHeight: number,
+  boxWidthSvg: number,
+) =>
+  StyleSheet.create({
+    container: {
+      height: boxHeight,
+      minHeight: 25,
+      width: '100%',
+      backgroundColor: 'transparent',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    buttonBox: {
+      height: '100%',
+      width: 'auto',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    boxText: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: fontSize,
+      fontStyle: 'normal',
+      fontWeight: '500',
+    },
+    boxArrow: {
+      height: arrowHeight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+      marginLeft: 8,
+    },
+    boxArrowIcon: {
+      height: '100%',
+      objectFit: 'contain',
+    },
+    boxSvg: {
+      position: 'absolute',
+      height: boxHeight,
+      width: boxWidthSvg,
+      zIndex: -1,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+    hiddenText: {
+      position: 'absolute',
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: fontSize,
+      fontStyle: 'normal',
+      fontWeight: '500',
+      opacity: 0,
+    },
+  });
 
 export default ChooseWalletButton;

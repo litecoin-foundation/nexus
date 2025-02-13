@@ -4,25 +4,35 @@ import {
   Image,
   ImageSourcePropType,
   Text,
-  Platform,
   View,
   TouchableOpacity,
 } from 'react-native';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   onPress: () => void;
   imageSource?: ImageSourcePropType;
   title?: string;
+  textKey?: string;
+  textDomain?: string;
   rightPadding?: boolean;
   marginLeft?: number;
   marginRight?: number;
 }
 
 const HeaderButton: React.FC<Props> = props => {
-  const {onPress, imageSource, title, rightPadding, marginLeft, marginRight} =
-    props;
+  const {
+    onPress,
+    imageSource,
+    title,
+    textKey,
+    textDomain,
+    rightPadding,
+    marginLeft,
+    marginRight,
+  } = props;
 
   const MARGIN_LEFT = marginLeft || 0;
   const MARGIN_RIGHT = marginRight || 0;
@@ -44,7 +54,15 @@ const HeaderButton: React.FC<Props> = props => {
         {imageSource ? (
           <Image source={imageSource} style={styles.image} />
         ) : null}
-        {title ? <Text style={styles.title}>{title}</Text> : null}
+        {textKey ? (
+          <TranslateText
+            textKey={textKey}
+            domain={textDomain || 'main'}
+            textStyle={styles.title}
+          />
+        ) : title ? (
+          <Text style={styles.title}>{title}</Text>
+        ) : null}
       </View>
     </TouchableOpacity>
   );

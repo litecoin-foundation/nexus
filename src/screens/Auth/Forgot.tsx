@@ -6,6 +6,8 @@ import {useTranslation} from 'react-i18next';
 
 import RecoveryField from '../../components/RecoveryField';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import TranslateText from '../../components/TranslateText';
+
 import {useAppSelector} from '../../store/hooks';
 
 type RootStackParamList = {
@@ -84,7 +86,12 @@ export const ForgotNavigationOptions = (navigation: any) => {
 
   return {
     headerTitle: () => (
-      <Text style={styles.headerTitle}>{t('forgot_pin')}</Text>
+      // <Text style={styles.headerTitle}>{t('forgot_pin')}</Text>
+      <TranslateText
+        textKey="forgot_pin"
+        domain="onbording"
+        textStyle={styles.headerTitle}
+      />
     ),
     headerTitleAlign: 'left',
     headerTransparent: true,
