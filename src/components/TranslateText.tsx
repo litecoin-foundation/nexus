@@ -13,6 +13,9 @@ interface Props {
   textStyle?: any;
   animatedProps?: any;
   numberOfLines?: number;
+  interpolationObj?: {
+    [key: string]: any;
+  };
   children?: any;
 }
 
@@ -27,6 +30,7 @@ const TranslateText: React.FC<Props> = props => {
     textStyle,
     animatedProps,
     numberOfLines,
+    interpolationObj,
     children,
   } = props;
 
@@ -50,7 +54,7 @@ const TranslateText: React.FC<Props> = props => {
         style={[styles.text, textStyle, styles.textLimits, animatedProps]}
         ellipsizeMode="tail"
         numberOfLines={numberOfLines || 0}>
-        {t(textKey)}
+        {t(textKey, interpolationObj)}
         {children}
       </Animated.Text>
     </View>

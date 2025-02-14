@@ -41,12 +41,16 @@
     "details": "ДЕТАЛИ"
   },
   "buyTab": {
-    "buy_n_ltc_for_total": "Купить {{amount}} за {{total}}",
+    "buy": "Купить ",
+    "n_ltc": "{{amount}}",
+    "for": "за ",
+    "total": "{{currencySymbol}}{{total}}",
     "history": "История",
     "preview_buy": "К Покупке",
-    "min_purchase": "Минимальная сумма покупки {{minAmountInFiat}}",
+    "min_purchase": "Минимальная сумма покупки {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "История Покупок",
-    "change": "СДАЧА",
+    "change": "ИЗМЕНИТЬ",
+    "cancel": "ОТМЕНА",
     "purchasing": "Вы покупаете",
     "rate": "КУРС",
     "will_spend": "ВЫ ПОТРАТИТЕ",
@@ -55,7 +59,9 @@
     "back": "НАЗАД"
   },
   "sellTab": {
-    "sell_n_ltc_for_total": "Продать {{amount}} за {{total}}"
+    "sell": "Продать ",
+    "sell_litecoin": "Продать Litecoin",
+    "preview_sell": "Продать LTC"
   },
   "sendTab": {
     "send_ltc": "Отправить LTC",

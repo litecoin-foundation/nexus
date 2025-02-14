@@ -344,14 +344,16 @@ export const ConfirmSendNavigationOptions = (navigation: any) => {
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        title="CHANGE"
+        textKey="change"
+        textDomain="buyTab"
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),
     headerRight: () => (
       <HeaderButton
-        title="CANCEL"
+        textKey="cancel"
+        textDomain="buyTab"
         onPress={() => navigation.navigate('Main', {isInitial: true})}
         rightPadding={true}
       />

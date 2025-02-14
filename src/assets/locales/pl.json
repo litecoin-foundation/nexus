@@ -41,12 +41,16 @@
     "details": "SZCZEGÓŁY"
   },
   "buyTab": {
-    "buy_n_ltc_for_total": "KUP {{amount}} za {{total}}",
+    "buy": "KUP ",
+    "n_ltc": "{{amount}}",
+    "for": "za ",
+    "total": "{{currencySymbol}}{{total}}",
     "history": "Historia",
     "preview_buy": "Podgląd zakupu",
-    "min_purchase": "Minimalny zakup {{minAmountInFiat}}",
+    "min_purchase": "Minimalny zakup {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Historia zakupów",
     "change": "ZMIEŃ",
+    "cancel": "CANCEL (fix)",
     "purchasing": "Kupujesz",
     "rate": "kurs",
     "will_spend": "Wydasz",
@@ -55,7 +59,9 @@
     "back": "Wróć"
   },
   "sellTab": {
-    "sell_n_ltc_for_total": "Sprzedaj {{amount}} za {{total}}"
+    "sell": "Sprzedaj ",
+    "sell_litecoin": "Sprzedaj Litecoin",
+    "preview_sell": "Sprzedaj LTC"
   },
   "sendTab": {
     "send_ltc": "Wyślij LTC",

@@ -41,12 +41,15 @@
     "details": "DETAILS"
   },
   "buyTab": {
-    "buy_n_ltc_for_total": "Buy {{amount}} for {{total}}",
+    "buy": "Buy ",
+    "n_ltc": "{{amount}}",
+    "for_total": "{{currencySymbol}}{{total}}",
     "history": "History",
     "preview_buy": "Preview Buy",
-    "min_purchase": "Minimum purchase size of {{minAmountInFiat}}",
+    "min_purchase": "Minimum purchase size of {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Purchase History",
     "change": "CHANGE",
+    "cancel": "CANCEL",
     "purchasing": "You are purchasing",
     "rate": "RATE",
     "will_spend": "YOU WILL SPEND",
@@ -55,7 +58,9 @@
     "back": "BACK"
   },
   "sellTab": {
-    "sell_n_ltc_for_total": "Sell {{amount}} for {{total}}"
+    "sell": "Sell ",
+    "sell_litecoin": "Sell Litecoin",
+    "preview_sell": "Sell LTC"
   },
   "sendTab": {
     "send_ltc": "Send LTC",

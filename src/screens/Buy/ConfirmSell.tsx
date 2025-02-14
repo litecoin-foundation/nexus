@@ -9,6 +9,8 @@ import {useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {showError} from '../../reducers/errors';
 
+import TranslateText from '../../components/TranslateText';
+
 interface Props {}
 
 const ConfirmSell: React.FC<Props> = props => {
@@ -88,7 +90,13 @@ const styles = StyleSheet.create({
 
 export const ConfirmSellNavigationOptions = navigation => {
   return {
-    headerTitle: 'Sell Litecoin',
+    headerTitle: () => (
+      <TranslateText
+        textKey={'sell_litecoin'}
+        domain={'sellTab'}
+        numberOfLines={1}
+      />
+    ),
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',
