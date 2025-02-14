@@ -13,6 +13,7 @@ interface Props {
   textStyle?: any;
   animatedProps?: any;
   numberOfLines?: number;
+  children?: any;
 }
 
 const DEFAULT_FONT_SIZE = 20;
@@ -26,6 +27,7 @@ const TranslateText: React.FC<Props> = props => {
     textStyle,
     animatedProps,
     numberOfLines,
+    children,
   } = props;
 
   const {width, height} = useContext(ScreenSizeContext);
@@ -49,6 +51,7 @@ const TranslateText: React.FC<Props> = props => {
         ellipsizeMode="tail"
         numberOfLines={numberOfLines || 0}>
         {t(textKey)}
+        {children}
       </Animated.Text>
     </View>
   );

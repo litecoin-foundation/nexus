@@ -29,6 +29,7 @@
     "network_fee": "NETZWERK-GEBÜHREN",
     "view_on_blockchain": "Auf der Blockchain ansehen",
     "bought": "Gekauft",
+    "sold": "Verkauft (fix)",
     "completed": "ABGESCHLOSSEN",
     "total": "GESAMT",
     "total_fee": "GEBÜHREN GESAMT",
@@ -37,7 +38,7 @@
     "date": "DATUM",
     "provider_fee": "ANBIETER-GEBÜHREN",
     "blockchain": "BLOCKHAIN",
-    "details": "DETAILS"
+    "details": "DETAILS (fix)"
   },
   "buyTab": {
     "buy_n_ltc_for_total": "none",

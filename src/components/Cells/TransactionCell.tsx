@@ -9,6 +9,7 @@ import {
 } from '../../reducers/settings';
 import {convertLocalFiatToUSD} from '../../reducers/ticker';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
@@ -29,36 +30,36 @@ const TransactionCell: React.FC<Props> = props => {
 
   const mathSign = Math.sign(parseFloat(String(amount))) === -1 ? '-' : '';
 
-  const {name, txIcon, amountColor} = {
+  const {textKey, txIcon, amountColor} = {
     current: function () {
       switch (metaLabel) {
         case 'Send':
           return {
-            name: 'Sent Litecoin',
+            textKey: 'sent_ltc',
             txIcon: require('../../assets/icons/sendtx.png'),
             amountColor: '#212124',
           };
         case 'Receive':
           return {
-            name: 'Received Litecoin',
+            textKey: 'received_ltc',
             txIcon: require('../../assets/icons/receivetx.png'),
             amountColor: '#1162E6',
           };
         case 'Buy':
           return {
-            name: 'Purchased Litecoin',
+            textKey: 'bought_ltc',
             txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
           };
         case 'Sell':
           return {
-            name: 'Spent Litecoin',
+            textKey: 'sent_ltc',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
           };
         default:
           return {
-            name: 'Unknown Status',
+            textKey: 'Unknown Status',
             txIcon: null,
             amountColor: '#212124',
           };
@@ -97,7 +98,13 @@ const TransactionCell: React.FC<Props> = props => {
         <Image source={txIcon} />
       </View>
       <View style={styles.left}>
-        <Text style={styles.nameText}>{name}</Text>
+        <TranslateText
+          textKey={textKey}
+          domain={'main'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={styles.textKeyText}
+          numberOfLines={1}
+        />
         <View style={styles.timeContainer}>
           <Text style={styles.timeText}>{String(time)}</Text>
           <Text style={styles.labelText}>{label}</Text>
@@ -159,7 +166,7 @@ const getStyles = (
       justifyContent: 'center',
       alignItems: 'center',
     },
-    nameText: {
+    textKeyText: {
       color: '#484859',
       fontFamily: 'Satoshi Variable',
       fontSize: screenHeight * 0.016,

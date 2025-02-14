@@ -2,10 +2,13 @@ import React, {useContext} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import Share from 'react-native-share';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface CommonProps {
-  title: string;
+  title?: string;
+  titleTextKey?: string;
+  titleTextDomain?: string;
   thick?: boolean;
   valueFontSize?: number;
   noBorder?: boolean;
@@ -30,6 +33,8 @@ type Props = CommonProps & ConditionalProps;
 const TableCell: React.FC<Props> = props => {
   const {
     title,
+    titleTextKey,
+    titleTextDomain,
     thick,
     value,
     valueStyle,
@@ -58,7 +63,20 @@ const TableCell: React.FC<Props> = props => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
+      {title ? (
+        <Text style={styles.title}>{title}</Text>
+      ) : titleTextKey && titleTextDomain ? (
+        <TranslateText
+          textKey={titleTextKey}
+          domain={titleTextDomain}
+          maxSizeInPixels={height * 0.03}
+          textStyle={styles.title}
+          numberOfLines={1}
+        />
+      ) : (
+        <></>
+      )}
+
       {children ? (
         children
       ) : (
