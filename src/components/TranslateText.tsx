@@ -1,5 +1,6 @@
 import React, {useContext} from 'react';
-import {View, Text, StyleSheet, Dimensions} from 'react-native';
+import {View, StyleSheet, Dimensions} from 'react-native';
+import Animated from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 
 import {ScreenSizeContext} from '../context/screenSize';
@@ -10,6 +11,7 @@ interface Props {
   maxSizeInPixels?: number;
   maxLengthInPixels?: number;
   textStyle?: any;
+  animatedProps?: any;
   numberOfLines?: number;
 }
 
@@ -22,6 +24,7 @@ const TranslateText: React.FC<Props> = props => {
     maxSizeInPixels,
     maxLengthInPixels,
     textStyle,
+    animatedProps,
     numberOfLines,
   } = props;
 
@@ -41,12 +44,12 @@ const TranslateText: React.FC<Props> = props => {
 
   return (
     <View style={styles.container}>
-      <Text
-        style={[styles.text, textStyle, styles.textLimits]}
+      <Animated.Text
+        style={[styles.text, textStyle, styles.textLimits, animatedProps]}
         ellipsizeMode="tail"
         numberOfLines={numberOfLines || 0}>
         {t(textKey)}
-      </Text>
+      </Animated.Text>
     </View>
   );
 };

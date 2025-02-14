@@ -535,7 +535,7 @@ const Main: React.FC<Props> = props => {
   const HeaderComponent = (
     <View style={styles.headerContainer}>
       <DashboardButton
-        title="Buy"
+        textKey="buy"
         imageSource={require('../assets/icons/buy-icon.png')}
         handlePress={() => {
           setBottomSheetFolded(false);
@@ -546,7 +546,7 @@ const Main: React.FC<Props> = props => {
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
-        title="Sell"
+        textKey="sell"
         imageSource={require('../assets/icons/sell-icon.png')}
         handlePress={() => {
           setBottomSheetFolded(false);
@@ -557,7 +557,7 @@ const Main: React.FC<Props> = props => {
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
-        title="Convert"
+        textKey="convert"
         wider={true}
         imageSource={require('../assets/icons/convert-icon.png')}
         handlePress={() => {
@@ -569,7 +569,7 @@ const Main: React.FC<Props> = props => {
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
-        title="Send"
+        textKey="send"
         imageSource={require('../assets/icons/send-icon.png')}
         handlePress={() => {
           setBottomSheetFolded(false);
@@ -580,7 +580,7 @@ const Main: React.FC<Props> = props => {
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
-        title="Receive"
+        textKey="receive"
         imageSource={require('../assets/icons/receive-icon.png')}
         handlePress={() => {
           setBottomSheetFolded(false);

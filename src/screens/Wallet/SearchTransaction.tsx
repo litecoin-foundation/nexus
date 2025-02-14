@@ -88,7 +88,8 @@ const SearchTransaction: React.FC<Props> = props => {
   const Filter = filters.map(element => {
     return (
       <FilterButton
-        title={element.value}
+        textKey={String(element.value).toLocaleLowerCase()}
+        textDomain="main"
         active={txType === element.value ? true : false}
         onPress={() => {
           setTxType(element.value);

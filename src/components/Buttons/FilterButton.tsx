@@ -12,18 +12,23 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   active: boolean;
-  title: string;
+  title?: string;
+  textKey?: string;
+  textDomain?: string;
   onPress: () => void;
   imageSource: ImageSourcePropType;
   tint?: boolean;
 }
 
 const FilterButton: React.FC<Props> = props => {
-  const {active, title, onPress, imageSource, tint} = props;
+  const {active, title, textKey, textDomain, onPress, imageSource, tint} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -66,7 +71,19 @@ const FilterButton: React.FC<Props> = props => {
     <Pressable onPressIn={onPressIn} onPressOut={onPressOut}>
       <Animated.View style={[styles.button, motionStyle]}>
         <Image style={[styles.image, motionStyle]} source={imageSource} />
-        <Text style={styles.text}>{title}</Text>
+        {title ? (
+          <Text style={styles.text}>{title}</Text>
+        ) : textKey && textDomain ? (
+          <TranslateText
+            textKey={textKey}
+            domain={textDomain}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.012}
+            textStyle={styles.text}
+            numberOfLines={1}
+          />
+        ) : (
+          <></>
+        )}
       </Animated.View>
     </Pressable>
   );

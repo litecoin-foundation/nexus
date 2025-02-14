@@ -1,8 +1,7 @@
 import React from 'react';
-import {StyleSheet, Alert, Text, View} from 'react-native';
+import {StyleSheet, Alert, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {useTranslation} from 'react-i18next';
 
 import RecoveryField from '../../components/RecoveryField';
 import HeaderButton from '../../components/Buttons/HeaderButton';
@@ -82,11 +81,8 @@ const styles = StyleSheet.create({
 });
 
 export const ForgotNavigationOptions = (navigation: any) => {
-  const {t} = useTranslation('onbording');
-
   return {
     headerTitle: () => (
-      // <Text style={styles.headerTitle}>{t('forgot_pin')}</Text>
       <TranslateText
         textKey="forgot_pin"
         domain="onbording"
