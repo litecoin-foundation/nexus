@@ -46,6 +46,9 @@ const HeaderButton: React.FC<Props> = props => {
     MARGIN_RIGHT,
   );
 
+  const textStyle = imageSource
+    ? {...styles.title, ...styles.titleWithImage}
+    : styles.title;
   return (
     <TouchableOpacity
       style={[styles.container, rightPadding ? styles.padRight : null]}
@@ -58,10 +61,12 @@ const HeaderButton: React.FC<Props> = props => {
           <TranslateText
             textKey={textKey}
             domain={textDomain || 'main'}
-            textStyle={styles.title}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={textStyle}
+            numberOfLines={1}
           />
         ) : title ? (
-          <Text style={styles.title}>{title}</Text>
+          <Text style={textStyle}>{title}</Text>
         ) : null}
       </View>
     </TouchableOpacity>
@@ -86,19 +91,21 @@ const getStyles = (
       marginLeft: screenWidth * 0.04 + marginLeft,
     },
     subcontainer: {
-      paddingHorizontal: screenHeight * 0.01,
-      paddingVertical: screenHeight * 0.005,
       flexDirection: 'row',
       alignItems: 'center',
+      paddingHorizontal: screenHeight * 0.01,
+      paddingVertical: screenHeight * 0.005,
     },
     image: {},
     title: {
+      color: 'white',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.013,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
-      fontSize: screenHeight * 0.013,
-      marginHorizontal: 10,
+    },
+    titleWithImage: {
+      marginLeft: screenHeight * 0.01,
     },
     padRight: {
       marginRight: screenWidth * 0.04 + marginRight,

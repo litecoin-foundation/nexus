@@ -69,7 +69,9 @@ const getStyles = (
     },
     textLimits: {
       width: '100%',
+      maxWidth: '100%',
       fontSize: fontSize,
+      flexWrap: 'wrap',
     },
   });
 

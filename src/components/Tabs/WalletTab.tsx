@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {View, Text, StyleSheet, Platform, Pressable, Image} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
 import PriceIndicatorButton from '../Buttons/PriceIndictorButton';
 import Animated, {
   useAnimatedStyle,
@@ -11,6 +11,7 @@ import {getAddress} from '../../reducers/address';
 import Clipboard from '@react-native-clipboard/clipboard';
 import InfoModal from '../Modals/InfoModalContent';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {subunitCodeSelector} from '../../reducers/settings';
 
@@ -100,7 +101,13 @@ const WalletTab: React.FC<Props> = (props: Props) => {
         onPress={handleCopy}>
         <Animated.View style={[styles.tabRight, motionStyle]}>
           <Image source={require('../../assets/icons/copy-icon.png')} />
-          <Text style={styles.tabRightTitle}>copy address</Text>
+          <TranslateText
+            textKey={'copy_address'}
+            domain={'main'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.tabRightTitle}
+            numberOfLines={2}
+          />
         </Animated.View>
       </Pressable>
 
@@ -108,7 +115,8 @@ const WalletTab: React.FC<Props> = (props: Props) => {
         isVisible={isInfoModalVisible}
         close={() => setInfoModalVisible(false)}
         textColor="green"
-        text="COPIED TO CLIPBOARD!"
+        textKey="copied"
+        textDomain="main"
       />
     </View>
   );
@@ -189,7 +197,8 @@ const getStyles = (
       textTransform: 'uppercase',
       textAlign: 'center',
       marginTop: screenHeight * 0.01,
-      width: 57,
+      // width: 57,
+      paddingHorizontal: screenWidth * 0.02,
     },
   });
 
