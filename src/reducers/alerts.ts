@@ -46,6 +46,22 @@ export const resyncAlertsOnApiServer =
       return;
     }
 
+    const alertsWithNoId = alerts
+      ? alerts.map((alert: IAlert) => {
+          return {
+            deviceToken: alert.deviceToken,
+            value: alert.value,
+            index: alert.index,
+            isPositive: alert.isPositive,
+            isIOS: alert.isIOS,
+            isFired: alert.isFired,
+            createdAt: alert.createdAt,
+          };
+        })
+      : [];
+
+    console.log(alertsWithNoId);
+
     try {
       fetch(`${alertProviderUrl}/resync`, {
         method: 'POST',
@@ -54,7 +70,7 @@ export const resyncAlertsOnApiServer =
         },
         body: JSON.stringify({
           deviceToken: deviceToken,
-          alerts: alerts || [],
+          alerts: alertsWithNoId,
         }),
       });
     } catch (error) {
