@@ -8,7 +8,7 @@ import {checkBiometricSupport} from '../lib/utils/biometric';
 import {checkInternetReachable} from '../reducers/info';
 import {subscribeAppState} from '../reducers/authentication';
 import {setDeeplink} from '../reducers/deeplinks';
-import {syncAlerts} from '../reducers/alerts';
+import {resyncAlertsOnApiServer} from '../reducers/alerts';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {checkMoonpayCountry} from '../reducers/buy';
 
@@ -35,7 +35,7 @@ const Loading: React.FC<Props> = props => {
     if (isOnboarded) {
       dispatch(startLnd());
       // sync alerts with nexus-api server
-      dispatch(syncAlerts());
+      dispatch(resyncAlertsOnApiServer());
     }
   }, [dispatch, isOnboarded]);
 
