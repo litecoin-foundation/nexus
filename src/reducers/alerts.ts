@@ -60,8 +60,6 @@ export const resyncAlertsOnApiServer =
         })
       : [];
 
-    console.log(alertsWithNoId);
-
     try {
       fetch(`${alertProviderUrl}/resync`, {
         method: 'POST',
