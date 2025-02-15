@@ -64,16 +64,21 @@
   },
   "sendTab": {
     "send_ltc": "Send LTC",
+    "send_litecoin": "Send Litecoin",
     "amount": "Amount",
     "send_to_address": "Send to address",
+    "address_invalid": " IS INVALID",
     "enter_address": "Enter a Litecoin Address",
     "description": "Description",
+    "confirm": "Confirm",
     "close": "Close",
     "scan_qr": "Scan QR Code",
     "camera_note": "App will use your camera to scan QR codes for Litecoin Payments",
     "enable_flash": "Enable Flash",
     "camara_disabled": "Camara disabled",
-    "enable_camera": "Enable Camera to Scan QR Codes"
+    "enable_camera": "Enable Camera to Scan QR Codes",
+    "awesome": "Awesome!",
+    "just-sent": "You just sent"
   },
   "receiveTab": {
     "receive_ltc": "Receive LTC",

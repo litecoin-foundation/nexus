@@ -65,16 +65,21 @@
   },
   "sendTab": {
     "send_ltc": "Отправить LTC",
+    "send_litecoin": "Отправить Litecoin",
     "amount": "Количество",
     "send_to_address": "Адрес отправления",
+    "address_invalid": " (НЕВЕРНЫЙ ФОРМАТ)",
     "enter_address": "Введите Litecoin-адрес",
     "description": "Примечание",
+    "confirm": "Подтвердить",
     "close": "Закрыть",
     "scan_qr": "Сканировать QR-Код",
     "camera_note": "Приложение использует вашу камеру для сканирования QR-Кодов для Litecoin платежей",
     "enable_flash": "Включить Flash",
     "camara_disabled": "Камера отключена",
-    "enable_camera": "Включить камеру для сканирования QR-Кодов"
+    "enable_camera": "Включить камеру для сканирования QR-Кодов",
+    "awesome": "Успешно!",
+    "just-sent": "Вы отправили"
   },
   "receiveTab": {
     "receive_ltc": "Получить LTC",

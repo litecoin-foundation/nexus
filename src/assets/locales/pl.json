@@ -65,16 +65,21 @@
   },
   "sendTab": {
     "send_ltc": "Wyślij LTC",
+    "send_litecoin": "Wyślij Litecoin",
     "amount": "Ilość",
     "send_to_address": "Wyślij na adres",
+    "address_invalid": " IS INVALID (fix)",
     "enter_address": "Wpisz adres Litecoin",
     "description": "Opis",
+    "confirm": "Confirm (fix)",
     "close": "Zamknij",
     "scan_qr": "Zeskanuj QR kod",
     "camera_note": "Aplikacja użyje Twojego aparatu by zeskanować kod QR.",
     "enable_flash": "Włącz lampę błyskową",
     "camara_disabled": "Aparat wyłączony",
-    "enable_camera": "Włącz uprawnienia aparatu by zeskanować kod QR"
+    "enable_camera": "Włącz uprawnienia aparatu by zeskanować kod QR",
+    "awesome": "Awesome! (fix)",
+    "just-sent": "You just sent (fix)"
   },
   "receiveTab": {
     "receive_ltc": "Odbierz LTC",

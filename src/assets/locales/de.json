@@ -65,16 +65,21 @@
   },
   "sendTab": {
     "send_ltc": "LTC senden",
+    "send_litecoin": "Litecoin senden",
     "amount": "Betrag",
     "send_to_address": "An adresse senden",
+    "address_invalid": " IS INVALID (fix)",
     "enter_address": "Litecoin-Adresse eingeben",
     "description": "Beschreibung",
+    "confirm": "Confirm (fix)",
     "close": "Schließen",
     "scan_qr": "QR-Code scannen",
     "camera_note": "Die App wird ihre Kamere verwenden, um QR-Codes für Litecoin-Zahlungen zu scannen.",
     "enable_flash": "Blitz aktivieren",
     "camara_disabled": "Kamera deaktiviert",
-    "enable_camera": "Kamaera zum Scannen von QR-Codes aktivieren"
+    "enable_camera": "Kamaera zum Scannen von QR-Codes aktivieren",
+    "awesome": "Awesome! (fix)",
+    "just-sent": "You just sent (fix)"
   },
   "receiveTab": {
     "receive_ltc": "LTC empfangen",

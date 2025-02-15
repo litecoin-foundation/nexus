@@ -1,13 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {
-  View,
-  StyleSheet,
-  Vibration,
-  Text,
-  Image,
-  Alert,
-  Platform,
-} from 'react-native';
+import React, {useState, useContext, useEffect} from 'react';
+import {View, StyleSheet, Vibration, Image, Alert} from 'react-native';
 import {
   Camera,
   useCameraDevice,
@@ -22,6 +14,9 @@ import Header from '../components/Header';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import BlueButton from '../components/Buttons/BlueButton';
 
+import TranslateText from '../components/TranslateText';
+import {ScreenSizeContext} from '../context/screenSize';
+
 type RootStackParamList = {
   Scan: {
     returnRoute: any;
@@ -34,6 +29,8 @@ const Scan = ({
 }: StackScreenProps<RootStackParamList, 'Scan'>) => {
   const [flashEnabled, triggerFlash] = useState(false);
   const [scanned, triggerScanned] = useState(false);
+
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
 
   const codeScanner = useCodeScanner({
     codeTypes: ['qr'],
@@ -95,7 +92,8 @@ const Scan = ({
       <Header modal={true} />
       <View style={styles.permissionsContainer}>
         <BlueButton
-          value="Enable Camera to Scan QR Codes"
+          textKey="enable_camera"
+          textDomain="sendTab"
           onPress={() => requestPermission()}
         />
       </View>
@@ -133,7 +131,13 @@ const Scan = ({
         end={{x: 1, y: 0}}
         style={styles.bottomContainer}>
         <View style={styles.bottomContentContainer}>
-          <Text style={styles.bottomText}>Enable Flash</Text>
+          <TranslateText
+            textKey="enable_flash"
+            domain="sendTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.bottomText}
+            numberOfLines={1}
+          />
           <Switch
             onPress={flashStatus => triggerFlash(flashStatus)}
             initialValue={false}
@@ -205,10 +209,20 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ScanNavigationOptions = navigation => {
+export const ScanNavigationOptions = (navigation: any) => {
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+
   return {
     ...TransitionPresets.ModalPresentationIOS,
-    headerTitle: () => <Text style={styles.headerTitle}>Scan QR Code</Text>,
+    headerTitle: () => (
+      <TranslateText
+        textKey="scan_qr"
+        domain="sendTab"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        textStyle={styles.headerTitle}
+        numberOfLines={1}
+      />
+    ),
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',
@@ -216,7 +230,8 @@ export const ScanNavigationOptions = navigation => {
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../assets/images/close-white.png')}
-        title="Close"
+        textKey="close"
+        textDomain="sendTab"
       />
     ),
   };
