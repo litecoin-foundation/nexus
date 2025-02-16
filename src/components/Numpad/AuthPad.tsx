@@ -11,6 +11,7 @@ import PadGrid from './PadGrid';
 import BuyButton from './BuyButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const MAX_LOGIN_ATTEMPTS = 10;
@@ -197,7 +198,14 @@ const AuthPad: React.FC<Props> = props => {
 
   return (
     <View style={styles.bottomSheet}>
-      <Text style={styles.bottomSheetTitle}>Enter your PIN</Text>
+      <TranslateText
+        textKey={'enter_pin'}
+        domain={'onboarding'}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+        maxLengthInPixels={SCREEN_WIDTH}
+        textStyle={styles.bottomSheetTitle}
+        numberOfLines={1}
+      />
       {RenderStatusText}
       <View style={styles.bottomSheetSubContainer}>
         <PasscodeInput

@@ -7,6 +7,7 @@ import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 
 import {useAppSelector} from '../../store/hooks';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {
   satsToSubunitSelector,
@@ -43,8 +44,20 @@ const SuccessSend: React.FC<Props> = () => {
     <>
       <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
         <View style={styles.body}>
-          <Text style={styles.title}>Awesome!</Text>
-          <Text style={styles.subtitle}>You just sent</Text>
+          <TranslateText
+            textKey="awesome"
+            domain="sendTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+            textStyle={styles.title}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textKey="sent"
+            domain="sendTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            textStyle={styles.subtitle}
+            numberOfLines={1}
+          />
           <Text style={styles.amount}>
             {amountInSubunit + ' ' + amountCode}
           </Text>

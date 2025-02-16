@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,9 @@ import {getAddress} from '../../reducers/address';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import GreenButton from '../../components/Buttons/GreenButton';
+
+import TranslateText from '../../components/TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   ConfirmBuy: undefined;
@@ -44,6 +47,9 @@ const ConfirmBuy: React.FC<Props> = props => {
 
   const address = useAppSelector(state => state.address.address);
 
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+
   useEffect(() => {
     dispatch(getAddress());
   }, [dispatch]);
@@ -68,7 +74,13 @@ const ConfirmBuy: React.FC<Props> = props => {
     <View style={{flex: 1, backgroundColor: '#1162E6'}}>
       <SafeAreaView>
         <View style={{paddingTop: 108, paddingLeft: 20}}>
-          <Text style={styles.titleText}>You are purchasing</Text>
+          <TranslateText
+            textKey={'purchasing'}
+            domain={'buyTab'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.titleText}
+            numberOfLines={1}
+          />
           <Text style={styles.amountText}>{quoteCurrencyAmount} LTC</Text>
           <View style={styles.fiatAmount}>
             <Text style={styles.fiatAmountText}>
@@ -82,16 +94,26 @@ const ConfirmBuy: React.FC<Props> = props => {
       <View style={styles.bottomSheetContainer}>
         <View style={styles.bottomSheetSubContainer}>
           <TableCell
-            title="RATE"
+            titleTextKey="rate"
+            titleTextDomain="buyTab"
             value={`${currencySymbol}${quoteCurrencyPrice.toFixed(
               2,
             )} per 1 LTC`}
             noBorder
           />
-          <TableCell title="FEE" value={feeAmount} />
-          <TableCell title="NETWORK FEE" value={networkFeeAmount} />
           <TableCell
-            title="YOU WILL SPEND"
+            titleTextKey="total_fee"
+            titleTextDomain="main"
+            value={feeAmount}
+          />
+          <TableCell
+            titleTextKey="network_fee"
+            titleTextDomain="main"
+            value={networkFeeAmount}
+          />
+          <TableCell
+            titleTextKey="will_spend"
+            titleTextDomain="buyTab"
             value={`${currencySymbol}${totalAmount.toFixed(2)}`}
             valueStyle={{color: '#20BB74'}}
           />
@@ -100,7 +122,11 @@ const ConfirmBuy: React.FC<Props> = props => {
         <View style={{height: 30}} />
 
         <View style={styles.confirmButtonContainer}>
-          <GreenButton value="Continue Purchase" onPress={onPress} />
+          <GreenButton
+            textKey="continue_purchase"
+            textDomain="buyTab"
+            onPress={onPress}
+          />
         </View>
       </View>
     </View>
@@ -175,9 +201,10 @@ export const ConfirmBuyNavigationOptions = navigation => {
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
+        textKey="change"
+        textDomain="buyTab"
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
-        title="CHANGE"
       />
     ),
   };

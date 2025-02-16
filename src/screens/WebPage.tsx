@@ -116,7 +116,8 @@ export const WebPageNavigationOptions = navigation => {
         <HeaderButton
           onPress={() => navigation.goBack()}
           imageSource={require('../assets/images/back-icon.png')}
-          title="BACK"
+          textKey="back"
+          textDomain="buyTab"
         />
       </View>
     ),

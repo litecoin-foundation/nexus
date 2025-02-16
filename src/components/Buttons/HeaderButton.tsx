@@ -4,25 +4,35 @@ import {
   Image,
   ImageSourcePropType,
   Text,
-  Platform,
   View,
   TouchableOpacity,
 } from 'react-native';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   onPress: () => void;
   imageSource?: ImageSourcePropType;
   title?: string;
+  textKey?: string;
+  textDomain?: string;
   rightPadding?: boolean;
   marginLeft?: number;
   marginRight?: number;
 }
 
 const HeaderButton: React.FC<Props> = props => {
-  const {onPress, imageSource, title, rightPadding, marginLeft, marginRight} =
-    props;
+  const {
+    onPress,
+    imageSource,
+    title,
+    textKey,
+    textDomain,
+    rightPadding,
+    marginLeft,
+    marginRight,
+  } = props;
 
   const MARGIN_LEFT = marginLeft || 0;
   const MARGIN_RIGHT = marginRight || 0;
@@ -36,6 +46,9 @@ const HeaderButton: React.FC<Props> = props => {
     MARGIN_RIGHT,
   );
 
+  const textStyle = imageSource
+    ? {...styles.title, ...styles.titleWithImage}
+    : styles.title;
   return (
     <TouchableOpacity
       style={[styles.container, rightPadding ? styles.padRight : null]}
@@ -44,7 +57,17 @@ const HeaderButton: React.FC<Props> = props => {
         {imageSource ? (
           <Image source={imageSource} style={styles.image} />
         ) : null}
-        {title ? <Text style={styles.title}>{title}</Text> : null}
+        {textKey ? (
+          <TranslateText
+            textKey={textKey}
+            domain={textDomain || 'main'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={textStyle}
+            numberOfLines={1}
+          />
+        ) : title ? (
+          <Text style={textStyle}>{title}</Text>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
@@ -68,19 +91,21 @@ const getStyles = (
       marginLeft: screenWidth * 0.04 + marginLeft,
     },
     subcontainer: {
-      paddingHorizontal: screenHeight * 0.01,
-      paddingVertical: screenHeight * 0.005,
       flexDirection: 'row',
       alignItems: 'center',
+      paddingHorizontal: screenHeight * 0.01,
+      paddingVertical: screenHeight * 0.005,
     },
     image: {},
     title: {
+      color: 'white',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.013,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
-      fontSize: screenHeight * 0.013,
-      marginHorizontal: 10,
+    },
+    titleWithImage: {
+      marginLeft: screenHeight * 0.01,
     },
     padRight: {
       marginRight: screenWidth * 0.04 + marginRight,

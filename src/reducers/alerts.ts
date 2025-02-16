@@ -10,7 +10,6 @@ type IAlert = {
   isPositive: boolean;
   isIOS: boolean;
   isFired: boolean;
-  enabled: boolean;
   createdAt: string;
 };
 
@@ -36,90 +35,131 @@ const SET_ALERT_AVAILABILITY = 'SET_ALERT_AVAILABILITY';
 
 const alertProviderUrl = 'https://mobile.litecoin.com/alert';
 
-// actions
-export const syncAlerts = (): AppThunk => async (dispatch, getState) => {
-  const deviceToken = getState().settings.deviceNotificationToken;
+const MAX_ALERTS = 5;
 
-  try {
-    const req = await fetch(`${alertProviderUrl}/get-all`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        deviceToken: deviceToken,
-      }),
-    });
+export const resyncAlertsOnApiServer =
+  (): AppThunk => async (dispatch, getState) => {
+    const deviceToken = getState().settings.deviceNotificationToken;
+    const alerts = getState().alerts.alerts;
 
-    if (!req.ok) {
+    if (!deviceToken) {
       return;
     }
 
-    const res = await req.json();
-
-    if (res && res.length > 0) {
-      const alerts: IAlert[] = JSON.parse(JSON.stringify(res));
-
-      const adjustedForTheAppAlerts = alerts.map(
-        (alert: IAlert) => (alert.enabled = !alert.isFired),
-      );
-
-      dispatch({
-        type: ADD_ALERT,
-        alerts: adjustedForTheAppAlerts,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-export const addAlert =
-  (data: PostedAlert): AppThunk =>
-  async (dispatch, getState) => {
-    const {rates}: any = getState().ticker;
-    if (!rates) {
-      return;
-    }
+    const alertsWithNoId = alerts
+      ? alerts.map((alert: IAlert) => {
+          return {
+            deviceToken: alert.deviceToken,
+            value: alert.value,
+            index: alert.index,
+            isPositive: alert.isPositive,
+            isIOS: alert.isIOS,
+            isFired: alert.isFired,
+            createdAt: alert.createdAt,
+          };
+        })
+      : [];
 
     try {
-      const req = await fetch(`${alertProviderUrl}/add`, {
+      fetch(`${alertProviderUrl}/resync`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          deviceToken: getState().settings.deviceNotificationToken,
-          value: Number(data.originalValue),
-          isPositive: data.originalValue > rates.USD,
-          isIOS: data.isIOS,
+          deviceToken: deviceToken,
+          alerts: alertsWithNoId,
         }),
       });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-      if (!req.ok) {
-        const res = await req.text();
-        dispatch(showError(res));
-        return;
-      }
+export const addAlert =
+  (data: PostedAlert): AppThunk =>
+  async (dispatch, getState) => {
+    const {rates}: any = getState().ticker;
 
-      const res = await req.json();
+    if (!rates) {
+      dispatch(showError('Price rates are missing.'));
+      return;
+    }
 
-      if (res.hasOwnProperty('deviceToken')) {
-        const newAlert: IAlert = JSON.parse(JSON.stringify(res));
-        newAlert.enabled = !newAlert.isFired;
+    try {
+      const {alerts} = getState().alerts;
 
-        const {alerts} = getState().alerts;
+      if (!alerts || (alerts && alerts.length < MAX_ALERTS)) {
+        const newAlert: IAlert = {
+          _id: 'unknown',
+          deviceToken: getState().settings.deviceNotificationToken,
+          value: Number(data.originalValue),
+          index: alerts ? alerts.length : 0,
+          isPositive: data.originalValue > rates.USD,
+          isIOS: data.isIOS,
+          isFired: false,
+          createdAt: new Date().toISOString(),
+        };
 
         const alertsBuf: IAlert[] = alerts
           ? JSON.parse(JSON.stringify(alerts))
           : [];
-
         alertsBuf.push(newAlert);
+
+        dispatch({
+          type: ADD_ALERT,
+          alerts: alertsBuf,
+        });
+      } else if (alerts.length === MAX_ALERTS) {
+        const alertsBuf: IAlert[] = [];
+
+        for (let i = 0; i < alerts.length - 1; i++) {
+          const shiftForwardAlert: IAlert = {
+            _id: alerts[i]._id,
+            deviceToken: getState().settings.deviceNotificationToken,
+            value: alerts[i + 1].value,
+            index: alerts[i].index,
+            isPositive: alerts[i + 1].isPositive,
+            isIOS: alerts[i + 1].isIOS,
+            isFired: alerts[i + 1].isFired,
+            createdAt: alerts[i + 1].createdAt,
+          };
+          alertsBuf.push(shiftForwardAlert);
+        }
+
+        const newAlert: IAlert = {
+          _id: 'unknown',
+          deviceToken: getState().settings.deviceNotificationToken,
+          value: Number(data.originalValue),
+          index: alerts.length - 1,
+          isPositive: data.originalValue > rates.USD,
+          isIOS: data.isIOS,
+          isFired: false,
+          createdAt: new Date().toISOString(),
+        };
+        alertsBuf.push(newAlert);
+
         dispatch({
           type: ADD_ALERT,
           alerts: alertsBuf,
         });
       }
+
+      // Add alert on api server
+      // fetch(`${alertProviderUrl}/add`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     deviceToken: getState().settings.deviceNotificationToken,
+      //     value: Number(data.originalValue),
+      //     isPositive: data.originalValue > rates.USD,
+      //     isIOS: data.isIOS,
+      //   }),
+      // });
+      // Or just resync all alerts on api server
+      dispatch(resyncAlertsOnApiServer());
     } catch (error) {
       console.error(error);
     }
@@ -129,33 +169,48 @@ export const removeAlert =
   (index: number): AppThunk =>
   async (dispatch, getState) => {
     try {
-      const req = await fetch(`${alertProviderUrl}/delete`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          deviceToken: getState().settings.deviceNotificationToken,
-          index: Number(index),
-        }),
+      dispatch({
+        type: REMOVE_ALERT,
+        index,
       });
 
-      if (!req.ok) {
-        const res = await req.text();
-        dispatch(showError(res));
-        return;
-      }
+      const {alerts} = getState().alerts;
+      const alertsBuf: IAlert[] = [];
 
-      const res = await req.json();
-
-      if (res.hasOwnProperty('deviceToken')) {
-        const alert = JSON.parse(JSON.stringify(res));
-
-        dispatch({
-          type: REMOVE_ALERT,
-          id: alert._id,
+      alerts
+        .filter((obj: IAlert) => obj.index !== index)
+        .map((alert: IAlert, i: number) => {
+          const reindexAlert: IAlert = {
+            _id: alert._id,
+            deviceToken: alert.deviceToken,
+            value: alert.value,
+            index: i,
+            isPositive: alert.isPositive,
+            isIOS: alert.isIOS,
+            isFired: alert.isFired,
+            createdAt: alert.createdAt,
+          };
+          alertsBuf.push(reindexAlert);
         });
-      }
+
+      dispatch({
+        type: ADD_ALERT,
+        alerts: alertsBuf,
+      });
+
+      // Delete alert on api server
+      // fetch(`${alertProviderUrl}/delete`, {
+      //   method: 'DELETE',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     deviceToken: getState().settings.deviceNotificationToken,
+      //     index: Number(index),
+      //   }),
+      // });
+      // Or just resync all alerts on api server
+      dispatch(resyncAlertsOnApiServer());
     } catch (error) {
       console.error(error);
     }
@@ -163,39 +218,27 @@ export const removeAlert =
 
 export const setAlertAvailability =
   (index: number, availability: boolean): AppThunk =>
-  async (dispatch, getState) => {
+  async dispatch => {
     try {
-      const req = await fetch(
-        `${alertProviderUrl}/${availability ? 'reset' : 'set-fired'}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            deviceToken: getState().settings.deviceNotificationToken,
-            index: Number(index),
-          }),
-        },
-      );
+      dispatch({
+        type: SET_ALERT_AVAILABILITY,
+        index: index,
+        availability: availability,
+      });
 
-      if (!req.ok) {
-        const res = await req.text();
-        dispatch(showError(res));
-        return;
-      }
-
-      const res = await req.json();
-
-      if (res.hasOwnProperty('deviceToken')) {
-        const alert = JSON.parse(JSON.stringify(res));
-
-        dispatch({
-          type: SET_ALERT_AVAILABILITY,
-          id: alert._id,
-          availability: !alert.isFired,
-        });
-      }
+      // Update alert on api server
+      // fetch(`${alertProviderUrl}/${availability ? 'reset' : 'set-fired'}`, {
+      //   method: 'PATCH',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     deviceToken: getState().settings.deviceNotificationToken,
+      //     index: Number(index),
+      //   }),
+      // });
+      // Or just resync all alerts on api server
+      dispatch(resyncAlertsOnApiServer());
     } catch (error) {
       console.error(error);
     }
@@ -204,18 +247,17 @@ export const setAlertAvailability =
 // action handlers
 const actionHandler = {
   [ADD_ALERT]: (state: any, {alerts}: any) => ({...state, alerts}),
-  [REMOVE_ALERT]: (state: any, {id}: any) => ({
+  [REMOVE_ALERT]: (state: any, {index}: any) => ({
     ...state,
-    alerts: state.alerts.filter((obj: IAlert) => obj._id !== id),
+    alerts: state.alerts.filter((obj: IAlert) => obj.index !== index),
   }),
-  [SET_ALERT_AVAILABILITY]: (state: any, {id, availability}: any) => ({
+  [SET_ALERT_AVAILABILITY]: (state: any, {index, availability}: any) => ({
     ...state,
     alerts: state.alerts.map((alert: IAlert) => {
-      if (alert._id === id) {
+      if (alert.index === index) {
         const alertBuf = {
           ...alert,
           isFired: !availability,
-          enabled: availability,
         };
         return alertBuf;
       } else {

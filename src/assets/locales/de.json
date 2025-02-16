@@ -10,6 +10,7 @@
     "copy_address": "ADRESSE KOPIEREN",
     "copied": "IN ZWISCHENABLAGE KOPIERT",
     "add_wallet": "NEUEN WALLET HINZUFÜGEN",
+    "all": "Alle",
     "buy": "Kaufen",
     "sell": "Verkaufen",
     "convert": "Tauschen",
@@ -28,6 +29,7 @@
     "network_fee": "NETZWERK-GEBÜHREN",
     "view_on_blockchain": "Auf der Blockchain ansehen",
     "bought": "Gekauft",
+    "sold": "Verkauft (fix)",
     "completed": "ABGESCHLOSSEN",
     "total": "GESAMT",
     "total_fee": "GEBÜHREN GESAMT",
@@ -36,15 +38,19 @@
     "date": "DATUM",
     "provider_fee": "ANBIETER-GEBÜHREN",
     "blockchain": "BLOCKHAIN",
-    "details": "DETAILS"
+    "details": "DETAILS (fix)"
   },
   "buyTab": {
-    "buy_n_ltc_for_total": "none",
+    "buy": "Buy ",
+    "n_ltc": "{{amount}}",
+    "for": "for ",
+    "total": "{{currencySymbol}}{{total}}",
     "history": "Historie",
     "preview_buy": "Kaufdaten ansehen",
-    "min_purchase": "Mindestkauf {{minAmountInFiat}}",
+    "min_purchase": "Mindestkauf {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Kaufhistorie",
     "change": "WECHSELGELD",
+    "cancel": "CANCEL (fix)",
     "purchasing": "Sie kaufen",
     "rate": "KURS",
     "will_spend": "",
@@ -53,20 +59,27 @@
     "back": "ZURÜCK"
   },
   "sellTab": {
-    "sell_n_ltc_for_total": "{{amount}} für {{total}} verkaufen"
+    "sell": "Verkaufen ",
+    "sell_litecoin": "Verkaufen Litecoin",
+    "preview_sell": "Verkaufen LTC"
   },
   "sendTab": {
     "send_ltc": "LTC senden",
+    "send_litecoin": "Litecoin senden",
     "amount": "Betrag",
     "send_to_address": "An adresse senden",
+    "address_invalid": " IS INVALID (fix)",
     "enter_address": "Litecoin-Adresse eingeben",
     "description": "Beschreibung",
+    "confirm": "Confirm (fix)",
     "close": "Schließen",
     "scan_qr": "QR-Code scannen",
     "camera_note": "Die App wird ihre Kamere verwenden, um QR-Codes für Litecoin-Zahlungen zu scannen.",
     "enable_flash": "Blitz aktivieren",
     "camara_disabled": "Kamera deaktiviert",
-    "enable_camera": "Kamaera zum Scannen von QR-Codes aktivieren"
+    "enable_camera": "Kamaera zum Scannen von QR-Codes aktivieren",
+    "awesome": "Awesome! (fix)",
+    "just-sent": "You just sent (fix)"
   },
   "receiveTab": {
     "receive_ltc": "LTC empfangen",

@@ -19,11 +19,11 @@ const Alert: React.FC<Props> = () => {
 
   const dispatch = useAppDispatch();
   const [alertModalVisible, setAlertModalVisible] = useState(false);
-  const [selectedID, setSelectedID] = useState(-1);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const {alerts} = useAppSelector(state => state.alerts);
 
   const handleAlertPress = (index: number) => {
-    setSelectedID(index);
+    setSelectedIndex(index);
     setAlertModalVisible(true);
   };
 
@@ -57,7 +57,7 @@ const Alert: React.FC<Props> = () => {
       <AlertModal
         isVisible={alertModalVisible}
         close={() => setAlertModalVisible(false)}
-        onPress={() => dispatch(removeAlert(selectedID))}
+        onPress={() => dispatch(removeAlert(selectedIndex))}
       />
     </LinearGradient>
   );

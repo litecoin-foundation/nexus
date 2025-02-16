@@ -102,10 +102,11 @@ export default function WalletsModalContent(props: Props) {
       <View style={styles.bodyItems}>{wallets}</View>
       <Animated.View style={[styles.buttonContainer, animatedButton]}>
         <WhiteButton
-          value="ADD A NEW WALLET"
           onPress={() => {}}
           disabled={true}
           small={false}
+          textKey="add_wallet"
+          textDomain="main"
           active={true}
         />
       </Animated.View>

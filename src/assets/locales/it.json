@@ -10,6 +10,7 @@
     "copy_address": "Copia indirizzo",
     "copied": "indirizzo copiato! ",
     "add_wallet": "Aggiungi un nuovo portafoglio",
+    "all": "Tutto",
     "buy": "compra",
     "sell": "vendi",
     "convert": "converti",
@@ -27,7 +28,8 @@
     "time_date": "ora e data",
     "network_fee": "Tassa Network ",
     "view_on_blockchain": "Vedi sulla Blockchain",
-    "bought": "acquistato ",
+    "bought": "acquistato",
+    "sold": "Venduti (fix)",
     "completed": "Completato",
     "total": "Totale",
     "total_fee": "Tasse totali",
@@ -39,12 +41,16 @@
     "details": "Dettagli"
   },
   "buyTab": {
-    "buy_n_ltc_for_total": "Compra {{amount}} per {{total}}",
+    "buy": "Compra ",
+    "n_ltc": "{{amount}}",
+    "for": "per ",
+    "total": "{{currencySymbol}}{{total}}",
     "history": "Storico",
     "preview_buy": "Anticipazione acquisto",
-    "min_purchase": "Acquisto minimo di {{minAmountInFiat}}",
+    "min_purchase": "Acquisto minimo di {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Scorico acquisti",
     "change": "Cambio",
+    "cancel": "CANCEL (fix)",
     "purchasing": "Stai comprando",
     "rate": "Tasso",
     "will_spend": "Spenderai",
@@ -53,20 +59,27 @@
     "back": "indietro"
   },
   "sellTab": {
-    "sell_n_ltc_for_total": "Vendi {{amount}} per {{total}}"
+    "sell": "Vendi ",
+    "sell_litecoin": "Vendi Litecoin",
+    "preview_sell": "Vendi LTC"
   },
   "sendTab": {
     "send_ltc": "Invia LTC",
+    "send_litecoin": "Invia Litecoin",
     "amount": "quantità",
     "send_to_address": "Invia all'indirizzo ",
+    "address_invalid": " IS INVALID (fix)",
     "enter_address": "Inserisci un indirizzo Litecoin",
     "description": "Descrizione",
+    "confirm": "Confirm (fix)",
     "close": "Chiudi",
     "scan_qr": "Scannerizza codice QR",
     "camera_note": "L'App utilizzerà la tua camera per scannerizzare il codice QR per il pagamento in Litecoin",
     "enable_flash": "Abilita Flash",
     "camara_disabled": "Camera disabilitata",
-    "enable_camera": "Abilita la camera per scannerizzare i codici QR"
+    "enable_camera": "Abilita la camera per scannerizzare i codici QR",
+    "awesome": "Awesome! (fix)",
+    "just-sent": "You just sent (fix)"
   },
   "receiveTab": {
     "receive_ltc": "Ricevi LTC",

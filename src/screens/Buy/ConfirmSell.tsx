@@ -9,6 +9,8 @@ import {getAddress} from '../../reducers/address';
 import {getSignedSellUrl} from '../../reducers/buy';
 import {useNavigation} from '@react-navigation/native';
 
+import TranslateText from '../../components/TranslateText';
+
 interface Props {}
 
 const ConfirmSell: React.FC<Props> = props => {
@@ -54,7 +56,13 @@ const styles = StyleSheet.create({
 
 export const ConfirmSellNavigationOptions = navigation => {
   return {
-    headerTitle: 'Sell Litecoin',
+    headerTitle: () => (
+      <TranslateText
+        textKey={'sell_litecoin'}
+        domain={'sellTab'}
+        numberOfLines={1}
+      />
+    ),
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',

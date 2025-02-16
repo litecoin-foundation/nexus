@@ -11,7 +11,8 @@ const Stack = createStackNavigator();
 function AuthStack(): React.JSX.Element {
   const headerRightComponent = (navigation: any) => (
     <HeaderButton
-      title="Forgot Pincode?"
+      textKey="forgot_pin"
+      textDomain="onboarding"
       onPress={() => navigation.navigate('Forgot')}
       rightPadding={true}
     />

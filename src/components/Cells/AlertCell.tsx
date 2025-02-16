@@ -79,7 +79,9 @@ const AlertCell: React.FC<Props> = props => {
         <View style={styles.subContainer}>
           <LitecoinIcon size={height * 0.046} />
           <View>
-            <Text style={styles.text}>Litecoin (LTC) is above</Text>
+            <Text style={styles.text}>
+              Litecoin (LTC) is {item.isPositive ? 'above' : 'below'}
+            </Text>
             <Text style={styles.valueText}>
               {`${currencySymbol}${alertValueInLocalFiat}`}
             </Text>

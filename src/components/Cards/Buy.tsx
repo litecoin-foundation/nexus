@@ -11,8 +11,13 @@ import {
   updateFiatAmount,
 } from '../../reducers/input';
 import {useNavigation} from '@react-navigation/native';
-import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedProps,
+  withTiming,
+} from 'react-native-reanimated';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {}
@@ -78,40 +83,67 @@ const Buy: React.FC<Props> = () => {
     }
   };
 
+  const ltcFontSizeStyle = useAnimatedProps(() => {
+    return {
+      fontSize: ltcFontSize.value,
+    };
+  });
+
+  const fiatFontSizeStyle = useAnimatedProps(() => {
+    return {
+      fontSize: fiatFontSize.value,
+    };
+  });
+
   const BuyContainer = (
     <>
       <View style={styles.buyContainer}>
         <View style={styles.buyControls}>
           <View style={styles.flexCol}>
             <View style={styles.flexRow}>
+              <TranslateText
+                textKey={'buy'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.buyText}
+                animatedProps={ltcFontSizeStyle}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textKey={'n_ltc'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={{...styles.buyText, color: '#2C72FF'}}
+                animatedProps={ltcFontSizeStyle}
+                numberOfLines={1}
+                interpolationObj={{amount: amount === '' ? '0.00' : amount}}
+              />
               <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
-                Buy{' '}
-              </Animated.Text>
-              <Animated.Text
-                style={[
-                  styles.buyText,
-                  {color: '#2C72FF', fontSize: ltcFontSize},
-                ]}>
-                {amount === '' ? '0.00' : amount}
-              </Animated.Text>
-              <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
-                {' '}
-                LTC
+                {' LTC'}
               </Animated.Text>
             </View>
 
             <View style={styles.flexRow}>
-              <Animated.Text style={[styles.buyText, {fontSize: fiatFontSize}]}>
-                for{' '}
-              </Animated.Text>
-              <Animated.Text
-                style={[
-                  styles.buyText,
-                  {color: '#20BB74', fontSize: fiatFontSize},
-                ]}>
-                {currencySymbol}
-                {fiatAmount === '' ? '0.00' : fiatAmount}
-              </Animated.Text>
+              <TranslateText
+                textKey={'for'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.buyText}
+                animatedProps={fiatFontSizeStyle}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textKey={'for_total'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={{...styles.buyText, color: '#20BB74'}}
+                animatedProps={fiatFontSizeStyle}
+                numberOfLines={1}
+                interpolationObj={{
+                  currencySymbol,
+                  total: fiatAmount === '' ? '0.00' : fiatAmount,
+                }}
+              />
             </View>
           </View>
 
@@ -134,7 +166,13 @@ const Buy: React.FC<Props> = () => {
                 navigation.navigate('SearchTransaction', {openFilter: 'Buy'})
               }>
               <Image source={require('../../assets/icons/history-icon.png')} />
-              <Text style={styles.buttonText}>History</Text>
+              <TranslateText
+                textKey={'history'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.buttonText}
+                numberOfLines={1}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -168,15 +206,20 @@ const Buy: React.FC<Props> = () => {
               ? true
               : false
           }
-          value="Preview Buy"
+          textKey="preview_buy"
+          textDomain="buyTab"
           onPress={() => {
             navigation.navigate('ConfirmBuy');
           }}
         />
-        <Text style={isBuyAllowed ? styles.minText : {display: 'none'}}>
-          Minimum purchase size of {currencySymbol}
-          {minBuyAmount}
-        </Text>
+        <TranslateText
+          textKey={'min_purchase'}
+          domain={'buyTab'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={isBuyAllowed ? styles.minText : {display: 'none'}}
+          numberOfLines={1}
+          interpolationObj={{currencySymbol, minAmountInFiat: minBuyAmount}}
+        />
       </View>
     </View>
   );

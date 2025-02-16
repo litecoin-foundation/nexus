@@ -10,6 +10,7 @@
     "copy_address": "COPIAR DIRECCIÓN",
     "copied": "¡COPIADO AL PORTAPAPELES!",
     "add_wallet": "AÑADIR NUEVA BILLETERA",
+    "all": "Todo",
     "buy": "Comprar",
     "sell": "Vender",
     "convert": "Convertir",
@@ -28,6 +29,7 @@
     "network_fee": "TARIFA DE RED",
     "view_on_blockchain": "Ver en la Blockchain",
     "bought": "Comprado",
+    "sold": "Vendidos (fix)",
     "completed": "COMPLETADO",
     "total": "TOTAL",
     "total_fee": "TARIFA TOTAL",
@@ -39,12 +41,16 @@
     "details": "DETALLES"
   },
   "buyTab": {
-    "buy_n_ltc_for_total": "Comprar {{amount}} por {{total}}",
+    "buy": "Comprar ",
+    "n_ltc": "{{amount}}",
+    "for": "por ",
+    "total": "{{currencySymbol}}{{total}}",
     "history": "Historial",
     "preview_buy": "Previsualizar compra",
-    "min_purchase": "Cantidad mínima de compra de {{minAmountInFiat}}",
+    "min_purchase": "Cantidad mínima de compra de {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Historial de compras",
     "change": "CAMBIAR",
+    "cancel": "CANCEL (fix)",
     "purchasing": "Estás comprando",
     "rate": "TARIFA",
     "will_spend": "GASTARÁS",
@@ -53,20 +59,27 @@
     "back": "VOLVER"
   },
   "sellTab": {
-    "sell_n_ltc_for_total": "Vender {{amount}} por {{total}}"
+    "sell": "Vender ",
+    "sell_litecoin": "Vender Litecoin",
+    "preview_sell": "Vender LTC"
   },
   "sendTab": {
     "send_ltc": "Enviar LTC",
+    "send_litecoin": "Enviar Litecoin",
     "amount": "Cantidad",
     "send_to_address": "Enviar a la dirección",
+    "address_invalid": " IS INVALID (fix)",
     "enter_address": "Introduce una dirección Litecoin",
     "description": "Concepto",
+    "confirm": "Confirm (fix)",
     "close": "Cerrar",
     "scan_qr": "Escanerar Código QR",
     "camera_note": "La app usará tu cámara para escanear códigos QR para pagos con Litecoin",
     "enable_flash": "Habilitar flash",
     "camara_disabled": "Cámara desabilitada",
-    "enable_camera": "Habilitar camara para escanear códigos"
+    "enable_camera": "Habilitar camara para escanear códigos",
+    "awesome": "Awesome! (fix)",
+    "just-sent": "You just sent (fix)"
   },
   "receiveTab": {
     "receive_ltc": "Recibir LTC",

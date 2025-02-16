@@ -1,17 +1,20 @@
 import React, {useContext} from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
-  value: string;
+  value?: string;
+  textKey?: string;
+  textDomain?: string;
   onPress: () => void;
   disabled?: boolean;
   small?: boolean;
 }
 
 const GreenButton: React.FC<Props> = props => {
-  const {value, onPress, disabled, small} = props;
+  const {value, textKey, textDomain, onPress, disabled, small} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -26,7 +29,19 @@ const GreenButton: React.FC<Props> = props => {
       ]}
       onPress={onPress}
       disabled={disabled}>
-      <Text style={styles.text}>{value}</Text>
+      {value ? (
+        <Text style={styles.text}>{value}</Text>
+      ) : textKey && textDomain ? (
+        <TranslateText
+          textKey={textKey}
+          domain={textDomain}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          textStyle={styles.text}
+          numberOfLines={1}
+        />
+      ) : (
+        <></>
+      )}
     </TouchableOpacity>
   );
 };

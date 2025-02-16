@@ -10,6 +10,7 @@
     "copy_address": "СКОПИРОВАТЬ АДРЕС",
     "copied": "СКОПИРОВАНО!",
     "add_wallet": "ДОБАВИТЬ НОВЫЙ КОШЕЛЕК",
+    "all": "Все",
     "buy": "Купить",
     "sell": "Продать",
     "convert": "Обменять",
@@ -28,6 +29,7 @@
     "network_fee": "КОМИССИЯ СЕТИ",
     "view_on_blockchain": "Посмотреть на Блокчейне",
     "bought": "Куплено",
+    "sold": "Продано",
     "completed": "ЗАВЕРШЕНО",
     "total": "ИТОГ",
     "total_fee": "ИТОГОВЫЕ КОМИССИИ",
@@ -39,12 +41,16 @@
     "details": "ДЕТАЛИ"
   },
   "buyTab": {
-    "buy_n_ltc_for_total": "Купить {{amount}} за {{total}}",
+    "buy": "Купить ",
+    "n_ltc": "{{amount}}",
+    "for": "за ",
+    "total": "{{currencySymbol}}{{total}}",
     "history": "История",
     "preview_buy": "К Покупке",
-    "min_purchase": "Минимальная сумма покупки {{minAmountInFiat}}",
+    "min_purchase": "Минимальная сумма покупки {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "История Покупок",
-    "change": "СДАЧА",
+    "change": "ИЗМЕНИТЬ",
+    "cancel": "ОТМЕНА",
     "purchasing": "Вы покупаете",
     "rate": "КУРС",
     "will_spend": "ВЫ ПОТРАТИТЕ",
@@ -53,20 +59,27 @@
     "back": "НАЗАД"
   },
   "sellTab": {
-    "sell_n_ltc_for_total": "Продать {{amount}} за {{total}}"
+    "sell": "Продать ",
+    "sell_litecoin": "Продать Litecoin",
+    "preview_sell": "Продать LTC"
   },
   "sendTab": {
     "send_ltc": "Отправить LTC",
+    "send_litecoin": "Отправить Litecoin",
     "amount": "Количество",
     "send_to_address": "Адрес отправления",
+    "address_invalid": " (НЕВЕРНЫЙ ФОРМАТ)",
     "enter_address": "Введите Litecoin-адрес",
     "description": "Примечание",
+    "confirm": "Подтвердить",
     "close": "Закрыть",
     "scan_qr": "Сканировать QR-Код",
     "camera_note": "Приложение использует вашу камеру для сканирования QR-Кодов для Litecoin платежей",
     "enable_flash": "Включить Flash",
     "camara_disabled": "Камера отключена",
-    "enable_camera": "Включить камеру для сканирования QR-Кодов"
+    "enable_camera": "Включить камеру для сканирования QR-Кодов",
+    "awesome": "Успешно!",
+    "just-sent": "Вы отправили"
   },
   "receiveTab": {
     "receive_ltc": "Получить LTC",

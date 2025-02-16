@@ -16,6 +16,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import {useTranslation} from 'react-i18next';
 
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -45,6 +46,8 @@ const AddressField: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const {t} = useTranslation('sendTab');
 
   const lineHeight = SCREEN_HEIGHT * 0.033;
   const fontLineHeight = SCREEN_HEIGHT * 0.026;
@@ -193,7 +196,7 @@ const AddressField: React.FC<Props> = props => {
 
       <TextInput
         placeholderTextColor="#dbdbdb"
-        placeholder="Enter a Litecoin Address"
+        placeholder={t('enter_address')}
         style={styles.text}
         value={address}
         autoCorrect={false}
@@ -280,10 +283,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenWidth * 0.7,
       maxWidth: screenWidth * 0.7,
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#20BB74',
-      fontSize: screenHeight * 0.022,
       textAlignVertical: 'top',
       paddingTop: Platform.OS === 'android' ? 0 : 3,
     },

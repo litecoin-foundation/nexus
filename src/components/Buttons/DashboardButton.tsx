@@ -5,32 +5,37 @@ import {
   Rect,
   RoundedRect,
   Shadow,
-  Text,
+  // Text,
   interpolateColors,
-  matchFont,
+  // matchFont,
   rect,
-  useFont,
+  // useFont,
   useImage,
 } from '@shopify/react-native-skia';
 import React, {useEffect, useContext} from 'react';
 import {
   ImageSourcePropType,
-  Platform,
+  // Platform,
   Pressable,
   StyleSheet,
 } from 'react-native';
 import {
+  interpolateColor,
+  useAnimatedProps,
   useDerivedValue,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import {useTranslation} from 'react-i18next';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   imageSource: ImageSourcePropType;
-  title: string;
+  title?: string;
+  textKey?: string;
   handlePress: () => void;
   active: boolean;
   textPadding: number;
@@ -43,8 +48,9 @@ const DashboardButton: React.FC<Props> = props => {
     active,
     handlePress,
     title,
+    textKey,
     imageSource,
-    textPadding,
+    // textPadding,
     disabled,
     wider,
   } = props;
@@ -54,17 +60,18 @@ const DashboardButton: React.FC<Props> = props => {
   const width = wider ? SCREEN_WIDTH * 0.168 : SCREEN_WIDTH * 0.152;
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, width);
 
-  const fontStyle = {
-    fontFamily: 'Satoshi Variable',
-    fontSize: 12,
-    fontStyle: 'normal',
-    fontWeight: '700',
-  } as const;
+  const {t} = useTranslation('main');
 
-  const font = Platform.select({
-    ios: matchFont(fontStyle),
-    default: useFont(require('../../fonts/Satoshi-Variable.ttf'), 12),
-  });
+  // const fontStyle = {
+  //   fontFamily: 'Satoshi Variable',
+  //   fontSize: 12,
+  //   fontStyle: 'normal',
+  //   fontWeight: '700',
+  // } as const;
+  // const font = Platform.select({
+  //   ios: matchFont(fontStyle),
+  //   default: useFont(require('../../fonts/Satoshi-Variable.ttf'), 12),
+  // });
   const image = useImage(imageSource);
 
   // animation
@@ -107,6 +114,18 @@ const DashboardButton: React.FC<Props> = props => {
       ),
     [buttonHeight],
   );
+
+  const textColorStyle = useAnimatedProps(() => {
+    return {
+      color: interpolateColor(
+        buttonHeight.value,
+        [49, 88],
+        ['#47516B', '#fff'],
+      ),
+    };
+  });
+
+  const titleText = title ? title : textKey ? t(textKey) : '';
 
   return (
     <>
@@ -165,14 +184,22 @@ const DashboardButton: React.FC<Props> = props => {
             <Rect rect={rect(0, 0, 300, 300)} color={interpolatedColour} />
           </Mask>
 
-          <Text
-            text={title}
+          {/* <Text
+            text={titleText}
             x={width / 2 - textPadding}
             y={82}
             font={font}
             color={interpolatedColour}
-          />
+          /> */}
         </Canvas>
+        <TranslateText
+          textKey={titleText}
+          domain={'main'}
+          maxSizeInPixels={SCREEN_WIDTH * 0.03}
+          textStyle={styles.title}
+          animatedProps={textColorStyle}
+          numberOfLines={1}
+        />
       </Pressable>
     </>
   );
@@ -190,6 +217,17 @@ const getStyles = (
     },
     container: {
       flex: 1,
+    },
+    title: {
+      position: 'absolute',
+      bottom: 25,
+      width: '100%',
+      color: '#000',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenWidth * 0.025,
+      fontStyle: 'normal',
+      fontWeight: '700',
+      textAlign: 'center',
     },
     disabled: {
       opacity: 0.2,

@@ -5,6 +5,7 @@ import Animated from 'react-native-reanimated';
 import {triggerHeavyFeedback} from '../../lib/utils/haptic';
 import PlasmaModal from './PlasmaModal';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
 
@@ -12,12 +13,15 @@ interface Props {
   isVisible: boolean;
   close: () => void;
   textColor: string;
-  text: string;
+  text?: string;
+  textKey?: string;
+  textDomain?: string;
   disableBlur?: boolean;
 }
 
 const InfoModal: React.FC<Props> = props => {
-  const {isVisible, close, textColor, text, disableBlur} = props;
+  const {isVisible, close, textColor, text, textKey, textDomain, disableBlur} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -37,6 +41,13 @@ const InfoModal: React.FC<Props> = props => {
 
   const {showPopUp} = useContext(PopUpContext);
 
+  const textColorStyle =
+    textColor === 'red'
+      ? styles.redText
+      : textColor === 'green'
+      ? styles.greenText
+      : null;
+
   const modal = (
     <PlasmaModal
       isOpened={isVisible}
@@ -49,17 +60,19 @@ const InfoModal: React.FC<Props> = props => {
       renderBody={(_, __, ___, ____, cardTranslateAnim) => (
         <Animated.View style={[styles.modal, cardTranslateAnim]}>
           <View style={styles.textContainer}>
-            <Text
-              style={[
-                styles.text,
-                textColor === 'red'
-                  ? styles.redText
-                  : textColor === 'green'
-                  ? styles.greenText
-                  : null,
-              ]}>
-              {text}
-            </Text>
+            {text ? (
+              <Text style={[styles.text, textColorStyle]}>{text}</Text>
+            ) : textKey && textDomain ? (
+              <TranslateText
+                textKey={textKey}
+                domain={textDomain}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={{...styles.text, ...textColorStyle}}
+                numberOfLines={1}
+              />
+            ) : (
+              <></>
+            )}
           </View>
         </Animated.View>
       )}

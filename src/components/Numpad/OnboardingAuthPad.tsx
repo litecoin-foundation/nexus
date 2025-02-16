@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, Text, Platform} from 'react-native';
+import {View, StyleSheet, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
@@ -11,6 +11,7 @@ import PasscodeInput from '../PasscodeInput';
 import OnboardingHeader from '../OnboardingHeader';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
@@ -37,7 +38,8 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   const pin = useAppSelector(state => state.authpad.pin);
   const passcodeSet = useAppSelector(state => state.authentication.passcodeSet);
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // clear all inputs in AuthPad on initial render
@@ -125,7 +127,14 @@ const OnboardingAuthPad: React.FC<Props> = props => {
       </LinearGradient>
 
       <View style={styles.bottomSheet}>
-        <Text style={styles.bottomSheetTitle}>Enter your PIN</Text>
+        <TranslateText
+          textKey={'enter_pin'}
+          domain={'onboarding'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          maxLengthInPixels={SCREEN_WIDTH}
+          textStyle={styles.bottomSheetTitle}
+          numberOfLines={1}
+        />
 
         <View style={styles.bottomSheetSubContainer}>
           <PasscodeInput dotsLength={6} activeDotIndex={pin.length} />

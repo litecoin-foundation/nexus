@@ -10,6 +10,7 @@
     "copy_address": "COPY ADDRESS",
     "copied": "COPIED TO CLIPBOARD!",
     "add_wallet": "ADD A NEW WALLET",
+    "all": "All",
     "buy": "Buy",
     "sell": "Sell",
     "convert": "Convert",
@@ -17,7 +18,7 @@
     "receive": "Receive",
     "latest_txs": "Latest Transactions",
     "received_ltc": "Received Litecoin",
-    "bought_ltc": "Bought Litecoin",
+    "bought_ltc": "Purchased Litecoin",
     "sent_ltc": "Sent Litecoin",
     "sold_ltc": "Sold Litecoin",
     "received": "Received",
@@ -28,6 +29,7 @@
     "network_fee": "NETWORK FEE",
     "view_on_blockchain": "View on Blockchain",
     "bought": "Bought",
+    "sold": "Spent",
     "completed": "COMPLETED",
     "total": "TOTAL",
     "total_fee": "TOTAL FEE",
@@ -39,12 +41,15 @@
     "details": "DETAILS"
   },
   "buyTab": {
-    "buy_n_ltc_for_total": "Buy {{amount}} for {{total}}",
+    "buy": "Buy ",
+    "n_ltc": "{{amount}}",
+    "for_total": "{{currencySymbol}}{{total}}",
     "history": "History",
     "preview_buy": "Preview Buy",
-    "min_purchase": "Minimum purchase size of {{minAmountInFiat}}",
+    "min_purchase": "Minimum purchase size of {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Purchase History",
     "change": "CHANGE",
+    "cancel": "CANCEL",
     "purchasing": "You are purchasing",
     "rate": "RATE",
     "will_spend": "YOU WILL SPEND",
@@ -53,20 +58,27 @@
     "back": "BACK"
   },
   "sellTab": {
-    "sell_n_ltc_for_total": "Sell {{amount}} for {{total}}"
+    "sell": "Sell ",
+    "sell_litecoin": "Sell Litecoin",
+    "preview_sell": "Sell LTC"
   },
   "sendTab": {
     "send_ltc": "Send LTC",
+    "send_litecoin": "Send Litecoin",
     "amount": "Amount",
     "send_to_address": "Send to address",
+    "address_invalid": " IS INVALID",
     "enter_address": "Enter a Litecoin Address",
     "description": "Description",
+    "confirm": "Confirm",
     "close": "Close",
     "scan_qr": "Scan QR Code",
     "camera_note": "App will use your camera to scan QR codes for Litecoin Payments",
     "enable_flash": "Enable Flash",
     "camara_disabled": "Camara disabled",
-    "enable_camera": "Enable Camera to Scan QR Codes"
+    "enable_camera": "Enable Camera to Scan QR Codes",
+    "awesome": "Awesome!",
+    "just-sent": "You just sent"
   },
   "receiveTab": {
     "receive_ltc": "Receive LTC",

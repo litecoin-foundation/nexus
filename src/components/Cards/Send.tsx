@@ -6,7 +6,7 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
@@ -34,6 +34,7 @@ import {
   updateSendAddress,
 } from '../../reducers/input';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -258,10 +259,22 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         scrollEnabled={false}
         ref={scrollViewRef}
         contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.titleText}>Send LTC</Text>
+        <TranslateText
+          textKey="send_ltc"
+          domain="sendTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+          textStyle={styles.titleText}
+          numberOfLines={1}
+        />
 
         <View style={styles.amountContainer}>
-          <Text style={styles.subtitleText}>AMOUNT</Text>
+          <TranslateText
+            textKey="amount"
+            domain="sendTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.subtitleText}
+            numberOfLines={1}
+          />
           <AmountPicker
             amount={amount}
             fiatAmount={fiatAmount}
@@ -278,10 +291,24 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
           <Animated.View
             style={{...styles.subContainer, opacity: detailsOpacity}}>
             <View style={styles.cellContainer}>
-              <Text style={styles.subtitleText}>
-                SEND TO ADDRESS{' '}
-                {!addressValid && addressValid !== null ? '(IS INVALID)' : null}
-              </Text>
+              <View style={styles.subtitlesContainer}>
+                <TranslateText
+                  textKey="send_to_address"
+                  domain="sendTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.subtitleText}
+                  numberOfLines={1}
+                />
+                {!addressValid && addressValid !== null ? (
+                  <TranslateText
+                    textKey="address_invalid"
+                    domain="sendTab"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.subtitleText}
+                    numberOfLines={1}
+                  />
+                ) : null}
+              </View>
               <View style={styles.inputFieldContainer}>
                 <AddressField
                   address={address}
@@ -297,7 +324,13 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             </View>
 
             <View style={styles.cellContainer}>
-              <Text style={styles.subtitleText}>DESCRIPTION</Text>
+              <TranslateText
+                textKey="description"
+                domain="sendTab"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.subtitleText}
+                numberOfLines={1}
+              />
               <View style={styles.inputFieldContainer}>
                 <InputField
                   value={description}
@@ -324,7 +357,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         </View> */}
               <View style={styles.blueBtnContainer}>
                 <BlueButton
-                  value="Send Litecoin"
+                  textKey="send_litecoin"
+                  textDomain="sendTab"
                   onPress={() => {
                     handleSend();
                   }}
@@ -344,13 +378,14 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
           />
           <View style={{paddingHorizontal: 20, paddingTop: 7}}>
             <BlueButton
-              disabled={false}
-              value="Confirm"
+              textKey="confirm"
+              textDomain="sendTab"
               onPress={async () => {
                 padOpacity.value = withTiming(0, {duration: 230});
                 await sleep(230);
                 setAmountPickerActive(false);
               }}
+              disabled={false}
             />
           </View>
         </Animated.View>
@@ -382,6 +417,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     cellContainer: {
       marginTop: screenHeight * 0.03,
+    },
+    subtitlesContainer: {
+      flexDirection: 'row',
     },
     amountContainer: {
       flexDirection: 'row',

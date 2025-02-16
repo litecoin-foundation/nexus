@@ -42,6 +42,7 @@ import {
 } from '../../reducers/settings';
 import {convertLocalFiatToUSD} from '../../reducers/ticker';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import ChangeAddress from '../ChangeAddress';
 
@@ -114,36 +115,36 @@ export default function TxDetailModalContent(props: Props) {
 
   const dispatch = useAppDispatch();
 
-  const {label} = {
+  const {textKey} = {
     current: function () {
       switch (transaction.metaLabel) {
         case 'Send':
           return {
-            label: 'Sent',
+            textKey: 'sent',
             txIcon: require('../../assets/icons/sendtx.png'),
             amountColor: '#212124',
           };
         case 'Receive':
           return {
-            label: 'Received',
+            textKey: 'received',
             txIcon: require('../../assets/icons/receivetx.png'),
             amountColor: '#1162E6',
           };
         case 'Buy':
           return {
-            label: 'Bought',
+            textKey: 'bought',
             txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
           };
         case 'Sell':
           return {
-            label: 'Spent',
+            textKey: 'sold',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
           };
         default:
           return {
-            label: 'Unknown',
+            textKey: 'Unknown',
             txIcon: null,
             amountColor: '#212124',
           };
@@ -394,13 +395,18 @@ export default function TxDetailModalContent(props: Props) {
         <Animated.View style={[styles.body, cardOpacityAnim]}>
           <Animated.View style={[styles.fadingContent, fadeNewDetailsIn]}>
             <View style={styles.modalHeaderContainer}>
-              <Text style={styles.modalHeaderTitle}>
-                {label}
+              <TranslateText
+                textKey={textKey}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+                textStyle={styles.modalHeaderTitle}
+                numberOfLines={1}>
+                {' '}
                 <Text style={styles.modalHeaderSubtitle}>
                   {` ${cryptoAmountFormatted}${amountSymbol}` +
                     ` (${currencySymbol}${amountInFiatOnDateAbsVal})`}
                 </Text>
-              </Text>
+              </TranslateText>
               <GreyRoundButton onPress={() => close()} />
             </View>
             <View style={styles.modalContentContainer}>
@@ -473,21 +479,34 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
     <Fragment>
       {/* <Text style={styles.statusText}>{status}</Text> */}
       <TableCell
-        title="TOTAL"
+        titleTextKey="total"
+        titleTextDomain="main"
         value={`${fiatSymbol}${fiatCurrencyAmount}`}
         blueValue
         thick
       />
       <View style={styles.tableCell}>
         <View style={styles.tableCellRow}>
-          <Text style={styles.tableCellTitle}>TOTAL FEE</Text>
+          <TranslateText
+            textKey={'total_fee'}
+            domain={'main'}
+            maxSizeInPixels={height * 0.02}
+            textStyle={styles.tableCellTitle}
+            numberOfLines={1}
+          />
           <Text
             style={styles.tableCellValue}>{`${fiatSymbol}${totalFee}`}</Text>
         </View>
         <View style={styles.tableCellRow}>
           <View style={styles.tableCellSubRow}>
             <View style={styles.tableCellListDot} />
-            <Text style={styles.tableCellTitle}>NETWORK FEE</Text>
+            <TranslateText
+              textKey={'network_fee'}
+              domain={'main'}
+              maxSizeInPixels={height * 0.02}
+              textStyle={styles.tableCellTitle}
+              numberOfLines={1}
+            />
           </View>
           <Text style={styles.tableCellSubValue}>
             {`${fiatSymbol}${blockchainFee}`}
@@ -496,7 +515,13 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
         <View style={styles.tableCellRow}>
           <View style={styles.tableCellSubRow}>
             <View style={styles.tableCellListDot} />
-            <Text style={styles.tableCellTitle}>PROVIDER FEE</Text>
+            <TranslateText
+              textKey={'provider_fee'}
+              domain={'main'}
+              maxSizeInPixels={height * 0.02}
+              textStyle={styles.tableCellTitle}
+              numberOfLines={1}
+            />
           </View>
           <Text style={styles.tableCellSubValue}>
             {`${fiatSymbol}${tipLFFee + moonpayFee}`}
@@ -504,25 +529,33 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
         </View>
       </View>
       <TableCell
-        title="MOONPAY ID"
+        titleTextKey="moobpay_id"
+        titleTextDomain="main"
         value={moonpayTxId}
         thick
         valueFontSize={height * 0.012}
         copyable
       />
       <TableCell
-        title="TX ID"
+        titleTextKey="tx_id"
+        titleTextDomain="main"
         value={cryptoTxId}
         thick
         valueFontSize={height * 0.012}
         copyable
       />
-      <TableCell title="TIME & DATE" value={createdAt} thick />
+      <TableCell
+        titleTextKey="time_date"
+        titleTextDomain="main"
+        value={createdAt}
+        thick
+      />
       <View style={styles.bottomContainer}>
         <View style={styles.bottomBtns}>
           <View style={styles.flexBtn1}>
             <BlueButton
-              value="Blockchain"
+              textKey="blockchain"
+              textDomain="main"
               onPress={() => {
                 navigation.navigate('WebPage', {
                   uri: currentExplorer,
@@ -532,7 +565,8 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
           </View>
           <View style={styles.flexBtn2}>
             <GreenButton
-              value="Details"
+              textKey="details"
+              textDomain="main"
               onPress={() => {
                 navigation.navigate('WebPage', {
                   uri: txDetailsUrl,
@@ -792,7 +826,13 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
                     <View style={styles.sentLine} />
                   </View>
                   <View style={styles.fromAndToTitlesContainer}>
-                    <Text style={styles.fromAndToTitle}>From</Text>
+                    <TranslateText
+                      textKey={'from'}
+                      domain={'main'}
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+                      textStyle={styles.fromAndToTitle}
+                      numberOfLines={1}
+                    />
                     {renderInputs()}
                     {renderInputNote()}
                   </View>
@@ -803,21 +843,37 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
                   <View style={styles.fromAndToIcon} />
                 </View>
                 <View style={styles.fromAndToTitlesContainer}>
-                  <Text style={styles.fromAndToTitle}>To</Text>
+                  <TranslateText
+                    textKey={'to'}
+                    domain={'main'}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+                    textStyle={styles.fromAndToTitle}
+                    numberOfLines={1}
+                  />
                   {renderOutputs()}
                   {renderOutputNote()}
                 </View>
               </View>
             </ScrollView>
           </View>
-          <TableCell title="TX ID" value={txId} copyable />
           <TableCell
-            title="NETWORK FEE"
+            titleTextKey="tx_id"
+            titleTextDomain="main"
+            value={txId}
+            copyable
+          />
+          <TableCell
+            titleTextKey="network_fee"
+            titleTextDomain="main"
             value={`${
               blockchainFee ? blockchainFee + amountSymbol : 'Unknown'
             }`}
           />
-          <TableCell title="TIME & DATE" value={dateString} />
+          <TableCell
+            titleTextKey="time_date"
+            titleTextDomain="main"
+            value={dateString}
+          />
           <View style={styles.inputFieldContainer}>
             <InputActionField
               value={newLabel}
@@ -834,7 +890,8 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
       <View style={styles.bottomContainer}>
         <View style={styles.buttonContainer}>
           <BlueButton
-            value="View on Blockchain"
+            textKey="view_on_blockchain"
+            textDomain="main"
             onPress={() => {
               navigation.navigate('WebPage', {
                 uri: currentExplorer,

@@ -111,7 +111,8 @@ const Receive: React.FC<Props> = () => {
         isVisible={isInfoModalVisible}
         close={() => setInfoModalVisible(false)}
         textColor="green"
-        text="COPIED TO CLIPBOARD!"
+        textKey="copied"
+        textDomain="main"
         disableBlur={true}
       />
     </>

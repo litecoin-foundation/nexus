@@ -1,12 +1,5 @@
 import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  TextInput,
-  Pressable,
-  DeviceEventEmitter,
-} from 'react-native';
+import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -30,7 +23,6 @@ import {
   payment,
   TransactionRequest,
 } from '@flexahq/flexa-react-native';
-import {useTranslation} from 'react-i18next';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -52,6 +44,7 @@ import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
 import {unsetDeeplink} from '../reducers/deeplinks';
 import {sleep} from '../lib/utils/poll';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 import PinModalContent from '../components/Modals/PinModalContent';
 import {validate as validateLtcAddress} from '../lib/utils/validate';
@@ -76,33 +69,8 @@ interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
 }
 
-interface TextWithDefaultProps extends Text {
-  defaultProps?: {allowFontScaling?: boolean; maxFontSizeMultiplier?: number};
-}
-
-interface TextInputWithDefaultProps extends TextInput {
-  defaultProps?: {allowFontScaling?: boolean};
-}
-
-(Text as unknown as TextWithDefaultProps).defaultProps =
-  (Text as unknown as TextWithDefaultProps).defaultProps || {};
-(Text as unknown as TextWithDefaultProps).defaultProps!.allowFontScaling =
-  false;
-(TextInput as unknown as TextInputWithDefaultProps).defaultProps =
-  (TextInput as unknown as TextInputWithDefaultProps).defaultProps || {};
-(
-  TextInput as unknown as TextInputWithDefaultProps
-).defaultProps!.allowFontScaling = false;
-
-// maxFontSizeMultiplier isn't being respected neither globally nor inline
-// (
-//   Text as unknown as TextWithDefaultProps
-// ).defaultProps!.maxFontSizeMultiplier = 1.5;
-
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
-
-  const {t} = useTranslation('main');
 
   const {
     width: SCREEN_WIDTH,
@@ -136,8 +104,7 @@ const Main: React.FC<Props> = props => {
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
-  const [currentWallet, setCurrentWallet] = useState(t('main_wallet'));
-  // const [currentWallet, setCurrentWallet] = useState('Main Wallet');
+  const [currentWallet, setCurrentWallet] = useState('main_wallet');
   const uniqueId = useAppSelector(state => state.onboarding.uniqueId);
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const confirmedBalance = useAppSelector(
@@ -522,7 +489,14 @@ const Main: React.FC<Props> = props => {
   const TxListComponent = (
     <View>
       <View style={styles.txTitleContainer}>
-        <Text style={styles.txTitleText}>{t('latest_txs')}</Text>
+        <TranslateText
+          textKey={'latest_txs'}
+          domain={'main'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          maxLengthInPixels={SCREEN_WIDTH * 0.8}
+          textStyle={styles.txTitleText}
+          numberOfLines={1}
+        />
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
           <Canvas style={styles.txSearchBtnCanvas}>
@@ -561,7 +535,7 @@ const Main: React.FC<Props> = props => {
   const HeaderComponent = (
     <View style={styles.headerContainer}>
       <DashboardButton
-        title="Buy"
+        textKey="buy"
         imageSource={require('../assets/icons/buy-icon.png')}
         handlePress={() => {
           setBottomSheetFolded(false);
@@ -572,7 +546,7 @@ const Main: React.FC<Props> = props => {
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
-        title="Sell"
+        textKey="sell"
         imageSource={require('../assets/icons/sell-icon.png')}
         handlePress={() => {
           setBottomSheetFolded(false);
@@ -583,7 +557,7 @@ const Main: React.FC<Props> = props => {
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
-        title="Convert"
+        textKey="convert"
         wider={true}
         imageSource={require('../assets/icons/convert-icon.png')}
         handlePress={() => {
@@ -595,7 +569,7 @@ const Main: React.FC<Props> = props => {
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
-        title="Send"
+        textKey="send"
         imageSource={require('../assets/icons/send-icon.png')}
         handlePress={() => {
           setBottomSheetFolded(false);
@@ -606,7 +580,7 @@ const Main: React.FC<Props> = props => {
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
-        title="Receive"
+        textKey="receive"
         imageSource={require('../assets/icons/receive-icon.png')}
         handlePress={() => {
           setBottomSheetFolded(false);
