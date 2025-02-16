@@ -85,7 +85,7 @@ export const ForgotNavigationOptions = (navigation: any) => {
     headerTitle: () => (
       <TranslateText
         textKey="forgot_pin"
-        domain="onbording"
+        domain="onboarding"
         textStyle={styles.headerTitle}
       />
     ),

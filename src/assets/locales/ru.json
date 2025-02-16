@@ -38,7 +38,8 @@
     "date": "ДАТА",
     "provider_fee": "КОМИССИЯ ПРОВАЙДЕРА",
     "blockchain": "БЛОКЧЕЙН",
-    "details": "ДЕТАЛИ"
+    "details": "ДЕТАЛИ",
+    "empty_transactions": "Ваши транзакции появятся тут"
   },
   "buyTab": {
     "buy": "Купить ",
@@ -136,7 +137,9 @@
     "repeat_new_pin": "Повторите пароль",
     "success": "Успешно",
     "successfully_reset": "Пароль успешно сброшен!",
-    "enable_face_id": "Включить Face ID",
+    "enable_face_id": "Включить {{faceIDSupported}}",
+    "face_id": "Face ID",
+    "touch_id": "",
     "import_private_key": "Импортировать приватный ключ",
     "import_private_key_note": "Импортируя приватный ключ Litecoin, вы отправляете все ваши монеты с этого ключа в Nexus.",
     "import_private_key_warning": "Вы больше не сможете получить доступ к монетам, используя этот приватный ключ.",

@@ -38,7 +38,8 @@
     "date": "FECHA",
     "provider_fee": "TARIFA DE PROVEEDOR",
     "blockchain": "BLOCKCHAIN",
-    "details": "DETALLES"
+    "details": "DETALLES",
+    "empty_transactions": "Tus transacciones aparecerán aquí"
   },
   "buyTab": {
     "buy": "Comprar ",
@@ -136,7 +137,9 @@
     "repeat_new_pin": "Repite tu nuevo PIN",
     "success": "Éxito",
     "successfully_reset": "¡PIN restablecido con éxito!",
-    "enable_face_id": "Habilitar Face ID",
+    "enable_face_id": "Habilitar {{faceIDSupported}}",
+    "face_id": "Face ID",
+    "touch_id": "",
     "import_private_key": "Importar clave privada",
     "import_private_key_note": "Importar una clave privada de Litecoin mueve cualquier Litecoin en esa billetera a Nexus.",
     "import_private_key_warning": "Ya no podrás acceder a Litecoin utilizando la clave privada.",

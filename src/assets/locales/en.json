@@ -38,7 +38,8 @@
     "date": "DATE",
     "provider_fee": "PROVIDER FEE",
     "blockchain": "BLOCKCHAIN",
-    "details": "DETAILS"
+    "details": "DETAILS",
+    "empty_transactions": "Your transactions will appear here"
   },
   "buyTab": {
     "buy": "Buy ",
@@ -135,7 +136,9 @@
     "repeat_new_pin": "Repeat your New PIN",
     "success": "Success",
     "successfully_reset": "Successfully reset PIN!",
-    "enable_face_id": "Enable Face ID",
+    "enable_face_id": "Enable {{faceIDSupported}}",
+    "face_id": "Face ID",
+    "touch_id": "Touch ID",
     "import_private_key": "Import Private Key",
     "import_private_key_note": "Importing a Litecoin private key moves any Litecoin in that wallet into Nexus.",
     "import_private_key_warning": "You will no longer be able to access Litecoin using the private key.",

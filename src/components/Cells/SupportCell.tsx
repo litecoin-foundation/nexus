@@ -1,5 +1,6 @@
 import React from 'react';
-import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import TranslateText from '../TranslateText';
 
 interface Props {
   onPress: () => void;
@@ -12,7 +13,11 @@ const SupportCell: React.FC<Props> = props => {
       <View style={styles.questionBox}>
         <Text style={styles.questionText}>?</Text>
       </View>
-      <Text style={styles.title}>Need Support? Ask a question!</Text>
+      <TranslateText
+        textKey="need_support"
+        domain="settingsTab"
+        textStyle={styles.title}
+      />
     </TouchableOpacity>
   );
 };

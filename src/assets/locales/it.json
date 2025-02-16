@@ -38,7 +38,8 @@
     "date": "Data",
     "provider_fee": "Tassa Provider",
     "blockchain": "Blockchain",
-    "details": "Dettagli"
+    "details": "Dettagli",
+    "empty_transactions": "La tua transazione apparirà qui"
   },
   "buyTab": {
     "buy": "Compra ",
@@ -136,7 +137,9 @@
     "repeat_new_pin": "Ripeti il tuo nuovo PIN",
     "success": "Successo",
     "successfully_reset": "PIN resettato correttamente! ",
-    "enable_face_id": "Abilita riconoscimento facciale",
+    "enable_face_id": "Abilita riconoscimento {{faceIDSupported}}",
+    "face_id": "facciale",
+    "touch_id": "",
     "import_private_key": "Importa chiave privata",
     "import_private_key_note": "Importare una chiave privata sposta qualunque Litecoin in quel portafoglio su Nexus",
     "import_private_key_warning": "Non sarai più in grado di accedere a quei Litecoin usando la chiave privata.",

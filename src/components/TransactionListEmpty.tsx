@@ -13,6 +13,7 @@ import {
 } from '../reducers/info';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import TranslateText from './TranslateText';
 
 interface Props {}
 
@@ -47,9 +48,11 @@ const TransactionListEmpty: React.FC<Props> = () => {
 
   const emptyWallet = (
     <View style={styles.emptySectionListContainer}>
-      <Text style={styles.emptySectionListText}>
-        Your transactions will appear here.
-      </Text>
+      <TranslateText
+        textKey="empty_transactions"
+        domain="main"
+        textStyle={styles.emptySectionListText}
+      />
     </View>
   );
 

@@ -1,21 +1,43 @@
 import React from 'react';
-import {TouchableOpacity, Text, StyleSheet, Image} from 'react-native';
+import {TouchableOpacity, StyleSheet, Image} from 'react-native';
 
 import Switch from '../Buttons/Switch';
+import TranslateText from '../TranslateText';
 
-const SettingCell = props => {
+interface Props {
+  textKey: string;
+  textDomain: string;
+  children?: React.ReactNode;
+  onPress?: () => void;
+  forward?: boolean;
+  switchEnabled?: boolean;
+  handleSwitch?: () => void;
+  switchValue?: boolean;
+  interpolationObj?: {
+    [key: string]: any;
+  };
+}
+
+const SettingCell: React.FC<Props> = props => {
   const {
-    title,
+    textKey,
+    textDomain,
     children,
     onPress,
     forward,
     switchEnabled,
     handleSwitch,
     switchValue,
+    interpolationObj,
   } = props;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Text style={styles.title}>{title}</Text>
+      <TranslateText
+        textKey={textKey}
+        domain={textDomain}
+        textStyle={styles.title}
+        interpolationObj={interpolationObj}
+      />
       {children}
       {forward ? (
         <Image source={require('../../assets/images/forward.png')} />

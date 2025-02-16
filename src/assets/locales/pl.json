@@ -38,7 +38,8 @@
     "date": "DATA",
     "provider_fee": "OPŁATA DOSTAWCY",
     "blockchain": "BLOCKCHAIN",
-    "details": "SZCZEGÓŁY"
+    "details": "SZCZEGÓŁY",
+    "empty_transactions": "Twoje transakcje pojawią się tutaj"
   },
   "buyTab": {
     "buy": "KUP ",
@@ -136,7 +137,9 @@
     "repeat_new_pin": "Powtórz nowy PIN",
     "success": "Udało się!",
     "successfully_reset": "PIN został zmieniony",
-    "enable_face_id": "Włącz Face ID",
+    "enable_face_id": "Włącz {{faceIDSupported}}",
+    "face_id": "Face ID",
+    "touch_id": "",
     "import_private_key": "Zaimportuj klucz prywatny",
     "import_private_key_note": "Zaimportowanie klucza prywatnego przenosi Twoje LTC z tego portfela do Twojego portfela w Nexus. ",
     "import_private_key_warning": "Nie będziesz mógł użyć tego klucza ponownie, by uzyskać dostęp do twoich LTC.",

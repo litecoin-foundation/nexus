@@ -177,7 +177,7 @@ const Sell: React.FC<Props> = () => {
         SellContainer
       ) : (
         <Text style={styles.disabledBuyText}>
-          Buy Litecoin is currently not available in your country/state.
+          Sell Litecoin is currently not available in your country/state.
         </Text>
       )}
       <View style={isSellAllowed ? styles.bottom : styles.bottomStandalone}>

@@ -23,6 +23,8 @@ import {deleteLNDDir} from '../../lib/utils/file';
 import {updateSubunit} from '../../reducers/settings';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
+import TranslateText from '../../components/TranslateText';
+import {useTranslation} from 'react-i18next';
 
 type RootStackParamList = {
   General: undefined;
@@ -97,6 +99,8 @@ const Settings: React.FC<Props> = props => {
     });
   };
 
+  const {t} = useTranslation('settingsTab');
+
   return (
     <>
       <LinearGradient
@@ -107,53 +111,60 @@ const Settings: React.FC<Props> = props => {
           <SupportCell onPress={() => navigation.navigate('Support')} />
 
           <SettingCell
-            title="About"
+            textKey="about"
+            textDomain="settingsTab"
             onPress={() => navigation.navigate('About')}
             forward
           />
           <SettingCell
-            title="Change Wallet Pin"
+            textKey="change_wallet_pin"
+            textDomain="settingsTab"
             onPress={() => navigation.navigate('ChangePincode', {type: null})}
             forward
           />
           {biometricsAvailable ? (
             <SettingCell
-              title={`Enable ${faceIDSupported ? 'Face ID' : 'Touch ID'}`}
+              textKey="enable_face_id"
+              textDomain="settingsTab"
               switchEnabled
               switchValue={biometricsEnabled}
               handleSwitch={handleBiometricSwitch}
+              interpolationObj={{
+                faceIDSupported: `${
+                  faceIDSupported ? t('face_id') : t('touch_id')
+                }`,
+              }}
             />
           ) : null}
 
           <SettingCell
-            title="Import Private Key"
+            textKey="import_private_key"
+            textDomain="settingsTab"
             onPress={() => navigation.navigate('Import')}
             forward
           />
           <SettingCell
-            title="Import Litewallet"
+            textKey="import_litewallet"
+            textDomain="settingsTab"
             onPress={() => navigation.navigate('RecoverLitewallet')}
             forward
           />
           <SettingCell
-            title="Block Explorer"
+            textKey="block_explorer"
+            textDomain="settingsTab"
             onPress={() => navigation.navigate('Explorer')}
             forward
           />
           <SettingCell
-            title="Change Currency"
+            textKey="change_currency"
+            textDomain="settingsTab"
             onPress={() => navigation.navigate('Currency')}
             forward
           />
 
           <SettingCell
-            title="INITIAL SCREENS TEST"
-            onPress={() => navigation.navigate('Onboarding')}
-            forward
-          />
-
-          <SettingCell
-            title="View Seed Phrase"
+            textKey="view_seed"
+            textDomain="settingsTab"
             onPress={() => {
               handleAuthenticationRequired('view-seed-auth')
                 .then(() => props.navigation.navigate('Seed'))
@@ -171,7 +182,11 @@ const Settings: React.FC<Props> = props => {
           />
 
           <View style={styles.switchContainer}>
-            <Text style={styles.switchTitleText}>Litecoin Denomination</Text>
+            <TranslateText
+              textKey="litecoin_denomination"
+              domain="settingsTab"
+              textStyle={styles.switchTitleText}
+            />
             <SegmentedControl
               values={['LTC', 'Lites', 'Photons']}
               selectedIndex={subunit}
@@ -184,7 +199,8 @@ const Settings: React.FC<Props> = props => {
           </View>
 
           <SettingCell
-            title="RESET WALLET?"
+            textKey="reset_wallet"
+            textDomain="settingsTab"
             onPress={() => {
               handleAuthenticationRequired('reset-wallet-auth').then(() =>
                 Alert.alert(
@@ -264,7 +280,13 @@ const styles = StyleSheet.create({
 
 export const SettingsNavigationOptions = (navigation: any) => {
   return {
-    headerTitle: () => <Text style={styles.headerTitle}>Settings</Text>,
+    headerTitle: () => (
+      <TranslateText
+        textKey={'settings'}
+        domain={'settingsTab'}
+        numberOfLines={1}
+      />
+    ),
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',
