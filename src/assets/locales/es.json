@@ -34,7 +34,10 @@
     "back": "", // Back
     "presync": "", // Presync in Progress
     "presync_description": "", // Your wallet is currently presyncing. This only happens once, and helps speed setting up your Nexus Wallet.
-    "retry": "" // Retry
+    "retry": "", // Retry
+    "invalid_word": "", // Invalid Word
+    "invalid_description": "", // This word is not valid - check your spelling and try again.
+    "try_again": "" // Try Again
   },
   "main": {
     "main_wallet": "Billetera Principal",

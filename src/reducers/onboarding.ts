@@ -97,7 +97,7 @@ export const loginToNexusApi =
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          appAuthKey: '',
+          appAuthKey: 'PCUgU3Vcuu4LNRdFPueKLEfsdbcSEgYFUSec4EXx3Ws79f6ckx',
           userAppUniqueId: uniqueId,
           deviceToken: deviceToken,
           isIOS,
