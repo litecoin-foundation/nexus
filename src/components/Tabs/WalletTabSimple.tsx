@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, Text, StyleSheet, Platform} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import PriceIndicatorButton from '../Buttons/PriceIndictorButton';
 
 import {ScreenSizeContext} from '../../context/screenSize';

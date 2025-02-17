@@ -11,6 +11,7 @@ import NewButton from '../Buttons/NewButton';
 import InfoModal from '../Modals/InfoModalContent';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import TranslateText from '../TranslateText';
 
 interface Props {}
 
@@ -51,7 +52,11 @@ const Receive: React.FC<Props> = () => {
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.titleText}>Receive LTC</Text>
+        <TranslateText
+          textKey="receive_ltc"
+          domain="receiveTab"
+          textStyle={styles.titleText}
+        />
 
         <View style={styles.txTypeContainer}>
           <NewBlueButton
@@ -72,7 +77,11 @@ const Receive: React.FC<Props> = () => {
           />
         </View>
 
-        <Text style={styles.subtitleText}>MY LTC ADDRESS</Text>
+        <TranslateText
+          textKey="my_ltc_address"
+          domain="receiveTab"
+          textStyle={styles.subtitleText}
+        />
 
         <View style={styles.addressContainer}>
           <Pressable

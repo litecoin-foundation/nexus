@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+import {StyleSheet, View, TouchableOpacity, Image} from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, getLimits, getBuyQuote} from '../../reducers/buy';
@@ -192,9 +192,11 @@ const Buy: React.FC<Props> = () => {
       {isBuyAllowed ? (
         BuyContainer
       ) : (
-        <Text style={styles.disabledBuyText}>
-          Buy Litecoin is currently not available in your country/state.
-        </Text>
+        <TranslateText
+          textKey="buy_blocked"
+          domain="buyTab"
+          textStyle={styles.disabledBuyText}
+        />
       )}
       <View style={isBuyAllowed ? styles.bottom : styles.bottomStandalone}>
         <BlueButton

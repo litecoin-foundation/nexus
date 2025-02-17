@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {View, StyleSheet, Text, SafeAreaView, Platform} from 'react-native';
+import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {v4 as uuidv4} from 'uuid';
 

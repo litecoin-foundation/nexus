@@ -5,7 +5,6 @@ import {
   DeviceEventEmitter,
   Alert,
   View,
-  Text,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';

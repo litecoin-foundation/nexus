@@ -40,7 +40,7 @@ const ImportSuccess: React.FC<Props> = props => {
             disabled={false}
             small={true}
             active={true}
-            value="Back to wallets"
+            value="Back to Wallet"
             onPress={() => {
               navigation.navigate('Main', {isInitial: true});
             }}

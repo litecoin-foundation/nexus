@@ -45,7 +45,7 @@ const ChangePincode: React.FC<Props> = props => {
         />
       ),
       headerTitle: () => (
-        <Text style={styles.headerTitle}>Change Login Pincode</Text>
+        <Text style={styles.headerTitle}>Change Login Passcode</Text>
       ),
     });
   });

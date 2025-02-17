@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import * as scale from 'd3-scale';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 
 import Cursor from './Cursor';
 import {monthSelector} from '../../reducers/ticker';
@@ -17,17 +17,12 @@ import {ScreenSizeContext} from '../../context/screenSize';
 
 const d3 = {shape};
 
-// const height = 130;
-// const {width} = Dimensions.get('window');
-
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 const Chart = () => {
-
-  const { width, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width, height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const height = SCREEN_HEIGHT * 0.15;
 
-  const dispatch = useDispatch();
   const data = useSelector(state => monthSelector(state));
 
   const [line, setLine] = useState('');

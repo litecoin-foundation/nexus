@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+import {StyleSheet, View, TouchableOpacity, Image} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Animated, {
   useSharedValue,
@@ -176,9 +176,11 @@ const Sell: React.FC<Props> = () => {
       {isSellAllowed ? (
         SellContainer
       ) : (
-        <Text style={styles.disabledBuyText}>
-          Sell Litecoin is currently not available in your country/state.
-        </Text>
+        <TranslateText
+          textKey="sell_blocked"
+          domain="sellTab"
+          textStyle={styles.disabledBuyText}
+        />
       )}
       <View style={isSellAllowed ? styles.bottom : styles.bottomStandalone}>
         <BlueButton

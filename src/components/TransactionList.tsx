@@ -14,7 +14,6 @@ import {
   View,
   SectionList,
   SectionListRenderItem,
-  Platform,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';

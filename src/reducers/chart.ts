@@ -1,7 +1,6 @@
 import {createAction, createSlice, createSelector} from '@reduxjs/toolkit';
 
 import {AppThunk} from './types';
-import {updateHistoricalRates} from './ticker';
 import percentageDiff from '../lib/utils/percentageDiff';
 import {RootState} from '../store';
 

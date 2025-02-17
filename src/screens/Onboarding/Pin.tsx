@@ -7,7 +7,7 @@ import {clearValues} from '../../reducers/authpad';
 import {resetPincode} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import {Platform, StyleSheet, Text} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
 
 type RootStackParamList = {
   Pin: undefined;

@@ -1,9 +1,40 @@
 {
   "onboarding": {
     "forgot_pin": "Zapomniałeś/aś PINu?",
+    "forgot_pin_description": "", // Forgot your Pincode?\nEnter your seed phrase to reset your pincode.
     "enter_pin": "Wpisz swój PIN",
     "attempts_left_one": "Pozostały {{count}} próby.",
-    "attempts_left_other": "Pozostały {{count}} próby."
+    "attempts_left_other": "Pozostały {{count}} próby.",
+    "for_litecoin": "", // FOR LITECOIN
+    "create_wallet": "", // Create Wallet
+    "already_wallet": "", // Already have a wallet? Log In
+    "recover_wallet": "", // Recover Wallet
+    "enter_seed": "", // Enter your seed phrase words below.
+    "create_pin": "", // Create Pincode
+    "create_pin_description": "", // Please create a secure pincode.
+    "create_pin_repeat": "", // Enter your pincode again.
+    "confirm_pin": "", // Confirm Pincode
+    "verify_pin": "", // Verify your Pincode
+    "seed_phrase": "", // Your Seed Phrase
+    "seed_phrase_description": "", // The 24 words below is your seed phrase.
+    "seed_phrase_description_2": "", // Your seed phrase is your password to your Litecoin & Wallet. Write it down and keep it safe somewhere secure!
+    "seed_warning": "", // WITHOUT THESE WORDS YOU WILL NOT BE ABLE TO ACCESS YOUR WALLET!
+    "scroll_right": "", // Scroll Right
+    "confirm_written": "", // I have written it down
+    "verify_seed": "", // Verify Seed Phrase
+    "verify_seed_description": "", // Select word #{{position}} to verify your seed phrase.
+    "continue": "", // Continue
+    "incorrect_seed": "", // Incorrect word! Check you have written down the correct word.
+    "face_id": "", // Face ID
+    "touch_id": "", // Touch ID
+    "biometric_description": "", // Would you like to use {{biometricType}} to unlock your wallet?
+    "enable_biometric": "", // Enable {{biometricType}}
+    "maybe": "", // Maybe Later
+    "tap_to_start": "", // Tap Anywhere to Start
+    "back": "", // Back
+    "presync": "", // Presync in Progress
+    "presync_description": "", // Your wallet is currently presyncing. This only happens once, and helps speed setting up your Nexus Wallet.
+    "retry": "" // Retry
   },
   "main": {
     "main_wallet": "Main Wallet",
@@ -20,7 +51,7 @@
     "received_ltc": "Otrzymano Litecoin",
     "bought_ltc": "Kupiono Litecoin",
     "sent_ltc": "Wysłano Litecoin",
-    "sold_ltc": "Sprzedano Litecoin??",
+    "sold_ltc": "Sprzedano Litecoin",
     "received": "Odebrano",
     "sent": "Wysłano",
     "from": "Od",
@@ -28,8 +59,8 @@
     "time_date": "Godzina i data",
     "network_fee": "Opłata sieciowa",
     "view_on_blockchain": "Zobacz na blockchainie",
-    "bought": "Kupiono",
-    "sold": "Sprzedano (fix)",
+    "bought": "", // Bought
+    "sold": "", // Sold
     "completed": "GOTOWE",
     "total": "Łącznie",
     "total_fee": "Prowizja",
@@ -39,7 +70,16 @@
     "provider_fee": "OPŁATA DOSTAWCY",
     "blockchain": "BLOCKCHAIN",
     "details": "SZCZEGÓŁY",
-    "empty_transactions": "Twoje transakcje pojawią się tutaj"
+    "empty_transactions": "Twoje transakcje pojawią się tutaj",
+    "load_txs": "", // Loading Transactions...
+    "recover_txs": "", // Recovering Transactions...
+    "1d": "", // 1D
+    "1w": "", // 1W
+    "1m": "", // 1M
+    "3m": "", // 3M
+    "1y": "", // 1Y
+    "all_time": "", // ALL
+    "order_id": "" // ORDER ID
   },
   "buyTab": {
     "buy": "KUP ",
@@ -51,41 +91,46 @@
     "min_purchase": "Minimalny zakup {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Historia zakupów",
     "change": "ZMIEŃ",
-    "cancel": "CANCEL (fix)",
+    "cancel": "", // CANCEL
     "purchasing": "Kupujesz",
     "rate": "kurs",
     "will_spend": "Wydasz",
     "rate_per_ltc": "{{rate}} za 1LTC",
     "continue_purchase": "Dokończ zakup",
-    "back": "Wróć"
+    "back": "Wróć",
+    "buy_blocked": "", // Buy Litecoin is currently not available in your country/state.
+    "error_title": "" // Something's wrong!
   },
   "sellTab": {
     "sell": "Sprzedaj ",
     "sell_litecoin": "Sprzedaj Litecoin",
-    "preview_sell": "Sprzedaj LTC"
+    "preview_sell": "Sprzedaj LTC",
+    "sell_blocked": "" // Sell Litecoin is currently not available in your country/state.
   },
   "sendTab": {
     "send_ltc": "Wyślij LTC",
     "send_litecoin": "Wyślij Litecoin",
     "amount": "Ilość",
     "send_to_address": "Wyślij na adres",
-    "address_invalid": " IS INVALID (fix)",
+    "address_invalid": "", // {{ }} IS INVALID
     "enter_address": "Wpisz adres Litecoin",
     "description": "Opis",
-    "confirm": "Confirm (fix)",
+    "confirm": "", // Confirm
     "close": "Zamknij",
     "scan_qr": "Zeskanuj QR kod",
     "camera_note": "Aplikacja użyje Twojego aparatu by zeskanować kod QR.",
     "enable_flash": "Włącz lampę błyskową",
     "camara_disabled": "Aparat wyłączony",
     "enable_camera": "Włącz uprawnienia aparatu by zeskanować kod QR",
-    "awesome": "Awesome! (fix)",
-    "just-sent": "You just sent (fix)"
+    "awesome": "", // Awesome!
+    "just-sent": "" // You just sent {{10 Litecoin}}
   },
   "receiveTab": {
     "receive_ltc": "Odbierz LTC",
+    "receive_privately": "", // Receive Privately
     "send_privately": "Wyślij prywatnie",
-    "my_ltc_address": "Mój adres LTC"
+    "my_ltc_address": "Mój adres LTC",
+    "recieve_mweb_description": "" // Receiving privately hides the sender and receiver addresses, and amount being sent.
   },
   "searchTab": {
     "transactions": "Transakcje",
@@ -108,7 +153,9 @@
     "alert_me_when": "Powiadom mnie gdy cena Litecoina wyniesie",
     "below": "Poniżej",
     "above": "Powyżej",
-    "create_alert": "Stwórz Alert"
+    "create_alert": "Stwórz Alert",
+    "price_compare": "", // Litecoin (LTC) is {{above/below}} ${currencySymbol}${alertValueInLocalFiat}
+    "last_time": "" // Last time LTC reached this value was {{date}}.
   },
   "settingsTab": {
     "settings": "Ustawienia",
@@ -153,6 +200,31 @@
     "view_paper_key": "Zobacz klucz papierowy",
     "last_time_accessed": "Ostatnio używane:",
     "litecoin_denomination": "Denominacja Litecoina",
-    "reset_wallet": "Zresetuj portfel?"
+    "reset_wallet": "Zresetuj portfel?",
+    "import_litewallet": "", // Import Litewallet
+    "litewallet_description": "", // Litewallet users can import their coins into Nexus Wallet. Entering your paper key below will permanently move your coins from Litewallet into Nexus.
+    "litewallet_success": "", // IMPORTED LITEWALLET!
+    "invalid_seed": "", // Incorrect Seed Phrase
+    "invalid": "", // Invalid
+    "pincode_invalid": "", // Pincodes did not match. Try again.
+    "okay": "", // Okay
+    "ok": "", // OK
+    "dismiss": "", // Dismiss
+    "awesome": "", // Awesome!
+    "success_import": "", // You just imported Litecoin.
+    "back_to_wallet": "", // Back to Wallet
+    "reset_warning": "", // Are you absolutely sure you would like to reset your wallet? Backup your seed phrase before resetting.
+    "view_tx": "", // View Transaction
+    "camera_error": "", // Camera Disabled
+    "cancel": "" // Cancel
+  },
+  "modals": {
+    "delete": "", // Delete
+    "delete_alert": "", // Delete Alert
+    "hide_modal": "", // Hide Modal
+    "tx_speed": "", // Transaction Speed
+    "fee_description": "", // Higher fees prioritise your transaction to confirm faster.
+    "fee_estimate": "", // 1 block = ~2.5 mins
+    "view_change": "" // View Change Address
   }
 }
