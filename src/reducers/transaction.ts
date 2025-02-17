@@ -181,7 +181,7 @@ export const labelTransaction = (txid: string, label: string) => async () => {
 
     const request = {
       txid: idBytes,
-      label,
+      label: label || ' ',
       overwrite: true,
     };
     await walletKitLabelTransaction(request);
@@ -346,6 +346,7 @@ export const sendOnchainPayment =
               sendAll: true,
               addr: address,
               satPerVbyte: fee ? BigInt(fee) : undefined,
+              label: label || '',
             });
             resolve(response.txid);
             return;
@@ -354,7 +355,7 @@ export const sendOnchainPayment =
               addr: address,
               amount: BigInt(amount),
               satPerVbyte: fee ? BigInt(fee) : undefined,
-              label: label ? label : undefined,
+              label: label || '',
             });
             resolve(response.txid);
             return;

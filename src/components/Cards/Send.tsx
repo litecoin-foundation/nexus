@@ -76,7 +76,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [address, setAddress] = useState('');
   const [addressValid, setAddressValid] = useState<boolean | null>(null);
   const [toggleLTC, setToggleLTC] = useState<boolean>(true);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState<string>('');
   const [amountPickerActive, setAmountPickerActive] = useState(false);
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
 
@@ -168,9 +168,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
           const amt = convertLitecoinToSubunit(Number(decoded.options.amount));
           dispatch(updateAmount(amt.toString(), 'ltc'));
         }
-        if (decoded.options.message) {
-          setDescription(decoded.options.message);
-        }
+        // Could be setting wrong labels
+        // if (decoded.options.message) {
+        //   setDescription(decoded.options.message);
+        // }
         setAddress(decoded.address);
 
         return;
