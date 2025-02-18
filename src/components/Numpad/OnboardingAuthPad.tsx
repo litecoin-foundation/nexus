@@ -137,7 +137,11 @@ const OnboardingAuthPad: React.FC<Props> = props => {
         />
 
         <View style={styles.bottomSheetSubContainer}>
-          <PasscodeInput dotsLength={6} activeDotIndex={pin.length} />
+          <PasscodeInput
+            dotsLength={6}
+            activeDotIndex={pin.length}
+            pinInactive={false}
+          />
           <PadGrid />
           <View style={styles.buttonContainer}>{buttons}</View>
         </View>
@@ -145,7 +149,8 @@ const OnboardingAuthPad: React.FC<Props> = props => {
         <View style={styles.confirmButtonContainer}>
           <BlueButton
             disabled={pin.length !== 6 ? true : false}
-            value="Confirm PIN"
+            textKey="confirm_pin"
+            textDomain="onboarding"
             onPress={handleSetPin}
           />
         </View>

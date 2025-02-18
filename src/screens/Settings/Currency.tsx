@@ -1,4 +1,4 @@
-import {StyleSheet, FlatList, Text} from 'react-native';
+import {StyleSheet, FlatList} from 'react-native';
 import React, {useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -8,6 +8,7 @@ import fiat from '../../assets/fiat';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setCurrencyCode} from '../../reducers/settings';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import TranslateText from '../../components/TranslateText';
 
 type CurrencyCodeType = {
   name: string;
@@ -63,7 +64,11 @@ const styles = StyleSheet.create({
 export const CurrencyNavigationOptions = navigation => {
   return {
     headerTitle: () => (
-      <Text style={styles.headerTitle}>Select Fiat Currency</Text>
+      <TranslateText
+        textKey="select_fiat"
+        domain="settingsTab"
+        textStyle={styles.headerTitle}
+      />
     ),
     headerTitleAlign: 'left',
     headerTransparent: true,

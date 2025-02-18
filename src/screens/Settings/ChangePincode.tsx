@@ -3,15 +3,17 @@ import {View, Text, StyleSheet, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {addPincode} from '../../reducers/authentication';
-import {setItem} from '../../lib/utils/keychain';
 import PasscodeInput from '../../components/PasscodeInput';
 import PadGrid from '../../components/Numpad/PadGrid';
 import BuyButton from '../../components/Numpad/BuyButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {addPincode} from '../../reducers/authentication';
+import {setItem} from '../../lib/utils/keychain';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {useTranslation} from 'react-i18next';
+import TranslateText from '../../components/TranslateText';
 
 interface Props {
   route: any; // TODO
@@ -22,9 +24,11 @@ interface PasscodeInputRef {
 }
 
 const ChangePincode: React.FC<Props> = props => {
-  const navigation = useNavigation<any>();
   const {route} = props;
+
+  const navigation = useNavigation<any>();
   const dispatch = useAppDispatch();
+  const {t} = useTranslation('settingsTab');
   const pin = useAppSelector(state => state.authentication.passcode);
 
   const passcodeInputRef = useRef<PasscodeInputRef>(null);
@@ -45,7 +49,11 @@ const ChangePincode: React.FC<Props> = props => {
         />
       ),
       headerTitle: () => (
-        <Text style={styles.headerTitle}>Change Login Passcode</Text>
+        <TranslateText
+          textKey="change_login"
+          domain="settingsTab"
+          textStyle={styles.headerTitle}
+        />
       ),
     });
   });
@@ -94,8 +102,8 @@ const ChangePincode: React.FC<Props> = props => {
         dispatch(addPincode(newPinCodeValue));
         setPincodeToKeychain(newPinCodeValue);
         Alert.alert(
-          'Success',
-          'Successfully reset PIN!',
+          t('success'),
+          t('successfully_reset'),
           [
             {
               text: 'OK',
@@ -112,9 +120,12 @@ const ChangePincode: React.FC<Props> = props => {
         setNewPin(true);
         setNewPinCodeValue('');
         Alert.alert(
-          'Invalid',
-          'Pincodes did not match. Try again.',
-          [{text: 'Cancel', onPress: () => navigation.goBack()}, {text: 'OK'}],
+          t('invalid'),
+          t('pincode_invalid'),
+          [
+            {text: t('cancel'), onPress: () => navigation.goBack()},
+            {text: t('ok')},
+          ],
           {
             cancelable: false,
           },
@@ -158,10 +169,10 @@ const ChangePincode: React.FC<Props> = props => {
       <View style={styles.bottomSheet}>
         <Text style={styles.bottomSheetTitle}>
           {currentPin
-            ? 'Enter your Old PIN'
+            ? t('enter_old_pin')
             : newPin
-            ? 'Enter a New PIN'
-            : 'Repeat your New PIN'}
+            ? t('enter_new_pin')
+            : t('repeat_new_pin')}
         </Text>
 
         <PasscodeInput

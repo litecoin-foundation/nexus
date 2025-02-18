@@ -4,17 +4,19 @@ import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {useAppSelector} from '../../store/hooks';
 import SeedView from '../../components/SeedView';
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import chunk from '../../lib/utils/chunk';
 import Dots from '../../components/Dots';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import OnboardingHeader from '../../components/OnboardingHeader';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import TranslateText from '../../components/TranslateText';
+import {useAppSelector} from '../../store/hooks';
+import chunk from '../../lib/utils/chunk';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {useTranslation} from 'react-i18next';
 
 type RootStackParamList = {
   Generate: undefined;
@@ -31,6 +33,8 @@ const Generate: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const {t} = useTranslation('onboarding');
 
   const carousel = useRef<ICarouselInstance>(null);
   const insets = useSafeAreaInsets();
@@ -58,7 +62,13 @@ const Generate: React.FC<Props> = props => {
           imageSource={require('../../assets/images/back-icon.png')}
         />
       ),
-      headerTitle: () => <Text style={styles.headerTitle}>Seed Phrase</Text>,
+      headerTitle: () => (
+        <TranslateText
+          textKey="seed_phrase"
+          domain="onboarding"
+          textStyle={styles.headerTitle}
+        />
+      ),
     });
   }, [navigation]);
 
@@ -103,7 +113,7 @@ const Generate: React.FC<Props> = props => {
       ]}>
       <OnboardingHeader
         description={
-          'The 24 words below is your seed phrase. \n\nYour seed phrase is your password to your Litecoin & Wallet. Write it down and place it somewhere secure!'
+          t('seed_phrase_description') + '\n\n' + t('seed_phrase_description_2')
         }
       />
       <View style={styles.seedContainer}>
@@ -120,13 +130,16 @@ const Generate: React.FC<Props> = props => {
             style={styles.image}
             source={require('../../assets/images/attention.png')}
           />
-          <Text style={styles.warningText}>
-            WITHOUT THESE WORDS YOU WILL NOT BE ABLE TO ACCESS YOUR WALLET!
-          </Text>
+          <TranslateText
+            textKey="seed_warning"
+            domain="onboarding"
+            textStyle={styles.warningText}
+          />
         </View>
 
         <WhiteButton
-          value={activePage === 5 ? 'I have written it down' : 'Scroll Right'}
+          textKey={activePage === 5 ? 'confirm_written' : 'scroll_right'}
+          textDomain="onboarding"
           onPress={() => handlePress()}
           small={false}
           active={true}

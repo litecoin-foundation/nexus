@@ -1,49 +1,49 @@
 {
   "onboarding": {
     "forgot_pin": "Pincode vergesen?",
-    "forgot_pin_description": "", // Forgot your Pincode?\nEnter your seed phrase to reset your pincode.
+    "forgot_pin_description": "PIN vergessen?\nGeben Sie Ihre Seedphrase ein, um die PIN zurückzusetzen.",
     "enter_pin": "PIN eingeben",
     "attempts_left_one": "Noch {{count}} Versuche.",
     "attempts_left_other": "Noch {{count}} Versuche.",
-    "for_litecoin": "", // FOR LITECOIN
-    "create_wallet": "", // Create Wallet
-    "already_wallet": "", // Already have a wallet? Log In
-    "recover_wallet": "", // Recover Wallet
-    "enter_seed": "", // Enter your seed phrase words below.
-    "create_pin": "", // Create Pincode
-    "create_pin_description": "", // Please create a secure pincode.
-    "create_pin_repeat": "", // Enter your pincode again.
-    "confirm_pin": "", // Confirm Pincode
-    "verify_pin": "", // Verify your Pincode
-    "seed_phrase": "", // Your Seed Phrase
-    "seed_phrase_description": "", // The 24 words below is your seed phrase.
-    "seed_phrase_description_2": "", // Your seed phrase is your password to your Litecoin & Wallet. Write it down and keep it safe somewhere secure!
-    "seed_warning": "", // WITHOUT THESE WORDS YOU WILL NOT BE ABLE TO ACCESS YOUR WALLET!
-    "scroll_right": "", // Scroll Right
-    "confirm_written": "", // I have written it down
-    "verify_seed": "", // Verify Seed Phrase
-    "verify_seed_description": "", // Select word #{{position}} to verify your seed phrase.
-    "continue": "", // Continue
-    "incorrect_seed": "", // Incorrect word! Check you have written down the correct word.
-    "face_id": "", // Face ID
-    "touch_id": "", // Touch ID
-    "biometric_description": "", // Would you like to use {{biometricType}} to unlock your wallet?
-    "enable_biometric": "", // Enable {{biometricType}}
-    "maybe": "", // Maybe Later
-    "tap_to_start": "", // Tap Anywhere to Start
-    "back": "", // Back
-    "presync": "", // Presync in Progress
-    "presync_description": "", // Your wallet is currently presyncing. This only happens once, and helps speed setting up your Nexus Wallet.
-    "retry": "", // Retry
-    "invalid_word": "", // Invalid Word
-    "invalid_description": "", // This word is not valid - check your spelling and try again.
-    "try_again": "" // Try Again
+    "for_litecoin": "FÜR LITECOIN",
+    "create_wallet": "Wallet erstellen",
+    "already_wallet": "Wallet bereits vorhanden? Einloggen",
+    "recover_wallet": "Wallet wiederherstellen",
+    "enter_seed": "Geben Sie die Wörter Ihrer Seedphrase unten ein.",
+    "create_pin": "PIN erstellen",
+    "create_pin_description": "Bitte erstellen Sie eine sichere PIN.",
+    "create_pin_repeat": "PIN wiederholen",
+    "confirm_pin": "PIN bestätigen",
+    "verify_pin": "PIN überprüfen",
+    "seed_phrase": "Ihre Seedphrase",
+    "seed_phrase_description": "Die untenstehenden 24 Wörter sind Ihre Seedphrase.",
+    "seed_phrase_description_2": "Ihre Seedphrase ist Ihr Passwort zu Ihrem Litecoin Wallet. Sie sollte aufgeschrieben und an einem sicheren Ort aufbewahrt werden.",
+    "seed_warning": "OHNE DIESE WÖRTER HABEN SIE KEINEN ZUGRIFF AUF IHR WALLET.",
+    "scroll_right": "Nach rechts scrollen",
+    "confirm_written": "Ich habe sie aufgeschrieben",
+    "verify_seed": "Seedphrase bestätigen",
+    "verify_seed_description": "Geben Sie das Wort an Stelle #{{position}} ein, um Ihre Seedphrase zu bestätigen.",
+    "continue": "Fortsetzen",
+    "incorrect_seed": "Falsches Wort! Prüfen Sie ob sie richtig aufgeschrieben ist.",
+    "face_id": "Gesichts-ID",
+    "touch_id": "Fingerabdruck",
+    "biometric_description": "Möchten Sie {{biometricType}} verwenden, um ihr Wallet zu entsperren?",
+    "enable_biometric": "{{biometricType}} aktivieren",
+    "maybe": "Vielleicht später",
+    "tap_to_start": "Berühren Sie den Bildhschirm",
+    "back": "Zurück",
+    "presync": "Vorsynchronisierung läuft",
+    "presync_description": "Ihr Wallet wird gerade vorsyncronisiert. Dies geschieht nur einmal und beschleunigt das Einrichten Ihres Wallets",
+    "retry": "Erneut versuchen",
+    "invalid_word": "Ungültiges Wort",
+    "invalid_description": "Dieses Wort ist nicht gültig - Prüfen Sie die Schreibweise und versuchen Sie es erneut.",
+    "try_again": "Erneut versuchen"
   },
   "main": {
     "main_wallet": "Hauptwallet",
     "copy_address": "ADRESSE KOPIEREN",
     "copied": "IN ZWISCHENABLAGE KOPIERT",
-    "add_wallet": "NEUEN WALLET HINZUFÜGEN",
+    "add_wallet": "NEUES WALLET HINZUFÜGEN",
     "all": "Alle",
     "buy": "Kaufen",
     "sell": "Verkaufen",
@@ -62,8 +62,8 @@
     "time_date": "DATUM & UHRZEIT",
     "network_fee": "NETZWERK-GEBÜHREN",
     "view_on_blockchain": "Auf der Blockchain ansehen",
-    "bought": "", // Bought
-    "sold": "", // Sold
+    "bought": "Gekauft",
+    "sold": "Verkauft",
     "completed": "ABGESCHLOSSEN",
     "total": "GESAMT",
     "total_fee": "GEBÜHREN GESAMT",
@@ -72,68 +72,68 @@
     "date": "DATUM",
     "provider_fee": "ANBIETER-GEBÜHREN",
     "blockchain": "BLOCKHAIN",
-    "details": "", // DETAILS
+    "details": "DETAILS",
     "empty_transactions": "Die Transaktion erscheint hier",
-    "load_txs": "", // Loading Transactions...
-    "recover_txs": "", // Recovering Transactions...
-    "1d": "", // 1D
-    "1w": "", // 1W
-    "1m": "", // 1M
-    "3m": "", // 3M
-    "1y": "", // 1Y
-    "all_time": "", // ALL
-    "order_id": "" // ORDER ID
+    "load_txs": "Lade Transaktionen...",
+    "recover_txs": "Transaktionen wiederherstellen",
+    "1d": "1T",
+    "1w": "1W",
+    "1m": "1M",
+    "3m": "3M",
+    "1y": "1J",
+    "all_time": "ALLE",
+    "order_id": "Order-ID"
   },
   "buyTab": {
-    "buy": "Buy ",
+    "buy": "Kaufen ",
     "n_ltc": "{{amount}}",
-    "for": "for ",
+    "for": "für ",
     "total": "{{currencySymbol}}{{total}}",
     "history": "Historie",
     "preview_buy": "Kaufdaten ansehen",
     "min_purchase": "Mindestkauf {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Kaufhistorie",
     "change": "WECHSELGELD",
-    "cancel": "", // CANCEL
+    "cancel": "ABBRECHEN",
     "purchasing": "Sie kaufen",
     "rate": "KURS",
-    "will_spend": "",
+    "will_spend": "Auszugeben",
     "rate_per_ltc": "{{rate}} pro 1LTC",
     "continue_purchase": "Kauf fortsetzen",
     "back": "ZURÜCK",
-    "buy_blocked": "", // Buy Litecoin is currently not available in your country/state.
-    "error_title": "" // Something's wrong!
+    "buy_blocked": "Litecoin Kaufen ist in Ihrem Gebiet derzeit nicht verfügbar",
+    "error_title": "Etwas ist schiefgelaufen"
   },
   "sellTab": {
     "sell": "Verkaufen ",
-    "sell_litecoin": "Verkaufen Litecoin",
-    "preview_sell": "Verkaufen LTC",
-    "sell_blocked": "" // Sell Litecoin is currently not available in your country/state.
+    "sell_litecoin": "Litecoin verkaufe",
+    "preview_sell": "Verkaufsdaten anzeigen",
+    "sell_blocked": "Litecoin verkaufen ist in Ihrem Gebiet derzeit nicht verfügbar"
   },
   "sendTab": {
     "send_ltc": "LTC senden",
     "send_litecoin": "Litecoin senden",
     "amount": "Betrag",
     "send_to_address": "An adresse senden",
-    "address_invalid": "", // {{ }} IS INVALID
+    "address_invalid": "{{ }} IST UNGÜLTIG",
     "enter_address": "Litecoin-Adresse eingeben",
     "description": "Beschreibung",
-    "confirm": "", // Confirm
+    "confirm": "Bestätigen",
     "close": "Schließen",
     "scan_qr": "QR-Code scannen",
     "camera_note": "Die App wird ihre Kamere verwenden, um QR-Codes für Litecoin-Zahlungen zu scannen.",
     "enable_flash": "Blitz aktivieren",
     "camara_disabled": "Kamera deaktiviert",
-    "enable_camera": "Kamaera zum Scannen von QR-Codes aktivieren",
-    "awesome": "", // Awesome!
-    "just-sent": "" // You just sent {{10 Litecoin}}
+    "enable_camera": "Kamera zum Scannen von QR-Codes aktivieren",
+    "awesome": "Wunderbar!",
+    "just-sent": "Sie haben gerade {{10 Litecoin}} versendet"
   },
   "receiveTab": {
     "receive_ltc": "LTC empfangen",
-    "receive_privately": "", // Receive Privately
+    "receive_privately": "Privat empfangen",
     "send_privately": "Privat versenden",
     "my_ltc_address": "MEINE LTC ADRESSE",
-    "recieve_mweb_description": "" // Receiving privately hides the sender and receiver addresses, and amount being sent.
+    "recieve_mweb_description": "Privat Empfangen verbirgt die Adressen des Senders und Empfängers, sowie den gesendeten Betrag."
   },
   "searchTab": {
     "transactions": "Transaktionen",
@@ -157,8 +157,8 @@
     "below": "UNTER",
     "above": "ÜBER",
     "create_alert": "Alarmierung erstellen",
-    "price_compare": "", // Litecoin (LTC) is {{above/below}} ${currencySymbol}${alertValueInLocalFiat}
-    "last_time": "" // Last time LTC reached this value was {{date}}.
+    "price_compare": "Litecoin (LTC) steht {{above/below}} ${currencySymbol}${alertValueInLocalFiat}",
+    "last_time": "LTC erreichte diesen Wert zuletzt am {{date}}"
   },
   "settingsTab": {
     "settings": "Einstellungen",
@@ -175,7 +175,7 @@
     "email": "Email?",
     "message_title": "Mitteilung",
     "message": "Bitte Mitteilung eingeben",
-    "connecting_status": "Wir verbinden Sie mit unseren ",
+    "connecting_status": "Wir verbinden Sie mit unseren Ansprechpartnern",
     "type_message": "Mitteilung eingeben",
     "done": "Fertig",
     "about": "Über Nexus Wallet",
@@ -189,7 +189,7 @@
     "successfully_reset": "PIN erfolgreich zurückgesetzt",
     "enable_face_id": "{{faceIDSupported}} einschalten",
     "face_id": "Gesichts-ID",
-    "touch_id": "",
+    "touch_id": "Fingerabruck",
     "import_private_key": "Privatschlüssel importieren",
     "import_private_key_note": "Beim Importieren eines Privatschlüssels wird der enthaltene Litecoin-Betrag in Nexus verschoben.",
     "import_private_key_warning": "Der Litecoin-Betrag wird unter dem bisherigen Privatschlüssel nicht mehr verfügbar sein.",
@@ -198,36 +198,36 @@
     "select_block_explorer": "Block-Explorer auswählen",
     "select_block_explorer_note": "Sie können ihren bevorzugten Block-Explorer auswählen.",
     "change_currency": "Währung ändern",
-    "select_fiat": "Fietwährung auswählen",
+    "select_fiat": "Fiatwährung auswählen",
     "view_seed": "Seedphrase anzwiegn",
     "view_paper_key": "Papierschlüssen ansehen",
-    "last_time_accessed": "Letzter Zugriff",
+    "last_time_accessed": "Letzter Zugriff: {{time}}",
     "litecoin_denomination": "Litecoin-Grundeinheit",
     "reset_wallet": "WALLET ZURÜCKSETZEN",
-    "import_litewallet": "", // Import Litewallet
-    "litewallet_description": "", // Litewallet users can import their coins into Nexus Wallet. Entering your paper key below will permanently move your coins from Litewallet into Nexus.
-    "litewallet_success": "", // IMPORTED LITEWALLET!
-    "invalid_seed": "", // Incorrect Seed Phrase
-    "invalid": "", // Invalid
-    "pincode_invalid": "", // Pincodes did not match. Try again.
-    "okay": "", // Okay
-    "ok": "", // OK
-    "dismiss": "", // Dismiss
-    "awesome": "", // Awesome!
-    "success_import": "", // You just imported Litecoin.
-    "back_to_wallet": "", // Back to Wallet
-    "reset_warning": "", // Are you absolutely sure you would like to reset your wallet? Backup your seed phrase before resetting.
-    "view_tx": "", // View Transaction
-    "camera_error": "", // Camera Disabled
-    "cancel": "" // Cancel
+    "import_litewallet": "Litewallet importieren",
+    "litewallet_description": "Litewallet-Nutzer können ihr Guthaben in Nexus Wallet importieren. Durch Eingabe Ihrer Seedphrase wird Ihr Guthaben dauerhaft in Nexus Wallet umgezogen.",
+    "litewallet_success": "LITEWALLET ERFOLGREICH IMPORTIERT",
+    "invalid_seed": "Ungültige Seedphrase",
+    "invalid": "Ungültig",
+    "pincode_invalid": "Ungltige PIN. Bitte nochmal versuchen.",
+    "okay": "OK",
+    "ok": "OK",
+    "dismiss": "Verwerfen",
+    "awesome": "Wunderbar!",
+    "success_import": "Sie haben gerade Litecoin importiert",
+    "back_to_wallet": "Zurück zum Wallet",
+    "reset_warning": "Sind Sie vollkommen sicher, dass Sie Ihren Wallet zurücksetzen möchten. Sichern Sie ihre Seedphrase, bevore Sie dies tun!",
+    "view_tx": "Transaktion anzeigen",
+    "camera_error": "Kamera dektiviert",
+    "cancel": "Abbrechen"
   },
   "modals": {
-    "delete": "", // Delete
-    "delete_alert": "", // Delete Alert
-    "hide_modal": "", // Hide Modal
-    "tx_speed": "", // Transaction Speed
-    "fee_description": "", // Higher fees prioritise your transaction to confirm faster.
-    "fee_estimate": "", // 1 block = ~2.5 mins
-    "view_change": "" // View Change Address
+    "delete": "Löschen",
+    "delete_alert": "Alarmierung löschen",
+    "hide_modal": "Dislog verbergen",
+    "tx_speed": "Transaktionsgeschwiindigkeit",
+    "fee_description": "Höhere Gebühren priorisieren Ihren Transaktion, damit sie schneller bestätigt wird.",
+    "fee_estimate": "Ein Block = 2,5 Minuten",
+    "view_change": "Wehcselgeldadresse anzeigen"
   }
 }

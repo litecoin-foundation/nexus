@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, StyleSheet, SafeAreaView, Text, Platform} from 'react-native';
+import {View, StyleSheet, SafeAreaView, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -60,7 +60,8 @@ const Biometric: React.FC<Props> = props => {
           }}
         />
         <WhiteClearButton
-          value="Maybe later"
+          textKey="maybe"
+          textDomain="onboarding"
           small={false}
           onPress={() => {
             dispatch(setBiometricEnabled(false));

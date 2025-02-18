@@ -37,7 +37,8 @@
     "retry": "Retry",
     "invalid_word": "Invalid Word",
     "invalid_description": "This word is not valid - check your spelling and try again.",
-    "try_again": "Try Again"
+    "try_again": "Try Again",
+    "incorrect": "Incorrect"
   },
   "main": {
     "main_wallet": "Main Wallet",
@@ -200,8 +201,8 @@
     "change_currency": "Change Currency",
     "select_fiat": "Select Fiat Currency",
     "view_seed": "View Seed Phrase",
-    "view_paper_key": "View Paper Key",
-    "last_time_accessed": "Last time accessed:",
+    "view_paper_key": "View Seed Phrase",
+    "last_time_accessed": "Last time accessed: {{time}}",
     "litecoin_denomination": "Litecoin Denomination",
     "reset_wallet": "Reset your Wallet?",
     "import_litewallet": "Import Litewallet",
@@ -219,7 +220,8 @@
     "reset_warning": "Are you absolutely sure you would like to reset your wallet? Backup your seed phrase before resetting.",
     "view_tx": "View Transaction",
     "camera_error": "Camera Disabled",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "change_login": "Change Login Passcode"
   },
   "modals": {
     "delete": "Delete",

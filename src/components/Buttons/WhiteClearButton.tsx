@@ -2,17 +2,21 @@ import React, {useContext} from 'react';
 import {StyleSheet, Text, TouchableOpacity} from 'react-native';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import TranslateText from '../TranslateText';
 
 interface Props {
   onPress: () => void;
-  value: string;
+  value?: string;
   small?: boolean;
   selected?: boolean;
   disabled?: boolean;
+  textKey?: string;
+  textDomain?: string;
 }
 
 const WhiteClearButton = (props: Props): React.JSX.Element => {
-  const {onPress, value, small, selected, disabled} = props;
+  const {onPress, value, small, selected, disabled, textKey, textDomain} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -27,14 +31,30 @@ const WhiteClearButton = (props: Props): React.JSX.Element => {
       ]}
       disabled={disabled}
       onPress={onPress}>
-      <Text
-        style={[
-          styles.text,
-          small ? styles.smallText : null,
-          selected ? styles.selectedText : null,
-        ]}>
-        {value}
-      </Text>
+      {textKey && textDomain ? (
+        <TranslateText
+          textKey={textKey}
+          domain={textDomain}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          numberOfLines={1}
+          textStyle={[
+            styles.container,
+            small ? styles.smallText : null,
+            selected ? styles.selectedText : null,
+          ]}
+        />
+      ) : value ? (
+        <Text
+          style={[
+            styles.text,
+            small ? styles.smallText : null,
+            selected ? styles.selectedText : null,
+          ]}>
+          {value}
+        </Text>
+      ) : (
+        <></>
+      )}
     </TouchableOpacity>
   );
 };

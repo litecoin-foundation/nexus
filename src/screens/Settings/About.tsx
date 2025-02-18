@@ -16,10 +16,12 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getRecoveryInfo} from '../../reducers/info';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import Card from '../../components/Card';
+import {useTranslation} from 'react-i18next';
 
 interface Props {}
 
 const About: React.FC<Props> = () => {
+  const {t} = useTranslation('settingsTab');
   const {
     syncedToChain,
     syncedToGraph,
@@ -44,9 +46,7 @@ const About: React.FC<Props> = () => {
       <ScrollView>
         <View style={styles.creditsContainer}>
           <Card
-            descriptionText={
-              'Dreamt up & brought to life with love and care by'
-            }
+            descriptionText={t('foundation_preamble')}
             imageSource={require('../../assets/images/collab.png')}
             largeImg={true}
           />

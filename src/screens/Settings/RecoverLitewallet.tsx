@@ -1,16 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, SafeAreaView, Text, Platform, Alert} from 'react-native';
+import {StyleSheet, SafeAreaView, Platform, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {sweepLitewallet} from '../../lib/utils/sweep';
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {getAddress} from '../../reducers/address';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import {publishTransaction} from '../../reducers/transaction';
 import RecoveryField from '../../components/RecoveryField';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import TranslateText from '../../components/TranslateText';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {sweepLitewallet} from '../../lib/utils/sweep';
+import {getAddress} from '../../reducers/address';
+import {publishTransaction} from '../../reducers/transaction';
+import {useTranslation} from 'react-i18next';
 
 type RootStackParamList = {
   Import: {
@@ -38,6 +40,8 @@ const RecoverLitewallet: React.FC<Props> = props => {
     dispatch(getAddress());
   }, [dispatch]);
 
+  const {t} = useTranslation('settingsTab');
+
   const handleLWRecovery = async (seed: string[]) => {
     setLoading(true);
     try {
@@ -50,7 +54,7 @@ const RecoverLitewallet: React.FC<Props> = props => {
 
       setLoading(false);
       navigation.replace('ImportSuccess', {
-        txHash: 'IMPORTED LITEWALLET!',
+        txHash: t('litewallet_success'),
       });
     } catch (error: any) {
       setLoading(false);
@@ -66,7 +70,7 @@ const RecoverLitewallet: React.FC<Props> = props => {
         <SafeAreaView>
           <RecoveryField
             handleLogin={() => {}}
-            headerText="Litewallet users can import their coins into Nexus Wallet. Entering your paper key below will permanently move your coins from Litewallet into Nexus."
+            headerText={t('litewallet_description')}
             isLitewalletRecovery={true}
             handleLWRecovery={seed => handleLWRecovery(seed)}
           />
@@ -105,10 +109,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export const RecoverLitewalletNavigationOptions = navigation => {
+export const RecoverLitewalletNavigationOptions = (navigation: any) => {
   return {
     headerTitle: () => (
-      <Text style={styles.headerTitle}>Import Litewallet Paper Key</Text>
+      <TranslateText
+        textKey="import_litewallet"
+        domain="settingsTab"
+        textStyle={styles.headerTitle}
+      />
     ),
     headerTitleAlign: 'left',
     headerTransparent: true,

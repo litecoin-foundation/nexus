@@ -3,10 +3,11 @@ import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {v4 as uuidv4} from 'uuid';
 
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import TranslateText from '../../components/TranslateText';
 import {updateLastViewSeed} from '../../reducers/settings';
 import {formatDate, formatTime} from '../../lib/utils/date';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 
 interface Props {}
 
@@ -47,9 +48,12 @@ const Seed: React.FC<Props> = () => {
     <LinearGradient colors={['#FF415E', '#FF9052']} style={styles.container}>
       <SafeAreaView />
       <View style={styles.textContainer}>
-        <Text style={styles.descriptionText}>
-          Last time accessed: {formatedTime}
-        </Text>
+        <TranslateText
+          textKey="last_time_accessed"
+          domain="settingsTab"
+          textStyle={styles.descriptionText}
+          interpolationObj={{time: formatedTime}}
+        />
       </View>
       {words}
       <SafeAreaView />
@@ -113,9 +117,15 @@ const styles = StyleSheet.create({
   },
 });
 
-export const SeedNavigationOptions = navigation => {
+export const SeedNavigationOptions = (navigation: any) => {
   return {
-    headerTitle: () => <Text style={styles.headerTitle}>View Paper Key</Text>,
+    headerTitle: () => (
+      <TranslateText
+        textKey="view_seed"
+        domain="settingsTab"
+        textStyle={styles.headerTitle}
+      />
+    ),
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',

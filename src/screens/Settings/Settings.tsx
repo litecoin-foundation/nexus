@@ -170,7 +170,7 @@ const Settings: React.FC<Props> = props => {
                 .catch(() =>
                   Alert.alert('Incorrect Pincode', undefined, [
                     {
-                      text: 'Dismiss',
+                      text: t('dismiss'),
                       onPress: () => setIsPinModalOpened(false),
                       style: 'cancel',
                     },
@@ -202,18 +202,14 @@ const Settings: React.FC<Props> = props => {
             textDomain="settingsTab"
             onPress={() => {
               handleAuthenticationRequired('reset-wallet-auth').then(() =>
-                Alert.alert(
-                  'Reset Wallet?',
-                  'Are you absolutely sure you would like to reset your wallet? Backup your seed phrase before resetting.',
-                  [
-                    {
-                      text: 'Cancel',
-                      onPress: () => setIsPinModalOpened(false),
-                      style: 'cancel',
-                    },
-                    {text: 'OK', onPress: () => handleReset()},
-                  ],
-                ),
+                Alert.alert(t('reset_wallet'), t('reset_warning'), [
+                  {
+                    text: t('cancel'),
+                    onPress: () => setIsPinModalOpened(false),
+                    style: 'cancel',
+                  },
+                  {text: t('ok'), onPress: () => handleReset()},
+                ]),
               );
             }}
           />

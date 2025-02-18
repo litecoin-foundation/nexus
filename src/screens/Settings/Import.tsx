@@ -1,16 +1,18 @@
 import React, {useEffect, useContext} from 'react';
-import {StyleSheet, View, SafeAreaView, Text, Alert} from 'react-native';
+import {StyleSheet, View, SafeAreaView, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useTranslation} from 'react-i18next';
 
 import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import TranslateText from '../../components/TranslateText';
+import {publishTransaction} from '../../reducers/transaction';
 import {sweepQrKey} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import {publishTransaction} from '../../reducers/transaction';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -37,6 +39,7 @@ const Import: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();
+  const {t} = useTranslation('settingsTab');
   const {address} = useAppSelector(state => state.address);
 
   useEffect(() => {
@@ -55,7 +58,7 @@ const Import: React.FC<Props> = props => {
         });
 
         navigation.replace('ImportSuccess', {
-          txHash: 'SUCCESS',
+          txHash: t('success'),
         });
       } catch (error) {
         Alert.alert(String(error));
@@ -73,9 +76,11 @@ const Import: React.FC<Props> = props => {
 
       <View style={styles.cardContainer}>
         <Card
-          titleText="Import Private Key"
+          titleText={t('import_private_key')}
           descriptionText={
-            'Importing a Litecoin private key moves any Litecoin in that wallet into Nexus.\n\nYou will no longer be able to access Litecoin using the private key.'
+            t('import_private_key_note') +
+            '\n\n' +
+            t('import_private_key_warning')
           }
           imageSource={require('../../assets/images/qr-frame.png')}
         />
@@ -83,7 +88,8 @@ const Import: React.FC<Props> = props => {
 
       <View style={styles.buttonContainer}>
         <WhiteButton
-          value="Scan Private Key"
+          textKey="scan_private_key"
+          textDomain="settingsTab"
           small={false}
           active={true}
           onPress={() => {
@@ -127,7 +133,11 @@ export const ImportNavigationOptions = (navigation: any) => {
 
   return {
     headerTitle: () => (
-      <Text style={styles.headerTitle}>Import Private Key</Text>
+      <TranslateText
+        textKey="import_private_key"
+        domain="settingsTab"
+        textStyle={styles.headerTitle}
+      />
     ),
     headerTitleAlign: 'left',
     headerTransparent: true,

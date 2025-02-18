@@ -4,16 +4,16 @@ import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import ProgressBar from '../../components/ProgressBar';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import TranslateText from '../../components/TranslateText';
 import {initWallet, startLnd} from '../../reducers/lightning';
 import {setSeed} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sleep} from '../../lib/utils/poll';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-
-import ProgressBar from '../../components/ProgressBar';
 
 import {ScreenSizeContext} from '../../context/screenSize';
-import LoadingIndicator from '../../components/LoadingIndicator';
 
 type RootStackParamList = {
   Welcome: undefined;
@@ -71,12 +71,17 @@ const Welcome: React.FC<Props> = props => {
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
       <View style={styles.titleContainer}>
-        <Text style={styles.titleText}>Presync in Progress</Text>
+        <TranslateText
+          textKey="presync"
+          domain="onboarding"
+          textStyle={styles.titleText}
+        />
 
-        <Text style={styles.descriptionText}>
-          Your wallet is currently presyncing. This only happens once, and helps
-          speed setting up your Nexus Wallet.
-        </Text>
+        <TranslateText
+          textKey="presync_description"
+          domain="onboarding"
+          textStyle={styles.descriptionText}
+        />
       </View>
 
       <View style={styles.progressBarContainer}>
@@ -97,7 +102,8 @@ const Welcome: React.FC<Props> = props => {
 
         <View style={styles.buttonContainer}>
           <WhiteButton
-            value="Tap Anywhere to Start"
+            textKey="tap_to_start"
+            textDomain="onboarding"
             small={false}
             onPress={() => handlePress()}
             active={true}

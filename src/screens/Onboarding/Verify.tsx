@@ -1,16 +1,17 @@
 import React, {useState, useEffect, useLayoutEffect, useContext} from 'react';
 import {View, Text, StyleSheet, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {StackNavigationProp} from '@react-navigation/stack';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
+import TranslateText from '../../components/TranslateText';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import {getBIP39Word} from '../../lib/utils/bip39';
 import {useAppSelector} from '../../store/hooks';
-import {StackNavigationProp} from '@react-navigation/stack';
 import randomShuffle from '../../lib/utils/randomShuffle';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -52,7 +53,11 @@ const Verify: React.FC<Props> = props => {
         />
       ),
       headerTitle: () => (
-        <Text style={styles.headerTitle}>Verify Paper Key</Text>
+        <TranslateText
+          textKey="verify_seed"
+          domain="onboarding"
+          textStyle={styles.headerTitle}
+        />
       ),
     });
   }, [navigation]);
@@ -94,9 +99,9 @@ const Verify: React.FC<Props> = props => {
         colors={['#1162E6', '#0F55C7']}
         style={styles.gradientContainer}>
         <OnboardingHeader
-          description={`Select word #${
-            3 * multiplier - 1
-          } to verify your paper-key`}>
+          textKey="verify_seed_description"
+          textDomain="onboarding"
+          textInterpolation={{position: `${3 * multiplier - 1}`}}>
           <View style={styles.optionsContainer}>
             <View style={styles.optionSubContainer}>
               <Text style={styles.optionText}>{seed[3 * multiplier - 3]}</Text>
@@ -141,7 +146,8 @@ const Verify: React.FC<Props> = props => {
         <View style={styles.bottomContainer}>
           <WhiteButton
             disabled={selected === null ? true : false}
-            value="Continue"
+            textKey="continue"
+            textDomain="onboarding"
             onPress={() => handlePress()}
             small={false}
             active={true}

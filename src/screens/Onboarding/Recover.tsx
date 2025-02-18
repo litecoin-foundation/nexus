@@ -1,13 +1,15 @@
 import React, {useEffect} from 'react';
-import {Platform, SafeAreaView, StyleSheet, Text} from 'react-native';
+import {Platform, SafeAreaView, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
-import {setSeedRecovery} from '../../reducers/onboarding';
+import TranslateText from '../../components/TranslateText';
 import RecoveryField from '../../components/RecoveryField';
-import {useAppDispatch} from '../../store/hooks';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import {setSeedRecovery} from '../../reducers/onboarding';
+import {useAppDispatch} from '../../store/hooks';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'Recover'>;
@@ -49,6 +51,7 @@ const Recover: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
+  const {t} = useTranslation('onboarding');
 
   useEffect(() => {
     if (__DEV__) {
@@ -80,7 +83,7 @@ const Recover: React.FC<Props> = props => {
       <SafeAreaView>
         <RecoveryField
           handleLogin={seed => attemptLogin(seed)}
-          headerText="Enter your paper-key words below."
+          headerText={t('enter_seed')}
           isLitewalletRecovery={false}
         />
       </SafeAreaView>
@@ -98,9 +101,15 @@ const styles = StyleSheet.create({
   },
 });
 
-export const RecoverNavigationOptions = navigation => {
+export const RecoverNavigationOptions = (navigation: any) => {
   return {
-    headerTitle: () => <Text style={styles.headerTitle}>Recover Wallet</Text>,
+    headerTitle: () => (
+      <TranslateText
+        textKey="recover_wallet"
+        domain="onboarding"
+        textStyle={styles.headerTitle}
+      />
+    ),
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',

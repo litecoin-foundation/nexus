@@ -1,13 +1,15 @@
 import React, {useState, useLayoutEffect, useEffect} from 'react';
+import {StyleSheet} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useTranslation} from 'react-i18next';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import TranslateText from '../../components/TranslateText';
 import {addPincode} from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {resetPincode} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import {StyleSheet, Text} from 'react-native';
 
 type RootStackParamList = {
   Pin: undefined;
@@ -21,8 +23,9 @@ interface Props {
 }
 
 const Pin: React.FC<Props> = props => {
-  const dispatch = useAppDispatch();
   const {navigation} = props;
+  const dispatch = useAppDispatch();
+  const {t} = useTranslation('onboarding');
 
   const biometricsAvailable = useAppSelector(
     state => state.authentication.biometricsAvailable,
@@ -57,9 +60,11 @@ const Pin: React.FC<Props> = props => {
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
-        <Text style={styles.headerTitle}>
-          {passcodeInitialSet ? 'Verify your Passcode' : 'Create Passcode'}
-        </Text>
+        <TranslateText
+          textKey={passcodeInitialSet ? 'verify_pin' : 'create_pin'}
+          domain="onboarding"
+          textStyle={styles.headerTitle}
+        />
       ),
     });
   }, [passcodeInitialSet]);
@@ -96,8 +101,8 @@ const Pin: React.FC<Props> = props => {
     <OnboardingAuthPad
       headerDescriptionText={
         passcodeInitialSet
-          ? 'Enter your passcode again.'
-          : 'Please create a secure passcode.'
+          ? t('create_pin_repeat')
+          : t('create_pin_description')
       }
       handleCompletion={handleCompletion}
       handleValidationFailure={handleValidationFailure}

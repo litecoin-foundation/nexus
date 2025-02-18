@@ -1,10 +1,11 @@
 import React, {useEffect} from 'react';
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
+import TranslateText from '../../components/TranslateText';
 import {useAppDispatch} from '../../store/hooks';
 import {detectCurrencyCode, setExplorer} from '../../reducers/settings';
 import {genSeed, getNeutrinoCache} from '../../reducers/onboarding';
@@ -39,12 +40,17 @@ const Initial = (props: Props) => {
         <Image source={require('../../assets/images/big-nexus-logo.png')} />
         <View style={styles.textContainer}>
           <Image source={require('../../assets/images/nexus-text-logo.png')} />
-          <Text style={styles.logoText}>FOR LITECOIN</Text>
+          <TranslateText
+            textKey="for_litecoin"
+            domain="onboarding"
+            textStyle={styles.logoText}
+          />
         </View>
       </View>
       <View style={styles.subContainer}>
         <WhiteButton
-          value="Create Wallet"
+          textKey="create_wallet"
+          textDomain="onboarding"
           small={false}
           onPress={() => {
             dispatch(genSeed());
@@ -53,7 +59,8 @@ const Initial = (props: Props) => {
           active={true}
         />
         <WhiteClearButton
-          value="Already have a wallet? Log In"
+          textKey="already_wallet"
+          textDomain="onboarding"
           small={false}
           onPress={() => {
             navigation.navigate('Recover');

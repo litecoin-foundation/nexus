@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
@@ -7,12 +7,16 @@ import {RouteProp} from '@react-navigation/native';
 import {ScreenSizeContext} from '../../context/screenSize';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import TranslateText from '../../components/TranslateText';
 
 type RootStackParamList = {
   ImportSuccess: {
     txHash: string;
   };
   NewWalletStack: undefined;
+  Main: {
+    isInitial: boolean;
+  };
 };
 
 interface Props {
@@ -21,7 +25,7 @@ interface Props {
 }
 
 const ImportSuccess: React.FC<Props> = props => {
-  const {navigation, route} = props;
+  const {navigation} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -31,16 +35,25 @@ const ImportSuccess: React.FC<Props> = props => {
     <>
       <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
         <View style={styles.body}>
-          <Text style={styles.title}>Awesome!</Text>
-          <Text style={styles.subtitle}>You just imported Litecoin.</Text>
+          <TranslateText
+            textKey="awesome"
+            domain="settingsTab"
+            textStyle={styles.title}
+          />
+          <TranslateText
+            textKey="success_import"
+            domain="settingsTab"
+            textStyle={styles.subtitle}
+          />
         </View>
 
         <View style={styles.confirmButtonContainer}>
           <WhiteButton
+            textKey="back_to_wallet"
+            textDomain="settingsTab"
             disabled={false}
             small={true}
             active={true}
-            value="Back to Wallet"
             onPress={() => {
               navigation.navigate('Main', {isInitial: true});
             }}
@@ -105,7 +118,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ImportSuccessNavigationOptions = navigation => {
+export const ImportSuccessNavigationOptions = (navigation: any) => {
   return {
     headerTitle: '',
     headerTitleAlign: 'left',

@@ -1,4 +1,4 @@
-import {StyleSheet, FlatList, Text} from 'react-native';
+import {StyleSheet, FlatList} from 'react-native';
 import React, {useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -8,6 +8,7 @@ import explorers from '../../assets/explorers';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setExplorer} from '../../reducers/settings';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import TranslateText from '../../components/TranslateText';
 
 type ExplorerType = {
   name: string;
@@ -39,9 +40,11 @@ const Explorer: React.FC = () => {
         style={styles.container}
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
-        <Text style={styles.headerText}>
-          You can select your preferred block explorer to view transactions.
-        </Text>
+        <TranslateText
+          textKey="select_block_explorer_note"
+          domain="settingsTab"
+          textStyle={styles.headerText}
+        />
         <FlatList data={explorers} renderItem={renderItem} />
       </LinearGradient>
     </>
@@ -73,10 +76,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ExplorerNavigationOptions = navigation => {
+export const ExplorerNavigationOptions = (navigation: any) => {
   return {
     headerTitle: () => (
-      <Text style={styles.headerTitle}>Select Block Explorer</Text>
+      <TranslateText
+        textKey="select_block_explorer"
+        domain="settingsTab"
+        textStyle={styles.headerTitle}
+      />
     ),
     headerTitleAlign: 'left',
     headerTransparent: true,

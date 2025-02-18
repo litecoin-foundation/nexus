@@ -266,7 +266,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     bottom: {
       flexBasis: '20%',
       width: '100%',
-      marginVertical: screenHeight * 0.03,
+      marginVertical: screenHeight * 0.02,
     },
     bottomStandalone: {
       flex: 1,

@@ -1,6 +1,6 @@
 {
   "onboarding": {
-    "forgot_pin": "¿Olvidaste tu código PIN?",
+    "forgot_pin": "¿Olvidaste tu PIN?",
     "forgot_pin_description": "", // Forgot your Pincode?\nEnter your seed phrase to reset your pincode.
     "enter_pin": "Introduce tu PIN",
     "attempts_left_one": "{{count}} attempt left.",
