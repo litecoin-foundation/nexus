@@ -52,6 +52,7 @@ type ItemType = {
   label: string;
   metaLabel: string;
   priceOnDateMeta: number;
+  confs: number;
 };
 
 const TransactionList = forwardRef((props: Props, ref) => {

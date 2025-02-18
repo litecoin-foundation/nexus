@@ -799,7 +799,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
     }
   }
 
-  const [newLabel, setNewLabel] = useState(label);
+  const [newLabel, setNewLabel] = useState(label === ' ' ? '' : label);
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const scrollToInput = (y: number) => {
@@ -881,7 +881,10 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
               onChangeText={text => setNewLabel(text)}
               onBlur={() => scrollToInput(0)}
               onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
-              clearInput={() => setNewLabel('')}
+              clearInput={() => {
+                setNewLabel('');
+                labelTx('');
+              }}
               onAction={() => labelTx(newLabel)}
             />
           </View>
@@ -1138,10 +1141,7 @@ const getStyles = (
       fontStyle: 'normal',
       textAlign: 'right',
     },
-    inputFieldContainer: {
-      paddingHorizontal: screenWidth * 0.05,
-      paddingVertical: screenHeight * 0.01,
-    },
+    inputFieldContainer: {},
     topContainer: {
       flex: 1,
       flexDirection: 'column',
