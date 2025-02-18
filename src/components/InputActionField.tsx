@@ -1,28 +1,10 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  Image,
-  Platform,
-} from 'react-native';
+import {View, TextInput, StyleSheet, Pressable, Image} from 'react-native';
 import Animated, {
   useAnimatedStyle,
-  useAnimatedProps,
   useSharedValue,
   withSpring,
-  interpolateColor,
-  withTiming,
-  useDerivedValue,
 } from 'react-native-reanimated';
-import {
-  Canvas,
-  Text,
-  interpolateColors,
-  matchFont,
-  useFont,
-} from '@shopify/react-native-skia';
 
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -51,60 +33,16 @@ const InputActionField: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const fontSize = SCREEN_HEIGHT * 0.018;
-  const fontStyle = {
-    fontFamily: 'Satoshi Variable',
-    fontSize: fontSize,
-    fontStyle: 'normal',
-    fontWeight: '600',
-  } as const;
-  const font = Platform.select({
-    ios: matchFont(fontStyle),
-    default: useFont(require('../fonts/Satoshi-Variable.ttf'), 16),
-  });
-
   const [isActive, setActive] = useState(false);
 
   // animation
-  const closeX = useSharedValue(70);
-  const buttonColor = useSharedValue(0);
-  const scaler = useSharedValue(1);
-
-  const onPressIn = () => {
-    scaler.value = withSpring(0.9, {mass: 1});
-  };
-  const onPressOut = () => {
-    scaler.value = withSpring(1, {mass: 0.7});
-  };
+  const closeX = useSharedValue(100);
 
   const closeContainerMotionStyle = useAnimatedStyle(() => {
     return {
       transform: [{translateX: withSpring(closeX.value, {stiffness: 50})}],
     };
   });
-
-  const buttonStyle = useAnimatedProps(() => {
-    const borderColorIterpolation = interpolateColor(
-      buttonColor.value,
-      [0, 1],
-      ['rgba(216, 210, 210, 0.75)', '#fff'],
-    );
-    const bgColorIterpolation = interpolateColor(
-      buttonColor.value,
-      [0, 1],
-      ['transparent', '#20BB74'],
-    );
-    return {
-      borderColor: borderColorIterpolation,
-      backgroundColor: bgColorIterpolation,
-      transform: [{scale: scaler.value}],
-    };
-  });
-
-  const interpolatedColour = useDerivedValue(
-    () => interpolateColors(buttonColor.value, [0, 1], ['#4a4a4a', '#fff']),
-    [buttonColor],
-  );
 
   useEffect(() => {
     if (value !== '') {
@@ -114,17 +52,15 @@ const InputActionField: React.FC<Props> = props => {
     } else {
       // AddressField is inactive (empty)
       setActive(false);
-      closeX.value = 80;
+      closeX.value = 100;
     }
   }, [value, closeX]);
 
   function handleAction() {
-    buttonColor.value = withTiming(1, {duration: 100});
     onAction();
   }
 
   function handleOnChangeText(text: string) {
-    buttonColor.value = withTiming(0, {duration: 100});
     onChangeText(text);
   }
 
@@ -164,26 +100,6 @@ const InputActionField: React.FC<Props> = props => {
           </Pressable>
         )}
       </View>
-
-      <Animated.View style={[styles.actionBtnContainer, buttonStyle]}>
-        <Pressable
-          style={styles.actionBtn}
-          onPressIn={onPressIn}
-          onPressOut={onPressOut}
-          onPress={() => {
-            handleAction();
-          }}>
-          <Canvas style={styles.canvasContainer}>
-            <Text
-              text="OK"
-              x={(SCREEN_WIDTH * 0.12) / 2 - fontSize * 0.8}
-              y={(SCREEN_HEIGHT * 0.05) / 2 + fontSize * 0.3}
-              font={font}
-              color={interpolatedColour}
-            />
-          </Canvas>
-        </Pressable>
-      </Animated.View>
     </View>
   );
 };
@@ -194,19 +110,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       minHeight: screenHeight * 0.06,
       height: screenHeight * 0.06,
-      borderRadius: screenHeight * 0.01,
-      borderColor: '#E8E8E8',
-      borderWidth: 1,
+      borderTopWidth: 1,
+      borderTopColor: '#eee',
+      borderBottomWidth: 1,
+      borderBottomColor: '#eee',
       backgroundColor: '#FFFFFF',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingLeft: screenHeight * 0.02,
-      paddingRight: screenHeight * 0.005,
-      paddingVertical: screenHeight * 0.005,
+      paddingHorizontal: screenWidth * 0.05,
     },
     inputContainer: {
-      flexBasis: '85%',
+      flexBasis: '100%',
       justifyContent: 'center',
     },
     actionBtnContainer: {
@@ -239,15 +154,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       right: 0,
       position: 'absolute',
       marginRight: screenWidth * 0.01,
-      height: 36,
-      width: 36,
+      height: screenHeight * 0.04,
+      width: screenHeight * 0.04,
       justifyContent: 'center',
       alignItems: 'center',
     },
     closeSubContainer: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
+      width: '80%',
+      height: '80%',
+      borderRadius: '50%',
       backgroundColor: '#f0f0f0',
       alignItems: 'center',
       justifyContent: 'center',

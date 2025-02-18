@@ -94,11 +94,7 @@ const ConfirmSend: React.FC<Props> = () => {
     try {
       // await is required!
       const txid = await dispatch(
-        sendOnchainPayment(
-          toAddress,
-          Math.trunc(amount),
-          label ? 'label' : label,
-        ),
+        sendOnchainPayment(toAddress, Math.trunc(amount), label),
       );
       setLoading(false);
       navigation.navigate('SuccessSend', {txid});
@@ -319,7 +315,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     background: {
       flex: 1,
       flexWrap: 'wrap',
-      ...StyleSheet.absoluteFill,
+      ...StyleSheet.absoluteFillObject,
     },
     box: {
       width: '25%',

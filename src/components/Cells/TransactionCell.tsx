@@ -1,5 +1,6 @@
 import React, {useContext} from 'react';
 import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+import Svg, {Circle} from 'react-native-svg';
 
 import {useAppSelector} from '../../store/hooks';
 import {
@@ -19,6 +20,7 @@ interface Props {
     label: string;
     metaLabel: string;
     priceOnDateMeta: number;
+    confs: number;
   };
   onPress(): void;
 }
@@ -26,7 +28,7 @@ interface Props {
 const TransactionCell: React.FC<Props> = props => {
   const {item, onPress} = props;
 
-  const {time, amount, label, metaLabel, priceOnDateMeta} = item;
+  const {time, amount, label, metaLabel, priceOnDateMeta, confs} = item;
 
   const mathSign = Math.sign(parseFloat(String(amount))) === -1 ? '-' : '';
 
@@ -92,10 +94,39 @@ const TransactionCell: React.FC<Props> = props => {
   ).toFixed(2);
   const amountInFiatOnDateAbsVal = Math.abs(Number(amountInFiatOnDate));
 
+  function calcStrokeProgress(radius: number): number {
+    const circumference = 2 * Math.PI * radius;
+    const progress = confs >= 6 ? 1 : confs / 6;
+    const dashffset = circumference * (1 - progress);
+    return dashffset;
+  }
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.circle}>
-        <Image source={txIcon} />
+      <View style={styles.circleContainer}>
+        <View style={styles.circle}>
+          <Image source={txIcon} />
+        </View>
+        <Svg
+          height={styles.circleContainer.height}
+          width={styles.circleContainer.width}
+          style={styles.circleProgress}>
+          <Circle
+            rotation={-90}
+            originX={(styles.circleContainer.width - 6) / 2 + 3}
+            originY={(styles.circleContainer.height - 6) / 2 + 3}
+            cx={(styles.circleContainer.width - 6) / 2 + 3}
+            cy={(styles.circleContainer.height - 6) / 2 + 3}
+            r={(styles.circleContainer.width - 6) / 2}
+            stroke={metaLabel === 'Send' ? '#000' : '#1162E6'}
+            strokeWidth={SCREEN_HEIGHT * 0.003}
+            fill="transparent"
+            strokeDasharray={Math.PI * (styles.circleContainer.width - 6)}
+            strokeDashoffset={calcStrokeProgress(
+              (styles.circleContainer.width - 6) / 2,
+            )}
+          />
+        </Svg>
       </View>
       <View style={styles.left}>
         <TranslateText
@@ -156,15 +187,31 @@ const getStyles = (
       justifyContent: 'space-between',
       paddingVertical: screenHeight * 0.02,
     },
-    circle: {
+    circleContainer: {
       minWidth: 24,
       minHeight: 24,
-      width: screenHeight * 0.04,
-      height: screenHeight * 0.04,
+      width: screenHeight * 0.045,
+      height: screenHeight * 0.045,
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+    },
+    circle: {
+      width: '67%',
+      height: '67%',
       borderRadius: screenHeight * 0.04 <= 24 ? 12 : (screenHeight * 0.04) / 2,
       backgroundColor: sent ? '#000' : '#1162E6',
       justifyContent: 'center',
       alignItems: 'center',
+      zIndex: 1,
+    },
+    circleProgress: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      zIndex: 0,
     },
     textKeyText: {
       color: '#484859',
