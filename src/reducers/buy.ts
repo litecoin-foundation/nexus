@@ -18,6 +18,8 @@ interface IBuy {
   maxBuyAmount: number;
   minLTCBuyAmount: number;
   maxLTCBuyAmount: number;
+  minLTCSellAmount: number;
+  maxLTCSellAmount: number;
 }
 
 interface IQuote {}
@@ -34,6 +36,8 @@ const initialState = {
   maxBuyAmount: 0,
   minLTCBuyAmount: 0,
   maxLTCBuyAmount: 0,
+  minLTCSellAmount: 0,
+  maxLTCSellAmount: 0,
 } as IBuy;
 
 // actions
@@ -45,6 +49,10 @@ const checkAllowedAction = createAction<{
   isSellAllowed: boolean;
 }>('buy/checkAllowedAction');
 const getLimitsAction = createAction('buy/getLimitsAction');
+const setSellLimitsAction = createAction<{
+  minSellAmount: number;
+  maxSellAmount: number;
+}>('buy/setSellLimitsAction');
 const setMoonpayCustomer = createAction<boolean>('buy/setMoonpayCustomer');
 
 // functions
@@ -327,6 +335,12 @@ export const getLimits = (): AppThunk => async (dispatch, getState) => {
   }
 };
 
+export const setSellLimits =
+  (minSellAmount: number, maxSellAmount: number): AppThunk =>
+  async dispatch => {
+    dispatch(setSellLimitsAction({minSellAmount, maxSellAmount}));
+  };
+
 export const getOnramperUrl =
   (address: string, fiatAmount: number): AppThunk =>
   (dispatch, getState) => {
@@ -461,6 +475,11 @@ export const buySlice = createSlice({
     setMoonpayCustomer: (state, action) => ({
       ...state,
       isMoonpayCustomer: action.payload,
+    }),
+    setSellLimitsAction: (state, action) => ({
+      ...state,
+      minLTCSellAmount: action.payload.minSellAmount,
+      maxLTCSellAmount: action.payload.maxSellAmount,
     }),
   },
 });

@@ -103,7 +103,8 @@
     "continue_purchase": "Continue Purchase",
     "back": "BACK",
     "buy_blocked": "Buy Litecoin is currently not available in your country/state.",
-    "error_title": "Something's wrong!"
+    "error_title": "Something's wrong!",
+    "min_sale": "Minimum sale of {{minAmount}} LTC & max sale of {{maxAmount}} LTC"
   },
   "sellTab": {
     "sell": "Sell ",
@@ -146,7 +147,7 @@
     "contact": "Contact",
     "passwords": "Passwords",
     "scan_text": "Scan Text",
-    "txs_note": "Your transactons will appear here"
+    "txs_note": "Your transactions will appear here"
   },
   "alertsTab": {
     "price_alerts": "Price Alerts",

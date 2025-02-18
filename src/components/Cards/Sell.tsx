@@ -26,10 +26,13 @@ const Sell: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
 
+  const balance = useAppSelector(state => state.balance.confirmedBalance);
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const isSellAllowed = useAppSelector(state => state.buy.isSellAllowed);
+  const minSellAmount = useAppSelector(state => state.buy.minLTCSellAmount);
+  const maxSellAmount = useAppSelector(state => state.buy.maxLTCSellAmount);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -184,10 +187,29 @@ const Sell: React.FC<Props> = () => {
       )}
       <View style={isSellAllowed ? styles.bottom : styles.bottomStandalone}>
         <BlueButton
-          disabled={isSellAllowed ? false : true}
+          disabled={
+            !isSellAllowed ||
+            Number(amount) <= minSellAmount ||
+            fiatAmount === '' ||
+            Number(amount) > maxSellAmount
+              ? true
+              : false || balance < amount
+          }
           textKey="preview_sell"
           textDomain="sellTab"
           onPress={() => navigation.navigate('ConfirmSell')}
+        />
+        <TranslateText
+          textKey={'min_sale'}
+          domain={'buyTab'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={isSellAllowed ? styles.minText : {display: 'none'}}
+          numberOfLines={1}
+          interpolationObj={{
+            currencySymbol,
+            minAmount: minSellAmount,
+            maxAmount: maxSellAmount,
+          }}
         />
       </View>
     </View>
@@ -235,7 +257,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     bottom: {
       flexBasis: '20%',
       width: '100%',
-      marginVertical: screenHeight * 0.03,
+      marginVertical: screenHeight * 0.02,
     },
     bottomStandalone: {
       flex: 1,
@@ -288,6 +310,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.012,
       textAlign: 'center',
       marginTop: screenHeight * 0.03,
+    },
+    minText: {
+      color: '#747E87',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.012,
+      textAlign: 'center',
+      marginTop: screenHeight * 0.01,
     },
   });
 

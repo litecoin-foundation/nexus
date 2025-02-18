@@ -3,7 +3,7 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
-import {getBuyQuoteData, getSellQuoteData} from './buy';
+import {getBuyQuoteData, getSellQuoteData, setSellLimits} from './buy';
 
 // types
 type IRates = {
@@ -104,6 +104,10 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
 
       dispatch(updateRatesAction({buy, sell, ltc}));
       dispatch(getTickerAction(rates));
+
+      // set Sell Limits
+      const {minSellAmount, maxSellAmount} = sellQuote.baseCurrency;
+      dispatch(setSellLimits(Number(minSellAmount), Number(maxSellAmount)));
     } catch (error) {
       console.warn(error);
     }

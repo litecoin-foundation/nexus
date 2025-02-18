@@ -1,15 +1,19 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
 import {TransitionPresets} from '@react-navigation/stack';
-import {RouteProp} from '@react-navigation/native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
 
 import Header from '../components/Header';
 import HeaderButton from '../components/Buttons/HeaderButton';
 
 type RootStackParamList = {
-  WebPage: undefined;
+  WebPage: {
+    uri: string;
+    observeURL?: string;
+    returnRoute?: string;
+  };
 };
 
 interface Props {
@@ -19,11 +23,16 @@ interface Props {
 const WebPage: React.FC<Props> = props => {
   const {route} = props;
   const WebPageRef = useRef();
-  const [canGoBack, setCanGoBack] = useState(false);
-  const [canGoForward, setCanGoForward] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation();
 
-  const handleEvent = syntheticEvent => {
+  const [ableToGoBack, setCanGoBack] = useState(false);
+  const [ableToGoForward, setCanGoForward] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('');
+
+  const {observeURL, returnRoute} = route.params || {};
+
+  const handleEvent = (syntheticEvent: any) => {
     const {nativeEvent} = syntheticEvent;
     const {canGoBack, canGoForward, loading} = nativeEvent;
 
@@ -32,16 +41,34 @@ const WebPage: React.FC<Props> = props => {
     setIsLoading(loading);
   };
 
+  // handle observing current url
+  useEffect(() => {
+    if (observeURL && currentUrl) {
+      const urlWithoutQuery = currentUrl.split('?')[0];
+      if (urlWithoutQuery === observeURL) {
+        const queryString = currentUrl.split('?')[1];
+        if (queryString && returnRoute) {
+          navigation.navigate(returnRoute, {
+            queryString: queryString,
+          });
+        }
+      }
+    }
+  }, [currentUrl, observeURL, returnRoute, navigation]);
+
   return (
     <View style={styles.container}>
       <Header modal={true} />
       <WebView
         style={styles.webview}
-        source={route.params}
+        source={{uri: route.params.uri}}
         ref={WebPageRef}
         enableApplePay={true}
         onLoadStart={syntheticEvent => handleEvent(syntheticEvent)}
         onLoadEnd={syntheticEvent => handleEvent(syntheticEvent)}
+        onNavigationStateChange={syntheticEvent =>
+          setCurrentUrl(syntheticEvent.url)
+        }
         applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${
           DeviceInfo.getSystemVersion
         }`}
@@ -51,9 +78,9 @@ const WebPage: React.FC<Props> = props => {
           onPress={() => {
             WebPageRef.current.goBack();
           }}
-          disabled={!canGoBack}>
+          disabled={!ableToGoBack}>
           <Image
-            style={canGoBack ? null : styles.opacity}
+            style={ableToGoBack ? null : styles.opacity}
             source={require('../assets/images/previous.png')}
           />
         </TouchableOpacity>
@@ -70,10 +97,10 @@ const WebPage: React.FC<Props> = props => {
 
         <TouchableOpacity
           onPress={() => WebPageRef.current.goForward()}
-          disabled={!canGoForward}
-          style={canGoForward ? null : styles.opacity}>
+          disabled={!ableToGoForward}
+          style={ableToGoForward ? null : styles.opacity}>
           <Image
-            style={canGoForward ? null : styles.opacity}
+            style={ableToGoForward ? null : styles.opacity}
             source={require('../assets/images/next.png')}
           />
         </TouchableOpacity>
