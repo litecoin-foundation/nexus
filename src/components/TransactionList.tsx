@@ -27,6 +27,11 @@ import {txDetailSelector} from '../reducers/transaction';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import ProgressBar from './ProgressBar';
+import {
+  percentSyncedSelector,
+  recoveryProgressSelector,
+} from '../reducers/info';
 
 interface Props {
   onPress(item: ItemType): void;
@@ -90,6 +95,11 @@ const TransactionList = forwardRef((props: Props, ref) => {
   // We never scroll folded list, therefore no need to set that height
   // const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
 
+  const {recoveryMode, syncedToChain} = useAppSelector(state => state.info);
+  const progress = useAppSelector(state => percentSyncedSelector(state));
+  const recoveryProgress = useAppSelector(state =>
+    recoveryProgressSelector(state),
+  );
   const transactions = useAppSelector(state => txDetailSelector(state));
   const [displayedTxs, setDisplayedTxs] = useState<any[]>([]);
 
@@ -186,8 +196,26 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   let curFrameY = -1;
 
+  const SyncProgressIndicator = (
+    <>
+      <View style={styles.headerContainer}>
+        <Text style={styles.sectionHeaderText}>
+          {recoveryMode
+            ? 'RECOVERING TRANSACTIONS...'
+            : 'LOADING TRANSACTIONS...'}
+        </Text>
+      </View>
+      {recoveryMode ? (
+        <ProgressBar progress={recoveryProgress! * 100} />
+      ) : (
+        <ProgressBar progress={progress! * 100} />
+      )}
+    </>
+  );
+
   return renderTxs ? (
     <View style={{height: scrollContainerHeight}}>
+      {!syncedToChain ? SyncProgressIndicator : <></>}
       <SectionList
         bounces={false}
         scrollEventThrottle={1}
@@ -275,6 +303,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     title: {
       fontSize: screenHeight * 0.024,
+    },
+    headerContainer: {
+      paddingBottom: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: 'rgba(214, 216, 218, 0.3)',
+      paddingLeft: screenHeight * 0.02,
     },
   });
 

@@ -38,7 +38,7 @@ const WhiteClearButton = (props: Props): React.JSX.Element => {
           maxSizeInPixels={SCREEN_HEIGHT * 0.03}
           numberOfLines={1}
           textStyle={[
-            styles.container,
+            styles.text,
             small ? styles.smallText : null,
             selected ? styles.selectedText : null,
           ]}

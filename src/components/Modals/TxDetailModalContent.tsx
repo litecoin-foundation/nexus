@@ -861,6 +861,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
             titleTextDomain="main"
             value={txId}
             copyable
+            valueStyle={{paddingLeft: 20}}
           />
           <TableCell
             titleTextKey="network_fee"
