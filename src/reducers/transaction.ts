@@ -346,7 +346,8 @@ export const sendOnchainPayment =
               sendAll: true,
               addr: address,
               satPerVbyte: fee ? BigInt(fee) : undefined,
-              label: label || '',
+              // Set ghost label if it's undefined in order to prevent default labeling
+              label: label || ' ',
             });
             resolve(response.txid);
             return;
@@ -355,7 +356,8 @@ export const sendOnchainPayment =
               addr: address,
               amount: BigInt(amount),
               satPerVbyte: fee ? BigInt(fee) : undefined,
-              label: label || '',
+              // Set ghost label if it's undefined in order to prevent default labeling
+              label: label || ' ',
             });
             resolve(response.txid);
             return;
