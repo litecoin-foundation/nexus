@@ -76,6 +76,7 @@ const TransactionCell: React.FC<Props> = props => {
     SCREEN_HEIGHT,
     metaLabel === 'Send',
     amountColor,
+    confs,
   );
 
   const convertToSubunit = useAppSelector(state =>
@@ -107,26 +108,30 @@ const TransactionCell: React.FC<Props> = props => {
         <View style={styles.circle}>
           <Image source={txIcon} />
         </View>
-        <Svg
-          height={styles.circleContainer.height}
-          width={styles.circleContainer.width}
-          style={styles.circleProgress}>
-          <Circle
-            rotation={-90}
-            originX={(styles.circleContainer.width - 6) / 2 + 3}
-            originY={(styles.circleContainer.height - 6) / 2 + 3}
-            cx={(styles.circleContainer.width - 6) / 2 + 3}
-            cy={(styles.circleContainer.height - 6) / 2 + 3}
-            r={(styles.circleContainer.width - 6) / 2}
-            stroke={metaLabel === 'Send' ? '#000' : '#1162E6'}
-            strokeWidth={SCREEN_HEIGHT * 0.003}
-            fill="transparent"
-            strokeDasharray={Math.PI * (styles.circleContainer.width - 6)}
-            strokeDashoffset={calcStrokeProgress(
-              (styles.circleContainer.width - 6) / 2,
-            )}
-          />
-        </Svg>
+        {confs > 6 ? (
+          <></>
+        ) : (
+          <Svg
+            height={styles.circleContainer.height}
+            width={styles.circleContainer.width}
+            style={styles.circleProgress}>
+            <Circle
+              rotation={-90}
+              originX={(styles.circleContainer.width - 6) / 2 + 3}
+              originY={(styles.circleContainer.height - 6) / 2 + 3}
+              cx={(styles.circleContainer.width - 6) / 2 + 3}
+              cy={(styles.circleContainer.height - 6) / 2 + 3}
+              r={(styles.circleContainer.width - 6) / 2}
+              stroke="#1EBC73"
+              strokeWidth={SCREEN_HEIGHT * 0.003}
+              fill="transparent"
+              strokeDasharray={Math.PI * (styles.circleContainer.width - 6)}
+              strokeDashoffset={calcStrokeProgress(
+                (styles.circleContainer.width - 6) / 2,
+              )}
+            />
+          </Svg>
+        )}
       </View>
       <View style={styles.left}>
         <TranslateText
@@ -159,6 +164,7 @@ const getStyles = (
   screenHeight: number,
   sent: boolean,
   amountColor: string,
+  confs: number,
 ) =>
   StyleSheet.create({
     container: {
@@ -197,8 +203,8 @@ const getStyles = (
       position: 'relative',
     },
     circle: {
-      width: '67%',
-      height: '67%',
+      width: confs > 6 ? '80%' : '67%',
+      height: confs > 6 ? '80%' : '67%',
       borderRadius: screenHeight * 0.04 <= 24 ? 12 : (screenHeight * 0.04) / 2,
       backgroundColor: sent ? '#000' : '#1162E6',
       justifyContent: 'center',
