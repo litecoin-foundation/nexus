@@ -5,8 +5,9 @@ import React, {
   useContext,
   useLayoutEffect,
 } from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
+import {useTranslation} from 'react-i18next';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TransactionList from '../../components/TransactionList';
@@ -19,6 +20,7 @@ import TxDetailModalContent from '../../components/Modals/TxDetailModalContent';
 import {useAppSelector} from '../../store/hooks';
 import {txDetailSelector} from '../../reducers/transaction';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -38,6 +40,8 @@ const SearchTransaction: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const {t} = useTranslation('searchTab');
 
   const TransactionListRef = useRef();
 
@@ -107,7 +111,7 @@ const SearchTransaction: React.FC<Props> = props => {
         <View style={styles.search}>
           <SearchBar
             value={searchFilter}
-            placeholder={'Find a transaction'}
+            placeholder={t('find_tx')}
             onChangeText={text => setSearchFilter(text)}
           />
         </View>
@@ -239,7 +243,15 @@ export const SearchTransactionNavigationOptions = (navigation: any) => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return {
-    headerTitle: () => <Text style={styles.headerTitle}>Transactions</Text>,
+    headerTitle: () => (
+      <TranslateText
+        textKey="transactions"
+        domain="searchTab"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        textStyle={styles.headerTitle}
+        numberOfLines={1}
+      />
+    ),
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',

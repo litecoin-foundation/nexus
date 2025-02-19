@@ -36,7 +36,11 @@ const TranslateText: React.FC<Props> = props => {
 
   const {width, height} = useContext(ScreenSizeContext);
 
-  let fontSize = textStyle ? textStyle.fontSize : DEFAULT_FONT_SIZE;
+  let fontSize =
+    textStyle && textStyle.hasOwnProperty('fontSize')
+      ? textStyle.fontSize
+      : DEFAULT_FONT_SIZE;
+
   if (
     maxSizeInPixels &&
     fontSize * Dimensions.get('window').fontScale > maxSizeInPixels

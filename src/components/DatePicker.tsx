@@ -12,7 +12,8 @@ interface Props {}
 type GraphPeriodType = ('1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL')[];
 
 const DatePicker: React.FC<Props> = () => {
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();

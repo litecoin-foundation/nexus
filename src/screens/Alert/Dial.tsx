@@ -11,6 +11,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {convertLocalFiatToUSD, ltcRateSelector} from '../../reducers/ticker';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -52,27 +53,43 @@ const Dial: React.FC<Props> = props => {
             style={styles.imageContainer}
             source={require('../../assets/images/alert-art.png')}
           />
-          <Text style={styles.text}>Alert me when</Text>
-          <Text style={styles.text}>
-            Litecoin <Text style={styles.boldText}>(LTC)</Text> is
-          </Text>
+          <TranslateText
+            textKey="alert_me"
+            domain="alertsTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+            textStyle={styles.text}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textKey="when_ltc"
+            domain="alertsTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+            textStyle={styles.text}
+            numberOfLines={1}
+          />
 
           <View style={styles.switchContainer}>
             <View style={!toggleActive ? styles.toggleActive : styles.toggle}>
-              <Text
-                style={
+              <TranslateText
+                textKey="below"
+                domain="alertsTab"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+                textStyle={
                   !toggleActive ? styles.toggleTextActive : styles.toggleText
-                }>
-                BELOW
-              </Text>
+                }
+                numberOfLines={1}
+              />
             </View>
             <View style={toggleActive ? styles.toggleActive : styles.toggle}>
-              <Text
-                style={
+              <TranslateText
+                textKey="above"
+                domain="alertsTab"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+                textStyle={
                   toggleActive ? styles.toggleTextActive : styles.toggleText
-                }>
-                ABOVE
-              </Text>
+                }
+                numberOfLines={1}
+              />
             </View>
           </View>
         </View>
@@ -102,7 +119,8 @@ const Dial: React.FC<Props> = props => {
       </View>
       <View style={styles.buttonContainer}>
         <BlueButton
-          value="Create Alert"
+          textKey="create_alert"
+          textDomain="alertsTab"
           onPress={() => {
             dispatch(
               addAlert({
@@ -226,7 +244,8 @@ export const DialNavigationOptions = (navigation: any) => {
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        title="SET ALERTS"
+        textKey="set_alerts"
+        textDomain="alertsTab"
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
       />

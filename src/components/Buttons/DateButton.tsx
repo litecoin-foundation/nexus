@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
+import {TouchableOpacity, StyleSheet} from 'react-native';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
@@ -13,18 +14,23 @@ interface Props {
 }
 
 const DateButton: React.FC<Props> = props => {
-  const {
-    value,
-    onPress,
-    disabled,
-    customStyles,
-    customFontStyles,
-    active,
-  } = props;
+  const {value, onPress, disabled, customStyles, customFontStyles, active} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const textStyle = active
+    ? {
+        ...styles.text,
+        ...customFontStyles,
+      }
+    : {
+        ...styles.text,
+        ...customFontStyles,
+        ...styles.inactiveText,
+      };
 
   return (
     <TouchableOpacity
@@ -36,14 +42,13 @@ const DateButton: React.FC<Props> = props => {
         active ? styles.active : null,
       ]}
       onPress={onPress}>
-      <Text
-        style={[
-          styles.text,
-          customFontStyles,
-          active ? null : styles.inactiveText,
-        ]}>
-        {value}
-      </Text>
+      <TranslateText
+        textKey={String(value).toLowerCase()}
+        domain="main"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+        textStyle={textStyle}
+        numberOfLines={1}
+      />
     </TouchableOpacity>
   );
 };

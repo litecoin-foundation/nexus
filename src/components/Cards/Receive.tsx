@@ -10,8 +10,8 @@ import NewBlueButton from '../Buttons/NewBlueButton';
 import NewButton from '../Buttons/NewButton';
 import InfoModal from '../Modals/InfoModalContent';
 
-import {ScreenSizeContext} from '../../context/screenSize';
 import TranslateText from '../TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {}
 
@@ -68,7 +68,8 @@ const Receive: React.FC<Props> = () => {
             }}
           />
           <NewBlueButton
-            title="Send Privately"
+            textKey="receive_privately"
+            textDomain="receiveTab"
             active={mwebAddress}
             onPress={() => {
               dispatch(getAddress(true));
@@ -110,10 +111,13 @@ const Receive: React.FC<Props> = () => {
         </View>
 
         {mwebAddress ? (
-          <Text style={styles.minText}>
-            Sending privately hides the sender and receiver addresses, and
-            amount being sent.
-          </Text>
+          <TranslateText
+            textKey="recieve_mweb_description"
+            domain="receiveTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+            textStyle={styles.minText}
+            numberOfLines={3}
+          />
         ) : null}
       </View>
       <InfoModal

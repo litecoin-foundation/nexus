@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {View, StyleSheet, FlatList, Text} from 'react-native';
+import {View, StyleSheet, FlatList} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Header from '../../components/Header';
@@ -9,6 +9,7 @@ import {removeAlert} from '../../reducers/alerts';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {}
@@ -29,13 +30,20 @@ const Alert: React.FC<Props> = () => {
 
   const EmptySectionList = (
     <View style={styles.emptySectionListContainer}>
-      <Text style={styles.emptySectionListText}>
-        Create alerts to be notified when the price of Litecoin hits a target
-        value.
-      </Text>
-      <Text style={styles.emptySectionListText}>
-        Your alerts will appear here.
-      </Text>
+      <TranslateText
+        textKey="create_alerts_note"
+        domain="alertsTab"
+        maxSizeInPixels={height * 0.02}
+        textStyle={styles.emptySectionListText}
+        numberOfLines={3}
+      />
+      <TranslateText
+        textKey="alerts_appear_here"
+        domain="alertsTab"
+        maxSizeInPixels={height * 0.02}
+        textStyle={styles.emptySectionListText}
+        numberOfLines={1}
+      />
     </View>
   );
 
@@ -99,7 +107,15 @@ export const AlertNavigationOptions = (navigation: any) => {
   const styles = getStyles(width, height);
 
   return {
-    headerTitle: () => <Text style={styles.headerTitle}>Price Alerts</Text>,
+    headerTitle: () => (
+      <TranslateText
+        textKey="price_alerts"
+        domain="alertsTab"
+        maxSizeInPixels={height * 0.02}
+        textStyle={styles.headerTitle}
+        numberOfLines={1}
+      />
+    ),
     headerTitleAlign: 'left',
     headerLeft: () => (
       <HeaderButton
@@ -109,7 +125,8 @@ export const AlertNavigationOptions = (navigation: any) => {
     ),
     headerRight: () => (
       <HeaderButton
-        title="Create Alert"
+        textKey="create_alert"
+        textDomain="alertsTab"
         onPress={() => navigation.navigate('Dial')}
         rightPadding={true}
       />
