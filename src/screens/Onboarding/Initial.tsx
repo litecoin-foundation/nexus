@@ -2,12 +2,17 @@ import React, {useEffect} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {getLocales} from 'react-native-localize';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import TranslateText from '../../components/TranslateText';
 import {useAppDispatch} from '../../store/hooks';
-import {detectCurrencyCode, setExplorer} from '../../reducers/settings';
+import {
+  detectCurrencyCode,
+  setExplorer,
+  setLanguage,
+} from '../../reducers/settings';
 import {genSeed, getNeutrinoCache} from '../../reducers/onboarding';
 
 type RootStackParamList = {
@@ -27,6 +32,7 @@ const Initial = (props: Props) => {
   useEffect(() => {
     dispatch(detectCurrencyCode());
     dispatch(setExplorer('Litecoin Space'));
+    dispatch(setLanguage(getLocales()[0].languageCode));
   }, [dispatch]);
 
   // fetch neutrino cache!

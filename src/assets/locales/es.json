@@ -199,6 +199,8 @@
     "select_block_explorer_note": "Puedes seleccionar tu explorador de bloques preferido para ver las transacciones.",
     "change_currency": "Cambiar moneda",
     "select_fiat": "Seleccionar moneda fiduciaria",
+    "change_lang": "Change Language (fix)",
+    "select_lang": "Select Language (fix)",
     "view_seed": "Ver frase semilla",
     "view_paper_key": "Ver clave de papel",
     "last_time_accessed": "Último acceso:",

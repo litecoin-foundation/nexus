@@ -199,6 +199,8 @@
     "select_block_explorer_note": "Sie können ihren bevorzugten Block-Explorer auswählen.",
     "change_currency": "Währung ändern",
     "select_fiat": "Fiatwährung auswählen",
+    "change_lang": "Change Language (fix)",
+    "select_lang": "Select Language (fix)",
     "view_seed": "Seedphrase anzwiegn",
     "view_paper_key": "Papierschlüssen ansehen",
     "last_time_accessed": "Letzter Zugriff: {{time}}",

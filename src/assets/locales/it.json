@@ -199,6 +199,8 @@
     "select_block_explorer_note": "Puoi selezionare il tuo Block Explorer preferito per visualizzare le transazioni. ",
     "change_currency": "Cambia valuta",
     "select_fiat": "Seleziona una valuta FIAT",
+    "change_lang": "Change Language (fix)",
+    "select_lang": "Select Language (fix)",
     "view_seed": "Visualizza Seed Phrase",
     "view_paper_key": "Visualizza Paper key",
     "last_time_accessed": "Ultimo accesso eseguito: ",

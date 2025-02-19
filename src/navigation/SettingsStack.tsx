@@ -7,6 +7,9 @@ import Settings, {
 import Explorer, {
   ExplorerNavigationOptions,
 } from '../screens/Settings/Explorer';
+import Language, {
+  LanguageNavigationOptions,
+} from '../screens/Settings/Language';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed, {SeedNavigationOptions} from '../screens/Settings/Seed';
 import About, {AboutNavigationOptions} from '../screens/Settings/About';
@@ -68,6 +71,11 @@ function SettingsStack() {
         name="Explorer"
         component={Explorer}
         options={({navigation}) => ExplorerNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="Language"
+        component={Language}
+        options={({navigation}) => LanguageNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Scan"

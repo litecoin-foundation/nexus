@@ -201,6 +201,8 @@
     "select_block_explorer_note": "You can select your preferred block explorer to view transactions.",
     "change_currency": "Change Currency",
     "select_fiat": "Select Fiat Currency",
+    "change_lang": "Change Language",
+    "select_lang": "Select Language",
     "view_seed": "View Seed Phrase",
     "view_paper_key": "View Seed Phrase",
     "last_time_accessed": "Last time accessed: {{time}}",

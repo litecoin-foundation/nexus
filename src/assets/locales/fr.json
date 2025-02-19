@@ -201,6 +201,8 @@
     "select_block_explorer_note": "Vous pouvez choisir votre explorateur de blocs préféré pour voir les transactions.",
     "change_currency": "Changer de devise",
     "select_fiat": "Sélectionner une devise fiat",
+    "change_lang": "Change Language (fix)",
+    "select_lang": "Select Language (fix)",
     "view_seed": "Voir la phrase de récupération",
     "view_paper_key": "Voir la clé papier",
     "last_time_accessed": "Dernier accès :",

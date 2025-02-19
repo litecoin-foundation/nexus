@@ -34,6 +34,7 @@ type RootStackParamList = {
   Wallet: undefined;
   Explorer: undefined;
   Currency: undefined;
+  Language: undefined;
   Seed: undefined;
   Import: undefined;
   RecoverLitewallet: undefined;
@@ -158,6 +159,12 @@ const Settings: React.FC<Props> = props => {
             textKey="change_currency"
             textDomain="settingsTab"
             onPress={() => navigation.navigate('Currency')}
+            forward
+          />
+          <SettingCell
+            textKey="change_lang"
+            textDomain="settingsTab"
+            onPress={() => navigation.navigate('Language')}
             forward
           />
 
