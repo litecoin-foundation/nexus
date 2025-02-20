@@ -27,6 +27,22 @@ const languages = [
     code: 'pl',
     name: 'Polish',
   },
+  {
+    code: 'sq',
+    name: 'Albanian',
+  },
+  {
+    code: 'id',
+    name: 'Indonesian',
+  },
+  {
+    code: 'hi',
+    name: 'Hindi',
+  },
+  {
+    code: 'zh',
+    name: 'Chinese',
+  },
 ];
 
 export default languages;
