@@ -97,24 +97,26 @@ const ConfirmSell: React.FC<Props> = props => {
 
   // handle successful sale!
   useEffect(() => {
-    if (route.params.queryString) {
-      // transactionId={{id}}
-      // &baseCurrencyCode={{code}}
-      // &baseCurrencyAmount={{amount}}
-      // &depositWalletAddress={{address}}
-      // &depositWalletAddressTag={{tag}}
-      const sellData = parseQueryString(route.params.queryString);
+    if (route.params) {
+      if (route.params.queryString) {
+        // transactionId={{id}}
+        // &baseCurrencyCode={{code}}
+        // &baseCurrencyAmount={{amount}}
+        // &depositWalletAddress={{address}}
+        // &depositWalletAddressTag={{tag}}
+        const sellData = parseQueryString(route.params.queryString);
 
-      setSaleTxid(sellData.transactionId);
-      setSaleAmount(Number(sellData.amount));
-      console.log(sellData);
+        setSaleTxid(sellData.transactionId);
+        setSaleAmount(Number(sellData.amount));
+        console.log(sellData);
+      }
     }
-  }, [route.params.queryString]);
+  }, [route.params]);
 
   return (
     <View style={styles.container}>
       <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
-        {saleTxid === '' && saleAmount !== 0 ? (
+        {saleTxid === '' && saleAmount === 0 ? (
           <></>
         ) : (
           <>
