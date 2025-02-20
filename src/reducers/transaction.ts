@@ -295,10 +295,35 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       }
 
       if (sellHistory && sellHistory.length >= 1) {
-        if (
-          sellHistory.filter(sellTx => sellTx.cryptoTransactionId === tx.txHash)
-            .length > 0
-        ) {
+        const sellTxs = sellHistory.filter(
+          sellTx => sellTx.depositHash === tx.txHash,
+        );
+        if (sellTxs && sellTxs.length > 0) {
+          const sellTx = sellTxs[0];
+          moonpayMeta = {
+            id: sellTx.id,
+            cryptoTransactionId: sellTx.depositHash || null,
+            createdAt: sellTx.createdAt,
+            updatedAt: sellTx.updatedAt || null,
+            // walletAddress: buyTx.walletAddress || null,
+            // baseCurrency: buyTx.baseCurrency.code || null,
+            // currency: buyTx.currency.code || null,
+            baseCurrencyAmount: sellTx.baseCurrencyAmount || null, //ltc
+            quoteCurrencyAmount: sellTx.quoteCurrencyAmount || null, //fiat
+            usdRate: sellTx.usdRate || null,
+            eurRate: sellTx.eurRate || null,
+            gbpRate: sellTx.gbpRate || null,
+            // areFeesIncluded: buyTx.areFeesIncluded || null,
+            // networkFeeAmount: buyTx.networkFeeAmount || null,
+            feeAmount: sellTx.feeAmount || null,
+            // feeAmountDiscount: buyTx.feeAmountDiscount || null,
+            extraFeeAmount: sellTx.extraFeeAmount || null,
+            // extraFeeAmountDiscount: buyTx.extraFeeAmountDiscount || null,
+            // returnUrl: buyTx.returnUrl,
+            status: sellTx.status || null,
+            country: sellTx.country || null,
+            // cardType: buyTx.cardType || null,
+          };
           metaLabel = 'Sell';
         }
       }

@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Alert, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
@@ -11,12 +11,15 @@ import LinearGradient from 'react-native-linear-gradient';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import TranslateText from '../../components/TranslateText';
+import SendConfirmation from '../../components/SendConfirmation';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {getSignedSellUrl} from '../../reducers/buy';
 import {parseQueryString} from '../../lib/utils/querystring';
+import {showError} from '../../reducers/errors';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {fiatValueSelector} from '../../reducers/ticker';
 
 type RootStackParamList = {
   ConfirmSell: {
@@ -45,16 +48,22 @@ const ConfirmSell: React.FC<Props> = props => {
 
   const [hasBeenMounted, setHasBeenMounted] = useState(false);
   const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [saleTxid, setSaleTxid] = useState('');
-  const [saleAmount, setSaleAmount] = useState(0);
+  const [toAmount, setToAmount] = useState(0);
+  const [fiatAmount, setFiatAmount] = useState('');
+  const [toAddress, setToAddress] = useState('');
 
   const {amount} = useAppSelector(state => state.input);
-  const {address} = useAppSelector(state => state.address);
+  const refundAddress = useAppSelector(state => state.address.address);
+  const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
 
   const openSellWidget = async () => {
     try {
       // await is important!
-      const url = await dispatch(getSignedSellUrl(address, Number(amount)));
+      const url = await dispatch(
+        getSignedSellUrl(refundAddress, Number(amount)),
+      );
 
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {
@@ -64,11 +73,10 @@ const ConfirmSell: React.FC<Props> = props => {
           returnRoute: 'ConfirmSell',
         });
       } else {
-        console.log(url);
-        Alert.alert("Something's wrong!", `${url}`);
+        throw new Error('Failed to get Sell Litecoin URL (Moonpay)!');
       }
     } catch (error) {
-      Alert.alert("Something's wrong!", `err: ${error}`);
+      dispatch(showError(String(error)));
     }
   };
 
@@ -95,7 +103,7 @@ const ConfirmSell: React.FC<Props> = props => {
     return unsubscribe;
   }, [navigation]);
 
-  // handle successful sale!
+  // handle ready to sell, confirm send.
   useEffect(() => {
     if (route.params) {
       if (route.params.queryString) {
@@ -104,55 +112,72 @@ const ConfirmSell: React.FC<Props> = props => {
         // &baseCurrencyAmount={{amount}}
         // &depositWalletAddress={{address}}
         // &depositWalletAddressTag={{tag}}
-        const sellData = parseQueryString(route.params.queryString);
+        const sellRequest = parseQueryString(route.params.queryString);
 
-        setSaleTxid(sellData.transactionId);
-        setSaleAmount(Number(sellData.amount));
-        console.log(sellData);
+        setSaleTxid(sellRequest.transactionId);
+        setToAmount(Number(sellRequest.baseCurrencyAmount) * 100000000);
+        setToAddress(sellRequest.depositWalletAddress);
+        setFiatAmount(calculateFiatAmount(sellRequest.baseCurrencyAmount));
+        console.log(sellRequest);
       }
     }
   }, [route.params]);
 
+  const SuccessScreen = (
+    <>
+      <View style={styles.body}>
+        <TranslateText
+          textKey="awesome"
+          domain="settingsTab"
+          textStyle={styles.title}
+        />
+        <TranslateText
+          textKey="sell_success"
+          domain="sellTab"
+          textStyle={styles.subtitle}
+          interpolationObj={{
+            amount: toAmount,
+          }}
+        />
+
+        <View style={styles.toAddressContainer}>
+          <Text style={styles.toAddressText}>{saleTxid}</Text>
+        </View>
+      </View>
+
+      <View style={styles.confirmButtonContainer}>
+        <WhiteButton
+          textKey="back_to_wallet"
+          textDomain="settingsTab"
+          disabled={false}
+          small={true}
+          active={true}
+          onPress={() => {
+            navigation.navigate('Main', {isInitial: true});
+          }}
+        />
+      </View>
+    </>
+  );
+
   return (
     <View style={styles.container}>
       <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
-        {saleTxid === '' && saleAmount === 0 ? (
+        {saleTxid === '' ? (
+          // WebPage is open
           <></>
+        ) : saleTxid !== '' && paymentSuccess === false ? (
+          // WebPage closed & ready for payment
+          <SendConfirmation
+            toAddress={toAddress}
+            amount={toAmount}
+            fiatAmount={fiatAmount}
+            label=""
+            sendSuccessHandler={txid => console.log(txid)}
+          />
         ) : (
-          <>
-            <View style={styles.body}>
-              <TranslateText
-                textKey="awesome"
-                domain="settingsTab"
-                textStyle={styles.title}
-              />
-              <TranslateText
-                textKey="sell_success"
-                domain="sellTab"
-                textStyle={styles.subtitle}
-                interpolationObj={{
-                  amount: saleAmount,
-                }}
-              />
-
-              <View style={styles.toAddressContainer}>
-                <Text style={styles.toAddressText}>{saleTxid}</Text>
-              </View>
-            </View>
-
-            <View style={styles.confirmButtonContainer}>
-              <WhiteButton
-                textKey="back_to_wallet"
-                textDomain="settingsTab"
-                disabled={false}
-                small={true}
-                active={true}
-                onPress={() => {
-                  navigation.navigate('Main', {isInitial: true});
-                }}
-              />
-            </View>
-          </>
+          // payment success!
+          SuccessScreen
         )}
       </LinearGradient>
     </View>
