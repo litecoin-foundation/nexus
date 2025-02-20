@@ -110,7 +110,8 @@
     "sell": "Sell ",
     "sell_litecoin": "Sell Litecoin",
     "preview_sell": "Sell LTC",
-    "sell_blocked": "Sell Litecoin is currently not available in your country/state."
+    "sell_blocked": "Sell Litecoin is currently not available in your country/state.",
+    "sell_success": "You just sold {{amount}} LTC!"
   },
   "sendTab": {
     "send_ltc": "Send LTC",
