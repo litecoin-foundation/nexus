@@ -43,6 +43,10 @@ const languages = [
     code: 'zh',
     name: 'Chinese',
   },
+  {
+    code: 'tl',
+    name: 'Tagalog',
+  },
 ];
 
 export default languages;

@@ -13,6 +13,7 @@ import hi_T from '../assets/locales/hi.json';
 import id_T from '../assets/locales/id.json';
 import sq_T from '../assets/locales/sq.json';
 import zh_T from '../assets/locales/zh.json';
+import tl_T from '../assets/locales/tl.json';
 
 function initI18N(languageCode: string) {
   console.log(languageCode);
@@ -32,6 +33,7 @@ function initI18N(languageCode: string) {
       id: id_T,
       sq: sq_T,
       zh: zh_T,
+      tl: tl_T,
     },
   });
 }
