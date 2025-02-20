@@ -1,43 +1,43 @@
 {
   "onboarding": {
     "forgot_pin": "Забыли Пароль?",
-    "forgot_pin_description": "", // Forgot your Pincode?\nEnter your seed phrase to reset your pincode.
+    "forgot_pin_description": "Забыли Пароль? Введите вашу Seed-фразу, чтобы сбросить пароль.",
     "enter_pin": "Введите ПИН",
     "attempts_left_one": "Осталась {{count}} попытка.",
     "attempts_left_other": "Осталось {{count}} попытки.",
-    "for_litecoin": "", // FOR LITECOIN
-    "create_wallet": "", // Create Wallet
-    "already_wallet": "", // Already have a wallet? Log In
-    "recover_wallet": "", // Recover Wallet
-    "enter_seed": "", // Enter your seed phrase words below.
-    "create_pin": "", // Create Pincode
-    "create_pin_description": "", // Please create a secure pincode.
-    "create_pin_repeat": "", // Enter your pincode again.
-    "confirm_pin": "", // Confirm Pincode
-    "verify_pin": "", // Verify your Pincode
-    "seed_phrase": "", // Your Seed Phrase
-    "seed_phrase_description": "", // The 24 words below is your seed phrase.
-    "seed_phrase_description_2": "", // Your seed phrase is your password to your Litecoin & Wallet. Write it down and keep it safe somewhere secure!
-    "seed_warning": "", // WITHOUT THESE WORDS YOU WILL NOT BE ABLE TO ACCESS YOUR WALLET!
-    "scroll_right": "", // Scroll Right
-    "confirm_written": "", // I have written it down
-    "verify_seed": "", // Verify Seed Phrase
-    "verify_seed_description": "", // Select word #{{position}} to verify your seed phrase.
-    "continue": "", // Continue
-    "incorrect_seed": "", // Incorrect word! Check you have written down the correct word.
-    "face_id": "", // Face ID
-    "touch_id": "", // Touch ID
-    "biometric_description": "", // Would you like to use {{biometricType}} to unlock your wallet?
-    "enable_biometric": "", // Enable {{biometricType}}
-    "maybe": "", // Maybe Later
-    "tap_to_start": "", // Tap Anywhere to Start
-    "back": "", // Back
-    "presync": "", // Presync in Progress
-    "presync_description": "", // Your wallet is currently presyncing. This only happens once, and helps speed setting up your Nexus Wallet.
-    "retry": "", // Retry
-    "invalid_word": "", // Invalid Word
-    "invalid_description": "", // This word is not valid - check your spelling and try again.
-    "try_again": "" // Try Again
+    "for_litecoin": "ДЛЯ LITECOIN",
+    "create_wallet": "Создать Кошелек",
+    "already_wallet": "Уже есть кошелек? Войти",
+    "recover_wallet": "Восстановить Кошелек",
+    "enter_seed": "Введите слова вашей Seed-фразы ниже",
+    "create_pin": "Создать Пароль",
+    "create_pin_description": "Введите безопасный пароль",
+    "create_pin_repeat": "Введите пароль снова",
+    "confirm_pin": "Подтвердить пароль",
+    "verify_pin": "Проверьте правильность пароля",
+    "seed_phrase": "Ваша Seed-фраза",
+    "seed_phrase_description": "Эти 24 слова - ваша Seed-фраза",
+    "seed_phrase_description_2": "Seed-фраза это ключ от вашего кошелька Litecoin. Запишите ее и сохраните в надежном месте!",
+    "seed_warning": "БЕЗ ЭТИХ СЛОВ ВЫ НЕ СМОЖЕТЕ ПОЛУЧИТЬ ДОСТУП К ВАШЕМУ КОШЕЛЬКУ!",
+    "scroll_right": "Листайте Вправо",
+    "confirm_written": "Я записал все слова",
+    "verify_seed": "Подствердить Seed-фразу",
+    "verify_seed_description": "Выберите слово {{position}} для проверки Seed-фразы.",
+    "continue": "Продолжить",
+    "incorrect_seed": "Неправильное слово! Проверье правильно ли вы записали слово.",
+    "face_id": "Face ID",
+    "touch_id": "Touch ID",
+    "biometric_description": "Хотите использовать {{biometricType}} для разблокировки кошелька?",
+    "enable_biometric": "Включить {{biometricType}}",
+    "maybe": "Потом",
+    "tap_to_start": "Нажмите где-нибудь для загрузки",
+    "back": "Назад",
+    "presync": "Предварительная Загрузка",
+    "presync_description": "Кошелек загружает данные для синхронизации. Это разовая процедура для ускорения настройки кошелька.",
+    "retry": "Повторить",
+    "invalid_word": "Неправильное Слово",
+    "invalid_description": "Это слово недействительно, проверьте правильность написания.",
+    "try_again": "Попробовать Снова"
   },
   "main": {
     "main_wallet": "Основной Кошелек",
@@ -63,7 +63,7 @@
     "network_fee": "КОМИССИЯ СЕТИ",
     "view_on_blockchain": "Посмотреть на Блокчейне",
     "bought": "Куплено",
-    "sold": "Продано",
+    "sold": "Потрачено",
     "completed": "ЗАВЕРШЕНО",
     "total": "ИТОГ",
     "total_fee": "ИТОГОВЫЕ КОМИССИИ",
@@ -74,15 +74,15 @@
     "blockchain": "БЛОКЧЕЙН",
     "details": "ДЕТАЛИ",
     "empty_transactions": "Ваши транзакции появятся тут",
-    "load_txs": "", // Loading Transactions...
-    "recover_txs": "", // Recovering Transactions...
-    "1d": "", // 1D
-    "1w": "", // 1W
-    "1m": "", // 1M
-    "3m": "", // 3M
-    "1y": "", // 1Y
-    "all_time": "", // ALL
-    "order_id": "" // ORDER ID
+    "load_txs": "Загрузка Транзакций",
+    "recover_txs": "Восстановление Транзакций",
+    "1d": "1Д",
+    "1w": "1Н",
+    "1m": "1М",
+    "3m": "3М",
+    "1y": "1Г",
+    "all_time": "ВСЕ",
+    "order_id": "ID Заказа"
   },
   "buyTab": {
     "buy": "Купить ",
@@ -101,14 +101,14 @@
     "rate_per_ltc": "{{rate}} за (1LTC)",
     "continue_purchase": "Продолжить Покупку",
     "back": "НАЗАД",
-    "buy_blocked": "", // Buy Litecoin is currently not available in your country/state.
-    "error_title": "" // Something's wrong!
+    "buy_blocked": "Покупка Litecoin в данный момент недоступна в вашем регионе.",
+    "error_title": "Что-то пошло не так!"
   },
   "sellTab": {
     "sell": "Продать ",
     "sell_litecoin": "Продать Litecoin",
     "preview_sell": "Продать LTC",
-    "sell_blocked": "" // Sell Litecoin is currently not available in your country/state.
+    "sell_blocked": "Продажа Litecoin в данный момент недоступна в вашем регионе."
   },
   "sendTab": {
     "send_ltc": "Отправить LTC",
@@ -130,15 +130,16 @@
   },
   "receiveTab": {
     "receive_ltc": "Получить LTC",
-    "receive_privately": "", // Receive Privately
+    "receive_privately": "Получить Скрытно",
     "send_privately": "Отправить Приватно",
     "my_ltc_address": "МОЙ LTC АДРЕС",
-    "recieve_mweb_description": "" // Receiving privately hides the sender and receiver addresses, and amount being sent.
+    "recieve_mweb_description": "Скрытные транзакации прячут адреса отправителя и получателя, а также отправляемую сумму."
   },
   "searchTab": {
     "transactions": "Транзакции",
     "all": "Все",
     "regular": "Простые",
+    "mweb": "MWEB",
     "find_tx": "Найти транзакцию",
     "paste": "Вставить",
     "auto_fill": "Авто-заполнение",
@@ -152,13 +153,14 @@
     "create_alerts": "Создать сигналы",
     "create_alerts_note": "Создавайте сигналы, чтобы получать уведомления, когда цена Litecoin дойдет до поставленной цены.",
     "alerts_appear_here": "Ваши сигналы появятся тут.",
-    "set_alerts": "ПОСТАВИТЬ СИГНАЛЫ",
-    "alert_me_when": "Скажи мне, когда цена Litecoin (LTC) будет",
+    "set_alerts": "СИГНАЛЫ",
+    "alert_me": "Скажи мне, когда цена",
+    "when_ltc": "Litecoin (LTC) будет",
     "below": "НИЖЕ",
     "above": "ВЫШЕ",
     "create_alert": "Создать сигнал",
-    "price_compare": "", // Litecoin (LTC) is {{above/below}} ${currencySymbol}${alertValueInLocalFiat}
-    "last_time": "" // Last time LTC reached this value was {{date}}.
+    "price_compare": "Litecoin (LTC) {{above/below}} ${currencySymbol}${alertValueInLocalFiat}",
+    "last_time": "Последний раз такая цена была {{date}}."
   },
   "settingsTab": {
     "settings": "Настройки",
@@ -179,7 +181,7 @@
     "type_message": "Введите ваше сообщение",
     "done": "Готово",
     "about": "О Проекте",
-    "foundation_preamble": "Зародился в мечтах и воплощен в жизнь с любовью и заботой командой (LTC FOUNDATION)",
+    "foundation_preamble": "Зародился в мечтах и воплощен в жизнь с любовью и заботой командой",
     "change_wallet_pin": "Сменить пароль кошелька",
     "change_login_pin": "Сменить ПИН-код для входа",
     "enter_old_pin": "Введите старый пароль",
@@ -199,35 +201,37 @@
     "select_block_explorer_note": "Вы можете выбрать Эксплорер блокчейна, который больше нравится, и смотреть там транзакции.",
     "change_currency": "Изменить Валюту",
     "select_fiat": "Выбрать Фиат Валюту",
+    "change_lang": "Изменить Язык",
+    "select_lang": "Выбрать Язык",
     "view_seed": "Посмотреть Seed-фразу",
     "view_paper_key": "Посмотреть Бумажный Ключ",
     "last_time_accessed": "Последний просмотр:",
     "litecoin_denomination": "Номинал Litecoin",
     "reset_wallet": "СБРОСИТЬ КОШЕЛЕК?",
-    "import_litewallet": "", // Import Litewallet
-    "litewallet_description": "", // Litewallet users can import their coins into Nexus Wallet. Entering your paper key below will permanently move your coins from Litewallet into Nexus.
-    "litewallet_success": "", // IMPORTED LITEWALLET!
-    "invalid_seed": "", // Incorrect Seed Phrase
-    "invalid": "", // Invalid
-    "pincode_invalid": "", // Pincodes did not match. Try again.
-    "okay": "", // Okay
-    "ok": "", // OK
-    "dismiss": "", // Dismiss
-    "awesome": "", // Awesome!
-    "success_import": "", // You just imported Litecoin.
-    "back_to_wallet": "", // Back to Wallet
-    "reset_warning": "", // Are you absolutely sure you would like to reset your wallet? Backup your seed phrase before resetting.
-    "view_tx": "", // View Transaction
-    "camera_error": "", // Camera Disabled
-    "cancel": "" // Cancel
+    "import_litewallet": "Импортировать Litewallet",
+    "litewallet_description": "Пользователи Litewallet могут переслать свои лайткоины в кошелек Nexus. Вводя Seed-фразу от Litewallet, вы полностью переводите ваш баланс в Nexus.",
+    "litewallet_success": "Litewallet Импортирован!",
+    "invalid_seed": "Неправильная Seed-фраза",
+    "invalid": "Неверно",
+    "pincode_invalid": "Пароли не совпадают. Попробуйте снова.",
+    "okay": "Окей",
+    "ok": "ОК",
+    "dismiss": "Отмена",
+    "awesome": "Круто!",
+    "success_import": "Вы импортировали Litecoin.",
+    "back_to_wallet": "Назад к Кошельку",
+    "reset_warning": "Вы точно уверены, что хотите сбросить ваш кошелек? Сделайте копию вашей Seed-фразы до сброса.",
+    "view_tx": "Посмотреть Транзакцию",
+    "camera_error": "Камера Отключена",
+    "cancel": "Отменить"
   },
   "modals": {
-    "delete": "", // Delete
-    "delete_alert": "", // Delete Alert
-    "hide_modal": "", // Hide Modal
-    "tx_speed": "", // Transaction Speed
-    "fee_description": "", // Higher fees prioritise your transaction to confirm faster.
-    "fee_estimate": "", // 1 block = ~2.5 mins
-    "view_change": "" // View Change Address
+    "delete": "Удалить",
+    "delete_alert": "Удалить Сигнал",
+    "hide_modal": "Спрятать Окно",
+    "tx_speed": "Скорость Транзакции",
+    "fee_description": "Более высокие комиссии дают приоритет вашей транзакации для быстрого подтверждения.",
+    "fee_estimate": "1 блок = примерно 2.5 мин",
+    "view_change": "Посмотреть Адрес Сдачи"
   }
 }

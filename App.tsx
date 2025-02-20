@@ -21,7 +21,7 @@ import {
 } from './src/context/screenSize';
 import {PopUpProvider, PopUpContext} from './src/context/popUpContext';
 
-import {useAppDispatch} from './src/store/hooks';
+import {useAppDispatch, useAppSelector} from './src/store/hooks';
 import {loginToNexusApi} from './src/reducers/onboarding';
 import {
   updatedRatesInFiat,
@@ -36,8 +36,7 @@ import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
 import Error from './src/components/Error';
 
-import i18n from './src/utils/i18n';
-const initI18n = i18n;
+import initI18N from './src/utils/i18n';
 
 const flexaPublishableTestKey =
   'publishable_test_5xJh36PJj2xw97G9MGgMpfW82QPvp2jPjp4r6925XQgpr9QWp2WWjjc9J8h665mHfHr6pXx4fwm674w83H2x44';
@@ -68,6 +67,9 @@ function ResizedView(props: any) {
 }
 
 function ContextExecutable(props: any) {
+  const {languageCode} = useAppSelector(state => state.settings);
+  initI18N(languageCode);
+
   const dispatch = useAppDispatch();
   dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
   // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,

@@ -50,7 +50,7 @@ const ChangePincode: React.FC<Props> = props => {
       ),
       headerTitle: () => (
         <TranslateText
-          textKey="change_login"
+          textKey="change_login_pin"
           domain="settingsTab"
           textStyle={styles.headerTitle}
         />

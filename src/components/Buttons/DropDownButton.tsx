@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState, useContext, Fragment} from 'react';
-import {Text, StyleSheet, Image, Pressable} from 'react-native';
+import {StyleSheet, Image, Pressable} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,6 +8,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
@@ -33,6 +34,8 @@ const OPTIONS_ANIM_DURATION = FOLDIND_ANIM_DURATION;
 const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
   const {isOpened, currentOption, options, onPress, styles} = props;
 
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+
   const [filteredOptions, setFilteredOptions] = useState<any>();
   function filterOptions() {
     setFilteredOptions(
@@ -44,7 +47,13 @@ const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
               <Pressable
                 style={styles.optionBtn}
                 onPress={() => onPress(option)}>
-                <Text style={styles.optionBtnText}>{option}</Text>
+                <TranslateText
+                  textKey={String(option).toLowerCase()}
+                  domain="searchTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.optionBtnText}
+                  numberOfLines={1}
+                />
               </Pressable>
             </Animated.View>
           );
@@ -164,7 +173,13 @@ const DropDownButton: React.FC<Props> = props => {
       }}>
       <Animated.View style={[styles.dropDownBox, animatedStyle]}>
         <Animated.View style={styles.boxTitleContainer}>
-          <Text style={styles.boxText}>{currentOption}</Text>
+          <TranslateText
+            textKey={String(currentOption).toLowerCase()}
+            domain="searchTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.boxText}
+            numberOfLines={1}
+          />
           <Animated.View
             style={[styles.boxArrow, animatedWalletButtonArrowStyle]}>
             <Image

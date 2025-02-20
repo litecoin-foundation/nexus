@@ -1,28 +1,48 @@
 import React, {useContext} from 'react';
 import {StyleSheet, Text, TouchableOpacity} from 'react-native';
 
+import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
-  title: string;
+  title?: string;
+  textKey?: string;
+  textDomain?: string;
   active: boolean;
   onPress: () => void;
 }
 
 const NewBlueButton: React.FC<Props> = props => {
-  const {title, active, onPress} = props;
+  const {title, textKey, textDomain, active, onPress} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  const textStyle = active
+    ? {
+        ...styles.text,
+        ...styles.activeText,
+      }
+    : styles.text;
+
   return (
     <TouchableOpacity
       onPress={onPress}
       style={[styles.container, active ? styles.active : null]}>
-      <Text style={[styles.text, active ? styles.activeText : null]}>
-        {title}
-      </Text>
+      {title ? (
+        <Text style={textStyle}>{title}</Text>
+      ) : textKey && textDomain ? (
+        <TranslateText
+          textKey={textKey}
+          domain={textDomain}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={textStyle}
+          numberOfLines={1}
+        />
+      ) : (
+        <></>
+      )}
     </TouchableOpacity>
   );
 };
@@ -38,6 +58,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: '#FEFEFE',
       borderWidth: 1,
       borderColor: 'rgba(216,210,210,75)',
+      paddingHorizontal: screenWidth * 0.02,
     },
     active: {
       backgroundColor: '#2C72FF',
