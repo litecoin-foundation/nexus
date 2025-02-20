@@ -1,4 +1,4 @@
-import React, {useState, useContext, useRef} from 'react';
+import React, {useState, useContext, useRef, useEffect} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
 import Animated, {
@@ -25,6 +25,8 @@ import {sendOnchainPayment} from '../../reducers/transaction';
 import {showError} from '../../reducers/errors';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {estimateFee} from 'react-native-turbo-lnd';
+import {fiatValueSelector} from '../../reducers/ticker';
 
 type RootStackParamList = {
   ConfirmSend: undefined;
@@ -43,6 +45,7 @@ const ConfirmSend: React.FC<Props> = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const amountCode = useAppSelector(state => subunitCodeSelector(state));
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
@@ -53,9 +56,7 @@ const ConfirmSend: React.FC<Props> = () => {
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const toAddress = useAppSelector(state => state.input.send.toAddress);
   const label = useAppSelector(state => state.input.send.label);
-  // const fee = useAppSelector(state => state.input.send.fee);
-  // Todo: get total fee for the tx
-  const totalFeeInLTC = 'undefined ';
+  const [fee, setFee] = useState(0);
 
   const amountInSubunit = convertToSubunit(amount);
 
@@ -103,6 +104,23 @@ const ConfirmSend: React.FC<Props> = () => {
       dispatch(showError(String(error)));
     }
   };
+
+  // estimate fee
+  useEffect(() => {
+    const calculateFee = async () => {
+      try {
+        const response = await estimateFee({
+          AddrToAmount: {[toAddress]: BigInt(amount)},
+          targetConf: 2,
+        });
+        setFee(Number(response.feeSat));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    calculateFee();
+  }, []);
 
   // animation
   const walletButtonAnimDuration = 200;
@@ -152,8 +170,9 @@ const ConfirmSend: React.FC<Props> = () => {
           <Text style={styles.valueTitle}>{toAddress}</Text>
           <Text style={styles.valueSubtitle}>Fee</Text>
           <Text style={styles.valueTitle}>
-            {totalFeeInLTC + '' + amountSymbol}
+            {convertToSubunit(fee) + '' + amountSymbol}
           </Text>
+          <Text style={styles.valueTitle}>{calculateFiatAmount(fee)}</Text>
         </View>
 
         <View style={styles.confirmButtonContainer}>
