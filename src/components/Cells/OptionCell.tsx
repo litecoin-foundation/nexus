@@ -1,3 +1,4 @@
+import React, {useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -5,7 +6,9 @@ import {
   Image,
   GestureResponderEvent,
 } from 'react-native';
-import React from 'react';
+
+import TranslateText from '../../components/TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   title: string;
@@ -16,9 +19,19 @@ interface Props {
 
 const OptionCell: React.FC<Props> = (props: Props) => {
   const {title, onPress, selected} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Text style={styles.title}>{title}</Text>
+      <TranslateText
+        textValue={title}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        textStyle={styles.title}
+        numberOfLines={1}
+      />
 
       {selected ? (
         <Image source={require('../../assets/images/checkBlue.png')} />
@@ -27,26 +40,27 @@ const OptionCell: React.FC<Props> = (props: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: 25,
-    paddingRight: 25,
-    height: 50,
-    borderTopWidth: 1,
-    borderColor: '#9797974d',
-    backgroundColor: 'white',
-  },
-  title: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#484859',
-    fontSize: 16,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingLeft: 25,
+      paddingRight: 25,
+      height: 50,
+      borderTopWidth: 1,
+      borderColor: '#9797974d',
+      backgroundColor: 'white',
+    },
+    title: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#484859',
+      fontSize: 16,
+    },
+  });
 
 export default OptionCell;

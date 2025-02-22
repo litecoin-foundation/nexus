@@ -55,7 +55,9 @@ const Receive: React.FC<Props> = () => {
         <TranslateText
           textKey="receive_ltc"
           domain="receiveTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
           textStyle={styles.titleText}
+          numberOfLines={1}
         />
 
         <View style={styles.txTypeContainer}>
@@ -81,6 +83,7 @@ const Receive: React.FC<Props> = () => {
         <TranslateText
           textKey="my_ltc_address"
           domain="receiveTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
           textStyle={styles.subtitleText}
         />
 
@@ -88,7 +91,11 @@ const Receive: React.FC<Props> = () => {
           <Pressable
             style={styles.pressableContainer}
             onPress={() => handleCopy()}>
-            <Text style={styles.addressText}>{address}</Text>
+            <TranslateText
+              textValue={address}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.021}
+              textStyle={styles.addressText}
+            />
           </Pressable>
 
           <NewButton

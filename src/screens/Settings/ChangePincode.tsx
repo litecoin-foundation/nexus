@@ -52,7 +52,9 @@ const ChangePincode: React.FC<Props> = props => {
         <TranslateText
           textKey="change_login_pin"
           domain="settingsTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
           textStyle={styles.headerTitle}
+          numberOfLines={1}
         />
       ),
     });

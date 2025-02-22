@@ -117,7 +117,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: 17,
     },
     cardContainer: {
-      paddingBottom: screenHeight * 0.15,
+      flex: 1,
+      justifyContent: 'center',
     },
     buttonContainer: {
       width: '100%',
@@ -136,7 +137,9 @@ export const ImportNavigationOptions = (navigation: any) => {
       <TranslateText
         textKey="import_private_key"
         domain="settingsTab"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
         textStyle={styles.headerTitle}
+        numberOfLines={1}
       />
     ),
     headerTitleAlign: 'left',
