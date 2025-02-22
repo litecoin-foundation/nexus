@@ -18,8 +18,6 @@ import TxDetailModalContent from '../../components/Modals/TxDetailModalContent';
 
 import {useAppSelector} from '../../store/hooks';
 import {txDetailSelector} from '../../reducers/transaction';
-import {getSellTransactionHistory} from '../../reducers/buy';
-import {useAppDispatch} from '../../store/hooks';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -70,10 +68,7 @@ const SearchTransaction: React.FC<Props> = props => {
     );
   }, [SCREEN_HEIGHT, styles, txPrivacyTypeFilter]);
 
-  // const dispatch = useAppDispatch();
   useLayoutEffect(() => {
-    // dispatch(getSellTransactionHistory());
-
     navigation.setOptions({
       headerRight: () => rightHeaderButton,
     });

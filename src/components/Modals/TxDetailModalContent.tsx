@@ -73,16 +73,16 @@ interface SendReceiveLayoutProps {
 }
 
 interface SellBuyLayoutProps {
+  isSell: boolean;
   fiatSymbol: string;
+  ltcSymbol: string;
   moonpayTxId: string;
   cryptoTxId: string;
   createdAt: string;
   // updatedAt: string;
   // walletAddress: string;
-  // cryptoCurrency: string;
-  // fiatCurrency: string;
-  // cryptoCurrencyAmount: number;
   fiatCurrencyAmount: number;
+  cryptoCurrencyAmount: number;
   // usdRate: number;
   // eurRate: number;
   // gbpRate: number;
@@ -291,6 +291,7 @@ export default function TxDetailModalContent(props: Props) {
     createdAt,
     // fiatCurrency,
     fiatCurrencyAmount,
+    cryptoCurrencyAmount,
     totalFee,
     blockchainFee,
     tipLFFee,
@@ -305,8 +306,8 @@ export default function TxDetailModalContent(props: Props) {
       let moonpayTxIdProp = '';
       let cryptoTxIdProp = '';
       let createdAtProp = '';
-      // let fiatCurrencyProp = '';
       let fiatCurrencyAmountProp = 0;
+      let cryptoCurrencyAmountProp = 0;
       let totalFeeProp: number | undefined = 0;
       let blockchainFeeProp: number | undefined = 0;
       let tipLFFeeProp = 0;
@@ -328,8 +329,8 @@ export default function TxDetailModalContent(props: Props) {
             10,
           ),
         );
-        // fiatCurrencyProp = transaction.moonpayMeta.fiatCurrency;
         fiatCurrencyAmountProp = transaction.moonpayMeta.fiatCurrencyAmount;
+        cryptoCurrencyAmountProp = transaction.moonpayMeta.cryptoCurrencyAmount;
         totalFeeProp = transaction.moonpayMeta.totalFee;
         blockchainFeeProp = transaction.moonpayMeta.blockchainFee;
         tipLFFeeProp = transaction.moonpayMeta.tipLFFee;
@@ -360,8 +361,8 @@ export default function TxDetailModalContent(props: Props) {
         moonpayTxId: moonpayTxIdProp,
         cryptoTxId: cryptoTxIdProp,
         createdAt: createdAtProp,
-        // fiatCurrency: fiatCurrencyProp,
         fiatCurrencyAmount: fiatCurrencyAmountProp,
+        cryptoCurrencyAmount: cryptoCurrencyAmountProp,
         totalFee: totalFeeProp,
         blockchainFee: blockchainFeeProp,
         tipLFFee: tipLFFeeProp,
@@ -428,12 +429,14 @@ export default function TxDetailModalContent(props: Props) {
                 />
               ) : (
                 <SellBuyLayout
+                  isSell={transaction.metaLabel === 'Sell'}
                   fiatSymbol={fiatSymbol}
+                  ltcSymbol={'Ł'}
                   moonpayTxId={moonpayTxId}
                   cryptoTxId={cryptoTxId}
                   createdAt={createdAt}
-                  // fiatCurrency={fiatCurrency}
                   fiatCurrencyAmount={fiatCurrencyAmount}
+                  cryptoCurrencyAmount={cryptoCurrencyAmount}
                   totalFee={totalFee}
                   blockchainFee={blockchainFee}
                   tipLFFee={tipLFFee}
@@ -454,12 +457,14 @@ export default function TxDetailModalContent(props: Props) {
 
 const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
   const {
+    isSell,
     fiatSymbol,
+    ltcSymbol,
     moonpayTxId,
     cryptoTxId,
     createdAt,
-    // fiatCurrency,
     fiatCurrencyAmount,
+    cryptoCurrencyAmount,
     totalFee,
     blockchainFee,
     tipLFFee,
@@ -481,10 +486,28 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
       <TableCell
         titleTextKey="total"
         titleTextDomain="main"
-        value={`${fiatSymbol}${fiatCurrencyAmount}`}
+        value={
+          isSell
+            ? `${cryptoCurrencyAmount}${ltcSymbol} (${fiatSymbol}${fiatCurrencyAmount})`
+            : `${fiatSymbol}${fiatCurrencyAmount}`
+        }
         blueValue
         thick
       />
+      {isSell ? (
+        <TableCell
+          titleTextKey="rate"
+          titleTextDomain="buyTab"
+          value={`${fiatSymbol}${parseFloat(
+            String(fiatCurrencyAmount / cryptoCurrencyAmount),
+          ).toFixed(2)}`}
+          blueValue
+          thick
+        />
+      ) : (
+        <></>
+      )}
+
       <View style={styles.tableCell}>
         <View style={styles.tableCellRow}>
           <TranslateText

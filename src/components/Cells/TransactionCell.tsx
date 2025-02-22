@@ -137,23 +137,42 @@ const TransactionCell: React.FC<Props> = props => {
         <TranslateText
           textKey={textKey}
           domain={'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
           textStyle={styles.textKeyText}
           numberOfLines={1}
         />
         <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{String(time)}</Text>
-          <Text style={styles.labelText}>{label}</Text>
+          <TranslateText
+            textValue={String(time)}
+            domain={'main'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+            textStyle={styles.timeText}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textValue={label}
+            domain={'main'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+            textStyle={styles.labelText}
+            numberOfLines={1}
+          />
         </View>
       </View>
       <View style={styles.right}>
-        <Text style={styles.cryptoText}>
-          {cryptoAmount}
-          {amountSymbol}
-        </Text>
-        <Text style={styles.fiatText}>
-          {`${mathSign}${currencySymbol}${amountInFiatOnDateAbsVal}`}
-        </Text>
+        <TranslateText
+          textKey={`${cryptoAmount}${amountSymbol}`}
+          domain={'main'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+          textStyle={styles.cryptoText}
+          numberOfLines={1}
+        />
+        <TranslateText
+          textKey={`${mathSign}${currencySymbol}${amountInFiatOnDateAbsVal}`}
+          domain={'main'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+          textStyle={styles.fiatText}
+          numberOfLines={1}
+        />
       </View>
     </TouchableOpacity>
   );

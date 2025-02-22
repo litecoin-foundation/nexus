@@ -6,8 +6,9 @@ import {useTranslation} from 'react-i18next';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
-  textKey: string;
-  domain: string;
+  textValue?: string;
+  textKey?: string;
+  domain?: string;
   maxSizeInPixels?: number;
   maxLengthInPixels?: number;
   textStyle?: any;
@@ -23,6 +24,7 @@ const DEFAULT_FONT_SIZE = 20;
 
 const TranslateText: React.FC<Props> = props => {
   const {
+    textValue,
     textKey,
     domain,
     maxSizeInPixels,
@@ -58,7 +60,7 @@ const TranslateText: React.FC<Props> = props => {
         style={[styles.text, textStyle, styles.textLimits, animatedProps]}
         ellipsizeMode="tail"
         numberOfLines={numberOfLines || 0}>
-        {t(textKey, interpolationObj)}
+        {textValue ? textValue : textKey ? t(textKey, interpolationObj) : ''}
         {children}
       </Animated.Text>
     </View>
