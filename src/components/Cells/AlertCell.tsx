@@ -1,5 +1,5 @@
 import React, {useState, useContext, useLayoutEffect} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, TouchableOpacity, StyleSheet} from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
