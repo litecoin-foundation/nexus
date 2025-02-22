@@ -55,7 +55,7 @@ const TransactionCell: React.FC<Props> = props => {
           };
         case 'Sell':
           return {
-            textKey: 'sent_ltc',
+            textKey: 'sold_ltc',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
           };

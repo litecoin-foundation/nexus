@@ -228,6 +228,8 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
     );
 
     let txs: IDecodedTx[] = [];
+    let unmatchedSellTxs: string[] = [];
+    let unmatchedBuyTxs: string[] = [];
 
     for await (const tx of transactions.transactions) {
       const outputDetails: IOutputDetails[] = [];
@@ -261,9 +263,17 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       }
 
       if (buyHistory && buyHistory.length >= 1) {
-        const buyTxs = buyHistory.filter(
-          buyTx => buyTx.cryptoTransactionId === tx.txHash,
-        );
+        const buyTxs = buyHistory.filter(buyTx => {
+          if (buyTx.cryptoTransactionId === tx.txHash) {
+            return buyTx;
+          } else if (
+            buyTx.txHash &&
+            buyTx.status === 'completed' &&
+            !unmatchedBuyTxs.includes(buyTx.txHash)
+          ) {
+            unmatchedBuyTxs.push(buyTx.txHash);
+          }
+        });
         if (buyTxs && buyTxs.length > 0) {
           const buyTx = buyTxs[0];
           moonpayMeta = {
@@ -295,9 +305,17 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       }
 
       if (sellHistory && sellHistory.length >= 1) {
-        const sellTxs = sellHistory.filter(
-          sellTx => sellTx.depositHash === tx.txHash,
-        );
+        const sellTxs = sellHistory.filter(sellTx => {
+          if (sellTx.depositHash === tx.txHash) {
+            return sellTx;
+          } else if (
+            sellTx.depositHash &&
+            sellTx.status === 'completed' &&
+            !unmatchedSellTxs.includes(sellTx.depositHash)
+          ) {
+            unmatchedSellTxs.push(sellTx.depositHash);
+          }
+        });
         if (sellTxs && sellTxs.length > 0) {
           const sellTx = sellTxs[0];
           moonpayMeta = {
@@ -306,8 +324,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
             createdAt: sellTx.createdAt,
             updatedAt: sellTx.updatedAt || null,
             // walletAddress: buyTx.walletAddress || null,
-            // baseCurrency: buyTx.baseCurrency.code || null,
-            // currency: buyTx.currency.code || null,
+            walletAddress: null,
+            baseCurrency: sellTx.baseCurrency.code || null, //
+            currency: sellTx.currency.code || null, //
             baseCurrencyAmount: sellTx.baseCurrencyAmount || null, //ltc
             quoteCurrencyAmount: sellTx.quoteCurrencyAmount || null, //fiat
             usdRate: sellTx.usdRate || null,
@@ -315,14 +334,20 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
             gbpRate: sellTx.gbpRate || null,
             // areFeesIncluded: buyTx.areFeesIncluded || null,
             // networkFeeAmount: buyTx.networkFeeAmount || null,
+            areFeesIncluded: null,
+            networkFeeAmount: null,
             feeAmount: sellTx.feeAmount || null,
             // feeAmountDiscount: buyTx.feeAmountDiscount || null,
+            feeAmountDiscount: null,
             extraFeeAmount: sellTx.extraFeeAmount || null,
             // extraFeeAmountDiscount: buyTx.extraFeeAmountDiscount || null,
             // returnUrl: buyTx.returnUrl,
+            extraFeeAmountDiscount: null,
+            returnUrl: null,
             status: sellTx.status || null,
             country: sellTx.country || null,
             // cardType: buyTx.cardType || null,
+            cardType: null,
           };
           metaLabel = 'Sell';
         }
@@ -343,6 +368,56 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         priceOnDateMeta: Number(priceOnDateMeta) || 0,
         moonpayMeta,
       };
+      txs.push(decodedTx);
+    }
+
+    for await (const unmatchedSellTx of unmatchedSellTxs) {
+      const sellTx = sellHistory.find(tx => tx.depositHash === unmatchedSellTx);
+
+      const moonpayMeta = {
+        id: sellTx.id,
+        cryptoTransactionId: sellTx.depositHash || null,
+        createdAt: sellTx.createdAt,
+        updatedAt: sellTx.updatedAt || null,
+        walletAddress: null,
+        baseCurrency: sellTx.baseCurrency?.code || null,
+        currency: sellTx.quoteCurrency?.code || null,
+        baseCurrencyAmount: sellTx.baseCurrencyAmount || null, //ltc
+        quoteCurrencyAmount: sellTx.quoteCurrencyAmount || null, //fiat
+        usdRate: sellTx.usdRate || null,
+        eurRate: sellTx.eurRate || null,
+        gbpRate: sellTx.gbpRate || null,
+        areFeesIncluded: null,
+        networkFeeAmount: null,
+        feeAmount: sellTx.feeAmount || null,
+        feeAmountDiscount: null,
+        extraFeeAmount: sellTx.extraFeeAmount || null,
+        extraFeeAmountDiscount: null,
+        returnUrl: null,
+        status: sellTx.status || null,
+        country: sellTx.country || null,
+        cardType: null,
+      };
+
+      const txTimeStamp = String(Date.parse(sellTx.createdAt) / 1000); // from iso to timestamp
+      const priceOnDateMeta = await getPriceOnDate(Number(txTimeStamp));
+
+      let decodedTx = {
+        txHash: sellTx.depositHash,
+        blockHash: sellTx.depositHash,
+        blockHeight: 0,
+        amount: sellTx.baseCurrencyAmount * 100000000,
+        numConfirmations: sellTx.confirmations,
+        timeStamp: txTimeStamp,
+        fee: sellTx.feeAmount,
+        outputDetails: [],
+        previousOutpoints: [],
+        label: '',
+        metaLabel: 'Sell',
+        priceOnDateMeta: Number(priceOnDateMeta) || 0,
+        moonpayMeta,
+      };
+
       txs.push(decodedTx);
     }
 
@@ -476,7 +551,10 @@ export const txDetailSelector = createSelector<
             updatedAt: data.moonpayMeta.updatedAt,
             walletAddress: data.moonpayMeta.walletAddress || '',
             cryptoCurrency: data.moonpayMeta.currency || 'ltc',
-            fiatCurrency: data.moonpayMeta.baseCurrency || 'unknown',
+            fiatCurrency:
+              data.metaLabel === 'Buy'
+                ? data.moonpayMeta.baseCurrency
+                : data.moonpayMeta.quoteCurrency || 'unknown',
             cryptoCurrencyAmount: data.moonpayMeta.quoteCurrencyAmount || 0,
             fiatCurrencyAmount: data.moonpayMeta.baseCurrencyAmount || 0,
             usdRate: data.moonpayMeta.usdRate || 0,

@@ -8,7 +8,6 @@ import React, {
 import {StyleSheet, View} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
-
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TransactionList from '../../components/TransactionList';
 import DropDownButton from '../../components/Buttons/DropDownButton';
@@ -19,6 +18,8 @@ import TxDetailModalContent from '../../components/Modals/TxDetailModalContent';
 
 import {useAppSelector} from '../../store/hooks';
 import {txDetailSelector} from '../../reducers/transaction';
+import {getSellTransactionHistory} from '../../reducers/buy';
+import {useAppDispatch} from '../../store/hooks';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -69,7 +70,10 @@ const SearchTransaction: React.FC<Props> = props => {
     );
   }, [SCREEN_HEIGHT, styles, txPrivacyTypeFilter]);
 
+  // const dispatch = useAppDispatch();
   useLayoutEffect(() => {
+    // dispatch(getSellTransactionHistory());
+
     navigation.setOptions({
       headerRight: () => rightHeaderButton,
     });

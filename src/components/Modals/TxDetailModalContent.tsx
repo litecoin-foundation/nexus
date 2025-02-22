@@ -800,6 +800,10 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
   }
 
   const [newLabel, setNewLabel] = useState(label === ' ' ? '' : label);
+  useEffect(() => {
+    setNewLabel(label === ' ' ? '' : label);
+  }, [label]);
+
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const scrollToInput = (y: number) => {

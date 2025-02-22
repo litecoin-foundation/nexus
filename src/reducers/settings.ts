@@ -63,7 +63,7 @@ const setDeviceNotificationTokenAction = createAction<string>(
 export const getCurrencySymbol = (code: string): string => {
   const codeFormatted = code.toUpperCase();
   const currencySymbolObject = fiat.find(e => e.code === codeFormatted);
-  const currencySymbol = currencySymbolObject!.symbol_native;
+  const currencySymbol = currencySymbolObject?.symbol_native || '';
   return currencySymbol;
 };
 
@@ -226,7 +226,7 @@ export const defaultExplorerSelector = createSelector(
       case 'MWEB Explorer':
         return explorerObject!.tx + txHash;
       default:
-        return explorerObject!.tx + txHash;
+        return explorers[0].tx + txHash;
     }
   },
 );
