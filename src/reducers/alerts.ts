@@ -77,6 +77,65 @@ export const resyncAlertsOnApiServer =
     }
   };
 
+export const updatedFiredAlertsFromApiServer =
+  (): AppThunk => async (dispatch, getState) => {
+    const deviceToken = getState().settings.deviceNotificationToken;
+    const alerts = getState().alerts.alerts;
+
+    if (!deviceToken) {
+      return;
+    }
+
+    const alertsWithNoId = alerts
+      ? alerts.map((alert: IAlert) => {
+          return {
+            deviceToken: alert.deviceToken,
+            value: alert.value,
+            index: alert.index,
+            isPositive: alert.isPositive,
+            isIOS: alert.isIOS,
+            isFired: alert.isFired,
+            createdAt: alert.createdAt,
+          };
+        })
+      : [];
+
+    try {
+      const res = await fetch(`${alertProviderUrl}/get-fired`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          deviceToken: deviceToken,
+          alerts: alertsWithNoId,
+        }),
+      });
+
+      if (!res.ok) {
+        // const error = await res.json();
+        // throw new Error(error);
+        return;
+      }
+
+      const data = await res.json();
+
+      data.map((serverFiredAlert: any) => {
+        dispatch({
+          type: SET_ALERT_AVAILABILITY,
+          index: serverFiredAlert.index,
+          availability: !serverFiredAlert.isFired,
+        });
+      });
+
+      // first sync fired alerts
+      // then resync alerts with nexus-api server
+      dispatch(resyncAlertsOnApiServer());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
 export const addAlert =
   (data: PostedAlert): AppThunk =>
   async (dispatch, getState) => {
@@ -248,6 +307,7 @@ export const setAlertAvailability =
       //     index: Number(index),
       //   }),
       // });
+
       // Or just resync all alerts on api server
       dispatch(resyncAlertsOnApiServer());
     } catch (error) {
