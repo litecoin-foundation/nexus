@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useContext} from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -23,6 +23,7 @@ import {updateSubunit} from '../../reducers/settings';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
 import TranslateText from '../../components/TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 import {useTranslation} from 'react-i18next';
 
 type RootStackParamList = {
@@ -49,6 +50,10 @@ interface Props {
 const Settings: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('view-seed-auth');
@@ -247,45 +252,52 @@ const Settings: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F7F7F7',
-  },
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 17,
-  },
-  switchContainer: {
-    flex: 1,
-    gap: 8,
-    paddingLeft: 25,
-    paddingTop: 10,
-    paddingRight: 25,
-    paddingBottom: 14,
-    borderTopWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderColor: '#9797974d',
-    backgroundColor: 'white',
-  },
-  switchTitleText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: '#484859',
-    fontSize: 14,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#F7F7F7',
+    },
+    headerTitle: {
+      color: 'white',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
+      fontStyle: 'normal',
+      fontWeight: '700',
+    },
+    switchContainer: {
+      flex: 1,
+      gap: 8,
+      paddingLeft: 25,
+      paddingTop: 10,
+      paddingRight: 25,
+      paddingBottom: 14,
+      borderTopWidth: 0.5,
+      borderBottomWidth: 0.5,
+      borderColor: '#9797974d',
+      backgroundColor: 'white',
+    },
+    switchTitleText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#484859',
+      fontSize: 14,
+    },
+  });
 
 export const SettingsNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return {
     headerTitle: () => (
       <TranslateText
         textKey={'settings'}
         domain={'settingsTab'}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        textStyle={styles.headerTitle}
         numberOfLines={1}
       />
     ),

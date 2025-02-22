@@ -10,7 +10,6 @@ import React, {
 import {
   ScrollView,
   View,
-  Text,
   StyleSheet,
   Platform,
   TouchableOpacity,
@@ -396,18 +395,32 @@ export default function TxDetailModalContent(props: Props) {
         <Animated.View style={[styles.body, cardOpacityAnim]}>
           <Animated.View style={[styles.fadingContent, fadeNewDetailsIn]}>
             <View style={styles.modalHeaderContainer}>
-              <TranslateText
-                textKey={textKey}
-                domain={'main'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-                textStyle={styles.modalHeaderTitle}
-                numberOfLines={1}>
-                {' '}
-                <Text style={styles.modalHeaderSubtitle}>
-                  {` ${cryptoAmountFormatted}${amountSymbol}` +
-                    ` (${currencySymbol}${amountInFiatOnDateAbsVal})`}
-                </Text>
-              </TranslateText>
+              <View style={styles.modalHeaderTitlesContainer}>
+                <TranslateText
+                  textKey={textKey}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.027}
+                  textStyle={styles.modalHeaderTitle}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={' '}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.027}
+                  textStyle={styles.modalHeaderTitle}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={
+                    `${cryptoAmountFormatted}${amountSymbol}` +
+                    ` (${currencySymbol}${amountInFiatOnDateAbsVal})`
+                  }
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.027}
+                  textStyle={styles.modalHeaderSubtitle}
+                  numberOfLines={1}
+                />
+              </View>
               <GreyRoundButton onPress={() => close()} />
             </View>
             <View style={styles.modalContentContainer}>
@@ -513,12 +526,16 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
           <TranslateText
             textKey={'total_fee'}
             domain={'main'}
-            maxSizeInPixels={height * 0.02}
+            maxSizeInPixels={height * 0.017}
             textStyle={styles.tableCellTitle}
             numberOfLines={1}
           />
-          <Text
-            style={styles.tableCellValue}>{`${fiatSymbol}${totalFee}`}</Text>
+          <TranslateText
+            textValue={`${fiatSymbol}${totalFee}`}
+            maxSizeInPixels={height * 0.02}
+            textStyle={styles.tableCellValue}
+            numberOfLines={1}
+          />
         </View>
         <View style={styles.tableCellRow}>
           <View style={styles.tableCellSubRow}>
@@ -526,14 +543,17 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
             <TranslateText
               textKey={'network_fee'}
               domain={'main'}
-              maxSizeInPixels={height * 0.02}
+              maxSizeInPixels={height * 0.017}
               textStyle={styles.tableCellTitle}
               numberOfLines={1}
             />
           </View>
-          <Text style={styles.tableCellSubValue}>
-            {`${fiatSymbol}${blockchainFee}`}
-          </Text>
+          <TranslateText
+            textValue={`${fiatSymbol}${blockchainFee}`}
+            maxSizeInPixels={height * 0.02}
+            textStyle={styles.tableCellSubValue}
+            numberOfLines={1}
+          />
         </View>
         <View style={styles.tableCellRow}>
           <View style={styles.tableCellSubRow}>
@@ -541,14 +561,17 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
             <TranslateText
               textKey={'provider_fee'}
               domain={'main'}
-              maxSizeInPixels={height * 0.02}
+              maxSizeInPixels={height * 0.017}
               textStyle={styles.tableCellTitle}
               numberOfLines={1}
             />
           </View>
-          <Text style={styles.tableCellSubValue}>
-            {`${fiatSymbol}${tipLFFee + moonpayFee}`}
-          </Text>
+          <TranslateText
+            textValue={`${fiatSymbol}${tipLFFee + moonpayFee}`}
+            maxSizeInPixels={height * 0.02}
+            textStyle={styles.tableCellSubValue}
+            numberOfLines={1}
+          />
         </View>
       </View>
       <TableCell
@@ -671,24 +694,28 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
   function renderInputs() {
     if (allInputAddrs.length > 0) {
       return allInputAddrs.slice(0, ADDR_ROW_LIMIT).map((input, index) => (
-        <Text
-          style={{
+        <TranslateText
+          textValue={input}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
             ...styles.fromAddressTitle,
             fontSize: fromAddressSize,
           }}
-          key={'input-' + index}>
-          {input}
-        </Text>
+          numberOfLines={2}
+          key={'input-' + index}
+        />
       ));
     } else {
       return (
-        <Text
-          style={{
+        <TranslateText
+          textValue="Unknown"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
             ...styles.fromAddressTitle,
             fontSize: fromAddressSize,
-          }}>
-          Unknown
-        </Text>
+          }}
+          numberOfLines={1}
+        />
       );
     }
   }
@@ -700,29 +727,33 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
     const myOutputElements = myOutputAddrs
       .slice(0, isSend ? CHANGE_ADDR_ROW_LIMIT : ADDR_ROW_LIMIT)
       .map((output, index) => (
-        <Text
-          style={{
+        <TranslateText
+          textValue={output}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
             ...styles.toAddressTitle,
             fontSize: toAddressSize,
             color: isSend ? '#2c72ff' : '#1ebc73',
           }}
-          key={'output-change-' + index}>
-          {output}
-        </Text>
+          numberOfLines={2}
+          key={'output-change-' + index}
+        />
       ));
 
     // to address
     const otherOutputElements = otherOutputAddrs
       .slice(0, ADDR_ROW_LIMIT)
       .map((output, index) => (
-        <Text
-          style={{
+        <TranslateText
+          textValue={output}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
             ...styles.toAddressTitle,
             fontSize: toAddressSize,
           }}
-          key={'output-sent-' + index}>
-          {output}
-        </Text>
+          numberOfLines={1}
+          key={'output-sent-' + index}
+        />
       ));
     if (isSend) {
     } else {
@@ -730,13 +761,15 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
 
     if (myOutputElements.length === 0 && otherOutputElements.length === 0) {
       return (
-        <Text
-          style={{
+        <TranslateText
+          textValue="Unknown"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
             ...styles.toAddressTitle,
             fontSize: toAddressSize,
-          }}>
-          Unknown
-        </Text>
+          }}
+          numberOfLines={1}
+        />
       );
     } else {
       if (isSend) {
@@ -752,37 +785,49 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
   }
 
   const hiddenInputsNote = (
-    <Text style={styles.otherAddressesNote}>
-      {`+ ${allInputAddrs.length - ADDR_ROW_LIMIT} other input ${
+    <TranslateText
+      textValue={`+ ${allInputAddrs.length - ADDR_ROW_LIMIT} other input ${
         allInputAddrs.length - ADDR_ROW_LIMIT > 1 ? 'addresses' : 'address'
       }`}
-    </Text>
+      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+      textStyle={styles.otherAddressesNote}
+      numberOfLines={1}
+    />
   );
 
   const strangerAddressesNote = (
-    <Text style={styles.otherAddressesNote}>
-      {`+ ${otherOutputAddrs.length} ${
+    <TranslateText
+      textValue={`+ ${otherOutputAddrs.length} ${
         otherOutputAddrs.length > 1 ? 'addresses' : 'address'
       } not belonging to you`}
-    </Text>
+      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+      textStyle={styles.otherAddressesNote}
+      numberOfLines={1}
+    />
   );
 
   const hiddenStrangerOutputsNote = (
-    <Text style={styles.otherAddressesNote}>
-      {`+ ${otherOutputAddrs.length - ADDR_ROW_LIMIT} other output ${
+    <TranslateText
+      textValue={`+ ${otherOutputAddrs.length - ADDR_ROW_LIMIT} other output ${
         otherOutputAddrs.length - ADDR_ROW_LIMIT > 1 ? 'addresses' : 'address'
       }`}
-    </Text>
+      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+      textStyle={styles.otherAddressesNote}
+      numberOfLines={1}
+    />
   );
 
   const hiddenChangeAddressesNote = (
-    <Text style={styles.otherAddressesNote}>
-      {`+ ${myOutputAddrs.length - CHANGE_ADDR_ROW_LIMIT} change ${
+    <TranslateText
+      textValue={`+ ${myOutputAddrs.length - CHANGE_ADDR_ROW_LIMIT} change ${
         myOutputAddrs.length - CHANGE_ADDR_ROW_LIMIT > 1
           ? 'addresses'
           : 'address'
       }`}
-    </Text>
+      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+      textStyle={styles.otherAddressesNote}
+      numberOfLines={1}
+    />
   );
 
   function renderInputNote() {
@@ -856,7 +901,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
                     <TranslateText
                       textKey={'from'}
                       domain={'main'}
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                       textStyle={styles.fromAndToTitle}
                       numberOfLines={1}
                     />
@@ -873,7 +918,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
                   <TranslateText
                     textKey={'to'}
                     domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                     textStyle={styles.fromAndToTitle}
                     numberOfLines={1}
                   />
@@ -1013,11 +1058,19 @@ const getStyles = (
       width: '100%',
     },
     modalHeaderContainer: {
+      width: '100%',
       backgroundColor: '#f7f7f7',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: screenHeight * 0.025,
+      paddingVertical: screenHeight * 0.015,
+      paddingHorizontal: screenHeight * 0.025,
+    },
+    modalHeaderTitlesContainer: {
+      flexBasis: '80%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
     },
     modalHeaderTitle: {
       color: '#3b3b3b',
