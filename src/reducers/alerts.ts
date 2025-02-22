@@ -6,6 +6,7 @@ type IAlert = {
   _id: string;
   deviceToken: string;
   value: number;
+  valueInLocal: number;
   index: number;
   isPositive: boolean;
   isIOS: boolean;
@@ -79,7 +80,13 @@ export const resyncAlertsOnApiServer =
 export const addAlert =
   (data: PostedAlert): AppThunk =>
   async (dispatch, getState) => {
+    const {currencyCode}: any = getState().settings;
     const {rates}: any = getState().ticker;
+
+    const localToUSD = rates.USD / rates[currencyCode];
+    const valueInLocal = parseFloat(
+      String(data.originalValue / localToUSD),
+    ).toFixed(1);
 
     if (!rates) {
       dispatch(showError('Price rates are missing.'));
@@ -94,6 +101,7 @@ export const addAlert =
           _id: 'unknown',
           deviceToken: getState().settings.deviceNotificationToken,
           value: Number(data.originalValue),
+          valueInLocal: Number(valueInLocal),
           index: alerts ? alerts.length : 0,
           isPositive: data.originalValue > rates.USD,
           isIOS: data.isIOS,
@@ -118,6 +126,7 @@ export const addAlert =
             _id: alerts[i]._id,
             deviceToken: getState().settings.deviceNotificationToken,
             value: alerts[i + 1].value,
+            valueInLocal: alerts[i + 1].valueInLocal,
             index: alerts[i].index,
             isPositive: alerts[i + 1].isPositive,
             isIOS: alerts[i + 1].isIOS,
@@ -131,6 +140,7 @@ export const addAlert =
           _id: 'unknown',
           deviceToken: getState().settings.deviceNotificationToken,
           value: Number(data.originalValue),
+          valueInLocal: Number(valueInLocal),
           index: alerts.length - 1,
           isPositive: data.originalValue > rates.USD,
           isIOS: data.isIOS,
@@ -184,6 +194,7 @@ export const removeAlert =
             _id: alert._id,
             deviceToken: alert.deviceToken,
             value: alert.value,
+            valueInLocal: alert.valueInLocal,
             index: i,
             isPositive: alert.isPositive,
             isIOS: alert.isIOS,

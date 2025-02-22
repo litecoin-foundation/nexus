@@ -1,11 +1,12 @@
 import React, {useEffect, useContext} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import BlueButton from '../Buttons/BlueButton';
 import PlasmaModal from './PlasmaModal';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
 
@@ -35,13 +36,20 @@ const AlertModal: React.FC<Props> = props => {
       renderBody={(_, __, ___, ____, cardTranslateAnim) => (
         <Animated.View style={[styles.modal, cardTranslateAnim]}>
           <View style={styles.modalHeaderContainer}>
-            <Text style={styles.modalHeaderTitle}>Delete</Text>
+            <TranslateText
+              textKey="delete"
+              domain="modals"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+              textStyle={styles.modalHeaderTitle}
+              numberOfLines={3}
+            />
             <GreyRoundButton onPress={() => close()} />
           </View>
 
           <View style={styles.buttonContainer}>
             <BlueButton
-              value="Delete Alert"
+              textKey="delete_alert"
+              textDomain="modals"
               onPress={() => {
                 onPress();
                 close();

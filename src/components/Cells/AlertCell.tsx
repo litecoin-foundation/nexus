@@ -6,9 +6,10 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import LitecoinIcon from '../LitecoinIcon';
 import Switch from '../Buttons/Switch';
 import {setAlertAvailability} from '../../reducers/alerts';
-import {convertLocalFiatToUSD} from '../../reducers/ticker';
+// import {convertLocalFiatToUSD} from '../../reducers/ticker';
 import {formatTxDate} from '../../lib/utils/date';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
@@ -25,10 +26,11 @@ const AlertCell: React.FC<Props> = props => {
   const item = data;
   const dispatch = useAppDispatch();
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
-  const localFiatToUSD = useAppSelector(state => convertLocalFiatToUSD(state));
-  const alertValueInLocalFiat = parseFloat(
-    String(item.value / localFiatToUSD),
-  ).toFixed(2);
+  // const localFiatToUSD = useAppSelector(state => convertLocalFiatToUSD(state));
+  // const alertValueInLocalFiat = parseFloat(
+  //   String(item.value / localFiatToUSD),
+  // ).toFixed(2);
+  const alertValueInLocalFiat = item.valueInLocal;
 
   const handleSwitch = (value: boolean) => {
     dispatch(setAlertAvailability(item.index, value));
@@ -79,12 +81,34 @@ const AlertCell: React.FC<Props> = props => {
         <View style={styles.subContainer}>
           <LitecoinIcon size={height * 0.046} />
           <View>
-            <Text style={styles.text}>
-              Litecoin (LTC) is {item.isPositive ? 'above' : 'below'}
-            </Text>
-            <Text style={styles.valueText}>
-              {`${currencySymbol}${alertValueInLocalFiat}`}
-            </Text>
+            <View style={styles.subContainer}>
+              <TranslateText
+                textKey="when_ltc"
+                domain="alertsTab"
+                maxSizeInPixels={height * 0.02}
+                textStyle={styles.text}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textValue={' '}
+                maxSizeInPixels={height * 0.02}
+                textStyle={styles.text}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textKey={item.isPositive ? 'above' : 'below'}
+                domain="alertsTab"
+                maxSizeInPixels={height * 0.02}
+                textStyle={{...styles.text, textTransform: 'lowercase'}}
+                numberOfLines={1}
+              />
+            </View>
+            <TranslateText
+              textValue={`${currencySymbol}${alertValueInLocalFiat}`}
+              maxSizeInPixels={height * 0.025}
+              textStyle={styles.valueText}
+              numberOfLines={1}
+            />
           </View>
         </View>
         <View style={styles.switchContainer}>
@@ -92,9 +116,14 @@ const AlertCell: React.FC<Props> = props => {
         </View>
       </View>
       <View style={styles.bottomContainer}>
-        <Text style={styles.dateText}>
-          Last time LTC reached this value was {lastTimePrice}
-        </Text>
+        <TranslateText
+          textKey="last_time"
+          domain="alertsTab"
+          maxSizeInPixels={height * 0.015}
+          textStyle={styles.dateText}
+          numberOfLines={1}
+          interpolationObj={{date: lastTimePrice}}
+        />
       </View>
     </TouchableOpacity>
   );
