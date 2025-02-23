@@ -492,7 +492,7 @@ const Main: React.FC<Props> = props => {
         <TranslateText
           textKey={'latest_txs'}
           domain={'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
           maxLengthInPixels={SCREEN_WIDTH * 0.8}
           textStyle={styles.txTitleText}
           numberOfLines={1}

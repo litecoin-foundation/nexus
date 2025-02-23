@@ -17,6 +17,7 @@ import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
 import {formatDate, formatTime} from '../lib/utils/date';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
@@ -68,11 +69,29 @@ const NewAmountView: React.FC<Props> = props => {
           ]}>
           {!chartCursorSelected ? (
             <>
-              <Text style={styles.amountText}>{subunitAmount}</Text>
+              <TranslateText
+                textValue={subunitAmount}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                textStyle={styles.amountText}
+                numberOfLines={1}
+              />
               <View style={styles.fiat}>
-                <Text style={styles.fiatText}>{fiatAmount}</Text>
+                <TranslateText
+                  textValue={fiatAmount}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.fiatText}
+                  numberOfLines={1}
+                />
                 <PriceIndicatorButton value={Number(chartPercentageChange)} />
-                <Text style={styles.fiatText}>{chartPercentageChange}</Text>
+                <TranslateText
+                  textValue={String(chartPercentageChange)}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.fiatText}
+                  numberOfLines={1}
+                />
               </View>
             </>
           ) : (

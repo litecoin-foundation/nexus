@@ -138,7 +138,7 @@ const DashboardButton: React.FC<Props> = props => {
         }}>
         <Canvas style={styles.container}>
           <RoundedRect
-            x={4}
+            x={SCREEN_WIDTH * 0.012}
             y={10}
             width={width}
             height={buttonHeight}
@@ -154,7 +154,7 @@ const DashboardButton: React.FC<Props> = props => {
             <Shadow dx={0} dy={2} blur={4} color={interpolatedShadowColour} />
           </RoundedRect>
           <RoundedRect
-            x={4}
+            x={SCREEN_WIDTH * 0.012}
             y={10}
             width={width}
             height={buttonHeight}
@@ -195,7 +195,7 @@ const DashboardButton: React.FC<Props> = props => {
         <TranslateText
           textKey={titleText}
           domain={'main'}
-          maxSizeInPixels={SCREEN_WIDTH * 0.03}
+          maxSizeInPixels={SCREEN_WIDTH * 0.027}
           textStyle={styles.title}
           animatedProps={textColorStyle}
           numberOfLines={1}

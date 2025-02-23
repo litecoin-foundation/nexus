@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {StyleSheet, SafeAreaView, Platform, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -13,6 +13,8 @@ import {sweepLitewallet} from '../../lib/utils/sweep';
 import {getAddress} from '../../reducers/address';
 import {publishTransaction} from '../../reducers/transaction';
 import {useTranslation} from 'react-i18next';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Import: {
@@ -31,6 +33,7 @@ interface Props {
 const RecoverLitewallet: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
+
   const insets = useSafeAreaInsets();
   const {address} = useAppSelector(state => state.address);
 
@@ -82,40 +85,47 @@ const RecoverLitewallet: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  activity: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  container: {
-    backgroundColor: 'rgba(10,10,10,0.8)',
-    height: 100,
-    width: 100,
-    borderRadius: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 17,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    activity: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    container: {
+      backgroundColor: 'rgba(10,10,10,0.8)',
+      height: 100,
+      width: 100,
+      borderRadius: 35,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: 'white',
+      fontSize: 17,
+    },
+  });
 
 export const RecoverLitewalletNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return {
     headerTitle: () => (
       <TranslateText
         textKey="import_litewallet"
         domain="settingsTab"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
         textStyle={styles.headerTitle}
+        numberOfLines={1}
       />
     ),
     headerTitleAlign: 'left',

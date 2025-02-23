@@ -26,6 +26,7 @@ import {getTransactions, IDisplayedTx} from '../reducers/transaction';
 import {txDetailSelector} from '../reducers/transaction';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 import ProgressBar from './ProgressBar';
 import {
@@ -200,11 +201,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const SyncProgressIndicator = (
     <>
       <View style={styles.headerContainer}>
-        <Text style={styles.sectionHeaderText}>
-          {recoveryMode
-            ? 'RECOVERING TRANSACTIONS...'
-            : 'LOADING TRANSACTIONS...'}
-        </Text>
+        <TranslateText
+          textKey={recoveryMode ? 'recover_txs' : 'load_txs'}
+          domain="main"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+          textStyle={styles.sectionHeaderText}
+          numberOfLines={1}
+        />
       </View>
       {recoveryMode ? (
         <ProgressBar progress={recoveryProgress! * 100} />

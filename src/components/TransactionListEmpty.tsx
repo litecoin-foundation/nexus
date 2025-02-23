@@ -1,13 +1,13 @@
 import React, {useEffect, useContext} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
-import ProgressBar from './ProgressBar';
+// import ProgressBar from './ProgressBar';
 import SkeletonTransactionCell from './Cells/SkeletonTransactionCell';
 import {useAppSelector, useAppDispatch} from '../store/hooks';
 import {
   percentSyncedSelector,
   syncStatusSelector,
-  recoveryProgressSelector,
+  // recoveryProgressSelector,
   getRecoveryInfo,
   pollRecoveryInfo,
 } from '../reducers/info';
@@ -21,9 +21,9 @@ const TransactionListEmpty: React.FC<Props> = () => {
   const progress = useAppSelector(state => percentSyncedSelector(state));
   const synced = useAppSelector(state => syncStatusSelector(state));
   const recoveryMode = useAppSelector(state => state.info.recoveryMode);
-  const recoveryProgress = useAppSelector(state =>
-    recoveryProgressSelector(state),
-  );
+  // const recoveryProgress = useAppSelector(state =>
+  //   recoveryProgressSelector(state),
+  // );
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -58,7 +58,7 @@ const TransactionListEmpty: React.FC<Props> = () => {
 
   const syncingWallet = (
     <>
-      <View style={styles.headerContainer}>
+      {/* <View style={styles.headerContainer}>
         <Text style={styles.sectionHeaderText}>
           {recoveryMode
             ? 'RECOVERING TRANSACTIONS...'
@@ -69,7 +69,7 @@ const TransactionListEmpty: React.FC<Props> = () => {
         <ProgressBar progress={recoveryProgress! * 100} />
       ) : (
         <ProgressBar progress={progress! * 100} />
-      )}
+      )} */}
       <SkeletonTransactionCell />
       <SkeletonTransactionCell />
       <SkeletonTransactionCell />

@@ -6,6 +6,7 @@ type IAlert = {
   _id: string;
   deviceToken: string;
   value: number;
+  valueInLocal: number;
   index: number;
   isPositive: boolean;
   isIOS: boolean;
@@ -76,10 +77,75 @@ export const resyncAlertsOnApiServer =
     }
   };
 
+export const updatedFiredAlertsFromApiServer =
+  (): AppThunk => async (dispatch, getState) => {
+    const deviceToken = getState().settings.deviceNotificationToken;
+    const alerts = getState().alerts.alerts;
+
+    if (!deviceToken) {
+      return;
+    }
+
+    const alertsWithNoId = alerts
+      ? alerts.map((alert: IAlert) => {
+          return {
+            deviceToken: alert.deviceToken,
+            value: alert.value,
+            index: alert.index,
+            isPositive: alert.isPositive,
+            isIOS: alert.isIOS,
+            isFired: alert.isFired,
+            createdAt: alert.createdAt,
+          };
+        })
+      : [];
+
+    try {
+      const res = await fetch(`${alertProviderUrl}/get-fired`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          deviceToken: deviceToken,
+          alerts: alertsWithNoId,
+        }),
+      });
+
+      if (!res.ok) {
+        // const error = await res.json();
+        // throw new Error(error);
+        return;
+      }
+
+      const data = await res.json();
+
+      data.map((serverFiredAlert: any) => {
+        dispatch({
+          type: SET_ALERT_AVAILABILITY,
+          index: serverFiredAlert.index,
+          availability: !serverFiredAlert.isFired,
+        });
+      });
+
+      // first sync fired alerts
+      // then resync alerts with nexus-api server
+      dispatch(resyncAlertsOnApiServer());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
 export const addAlert =
   (data: PostedAlert): AppThunk =>
   async (dispatch, getState) => {
+    const {currencyCode}: any = getState().settings;
     const {rates}: any = getState().ticker;
+
+    const localToUSD = rates.USD / rates[currencyCode];
+    const valueInLocal = parseFloat(
+      String(data.originalValue / localToUSD),
+    ).toFixed(1);
 
     if (!rates) {
       dispatch(showError('Price rates are missing.'));
@@ -94,6 +160,7 @@ export const addAlert =
           _id: 'unknown',
           deviceToken: getState().settings.deviceNotificationToken,
           value: Number(data.originalValue),
+          valueInLocal: Number(valueInLocal),
           index: alerts ? alerts.length : 0,
           isPositive: data.originalValue > rates.USD,
           isIOS: data.isIOS,
@@ -118,6 +185,7 @@ export const addAlert =
             _id: alerts[i]._id,
             deviceToken: getState().settings.deviceNotificationToken,
             value: alerts[i + 1].value,
+            valueInLocal: alerts[i + 1].valueInLocal,
             index: alerts[i].index,
             isPositive: alerts[i + 1].isPositive,
             isIOS: alerts[i + 1].isIOS,
@@ -131,6 +199,7 @@ export const addAlert =
           _id: 'unknown',
           deviceToken: getState().settings.deviceNotificationToken,
           value: Number(data.originalValue),
+          valueInLocal: Number(valueInLocal),
           index: alerts.length - 1,
           isPositive: data.originalValue > rates.USD,
           isIOS: data.isIOS,
@@ -184,6 +253,7 @@ export const removeAlert =
             _id: alert._id,
             deviceToken: alert.deviceToken,
             value: alert.value,
+            valueInLocal: alert.valueInLocal,
             index: i,
             isPositive: alert.isPositive,
             isIOS: alert.isIOS,
@@ -237,6 +307,7 @@ export const setAlertAvailability =
       //     index: Number(index),
       //   }),
       // });
+
       // Or just resync all alerts on api server
       dispatch(resyncAlertsOnApiServer());
     } catch (error) {

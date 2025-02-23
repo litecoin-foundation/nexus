@@ -61,6 +61,8 @@ const TableCell: React.FC<Props> = props => {
     }
   };
 
+  const textStyle = valueStyle ? {...styles.text, ...valueStyle} : styles.text;
+
   return (
     <View style={styles.container}>
       {title ? (
@@ -69,7 +71,7 @@ const TableCell: React.FC<Props> = props => {
         <TranslateText
           textKey={titleTextKey}
           domain={titleTextDomain}
-          maxSizeInPixels={height * 0.03}
+          maxSizeInPixels={height * 0.017}
           textStyle={styles.title}
           numberOfLines={1}
         />
@@ -81,12 +83,12 @@ const TableCell: React.FC<Props> = props => {
         children
       ) : (
         <Pressable style={{flex: 1}} onPress={handleShare}>
-          <Text
-            style={[styles.text, valueStyle ? valueStyle : null]}
-            ellipsizeMode="middle"
-            numberOfLines={1}>
-            {value}
-          </Text>
+          <TranslateText
+            textValue={value}
+            maxSizeInPixels={height * 0.02}
+            textStyle={textStyle}
+            numberOfLines={1}
+          />
         </Pressable>
       )}
     </View>
@@ -105,6 +107,7 @@ const getStyles = (
     container: {
       width: '100%',
       height: thick ? screenHeight * 0.065 : screenHeight * 0.055,
+      minHeight: thick ? screenHeight * 0.065 : screenHeight * 0.055,
       borderTopWidth: noBorder ? 0 : 1,
       borderTopColor: '#eee',
       backgroundColor: '#fff',
@@ -114,7 +117,6 @@ const getStyles = (
       paddingHorizontal: screenWidth * 0.05,
     },
     title: {
-      flexBasis: '30%',
       color: '#747e87',
       fontSize: screenHeight * 0.015,
       fontWeight: '600',

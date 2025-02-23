@@ -16,7 +16,6 @@ import zh_T from '../assets/locales/zh.json';
 import tl_T from '../assets/locales/tl.json';
 
 function initI18N(languageCode: string) {
-  console.log(languageCode);
   i18n.use(initReactI18next).init({
     lng: languageCode,
     //   lng: getLocales()[0].languageCode,

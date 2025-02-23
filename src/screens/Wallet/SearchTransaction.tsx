@@ -8,7 +8,6 @@ import React, {
 import {StyleSheet, View} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
-
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TransactionList from '../../components/TransactionList';
 import DropDownButton from '../../components/Buttons/DropDownButton';
