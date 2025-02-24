@@ -57,7 +57,13 @@ const TranslateText: React.FC<Props> = props => {
   return (
     <View style={styles.container}>
       <Animated.Text
-        style={[styles.text, textStyle, styles.textLimits, animatedProps]}
+        style={[
+          styles.text,
+          textStyle,
+          styles.textLimits,
+          animatedProps,
+          {includeFontPadding: false},
+        ]}
         ellipsizeMode="tail"
         numberOfLines={numberOfLines || 0}>
         {textValue ? textValue : textKey ? t(textKey, interpolationObj) : ''}
@@ -84,10 +90,7 @@ const getStyles = (
       fontWeight: '500',
     },
     textLimits: {
-      width: '100%',
-      maxWidth: '100%',
       fontSize: fontSize,
-      flexWrap: 'wrap',
     },
   });
 

@@ -90,6 +90,7 @@ const Import: React.FC<Props> = props => {
         <WhiteButton
           textKey="scan_private_key"
           textDomain="settingsTab"
+          customFontStyles={{textAlign: 'center'}}
           small={false}
           active={true}
           onPress={() => {
