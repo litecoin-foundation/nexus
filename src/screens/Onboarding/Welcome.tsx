@@ -184,13 +184,8 @@ export const WelcomeNavigationOptions = (navigation: any) => {
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        title="Back"
-      />
-    ),
+    headerLeft: () => null,
+    gestureEnabled: false,
   };
 };
 

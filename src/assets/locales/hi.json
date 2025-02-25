@@ -3,6 +3,7 @@
     "forgot_pin": "पिनकोड भूल गए?",
     "forgot_pin_description": "क्या आपने अपना पिनकोड भूल गए हैं?\nअपना सीड वाक्यांश दर्ज करें ताकि आप अपना पिनकोड रीसेट कर सकें।",
     "enter_pin": "अपना पिन दर्ज करें",
+    "reenter_pin": "अपना पिन दर्ज करें",
     "attempts_left_one": "{{count}} प्रयास बचा है।",
     "attempts_left_other": "{{count}} प्रयास बचे हैं।",
     "for_litecoin": "लाइटकॉइन के लिए",

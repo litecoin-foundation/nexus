@@ -128,7 +128,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
 
       <View style={styles.bottomSheet}>
         <TranslateText
-          textKey={'enter_pin'}
+          textKey={passcodeInitialSet ? 'reenter_pin' : 'enter_pin'}
           domain={'onboarding'}
           maxSizeInPixels={SCREEN_HEIGHT * 0.03}
           maxLengthInPixels={SCREEN_WIDTH}

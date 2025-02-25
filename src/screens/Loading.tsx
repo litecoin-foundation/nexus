@@ -26,7 +26,8 @@ const Loading: React.FC<Props> = props => {
   const {navigation} = props;
 
   const dispatch = useAppDispatch();
-  const onboarding = useAppSelector(state => state.onboarding.onboarding);
+  const passcodeSet = useAppSelector(state => state.authentication.passcodeSet);
+  const {onboarding, seedVerified} = useAppSelector(state => state.onboarding);
   const isOnboarded = useAppSelector(state => state.onboarding.isOnboarded);
 
   // only start LND if wallet isOnboarded
@@ -67,8 +68,12 @@ const Loading: React.FC<Props> = props => {
       if (onboarding === false && isOnboarded === true) {
         navigation.replace('AuthStack');
       } else if (isOnboarded === false) {
-        dispatch(startOnboarding());
-        navigation.navigate('Onboarding');
+        if (onboarding === true && passcodeSet === true && seedVerified) {
+          navigation.navigate('Onboarding', {screen: 'Welcome'});
+        } else {
+          dispatch(startOnboarding());
+          navigation.navigate('Onboarding');
+        }
       } else {
         console.log('SOMETHING WENT WRONG!');
         // TODO (LOSHY!)

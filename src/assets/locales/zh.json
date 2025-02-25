@@ -3,6 +3,7 @@
     "forgot_pin": "忘记密码?",
     "forgot_pin_description": "忘记你的密码？\n输入您的恢复短语/种子短语以重置您的密码密码。",
     "enter_pin": "输入您的密码",
+    "reenter_pin": "输入您的密码",
     "attempts_left_one": "还有{{count}} 剩余尝试次数.",
     "attempts_left_other": "还有{{count}} 剩余尝试次数.",
     "for_litecoin": "FOR 莱特币",
