@@ -13,7 +13,7 @@ import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import messaging from '@react-native-firebase/messaging';
-import {FlexaContext} from '@flexahq/flexa-react-native';
+import {FlexaContext} from '@flexa/flexa-react-native';
 import {
   ScreenSizeProvider,
   ScreenSizeContext,

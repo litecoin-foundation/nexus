@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
@@ -21,7 +22,13 @@ const SeedView: React.FC<Props> = props => {
         <Text style={styles.number}>{index}</Text>
       </View>
 
-      <Text style={styles.text}>{value}</Text>
+      {/* <Text style={styles.text}>{value}</Text> */}
+      <TranslateText
+        textValue={value}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+        textStyle={styles.text}
+        numberOfLines={1}
+      />
     </View>
   );
 };
@@ -34,13 +41,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.014,
       backgroundColor: 'white',
       flexDirection: 'row',
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       alignItems: 'center',
     },
     numberContainer: {
+      flexBasis: '20%',
       borderRightWidth: 1,
       borderRightColor: 'rgba(151, 151, 151, 0.3)',
-      height: 40,
       justifyContent: 'center',
     },
     number: {
@@ -48,16 +55,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#3873FF',
       fontSize: screenHeight * 0.024,
       fontWeight: 'bold',
-      width: screenWidth * 0.15,
       textAlign: 'center',
     },
     text: {
-      fontFamily: 'Satoshi Variable',
-      fontWeight: '500',
+      flexBasis: '80%',
       color: '#2e2e2e',
+      fontFamily: 'Satoshi Variable',
       fontSize: screenHeight * 0.028,
-      flexGrow: 4,
+      fontWeight: '500',
       paddingLeft: screenWidth * 0.06,
+      paddingBottom: 3,
     },
   });
 

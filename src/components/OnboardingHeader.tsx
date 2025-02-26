@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
+import {View, StyleSheet, SafeAreaView} from 'react-native';
 
 import TranslateText from './TranslateText';
 
@@ -13,20 +13,26 @@ interface Props {
   textInterpolation?: {
     [key: string]: any;
   };
+  thin?: boolean;
 }
 
 const OnboardingHeader: React.FC<Props> = props => {
-  const {description, children, textKey, textDomain, textInterpolation} = props;
+  const {description, children, textKey, textDomain, textInterpolation, thin} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, thin || false);
 
   return (
     <SafeAreaView>
       <View style={styles.headerContainer}>
         {description ? (
-          <Text style={styles.headerDescriptionText}>{description}</Text>
+          <TranslateText
+            textValue={description}
+            textStyle={styles.headerDescriptionText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+          />
         ) : textKey && textDomain ? (
           <TranslateText
             textKey={textKey}
@@ -44,7 +50,7 @@ const OnboardingHeader: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number, thin: boolean) =>
   StyleSheet.create({
     headerContainer: {
       paddingTop: screenHeight * 0.055,
@@ -53,10 +59,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: 'white',
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
-      fontWeight: '600',
+      fontWeight: thin ? '500' : '600',
       fontSize: screenHeight * 0.015,
-      // screenHeight * 0.0022 is approx font diff offset
-      paddingLeft: screenWidth * 0.15 + screenHeight * 0.002,
+      // screenHeight * 0.002 is approx font diff offset
+      paddingHorizontal: screenWidth * 0.15 + screenHeight * 0.002,
     },
   });
 

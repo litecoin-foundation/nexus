@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Image,
   ImageSourcePropType,
-  Text,
   View,
   TouchableOpacity,
 } from 'react-native';
@@ -66,7 +65,12 @@ const HeaderButton: React.FC<Props> = props => {
             numberOfLines={1}
           />
         ) : title ? (
-          <Text style={textStyle}>{title}</Text>
+          <TranslateText
+            textValue={title}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={textStyle}
+            numberOfLines={1}
+          />
         ) : null}
       </View>
     </TouchableOpacity>

@@ -67,6 +67,7 @@ const Generate: React.FC<Props> = props => {
           textKey="seed_phrase"
           domain="onboarding"
           textStyle={styles.headerTitle}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         />
       ),
     });
@@ -115,6 +116,7 @@ const Generate: React.FC<Props> = props => {
         description={
           t('seed_phrase_description') + '\n\n' + t('seed_phrase_description_2')
         }
+        thin
       />
       <View style={styles.seedContainer}>
         {!seed ? <Text>Loading...</Text> : list}
@@ -126,14 +128,20 @@ const Generate: React.FC<Props> = props => {
 
       <View style={styles.bottomContainer}>
         <View style={styles.bottomTextContainer}>
-          <Image
-            style={styles.image}
-            source={require('../../assets/images/attention.png')}
-          />
+          <View style={styles.imageContainer}>
+            <Image
+              style={styles.image}
+              source={require('../../assets/images/attention.png')}
+            />
+          </View>
+
           <TranslateText
             textKey="seed_warning"
             domain="onboarding"
             textStyle={styles.warningText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+            // maxLengthInPixels={SCREEN_WIDTH * 0.7}
+            numberOfLines={2}
           />
         </View>
 
@@ -178,24 +186,27 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     bottomTextContainer: {
       position: 'absolute',
-      bottom: screenHeight * 0.18,
+      bottom: screenHeight * 0.17,
       width: '100%',
+      height: screenHeight * 0.04,
       flexDirection: 'row',
       alignItems: 'center',
     },
     warningText: {
-      flex: 1,
+      flexBasis: '85%',
       color: 'rgba(255, 255, 255, 0.6)',
       fontSize: screenHeight * 0.012,
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: 'bold',
     },
+    imageContainer: {
+      flexBasis: '15%',
+      marginTop: 3,
+    },
     image: {
       width: screenWidth * 0.08,
-      alignSelf: 'center',
       objectFit: 'contain',
-      marginRight: screenWidth * 0.04,
     },
     headerTitle: {
       fontFamily: 'Satoshi Variable',

@@ -22,7 +22,7 @@ import {
   dismissAllModals,
   payment,
   TransactionRequest,
-} from '@flexahq/flexa-react-native';
+} from '@flexa/flexa-react-native';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';

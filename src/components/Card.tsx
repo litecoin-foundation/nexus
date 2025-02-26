@@ -1,17 +1,31 @@
 import React, {useContext} from 'react';
 import {View, Text, StyleSheet, Image, ImageSourcePropType} from 'react-native';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
   titleText?: string;
-  descriptionText: string;
+  descriptionText?: string;
+  descTextKey?: string;
+  descTextDomain?: string;
+  textInterpolation?: {
+    [key: string]: any;
+  };
   imageSource: ImageSourcePropType;
   largeImg?: boolean;
 }
 
 const Card: React.FC<Props> = props => {
-  const {titleText, descriptionText, imageSource, largeImg} = props;
+  const {
+    titleText,
+    descriptionText,
+    descTextKey,
+    descTextDomain,
+    textInterpolation,
+    imageSource,
+    largeImg,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -23,6 +37,21 @@ const Card: React.FC<Props> = props => {
         {titleText ? <Text style={styles.titleText}>{titleText}</Text> : null}
 
         <Text style={styles.descriptionText}>{descriptionText}</Text>
+
+        {descriptionText ? (
+          <Text style={styles.descriptionText}>{descriptionText}</Text>
+        ) : descTextKey && descTextDomain ? (
+          <TranslateText
+            textKey={descTextKey}
+            domain={descTextDomain}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            textStyle={styles.descriptionText}
+            numberOfLines={2}
+            interpolationObj={textInterpolation}
+          />
+        ) : (
+          <></>
+        )}
       </View>
       <View
         style={largeImg ? styles.largeImageContainer : styles.imageContainer}>
@@ -63,12 +92,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#2C72FF',
       fontSize: screenHeight * 0.03,
       fontWeight: 'bold',
-      paddingBottom: screenHeight * 0.025,
+      paddingBottom: screenHeight * 0.01,
     },
     descriptionText: {
       textAlign: 'center',
       color: '#4A4A4A',
-      fontSize: screenHeight * 0.017,
+      fontSize: screenHeight * 0.02,
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
