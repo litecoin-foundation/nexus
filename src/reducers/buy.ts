@@ -62,7 +62,7 @@ export const getBuyTransactionHistory =
 
     try {
       const res = await fetch(
-        'https://mobile.litecoin.com/api/buy/moonpay/transactions',
+        'https://api.nexuswallet.com/api/buy/moonpay/transactions',
         {
           method: 'POST',
           headers: {
@@ -94,7 +94,7 @@ export const getSellTransactionHistory =
     const {uniqueId} = getState().onboarding;
 
     const res = await fetch(
-      'https://mobile.litecoin.com/api/sell/moonpay/transactions',
+      'https://api.nexuswallet.com/api/sell/moonpay/transactions',
       {
         method: 'POST',
         headers: {
@@ -378,7 +378,7 @@ export const getSignedUrl =
 
       try {
         const res = await fetch(
-          'https://mobile.litecoin.com/api/buy/moonpay/sign',
+          'https://api.nexuswallet.com/api/buy/moonpay/sign',
           {
             method: 'POST',
             headers: {
@@ -418,7 +418,7 @@ export const getSignedSellUrl =
 
       try {
         const req = await fetch(
-          'https://mobile.litecoin.com/api/sell/moonpay/sign',
+          'https://api.nexuswallet.com/api/sell/moonpay/sign',
           {
             method: 'POST',
             headers: {

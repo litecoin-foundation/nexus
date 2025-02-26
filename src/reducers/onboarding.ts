@@ -45,7 +45,7 @@ const initialState = {
   lastLoadedCachePart: 0,
 } as IOnboardingState;
 
-const apiAuthUrl = 'https://mobile.litecoin.com/auth';
+const apiAuthUrl = 'https://api.nexuswallet.com/auth';
 
 // actions
 export const startOnboarding = createAction('onboarding/startOnboarding');
@@ -113,7 +113,7 @@ export const loginToNexusApi =
         return;
       }
 
-      const req2 = await fetch('https://mobile.litecoin.com/api/support/sign', {
+      const req2 = await fetch('https://api.nexuswallet.com/api/support/sign', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +215,7 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
     })
       .fetch(
         'GET',
-        `https://static-mobile.litecoin.com/cache/${cacheParts[nextPart - 1]}`,
+        `https://static.nexuswallet.com/cache/${cacheParts[nextPart - 1]}`,
       )
       .progress((received, total) => {
         dispatch(

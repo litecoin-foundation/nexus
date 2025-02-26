@@ -42,7 +42,7 @@ const AlertCell: React.FC<Props> = props => {
     try {
       const price = item.value;
       const res = await fetch(
-        'https://mobile.litecoin.com/api/prices/lastprice',
+        'https://api.nexuswallet.com/api/prices/lastprice',
         {
           method: 'POST',
           headers: {

@@ -133,7 +133,7 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
   return new Promise(async (resolve, reject) => {
     try {
       const res = await fetch(
-        'https://mobile.litecoin.com/api/prices/dateprice',
+        'https://api.nexuswallet.com/api/prices/dateprice',
         {
           method: 'POST',
           headers: {

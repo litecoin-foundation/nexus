@@ -115,7 +115,7 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
 };
 
 const fetchHistoricalRates = async (interval: string): Promise<any[]> => {
-  const url = `https://mobile.litecoin.com/api/prices/${interval}`;
+  const url = `https://api.nexuswallet.com/api/prices/${interval}`;
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json',

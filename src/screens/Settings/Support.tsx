@@ -32,7 +32,7 @@ const Support: React.FC<Props> = props => {
     nexusversion: 3,
   };
   const websiteToken = 'SH4YF5fA3sHFqhHvKt23aQzz';
-  const baseUrl = 'https://chat-mobile.litecoin.com';
+  const baseUrl = 'https://chat.nexuswallet.com';
   const locale = 'en';
   return (
     <View style={styles.container}>

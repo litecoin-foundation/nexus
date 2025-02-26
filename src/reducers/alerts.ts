@@ -34,7 +34,7 @@ const ADD_ALERT = 'ADD_ALERT';
 const REMOVE_ALERT = 'REMOVE_ALERT';
 const SET_ALERT_AVAILABILITY = 'SET_ALERT_AVAILABILITY';
 
-const alertProviderUrl = 'https://mobile.litecoin.com/alert';
+const alertProviderUrl = 'https://api.nexuswallet.com/alert';
 
 const MAX_ALERTS = 5;
 
