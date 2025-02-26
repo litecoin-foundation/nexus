@@ -21,6 +21,7 @@ import {txDetailSelector} from '../../reducers/transaction';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {useHeaderHeight} from '@react-navigation/elements';
 
 type RootStackParamList = {
   SearchTransaction: {
@@ -38,7 +39,12 @@ const SearchTransaction: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const deviceHeaderHeight = useHeaderHeight();
+
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, deviceHeaderHeight);
+  console.log(deviceHeaderHeight);
+  console.log(SCREEN_HEIGHT);
 
   const {t} = useTranslation('searchTab');
 
@@ -172,7 +178,11 @@ const SearchTransaction: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  deviceHeaderHeight: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -210,16 +220,24 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '500',
       letterSpacing: -0.39,
     },
+    filters: {
+      flexBasis: '25%',
+      width: '100%',
+      // deviceHeaderHeight - header buttons container + island gap
+      // 0.04 - header buttons container
+      // 0.035 - header buttons
+      // 0.035 - header buttons
+      // 0.008 - padding
+      paddingTop:
+        deviceHeaderHeight -
+        screenHeight * 0.04 +
+        screenHeight * 0.035 +
+        screenHeight * 0.008,
+    },
     search: {
       width: '100%',
       paddingBottom: screenHeight * 0.01,
       paddingHorizontal: screenWidth * 0.04,
-    },
-    filters: {
-      flexBasis: '25%',
-      width: '100%',
-      justifyContent: 'flex-end',
-      paddingBottom: screenHeight * 0.01,
     },
     filterContainer: {
       flexDirection: 'row',
@@ -239,7 +257,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
 export const SearchTransactionNavigationOptions = (navigation: any) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 
   return {
     headerTitle: () => (

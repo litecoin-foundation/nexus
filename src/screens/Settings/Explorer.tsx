@@ -51,6 +51,7 @@ const Explorer: React.FC = () => {
           textKey="select_block_explorer_note"
           domain="settingsTab"
           textStyle={styles.headerText}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
         />
         <FlatList data={explorers} renderItem={renderItem} />
       </LinearGradient>
@@ -94,7 +95,7 @@ export const ExplorerNavigationOptions = (navigation: any) => {
       <TranslateText
         textKey="select_block_explorer"
         domain="settingsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         textStyle={styles.headerTitle}
         numberOfLines={1}
       />

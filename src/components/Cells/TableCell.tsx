@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 import Share from 'react-native-share';
 
 import TranslateText from '../../components/TranslateText';
@@ -66,7 +66,11 @@ const TableCell: React.FC<Props> = props => {
   return (
     <View style={styles.container}>
       {title ? (
-        <Text style={styles.title}>{title}</Text>
+        <TranslateText
+          textValue={title}
+          maxSizeInPixels={height * 0.017}
+          textStyle={styles.title}
+        />
       ) : titleTextKey && titleTextDomain ? (
         <TranslateText
           textKey={titleTextKey}

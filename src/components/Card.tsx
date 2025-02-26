@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, Text, StyleSheet, Image, ImageSourcePropType} from 'react-native';
+import {View, StyleSheet, Image, ImageSourcePropType} from 'react-native';
 
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
@@ -34,17 +34,25 @@ const Card: React.FC<Props> = props => {
   return (
     <View style={styles.cardContainer}>
       <View style={styles.internalCardContainer}>
-        {titleText ? <Text style={styles.titleText}>{titleText}</Text> : null}
-
-        <Text style={styles.descriptionText}>{descriptionText}</Text>
+        {titleText ? (
+          <TranslateText
+            textValue={titleText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+            textStyle={styles.titleText}
+          />
+        ) : null}
 
         {descriptionText ? (
-          <Text style={styles.descriptionText}>{descriptionText}</Text>
+          <TranslateText
+            textValue={descriptionText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+            textStyle={styles.descriptionText}
+          />
         ) : descTextKey && descTextDomain ? (
           <TranslateText
             textKey={descTextKey}
             domain={descTextDomain}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
             textStyle={styles.descriptionText}
             numberOfLines={2}
             interpolationObj={textInterpolation}

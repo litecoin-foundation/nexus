@@ -196,6 +196,7 @@ const Buy: React.FC<Props> = () => {
           textKey="buy_blocked"
           domain="buyTab"
           textStyle={styles.disabledBuyText}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         />
       )}
       <View style={isBuyAllowed ? styles.bottom : styles.bottomStandalone}>

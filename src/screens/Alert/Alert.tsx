@@ -87,9 +87,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     emptySectionListText: {
       color: '#7C96AE',
       fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.016,
+      fontSize: screenHeight * 0.02,
       fontStyle: 'normal',
-      fontWeight: '600',
+      fontWeight: '500',
       textAlign: 'center',
       marginBottom: screenHeight * 0.02,
     },

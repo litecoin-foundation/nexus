@@ -7,13 +7,13 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import RecoveryField from '../../components/RecoveryField';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import TranslateText from '../../components/TranslateText';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sweepLitewallet} from '../../lib/utils/sweep';
 import {getAddress} from '../../reducers/address';
 import {publishTransaction} from '../../reducers/transaction';
 import {useTranslation} from 'react-i18next';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -123,7 +123,7 @@ export const RecoverLitewalletNavigationOptions = (navigation: any) => {
       <TranslateText
         textKey="import_litewallet"
         domain="settingsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         textStyle={styles.headerTitle}
         numberOfLines={1}
       />

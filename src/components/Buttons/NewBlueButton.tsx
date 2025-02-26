@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, TouchableOpacity} from 'react-native';
 
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -31,7 +31,12 @@ const NewBlueButton: React.FC<Props> = props => {
       onPress={onPress}
       style={[styles.container, active ? styles.active : null]}>
       {title ? (
-        <Text style={textStyle}>{title}</Text>
+        <TranslateText
+          textValue={title}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={textStyle}
+          numberOfLines={1}
+        />
       ) : textKey && textDomain ? (
         <TranslateText
           textKey={textKey}

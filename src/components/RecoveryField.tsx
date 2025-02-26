@@ -180,7 +180,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '600',
       fontSize: screenHeight * 0.015,
       // screenHeight * 0.002 is approx font diff offset
-      paddingLeft: screenWidth * 0.15 + screenHeight * 0.002,
+      paddingHorizontal: screenWidth * 0.15 + screenHeight * 0.002,
       paddingBottom: screenHeight * 0.03,
     },
     wordContainer: {

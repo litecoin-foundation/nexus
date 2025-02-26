@@ -1,18 +1,25 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {v4 as uuidv4} from 'uuid';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import TranslateText from '../../components/TranslateText';
 import {updateLastViewSeed} from '../../reducers/settings';
 import {formatDate, formatTime} from '../../lib/utils/date';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+
+import TranslateText from '../../components/TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {}
 
 const Seed: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const seedArray = useAppSelector(state => state.onboarding.seed);
   const lastViewSeed = useAppSelector(state => state.settings.lastViewSeed);
   const formatedTime =
@@ -61,69 +68,76 @@ const Seed: React.FC<Props> = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  word: {
-    color: 'white',
-    fontSize: 15,
-    fontWeight: '600',
-    letterSpacing: -0.35,
-    lineHeight: 22,
-  },
-  textContainer: {
-    marginTop: 50,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffffff30',
-  },
-  wordContainer: {
-    flex: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffffff30',
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  wordSubContainer: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  indexText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: -0.28,
-    lineHeight: 22,
-    textAlign: 'center',
-    paddingRight: 37 / 2,
-  },
-  descriptionText: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 15,
-    paddingLeft: 18,
-    textAlign: 'left',
-  },
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 17,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    word: {
+      color: 'white',
+      fontSize: 15,
+      fontWeight: '600',
+      letterSpacing: -0.35,
+      lineHeight: 22,
+    },
+    textContainer: {
+      marginTop: 50,
+      paddingBottom: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ffffff30',
+    },
+    wordContainer: {
+      flex: 1,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ffffff30',
+      justifyContent: 'space-between',
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    wordSubContainer: {
+      flex: 1,
+      flexDirection: 'row',
+    },
+    indexText: {
+      color: 'white',
+      fontSize: 12,
+      fontWeight: '600',
+      letterSpacing: -0.28,
+      lineHeight: 22,
+      textAlign: 'center',
+      paddingRight: 37 / 2,
+    },
+    descriptionText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: 'white',
+      fontSize: 15,
+      paddingLeft: 18,
+      textAlign: 'left',
+    },
+    headerTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: 'white',
+      fontSize: 17,
+    },
+  });
 
 export const SeedNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return {
     headerTitle: () => (
       <TranslateText
         textKey="view_seed"
         domain="settingsTab"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         textStyle={styles.headerTitle}
+        numberOfLines={1}
       />
     ),
     headerTitleAlign: 'left',

@@ -10,7 +10,6 @@ import React, {
 } from 'react';
 import {
   StyleSheet,
-  Text,
   View,
   SectionList,
   SectionListRenderItem,
@@ -259,7 +258,12 @@ const TransactionList = forwardRef((props: Props, ref) => {
               styles.sectionHeaderContainer,
               {backgroundColor: headerBackgroundColor},
             ]}>
-            <Text style={styles.sectionHeaderText}>{section.title}</Text>
+            <TranslateText
+              textValue={section.title}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+              textStyle={styles.sectionHeaderText}
+              numberOfLines={1}
+            />
           </View>
         )}
         keyExtractor={item => item.hash}

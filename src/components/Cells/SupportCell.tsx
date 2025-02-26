@@ -17,7 +17,11 @@ const SupportCell: React.FC<Props> = props => {
   return (
     <TouchableOpacity style={styles.container} onPress={() => onPress()}>
       <View style={styles.questionBox}>
-        <Text style={styles.questionText}>?</Text>
+        <TranslateText
+          textValue="?"
+          textStyle={styles.questionText}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+        />
       </View>
       <TranslateText
         textKey="need_support"

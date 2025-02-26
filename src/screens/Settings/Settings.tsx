@@ -197,12 +197,15 @@ const Settings: React.FC<Props> = props => {
               textKey="litecoin_denomination"
               domain="settingsTab"
               textStyle={styles.switchTitleText}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.017}
             />
             <SegmentedControl
               values={['LTC', 'Lites', 'Photons']}
               selectedIndex={subunit}
-              tintColor="#20BB74"
-              backgroundColor="white"
+              tintColor="#2C72FF"
+              fontStyle={styles.toggleText}
+              activeFontStyle={styles.activeToggleText}
+              backgroundColor="#fff"
               onChange={event =>
                 dispatch(updateSubunit(event.nativeEvent.selectedSegmentIndex))
               }
@@ -259,9 +262,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: '#F7F7F7',
     },
     headerTitle: {
-      color: 'white',
+      color: '#fff',
       fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
+      fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: '700',
     },
@@ -284,6 +287,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#484859',
       fontSize: 14,
     },
+    toggleText: {
+      color: '#484859',
+      fontSize: screenHeight * 0.017,
+      fontWeight: 'bold',
+    },
+    activeToggleText: {
+      color: '#fff',
+      fontSize: screenHeight * 0.017,
+      fontWeight: 'bold',
+    },
   });
 
 export const SettingsNavigationOptions = (navigation: any) => {
@@ -296,7 +309,7 @@ export const SettingsNavigationOptions = (navigation: any) => {
       <TranslateText
         textKey={'settings'}
         domain={'settingsTab'}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         textStyle={styles.headerTitle}
         numberOfLines={1}
       />

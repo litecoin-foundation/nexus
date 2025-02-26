@@ -138,7 +138,7 @@ export const ImportNavigationOptions = (navigation: any) => {
       <TranslateText
         textKey="import_private_key"
         domain="settingsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         textStyle={styles.headerTitle}
         numberOfLines={1}
       />

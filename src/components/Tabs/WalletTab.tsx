@@ -85,14 +85,32 @@ const WalletTab: React.FC<Props> = (props: Props) => {
   return (
     <View style={styles.walletTab}>
       <View style={styles.tabLeft}>
-        <Text style={styles.tabLeftTitle}>{walletName}</Text>
-        <Text style={[styles.tabLeftBalance, balanceTextSizeStyle]}>
-          {balance + ' ' + amountCode}
-        </Text>
+        <TranslateText
+          textValue={walletName}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={styles.tabLeftTitle}
+          numberOfLines={1}
+        />
+        <TranslateText
+          textValue={String(balance + ' ' + amountCode)}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          textStyle={[styles.tabLeftBalance, balanceTextSizeStyle]}
+          numberOfLines={1}
+        />
         <View style={styles.tabLeftWorthContainer}>
-          <Text style={styles.tabLeftWorth}>{fiatBalance}</Text>
+          <TranslateText
+            textValue={String(fiatBalance)}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+            textStyle={styles.tabLeftWorth}
+            numberOfLines={1}
+          />
           <PriceIndicatorButton value={Number(change)} />
-          <Text style={styles.tabLeftWorthChange}>{changeText}</Text>
+          <TranslateText
+            textValue={String(changeText)}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+            textStyle={styles.tabLeftWorthChange}
+            numberOfLines={1}
+          />
         </View>
       </View>
       <Pressable
@@ -104,7 +122,7 @@ const WalletTab: React.FC<Props> = (props: Props) => {
           <TranslateText
             textKey={'copy_address'}
             domain={'main'}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.013}
             textStyle={styles.tabRightTitle}
             numberOfLines={2}
           />
