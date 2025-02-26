@@ -32,7 +32,9 @@ const Initial = (props: Props) => {
   useEffect(() => {
     dispatch(detectCurrencyCode());
     dispatch(setExplorer('Litecoin Space'));
-    dispatch(setLanguage(getLocales()[0].languageCode));
+    dispatch(
+      setLanguage(getLocales()[0].languageCode, getLocales()[0].languageTag),
+    );
   }, [dispatch]);
 
   // fetch neutrino cache!

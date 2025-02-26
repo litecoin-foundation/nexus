@@ -12,6 +12,7 @@ import TranslateText from '../../components/TranslateText';
 
 type LangT = {
   code: string;
+  tag: string;
   name: string;
 };
 
@@ -20,16 +21,16 @@ const Language: React.FC = () => {
   const {languageCode} = useAppSelector(state => state.settings);
   const [selectedLang, setSelectedLang] = useState(languageCode);
 
-  const handlePress = (code: string): void => {
+  const handlePress = (code: string, tag: string): void => {
     setSelectedLang(code);
-    dispatch(setLanguage(code));
+    dispatch(setLanguage(code, tag));
   };
 
   const renderItem = ({item}: {item: LangT}) => (
     <OptionCell
       title={`${item.name}`}
       key={item.code}
-      onPress={() => handlePress(item.code)}
+      onPress={() => handlePress(item.code, item.tag)}
       selected={selectedLang === item.code ? true : false}
     />
   );

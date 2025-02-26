@@ -21,11 +21,16 @@ interface ISettings {
   defaultExplorer: string;
   mwebDefaultExplorer: string;
   languageCode: string;
+  languageTag: string;
   deviceNotificationToken: string;
 }
 type CurrencyCodeType = {
   currencyCode: string;
   currencySymbol: string;
+};
+type LanguageType = {
+  languageCode: string;
+  languageTag: string;
 };
 
 // initial state
@@ -37,6 +42,7 @@ const initialState = {
   defaultExplorer: 'Litecoin Space',
   mwebDefaultExplorer: 'MWEB Explorer',
   languageCode: 'en',
+  languageTag: 'en-US',
   deviceNotificationToken: '',
 } as ISettings;
 
@@ -54,7 +60,9 @@ const setExplorerAction = createAction<string>('settings/setExplorerAction');
 const setMWEBExplorerAction = createAction<string>(
   'settings/setMWEBExplorerAction',
 );
-const setLanguageAction = createAction<string>('settings/setLanguageAction');
+const setLanguageAction = createAction<LanguageType>(
+  'settings/setLanguageAction',
+);
 const setDeviceNotificationTokenAction = createAction<string>(
   'settings/setDeviceNotificationTokenAction',
 );
@@ -99,9 +107,9 @@ export const setExplorer =
   };
 
 export const setLanguage =
-  (language: string): AppThunk =>
+  (languageCode: string, languageTag: string): AppThunk =>
   dispatch => {
-    dispatch(setLanguageAction(language));
+    dispatch(setLanguageAction({languageCode, languageTag}));
   };
 
 export const setDeviceNotificationToken =
@@ -138,7 +146,8 @@ export const settingsSlice = createSlice({
     }),
     setLanguageAction: (state, action) => ({
       ...state,
-      languageCode: action.payload,
+      languageCode: action.payload.languageCode,
+      languageTag: action.payload.languageTag,
     }),
     setDeviceNotificationTokenAction: (state, action) => ({
       ...state,
