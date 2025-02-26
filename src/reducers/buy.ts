@@ -77,6 +77,7 @@ export const getBuyTransactionHistory =
 
       if (!res.ok) {
         const error = await res.json();
+        console.log(error);
         throw new Error(error);
       }
 
@@ -372,7 +373,8 @@ export const getSignedUrl =
         `&externalCustomerId=${uniqueId}` +
         `&walletAddress=${address}` +
         `&baseCurrencyAmount=${fiatAmount}` +
-        `&baseCurrencyCode=${String(currencyCode).toLowerCase()}`;
+        `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
+        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fmoonpay%2Fsuccess_buy%2F';
 
       try {
         const res = await fetch(
@@ -412,7 +414,7 @@ export const getSignedSellUrl =
         `&baseCurrencyAmount=${ltcAmount}` +
         `&externalCustomerId=${uniqueId}` +
         `&refundWalletAddress=${address}` +
-        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fmoonpay%2Fsuccess_sell%2F&mpSdk=%7B%22version%22%3A%221.0.3%22%2C%22environment%22%3A%22production%22%2C%22flow%22%3A%22sell%22%2C%22variant%22%3A%22webview%22%2C%22platform%22%3A%22rn%22%7D';
+        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fmoonpay%2Fsuccess_sell%2F&mpSdk=%7B%22version%22%3A%221.0.3%22%2C%22environment%22%3A%22production%22%2C%22flow%22%3A%22sell%22%2C%22variant%22%3A%22webview%22%2C%22platform%22%3A%22rn%22%7D';
 
       try {
         const req = await fetch(

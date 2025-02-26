@@ -17,9 +17,9 @@ import {getAddress} from '../../reducers/address';
 import {getSignedSellUrl} from '../../reducers/buy';
 import {parseQueryString} from '../../lib/utils/querystring';
 import {showError} from '../../reducers/errors';
+import {fiatValueSelector} from '../../reducers/ticker';
 
 import {ScreenSizeContext} from '../../context/screenSize';
-import {fiatValueSelector} from '../../reducers/ticker';
 
 type RootStackParamList = {
   ConfirmSell: {
@@ -29,6 +29,9 @@ type RootStackParamList = {
     uri: string;
     observeURL: string;
     returnRoute: string;
+  };
+  Main: {
+    isInitial: boolean;
   };
 };
 
@@ -73,7 +76,7 @@ const ConfirmSell: React.FC<Props> = props => {
           returnRoute: 'ConfirmSell',
         });
       } else {
-        throw new Error('Failed to get Sell Litecoin URL (Moonpay)!');
+        throw new Error('Failed to Sell Litecoin URL (Moonpay)!');
       }
     } catch (error) {
       dispatch(showError(String(error)));
@@ -173,7 +176,10 @@ const ConfirmSell: React.FC<Props> = props => {
             amount={toAmount}
             fiatAmount={fiatAmount}
             label=""
-            sendSuccessHandler={txid => console.log(txid)}
+            sendSuccessHandler={txid => {
+              console.log(txid);
+              setPaymentSuccess(true);
+            }}
           />
         ) : (
           // payment success!
@@ -258,7 +264,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ConfirmSellNavigationOptions = navigation => {
+export const ConfirmSellNavigationOptions = (navigation: any) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
