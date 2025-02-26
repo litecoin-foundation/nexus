@@ -95,7 +95,7 @@ const Settings: React.FC<Props> = props => {
 
   const handleReset = async () => {
     dispatch(resetPincode());
-    purgeStore();
+    await purgeStore();
     await deleteLNDDir();
     await sleep(4000);
     navigation.reset({
