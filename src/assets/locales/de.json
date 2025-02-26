@@ -3,6 +3,7 @@
     "forgot_pin": "Pincode vergesen?",
     "forgot_pin_description": "PIN vergessen?\nGeben Sie Ihre Seedphrase ein, um die PIN zurückzusetzen.",
     "enter_pin": "PIN eingeben",
+    "reenter_pin": "PIN eingeben",
     "attempts_left_one": "Noch {{count}} Versuche.",
     "attempts_left_other": "Noch {{count}} Versuche.",
     "for_litecoin": "FÜR LITECOIN",

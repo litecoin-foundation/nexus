@@ -12,6 +12,8 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import {getBIP39Word} from '../../lib/utils/bip39';
 import {useAppSelector} from '../../store/hooks';
 import randomShuffle from '../../lib/utils/randomShuffle';
+import {useAppDispatch} from '../../store/hooks';
+import {setSeedVerified} from '../../reducers/onboarding';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -26,6 +28,8 @@ interface Props {
 
 const Verify: React.FC<Props> = props => {
   const {navigation} = props;
+
+  const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -65,6 +69,7 @@ const Verify: React.FC<Props> = props => {
   const handlePress = async () => {
     if (multiplier === 8) {
       navigation.navigate('Biometric');
+      dispatch(setSeedVerified(true));
       return;
     }
     setMultiplier(multiplier + 1);

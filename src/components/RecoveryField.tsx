@@ -1,4 +1,4 @@
-import React, {createRef, useRef, useEffect, useState} from 'react';
+import React, {createRef, useRef, useEffect, useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import {
 import {checkBIP39Word} from '../lib/utils/bip39';
 import {checkSeedChecksum} from '../lib/utils/aezeed';
 
+import {ScreenSizeContext} from '../context/screenSize';
+
 interface Props {
   handleLogin: (seed: string[]) => void;
   headerText: string;
@@ -23,6 +25,11 @@ interface Props {
 const RecoveryField: React.FC<Props> = props => {
   const {handleLogin, headerText, isLitewalletRecovery, handleLWRecovery} =
     props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const n = isLitewalletRecovery
     ? [...Array(12).keys()]
     : [...Array(24).keys()];
@@ -155,64 +162,65 @@ const RecoveryField: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    paddingTop: 50,
-    height: '100%',
-  },
-  headerText: {
-    color: 'white',
-    paddingBottom: 25,
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '600',
-    fontSize: 14,
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  wordContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderColor: '#E8E8E8',
-    height: 44,
-    color: 'transparent',
-  },
-  wordContainerActive: {
-    height: 66,
-    backgroundColor: 'white',
-    borderTopWidth: 0,
-  },
-  wordNumberContainer: {
-    width: 44,
-    alignItems: 'center',
-  },
-  wordNumber: {
-    color: '#7C96AE',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  wordText: {
-    flex: 1,
-    height: '100%',
-    color: '#C5D4E3',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  wordTextActive: {
-    color: '#2C72FF',
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  wordTextInactive: {
-    color: '#C5D4E3',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  emptyView: {
-    height: 120,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      paddingTop: screenHeight * 0.055,
+      height: '100%',
+    },
+    headerText: {
+      color: 'white',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '600',
+      fontSize: screenHeight * 0.015,
+      // screenHeight * 0.0022 is approx font diff offset
+      paddingLeft: screenWidth * 0.15 + screenHeight * 0.002,
+      paddingBottom: screenHeight * 0.03,
+    },
+    wordContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderColor: '#E8E8E8',
+      height: 44,
+      color: 'transparent',
+    },
+    wordContainerActive: {
+      height: 66,
+      backgroundColor: 'white',
+      borderTopWidth: 0,
+    },
+    wordNumberContainer: {
+      width: 44,
+      alignItems: 'center',
+    },
+    wordNumber: {
+      color: '#7C96AE',
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    wordText: {
+      flex: 1,
+      height: '100%',
+      color: '#C5D4E3',
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    wordTextActive: {
+      color: '#2C72FF',
+      fontSize: 28,
+      fontWeight: 'bold',
+    },
+    wordTextInactive: {
+      color: '#C5D4E3',
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    emptyView: {
+      height: 120,
+    },
+  });
 
 export default RecoveryField;

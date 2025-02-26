@@ -3,6 +3,7 @@
     "forgot_pin": "Zapomniałeś/aś PINu?",
     "forgot_pin_description": "", // Forgot your Pincode?\nEnter your seed phrase to reset your pincode.
     "enter_pin": "Wpisz swój PIN",
+    "reenter_pin": "Wpisz swój PIN",
     "attempts_left_one": "Pozostały {{count}} próby.",
     "attempts_left_other": "Pozostały {{count}} próby.",
     "for_litecoin": "", // FOR LITECOIN

@@ -47,15 +47,16 @@ const OnboardingHeader: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     headerContainer: {
-      marginTop: screenHeight * 0.07,
+      paddingTop: screenHeight * 0.055,
     },
     headerDescriptionText: {
+      color: 'white',
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '600',
-      color: 'white',
-      fontSize: screenHeight * 0.02,
-      paddingHorizontal: 30,
+      fontSize: screenHeight * 0.015,
+      // screenHeight * 0.0022 is approx font diff offset
+      paddingLeft: screenWidth * 0.15 + screenHeight * 0.002,
     },
   });
 

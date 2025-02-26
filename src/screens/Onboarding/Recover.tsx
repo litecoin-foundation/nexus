@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {Platform, SafeAreaView, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -10,6 +10,8 @@ import {setSeedRecovery} from '../../reducers/onboarding';
 import {useAppDispatch} from '../../store/hooks';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'Recover'>;
@@ -91,18 +93,28 @@ const Recover: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 17,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    // right absolute margin is screenWidth * 0.15,
+    headerTitle: {
+      position: 'absolute',
+      top: screenHeight * 0.014 * -1,
+      left: screenWidth * 0.5 * -1 + screenWidth * 0.15,
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.026,
+      fontStyle: 'normal',
+      fontWeight: 'bold',
+    },
+  });
 
 export const RecoverNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return {
+    headerTitleAlign: 'center',
     headerTitle: () => (
       <TranslateText
         textKey="recover_wallet"
@@ -110,14 +122,10 @@ export const RecoverNavigationOptions = (navigation: any) => {
         textStyle={styles.headerTitle}
       />
     ),
-    headerTitleAlign: 'left',
-    headerTransparent: true,
-    headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
-        title="Back"
       />
     ),
   };

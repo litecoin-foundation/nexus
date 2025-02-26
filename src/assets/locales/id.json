@@ -3,6 +3,7 @@
     "forgot_pin": "Lupa PIN?",
     "forgot_pin_description": "Lupa kode PIN?\nMasukkan seed phrase untuk mengganti ulang kode PIN Anda.",
     "enter_pin": "Masukkan PIN",
+    "reenter_pin": "Masukkan PIN",
     "attempts_left_one": "{{count}} kesempatan lagi.",
     "attempts_left_other": "{{count}} kesempatan lagi.",
     "for_litecoin": "FOR LITECOIN",

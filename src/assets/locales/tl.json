@@ -3,6 +3,7 @@
     "forgot_pin": "Nakalimutan ang Pincode?",
     "forgot_pin_description": "Nakalimutan ang iyong Pincode?\nIlagay ang iyong seed phrase upang i-reset ang iyong pincode.",
     "enter_pin": "Ilagay ang iyong PIN",
+    "reenter_pin": "Ilagay ang iyong PIN",
     "attempts_left_one": "{{count}} natitirang pagtatangka.",
     "attempts_left_other": "{{count}} mga natitirang pagtatangka.",
     "for_litecoin": "PARA SA LITECOIN",

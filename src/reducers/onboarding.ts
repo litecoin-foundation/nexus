@@ -19,6 +19,7 @@ interface IOnboardingState {
   isOnboarded: boolean;
   generatedSeed: string[];
   seed: string[];
+  seedVerified: boolean;
   uniqueId: string;
   supportId: string;
   beingRecovered: boolean;
@@ -34,6 +35,7 @@ const initialState = {
   isOnboarded: false,
   generatedSeed: [],
   seed: [],
+  seedVerified: false,
   uniqueId: '',
   supportId: '',
   beingRecovered: false,
@@ -52,6 +54,9 @@ const finishOnboardingAction = createAction<string>(
 );
 const genSeedAction = createAction<string[]>('onboarding/genSeedAction');
 const setSeedAction = createAction<string[]>('onboarding/setSeedAction');
+export const setSeedVerified = createAction<boolean>(
+  'onboarding/setSeedVerified',
+);
 const setSeedRecoveryAction = createAction<string[]>(
   'onboarding/setSeedRecoveryAction',
 );
@@ -345,6 +350,10 @@ export const onboardingSlice = createSlice({
     genSeedAction: (state, action: PayloadAction<string[]>) => ({
       ...state,
       generatedSeed: action.payload,
+    }),
+    setSeedVerified: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      seedVerified: action.payload,
     }),
     setSeedAction: (state, action: PayloadAction<string[]>) => ({
       ...state,

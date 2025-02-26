@@ -77,7 +77,7 @@ export const resyncAlertsOnApiServer =
     }
   };
 
-export const updatedFiredAlertsFromApiServer =
+export const updateFiredAlertsFromApiServer =
   (): AppThunk => async (dispatch, getState) => {
     const deviceToken = getState().settings.deviceNotificationToken;
     const alerts = getState().alerts.alerts;
@@ -102,7 +102,7 @@ export const updatedFiredAlertsFromApiServer =
 
     try {
       const res = await fetch(`${alertProviderUrl}/get-fired`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

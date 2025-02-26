@@ -3,6 +3,7 @@
     "forgot_pin": "Ke harruar kodin PIN?",
     "forgot_pin_description": "Ke harruar kodin PIN?\nShkruj seed phrase-in (24 fjalët) për të rivendosur kodin PIN.",
     "enter_pin": "Vendos kodin PIN",
+    "reenter_pin": "Vendos kodin PIN",
     "attempts_left_one": "{{count}} tentativë e mbetur.",
     "attempts_left_other": "{{count}} tentativa të mbetura.",
     "for_litecoin": "PËR LITECOIN",
