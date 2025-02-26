@@ -9382,10 +9382,10 @@ react-native-modal@^13.0.1:
     prop-types "^15.6.2"
     react-native-animatable "1.3.3"
 
-react-native-nitro-modules@0.21.0:
-  version "0.21.0"
-  resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-0.21.0.tgz#e59e095b6124247ca220d5b6cb58375bc9dfac28"
-  integrity sha512-7OQsFiApHnBmTmZj5Ge6A1FZb63v3BjI4p2Y0s6zff35Tq9LJemjB2tHdv5F/0tbjHBV4AYcZf5DMop3NdzOog==
+react-native-nitro-modules@0.24.0:
+  version "0.24.0"
+  resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-0.24.0.tgz#012ee50e9a365280f7077ef3baba678b4bfff17c"
+  integrity sha512-xdxRx6ZMqyB8ZqICI2uF73eBxrRSvmv1/u3zFhFgKLWMlo4t9K0Il2QFjRiMnnJPIhPUfGTbQubJOk6/a2FaYA==
 
 react-native-qrcode-svg@6.3.12:
   version "6.3.12"
@@ -9486,10 +9486,10 @@ react-native-touch-id@^4.4.1:
   version "0.1.2"
   resolved "https://codeload.github.com/hsjoberg/react-native-turbo-lnd/tar.gz/f9c563aeefe06e789940331045e7fcbc4a194870"
 
-react-native-turbo-scrypt@0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/react-native-turbo-scrypt/-/react-native-turbo-scrypt-0.0.5.tgz#d2816e08532b49ede5137e434ad3d0f8fa36396d"
-  integrity sha512-hDRVO3wIV0lO+aDtjKX8hAl6d/inqurELrPrzHQPCObwauEkPIFQirohLLhERLLa+56gOQHhcnfnH8RNkSfuYA==
+react-native-turbo-scrypt@0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/react-native-turbo-scrypt/-/react-native-turbo-scrypt-0.0.6.tgz#08d8cf752ce01fb6afb8079cca25dbe06116f7a8"
+  integrity sha512-7UOj1XUG5lgT3Im+bSzp8sn/PIFmUCs7eCm5P+XJRKd45MJAp7M8XB7ugxv8r0zJF3Zzr3vtP0x/9DtJweiChg==
 
 react-native-url-polyfill@^2.0.0:
   version "2.0.0"

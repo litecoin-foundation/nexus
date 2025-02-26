@@ -4,6 +4,7 @@ import {unzip, subscribe} from 'react-native-zip-archive';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Crypto from 'react-native-quick-crypto';
 import * as RNFS from 'react-native-fs';
+import {Platform} from 'react-native';
 
 import {AppThunk} from './types';
 import {fileExists} from '../lib/utils/file';
@@ -273,9 +274,20 @@ const combineZipPartsAndExtract =
           throw new Error(`File part ${part} not found`);
         }
 
-        // Read part and append to the output file
-        const partData = await RNFS.readFile(partPath, 'base64');
-        await RNFS.appendFile(outputFilePath, partData, 'base64');
+        if (Platform.OS === 'android') {
+          const size = (await RNFS.stat(partPath)).size;
+          const chunkSize = 1024 * 1024;
+
+          // Read part and append to the output file in chunks
+          for (let i = 0; i < size; i += chunkSize) {
+            const data = await RNFS.read(partPath, chunkSize, i, 'base64');
+            await RNFS.appendFile(outputFilePath, data, 'base64');
+          }
+        } else if (Platform.OS === 'ios') {
+          // Read part and append to the output file
+          const partData = await RNFS.readFile(partPath, 'base64');
+          await RNFS.appendFile(outputFilePath, partData, 'base64');
+        }
       }
 
       // TODO: sometimes blob-util will call .then() before a downloaded file is ready
@@ -319,8 +331,7 @@ const extractNeutrinoCache = (): AppThunk => async dispatch => {
       `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/`,
     );
     // clean up
-    await FileSystem.deleteAsync(`${RNFS.DocumentDirectoryPath}/mainnet.zip`);
-    ReactNativeBlobUtil.fs.unlink(`${RNFS.DocumentDirectoryPath}/mainnet.zip`);
+    await RNFS.unlink(`${ReactNativeBlobUtil.fs.dirs.DocumentDir}/mainnet.zip`);
     dispatch(getNeutrinoCacheSuccessAction());
   } catch (error) {
     console.error(error);
