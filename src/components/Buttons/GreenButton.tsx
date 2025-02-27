@@ -1,8 +1,13 @@
 import React, {useContext} from 'react';
-import {Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {Text, StyleSheet, Pressable} from 'react-native';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 interface Props {
   value?: string;
@@ -20,29 +25,51 @@ const GreenButton: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  // animation
+  const scaler = useSharedValue(1);
+
+  const motionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scaler.value}],
+    };
+  });
+
+  const onPressIn = () => {
+    scaler.value = withSpring(0.96, {mass: 1});
+  };
+
+  const onPressOut = () => {
+    scaler.value = withSpring(1, {mass: 0.7});
+  };
+
   return (
-    <TouchableOpacity
-      style={[
-        styles.container,
-        small ? styles.small : styles.big,
-        disabled ? styles.disabled : null,
-      ]}
+    <Pressable
       onPress={onPress}
-      disabled={disabled}>
-      {value ? (
-        <Text style={styles.text}>{value}</Text>
-      ) : textKey && textDomain ? (
-        <TranslateText
-          textKey={textKey}
-          domain={textDomain}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-          textStyle={styles.text}
-          numberOfLines={1}
-        />
-      ) : (
-        <></>
-      )}
-    </TouchableOpacity>
+      disabled={disabled}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}>
+      <Animated.View
+        style={[
+          styles.container,
+          small ? styles.small : styles.big,
+          disabled ? styles.disabled : null,
+          motionStyle,
+        ]}>
+        {value ? (
+          <Text style={styles.text}>{value}</Text>
+        ) : textKey && textDomain ? (
+          <TranslateText
+            textKey={textKey}
+            domain={textDomain}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+            textStyle={styles.text}
+            numberOfLines={1}
+          />
+        ) : (
+          <></>
+        )}
+      </Animated.View>
+    </Pressable>
   );
 };
 
