@@ -169,13 +169,19 @@ const ChangePincode: React.FC<Props> = props => {
   return (
     <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
       <View style={styles.bottomSheet}>
-        <Text style={styles.bottomSheetTitle}>
-          {currentPin
-            ? t('enter_old_pin')
-            : newPin
-            ? t('enter_new_pin')
-            : t('repeat_new_pin')}
-        </Text>
+        <TranslateText
+          textValue={
+            currentPin
+              ? t('enter_old_pin')
+              : newPin
+              ? t('enter_new_pin')
+              : t('repeat_new_pin')
+          }
+          maxSizeInPixels={SCREEN_HEIGHT * 0.027}
+          maxLengthInPixels={SCREEN_WIDTH}
+          textStyle={styles.bottomSheetTitle}
+          numberOfLines={1}
+        />
 
         <PasscodeInput
           dotsLength={6}

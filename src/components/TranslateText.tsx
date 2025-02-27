@@ -50,7 +50,18 @@ const TranslateText: React.FC<Props> = props => {
     fontSize = maxSizeInPixels / Dimensions.get('window').fontScale;
   }
 
-  const styles = getStyles(width, height, fontSize, maxLengthInPixels);
+  const textFlexBasis =
+    textStyle && textStyle.hasOwnProperty('flexBasis')
+      ? textStyle.flexBasis
+      : undefined;
+
+  const styles = getStyles(
+    width,
+    height,
+    fontSize,
+    maxLengthInPixels,
+    textFlexBasis,
+  );
 
   const {t} = useTranslation(domain);
 
@@ -78,9 +89,11 @@ const getStyles = (
   screenHeight: number,
   fontSize: number,
   maxLengthInPixels: number | undefined,
+  textFlexBasis: number | undefined,
 ) =>
   StyleSheet.create({
     container: {
+      flexBasis: textFlexBasis,
       maxWidth: maxLengthInPixels || '100%',
     },
     text: {
@@ -91,6 +104,7 @@ const getStyles = (
     },
     textLimits: {
       fontSize: fontSize,
+      flexBasis: null,
     },
   });
 

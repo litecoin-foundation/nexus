@@ -52,6 +52,7 @@ const TransactionListEmpty: React.FC<Props> = () => {
         textKey="empty_transactions"
         domain="main"
         textStyle={styles.emptySectionListText}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
       />
     </View>
   );

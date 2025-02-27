@@ -1,7 +1,8 @@
 import React, {useRef, useState, useEffect, useContext, Fragment} from 'react';
-import {FlatList, View, StyleSheet, Text} from 'react-native';
+import {FlatList, View, StyleSheet} from 'react-native';
 import {triggerHeavyFeedback, triggerLightFeedback} from '../lib/utils/haptic';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface ItemProps {
@@ -25,7 +26,12 @@ const Item: React.FC<ItemProps> = props => {
         ]}
       />
       {(index + 1) % 5 === 0 ? (
-        <Text style={styles.metricText}>{index + 1 - 15}</Text>
+        <TranslateText
+          textValue={String(index + 1 - 15)}
+          maxSizeInPixels={height * 0.016}
+          textStyle={styles.metricText}
+          numberOfLines={1}
+        />
       ) : null}
     </Fragment>
   );
@@ -192,13 +198,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     metricText: {
       position: 'absolute',
+      left: screenWidth * 0.08 * -1,
       bottom: 0,
-      width: screenWidth * 0.07,
+      width: screenWidth * 0.16,
       color: '#7C96AE',
       fontSize: screenHeight * 0.013,
       fontWeight: '500',
       textAlign: 'center',
       letterSpacing: -0.28,
+      // backgroundColor: 'red',
     },
   });
 

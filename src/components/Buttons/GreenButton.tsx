@@ -35,7 +35,7 @@ const GreenButton: React.FC<Props> = props => {
         <TranslateText
           textKey={textKey}
           domain={textDomain}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
           textStyle={styles.text}
           numberOfLines={1}
         />

@@ -183,6 +183,7 @@ const Sell: React.FC<Props> = () => {
           textKey="sell_blocked"
           domain="sellTab"
           textStyle={styles.disabledBuyText}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         />
       )}
       <View style={isSellAllowed ? styles.bottom : styles.bottomStandalone}>

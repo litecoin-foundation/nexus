@@ -95,7 +95,8 @@ const Recover: React.FC<Props> = props => {
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
-    // right absolute margin is screenWidth * 0.15,
+    // left absolute margin is screenWidth * 0.15
+    // used for subtitles alinging
     headerTitle: {
       position: 'absolute',
       top: screenHeight * 0.014 * -1,
@@ -120,6 +121,7 @@ export const RecoverNavigationOptions = (navigation: any) => {
         textKey="recover_wallet"
         domain="onboarding"
         textStyle={styles.headerTitle}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
       />
     ),
     headerLeft: () => (

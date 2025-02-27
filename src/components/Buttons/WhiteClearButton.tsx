@@ -35,7 +35,7 @@ const WhiteClearButton = (props: Props): React.JSX.Element => {
         <TranslateText
           textKey={textKey}
           domain={textDomain}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
           numberOfLines={1}
           textStyle={[
             styles.text,

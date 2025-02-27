@@ -130,7 +130,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
         <TranslateText
           textKey={passcodeInitialSet ? 'reenter_pin' : 'enter_pin'}
           domain={'onboarding'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.027}
           maxLengthInPixels={SCREEN_WIDTH}
           textStyle={styles.bottomSheetTitle}
           numberOfLines={1}

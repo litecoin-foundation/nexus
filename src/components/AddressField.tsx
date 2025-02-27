@@ -210,6 +210,7 @@ const AddressField: React.FC<Props> = props => {
         onEndEditing={e => validateAddress(e.nativeEvent.text)}
         onFocus={onFocus}
         onBlur={onBlur}
+        allowFontScaling={false}
       />
 
       {isActive ? null : (

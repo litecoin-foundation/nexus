@@ -13,6 +13,7 @@ import {
 import {checkBIP39Word} from '../lib/utils/bip39';
 import {checkSeedChecksum} from '../lib/utils/aezeed';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
@@ -122,7 +123,11 @@ const RecoveryField: React.FC<Props> = props => {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'android' ? 'height' : 'padding'}>
       <View style={styles.container}>
-        <Text style={styles.headerText}>{headerText}</Text>
+        <TranslateText
+          textValue={headerText}
+          textStyle={styles.headerText}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+        />
         <FlatList
           data={n}
           ref={listRef}
@@ -174,8 +179,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '600',
       fontSize: screenHeight * 0.015,
-      // screenHeight * 0.0022 is approx font diff offset
-      paddingLeft: screenWidth * 0.15 + screenHeight * 0.002,
+      // screenHeight * 0.002 is approx font diff offset
+      paddingHorizontal: screenWidth * 0.15 + screenHeight * 0.002,
       paddingBottom: screenHeight * 0.03,
     },
     wordContainer: {

@@ -32,6 +32,7 @@ const SearchBar: React.FC<Props> = props => {
         value={value}
         autoCorrect={false}
         autoComplete="off"
+        allowFontScaling={false}
       />
     </View>
   );

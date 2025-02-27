@@ -1,10 +1,9 @@
 import React, {useEffect, useContext, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, Pressable} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import ProgressBar from '../../components/ProgressBar';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import TranslateText from '../../components/TranslateText';
@@ -63,9 +62,11 @@ const Welcome: React.FC<Props> = props => {
   }, [isOnboarded, navigation]);
 
   const handlePress = () => {
-    setLoading(true);
-    dispatch(setSeed());
-    dispatch(startLnd());
+    if (task === 'complete') {
+      setLoading(true);
+      dispatch(setSeed());
+      dispatch(startLnd());
+    }
   };
 
   const cacheProgress = (
@@ -96,7 +97,7 @@ const Welcome: React.FC<Props> = props => {
   );
 
   return (
-    <>
+    <Pressable style={styles.container} onPress={handlePress}>
       <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
         {task !== 'complete' ? cacheProgress : null}
 
@@ -113,7 +114,7 @@ const Welcome: React.FC<Props> = props => {
       </LinearGradient>
 
       <LoadingIndicator visible={loading} />
-    </>
+    </Pressable>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {View, Text, StyleSheet, Image, Platform} from 'react-native';
+import {View, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
@@ -73,7 +73,7 @@ const Dial: React.FC<Props> = props => {
               <TranslateText
                 textKey="below"
                 domain="alertsTab"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.03}
                 textStyle={
                   !toggleActive ? styles.toggleTextActive : styles.toggleText
                 }
@@ -84,7 +84,7 @@ const Dial: React.FC<Props> = props => {
               <TranslateText
                 textKey="above"
                 domain="alertsTab"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.03}
                 textStyle={
                   toggleActive ? styles.toggleTextActive : styles.toggleText
                 }
@@ -95,10 +95,12 @@ const Dial: React.FC<Props> = props => {
         </View>
 
         <View style={styles.valueContainer}>
-          <Text style={styles.valueText}>
-            {currencySymbol}
-            {value}
-          </Text>
+          <TranslateText
+            textValue={currencySymbol + value}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.07}
+            textStyle={styles.valueText}
+            numberOfLines={1}
+          />
         </View>
         <View style={styles.rulerContainer}>
           <SlideRuler
