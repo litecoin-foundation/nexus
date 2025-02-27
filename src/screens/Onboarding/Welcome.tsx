@@ -1,9 +1,8 @@
 import React, {useEffect, useContext, useState} from 'react';
-import {StyleSheet, Text, View, Pressable} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
-import WhiteButton from '../../components/Buttons/WhiteButton';
 import ProgressBar from '../../components/ProgressBar';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import TranslateText from '../../components/TranslateText';
@@ -61,13 +60,14 @@ const Welcome: React.FC<Props> = props => {
     }
   }, [isOnboarded, navigation]);
 
-  const handlePress = () => {
-    if (task === 'complete') {
+  // startup wallet after presyncing is over!
+  useEffect(() => {
+    if (task === 'complete' || task === 'failed') {
       setLoading(true);
       dispatch(setSeed());
       dispatch(startLnd());
     }
-  };
+  }, [dispatch, task]);
 
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
@@ -97,24 +97,13 @@ const Welcome: React.FC<Props> = props => {
   );
 
   return (
-    <Pressable style={styles.container} onPress={handlePress}>
+    <>
       <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
         {task !== 'complete' ? cacheProgress : null}
-
-        <View style={styles.buttonContainer}>
-          <WhiteButton
-            textKey="tap_to_start"
-            textDomain="onboarding"
-            small={false}
-            onPress={() => handlePress()}
-            active={true}
-            disabled={task === 'complete' || task === 'failed' ? false : true}
-          />
-        </View>
       </LinearGradient>
 
       <LoadingIndicator visible={loading} />
-    </Pressable>
+    </>
   );
 };
 
@@ -145,16 +134,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenHeight * 0.01,
       paddingVertical: screenHeight * 0.015,
       alignSelf: 'center',
-    },
-    buttonContainer: {
-      width: '100%',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 15,
-      paddingHorizontal: 30,
-      paddingBottom: 50,
-      position: 'absolute',
-      bottom: 0,
     },
     titleContainer: {
       paddingLeft: screenHeight * 0.025,
