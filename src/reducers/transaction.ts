@@ -325,7 +325,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
             updatedAt: sellTx.updatedAt || null,
             walletAddress: null,
             baseCurrency: sellTx.baseCurrency.code || null, // ltc
-            quoteCurrency: sellTx.currency.code || null, // fiat
+            quoteCurrency: sellTx.quoteCurrency.code || null, // fiat
             baseCurrencyAmount: sellTx.baseCurrencyAmount || null, // ltc
             quoteCurrencyAmount: sellTx.quoteCurrencyAmount || null, // fiat
             usdRate: sellTx.usdRate || null,

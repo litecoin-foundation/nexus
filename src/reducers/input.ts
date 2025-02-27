@@ -12,6 +12,10 @@ interface IInputState {
     amount: number;
     fee: number | null;
   };
+  convert: {
+    regularAmount: string;
+    privateAmount: string;
+  };
 }
 
 type InputType = 'buy' | 'sell' | 'ltc';
@@ -26,6 +30,10 @@ const initialState = {
     amount: 0,
     fee: null,
   },
+  convert: {
+    regularAmount: '',
+    privateAmount: '',
+  },
 } as IInputState;
 
 // actions
@@ -39,6 +47,12 @@ export const updateSendAddress = createAction<string>(
 );
 export const updateSendLabel = createAction<string>('input/updateSendLabel');
 // const updateSendFeeAction = createAction<number>('input/updateFeeAction');
+export const updateRegularAmountAction = createAction<string>(
+  'input/updateRegularAmountAction',
+);
+export const updatePrivateAmountAction = createAction<string>(
+  'input/updatePrivateAmountAction',
+);
 export const resetInputs = createAction('input/resetInputs');
 
 // functions
@@ -111,6 +125,67 @@ const handleAmountConversion =
     }
   };
 
+// convert functions
+export const updateRegularAmount =
+  (amount: string): AppThunk =>
+  dispatch => {
+    dispatch(updateRegularAmountAction(amount));
+    dispatch(handlePrivateAmountConversion(amount));
+  };
+
+export const updatePrivateAmount =
+  (amount: string): AppThunk =>
+  dispatch => {
+    dispatch(updatePrivateAmountAction(amount));
+    dispatch(handleRegularAmountConversion(amount));
+  };
+
+const handlePrivateAmountConversion =
+  (amount: string): AppThunk =>
+  (dispatch, getState) => {
+    // subunit to sats
+    const subunit = getState().settings.subunit;
+    const satoshis = subunitToSats(Number(amount), subunit);
+
+    const {regularConfirmedBalance, privateConfirmedBalance} =
+      getState().balance;
+    const sum = Number(privateConfirmedBalance) + satoshis;
+
+    // constrain sum to private + regular
+    const minSum = Math.min(
+      sum,
+      Number(regularConfirmedBalance) + Number(privateConfirmedBalance),
+    );
+
+    // sats to subunit
+    const sumInSubunit = satsToSubunit(minSum, subunit);
+
+    dispatch(updatePrivateAmountAction(String(sumInSubunit)));
+  };
+
+const handleRegularAmountConversion =
+  (amount: string): AppThunk =>
+  (dispatch, getState) => {
+    // subunit to sats
+    const subunit = getState().settings.subunit;
+    const satoshis = subunitToSats(Number(amount), subunit);
+
+    const {regularConfirmedBalance, privateConfirmedBalance} =
+      getState().balance;
+    const sum = Number(regularConfirmedBalance) + satoshis;
+
+    // constrain sum to private + regular
+    const minSum = Math.min(
+      sum,
+      Number(regularConfirmedBalance) + Number(privateConfirmedBalance),
+    );
+
+    // sats to subunit
+    const sumInSubunit = satsToSubunit(minSum, subunit);
+
+    dispatch(updateRegularAmountAction(String(sumInSubunit)));
+  };
+
 // slice
 export const inputSlice = createSlice({
   name: 'input',
@@ -125,6 +200,10 @@ export const inputSlice = createSlice({
         label: '',
         amount: 0,
         fee: 0,
+      },
+      convert: {
+        regularAmount: '',
+        privateAmount: '',
       },
     }),
     updateAmountAction: (state, action: PayloadAction<string>) => ({
@@ -143,6 +222,12 @@ export const inputSlice = createSlice({
     },
     updateSendLabel(state, action: PayloadAction<string>) {
       state.send.label = action.payload;
+    },
+    updateRegularAmountAction(state, action: PayloadAction<string>) {
+      state.convert.regularAmount = action.payload;
+    },
+    updatePrivateAmountAction(state, action: PayloadAction<string>) {
+      state.convert.privateAmount = action.payload;
     },
   },
 });

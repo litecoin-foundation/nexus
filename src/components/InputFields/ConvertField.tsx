@@ -1,10 +1,10 @@
-import React, {useState, useEffect, useContext} from 'react';
-import {Platform, Pressable, StyleSheet, Text, View} from 'react-native';
-import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
-
-import {useAppSelector} from '../../store/hooks';
-import {subunitSymbolSelector} from '../../reducers/settings';
-import {defaultButtonSpring} from '../../theme/spring';
+import React, {useEffect, useContext} from 'react';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -21,20 +21,40 @@ const ConvertField: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
+  // animation
+  const borderColor = useSharedValue('#e5e5e5');
+  const borderWidth = useSharedValue(1);
+
+  useEffect(() => {
+    if (active) {
+      borderColor.value = withTiming('#2C72FF', {duration: 200});
+      borderWidth.value = withTiming(3, {duration: 200});
+    } else {
+      borderColor.value = withTiming('#e5e5e5', {duration: 200});
+      borderWidth.value = withTiming(1, {duration: 200});
+    }
+  }, [active]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    borderColor: borderColor.value,
+    borderWidth: borderWidth.value,
+  }));
 
   return (
-    <Pressable style={styles.container} onPress={handlePress}>
-      <View style={styles.amountsContainer}>
-        <Text
-          style={[
-            styles.amountText,
-            active ? {color: '#2C72FF'} : {color: '#747E87'},
-          ]}>
-          {amount}
-        </Text>
-      </View>
+    <Pressable onPress={handlePress}>
+      <Animated.View style={[styles.container, animatedStyle]}>
+        <View style={styles.amountsContainer}>
+          <Text
+            adjustsFontSizeToFit={true}
+            numberOfLines={1}
+            style={[
+              styles.amountText,
+              active ? {color: '#2C72FF'} : {color: '#747E87'},
+            ]}>
+            {amount}
+          </Text>
+        </View>
+      </Animated.View>
     </Pressable>
   );
 };
@@ -44,10 +64,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       backgroundColor: 'white',
       borderRadius: 11,
-      borderWidth: 1,
-      borderColor: '#e5e5e5',
       flexDirection: 'row',
       paddingLeft: 10,
+      paddingRight: 10,
       justifyContent: 'space-between',
       height: screenHeight * 0.055,
       marginVertical: 4,

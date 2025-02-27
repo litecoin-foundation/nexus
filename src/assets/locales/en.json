@@ -230,6 +230,9 @@
     "cancel": "Cancel",
     "change_login": "Change Login Passcode"
   },
+  "convertTab": {
+    "convert_button": "Convert your LTC"
+  },
   "modals": {
     "delete": "Delete",
     "delete_alert": "Delete Alert",
