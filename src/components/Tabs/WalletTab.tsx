@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
+import {View, StyleSheet, Pressable, Image} from 'react-native';
 import PriceIndicatorButton from '../Buttons/PriceIndictorButton';
 import Animated, {
   useAnimatedStyle,
@@ -94,7 +94,7 @@ const WalletTab: React.FC<Props> = (props: Props) => {
         <TranslateText
           textValue={String(balance + ' ' + amountCode)}
           maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-          textStyle={[styles.tabLeftBalance, balanceTextSizeStyle]}
+          textStyle={{...styles.tabLeftBalance, ...balanceTextSizeStyle}}
           numberOfLines={1}
         />
         <View style={styles.tabLeftWorthContainer}>

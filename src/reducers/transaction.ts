@@ -263,16 +263,21 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       }
 
       if (buyHistory && buyHistory.length >= 1) {
+        // Find matching with tx hash amongst the buyHistory from nexus-api
+        // to identify transaction as a Buy one.
+        // If lnd fails to return Buy transaction associated with user's wallet
+        // it is put in unmatchedBuyTxs array and added afterwards
         const buyTxs = buyHistory.filter(buyTx => {
           if (buyTx.cryptoTransactionId === tx.txHash) {
-            return buyTx;
+            return true;
+            // If tx is valid (assigned with hash) and haven't been included yet
           } else if (
-            buyTx.txHash &&
-            buyTx.status === 'completed' &&
+            buyTx.cryptoTransactionId &&
             !unmatchedBuyTxs.includes(buyTx.txHash)
           ) {
             unmatchedBuyTxs.push(buyTx.txHash);
           }
+          return false;
         });
         if (buyTxs && buyTxs.length > 0) {
           const buyTx = buyTxs[0];
@@ -305,16 +310,21 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       }
 
       if (sellHistory && sellHistory.length >= 1) {
+        // Find matching with tx hash amongst the sellHistory from nexus-api
+        // to identify transaction as a Sell one.
+        // If lnd fails to return Sell transaction associated with user's wallet
+        // it is put in unmatchedSellTxs array and added afterwards
         const sellTxs = sellHistory.filter(sellTx => {
           if (sellTx.depositHash === tx.txHash) {
-            return sellTx;
+            return true;
+            // If tx is valid (assigned with hash) and haven't been included yet
           } else if (
             sellTx.depositHash &&
-            sellTx.status === 'completed' &&
             !unmatchedSellTxs.includes(sellTx.depositHash)
           ) {
             unmatchedSellTxs.push(sellTx.depositHash);
           }
+          return false;
         });
         if (sellTxs && sellTxs.length > 0) {
           const sellTx = sellTxs[0];

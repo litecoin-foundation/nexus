@@ -43,8 +43,6 @@ const SearchTransaction: React.FC<Props> = props => {
   const deviceHeaderHeight = useHeaderHeight();
 
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, deviceHeaderHeight);
-  console.log(deviceHeaderHeight);
-  console.log(SCREEN_HEIGHT);
 
   const {t} = useTranslation('searchTab');
 
