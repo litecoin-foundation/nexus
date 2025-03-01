@@ -483,7 +483,7 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
     tipLFFee,
     moonpayFee,
     txDetailsUrl,
-    // status,
+    status,
     // paymentMethod,
     currentExplorer,
   } = props;
@@ -585,7 +585,9 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
       <TableCell
         titleTextKey="tx_id"
         titleTextDomain="main"
-        value={cryptoTxId}
+        value={
+          status === 'completed' || status === 'sent' ? cryptoTxId : 'pending'
+        }
         thick
         valueFontSize={height * 0.012}
         copyable
@@ -597,30 +599,34 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
         thick
       />
       <View style={styles.bottomContainer}>
-        <View style={styles.bottomBtns}>
-          <View style={styles.flexBtn1}>
-            <BlueButton
-              textKey="blockchain"
-              textDomain="main"
-              onPress={() => {
-                navigation.navigate('WebPage', {
-                  uri: currentExplorer,
-                });
-              }}
-            />
+        {status === 'completed' || status === 'sent' ? (
+          <View style={styles.bottomBtns}>
+            <View style={styles.flexBtn1}>
+              <BlueButton
+                textKey="blockchain"
+                textDomain="main"
+                onPress={() => {
+                  navigation.navigate('WebPage', {
+                    uri: currentExplorer,
+                  });
+                }}
+              />
+            </View>
+            <View style={styles.flexBtn2}>
+              <GreenButton
+                textKey="details"
+                textDomain="main"
+                onPress={() => {
+                  navigation.navigate('WebPage', {
+                    uri: txDetailsUrl,
+                  });
+                }}
+              />
+            </View>
           </View>
-          <View style={styles.flexBtn2}>
-            <GreenButton
-              textKey="details"
-              textDomain="main"
-              onPress={() => {
-                navigation.navigate('WebPage', {
-                  uri: txDetailsUrl,
-                });
-              }}
-            />
-          </View>
-        </View>
+        ) : (
+          <></>
+        )}
         <View style={styles.paginationStrip} />
       </View>
     </Fragment>

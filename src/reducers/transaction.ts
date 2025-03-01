@@ -64,7 +64,7 @@ export type IDisplayedTx = {
   amount: number;
   confs: number;
   day: string;
-  time: Date;
+  time: string;
   timestamp: number;
   fee: number;
   lightning: boolean;
@@ -270,9 +270,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         const buyTxs = buyHistory.filter(buyTx => {
           if (buyTx.cryptoTransactionId === tx.txHash) {
             return true;
-            // If tx is valid (assigned with hash) and haven't been included yet
+            // If tx is valid (not failed) and haven't been included yet
+            // Status can be Sent, Pending, Completed or Failed
           } else if (
-            buyTx.cryptoTransactionId &&
+            buyTx.status !== 'failed' &&
             !unmatchedBuyTxs.includes(buyTx.txHash)
           ) {
             unmatchedBuyTxs.push(buyTx.txHash);
@@ -400,10 +401,12 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         country: buyTx.country || null,
         cardType: buyTx.cardType || null,
       };
-      const txTimeStamp = String(Date.parse(buyTx.createdAt) / 1000); // from iso to timestamp
+      const txTimeStamp = String(
+        Number.parseInt(String(Date.parse(buyTx.createdAt) / 1000), 10),
+      ); // from iso to timestamp
       const priceOnDateMeta = await getPriceOnDate(Number(txTimeStamp));
       let decodedTx = {
-        txHash: buyTx.cryptoTransactionId,
+        txHash: buyTx.cryptoTransactionId || null,
         blockHash: '',
         blockHeight: 0,
         amount: buyTx.quoteCurrencyAmount,
@@ -446,7 +449,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         country: sellTx.country || null,
         cardType: null,
       };
-      const txTimeStamp = String(Date.parse(sellTx.createdAt) / 1000); // from iso to timestamp
+      const txTimeStamp = String(
+        Number.parseInt(String(Date.parse(sellTx.createdAt) / 1000), 10),
+      ); // from iso to timestamp
       const priceOnDateMeta = await getPriceOnDate(Number(txTimeStamp));
       let decodedTx = {
         txHash: sellTx.depositHash,
@@ -545,8 +550,12 @@ const txSelector = (state: any): any => state.transaction.transactions;
 export const txDetailSelector = createSelector<
   [(state: any) => any],
   IDisplayedTx[]
->(txSelector, (txs: any) =>
-  txs.map((data: any, index: number) => {
+>(txSelector, (txs: any) => {
+  const sortedTxs = [...txs];
+
+  sortedTxs.sort((a: any, b: any) => b.timeStamp - a.timeStamp);
+
+  return sortedTxs.map((data: any, index: number) => {
     const myOutputs: string[] = [];
     const otherOutputs: string[] = [];
 
@@ -572,7 +581,7 @@ export const txDetailSelector = createSelector<
     }
 
     return {
-      hash: data.txHash,
+      hash: data.txHash || 'unknown',
       isMweb: isMweb,
       blockHash: data.blockHash,
       blockHeight: data.blockHeight,
@@ -629,8 +638,8 @@ export const txDetailSelector = createSelector<
         : null,
       renderIndex: index,
     };
-  }),
-);
+  });
+});
 
 // slice
 export const transactionSlice = createSlice({

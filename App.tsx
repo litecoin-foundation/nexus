@@ -102,7 +102,7 @@ const App: React.FC = () => {
 
     messaging()
       .getAPNSToken()
-      .then((token: string) => {
+      .then((token: string | null) => {
         console.log('APNS Device Token Received', token);
         setDeviceToken(token || '');
       });
