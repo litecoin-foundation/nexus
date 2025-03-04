@@ -14,6 +14,9 @@ import SuccessSend, {
 import ConfirmBuy, {
   ConfirmBuyNavigationOptions,
 } from '../screens/Buy/ConfirmBuy';
+import ConfirmBuyOnramper, {
+  ConfirmBuyOnramperNavigationOptions,
+} from '../screens/Buy/ConfirmBuyOnramper';
 import AlertsStack from './AlertsStack';
 import ConfirmSell, {
   ConfirmSellNavigationOptions,
@@ -66,6 +69,13 @@ function NewWalletStack(): React.JSX.Element {
         name="ConfirmBuy"
         component={ConfirmBuy}
         options={({navigation}) => ConfirmBuyNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="ConfirmBuyOnramper"
+        component={ConfirmBuyOnramper}
+        options={({navigation}) =>
+          ConfirmBuyOnramperNavigationOptions(navigation)
+        }
       />
       <Stack.Screen
         name="ConfirmSell"

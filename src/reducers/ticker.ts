@@ -3,7 +3,7 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
-import {getBuyQuoteData, getSellQuoteData, setSellLimits} from './buy';
+import {getBuyQuote, getSellQuoteData, setSellLimits} from './buy';
 
 // types
 type IRates = {
@@ -89,24 +89,39 @@ const getTickerData = () => {
 
 export const pollRates = (): AppThunk => async (dispatch, getState) => {
   await poll(async () => {
+    const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
     const {currencyCode} = getState().settings;
 
     try {
       // fetch buy quote
-      const buyQuote: any = await getBuyQuoteData(currencyCode, 1);
-      const buy = Number(buyQuote.quoteCurrencyPrice);
+      const buyQuote: any = await getBuyQuote(
+        isMoonpayCustomer,
+        isOnramperCustomer,
+        currencyCode,
+        1,
+      );
+      // const buy = Number(buyQuote.quoteCurrencyPrice);
+      const buy = Number(buyQuote);
       // fetch sell quote
-      const sellQuote: any = await getSellQuoteData(currencyCode, 1);
-      const sell = Number(sellQuote.baseCurrencyPrice);
+      // const sellQuote: any = await getSellQuoteData(currencyCode, 1);
+      // const sell = Number(sellQuote.baseCurrencyPrice);
+      const sell = 10;
       // fetch ltc rates
       const rates = await getTickerData();
       const ltc = Number(rates[currencyCode]);
-
-      dispatch(updateRatesAction({buy, sell, ltc}));
       dispatch(getTickerAction(rates));
 
+      // console.log('ticker buy quote - ' + buy);
+      // console.log('ticker sell quote - ' + sell);
+      // console.log('ticker ltc rate - ' + ltc);
+      dispatch(updateRatesAction({buy, sell, ltc}));
+
       // set Sell Limits
-      const {minSellAmount, maxSellAmount} = sellQuote.baseCurrency;
+      // const {minSellAmount, maxSellAmount} = sellQuote.baseCurrency;
+      const {minSellAmount, maxSellAmount} = {
+        minSellAmount: 10,
+        maxSellAmount: 1000,
+      };
       dispatch(setSellLimits(Number(minSellAmount), Number(maxSellAmount)));
     } catch (error) {
       console.warn(error);
