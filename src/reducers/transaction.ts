@@ -3,6 +3,7 @@ import {
   getTransactions as getLndTransactions,
   sendCoins,
   subscribeTransactions as subscribeLndTransactions,
+  newAddress as newLndAddress,
   walletKitLabelTransaction,
   walletKitListUnspent,
   walletKitFundPsbt,
@@ -13,6 +14,7 @@ import {
   OutputScriptType,
   PreviousOutPoint,
   Utxo,
+  OutPoint,
 } from 'react-native-turbo-lnd/protos/lightning_pb';
 import {create} from '@bufbuild/protobuf';
 
@@ -195,11 +197,17 @@ export const sendConvertPsbtTransaction = async (
   amount: number,
   destination: 'regular' | 'private',
 ) => {
-  // example address
-  const address = 'ltc1qvmdhuzznzrmqxwmlw3w59smdr38njxuneceuts';
-  console.log('poopy');
-
   try {
+    // new destination address
+    let type: number;
+    if (destination === 'private') {
+      type = 7;
+    } else {
+      type = 2;
+    }
+    const destinationAddress = await newLndAddress({type});
+
+    // lookup utxos
     const listUnspentResponse = await walletKitListUnspent({});
 
     if (!listUnspentResponse || !listUnspentResponse.utxos) {
@@ -221,12 +229,46 @@ export const sendConvertPsbtTransaction = async (
       amount,
     );
 
-    // Check if the selected UTXOs satisfy the amount
+    // check if selected UTXOs satisfy the amount
     if (totalAmountSat < amount) {
       throw new Error('Insufficient funds in UTXOs');
     }
 
-    console.log(selectedUtxos);
+    const outpointsArray = selectedUtxos
+      .map(utxo => utxo.outpoint)
+      .filter((outpoint): outpoint is OutPoint => outpoint !== undefined);
+
+    if (outpointsArray.length < 1 || outpointsArray === undefined) {
+      throw new Error('Outpoints empty!');
+    }
+
+    const psbt = await walletKitFundPsbt({
+      template: {
+        case: 'raw',
+        value: {
+          inputs: outpointsArray,
+          outputs: {
+            [destinationAddress.address]: BigInt(amount),
+          },
+        },
+      },
+      fees: {
+        case: 'targetConf',
+        value: 3,
+      },
+    });
+
+    const signedPsbt = await walletKitFinalizePsbt({
+      fundedPsbt: psbt.fundedPsbt,
+    });
+    const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
+    const finalPsbt = Buffer.from(signedPsbt.signedPsbt).toString('base64');
+    console.log(txHex);
+    console.log(finalPsbt);
+    console.log(destinationAddress.address);
+
+    // transaction.ts:270 Error: rpc error: code = Unknown desc = error finalizing PSBT: found UTXO tx cde375a5aaa7d6878e44d502e04af28f34af3836ebb139242ae7f8adbfea1662 but it doesn't match PSBT's input 7e237d4d7a8fdfe941f6caa8aaec5fffcb70ce3084e0f8d99a12a87aa0f37059
+    await publishTransaction(txHex);
   } catch (error) {
     console.error(error);
   }
