@@ -14,6 +14,7 @@ import {useAppSelector} from '../../store/hooks';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
+  subunitToSatsSelector,
 } from '../../reducers/settings';
 import {useDispatch} from 'react-redux';
 import {
@@ -23,13 +24,16 @@ import {
 } from '../../reducers/input';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {sendConvertPsbtTransaction} from '../../reducers/transaction';
 
 interface Props {}
 
 const Convert: React.FC<Props> = props => {
   const {} = props;
   const dispatch = useDispatch();
-  const [activeField, setActiveField] = useState('regular');
+  const [activeField, setActiveField] = useState<'regular' | 'private'>(
+    'regular',
+  );
   const {regularConfirmedBalance, privateConfirmedBalance} = useAppSelector(
     state => state.balance,
   );
@@ -39,6 +43,7 @@ const Convert: React.FC<Props> = props => {
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
+  const convertToSats = useAppSelector(state => subunitToSatsSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -65,6 +70,12 @@ const Convert: React.FC<Props> = props => {
     } else if (activeField === 'private') {
       setActiveField('regular');
     }
+  };
+
+  const handleConfirm = () => {
+    const amt = activeField === 'regular' ? regularAmount : privateAmount;
+    const destination = activeField === 'regular' ? 'private' : 'regular';
+    sendConvertPsbtTransaction(convertToSats(Number(amt)), destination);
   };
 
   // animation
@@ -160,9 +171,7 @@ const Convert: React.FC<Props> = props => {
             disabled={false}
             textKey="convert_button"
             textDomain="convertTab"
-            onPress={() => {
-              console.log('pressed');
-            }}
+            onPress={() => handleConfirm()}
           />
         </View>
       </View>

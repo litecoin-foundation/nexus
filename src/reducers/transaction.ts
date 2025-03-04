@@ -4,11 +4,15 @@ import {
   sendCoins,
   subscribeTransactions as subscribeLndTransactions,
   walletKitLabelTransaction,
+  walletKitListUnspent,
+  walletKitFundPsbt,
+  walletKitFinalizePsbt,
 } from 'react-native-turbo-lnd';
 import {
   GetTransactionsRequestSchema,
   OutputScriptType,
   PreviousOutPoint,
+  Utxo,
 } from 'react-native-turbo-lnd/protos/lightning_pb';
 import {create} from '@bufbuild/protobuf';
 
@@ -107,6 +111,11 @@ type IOutputDetails = {
   pkScript: string;
 };
 
+interface Accumulator {
+  selectedUtxos: Utxo[];
+  totalAmountSat: number;
+}
+
 interface ITx {
   txSubscriptionStarted: boolean;
   transactions: IDecodedTx[];
@@ -162,6 +171,65 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
       reject(error);
     }
   });
+};
+
+const selectUtxosForConversion = (
+  utxos: Utxo[],
+  amount: number,
+): Accumulator => {
+  return utxos.reduce<Accumulator>(
+    ({selectedUtxos, totalAmountSat}, utxo) => {
+      if (totalAmountSat >= amount) {
+        return {selectedUtxos, totalAmountSat};
+      }
+      return {
+        selectedUtxos: [...selectedUtxos, utxo],
+        totalAmountSat: totalAmountSat + Number(utxo.amountSat),
+      };
+    },
+    {selectedUtxos: [], totalAmountSat: 0},
+  );
+};
+
+export const sendConvertPsbtTransaction = async (
+  amount: number,
+  destination: 'regular' | 'private',
+) => {
+  // example address
+  const address = 'ltc1qvmdhuzznzrmqxwmlw3w59smdr38njxuneceuts';
+  console.log('poopy');
+
+  try {
+    const listUnspentResponse = await walletKitListUnspent({});
+
+    if (!listUnspentResponse || !listUnspentResponse.utxos) {
+      throw new Error('Invalid response from ListUnspent');
+    }
+    const {utxos} = listUnspentResponse;
+
+    // filter mweb and non mweb utxos, sort by largest
+    // coin selection will use first largest available
+    const mwebUtxos = utxos
+      .filter(utxo => utxo.addressType === 6)
+      .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
+    const nonMwebUtxos = utxos
+      .filter(utxo => utxo.addressType !== 6)
+      .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
+
+    const {selectedUtxos, totalAmountSat} = selectUtxosForConversion(
+      destination === 'regular' ? mwebUtxos : nonMwebUtxos,
+      amount,
+    );
+
+    // Check if the selected UTXOs satisfy the amount
+    if (totalAmountSat < amount) {
+      throw new Error('Insufficient funds in UTXOs');
+    }
+
+    console.log(selectedUtxos);
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const changeEndianness = (string: string) => {
