@@ -101,11 +101,18 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
         1,
       );
       // const buy = Number(buyQuote.quoteCurrencyPrice);
-      const buy = Number(buyQuote);
+      let buy = Number(buyQuote);
+      // if quote is null/0 there was a fetching error
+      // set coinbase rate instead
+      if (!buy) {
+        buy = getState().ticker.ltcRate;
+      }
+
       // fetch sell quote
       // const sellQuote: any = await getSellQuoteData(currencyCode, 1);
       // const sell = Number(sellQuote.baseCurrencyPrice);
       const sell = 10;
+
       // fetch ltc rates
       const rates = await getTickerData();
       const ltc = Number(rates[currencyCode]);
@@ -119,8 +126,8 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
       // set Sell Limits
       // const {minSellAmount, maxSellAmount} = sellQuote.baseCurrency;
       const {minSellAmount, maxSellAmount} = {
-        minSellAmount: 10,
-        maxSellAmount: 1000,
+        minSellAmount: 0.1,
+        maxSellAmount: 100,
       };
       dispatch(setSellLimits(Number(minSellAmount), Number(maxSellAmount)));
     } catch (error) {

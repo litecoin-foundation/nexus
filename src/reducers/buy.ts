@@ -3,8 +3,15 @@ import {AppThunk} from './types';
 import {getLocales, getCountry} from 'react-native-localize';
 import {uuidFromSeed} from '../lib/utils/uuid';
 
+const enableTest = __DEV__;
+const TEST_METHOD: string = 'ONRAMPER';
+const TEST_COUNTRY: string = 'NL';
+const TEST_FIAT: string = 'EUR';
+
 const MOONPAY_PUBLIC_KEY = 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
-const ONRAMPER_PUBLIC_KEY = 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
+const ONRAMPER_PUBLIC_KEY = enableTest
+  ? 'pk_test_01JF0BA1P5AXVTW3NQM22FJXG2'
+  : 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
 
 // types
 interface IBuy {
@@ -196,7 +203,8 @@ const getOnramperBuyQuoteData = (
 
       // const data = await res.json();
       // resolve(data);
-      resolve(100);
+
+      resolve(null);
     } catch (error: any) {
       reject(error.response.data.message);
     }
@@ -241,11 +249,13 @@ export const setBuyQuote =
   (cryptoAmount?: number, fiatAmount?: number): AppThunk =>
   async (dispatch, getState) => {
     const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-    const {currencyCode} = getState().settings;
-    // const countryCode = getCountry();
-    const countryCode = 'NL';
 
-    const quote: any = await getBuyQuote(
+    const currencyCode = enableTest
+      ? TEST_FIAT
+      : getState().settings.currencyCode;
+    const countryCode = enableTest ? TEST_COUNTRY : getCountry();
+
+    let quote: any = await getBuyQuote(
       isMoonpayCustomer,
       isOnramperCustomer,
       currencyCode,
@@ -261,6 +271,12 @@ export const setBuyQuote =
     // console.log('fiatAmount - ' + fiatAmount);
     // console.log('countryCode - ' + countryCode);
     // console.log('quote - ' + quote);
+
+    // if quote is null there was a fetching error
+    // set coinbase rate instead
+    if (!quote) {
+      quote = getState().ticker.ltcRate;
+    }
 
     dispatch(setBuyQuoteAction(quote));
   };
@@ -315,30 +331,36 @@ export const getSellQuote =
   };
 
 export const checkBuySellProviderCountry = (): AppThunk => dispatch => {
-  // const countryCode = getCountry();
-  const countryCode = 'NL';
+  const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
-  // console.log('checkBuySellProviderCountry countryCode - ' + countryCode);
-
-  // if (moonpayCountries.includes(countryCode)) {
-  if (false) {
-    dispatch(setMoonpayCustomer(true));
-  } else {
-    dispatch(setMoonpayCustomer(false));
-
-    if (onramperCountries.includes(countryCode)) {
+  if (enableTest) {
+    if (TEST_METHOD === 'MOONPAY') {
+      dispatch(setMoonpayCustomer(true));
+      dispatch(setOnramperCustomer(false));
+    } else if (TEST_METHOD === 'ONRAMPER') {
+      dispatch(setMoonpayCustomer(false));
       dispatch(setOnramperCustomer(true));
     } else {
-      dispatch(setOnramperCustomer(false));
+      dispatch(setMoonpayCustomer(false));
+      dispatch(setOnramperCustomer(trfalseue));
+    }
+  } else {
+    if (moonpayCountries.includes(countryCode)) {
+      dispatch(setMoonpayCustomer(true));
+    } else {
+      dispatch(setMoonpayCustomer(false));
+
+      if (onramperCountries.includes(countryCode)) {
+        dispatch(setOnramperCustomer(true));
+      } else {
+        dispatch(setOnramperCustomer(false));
+      }
     }
   }
 };
 
 export const checkAllowed = (): AppThunk => async (dispatch, getState) => {
   const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-
-  // console.log('isMoonpayCustomer - ' + isMoonpayCustomer);
-  // console.log('isOnramperCustomer - ' + isOnramperCustomer);
 
   if (isMoonpayCustomer) {
     dispatch(checkMoonpayAllowed());
@@ -415,14 +437,10 @@ const checkMoonpayAllowed = (): AppThunk => async dispatch => {
 
 const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
   // check if buy/sell is allowed based on user ip and preferred currency
-  const currencyCode = getState().settings.currencyCode;
-  // const countryCode = getCountry();
-  const countryCode = 'NL';
-  // const currencyCode = 'COP';
-  // const countryCode = 'CO';
-
-  // console.log('currencyCode - ' + currencyCode);
-  // console.log('countryCode - ' + countryCode);
+  const currencyCode = enableTest
+    ? TEST_FIAT
+    : getState().settings.currencyCode;
+  const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
   // way 1 with ltc code and onramps/offramps arrays
   // const supportedCrypto = `https://api.onramper.com/supported/crypto?source=${currencyCode}&country=${countryCode}`;
@@ -499,9 +517,6 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
       }
     }
 
-    // console.log('canBuy - ' + canBuy);
-    // console.log('canSell - ' + canSell);
-
     dispatch(
       checkAllowedAction({
         isBuyAllowed: canBuy,
@@ -553,9 +568,9 @@ const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
 const getOnramperLimits = (): AppThunk => async (dispatch, getState) => {
   const data = {
     minBuyAmount: 10,
-    maxBuyAmount: 1000,
+    maxBuyAmount: 10000,
     minLTCBuyAmount: 0.1,
-    maxLTCBuyAmount: 10,
+    maxLTCBuyAmount: 100,
   };
   dispatch(getLimitsAction(data));
 };
@@ -616,47 +631,47 @@ export const getSignedOnramperUrl =
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
 
+      const signContent = `wallets=ltc_litecoin:${address}`;
+      const baseUrl = enableTest
+        ? `https://buy.onramper.dev/?apiKey=${ONRAMPER_PUBLIC_KEY}`
+        : `https://buy.onramper.com/?apiKey=${ONRAMPER_PUBLIC_KEY}`;
+
       const unsignedURL =
-        `https://buy.onramper.com/?apiKey=${ONRAMPER_PUBLIC_KEY}` +
+        baseUrl +
         '&onlyCryptos=ltc_litecoin' +
-        // `&wallets=${address}` +
         `&wallets=ltc_litecoin:${address}` +
         `&defaultAmount=${fiatAmount}` +
         `&defaultFiat=${currencyCode}` +
         `&uuid=${uniqueIdAsUUID}` +
-        '&mode=buy';
+        '&mode=buy' +
+        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fmoonpay%2Fsuccess_buy%2F';
+      // TODO: replace moonpay with onramper
+      // '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F';
 
-      // const unsignedURL =
-      //   `https://buy.onramper.com/?apiKey=${ONRAMPER_PUBLIC_KEY}` +
-      //   `&wallets=ltc_litecoin:${address}`;
-
-      console.log('unsignedURL - ' + unsignedURL);
-
-      // return url;
       try {
-        // const res = await fetch(
-        //   'https://api.nexuswallet.com/api/buy/onramper/sign',
-        //   {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({unsignedURL}),
-        //   },
-        // );
+        const res = await fetch(
+          'https://api.nexuswallet.com/api/buy/onramper/sign',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({signContent: signContent}),
+          },
+        );
 
-        // if (!res.ok) {
-        //   const {message} = await res.json();
-        //   reject(String(message));
-        // }
+        if (!res.ok) {
+          const {message} = await res.json();
+          reject(String(message));
+        }
 
-        // const response = await res.json();
-        // console.log('response - ' + response);
+        const response = await res.json();
 
-        // const {urlWithSignature} = response;
-        // resolve(urlWithSignature);
+        const signature = response;
+        const signedUrl = `${unsignedURL}&signature=${signature}`;
 
-        resolve(unsignedURL);
+        resolve(signedUrl);
+        // resolve(unsignedURL);
       } catch (error) {
         // handle error
         reject(error);
@@ -701,6 +716,64 @@ export const getSignedSellUrl =
         const {urlWithSignature} = data;
         resolve(urlWithSignature);
       } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+export const getSignedSellOnramperUrl =
+  (address: string, cryptoAmount: number): AppThunk =>
+  (_, getState) => {
+    return new Promise(async (resolve, reject) => {
+      const {currencyCode} = getState().settings;
+      const {uniqueId} = getState().onboarding;
+      const uniqueIdAsUUID = uuidFromSeed(uniqueId);
+
+      const signContent = `wallets=ltc_litecoin:${address}`;
+      const baseUrl = enableTest
+        ? `https://buy.onramper.dev/?apiKey=${ONRAMPER_PUBLIC_KEY}`
+        : `https://buy.onramper.com/?apiKey=${ONRAMPER_PUBLIC_KEY}`;
+
+      console.log(cryptoAmount);
+
+      const unsignedURL =
+        baseUrl +
+        '&sell_onlyCryptos=ltc_litecoin' +
+        `&sell_defaultFiat=${currencyCode}` +
+        '&sell_defaultCrypto=ltc_litecoin' +
+        `&sell_defaultAmount=${cryptoAmount}` +
+        `&uuid=${uniqueIdAsUUID}` +
+        '&mode=sell' +
+        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fmoonpay%2Fsuccess_sell%2F';
+      // TODO: replace moonpay with onramper
+      // '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F';
+
+      try {
+        const res = await fetch(
+          'https://api.nexuswallet.com/api/buy/onramper/sign',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({signContent: signContent}),
+          },
+        );
+
+        if (!res.ok) {
+          const {message} = await res.json();
+          reject(String(message));
+        }
+
+        const response = await res.json();
+
+        const signature = response;
+        const signedUrl = `${unsignedURL}&signature=${signature}`;
+
+        resolve(signedUrl);
+        // resolve(unsignedURL);
+      } catch (error) {
+        // handle error
         reject(error);
       }
     });

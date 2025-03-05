@@ -35,6 +35,9 @@ const Buy: React.FC<Props> = () => {
   const maxBuyAmount = useAppSelector(state => state.buy.maxBuyAmount);
   const minLTCBuyAmount = useAppSelector(state => state.buy.minLTCBuyAmount);
   const maxLTCBuyAmount = useAppSelector(state => state.buy.maxLTCBuyAmount);
+  const {isMoonpayCustomer, isOnramperCustomer} = useAppSelector(
+    state => state.buy,
+  );
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -214,8 +217,13 @@ const Buy: React.FC<Props> = () => {
           textKey="preview_buy"
           textDomain="buyTab"
           onPress={() => {
-            // navigation.navigate('ConfirmBuy');
-            navigation.navigate('ConfirmBuyOnramper');
+            if (isMoonpayCustomer) {
+              navigation.navigate('ConfirmBuy');
+            } else if (isOnramperCustomer) {
+              navigation.navigate('ConfirmBuyOnramper');
+            } else {
+              return;
+            }
           }}
         />
         <TranslateText

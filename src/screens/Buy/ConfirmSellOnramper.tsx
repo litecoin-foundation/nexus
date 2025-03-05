@@ -13,14 +13,14 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import TranslateText from '../../components/TranslateText';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
-import {getSignedOnramperUrl} from '../../reducers/buy';
+import {getSignedSellOnramperUrl} from '../../reducers/buy';
 import {parseQueryString} from '../../lib/utils/querystring';
 import {showError} from '../../reducers/errors';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
-  ConfirmBuyOnramper: {
+  ConfirmSellOnramper: {
     queryString?: string;
   };
   WebPage: {
@@ -34,11 +34,11 @@ type RootStackParamList = {
 };
 
 interface Props {
-  route: RouteProp<RootStackParamList, 'ConfirmBuyOnramper'>;
-  navigation: StackNavigationProp<RootStackParamList, 'ConfirmBuyOnramper'>;
+  route: RouteProp<RootStackParamList, 'ConfirmSellOnramper'>;
+  navigation: StackNavigationProp<RootStackParamList, 'ConfirmSellOnramper'>;
 }
 
-const ConfirmBuyOnramper: React.FC<Props> = props => {
+const ConfirmSellOnramper: React.FC<Props> = props => {
   const {route} = props;
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
@@ -47,30 +47,30 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const [buyTxId, setBuyTxId] = useState<string>('');
+  const [sellTxId, setSellTxId] = useState<string>('');
 
   const [hasBeenMounted, setHasBeenMounted] = useState(false);
   const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
 
-  const {fiatAmount} = useAppSelector(state => state.input);
+  const {amount} = useAppSelector(state => state.input);
   const refundAddress = useAppSelector(state => state.address.address);
 
-  const openBuyWidget = async () => {
+  const openSellWidget = async () => {
     try {
       // await is important!
       const url = await dispatch(
-        getSignedOnramperUrl(refundAddress, Number(fiatAmount)),
+        getSignedSellOnramperUrl(refundAddress, Number(amount)),
       );
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {
           uri: url,
           observeURL:
             // TODO: replace moonpay with onramper
-            'https://api.nexuswallet.com/api/buy/moonpay/success_buy/',
-          returnRoute: 'ConfirmBuyOnramper',
+            'https://api.nexuswallet.com/api/sell/moonpay/success_sell/',
+          returnRoute: 'ConfirmSellOnramper',
         });
       } else {
-        throw new Error('Failed to Buy Litecoin URL (Onramper)!');
+        throw new Error('Failed to Sell Litecoin URL (Onramper)!');
       }
     } catch (error) {
       dispatch(showError(String(error)));
@@ -79,12 +79,12 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
 
   useEffect(() => {
     dispatch(getAddress(false));
-    openBuyWidget();
+    openSellWidget();
     setHasBeenMounted(true);
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [dispatch]);
 
-  // if exited WebPage before successful buy, go back!
+  // if exited WebPage before successful sell, go back!
   useFocusEffect(
     React.useCallback(() => {
       if (hasBeenMounted && hasNavigatedBack && !route.params?.queryString) {
@@ -110,8 +110,8 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
         // &transactionStatus=pending
         console.log(route.params.queryString);
         // parse qs & set values to state!
-        const buySuccess = parseQueryString(route.params.queryString);
-        setBuyTxId(buySuccess.transactionId);
+        const sellSuccess = parseQueryString(route.params.queryString);
+        setSellTxId(sellSuccess.transactionId);
       }
     }
   }, [route.params]);
@@ -125,13 +125,13 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
           textStyle={styles.title}
         />
         <TranslateText
-          textKey="buy_success"
-          domain="buyTab"
+          textKey="sell_success"
+          domain="sellTab"
           textStyle={styles.subtitle}
         />
 
         <View style={styles.toAddressContainer}>
-          <Text style={styles.toAddressText}>{buyTxId}</Text>
+          <Text style={styles.toAddressText}>{sellTxId}</Text>
         </View>
       </View>
 
@@ -153,7 +153,7 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
   return (
     <View style={styles.container}>
       <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
-        {buyTxId === '' ? (
+        {sellTxId === '' ? (
           // WebPage is open
           <></>
         ) : (
@@ -239,7 +239,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ConfirmBuyOnramperNavigationOptions = (navigation: any) => {
+export const ConfirmSellOnramperNavigationOptions = (navigation: any) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -247,8 +247,8 @@ export const ConfirmBuyOnramperNavigationOptions = (navigation: any) => {
   return {
     headerTitle: () => (
       <TranslateText
-        textKey={'buy_litecoin'}
-        domain={'buyTab'}
+        textKey={'sell_litecoin'}
+        domain={'sellTab'}
         numberOfLines={1}
         textStyle={styles.headerTitle}
       />
@@ -265,4 +265,4 @@ export const ConfirmBuyOnramperNavigationOptions = (navigation: any) => {
   };
 };
 
-export default ConfirmBuyOnramper;
+export default ConfirmSellOnramper;
