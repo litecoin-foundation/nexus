@@ -2,7 +2,7 @@ import React, {useEffect, useState, useContext} from 'react';
 import {StyleSheet, View, TouchableOpacity, Image} from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {checkAllowed, getLimits, setBuyQuote} from '../../reducers/buy';
+import {checkAllowed, setLimits, setBuyQuote} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
 import {
@@ -49,7 +49,7 @@ const Buy: React.FC<Props> = () => {
 
   useEffect(() => {
     dispatch(checkAllowed());
-    dispatch(getLimits());
+    dispatch(setLimits());
     dispatch(setBuyQuote(1));
     // dispatch(pollRates());
   }, [dispatch]);

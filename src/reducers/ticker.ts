@@ -3,7 +3,7 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
-import {getBuyQuote, getSellQuoteData, setSellLimits} from './buy';
+import {getBuyQuote, getSellQuote, setLimits} from './buy';
 
 // types
 type IRates = {
@@ -100,36 +100,34 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
         currencyCode,
         1,
       );
-      // const buy = Number(buyQuote.quoteCurrencyPrice);
       let buy = Number(buyQuote);
-      // if quote is null/0 there was a fetching error
+      // if quote is null/undefined/0 there was a fetching error
       // set coinbase rate instead
       if (!buy) {
         buy = getState().ticker.ltcRate;
       }
 
       // fetch sell quote
-      // const sellQuote: any = await getSellQuoteData(currencyCode, 1);
-      // const sell = Number(sellQuote.baseCurrencyPrice);
-      const sell = 10;
+      const sellQuote: any = await getSellQuote(
+        isMoonpayCustomer,
+        isOnramperCustomer,
+        currencyCode,
+        1,
+      );
+      let sell = Number(sellQuote);
+      // if quote is null/undefined/0 there was a fetching error
+      // set coinbase rate instead
+      if (!sell) {
+        sell = getState().ticker.ltcRate;
+      }
 
       // fetch ltc rates
       const rates = await getTickerData();
       const ltc = Number(rates[currencyCode]);
+
       dispatch(getTickerAction(rates));
-
-      // console.log('ticker buy quote - ' + buy);
-      // console.log('ticker sell quote - ' + sell);
-      // console.log('ticker ltc rate - ' + ltc);
       dispatch(updateRatesAction({buy, sell, ltc}));
-
-      // set Sell Limits
-      // const {minSellAmount, maxSellAmount} = sellQuote.baseCurrency;
-      const {minSellAmount, maxSellAmount} = {
-        minSellAmount: 0.1,
-        maxSellAmount: 100,
-      };
-      dispatch(setSellLimits(Number(minSellAmount), Number(maxSellAmount)));
+      dispatch(setLimits());
     } catch (error) {
       console.warn(error);
     }

@@ -3,7 +3,7 @@ import {AppThunk} from './types';
 import {getLocales, getCountry} from 'react-native-localize';
 import {uuidFromSeed} from '../lib/utils/uuid';
 
-const enableTest = __DEV__;
+const enableTest = false;
 const TEST_METHOD: string = 'ONRAMPER';
 const TEST_COUNTRY: string = 'NL';
 const TEST_FIAT: string = 'EUR';
@@ -52,21 +52,21 @@ const initialState = {
 // actions
 const getBuyTxHistoryAction = createAction('buy/getBuyTxHistoryAction');
 const getSellTxHistoryAction = createAction('buy/getSellTxHistoryAction');
-const setBuyQuoteAction = createAction('buy/setBuyQuoteAction');
+const setQuoteAction = createAction('buy/setQuoteAction');
 const checkAllowedAction = createAction<{
   isBuyAllowed: boolean;
   isSellAllowed: boolean;
 }>('buy/checkAllowedAction');
-const getLimitsAction = createAction<{
+const setLimitsAction = createAction<{
   minBuyAmount: number;
   maxBuyAmount: number;
   minLTCBuyAmount: number;
   maxLTCBuyAmount: number;
-}>('buy/getLimitsAction');
-const setOnramperLimitsAction = createAction<{
+}>('buy/setLimitsAction');
+const setBuyLimitsAction = createAction<{
   minBuyAmount: number;
   maxBuyAmount: number;
-}>('buy/setOnramperLimitsAction');
+}>('buy/setBuyLimitsAction');
 const setSellLimitsAction = createAction<{
   minSellAmount: number;
   maxSellAmount: number;
@@ -180,11 +180,12 @@ const getOnramperBuyQuoteData = (
   countryCode?: string,
 ) => {
   return new Promise(async (resolve, reject) => {
-    const countryCodeUrl = countryCode ? `?country=${countryCode}` : '';
-    const url =
-      `https://api.onramper.com/quotes/${currencyCode}/ltc_litecoin` +
-      `?amount=${cryptoAmount}` +
-      countryCodeUrl;
+    // TODO: uncomment and test when it's working on onramper's end
+    // const countryCodeUrl = countryCode ? `?country=${countryCode}` : '';
+    // const url =
+    //   `https://api.onramper.com/quotes/${currencyCode}/ltc_litecoin` +
+    //   `?amount=${cryptoAmount}` +
+    //   countryCodeUrl;
 
     try {
       // const res = await fetch(url, {
@@ -264,24 +265,20 @@ export const setBuyQuote =
       countryCode,
     );
 
-    // console.log('BUY QUOTE DATA:');
-    // console.log('isOnramperCustomer - ' + isOnramperCustomer);
-    // console.log('currencyCode - ' + currencyCode);
-    // console.log('cryptoAmount - ' + cryptoAmount);
-    // console.log('fiatAmount - ' + fiatAmount);
-    // console.log('countryCode - ' + countryCode);
-    // console.log('quote - ' + quote);
-
-    // if quote is null there was a fetching error
+    // if quote is null/undefined/0 there was a fetching error
     // set coinbase rate instead
     if (!quote) {
       quote = getState().ticker.ltcRate;
     }
 
-    dispatch(setBuyQuoteAction(quote));
+    // set sell limits when possible
+    const {minSellAmount, maxSellAmount} = quote.baseCurrency;
+    dispatch(setSellLimitsAction({minSellAmount, maxSellAmount}));
+
+    dispatch(setQuoteAction(quote));
   };
 
-export const getSellQuoteData = (
+export const getMoonpaySellQuoteData = (
   currencyCode: string,
   cryptoAmount: number,
 ) => {
@@ -321,13 +318,60 @@ export const getSellQuoteData = (
   });
 };
 
-export const getSellQuote =
+export const getSellQuote = (
+  isMoonpayCustomer: boolean,
+  isOnramperCustomer: boolean,
+  currencyCode: string,
+  cryptoAmount: number,
+  countryCode?: string,
+) => {
+  return new Promise(async (resolve, reject) => {
+    let quote: any;
+
+    try {
+      if (isMoonpayCustomer) {
+        quote = await getMoonpaySellQuoteData(currencyCode, cryptoAmount);
+      } else if (isOnramperCustomer) {
+        // not supported by onramper
+        // quote = await getOnramperSellQuoteData(
+        //   currencyCode,
+        //   cryptoAmount,
+        //   countryCode,
+        // );
+      }
+
+      resolve(quote);
+    } catch (error: any) {
+      reject(error.response.data.message);
+    }
+  });
+};
+
+export const setSellQuote =
   (cryptoAmount: number): AppThunk =>
   async (dispatch, getState) => {
-    const {currencyCode} = getState().settings;
-    const quote: any = await getSellQuoteData(currencyCode, cryptoAmount);
+    const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
 
-    // dispatch(getSellQuoteAction(quote));
+    const currencyCode = enableTest
+      ? TEST_FIAT
+      : getState().settings.currencyCode;
+    const countryCode = enableTest ? TEST_COUNTRY : getCountry();
+
+    let quote: any = await getSellQuote(
+      isMoonpayCustomer,
+      isOnramperCustomer,
+      currencyCode,
+      cryptoAmount,
+      countryCode,
+    );
+
+    // if quote is null/undefined/0 there was a fetching error
+    // set coinbase rate instead
+    if (!quote) {
+      quote = getState().ticker.ltcRate;
+    }
+
+    dispatch(setQuoteAction(quote));
   };
 
 export const checkBuySellProviderCountry = (): AppThunk => dispatch => {
@@ -342,7 +386,7 @@ export const checkBuySellProviderCountry = (): AppThunk => dispatch => {
       dispatch(setOnramperCustomer(true));
     } else {
       dispatch(setMoonpayCustomer(false));
-      dispatch(setOnramperCustomer(trfalseue));
+      dispatch(setOnramperCustomer(false));
     }
   } else {
     if (moonpayCountries.includes(countryCode)) {
@@ -442,9 +486,7 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
     : getState().settings.currencyCode;
   const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
-  // way 1 with ltc code and onramps/offramps arrays
-  // const supportedCrypto = `https://api.onramper.com/supported/crypto?source=${currencyCode}&country=${countryCode}`;
-  // way 2 with ltc_litecoin code and separate buy/sell requests
+  // ltc_litecoin code
   const supportedForBuying = `https://api.onramper.com/supported/assets?source=${currencyCode}&type=buy&country=${countryCode}`;
   const supportedForSelling = `https://api.onramper.com/supported/assets?source=ltc_litecoin&type=sell&country=${countryCode}`;
 
@@ -468,41 +510,12 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
     }
     const data = await res.json();
     if (data.hasOwnProperty('message')) {
-      // way 1
-      // const ltcSupportObj = data.message.find(
-      //   (crypto: any) =>
-      //     crypto.code === 'LTC' && crypto.networkDisplayName === 'Litecoin',
-      // );
-      // if (ltcSupportObj) {
-      //   if (ltcSupportObj.hasOwnProperty('fiat') && ltcSupportObj.fiat > 0) {
-      //     if (
-      //       ltcSupportObj.fiat[0].hasOwnProperty('onramps') &&
-      //       ltcSupportObj.fiat[0].onramps > 0
-      //     ) {
-      //       canBuy = true;
-      //       // Check for limits
-      //       const {min, max} =
-      //         ltcSupportObj.fiat[0].onramps[0].paymentMethods;
-      //       dispatch(
-      //         setOnramperLimitsAction({
-      //           minBuyAmount: min,
-      //           maxBuyAmount: max,
-      //         }),
-      //       );
-      //     }
-      //   }
-      //   // Never returns offramps, sell is not supported?
-      //   // https://api.onramper.com/quotes/{crypto}/{fiat} returns No supported payments found
-      //   canSell = false;
-      // }
-
       if (data.message.hasOwnProperty('assets')) {
         if (data.message.assets[0].crypto.includes('ltc_litecoin')) {
           canBuy = true;
         }
       }
     }
-
     const res2 = await fetch(supportedForSelling, req);
     if (!res2.ok) {
       const error = await res2.json();
@@ -516,7 +529,6 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
         }
       }
     }
-
     dispatch(
       checkAllowedAction({
         isBuyAllowed: canBuy,
@@ -525,18 +537,6 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
     );
   } catch (error) {
     console.error(error);
-  }
-};
-
-export const getLimits = (): AppThunk => async (dispatch, getState) => {
-  const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-
-  if (isMoonpayCustomer) {
-    dispatch(getMoonpayLimits());
-  } else if (isOnramperCustomer) {
-    dispatch(getOnramperLimits());
-  } else {
-    return;
   }
 };
 
@@ -559,27 +559,55 @@ const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
 
     const data = await res.json();
 
-    dispatch(getLimitsAction(data));
+    dispatch(
+      setLimitsAction({
+        minBuyAmount: data.baseCurrency.minBuyAmount,
+        maxBuyAmount: data.baseCurrency.maxBuyAmount,
+        minLTCBuyAmount: data.quoteCurrency.minBuyAmount,
+        maxLTCBuyAmount: data.quoteCurrency.maxBuyAmount,
+      }),
+    );
+
+    // set sell limits when possible
+    const {minSellAmount, maxSellAmount} = {
+      minSellAmount: 0.1,
+      maxSellAmount: 100,
+    };
+    dispatch(setSellLimitsAction({minSellAmount, maxSellAmount}));
   } catch (error) {
     console.error(error);
   }
 };
 
-const getOnramperLimits = (): AppThunk => async (dispatch, getState) => {
+const getOnramperLimits = (): AppThunk => async dispatch => {
+  // TODO: get actual limits when it's working on onramper's end
   const data = {
     minBuyAmount: 10,
     maxBuyAmount: 10000,
     minLTCBuyAmount: 0.1,
     maxLTCBuyAmount: 100,
   };
-  dispatch(getLimitsAction(data));
+  dispatch(setLimitsAction(data));
+
+  // set sell limits when possible
+  const {minSellAmount, maxSellAmount} = {
+    minSellAmount: 0.1,
+    maxSellAmount: 100,
+  };
+  dispatch(setSellLimitsAction({minSellAmount, maxSellAmount}));
 };
 
-export const setSellLimits =
-  (minSellAmount: number, maxSellAmount: number): AppThunk =>
-  async dispatch => {
-    dispatch(setSellLimitsAction({minSellAmount, maxSellAmount}));
-  };
+export const setLimits = (): AppThunk => async (dispatch, getState) => {
+  const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
+
+  if (isMoonpayCustomer) {
+    dispatch(getMoonpayLimits());
+  } else if (isOnramperCustomer) {
+    dispatch(getOnramperLimits());
+  } else {
+    return;
+  }
+};
 
 export const getSignedUrl =
   (address: string, fiatAmount: number): AppThunk =>
@@ -734,8 +762,6 @@ export const getSignedSellOnramperUrl =
         ? `https://buy.onramper.dev/?apiKey=${ONRAMPER_PUBLIC_KEY}`
         : `https://buy.onramper.com/?apiKey=${ONRAMPER_PUBLIC_KEY}`;
 
-      console.log(cryptoAmount);
-
       const unsignedURL =
         baseUrl +
         '&sell_onlyCryptos=ltc_litecoin' +
@@ -792,7 +818,7 @@ export const buySlice = createSlice({
       ...state,
       sellHistory: action.payload,
     }),
-    setBuyQuoteAction: (state, action) => ({
+    setQuoteAction: (state, action) => ({
       ...state,
       quote: action.payload,
     }),
@@ -801,17 +827,22 @@ export const buySlice = createSlice({
       isBuyAllowed: action.payload.isBuyAllowed,
       isSellAllowed: action.payload.isSellAllowed,
     }),
-    getLimitsAction: (state, action) => ({
+    setLimitsAction: (state, action) => ({
       ...state,
-      minBuyAmount: action.payload.baseCurrency.minBuyAmount,
-      maxBuyAmount: action.payload.baseCurrency.maxBuyAmount,
-      minLTCBuyAmount: action.payload.quoteCurrency.minBuyAmount,
-      maxLTCBuyAmount: action.payload.quoteCurrency.maxBuyAmount,
+      minBuyAmount: action.payload.minBuyAmount,
+      maxBuyAmount: action.payload.maxBuyAmount,
+      minLTCBuyAmount: action.payload.minBuyAmount,
+      maxLTCBuyAmount: action.payload.maxBuyAmount,
     }),
-    setOnramperLimitsAction: (state, action) => ({
+    setBuyLimitsAction: (state, action) => ({
       ...state,
       minLTCBuyAmount: action.payload.minBuyAmount,
       maxLTCBuyAmount: action.payload.maxBuyAmount,
+    }),
+    setSellLimitsAction: (state, action) => ({
+      ...state,
+      minLTCSellAmount: action.payload.minSellAmount,
+      maxLTCSellAmount: action.payload.maxSellAmount,
     }),
     setMoonpayCustomer: (state, action) => ({
       ...state,
@@ -820,11 +851,6 @@ export const buySlice = createSlice({
     setOnramperCustomer: (state, action) => ({
       ...state,
       isOnramperCustomer: action.payload,
-    }),
-    setSellLimitsAction: (state, action) => ({
-      ...state,
-      minLTCSellAmount: action.payload.minSellAmount,
-      maxLTCSellAmount: action.payload.maxSellAmount,
     }),
   },
 });

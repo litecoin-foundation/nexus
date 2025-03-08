@@ -88,7 +88,8 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
   useFocusEffect(
     React.useCallback(() => {
       if (hasBeenMounted && hasNavigatedBack && !route.params?.queryString) {
-        navigation.goBack();
+        // navigation.goBack();
+        navigation.navigate('Main', {isInitial: true});
       }
       /* eslint-disable react-hooks/exhaustive-deps */
     }, [hasBeenMounted, hasNavigatedBack, route.params]),
@@ -106,10 +107,6 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params) {
       if (route.params.queryString) {
-        // transactionId={{transactionId}}
-        // &transactionStatus=pending
-        console.log(route.params.queryString);
-        // parse qs & set values to state!
         const buySuccess = parseQueryString(route.params.queryString);
         setBuyTxId(buySuccess.transactionId);
       }

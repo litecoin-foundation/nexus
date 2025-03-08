@@ -88,9 +88,9 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
   useFocusEffect(
     React.useCallback(() => {
       if (hasBeenMounted && hasNavigatedBack && !route.params?.queryString) {
-        navigation.goBack();
+        // navigation.goBack();
+        navigation.navigate('Main', {isInitial: true});
       }
-      /* eslint-disable react-hooks/exhaustive-deps */
     }, [hasBeenMounted, hasNavigatedBack, route.params]),
   );
 
@@ -102,14 +102,10 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
     return unsubscribe;
   }, [navigation]);
 
-  // handle successful purchase
+  // handle successful sell
   useEffect(() => {
     if (route.params) {
       if (route.params.queryString) {
-        // transactionId={{transactionId}}
-        // &transactionStatus=pending
-        console.log(route.params.queryString);
-        // parse qs & set values to state!
         const sellSuccess = parseQueryString(route.params.queryString);
         setSellTxId(sellSuccess.transactionId);
       }
