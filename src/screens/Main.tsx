@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
   withDelay,
 } from 'react-native-reanimated';
-import {RouteProp, useFocusEffect} from '@react-navigation/native';
+import {RouteProp} from '@react-navigation/native';
 import {
   Canvas,
   Image,
@@ -60,6 +60,7 @@ type RootStackParamList = {
   Main: {
     scanData?: string;
     isInitial?: boolean;
+    updateHeader?: boolean;
   };
   SearchTransaction: undefined;
 };
@@ -89,8 +90,8 @@ const Main: React.FC<Props> = props => {
 
   // fixes a bug where navigating back from ConfirmBuy/Sell WebPage
   // causes header to disappear or not follow inset rules!
-  useFocusEffect(
-    React.useCallback(() => {
+  useEffect(() => {
+    if (route.params?.updateHeader) {
       navigation.setOptions({
         headerShown: false,
       });
@@ -100,10 +101,8 @@ const Main: React.FC<Props> = props => {
           headerShown: true,
         });
       }, 10);
-
-      return () => {};
-    }, []),
-  );
+    }
+  }, [route]);
 
   const SNAP_POINTS_FROM_TOP = [SCREEN_HEIGHT * 0.24, SCREEN_HEIGHT * 0.47];
   const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
@@ -493,7 +492,6 @@ const Main: React.FC<Props> = props => {
       clearTimeout(walletButtonFadingTimeout.current);
     };
   }, [
-    route,
     activeTab,
     backHeaderButton,
     leftHeaderButton,
@@ -562,7 +560,6 @@ const Main: React.FC<Props> = props => {
           setActiveTab(1);
         }}
         active={activeTab === 1}
-        textPadding={8}
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
@@ -573,7 +570,6 @@ const Main: React.FC<Props> = props => {
           setActiveTab(2);
         }}
         active={activeTab === 2}
-        textPadding={7}
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
@@ -585,7 +581,6 @@ const Main: React.FC<Props> = props => {
           setActiveTab(3);
         }}
         active={activeTab === 3}
-        textPadding={18}
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
@@ -596,7 +591,6 @@ const Main: React.FC<Props> = props => {
           setActiveTab(4);
         }}
         active={activeTab === 4}
-        textPadding={11}
         disabled={!isInternetReachable ? true : false}
       />
       <DashboardButton
@@ -607,7 +601,6 @@ const Main: React.FC<Props> = props => {
           setActiveTab(5);
         }}
         active={activeTab === 5}
-        textPadding={18}
         disabled={false}
       />
     </View>
