@@ -70,7 +70,7 @@ export type IDisplayedTx = {
   amount: number;
   confs: number;
   day: string;
-  time: Date;
+  time: string;
   timestamp: number;
   fee: number;
   lightning: boolean;
@@ -373,16 +373,22 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       }
 
       if (buyHistory && buyHistory.length >= 1) {
+        // Find matching with tx hash amongst the buyHistory from nexus-api
+        // to identify transaction as a Buy one.
+        // If lnd fails to return Buy transaction associated with user's wallet
+        // it is put in unmatchedBuyTxs array and added afterwards
         const buyTxs = buyHistory.filter(buyTx => {
           if (buyTx.cryptoTransactionId === tx.txHash) {
-            return buyTx;
+            return true;
+            // If tx is valid (not failed) and haven't been included yet
+            // Status can be Sent, Pending, Completed or Failed
           } else if (
-            buyTx.txHash &&
-            buyTx.status === 'completed' &&
+            buyTx.status !== 'failed' &&
             !unmatchedBuyTxs.includes(buyTx.txHash)
           ) {
             unmatchedBuyTxs.push(buyTx.txHash);
           }
+          return false;
         });
         if (buyTxs && buyTxs.length > 0) {
           const buyTx = buyTxs[0];
@@ -415,16 +421,21 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       }
 
       if (sellHistory && sellHistory.length >= 1) {
+        // Find matching with tx hash amongst the sellHistory from nexus-api
+        // to identify transaction as a Sell one.
+        // If lnd fails to return Sell transaction associated with user's wallet
+        // it is put in unmatchedSellTxs array and added afterwards
         const sellTxs = sellHistory.filter(sellTx => {
           if (sellTx.depositHash === tx.txHash) {
-            return sellTx;
+            return true;
+            // If tx is valid (assigned with hash) and haven't been included yet
           } else if (
             sellTx.depositHash &&
-            sellTx.status === 'completed' &&
             !unmatchedSellTxs.includes(sellTx.depositHash)
           ) {
             unmatchedSellTxs.push(sellTx.depositHash);
           }
+          return false;
         });
         if (sellTxs && sellTxs.length > 0) {
           const sellTx = sellTxs[0];
@@ -500,10 +511,12 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         country: buyTx.country || null,
         cardType: buyTx.cardType || null,
       };
-      const txTimeStamp = String(Date.parse(buyTx.createdAt) / 1000); // from iso to timestamp
+      const txTimeStamp = String(
+        Number.parseInt(String(Date.parse(buyTx.createdAt) / 1000), 10),
+      ); // from iso to timestamp
       const priceOnDateMeta = await getPriceOnDate(Number(txTimeStamp));
       let decodedTx = {
-        txHash: buyTx.cryptoTransactionId,
+        txHash: buyTx.cryptoTransactionId || null,
         blockHash: '',
         blockHeight: 0,
         amount: buyTx.quoteCurrencyAmount,
@@ -546,7 +559,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         country: sellTx.country || null,
         cardType: null,
       };
-      const txTimeStamp = String(Date.parse(sellTx.createdAt) / 1000); // from iso to timestamp
+      const txTimeStamp = String(
+        Number.parseInt(String(Date.parse(sellTx.createdAt) / 1000), 10),
+      ); // from iso to timestamp
       const priceOnDateMeta = await getPriceOnDate(Number(txTimeStamp));
       let decodedTx = {
         txHash: sellTx.depositHash,
@@ -645,8 +660,12 @@ const txSelector = (state: any): any => state.transaction.transactions;
 export const txDetailSelector = createSelector<
   [(state: any) => any],
   IDisplayedTx[]
->(txSelector, (txs: any) =>
-  txs.map((data: any, index: number) => {
+>(txSelector, (txs: any) => {
+  const sortedTxs = [...txs];
+
+  sortedTxs.sort((a: any, b: any) => b.timeStamp - a.timeStamp);
+
+  return sortedTxs.map((data: any, index: number) => {
     const myOutputs: string[] = [];
     const otherOutputs: string[] = [];
 
@@ -672,7 +691,7 @@ export const txDetailSelector = createSelector<
     }
 
     return {
-      hash: data.txHash,
+      hash: data.txHash || 'unknown',
       isMweb: isMweb,
       blockHash: data.blockHash,
       blockHeight: data.blockHeight,
@@ -729,8 +748,8 @@ export const txDetailSelector = createSelector<
         : null,
       renderIndex: index,
     };
-  }),
-);
+  });
+});
 
 // slice
 export const transactionSlice = createSlice({

@@ -2,7 +2,7 @@ import React, {useEffect, useState, useContext} from 'react';
 import {StyleSheet, View, TouchableOpacity, Image} from 'react-native';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {checkAllowed, getLimits, getBuyQuote} from '../../reducers/buy';
+import {checkAllowed, setLimits, setBuyQuote} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
 import {
@@ -10,6 +10,7 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
+// import {pollRates} from '../../reducers/ticker';
 import {useNavigation} from '@react-navigation/native';
 import Animated, {
   useSharedValue,
@@ -34,6 +35,9 @@ const Buy: React.FC<Props> = () => {
   const maxBuyAmount = useAppSelector(state => state.buy.maxBuyAmount);
   const minLTCBuyAmount = useAppSelector(state => state.buy.minLTCBuyAmount);
   const maxLTCBuyAmount = useAppSelector(state => state.buy.maxLTCBuyAmount);
+  const {isMoonpayCustomer, isOnramperCustomer} = useAppSelector(
+    state => state.buy,
+  );
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -45,8 +49,9 @@ const Buy: React.FC<Props> = () => {
 
   useEffect(() => {
     dispatch(checkAllowed());
-    dispatch(getLimits());
-    dispatch(getBuyQuote(1));
+    dispatch(setLimits());
+    dispatch(setBuyQuote(1));
+    // dispatch(pollRates());
   }, [dispatch]);
 
   const onChange = (value: string) => {
@@ -57,12 +62,12 @@ const Buy: React.FC<Props> = () => {
         Number(value) >= minLTCBuyAmount &&
         Number(value) <= maxLTCBuyAmount
       ) {
-        dispatch(getBuyQuote(Number(value)));
+        dispatch(setBuyQuote(Number(value)));
       }
     } else if (!toggleLTC) {
       dispatch(updateFiatAmount(value, 'buy'));
       if (Number(value) >= minBuyAmount && Number(value) <= maxBuyAmount) {
-        dispatch(getBuyQuote(undefined, Number(value)));
+        dispatch(setBuyQuote(undefined, Number(value)));
       }
     }
   };
@@ -212,7 +217,13 @@ const Buy: React.FC<Props> = () => {
           textKey="preview_buy"
           textDomain="buyTab"
           onPress={() => {
-            navigation.navigate('ConfirmBuy');
+            if (isMoonpayCustomer) {
+              navigation.navigate('ConfirmBuy');
+            } else if (isOnramperCustomer) {
+              navigation.navigate('ConfirmBuyOnramper');
+            } else {
+              return;
+            }
           }}
         />
         <TranslateText

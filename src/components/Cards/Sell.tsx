@@ -33,6 +33,9 @@ const Sell: React.FC<Props> = () => {
   const isSellAllowed = useAppSelector(state => state.buy.isSellAllowed);
   const minSellAmount = useAppSelector(state => state.buy.minLTCSellAmount);
   const maxSellAmount = useAppSelector(state => state.buy.maxLTCSellAmount);
+  const {isMoonpayCustomer, isOnramperCustomer} = useAppSelector(
+    state => state.buy,
+  );
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -198,7 +201,15 @@ const Sell: React.FC<Props> = () => {
           }
           textKey="preview_sell"
           textDomain="sellTab"
-          onPress={() => navigation.navigate('ConfirmSell')}
+          onPress={() => {
+            if (isMoonpayCustomer) {
+              navigation.navigate('ConfirmSell');
+            } else if (isOnramperCustomer) {
+              navigation.navigate('ConfirmSellOnramper');
+            } else {
+              return;
+            }
+          }}
         />
         <TranslateText
           textKey={'min_sale'}

@@ -3,7 +3,7 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
-import {getBuyQuoteData, getSellQuoteData, setSellLimits} from './buy';
+import {getBuyQuote, getSellQuote, setLimits} from './buy';
 
 // types
 type IRates = {
@@ -89,25 +89,45 @@ const getTickerData = () => {
 
 export const pollRates = (): AppThunk => async (dispatch, getState) => {
   await poll(async () => {
+    const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
     const {currencyCode} = getState().settings;
 
     try {
       // fetch buy quote
-      const buyQuote: any = await getBuyQuoteData(currencyCode, 1);
-      const buy = Number(buyQuote.quoteCurrencyPrice);
+      const buyQuote: any = await getBuyQuote(
+        isMoonpayCustomer,
+        isOnramperCustomer,
+        currencyCode,
+        1,
+      );
+      let buy = Number(buyQuote);
+      // if quote is null/undefined/0 there was a fetching error
+      // set coinbase rate instead
+      if (!buy) {
+        buy = getState().ticker.ltcRate;
+      }
+
       // fetch sell quote
-      const sellQuote: any = await getSellQuoteData(currencyCode, 1);
-      const sell = Number(sellQuote.baseCurrencyPrice);
+      const sellQuote: any = await getSellQuote(
+        isMoonpayCustomer,
+        isOnramperCustomer,
+        currencyCode,
+        1,
+      );
+      let sell = Number(sellQuote);
+      // if quote is null/undefined/0 there was a fetching error
+      // set coinbase rate instead
+      if (!sell) {
+        sell = getState().ticker.ltcRate;
+      }
+
       // fetch ltc rates
       const rates = await getTickerData();
       const ltc = Number(rates[currencyCode]);
 
-      dispatch(updateRatesAction({buy, sell, ltc}));
       dispatch(getTickerAction(rates));
-
-      // set Sell Limits
-      const {minSellAmount, maxSellAmount} = sellQuote.baseCurrency;
-      dispatch(setSellLimits(Number(minSellAmount), Number(maxSellAmount)));
+      dispatch(updateRatesAction({buy, sell, ltc}));
+      dispatch(setLimits());
     } catch (error) {
       console.warn(error);
     }

@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
+import {StyleSheet, View, TouchableOpacity, Image} from 'react-native';
 import Svg, {Circle} from 'react-native-svg';
 
 import {useAppSelector} from '../../store/hooks';
@@ -97,7 +97,8 @@ const TransactionCell: React.FC<Props> = props => {
 
   function calcStrokeProgress(radius: number): number {
     const circumference = 2 * Math.PI * radius;
-    const progress = confs >= 6 ? 1 : confs / 6;
+    const syncedConfs = confs <= 0 ? 0 : confs;
+    const progress = syncedConfs >= 6 ? 1 : syncedConfs / 6;
     const dashffset = circumference * (1 - progress);
     return dashffset;
   }

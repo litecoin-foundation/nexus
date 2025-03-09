@@ -75,16 +75,17 @@ const Main: React.FC<Props> = props => {
   const {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
-    testDeviceHeaderHeight,
+    // testDeviceHeaderHeight,
   } = useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerStyle: {height: testDeviceHeaderHeight},
-    });
-    /* eslint-disable react-hooks/exhaustive-deps */
-  }, [testDeviceHeaderHeight]);
+  // for ui testing purposes
+  // useEffect(() => {
+  //   navigation.setOptions({
+  //     headerStyle: {height: testDeviceHeaderHeight},
+  //   });
+  //   /* eslint-disable react-hooks/exhaustive-deps */
+  // }, [testDeviceHeaderHeight]);
 
   const SNAP_POINTS_FROM_TOP = [SCREEN_HEIGHT * 0.24, SCREEN_HEIGHT * 0.47];
   const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
@@ -474,6 +475,7 @@ const Main: React.FC<Props> = props => {
       clearTimeout(walletButtonFadingTimeout.current);
     };
   }, [
+    route,
     activeTab,
     backHeaderButton,
     leftHeaderButton,
@@ -758,7 +760,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
 
 export const navigationOptions = (navigation: any) => {
   return {
-    headerStyle: {height: 103},
+    // headerStyle: {height: 103},
+    // headerShown: true,
     headerTitle: () => (
       <ChooseWalletButton
         title={'Wallet Title'}
