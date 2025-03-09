@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
   withDelay,
 } from 'react-native-reanimated';
-import {RouteProp} from '@react-navigation/native';
+import {RouteProp, useFocusEffect} from '@react-navigation/native';
 import {
   Canvas,
   Image,
@@ -39,18 +39,18 @@ import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
 import DatePicker from '../components/DatePicker';
+import TranslateText from '../components/TranslateText';
+import PinModalContent from '../components/Modals/PinModalContent';
+import LoadingIndicator from '../components/LoadingIndicator';
+import Convert from '../components/Cards/Convert';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
 import {unsetDeeplink} from '../reducers/deeplinks';
 import {sleep} from '../lib/utils/poll';
-
-import TranslateText from '../components/TranslateText';
-import {ScreenSizeContext} from '../context/screenSize';
-import PinModalContent from '../components/Modals/PinModalContent';
 import {validate as validateLtcAddress} from '../lib/utils/validate';
-import LoadingIndicator from '../components/LoadingIndicator';
 import {showError} from '../reducers/errors';
-import Convert from '../components/Cards/Convert';
+
+import {ScreenSizeContext} from '../context/screenSize';
 
 interface URIHandlerRef {
   handleURI: (data: string) => void;
@@ -75,17 +75,35 @@ const Main: React.FC<Props> = props => {
   const {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
-    // testDeviceHeaderHeight,
+    testDeviceHeaderHeight,
   } = useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  // for ui testing purposes
-  // useEffect(() => {
-  //   navigation.setOptions({
-  //     headerStyle: {height: testDeviceHeaderHeight},
-  //   });
-  //   /* eslint-disable react-hooks/exhaustive-deps */
-  // }, [testDeviceHeaderHeight]);
+  useEffect(() => {
+    navigation.setOptions({
+      headerStyle: {height: testDeviceHeaderHeight},
+    });
+
+    /* eslint-disable react-hooks/exhaustive-deps */
+  }, [testDeviceHeaderHeight]);
+
+  // fixes a bug where navigating back from ConfirmBuy/Sell WebPage
+  // causes header to disappear or not follow inset rules!
+  useFocusEffect(
+    React.useCallback(() => {
+      navigation.setOptions({
+        headerShown: false,
+      });
+
+      setTimeout(() => {
+        navigation.setOptions({
+          headerShown: true,
+        });
+      }, 10);
+
+      return () => {};
+    }, []),
+  );
 
   const SNAP_POINTS_FROM_TOP = [SCREEN_HEIGHT * 0.24, SCREEN_HEIGHT * 0.47];
   const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
@@ -760,8 +778,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
 
 export const navigationOptions = (navigation: any) => {
   return {
-    // headerStyle: {height: 103},
-    // headerShown: true,
+    headerStyle: {height: 103},
+    headerShown: true,
     headerTitle: () => (
       <ChooseWalletButton
         title={'Wallet Title'}
