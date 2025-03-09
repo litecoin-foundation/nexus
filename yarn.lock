@@ -2208,10 +2208,10 @@
   resolved "https://registry.yarnpkg.com/@firebase/webchannel-wrapper/-/webchannel-wrapper-1.0.3.tgz#a73bab8eb491d7b8b7be2f0e6c310647835afe83"
   integrity sha512-2xCRM9q9FlzGZCdgDMJwc0gyUkWFtkosy7Xxr6sFgQwn+wMNIWd7xIvYNauU1r64B5L5rsGKy/n9TKJ0aAFeqQ==
 
-"@flexa/flexa-react-native@^1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@flexa/flexa-react-native/-/flexa-react-native-1.0.9.tgz#2e07ac2af46852a0eee27e82c03de9c77824db68"
-  integrity sha512-6vTNWkjj5fJ104vvR9hGYKpsQ5JR1qc5v+P4Oepf2qdXdhkwAdsdRFVynZVv9Bk47AkpDwM02y8piaSn+nduag==
+"@flexa/flexa-react-native@1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@flexa/flexa-react-native/-/flexa-react-native-1.0.10.tgz#f483cbee7297ca18e6e240cbc856806e5e42a911"
+  integrity sha512-0Sv/9ZvXFEOF9CL0XI+jpwY2NlrWn+8CtdIRaEn53HJ6szA32R35UinGvbE399XxZmW9p7QNtJHC1oO1neY4IA==
 
 "@gorhom/bottom-sheet@^5.0.6":
   version "5.0.6"

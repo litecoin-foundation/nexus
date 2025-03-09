@@ -78,43 +78,43 @@ PODS:
     - GoogleUtilities/Reachability (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - nanopb (~> 3.30910.0)
-  - Flexa (1.0.9):
-    - Flexa/Complete (= 1.0.9)
-  - flexa-react-native (1.0.9):
-    - Flexa (~> 1.0.9)
+  - Flexa (1.0.10):
+    - Flexa/Complete (= 1.0.10)
+  - flexa-react-native (1.0.10):
+    - Flexa (~> 1.0.10)
     - RCT-Folly
     - RCTRequired
     - RCTTypeSafety
     - React-Codegen
     - React-Core
     - ReactCommon/turbomodule/core
-  - Flexa/Complete (1.0.9):
-    - FlexaCore (~> 1.0.9)
-    - FlexaLoad (~> 1.0.9)
-    - FlexaNetworking (~> 1.0.9)
-    - FlexaScan (~> 1.0.9)
-    - FlexaSpend (~> 1.0.9)
-    - FlexaUICore (~> 1.0.9)
-  - FlexaCore (1.0.9):
+  - Flexa/Complete (1.0.10):
+    - FlexaCore (~> 1.0.10)
+    - FlexaLoad (~> 1.0.10)
+    - FlexaNetworking (~> 1.0.10)
+    - FlexaScan (~> 1.0.10)
+    - FlexaSpend (~> 1.0.10)
+    - FlexaUICore (~> 1.0.10)
+  - FlexaCore (1.0.10):
     - DeviceKit (~> 5.0.0)
     - Factory (~> 2.4.3)
-    - FlexaNetworking (~> 1.0.9)
+    - FlexaNetworking (~> 1.0.10)
     - KeychainAccess (~> 4.2.2)
     - SwiftUIIntrospect (~> 0.12.0)
-  - FlexaLoad (1.0.9):
-    - FlexaCore (~> 1.0.9)
-  - FlexaNetworking (1.0.9):
+  - FlexaLoad (1.0.10):
+    - FlexaCore (~> 1.0.10)
+  - FlexaNetworking (1.0.10):
     - Factory (~> 2.4.3)
-  - FlexaScan (1.0.9):
-    - FlexaCore (~> 1.0.9)
-  - FlexaSpend (1.0.9):
+  - FlexaScan (1.0.10):
+    - FlexaCore (~> 1.0.10)
+  - FlexaSpend (1.0.10):
     - Base32 (~> 1.1.2)
     - Factory (~> 2.4.3)
-    - FlexaCore (~> 1.0.9)
-    - FlexaUICore (~> 1.0.9)
+    - FlexaCore (~> 1.0.10)
+    - FlexaUICore (~> 1.0.10)
     - SVGView (~> 1.0.4)
-  - FlexaUICore (1.0.9):
-    - FlexaCore (~> 1.0.9)
+  - FlexaUICore (1.0.10):
+    - FlexaCore (~> 1.0.10)
     - SwiftUIIntrospect (~> 0.12.0)
   - fmt (9.1.0)
   - glog (0.3.5)
@@ -2388,7 +2388,7 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FirebaseCore
   - FirebaseCoreInternal
-  - "flexa-react-native (from `../node_modules/@flexahq/flexa-react-native`)"
+  - "flexa-react-native (from `../node_modules/@flexa/flexa-react-native`)"
   - FlexaSpend
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
@@ -2489,13 +2489,6 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  "git@github.com:flexa/flexa-cocoapods.git":
-    - Flexa
-    - FlexaCore
-    - FlexaLoad
-    - FlexaNetworking
-    - FlexaScan
-    - FlexaUICore
   trunk:
     - Base32
     - CryptoSwift
@@ -2507,7 +2500,13 @@ SPEC REPOS:
     - FirebaseCoreInternal
     - FirebaseInstallations
     - FirebaseMessaging
+    - Flexa
+    - FlexaCore
+    - FlexaLoad
+    - FlexaNetworking
+    - FlexaScan
     - FlexaSpend
+    - FlexaUICore
     - GoogleDataTransport
     - GoogleUtilities
     - KeychainAccess
@@ -2553,7 +2552,7 @@ EXTERNAL SOURCES:
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   flexa-react-native:
-    :path: "../node_modules/@flexahq/flexa-react-native"
+    :path: "../node_modules/@flexa/flexa-react-native"
   fmt:
     :podspec: "../node_modules/react-native/third-party-podspecs/fmt.podspec"
   glog:
@@ -2770,14 +2769,14 @@ SPEC CHECKSUMS:
   FirebaseCoreInternal: d6c17dafc8dc33614733a8b52df78fcb4394c881
   FirebaseInstallations: 9347e719c3d52d8d7b9074b2c32407dd027305e9
   FirebaseMessaging: 00ece041b71ddb52a2862ffdee73fb6e9824bd0c
-  Flexa: fd77aea51d7da843b21b6745e63a904c592ff6bf
-  flexa-react-native: 1bcee10fe95e5c8600068ed09ef80f135408939e
-  FlexaCore: 3586fd15543ae78729c7aaeb1fb141ef47e64bad
-  FlexaLoad: ffec731a10f0ee00da0e112e266606e24aa5d6a0
-  FlexaNetworking: c6dd47a7275f98a70b48eb624fd079882209410c
-  FlexaScan: fc8ea69dfb5e7b397c8b20c200c4ba9c227831a9
-  FlexaSpend: 773564a77c43e2e16c95ad74b376c506b2fd8f28
-  FlexaUICore: 7890ba788a58109e00637f6a208127a06c2ff49c
+  Flexa: 819505e9de1925a485334d7af695205e1a711c19
+  flexa-react-native: 88521cee93e1fab8913583633c1505d8c59efcb4
+  FlexaCore: 90c01fdc74ae0a02d28a0600e7a625a02719dd9b
+  FlexaLoad: 5bba58399acfe8464a5f47101a396c23861cc2ba
+  FlexaNetworking: c82f91e27533003fb1376e483769ed61dde7c2d0
+  FlexaScan: adddea1df47575627a67cd8655cde6ed9a90c1d9
+  FlexaSpend: 8b8d661f09104cb17203497e407d1cc3f6eaf7fd
+  FlexaUICore: 19f9af996646cc48e48494651151a05c4524ab42
   fmt: 10c6e61f4be25dc963c36bd73fc7b1705fe975be
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7

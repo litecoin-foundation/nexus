@@ -672,9 +672,7 @@ export const getSignedOnramperUrl =
         `&defaultFiat=${currencyCode}` +
         `&uuid=${uniqueIdAsUUID}` +
         '&mode=buy' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fmoonpay%2Fsuccess_buy%2F';
-      // TODO: replace moonpay with onramper
-      // '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F';
+        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F';
 
       try {
         const res = await fetch(
@@ -699,7 +697,6 @@ export const getSignedOnramperUrl =
         const signedUrl = `${unsignedURL}&signature=${signature}`;
 
         resolve(signedUrl);
-        // resolve(unsignedURL);
       } catch (error) {
         // handle error
         reject(error);
@@ -770,9 +767,7 @@ export const getSignedSellOnramperUrl =
         `&sell_defaultAmount=${cryptoAmount}` +
         `&uuid=${uniqueIdAsUUID}` +
         '&mode=sell' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fmoonpay%2Fsuccess_sell%2F';
-      // TODO: replace moonpay with onramper
-      // '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F';
+        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F';
 
       try {
         const res = await fetch(
@@ -797,7 +792,6 @@ export const getSignedSellOnramperUrl =
         const signedUrl = `${unsignedURL}&signature=${signature}`;
 
         resolve(signedUrl);
-        // resolve(unsignedURL);
       } catch (error) {
         // handle error
         reject(error);
@@ -885,51 +879,211 @@ const moonpayCountries = [
 ];
 
 const onramperCountries = [
-  // americas except for usa
-  'MX',
-  'BR',
+  // North America (excluding usa)
   'CA',
-  'UY',
-  'CO',
-  'GP',
-  'SR',
-  'BL',
-  'JM',
-  'TC',
-  'GD',
-  'CL',
-  'PR',
-  'AI',
-  'AR',
-  'VG',
-  'PE',
-  'MF',
-  'GT',
-  'CR',
-  'GL',
+  'MX',
   'BM',
-  'VC',
-  'BZ',
+  'GL',
   'PM',
-  'AG',
-  'EC',
-  'LC',
-  'PY',
-  'KN',
-  'BB',
-  'VI',
-  'GF',
-  'UM',
-  'DO',
+
+  // Central America & Caribbean
+  'BZ',
+  'CR',
   'SV',
-  'MS',
-  'DM',
-  'FK',
+  'GT',
+  'HN',
+  'NI',
+  'PA',
+  'AG',
+  'AI',
+  'AW',
+  'BB',
+  'BL',
   'BQ',
-  'MQ',
-  // europe
-  'NL',
-  // uk & usa
-  // 'GB',
-  // 'US',
+  'BS',
+  'CU',
+  'CW',
+  'DM',
+  'DO',
+  'GD',
+  'GP',
+  'HT',
+  'JM',
+  'KN',
+  'KY',
+  'LC',
+  'MF',
+  'MS',
+  'PR',
+  'TC',
+  'TT',
+  'VC',
+  'VG',
+  'VI',
+
+  // South America
+  'AR',
+  'BO',
+  'BR',
+  'CL',
+  'CO',
+  'EC',
+  'FK',
+  'GF',
+  'GY',
+  'PE',
+  'PY',
+  'SR',
+  'UY',
+  'VE',
+
+  // Europe (exlcuding eurozone + uk)
+  'IS',
+  'SJ',
+  'AL',
+  'CH',
+  'UA',
+  'SE',
+  'BG',
+  'RO',
+  'FO',
+  'AD',
+  'JE',
+  'GG',
+  'MK',
+  'LI',
+  'PL',
+  'XK',
+  'MD',
+  'CZ',
+  'DK',
+  'HU',
+  'MC',
+  'VA',
+  'SM',
+  'GI',
+  'ME',
+  'NO',
+  'IM',
+
+  // Africa
+  'AO',
+  'BJ',
+  'BW',
+  'BF',
+  'BI',
+  'CV',
+  'CM',
+  'CF',
+  'TD',
+  'KM',
+  'CD',
+  'DJ',
+  'GQ',
+  'ER',
+  'SZ',
+  'ET',
+  'GA',
+  'GM',
+  'GH',
+  'GN',
+  'GW',
+  'CI',
+  'KE',
+  'LS',
+  'LR',
+  'MG',
+  'MW',
+  'ML',
+  'MR',
+  'MU',
+  'YT',
+  'MZ',
+  'NA',
+  'NE',
+  'NG',
+  'RW',
+  'ST',
+  'SN',
+  'SC',
+  'SL',
+  'SH',
+  'TG',
+  'TZ',
+  'UG',
+  'ZM',
+  'ZW',
+
+  // Asia
+  'BH',
+  'BD',
+  'BN',
+  'KH',
+  'CN',
+  'HK',
+  'IN',
+  'ID',
+  'IL',
+  'JP',
+  'JO',
+  'KZ',
+  'KW',
+  'KG',
+  'LA',
+  'LB',
+  'MO',
+  'MY',
+  'MV',
+  'MN',
+  'MM',
+  'NP',
+  'OM',
+  'PK',
+  'PS',
+  'PH',
+  'QA',
+  'SA',
+  'SG',
+  'KR',
+  'LK',
+  'SY',
+  'TJ',
+  'TH',
+  'TL',
+  'TM',
+  'AE',
+  'UZ',
+  'VN',
+  'YE',
+
+  // Oceania
+  'AS',
+  'AU',
+  'CX',
+  'CC',
+  'CK',
+  'FJ',
+  'GU',
+  'KI',
+  'MH',
+  'FM',
+  'NR',
+  'NC',
+  'NZ',
+  'NU',
+  'NF',
+  'MP',
+  'PW',
+  'PG',
+  'PN',
+  'WS',
+  'SB',
+  'TK',
+  'TO',
+  'TV',
+  'VU',
+  'WF',
+
+  // Antarctica & Outlying Territories
+  'AQ',
 ];

@@ -27,7 +27,7 @@
     "@bitcoinerlab/secp256k1": "^1.1.1",
     "@bufbuild/protobuf": "^2.2.2",
     "@craftzdog/react-native-buffer": "^6.0.5",
-    "@flexa/flexa-react-native": "^1.0.9",
+    "@flexa/flexa-react-native": "1.0.10",
     "@noble/secp256k1": "^1.7.1",
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-clipboard/clipboard": "^1.15.0",
