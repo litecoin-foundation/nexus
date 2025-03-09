@@ -14,6 +14,7 @@ import id_T from '../assets/locales/id.json';
 import sq_T from '../assets/locales/sq.json';
 import zh_T from '../assets/locales/zh.json';
 import tl_T from '../assets/locales/tl.json';
+import ta_T from '../assets/locales/ta.json';
 
 function initI18N(languageCode: string) {
   i18n.use(initReactI18next).init({
@@ -33,6 +34,7 @@ function initI18N(languageCode: string) {
       sq: sq_T,
       zh: zh_T,
       tl: tl_T,
+      ta: ta_T,
     },
   });
 }

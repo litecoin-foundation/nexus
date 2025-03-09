@@ -7,57 +7,72 @@ const languages = [
   {
     code: 'de',
     tag: 'de-DE',
-    name: 'German',
+    name: 'Deutsch (German)',
   },
   {
     code: 'es',
     tag: 'es-ES',
-    name: 'Spanish',
+    name: 'Español (Spanish)',
   },
   {
     code: 'fr',
     tag: 'fr-FR',
-    name: 'French',
+    name: 'Français (French)',
   },
   {
     code: 'it',
     tag: 'it-IT',
-    name: 'Italian',
+    name: 'Italiano (Italian)',
   },
   {
     code: 'ru',
     tag: 'ru-RU',
-    name: 'Russian',
+    name: 'Русский (Russian)',
   },
   {
     code: 'pl',
     tag: 'pl-PL',
-    name: 'Polish',
+    name: 'Polski (Polish)',
   },
   {
     code: 'sq',
     tag: 'sq-AL',
-    name: 'Albanian',
+    name: 'Shqip (Albanian)',
   },
   {
     code: 'id',
     tag: 'id-ID',
-    name: 'Indonesian',
+    name: 'Bahasa Indonesia (Indonesian)',
   },
   {
     code: 'hi',
     tag: 'hi-IN',
-    name: 'Hindi',
+    name: 'हिन्दी (Hindi)',
   },
   {
     code: 'zh',
     tag: 'zh-CN',
-    name: 'Chinese',
+    name: '中文 (Chinese)',
   },
   {
     code: 'tl',
     tag: 'tl-PH',
     name: 'Tagalog',
+  },
+  {
+    code: 'ta',
+    tag: 'ta-LK',
+    name: 'தமிழ் (Tamil)',
+  },
+  {
+    code: 'fa',
+    tag: 'fa-IR',
+    name: 'فارسی (Persian)',
+  },
+  {
+    code: 'lt',
+    tag: 'lt-LT',
+    name: 'Lietuvių kalba (Lithuanian)',
   },
 ];
 
