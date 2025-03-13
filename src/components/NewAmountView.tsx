@@ -43,6 +43,11 @@ const NewAmountView: React.FC<Props> = props => {
   const chartPercentageChange = useAppSelector(state =>
     chartPercentageChangeSelector(state),
   );
+  const chartPercentage = chartPercentageChange
+    ? Number(
+        chartPercentageChange.substring(0, chartPercentageChange.length - 1),
+      )
+    : 0;
 
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const convertToSubunit = useAppSelector(state =>
@@ -84,7 +89,7 @@ const NewAmountView: React.FC<Props> = props => {
                   textStyle={styles.fiatText}
                   numberOfLines={1}
                 />
-                <PriceIndicatorButton value={Number(chartPercentageChange)} />
+                <PriceIndicatorButton value={chartPercentage} />
                 <TranslateText
                   textValue={String(chartPercentageChange)}
                   domain={'main'}

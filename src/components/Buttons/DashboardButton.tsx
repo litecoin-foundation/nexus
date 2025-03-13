@@ -5,20 +5,12 @@ import {
   Rect,
   RoundedRect,
   Shadow,
-  // Text,
   interpolateColors,
-  // matchFont,
   rect,
-  // useFont,
   useImage,
 } from '@shopify/react-native-skia';
 import React, {useEffect, useContext} from 'react';
-import {
-  ImageSourcePropType,
-  // Platform,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
+import {ImageSourcePropType, Pressable, StyleSheet} from 'react-native';
 import {
   interpolateColor,
   useAnimatedProps,
@@ -38,22 +30,13 @@ interface Props {
   textKey?: string;
   handlePress: () => void;
   active: boolean;
-  textPadding: number;
   disabled: boolean;
   wider?: boolean;
 }
 
 const DashboardButton: React.FC<Props> = props => {
-  const {
-    active,
-    handlePress,
-    title,
-    textKey,
-    imageSource,
-    // textPadding,
-    disabled,
-    wider,
-  } = props;
+  const {active, handlePress, title, textKey, imageSource, disabled, wider} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -62,16 +45,6 @@ const DashboardButton: React.FC<Props> = props => {
 
   const {t} = useTranslation('main');
 
-  // const fontStyle = {
-  //   fontFamily: 'Satoshi Variable',
-  //   fontSize: 12,
-  //   fontStyle: 'normal',
-  //   fontWeight: '700',
-  // } as const;
-  // const font = Platform.select({
-  //   ios: matchFont(fontStyle),
-  //   default: useFont(require('../../fonts/Satoshi-Variable.ttf'), 12),
-  // });
   const image = useImage(imageSource);
 
   // animation
@@ -183,14 +156,6 @@ const DashboardButton: React.FC<Props> = props => {
             }>
             <Rect rect={rect(0, 0, 300, 300)} color={interpolatedColour} />
           </Mask>
-
-          {/* <Text
-            text={titleText}
-            x={width / 2 - textPadding}
-            y={82}
-            font={font}
-            color={interpolatedColour}
-          /> */}
         </Canvas>
         <TranslateText
           textKey={titleText}

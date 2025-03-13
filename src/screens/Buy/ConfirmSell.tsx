@@ -31,7 +31,8 @@ type RootStackParamList = {
     returnRoute: string;
   };
   Main: {
-    isInitial: boolean;
+    isInitial?: boolean;
+    updateHeader?: boolean;
   };
 };
 
@@ -93,7 +94,7 @@ const ConfirmSell: React.FC<Props> = props => {
   useFocusEffect(
     React.useCallback(() => {
       if (hasBeenMounted && hasNavigatedBack && !route.params?.queryString) {
-        navigation.goBack();
+        navigation.navigate('Main', {updateHeader: true});
       }
     }, [hasBeenMounted, hasNavigatedBack, route.params]),
   );
@@ -283,7 +284,7 @@ export const ConfirmSellNavigationOptions = (navigation: any) => {
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Main', {updateHeader: true})}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

@@ -166,7 +166,18 @@ const getMoonpayBuyQuoteData = (
       }
 
       const data = await res.json();
-      resolve(data);
+
+      if (data && data.hasOwnProperty('quoteCurrencyPrice')) {
+        // check if response is number
+        // return sell quote 0 if it's not
+        if (isNaN(+Number(data.quoteCurrencyPrice))) {
+          resolve(0);
+        } else {
+          resolve(data.quoteCurrencyPrice);
+        }
+      } else {
+        resolve(0);
+      }
     } catch (error: any) {
       reject(error.response.data.message);
     }
@@ -305,12 +316,17 @@ export const getMoonpaySellQuoteData = (
       }
 
       const data = await res.json();
-      // check if response is number
-      // return sell quote 0 if it's not
-      if (isNaN(+Number(data))) {
-        resolve(0);
+
+      if (data && data.hasOwnProperty('quoteCurrencyAmount')) {
+        // check if response is number
+        // return sell quote 0 if it's not
+        if (isNaN(+Number(data.quoteCurrencyAmount))) {
+          resolve(0);
+        } else {
+          resolve(data.quoteCurrencyAmount);
+        }
       } else {
-        resolve(data);
+        resolve(0);
       }
     } catch (error: any) {
       reject(error.response.data.message);
