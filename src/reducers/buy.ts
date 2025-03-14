@@ -407,6 +407,7 @@ export const checkBuySellProviderCountry = (): AppThunk => dispatch => {
   } else {
     if (moonpayCountries.includes(countryCode)) {
       dispatch(setMoonpayCustomer(true));
+      dispatch(setOnramperCustomer(false));
     } else {
       dispatch(setMoonpayCustomer(false));
 
@@ -687,6 +688,7 @@ export const getSignedOnramperUrl =
         `&defaultAmount=${fiatAmount}` +
         `&defaultFiat=${currencyCode}` +
         `&uuid=${uniqueIdAsUUID}` +
+        `&partnerContext=${uniqueId}` +
         '&mode=buy' +
         '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F';
 
@@ -782,6 +784,7 @@ export const getSignedSellOnramperUrl =
         '&sell_defaultCrypto=ltc_litecoin' +
         `&sell_defaultAmount=${cryptoAmount}` +
         `&uuid=${uniqueIdAsUUID}` +
+        `&partnerContext=${uniqueId}` +
         '&mode=sell' +
         '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F';
 
