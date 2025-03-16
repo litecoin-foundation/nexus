@@ -19,7 +19,7 @@ interface Props {
     amount: number;
     label: string;
     metaLabel: string;
-    priceOnDateMeta: number;
+    priceOnDate: number;
     confs: number;
   };
   onPress(): void;
@@ -28,7 +28,7 @@ interface Props {
 const TransactionCell: React.FC<Props> = props => {
   const {item, onPress} = props;
 
-  const {time, amount, label, metaLabel, priceOnDateMeta, confs} = item;
+  const {time, amount, label, metaLabel, priceOnDate, confs} = item;
 
   const mathSign = Math.sign(parseFloat(String(amount))) === -1 ? '-' : '';
 
@@ -89,7 +89,7 @@ const TransactionCell: React.FC<Props> = props => {
   // const fiatAmount = calculateFiatAmount(amount);
 
   const localFiatToUSD = useAppSelector(state => convertLocalFiatToUSD(state));
-  const priceOnDateInLocalFiat = priceOnDateMeta / localFiatToUSD;
+  const priceOnDateInLocalFiat = priceOnDate / localFiatToUSD;
   const amountInFiatOnDate = parseFloat(
     String(priceOnDateInLocalFiat * (amount / 100000000)),
   ).toFixed(2);

@@ -56,7 +56,7 @@ type ItemType = {
   amount: number;
   label: string;
   metaLabel: string;
-  priceOnDateMeta: number;
+  priceOnDate: number;
   confs: number;
 };
 

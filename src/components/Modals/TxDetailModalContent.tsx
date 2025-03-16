@@ -75,7 +75,7 @@ interface SellBuyLayoutProps {
   isSell: boolean;
   fiatSymbol: string;
   ltcSymbol: string;
-  moonpayTxId: string;
+  providerTxId: string;
   cryptoTxId: string;
   createdAt: string;
   // updatedAt: string;
@@ -88,7 +88,7 @@ interface SellBuyLayoutProps {
   totalFee: number | undefined;
   blockchainFee: number | undefined;
   tipLFFee: number;
-  moonpayFee: number;
+  providerFee: number;
   txDetailsUrl: string;
   status: string;
   // country: string;
@@ -164,7 +164,7 @@ export default function TxDetailModalContent(props: Props) {
   const dateString = formatTxDate(transaction.timestamp);
   const currencySymbol = useAppSelector(state => currencySymbolSelector(state));
   const localFiatToUSD = useAppSelector(state => convertLocalFiatToUSD(state));
-  const priceOnDateInLocalFiat = transaction.priceOnDateMeta / localFiatToUSD;
+  const priceOnDateInLocalFiat = transaction.priceOnDate / localFiatToUSD;
   const amountInFiatOnDate = parseFloat(
     String(priceOnDateInLocalFiat * (transaction.amount / 100000000)),
   ).toFixed(2);
@@ -285,7 +285,7 @@ export default function TxDetailModalContent(props: Props) {
 
   const {
     fiatSymbol,
-    moonpayTxId,
+    providerTxId,
     cryptoTxId,
     createdAt,
     // fiatCurrency,
@@ -294,7 +294,7 @@ export default function TxDetailModalContent(props: Props) {
     totalFee,
     blockchainFee,
     tipLFFee,
-    moonpayFee,
+    providerFee,
     txDetailsUrl,
     status,
     // paymentMethod,
@@ -302,7 +302,7 @@ export default function TxDetailModalContent(props: Props) {
   } = {
     current: function () {
       let fiatSymbolProp = '';
-      let moonpayTxIdProp = '';
+      let providerTxIdProp = '';
       let cryptoTxIdProp = '';
       let createdAtProp = '';
       let fiatCurrencyAmountProp = 0;
@@ -310,33 +310,34 @@ export default function TxDetailModalContent(props: Props) {
       let totalFeeProp: number | undefined = 0;
       let blockchainFeeProp: number | undefined = 0;
       let tipLFFeeProp = 0;
-      let moonpayFeeProp = 0;
+      let providerFeeProp = 0;
       let txDetailsUrlProp = '';
       let statusProp = '';
       // let paymentMethodProp = '';
       let currentExplorerProp = '';
 
-      if (transaction.moonpayMeta) {
+      if (transaction.providerMeta) {
         fiatSymbolProp = getCurrencySymbol(
-          transaction.moonpayMeta.fiatCurrency,
+          transaction.providerMeta.fiatCurrency,
         );
-        moonpayTxIdProp = transaction.moonpayMeta.moonpayTxId;
-        cryptoTxIdProp = transaction.moonpayMeta.cryptoTxId;
+        providerTxIdProp = transaction.providerMeta.providerTxId;
+        cryptoTxIdProp = transaction.providerMeta.cryptoTxId;
         createdAtProp = formatTxDate(
           parseInt(
-            String(Date.parse(transaction.moonpayMeta.createdAt) / 1000),
+            String(Date.parse(transaction.providerMeta.createdAt) / 1000),
             10,
           ),
         );
-        fiatCurrencyAmountProp = transaction.moonpayMeta.fiatCurrencyAmount;
-        cryptoCurrencyAmountProp = transaction.moonpayMeta.cryptoCurrencyAmount;
-        totalFeeProp = transaction.moonpayMeta.totalFee;
-        blockchainFeeProp = transaction.moonpayMeta.blockchainFee;
-        tipLFFeeProp = transaction.moonpayMeta.tipLFFee;
-        moonpayFeeProp = transaction.moonpayMeta.moonpayFee;
-        txDetailsUrlProp = transaction.moonpayMeta.txDetailsUrl;
-        statusProp = transaction.moonpayMeta.status;
-        // paymentMethodProp = transaction.moonpayMeta.paymentMethod;
+        fiatCurrencyAmountProp = transaction.providerMeta.fiatCurrencyAmount;
+        cryptoCurrencyAmountProp =
+          transaction.providerMeta.cryptoCurrencyAmount;
+        totalFeeProp = transaction.providerMeta.totalFee;
+        blockchainFeeProp = transaction.providerMeta.blockchainFee;
+        tipLFFeeProp = transaction.providerMeta.tipLFFee;
+        providerFeeProp = transaction.providerMeta.providerFee;
+        txDetailsUrlProp = transaction.providerMeta.txDetailsUrl;
+        statusProp = transaction.providerMeta.status;
+        // paymentMethodProp = transaction.providerMeta.paymentMethod;
       } else {
         // Fetching fee data from explorer due to incorrect response from lnd
         // totalFeeProp = transaction.fee;
@@ -357,7 +358,7 @@ export default function TxDetailModalContent(props: Props) {
 
       return {
         fiatSymbol: fiatSymbolProp,
-        moonpayTxId: moonpayTxIdProp,
+        providerTxId: providerTxIdProp,
         cryptoTxId: cryptoTxIdProp,
         createdAt: createdAtProp,
         fiatCurrencyAmount: fiatCurrencyAmountProp,
@@ -365,7 +366,7 @@ export default function TxDetailModalContent(props: Props) {
         totalFee: totalFeeProp,
         blockchainFee: blockchainFeeProp,
         tipLFFee: tipLFFeeProp,
-        moonpayFee: moonpayFeeProp,
+        providerFee: providerFeeProp,
         txDetailsUrl: txDetailsUrlProp,
         status: statusProp,
         // paymentMethod: paymentMethodProp,
@@ -445,7 +446,7 @@ export default function TxDetailModalContent(props: Props) {
                   isSell={transaction.metaLabel === 'Sell'}
                   fiatSymbol={fiatSymbol}
                   ltcSymbol={'Ł'}
-                  moonpayTxId={moonpayTxId}
+                  providerTxId={providerTxId}
                   cryptoTxId={cryptoTxId}
                   createdAt={createdAt}
                   fiatCurrencyAmount={fiatCurrencyAmount}
@@ -453,7 +454,7 @@ export default function TxDetailModalContent(props: Props) {
                   totalFee={totalFee}
                   blockchainFee={blockchainFee}
                   tipLFFee={tipLFFee}
-                  moonpayFee={moonpayFee}
+                  providerFee={providerFee}
                   txDetailsUrl={txDetailsUrl}
                   status={status}
                   // paymentMethod={paymentMethod}
@@ -473,7 +474,7 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
     isSell,
     fiatSymbol,
     ltcSymbol,
-    moonpayTxId,
+    providerTxId,
     cryptoTxId,
     createdAt,
     fiatCurrencyAmount,
@@ -481,7 +482,7 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
     totalFee,
     blockchainFee,
     tipLFFee,
-    moonpayFee,
+    providerFee,
     txDetailsUrl,
     status,
     // paymentMethod,
@@ -567,7 +568,7 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
             />
           </View>
           <TranslateText
-            textValue={`${fiatSymbol}${tipLFFee + moonpayFee}`}
+            textValue={`${fiatSymbol}${tipLFFee + providerFee}`}
             maxSizeInPixels={height * 0.02}
             textStyle={styles.tableCellSubValue}
             numberOfLines={1}
@@ -577,7 +578,7 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
       <TableCell
         titleTextKey="moobpay_id"
         titleTextDomain="main"
-        value={moonpayTxId}
+        value={providerTxId}
         thick
         valueFontSize={height * 0.012}
         copyable
