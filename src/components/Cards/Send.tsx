@@ -223,7 +223,43 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       return;
     }
 
-    const valid = await validateLtcAddress(endAddress);
+    let addressOnValidation = endAddress;
+
+    const matched = endAddress.match(/^[a-zA-Z0-9-]{1,24}\.ltc$/);
+    if (matched) {
+      const res = await fetch(
+        'https://api.nexuswallet.com/api/domains/resolve-unstoppable',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            domain: endAddress,
+          }),
+        },
+      );
+
+      if (!res.ok) {
+        setAddressValid(null);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data && data.hasOwnProperty('address')) {
+        addressOnValidation = data.address;
+        // for another validation function
+        // also replaces domain for real address in ui
+        setAddress(addressOnValidation);
+      } else {
+        setAddressValid(null);
+        return;
+      }
+    }
+
+    const valid = await validateLtcAddress(addressOnValidation);
 
     if (!valid) {
       setAddressValid(false);
