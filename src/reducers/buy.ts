@@ -80,23 +80,19 @@ export const getBuyTransactionHistory =
     const {uniqueId} = getState().onboarding;
 
     try {
-      const res = await fetch(
-        'https://api.nexuswallet.com/api/buy/moonpay/transactions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            id: uniqueId,
-          }),
+      const res = await fetch('https://api.nexuswallet.com/api/trades/buy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
-      );
+        body: JSON.stringify({
+          userAppUniqueId: uniqueId,
+        }),
+      });
 
       if (!res.ok) {
         const error = await res.json();
-        console.log(error);
         throw new Error(error);
       }
 
@@ -112,18 +108,15 @@ export const getSellTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
     const {uniqueId} = getState().onboarding;
 
-    const res = await fetch(
-      'https://api.nexuswallet.com/api/sell/moonpay/transactions',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: uniqueId,
-        }),
+    const res = await fetch('https://api.nexuswallet.com/api/trades/sell', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify({
+        userAppUniqueId: uniqueId,
+      }),
+    });
 
     if (!res.ok) {
       const error = await res.json();
@@ -523,7 +516,7 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
     const res = await fetch(supportedForBuying, req);
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error);
+      throw new Error(error.message);
     }
     const data = await res.json();
     if (data.hasOwnProperty('message')) {
@@ -536,7 +529,7 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
     const res2 = await fetch(supportedForSelling, req);
     if (!res2.ok) {
       const error = await res2.json();
-      throw new Error(error);
+      throw new Error(error.message);
     }
     const data2 = await res2.json();
     if (data2.hasOwnProperty('message')) {

@@ -16,6 +16,7 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
+import {estimateFee} from 'react-native-turbo-lnd';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -27,6 +28,7 @@ const Sell: React.FC<Props> = () => {
   const navigation = useNavigation();
 
   const balance = useAppSelector(state => state.balance.confirmedBalance);
+  const balanceMinus001 = Number(balance) - 1000000;
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
@@ -85,6 +87,26 @@ const Sell: React.FC<Props> = () => {
     };
   });
 
+  const [sellOutFee, setSellOutFee] = useState(0);
+  // estimate fee
+  useEffect(() => {
+    const calculateFee = async () => {
+      try {
+        const response = await estimateFee({
+          AddrToAmount: {
+            ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus001),
+          },
+          targetConf: 2,
+        });
+        setSellOutFee(Number(response.feeSat));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    calculateFee();
+  }, [balanceMinus001]);
+
   const SellContainer = (
     <>
       <View style={styles.sellContainer}>
@@ -138,6 +160,28 @@ const Sell: React.FC<Props> = () => {
           </View>
 
           <View style={styles.controlBtns}>
+            <TouchableOpacity
+              onPress={() => {
+                dispatch(
+                  updateAmount(
+                    parseFloat(
+                      String(
+                        Number(balance) / 100000000 - sellOutFee / 100000000,
+                      ),
+                    ).toFixed(5),
+                    'sell',
+                  ),
+                );
+              }}
+              style={styles.maxButton}>
+              <TranslateText
+                textValue="MAX"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.buttonText}
+                numberOfLines={1}
+              />
+            </TouchableOpacity>
+
             <TouchableOpacity
               onPress={() => {
                 if (amount === '0.0000' && !toggleLTC) {
@@ -276,6 +320,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'flex-end',
       width: '100%',
       marginVertical: screenHeight * 0.03,
+    },
+    maxButton: {
+      borderRadius: screenHeight * 0.01,
+      borderWidth: 1,
+      borderColor: '#e5e5e5',
+      backgroundColor: '#fff',
+      width: 'auto',
+      minWidth: screenHeight * 0.05,
+      height: screenHeight * 0.05,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: screenWidth * 0.02,
     },
     switchButton: {
       borderRadius: screenHeight * 0.01,
