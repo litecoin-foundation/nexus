@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 
-import {checkBIP39Word} from '../lib/utils/bip39';
+import {checkBIP39Word, checkLitewalletBIP39Word} from '../lib/utils/bip39/';
 import {checkSeedChecksum} from '../lib/utils/aezeed';
 
 import TranslateText from '../components/TranslateText';
@@ -45,7 +45,11 @@ const RecoveryField: React.FC<Props> = props => {
   });
 
   const handleSubmit = async (index: number) => {
-    if (checkBIP39Word(seed[index]) === false) {
+    const isValidWord = isLitewalletRecovery
+      ? checkLitewalletBIP39Word(seed[index])
+      : checkBIP39Word(seed[index]);
+
+    if (!isValidWord) {
       await Alert.alert(
         'Invalid Word',
         'This word is not valid - check your spelling and try again.',

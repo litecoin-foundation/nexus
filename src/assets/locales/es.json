@@ -1,13 +1,13 @@
 {
   "onboarding": {
-    "forgot_pin": "¿Olvidaste tu código PIN?",
+    "forgot_pin": "¿Olvidaste tu PIN?",
     "forgot_pin_description": "¿Olvidaste tu código PIN?\nIntroduce tu frase semilla para restablecer tu código PIN.",
     "enter_pin": "Introduce tu PIN",
     "reenter_pin": "Introduce tu PIN",
     "attempts_left_one": "{{count}} intento restante.",
     "attempts_left_other": "{{count}} intentos restantes.",
     "for_litecoin": "PARA LITECOIN",
-    "create_wallet": "Crear Wallet",
+    "create_wallet": "Crear Billetera",
     "already_wallet": "¿Ya tienes una billetera? Inicia sesión",
     "recover_wallet": "Restaurar Billetera",
     "enter_seed": "Introduce tus palabras de la frase semilla a continuación",
@@ -86,9 +86,9 @@
     "order_id": ""
   },
   "buyTab": {
-    "buy": "Comprar",
+    "buy": "Comprar ",
     "n_ltc": "{{amount}}",
-    "for": "por",
+    "for": "por ",
     "total": "{{currencySymbol}}{{total}}",
     "history": "Historial",
     "preview_buy": "Previsualizar compra",
