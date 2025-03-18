@@ -136,7 +136,7 @@ const getAddressInfo = (address: string): AddressInfo => {
   // check and handle bech32 address
   const prefix = address.substring(0, 4).toLowerCase();
   if (prefix === 'ltc1' || prefix === 'tltc') {
-    if (address.length === 33 || 34) {
+    if (address.length >= 15 && address.length <= 92) {
       return parseBech32(address);
     } else {
       throw new Error('Invalid bech32 address');
