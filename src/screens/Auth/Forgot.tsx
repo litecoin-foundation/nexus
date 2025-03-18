@@ -8,6 +8,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import TranslateText from '../../components/TranslateText';
 
 import {useAppSelector} from '../../store/hooks';
+import {useTranslation} from 'react-i18next';
 
 type RootStackParamList = {
   Forgot: undefined;
@@ -22,6 +23,7 @@ interface Props {
 
 const Forgot: React.FC<Props> = ({navigation}) => {
   const {seed} = useAppSelector(state => state.onboarding);
+  const {t} = useTranslation('onboarding');
 
   const attemptLogin = async (seedAttempt: string[]) => {
     // validate user seed
@@ -56,9 +58,8 @@ const Forgot: React.FC<Props> = ({navigation}) => {
       <View style={styles.header} />
       <RecoveryField
         handleLogin={seedAttempt => attemptLogin(seedAttempt)}
-        headerText={
-          'Forgot your pincode?\nEnter your paper-key to reset your pincode.'
-        }
+        headerText={t('forgot_pin_description')}
+        isLitewalletRecovery={false}
       />
     </LinearGradient>
   );
