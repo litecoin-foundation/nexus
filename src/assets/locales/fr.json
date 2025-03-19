@@ -117,6 +117,8 @@
     "send_litecoin": "Envoyer du Litecoin",
     "amount": "Montant",
     "send_to_address": "Envoyer à une adresse",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": "Adresse invalide",
     "enter_address": "Entrer une adresse Litecoin",
     "description": "Description",

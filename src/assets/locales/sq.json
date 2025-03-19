@@ -118,6 +118,8 @@
     "send_litecoin": "Dërgo Litecoin",
     "amount": "Shuma",
     "send_to_address": "Dërgo në adresën",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": " ËSHTË E PASAKTË",
     "enter_address": "Vendos një Adresë Litecoin-i",
     "description": "Përshkrimi",

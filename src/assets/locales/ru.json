@@ -116,6 +116,8 @@
     "send_litecoin": "Отправить Litecoin",
     "amount": "Количество",
     "send_to_address": "Адрес отправления",
+    "fee": "Комиссия",
+    "confirm_and_send": "Подтвердить и Отправить",
     "address_invalid": " (НЕВЕРНЫЙ ФОРМАТ)",
     "enter_address": "Введите Litecoin-адрес",
     "description": "Примечание",
