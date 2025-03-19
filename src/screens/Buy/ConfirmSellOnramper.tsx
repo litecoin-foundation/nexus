@@ -66,8 +66,7 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
         navigation.navigate('WebPage', {
           uri: url,
           observeURL:
-            // TODO: replace moonpay with onramper
-            'https://api.nexuswallet.com/api/sell/moonpay/success_sell/',
+            'https://api.nexuswallet.com/api/sell/onramper/success_sell/',
           returnRoute: 'ConfirmSellOnramper',
         });
       } else {

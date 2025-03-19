@@ -20,6 +20,13 @@ import {create} from '@bufbuild/protobuf';
 
 import {AppThunk} from './types';
 import {formatDate, formatTime} from '../lib/utils/date';
+import {
+  getTxCombinedMetadata,
+  displayedMetadataProjection,
+  MoonpayMetaType,
+  OnramperMetaType,
+  DisplayedMetadataType,
+} from '../lib/utils/txMetadata';
 import {getBalance} from './balance';
 
 // types
@@ -35,31 +42,9 @@ type IDecodedTx = {
   previousOutpoints: PreviousOutPoint[];
   label: string | null | undefined;
   metaLabel: string;
-  priceOnDateMeta: number | null;
-  moonpayMeta: {
-    id: string;
-    cryptoTransactionId: string | null;
-    createdAt: string;
-    updatedAt: string | null;
-    walletAddress: string | null;
-    baseCurrency: string | null;
-    quoteCurrency: string | null;
-    baseCurrencyAmount: number | null;
-    quoteCurrencyAmount: number | null;
-    usdRate: number | null;
-    eurRate: number | null;
-    gbpRate: number | null;
-    areFeesIncluded: boolean | null;
-    networkFeeAmount: number | null;
-    feeAmount: number | null;
-    feeAmountDiscount: number | null;
-    extraFeeAmount: number | null;
-    extraFeeAmountDiscount: number | null;
-    returnUrl: string | null;
-    status: string | null;
-    country: string | null;
-    cardType: string | null;
-  } | null;
+  priceOnDate: number | null;
+  moonpayMeta: MoonpayMetaType;
+  onramperMeta: OnramperMetaType;
 };
 
 export type IDisplayedTx = {
@@ -78,29 +63,8 @@ export type IDisplayedTx = {
   otherOutputs: string[];
   label: string | null | undefined;
   metaLabel: string;
-  priceOnDateMeta: number;
-  moonpayMeta: {
-    moonpayTxId: string;
-    cryptoTxId: string;
-    createdAt: string;
-    updatedAt: string;
-    walletAddress: string;
-    cryptoCurrency: string;
-    fiatCurrency: string;
-    cryptoCurrencyAmount: number;
-    fiatCurrencyAmount: number;
-    usdRate: number;
-    eurRate: number;
-    gbpRate: number;
-    totalFee: number;
-    blockchainFee: number;
-    tipLFFee: number;
-    moonpayFee: number;
-    txDetailsUrl: string;
-    status: string;
-    country: string;
-    paymentMethod: string;
-  } | null;
+  priceOnDate: number;
+  providerMeta: DisplayedMetadataType;
   renderIndex: number;
 };
 
@@ -361,8 +325,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       });
 
       let metaLabel = 'All';
-      const priceOnDateMeta = await getPriceOnDate(Number(tx.timeStamp));
+      const priceOnDate = await getPriceOnDate(Number(tx.timeStamp));
       let moonpayMeta = null;
+      let onramperMeta = null;
 
       if (Math.sign(parseFloat(String(tx.amount))) === -1) {
         metaLabel = 'Send';
@@ -392,30 +357,13 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         });
         if (buyTxs && buyTxs.length > 0) {
           const buyTx = buyTxs[0];
-          moonpayMeta = {
-            id: buyTx.id,
-            cryptoTransactionId: buyTx.cryptoTransactionId || null,
-            createdAt: buyTx.createdAt,
-            updatedAt: buyTx.updatedAt || null,
-            walletAddress: buyTx.walletAddress || null,
-            baseCurrency: buyTx.baseCurrency.code || null, // fiat
-            quoteCurrency: buyTx.currency.code || null, // ltc
-            baseCurrencyAmount: buyTx.baseCurrencyAmount || null, // fiat
-            quoteCurrencyAmount: buyTx.quoteCurrencyAmount || null, // ltc
-            usdRate: buyTx.usdRate || null,
-            eurRate: buyTx.eurRate || null,
-            gbpRate: buyTx.gbpRate || null,
-            areFeesIncluded: buyTx.areFeesIncluded || null,
-            networkFeeAmount: buyTx.networkFeeAmount || null,
-            feeAmount: buyTx.feeAmount || null,
-            feeAmountDiscount: buyTx.feeAmountDiscount || null,
-            extraFeeAmount: buyTx.extraFeeAmount || null,
-            extraFeeAmountDiscount: buyTx.extraFeeAmountDiscount || null,
-            returnUrl: buyTx.returnUrl,
-            status: buyTx.status || null,
-            country: buyTx.country || null,
-            cardType: buyTx.cardType || null,
-          };
+          const providerMetaCollection = getTxCombinedMetadata(
+            buyTx,
+            buyTx.provider,
+            buyTx.type,
+          );
+          moonpayMeta = providerMetaCollection.moonpayMeta;
+          onramperMeta = providerMetaCollection.onramperMeta;
           metaLabel = 'Buy';
         }
       }
@@ -439,30 +387,13 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         });
         if (sellTxs && sellTxs.length > 0) {
           const sellTx = sellTxs[0];
-          moonpayMeta = {
-            id: sellTx.id,
-            cryptoTransactionId: sellTx.depositHash || null,
-            createdAt: sellTx.createdAt,
-            updatedAt: sellTx.updatedAt || null,
-            walletAddress: null,
-            baseCurrency: sellTx.baseCurrency.code || null, // ltc
-            quoteCurrency: sellTx.quoteCurrency.code || null, // fiat
-            baseCurrencyAmount: sellTx.baseCurrencyAmount || null, // ltc
-            quoteCurrencyAmount: sellTx.quoteCurrencyAmount || null, // fiat
-            usdRate: sellTx.usdRate || null,
-            eurRate: sellTx.eurRate || null,
-            gbpRate: sellTx.gbpRate || null,
-            areFeesIncluded: null,
-            networkFeeAmount: null,
-            feeAmount: sellTx.feeAmount || null,
-            feeAmountDiscount: null,
-            extraFeeAmount: sellTx.extraFeeAmount || null,
-            extraFeeAmountDiscount: null,
-            returnUrl: null,
-            status: sellTx.status || null,
-            country: sellTx.country || null,
-            cardType: null,
-          };
+          const providerMetaCollection = getTxCombinedMetadata(
+            sellTx,
+            sellTx.provider,
+            sellTx.type,
+          );
+          moonpayMeta = providerMetaCollection.moonpayMeta;
+          onramperMeta = providerMetaCollection.onramperMeta;
           metaLabel = 'Sell';
         }
       }
@@ -479,42 +410,24 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         previousOutpoints,
         label: tx.label,
         metaLabel,
-        priceOnDateMeta: Number(priceOnDateMeta) || 0,
+        priceOnDate: Number(priceOnDate) || 0,
         moonpayMeta,
+        onramperMeta,
       };
       txs.push(decodedTx);
     }
 
     for await (const unmatchedBuyTx of unmatchedBuyTxs) {
       const buyTx = buyHistory.find(tx => tx.depositHash === unmatchedBuyTx);
-      const moonpayMeta = {
-        id: buyTx.id,
-        cryptoTransactionId: buyTx.cryptoTransactionId || null,
-        createdAt: buyTx.createdAt,
-        updatedAt: buyTx.updatedAt || null,
-        walletAddress: buyTx.walletAddress || null,
-        baseCurrency: buyTx.baseCurrency.code || null,
-        quoteCurrency: buyTx.currency.code || null,
-        baseCurrencyAmount: buyTx.baseCurrencyAmount || null,
-        quoteCurrencyAmount: buyTx.quoteCurrencyAmount || null,
-        usdRate: buyTx.usdRate || null,
-        eurRate: buyTx.eurRate || null,
-        gbpRate: buyTx.gbpRate || null,
-        areFeesIncluded: buyTx.areFeesIncluded || null,
-        networkFeeAmount: buyTx.networkFeeAmount || null,
-        feeAmount: buyTx.feeAmount || null,
-        feeAmountDiscount: buyTx.feeAmountDiscount || null,
-        extraFeeAmount: buyTx.extraFeeAmount || null,
-        extraFeeAmountDiscount: buyTx.extraFeeAmountDiscount || null,
-        returnUrl: buyTx.returnUrl,
-        status: buyTx.status || null,
-        country: buyTx.country || null,
-        cardType: buyTx.cardType || null,
-      };
+      const {moonpayMeta, onramperMeta} = getTxCombinedMetadata(
+        buyTx,
+        buyTx.provider,
+        buyTx.type,
+      );
       const txTimeStamp = String(
         Number.parseInt(String(Date.parse(buyTx.createdAt) / 1000), 10),
       ); // from iso to timestamp
-      const priceOnDateMeta = await getPriceOnDate(Number(txTimeStamp));
+      const priceOnDate = await getPriceOnDate(Number(txTimeStamp));
       let decodedTx = {
         txHash: buyTx.cryptoTransactionId || null,
         blockHash: '',
@@ -527,42 +440,24 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         previousOutpoints: [],
         label: '',
         metaLabel: 'Buy',
-        priceOnDateMeta: Number(priceOnDateMeta) || 0,
+        priceOnDate: Number(priceOnDate) || 0,
         moonpayMeta,
+        onramperMeta,
       };
       txs.push(decodedTx);
     }
 
     for await (const unmatchedSellTx of unmatchedSellTxs) {
       const sellTx = sellHistory.find(tx => tx.depositHash === unmatchedSellTx);
-      const moonpayMeta = {
-        id: sellTx.id,
-        cryptoTransactionId: sellTx.depositHash || null,
-        createdAt: sellTx.createdAt,
-        updatedAt: sellTx.updatedAt || null,
-        walletAddress: null,
-        baseCurrency: sellTx.baseCurrency?.code || null,
-        quoteCurrency: sellTx.quoteCurrency?.code || null,
-        baseCurrencyAmount: sellTx.baseCurrencyAmount || null, //ltc
-        quoteCurrencyAmount: sellTx.quoteCurrencyAmount || null, //fiat
-        usdRate: sellTx.usdRate || null,
-        eurRate: sellTx.eurRate || null,
-        gbpRate: sellTx.gbpRate || null,
-        areFeesIncluded: null,
-        networkFeeAmount: null, // IS IT UNDEFINED?
-        feeAmount: sellTx.feeAmount || null,
-        feeAmountDiscount: null,
-        extraFeeAmount: sellTx.extraFeeAmount || null,
-        extraFeeAmountDiscount: null,
-        returnUrl: null,
-        status: sellTx.status || null,
-        country: sellTx.country || null,
-        cardType: null,
-      };
+      const {moonpayMeta, onramperMeta} = getTxCombinedMetadata(
+        sellTx,
+        sellTx.provider,
+        sellTx.type,
+      );
       const txTimeStamp = String(
         Number.parseInt(String(Date.parse(sellTx.createdAt) / 1000), 10),
       ); // from iso to timestamp
-      const priceOnDateMeta = await getPriceOnDate(Number(txTimeStamp));
+      const priceOnDate = await getPriceOnDate(Number(txTimeStamp));
       let decodedTx = {
         txHash: sellTx.depositHash,
         blockHash: '',
@@ -575,8 +470,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         previousOutpoints: [],
         label: '',
         metaLabel: 'Sell',
-        priceOnDateMeta: Number(priceOnDateMeta) || 0,
+        priceOnDate: Number(priceOnDate) || 0,
         moonpayMeta,
+        onramperMeta,
       };
       txs.push(decodedTx);
     }
@@ -706,46 +602,14 @@ export const txDetailSelector = createSelector<
       otherOutputs,
       label: data.label,
       metaLabel: data.metaLabel,
-      priceOnDateMeta: data.priceOnDateMeta,
-      moonpayMeta: data.moonpayMeta
-        ? {
-            moonpayTxId: data.moonpayMeta.id,
-            cryptoTxId: data.moonpayMeta.cryptoTransactionId || '',
-            createdAt: data.moonpayMeta.createdAt,
-            updatedAt: data.moonpayMeta.updatedAt,
-            walletAddress: data.moonpayMeta.walletAddress || '',
-            cryptoCurrency:
-              data.metaLabel === 'Sell'
-                ? data.moonpayMeta.baseCurrency || 'ltc'
-                : data.moonpayMeta.quoteCurrency || 'ltc',
-            fiatCurrency:
-              data.metaLabel === 'Sell'
-                ? data.moonpayMeta.quoteCurrency || 'unknown'
-                : data.moonpayMeta.baseCurrency || 'unknown',
-            cryptoCurrencyAmount:
-              data.metaLabel === 'Sell'
-                ? data.moonpayMeta.baseCurrencyAmount || 0
-                : data.moonpayMeta.quoteCurrencyAmount || 0,
-            fiatCurrencyAmount:
-              data.metaLabel === 'Sell'
-                ? data.moonpayMeta.quoteCurrencyAmount || 0
-                : data.moonpayMeta.baseCurrencyAmount || 0,
-            usdRate: data.moonpayMeta.usdRate || 0,
-            eurRate: data.moonpayMeta.eurRate || 0,
-            gbpRate: data.moonpayMeta.gbpRate || 0,
-            totalFee:
-              Number(data.moonpayMeta.networkFeeAmount) +
-              Number(data.moonpayMeta.extraFeeAmount) +
-              Number(data.moonpayMeta.feeAmount),
-            blockchainFee: Number(data.moonpayMeta.networkFeeAmount),
-            tipLFFee: Number(data.moonpayMeta.extraFeeAmount),
-            moonpayFee: Number(data.moonpayMeta.feeAmount),
-            txDetailsUrl: `${data.moonpayMeta.returnUrl}?transactionId=${data.moonpayMeta.id}`,
-            status: data.moonpayMeta.status || 'unknown',
-            country: data.moonpayMeta.country || 'unknown',
-            paymentMethod: data.moonpayMeta.cardType || 'unknown',
-          }
-        : null,
+      priceOnDate: data.priceOnDate,
+      providerMeta: displayedMetadataProjection(
+        {
+          Moonpay: data.moonpayMeta,
+          Onramper: data.onramperMeta,
+        },
+        data.metaLabel.toLowerCase(),
+      ),
       renderIndex: index,
     };
   });
