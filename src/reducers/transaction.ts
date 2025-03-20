@@ -21,15 +21,11 @@ import {create} from '@bufbuild/protobuf';
 import {AppThunk} from './types';
 import {formatDate, formatTime} from '../lib/utils/date';
 import {
-  // getTxCombinedMetadata,
-  displayedTxMetadataProjection,
-  decodedTxMetadataProjection,
-  // ITrade,
   IDecodedTx,
-  // MoonpayMetaType,
-  // OnramperMetaType,
   DisplayedMetadataType,
-} from '../lib/utils/txMetadata';
+  decodedTxMetadataProjection,
+  displayedTxMetadataProjection,
+} from '../utils/txMetadata';
 import {getBalance} from './balance';
 
 // types
@@ -312,31 +308,33 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         previousOutpoints.push(prevOutpoint);
       });
 
+      // Type of transaction, All denotes unlabeled txs
       let metaLabel = 'All';
-      const priceOnDate = (await getPriceOnDate(Number(tx.timeStamp))) || 0;
+      // Trade transaction is buy/sell tx
       let tradeTx = null;
-      // let moonpayMeta = null;
-      // let onramperMeta = null;
+      // 0 if request fails
+      const priceOnDate = (await getPriceOnDate(Number(tx.timeStamp))) || 0;
 
       if (Math.sign(parseFloat(String(tx.amount))) === -1) {
         metaLabel = 'Send';
       }
-
       if (Math.sign(parseFloat(String(tx.amount))) === 1) {
         metaLabel = 'Receive';
       }
 
       if (buyHistory && buyHistory.length >= 1) {
-        // Find matching with tx hash amongst the buyHistory from nexus-api
+        // Find matching lnd tx with the tx from buyHistory from nexus-api
+        // by comparing cryptoTxId with txHash
         // to identify transaction as a Buy one.
         // If lnd fails to return Buy transaction associated with user's wallet
-        // it is put in unmatchedBuyTxs array and added afterwards
+        // it is added to unmatchedBuyTxs array for further processing
         const buyTxs = buyHistory.filter(buyTx => {
-          // if (buyTx.cryptoTransactionId === tx.txHash) {
-          if (buyTx.metadata?.txId === tx.txHash) {
+          if (buyTx.cryptoTxId === tx.txHash) {
             return true;
           }
           // If tx is valid (not failed) and haven't been pushed in unmatchedBuyTxs yet
+          // add providerTxId in unmatchedSellTxs as a unique id for finding the tx
+          // TODO: make sure fetched trades from providers always have a providerTxId
           if (
             buyTx.status !== 'failed' &&
             !unmatchedBuyTxs.includes(buyTx.providerTxId)
@@ -345,31 +343,27 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           }
           return false;
         });
+        // Get filtered out trade tx and label it
         if (buyTxs && buyTxs.length > 0) {
           const buyTx = buyTxs[0];
           tradeTx = buyTx;
-          // const providerMetaCollection = getTxCombinedMetadata(
-          //   buyTx,
-          //   buyTx.provider,
-          //   buyTx.type,
-          // );
-          // moonpayMeta = providerMetaCollection.moonpayMeta;
-          // onramperMeta = providerMetaCollection.onramperMeta;
           metaLabel = 'Buy';
         }
       }
 
       if (sellHistory && sellHistory.length >= 1) {
-        // Find matching with tx hash amongst the sellHistory from nexus-api
+        // Find matching lnd tx with the tx from sellHistory from nexus-api
+        // by comparing cryptoTxId with txHash
         // to identify transaction as a Sell one.
         // If lnd fails to return Sell transaction associated with user's wallet
-        // it is put in unmatchedSellTxs array and added afterwards
+        // it is added to unmatchedSellTxs array for further processing
         const sellTxs = sellHistory.filter(sellTx => {
-          // if (sellTx.depositHash === tx.txHash) {
-          if (sellTx.metadata?.txId === tx.txHash) {
+          if (sellTx.cryptoTxId === tx.txHash) {
             return true;
           }
           // If tx is valid (not failed) and haven't been pushed in unmatchedBuyTxs yet
+          // add providerTxId in unmatchedSellTxs as a unique id for finding the tx
+          // TODO: make sure fetched trades from providers always have a providerTxId
           if (
             sellTx.status !== 'failed' &&
             !unmatchedSellTxs.includes(sellTx.providerTxId)
@@ -378,16 +372,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           }
           return false;
         });
+        // Get filtered out trade tx and label it
         if (sellTxs && sellTxs.length > 0) {
           const sellTx = sellTxs[0];
           tradeTx = sellTx;
-          // const providerMetaCollection = getTxCombinedMetadata(
-          //   sellTx,
-          //   sellTx.provider,
-          //   sellTx.type,
-          // );
-          // moonpayMeta = providerMetaCollection.moonpayMeta;
-          // onramperMeta = providerMetaCollection.onramperMeta;
           metaLabel = 'Sell';
         }
       }
@@ -412,30 +400,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
     for await (const unmatchedBuyTx of unmatchedBuyTxs) {
       const buyTx = buyHistory.find(tx => tx.providerTxId === unmatchedBuyTx);
-      // const {moonpayMeta, onramperMeta} = getTxCombinedMetadata(
-      //   buyTx,
-      //   buyTx.provider,
-      //   buyTx.type,
-      // );
       const txTimeStamp = String(
         Number.parseInt(String(Date.parse(buyTx.createdAt) / 1000), 10),
       ); // from iso to timestamp
       const priceOnDate = (await getPriceOnDate(Number(txTimeStamp))) || 0;
-      // let decodedTx = {
-      //   txHash: buyTx.cryptoTransactionId || null,
-      //   blockHash: '',
-      //   blockHeight: 0,
-      //   amount: buyTx.quoteCurrencyAmount,
-      //   numConfirmations: buyTx.confirmations || 0,
-      //   timeStamp: txTimeStamp,
-      //   fee: buyTx.feeAmount,
-      //   outputDetails: [],
-      //   previousOutpoints: [],
-      //   label: '',
-      //   metaLabel: 'Buy',
-      //   priceOnDate: Number(priceOnDate) || 0,
-      //   tradeTx: buyTx,
-      // };
       const decodedTx = decodedTxMetadataProjection(buyTx, priceOnDate);
       txs.push(decodedTx);
     }
@@ -444,30 +412,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       const sellTx = sellHistory.find(
         tx => tx.providerTxId === unmatchedSellTx,
       );
-      // const {moonpayMeta, onramperMeta} = getTxCombinedMetadata(
-      //   sellTx,
-      //   sellTx.provider,
-      //   sellTx.type,
-      // );
       const txTimeStamp = String(
         Number.parseInt(String(Date.parse(sellTx.createdAt) / 1000), 10),
       ); // from iso to timestamp
       const priceOnDate = (await getPriceOnDate(Number(txTimeStamp))) || 0;
-      // let decodedTx = {
-      //   txHash: sellTx.depositHash,
-      //   blockHash: '',
-      //   blockHeight: 0,
-      //   amount: sellTx.baseCurrencyAmount * 100000000,
-      //   numConfirmations: sellTx.confirmations,
-      //   timeStamp: txTimeStamp,
-      //   fee: sellTx.feeAmount,
-      //   outputDetails: [],
-      //   previousOutpoints: [],
-      //   label: '',
-      //   metaLabel: 'Sell',
-      //   priceOnDate: Number(priceOnDate) || 0,
-      //   tradeTx: sellTx,
-      // };
       const decodedTx = decodedTxMetadataProjection(sellTx, priceOnDate);
       txs.push(decodedTx);
     }
@@ -598,16 +546,10 @@ export const txDetailSelector = createSelector<
       label: data.label,
       metaLabel: data.metaLabel,
       priceOnDate: data.priceOnDate,
+      // if it's buy/sell tx (aka trade tx) fetch its metadata
       providerMeta: data.tradeTx
         ? displayedTxMetadataProjection(data.tradeTx)
         : null,
-      // providerMeta: displayedTxMetadataProjection(
-      //   {
-      //     Moonpay: data.moonpayMeta,
-      //     Onramper: data.onramperMeta,
-      //   },
-      //   data.metaLabel.toLowerCase(),
-      // ),
       renderIndex: index,
     };
   });
