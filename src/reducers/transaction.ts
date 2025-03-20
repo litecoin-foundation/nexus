@@ -21,32 +21,18 @@ import {create} from '@bufbuild/protobuf';
 import {AppThunk} from './types';
 import {formatDate, formatTime} from '../lib/utils/date';
 import {
-  getTxCombinedMetadata,
-  displayedMetadataProjection,
-  MoonpayMetaType,
-  OnramperMetaType,
+  // getTxCombinedMetadata,
+  displayedTxMetadataProjection,
+  decodedTxMetadataProjection,
+  // ITrade,
+  IDecodedTx,
+  // MoonpayMetaType,
+  // OnramperMetaType,
   DisplayedMetadataType,
 } from '../lib/utils/txMetadata';
 import {getBalance} from './balance';
 
 // types
-type IDecodedTx = {
-  txHash: string;
-  blockHash: string;
-  blockHeight: number;
-  amount: number;
-  numConfirmations: number;
-  timeStamp: string;
-  fee: number;
-  outputDetails: IOutputDetails[];
-  previousOutpoints: PreviousOutPoint[];
-  label: string | null | undefined;
-  metaLabel: string;
-  priceOnDate: number | null;
-  moonpayMeta: MoonpayMetaType;
-  onramperMeta: OnramperMetaType;
-};
-
 export type IDisplayedTx = {
   hash: string;
   isMweb: boolean;
@@ -122,8 +108,10 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
       );
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error);
+        // const error = await res.json();
+        // throw new Error(error);
+        // resolve null so this request wouldn't break math for ui
+        resolve(null);
       }
 
       const data = await res.json();
@@ -325,9 +313,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       });
 
       let metaLabel = 'All';
-      const priceOnDate = await getPriceOnDate(Number(tx.timeStamp));
-      let moonpayMeta = null;
-      let onramperMeta = null;
+      const priceOnDate = (await getPriceOnDate(Number(tx.timeStamp))) || 0;
+      let tradeTx = null;
+      // let moonpayMeta = null;
+      // let onramperMeta = null;
 
       if (Math.sign(parseFloat(String(tx.amount))) === -1) {
         metaLabel = 'Send';
@@ -343,27 +332,29 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         // If lnd fails to return Buy transaction associated with user's wallet
         // it is put in unmatchedBuyTxs array and added afterwards
         const buyTxs = buyHistory.filter(buyTx => {
-          if (buyTx.cryptoTransactionId === tx.txHash) {
+          // if (buyTx.cryptoTransactionId === tx.txHash) {
+          if (buyTx.metadata?.txId === tx.txHash) {
             return true;
-            // If tx is valid (not failed) and haven't been included yet
-            // Status can be Sent, Pending, Completed or Failed
-          } else if (
+          }
+          // If tx is valid (not failed) and haven't been pushed in unmatchedBuyTxs yet
+          if (
             buyTx.status !== 'failed' &&
-            !unmatchedBuyTxs.includes(buyTx.txHash)
+            !unmatchedBuyTxs.includes(buyTx.providerTxId)
           ) {
-            unmatchedBuyTxs.push(buyTx.txHash);
+            unmatchedBuyTxs.push(buyTx.providerTxId);
           }
           return false;
         });
         if (buyTxs && buyTxs.length > 0) {
           const buyTx = buyTxs[0];
-          const providerMetaCollection = getTxCombinedMetadata(
-            buyTx,
-            buyTx.provider,
-            buyTx.type,
-          );
-          moonpayMeta = providerMetaCollection.moonpayMeta;
-          onramperMeta = providerMetaCollection.onramperMeta;
+          tradeTx = buyTx;
+          // const providerMetaCollection = getTxCombinedMetadata(
+          //   buyTx,
+          //   buyTx.provider,
+          //   buyTx.type,
+          // );
+          // moonpayMeta = providerMetaCollection.moonpayMeta;
+          // onramperMeta = providerMetaCollection.onramperMeta;
           metaLabel = 'Buy';
         }
       }
@@ -374,26 +365,29 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         // If lnd fails to return Sell transaction associated with user's wallet
         // it is put in unmatchedSellTxs array and added afterwards
         const sellTxs = sellHistory.filter(sellTx => {
-          if (sellTx.depositHash === tx.txHash) {
+          // if (sellTx.depositHash === tx.txHash) {
+          if (sellTx.metadata?.txId === tx.txHash) {
             return true;
-            // If tx is valid (assigned with hash) and haven't been included yet
-          } else if (
-            sellTx.depositHash &&
-            !unmatchedSellTxs.includes(sellTx.depositHash)
+          }
+          // If tx is valid (not failed) and haven't been pushed in unmatchedBuyTxs yet
+          if (
+            sellTx.status !== 'failed' &&
+            !unmatchedSellTxs.includes(sellTx.providerTxId)
           ) {
-            unmatchedSellTxs.push(sellTx.depositHash);
+            unmatchedSellTxs.push(sellTx.providerTxId);
           }
           return false;
         });
         if (sellTxs && sellTxs.length > 0) {
           const sellTx = sellTxs[0];
-          const providerMetaCollection = getTxCombinedMetadata(
-            sellTx,
-            sellTx.provider,
-            sellTx.type,
-          );
-          moonpayMeta = providerMetaCollection.moonpayMeta;
-          onramperMeta = providerMetaCollection.onramperMeta;
+          tradeTx = sellTx;
+          // const providerMetaCollection = getTxCombinedMetadata(
+          //   sellTx,
+          //   sellTx.provider,
+          //   sellTx.type,
+          // );
+          // moonpayMeta = providerMetaCollection.moonpayMeta;
+          // onramperMeta = providerMetaCollection.onramperMeta;
           metaLabel = 'Sell';
         }
       }
@@ -410,70 +404,71 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         previousOutpoints,
         label: tx.label,
         metaLabel,
-        priceOnDate: Number(priceOnDate) || 0,
-        moonpayMeta,
-        onramperMeta,
+        priceOnDate,
+        tradeTx,
       };
       txs.push(decodedTx);
     }
 
     for await (const unmatchedBuyTx of unmatchedBuyTxs) {
-      const buyTx = buyHistory.find(tx => tx.depositHash === unmatchedBuyTx);
-      const {moonpayMeta, onramperMeta} = getTxCombinedMetadata(
-        buyTx,
-        buyTx.provider,
-        buyTx.type,
-      );
+      const buyTx = buyHistory.find(tx => tx.providerTxId === unmatchedBuyTx);
+      // const {moonpayMeta, onramperMeta} = getTxCombinedMetadata(
+      //   buyTx,
+      //   buyTx.provider,
+      //   buyTx.type,
+      // );
       const txTimeStamp = String(
         Number.parseInt(String(Date.parse(buyTx.createdAt) / 1000), 10),
       ); // from iso to timestamp
-      const priceOnDate = await getPriceOnDate(Number(txTimeStamp));
-      let decodedTx = {
-        txHash: buyTx.cryptoTransactionId || null,
-        blockHash: '',
-        blockHeight: 0,
-        amount: buyTx.quoteCurrencyAmount,
-        numConfirmations: buyTx.confirmations || 0,
-        timeStamp: txTimeStamp,
-        fee: buyTx.feeAmount,
-        outputDetails: [],
-        previousOutpoints: [],
-        label: '',
-        metaLabel: 'Buy',
-        priceOnDate: Number(priceOnDate) || 0,
-        moonpayMeta,
-        onramperMeta,
-      };
+      const priceOnDate = (await getPriceOnDate(Number(txTimeStamp))) || 0;
+      // let decodedTx = {
+      //   txHash: buyTx.cryptoTransactionId || null,
+      //   blockHash: '',
+      //   blockHeight: 0,
+      //   amount: buyTx.quoteCurrencyAmount,
+      //   numConfirmations: buyTx.confirmations || 0,
+      //   timeStamp: txTimeStamp,
+      //   fee: buyTx.feeAmount,
+      //   outputDetails: [],
+      //   previousOutpoints: [],
+      //   label: '',
+      //   metaLabel: 'Buy',
+      //   priceOnDate: Number(priceOnDate) || 0,
+      //   tradeTx: buyTx,
+      // };
+      const decodedTx = decodedTxMetadataProjection(buyTx, priceOnDate);
       txs.push(decodedTx);
     }
 
     for await (const unmatchedSellTx of unmatchedSellTxs) {
-      const sellTx = sellHistory.find(tx => tx.depositHash === unmatchedSellTx);
-      const {moonpayMeta, onramperMeta} = getTxCombinedMetadata(
-        sellTx,
-        sellTx.provider,
-        sellTx.type,
+      const sellTx = sellHistory.find(
+        tx => tx.providerTxId === unmatchedSellTx,
       );
+      // const {moonpayMeta, onramperMeta} = getTxCombinedMetadata(
+      //   sellTx,
+      //   sellTx.provider,
+      //   sellTx.type,
+      // );
       const txTimeStamp = String(
         Number.parseInt(String(Date.parse(sellTx.createdAt) / 1000), 10),
       ); // from iso to timestamp
-      const priceOnDate = await getPriceOnDate(Number(txTimeStamp));
-      let decodedTx = {
-        txHash: sellTx.depositHash,
-        blockHash: '',
-        blockHeight: 0,
-        amount: sellTx.baseCurrencyAmount * 100000000,
-        numConfirmations: sellTx.confirmations,
-        timeStamp: txTimeStamp,
-        fee: sellTx.feeAmount,
-        outputDetails: [],
-        previousOutpoints: [],
-        label: '',
-        metaLabel: 'Sell',
-        priceOnDate: Number(priceOnDate) || 0,
-        moonpayMeta,
-        onramperMeta,
-      };
+      const priceOnDate = (await getPriceOnDate(Number(txTimeStamp))) || 0;
+      // let decodedTx = {
+      //   txHash: sellTx.depositHash,
+      //   blockHash: '',
+      //   blockHeight: 0,
+      //   amount: sellTx.baseCurrencyAmount * 100000000,
+      //   numConfirmations: sellTx.confirmations,
+      //   timeStamp: txTimeStamp,
+      //   fee: sellTx.feeAmount,
+      //   outputDetails: [],
+      //   previousOutpoints: [],
+      //   label: '',
+      //   metaLabel: 'Sell',
+      //   priceOnDate: Number(priceOnDate) || 0,
+      //   tradeTx: sellTx,
+      // };
+      const decodedTx = decodedTxMetadataProjection(sellTx, priceOnDate);
       txs.push(decodedTx);
     }
 
@@ -603,13 +598,16 @@ export const txDetailSelector = createSelector<
       label: data.label,
       metaLabel: data.metaLabel,
       priceOnDate: data.priceOnDate,
-      providerMeta: displayedMetadataProjection(
-        {
-          Moonpay: data.moonpayMeta,
-          Onramper: data.onramperMeta,
-        },
-        data.metaLabel.toLowerCase(),
-      ),
+      providerMeta: data.tradeTx
+        ? displayedTxMetadataProjection(data.tradeTx)
+        : null,
+      // providerMeta: displayedTxMetadataProjection(
+      //   {
+      //     Moonpay: data.moonpayMeta,
+      //     Onramper: data.onramperMeta,
+      //   },
+      //   data.metaLabel.toLowerCase(),
+      // ),
       renderIndex: index,
     };
   });
