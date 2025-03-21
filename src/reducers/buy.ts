@@ -17,7 +17,7 @@ const ONRAMPER_PUBLIC_KEY = enableTest
 interface IBuy {
   isMoonpayCustomer: boolean;
   isOnramperCustomer: boolean;
-  quote: any;
+  quote: IQuote | any;
   buyHistory: any[];
   sellHistory: any[];
   isBuyAllowed: boolean | null;
@@ -30,7 +30,14 @@ interface IBuy {
   maxLTCSellAmount: number;
 }
 
-interface IQuote {}
+interface IQuote {
+  quoteCurrencyAmount: number;
+  quoteCurrencyPrice: number;
+  totalAmount: number;
+  baseCurrencyAmount: number;
+  networkFeeAmount: number;
+  feeAmount: number;
+}
 
 // initial state
 const initialState = {
@@ -209,7 +216,15 @@ const getOnramperBuyQuoteData = (
       // const data = await res.json();
       // resolve(data);
 
-      resolve(null);
+      // resolve(null);
+      resolve({
+        quoteCurrencyAmount: 0,
+        quoteCurrencyPrice: 0,
+        totalAmount: 0,
+        baseCurrencyAmount: 0,
+        networkFeeAmount: 0,
+        feeAmount: 0,
+      });
     } catch (error: any) {
       reject(error.response.data.message);
     }
