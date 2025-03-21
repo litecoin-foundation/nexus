@@ -4,7 +4,7 @@ import {getLocales, getCountry} from 'react-native-localize';
 import {uuidFromSeed} from '../lib/utils/uuid';
 
 const enableTest = false;
-const TEST_METHOD: string = 'ONRAMPER';
+const TEST_METHOD: string = 'MOONPAY';
 const TEST_COUNTRY: string = 'NL';
 const TEST_FIAT: string = 'EUR';
 
@@ -17,7 +17,7 @@ const ONRAMPER_PUBLIC_KEY = enableTest
 interface IBuy {
   isMoonpayCustomer: boolean;
   isOnramperCustomer: boolean;
-  quote: IQuote | any;
+  quote: IQuote;
   buyHistory: any[];
   sellHistory: any[];
   isBuyAllowed: boolean | null;
@@ -43,7 +43,14 @@ interface IQuote {
 const initialState = {
   isMoonpayCustomer: true,
   isOnramperCustomer: true,
-  quote: null,
+  quote: {
+    quoteCurrencyAmount: 0,
+    quoteCurrencyPrice: 0,
+    totalAmount: 0,
+    baseCurrencyAmount: 0,
+    networkFeeAmount: 0,
+    feeAmount: 0,
+  },
   buyHistory: [],
   sellHistory: [],
   isBuyAllowed: null,
@@ -140,7 +147,7 @@ const getMoonpayBuyQuoteData = (
   cryptoAmount?: number,
   fiatAmount?: number,
 ) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise<IQuote>(async (resolve, reject) => {
     const currencyAmountURL = fiatAmount
       ? `&baseCurrencyAmount=${fiatAmount}`
       : `&quoteCurrencyAmount=${cryptoAmount}`;
@@ -169,14 +176,34 @@ const getMoonpayBuyQuoteData = (
 
       if (data && data.hasOwnProperty('quoteCurrencyPrice')) {
         // check if response is number
-        // return sell quote 0 if it's not
         if (isNaN(+Number(data.quoteCurrencyPrice))) {
-          resolve(0);
+          resolve({
+            quoteCurrencyAmount: 0,
+            quoteCurrencyPrice: 0,
+            totalAmount: 0,
+            baseCurrencyAmount: 0,
+            networkFeeAmount: 0,
+            feeAmount: 0,
+          });
         } else {
-          resolve(data.quoteCurrencyPrice);
+          resolve({
+            quoteCurrencyAmount: data.quoteCurrencyPrice || 0,
+            quoteCurrencyPrice: data.quoteCurrencyPrice || 0,
+            totalAmount: data.totalAmount || 0,
+            baseCurrencyAmount: data.baseCurrencyAmount || 0,
+            networkFeeAmount: data.networkFeeAmount || 0,
+            feeAmount: data.feeAmount || 0,
+          });
         }
       } else {
-        resolve(0);
+        resolve({
+          quoteCurrencyAmount: 0,
+          quoteCurrencyPrice: 0,
+          totalAmount: 0,
+          baseCurrencyAmount: 0,
+          networkFeeAmount: 0,
+          feeAmount: 0,
+        });
       }
     } catch (error: any) {
       reject(error.response.data.message);
@@ -190,7 +217,7 @@ const getOnramperBuyQuoteData = (
   fiatAmount?: number,
   countryCode?: string,
 ) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise<IQuote>(async (resolve, reject) => {
     // TODO: uncomment and test when it's working on onramper's end
     // const countryCodeUrl = countryCode ? `?country=${countryCode}` : '';
     // const url =
@@ -239,7 +266,7 @@ export const getBuyQuote = (
   fiatAmount?: number,
   countryCode?: string,
 ) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise<IQuote>(async (resolve, reject) => {
     let quote: any;
 
     try {
@@ -301,7 +328,7 @@ export const getMoonpaySellQuoteData = (
   currencyCode: string,
   cryptoAmount: number,
 ) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise<IQuote>(async (resolve, reject) => {
     const url =
       'https://api.moonpay.com/v3/currencies/ltc/sell_quote/' +
       `?apiKey=${MOONPAY_PUBLIC_KEY}` +
@@ -325,16 +352,36 @@ export const getMoonpaySellQuoteData = (
 
       const data = await res.json();
 
-      if (data && data.hasOwnProperty('quoteCurrencyAmount')) {
+      if (data && data.hasOwnProperty('quoteCurrencyPrice')) {
         // check if response is number
-        // return sell quote 0 if it's not
-        if (isNaN(+Number(data.quoteCurrencyAmount))) {
-          resolve(0);
+        if (isNaN(+Number(data.quoteCurrencyPrice))) {
+          resolve({
+            quoteCurrencyAmount: 0,
+            quoteCurrencyPrice: 0,
+            totalAmount: 0,
+            baseCurrencyAmount: 0,
+            networkFeeAmount: 0,
+            feeAmount: 0,
+          });
         } else {
-          resolve(data.quoteCurrencyAmount);
+          resolve({
+            quoteCurrencyAmount: data.quoteCurrencyPrice || 0,
+            quoteCurrencyPrice: data.quoteCurrencyPrice || 0,
+            totalAmount: data.totalAmount || 0,
+            baseCurrencyAmount: data.baseCurrencyAmount || 0,
+            networkFeeAmount: data.networkFeeAmount || 0,
+            feeAmount: data.feeAmount || 0,
+          });
         }
       } else {
-        resolve(0);
+        resolve({
+          quoteCurrencyAmount: 0,
+          quoteCurrencyPrice: 0,
+          totalAmount: 0,
+          baseCurrencyAmount: 0,
+          networkFeeAmount: 0,
+          feeAmount: 0,
+        });
       }
     } catch (error: any) {
       reject(error.response.data.message);
@@ -349,8 +396,15 @@ export const getSellQuote = (
   cryptoAmount: number,
   countryCode?: string,
 ) => {
-  return new Promise(async (resolve, reject) => {
-    let quote: any;
+  return new Promise<IQuote>(async (resolve, reject) => {
+    let quote: IQuote = {
+      quoteCurrencyAmount: 0,
+      quoteCurrencyPrice: 0,
+      totalAmount: 0,
+      baseCurrencyAmount: 0,
+      networkFeeAmount: 0,
+      feeAmount: 0,
+    };
 
     try {
       if (isMoonpayCustomer) {
