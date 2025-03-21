@@ -118,6 +118,8 @@
     "send_litecoin": "Kirim Litecoin",
     "amount": "Jumlah",
     "send_to_address": "Kirim ke alamat",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": " TIDAK TEPAT",
     "enter_address": "Masukan Alamat Litecoin",
     "description": "Deskripsi",

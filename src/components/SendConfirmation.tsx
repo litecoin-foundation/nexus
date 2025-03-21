@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import {View, Text, StyleSheet, DeviceEventEmitter} from 'react-native';
+import {View, StyleSheet, DeviceEventEmitter} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 import PlasmaModal from './Modals/PlasmaModal';
 import PinModalContent from './Modals/PinModalContent';
@@ -16,8 +17,8 @@ import {
 } from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
-import LinearGradient from 'react-native-linear-gradient';
 
 interface Props {
   toAddress: string;
@@ -25,10 +26,12 @@ interface Props {
   fiatAmount: string;
   label: string;
   sendSuccessHandler: (txid: string) => void;
+  toDomain?: string;
 }
 
 const SendConfirmation: React.FC<Props> = props => {
-  const {toAddress, amount, label, fiatAmount, sendSuccessHandler} = props;
+  const {toAddress, amount, label, fiatAmount, sendSuccessHandler, toDomain} =
+    props;
   const dispatch = useAppDispatch();
 
   const [loading, setLoading] = useState(false);
@@ -101,7 +104,7 @@ const SendConfirmation: React.FC<Props> = props => {
     };
 
     calculateFee();
-  }, []);
+  }, [amount, toAddress]);
 
   return (
     <>
@@ -119,29 +122,85 @@ const SendConfirmation: React.FC<Props> = props => {
 
       <LinearGradient style={styles.background} colors={['#1162E6', '#0F55C7']}>
         <View style={styles.body}>
-          <Text style={styles.sendText}>Send</Text>
-          <Text style={styles.amountText}>
-            {amountInSubunit + ' ' + amountCode}
-          </Text>
-          <View style={styles.fiatAmount}>
-            <Text style={styles.fiatAmountText}>
-              {currencySymbol + '' + fiatAmount}
-            </Text>
-          </View>
-          <Text style={styles.valueSubtitle}>To Recipient Address</Text>
-          <Text style={styles.valueTitle}>{toAddress}</Text>
-          <Text style={styles.valueSubtitle}>Fee</Text>
-          <Text style={styles.valueTitle}>
-            {convertToSubunit(fee) + '' + amountSymbol}
-          </Text>
-          <Text style={styles.valueTitle}>{calculateFiatAmount(fee)}</Text>
-        </View>
-
-        <View style={styles.confirmButtonContainer}>
-          <GreenButton
-            value="Confirm and Send"
-            onPress={() => handleAuthenticationRequired('send-auth')}
+          <TranslateText
+            textKey="send"
+            domain="main"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            textStyle={styles.sendText}
+            numberOfLines={1}
           />
+          <TranslateText
+            textValue={amountInSubunit + ' ' + amountCode}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+            textStyle={styles.amountText}
+            numberOfLines={1}
+          />
+          <View style={styles.fiatAmount}>
+            <TranslateText
+              textValue={currencySymbol + '' + fiatAmount}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+              textStyle={styles.fiatAmountText}
+              numberOfLines={1}
+            />
+          </View>
+
+          {toDomain ? (
+            <>
+              <TranslateText
+                textKey="to"
+                domain="main"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.valueSubtitle}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textValue={toDomain}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.valueTitle}
+                numberOfLines={1}
+              />
+            </>
+          ) : null}
+          <TranslateText
+            textKey="send_to_address"
+            domain="sendTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.valueSubtitle}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textValue={toAddress}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.valueTitle}
+            numberOfLines={3}
+          />
+          <TranslateText
+            textKey="fee"
+            domain="sendTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.valueSubtitle}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textValue={convertToSubunit(fee) + '' + amountSymbol}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.valueTitle}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textValue={calculateFiatAmount(fee)}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.valueTitle}
+            numberOfLines={1}
+          />
+
+          <View style={styles.confirmButtonContainer}>
+            <GreenButton
+              textKey="confirm_and_send"
+              textDomain="sendTab"
+              onPress={() => handleAuthenticationRequired('send-auth')}
+            />
+          </View>
         </View>
       </LinearGradient>
 
@@ -177,6 +236,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
+    background: {
+      flex: 1,
+    },
     body: {
       width: '100%',
       height: '100%',
@@ -185,8 +247,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'flex-start',
       position: 'relative',
       paddingTop: screenHeight * 0.12,
-      paddingLeft: screenHeight * 0.02,
-      paddingRight: screenHeight * 0.02,
+      paddingHorizontal: screenWidth * 0.06,
     },
     chooseWalletBtnContainer: {
       position: 'absolute',
@@ -279,10 +340,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     confirmButtonContainer: {
       position: 'absolute',
       bottom: screenHeight * 0.03,
+      left: screenWidth * 0.06,
       width: '100%',
-      height: screenHeight * 0.05,
-      paddingLeft: screenHeight * 0.02,
-      paddingRight: screenHeight * 0.02,
     },
     blurContainer: {
       flex: 1,
@@ -292,11 +351,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
       overflow: 'hidden',
       borderRadius: 20,
-    },
-    background: {
-      flex: 1,
-      flexWrap: 'wrap',
-      ...StyleSheet.absoluteFillObject,
     },
     box: {
       width: '25%',

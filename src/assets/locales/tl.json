@@ -118,6 +118,8 @@
     "send_litecoin": "Ipadala ang Litecoin",
     "amount": "Halaga",
     "send_to_address": "Ipadala sa address",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": " AY HINDI WASTO",
     "enter_address": "Ilagay ang Litecoin Address",
     "description": "Paglalarawan",

@@ -22,11 +22,13 @@ const ConfirmSend: React.FC<Props> = props => {
   const amount = useAppSelector(state => state.input.send.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const toAddress = useAppSelector(state => state.input.send.toAddress);
+  const toDomain = useAppSelector(state => state.input.send.toDomain);
   const label = useAppSelector(state => state.input.send.label);
 
   return (
     <SendConfirmation
       toAddress={toAddress}
+      toDomain={toDomain}
       amount={amount}
       fiatAmount={fiatAmount}
       label={label}

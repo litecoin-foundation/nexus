@@ -118,6 +118,8 @@
     "send_litecoin": "发送莱特币",
     "amount": "数量",
     "send_to_address": "发送到地址",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": " 无效",
     "enter_address": "输入莱特币地址",
     "description": "描述",

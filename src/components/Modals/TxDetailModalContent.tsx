@@ -67,7 +67,7 @@ interface SendReceiveLayoutProps {
   dateString: string;
   amountSymbol: string;
   currentExplorer: string;
-  blockchainFee: number | undefined;
+  blockchainFee: number | 'unknown';
   labelTx: (labelProp: string) => void;
 }
 
@@ -85,10 +85,10 @@ interface SellBuyLayoutProps {
   // usdRate: number;
   // eurRate: number;
   // gbpRate: number;
-  totalFee: number | undefined;
-  blockchainFee: number | undefined;
-  tipLFFee: number;
-  providerFee: number;
+  totalFee: number | 'unknown';
+  blockchainFee: number | 'unknown';
+  tipLFFee: number | 'unknown';
+  providerFee: number | 'unknown';
   txDetailsUrl: string;
   status: string;
   // country: string;
@@ -307,10 +307,10 @@ export default function TxDetailModalContent(props: Props) {
       let createdAtProp = '';
       let fiatCurrencyAmountProp = 0;
       let cryptoCurrencyAmountProp = 0;
-      let totalFeeProp: number | undefined = 0;
-      let blockchainFeeProp: number | undefined = 0;
-      let tipLFFeeProp = 0;
-      let providerFeeProp = 0;
+      let totalFeeProp: number | 'unknown' = 0;
+      let blockchainFeeProp: number | 'unknown' = 0;
+      let tipLFFeeProp: number | 'unknown' = 0;
+      let providerFeeProp: number | 'unknown' = 0;
       let txDetailsUrlProp = '';
       let statusProp = '';
       // let paymentMethodProp = '';
@@ -342,8 +342,8 @@ export default function TxDetailModalContent(props: Props) {
         // Fetching fee data from explorer due to incorrect response from lnd
         // totalFeeProp = transaction.fee;
         // blockchainFeeProp = transaction.fee;
-        totalFeeProp = fetchedTxFee;
-        blockchainFeeProp = fetchedTxFee;
+        totalFeeProp = fetchedTxFee || 'unknown';
+        blockchainFeeProp = fetchedTxFee || 'unknown';
       }
 
       if (transaction.isMweb) {
@@ -568,7 +568,11 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
             />
           </View>
           <TranslateText
-            textValue={`${fiatSymbol}${tipLFFee + providerFee}`}
+            textValue={
+              tipLFFee !== 'unknown' && providerFee !== 'unknown'
+                ? `${fiatSymbol}${Number(tipLFFee) + Number(providerFee)}`
+                : 'unknown'
+            }
             maxSizeInPixels={height * 0.02}
             textStyle={styles.tableCellSubValue}
             numberOfLines={1}

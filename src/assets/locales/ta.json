@@ -106,6 +106,8 @@
     "send_litecoin": "லைட்காயின் அனுப்பவும்",
     "amount": "தொகை",
     "send_to_address": "முகவரிக்கு அனுப்பவும்",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": " செல்லுபடியாகாது",
     "enter_address": "லைட்காயின் முகவரியை உள்ளிடவும்",
     "description": "விவரம்",

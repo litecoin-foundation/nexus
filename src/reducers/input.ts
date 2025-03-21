@@ -8,6 +8,7 @@ interface IInputState {
   fiatAmount: string;
   send: {
     toAddress: string;
+    toDomain: string;
     label: string;
     amount: number;
     fee: number | null;
@@ -26,6 +27,7 @@ const initialState = {
   fiatAmount: '',
   send: {
     toAddress: '',
+    toDomain: '',
     label: '',
     amount: 0,
     fee: null,
@@ -45,6 +47,7 @@ export const updateSendAmount = createAction<number>('input/updateSendAmount');
 export const updateSendAddress = createAction<string>(
   'input/updateSendAddress',
 );
+export const updateSendDomain = createAction<string>('input/updateSendDomain');
 export const updateSendLabel = createAction<string>('input/updateSendLabel');
 // const updateSendFeeAction = createAction<number>('input/updateFeeAction');
 export const updateRegularAmountAction = createAction<string>(
@@ -197,6 +200,7 @@ export const inputSlice = createSlice({
       fiatAmount: '',
       send: {
         toAddress: '',
+        toDomain: '',
         label: '',
         amount: 0,
         fee: 0,
@@ -219,6 +223,9 @@ export const inputSlice = createSlice({
     },
     updateSendAddress(state, action: PayloadAction<string>) {
       state.send.toAddress = action.payload;
+    },
+    updateSendDomain(state, action: PayloadAction<string>) {
+      state.send.toDomain = action.payload;
     },
     updateSendLabel(state, action: PayloadAction<string>) {
       state.send.label = action.payload;

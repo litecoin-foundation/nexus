@@ -118,6 +118,8 @@
     "send_litecoin": "लाइटकॉइन भेजें",
     "amount": "राशि",
     "send_to_address": "पते पर भेजें",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": " अमान्य है",
     "enter_address": "एक लाइटकॉइन पता दर्ज करें",
     "description": "विवरण",

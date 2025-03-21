@@ -117,6 +117,8 @@
     "send_litecoin": "ارسال لایت‌کوین",
     "amount": "مقدار",
     "send_to_address": "ارسال به آدرس",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": "نامعتبر است",
     "enter_address": "یک آدرس لایت‌کوین وارد کنید",
     "description": "توضیحات",

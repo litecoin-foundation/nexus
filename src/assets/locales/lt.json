@@ -117,6 +117,8 @@
     "send_litecoin": "Siųsti Litecoin",
     "amount": "Suma",
     "send_to_address": "Siųsti adresu",
+    "fee": "Fee", // translate
+    "confirm_and_send": "Confirm and Send", // translate
     "address_invalid": " YRA NETEISINGAS",
     "enter_address": "Įveskite Litecoin adresą",
     "description": "Aprašymas",

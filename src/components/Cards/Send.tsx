@@ -32,6 +32,7 @@ import {
   updateSendAmount,
   updateSendLabel,
   updateSendAddress,
+  updateSendDomain,
 } from '../../reducers/input';
 
 import TranslateText from '../../components/TranslateText';
@@ -74,6 +75,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [address, setAddress] = useState('');
+  const [addressDomain, setAddressDomain] = useState('');
   const [addressValid, setAddressValid] = useState<boolean | null>(null);
   const [toggleLTC, setToggleLTC] = useState<boolean>(true);
   const [description, setDescription] = useState<string>('');
@@ -112,6 +114,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       setSendDisabled(false);
     };
     check();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, description, amount, confirmedBalance]);
 
   // qr code scanner result handler
@@ -127,7 +130,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     navigation.navigate('Scan', {returnRoute: 'Main'});
   };
 
-  const handleScanCallback = async data => {
+  const handleScanCallback = async (data: any) => {
     try {
       await validate(data);
     } catch (error) {
@@ -226,6 +229,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     let addressOnValidation = endAddress;
 
     const matched = endAddress.match(/^[a-zA-Z0-9-]{1,24}\.ltc$/);
+
     if (matched) {
       const res = await fetch(
         'https://api.nexuswallet.com/api/domains/resolve-unstoppable',
@@ -243,6 +247,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       if (!res.ok) {
         setAddressValid(null);
+        dispatch(showError('Invalid domain name'));
         return;
       }
 
@@ -250,8 +255,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       if (data && data.hasOwnProperty('address')) {
         addressOnValidation = data.address;
-        // for another validation function
-        // also replaces domain for real address in ui
+        // set domain to render in ui
+        setAddressDomain(endAddress);
+        // update address for another validation function
         setAddress(addressOnValidation);
       } else {
         setAddressValid(null);
@@ -263,6 +269,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
     if (!valid) {
       setAddressValid(false);
+      dispatch(showError('Invalid address'));
     } else {
       setAddressValid(true);
     }
@@ -272,6 +279,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     const amountInSats = convertToSats(Number(amount));
     dispatch(updateSendAmount(amountInSats));
     dispatch(updateSendAddress(address));
+    dispatch(updateSendDomain(addressDomain));
     dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
 
@@ -348,7 +356,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               </View>
               <View style={styles.inputFieldContainer}>
                 <AddressField
-                  address={address}
+                  address={addressDomain ? addressDomain : address}
                   onChangeText={setAddress}
                   onScanPress={handleScan}
                   onPastePress={handlePaste}
@@ -383,25 +391,24 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       </ScrollView>
 
       {amountPickerActive ? null : (
-        <Animated.View style={{opacity: detailsOpacity}}>
-          <View style={styles.bottomBtnsContainer}>
-            <View style={styles.bottomBtns}>
-              {/* <View style={styles.greenBtnContainer}>
-          <GreenButton
+        <Animated.View
+          style={[styles.bottomBtnsContainer, {opacity: detailsOpacity}]}>
+          <View style={styles.bottomBtns}>
+            {/* <View style={styles.greenBtnContainer}>
+           <GreenButton
             value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
             onPress={() => console.log('pressed fee')}
           />
-        </View> */}
-              <View style={styles.blueBtnContainer}>
-                <BlueButton
-                  textKey="send_litecoin"
-                  textDomain="sendTab"
-                  onPress={() => {
-                    handleSend();
-                  }}
-                  disabled={isSendDisabled}
-                />
-              </View>
+        </View>  */}
+            <View style={styles.blueBtnContainer}>
+              <BlueButton
+                textKey="send_litecoin"
+                textDomain="sendTab"
+                onPress={() => {
+                  handleSend();
+                }}
+                disabled={isSendDisabled}
+              />
             </View>
           </View>
         </Animated.View>
@@ -413,7 +420,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             onChange={(value: string) => onChange(value)}
             currentValue={toggleLTC ? String(amount) : String(fiatAmount)}
           />
-          <View style={{paddingHorizontal: 20, paddingTop: 7}}>
+          <View style={styles.blueBtnContainerStandalone}>
             <BlueButton
               textKey="confirm"
               textDomain="sendTab"
@@ -434,10 +441,15 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
+      width: '100%',
+      // BottomSheet is screenHeight * 0.76
       // DashboardButton is 110
-      height: screenHeight * 0.76 - 110,
+      // Header margin is 5
+      height: screenHeight * 0.76 - 110 - 5,
       backgroundColor: '#f7f7f7',
+      // backgroundColor: 'red',
       paddingHorizontal: screenWidth * 0.06,
+      position: 'relative',
     },
     scrollViewContent: {
       minHeight: screenHeight,
@@ -479,10 +491,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       bottom: screenHeight * 0.03,
     },
     bottomBtnsContainer: {
-      flex: 1,
+      position: 'absolute',
+      left: screenWidth * 0.06,
+      bottom: screenHeight * 0.03,
+      width: '100%',
       flexDirection: 'column',
       justifyContent: 'flex-end',
-      paddingBottom: screenHeight * 0.1,
     },
     bottomBtns: {
       width: '100%',
@@ -495,6 +509,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     blueBtnContainer: {
       flex: 1,
+    },
+    // this button style regulates relative BuyPad
+    blueBtnContainerStandalone: {
+      flex: 1,
+      paddingTop: screenHeight * 0.025,
+      paddingHorizontal: screenWidth * 0.06,
     },
   });
 
