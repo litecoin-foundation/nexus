@@ -1,6 +1,6 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import {AppThunk} from './types';
-import {getLocales, getCountry} from 'react-native-localize';
+import {getCountry} from 'react-native-localize';
 import {uuidFromSeed} from '../lib/utils/uuid';
 
 const enableTest = false;
@@ -302,6 +302,14 @@ export const setBuyQuote =
       : getState().settings.currencyCode;
     const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
+    // console.log('START-setBuyQuote');
+    // console.log(isMoonpayCustomer);
+    // console.log(currencyCode);
+    // console.log(countryCode);
+    // console.log(cryptoAmount);
+    // console.log(fiatAmount);
+    // console.log('END-setBuyQuote');
+
     let quote: any = await getBuyQuote(
       isMoonpayCustomer,
       isOnramperCustomer,
@@ -525,7 +533,7 @@ const checkMoonpayAllowed = (): AppThunk => async dispatch => {
     canSellIP = isSellAllowed;
 
     // check if buy/sell is allowed based on device country config
-    const {countryCode} = getLocales()[0];
+    const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
     const res2 = await fetch(supportedCountriesURL, req);
     if (!res2.ok) {
@@ -620,7 +628,10 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
 };
 
 const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
-  const {currencyCode} = getState().settings;
+  const currencyCode = enableTest
+    ? TEST_FIAT
+    : getState().settings.currencyCode;
+
   const url = `https://api.moonpay.com/v3/currencies/ltc/limits?apiKey=${MOONPAY_PUBLIC_KEY}&baseCurrencyCode=${currencyCode}`;
 
   try {
@@ -638,14 +649,13 @@ const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
 
     const data = await res.json();
 
-    dispatch(
-      setLimitsAction({
-        minBuyAmount: data.baseCurrency.minBuyAmount,
-        maxBuyAmount: data.baseCurrency.maxBuyAmount,
-        minLTCBuyAmount: data.quoteCurrency.minBuyAmount,
-        maxLTCBuyAmount: data.quoteCurrency.maxBuyAmount,
-      }),
-    );
+    const limits = {
+      minBuyAmount: data.baseCurrency.minBuyAmount,
+      maxBuyAmount: data.baseCurrency.maxBuyAmount,
+      minLTCBuyAmount: data.quoteCurrency.minBuyAmount,
+      maxLTCBuyAmount: data.quoteCurrency.maxBuyAmount,
+    };
+    dispatch(setLimitsAction(limits));
 
     // set sell limits when possible
     const {minSellAmount, maxSellAmount} = {
@@ -906,8 +916,8 @@ export const buySlice = createSlice({
       ...state,
       minBuyAmount: action.payload.minBuyAmount,
       maxBuyAmount: action.payload.maxBuyAmount,
-      minLTCBuyAmount: action.payload.minBuyAmount,
-      maxLTCBuyAmount: action.payload.maxBuyAmount,
+      minLTCBuyAmount: action.payload.minLTCBuyAmount,
+      maxLTCBuyAmount: action.payload.maxLTCBuyAmount,
     }),
     setBuyLimitsAction: (state, action) => ({
       ...state,

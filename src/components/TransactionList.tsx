@@ -33,6 +33,8 @@ import {
   recoveryProgressSelector,
 } from '../reducers/info';
 
+import {v4 as uuidv4} from 'uuid';
+
 interface Props {
   onPress(item: ItemType): void;
   onViewableItemsChanged?(): void;
@@ -176,7 +178,10 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
     item,
-  }) => <TransactionCell item={item} onPress={() => onPress(item)} />;
+  }) => (
+    // TODO: unique tx id
+    <TransactionCell key={uuidv4()} item={item} onPress={() => onPress(item)} />
+  );
 
   // DashboardButton is 110, txTitleContainer is screenHeight * 0.07 in Main component
   // Gap in SearchTransaction component is 200 + 30 padding
@@ -266,7 +271,9 @@ const TransactionList = forwardRef((props: Props, ref) => {
             />
           </View>
         )}
-        keyExtractor={item => item.hash}
+        // TODO: unique tx id
+        // keyExtractor={item => item.hash}
+        keyExtractor={() => uuidv4()}
         initialNumToRender={9}
         ListEmptyComponent={<TransactionListEmpty />}
         ListFooterComponent={<View style={styles.emptyView} />}
