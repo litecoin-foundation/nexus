@@ -25,6 +25,7 @@ export type ITrade = {
   type: TxTypeTypes;
   amountInLTC: number;
   priceInFiat: number;
+  fiatCurrency: string;
   status: StatusTypes;
   metadata: any | undefined;
 };
@@ -110,7 +111,7 @@ export const displayedTxMetadataProjection = (
     updatedAt: trade.metadata?.updatedAt || trade.metadata?.createdAt || '',
     walletAddress: trade.metadata?.walletAddress || '',
     cryptoCurrency: trade.metadata?.crypto || 'ltc',
-    fiatCurrency: trade.metadata?.fiat || 'unknown',
+    fiatCurrency: trade.fiatCurrency || 'unknown',
     cryptoCurrencyAmount: trade.amountInLTC || 0,
     fiatCurrencyAmount: trade.priceInFiat || 0,
     usdRate: trade.metadata?.usdRate || 0,
