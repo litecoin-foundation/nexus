@@ -16,6 +16,15 @@ interface ITicker {
   sellRate: number;
 }
 
+interface IQuote {
+  quoteCurrencyAmount: number;
+  quoteCurrencyPrice: number;
+  totalAmount: number;
+  baseCurrencyAmount: number;
+  networkFeeAmount: number;
+  feeAmount: number;
+}
+
 // initial state
 const initialState = {
   ltcRate: 0,
@@ -94,13 +103,13 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
 
     try {
       // fetch buy quote
-      const buyQuote: any = await getBuyQuote(
+      const buyQuote: IQuote = await getBuyQuote(
         isMoonpayCustomer,
         isOnramperCustomer,
         currencyCode,
         1,
       );
-      let buy = Number(buyQuote);
+      let buy = Number(buyQuote.quoteCurrencyPrice);
       // if quote is null/undefined/0 there was a fetching error
       // set coinbase rate instead
       if (!buy) {
@@ -108,13 +117,13 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
       }
 
       // fetch sell quote
-      const sellQuote: any = await getSellQuote(
+      const sellQuote: IQuote = await getSellQuote(
         isMoonpayCustomer,
         isOnramperCustomer,
         currencyCode,
         1,
       );
-      let sell = Number(sellQuote);
+      let sell = Number(sellQuote.quoteCurrencyPrice);
       // if quote is null/undefined/0 there was a fetching error
       // set coinbase rate instead
       if (!sell) {
