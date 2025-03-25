@@ -4,8 +4,8 @@ import {getCountry} from 'react-native-localize';
 import {uuidFromSeed} from '../lib/utils/uuid';
 
 const enableTest = false;
-const TEST_METHOD: string = 'MOONPAY';
-const TEST_COUNTRY: string = 'NL';
+const TEST_METHOD: string = 'ONRAMPER';
+const TEST_COUNTRY: string = 'ES';
 const TEST_FIAT: string = 'EUR';
 
 const MOONPAY_PUBLIC_KEY = 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
@@ -187,7 +187,7 @@ const getMoonpayBuyQuoteData = (
           });
         } else {
           resolve({
-            quoteCurrencyAmount: data.quoteCurrencyPrice || 0,
+            quoteCurrencyAmount: data.quoteCurrencyAmount || 0,
             quoteCurrencyPrice: data.quoteCurrencyPrice || 0,
             totalAmount: data.totalAmount || 0,
             baseCurrencyAmount: data.baseCurrencyAmount || 0,
@@ -302,14 +302,6 @@ export const setBuyQuote =
       : getState().settings.currencyCode;
     const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
-    // console.log('START-setBuyQuote');
-    // console.log(isMoonpayCustomer);
-    // console.log(currencyCode);
-    // console.log(countryCode);
-    // console.log(cryptoAmount);
-    // console.log(fiatAmount);
-    // console.log('END-setBuyQuote');
-
     let quote: any = await getBuyQuote(
       isMoonpayCustomer,
       isOnramperCustomer,
@@ -324,10 +316,6 @@ export const setBuyQuote =
     if (!quote) {
       quote = getState().ticker.ltcRate;
     }
-
-    // set sell limits when possible
-    const {minSellAmount, maxSellAmount} = quote.baseCurrency;
-    dispatch(setSellLimitsAction({minSellAmount, maxSellAmount}));
 
     dispatch(setQuoteAction(quote));
   };
@@ -464,30 +452,19 @@ export const checkBuySellProviderCountry = (): AppThunk => dispatch => {
   const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
   if (enableTest) {
-    if (TEST_METHOD === 'MOONPAY') {
-      dispatch(setMoonpayCustomer(true));
-      dispatch(setOnramperCustomer(false));
-    } else if (TEST_METHOD === 'ONRAMPER') {
-      dispatch(setMoonpayCustomer(false));
-      dispatch(setOnramperCustomer(true));
-    } else {
-      dispatch(setMoonpayCustomer(false));
-      dispatch(setOnramperCustomer(false));
-    }
-  } else {
-    if (moonpayCountries.includes(countryCode)) {
-      dispatch(setMoonpayCustomer(true));
-      dispatch(setOnramperCustomer(false));
-    } else {
-      dispatch(setMoonpayCustomer(false));
+    const isMoonpay = TEST_METHOD === 'MOONPAY';
+    const isOnramper = TEST_METHOD === 'ONRAMPER';
 
-      if (onramperCountries.includes(countryCode)) {
-        dispatch(setOnramperCustomer(true));
-      } else {
-        dispatch(setOnramperCustomer(false));
-      }
-    }
+    dispatch(setMoonpayCustomer(isMoonpay));
+    dispatch(setOnramperCustomer(isOnramper));
+    return;
   }
+
+  const isMoonpay = moonpayCountries.includes(countryCode);
+  const isOnramper = onramperCountries.includes(countryCode);
+
+  dispatch(setMoonpayCustomer(isMoonpay));
+  dispatch(setOnramperCustomer(isOnramper));
 };
 
 export const checkAllowed = (): AppThunk => async (dispatch, getState) => {
