@@ -193,7 +193,7 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
-  - NitroModules (0.24.0):
+  - NitroModules (0.25.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2338,7 +2338,7 @@ PODS:
   - SwiftUIIntrospect (0.12.0)
   - TouchID (4.4.1):
     - React
-  - TurboScryptiOS (0.0.6):
+  - TurboScryptiOS (0.0.7):
     - CryptoSwift
     - DoubleConversion
     - glog
@@ -2786,7 +2786,7 @@ SPEC CHECKSUMS:
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 3c5b7d19655d03ce1e85a2656fe4fb903b0b2013
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  NitroModules: 0571752ee85bcf0b9ecd0d6a502f6b3dc93b7f66
+  NitroModules: 280c2a1a67b10faef2395aaae27d37cecfec6561
   OpenSSL-Universal: b60a3702c9fea8b3145549d421fdb018e53ab7b4
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
@@ -2880,7 +2880,7 @@ SPEC CHECKSUMS:
   SVGView: 4a9fa6296a5fdb6232dec7450aa98f169d0e274f
   SwiftUIIntrospect: 89f443402f701a9197e9e54e3c2ed00b10c32e6d
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
-  TurboScryptiOS: 8f163240da1fa9ec4d9f6ed67f24296d23d7583b
+  TurboScryptiOS: 9a44b18586435a6837d61bebde078df3d51a5f78
   VisionCamera: 598ab83c6bf4d65f5c32ec54361eed866505d388
   Yoga: db69236006b8b1c6d55ab453390c882306cbf219
 
