@@ -46,8 +46,6 @@ const ConfirmBuy: React.FC<Props> = props => {
   const [buyTxid, setBuyTxid] = useState<string>('');
 
   const {quote} = useAppSelector(state => state.buy);
-  console.log('ConfirmBuy');
-  console.log(quote);
   const {currencySymbol} = useAppSelector(state => state.settings);
   const {
     quoteCurrencyAmount,
