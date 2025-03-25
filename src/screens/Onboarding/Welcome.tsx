@@ -127,13 +127,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
         height: 0,
         width: 0,
       },
-      textAlign: 'center',
+      alignItems: 'center',
     },
     progressBarContainer: {
       width: (screenWidth - 60) * 0.8,
+      minWidth: (screenWidth - 60) * 0.8,
       paddingHorizontal: screenHeight * 0.01,
       paddingVertical: screenHeight * 0.015,
-      alignSelf: 'center',
     },
     titleContainer: {
       paddingLeft: screenHeight * 0.025,

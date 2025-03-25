@@ -1,5 +1,6 @@
 import React, {PureComponent} from 'react';
-import {StyleSheet, SafeAreaView, View, Dimensions} from 'react-native';
+import {StyleSheet, View, Dimensions} from 'react-native';
+import SafeAreaView from '../components/SafeAreaView';
 
 interface Props {
   children?: React.ReactNode;
