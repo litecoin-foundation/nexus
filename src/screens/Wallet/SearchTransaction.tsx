@@ -1,10 +1,4 @@
-import React, {
-  useMemo,
-  useRef,
-  useState,
-  useContext,
-  useLayoutEffect,
-} from 'react';
+import React, {useRef, useState, useContext, useLayoutEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
@@ -34,6 +28,32 @@ interface Props {
   route: RouteProp<RootStackParamList, 'SearchTransaction'>;
 }
 
+interface RightHeaderProps {
+  txPrivacyTypeFilter: string;
+  setTxPrivacyTypeFilter: (option: string) => void;
+  styles: {
+    [key: string]: any;
+  };
+}
+
+const RightHeaderButton: React.FC<RightHeaderProps> = props => {
+  const {txPrivacyTypeFilter, setTxPrivacyTypeFilter, styles} = props;
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const txPrivacyTypes = ['All', 'Regular', 'MWEB'];
+  return (
+    <View style={styles.dropDownContainer}>
+      <DropDownButton
+        initial={txPrivacyTypeFilter}
+        options={txPrivacyTypes}
+        chooseOptionCallback={(option: string) =>
+          setTxPrivacyTypeFilter(option)
+        }
+        cellHeight={SCREEN_HEIGHT * 0.035}
+      />
+    </View>
+  );
+};
+
 const SearchTransaction: React.FC<Props> = props => {
   const {navigation, route} = props;
 
@@ -55,28 +75,18 @@ const SearchTransaction: React.FC<Props> = props => {
   const [searchFilter, setSearchFilter] = useState('');
   const [txPrivacyTypeFilter, setTxPrivacyTypeFilter] = useState('All');
 
-  const rightHeaderButton = useMemo(() => {
-    const txPrivacyTypes = ['All', 'Regular', 'MWEB'];
-
-    return (
-      <View style={styles.dropDownContainer}>
-        <DropDownButton
-          initial={txPrivacyTypeFilter}
-          options={txPrivacyTypes}
-          chooseOptionCallback={(option: string) =>
-            setTxPrivacyTypeFilter(option)
-          }
-          cellHeight={SCREEN_HEIGHT * 0.035}
-        />
-      </View>
-    );
-  }, [SCREEN_HEIGHT, styles, txPrivacyTypeFilter]);
-
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => rightHeaderButton,
+      // eslint-disable-next-line react/no-unstable-nested-components
+      headerRight: () => (
+        <RightHeaderButton
+          txPrivacyTypeFilter={txPrivacyTypeFilter}
+          setTxPrivacyTypeFilter={setTxPrivacyTypeFilter}
+          styles={styles}
+        />
+      ),
     });
-  }, [navigation, rightHeaderButton]);
+  }, [navigation, styles, txPrivacyTypeFilter]);
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   function setTransactionIndex(newTxIndex: number) {

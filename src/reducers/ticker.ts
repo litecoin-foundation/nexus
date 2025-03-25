@@ -109,7 +109,7 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
         currencyCode,
         1,
       );
-      let buy = Number(buyQuote.quoteCurrencyPrice);
+      let buy = buyQuote ? Number(buyQuote.quoteCurrencyPrice) : null;
       // if quote is null/undefined/0 there was a fetching error
       // set coinbase rate instead
       if (!buy) {
@@ -123,7 +123,7 @@ export const pollRates = (): AppThunk => async (dispatch, getState) => {
         currencyCode,
         1,
       );
-      let sell = Number(sellQuote.quoteCurrencyPrice);
+      let sell = buyQuote ? Number(sellQuote.quoteCurrencyPrice) : null;
       // if quote is null/undefined/0 there was a fetching error
       // set coinbase rate instead
       if (!sell) {
