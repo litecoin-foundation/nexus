@@ -8,11 +8,12 @@ interface Props {
 
 const ProgressBar = (props: Props) => {
   const {progress, white} = props;
+  const legitProgress = progress > 0 ? (progress > 100 ? 100 : progress) : 1;
   return (
     <View
       style={[
         white ? styles.whiteBar : styles.container,
-        {width: `${progress}%`},
+        {width: `${legitProgress}%`},
       ]}
     />
   );
