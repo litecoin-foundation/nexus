@@ -41,6 +41,7 @@ type RootStackParamList = {
   RecoverLitewallet: undefined;
   Loading: undefined;
   Support: undefined;
+  TestPayment: undefined;
 };
 
 interface Props {
@@ -227,6 +228,13 @@ const Settings: React.FC<Props> = props => {
                 ]),
               );
             }}
+          />
+
+          <SettingCell
+            textKey="Test Payment"
+            textDomain="settingsTab"
+            onPress={() => navigation.navigate('TestPayment')}
+            forward
           />
         </ScrollView>
       </LinearGradient>
