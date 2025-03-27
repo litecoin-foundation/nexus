@@ -7,6 +7,7 @@ import Header from '../../components/Header';
 import fiat from '../../assets/fiat';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setCurrencyCode} from '../../reducers/settings';
+import {callRates} from '../../reducers/ticker';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import TranslateText from '../../components/TranslateText';
@@ -31,6 +32,7 @@ const Currency: React.FC = () => {
   const handlePress = (code: string, symbol: string): void => {
     setSelectedCurrency(code);
     dispatch(setCurrencyCode(code, symbol));
+    dispatch(callRates());
   };
 
   const renderItem = ({item}: {item: CurrencyCodeType}) => (

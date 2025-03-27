@@ -107,6 +107,25 @@ const Sell: React.FC<Props> = () => {
     calculateFee();
   }, [balanceMinus001]);
 
+  function amountValid(): boolean {
+    if (!isSellAllowed) {
+      return false;
+    }
+    // balance in SATS, amount in LTC
+    if (Number(balance) < Number(amount) * 100000000) {
+      return false;
+    }
+    if (
+      !fiatAmount ||
+      !amount ||
+      Number(amount) < minSellAmount ||
+      Number(amount) > maxSellAmount
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   const SellContainer = (
     <>
       <View style={styles.sellContainer}>
@@ -235,14 +254,7 @@ const Sell: React.FC<Props> = () => {
       )}
       <View style={isSellAllowed ? styles.bottom : styles.bottomStandalone}>
         <BlueButton
-          disabled={
-            !isSellAllowed ||
-            Number(amount) <= minSellAmount ||
-            fiatAmount === '' ||
-            Number(amount) > maxSellAmount
-              ? true
-              : false || balance < amount
-          }
+          disabled={!amountValid()}
           textKey="preview_sell"
           textDomain="sellTab"
           onPress={() => {

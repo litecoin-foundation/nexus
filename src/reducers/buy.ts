@@ -259,8 +259,15 @@ export const getBuyQuote = (
   fiatAmount?: number,
   countryCode?: string,
 ) => {
-  return new Promise<IQuote>(async (resolve, reject) => {
-    let quote: any;
+  return new Promise<IQuote>(async resolve => {
+    let quote: IQuote = {
+      quoteCurrencyAmount: 0,
+      quoteCurrencyPrice: 0,
+      totalAmount: 0,
+      baseCurrencyAmount: 0,
+      networkFeeAmount: 0,
+      feeAmount: 0,
+    };
 
     try {
       if (isMoonpayCustomer) {
@@ -280,7 +287,17 @@ export const getBuyQuote = (
 
       resolve(quote);
     } catch (error: any) {
-      reject(error.response.data.message);
+      // Instead of rejecting we reset quotes to indicate that
+      // it's not fetched while not breaking the math
+      const initialObj = {
+        quoteCurrencyAmount: 0,
+        quoteCurrencyPrice: 0,
+        totalAmount: 0,
+        baseCurrencyAmount: 0,
+        networkFeeAmount: 0,
+        feeAmount: 0,
+      };
+      resolve(initialObj);
     }
   });
 };
@@ -387,7 +404,7 @@ export const getSellQuote = (
   cryptoAmount: number,
   countryCode?: string,
 ) => {
-  return new Promise<IQuote>(async (resolve, reject) => {
+  return new Promise<IQuote>(async resolve => {
     let quote: IQuote = {
       quoteCurrencyAmount: 0,
       quoteCurrencyPrice: 0,
@@ -411,7 +428,17 @@ export const getSellQuote = (
 
       resolve(quote);
     } catch (error: any) {
-      reject(error.response.data.message);
+      // Instead of rejecting we reset quotes to indicate that
+      // it's not fetched while not breaking the math
+      const initialObj = {
+        quoteCurrencyAmount: 0,
+        quoteCurrencyPrice: 0,
+        totalAmount: 0,
+        baseCurrencyAmount: 0,
+        networkFeeAmount: 0,
+        feeAmount: 0,
+      };
+      resolve(initialObj);
     }
   });
 };

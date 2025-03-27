@@ -10,7 +10,6 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
-// import {pollRates} from '../../reducers/ticker';
 import {useNavigation} from '@react-navigation/native';
 import Animated, {
   useSharedValue,
@@ -51,7 +50,6 @@ const Buy: React.FC<Props> = () => {
     dispatch(checkAllowed());
     dispatch(setLimits());
     dispatch(setBuyQuote(1));
-    // dispatch(pollRates());
   }, [dispatch]);
 
   const onChange = (value: string) => {
@@ -99,6 +97,21 @@ const Buy: React.FC<Props> = () => {
       fontSize: fiatFontSize.value,
     };
   });
+
+  function amountValid(): boolean {
+    if (!isBuyAllowed) {
+      return false;
+    }
+    if (
+      !fiatAmount ||
+      !amount ||
+      Number(fiatAmount) < minBuyAmount ||
+      Number(fiatAmount) > maxBuyAmount
+    ) {
+      return false;
+    }
+    return true;
+  }
 
   const BuyContainer = (
     <>
@@ -206,14 +219,7 @@ const Buy: React.FC<Props> = () => {
       )}
       <View style={isBuyAllowed ? styles.bottom : styles.bottomStandalone}>
         <BlueButton
-          disabled={
-            !isBuyAllowed ||
-            Number(fiatAmount) <= minBuyAmount ||
-            fiatAmount === '' ||
-            Number(fiatAmount) > maxBuyAmount
-              ? true
-              : false
-          }
+          disabled={!amountValid()}
           textKey="preview_buy"
           textDomain="buyTab"
           onPress={() => {
