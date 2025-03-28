@@ -3,7 +3,7 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
-import {getBuyQuote, getSellQuote, setLimits} from './buy';
+import {getBuyQuote, setSellQuote, setLimits} from './buy';
 
 // types
 type IRates = {
@@ -127,13 +127,15 @@ export const callRates = (): AppThunk => async (dispatch, getState) => {
     let buy = buyQuote ? Number(buyQuote.quoteCurrencyPrice) : null;
 
     // Fetch sell quote
-    const sellQuote: IQuote = await getSellQuote(
-      isMoonpayCustomer,
-      isOnramperCustomer,
-      currencyCode,
-      1,
-    );
-    let sell = buyQuote ? Number(sellQuote.quoteCurrencyPrice) : null;
+    // const sellQuote: IQuote = await setSellQuote(
+    //   isMoonpayCustomer,
+    //   isOnramperCustomer,
+    //   currencyCode,
+    //   1,
+    // );
+    const sellQuote: any = await dispatch(setSellQuote(1));
+
+    let sell = sellQuote ? Number(sellQuote.quoteCurrencyPrice) : null;
 
     // Fetch ltc rates
     const rates = await getTickerData();
@@ -161,7 +163,6 @@ export const callRates = (): AppThunk => async (dispatch, getState) => {
     );
     dispatch(setLimits());
   } catch (error) {
-    console.log('ticker');
     console.warn(error);
   }
 };

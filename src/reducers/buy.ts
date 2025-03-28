@@ -21,6 +21,8 @@ interface IBuy {
   maxLTCBuyAmount: number;
   minLTCSellAmount: number;
   maxLTCSellAmount: number;
+  proceedToGetBuyLimits: boolean;
+  proceedToGetSellLimits: boolean;
 }
 
 interface IQuote {
@@ -30,6 +32,29 @@ interface IQuote {
   baseCurrencyAmount: number;
   networkFeeAmount: number;
   feeAmount: number;
+}
+
+interface IBuyLimits {
+  minBuyAmount: number;
+  maxBuyAmount: number;
+  minLTCBuyAmount: number;
+  maxLTCBuyAmount: number;
+}
+
+interface ISellLimits {
+  minLTCSellAmount: number;
+  maxLTCSellAmount: number;
+}
+
+interface IQuoteAndLimits {
+  quoteCurrencyAmount: number;
+  quoteCurrencyPrice: number;
+  totalAmount: number;
+  baseCurrencyAmount: number;
+  networkFeeAmount: number;
+  feeAmount: number;
+  buyLimits: IBuyLimits | null;
+  sellLimits: ISellLimits | null;
 }
 
 // initial state
@@ -54,30 +79,32 @@ const initialState = {
   maxLTCBuyAmount: 0,
   minLTCSellAmount: 0,
   maxLTCSellAmount: 0,
+  proceedToGetBuyLimits: false,
+  proceedToGetSellLimits: false,
 } as IBuy;
 
 // actions
 const getBuyTxHistoryAction = createAction('buy/getBuyTxHistoryAction');
 const getSellTxHistoryAction = createAction('buy/getSellTxHistoryAction');
-const setQuoteAction = createAction('buy/setQuoteAction');
+const setQuoteAction = createAction<IQuote>('buy/setQuoteAction');
 const checkAllowedAction = createAction<{
   isBuyAllowed: boolean;
   isSellAllowed: boolean;
 }>('buy/checkAllowedAction');
-const setLimitsAction = createAction<{
+const setBuyLimitsAction = createAction<{
   minBuyAmount: number;
   maxBuyAmount: number;
   minLTCBuyAmount: number;
   maxLTCBuyAmount: number;
-}>('buy/setLimitsAction');
-const setBuyLimitsAction = createAction<{
-  minBuyAmount: number;
-  maxBuyAmount: number;
 }>('buy/setBuyLimitsAction');
-const setSellLimitsAction = createAction<{
-  minSellAmount: number;
-  maxSellAmount: number;
-}>('buy/setSellLimitsAction');
+const setLTCSellLimitsAction = createAction<{
+  minLTCSellAmount: number;
+  maxLTCSellAmount: number;
+}>('buy/setLTCSellLimitsAction');
+const setProceedToGetLimitsAction = createAction<{
+  proceedToGetBuyLimits: boolean;
+  proceedToGetSellLimits: boolean;
+}>('buy/setProceedToGetLimitsAction');
 const setMoonpayCustomer = createAction<boolean>('buy/setMoonpayCustomer');
 const setOnramperCustomer = createAction<boolean>('buy/setOnramperCustomer');
 
@@ -151,6 +178,15 @@ const getMoonpayBuyQuoteData = (
       `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
       '&paymentMethod=credit_debit_card';
 
+    let emptyQuote: IQuote = {
+      quoteCurrencyAmount: 0,
+      quoteCurrencyPrice: 0,
+      totalAmount: 0,
+      baseCurrencyAmount: 0,
+      networkFeeAmount: 0,
+      feeAmount: 0,
+    };
+
     try {
       const res = await fetch(url, {
         method: 'GET',
@@ -170,14 +206,7 @@ const getMoonpayBuyQuoteData = (
       if (data && data.hasOwnProperty('quoteCurrencyPrice')) {
         // check if response is number
         if (isNaN(+Number(data.quoteCurrencyPrice))) {
-          resolve({
-            quoteCurrencyAmount: 0,
-            quoteCurrencyPrice: 0,
-            totalAmount: 0,
-            baseCurrencyAmount: 0,
-            networkFeeAmount: 0,
-            feeAmount: 0,
-          });
+          resolve(emptyQuote);
         } else {
           resolve({
             quoteCurrencyAmount: data.quoteCurrencyAmount || 0,
@@ -189,14 +218,7 @@ const getMoonpayBuyQuoteData = (
           });
         }
       } else {
-        resolve({
-          quoteCurrencyAmount: 0,
-          quoteCurrencyPrice: 0,
-          totalAmount: 0,
-          baseCurrencyAmount: 0,
-          networkFeeAmount: 0,
-          feeAmount: 0,
-        });
+        resolve(emptyQuote);
       }
     } catch (error: any) {
       reject(error.response.data.message);
@@ -289,7 +311,7 @@ export const getBuyQuote = (
     } catch (error: any) {
       // Instead of rejecting we reset quotes to indicate that
       // it's not fetched while not breaking the math
-      const initialObj = {
+      const emptyQuote = {
         quoteCurrencyAmount: 0,
         quoteCurrencyPrice: 0,
         totalAmount: 0,
@@ -297,7 +319,7 @@ export const getBuyQuote = (
         networkFeeAmount: 0,
         feeAmount: 0,
       };
-      resolve(initialObj);
+      resolve(emptyQuote);
     }
   });
 };
@@ -323,12 +345,6 @@ export const setBuyQuote =
       countryCode,
     );
 
-    // if quote is null/undefined/0 there was a fetching error
-    // set coinbase rate instead
-    if (!quote) {
-      quote = getState().ticker.ltcRate;
-    }
-
     dispatch(setQuoteAction(quote));
   };
 
@@ -336,13 +352,24 @@ export const getMoonpaySellQuoteData = (
   currencyCode: string,
   cryptoAmount: number,
 ) => {
-  return new Promise<IQuote>(async (resolve, reject) => {
+  return new Promise<IQuoteAndLimits>(async (resolve, reject) => {
     const url =
       'https://api.moonpay.com/v3/currencies/ltc/sell_quote/' +
       `?apiKey=${MOONPAY_PUBLIC_KEY}` +
       `&baseCurrencyAmount=${cryptoAmount}` +
       `&quoteCurrencyCode=${String(currencyCode).toLowerCase()}` +
       '&paymentMethod=credit_debit_card';
+
+    let emptyQuote: IQuoteAndLimits = {
+      quoteCurrencyAmount: 0,
+      quoteCurrencyPrice: 0,
+      totalAmount: 0,
+      baseCurrencyAmount: 0,
+      networkFeeAmount: 0,
+      feeAmount: 0,
+      buyLimits: null,
+      sellLimits: null,
+    };
 
     try {
       const res = await fetch(url, {
@@ -360,36 +387,32 @@ export const getMoonpaySellQuoteData = (
 
       const data = await res.json();
 
-      if (data && data.hasOwnProperty('quoteCurrencyPrice')) {
+      if (data && data.hasOwnProperty('quoteCurrencyAmount')) {
+        // set sell limits
+        const ltcSellLimits = data.hasOwnProperty('baseCurrency')
+          ? {
+              minLTCSellAmount: data.baseCurrency.minSellAmount as number,
+              maxLTCSellAmount: data.baseCurrency.maxSellAmount as number,
+            }
+          : {minLTCSellAmount: 0, maxLTCSellAmount: 0};
+
         // check if response is number
-        if (isNaN(+Number(data.quoteCurrencyPrice))) {
-          resolve({
-            quoteCurrencyAmount: 0,
-            quoteCurrencyPrice: 0,
-            totalAmount: 0,
-            baseCurrencyAmount: 0,
-            networkFeeAmount: 0,
-            feeAmount: 0,
-          });
+        if (isNaN(+Number(data.quoteCurrencyAmount))) {
+          resolve(emptyQuote);
         } else {
           resolve({
-            quoteCurrencyAmount: data.quoteCurrencyPrice || 0,
-            quoteCurrencyPrice: data.quoteCurrencyPrice || 0,
-            totalAmount: data.totalAmount || 0,
+            quoteCurrencyAmount: data.quoteCurrencyAmount || 0, // total in fiat
+            quoteCurrencyPrice: data.baseCurrencyPrice || 0, // ltc price
+            totalAmount: data.quoteCurrencyAmount || 0,
             baseCurrencyAmount: data.baseCurrencyAmount || 0,
             networkFeeAmount: data.networkFeeAmount || 0,
             feeAmount: data.feeAmount || 0,
+            buyLimits: null,
+            sellLimits: ltcSellLimits,
           });
         }
       } else {
-        resolve({
-          quoteCurrencyAmount: 0,
-          quoteCurrencyPrice: 0,
-          totalAmount: 0,
-          baseCurrencyAmount: 0,
-          networkFeeAmount: 0,
-          feeAmount: 0,
-        });
+        resolve(emptyQuote);
       }
     } catch (error: any) {
       reject(error.response.data.message);
@@ -404,14 +427,16 @@ export const getSellQuote = (
   cryptoAmount: number,
   countryCode?: string,
 ) => {
-  return new Promise<IQuote>(async resolve => {
-    let quote: IQuote = {
+  return new Promise<IQuoteAndLimits>(async resolve => {
+    let quote: IQuoteAndLimits = {
       quoteCurrencyAmount: 0,
       quoteCurrencyPrice: 0,
       totalAmount: 0,
       baseCurrencyAmount: 0,
       networkFeeAmount: 0,
       feeAmount: 0,
+      buyLimits: null,
+      sellLimits: null,
     };
 
     try {
@@ -430,15 +455,17 @@ export const getSellQuote = (
     } catch (error: any) {
       // Instead of rejecting we reset quotes to indicate that
       // it's not fetched while not breaking the math
-      const initialObj = {
+      const emptyQuote = {
         quoteCurrencyAmount: 0,
         quoteCurrencyPrice: 0,
         totalAmount: 0,
         baseCurrencyAmount: 0,
         networkFeeAmount: 0,
         feeAmount: 0,
+        buyLimits: null,
+        sellLimits: null,
       };
-      resolve(initialObj);
+      resolve(emptyQuote);
     }
   });
 };
@@ -446,30 +473,50 @@ export const getSellQuote = (
 export const setSellQuote =
   (cryptoAmount: number): AppThunk =>
   async (dispatch, getState) => {
-    const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-    const {testPaymentActive, testPaymentCountry, testPaymentFiat} =
-      getState().settings;
+    return new Promise<IQuoteAndLimits>(async resolve => {
+      const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
+      const {testPaymentActive, testPaymentCountry, testPaymentFiat} =
+        getState().settings;
 
-    const currencyCode = testPaymentActive
-      ? testPaymentFiat
-      : getState().settings.currencyCode;
-    const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
+      const currencyCode = testPaymentActive
+        ? testPaymentFiat
+        : getState().settings.currencyCode;
+      const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
-    let quote: any = await getSellQuote(
-      isMoonpayCustomer,
-      isOnramperCustomer,
-      currencyCode,
-      cryptoAmount,
-      countryCode,
-    );
+      const quote: IQuoteAndLimits = await getSellQuote(
+        isMoonpayCustomer,
+        isOnramperCustomer,
+        currencyCode,
+        cryptoAmount,
+        countryCode,
+      );
 
-    // if quote is null/undefined/0 there was a fetching error
-    // set coinbase rate instead
-    if (!quote) {
-      quote = getState().ticker.ltcRate;
-    }
+      // if quote does return limits then there's no need to notify user
+      // that they need to proceed with transaction to see the limit
+      dispatch(
+        setProceedToGetLimitsAction({
+          proceedToGetBuyLimits: quote.buyLimits
+            ? false
+            : getState().buy.proceedToGetBuyLimits,
+          proceedToGetSellLimits: quote.sellLimits
+            ? false
+            : getState().buy.proceedToGetSellLimits,
+        }),
+      );
 
-    dispatch(setQuoteAction(quote));
+      // set limits if availabe
+      if (quote.buyLimits) {
+        dispatch(setBuyLimitsAction(quote.buyLimits));
+      }
+      if (quote.sellLimits) {
+        dispatch(setLTCSellLimitsAction(quote.sellLimits));
+      }
+
+      // set quote
+      dispatch(setQuoteAction(quote));
+
+      resolve(quote);
+    });
   };
 
 export const checkBuySellProviderCountry =
@@ -661,46 +708,62 @@ const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
 
     const data = await res.json();
 
+    // set limits when possible
     const limits = {
       minBuyAmount: data.baseCurrency.minBuyAmount,
       maxBuyAmount: data.baseCurrency.maxBuyAmount,
       minLTCBuyAmount: data.quoteCurrency.minBuyAmount,
       maxLTCBuyAmount: data.quoteCurrency.maxBuyAmount,
     };
-    dispatch(setLimitsAction(limits));
+    dispatch(setBuyLimitsAction(limits));
+    // const {minSellAmount, maxSellAmount} = {
+    //   minSellAmount: 0.1,
+    //   maxSellAmount: 100,
+    // };
+    // dispatch(setLTCSellLimitsAction({minSellAmount, maxSellAmount}));
 
-    // set sell limits when possible
-    const {minSellAmount, maxSellAmount} = {
-      minSellAmount: 0.1,
-      maxSellAmount: 100,
-    };
-    dispatch(setSellLimitsAction({minSellAmount, maxSellAmount}));
+    // set proceedToGetLimits if there's no general limits
+    // NOTE: limits can be set after getting a quote
+    // for getMoonpayLimits sell limits are set on setSellQuote request
+    dispatch(
+      setProceedToGetLimitsAction({
+        proceedToGetBuyLimits: false,
+        proceedToGetSellLimits: getState().buy.proceedToGetSellLimits,
+      }),
+    );
   } catch (error) {
     console.error(error);
   }
 };
 
 const getOnramperLimits = (): AppThunk => async dispatch => {
+  // set limits when possible
   // TODO: get actual limits when it's working on onramper's end
-  const data = {
-    minBuyAmount: 10,
-    maxBuyAmount: 10000,
-    minLTCBuyAmount: 0.1,
-    maxLTCBuyAmount: 100,
-  };
-  dispatch(setLimitsAction(data));
+  // const data = {
+  //   minBuyAmount: 10,
+  //   maxBuyAmount: 10000,
+  //   minLTCBuyAmount: 0.1,
+  //   maxLTCBuyAmount: 100,
+  // };
+  // dispatch(setBuyLimitsAction(data));
+  // const ltcSellLimits = {
+  //   minLTCSellAmount: 0.01,
+  //   maxLTCSellAmount: 999,
+  // };
+  // dispatch(setLTCSellLimitsAction(ltcSellLimits));
 
-  // set sell limits when possible
-  const {minSellAmount, maxSellAmount} = {
-    minSellAmount: 0.1,
-    maxSellAmount: 100,
-  };
-  dispatch(setSellLimitsAction({minSellAmount, maxSellAmount}));
+  // set proceedToGetLimits if there's no general limits
+  // NOTE: limits can be set after getting a quote
+  dispatch(
+    setProceedToGetLimitsAction({
+      proceedToGetBuyLimits: true,
+      proceedToGetSellLimits: true,
+    }),
+  );
 };
 
 export const setLimits = (): AppThunk => async (dispatch, getState) => {
   const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-
   if (isMoonpayCustomer) {
     dispatch(getMoonpayLimits());
   } else if (isOnramperCustomer) {
@@ -920,22 +983,22 @@ export const buySlice = createSlice({
       isBuyAllowed: action.payload.isBuyAllowed,
       isSellAllowed: action.payload.isSellAllowed,
     }),
-    setLimitsAction: (state, action) => ({
+    setBuyLimitsAction: (state, action) => ({
       ...state,
       minBuyAmount: action.payload.minBuyAmount,
       maxBuyAmount: action.payload.maxBuyAmount,
       minLTCBuyAmount: action.payload.minLTCBuyAmount,
       maxLTCBuyAmount: action.payload.maxLTCBuyAmount,
     }),
-    setBuyLimitsAction: (state, action) => ({
+    setLTCSellLimitsAction: (state, action) => ({
       ...state,
-      minLTCBuyAmount: action.payload.minBuyAmount,
-      maxLTCBuyAmount: action.payload.maxBuyAmount,
+      minLTCSellAmount: action.payload.minLTCSellAmount,
+      maxLTCSellAmount: action.payload.maxLTCSellAmount,
     }),
-    setSellLimitsAction: (state, action) => ({
+    setProceedToGetLimitsAction: (state, action) => ({
       ...state,
-      minLTCSellAmount: action.payload.minSellAmount,
-      maxLTCSellAmount: action.payload.maxSellAmount,
+      proceedToGetBuyLimits: action.payload.proceedToGetBuyLimits,
+      proceedToGetSellLimits: action.payload.proceedToGetSellLimits,
     }),
     setMoonpayCustomer: (state, action) => ({
       ...state,
