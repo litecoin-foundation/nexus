@@ -27,6 +27,7 @@ type RootStackParamList = {
   };
   Main: {
     isInitial: boolean;
+    updateHeader: boolean;
   };
 };
 
@@ -34,6 +35,24 @@ interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'ConfirmBuy'>;
   route: RouteProp<RootStackParamList, 'ConfirmBuy'>;
 }
+
+interface LeftHeaderProps {
+  navigation: StackNavigationProp<RootStackParamList, 'ConfirmBuy'>;
+}
+
+const LeftHeaderButton: React.FC<LeftHeaderProps> = props => {
+  const {navigation} = props;
+  return (
+    <HeaderButton
+      textKey="back"
+      textDomain="buyTab"
+      onPress={() =>
+        navigation.navigate('Main', {isInitial: true, updateHeader: true})
+      }
+      imageSource={require('../../assets/images/back-icon.png')}
+    />
+  );
+};
 
 const ConfirmBuy: React.FC<Props> = props => {
   const {navigation, route} = props;
@@ -44,6 +63,8 @@ const ConfirmBuy: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [buyTxid, setBuyTxid] = useState<string>('');
+  const [buyTxStatus, setBuyTxStatus] = useState<string>('');
+  const [wasSuccessful, setWasSuccessful] = useState<boolean>(false);
 
   const {quote} = useAppSelector(state => state.buy);
   const {currencySymbol} = useAppSelector(state => state.settings);
@@ -86,15 +107,25 @@ const ConfirmBuy: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params) {
       if (route.params.queryString) {
-        // transactionId={{transactionId}}
-        // &transactionStatus=pending
-        console.log(route.params.queryString);
-        // parse qs & set values to state!
-        const buySuccess = parseQueryString(route.params.queryString);
-        setBuyTxid(buySuccess.transactionId);
+        setWasSuccessful(true);
+
+        navigation.setOptions({
+          // eslint-disable-next-line react/no-unstable-nested-components
+          headerLeft: () => <LeftHeaderButton navigation={navigation} />,
+        });
+
+        const parsedQueryString = parseQueryString(route.params.queryString);
+        if (parsedQueryString) {
+          if (parsedQueryString.hasOwnProperty('transactionId')) {
+            setBuyTxid(parsedQueryString.transactionId);
+          }
+          if (parsedQueryString.hasOwnProperty('transactionStatus')) {
+            setBuyTxStatus(parsedQueryString.transactionStatus);
+          }
+        }
       }
     }
-  }, [route.params]);
+  }, [route.params, navigation]);
 
   const SuccessScreen = (
     <>
@@ -102,28 +133,38 @@ const ConfirmBuy: React.FC<Props> = props => {
         <TranslateText
           textKey="awesome"
           domain="settingsTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.07}
           textStyle={styles.title}
+          numberOfLines={1}
         />
         <TranslateText
           textKey="buy_success"
           domain="buyTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
           textStyle={styles.subtitle}
+          numberOfLines={2}
         />
-
-        <View style={styles.toAddressContainer}>
-          <Text style={styles.toAddressText}>{buyTxid}</Text>
-        </View>
+        {buyTxid ? (
+          <View style={styles.toAddressContainer}>
+            <TranslateText
+              textValue={buyTxid}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.toAddressText}
+              numberOfLines={4}
+            />
+          </View>
+        ) : (
+          <></>
+        )}
       </View>
-
       <View style={styles.confirmButtonContainer}>
         <WhiteButton
           textKey="back_to_wallet"
           textDomain="settingsTab"
           disabled={false}
-          small={true}
-          active={true}
+          active
           onPress={() => {
-            navigation.navigate('Main', {isInitial: true});
+            navigation.navigate('Main', {isInitial: true, updateHeader: true});
           }}
         />
       </View>
@@ -132,7 +173,7 @@ const ConfirmBuy: React.FC<Props> = props => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#1162E6'}}>
-      {buyTxid !== '' ? (
+      {wasSuccessful ? (
         SuccessScreen
       ) : (
         <>
@@ -168,12 +209,12 @@ const ConfirmBuy: React.FC<Props> = props => {
               <TableCell
                 titleTextKey="total_fee"
                 titleTextDomain="main"
-                value={feeAmount}
+                value={String(feeAmount)}
               />
               <TableCell
                 titleTextKey="network_fee"
                 titleTextDomain="main"
-                value={networkFeeAmount}
+                value={String(networkFeeAmount)}
               />
               <TableCell
                 titleTextKey="will_spend"
