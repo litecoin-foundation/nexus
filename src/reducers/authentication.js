@@ -159,7 +159,7 @@ export const unlockWalletWithPin =
           {},
           async state => {
             try {
-              if (state.state === WalletState.UNLOCKED) {
+              if (state.state === WalletState.RPC_ACTIVE) {
                 dispatch({
                   type: UNLOCK_WALLET,
                 });
