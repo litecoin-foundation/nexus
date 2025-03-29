@@ -33,8 +33,9 @@ const Sell: React.FC<Props> = () => {
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const isSellAllowed = useAppSelector(state => state.buy.isSellAllowed);
-  const minSellAmount = useAppSelector(state => state.buy.minLTCSellAmount);
-  const maxSellAmount = useAppSelector(state => state.buy.maxLTCSellAmount);
+  const {minLTCSellAmount, maxLTCSellAmount} = useAppSelector(
+    state => state.buy.sellLimits,
+  );
   const {isMoonpayCustomer, isOnramperCustomer} = useAppSelector(
     state => state.buy,
   );
@@ -118,8 +119,8 @@ const Sell: React.FC<Props> = () => {
     if (
       !fiatAmount ||
       !amount ||
-      Number(amount) < minSellAmount ||
-      Number(amount) > maxSellAmount
+      Number(amount) < minLTCSellAmount ||
+      Number(amount) > maxLTCSellAmount
     ) {
       return false;
     }
@@ -275,8 +276,8 @@ const Sell: React.FC<Props> = () => {
           numberOfLines={1}
           interpolationObj={{
             currencySymbol,
-            minAmount: minSellAmount,
-            maxAmount: maxSellAmount,
+            minAmount: minLTCSellAmount,
+            maxAmount: maxLTCSellAmount,
           }}
         />
       </View>
