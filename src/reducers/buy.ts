@@ -188,8 +188,8 @@ const getMoonpayBuyQuoteData = (
           const combinedFee =
             (data.feeAmount || 0) + (data.extraFeeAmount || 0);
           resolve({
-            ltcAmount: data.quoteCurrencyAmount || 0,
-            ltcPrice: data.quoteCurrencyPrice || 0,
+            quoteCurrencyAmount: data.quoteCurrencyAmount || 0,
+            quoteCurrencyPrice: data.quoteCurrencyPrice || 0,
             totalAmount: data.totalAmount || 0,
             baseCurrencyAmount: data.baseCurrencyAmount || 0,
             networkFeeAmount: data.networkFeeAmount || 0,
@@ -303,7 +303,7 @@ export const setBuyQuote =
     const currencyCode = testPaymentActive
       ? testPaymentFiat
       : getState().settings.currencyCode;
-    const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
+    const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
     let quote: any = await getBuyQuote(
       isMoonpayCustomer,
@@ -324,13 +324,7 @@ export const setBuyQuote =
       }),
     );
 
-    // set sell limits if available
-    if (quote.buyLimits) {
-      dispatch(setBuyLimitsAction(quote.buyLimits));
-    }
-
-    // set quote
-    dispatch(setBuyQuoteAction(quote));
+    dispatch(setQuoteAction(quote));
   };
 
 const getMoonpaySellQuoteData = (
@@ -473,28 +467,24 @@ export const setSellQuote =
     });
   };
 
-export const checkBuySellProviderCountry =
-  (): AppThunk => (dispatch, getState) => {
-    const {testPaymentActive, testPaymentCountry, testPaymentMethod} =
-      getState().settings;
+export const checkBuySellProviderCountry = (): AppThunk => dispatch => {
+  const countryCode = enableTest ? TEST_COUNTRY : getCountry();
 
-    const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
-
-    if (testPaymentActive) {
-      const isMoonpay = testPaymentMethod === 'MOONPAY';
-      const isOnramper = testPaymentMethod === 'ONRAMPER';
-
-      dispatch(setMoonpayCustomer(isMoonpay));
-      dispatch(setOnramperCustomer(isOnramper));
-      return;
-    }
-
-    const isMoonpay = moonpayCountries.includes(countryCode);
-    const isOnramper = onramperCountries.includes(countryCode);
+  if (enableTest) {
+    const isMoonpay = TEST_METHOD === 'MOONPAY';
+    const isOnramper = TEST_METHOD === 'ONRAMPER';
 
     dispatch(setMoonpayCustomer(isMoonpay));
     dispatch(setOnramperCustomer(isOnramper));
-  };
+    return;
+  }
+
+  const isMoonpay = moonpayCountries.includes(countryCode);
+  const isOnramper = onramperCountries.includes(countryCode);
+
+  dispatch(setMoonpayCustomer(isMoonpay));
+  dispatch(setOnramperCustomer(isOnramper));
+};
 
 export const checkAllowed = (): AppThunk => async (dispatch, getState) => {
   const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
