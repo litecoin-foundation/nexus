@@ -10,6 +10,8 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
+import {callRates} from '../../reducers/ticker';
+
 import {useNavigation} from '@react-navigation/native';
 import Animated, {
   useSharedValue,
@@ -30,10 +32,8 @@ const Buy: React.FC<Props> = () => {
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const isBuyAllowed = useAppSelector(state => state.buy.isBuyAllowed);
-  const minBuyAmount = useAppSelector(state => state.buy.minBuyAmount);
-  const maxBuyAmount = useAppSelector(state => state.buy.maxBuyAmount);
-  const minLTCBuyAmount = useAppSelector(state => state.buy.minLTCBuyAmount);
-  const maxLTCBuyAmount = useAppSelector(state => state.buy.maxLTCBuyAmount);
+  const {minBuyAmount, maxBuyAmount, minLTCBuyAmount, maxLTCBuyAmount} =
+    useAppSelector(state => state.buy.buyLimits);
   const {isMoonpayCustomer, isOnramperCustomer} = useAppSelector(
     state => state.buy,
   );
@@ -223,6 +223,9 @@ const Buy: React.FC<Props> = () => {
           textKey="preview_buy"
           textDomain="buyTab"
           onPress={() => {
+            // NOTE: quote's polled every 15 sec but we have to
+            // instant update it for preview
+            dispatch(callRates());
             if (isMoonpayCustomer) {
               navigation.navigate('ConfirmBuy');
             } else if (isOnramperCustomer) {

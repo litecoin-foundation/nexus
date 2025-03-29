@@ -3,7 +3,7 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
-import {getBuyQuote, setSellQuote, setLimits} from './buy';
+import {setBuyQuote, setSellQuote, setLimits} from './buy';
 
 // types
 type IRates = {
@@ -16,15 +16,6 @@ interface ITicker {
   sellRate: number;
   isBuyRateApprox: boolean;
   isSellRateApprox: boolean;
-}
-
-interface IQuote {
-  quoteCurrencyAmount: number;
-  quoteCurrencyPrice: number;
-  totalAmount: number;
-  baseCurrencyAmount: number;
-  networkFeeAmount: number;
-  feeAmount: number;
 }
 
 // initial state
@@ -109,32 +100,22 @@ const getTickerData = () => {
   });
 };
 
+// NOTE: if we will call buy and sell quotes separately depending on what
+// screen user's at it will be half amount of requests
 export const callRates = (): AppThunk => async (dispatch, getState) => {
-  const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
   const {currencyCode} = getState().settings;
+  const {amount: ltcAmount} = getState().input;
 
   let isBuyRateApprox = false,
     isSellRateApprox = false;
 
   try {
     // Fetch buy quote
-    const buyQuote: IQuote = await getBuyQuote(
-      isMoonpayCustomer,
-      isOnramperCustomer,
-      currencyCode,
-      1,
-    );
+    const buyQuote: any = await dispatch(setBuyQuote(Number(ltcAmount)));
     let buy = buyQuote ? Number(buyQuote.quoteCurrencyPrice) : null;
 
     // Fetch sell quote
-    // const sellQuote: IQuote = await setSellQuote(
-    //   isMoonpayCustomer,
-    //   isOnramperCustomer,
-    //   currencyCode,
-    //   1,
-    // );
-    const sellQuote: any = await dispatch(setSellQuote(1));
-
+    const sellQuote: any = await dispatch(setSellQuote(Number(ltcAmount)));
     let sell = sellQuote ? Number(sellQuote.quoteCurrencyPrice) : null;
 
     // Fetch ltc rates

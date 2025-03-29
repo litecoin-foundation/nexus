@@ -66,15 +66,16 @@ const ConfirmBuy: React.FC<Props> = props => {
   const [buyTxStatus, setBuyTxStatus] = useState<string>('');
   const [wasSuccessful, setWasSuccessful] = useState<boolean>(false);
 
-  const {quote} = useAppSelector(state => state.buy);
+  const {buyQuote: quote} = useAppSelector(state => state.buy);
   const {currencySymbol} = useAppSelector(state => state.settings);
   const {
-    quoteCurrencyAmount,
-    quoteCurrencyPrice,
+    ltcAmount,
+    ltcPrice,
     totalAmount,
     baseCurrencyAmount,
     networkFeeAmount,
     feeAmount,
+    discount,
   } = quote;
 
   const address = useAppSelector(state => state.address.address);
@@ -186,7 +187,7 @@ const ConfirmBuy: React.FC<Props> = props => {
                 textStyle={styles.titleText}
                 numberOfLines={1}
               />
-              <Text style={styles.amountText}>{quoteCurrencyAmount} LTC</Text>
+              <Text style={styles.amountText}>{ltcAmount} LTC</Text>
               <View style={styles.fiatAmount}>
                 <Text style={styles.fiatAmountText}>
                   {currencySymbol}
@@ -201,9 +202,7 @@ const ConfirmBuy: React.FC<Props> = props => {
               <TableCell
                 titleTextKey="rate"
                 titleTextDomain="buyTab"
-                value={`${currencySymbol}${quoteCurrencyPrice.toFixed(
-                  2,
-                )} per 1 LTC`}
+                value={`${currencySymbol}${ltcPrice.toFixed(2)} per 1 LTC`}
                 noBorder
               />
               <TableCell
