@@ -66,7 +66,7 @@ const ConfirmBuy: React.FC<Props> = props => {
   const [buyTxStatus, setBuyTxStatus] = useState<string>('');
   const [wasSuccessful, setWasSuccessful] = useState<boolean>(false);
 
-  const {quote} = useAppSelector(state => state.buy);
+  const {buyQuote: quote} = useAppSelector(state => state.buy);
   const {currencySymbol} = useAppSelector(state => state.settings);
   const {
     ltcAmount,
