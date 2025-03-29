@@ -105,7 +105,8 @@
     "back": "BACK",
     "buy_blocked": "Buy Litecoin is currently not available in your country/state.",
     "error_title": "Something's wrong!",
-    "min_sale": "Minimum sale of {{minAmount}} LTC & max sale of {{maxAmount}} LTC"
+    "min_sale": "Minimum sale of {{minAmount}} LTC & max sale of {{maxAmount}} LTC",
+    "buy_success": "Bought Successfully"
   },
   "sellTab": {
     "sell": "Sell ",

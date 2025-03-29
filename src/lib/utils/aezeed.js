@@ -6,7 +6,8 @@ import Crypto from 'react-native-quick-crypto';
 import aez from 'aez';
 import {Scrypt} from 'react-native-turbo-scrypt';
 
-import {checkBIP39Word, getBIP39Index, wordlist} from './bip39';
+import wordlist from './bip39/english.json';
+import {checkBIP39Word, getBIP39Index} from './bip39';
 import lpad from './lpad';
 import crc32c from './crc32c';
 import {hexStringToHexArray} from './hexStringToHexArray';
@@ -35,7 +36,9 @@ export const generateMnemonic = () => {
   return new Promise((resolve, reject) => {
     try {
       const passwordString = 'aezeed';
-      const passwordBuffer = new TextEncoder().encode(passwordString).buffer;
+      const passwordBuffer = new Uint8Array(
+        [...passwordString].map(char => char.charCodeAt(0)),
+      ).buffer;
 
       const s = Crypto.randomBytes(5).toString('hex');
       const saltBytes = hexStringToHexArray(s);

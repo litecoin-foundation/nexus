@@ -25,6 +25,9 @@ import ImportSuccess, {
   ImportSuccessNavigationOptions,
 } from '../screens/Settings/ImportSuccess';
 import Support, {SupportNavigationOptions} from '../screens/Settings/Support';
+import TestPayment, {
+  TestPaymentNavigationOptions,
+} from '../screens/Settings/TestPayment';
 
 const Stack = createStackNavigator();
 
@@ -103,6 +106,11 @@ function SettingsStack() {
         name="Support"
         component={Support}
         options={({navigation}) => SupportNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="TestPayment"
+        component={TestPayment}
+        options={({navigation}) => TestPaymentNavigationOptions(navigation)}
       />
     </Stack.Navigator>
   );

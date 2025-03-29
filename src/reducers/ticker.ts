@@ -3,26 +3,19 @@ import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
-import {getBuyQuote, getSellQuote, setLimits} from './buy';
+import {setBuyQuote, setSellQuote, setLimits} from './buy';
 
 // types
 type IRates = {
-  [key: string]: string;
+  [key: string]: any;
 };
 
 interface ITicker {
   ltcRate: number;
   buyRate: number;
   sellRate: number;
-}
-
-interface IQuote {
-  quoteCurrencyAmount: number;
-  quoteCurrencyPrice: number;
-  totalAmount: number;
-  baseCurrencyAmount: number;
-  networkFeeAmount: number;
-  feeAmount: number;
+  isBuyRateApprox: boolean;
+  isSellRateApprox: boolean;
 }
 
 // initial state
@@ -30,7 +23,9 @@ const initialState = {
   ltcRate: 0,
   buyRate: 0,
   sellRate: 0,
-  rates: [],
+  isBuyRateApprox: false,
+  isSellRateApprox: false,
+  rates: {} as IRates,
   day: [],
   week: [],
   month: [],
@@ -45,27 +40,36 @@ const updateRatesAction = createAction<{
   buy: number;
   sell: number;
   ltc: number;
+  isBuyRateApprox: boolean;
+  isSellRateApprox: boolean;
 }>('ticker/updateRatesAction');
-const updateHistoricRateDayAction = createAction(
+const updateHistoricRateDayAction = createAction<any>(
   'ticker/updateHistoricRateDayAction',
 );
-const updateHistoricRateWeekAction = createAction(
+const updateHistoricRateWeekAction = createAction<any>(
   'ticker/updateHistoricRateWeekAction',
 );
-const updateHistoricRateMonthAction = createAction(
+const updateHistoricRateMonthAction = createAction<any>(
   'ticker/updateHistoricRateMonthAction',
 );
-const updateHistoricRateQuarterAction = createAction(
+const updateHistoricRateQuarterAction = createAction<any>(
   'ticker/updateHistoricRateQuarterAction',
 );
-const updateHistoricRateYearAction = createAction(
+const updateHistoricRateYearAction = createAction<any>(
   'ticker/updateHistoricRateYearAction',
 );
-const updateHistoricRateAllAction = createAction(
+const updateHistoricRateAllAction = createAction<any>(
   'ticker/updateHistoricRateAllAction',
 );
 
 // functions
+function isObjectEmpty(obj: {[key: string]: any}) {
+  if (Object.getOwnPropertyNames(obj).length >= 1) {
+    return false;
+  } else {
+    return true;
+  }
+}
 
 const getTickerData = () => {
   return new Promise<{[key: string]: string}>(async (resolve, reject) => {
@@ -96,47 +100,58 @@ const getTickerData = () => {
   });
 };
 
-export const pollRates = (): AppThunk => async (dispatch, getState) => {
+// NOTE: if we will call buy and sell quotes separately depending on what
+// screen user's at it will be half amount of requests
+export const callRates = (): AppThunk => async (dispatch, getState) => {
+  const {currencyCode} = getState().settings;
+  const {amount: ltcAmount} = getState().input;
+
+  let isBuyRateApprox = false,
+    isSellRateApprox = false;
+
+  try {
+    // Fetch buy quote
+    const buyQuote: any = await dispatch(setBuyQuote(Number(ltcAmount)));
+    let buy = buyQuote ? Number(buyQuote.quoteCurrencyPrice) : null;
+
+    // Fetch sell quote
+    const sellQuote: any = await dispatch(setSellQuote(Number(ltcAmount)));
+    let sell = sellQuote ? Number(sellQuote.quoteCurrencyPrice) : null;
+
+    // Fetch ltc rates
+    const rates = await getTickerData();
+    let ltc = 0;
+    if (rates && !isObjectEmpty(rates)) {
+      ltc = Number(rates[currencyCode]);
+    }
+
+    // Set fallbacks after getting current ltc rate
+    // with current currency
+    // If quote is null/undefined/0 there was a fetching error
+    // set coinbase rate instead
+    if (!buy) {
+      buy = ltc;
+      isBuyRateApprox = true;
+    }
+    if (!sell) {
+      sell = ltc;
+      isSellRateApprox = true;
+    }
+
+    dispatch(getTickerAction(rates));
+    dispatch(
+      updateRatesAction({ltc, buy, sell, isBuyRateApprox, isSellRateApprox}),
+    );
+    dispatch(setLimits());
+  } catch (error) {
+    console.warn(error);
+  }
+};
+
+export const pollRates = (): AppThunk => async dispatch => {
   await poll(async () => {
-    const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-    const {currencyCode} = getState().settings;
-
     try {
-      // fetch buy quote
-      const buyQuote: IQuote = await getBuyQuote(
-        isMoonpayCustomer,
-        isOnramperCustomer,
-        currencyCode,
-        1,
-      );
-      let buy = Number(buyQuote.quoteCurrencyPrice);
-      // if quote is null/undefined/0 there was a fetching error
-      // set coinbase rate instead
-      if (!buy) {
-        buy = getState().ticker.ltcRate;
-      }
-
-      // fetch sell quote
-      const sellQuote: IQuote = await getSellQuote(
-        isMoonpayCustomer,
-        isOnramperCustomer,
-        currencyCode,
-        1,
-      );
-      let sell = Number(sellQuote.quoteCurrencyPrice);
-      // if quote is null/undefined/0 there was a fetching error
-      // set coinbase rate instead
-      if (!sell) {
-        sell = getState().ticker.ltcRate;
-      }
-
-      // fetch ltc rates
-      const rates = await getTickerData();
-      const ltc = Number(rates[currencyCode]);
-
-      dispatch(getTickerAction(rates));
-      dispatch(updateRatesAction({buy, sell, ltc}));
-      dispatch(setLimits());
+      dispatch(callRates());
     } catch (error) {
       console.warn(error);
     }
@@ -307,6 +322,8 @@ export const tickerSlice = createSlice({
       ltcRate: action.payload.ltc,
       buyRate: action.payload.buy,
       sellRate: action.payload.sell,
+      isBuyRateApprox: action.payload.isBuyRateApprox,
+      isSellRateApprox: action.payload.isSellRateApprox,
     }),
   },
 });
@@ -315,7 +332,7 @@ export const tickerSlice = createSlice({
 export const ltcRateSelector = createSelector(
   state => state.ticker.rates,
   state => state.settings.currencyCode,
-  (rates, currencyCode) => {
+  (rates: {[key: string]: any}, currencyCode: string) => {
     if (rates[currencyCode] === undefined) {
       return rates.USD;
     } else {
@@ -327,7 +344,7 @@ export const ltcRateSelector = createSelector(
 export const convertLocalFiatToUSD = createSelector(
   state => state.settings.currencyCode,
   state => state.ticker.rates,
-  (currencyCode: string, rates) => {
+  (currencyCode: string, rates: {[key: string]: any}) => {
     const localToUSD = rates.USD / rates[currencyCode];
     return localToUSD;
   },
@@ -337,7 +354,7 @@ export const fiatValueSelector = createSelector(
   state => state.ticker.rates,
   state => state.settings.currencyCode,
   state => state.settings.currencySymbol,
-  (rates, currencyCode, currencySymbol) =>
+  (rates: {[key: string]: any}, currencyCode: string, currencySymbol) =>
     memoize(
       satoshi =>
         `${currencySymbol}${(
@@ -364,30 +381,30 @@ export const monthSelector = createSelector(
     yearData,
     allData,
   ) => {
-    let data;
+    let data: any[] = [];
 
     if (graphPeriod === '1D') {
-      data = dayData;
+      data = dayData as any[];
     } else if (graphPeriod === '1W') {
-      data = weekData;
+      data = weekData as any[];
     } else if (graphPeriod === '1M') {
-      data = monthData;
+      data = monthData as any[];
     } else if (graphPeriod === '3M') {
-      data = quarterData;
+      data = quarterData as any[];
     } else if (graphPeriod === '1Y') {
-      data = yearData;
+      data = yearData as any[];
     } else if (graphPeriod === 'ALL') {
-      data = allData;
+      data = allData as any[];
     }
 
     if (data === undefined || data === null) {
       return;
     }
 
-    const result = data.map(data => {
+    const result = data.map(item => {
       return {
-        x: new Date(data[0] * 1000),
-        y: data[3],
+        x: new Date(item[0] * 1000),
+        y: item[3],
       };
     });
 

@@ -7,7 +7,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface Props {
   value?: string;
   onPress(): void;
-  small: boolean;
+  small?: boolean;
   disabled?: boolean;
   customStyles?: {};
   customFontStyles?: {};

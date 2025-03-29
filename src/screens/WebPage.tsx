@@ -47,9 +47,9 @@ const WebPage: React.FC<Props> = props => {
       const urlWithoutQuery = currentUrl.split('?')[0];
       if (urlWithoutQuery === observeURL) {
         const queryString = currentUrl.split('?')[1];
-        if (queryString && returnRoute) {
+        if (returnRoute) {
           navigation.navigate(returnRoute, {
-            queryString: queryString,
+            queryString: queryString || 'empty',
           });
         }
       }

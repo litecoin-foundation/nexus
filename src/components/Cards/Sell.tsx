@@ -33,8 +33,9 @@ const Sell: React.FC<Props> = () => {
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const isSellAllowed = useAppSelector(state => state.buy.isSellAllowed);
-  const minSellAmount = useAppSelector(state => state.buy.minLTCSellAmount);
-  const maxSellAmount = useAppSelector(state => state.buy.maxLTCSellAmount);
+  const {minLTCSellAmount, maxLTCSellAmount} = useAppSelector(
+    state => state.buy.sellLimits,
+  );
   const {isMoonpayCustomer, isOnramperCustomer} = useAppSelector(
     state => state.buy,
   );
@@ -106,6 +107,25 @@ const Sell: React.FC<Props> = () => {
 
     calculateFee();
   }, [balanceMinus001]);
+
+  function amountValid(): boolean {
+    if (!isSellAllowed) {
+      return false;
+    }
+    // balance in SATS, amount in LTC
+    if (Number(balance) < Number(amount) * 100000000) {
+      return false;
+    }
+    if (
+      !fiatAmount ||
+      !amount ||
+      Number(amount) < minLTCSellAmount ||
+      Number(amount) > maxLTCSellAmount
+    ) {
+      return false;
+    }
+    return true;
+  }
 
   const SellContainer = (
     <>
@@ -235,14 +255,7 @@ const Sell: React.FC<Props> = () => {
       )}
       <View style={isSellAllowed ? styles.bottom : styles.bottomStandalone}>
         <BlueButton
-          disabled={
-            !isSellAllowed ||
-            Number(amount) <= minSellAmount ||
-            fiatAmount === '' ||
-            Number(amount) > maxSellAmount
-              ? true
-              : false || balance < amount
-          }
+          disabled={!amountValid()}
           textKey="preview_sell"
           textDomain="sellTab"
           onPress={() => {
@@ -263,8 +276,8 @@ const Sell: React.FC<Props> = () => {
           numberOfLines={1}
           interpolationObj={{
             currencySymbol,
-            minAmount: minSellAmount,
-            maxAmount: maxSellAmount,
+            minAmount: minLTCSellAmount,
+            maxAmount: maxLTCSellAmount,
           }}
         />
       </View>

@@ -1,4 +1,10 @@
-import React, {useState, useRef, useLayoutEffect, useContext} from 'react';
+import React, {
+  useState,
+  useRef,
+  useLayoutEffect,
+  useContext,
+  useMemo,
+} from 'react';
 import {View, Text, StyleSheet, Image, Platform} from 'react-native';
 import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
 import LinearGradient from 'react-native-linear-gradient';
@@ -44,34 +50,39 @@ const Generate: React.FC<Props> = props => {
     seedArray => chunk(seedArray, 4),
   );
   const seed = useAppSelector(state => seedSelector(state));
-
   const [activePage, setActivePage] = useState(0);
 
-  useLayoutEffect(() => {
-    const handleBackNavigation = () => {
-      navigation.goBack();
-    };
+  const headerLeftButton = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+    [navigation],
+  );
 
+  const headerTitle = useMemo(
+    () => (
+      <TranslateText
+        textKey="seed_phrase"
+        domain="onboarding"
+        textStyle={styles.headerTitle}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+      />
+    ),
+    [styles, SCREEN_HEIGHT],
+  );
+
+  useLayoutEffect(() => {
     navigation.setOptions({
       headerTransparent: true,
       headerTitleAlign: 'left',
       headerTintColor: 'white',
-      headerLeft: () => (
-        <HeaderButton
-          onPress={() => handleBackNavigation()}
-          imageSource={require('../../assets/images/back-icon.png')}
-        />
-      ),
-      headerTitle: () => (
-        <TranslateText
-          textKey="seed_phrase"
-          domain="onboarding"
-          textStyle={styles.headerTitle}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        />
-      ),
+      headerLeft: () => headerLeftButton,
+      headerTitle: () => headerTitle,
     });
-  }, [navigation]);
+  }, [navigation, headerLeftButton, headerTitle]);
 
   const list = (
     <Carousel
@@ -106,54 +117,58 @@ const Generate: React.FC<Props> = props => {
   };
 
   return (
-    <LinearGradient
-      colors={['#1162E6', '#0F55C7']}
-      style={[
-        styles.header,
-        Platform.OS === 'android' ? {paddingTop: insets.top} : null,
-      ]}>
-      <OnboardingHeader
-        description={
-          t('seed_phrase_description') + '\n\n' + t('seed_phrase_description_2')
-        }
-        thin
-      />
-      <View style={styles.seedContainer}>
-        {!seed ? <Text>Loading...</Text> : list}
-      </View>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#1162E6', '#0F55C7']}
+        style={[
+          styles.gradientContainer,
+          Platform.OS === 'android' ? {paddingTop: insets.top} : null,
+        ]}>
+        <OnboardingHeader
+          description={
+            t('seed_phrase_description') +
+            '\n\n' +
+            t('seed_phrase_description_2')
+          }
+          thin
+        />
+        <View style={styles.seedContainer}>
+          {!seed ? <Text>Loading...</Text> : list}
+        </View>
 
-      <View style={styles.dotContainer}>
-        <Dots dotsLength={seed.length} activeDotIndex={activePage} />
-      </View>
+        <View style={styles.dotContainer}>
+          <Dots dotsLength={seed.length} activeDotIndex={activePage} />
+        </View>
 
-      <View style={styles.bottomContainer}>
-        <View style={styles.bottomTextContainer}>
-          <View style={styles.imageContainer}>
-            <Image
-              style={styles.image}
-              source={require('../../assets/images/attention.png')}
+        <View style={styles.bottomContainer}>
+          <View style={styles.bottomTextContainer}>
+            <View style={styles.imageContainer}>
+              <Image
+                style={styles.image}
+                source={require('../../assets/images/attention.png')}
+              />
+            </View>
+
+            <TranslateText
+              textKey="seed_warning"
+              domain="onboarding"
+              textStyle={styles.warningText}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+              // maxLengthInPixels={SCREEN_WIDTH * 0.7}
+              numberOfLines={2}
             />
           </View>
 
-          <TranslateText
-            textKey="seed_warning"
-            domain="onboarding"
-            textStyle={styles.warningText}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.013}
-            // maxLengthInPixels={SCREEN_WIDTH * 0.7}
-            numberOfLines={2}
+          <WhiteButton
+            textKey={activePage === 5 ? 'confirm_written' : 'scroll_right'}
+            textDomain="onboarding"
+            onPress={() => handlePress()}
+            small={false}
+            active={true}
           />
         </View>
-
-        <WhiteButton
-          textKey={activePage === 5 ? 'confirm_written' : 'scroll_right'}
-          textDomain="onboarding"
-          onPress={() => handlePress()}
-          small={false}
-          active={true}
-        />
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </View>
   );
 };
 
@@ -162,7 +177,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
-    header: {
+    gradientContainer: {
       flex: 1,
     },
     seedContainer: {

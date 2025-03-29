@@ -48,7 +48,6 @@ const Language: React.FC = () => {
         style={styles.container}
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
-        zR
         <FlatList data={languages} renderItem={renderItem} />
       </LinearGradient>
     </>
@@ -62,22 +61,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: '#F7F7F7',
     },
     headerTitle: {
+      color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
-      fontSize: 17,
-    },
-    headerText: {
-      color: '#484859',
-      paddingTop: 10,
-      paddingBottom: 10,
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '600',
-      fontSize: 14,
-      textAlign: 'center',
-      paddingHorizontal: 20,
     },
   });
 

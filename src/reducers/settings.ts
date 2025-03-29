@@ -23,6 +23,10 @@ interface ISettings {
   languageCode: string;
   languageTag: string;
   deviceNotificationToken: string;
+  testPaymentActive: boolean;
+  testPaymentMethod: string;
+  testPaymentCountry: string;
+  testPaymentFiat: string;
 }
 type CurrencyCodeType = {
   currencyCode: string;
@@ -31,6 +35,12 @@ type CurrencyCodeType = {
 type LanguageType = {
   languageCode: string;
   languageTag: string;
+};
+type TestPaymentType = {
+  testPaymentActive: boolean;
+  testPaymentMethod: string;
+  testPaymentCountry: string;
+  testPaymentFiat: string;
 };
 
 // initial state
@@ -65,6 +75,9 @@ const setLanguageAction = createAction<LanguageType>(
 );
 const setDeviceNotificationTokenAction = createAction<string>(
   'settings/setDeviceNotificationTokenAction',
+);
+const setTestPaymentAction = createAction<TestPaymentType>(
+  'settings/setTestPaymentAction',
 );
 
 // functions
@@ -118,6 +131,24 @@ export const setDeviceNotificationToken =
     dispatch(setDeviceNotificationTokenAction(deviceToken));
   };
 
+export const setTestPayment =
+  (
+    testPaymentActive: boolean,
+    testPaymentMethod: string,
+    testPaymentCountry: string,
+    testPaymentFiat: string,
+  ): AppThunk =>
+  dispatch => {
+    dispatch(
+      setTestPaymentAction({
+        testPaymentActive,
+        testPaymentMethod,
+        testPaymentCountry,
+        testPaymentFiat,
+      }),
+    );
+  };
+
 // slice
 export const settingsSlice = createSlice({
   name: 'settings',
@@ -152,6 +183,13 @@ export const settingsSlice = createSlice({
     setDeviceNotificationTokenAction: (state, action) => ({
       ...state,
       deviceNotificationToken: action.payload,
+    }),
+    setTestPaymentAction: (state, action) => ({
+      ...state,
+      testPaymentActive: action.payload.testPaymentActive,
+      testPaymentMethod: action.payload.testPaymentMethod,
+      testPaymentCountry: action.payload.testPaymentCountry,
+      testPaymentFiat: action.payload.testPaymentFiat,
     }),
   },
 });

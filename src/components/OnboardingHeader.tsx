@@ -1,5 +1,6 @@
 import React, {useContext} from 'react';
-import {View, StyleSheet, SafeAreaView} from 'react-native';
+import {View, StyleSheet} from 'react-native';
+import SafeAreaView from '../components/SafeAreaView';
 
 import TranslateText from './TranslateText';
 
