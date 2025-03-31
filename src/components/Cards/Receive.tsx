@@ -25,6 +25,7 @@ const Receive: React.FC<Props> = () => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, address.length);
 
+  const [regularAddress, setRegularAddress] = useState('');
   const [mwebAddress, setMwebAddress] = useState('');
   const [isMwebAddress, setIsMwebAddress] = useState(false);
   const [uri, setURI] = useState('');
@@ -36,6 +37,8 @@ const Receive: React.FC<Props> = () => {
     // check if RPC is ready for new address
     if (lndActive) {
       dispatch(getAddress());
+    } else {
+      setLoading(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lndActive]);
@@ -43,10 +46,13 @@ const Receive: React.FC<Props> = () => {
   // update qr code when address changes
   useEffect(() => {
     setURI(address);
-    if (isMwebAddress) {
+    if (isMwebAddress && address !== regularAddress) {
       setMwebAddress(address);
     }
-  }, [address, isMwebAddress]);
+    if (!isMwebAddress && address !== mwebAddress) {
+      setRegularAddress(address);
+    }
+  }, [address, regularAddress, mwebAddress, isMwebAddress]);
 
   // handle loading indicator
   useEffect(() => {
