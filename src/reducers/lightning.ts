@@ -19,6 +19,7 @@ import {subscribeTransactions} from './transaction';
 import {pollInfo} from './info';
 import {pollRates} from './ticker';
 import {pollBalance} from './balance';
+import {pollTransactions} from './transaction';
 import {createConfig} from '../lib/utils/config';
 import {stringToUint8Array} from '../lib/utils';
 
@@ -147,6 +148,7 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
             // RPC_ACTIVE so we are ready to dispatch pollers
             dispatch(pollInfo());
             dispatch(pollRates());
+            dispatch(pollTransactions());
             dispatch(subscribeTransactions());
 
             return;

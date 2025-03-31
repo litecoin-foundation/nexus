@@ -8,7 +8,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import TranslateText from '../../components/TranslateText';
 import GreenButton from '../../components/Buttons/GreenButton';
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import {getSignedUrl} from '../../reducers/buy';
+import {getSignedUrl, getBuyTransactionHistory} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {showError} from '../../reducers/errors';
@@ -108,6 +108,7 @@ const ConfirmBuy: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params) {
       if (route.params.queryString) {
+        dispatch(getBuyTransactionHistory());
         setWasSuccessful(true);
 
         navigation.setOptions({

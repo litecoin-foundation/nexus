@@ -13,7 +13,10 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import TranslateText from '../../components/TranslateText';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
-import {getSignedSellOnramperUrl} from '../../reducers/buy';
+import {
+  getSignedSellOnramperUrl,
+  getSellTransactionHistory,
+} from '../../reducers/buy';
 import {parseQueryString} from '../../lib/utils/querystring';
 import {showError} from '../../reducers/errors';
 
@@ -105,6 +108,8 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params) {
       if (route.params.queryString) {
+        dispatch(getSellTransactionHistory());
+
         const sellSuccess = parseQueryString(route.params.queryString);
         setSellTxId(sellSuccess.transactionId);
       }

@@ -14,7 +14,7 @@ import TranslateText from '../../components/TranslateText';
 import SendConfirmation from '../../components/SendConfirmation';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
-import {getSignedSellUrl} from '../../reducers/buy';
+import {getSignedSellUrl, getSellTransactionHistory} from '../../reducers/buy';
 import {parseQueryString} from '../../lib/utils/querystring';
 import {showError} from '../../reducers/errors';
 import {fiatValueSelector} from '../../reducers/ticker';
@@ -111,6 +111,8 @@ const ConfirmSell: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params) {
       if (route.params.queryString) {
+        dispatch(getSellTransactionHistory());
+
         // transactionId={{id}}
         // &baseCurrencyCode={{code}}
         // &baseCurrencyAmount={{amount}}
