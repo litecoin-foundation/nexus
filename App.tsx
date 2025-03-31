@@ -31,7 +31,6 @@ import {
   getBuyTransactionHistory,
   getSellTransactionHistory,
 } from './src/reducers/buy';
-import {getTransactions} from './src/reducers/transaction';
 import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
 import Error from './src/components/Error';
@@ -78,7 +77,6 @@ function ContextExecutable(props: any) {
   dispatch(updateHistoricalRatesForAllPeriods());
   dispatch(getBuyTransactionHistory());
   dispatch(getSellTransactionHistory());
-  dispatch(getTransactions());
   return <></>;
 }
 

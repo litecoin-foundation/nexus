@@ -14,6 +14,7 @@ import {
   emptyBuyQuoteAndLimits,
   emptySellQuoteAndLimits,
 } from '../utils/tradeQuotes';
+import {ITrade} from '../utils/txMetadata';
 
 const MOONPAY_PUBLIC_KEY = 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
 const ONRAMPER_PUBLIC_KEY = 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
@@ -28,8 +29,6 @@ interface IBuy {
   sellHistory: any[];
   isBuyAllowed: boolean | null;
   isSellAllowed: boolean | null;
-  // buyLimits: IBuyLimits | null;
-  // sellLimits: ISellLimits | null;
   buyLimits: IBuyLimits;
   sellLimits: ISellLimits;
   proceedToGetBuyLimits: boolean;
@@ -61,8 +60,6 @@ const initialState = {
   sellHistory: [],
   isBuyAllowed: null,
   isSellAllowed: null,
-  // buyLimits: null,
-  // sellLimits: null,
   buyLimits: {
     minBuyAmount: 0,
     maxBuyAmount: 0,
@@ -119,9 +116,20 @@ export const getBuyTransactionHistory =
         throw new Error(error);
       }
 
-      const data = await res.json();
+      const data: ITrade[] = await res.json();
+      let realTxs: any = [];
 
-      dispatch(getBuyTxHistoryAction(data));
+      // filter out prompted but yet unknown txs and failed txs
+      // NOTE: unknown transaction is used in nexus-api to identify
+      // clients of payment providers
+      if (data && data.length > 0) {
+        realTxs = data.filter(
+          (tx: ITrade) =>
+            tx.providerTxId !== 'unknown' && tx.status !== 'failed',
+        );
+      }
+
+      dispatch(getBuyTxHistoryAction(realTxs));
     } catch (error) {
       console.error(error);
     }
@@ -146,9 +154,19 @@ export const getSellTransactionHistory =
       throw new Error(error);
     }
 
-    const data = await res.json();
+    const data: ITrade[] = await res.json();
+    let realTxs: any = [];
 
-    dispatch(getSellTxHistoryAction(data));
+    // filter out prompted but yet unknown txs and failed txs
+    // NOTE: unknown transaction is used in nexus-api to identify
+    // clients of payment providers
+    if (data && data.length > 0) {
+      realTxs = data.filter(
+        (tx: ITrade) => tx.providerTxId !== 'unknown' && tx.status !== 'failed',
+      );
+    }
+
+    dispatch(getSellTxHistoryAction(realTxs));
   };
 
 const getMoonpayBuyQuoteData = (

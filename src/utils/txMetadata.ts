@@ -87,8 +87,26 @@ export const decodedTxMetadataProjection = (
     blockHash: '',
     blockHeight: 0,
     amount: trade.amountInLTC * 100000000 || 0,
-    numConfirmations: trade.metadata?.confirmations || 0,
-    timeStamp: trade.metadata?.createdAt || trade.metadata?.updatedAt || '',
+    numConfirmations:
+      trade.status === 'completed' || trade.status === 'paid'
+        ? 7
+        : trade.status === 'pending'
+          ? 6
+          : 0,
+    timeStamp:
+      String(
+        Number.parseInt(
+          String(Date.parse(trade.metadata?.createdAt) / 1000),
+          10,
+        ),
+      ) ||
+      String(
+        Number.parseInt(
+          String(Date.parse(trade.metadata?.updatedAt) / 1000),
+          10,
+        ),
+      ) ||
+      '',
     fee: trade.metadata?.networkFeeAmount,
     outputDetails: [],
     previousOutpoints: [],
@@ -118,8 +136,8 @@ export const displayedTxMetadataProjection = (
     eurRate: trade.metadata?.eurRate || 0,
     gbpRate: trade.metadata?.gbpRate || 0,
     totalFee:
-      Number(trade.metadata?.networkFeeAmount) +
-        Number(trade.metadata?.extraFeeAmount) +
+      Number(trade.metadata?.networkFeeAmount || 0) +
+        Number(trade.metadata?.extraFeeAmount || 0) +
         Number(trade.metadata?.feeAmount) || ('unknown' as 'unknown'),
     blockchainFee:
       Number(trade.metadata?.networkFeeAmount) || ('unknown' as 'unknown'),
@@ -133,4 +151,19 @@ export const displayedTxMetadataProjection = (
   };
 
   return projectedObj;
+};
+
+// from iso to timestamp
+export const getUTCTimeStampFromMetadata = (
+  tradeMetadata: ITrade['metadata'],
+): string => {
+  return (
+    String(
+      Number.parseInt(String(Date.parse(tradeMetadata?.createdAt) / 1000), 10),
+    ) ||
+    String(
+      Number.parseInt(String(Date.parse(tradeMetadata?.updatedAt) / 1000), 10),
+    ) ||
+    ''
+  );
 };

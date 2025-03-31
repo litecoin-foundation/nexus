@@ -550,7 +550,11 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
             />
           </View>
           <TranslateText
-            textValue={`${fiatSymbol}${blockchainFee}`}
+            textValue={
+              blockchainFee !== 'unknown'
+                ? `${fiatSymbol}${blockchainFee}`
+                : 'unknown'
+            }
             maxSizeInPixels={height * 0.02}
             textStyle={styles.tableCellSubValue}
             numberOfLines={1}

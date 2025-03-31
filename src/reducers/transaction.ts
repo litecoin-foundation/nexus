@@ -19,12 +19,14 @@ import {
 import {create} from '@bufbuild/protobuf';
 
 import {AppThunk} from './types';
+import {poll} from '../lib/utils/poll';
 import {formatDate, formatTime} from '../lib/utils/date';
 import {
   IDecodedTx,
   DisplayedMetadataType,
   decodedTxMetadataProjection,
   displayedTxMetadataProjection,
+  getUTCTimeStampFromMetadata,
 } from '../utils/txMetadata';
 import {getBalance} from './balance';
 
@@ -400,9 +402,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
     for await (const unmatchedBuyTx of unmatchedBuyTxs) {
       const buyTx = buyHistory.find(tx => tx.providerTxId === unmatchedBuyTx);
-      const txTimeStamp = String(
-        Number.parseInt(String(Date.parse(buyTx.createdAt) / 1000), 10),
-      ); // from iso to timestamp
+      // Instead of buyTx.createdAt we extract metadata time since
+      // it is a transaction of nexus-api trade type
+      const txTimeStamp = getUTCTimeStampFromMetadata(buyTx.metadata);
       const priceOnDate = (await getPriceOnDate(Number(txTimeStamp))) || 0;
       const decodedTx = decodedTxMetadataProjection(buyTx, priceOnDate);
       txs.push(decodedTx);
@@ -412,9 +414,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       const sellTx = sellHistory.find(
         tx => tx.providerTxId === unmatchedSellTx,
       );
-      const txTimeStamp = String(
-        Number.parseInt(String(Date.parse(sellTx.createdAt) / 1000), 10),
-      ); // from iso to timestamp
+      // Instead of sellTx.createdAt we extract metadata time since
+      // it is a transaction of nexus-api trade type
+      const txTimeStamp = getUTCTimeStampFromMetadata(sellTx.metadata);
       const priceOnDate = (await getPriceOnDate(Number(txTimeStamp))) || 0;
       const decodedTx = decodedTxMetadataProjection(sellTx, priceOnDate);
       txs.push(decodedTx);
@@ -424,6 +426,16 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   } catch (error) {
     console.error(error);
   }
+};
+
+export const pollTransactions = (): AppThunk => async dispatch => {
+  await poll(async () => {
+    try {
+      dispatch(getTransactions());
+    } catch (error) {
+      console.warn(error);
+    }
+  }, 15000);
 };
 
 export const sendOnchainPayment =
