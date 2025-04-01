@@ -140,8 +140,8 @@ const sweepBase58Ltpv = async (
     );
 
     return rawTopUpTxs;
-  } catch (error) {
-    throw new Error(String(error));
+  } catch (error: any) {
+    throw new Error(String(error.message));
   }
 };
 
