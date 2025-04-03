@@ -234,7 +234,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   const curFrameY = useRef(-1);
 
-  const SectionListtMemo = useMemo(
+  const txSignature = displayedTxs
+    .map(section =>
+      section.data.map((tx: any) => `${tx.hash}-${tx.confs}`).join(','),
+    )
+    .join('|');
+
+  const SectionListMemo = useMemo(
     () => (
       <SectionList
         bounces={false}
@@ -295,17 +301,15 @@ const TransactionList = forwardRef((props: Props, ref) => {
         onViewableItemsChanged={onViewableItemsChanged}
       />
     ),
-    // NOTE: redux changes reference every time it updates transaction data
-    // even tho they stay the same, that's why we use displayedTxs.length instead displayedTxs
-    // TODO: compare array of transaction ids instead just length
+    // Extract a unique signature from the transactions to detect changes
     /* eslint-disable react-hooks/exhaustive-deps */
-    [curFrameY, displayedTxs.length],
+    [curFrameY, displayedTxs.length, txSignature],
   );
 
   return renderTxs ? (
     <View style={{height: scrollContainerHeight}}>
       {!syncedToChain ? SyncProgressIndicator : <></>}
-      {SectionListtMemo}
+      {SectionListMemo}
     </View>
   ) : (
     <></>
