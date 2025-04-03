@@ -38,7 +38,8 @@
     "retry": "Erneut versuchen",
     "invalid_word": "Ungültiges Wort",
     "invalid_description": "Dieses Wort ist nicht gültig - Prüfen Sie die Schreibweise und versuchen Sie es erneut.",
-    "try_again": "Erneut versuchen"
+    "try_again": "Erneut versuchen",
+    "incorrect": "Falsch"
   },
   "main": {
     "main_wallet": "Hauptwallet",
@@ -89,7 +90,7 @@
     "buy": "Kaufen ",
     "n_ltc": "{{amount}}",
     "for": "für ",
-    "total": "{{currencySymbol}}{{total}}",
+    "for_total": "{{currencySymbol}}{{total}}",
     "history": "Historie",
     "preview_buy": "Kaufdaten ansehen",
     "min_purchase": "Mindestkauf {{currencySymbol}}{{minAmountInFiat}}",
@@ -103,22 +104,25 @@
     "continue_purchase": "Kauf fortsetzen",
     "back": "ZURÜCK",
     "buy_blocked": "Litecoin Kaufen ist in Ihrem Gebiet derzeit nicht verfügbar",
-    "error_title": "Etwas ist schiefgelaufen"
+    "error_title": "Etwas ist schiefgelaufen",
+    "min_sale": "Mindestverkauf von {{minAmount}} LTC & Höchstverkauf von {{maxAmount}} LTC",
+    "buy_success": "Erfolgreich gekauft"
   },
   "sellTab": {
     "sell": "Verkaufen ",
     "sell_litecoin": "Litecoin verkaufe",
     "preview_sell": "Verkaufsdaten anzeigen",
-    "sell_blocked": "Litecoin verkaufen ist in Ihrem Gebiet derzeit nicht verfügbar"
+    "sell_blocked": "Litecoin verkaufen ist in Ihrem Gebiet derzeit nicht verfügbar",
+    "sell_success": "Sie haben gerade {{amount}} LTC verkauft!"
   },
   "sendTab": {
     "send_ltc": "LTC senden",
     "send_litecoin": "Litecoin senden",
     "amount": "Betrag",
-    "send_to_address": "An adresse senden",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
-    "address_invalid": "{{ }} IST UNGÜLTIG",
+    "send_to_address": "An Adresse senden",
+    "fee": "Gebühr",
+    "confirm_and_send": "Bestätigen und Senden",
+    "address_invalid": " IST UNGÜLTIG",
     "enter_address": "Litecoin-Adresse eingeben",
     "description": "Beschreibung",
     "confirm": "Bestätigen",
@@ -129,7 +133,7 @@
     "camara_disabled": "Kamera deaktiviert",
     "enable_camera": "Kamera zum Scannen von QR-Codes aktivieren",
     "awesome": "Wunderbar!",
-    "just-sent": "Sie haben gerade {{10 Litecoin}} versendet"
+    "just-sent": "Sie haben gerade gesendet"
   },
   "receiveTab": {
     "receive_ltc": "LTC empfangen",
@@ -157,7 +161,8 @@
     "create_alerts_note": "Alarmiert werden, wenn der Litecoin-Preis einen Zielwert erreicht.",
     "alerts_appear_here": "Alarmierungen werden hier angezeigt",
     "set_alerts": "ALARMIERUNGEN ERSTELLEN",
-    "alert_me_when": "Benachrichtige mich bei",
+    "alert_me": "Benachrichtige mich bei",
+    "when_ltc": "Litecoin (LTC) ist",
     "below": "UNTER",
     "above": "ÜBER",
     "create_alert": "Alarmierung erstellen",
@@ -179,11 +184,11 @@
     "email": "Email?",
     "message_title": "Mitteilung",
     "message": "Bitte Mitteilung eingeben",
-    "connecting_status": "Wir verbinden Sie mit unseren Ansprechpartnern",
+    "connecting_status": "Wir verbinden Sie mit unseren Ansprechpartnern. Es kann etwas dauern, bis sie Ihre Nachricht sehen. Hinterlassen Sie gerne eine Nachricht und schauen Sie später wieder vorbei.",
     "type_message": "Mitteilung eingeben",
     "done": "Fertig",
     "about": "Über Nexus Wallet",
-    "foundation_preamble": "Erträumt und mit viel Liebe und Zuwendung von der (LTC FOUNDATION) ins Leben gerufen.",
+    "foundation_preamble": "Erträumt und mit viel Liebe und Zuwendung von der ins Leben gerufen.",
     "change_wallet_pin": "Wallet-PIN ändern",
     "change_login_pin": "Login PIN ändern",
     "enter_old_pin": "Alte PIN eingeben",
@@ -203,11 +208,13 @@
     "select_block_explorer_note": "Sie können ihren bevorzugten Block-Explorer auswählen.",
     "change_currency": "Währung ändern",
     "select_fiat": "Fiatwährung auswählen",
+    "change_lang": "Sprache ändern",
+    "select_lang": "Sprache auswählen",
     "view_seed": "Seedphrase anzwiegn",
     "view_paper_key": "Papierschlüssen ansehen",
-    "last_time_accessed": "Letzter Zugriff",
+    "last_time_accessed": "Letzter Zugriff: {{time}}",
     "litecoin_denomination": "Litecoin-Grundeinheit",
-    "reset_wallet": "WALLET ZURÜCKSETZEN",
+    "reset_wallet": "Wallet zurücksetzen?",
     "import_litewallet": "Litewallet importieren",
     "litewallet_description": "Litewallet-Nutzer können ihr Guthaben in Nexus Wallet importieren. Durch Eingabe Ihrer Seedphrase wird Ihr Guthaben dauerhaft in Nexus Wallet umgezogen.",
     "litewallet_success": "LITEWALLET ERFOLGREICH IMPORTIERT",
@@ -223,15 +230,19 @@
     "reset_warning": "Sind Sie vollkommen sicher, dass Sie Ihren Wallet zurücksetzen möchten. Sichern Sie ihre Seedphrase, bevore Sie dies tun!",
     "view_tx": "Transaktion anzeigen",
     "camera_error": "Kamera dektiviert",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "change_login": "Login-PIN ändern"
+  },
+  "convertTab": {
+    "convert_button": "Tauschen Sie Ihr LTC"
   },
   "modals": {
     "delete": "Löschen",
     "delete_alert": "Alarmierung löschen",
-    "hide_modal": "Dislog verbergen",
-    "tx_speed": "Transaktionsgeschwiindigkeit",
+    "hide_modal": "Dialog verbergen",
+    "tx_speed": "Transaktionsgeschwindigkeit",
     "fee_description": "Höhere Gebühren priorisieren Ihren Transaktion, damit sie schneller bestätigt wird.",
     "fee_estimate": "Ein Block = 2,5 Minuten",
-    "view_change": "Wehcselgeldadresse anzeigen"
+    "view_change": "Wechselgeldadresse anzeigen"
   }
 }

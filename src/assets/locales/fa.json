@@ -3,6 +3,7 @@
     "forgot_pin": "پین کد را فراموش کرده‌اید؟",
     "forgot_pin_description": "کد پین خود را فراموش کرده‌اید؟\nعبارت بازیابی خود را وارد کنید تا کد پین را بازنشانی کنید.",
     "enter_pin": "پین کد خود را وارد کنید",
+    "reenter_pin": "پین کد خود را دوباره وارد کنید",
     "attempts_left_one": "{{count}} تلاش باقی مانده است.",
     "attempts_left_other": "{{count}} تلاش باقی مانده است.",
     "for_litecoin": "برای لایت‌کوین",
@@ -104,21 +105,23 @@
     "back": "بازگشت",
     "buy_blocked": "خرید لایت‌کوین در کشور/ایالت شما در حال حاضر امکان‌پذیر نیست.",
     "error_title": "مشکلی وجود دارد!",
-    "min_sale": "حداقل فروش {{minAmount}} LTC و حداکثر فروش {{maxAmount}} LTC"
+    "min_sale": "حداقل فروش {{minAmount}} LTC و حداکثر فروش {{maxAmount}} LTC",
+    "buy_success": "با موفقیت خریداری شد"
   },
   "sellTab": {
     "sell": "فروش ",
     "sell_litecoin": "فروش لایت‌کوین",
     "preview_sell": "فروش LTC",
-    "sell_blocked": "فروش لایت‌کوین در کشور/ایالت شما در حال حاضر امکان‌پذیر نیست."
+    "sell_blocked": "فروش لایت‌کوین در کشور/ایالت شما در حال حاضر امکان‌پذیر نیست.",
+    "sell_success": "شما {{amount}} LTC فروختید!"
   },
   "sendTab": {
     "send_ltc": "ارسال LTC",
     "send_litecoin": "ارسال لایت‌کوین",
     "amount": "مقدار",
     "send_to_address": "ارسال به آدرس",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
+    "fee": "کارمزد",
+    "confirm_and_send": "تأیید و ارسال",
     "address_invalid": "نامعتبر است",
     "enter_address": "یک آدرس لایت‌کوین وارد کنید",
     "description": "توضیحات",
@@ -143,6 +146,7 @@
     "transactions": "تراکنش‌ها",
     "all": "همه",
     "regular": "معمولی",
+    "mweb": "MWEB",
     "find_tx": "یافتن یک تراکنش",
     "paste": "چسباندن",
     "auto_fill": "پرکردن خودکار",
@@ -157,7 +161,8 @@
     "create_alerts_note": "هشدارها را ایجاد کنید تا زمانی که قیمت لایت‌کوین به مقدار هدف برسد، مطلع شوید.",
     "alerts_appear_here": "هشدارهای شما در اینجا نمایش داده خواهند شد.",
     "set_alerts": "تنظیم هشدارها",
-    "alert_me_when": "هنگامی که لایت‌کوین (LTC) ",
+    "alert_me": "به من هشدار بده زمانی که",
+    "when_ltc": "لایت‌کوین (LTC)",
     "below": "کمتر از",
     "above": "بیشتر از",
     "create_alert": "ایجاد هشدار",
@@ -203,6 +208,8 @@
     "select_block_explorer_note": "می‌توانید کاوشگر بلاک مورد نظر خود را برای مشاهده تراکنش‌ها انتخاب کنید.",
     "change_currency": "تغییر ارز",
     "select_fiat": "انتخاب ارز فیات",
+    "change_lang": "تغییر زبان",
+    "select_lang": "انتخاب زبان",
     "view_seed": "مشاهده عبارت بازیابی",
     "view_paper_key": "مشاهده عبارت بازیابی",
     "last_time_accessed": "آخرین باری که دسترسی داشتید: {{time}}",
@@ -225,6 +232,9 @@
     "camera_error": "دوربین غیرفعال است",
     "cancel": "لغو",
     "change_login": "تغییر رمز ورود"
+  },
+  "convertTab": {
+    "convert_button": "تبدیل LTC شما"
   },
   "modals": {
     "delete": "حذف",

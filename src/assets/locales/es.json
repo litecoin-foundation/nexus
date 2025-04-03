@@ -38,7 +38,8 @@
     "retry": "Reintentar",
     "invalid_word": "Palabra inválida",
     "invalid_description": "Esta palabra no es válida. Verifica la ortografía e inténtalo de nuevo.",
-    "try_again": "Vuelve a intentarlo"
+    "try_again": "Vuelve a intentarlo",
+    "incorrect": "Incorrecto"
   },
   "main": {
     "main_wallet": "Billetera Principal",
@@ -83,13 +84,13 @@
     "3m": "3M",
     "1y": "1A",
     "all_time": "TODO",
-    "order_id": ""
+    "order_id": "ID DE ORDEN"
   },
   "buyTab": {
     "buy": "Comprar ",
     "n_ltc": "{{amount}}",
     "for": "por ",
-    "total": "{{currencySymbol}}{{total}}",
+    "for_total": "{{currencySymbol}}{{total}}",
     "history": "Historial",
     "preview_buy": "Previsualizar compra",
     "min_purchase": "Cantidad mínima de compra de {{currencySymbol}}{{minAmountInFiat}}",
@@ -103,22 +104,25 @@
     "continue_purchase": "Continuar compra",
     "back": "ATRÁS",
     "buy_blocked": "La compra de Litecoin no está disponible actualmente en tu país/estado.",
-    "error_title": "¡Algo salió mal!"
+    "error_title": "¡Algo salió mal!",
+    "min_sale": "Venta mínima de {{minAmount}} LTC y venta máxima de {{maxAmount}} LTC",
+    "buy_success": "Comprado con éxito"
   },
   "sellTab": {
     "sell": "Vender ",
     "sell_litecoin": "Vender Litecoin",
     "preview_sell": "Vender LTC",
-    "sell_blocked": "La venta de Litecoin no está disponible actualmente en tu país/estado."
+    "sell_blocked": "La venta de Litecoin no está disponible actualmente en tu país/estado.",
+    "sell_success": "¡Acabas de vender {{amount}} LTC!"
   },
   "sendTab": {
     "send_ltc": "Enviar LTC",
     "send_litecoin": "Enviar Litecoin",
     "amount": "Cantidad",
     "send_to_address": "Enviar a la dirección",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
-    "address_invalid": "{{ }} ES INVÁLIDO",
+    "fee": "Tarifa",
+    "confirm_and_send": "Confirmar y Enviar",
+    "address_invalid": " ES INVÁLIDO",
     "enter_address": "Introduce una dirección Litecoin",
     "description": "Concepto",
     "confirm": "Confirmar",
@@ -129,7 +133,7 @@
     "camara_disabled": "Cámara desabilitada",
     "enable_camera": "Habilitar camara para escanear códigos",
     "awesome": "¡Genial!",
-    "just-sent": "Acabas de enviar {{10 Litecoin}}"
+    "just-sent": "Acabas de enviar"
   },
   "receiveTab": {
     "receive_ltc": "Recibir LTC",
@@ -141,7 +145,6 @@
   "searchTab": {
     "transactions": "Transacciones",
     "all": "Todo",
-    "regular": "Normal/Estándar?????",
     "regular": "Estándar",
     "mweb": "MWEB",
     "find_tx": "Buscar una transacción",
@@ -205,13 +208,13 @@
     "select_block_explorer_note": "Puedes seleccionar tu explorador de bloques preferido para ver las transacciones.",
     "change_currency": "Cambiar moneda",
     "select_fiat": "Seleccionar moneda fiduciaria",
-    "change_lang": "Change Language (fix)",
-    "select_lang": "Select Language (fix)",
+    "change_lang": "Cambiar idioma",
+    "select_lang": "Seleccionar idioma",
     "view_seed": "Ver Frase Semilla",
     "view_paper_key": "Ver Clave de Papel",
-    "last_time_accessed": "Último acceso:",
+    "last_time_accessed": "Último acceso: {{time}}",
     "litecoin_denomination": "Denominación de Litecoin",
-    "reset_wallet": "RESTABLECER BILLETERA",
+    "reset_wallet": "¿Restablecer tu billetera?",
     "import_litewallet": "Importar Litewallet",
     "litewallet_description": "Los usuarios de Litewallet pueden importar sus monedas a Nexus Wallet. Al ingresar tu clave en papel a continuación, moverás permanentemente tus monedas de Litewallet a Nexus.",
     "litewallet_success": "¡Litewallet IMPORTADO!",
@@ -227,7 +230,11 @@
     "reset_warning": "¿Estás absolutamente seguro de que deseas restablecer tu billetera? Haz una copia de seguridad de tu frase semilla antes de restablecer.",
     "view_tx": "Ver transacción",
     "camera_error": "Cámara deshabilitada.",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "change_login": "Cambiar código de acceso"
+  },
+  "convertTab": {
+    "convert_button": "Convertir tus LTC"
   },
   "modals": {
     "delete": "Eliminar",
