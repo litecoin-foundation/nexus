@@ -97,7 +97,7 @@ async function getDerivedUsedAddresses(
         keyPair: childExtendedKey,
       });
     } catch (error) {
-      if (error === false) {
+      if (error === 'This address was never used.') {
         currentIndex++;
         currentGap++;
       } else {
@@ -154,15 +154,20 @@ function getPubKeyFromExtendedKey(extendedKey: BIP32Interface) {
 async function fetchAddressData(address: string, index: number) {
   return new Promise(async (resolve, reject) => {
     try {
-      const req = await fetch(
+      const res = await fetch(
         `https://litecoinspace.org/api/address/${address}`,
       );
-      const data: any = await req.json();
+
+      if (!res.ok) {
+        reject('Unable to fetch balance. Please try later.');
+      }
+
+      const data = await res.json();
 
       if (data.hasOwnProperty('chain_stats')) {
-        // check if address was used (received_value > 0)
+        // check if address was used received value > 0
         if (parseFloat(data.chain_stats.funded_txo_sum) === 0) {
-          reject(false);
+          reject('This address was never used.');
         }
 
         resolve({
@@ -175,7 +180,7 @@ async function fetchAddressData(address: string, index: number) {
         reject('Invalid request.');
       }
     } catch (err) {
-      reject(err);
+      reject('Unable to fetch balance. Please try later.');
     }
   });
 }

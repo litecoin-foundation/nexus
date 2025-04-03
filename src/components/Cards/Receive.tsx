@@ -9,6 +9,7 @@ import {getAddress} from '../../reducers/address';
 import NewBlueButton from '../Buttons/NewBlueButton';
 import NewButton from '../Buttons/NewButton';
 import InfoModal from '../Modals/InfoModalContent';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -18,27 +19,49 @@ interface Props {}
 const Receive: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const address = useAppSelector(state => state.address.address);
+  const lndActive = useAppSelector(state => state.lightning.lndActive);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, address.length);
 
-  const [mwebAddress, setMwebAddress] = useState(false);
+  const [regularAddress, setRegularAddress] = useState('');
+  const [mwebAddress, setMwebAddress] = useState('');
+  const [isMwebAddress, setIsMwebAddress] = useState(false);
   const [uri, setURI] = useState('');
   const [isInfoModalVisible, setInfoModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // generate fresh new address on launch
   useEffect(() => {
-    // TODO: fix bug where RPC isn't ready for new address
-    dispatch(getAddress());
-    setURI(address);
+    // check if RPC is ready for new address
+    if (lndActive) {
+      dispatch(getAddress());
+    } else {
+      setLoading(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lndActive]);
 
   // update qr code when address changes
   useEffect(() => {
     setURI(address);
-  }, [address]);
+    if (isMwebAddress && address !== regularAddress) {
+      setMwebAddress(address);
+    }
+    if (!isMwebAddress && address !== mwebAddress) {
+      setRegularAddress(address);
+    }
+  }, [address, regularAddress, mwebAddress, isMwebAddress]);
+
+  // handle loading indicator
+  useEffect(() => {
+    if (isMwebAddress) {
+      setLoading(mwebAddress ? false : true);
+    } else {
+      setLoading(address ? false : true);
+    }
+  }, [address, mwebAddress, isMwebAddress]);
 
   const handleCopy = async () => {
     setInfoModalVisible(true);
@@ -63,19 +86,19 @@ const Receive: React.FC<Props> = () => {
         <View style={styles.txTypeContainer}>
           <NewBlueButton
             title="Litecoin"
-            active={!mwebAddress}
+            active={!isMwebAddress}
             onPress={() => {
               dispatch(getAddress(false));
-              setMwebAddress(false);
+              setIsMwebAddress(false);
             }}
           />
           <NewBlueButton
             textKey="receive_privately"
             textDomain="receiveTab"
-            active={mwebAddress}
+            active={isMwebAddress}
             onPress={() => {
               dispatch(getAddress(true));
-              setMwebAddress(true);
+              setIsMwebAddress(true);
             }}
           />
         </View>
@@ -88,36 +111,40 @@ const Receive: React.FC<Props> = () => {
         />
 
         <View style={styles.addressContainer}>
-          <Pressable
-            style={styles.pressableContainer}
-            onPress={() => handleCopy()}>
-            <TranslateText
-              textValue={address}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.021}
-              textStyle={styles.addressText}
-            />
-          </Pressable>
+          <View style={styles.address}>
+            <Pressable
+              style={styles.pressableContainer}
+              onPress={() => handleCopy()}>
+              <TranslateText
+                textValue={address}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.021}
+                textStyle={styles.addressText}
+              />
+            </Pressable>
 
-          <NewButton
-            onPress={() => handleShare()}
-            imageSource={require('../../assets/icons/share-icon.png')}
-          />
+            <NewButton
+              onPress={() => handleShare()}
+              imageSource={require('../../assets/icons/share-icon.png')}
+            />
+          </View>
+
+          <View style={styles.qrContainer}>
+            {uri ? (
+              <QRCode
+                value={uri}
+                size={
+                  address.length < 64
+                    ? SCREEN_HEIGHT * 0.25
+                    : SCREEN_HEIGHT * 0.18
+                }
+              />
+            ) : null}
+          </View>
+
+          <LoadingIndicator visible={loading} />
         </View>
 
-        <View style={styles.qrContainer}>
-          {uri ? (
-            <QRCode
-              value={uri}
-              size={
-                address.length < 64
-                  ? SCREEN_HEIGHT * 0.25
-                  : SCREEN_HEIGHT * 0.18
-              }
-            />
-          ) : null}
-        </View>
-
-        {mwebAddress ? (
+        {isMwebAddress ? (
           <TranslateText
             textKey="recieve_mweb_description"
             domain="receiveTab"
@@ -127,6 +154,7 @@ const Receive: React.FC<Props> = () => {
           />
         ) : null}
       </View>
+
       <InfoModal
         isVisible={isInfoModalVisible}
         close={() => setInfoModalVisible(false)}
@@ -172,6 +200,10 @@ const getStyles = (
       fontSize: screenHeight * 0.017,
     },
     addressContainer: {
+      width: '100%',
+      height: 'auto',
+    },
+    address: {
       width: '100%',
       flexDirection: 'row',
       alignItems: 'center',

@@ -106,9 +106,7 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
       );
 
       if (!res.ok) {
-        // const error = await res.json();
-        // throw new Error(error);
-        // resolve null so this request wouldn't break math for ui
+        // NOTE: resolve null so this request won't break math for the TransactionList
         resolve(null);
       }
 
@@ -336,7 +334,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           }
           // If tx is valid (not failed) and haven't been pushed in unmatchedBuyTxs yet
           // add providerTxId in unmatchedSellTxs as a unique id for finding the tx
-          // TODO: make sure fetched trades from providers always have a providerTxId
+          // TODO: make sure fetched trades from providers always have providerTxId
           if (
             buyTx.status !== 'failed' &&
             !unmatchedBuyTxs.includes(buyTx.providerTxId)
@@ -353,6 +351,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         }
       }
 
+      // NOTE: when you sell your ltc and make a Send transaction to the provider,
+      // wallet will likely show this tx before provider detects it and assigns cryptoTxId to it,
+      // this causes a Sell transaction to appear as a Send transaction at first
+      // TODO: figure the aforementioned note out
       if (sellHistory && sellHistory.length >= 1) {
         // Find matching lnd tx with the tx from sellHistory from nexus-api
         // by comparing cryptoTxId with txHash
@@ -365,7 +367,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           }
           // If tx is valid (not failed) and haven't been pushed in unmatchedBuyTxs yet
           // add providerTxId in unmatchedSellTxs as a unique id for finding the tx
-          // TODO: make sure fetched trades from providers always have a providerTxId
+          // TODO: make sure fetched trades from providers always have providerTxId
           if (
             sellTx.status !== 'failed' &&
             !unmatchedSellTxs.includes(sellTx.providerTxId)

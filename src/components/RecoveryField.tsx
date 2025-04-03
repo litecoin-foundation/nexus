@@ -38,7 +38,7 @@ const RecoveryField: React.FC<Props> = props => {
   const [phrase, setPhrasePosition] = useState(0);
   const [seed, setSeed] = useState<string[]>([]);
   const phraseRef = useRef(n.map(() => createRef<TextInput>()));
-  const listRef = useRef<FlatList>();
+  const listRef = useRef<FlatList>(null);
 
   useEffect(() => {
     phraseRef.current[phrase].current!.focus();
@@ -71,7 +71,7 @@ const RecoveryField: React.FC<Props> = props => {
 
         // reset seed list inputs in state and ui
         setSeed([]);
-        for (let i = 0; i < 24; i++) {
+        for (let i = 0; i < 12; i++) {
           phraseRef.current[i].current!.clear();
         }
         return;
@@ -149,7 +149,6 @@ const RecoveryField: React.FC<Props> = props => {
 
               <TextInput
                 autoCorrect={false}
-                blurOnSubmit={false}
                 autoCapitalize="none"
                 autoComplete="off"
                 clearTextOnFocus

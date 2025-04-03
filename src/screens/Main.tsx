@@ -70,6 +70,78 @@ interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
 }
 
+interface TxListComponentProps {
+  selectTransaction: (option: any) => void;
+  setTxDetailModalOpened: (option: boolean) => void;
+  foldUnfoldBottomSheet: (option: boolean) => void;
+  isBottomSheetFolded: boolean;
+  navigation: any;
+  styles: {
+    [key: string]: any;
+  };
+}
+
+const TxListComponent: React.FC<TxListComponentProps> = props => {
+  const {
+    selectTransaction,
+    setTxDetailModalOpened,
+    foldUnfoldBottomSheet,
+    isBottomSheetFolded,
+    navigation,
+    styles,
+  } = props;
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+
+  const image = useImage(require('../assets/icons/search-icon.png'));
+
+  return (
+    <View>
+      <View style={styles.txTitleContainer}>
+        <TranslateText
+          textKey={'latest_txs'}
+          domain={'main'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+          maxLengthInPixels={SCREEN_WIDTH * 0.8}
+          textStyle={styles.txTitleText}
+          numberOfLines={1}
+        />
+
+        <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
+          <Canvas style={styles.txSearchBtnCanvas}>
+            <RoundedRect
+              x={SCREEN_HEIGHT * 0.02}
+              y={SCREEN_HEIGHT * 0.01}
+              width={SCREEN_HEIGHT * 0.1}
+              height={SCREEN_HEIGHT * 0.05}
+              color="white"
+              r={SCREEN_HEIGHT * 0.01}>
+              <Shadow dx={0} dy={2} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
+            </RoundedRect>
+            <Image
+              image={image}
+              x={SCREEN_HEIGHT * 0.035}
+              y={SCREEN_HEIGHT * 0.025}
+              width={SCREEN_HEIGHT * 0.02}
+              height={SCREEN_HEIGHT * 0.02}
+              fit="scaleDown"
+            />
+          </Canvas>
+        </Pressable>
+      </View>
+      <TransactionList
+        onPress={data => {
+          selectTransaction(data);
+          setTxDetailModalOpened(true);
+        }}
+        headerBackgroundColor="#F7F7F7"
+        folded={isBottomSheetFolded}
+        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
+      />
+    </View>
+  );
+};
+
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
 
@@ -232,7 +304,7 @@ const Main: React.FC<Props> = props => {
   };
 
   // Transaction Detail Modal Swiping
-  const image = useImage(require('../assets/icons/search-icon.png'));
+  // const image = useImage(require('../assets/icons/search-icon.png'));
   const sendCardRef = useRef<URIHandlerRef>(null);
 
   function setTransactionIndex(newTxIndex: number) {
@@ -504,52 +576,6 @@ const Main: React.FC<Props> = props => {
     walletButtonOpacity,
   ]);
 
-  const TxListComponent = (
-    <View>
-      <View style={styles.txTitleContainer}>
-        <TranslateText
-          textKey={'latest_txs'}
-          domain={'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-          maxLengthInPixels={SCREEN_WIDTH * 0.8}
-          textStyle={styles.txTitleText}
-          numberOfLines={1}
-        />
-
-        <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={styles.txSearchBtnCanvas}>
-            <RoundedRect
-              x={SCREEN_HEIGHT * 0.02}
-              y={SCREEN_HEIGHT * 0.01}
-              width={SCREEN_HEIGHT * 0.1}
-              height={SCREEN_HEIGHT * 0.05}
-              color="white"
-              r={SCREEN_HEIGHT * 0.01}>
-              <Shadow dx={0} dy={2} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
-            </RoundedRect>
-            <Image
-              image={image}
-              x={SCREEN_HEIGHT * 0.035}
-              y={SCREEN_HEIGHT * 0.025}
-              width={SCREEN_HEIGHT * 0.02}
-              height={SCREEN_HEIGHT * 0.02}
-              fit="scaleDown"
-            />
-          </Canvas>
-        </Pressable>
-      </View>
-      <TransactionList
-        onPress={data => {
-          selectTransaction(data);
-          setTxDetailModalOpened(true);
-        }}
-        headerBackgroundColor="#F7F7F7"
-        folded={isBottomSheetFolded}
-        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
-      />
-    </View>
-  );
-
   const HeaderComponent = (
     <View style={styles.headerContainer}>
       <DashboardButton
@@ -606,6 +632,48 @@ const Main: React.FC<Props> = props => {
     </View>
   );
 
+  const TxListComponentMemo = useMemo(
+    () => (
+      <TxListComponent
+        selectTransaction={selectTransaction}
+        setTxDetailModalOpened={setTxDetailModalOpened}
+        foldUnfoldBottomSheet={foldUnfoldBottomSheet}
+        isBottomSheetFolded={isBottomSheetFolded}
+        navigation={navigation}
+        styles={styles}
+      />
+    ),
+    [isBottomSheetFolded],
+  );
+
+  const BottomSheetMemo = useMemo(
+    () => (
+      <BottomSheet
+        headerComponent={HeaderComponent}
+        txViewComponent={TxListComponentMemo}
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+        folded={isBottomSheetFolded}
+        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
+        activeTab={activeTab}
+        buyViewComponent={<Buy route={route} />}
+        sellViewComponent={<Sell route={route} />}
+        convertViewComponent={<Convert />}
+        sendViewComponent={<Send route={route} ref={sendCardRef} />}
+        receiveViewComponent={<Receive />}
+      />
+    ),
+    [
+      HeaderComponent,
+      TxListComponentMemo,
+      mainSheetsTranslationY,
+      mainSheetsTranslationYStart,
+      isBottomSheetFolded,
+      activeTab,
+      route,
+    ],
+  );
+
   return (
     <Animated.View
       style={[styles.container, animatedHeaderContainerBackground]}>
@@ -618,20 +686,7 @@ const Main: React.FC<Props> = props => {
         </Animated.View>
       </NewAmountView>
 
-      <BottomSheet
-        headerComponent={HeaderComponent}
-        txViewComponent={TxListComponent}
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
-        folded={isBottomSheetFolded}
-        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
-        activeTab={activeTab}
-        buyViewComponent={<Buy route={route} />}
-        sellViewComponent={<Sell route={route} />}
-        convertViewComponent={<Convert />}
-        sendViewComponent={<Send route={route} ref={sendCardRef} />}
-        receiveViewComponent={<Receive />}
-      />
+      {BottomSheetMemo}
 
       <PlasmaModal
         isOpened={isTxDetailModalOpened}

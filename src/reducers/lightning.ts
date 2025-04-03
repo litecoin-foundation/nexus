@@ -188,6 +188,7 @@ export const unlockWallet = (): AppThunk => async dispatch => {
               dispatch(pollInfo());
               dispatch(subscribeTransactions());
               dispatch(pollRates());
+              dispatch(pollTransactions());
               dispatch(pollBalance());
 
               resolve();

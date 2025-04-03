@@ -7,6 +7,8 @@ import React, {
   useEffect,
   useState,
   useContext,
+  memo,
+  useMemo,
 } from 'react';
 import {
   StyleSheet,
@@ -62,6 +64,20 @@ type ItemType = {
   confs: number;
 };
 
+interface TransactionCellItemProps {
+  item: any;
+  onPress: (item: any) => void;
+}
+
+const TransactionCellMemo = memo(function TransactionCellItem(
+  props: TransactionCellItemProps,
+) {
+  const {item, onPress} = props;
+  return (
+    <TransactionCell key={uuidv4()} item={item} onPress={() => onPress(item)} />
+  );
+});
+
 const TransactionList = forwardRef((props: Props, ref) => {
   const transactionListRef = useRef() as MutableRefObject<
     SectionList<any, ITransactions>
@@ -92,6 +108,8 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+  // NOTE: when parent causes TransactionList to rerender, styles get a new ref each time, this in turn
+  // leads to TransactionCell flickering, use useMemo or React.memo and never put styles in the deps to avoid this
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24;
@@ -110,11 +128,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
   useLayoutEffect(() => {
     dispatch(getTransactions());
   }, [dispatch]);
-
-  // Set by filter function
-  // useEffect(() => {
-  //   setDisplayedTxs(groupTransactions(transactions));
-  // }, [transactions]);
 
   const filterTransactions = () => {
     const txArray = [];
@@ -180,7 +193,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     item,
   }) => (
     // TODO: unique tx id
-    <TransactionCell key={uuidv4()} item={item} onPress={() => onPress(item)} />
+    <TransactionCellMemo item={item} onPress={() => onPress(item)} />
   );
 
   // DashboardButton is 110, txTitleContainer is screenHeight * 0.07 in Main component
@@ -199,8 +212,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
     }
     setRenderTxs(true);
   }, [folded, SCREEN_HEIGHT, UNFOLD_SHEET_POINT]);
-
-  let curFrameY = -1;
 
   const SyncProgressIndicator = (
     <>
@@ -221,20 +232,21 @@ const TransactionList = forwardRef((props: Props, ref) => {
     </>
   );
 
-  return renderTxs ? (
-    <View style={{height: scrollContainerHeight}}>
-      {!syncedToChain ? SyncProgressIndicator : <></>}
+  const curFrameY = useRef(-1);
+
+  const SectionListtMemo = useMemo(
+    () => (
       <SectionList
         bounces={false}
         scrollEventThrottle={1}
         onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
           const direction =
-            e.nativeEvent.contentOffset.y > curFrameY ? 'down' : 'up';
+            e.nativeEvent.contentOffset.y > curFrameY.current ? 'down' : 'up';
           const maxOffset = Math.floor(
             Number(e.nativeEvent.contentSize.height) -
               Number(e.nativeEvent.layoutMeasurement.height),
           );
-          if (direction === 'up' && curFrameY === maxOffset) {
+          if (direction === 'up' && curFrameY.current === maxOffset) {
             if (typeof foldUnfold === 'function') {
               foldUnfold(false);
             }
@@ -245,12 +257,12 @@ const TransactionList = forwardRef((props: Props, ref) => {
             Number(e.nativeEvent.contentSize.height) -
               Number(e.nativeEvent.layoutMeasurement.height),
           );
-          if (curFrameY !== maxOffset) {
+          if (curFrameY.current !== maxOffset) {
             if (typeof foldUnfold === 'function') {
               foldUnfold(true);
             }
           }
-          curFrameY = e.nativeEvent.contentOffset.y;
+          curFrameY.current = e.nativeEvent.contentOffset.y;
         }}
         ref={transactionListRef}
         sections={displayedTxs}
@@ -282,6 +294,18 @@ const TransactionList = forwardRef((props: Props, ref) => {
         // }
         onViewableItemsChanged={onViewableItemsChanged}
       />
+    ),
+    // NOTE: redux changes reference every time it updates transaction data
+    // even tho they stay the same, that's why we use displayedTxs.length instead displayedTxs
+    // TODO: compare array of transaction ids instead just length
+    /* eslint-disable react-hooks/exhaustive-deps */
+    [curFrameY, displayedTxs.length],
+  );
+
+  return renderTxs ? (
+    <View style={{height: scrollContainerHeight}}>
+      {!syncedToChain ? SyncProgressIndicator : <></>}
+      {SectionListtMemo}
     </View>
   ) : (
     <></>
