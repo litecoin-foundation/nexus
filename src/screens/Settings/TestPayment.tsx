@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, {useState, useContext} from 'react';
 import {StyleSheet, FlatList, View, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -16,12 +16,8 @@ import {moonpayCountries, onramperCountries} from '../../reducers/buy';
 
 const TEST_PAYMENT_ACTIVE: boolean[] = [true, false];
 const TEST_PAYMENT_METHODS: string[] = ['MOONPAY', 'ONRAMPER'];
-const TEST_PAYMENT_COUNTRIES_COLLECTION: {
-  [key: string]: string[];
-} = {
-  MOONPAY: moonpayCountries,
-  ONRAMPER: onramperCountries,
-};
+const ALL_COUNTRIES = [...new Set([...moonpayCountries, ...onramperCountries])];
+
 const TEST_PAYMENT_FIATS: string[] = fiat.map(fiatObj => fiatObj.code);
 
 const TestPayment: React.FC = () => {
@@ -30,10 +26,6 @@ const TestPayment: React.FC = () => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  const [TEST_PAYMENT_COUNTRIES, set_TEST_PAYMENT_COUNTRIES] = useState<
-    string[]
-  >([]);
 
   const {
     testPaymentActive,
@@ -46,12 +38,6 @@ const TestPayment: React.FC = () => {
   const [selectedTPM, setSelectedTPM] = useState(testPaymentMethod || '');
   const [selectedTPC, setSelectedTPC] = useState(testPaymentCountry || '');
   const [selectedTPF, setSelectedTPF] = useState(testPaymentFiat || '');
-
-  useEffect(() => {
-    set_TEST_PAYMENT_COUNTRIES(
-      TEST_PAYMENT_COUNTRIES_COLLECTION[selectedTPM] || [],
-    );
-  }, [selectedTPM]);
 
   const handleSetTestPayment = (
     TPA: boolean,
@@ -131,10 +117,10 @@ const TestPayment: React.FC = () => {
           <FlatList data={TEST_PAYMENT_METHODS} renderItem={renderItemTPM} />
         </View>
         <View style={styles.separator}>
-          <Text style={styles.separatorTitle}>Country by Method</Text>
+          <Text style={styles.separatorTitle}>Country</Text>
         </View>
         <View style={styles.flatListContainer}>
-          <FlatList data={TEST_PAYMENT_COUNTRIES} renderItem={renderItemTPC} />
+          <FlatList data={ALL_COUNTRIES} renderItem={renderItemTPC} />
         </View>
         <View style={styles.separator}>
           <Text style={styles.separatorTitle}>Fiat</Text>
