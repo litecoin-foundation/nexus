@@ -1,9 +1,9 @@
 {
   "onboarding": {
-    "forgot_pin": "Pincode vergesen?",
+    "forgot_pin": "Pincode vergessen?",
     "forgot_pin_description": "PIN vergessen?\nGeben Sie Ihre Seedphrase ein, um die PIN zurückzusetzen.",
     "enter_pin": "PIN eingeben",
-    "reenter_pin": "PIN eingeben",
+    "reenter_pin": "PIN erneut eingeben",
     "attempts_left_one": "Noch {{count}} Versuche.",
     "attempts_left_other": "Noch {{count}} Versuche.",
     "for_litecoin": "FÜR LITECOIN",
@@ -31,15 +31,16 @@
     "biometric_description": "Möchten Sie {{biometricType}} verwenden, um ihr Wallet zu entsperren?",
     "enable_biometric": "{{biometricType}} aktivieren",
     "maybe": "Vielleicht später",
-    "tap_to_start": "Berühren Sie den Bildhschirm",
+    "tap_to_start": "Berühren Sie den Bildschirm",
     "back": "Zurück",
     "presync": "Vorsynchronisierung läuft",
-    "presync_description": "Ihr Wallet wird gerade vorsyncronisiert. Dies geschieht nur einmal und beschleunigt das Einrichten Ihres Wallets",
+    "presync_description": "Ihr Wallet wird gerade vorgesynchronisiert. Dies geschieht nur einmal und beschleunigt das Einrichten Ihres Wallets.",
     "retry": "Erneut versuchen",
     "invalid_word": "Ungültiges Wort",
     "invalid_description": "Dieses Wort ist nicht gültig - Prüfen Sie die Schreibweise und versuchen Sie es erneut.",
     "try_again": "Erneut versuchen",
-    "incorrect": "Falsch"
+    "incorrect": "Falsch",
+    "offline_description": "Sie sind offline. \nVerbinden Sie sich mit dem Internet."
   },
   "main": {
     "main_wallet": "Hauptwallet",
@@ -69,11 +70,11 @@
     "completed": "ABGESCHLOSSEN",
     "total": "GESAMT",
     "total_fee": "GEBÜHREN GESAMT",
-    "moobpay_id": "MOONPAY ID",
+    "moonpay_id": "MOONPAY ID",
     "tx_id": "TX ID",
     "date": "DATUM",
     "provider_fee": "ANBIETER-GEBÜHREN",
-    "blockchain": "BLOCKHAIN",
+    "blockchain": "BLOCKCHAIN",
     "details": "DETAILS",
     "empty_transactions": "Die Transaktion erscheint hier",
     "load_txs": "Lade Transaktionen...",
@@ -128,9 +129,9 @@
     "confirm": "Bestätigen",
     "close": "Schließen",
     "scan_qr": "QR-Code scannen",
-    "camera_note": "Die App wird ihre Kamere verwenden, um QR-Codes für Litecoin-Zahlungen zu scannen.",
+    "camera_note": "Die App wird Ihre Kamera verwenden, um QR-Codes für Litecoin-Zahlungen zu scannen.",
     "enable_flash": "Blitz aktivieren",
-    "camara_disabled": "Kamera deaktiviert",
+    "camera_disabled": "Kamera deaktiviert",
     "enable_camera": "Kamera zum Scannen von QR-Codes aktivieren",
     "awesome": "Wunderbar!",
     "just-sent": "Sie haben gerade gesendet"
@@ -140,7 +141,7 @@
     "receive_privately": "Privat empfangen",
     "send_privately": "Privat versenden",
     "my_ltc_address": "MEINE LTC ADRESSE",
-    "recieve_mweb_description": "Privat Empfangen verbirgt die Adressen des Senders und Empfängers, sowie den gesendeten Betrag."
+    "receive_mweb_description": "Privat Empfangen verbirgt die Adressen des Senders und Empfängers, sowie den gesendeten Betrag."
   },
   "searchTab": {
     "transactions": "Transaktionen",
@@ -210,8 +211,8 @@
     "select_fiat": "Fiatwährung auswählen",
     "change_lang": "Sprache ändern",
     "select_lang": "Sprache auswählen",
-    "view_seed": "Seedphrase anzwiegn",
-    "view_paper_key": "Papierschlüssen ansehen",
+    "view_seed": "Seedphrase anzeigen",
+    "view_paper_key": "Papierschlüssel ansehen",
     "last_time_accessed": "Letzter Zugriff: {{time}}",
     "litecoin_denomination": "Litecoin-Grundeinheit",
     "reset_wallet": "Wallet zurücksetzen?",
@@ -220,21 +221,23 @@
     "litewallet_success": "LITEWALLET ERFOLGREICH IMPORTIERT",
     "invalid_seed": "Ungültige Seedphrase",
     "invalid": "Ungültig",
-    "pincode_invalid": "Ungltige PIN. Bitte nochmal versuchen.",
+    "pincode_invalid": "Ungültige PIN. Bitte nochmal versuchen.",
     "okay": "OK",
     "ok": "OK",
     "dismiss": "Verwerfen",
     "awesome": "Wunderbar!",
     "success_import": "Sie haben gerade Litecoin importiert",
     "back_to_wallet": "Zurück zum Wallet",
-    "reset_warning": "Sind Sie vollkommen sicher, dass Sie Ihren Wallet zurücksetzen möchten. Sichern Sie ihre Seedphrase, bevore Sie dies tun!",
+    "reset_warning": "Sind Sie vollkommen sicher, dass Sie Ihr Wallet zurücksetzen möchten? Sichern Sie Ihre Seedphrase, bevor Sie dies tun!",
     "view_tx": "Transaktion anzeigen",
-    "camera_error": "Kamera dektiviert",
+    "camera_error": "Kamera deaktiviert",
     "cancel": "Abbrechen",
     "change_login": "Login-PIN ändern"
   },
   "convertTab": {
-    "convert_button": "Tauschen Sie Ihr LTC"
+    "convert_button": "Tauschen Sie Ihr LTC",
+    "regular_ltc": "IHR REGULÄRES LITECOIN",
+    "private_ltc": "IHR PRIVATES LITECOIN"
   },
   "modals": {
     "delete": "Löschen",

@@ -121,11 +121,11 @@ const NewAmountView: React.FC<Props> = props => {
                   source={require('../assets/images/no-internet-graph.png')}
                 />
               </View>
-              <Text style={styles.internetText}>
-                You are offline.
-                {'\n'}
-                Connect to the internet.
-              </Text>
+              <TranslateText
+                textKey="offline_description"
+                domain="onboarding"
+                textStyle={styles.internetText}
+              />
             </View>
           </Animated.View>
         )}

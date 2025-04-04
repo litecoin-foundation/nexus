@@ -39,7 +39,8 @@
     "invalid_word": "Kata Salah",
     "invalid_description": "Kata ini tidak tepat - Periksa pengejaan Anda dan coba lagi.",
     "try_again": "Coba Lagi",
-    "incorrect": "Salah"
+    "incorrect": "Salah",
+    "offline_description": "Anda sedang offline. \nHubungkan ke Internet."
   },
   "main": {
     "main_wallet": "Dompet Utama",
@@ -69,7 +70,7 @@
     "completed": "SELESAI",
     "total": "TOTAL",
     "total_fee": "TOTAL BIAYA",
-    "moobpay_id": "MOONPAY ID",
+    "moonpay_id": "MOONPAY ID",
     "tx_id": "TX ID",
     "date": "TANGGAL",
     "provider_fee": "BIAYA PROVIDER",
@@ -105,21 +106,23 @@
     "back": "KEMBALI",
     "buy_blocked": "Membeli Litecoin sedang tidak tersedia di negara/daerah Anda.",
     "error_title": "Ada yang salah!",
-    "min_sale": "Pembelian minimum {{minAmount}} LTC & pembelian maksimum {{maxAmount}} LTC"
+    "min_sale": "Pembelian minimum {{minAmount}} LTC & pembelian maksimum {{maxAmount}} LTC",
+    "buy_success": "Berhasil Dibeli"
   },
   "sellTab": {
     "sell": "Jual ",
     "sell_litecoin": "Jual Litecoin",
     "preview_sell": "Jual LTC",
-    "sell_blocked": "Menjual Litecoin sedang tidak tersedia di negara/daerah Anda."
+    "sell_blocked": "Menjual Litecoin sedang tidak tersedia di negara/daerah Anda.",
+    "sell_success": "Anda baru saja menjual {{amount}} LTC!"
   },
   "sendTab": {
     "send_ltc": "Kirim LTC",
     "send_litecoin": "Kirim Litecoin",
     "amount": "Jumlah",
     "send_to_address": "Kirim ke alamat",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
+    "fee": "Biaya",
+    "confirm_and_send": "Konfirmasi dan Kirim",
     "address_invalid": " TIDAK TEPAT",
     "enter_address": "Masukan Alamat Litecoin",
     "description": "Deskripsi",
@@ -128,8 +131,8 @@
     "scan_qr": "Scan Kode QR",
     "camera_note": "Aplikasi akan menggunakan kamera Anda untuk scan Kode QR untuk Pembayaran Litecoin",
     "enable_flash": "Nyalakan Cahaya",
-    "camara_disabled": "Kamera Dinonaktifkan",
-    "enable_camera": "Enable Camera to Scan QR Codes",
+    "camera_disabled": "Kamera Dinonaktifkan",
+    "enable_camera": "Aktifkan Kamera untuk Scan Kode QR",
     "awesome": "Keren!",
     "just-sent": "Anda telah mengirim"
   },
@@ -138,12 +141,13 @@
     "receive_privately": "Terima Secara Privat",
     "send_privately": "Kirim Secara Privat",
     "my_ltc_address": "ALAMAT LTC SAYA",
-    "recieve_mweb_description": "Menerima secara privat menyembunyikan alamat pengirim dan penerima, dan jumlah yang dikirim."
+    "receive_mweb_description": "Menerima secara privat menyembunyikan alamat pengirim dan penerima, dan jumlah yang dikirim."
   },
   "searchTab": {
     "transactions": "Transaksi",
     "all": "Semua",
     "regular": "Regular",
+    "mweb": "MWEB",
     "find_tx": "Cari suatu transaksi",
     "paste": "Salin",
     "auto_fill": "AutoFill",
@@ -158,7 +162,8 @@
     "create_alerts_note": "Buat peringatan agar Anda diberitahu saat harga Litecoin mencapai suatu target harga.",
     "alerts_appear_here": "Peringatan Anda akan muncul disini.",
     "set_alerts": "PASANG PERINGATAN",
-    "alert_me_when": "Beritahu saya saat Litecoin (LTC) berharga",
+    "alert_me": "Beritahu saya saat",
+    "when_ltc": "Litecoin (LTC) berharga",
     "below": "DI BAWAH",
     "above": "DI ATAS",
     "create_alert": "Buat peringatan",
@@ -204,6 +209,8 @@
     "select_block_explorer_note": "Anda dapat memilih explorer block kesukaan Anda untuk melihat transaksi.",
     "change_currency": "Ganti Mata Uang",
     "select_fiat": "Pilih Mata Uang Fiat",
+    "change_lang": "Ganti Bahasa",
+    "select_lang": "Pilih Bahasa",
     "view_seed": "Lihat Seed Phrase",
     "view_paper_key": "Lihat Seed Phrase",
     "last_time_accessed": "Waktu terakhir diakses: {{time}}",
@@ -226,6 +233,11 @@
     "camera_error": "Kamera Dinonaktifkan",
     "cancel": "Batal",
     "change_login": "Ganti Kode Sandi Login"
+  },
+  "convertTab": {
+    "convert_button": "Konversi LTC Anda",
+    "regular_ltc": "LITECOIN BIASA ANDA",
+    "private_ltc": "LITECOIN PRIVAT ANDA"
   },
   "modals": {
     "delete": "Hapus",

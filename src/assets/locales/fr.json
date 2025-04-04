@@ -39,7 +39,8 @@
     "invalid_word": "Mot invalide",
     "invalid_description": "Ce mot n'est pas valide - vérifiez l'orthographe et réessayez.",
     "try_again": "Réessayer",
-    "incorrect": "Incorrect"
+    "incorrect": "Incorrect",
+    "offline_description": "Vous êtes hors ligne. \nConnectez-vous à Internet."
   },
   "main": {
     "main_wallet": "Portefeuille principal",
@@ -69,7 +70,7 @@
     "completed": "Terminé",
     "total": "Total",
     "total_fee": "Frais totaux",
-    "moobpay_id": "ID MOONPAY",
+    "moonpay_id": "ID MOONPAY",
     "tx_id": "ID TRANSACTION",
     "date": "Date",
     "provider_fee": "Frais du fournisseur",
@@ -130,7 +131,7 @@
     "scan_qr": "Scanner un QR Code",
     "camera_note": "L'application utilisera votre caméra pour scanner les QR codes des paiements Litecoin",
     "enable_flash": "Activer le flash",
-    "camara_disabled": "Caméra désactivée",
+    "camera_disabled": "Caméra désactivée",
     "enable_camera": "Activer la caméra pour scanner les QR codes",
     "awesome": "Super !",
     "just-sent": "Vous venez d'envoyer"
@@ -140,7 +141,7 @@
     "receive_privately": "Recevoir en privé",
     "send_privately": "Envoyer en privé",
     "my_ltc_address": "MON ADRESSE LTC",
-    "recieve_mweb_description": "Recevoir en privé masque les adresses de l'expéditeur et du destinataire, ainsi que le montant envoyé."
+    "receive_mweb_description": "Recevoir en privé masque les adresses de l'expéditeur et du destinataire, ainsi que le montant envoyé."
   },
   "searchTab": {
     "transactions": "Transactions",
@@ -234,7 +235,9 @@
     "change_login": "Changer le code d'accès"
   },
   "convertTab": {
-    "convert_button": "Convertir vos LTC"
+    "convert_button": "Convertir vos LTC",
+    "regular_ltc": "VOTRE LITECOIN STANDARD",
+    "private_ltc": "VOTRE LITECOIN PRIVÉ"
   },
   "modals": {
     "delete": "Supprimer",

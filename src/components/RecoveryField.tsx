@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 import {checkBIP39Word, checkLitewalletBIP39Word} from '../lib/utils/bip39/';
 import {checkSeedChecksum} from '../lib/utils/aezeed';
@@ -31,6 +32,8 @@ const RecoveryField: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  const {t} = useTranslation('onboarding');
+
   const n = isLitewalletRecovery
     ? [...Array(12).keys()]
     : [...Array(24).keys()];
@@ -51,11 +54,11 @@ const RecoveryField: React.FC<Props> = props => {
 
     if (!isValidWord) {
       await Alert.alert(
-        'Invalid Word',
-        'This word is not valid - check your spelling and try again.',
+        t('invalid_word'),
+        t('invalid_description'),
         [
           {
-            text: 'Try Again',
+            text: t('try_again'),
             onPress: undefined,
             style: undefined,
           },

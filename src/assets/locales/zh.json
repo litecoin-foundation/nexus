@@ -39,7 +39,8 @@
     "invalid_word": "词语不对",
     "invalid_description": "这个词语无效- 检查您的拼写并重试.",
     "try_again": "重新试一次",
-    "incorrect": "不正确🙅"
+    "incorrect": "不正确🙅",
+    "offline_description": "您已离线。\n请连接到互联网。"
   },
   "main": {
     "main_wallet": "主钱包",
@@ -69,7 +70,7 @@
     "completed": "完成！",
     "total": "总共",
     "total_fee": "总费用",
-    "moobpay_id": "MOONPAY ID",
+    "moonpay_id": "MOONPAY ID",
     "tx_id": "交易ID",
     "date": "日期",
     "provider_fee": "供应商费用",
@@ -105,21 +106,23 @@
     "back": "返回",
     "buy_blocked": "目前购买莱特币在您所在的国家/州不可用.",
     "error_title": "出现了点问题!",
-    "min_sale": "最低销售量{{minAmount}}LTC &amp; 最高销售量 {{maxAmount}} LTC"
+    "min_sale": "最低销售量{{minAmount}}LTC &amp; 最高销售量 {{maxAmount}} LTC",
+    "buy_success": "购买成功"
   },
   "sellTab": {
     "sell": "卖",
     "sell_litecoin": "出售莱特币",
     "preview_sell": "出售莱特币",
-    "sell_blocked": "目前出售莱特币在您所在的国家/州/州不可用."
+    "sell_blocked": "目前出售莱特币在您所在的国家/州/州不可用.",
+    "sell_success": "您刚刚卖出了 {{amount}} LTC!"
   },
   "sendTab": {
     "send_ltc": "发送莱特币",
     "send_litecoin": "发送莱特币",
     "amount": "数量",
     "send_to_address": "发送到地址",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
+    "fee": "费用",
+    "confirm_and_send": "确认并发送",
     "address_invalid": " 无效",
     "enter_address": "输入莱特币地址",
     "description": "描述",
@@ -128,7 +131,7 @@
     "scan_qr": "请扫二维码",
     "camera_note": "应用程序将使用您的相机扫描二维码进行莱特币支付",
     "enable_flash": "启动闪关灯",
-    "camara_disabled": "相机被禁止",
+    "camera_disabled": "相机被禁止",
     "enable_camera": "开启相机来扫描二维码",
     "awesome": "漂亮666!",
     "just-sent": "你刚刚发送"
@@ -144,6 +147,7 @@
     "transactions": "交易",
     "all": "全部",
     "regular": "正常",
+    "mweb": "MWEB",
     "find_tx": "查找交易",
     "paste": "粘贴",
     "auto_fill": "自动填充",
@@ -158,7 +162,8 @@
     "create_alerts_note": "创建提示当莱特币价格触及目标值.",
     "alerts_appear_here": "您的警报将出现在这里.",
     "set_alerts": "设置提醒",
-    "alert_me_when": "提醒我当莱特币价格",
+    "alert_me": "提醒我当",
+    "when_ltc": "莱特币价格",
     "below": "低于",
     "above": "高于",
     "create_alert": "创建提示",
@@ -204,6 +209,8 @@
     "select_block_explorer_note": "你可以选择您喜欢的区块浏览器进行查看交易.",
     "change_currency": "更改货币",
     "select_fiat": "选择法定货币",
+    "change_lang": "更改语言",
+    "select_lang": "选择语言",
     "view_seed": "查看私钥",
     "view_paper_key": "查看私钥",
     "last_time_accessed": "上次访问时间:{{time}}",
@@ -226,6 +233,11 @@
     "camera_error": "相机被禁止",
     "cancel": "取消",
     "change_login": "更改登录密码"
+  },
+  "convertTab": {
+    "convert_button": "转换您的莱特币",
+    "regular_ltc": "您的常规莱特币",
+    "private_ltc": "您的私密莱特币"
   },
   "modals": {
     "delete": "删除",

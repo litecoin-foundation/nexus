@@ -23,7 +23,7 @@
     "scroll_right": "Mag-scroll pakanan",
     "confirm_written": "Isinulat ko na",
     "verify_seed": "Beripikahin ang Seed Phrase",
-    "verify_seed_description": "Pumili ng salita #{{posisyon}} upang beripikahin ang iyong seed phrase.",
+    "verify_seed_description": "Pumili ng salita #{{position}} upang beripikahin ang iyong seed phrase.",
     "continue": "Magpatuloy",
     "incorrect_seed": "Maling salita! Suriin kung naisulat mo ang tamang salita.",
     "face_id": "Face ID",
@@ -38,8 +38,9 @@
     "retry": "Subukang muli",
     "invalid_word": "Di-wastong salita",
     "invalid_description": "Ang salitang ito ay hindi wasto - suriin ang iyong pagbaybay at subukang muli.",
-    "subukang_muli": "Subukang muli",
-    "incorrect": "Di-wasto"
+    "try_again": "Subukang muli",
+    "incorrect": "Di-wasto",
+    "offline_description": "Ikaw ay offline. \nKumonekta sa Internet."
   },
   "main": {
     "main_wallet": "Pangunahing pitaka",
@@ -56,7 +57,7 @@
     "received_ltc": "Tumanggap ng Litecoin",
     "bought_ltc": "Bumili ng Litecoin",
     "sent_ltc": "Nagpadala ng Litecoin",
-    "sold_ltc": "Nagbeta ng Litecoin",
+    "sold_ltc": "Nagbenta ng Litecoin",
     "received": "Tumanggap",
     "sent": "Nagpadala",
     "from": "Mula",
@@ -69,7 +70,7 @@
     "completed": "NAKUMPLETO",
     "total": "KABUUAN",
     "total_fee": "KABUUANG BAYAD",
-    "moobpay_id": "MOONPAY ID",
+    "moonpay_id": "MOONPAY ID",
     "tx_id": "TX ID",
     "date": "PETSA",
     "provider_fee": "BAYAD SA PROVIDER",
@@ -88,9 +89,9 @@
   },
   "buyTab": {
     "buy": "Bumili ",
-    "n_ltc": "{{halaga}}",
-    "for": "for ",
-    "for_total": "{{currencySymbol}}{{kabuuan}}",
+    "n_ltc": "{{amount}}",
+    "for": "para sa ",
+    "for_total": "{{currencySymbol}}{{total}}",
     "history": "Kasaysayan",
     "preview_buy": "I-preview ang pagbili",
     "min_purchase": "Minimum na laki ng pagbili ng {{currencySymbol}}{{minAmountInFiat}}",
@@ -105,21 +106,23 @@
     "back": "BUMALIK",
     "buy_blocked": "Bumili ng Litecoin ay kasalukuyang hindi magagamit sa iyong bansa/estado.",
     "error_title": "May mali!",
-    "min_sale": "Pinakamababang pagbebenta ng {{minAmount}} LTC & max sale ng {{maxAmount}} LTC"
+    "min_sale": "Pinakamababang pagbebenta ng {{minAmount}} LTC & max sale ng {{maxAmount}} LTC",
+    "buy_success": "Matagumpay na nabili"
   },
   "sellTab": {
-    "sell": "Sell ",
+    "sell": "Ibenta ",
     "sell_litecoin": "Ibenta ang Litecoin",
     "preview_sell": "Ibenta ang LTC",
-    "sell_blocked": "Ibenta ang Litecoin.ay kasalukuyang hindi magagamit sa iyong bansa/estado"
+    "sell_blocked": "Ibenta ang Litecoin.ay kasalukuyang hindi magagamit sa iyong bansa/estado",
+    "sell_success": "Nagbenta ka lang ng {{amount}} LTC!"
   },
   "sendTab": {
     "send_ltc": "Ipadala ang LTC",
     "send_litecoin": "Ipadala ang Litecoin",
     "amount": "Halaga",
     "send_to_address": "Ipadala sa address",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
+    "fee": "Bayad",
+    "confirm_and_send": "Kumpirmahin at Ipadala",
     "address_invalid": " AY HINDI WASTO",
     "enter_address": "Ilagay ang Litecoin Address",
     "description": "Paglalarawan",
@@ -128,7 +131,7 @@
     "scan_qr": "Scan QR Code",
     "camera_note": "Gagamitin ng app ang iyong kamera para i-scan ang mga QR code para sa Litecoin Payments",
     "enable_flash": "Paganahin ang Flash",
-    "camara_disabled": "Ang kamera ay hindi gumagana",
+    "camera_disabled": "Ang kamera ay hindi gumagana",
     "enable_camera": "Paganahin ang kamera para ma-scan ang QR Codes",
     "awesome": "Kahanga-hanga!",
     "just-sent": "Nagpadala ka lang"
@@ -137,13 +140,14 @@
     "receive_ltc": "Tanggapin ang LTC",
     "receive_privately": "Tanggapin nang pribado",
     "send_privately": "Ipadala nang pribado",
-    "my_ltc_address": "MY LTC ADDRESS",
+    "my_ltc_address": "AKING LTC ADDRESS",
     "recieve_mweb_description": "Itinatago ng pribadong pagtanggap ang mga address ng nagpadala at tagatanggap, at halagang ipinapadala."
   },
   "searchTab": {
     "transactions": "Mga transaksyon",
     "all": "Lahat",
     "regular": "Regular",
+    "mweb": "MWEB",
     "find_tx": "Hanapin ang transaksyon",
     "paste": "Idikit",
     "auto_fill": "AutoFill",
@@ -158,12 +162,13 @@
     "create_alerts_note": "Lumikha ng mga alerto upang maabisuhan kapag ang presyo ng Litecoin ay tumama sa isang target na halaga.",
     "alerts_appear_here": "Lalabas dito ang iyong mga alerto.",
     "set_alerts": "ITAKDA ANG MGA ALERTO",
-    "alert_me_when": "Alertuhin ako tuwing ang Litecoin (LTC) ay",
+    "alert_me": "Alertuhin ako tuwing",
+    "when_ltc": "Litecoin (LTC) ay",
     "below": "SA BABA",
     "above": "SA TAAS",
     "create_alert": "Lumikha ng alerto",
-    "price_compare": "Ang Litecoin (LTC) ay{{sa taas/sa baba}} ${currencySymbol}${alertValueInLocalFiat}",
-    "last_time": "Ang huling beses na naabot ng LTC ang halagang ito ay {{petsa}}."
+    "price_compare": "Ang Litecoin (LTC) ay {{above/below}} ${currencySymbol}${alertValueInLocalFiat}",
+    "last_time": "Ang huling beses na naabot ng LTC ang halagang ito ay {{date}}."
   },
   "settingsTab": {
     "settings": "Mga setting",
@@ -204,15 +209,17 @@
     "select_block_explorer_note": "Maaari mong piliin ang iyong gustong block explorer para tingnan ang mga transaksyon.",
     "change_currency": "Baguhin ang Currency",
     "select_fiat": "Piliin ang Fiat Currency",
+    "change_lang": "Baguhin ang Wika",
+    "select_lang": "Piliin ang Wika",
     "view_seed": "Tingnan ang Seed Phrase",
     "view_paper_key": "Tingnan ang Seed Phrase",
-    "last_time_accessed": "Huling beses na in-access: {{oras}}",
+    "last_time_accessed": "Huling beses na in-access: {{time}}",
     "litecoin_denomination": "Litecoin Denomination",
     "reset_wallet": "I-reset ang iyong wallet?",
     "import_litewallet": "I-import ang Litewallet",
     "litewallet_description": "Maaaring i-import ng mga user ng Litewallet ang kanilang mga barya sa Nexus Wallet. Ang paglalagay ng iyong paper key sa ibaba ay permanenteng maglilipat ng iyong mga barya mula sa Litewallet patungo sa Nexus.",
     "litewallet_success": "IMPORTED LITEWALLET!",
-    "invalid_seed": "Di-wasatong Seed Phrase",
+    "invalid_seed": "Di-wastong Seed Phrase",
     "invalid": "Di-wasto",
     "pincode_invalid": "Ang mga pincode ay hindi tumugma. Subukang muli.",
     "okay": "Okay",
@@ -227,10 +234,15 @@
     "cancel": "Kanselahin",
     "change_login": "Palitan ang Login Passcode"
   },
+  "convertTab": {
+    "convert_button": "Palitan ang iyong LTC",
+    "regular_ltc": "ANG IYONG REGULAR NA LITECOIN",
+    "private_ltc": "ANG IYONG PRIBADONG LITECOIN"
+  },
   "modals": {
     "delete": "Tanggalin",
     "delete_alert": "Tanggalin ang Alert",
-    "hide_modal": "Hide Modal",
+    "hide_modal": "Itago ang Modal",
     "tx_speed": "Bilis ng transaksyon",
     "fee_description": "Ang mas mataas na bayad ay inuuna ang iyong transaksyon para mas mabilis na makumpirma.",
     "fee_estimate": "1 block = ~2.5 mins",

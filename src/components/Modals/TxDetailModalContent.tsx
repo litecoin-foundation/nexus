@@ -584,7 +584,7 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
         </View>
       </View>
       <TableCell
-        titleTextKey="moobpay_id"
+        titleTextKey="moonpay_id"
         titleTextDomain="main"
         value={providerTxId}
         thick

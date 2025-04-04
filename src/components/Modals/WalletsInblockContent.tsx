@@ -6,6 +6,7 @@ import Animated, {
   withTiming,
   withDelay,
 } from 'react-native-reanimated';
+import {useTranslation} from 'react-i18next';
 
 import WhiteClearButton from '../Buttons/WhiteClearButton';
 import WalletTabSimple from '../Tabs/WalletTabSimple';
@@ -27,6 +28,8 @@ export default function WalletsInblockContent(props: Props) {
 
   const {width, height} = useContext(ScreenSizeContext);
   const styles = getStyles(width, height);
+
+  const {t} = useTranslation('main');
 
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const convertToSubunit = useAppSelector(state =>
@@ -65,7 +68,7 @@ export default function WalletsInblockContent(props: Props) {
       <Animated.View style={[styles.bodyItem, animatedButton]}>
         <WalletTabSimple
           colorStyle="White"
-          walletName="Main Wallet"
+          walletName={t('main_wallet')}
           balance={balanceAmount}
           fiatBalance={fiatAmount}
           priceRate={65}

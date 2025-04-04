@@ -39,7 +39,8 @@
     "invalid_word": "کلمه نامعتبر",
     "invalid_description": "این کلمه معتبر نیست - املای آن را بررسی کرده و دوباره تلاش کنید.",
     "try_again": "دوباره امتحان کنید",
-    "incorrect": "نادرست"
+    "incorrect": "نادرست",
+    "offline_description": "شما آفلاین هستید. \nبه اینترنت متصل شوید."
   },
   "main": {
     "main_wallet": "کیف پول اصلی",
@@ -69,7 +70,7 @@
     "completed": "تکمیل شده",
     "total": "جمع کل",
     "total_fee": "کارمزد کل",
-    "moobpay_id": "شناسه MOONPAY",
+    "moonpay_id": "شناسه MOONPAY",
     "tx_id": "شناسه تراکنش",
     "date": "تاریخ",
     "provider_fee": "کارمزد ارائه‌دهنده",
@@ -130,7 +131,7 @@
     "scan_qr": "اسکن کد QR",
     "camera_note": "برنامه از دوربین شما برای اسکن کدهای QR برای پرداخت لایت‌کوین استفاده خواهد کرد",
     "enable_flash": "فعال‌سازی فلاش",
-    "camara_disabled": "دوربین غیرفعال است",
+    "camera_disabled": "دوربین غیرفعال است",
     "enable_camera": "فعال‌سازی دوربین برای اسکن کد QR",
     "awesome": "عالی!",
     "just-sent": "شما ارسال کردید"
@@ -140,7 +141,7 @@
     "receive_privately": "دریافت به صورت خصوصی",
     "send_privately": "ارسال به صورت خصوصی",
     "my_ltc_address": "آدرس LTC من",
-    "recieve_mweb_description": "دریافت به صورت خصوصی، آدرس فرستنده و گیرنده و مقدار ارسالی را پنهان می‌کند."
+    "receive_mweb_description": "دریافت به صورت خصوصی، آدرس فرستنده و گیرنده و مقدار ارسالی را پنهان می‌کند."
   },
   "searchTab": {
     "transactions": "تراکنش‌ها",
@@ -234,7 +235,9 @@
     "change_login": "تغییر رمز ورود"
   },
   "convertTab": {
-    "convert_button": "تبدیل LTC شما"
+    "convert_button": "تبدیل LTC شما",
+    "regular_ltc": "لایت‌کوین معمولی شما",
+    "private_ltc": "لایت‌کوین خصوصی شما"
   },
   "modals": {
     "delete": "حذف",

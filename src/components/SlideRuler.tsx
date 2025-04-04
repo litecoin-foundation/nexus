@@ -71,7 +71,6 @@ const SlideRuler: React.FC<Props> = props => {
   useEffect(() => {
     if (value % 5 === 0) {
       // multiple of 5
-      // console.log('slider moved');
       triggerHeavyFeedback();
     } else {
       triggerLightFeedback();

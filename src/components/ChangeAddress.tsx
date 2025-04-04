@@ -1,11 +1,12 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import {View, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   interpolate,
 } from 'react-native-reanimated';
+import TranslateText from './TranslateText';
 
 interface Props {
   children: JSX.Element | JSX.Element[];
@@ -40,7 +41,12 @@ const ChangeAddress: React.FC<Props> = ({children}) => {
   return (
     <View>
       <TouchableOpacity onPress={toggleVisibility} style={styles.button}>
-        <Text style={styles.buttonText}>View Change Address</Text>
+        <TranslateText
+          textKey="view_change"
+          domain="modals"
+          maxSizeInPixels={22}
+          textStyle={styles.buttonText}
+        />
         <Animated.View style={[styles.boxArrow, animatedArrowStyle]}>
           <Image
             tintColor="#747e87"

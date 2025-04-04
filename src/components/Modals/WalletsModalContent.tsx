@@ -6,6 +6,7 @@ import Animated, {
   withTiming,
   withDelay,
 } from 'react-native-reanimated';
+import {useTranslation} from 'react-i18next';
 
 import WhiteButton from '../Buttons/WhiteButton';
 import WalletTab from '../Tabs/WalletTab';
@@ -29,6 +30,8 @@ export default function WalletsModalContent(props: Props) {
 
   const {width, height} = useContext(ScreenSizeContext);
   const styles = getStyles(width, height);
+
+  const {t} = useTranslation('main');
 
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const convertToSubunit = useAppSelector(state =>
@@ -69,7 +72,7 @@ export default function WalletsModalContent(props: Props) {
       <Animated.View style={[styles.bodyItem, animatedButton]}>
         <WalletTab
           colorStyle="White"
-          walletName="Main Wallet"
+          walletName={t('main_wallet')}
           balance={balanceAmount}
           fiatBalance={fiatAmount}
           priceRate={65}

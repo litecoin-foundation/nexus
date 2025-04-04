@@ -1,8 +1,9 @@
 {
   "onboarding": {
-    "forgot_pin": "Pamiršote PIN kodą??",
-    "forgot_pin_description": "Pamiršote PIN kodą?\nĮveskite pradinę frazę, kad iš naujo nustatytumėte PIN kodą..",
+    "forgot_pin": "Pamiršote PIN kodą?",
+    "forgot_pin_description": "Pamiršote PIN kodą?\nĮveskite pradinę frazę, kad iš naujo nustatytumėte PIN kodą.",
     "enter_pin": "Įveskite PIN kodą",
+    "reenter_pin": "Pakartotinai įveskite PIN kodą",
     "attempts_left_one": "{{count}} bandymas likęs.",
     "attempts_left_other": "{{count}} bandymai likę.",
     "for_litecoin": "DĖL LITECOIN",
@@ -17,8 +18,8 @@
     "verify_pin": "Patvirtinkite PIN kodą",
     "seed_phrase": "Jūsų pradinė frazė",
     "seed_phrase_description": "Toliau pateikti 24 žodžiai yra jūsų pradinė frazė.",
-    "seed_phrase_description_2": "Jūsų pradinė frazė yra jūsų slaptažodis į „Litecoin“ ir piniginę. Užsirašykite jį ir išsisaugokite saugioje vietoje!",
-    "seed_warning": "BE ŠIŲ ŽODŽIŲ NEGALĖSITE PASIEKTI SAVO PINIGINĖS.!",
+    "seed_phrase_description_2": "Jūsų pradinė frazė yra jūsų slaptažodis į Litecoin ir piniginę. Užsirašykite jį ir išsisaugokite saugioje vietoje!",
+    "seed_warning": "BE ŠIŲ ŽODŽIŲ NEGALĖSITE PASIEKTI SAVO PINIGINĖS!",
     "scroll_right": "Slinkti į dešinę",
     "confirm_written": "Aš jį užrašiau",
     "verify_seed": "Patikrinti pradinę frazę",
@@ -33,12 +34,13 @@
     "tap_to_start": "Bakstelėkite bet kurią vietą, kad pradėtumėte",
     "back": "Atgal",
     "presync": "Vyksta sinchronizacija",
-    "presync_description": "Šiuo metu jūsų piniginė iš sinchronizuojama. Tai vyksta tik vieną kartą, tai padeda greičiau nustatyti „Nexus“ piniginę.",
+    "presync_description": "Šiuo metu jūsų piniginė iš sinchronizuojama. Tai vyksta tik vieną kartą, tai padeda greičiau nustatyti Nexus piniginę.",
     "retry": "Iš naujo",
     "invalid_word": "Neteisingas Žodis",
     "invalid_description": "Šis žodis negalioja - patikrinkite rašybą ir bandykite dar kartą.",
     "try_again": "Pabandykite iš naujo",
-    "incorrect": "Neteisingas"
+    "incorrect": "Neteisingas",
+    "offline_description": "Jūs esate neprisijungę. \nPrisijunkite prie interneto."
   },
   "main": {
     "main_wallet": "Pagrindinė piniginė",
@@ -53,7 +55,7 @@
     "receive": "Gauti",
     "latest_txs": "Paskutiniai Sandoriai",
     "received_ltc": "Gautas Litecoin",
-    "bought_ltc": "Purchased Litecoin",
+    "bought_ltc": "Nupirktas Litecoin",
     "sent_ltc": "Siųsti Litecoin",
     "sold_ltc": "Parduoti Litecoin",
     "received": "Gautas",
@@ -104,21 +106,23 @@
     "back": "ATGAL",
     "buy_blocked": "Pirkti Litecoin šiuo metu jūsų šalyje/valstybėje negalima.",
     "error_title": "Kažkas negerai!",
-    "min_sale": "Minimalus pardavimas {{minAmount}} LTC ir maksimalus pardavimas {{maxAmount}} LTC"
+    "min_sale": "Minimalus pardavimas {{minAmount}} LTC ir maksimalus pardavimas {{maxAmount}} LTC",
+    "buy_success": "Sėkmingai nupirkta"
   },
   "sellTab": {
     "sell": "Parduoti ",
     "sell_litecoin": "Parduoti Litecoin",
     "preview_sell": "Parduoti LTC",
-    "sell_blocked": "Parduoti Litecoin šiuo metu jūsų šalyje/valstybėje negalima."
+    "sell_blocked": "Parduoti Litecoin šiuo metu jūsų šalyje/valstybėje negalima.",
+    "sell_success": "Jūs ką tik pardavėte {{amount}} LTC!"
   },
   "sendTab": {
     "send_ltc": "Siųsti LTC",
     "send_litecoin": "Siųsti Litecoin",
     "amount": "Suma",
     "send_to_address": "Siųsti adresu",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
+    "fee": "Mokestis",
+    "confirm_and_send": "Patvirtinti ir Siųsti",
     "address_invalid": " YRA NETEISINGAS",
     "enter_address": "Įveskite Litecoin adresą",
     "description": "Aprašymas",
@@ -137,12 +141,13 @@
     "receive_privately": "Gauti Privačiai",
     "send_privately": "Siųsti Privačiai",
     "my_ltc_address": "MANO LTC ADRESAS",
-    "recieve_mweb_description": "Privatus gavimas slepia siuntėjo ir gavėjo adresus bei siunčiamą sumą.."
+    "recieve_mweb_description": "Privatus gavimas slepia siuntėjo ir gavėjo adresus bei siunčiamą sumą."
   },
   "searchTab": {
     "transactions": "Transakcijos",
     "all": "Visi",
     "regular": "Reguliarus",
+    "mweb": "MWEB",
     "find_tx": "Surasti transakciją",
     "paste": "Įklijuoti",
     "auto_fill": "Automatinis užpildymas",
@@ -157,7 +162,8 @@
     "create_alerts_note": "Sukurti įspėjimus, kad gautumėte pranešimą, kai Litecoin kaina pasieks tikslinę vertę.",
     "alerts_appear_here": "Jūsų perspėjimai bus rodomi čia.",
     "set_alerts": "NUSTATYTI ĮSPĖJIMUS",
-    "alert_me_when": "Įspėkite mane, kai Litecoin (LTC) bus",
+    "alert_me": "Įspėkite mane, kai",
+    "when_ltc": "Litecoin (LTC) bus",
     "below": "ŽEMIAU",
     "above": "AUKŠČIAU",
     "create_alert": "Sukurti įspėjimą",
@@ -203,6 +209,8 @@
     "select_block_explorer_note": "Galite pasirinkti pageidaujamą blokų naršyklę, kad galėtumėte peržiūrėti sandorius.",
     "change_currency": "Keisti valiutą",
     "select_fiat": "Pasirinkite Fiat valiutą",
+    "change_lang": "Keisti kalbą",
+    "select_lang": "Pasirinkti kalbą",
     "view_seed": "Peržiūrėti Seed Frazę",
     "view_paper_key": "Peržiūrėti Seed Frazę",
     "last_time_accessed": "Paskutinį kartą pasiekta: {{time}}",
@@ -226,13 +234,18 @@
     "cancel": "Atšaukti",
     "change_login": "Keisti Prisijungimo Slaptažodį"
   },
+  "convertTab": {
+    "convert_button": "Konvertuoti jūsų LTC",
+    "regular_ltc": "JŪSŲ ĮPRASTAS LITECOIN",
+    "private_ltc": "JŪSŲ PRIVATUS LITECOIN"
+  },
   "modals": {
     "delete": "Ištrinti",
     "delete_alert": "Ištrinti Įspėjimą",
     "hide_modal": "Paslėpti Langą",
     "tx_speed": "Transakcijos Greitis",
     "fee_description": "Didesni mokesčiai suteikia pirmenybę greičiau patvirtinti jūsų sandorį.",
-    "fee_estimate": "1 blokas = ~2.5 minutes",
+    "fee_estimate": "1 blokas = ~2,5 minutės",
     "view_change": "Peržiūrėti Adreso Keitimą"
   }
 }

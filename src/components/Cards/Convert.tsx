@@ -22,9 +22,10 @@ import {
   updatePrivateAmount,
   updateRegularAmount,
 } from '../../reducers/input';
-
-import {ScreenSizeContext} from '../../context/screenSize';
 import {sendConvertPsbtTransaction} from '../../reducers/transaction';
+
+import TranslateText from '../TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {}
 
@@ -111,7 +112,11 @@ const Convert: React.FC<Props> = props => {
     <View style={styles.container}>
       <View style={styles.inputsContainer}>
         <View style={styles.fieldContainer}>
-          <Text style={styles.smallText}>YOUR REGULAR LITECOIN</Text>
+          <TranslateText
+            textKey="regular_ltc"
+            domain="convertTab"
+            textStyle={styles.smallText}
+          />
           <ConvertField
             active={activeField === 'regular'}
             amount={regularAmount}
@@ -140,7 +145,11 @@ const Convert: React.FC<Props> = props => {
         </Animated.View>
 
         <View style={styles.fieldContainer}>
-          <Text style={styles.smallText}>YOUR PRIVATE LITECOIN</Text>
+          <TranslateText
+            textKey="private_ltc"
+            domain="convertTab"
+            textStyle={styles.smallText}
+          />
           <ConvertField
             active={activeField === 'private'}
             amount={privateAmount}

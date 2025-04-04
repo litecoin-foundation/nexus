@@ -39,7 +39,8 @@
     "invalid_word": "अमान्य शब्द",
     "invalid_description": "यह शब्द मान्य नहीं है - अपनी वर्तनी जांचें और पुनः प्रयास करें।",
     "try_again": "फिर से प्रयास करें",
-    "incorrect": "गलत"
+    "incorrect": "गलत",
+    "offline_description": "आप ऑफलाइन हैं। \nइंटरनेट से कनेक्ट करें।"
   },
   "main": {
     "main_wallet": "मुख्य वॉलेट",
@@ -69,7 +70,7 @@
     "completed": "पूरा हुआ",
     "total": "कुल",
     "total_fee": "कुल शुल्क",
-    "moobpay_id": "मूनपे आईडी",
+    "moonpay_id": "मूनपे आईडी",
     "tx_id": "लेन-देन आईडी",
     "date": "तारीख",
     "provider_fee": "प्रदाता शुल्क",
@@ -105,21 +106,23 @@
     "back": "वापस",
     "buy_blocked": "आपके देश/राज्य में लाइटकॉइन खरीदना वर्तमान में उपलब्ध नहीं है।",
     "error_title": "कुछ गलत हो गया है!",
-    "min_sale": "न्यूनतम बिक्री {{minAmount}} LTC और अधिकतम बिक्री {{maxAmount}} LTC"
+    "min_sale": "न्यूनतम बिक्री {{minAmount}} LTC और अधिकतम बिक्री {{maxAmount}} LTC",
+    "buy_success": "सफलतापूर्वक खरीदा गया"
   },
   "sellTab": {
     "sell": "बेचें ",
     "sell_litecoin": "लाइटकॉइन बेचें",
     "preview_sell": "LTC बेचें",
-    "sell_blocked": "आपके देश/राज्य में लाइटकॉइन बेचना वर्तमान में उपलब्ध नहीं है।"
+    "sell_blocked": "आपके देश/राज्य में लाइटकॉइन बेचना वर्तमान में उपलब्ध नहीं है।",
+    "sell_success": "आपने {{amount}} LTC बेच दिया है!"
   },
   "sendTab": {
     "send_ltc": "LTC भेजें",
     "send_litecoin": "लाइटकॉइन भेजें",
     "amount": "राशि",
     "send_to_address": "पते पर भेजें",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
+    "fee": "शुल्क",
+    "confirm_and_send": "पुष्टि करें और भेजें",
     "address_invalid": " अमान्य है",
     "enter_address": "एक लाइटकॉइन पता दर्ज करें",
     "description": "विवरण",
@@ -128,7 +131,7 @@
     "scan_qr": "QR कोड स्कैन करें",
     "camera_note": "ऐप लाइटकॉइन भुगतान के लिए QR कोड स्कैन करने हेतु आपके कैमरे का उपयोग करेगा",
     "enable_flash": "फ्लैश सक्षम करें",
-    "camara_disabled": "कैमरा अक्षम है",
+    "camera_disabled": "कैमरा अक्षम है",
     "enable_camera": "QR कोड स्कैन करने के लिए कैमरा सक्षम करें",
     "awesome": "शानदार!",
     "just-sent": "आपने अभी भेजा"
@@ -138,7 +141,7 @@
     "receive_privately": "गुप्त रूप से प्राप्त करें",
     "send_privately": "गुप्त रूप से भेजें",
     "my_ltc_address": "मेरा LTC पता",
-    "recieve_mweb_description": "गुप्त रूप से प्राप्त करने पर प्रेषक और प्राप्तकर्ता के पते तथा भेजी गई राशि छिप जाती है।"
+    "receive_mweb_description": "गुप्त रूप से प्राप्त करने पर प्रेषक और प्राप्तकर्ता के पते तथा भेजी गई राशि छिप जाती है।"
   },
   "searchTab": {
     "transactions": "लेन-देन",
@@ -150,7 +153,8 @@
     "contact": "संपर्क",
     "passwords": "पासवर्ड",
     "scan_text": "टेक्स्ट स्कैन करें",
-    "txs_note": "आपके लेन-देन यहाँ दिखाई देंगे"
+    "txs_note": "आपके लेन-देन यहाँ दिखाई देंगे",
+    "mweb": "MWEB"
   },
   "alertsTab": {
     "price_alerts": "मूल्य अलर्ट्स",
@@ -158,7 +162,8 @@
     "create_alerts_note": "जब लाइटकॉइन का मूल्य लक्षित मान तक पहुँच जाए, तो सूचित होने के लिए अलर्ट्स बनाएं।",
     "alerts_appear_here": "आपके अलर्ट्स यहाँ दिखाई देंगे।",
     "set_alerts": "अलर्ट्स सेट करें",
-    "alert_me_when": "जब लाइटकॉइन (LTC) हो तो मुझे अलर्ट करें",
+    "alert_me": "मुझे अलर्ट करें जब",
+    "when_ltc": "लाइटकॉइन (LTC)",
     "below": "नीचे",
     "above": "ऊपर",
     "create_alert": "अलर्ट बनाएं",
@@ -204,6 +209,8 @@
     "select_block_explorer_note": "आप लेन-देन देखने के लिए अपनी पसंद का ब्लॉक एक्सप्लोरर चुन सकते हैं।",
     "change_currency": "मुद्रा बदलें",
     "select_fiat": "फिएट मुद्रा चुनें",
+    "change_lang": "भाषा बदलें",
+    "select_lang": "भाषा चुनें",
     "view_seed": "सीड वाक्यांश देखें",
     "view_paper_key": "सीड वाक्यांश देखें",
     "last_time_accessed": "अंतिम बार एक्सेस किया गया: {{time}}",
@@ -226,6 +233,11 @@
     "camera_error": "कैमरा अक्षम है",
     "cancel": "रद्द करें",
     "change_login": "लॉगिन पासकोड बदलें"
+  },
+  "convertTab": {
+    "convert_button": "तबदील LTC शुल्क",
+    "regular_ltc": "आपका नियमित लाइटकॉइन",
+    "private_ltc": "आपका निजी लाइटकॉइन"
   },
   "modals": {
     "delete": "हटाएं",

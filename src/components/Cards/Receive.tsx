@@ -146,7 +146,7 @@ const Receive: React.FC<Props> = () => {
 
         {isMwebAddress ? (
           <TranslateText
-            textKey="recieve_mweb_description"
+            textKey="receive_mweb_description"
             domain="receiveTab"
             maxSizeInPixels={SCREEN_HEIGHT * 0.015}
             textStyle={styles.minText}

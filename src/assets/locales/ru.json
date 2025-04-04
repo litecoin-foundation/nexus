@@ -38,7 +38,9 @@
     "retry": "Повторить",
     "invalid_word": "Неправильное Слово",
     "invalid_description": "Это слово недействительно, проверьте правильность написания.",
-    "try_again": "Попробовать Снова"
+    "try_again": "Попробовать Снова",
+    "incorrect": "Неверно",
+    "offline_description": "Вы не подключены к сети. \nПодключитесь к Интернету."
   },
   "main": {
     "main_wallet": "Основной Кошелек",
@@ -68,7 +70,7 @@
     "completed": "ЗАВЕРШЕНО",
     "total": "ИТОГ",
     "total_fee": "ИТОГОВЫЕ КОМИССИИ",
-    "moobpay_id": "MOONPAY ID",
+    "moonpay_id": "MOONPAY ID",
     "tx_id": "TX ID",
     "date": "ДАТА",
     "provider_fee": "КОМИССИЯ ПРОВАЙДЕРА",
@@ -89,7 +91,7 @@
     "buy": "Купить ",
     "n_ltc": "{{amount}}",
     "for": "за ",
-    "total": "{{currencySymbol}}{{total}}",
+    "for_total": "{{currencySymbol}}{{total}}",
     "history": "История",
     "preview_buy": "К Покупке",
     "min_purchase": "Минимальная сумма покупки {{currencySymbol}}{{minAmountInFiat}}",
@@ -103,13 +105,16 @@
     "continue_purchase": "Продолжить Покупку",
     "back": "НАЗАД",
     "buy_blocked": "Покупка Litecoin в данный момент недоступна в вашем регионе.",
-    "error_title": "Что-то пошло не так!"
+    "error_title": "Что-то пошло не так!",
+    "min_sale": "Минимальная продажа {{minAmount}} LTC и максимальная продажа {{maxAmount}} LTC",
+    "buy_success": "Успешно куплено"
   },
   "sellTab": {
     "sell": "Продать ",
     "sell_litecoin": "Продать Litecoin",
     "preview_sell": "Продать LTC",
-    "sell_blocked": "Продажа Litecoin в данный момент недоступна в вашем регионе."
+    "sell_blocked": "Продажа Litecoin в данный момент недоступна в вашем регионе.",
+    "sell_success": "Вы только что продали {{amount}} LTC!"
   },
   "sendTab": {
     "send_ltc": "Отправить LTC",
@@ -126,7 +131,7 @@
     "scan_qr": "Сканировать QR-Код",
     "camera_note": "Приложение использует вашу камеру для сканирования QR-Кодов для Litecoin платежей",
     "enable_flash": "Включить Flash",
-    "camara_disabled": "Камера отключена",
+    "camera_disabled": "Камера отключена",
     "enable_camera": "Включить камеру для сканирования QR-Кодов",
     "awesome": "Успешно!",
     "just-sent": "Вы отправили"
@@ -194,7 +199,7 @@
     "successfully_reset": "Пароль успешно сброшен!",
     "enable_face_id": "Включить {{faceIDSupported}}",
     "face_id": "Face ID",
-    "touch_id": "",
+    "touch_id": "Touch ID",
     "import_private_key": "Импортировать приватный ключ",
     "import_private_key_note": "Импортируя приватный ключ Litecoin, вы отправляете все ваши монеты с этого ключа в Nexus.",
     "import_private_key_warning": "Вы больше не сможете получить доступ к монетам, используя этот приватный ключ.",
@@ -208,7 +213,7 @@
     "select_lang": "Выбрать Язык",
     "view_seed": "Посмотреть Seed-фразу",
     "view_paper_key": "Посмотреть Бумажный Ключ",
-    "last_time_accessed": "Последний просмотр:",
+    "last_time_accessed": "Последний просмотр: {{time}}",
     "litecoin_denomination": "Номинал Litecoin",
     "reset_wallet": "СБРОСИТЬ КОШЕЛЕК?",
     "import_litewallet": "Импортировать Litewallet",
@@ -226,7 +231,13 @@
     "reset_warning": "Вы точно уверены, что хотите сбросить ваш кошелек? Сделайте копию вашей Seed-фразы до сброса.",
     "view_tx": "Посмотреть Транзакцию",
     "camera_error": "Камера Отключена",
-    "cancel": "Отменить"
+    "cancel": "Отменить",
+    "change_login": "Изменить пароль входа"
+  },
+  "convertTab": {
+    "convert_button": "Обменять ваш LTC",
+    "regular_ltc": "ВАШ ОБЫЧНЫЙ LITECOIN",
+    "private_ltc": "ВАШ ПРИВАТНЫЙ LITECOIN"
   },
   "modals": {
     "delete": "Удалить",

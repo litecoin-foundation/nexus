@@ -8,14 +8,13 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface Props {}
 
 const PadGrid: React.FC<Props> = () => {
-
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const thirdOfWidth = Math.ceil(SCREEN_WIDTH / 3);
   const twoThirdOfWidth = thirdOfWidth * 2;
 
-  // const h = [SCREEN_HEIGHT * 0.115, SCREEN_HEIGHT * 0.210, SCREEN_HEIGHT * 0.306];
   const h = [SCREEN_HEIGHT * 0.1, SCREEN_HEIGHT * 0.2, SCREEN_HEIGHT * 0.3];
   const v = [thirdOfWidth, twoThirdOfWidth];
 

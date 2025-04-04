@@ -39,11 +39,12 @@
     "invalid_word": "Fjalë e Pasaktë",
     "invalid_description": "Kjo fjalë nuk është e vlefshme - kontrollo drejtshkrimin dhe provo përsëri.",
     "try_again": "Provo Përsëri",
-    "incorrect": "E Pasaktë"
+    "incorrect": "E Pasaktë",
+    "offline_description": "Je offline. \nLidhu me internetin."
   },
   "main": {
     "main_wallet": "Portofoli Kryesor",
-    "copy_address": "KOJPO ADRESËN",
+    "copy_address": "KOPJO ADRESËN",
     "copied": "KOPJUAR NË CLIPBOARD!",
     "add_wallet": "VENDOS NJË PORTOFOL TË RI",
     "all": "Të Gjitha",
@@ -69,7 +70,7 @@
     "completed": "PËRFUNDUAR",
     "total": "TOTALI",
     "total_fee": "TOTALI I TARIFAVE",
-    "moobpay_id": "ID e MOONPAY",
+    "moonpay_id": "ID e MOONPAY",
     "tx_id": "ID E TRANSAKSIONIT",
     "date": "DATA",
     "provider_fee": "TARIFË E SHËRBIMIT",
@@ -105,30 +106,32 @@
     "back": "KALO",
     "buy_blocked": "Blerja e Litecoin-it is aktualisht nuk disponohet në shtetin tuaj.",
     "error_title": "Diçka nuk shkoji mirë!",
-    "min_sale": "Minimumi i shitjes {{minAmount}} LTC dhe maksimumi i shitjes së {{maxAmount}} LTC"
+    "min_sale": "Minimumi i shitjes {{minAmount}} LTC dhe maksimumi i shitjes së {{maxAmount}} LTC",
+    "buy_success": "Blerja u krye me sukses"
   },
   "sellTab": {
     "sell": "Shit ",
     "sell_litecoin": "Shit Litecoin",
     "preview_sell": "Shit LTC",
-    "sell_blocked": "Shitja Litecoin-it aktualisht nuk disponohet në shtetin tuaj."
+    "sell_blocked": "Shitja Litecoin-it aktualisht nuk disponohet në shtetin tuaj.",
+    "sell_success": "Sapo ke shitur {{amount}} LTC!"
   },
   "sendTab": {
     "send_ltc": "Dërgo LTC",
     "send_litecoin": "Dërgo Litecoin",
     "amount": "Shuma",
     "send_to_address": "Dërgo në adresën",
-    "fee": "Fee", // translate
-    "confirm_and_send": "Confirm and Send", // translate
+    "fee": "Tarifa",
+    "confirm_and_send": "Konfirmo dhe Dërgo",
     "address_invalid": " ËSHTË E PASAKTË",
     "enter_address": "Vendos një Adresë Litecoin-i",
     "description": "Përshkrimi",
     "confirm": "Konfirmo",
     "close": "Mbyll",
     "scan_qr": "Skano Kodin QR",
-    "camera_note": "App will use your camera to scan QR codes for Litecoin Payments",
+    "camera_note": "Aplikacioni do të përdorë kamerën tënde për të skanuar kodet QR për pagesat në Litecoin",
     "enable_flash": "Aktivizo Blicin",
-    "camara_disabled": "Kamera e çaktivizuar",
+    "camera_disabled": "Kamera e çaktivizuar",
     "enable_camera": "Aktivizo Kamerën për të skanuar Kodet QR",
     "awesome": "Shkëlqyeshëm!",
     "just-sent": "Sapo dërgove"
@@ -143,9 +146,10 @@
   "searchTab": {
     "transactions": "Transaksionet",
     "all": "TË GJITHA",
-    "regular": "Regular",
+    "regular": "Të Rregullta",
+    "mweb": "MWEB",
     "find_tx": "Gjej një transaksion",
-    "paste": "Paste",
+    "paste": "Ngjit",
     "auto_fill": "Mbush Automatikisht",
     "contact": "Kontakto",
     "passwords": "Fjalëkalimet",
@@ -158,7 +162,8 @@
     "create_alerts_note": "Krijo sinjale për t'u njoftuar kur çmimi i Litecoin-it të arrijë një vlerë të synuar.",
     "alerts_appear_here": "Sinjalet e tua do të shfaqen këtu.",
     "set_alerts": "VENDOS SINJALE",
-    "alert_me_when": "Më sinjalizo kur Litecoin-i (LTC) të jetë",
+    "alert_me": "Më sinjalizo kur",
+    "when_ltc": "Litecoin-i (LTC) të jetë",
     "below": "NËN",
     "above": "MBI",
     "create_alert": "Krijo sinjal",
@@ -184,7 +189,7 @@
     "type_message": "Shkruani mesazhin tuaj",
     "done": "U dërgua",
     "about": "Rreth",
-    "foundation_preamble": "Shpikur dhe sjellë në jetë me dashuri dhe kujdes nga (LTC FOUNDATION)",
+    "foundation_preamble": "Shpikur dhe sjellë në jetë me dashuri dhe kujdes nga",
     "change_wallet_pin": "Ndrysho Pin-in e Portofolit",
     "change_login_pin": "Ndrysho kodin PIN të kyçjes",
     "enter_old_pin": "Vendos Pin-in e vjetër",
@@ -204,6 +209,8 @@
     "select_block_explorer_note": "Mund të zgjedhësh block explorer tënd të preferuar për të parë transaksionet.",
     "change_currency": "Ndrysho Valutën",
     "select_fiat": "Zgjidh Paranë",
+    "change_lang": "Ndrysho Gjuhën",
+    "select_lang": "Zgjidh Gjuhën",
     "view_seed": "Shiko Seed Phrase",
     "view_paper_key": "Shiko Seed Phrase",
     "last_time_accessed": "Hera e fundit që është aksesuar: {{time}}",
@@ -226,6 +233,11 @@
     "camera_error": "Kamera e Çaktivizuar",
     "cancel": "Anulo",
     "change_login": "Ndrysho Kodin e Kyçjes"
+  },
+  "convertTab": {
+    "convert_button": "Konverto LTC-në tënde",
+    "regular_ltc": "LITECOIN-I YT I ZAKONSHËM",
+    "private_ltc": "LITECOIN-I YT PRIVAT"
   },
   "modals": {
     "delete": "Fshi",
