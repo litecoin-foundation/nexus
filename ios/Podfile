@@ -1,4 +1,3 @@
-source 'git@github.com:flexa/flexa-cocoapods.git'
 source 'https://cdn.cocoapods.org/'
 
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
@@ -31,7 +30,6 @@ target 'nexus' do
   config = use_native_modules!
 
   pod 'Base32', :modular_headers => true;
-  pod 'FlexaSpend', :modular_headers => true;
   pod 'FirebaseCore', :modular_headers => true;
   pod 'FirebaseCoreInternal', :modular_headers => true;
   pod 'GoogleUtilities', :modular_headers => true;
