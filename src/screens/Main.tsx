@@ -200,6 +200,7 @@ const Main: React.FC<Props> = props => {
   const confirmedBalance = useAppSelector(
     state => state.balance.confirmedBalance,
   );
+  const isFlexaCustomer = useAppSelector(state => state.buy.isFlexaCustomer);
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('view-seed-auth');
   const [loading, setLoading] = useState(false);
@@ -497,14 +498,16 @@ const Main: React.FC<Props> = props => {
           onPress={() => navigation.navigate('SettingsStack')}
           imageSource={require('../assets/icons/settings-cog.png')}
         />
-        <HeaderButton
-          onPress={() => manualPayment()}
-          imageSource={require('../assets/icons/shop.png')}
-          marginLeft={SCREEN_WIDTH * 0.02 * -1}
-        />
+        {isFlexaCustomer ? (
+          <HeaderButton
+            onPress={() => manualPayment()}
+            imageSource={require('../assets/icons/shop.png')}
+            marginLeft={SCREEN_WIDTH * 0.02 * -1}
+          />
+        ) : null}
       </Animated.View>
     ),
-    [animatedButton, navigation],
+    [animatedButton, navigation, isFlexaCustomer],
   );
 
   const rightHeaderButton = useMemo(

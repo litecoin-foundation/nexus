@@ -30,6 +30,7 @@ import {
 import {
   getBuyTransactionHistory,
   getSellTransactionHistory,
+  checkFlexaCustomer,
 } from './src/reducers/buy';
 import RootNavigator from './src/navigation/RootNavigator';
 import {store, pStore} from './src/store';
@@ -77,6 +78,7 @@ function ContextExecutable(props: any) {
   dispatch(updateHistoricalRatesForAllPeriods());
   dispatch(getBuyTransactionHistory());
   dispatch(getSellTransactionHistory());
+  dispatch(checkFlexaCustomer());
   return <></>;
 }
 

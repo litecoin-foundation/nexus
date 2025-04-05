@@ -35,6 +35,9 @@ const About: React.FC<Props> = () => {
   const {lndActive} = useAppSelector(state => state.lightning);
   const onboarding = useAppSelector(state => state.onboarding.onboarding);
   const isOnboarded = useAppSelector(state => state.onboarding.isOnboarded);
+  const beingRecovered = useAppSelector(
+    state => state.onboarding.beingRecovered,
+  );
 
   const dispatch = useAppDispatch();
 
@@ -65,6 +68,7 @@ const About: React.FC<Props> = () => {
         />
         <TableCell title="onboarding" value={`${onboarding}`} />
         <TableCell title="isOnboarded" value={`${isOnboarded}`} />
+        <TableCell title="beingRecovered" value={`${beingRecovered}`} />
         <TableCell
           title="LND Active"
           value={`${lndActive === true ? 'true' : 'false'}`}
