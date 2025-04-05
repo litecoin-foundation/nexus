@@ -896,7 +896,8 @@ export const getSignedSellOnramperUrl =
         `&uuid=${uniqueIdAsUUID}` +
         `&partnerContext=${uniqueId}` +
         '&mode=sell' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F';
+        '&offrampCashoutRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F' +
+        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell_complete%2F';
 
       try {
         const res = await fetch(

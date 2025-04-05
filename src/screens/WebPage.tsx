@@ -66,6 +66,12 @@ const WebPage: React.FC<Props> = props => {
         enableApplePay={true}
         onLoadStart={syntheticEvent => handleEvent(syntheticEvent)}
         onLoadEnd={syntheticEvent => handleEvent(syntheticEvent)}
+        originWhitelist={[
+          'https://*',
+          'http://*',
+          'about:blank',
+          'about:srcdoc',
+        ]}
         onNavigationStateChange={syntheticEvent =>
           setCurrentUrl(syntheticEvent.url)
         }

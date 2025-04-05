@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
@@ -9,8 +9,6 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import WhiteButton from '../../components/Buttons/WhiteButton';
-import TranslateText from '../../components/TranslateText';
 import SendConfirmation from '../../components/SendConfirmation';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
@@ -19,7 +17,9 @@ import {parseQueryString} from '../../lib/utils/querystring';
 import {showError} from '../../reducers/errors';
 import {fiatValueSelector} from '../../reducers/ticker';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import SuccessSell from '../../components/SuccessSell';
 
 type RootStackParamList = {
   ConfirmSell: {
@@ -124,47 +124,9 @@ const ConfirmSell: React.FC<Props> = props => {
         setToAmount(Number(sellRequest.baseCurrencyAmount) * 100000000);
         setToAddress(sellRequest.depositWalletAddress);
         setFiatAmount(calculateFiatAmount(sellRequest.baseCurrencyAmount));
-        console.log(sellRequest);
       }
     }
   }, [route.params]);
-
-  const SuccessScreen = (
-    <>
-      <View style={styles.body}>
-        <TranslateText
-          textKey="awesome"
-          domain="settingsTab"
-          textStyle={styles.title}
-        />
-        <TranslateText
-          textKey="sell_success"
-          domain="sellTab"
-          textStyle={styles.subtitle}
-          interpolationObj={{
-            amount: toAmount,
-          }}
-        />
-
-        <View style={styles.toAddressContainer}>
-          <Text style={styles.toAddressText}>{saleTxid}</Text>
-        </View>
-      </View>
-
-      <View style={styles.confirmButtonContainer}>
-        <WhiteButton
-          textKey="back_to_wallet"
-          textDomain="settingsTab"
-          disabled={false}
-          small={true}
-          active={true}
-          onPress={() => {
-            navigation.navigate('Main', {isInitial: true});
-          }}
-        />
-      </View>
-    </>
-  );
 
   return (
     <View style={styles.container}>
@@ -178,7 +140,7 @@ const ConfirmSell: React.FC<Props> = props => {
             toAddress={toAddress}
             amount={toAmount}
             fiatAmount={fiatAmount}
-            label=""
+            label="Sell Litecoin via Moonpay"
             sendSuccessHandler={txid => {
               console.log(txid);
               setPaymentSuccess(true);
@@ -186,7 +148,7 @@ const ConfirmSell: React.FC<Props> = props => {
           />
         ) : (
           // payment success!
-          SuccessScreen
+          <SuccessSell toAmount={toAmount} saleTxid={saleTxid} />
         )}
       </LinearGradient>
     </View>
@@ -198,72 +160,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
-    body: {
-      width: '100%',
-      height: '100%',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: screenHeight * 0.03,
-    },
-    title: {
-      width: '100%',
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.07,
-      textAlign: 'center',
-      marginTop: screenHeight * 0.05 * -1,
-    },
-    subtitle: {
-      width: '100%',
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.016,
-      textTransform: 'uppercase',
-      textAlign: 'center',
-      opacity: 0.9,
-      marginTop: screenHeight * 0.005,
-    },
-    confirmButtonContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.01,
-      width: '100%',
-      height: screenHeight * 0.1,
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
     headerTitle: {
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: 'white',
       fontSize: 17,
-    },
-    toAddressContainer: {
-      width: 'auto',
-      height: 'auto',
-      borderRadius: screenHeight * 0.012,
-      backgroundColor: 'rgba(240, 240, 240, 0.1)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: screenHeight * 0.05,
-      paddingLeft: screenWidth * 0.05,
-      paddingRight: screenWidth * 0.05,
-      paddingTop: screenWidth * 0.02,
-      paddingBottom: screenWidth * 0.02,
-    },
-    toAddressText: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '500',
-      fontSize: screenHeight * 0.025,
-      textAlign: 'center',
     },
   });
 

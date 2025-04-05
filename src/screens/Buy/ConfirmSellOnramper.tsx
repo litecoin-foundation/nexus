@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
@@ -9,8 +9,8 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import WhiteButton from '../../components/Buttons/WhiteButton';
-import TranslateText from '../../components/TranslateText';
+import SendConfirmation from '../../components/SendConfirmation';
+import SuccessSell from '../../components/SuccessSell';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {
@@ -20,6 +20,7 @@ import {
 import {parseQueryString} from '../../lib/utils/querystring';
 import {showError} from '../../reducers/errors';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -51,10 +52,13 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const [sellTxId, setSellTxId] = useState<string>('');
-
   const [hasBeenMounted, setHasBeenMounted] = useState(false);
   const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [saleTxid, setSaleTxid] = useState('');
+  const [toAmount, setToAmount] = useState(0);
+  const [fiatAmount, setFiatAmount] = useState('');
+  const [toAddress, setToAddress] = useState('');
 
   const {amount} = useAppSelector(state => state.input);
   const refundAddress = useAppSelector(state => state.address.address);
@@ -104,61 +108,57 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
     return unsubscribe;
   }, [navigation]);
 
-  // handle successful sell
+  // handle ready to sell, confirm send
   useEffect(() => {
     if (route.params) {
       if (route.params.queryString) {
+        ///providerWalletAddress={{address}}
+        // &offramp={{offramp_provider}}
+        // &partnerContext={{context_id}}
+        // &wallet={{address_of_utxos}}
+        // &transactionId={{txid}}
+        // &sourceCurrency={{ltc_litecoin}}
+        // &targetCurrency={{currency_code}}
+        // &inAmount={{ltc_amount}}
+        // &outAmount={{fiat_amount}}
+        // &paymentMethod={{payment_method}}
+        // &totalFee={{total_fee}}
+        // &countryCode={{country_code}}
+        // &exchangeRate={{exchange_rate}}
+
         dispatch(getSellTransactionHistory());
 
-        const sellSuccess = parseQueryString(route.params.queryString);
-        setSellTxId(sellSuccess.transactionId);
+        const sellRequest = parseQueryString(route.params.queryString);
+
+        setSaleTxid(sellRequest.transactionId);
+        setToAmount(Number(sellRequest.inAmount) * 100000000);
+        setToAddress(sellRequest.providerWalletAddress);
+        setFiatAmount(sellRequest.outAmount);
       }
     }
   }, [route.params]);
 
-  const SuccessScreen = (
-    <>
-      <View style={styles.body}>
-        <TranslateText
-          textKey="awesome"
-          domain="settingsTab"
-          textStyle={styles.title}
-        />
-        <TranslateText
-          textKey="sell_success"
-          domain="sellTab"
-          textStyle={styles.subtitle}
-        />
-
-        <View style={styles.toAddressContainer}>
-          <Text style={styles.toAddressText}>{sellTxId}</Text>
-        </View>
-      </View>
-
-      <View style={styles.confirmButtonContainer}>
-        <WhiteButton
-          textKey="back_to_wallet"
-          textDomain="settingsTab"
-          disabled={false}
-          small={true}
-          active={true}
-          onPress={() => {
-            navigation.navigate('Main', {isInitial: true});
-          }}
-        />
-      </View>
-    </>
-  );
-
   return (
     <View style={styles.container}>
       <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
-        {sellTxId === '' ? (
+        {saleTxid === '' ? (
           // WebPage is open
           <></>
+        ) : saleTxid !== '' && paymentSuccess === false ? (
+          // WebPage closed & ready for payment
+          <SendConfirmation
+            toAddress={toAddress}
+            amount={toAmount}
+            fiatAmount={fiatAmount}
+            label="Sell Litecoin via Onramper"
+            sendSuccessHandler={txid => {
+              console.log(txid);
+              setPaymentSuccess(true);
+            }}
+          />
         ) : (
           // payment success!
-          SuccessScreen
+          <SuccessSell toAmount={toAmount} saleTxid={saleTxid} />
         )}
       </LinearGradient>
     </View>
