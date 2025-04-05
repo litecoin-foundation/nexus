@@ -33,7 +33,7 @@ export const checkBIP39Word = word => {
 };
 
 export const checkLitewalletBIP39Word = word => {
-  return wordlists.some(list => list.includes(word));
+  return wordlists.some(list => list.includes(word.normalize('NFD')));
 };
 
 export const getBIP39Index = word => {

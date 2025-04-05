@@ -122,6 +122,8 @@ const RecoveryField: React.FC<Props> = props => {
     }
 
     const arr = [...seed];
+    // NOTE: seems like lnd accepts seed without normalization
+    // arr[index] = input.normalize('NFD');
     arr[index] = input;
     setSeed(arr);
   };
