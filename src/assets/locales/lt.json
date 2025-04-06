@@ -198,6 +198,7 @@
     "success": "Pavyko",
     "successfully_reset": "Sėkmingai iš naujo nustatytas PIN kodas!",
     "enable_face_id": "Įjungti {{faceIDSupported}}",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "Face ID",
     "touch_id": "Touch ID",
     "import_private_key": "Importuoti privatų raktą",

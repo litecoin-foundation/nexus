@@ -198,6 +198,7 @@
     "success": "Erfolg",
     "successfully_reset": "PIN erfolgreich zurückgesetzt",
     "enable_face_id": "{{faceIDSupported}} einschalten",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "Gesichts-ID",
     "touch_id": "Fingerabruck",
     "import_private_key": "Privatschlüssel importieren",

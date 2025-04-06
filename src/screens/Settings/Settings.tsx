@@ -1,10 +1,20 @@
-import React, {useState, useRef, useContext} from 'react';
+import React, {
+  useState,
+  useRef,
+  useContext,
+  useLayoutEffect,
+  useCallback,
+} from 'react';
 import {
   StyleSheet,
   ScrollView,
   DeviceEventEmitter,
   Alert,
   View,
+  Platform,
+  PermissionsAndroid,
+  Linking,
+  AppState,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
@@ -19,12 +29,13 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sleep} from '../../lib/utils/poll';
 import {purgeStore} from '../../store';
 import {deleteLNDDir} from '../../lib/utils/file';
-import {updateSubunit} from '../../reducers/settings';
+import {updateSubunit, setNotificationsEnabled} from '../../reducers/settings';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {useTranslation} from 'react-i18next';
+import messaging from '@react-native-firebase/messaging';
 
 type RootStackParamList = {
   General: undefined;
@@ -72,7 +83,37 @@ const Settings: React.FC<Props> = props => {
   const faceIDSupported = useAppSelector(
     state => state.authentication.faceIDSupported,
   );
-  const {subunit} = useAppSelector(state => state.settings);
+  const {subunit, notificationsEnabled} = useAppSelector(
+    state => state.settings,
+  );
+
+  const openSystemSettings = async () => {
+    Linking.openSettings();
+  };
+
+  const handleNotificationSwitch = async () => {
+    let enabled;
+    if (Platform.OS === 'ios') {
+      const authStatus = await messaging().hasPermission();
+      enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    } else {
+      enabled = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+    }
+    dispatch(setNotificationsEnabled(enabled));
+  };
+
+  useLayoutEffect(() => {
+    const subscription = AppState.addEventListener(
+      'change',
+      handleNotificationSwitch,
+    );
+    return () => subscription.remove();
+    /* eslint-disable react-hooks/exhaustive-deps */
+  }, []);
 
   const handleBiometricSwitch = () => {
     dispatch(setBiometricEnabled(!biometricsEnabled));
@@ -107,6 +148,21 @@ const Settings: React.FC<Props> = props => {
 
   const {t} = useTranslation('settingsTab');
 
+  // NOTE: useMemo won't work here because we need to recalc the function after changing AppState,
+  // this is bacause closing/opening the app do not trigger opened component to rerender
+  const NotificationsSettingCell = useCallback(
+    () => (
+      <SettingCell
+        textKey="enable_notifications"
+        textDomain="settingsTab"
+        switchEnabled
+        fakeSwitch
+        switchValue={notificationsEnabled}
+        onPress={() => openSystemSettings()}
+      />
+    ),
+    [notificationsEnabled],
+  );
   return (
     <>
       <LinearGradient
@@ -128,6 +184,7 @@ const Settings: React.FC<Props> = props => {
             onPress={() => navigation.navigate('ChangePincode', {type: null})}
             forward
           />
+          <NotificationsSettingCell />
           {biometricsAvailable ? (
             <SettingCell
               textKey="enable_face_id"

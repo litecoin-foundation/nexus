@@ -198,6 +198,7 @@
     "success": "Éxito",
     "successfully_reset": "¡PIN restablecido con éxito!",
     "enable_face_id": "Habilitar {{faceIDSupported}}",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "Face ID",
     "touch_id": "Touch ID",
     "import_private_key": "Importar clave privada",

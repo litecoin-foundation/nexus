@@ -198,6 +198,7 @@
     "success": "Tagumpay",
     "successfully_reset": "Matagumpay na ni-reset ang PIN!",
     "enable_face_id": "Paganahin {{faceIDSupported}}",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "Face ID",
     "touch_id": "Touch ID",
     "import_private_key": "Mag-import ng Pribadong Key",

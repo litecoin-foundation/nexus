@@ -198,6 +198,7 @@
     "success": "Успешно",
     "successfully_reset": "Пароль успешно сброшен!",
     "enable_face_id": "Включить {{faceIDSupported}}",
+    "enable_notifications": "Включить Уведомления",
     "face_id": "Face ID",
     "touch_id": "Touch ID",
     "import_private_key": "Импортировать приватный ключ",

@@ -198,6 +198,7 @@
     "success": "सफलता",
     "successfully_reset": "पिन सफलतापूर्वक रीसेट हो गया!",
     "enable_face_id": "{{faceIDSupported}} सक्षम करें",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "फेस आईडी",
     "touch_id": "टच आईडी",
     "import_private_key": "निजी कुंजी आयात करें",

@@ -197,6 +197,7 @@
     "success": "வெற்றி",
     "successfully_reset": "PIN வெற்றிகரமாக மீட்டமைக்கப்பட்டது!",
     "enable_face_id": "{{faceIDSupported}} ஐ இயக்கவும்",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "முக அடையாளம்",
     "touch_id": "தொடு அடையாளம்",
     "import_private_key": "தனிப்பட்ட விசையை இறக்குமதி செய்யவும்",

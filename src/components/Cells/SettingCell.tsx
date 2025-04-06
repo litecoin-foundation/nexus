@@ -12,6 +12,7 @@ interface Props {
   onPress?: () => void;
   forward?: boolean;
   switchEnabled?: boolean;
+  fakeSwitch?: boolean;
   handleSwitch?: () => void;
   switchValue?: boolean;
   interpolationObj?: {
@@ -27,6 +28,7 @@ const SettingCell: React.FC<Props> = props => {
     onPress,
     forward,
     switchEnabled,
+    fakeSwitch,
     handleSwitch,
     switchValue,
     interpolationObj,
@@ -50,7 +52,11 @@ const SettingCell: React.FC<Props> = props => {
         <Image source={require('../../assets/images/forward.png')} />
       ) : null}
       {switchEnabled ? (
-        <Switch initialValue={switchValue} onPress={handleSwitch} />
+        <Switch
+          initialValue={switchValue}
+          onPress={fakeSwitch ? onPress : handleSwitch}
+          fakeSwitch={fakeSwitch}
+        />
       ) : null}
     </TouchableOpacity>
   );

@@ -198,6 +198,7 @@
     "success": "Berhasil",
     "successfully_reset": "Berhasil mengganti PIN!",
     "enable_face_id": "Aktifkan {{faceIDSupported}}",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "Face ID",
     "touch_id": "Touch ID",
     "import_private_key": "Impor Private Key",
