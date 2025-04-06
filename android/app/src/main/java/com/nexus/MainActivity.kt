@@ -1,4 +1,4 @@
-package com.nexus
+package com.litecoin.nexus
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity

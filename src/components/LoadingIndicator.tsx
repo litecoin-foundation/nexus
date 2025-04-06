@@ -62,6 +62,7 @@ const LoadingIndicator: React.FC<Props> = props => {
                 style={{width: '100%', height: '100%'}}
                 animatedProps={animatedProps}
                 // autoPlay
+                enableMergePathsAndroidForKitKatAndAbove={true}
               />
             </Animated.View>
           </View>
