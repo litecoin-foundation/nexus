@@ -23,6 +23,7 @@ const ONRAMPER_PUBLIC_KEY = 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
 interface IBuy {
   isMoonpayCustomer: boolean;
   isOnramperCustomer: boolean;
+  isFlexaCustomer: boolean;
   buyQuote: IBuyQuote;
   sellQuote: ISellQuote;
   buyHistory: any[];
@@ -39,6 +40,7 @@ interface IBuy {
 const initialState = {
   isMoonpayCustomer: true,
   isOnramperCustomer: true,
+  isFlexaCustomer: false,
   buyQuote: {
     ltcAmount: 0,
     ltcPrice: 0,
@@ -77,6 +79,7 @@ const initialState = {
 // actions
 const setMoonpayCustomer = createAction<boolean>('buy/setMoonpayCustomer');
 const setOnramperCustomer = createAction<boolean>('buy/setOnramperCustomer');
+const setFlexaCustomer = createAction<boolean>('buy/setFlexaCustomer');
 const setBuyQuoteAction = createAction<IBuyQuote>('buy/setBuyQuoteAction');
 // const setSellQuoteAction = createAction<ISellQuote>('buy/setSellQuoteAction');
 const getBuyTxHistoryAction = createAction('buy/getBuyTxHistoryAction');
@@ -167,6 +170,24 @@ export const getSellTransactionHistory =
     }
 
     dispatch(getSellTxHistoryAction(realTxs));
+  };
+
+export const checkFlexaCustomer =
+  (): AppThunk => async (dispatch, getState) => {
+    const {testPaymentActive, testPaymentCountry} = getState().settings;
+    const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
+    let isFlexaCustomer = false;
+    switch (countryCode) {
+      case 'US':
+      case 'CA':
+      case 'SV':
+        isFlexaCustomer = true;
+        break;
+      default:
+        isFlexaCustomer = false;
+        break;
+    }
+    dispatch(setFlexaCustomer(isFlexaCustomer));
   };
 
 const getMoonpayBuyQuoteData = (
@@ -975,6 +996,10 @@ export const buySlice = createSlice({
     setOnramperCustomer: (state, action) => ({
       ...state,
       isOnramperCustomer: action.payload,
+    }),
+    setFlexaCustomer: (state, action) => ({
+      ...state,
+      isFlexaCustomer: action.payload,
     }),
   },
 });

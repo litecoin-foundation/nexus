@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:616133023637:android:c7cb117ebf1615df59489c",
+        "mobilesdk_app_id": "1:616133023637:android:719c9ba837bfc81359489c",
         "android_client_info": {
-          "package_name": "com.nexus"
+          "package_name": "com.litecoin.nexus"
         }
       },
       "oauth_client": [],

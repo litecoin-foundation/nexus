@@ -45,12 +45,16 @@ const Receive: React.FC<Props> = () => {
 
   // update qr code when address changes
   useEffect(() => {
-    setURI(address);
     if (isMwebAddress && address !== regularAddress) {
       setMwebAddress(address);
-    }
-    if (!isMwebAddress && address !== mwebAddress) {
+      setURI(address);
+    } else if (!isMwebAddress && address !== mwebAddress) {
       setRegularAddress(address);
+      setURI(address);
+    } else {
+      setMwebAddress('');
+      setRegularAddress('');
+      setURI('');
     }
   }, [address, regularAddress, mwebAddress, isMwebAddress]);
 
@@ -116,7 +120,7 @@ const Receive: React.FC<Props> = () => {
               style={styles.pressableContainer}
               onPress={() => handleCopy()}>
               <TranslateText
-                textValue={address}
+                textValue={isMwebAddress ? mwebAddress : regularAddress}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.021}
                 textStyle={styles.addressText}
               />

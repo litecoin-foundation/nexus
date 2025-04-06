@@ -1,4 +1,4 @@
-package com.nexus
+package com.litecoin.nexus
 
 import com.facebook.react.common.assets.ReactFontManager
 import android.content.res.Configuration
