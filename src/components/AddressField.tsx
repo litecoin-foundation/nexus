@@ -6,7 +6,6 @@ import {
   Text,
   Pressable,
   Image,
-  Platform,
 } from 'react-native';
 import Animated, {
   interpolateColor,
@@ -49,19 +48,17 @@ const AddressField: React.FC<Props> = props => {
 
   const {t} = useTranslation('sendTab');
 
-  const lineHeight = SCREEN_HEIGHT * 0.033;
-  const fontLineHeight = SCREEN_HEIGHT * 0.026;
+  const MULTILINE_HEIGHT = SCREEN_HEIGHT * 0.04;
+  const LINE_HEIGHT = SCREEN_HEIGHT * 0.025; // Line height for text
+  const PADDING = SCREEN_HEIGHT * 0.01; // Padding for multiline content
 
   const [isActive, setActive] = useState(false);
+  const hiddenTextRef = useRef<string>('');
+  const textLayoutRef = useRef<any>(null);
 
   useEffect(() => {
     hiddenTextRef.current = address;
   }, [address]);
-
-  // logic below to calculate and resize height of container
-  const [height, setHeight] = useState(SCREEN_HEIGHT * 0.06);
-  const hiddenTextRef = useRef<string>('');
-  const textLayoutRef = useRef<any>(null);
 
   const handleTextChange = (text: string) => {
     onChangeText(text);
@@ -69,30 +66,18 @@ const AddressField: React.FC<Props> = props => {
 
   const onMeasuredTextLayout = (event: any) => {
     const {height: measuredHeight} = event.nativeEvent.layout;
-    const lines = measuredHeight / fontLineHeight;
-    // Plus padding
-    const newHeight = lines * lineHeight + SCREEN_HEIGHT * 0.02;
-    if (newHeight !== height) {
-      setHeight(newHeight);
-    }
+
+    const lines = Math.max(1, Math.ceil(measuredHeight / LINE_HEIGHT)) - 1;
+
+    const newHeight =
+      MULTILINE_HEIGHT + (lines > 1 ? lines * LINE_HEIGHT + PADDING : 0);
+
+    animatedHeight.value = withTiming(newHeight, {
+      duration: 200,
+    });
   };
 
-  useEffect(() => {
-    // updates height based on address prop
-    if (textLayoutRef.current) {
-      textLayoutRef.current.measure(
-        (_: number, __: number, ___: number, textHeight: number) => {
-          const lines = textHeight / fontLineHeight;
-          // Plus padding
-          const newHeight = lines * lineHeight + SCREEN_HEIGHT * 0.02;
-          setHeight(newHeight);
-        },
-      );
-    }
-  }, [address]);
-
   // animation
-
   const pasteScaler = useSharedValue(1);
   const scanScaler = useSharedValue(1);
   const pasteBg = useSharedValue(1);
@@ -101,6 +86,13 @@ const AddressField: React.FC<Props> = props => {
   const scanX = useSharedValue(0);
   const closeX = useSharedValue(70);
   const activeOpacity = useSharedValue(1);
+  const animatedHeight = useSharedValue(MULTILINE_HEIGHT);
+
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    return {
+      height: animatedHeight.value,
+    };
+  });
 
   const pasteContainerMotionStyle = useAnimatedStyle(() => {
     return {
@@ -180,11 +172,16 @@ const AddressField: React.FC<Props> = props => {
       closeX.value = 80;
       activeOpacity.value = withTiming(1, {duration: 500});
       runOnJS(setActive)(false);
+
+      // Reset height when address is cleared
+      animatedHeight.value = withTiming(MULTILINE_HEIGHT, {
+        duration: 200,
+      });
     }
   }, [address]);
 
   return (
-    <View style={[styles.container, {height}]}>
+    <Animated.View style={[styles.container, animatedContainerStyle]}>
       <View style={styles.hiddenContainer}>
         <Text
           ref={textLayoutRef}
@@ -263,14 +260,14 @@ const AddressField: React.FC<Props> = props => {
           </Animated.View>
         </Pressable>
       )}
-    </View>
+    </Animated.View>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
-      minHeight: screenHeight * 0.06,
+      minHeight: screenHeight * 0.063,
       borderRadius: screenHeight * 0.01,
       borderColor: '#E8E8E8',
       borderWidth: 1,
@@ -289,7 +286,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       color: '#20BB74',
       textAlignVertical: 'top',
-      paddingTop: Platform.OS === 'android' ? 0 : 3,
+      paddingTop: screenHeight * 0.008,
+      lineHeight: screenHeight * 0.025,
+      height: 'auto',
     },
     pasteContainer: {
       right: 54,
@@ -347,7 +346,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.022,
+      fontSize: screenHeight * 0.02,
+      lineHeight: screenHeight * 0.025,
       textAlignVertical: 'top',
       opacity: 0,
     },
