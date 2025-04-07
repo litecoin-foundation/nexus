@@ -5,6 +5,7 @@ import {
   DeviceEventEmitter,
   Alert,
   View,
+  Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
@@ -25,6 +26,7 @@ import SupportCell from '../../components/Cells/SupportCell';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   General: undefined;
@@ -50,6 +52,7 @@ interface Props {
 
 const Settings: React.FC<Props> = props => {
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -110,7 +113,10 @@ const Settings: React.FC<Props> = props => {
   return (
     <>
       <LinearGradient
-        style={styles.container}
+        style={[
+          styles.container,
+          Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+        ]}
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
         <ScrollView>

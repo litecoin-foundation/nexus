@@ -1,17 +1,12 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {StyleSheet, View, TouchableOpacity, Image} from 'react-native';
-
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {checkAllowed, setLimits, setBuyQuote} from '../../reducers/buy';
-import BuyPad from '../Numpad/BuyPad';
-import BlueButton from '../Buttons/BlueButton';
 import {
-  resetInputs,
-  updateAmount,
-  updateFiatAmount,
-} from '../../reducers/input';
-import {callRates} from '../../reducers/ticker';
-
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Image,
+  Platform,
+} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import Animated, {
   useSharedValue,
@@ -19,12 +14,24 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import BuyPad from '../Numpad/BuyPad';
+import BlueButton from '../Buttons/BlueButton';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {checkAllowed, setLimits, setBuyQuote} from '../../reducers/buy';
+import {
+  resetInputs,
+  updateAmount,
+  updateFiatAmount,
+} from '../../reducers/input';
+import {callRates} from '../../reducers/ticker';
+
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {}
 
 const Buy: React.FC<Props> = () => {
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
 
@@ -206,7 +213,11 @@ const Buy: React.FC<Props> = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+      ]}>
       {isBuyAllowed ? (
         BuyContainer
       ) : (

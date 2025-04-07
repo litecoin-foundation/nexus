@@ -1,6 +1,7 @@
 import React, {useState, useContext} from 'react';
 import {StyleSheet, FlatList} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import OptionCell from '../../components/Cells/OptionCell';
 import Header from '../../components/Header';
@@ -49,6 +50,7 @@ const Language: React.FC = () => {
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
         <FlatList data={languages} renderItem={renderItem} />
+        <SafeAreaView />
       </LinearGradient>
     </>
   );

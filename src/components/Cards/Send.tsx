@@ -6,10 +6,11 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {Platform, ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import InputField from '../InputField';
 import AddressField from '../AddressField';
@@ -54,9 +55,11 @@ interface URIHandlerRef {
 }
 
 const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
+  const {route} = props;
+
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
-  const {route} = props;
 
   const scrollViewRef = useRef<ScrollView | null>(null);
 
@@ -400,7 +403,13 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             onPress={() => console.log('pressed fee')}
           />
         </View>  */}
-            <View style={styles.blueBtnContainer}>
+            <View
+              style={[
+                styles.blueBtnContainer,
+                Platform.OS === 'android'
+                  ? {paddingBottom: insets.bottom}
+                  : null,
+              ]}>
               <BlueButton
                 textKey="send_litecoin"
                 textDomain="sendTab"
@@ -415,12 +424,23 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       )}
 
       {amountPickerActive ? (
-        <Animated.View style={[styles.numpadContainer, {opacity: padOpacity}]}>
+        <Animated.View
+          style={[
+            styles.numpadContainer,
+            {opacity: padOpacity},
+            Platform.OS === 'android'
+              ? {paddingBottom: insets.bottom - 20}
+              : null,
+          ]}>
           <BuyPad
             onChange={(value: string) => onChange(value)}
             currentValue={toggleLTC ? String(amount) : String(fiatAmount)}
           />
-          <View style={styles.blueBtnContainerStandalone}>
+          <View
+            style={[
+              styles.blueBtnContainerStandalone,
+              Platform.OS === 'android' ? {paddingTop: 0} : null,
+            ]}>
             <BlueButton
               textKey="confirm"
               textDomain="sendTab"

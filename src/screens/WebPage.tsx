@@ -1,5 +1,11 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Platform,
+} from 'react-native';
 import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
 import {TransitionPresets} from '@react-navigation/stack';
@@ -7,6 +13,7 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 
 import Header from '../components/Header';
 import HeaderButton from '../components/Buttons/HeaderButton';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   WebPage: {
@@ -22,6 +29,7 @@ interface Props {
 
 const WebPage: React.FC<Props> = props => {
   const {route} = props;
+  const insets = useSafeAreaInsets();
   const WebPageRef = useRef();
   const navigation = useNavigation();
 
@@ -57,7 +65,11 @@ const WebPage: React.FC<Props> = props => {
   }, [currentUrl, observeURL, returnRoute, navigation]);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+      ]}>
       <Header modal={true} />
       <WebView
         style={styles.webview}

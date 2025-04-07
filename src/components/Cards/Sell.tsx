@@ -1,11 +1,18 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {StyleSheet, View, TouchableOpacity, Image} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Image,
+  Platform,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Animated, {
   useSharedValue,
   useAnimatedProps,
   withTiming,
 } from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed} from '../../reducers/buy';
@@ -24,6 +31,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface Props {}
 
 const Sell: React.FC<Props> = () => {
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
 
@@ -242,7 +250,11 @@ const Sell: React.FC<Props> = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+      ]}>
       {isSellAllowed ? (
         SellContainer
       ) : (

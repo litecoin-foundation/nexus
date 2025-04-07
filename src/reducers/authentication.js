@@ -115,7 +115,10 @@ export const unlockWalletWithPin =
       {},
       async state => {
         try {
-          console.log(state.state);
+          if (state.state === WalletState.NON_EXISTING) {
+            console.error('Wallet does not exist. Reinstall the app.');
+            throw new Error('Wallet does not exist. Reinstall the app.');
+          }
           if (state.state === WalletState.RPC_ACTIVE) {
             dispatch({type: UNLOCK_WALLET});
           }

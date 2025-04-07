@@ -1,21 +1,16 @@
 import React, {useEffect, useContext} from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  SafeAreaView,
-  Dimensions,
-} from 'react-native';
+import {View, StyleSheet, ScrollView, Dimensions} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useTranslation} from 'react-i18next';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import TableCell from '../../components/Cells/TableCell';
 import VerticalTableCell from '../../components/Cells/VerticalTableCell';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import Card from '../../components/Card';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getRecoveryInfo} from '../../reducers/info';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import Card from '../../components/Card';
-import {useTranslation} from 'react-i18next';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -51,56 +46,57 @@ const About: React.FC<Props> = () => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
-      <SafeAreaView />
-      <ScrollView>
-        <View style={styles.creditsContainer}>
-          <Card
-            descriptionText={t('foundation_preamble')}
-            imageSource={require('../../assets/images/collab.png')}
-            largeImg={true}
-          />
-        </View>
+      <SafeAreaView>
+        <ScrollView>
+          <View style={styles.creditsContainer}>
+            <Card
+              descriptionText={t('foundation_preamble')}
+              imageSource={require('../../assets/images/collab.png')}
+              largeImg={true}
+            />
+          </View>
 
-        <TranslateText
-          textValue="DEBUG INFO"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-          textStyle={styles.titleText}
-        />
-        <TableCell title="onboarding" value={`${onboarding}`} />
-        <TableCell title="isOnboarded" value={`${isOnboarded}`} />
-        <TableCell title="beingRecovered" value={`${beingRecovered}`} />
-        <TableCell
-          title="LND Active"
-          value={`${lndActive === true ? 'true' : 'false'}`}
-        />
-        <TableCell
-          title="Synced to Chain?"
-          value={`${syncedToChain === true ? 'true' : 'false'}`}
-        />
-        <TableCell title="Synced to Graph?" value={`${syncedToGraph}`} />
-        <TableCell title="Block Height" value={String(blockHeight)} />
-        <VerticalTableCell title="Blockhash">
           <TranslateText
-            textValue={blockHash}
+            textValue="DEBUG INFO"
             maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-            textStyle={styles.text}
+            textStyle={styles.titleText}
           />
-        </VerticalTableCell>
-        <VerticalTableCell title="bestHeaderTimestamp">
-          <TranslateText
-            textValue={`${new Date(Number(bestHeaderTimestamp) * 1000)}`}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-            textStyle={styles.text}
+          <TableCell title="onboarding" value={`${onboarding}`} />
+          <TableCell title="isOnboarded" value={`${isOnboarded}`} />
+          <TableCell title="beingRecovered" value={`${beingRecovered}`} />
+          <TableCell
+            title="LND Active"
+            value={`${lndActive === true ? 'true' : 'false'}`}
           />
-        </VerticalTableCell>
-        <VerticalTableCell title="LND version">
-          <TranslateText
-            textValue={version}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-            textStyle={styles.text}
+          <TableCell
+            title="Synced to Chain?"
+            value={`${syncedToChain === true ? 'true' : 'false'}`}
           />
-        </VerticalTableCell>
-      </ScrollView>
+          <TableCell title="Synced to Graph?" value={`${syncedToGraph}`} />
+          <TableCell title="Block Height" value={String(blockHeight)} />
+          <VerticalTableCell title="Blockhash">
+            <TranslateText
+              textValue={blockHash}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+              textStyle={styles.text}
+            />
+          </VerticalTableCell>
+          <VerticalTableCell title="bestHeaderTimestamp">
+            <TranslateText
+              textValue={`${new Date(Number(bestHeaderTimestamp) * 1000)}`}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+              textStyle={styles.text}
+            />
+          </VerticalTableCell>
+          <VerticalTableCell title="LND version">
+            <TranslateText
+              textValue={version}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+              textStyle={styles.text}
+            />
+          </VerticalTableCell>
+        </ScrollView>
+      </SafeAreaView>
     </LinearGradient>
   );
 };

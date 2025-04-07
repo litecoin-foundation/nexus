@@ -2,6 +2,7 @@ import React, {useEffect, useContext, useState} from 'react';
 import {View, Text, SafeAreaView, StyleSheet} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import TableCell from '../../components/Cells/TableCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
@@ -56,6 +57,7 @@ const LeftHeaderButton: React.FC<LeftHeaderProps> = props => {
 
 const ConfirmBuy: React.FC<Props> = props => {
   const {navigation, route} = props;
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -174,7 +176,12 @@ const ConfirmBuy: React.FC<Props> = props => {
   );
 
   return (
-    <View style={{flex: 1, backgroundColor: '#1162E6'}}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#1162E6',
+        marginBottom: insets.bottom,
+      }}>
       {wasSuccessful ? (
         SuccessScreen
       ) : (
