@@ -198,6 +198,7 @@
     "success": "موفقیت",
     "successfully_reset": "پین کد با موفقیت بازنشانی شد!",
     "enable_face_id": "فعال‌سازی {{faceIDSupported}}",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "شناسایی چهره",
     "touch_id": "شناسایی لمسی",
     "import_private_key": "وارد کردن کلید خصوصی",

@@ -24,6 +24,7 @@ interface ISettings {
   languageCode: string;
   languageTag: string;
   deviceNotificationToken: string;
+  notificationsEnabled: boolean;
   testPaymentActive: boolean;
   testPaymentMethod: string;
   testPaymentCountry: string;
@@ -55,6 +56,7 @@ const initialState = {
   languageCode: 'en',
   languageTag: 'en-US',
   deviceNotificationToken: '',
+  notificationsEnabled: false,
 } as ISettings;
 
 // actions
@@ -76,6 +78,9 @@ const setLanguageAction = createAction<LanguageType>(
 );
 const setDeviceNotificationTokenAction = createAction<string>(
   'settings/setDeviceNotificationTokenAction',
+);
+const enableNotificationsAction = createAction<boolean>(
+  'settings/enableNotificationsAction',
 );
 const setTestPaymentAction = createAction<TestPaymentType>(
   'settings/setTestPaymentAction',
@@ -132,6 +137,12 @@ export const setDeviceNotificationToken =
     dispatch(setDeviceNotificationTokenAction(deviceToken));
   };
 
+export const setNotificationsEnabled =
+  (isEnabled: boolean): AppThunk =>
+  dispatch => {
+    dispatch(enableNotificationsAction(isEnabled));
+  };
+
 export const setTestPayment =
   (
     testPaymentActive: boolean,
@@ -185,6 +196,10 @@ export const settingsSlice = createSlice({
     setDeviceNotificationTokenAction: (state, action) => ({
       ...state,
       deviceNotificationToken: action.payload,
+    }),
+    enableNotificationsAction: (state, action) => ({
+      ...state,
+      notificationsEnabled: action.payload,
     }),
     setTestPaymentAction: (state, action) => ({
       ...state,

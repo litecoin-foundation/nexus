@@ -198,6 +198,7 @@
     "success": "成功",
     "successfully_reset": "重置您的密码，成功!",
     "enable_face_id": "开启{{faceIDSupported}}",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "脸部识别",
     "touch_id": "指纹识别",
     "import_private_key": "导入私钥",

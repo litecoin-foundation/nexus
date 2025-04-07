@@ -198,6 +198,7 @@
     "success": "Sukses",
     "successfully_reset": "PIN-i u rivendos me sukses!",
     "enable_face_id": "Aktivizo {{faceIDSupported}}",
+    "enable_notifications": "Enable Notifications", // translate
     "face_id": "Identifikim me fytyrë",
     "touch_id": "Shenjë gishti",
     "import_private_key": "Importo Çelësin Privat",

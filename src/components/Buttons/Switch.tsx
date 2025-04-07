@@ -4,14 +4,17 @@ import {StyleSheet, View, Switch} from 'react-native';
 interface Props {
   onPress: (bool: boolean) => void;
   initialValue: boolean;
+  fakeSwitch?: boolean;
 }
 
 const SwitchButton: React.FC<Props> = props => {
-  const {onPress, initialValue} = props;
+  const {onPress, initialValue, fakeSwitch} = props;
   const [triggered, trigger] = useState(initialValue ? initialValue : false);
 
   const handlePress = (value: boolean) => {
-    trigger(value);
+    if (!fakeSwitch) {
+      trigger(value);
+    }
     onPress(value);
   };
 
