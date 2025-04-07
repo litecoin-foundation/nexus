@@ -44,9 +44,8 @@ const Sell: React.FC<Props> = () => {
   const {minLTCSellAmount, maxLTCSellAmount} = useAppSelector(
     state => state.buy.sellLimits,
   );
-  const {isMoonpayCustomer, isOnramperCustomer} = useAppSelector(
-    state => state.buy,
-  );
+  const {isMoonpayCustomer, isOnramperCustomer, proceedToGetSellLimits} =
+    useAppSelector(state => state.buy);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -267,7 +266,7 @@ const Sell: React.FC<Props> = () => {
       )}
       <View style={isSellAllowed ? styles.bottom : styles.bottomStandalone}>
         <BlueButton
-          disabled={!amountValid()}
+          disabled={proceedToGetSellLimits ? false : !amountValid()}
           textKey="preview_sell"
           textDomain="sellTab"
           onPress={() => {
@@ -280,18 +279,20 @@ const Sell: React.FC<Props> = () => {
             }
           }}
         />
-        <TranslateText
-          textKey={'min_sale'}
-          domain={'buyTab'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-          textStyle={isSellAllowed ? styles.minText : {display: 'none'}}
-          numberOfLines={1}
-          interpolationObj={{
-            currencySymbol,
-            minAmount: minLTCSellAmount,
-            maxAmount: maxLTCSellAmount,
-          }}
-        />
+        {proceedToGetSellLimits ? null : (
+          <TranslateText
+            textKey={'min_sale'}
+            domain={'buyTab'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={isSellAllowed ? styles.minText : {display: 'none'}}
+            numberOfLines={1}
+            interpolationObj={{
+              currencySymbol,
+              minAmount: minLTCSellAmount,
+              maxAmount: maxLTCSellAmount,
+            }}
+          />
+        )}
       </View>
     </View>
   );

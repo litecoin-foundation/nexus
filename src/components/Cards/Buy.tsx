@@ -41,9 +41,8 @@ const Buy: React.FC<Props> = () => {
   const isBuyAllowed = useAppSelector(state => state.buy.isBuyAllowed);
   const {minBuyAmount, maxBuyAmount, minLTCBuyAmount, maxLTCBuyAmount} =
     useAppSelector(state => state.buy.buyLimits);
-  const {isMoonpayCustomer, isOnramperCustomer} = useAppSelector(
-    state => state.buy,
-  );
+  const {isMoonpayCustomer, isOnramperCustomer, proceedToGetBuyLimits} =
+    useAppSelector(state => state.buy);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -230,7 +229,7 @@ const Buy: React.FC<Props> = () => {
       )}
       <View style={isBuyAllowed ? styles.bottom : styles.bottomStandalone}>
         <BlueButton
-          disabled={!amountValid()}
+          disabled={proceedToGetBuyLimits ? false : !amountValid()}
           textKey="preview_buy"
           textDomain="buyTab"
           onPress={() => {
@@ -246,14 +245,16 @@ const Buy: React.FC<Props> = () => {
             }
           }}
         />
-        <TranslateText
-          textKey={'min_purchase'}
-          domain={'buyTab'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-          textStyle={isBuyAllowed ? styles.minText : {display: 'none'}}
-          numberOfLines={1}
-          interpolationObj={{currencySymbol, minAmountInFiat: minBuyAmount}}
-        />
+        {proceedToGetBuyLimits ? null : (
+          <TranslateText
+            textKey={'min_purchase'}
+            domain={'buyTab'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={isBuyAllowed ? styles.minText : {display: 'none'}}
+            numberOfLines={1}
+            interpolationObj={{currencySymbol, minAmountInFiat: minBuyAmount}}
+          />
+        )}
       </View>
     </View>
   );
