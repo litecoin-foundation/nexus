@@ -36,6 +36,7 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {useTranslation} from 'react-i18next';
 import messaging from '@react-native-firebase/messaging';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   General: undefined;
@@ -61,6 +62,7 @@ interface Props {
 
 const Settings: React.FC<Props> = props => {
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -166,7 +168,10 @@ const Settings: React.FC<Props> = props => {
   return (
     <>
       <LinearGradient
-        style={styles.container}
+        style={[
+          styles.container,
+          Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+        ]}
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
         <ScrollView>

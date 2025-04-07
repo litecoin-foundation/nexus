@@ -2,6 +2,7 @@ import React, {useState, useContext} from 'react';
 import {View, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Header from '../../components/Header';
 import SlideRuler from '../../components/SlideRuler';
@@ -24,6 +25,7 @@ interface Props {
 
 const Dial: React.FC<Props> = props => {
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -44,7 +46,10 @@ const Dial: React.FC<Props> = props => {
 
   return (
     <LinearGradient
-      style={styles.container}
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+      ]}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
       <Header />
       <View style={styles.subContainer}>

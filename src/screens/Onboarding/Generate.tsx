@@ -35,6 +35,7 @@ interface Props {
 
 const Generate: React.FC<Props> = props => {
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -43,7 +44,6 @@ const Generate: React.FC<Props> = props => {
   const {t} = useTranslation('onboarding');
 
   const carousel = useRef<ICarouselInstance>(null);
-  const insets = useSafeAreaInsets();
 
   const seedSelector = createSelector(
     state => state.onboarding.generatedSeed,
@@ -122,7 +122,9 @@ const Generate: React.FC<Props> = props => {
         colors={['#1162E6', '#0F55C7']}
         style={[
           styles.gradientContainer,
-          Platform.OS === 'android' ? {paddingTop: insets.top} : null,
+          Platform.OS === 'android'
+            ? {paddingTop: insets.top, marginBottom: insets.bottom}
+            : null,
         ]}>
         <OnboardingHeader
           description={

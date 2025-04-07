@@ -1,11 +1,12 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Pressable} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Platform} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ConvertField from '../InputFields/ConvertField';
 import BuyPad from '../Numpad/BuyPad';
@@ -31,6 +32,7 @@ interface Props {}
 
 const Convert: React.FC<Props> = props => {
   const {} = props;
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const [activeField, setActiveField] = useState<'regular' | 'private'>(
     'regular',
@@ -109,7 +111,11 @@ const Convert: React.FC<Props> = props => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+      ]}>
       <View style={styles.inputsContainer}>
         <View style={styles.fieldContainer}>
           <TranslateText

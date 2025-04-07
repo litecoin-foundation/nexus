@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useLayoutEffect, useContext} from 'react';
-import {View, Text, StyleSheet, Alert} from 'react-native';
+import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -28,7 +29,7 @@ interface Props {
 
 const Verify: React.FC<Props> = props => {
   const {navigation} = props;
-
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -37,7 +38,7 @@ const Verify: React.FC<Props> = props => {
 
   const seed = useAppSelector(state => state.onboarding.generatedSeed);
   const [multiplier, setMultiplier] = useState(1);
-  const [selected, setSelectedIndex] = useState(null);
+  const [selected, setSelectedIndex] = useState<number | null>(null);
 
   const [scrambled, setScrambledArray] = useState([]);
 
@@ -76,7 +77,7 @@ const Verify: React.FC<Props> = props => {
     setSelectedIndex(null);
   };
 
-  const handleSelection = async (word, index) => {
+  const handleSelection = async (word: string, index: number) => {
     if (word === seed[3 * multiplier - 2]) {
       setSelectedIndex(index);
     } else {
@@ -102,7 +103,12 @@ const Verify: React.FC<Props> = props => {
     <View style={styles.container}>
       <LinearGradient
         colors={['#1162E6', '#0F55C7']}
-        style={styles.gradientContainer}>
+        style={[
+          styles.gradientContainer,
+          Platform.OS === 'android'
+            ? {paddingTop: insets.top, marginBottom: insets.bottom}
+            : null,
+        ]}>
         <OnboardingHeader
           textKey="verify_seed_description"
           textDomain="onboarding"

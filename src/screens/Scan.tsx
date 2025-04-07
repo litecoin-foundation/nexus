@@ -1,5 +1,12 @@
 import React, {useState, useContext, useEffect} from 'react';
-import {View, StyleSheet, Vibration, Image, Alert} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Vibration,
+  Image,
+  Alert,
+  Platform,
+} from 'react-native';
 import {
   Camera,
   useCameraDevice,
@@ -8,6 +15,7 @@ import {
 } from 'react-native-vision-camera';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackScreenProps, TransitionPresets} from '@react-navigation/stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Switch from '../components/Buttons/Switch';
 import Header from '../components/Header';
@@ -27,6 +35,7 @@ const Scan = ({
   navigation,
   route,
 }: StackScreenProps<RootStackParamList, 'Scan'>) => {
+  const insets = useSafeAreaInsets();
   const [flashEnabled, triggerFlash] = useState(false);
   const [scanned, triggerScanned] = useState(false);
 
@@ -108,7 +117,11 @@ const Scan = ({
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
+      ]}>
       <Header modal={true} />
       <View style={styles.container}>
         <Camera
@@ -185,7 +198,7 @@ const styles = StyleSheet.create({
   qrFrameContainer: {
     position: 'absolute',
     top: 270,
-    left: 70,
+    alignSelf: 'center',
     backgroundColor: 'rgba(0,0,0,0)',
   },
   bottomContentContainer: {

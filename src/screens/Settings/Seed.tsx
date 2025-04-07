@@ -1,7 +1,8 @@
 import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, Text, SafeAreaView} from 'react-native';
+import {View, StyleSheet, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {v4 as uuidv4} from 'uuid';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {updateLastViewSeed} from '../../reducers/settings';

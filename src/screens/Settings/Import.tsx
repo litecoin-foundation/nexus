@@ -1,19 +1,20 @@
 import React, {useEffect, useContext} from 'react';
-import {StyleSheet, View, SafeAreaView, Alert} from 'react-native';
+import {StyleSheet, View, SafeAreaView, Alert, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import TranslateText from '../../components/TranslateText';
 import {publishTransaction} from '../../reducers/transaction';
 import {sweepQrKey} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -33,6 +34,7 @@ interface Props {
 
 const Import: React.FC<Props> = props => {
   const {navigation, route} = props;
+  const insets = useSafeAreaInsets();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -71,7 +73,12 @@ const Import: React.FC<Props> = props => {
   }, [address, route.params?.scanData, dispatch]);
 
   return (
-    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
+    <LinearGradient
+      colors={['#1162E6', '#0F55C7']}
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+      ]}>
       <SafeAreaView />
 
       <View style={styles.cardContainer}>

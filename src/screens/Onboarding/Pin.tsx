@@ -1,5 +1,5 @@
 import React, {useState, useLayoutEffect, useEffect, useContext} from 'react';
-import {StyleSheet} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
 
@@ -12,6 +12,7 @@ import {resetPincode} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import {ScreenSizeContext} from '../../context/screenSize';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   Pin: undefined;
@@ -26,6 +27,7 @@ interface Props {
 
 const Pin: React.FC<Props> = props => {
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const {t} = useTranslation('onboarding');
 
@@ -103,23 +105,32 @@ const Pin: React.FC<Props> = props => {
   };
 
   return (
-    <OnboardingAuthPad
-      headerDescriptionText={
-        passcodeInitialSet
-          ? t('create_pin_repeat')
-          : t('create_pin_description')
-      }
-      handleCompletion={handleCompletion}
-      handleValidationFailure={handleValidationFailure}
-      handleValidationSuccess={handleValidationSuccess}
-      newPasscode={newPasscode}
-      passcodeInitialSet={passcodeInitialSet}
-    />
+    <View
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
+      ]}>
+      <OnboardingAuthPad
+        headerDescriptionText={
+          passcodeInitialSet
+            ? t('create_pin_repeat')
+            : t('create_pin_description')
+        }
+        handleCompletion={handleCompletion}
+        handleValidationFailure={handleValidationFailure}
+        handleValidationSuccess={handleValidationSuccess}
+        newPasscode={newPasscode}
+        passcodeInitialSet={passcodeInitialSet}
+      />
+    </View>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    container: {
+      flex: 1,
+    },
     // left absolute margin is screenWidth * 0.15
     // used for subtitles alinging
     headerTitle: {

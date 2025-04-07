@@ -158,7 +158,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const WelcomeNavigationOptions = (navigation: any) => {
+export const WelcomeNavigationOptions = () => {
   return {
     headerTitle: () => null,
     headerTitleAlign: 'left',
