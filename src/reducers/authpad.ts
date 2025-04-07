@@ -1,4 +1,5 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {AppThunk} from './types';
 
 // types
@@ -38,6 +39,11 @@ export const authpadSlice = createSlice({
     }),
     backspaceValue: state => ({...state, pin: state.pin.slice(0, -1)}),
     clearValues: state => ({...state, pin: ''}),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

@@ -1,4 +1,5 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {AppThunk} from './types';
 import {decodeBIP21} from '../lib/utils/bip21';
 
@@ -41,6 +42,11 @@ export const deeplinksSlice = createSlice({
       uri: action.payload,
     }),
     unsetDeeplink: state => ({...state, deeplinkSet: false, uri: ''}),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

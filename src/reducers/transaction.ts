@@ -1,4 +1,5 @@
 import {createAction, createSelector, createSlice} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {
   getTransactions as getLndTransactions,
   sendCoins,
@@ -582,6 +583,11 @@ export const transactionSlice = createSlice({
       ...state,
       txSubscriptionStarted: action.payload,
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

@@ -1,4 +1,5 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {AppThunk} from './types';
 
 // types
@@ -44,6 +45,11 @@ export const errorsSlice = createSlice({
       visible: false,
       message: '',
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

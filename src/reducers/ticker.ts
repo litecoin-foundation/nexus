@@ -1,4 +1,5 @@
 import {createAction, createSlice, createSelector} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import memoize from 'lodash.memoize';
 
 import {poll} from '../lib/utils/poll';
@@ -325,6 +326,11 @@ export const tickerSlice = createSlice({
       isBuyRateApprox: action.payload.isBuyRateApprox,
       isSellRateApprox: action.payload.isSellRateApprox,
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

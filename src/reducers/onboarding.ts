@@ -1,4 +1,5 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import * as FileSystem from 'expo-file-system';
 import {unzip, subscribe} from 'react-native-zip-archive';
 import ReactNativeBlobUtil from 'react-native-blob-util';
@@ -413,6 +414,11 @@ export const onboardingSlice = createSlice({
       ...state,
       supportId: action.payload,
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

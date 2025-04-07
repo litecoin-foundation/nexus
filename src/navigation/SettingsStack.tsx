@@ -25,6 +25,9 @@ import ImportSuccess, {
   ImportSuccessNavigationOptions,
 } from '../screens/Settings/ImportSuccess';
 import Support, {SupportNavigationOptions} from '../screens/Settings/Support';
+import ResetWallet, {
+  ResetWalletNavigationOptions,
+} from '../screens/Settings/ResetWallet';
 import TestPayment, {
   TestPaymentNavigationOptions,
 } from '../screens/Settings/TestPayment';
@@ -106,6 +109,11 @@ function SettingsStack() {
         name="Support"
         component={Support}
         options={({navigation}) => SupportNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="ResetWallet"
+        component={ResetWallet}
+        options={({navigation}) => ResetWalletNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="TestPayment"

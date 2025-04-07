@@ -1,4 +1,5 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import * as FileSystem from 'expo-file-system';
 import {Platform} from 'react-native';
 import {
@@ -250,6 +251,11 @@ export const lightningSlice = createSlice({
       ...state,
       lndActive: action.payload,
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

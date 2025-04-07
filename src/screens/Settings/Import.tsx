@@ -70,7 +70,8 @@ const Import: React.FC<Props> = props => {
     if (route.params?.scanData) {
       handleScan(route.params?.scanData);
     }
-  }, [address, route.params?.scanData, dispatch]);
+    /* eslint-disable react-hooks/exhaustive-deps */
+  }, [address, route.params?.scanData]);
 
   return (
     <LinearGradient
@@ -118,20 +119,22 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'flex-end',
     },
     headerTitle: {
+      color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
-      fontSize: 17,
     },
     cardContainer: {
       flex: 1,
       justifyContent: 'center',
+      marginTop: screenHeight * 0.05 * -1,
     },
     buttonContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.03,
       width: '100%',
-      paddingHorizontal: 30,
-      paddingBottom: 50,
+      paddingHorizontal: screenWidth * 0.06,
     },
   });
 

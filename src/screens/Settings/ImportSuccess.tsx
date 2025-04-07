@@ -32,35 +32,37 @@ const ImportSuccess: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return (
-    <>
-      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
-        <View style={styles.body}>
-          <TranslateText
-            textKey="awesome"
-            domain="settingsTab"
-            textStyle={styles.title}
-          />
-          <TranslateText
-            textKey="success_import"
-            domain="settingsTab"
-            textStyle={styles.subtitle}
-          />
-        </View>
+    <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+      <View style={styles.body}>
+        <TranslateText
+          textKey="awesome"
+          domain="settingsTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.07}
+          textStyle={styles.title}
+          numberOfLines={1}
+        />
+        <TranslateText
+          textKey="success_import"
+          domain="settingsTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+          textStyle={styles.subtitle}
+          numberOfLines={3}
+        />
+      </View>
 
-        <View style={styles.confirmButtonContainer}>
-          <WhiteButton
-            textKey="back_to_wallet"
-            textDomain="settingsTab"
-            disabled={false}
-            small={true}
-            active={true}
-            onPress={() => {
-              navigation.navigate('Main', {isInitial: true});
-            }}
-          />
-        </View>
-      </LinearGradient>
-    </>
+      <View style={styles.confirmButtonContainer}>
+        <WhiteButton
+          textKey="back_to_wallet"
+          textDomain="settingsTab"
+          disabled={false}
+          small={false}
+          active={true}
+          onPress={() => {
+            navigation.navigate('Main', {isInitial: true});
+          }}
+        />
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -84,7 +86,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.07,
+      fontSize: screenHeight * 0.05,
       textAlign: 'center',
       marginTop: screenHeight * 0.05 * -1,
     },
@@ -94,7 +96,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.016,
+      fontSize: screenHeight * 0.02,
       textTransform: 'uppercase',
       textAlign: 'center',
       opacity: 0.9,
@@ -104,17 +106,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       position: 'absolute',
       bottom: screenHeight * 0.03,
       width: '100%',
-      height: screenHeight * 0.125,
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      paddingHorizontal: screenWidth * 0.06,
     },
     headerTitle: {
+      color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
-      fontSize: 17,
     },
   });
 
