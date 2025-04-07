@@ -1,15 +1,15 @@
 import React, {useEffect, useContext} from 'react';
-import {Platform, SafeAreaView, StyleSheet} from 'react-native';
+import {KeyboardAvoidingView, Platform, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 
 import TranslateText from '../../components/TranslateText';
 import RecoveryField from '../../components/RecoveryField';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {setSeedRecovery} from '../../reducers/onboarding';
 import {useAppDispatch} from '../../store/hooks';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useTranslation} from 'react-i18next';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -51,8 +51,8 @@ const debugSeed = [
 
 const Recover: React.FC<Props> = props => {
   const {navigation} = props;
-  const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
+  const dispatch = useAppDispatch();
   const {t} = useTranslation('onboarding');
 
   useEffect(() => {
@@ -81,13 +81,19 @@ const Recover: React.FC<Props> = props => {
   return (
     <LinearGradient
       colors={['#1162E6', '#0F55C7']}
-      style={Platform.OS === 'android' ? {paddingTop: insets.top} : null}>
+      style={
+        Platform.OS === 'android'
+          ? {paddingTop: insets.top, marginBottom: insets.bottom}
+          : null
+      }>
       <SafeAreaView>
-        <RecoveryField
-          handleLogin={seed => attemptLogin(seed)}
-          headerText={t('enter_seed')}
-          isLitewalletRecovery={false}
-        />
+        <KeyboardAvoidingView>
+          <RecoveryField
+            handleLogin={seed => attemptLogin(seed)}
+            headerText={t('enter_seed')}
+            isLitewalletRecovery={false}
+          />
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );

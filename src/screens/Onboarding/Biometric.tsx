@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, SafeAreaView} from 'react-native';
+import {View, StyleSheet, SafeAreaView, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -13,6 +13,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   Biometric: undefined;
@@ -25,6 +26,7 @@ interface Props {
 
 const Biometric: React.FC<Props> = props => {
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -52,7 +54,12 @@ const Biometric: React.FC<Props> = props => {
   }, [navigation, biometryType]);
 
   return (
-    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
+    <LinearGradient
+      colors={['#1162E6', '#0F55C7']}
+      style={[
+        styles.container,
+        Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
+      ]}>
       <SafeAreaView />
 
       <Card

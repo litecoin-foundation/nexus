@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {Image, Platform, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {getLocales} from 'react-native-localize';
@@ -14,6 +14,7 @@ import {
   setLanguage,
 } from '../../reducers/settings';
 import {genSeed, getNeutrinoCache} from '../../reducers/onboarding';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   Initial: undefined;
@@ -26,8 +27,9 @@ interface Props {
 }
 
 const Initial = (props: Props) => {
-  const dispatch = useAppDispatch();
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(detectCurrencyCode());
@@ -55,7 +57,11 @@ const Initial = (props: Props) => {
           />
         </View>
       </View>
-      <View style={styles.subContainer}>
+      <View
+        style={[
+          styles.subContainer,
+          Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
+        ]}>
         <WhiteButton
           textKey="create_wallet"
           textDomain="onboarding"
