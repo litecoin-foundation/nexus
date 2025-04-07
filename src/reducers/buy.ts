@@ -1,4 +1,5 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {AppThunk} from './types';
 import {getCountry} from 'react-native-localize';
 import {uuidFromSeed} from '../lib/utils/uuid';
@@ -1001,6 +1002,11 @@ export const buySlice = createSlice({
       ...state,
       isFlexaCustomer: action.payload,
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

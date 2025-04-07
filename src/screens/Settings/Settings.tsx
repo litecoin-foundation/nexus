@@ -23,12 +23,9 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
-import {resetPincode, setBiometricEnabled} from '../../reducers/authentication';
+import {setBiometricEnabled} from '../../reducers/authentication';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sleep} from '../../lib/utils/poll';
-import {purgeStore} from '../../store';
-import {deleteLNDDir} from '../../lib/utils/file';
 import {updateSubunit, setNotificationsEnabled} from '../../reducers/settings';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
@@ -53,6 +50,7 @@ type RootStackParamList = {
   RecoverLitewallet: undefined;
   Loading: undefined;
   Support: undefined;
+  ResetWallet: undefined;
   TestPayment: undefined;
 };
 
@@ -137,17 +135,6 @@ const Settings: React.FC<Props> = props => {
     });
   };
 
-  const handleReset = async () => {
-    dispatch(resetPincode());
-    await purgeStore();
-    await deleteLNDDir();
-    await sleep(4000);
-    navigation.reset({
-      index: 0,
-      routes: [{name: 'Loading'}],
-    });
-  };
-
   const {t} = useTranslation('settingsTab');
 
   // NOTE: useMemo won't work here because we need to recalc the function after changing AppState,
@@ -165,6 +152,7 @@ const Settings: React.FC<Props> = props => {
     ),
     [notificationsEnabled],
   );
+
   return (
     <>
       <LinearGradient
@@ -235,7 +223,6 @@ const Settings: React.FC<Props> = props => {
             onPress={() => navigation.navigate('Language')}
             forward
           />
-
           <SettingCell
             textKey="view_seed"
             textDomain="settingsTab"
@@ -278,20 +265,9 @@ const Settings: React.FC<Props> = props => {
           <SettingCell
             textKey="reset_wallet"
             textDomain="settingsTab"
-            onPress={() => {
-              handleAuthenticationRequired('reset-wallet-auth').then(() =>
-                Alert.alert(t('reset_wallet'), t('reset_warning'), [
-                  {
-                    text: t('cancel'),
-                    onPress: () => setIsPinModalOpened(false),
-                    style: 'cancel',
-                  },
-                  {text: t('ok'), onPress: () => handleReset()},
-                ]),
-              );
-            }}
+            onPress={() => navigation.navigate('ResetWallet')}
+            forward
           />
-
           <SettingCell
             textKey="Test Payment"
             textDomain="settingsTab"

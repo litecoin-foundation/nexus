@@ -1,4 +1,5 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import NetInfo from '@react-native-community/netinfo';
 import {
   getInfo as getLndInfo,
@@ -190,6 +191,11 @@ export const infoSlice = createSlice({
       isInternetReachable: action.payload,
     }),
     getRecoveryInfoAction: (state, action) => ({...state, ...action.payload}),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

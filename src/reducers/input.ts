@@ -1,4 +1,5 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {AppThunk} from './types';
 import {satsToSubunit, subunitToSats} from '../lib/utils/satoshis';
 
@@ -236,6 +237,11 @@ export const inputSlice = createSlice({
     updatePrivateAmountAction(state, action: PayloadAction<string>) {
       state.convert.privateAmount = action.payload;
     },
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

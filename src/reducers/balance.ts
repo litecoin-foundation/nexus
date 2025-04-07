@@ -1,4 +1,5 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {walletBalance, walletKitListUnspent} from 'react-native-turbo-lnd';
 
 import {AppThunk} from './types';
@@ -120,6 +121,11 @@ export const balanceSlice = createSlice({
       regularConfirmedBalance: action.payload.regularConfirmedBalance,
       privateConfirmedBalance: action.payload.privateConfirmedBalance,
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

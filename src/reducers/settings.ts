@@ -1,4 +1,5 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {createSelector} from '@reduxjs/toolkit';
 import memoize from 'lodash.memoize';
 import {getCurrencies} from 'react-native-localize';
@@ -208,6 +209,11 @@ export const settingsSlice = createSlice({
       testPaymentCountry: action.payload.testPaymentCountry,
       testPaymentFiat: action.payload.testPaymentFiat,
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 

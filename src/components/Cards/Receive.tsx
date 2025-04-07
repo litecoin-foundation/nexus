@@ -45,27 +45,33 @@ const Receive: React.FC<Props> = () => {
 
   // update qr code when address changes
   useEffect(() => {
-    if (isMwebAddress && address !== regularAddress) {
+    if (isMwebAddress && address.includes('ltcmweb')) {
       setMwebAddress(address);
       setURI(address);
-    } else if (!isMwebAddress && address !== mwebAddress) {
+    } else if (!isMwebAddress && !address.includes('ltcmweb')) {
       setRegularAddress(address);
       setURI(address);
-    } else {
-      setMwebAddress('');
-      setRegularAddress('');
-      setURI('');
     }
-  }, [address, regularAddress, mwebAddress, isMwebAddress]);
+  }, [address, isMwebAddress]);
 
   // handle loading indicator
   useEffect(() => {
-    if (isMwebAddress) {
-      setLoading(mwebAddress ? false : true);
-    } else {
-      setLoading(address ? false : true);
+    if (isMwebAddress && !mwebAddress) {
+      setLoading(true);
     }
-  }, [address, mwebAddress, isMwebAddress]);
+    if (!isMwebAddress && !regularAddress) {
+      setLoading(true);
+    }
+    var timeout = setTimeout(() => {
+      if (isMwebAddress) {
+        setLoading(mwebAddress ? false : true);
+      } else {
+        setLoading(regularAddress ? false : true);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [regularAddress, mwebAddress, isMwebAddress]);
 
   const handleCopy = async () => {
     setInfoModalVisible(true);
@@ -137,9 +143,7 @@ const Receive: React.FC<Props> = () => {
               <QRCode
                 value={uri}
                 size={
-                  address.length < 64
-                    ? SCREEN_HEIGHT * 0.25
-                    : SCREEN_HEIGHT * 0.18
+                  isMwebAddress ? SCREEN_HEIGHT * 0.18 : SCREEN_HEIGHT * 0.25
                 }
               />
             ) : null}

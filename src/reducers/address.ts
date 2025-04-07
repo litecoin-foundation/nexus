@@ -1,4 +1,5 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
+import {PURGE} from 'redux-persist';
 import {newAddress} from 'react-native-turbo-lnd';
 import {NewAddressResponse} from 'react-native-turbo-lnd/protos/lightning_pb';
 import {AppThunk} from './types';
@@ -46,6 +47,11 @@ export const addressSlice = createSlice({
       ...state,
       address: action.payload,
     }),
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, () => {
+      return initialState;
+    });
   },
 });
 
