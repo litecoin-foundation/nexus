@@ -1,7 +1,5 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import * as FileSystem from 'expo-file-system';
-import {Platform} from 'react-native';
 import {
   start,
   initWallet as initLndWallet,
@@ -9,6 +7,7 @@ import {
   subscribeState,
   stopDaemon,
 } from 'react-native-turbo-lnd';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import {WalletState} from 'react-native-turbo-lnd/protos/lightning_pb';
 
 import {AppThunk} from './types';
@@ -45,18 +44,8 @@ export const startLnd = (): AppThunk => async dispatch => {
     await createConfig();
 
     // lnd dir path
-    let appFolderPath: string;
-    if (Platform.OS === 'android') {
-      appFolderPath = '/data/user/0/com.litecoin.nexus/files/lndltc';
-    } else if (Platform.OS === 'ios') {
-      appFolderPath = FileSystem.documentDirectory!.replace(
-        'file://',
-        '',
-      ).replace(/%20/g, ' ');
-      appFolderPath += 'lndltc/';
-    } else {
-      throw new Error('LND running on Unknown OS!');
-    }
+    const appFolderPath = `${RNFS.DocumentDirectoryPath}/lndltc/`;
+    console.log(appFolderPath);
 
     // start LND
     await start(` --lnddir=${appFolderPath}`);
@@ -195,7 +184,7 @@ export const unlockWallet = (): AppThunk => async dispatch => {
               resolve();
             }
           } catch (error) {
-            const dbPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+            const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
 
             if ((await fileExists(dbPath)) === false) {
               // TODO: users seedphrase is no longer saved to keychain as seed is in mmkv db

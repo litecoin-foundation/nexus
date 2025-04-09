@@ -1,5 +1,5 @@
 import {configureStore} from '@reduxjs/toolkit';
-import * as RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 
 import {
   persistStore,

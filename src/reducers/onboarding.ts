@@ -1,10 +1,9 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import * as FileSystem from 'expo-file-system';
 import {unzip, subscribe} from 'react-native-zip-archive';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Crypto from 'react-native-quick-crypto';
-import * as RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import {Platform} from 'react-native';
 
 import {AppThunk} from './types';
@@ -197,7 +196,8 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
   } else {
     // Check for free space
     // 1GB in bytes
-    const freeSpace = await FileSystem.getFreeDiskStorageAsync();
+    const {freeSpace} = await RNFS.getFSInfo();
+    console.log(`free space: ${freeSpace}`);
     if (freeSpace < 1000 * Math.pow(2, 20)) {
       // TODO: handle presync failure better
       throw new Error('Device requires at least 1GB of free space to presync!');
@@ -311,25 +311,25 @@ const extractNeutrinoCache = (): AppThunk => async dispatch => {
   try {
     console.log('starting extraction!');
     // delete any preexisting filter files if any exists
-    const blkHeaderPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/block_headers.bin`;
-    const neutrinodbPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/neutrino.db`;
-    const filterHeaderPath = `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/mainnet/reg_filter_headers.bin`;
+    const blkHeaderPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/block_headers.bin`;
+    const neutrinodbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/neutrino.db`;
+    const filterHeaderPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/reg_filter_headers.bin`;
     if (await fileExists(blkHeaderPath)) {
-      await FileSystem.deleteAsync(blkHeaderPath);
+      await RNFS.unlink(blkHeaderPath);
     }
     if (await fileExists(neutrinodbPath)) {
-      await FileSystem.deleteAsync(neutrinodbPath);
+      await RNFS.unlink(neutrinodbPath);
     }
     if (await fileExists(filterHeaderPath)) {
-      await FileSystem.deleteAsync(filterHeaderPath);
+      await RNFS.unlink(filterHeaderPath);
     }
     // extract cache
     subscribe(({progress}) => {
       dispatch(updateNeutrinoCacheUnzipProgress(Math.floor(progress * 100)));
     });
     await unzip(
-      `${FileSystem.documentDirectory}/mainnet.zip`,
-      `${FileSystem.documentDirectory}/lndltc/data/chain/litecoin/`,
+      `${RNFS.DocumentDirectoryPath}/mainnet.zip`,
+      `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/`,
     );
     // clean up
     await RNFS.unlink(`${ReactNativeBlobUtil.fs.dirs.DocumentDir}/mainnet.zip`);

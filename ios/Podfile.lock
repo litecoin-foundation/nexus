@@ -6,6 +6,27 @@ PODS:
   - CryptoSwift (1.8.4)
   - DeviceKit (5.0.0)
   - DoubleConversion (1.1.6)
+  - dr-pogodin-react-native-fs (2.30.3):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - EXApplication (6.0.1):
     - ExpoModulesCore
   - EXConstants (17.0.3):
@@ -81,7 +102,7 @@ PODS:
     - nanopb (~> 3.30910.0)
   - Flexa (1.0.10):
     - Flexa/Complete (= 1.0.10)
-  - flexa-react-native (1.0.10):
+  - flexa-react-native (1.0.11):
     - Flexa (~> 1.0.10)
     - RCT-Folly
     - RCTRequired
@@ -2130,8 +2151,6 @@ PODS:
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNFS (2.20.0):
-    - React-Core
   - RNGestureHandler (2.21.2):
     - DoubleConversion
     - glog
@@ -2423,6 +2442,7 @@ DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - "dr-pogodin-react-native-fs (from `../node_modules/@dr.pogodin/react-native-fs`)"
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
@@ -2522,7 +2542,6 @@ DEPENDENCIES:
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
-  - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNICloudStore (from `../node_modules/react-native-icloudstore`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
@@ -2576,6 +2595,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-linear-gradient"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
+  dr-pogodin-react-native-fs:
+    :path: "../node_modules/@dr.pogodin/react-native-fs"
   EXApplication:
     :path: "../node_modules/expo-application/ios"
   EXConstants:
@@ -2765,8 +2786,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBMessaging:
     :path: "../node_modules/@react-native-firebase/messaging"
-  RNFS:
-    :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNICloudStore:
@@ -2801,6 +2820,7 @@ SPEC CHECKSUMS:
   CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90
   DeviceKit: 0fd016a2cb67aca17c33dc23171cac270131eb88
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
+  dr-pogodin-react-native-fs: a195896657a2005ba5c15cbf68d4561ca8a2a3d6
   EXApplication: e1ad9c950c98b2b134578092c948b10b403f3ea7
   EXConstants: dd2fe64c6cdb1383b694c309a63028a8e9f2be6d
   Expo: 148aac4ce0da148c63447d09ae41ddb153f35506
@@ -2822,7 +2842,7 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 9347e719c3d52d8d7b9074b2c32407dd027305e9
   FirebaseMessaging: 00ece041b71ddb52a2862ffdee73fb6e9824bd0c
   Flexa: 819505e9de1925a485334d7af695205e1a711c19
-  flexa-react-native: 88521cee93e1fab8913583633c1505d8c59efcb4
+  flexa-react-native: 1ac1372e385900b2595baaee64ca0b991c3147bb
   FlexaCore: 90c01fdc74ae0a02d28a0600e7a625a02719dd9b
   FlexaLoad: 5bba58399acfe8464a5f47101a396c23861cc2ba
   FlexaNetworking: c82f91e27533003fb1376e483769ed61dde7c2d0
@@ -2917,7 +2937,6 @@ SPEC CHECKSUMS:
   RNDeviceInfo: b899ce37a403a4dea52b7cb85e16e49c04a5b88e
   RNFBApp: c9a7b90058f665b77e742a7f18812664479f464a
   RNFBMessaging: be0a99555606b2f1cf5453eb15d40af32e45c7ba
-  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 9bf33d2f92bec74a03d517b97d29c285e2f412d2
   RNICloudStore: 7ac4f2630e2a7e90a4b059b92e8483828bbacd2b
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
