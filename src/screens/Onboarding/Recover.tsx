@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {KeyboardAvoidingView, Platform, StyleSheet} from 'react-native';
+import {KeyboardAvoidingView, Platform, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -55,6 +55,10 @@ const Recover: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
   const {t} = useTranslation('onboarding');
 
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   useEffect(() => {
     if (__DEV__) {
       navigation.setOptions({
@@ -81,20 +85,28 @@ const Recover: React.FC<Props> = props => {
   return (
     <LinearGradient
       colors={['#1162E6', '#0F55C7']}
-      style={
-        Platform.OS === 'android'
-          ? {paddingTop: insets.top, marginBottom: insets.bottom}
-          : null
-      }>
-      <SafeAreaView>
-        <KeyboardAvoidingView>
-          <RecoveryField
-            handleLogin={seed => attemptLogin(seed)}
-            headerText={t('enter_seed')}
-            isLitewalletRecovery={false}
-          />
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+      style={[
+        styles.gradient,
+        Platform.OS === 'android' && {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        },
+      ]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 40}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.contentContainer}>
+            <RecoveryField
+              handleLogin={seed => attemptLogin(seed)}
+              headerText={t('enter_seed')}
+              isLitewalletRecovery={false}
+            />
+          </View>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+      <SafeAreaView />
     </LinearGradient>
   );
 };
@@ -112,6 +124,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: 'bold',
+    },
+    container: {
+      flex: 1,
+    },
+    gradient: {
+      flex: 1,
+    },
+    safeArea: {
+      flex: 1,
+    },
+    contentContainer: {
+      flex: 1,
     },
   });
 
