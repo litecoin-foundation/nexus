@@ -29,40 +29,77 @@ const TestPayment: React.FC = () => {
 
   const {
     testPaymentActive,
+    testPaymentKey,
     testPaymentMethod,
     testPaymentCountry,
     testPaymentFiat,
   } = useAppSelector(state => state.settings);
 
   const [selectedTPA, setSelectedTPA] = useState(testPaymentActive || false);
+  const [selectedTPK, setSelectedTPK] = useState(testPaymentKey || false);
   const [selectedTPM, setSelectedTPM] = useState(testPaymentMethod || '');
   const [selectedTPC, setSelectedTPC] = useState(testPaymentCountry || '');
   const [selectedTPF, setSelectedTPF] = useState(testPaymentFiat || '');
 
   const handleSetTestPayment = (
     TPA: boolean,
+    TPK: boolean,
     TPM: string,
     TPC: string,
     TPF: string,
   ): void => {
-    dispatch(setTestPayment(TPA, TPM, TPC, TPF));
+    dispatch(setTestPayment(TPA, TPK, TPM, TPC, TPF));
   };
 
   const handlePressTPA = (newOption: boolean): void => {
     setSelectedTPA(newOption);
-    handleSetTestPayment(newOption, selectedTPM, selectedTPC, selectedTPF);
+    handleSetTestPayment(
+      newOption,
+      selectedTPK,
+      selectedTPM,
+      selectedTPC,
+      selectedTPF,
+    );
+  };
+  const handlePressTPK = (newOption: boolean): void => {
+    setSelectedTPK(newOption);
+    handleSetTestPayment(
+      selectedTPA,
+      newOption,
+      selectedTPM,
+      selectedTPC,
+      selectedTPF,
+    );
   };
   const handlePressTPM = (newOption: string): void => {
     setSelectedTPM(newOption);
-    handleSetTestPayment(selectedTPA, newOption, selectedTPC, selectedTPF);
+    handleSetTestPayment(
+      selectedTPA,
+      selectedTPK,
+      newOption,
+      selectedTPC,
+      selectedTPF,
+    );
   };
   const handlePressTPC = (newOption: string): void => {
     setSelectedTPC(newOption);
-    handleSetTestPayment(selectedTPA, selectedTPM, newOption, selectedTPF);
+    handleSetTestPayment(
+      selectedTPA,
+      selectedTPK,
+      selectedTPM,
+      newOption,
+      selectedTPF,
+    );
   };
   const handlePressTPF = (newOption: string): void => {
     setSelectedTPF(newOption);
-    handleSetTestPayment(selectedTPA, selectedTPM, selectedTPC, newOption);
+    handleSetTestPayment(
+      selectedTPA,
+      selectedTPK,
+      selectedTPM,
+      selectedTPC,
+      newOption,
+    );
   };
 
   const renderItemTPA = ({item}: {item: boolean}) => (
@@ -71,6 +108,14 @@ const TestPayment: React.FC = () => {
       key={String(item)}
       onPress={() => handlePressTPA(item)}
       selected={selectedTPA === item}
+    />
+  );
+  const renderItemTPK = ({item}: {item: boolean}) => (
+    <OptionCell
+      title={String(item)}
+      key={String(item)}
+      onPress={() => handlePressTPK(item)}
+      selected={selectedTPK === item}
     />
   );
   const renderItemTPM = ({item}: {item: string}) => (
@@ -109,6 +154,12 @@ const TestPayment: React.FC = () => {
         </View>
         <View style={styles.flatListContainer}>
           <FlatList data={TEST_PAYMENT_ACTIVE} renderItem={renderItemTPA} />
+        </View>
+        <View style={styles.separator}>
+          <Text style={styles.separatorTitle}>Test Key</Text>
+        </View>
+        <View style={styles.flatListContainer}>
+          <FlatList data={TEST_PAYMENT_ACTIVE} renderItem={renderItemTPK} />
         </View>
         <View style={styles.separator}>
           <Text style={styles.separatorTitle}>Method</Text>
@@ -150,7 +201,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     flatListContainer: {
       width: '100%',
       minHeight: 100,
-      maxHeight: screenHeight * 0.25,
+      maxHeight: screenHeight * 0.22,
     },
     separatorTitle: {
       color: '#000',
