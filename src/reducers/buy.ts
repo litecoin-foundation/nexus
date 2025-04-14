@@ -864,7 +864,9 @@ export const getSignedOnramperUrl =
 
       try {
         const res = await fetch(
-          'https://api.nexuswallet.com/api/buy/onramper/sign',
+          testPaymentActive && testPaymentKey
+            ? 'https://api.nexuswallet.com/api/buy/onramper/sign_test'
+            : 'https://api.nexuswallet.com/api/buy/onramper/sign',
           {
             method: 'POST',
             headers: {
@@ -972,7 +974,9 @@ export const getSignedSellOnramperUrl =
 
       try {
         const res = await fetch(
-          'https://api.nexuswallet.com/api/buy/onramper/sign',
+          testPaymentActive && testPaymentKey
+            ? 'https://api.nexuswallet.com/api/buy/onramper/sign_test'
+            : 'https://api.nexuswallet.com/api/buy/onramper/sign',
           {
             method: 'POST',
             headers: {
