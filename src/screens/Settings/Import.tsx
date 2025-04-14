@@ -74,12 +74,7 @@ const Import: React.FC<Props> = props => {
   }, [address, route.params?.scanData]);
 
   return (
-    <LinearGradient
-      colors={['#1162E6', '#0F55C7']}
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-      ]}>
+    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
       <SafeAreaView />
 
       <View style={styles.cardContainer}>
@@ -94,7 +89,11 @@ const Import: React.FC<Props> = props => {
         />
       </View>
 
-      <View style={styles.buttonContainer}>
+      <View
+        style={[
+          styles.buttonContainer,
+          Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+        ]}>
         <WhiteButton
           textKey="scan_private_key"
           textDomain="settingsTab"

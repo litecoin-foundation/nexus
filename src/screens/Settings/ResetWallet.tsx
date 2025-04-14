@@ -1,9 +1,16 @@
 import React, {useState, useRef, useContext} from 'react';
-import {StyleSheet, View, Alert, DeviceEventEmitter} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Alert,
+  DeviceEventEmitter,
+  Platform,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {resetPincode} from '../../reducers/authentication';
 import {useAppDispatch} from '../../store/hooks';
@@ -33,7 +40,7 @@ interface Props {
 
 const ResetWallet: React.FC<Props> = props => {
   const {navigation} = props;
-
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {t} = useTranslation('settingsTab');
@@ -103,7 +110,11 @@ const ResetWallet: React.FC<Props> = props => {
           />
         </View>
 
-        <View style={styles.confirmButtonContainer}>
+        <View
+          style={[
+            styles.confirmButtonContainer,
+            Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
+          ]}>
           <WhiteButton
             textKey="Continue Reset"
             textDomain="settingsTab"

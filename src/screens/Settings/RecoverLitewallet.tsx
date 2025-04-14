@@ -1,5 +1,11 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {StyleSheet, SafeAreaView, Platform, Alert} from 'react-native';
+import {
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  Alert,
+  KeyboardAvoidingView,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -32,12 +38,16 @@ interface Props {
 
 const RecoverLitewallet: React.FC<Props> = props => {
   const {navigation} = props;
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
-  const insets = useSafeAreaInsets();
   const {address} = useAppSelector(state => state.address);
 
   const [loading, setLoading] = useState(false);
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   useEffect(() => {
     dispatch(getAddress());
@@ -69,15 +79,25 @@ const RecoverLitewallet: React.FC<Props> = props => {
     <>
       <LinearGradient
         colors={['#1162E6', '#0F55C7']}
-        style={Platform.OS === 'android' ? {paddingTop: insets.top} : null}>
-        <SafeAreaView>
-          <RecoveryField
-            handleLogin={() => {}}
-            headerText={t('litewallet_description')}
-            isLitewalletRecovery={true}
-            handleLWRecovery={seed => handleLWRecovery(seed)}
-          />
-        </SafeAreaView>
+        style={
+          Platform.OS === 'android' && {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+          }
+        }>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.flex}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 40}>
+          <SafeAreaView style={styles.flex}>
+            <RecoveryField
+              handleLogin={() => {}}
+              headerText={t('litewallet_description')}
+              isLitewalletRecovery={true}
+              handleLWRecovery={seed => handleLWRecovery(seed)}
+            />
+          </SafeAreaView>
+        </KeyboardAvoidingView>
       </LinearGradient>
 
       <LoadingIndicator visible={loading} />
@@ -110,6 +130,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       color: 'white',
       fontSize: 17,
+    },
+    flex: {
+      flex: 1,
     },
   });
 
