@@ -27,6 +27,7 @@ interface ISettings {
   deviceNotificationToken: string;
   notificationsEnabled: boolean;
   testPaymentActive: boolean;
+  testPaymentKey: boolean;
   testPaymentMethod: string;
   testPaymentCountry: string;
   testPaymentFiat: string;
@@ -41,6 +42,7 @@ type LanguageType = {
 };
 type TestPaymentType = {
   testPaymentActive: boolean;
+  testPaymentKey: boolean;
   testPaymentMethod: string;
   testPaymentCountry: string;
   testPaymentFiat: string;
@@ -147,6 +149,7 @@ export const setNotificationsEnabled =
 export const setTestPayment =
   (
     testPaymentActive: boolean,
+    testPaymentKey: boolean,
     testPaymentMethod: string,
     testPaymentCountry: string,
     testPaymentFiat: string,
@@ -155,6 +158,7 @@ export const setTestPayment =
     dispatch(
       setTestPaymentAction({
         testPaymentActive,
+        testPaymentKey,
         testPaymentMethod,
         testPaymentCountry,
         testPaymentFiat,
@@ -205,6 +209,7 @@ export const settingsSlice = createSlice({
     setTestPaymentAction: (state, action) => ({
       ...state,
       testPaymentActive: action.payload.testPaymentActive,
+      testPaymentKey: action.payload.testPaymentKey,
       testPaymentMethod: action.payload.testPaymentMethod,
       testPaymentCountry: action.payload.testPaymentCountry,
       testPaymentFiat: action.payload.testPaymentFiat,

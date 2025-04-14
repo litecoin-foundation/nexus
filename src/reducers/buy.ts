@@ -19,6 +19,7 @@ import {ITrade} from '../utils/txMetadata';
 
 const MOONPAY_PUBLIC_KEY = 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
 const ONRAMPER_PUBLIC_KEY = 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
+const ONRAMPER_TEST_PUBLIC_KEY = 'pk_test_01JF0BA1P5AXVTW3NQM22FJXG2';
 
 // types
 interface IBuy {
@@ -615,8 +616,12 @@ const checkMoonpayAllowed = (): AppThunk => async (dispatch, getState) => {
 };
 
 const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
-  const {testPaymentActive, testPaymentCountry, testPaymentFiat} =
-    getState().settings;
+  const {
+    testPaymentActive,
+    testPaymentKey,
+    testPaymentCountry,
+    testPaymentFiat,
+  } = getState().settings;
 
   // check if buy/sell is allowed based on user ip and preferred currency
   const currencyCode = testPaymentActive
@@ -639,6 +644,19 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
       Authorization: ONRAMPER_PUBLIC_KEY,
     },
   };
+
+  // ONRAMPER_TEST_PUBLIC_KEY returns forbidden res
+  // const req = {
+  //   method: 'GET',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //     accept: 'application/json',
+  //     Authorization:
+  //       testPaymentActive && testPaymentKey
+  //         ? ONRAMPER_TEST_PUBLIC_KEY
+  //         : ONRAMPER_PUBLIC_KEY,
+  //   },
+  // };
 
   try {
     const res = await fetch(supportedForBuying, req);
@@ -766,7 +784,12 @@ export const getSignedUrl =
   (address: string, fiatAmount: number): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {currencyCode} = getState().settings;
+      const {testPaymentActive, testPaymentFiat} = getState().settings;
+
+      const currencyCode = testPaymentActive
+        ? testPaymentFiat
+        : getState().settings.currencyCode;
+
       const {uniqueId} = getState().onboarding;
       const unsignedURL =
         `https://buy.moonpay.com?apiKey=${MOONPAY_PUBLIC_KEY}` +
@@ -808,12 +831,25 @@ export const getSignedOnramperUrl =
   (address: string, fiatAmount: number): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {currencyCode} = getState().settings;
+      const {testPaymentActive, testPaymentKey, testPaymentFiat} =
+        getState().settings;
+
+      const currencyCode = testPaymentActive
+        ? testPaymentFiat
+        : getState().settings.currencyCode;
+
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
 
       const signContent = `wallets=ltc_litecoin:${address}`;
-      const baseUrl = `https://buy.onramper.com/?apiKey=${ONRAMPER_PUBLIC_KEY}`;
+      const onramperKey =
+        testPaymentActive && testPaymentKey
+          ? ONRAMPER_TEST_PUBLIC_KEY
+          : ONRAMPER_PUBLIC_KEY;
+      const baseUrl =
+        testPaymentActive && testPaymentKey
+          ? `https://buy.onramper.dev/?apiKey=${onramperKey}`
+          : `https://buy.onramper.com/?apiKey=${onramperKey}`;
 
       const unsignedURL =
         baseUrl +
@@ -902,12 +938,25 @@ export const getSignedSellOnramperUrl =
   (address: string, cryptoAmount: number): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {currencyCode} = getState().settings;
+      const {testPaymentActive, testPaymentKey, testPaymentFiat} =
+        getState().settings;
+
+      const currencyCode = testPaymentActive
+        ? testPaymentFiat
+        : getState().settings.currencyCode;
+
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
 
       const signContent = `wallets=ltc_litecoin:${address}`;
-      const baseUrl = `https://buy.onramper.com/?apiKey=${ONRAMPER_PUBLIC_KEY}`;
+      const onramperKey =
+        testPaymentActive && testPaymentKey
+          ? ONRAMPER_TEST_PUBLIC_KEY
+          : ONRAMPER_PUBLIC_KEY;
+      const baseUrl =
+        testPaymentActive && testPaymentKey
+          ? `https://buy.onramper.dev/?apiKey=${onramperKey}`
+          : `https://buy.onramper.com/?apiKey=${onramperKey}`;
 
       const unsignedURL =
         baseUrl +
