@@ -11,11 +11,19 @@ import {setDeeplink} from '../reducers/deeplinks';
 import {updateFiredAlertsFromApiServer} from '../reducers/alerts';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {checkBuySellProviderCountry} from '../reducers/buy';
+import {getItem, resetItem} from '../lib/utils/keychain';
 
 type RootStackParamList = {
   Loading: undefined;
   AuthStack: undefined;
-  Onboarding: undefined;
+  Onboarding:
+    | {
+        screen?: 'Welcome' | 'InitialWithSeed';
+        params?: {
+          existingSeed: string;
+        };
+      }
+    | undefined;
 };
 
 interface Props {
@@ -65,6 +73,12 @@ const Loading: React.FC<Props> = props => {
         dispatch(setDeeplink(uri));
       }
 
+      const seed = await getItem('SEEDPHRASE');
+      // uncomment for dev purposes
+      // if (__DEV__) {
+      //   await resetItem('SEEDPHRASE');
+      // }
+
       if (onboarding === false && isOnboarded === true) {
         navigation.replace('AuthStack');
       } else if (isOnboarded === false) {
@@ -72,7 +86,14 @@ const Loading: React.FC<Props> = props => {
           navigation.navigate('Onboarding', {screen: 'Welcome'});
         } else {
           dispatch(startOnboarding());
-          navigation.navigate('Onboarding');
+          if (seed) {
+            navigation.navigate('Onboarding', {
+              screen: 'InitialWithSeed',
+              params: {existingSeed: seed},
+            });
+          } else {
+            navigation.navigate('Onboarding');
+          }
         }
       } else {
         console.log('SOMETHING WENT WRONG!');
