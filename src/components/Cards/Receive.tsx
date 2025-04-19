@@ -1,5 +1,14 @@
 import React, {useEffect, useState, useContext} from 'react';
 import {StyleSheet, View, Pressable} from 'react-native';
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  withRepeat,
+  withDelay,
+  Easing,
+  interpolateColor,
+} from 'react-native-reanimated';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import Share from 'react-native-share';
@@ -31,6 +40,69 @@ const Receive: React.FC<Props> = () => {
   const [uri, setURI] = useState('');
   const [isInfoModalVisible, setInfoModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const shimmerValue = useSharedValue(0);
+  const shimmerValue2 = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      shimmerValue.value,
+      [0, 1],
+      ['rgba(244, 244, 244, 0.6)', 'rgba(200, 200, 200, 0.9)'],
+    );
+
+    return {
+      backgroundColor,
+      transform: [
+        {
+          translateX: shimmerValue.value * SCREEN_WIDTH,
+        },
+      ],
+    };
+  });
+  const animatedStyle2 = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      shimmerValue2.value,
+      [0, 1],
+      ['rgba(244, 244, 244, 0.6)', 'rgba(200, 200, 200, 0.9)'],
+    );
+
+    return {
+      backgroundColor,
+      transform: [
+        {
+          translateX: shimmerValue2.value * SCREEN_WIDTH * 0.7,
+        },
+      ],
+    };
+  });
+
+  useEffect(() => {
+    shimmerValue.value = withRepeat(
+      withDelay(
+        500,
+        withTiming(1, {
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+        }),
+      ),
+      -1,
+      false,
+    );
+    shimmerValue2.value = withDelay(
+      500,
+      withRepeat(
+        withDelay(
+          500,
+          withTiming(1, {
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+          }),
+        ),
+        -1,
+        false,
+      ),
+    );
+  }, [shimmerValue, shimmerValue2]);
 
   // generate fresh new address on launch
   useEffect(() => {
@@ -121,22 +193,37 @@ const Receive: React.FC<Props> = () => {
         />
 
         <View style={styles.addressContainer}>
-          <View style={styles.address}>
-            <Pressable
-              style={styles.pressableContainer}
-              onPress={() => handleCopy()}>
-              <TranslateText
-                textValue={isMwebAddress ? mwebAddress : regularAddress}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.021}
-                textStyle={styles.addressText}
-              />
-            </Pressable>
+          {!loading ? (
+            <View style={styles.address}>
+              <Pressable
+                style={styles.pressableContainer}
+                onPress={() => handleCopy()}>
+                <TranslateText
+                  textValue={isMwebAddress ? mwebAddress : regularAddress}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.021}
+                  textStyle={styles.addressText}
+                />
+              </Pressable>
 
-            <NewButton
-              onPress={() => handleShare()}
-              imageSource={require('../../assets/icons/share-icon.png')}
-            />
-          </View>
+              <NewButton
+                onPress={() => handleShare()}
+                imageSource={require('../../assets/icons/share-icon.png')}
+              />
+            </View>
+          ) : (
+            <>
+              <View style={styles.skeleton}>
+                <Animated.View
+                  style={[styles.animatedSkeleton, animatedStyle]}
+                />
+              </View>
+              <View style={[styles.skeleton, styles.skeleton2]}>
+                <Animated.View
+                  style={[styles.animatedSkeleton, animatedStyle2]}
+                />
+              </View>
+            </>
+          )}
 
           <View style={styles.qrContainer}>
             {uri ? (
@@ -147,9 +234,9 @@ const Receive: React.FC<Props> = () => {
                 }
               />
             ) : null}
-          </View>
 
-          <LoadingIndicator visible={loading} />
+            <LoadingIndicator visible={loading} />
+          </View>
         </View>
 
         {isMwebAddress ? (
@@ -248,6 +335,21 @@ const getStyles = (
       textAlign: 'center',
       marginTop: screenWidth * 0.03,
       paddingHorizontal: screenWidth * 0.15,
+    },
+    skeleton: {
+      width: '100%',
+      height: screenHeight * 0.022,
+      borderRadius: 3,
+      backgroundColor: '#F4F4F4',
+      overflow: 'hidden',
+      marginTop: screenHeight * 0.01,
+    },
+    skeleton2: {
+      width: '70%',
+    },
+    animatedSkeleton: {
+      width: '100%',
+      height: '100%',
     },
   });
 

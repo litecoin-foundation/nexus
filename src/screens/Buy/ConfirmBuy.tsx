@@ -1,9 +1,9 @@
 import React, {useEffect, useContext, useState} from 'react';
-import {View, Text, SafeAreaView, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import SafeAreaView from '../../components/SafeAreaView';
 import TableCell from '../../components/Cells/TableCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TranslateText from '../../components/TranslateText';
@@ -57,7 +57,6 @@ const LeftHeaderButton: React.FC<LeftHeaderProps> = props => {
 
 const ConfirmBuy: React.FC<Props> = props => {
   const {navigation, route} = props;
-  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -129,6 +128,7 @@ const ConfirmBuy: React.FC<Props> = props => {
         }
       }
     }
+    /* eslint-disable react-hooks/exhaustive-deps */
   }, [route.params, navigation]);
 
   const SuccessScreen = (
@@ -176,63 +176,60 @@ const ConfirmBuy: React.FC<Props> = props => {
   );
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#1162E6',
-        marginBottom: insets.bottom,
-      }}>
+    <View style={styles.container}>
       {wasSuccessful ? (
         SuccessScreen
       ) : (
         <>
           <SafeAreaView>
-            <View style={{paddingTop: 108, paddingLeft: 20}}>
+            <View style={styles.topContainer}>
               <TranslateText
                 textKey={'purchasing'}
                 domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.03}
                 textStyle={styles.titleText}
                 numberOfLines={1}
               />
-              <Text style={styles.amountText}>{ltcAmount} LTC</Text>
+              <TranslateText
+                textValue={`${ltcAmount} LTC`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.08}
+                textStyle={styles.amountText}
+                numberOfLines={1}
+              />
               <View style={styles.fiatAmount}>
-                <Text style={styles.fiatAmountText}>
-                  {currencySymbol}
-                  {totalAmount.toFixed(2)}
-                </Text>
+                <TranslateText
+                  textValue={`${currencySymbol}${totalAmount.toFixed(2)}`}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                  textStyle={styles.fiatAmountText}
+                  numberOfLines={1}
+                />
               </View>
             </View>
           </SafeAreaView>
 
           <View style={styles.bottomSheetContainer}>
-            <View style={styles.bottomSheetSubContainer}>
-              <TableCell
-                titleTextKey="rate"
-                titleTextDomain="buyTab"
-                value={`${currencySymbol}${ltcPrice.toFixed(2)} per 1 LTC`}
-                noBorder
-              />
-              <TableCell
-                titleTextKey="total_fee"
-                titleTextDomain="main"
-                value={String(feeAmount)}
-              />
-              <TableCell
-                titleTextKey="network_fee"
-                titleTextDomain="main"
-                value={String(networkFeeAmount)}
-              />
-              <TableCell
-                titleTextKey="will_spend"
-                titleTextDomain="buyTab"
-                value={`${currencySymbol}${totalAmount.toFixed(2)}`}
-                valueStyle={{color: '#20BB74'}}
-              />
-            </View>
-
-            <View style={{height: 30}} />
-
+            <TableCell
+              titleTextKey="rate"
+              titleTextDomain="buyTab"
+              value={`${currencySymbol}${ltcPrice.toFixed(2)} per 1 LTC`}
+              noBorder
+            />
+            <TableCell
+              titleTextKey="total_fee"
+              titleTextDomain="main"
+              value={`${currencySymbol}${feeAmount.toFixed(2)}`}
+            />
+            <TableCell
+              titleTextKey="network_fee"
+              titleTextDomain="main"
+              value={`${currencySymbol}${networkFeeAmount.toFixed(2)}`}
+            />
+            <TableCell
+              titleTextKey="will_spend"
+              titleTextDomain="buyTab"
+              value={`${currencySymbol}${totalAmount.toFixed(2)}`}
+              valueStyle={{color: '#20BB74'}}
+            />
             <View style={styles.confirmButtonContainer}>
               <GreenButton
                 textKey="continue_purchase"
@@ -251,59 +248,62 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: '#1162E6',
+    },
+    topContainer: {
+      paddingHorizontal: screenWidth * 0.04,
     },
     bottomSheetContainer: {
-      backgroundColor: 'white',
       position: 'absolute',
       bottom: 0,
-      borderTopLeftRadius: 28,
-      borderTopRightRadius: 28,
       width: '100%',
-    },
-    bottomSheetSubContainer: {
-      height: 330,
-      paddingTop: 26,
+      height: screenHeight * 0.36,
+      backgroundColor: 'white',
+      borderTopLeftRadius: screenHeight * 0.03,
+      borderTopRightRadius: screenHeight * 0.03,
+      paddingTop: screenWidth * 0.04,
+      overflow: 'hidden',
     },
     titleText: {
+      color: 'white',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.025,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
-      fontSize: 24,
+      marginTop: screenHeight * 0.1,
     },
     amountText: {
+      color: 'white',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.06,
       fontStyle: 'normal',
       fontWeight: '400',
-      color: 'white',
-      fontSize: 48,
-    },
-    headerLeftMargin: {
-      marginLeft: 22,
+      marginTop: screenHeight * 0.01,
     },
     confirmButtonContainer: {
-      marginHorizontal: 24,
-      bottom: 44,
       position: 'absolute',
-      width: screenWidth - 48,
+      bottom: screenHeight * 0.03,
+      left: screenWidth * 0.04,
+      width: screenWidth - screenWidth * 0.08,
     },
     fiatAmount: {
+      width: 'auto',
+      height: screenHeight * 0.05,
       borderRadius: screenHeight * 0.01,
       backgroundColor: '#0F4CAD',
-      paddingTop: screenHeight * 0.01,
-      paddingBottom: screenHeight * 0.01,
-      paddingLeft: screenHeight * 0.015,
-      paddingRight: screenHeight * 0.015,
-      height: 42,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: screenHeight * 0.01,
+      paddingHorizontal: screenHeight * 0.015,
       alignSelf: 'flex-start',
-      marginTop: 10,
+      marginTop: screenHeight * 0.01,
     },
     fiatAmountText: {
       color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.02,
       opacity: 0.4,
     },
     body: {
@@ -318,9 +318,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.07,
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.07,
       textAlign: 'center',
       marginTop: screenHeight * 0.05 * -1,
     },
@@ -328,9 +328,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.016,
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.016,
       textTransform: 'uppercase',
       textAlign: 'center',
       opacity: 0.9,
@@ -352,9 +352,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     toAddressText: {
       color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.025,
       fontStyle: 'normal',
       fontWeight: '500',
-      fontSize: screenHeight * 0.025,
       textAlign: 'center',
     },
   });

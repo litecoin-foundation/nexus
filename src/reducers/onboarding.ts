@@ -151,7 +151,6 @@ export const finishOnboarding = (): AppThunk => (dispatch, getState) => {
 export const genSeed = (): AppThunk => async dispatch => {
   try {
     const seed = await generateMnemonic();
-    await setItem('SEEDPHRASE', seed.join(''));
     dispatch(genSeedAction(seed));
   } catch (error) {
     console.error(error);
@@ -159,9 +158,12 @@ export const genSeed = (): AppThunk => async dispatch => {
 };
 
 // sets users wallet seed
-export const setSeed = (): AppThunk => (dispatch, getState) => {
+export const setSeed = (): AppThunk => async (dispatch, getState) => {
   const {generatedSeed, beingRecovered} = getState().onboarding!;
-  // if wallet is being recovered, there is not generated seed to set!
+  // save seed to keychain
+  await setItem('SEEDPHRASE', generatedSeed.join(','));
+  // another function setSeedRecovery handles seed in recovery mode
+  // in which this one should not be called
   if (beingRecovered) {
     return;
   }
@@ -170,7 +172,9 @@ export const setSeed = (): AppThunk => (dispatch, getState) => {
 
 export const setSeedRecovery =
   (seedPhrase: string[]): AppThunk =>
-  dispatch => {
+  async dispatch => {
+    // save seed to keychain
+    await setItem('SEEDPHRASE', seedPhrase.join(','));
     dispatch(setSeedRecoveryAction(seedPhrase));
   };
 

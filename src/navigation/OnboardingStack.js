@@ -2,6 +2,7 @@ import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import Initial from '../screens/Onboarding/Initial';
+import InitialWithSeed from '../screens/Onboarding/InitialWithSeed';
 import Pin from '../screens/Onboarding/Pin';
 import Generate from '../screens/Onboarding/Generate';
 import Verify from '../screens/Onboarding/Verify';
@@ -27,6 +28,11 @@ function OnboardingStack() {
         name="Initial"
         component={Initial}
         options={Initial.navigationOptions}
+      />
+      <Stack.Screen
+        name="InitialWithSeed"
+        component={InitialWithSeed}
+        options={InitialWithSeed.navigationOptions}
       />
       <Stack.Screen
         name="Pin"

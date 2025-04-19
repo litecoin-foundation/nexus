@@ -35,6 +35,7 @@ import {
   updateSendAddress,
   updateSendDomain,
 } from '../../reducers/input';
+import {estimateFee} from 'react-native-turbo-lnd';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -69,9 +70,11 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   );
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
-  const confirmedBalance = useAppSelector(
-    state => state.balance.confirmedBalance,
+  const {confirmedBalance, totalBalance} = useAppSelector(
+    state => state.balance,
   );
+  const balanceMinus001 = Number(confirmedBalance) - 1000000;
+  const syncedToChain = useAppSelector(state => state.info.syncedToChain);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -79,15 +82,49 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
   const [address, setAddress] = useState('');
   const [addressDomain, setAddressDomain] = useState('');
+  const [showResolvedDomain, setShowResolvedDomain] = useState<boolean>(false);
   const [addressValid, setAddressValid] = useState<boolean | null>(null);
   const [toggleLTC, setToggleLTC] = useState<boolean>(true);
   const [description, setDescription] = useState<string>('');
   const [amountPickerActive, setAmountPickerActive] = useState(false);
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
+  const [noteKey, setNoteKey] = useState<string>('');
+
+  const [sendOutFee, setSendOutFee] = useState(0);
+  // estimate fee
+  useEffect(() => {
+    const calculateFee = async () => {
+      try {
+        const response = await estimateFee({
+          AddrToAmount: {
+            ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus001),
+          },
+          targetConf: 2,
+        });
+        setSendOutFee(Number(response.feeSat));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    calculateFee();
+  }, [balanceMinus001]);
 
   // check if ready to send
   useEffect(() => {
     const check = async () => {
+      // NOTE: when wallet isn't fully synced, balance is showed as not confirmed
+      // hence cannot send the coins
+      if (totalBalance !== confirmedBalance) {
+        setNoteKey('balance_unconfirmed');
+        return;
+      }
+
+      if (!syncedToChain) {
+        setNoteKey('wallet_unsynced');
+        return;
+      }
+
       // check user balance
       if (!amount) {
         setSendDisabled(true);
@@ -97,6 +134,13 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       // validate balance
       const amountInSats = convertToSats(Number(amount));
       if (amountInSats > Number(confirmedBalance)) {
+        setNoteKey('insufficient_funds');
+        setSendDisabled(true);
+        return;
+      }
+
+      if (amountInSats > Number(confirmedBalance) - sendOutFee) {
+        setNoteKey('try_less_amount');
         setSendDisabled(true);
         return;
       }
@@ -118,7 +162,14 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     };
     check();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, description, amount, confirmedBalance]);
+  }, [
+    address,
+    description,
+    amount,
+    confirmedBalance,
+    syncedToChain,
+    sendOutFee,
+  ]);
 
   // qr code scanner result handler
   useEffect(() => {
@@ -260,6 +311,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         addressOnValidation = data.address;
         // set domain to render in ui
         setAddressDomain(endAddress);
+        setShowResolvedDomain(true);
         // update address for another validation function
         setAddress(addressOnValidation);
       } else {
@@ -359,14 +411,20 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               </View>
               <View style={styles.inputFieldContainer}>
                 <AddressField
-                  address={addressDomain ? addressDomain : address}
-                  onChangeText={setAddress}
+                  address={showResolvedDomain ? addressDomain : address}
+                  onChangeText={e => {
+                    setShowResolvedDomain(false);
+                    setAddress(e);
+                  }}
                   onScanPress={handleScan}
                   onPastePress={handlePaste}
                   validateAddress={endAddress => validateAddress(endAddress)}
                   onBlur={() => scrollToInput(0)}
                   onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.13)}
-                  clearInput={() => setAddress('')}
+                  clearInput={() => {
+                    setAddress('');
+                    setAddressDomain('');
+                  }}
                 />
               </View>
             </View>
@@ -389,6 +447,18 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                 />
               </View>
             </View>
+
+            {noteKey ? (
+              <View style={styles.noteContainer}>
+                <TranslateText
+                  textKey={noteKey}
+                  domain="sendTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                  textStyle={styles.noteText}
+                  numberOfLines={3}
+                />
+              </View>
+            ) : null}
           </Animated.View>
         )}
       </ScrollView>
@@ -509,6 +579,20 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       position: 'absolute',
       width: screenWidth,
       bottom: screenHeight * 0.03,
+    },
+    noteContainer: {
+      width: '100%',
+      marginTop: screenHeight * 0.08,
+      paddingHorizontal: screenWidth * 0.04,
+    },
+    noteText: {
+      width: '100%',
+      color: '#2E2E2E',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
+      fontStyle: 'normal',
+      fontWeight: '500',
+      textAlign: 'center',
     },
     bottomBtnsContainer: {
       position: 'absolute',
