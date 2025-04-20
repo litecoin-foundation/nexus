@@ -1,4 +1,10 @@
-import React, {useEffect, useRef, useState, useContext} from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useContext,
+  useCallback,
+} from 'react';
 import {
   View,
   TextInput,
@@ -6,6 +12,7 @@ import {
   Text,
   Pressable,
   Image,
+  LayoutChangeEvent,
 } from 'react-native';
 import Animated, {
   interpolateColor,
@@ -53,28 +60,18 @@ const AddressField: React.FC<Props> = props => {
   const PADDING = SCREEN_HEIGHT * 0.01; // Padding for multiline content
 
   const [isActive, setActive] = useState(false);
-  const hiddenTextRef = useRef<string>('');
-  const textLayoutRef = useRef<any>(null);
+  const [addressForMeasurement, setAddressForMeasurement] = useState(address);
 
+  // updates AddressField height if address prop updated
+  // via Scan or Paste
   useEffect(() => {
-    hiddenTextRef.current = address;
+    setAddressForMeasurement(address);
   }, [address]);
 
+  // updates AddressField height via user input
   const handleTextChange = (text: string) => {
     onChangeText(text);
-  };
-
-  const onMeasuredTextLayout = (event: any) => {
-    const {height: measuredHeight} = event.nativeEvent.layout;
-
-    const lines = Math.max(1, Math.ceil(measuredHeight / LINE_HEIGHT)) - 1;
-
-    const newHeight =
-      MULTILINE_HEIGHT + (lines > 1 ? lines * LINE_HEIGHT + PADDING : 0);
-
-    animatedHeight.value = withTiming(newHeight, {
-      duration: 200,
-    });
+    setAddressForMeasurement(text);
   };
 
   // animation
@@ -156,6 +153,28 @@ const AddressField: React.FC<Props> = props => {
     }
   };
 
+  const updateHeightFromMeasurement = useCallback(
+    (measuredHeight: number) => {
+      const lines = Math.max(1, Math.ceil(measuredHeight / LINE_HEIGHT)) - 1;
+
+      const newHeight =
+        MULTILINE_HEIGHT + (lines > 1 ? lines * LINE_HEIGHT + PADDING : 0);
+
+      animatedHeight.value = withTiming(newHeight, {
+        duration: 200,
+      });
+    },
+    [MULTILINE_HEIGHT, LINE_HEIGHT, PADDING, animatedHeight],
+  );
+
+  const onMeasuredTextLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const {height} = event.nativeEvent.layout;
+      updateHeightFromMeasurement(height);
+    },
+    [updateHeightFromMeasurement],
+  );
+
   useEffect(() => {
     if (address !== '') {
       // AddressField is active
@@ -183,11 +202,8 @@ const AddressField: React.FC<Props> = props => {
   return (
     <Animated.View style={[styles.container, animatedContainerStyle]}>
       <View style={styles.hiddenContainer}>
-        <Text
-          ref={textLayoutRef}
-          style={styles.hiddenText}
-          onLayout={onMeasuredTextLayout}>
-          {address}
+        <Text style={styles.hiddenText} onLayout={onMeasuredTextLayout}>
+          {addressForMeasurement}
         </Text>
       </View>
 
