@@ -1,4 +1,11 @@
-import React, {useEffect, useContext, useRef} from 'react';
+import React, {
+  useEffect,
+  useContext,
+  useRef,
+  useState,
+  useLayoutEffect,
+  useCallback,
+} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
@@ -67,19 +74,22 @@ const AuthPad: React.FC<Props> = props => {
     };
   }, [dispatch]);
 
+  const [pinInactive, setPinInactive] = useState(false);
   // handles when AuthPad inputs are filled
   useEffect(() => {
     if (pin.length === 6) {
+      setPinInactive(true);
       if (pin === passcode) {
         handleValidationSuccess();
       } else {
         passcodeInputRef.current?.playIncorrectAnimation();
         handleValidationFailure();
         dispatch(clearValues());
+        setPinInactive(false);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pin]);
+  }, [pin, passcode]);
 
   const handlePress = (input: string) => {
     switch (input) {
@@ -95,62 +105,71 @@ const AuthPad: React.FC<Props> = props => {
     }
   };
 
-  let pinInactive = false;
-
-  const status = {
-    status: function () {
-      if (permaLock) {
-        pinInactive = true;
-        return 'Maxed out pin attempts. Recover with seed.';
-      } else if (dayLock) {
-        if (
-          Number(dayLockAt || 0) + DAY_LOCK_IN_SEC <
-          Math.floor(Date.now() / 1000)
-        ) {
-          pinInactive = false;
-          if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
-            return t('attempts_left', {
-              count: MAX_LOGIN_ATTEMPTS - failedLoginAttempts,
-            });
-          }
-        } else {
-          pinInactive = true;
-          const timeLeftInSec =
-            DAY_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - dayLockAt);
-          return `Maxed out pin attempts. Try again in ${Math.ceil(
-            timeLeftInSec / 60,
-          )} minutes.`;
-        }
-      } else if (timeLock) {
-        if (
-          Number(timeLockAt || 0) + TIME_LOCK_IN_SEC <
-          Math.floor(Date.now() / 1000)
-        ) {
-          pinInactive = false;
-          if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
-            return t('attempts_left', {
-              count: MAX_LOGIN_ATTEMPTS - failedLoginAttempts,
-            });
-          }
-        } else {
-          pinInactive = true;
-          const timeLeftInSec =
-            TIME_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - timeLockAt);
-          return `Maxed out pin attempts. Try again in ${Math.ceil(
-            timeLeftInSec / 60,
-          )} minutes.`;
-        }
-      } else {
-        pinInactive = false;
+  const getStatus = useCallback(() => {
+    if (permaLock) {
+      setPinInactive(true);
+      return 'Maxed out pin attempts. Recover with seed.';
+    } else if (dayLock) {
+      if (
+        Number(dayLockAt || 0) + DAY_LOCK_IN_SEC <
+        Math.floor(Date.now() / 1000)
+      ) {
+        setPinInactive(false);
         if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
           return t('attempts_left', {
             count: MAX_LOGIN_ATTEMPTS - failedLoginAttempts,
           });
         }
+      } else {
+        setPinInactive(true);
+        const timeLeftInSec =
+          DAY_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - dayLockAt);
+        return `Maxed out pin attempts. Try again in ${Math.ceil(
+          timeLeftInSec / 60,
+        )} minutes.`;
       }
-      return '';
-    },
-  }.status();
+    } else if (timeLock) {
+      if (
+        Number(timeLockAt || 0) + TIME_LOCK_IN_SEC <
+        Math.floor(Date.now() / 1000)
+      ) {
+        setPinInactive(false);
+        if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
+          return t('attempts_left', {
+            count: MAX_LOGIN_ATTEMPTS - failedLoginAttempts,
+          });
+        }
+      } else {
+        setPinInactive(true);
+        const timeLeftInSec =
+          TIME_LOCK_IN_SEC - (Math.floor(Date.now() / 1000) - timeLockAt);
+        return `Maxed out pin attempts. Try again in ${Math.ceil(
+          timeLeftInSec / 60,
+        )} minutes.`;
+      }
+    } else {
+      setPinInactive(false);
+      if (failedLoginAttempts >= MAX_LOGIN_ATTEMPTS - 3) {
+        return t('attempts_left', {
+          count: MAX_LOGIN_ATTEMPTS - failedLoginAttempts,
+        });
+      }
+    }
+    return '';
+  }, [
+    timeLock,
+    timeLockAt,
+    dayLock,
+    dayLockAt,
+    permaLock,
+    failedLoginAttempts,
+    t,
+  ]);
+
+  const [status, setStatus] = useState('');
+  useLayoutEffect(() => {
+    setStatus(getStatus());
+  }, [getStatus]);
 
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 

@@ -485,6 +485,33 @@ export const sendOnchainPayment =
     });
   };
 
+export const sendAllOnchainPayment =
+  (
+    address: string,
+    label: string | undefined = undefined,
+  ): AppThunk<Promise<string>> =>
+  (dispatch, getState) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        try {
+          const response = await sendCoins({
+            sendAll: true,
+            addr: address,
+            satPerVbyte: undefined,
+            // Set ghost label if it's undefined in order to prevent default labeling
+            label: label || ' ',
+          });
+          resolve(response.txid);
+          return;
+        } catch (error) {
+          reject(String(error));
+        }
+      } catch (error) {
+        reject(String(error));
+      }
+    });
+  };
+
 export const publishTransaction = (txHex: string) => {
   return new Promise(async (resolve, reject) => {
     try {

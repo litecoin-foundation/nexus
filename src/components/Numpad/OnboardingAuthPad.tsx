@@ -94,6 +94,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
     if (value === '.') {
       return (
         <BuyButton
+          disabled={pin.length === 6}
           key="disabled"
           value=""
           onPress={() => console.log('void')}
@@ -103,6 +104,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
     if (value === '⌫') {
       return (
         <BuyButton
+          disabled={pin.length === 6}
           key="back-arrow-button-key"
           value={value}
           onPress={() => handlePress(value)}
@@ -111,7 +113,12 @@ const OnboardingAuthPad: React.FC<Props> = props => {
       );
     }
     return (
-      <BuyButton key={value} value={value} onPress={() => handlePress(value)} />
+      <BuyButton
+        disabled={pin.length === 6}
+        key={value}
+        value={value}
+        onPress={() => handlePress(value)}
+      />
     );
   });
 

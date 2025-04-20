@@ -195,7 +195,7 @@ const Sell: React.FC<Props> = () => {
                       String(
                         Number(balance) / 100000000 - sellOutFee / 100000000,
                       ),
-                    ).toFixed(5),
+                    ).toFixed(6),
                     'sell',
                   ),
                 );

@@ -1,4 +1,5 @@
 import React from 'react';
+import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
@@ -6,7 +7,9 @@ import SendConfirmation from '../../components/SendConfirmation';
 import {useAppSelector} from '../../store/hooks';
 
 type RootStackParamList = {
-  ConfirmSend: undefined;
+  ConfirmSend: {
+    sendAll?: boolean;
+  };
   SuccessSend: {
     txid: string;
   };
@@ -14,16 +17,19 @@ type RootStackParamList = {
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'ConfirmSend'>;
+  route: RouteProp<RootStackParamList, 'ConfirmSend'>;
 }
 
 const ConfirmSend: React.FC<Props> = props => {
-  const {navigation} = props;
+  const {navigation, route} = props;
 
   const amount = useAppSelector(state => state.input.send.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const toAddress = useAppSelector(state => state.input.send.toAddress);
   const toDomain = useAppSelector(state => state.input.send.toDomain);
   const label = useAppSelector(state => state.input.send.label);
+
+  const sendAll = route.params?.sendAll || false;
 
   return (
     <SendConfirmation
@@ -33,6 +39,7 @@ const ConfirmSend: React.FC<Props> = props => {
       fiatAmount={fiatAmount}
       label={label}
       sendSuccessHandler={txid => navigation.navigate('SuccessSend', {txid})}
+      sendAll={sendAll}
     />
   );
 };

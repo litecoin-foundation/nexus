@@ -6,8 +6,9 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from 'react';
-import {Platform, ScrollView, StyleSheet, View} from 'react-native';
+import {Platform, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -41,14 +42,18 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
-  Main: {
+  Send: {
     scanData?: string;
   };
-  ConfirmSend: undefined;
+  Scan: {returnRoute: string};
+  ConfirmSend: {
+    sendAll: boolean;
+  };
 };
 
 interface Props {
-  route: RouteProp<RootStackParamList, 'Main'>;
+  route: RouteProp<RootStackParamList, 'Send'>;
+  navigation: StackNavigationProp<RootStackParamList, 'Send'>;
 }
 
 interface URIHandlerRef {
@@ -60,7 +65,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation<Props['navigation']>();
 
   const scrollViewRef = useRef<ScrollView | null>(null);
 
@@ -90,25 +95,47 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
   const [noteKey, setNoteKey] = useState<string>('');
 
+  const [activateSendAll, setActivateSendAll] = useState(false);
+
   const [sendOutFee, setSendOutFee] = useState(0);
   // estimate fee
   useEffect(() => {
-    const calculateFee = async () => {
-      try {
-        const response = await estimateFee({
-          AddrToAmount: {
-            ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus001),
-          },
-          targetConf: 2,
-        });
-        setSendOutFee(Number(response.feeSat));
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    if (address) {
+      const calculateFee = async () => {
+        try {
+          const valid = await validateLtcAddress(address);
 
-    calculateFee();
-  }, [balanceMinus001]);
+          const response = await estimateFee({
+            AddrToAmount: valid
+              ? {
+                  [address]: BigInt(balanceMinus001),
+                }
+              : {
+                  ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']:
+                    BigInt(balanceMinus001),
+                },
+            targetConf: 2,
+          });
+          setSendOutFee(Number(response.feeSat));
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      calculateFee();
+    }
+  }, [balanceMinus001, address]);
+
+  const setMax = () => {
+    dispatch(
+      updateAmount(
+        parseFloat(
+          String(Number(confirmedBalance) / 100000000 - sendOutFee / 100000000),
+        ).toFixed(6),
+        'ltc',
+      ),
+    );
+  };
 
   // check if ready to send
   useEffect(() => {
@@ -134,14 +161,16 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       // validate balance
       const amountInSats = convertToSats(Number(amount));
       if (amountInSats > Number(confirmedBalance)) {
-        setNoteKey('insufficient_funds');
-        setSendDisabled(true);
+        // setNoteKey('insufficient_funds');
+        // setSendDisabled(true);
+        setMax();
         return;
       }
 
       if (amountInSats > Number(confirmedBalance) - sendOutFee) {
-        setNoteKey('try_less_amount');
-        setSendDisabled(true);
+        // setNoteKey('try_less_amount');
+        // setSendDisabled(true);
+        setMax();
         return;
       }
 
@@ -149,16 +178,26 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       if (address !== '') {
         const valid = await validateLtcAddress(address);
         if (!valid) {
+          setNoteKey('');
           setSendDisabled(true);
           return;
         }
       } else {
+        setNoteKey('');
         setSendDisabled(true);
         return;
       }
 
+      // force send all flag for lnd with 1000 sats margin
+      if (amountInSats + 1000 > Number(confirmedBalance) - sendOutFee) {
+        setActivateSendAll(true);
+      } else {
+        setActivateSendAll(false);
+      }
+
       // otherwise enable send
       setSendDisabled(false);
+      setNoteKey('');
     };
     check();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -316,17 +355,17 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         setAddress(addressOnValidation);
       } else {
         setAddressValid(null);
+        dispatch(showError('Invalid domain name'));
         return;
       }
     }
 
     const valid = await validateLtcAddress(addressOnValidation);
 
-    if (!valid) {
-      setAddressValid(false);
-      dispatch(showError('Invalid address'));
-    } else {
+    if (valid) {
       setAddressValid(true);
+    } else {
+      setAddressValid(false);
     }
   };
 
@@ -338,7 +377,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
 
-    navigation.navigate('ConfirmSend');
+    navigation.navigate('ConfirmSend', {sendAll: activateSendAll});
   };
 
   useEffect(() => {
@@ -375,16 +414,26 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             textStyle={styles.subtitleText}
             numberOfLines={1}
           />
-          <AmountPicker
-            amount={amount}
-            fiatAmount={fiatAmount}
-            active={amountPickerActive}
-            handlePress={() => {
-              detailsOpacity.value = withTiming(0, {duration: 200});
-              setAmountPickerActive(true);
-            }}
-            handleToggle={() => setToggleLTC(!toggleLTC)}
-          />
+          <View style={styles.amountSubContainer}>
+            <Pressable onPress={() => setMax()} style={styles.maxButton}>
+              <TranslateText
+                textValue="MAX"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.buttonText}
+                numberOfLines={1}
+              />
+            </Pressable>
+            <AmountPicker
+              amount={amount}
+              fiatAmount={fiatAmount}
+              active={amountPickerActive}
+              handlePress={() => {
+                detailsOpacity.value = withTiming(0, {duration: 200});
+                setAmountPickerActive(true);
+              }}
+              handleToggle={() => setToggleLTC(!toggleLTC)}
+            />
+          </View>
         </View>
 
         {amountPickerActive ? null : (
@@ -568,6 +617,31 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#747E87',
+      fontSize: screenHeight * 0.012,
+    },
+    amountSubContainer: {
+      height: '100%',
+      flexDirection: 'row',
+    },
+    maxButton: {
+      width: 'auto',
+      height: '100%',
+      minWidth: screenHeight * 0.06,
+      minHeight: screenHeight * 0.06,
+      borderRadius: screenHeight * 0.01,
+      borderWidth: 1,
+      borderColor: '#e5e5e5',
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: screenWidth * 0.02,
+      marginHorizontal: screenWidth * 0.02,
+    },
+    buttonText: {
+      color: '#2E2E2E',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
       fontSize: screenHeight * 0.012,
     },
     inputFieldContainer: {
