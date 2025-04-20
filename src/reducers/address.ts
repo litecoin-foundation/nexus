@@ -7,16 +7,26 @@ import {AppThunk} from './types';
 // types
 interface IAddress {
   address: string;
+  regularAddress: string;
+  mwebAddress: string;
 }
 
 // initial state
 const initialState = {
   address: '',
+  regularAddress: '',
+  mwebAddress: '',
 } as IAddress;
 
 // actions
 const getAddressAction = createAction<NewAddressResponse['address']>(
   'address/getAddressAction',
+);
+const setRegularAddressAddressAction = createAction<string>(
+  'address/setRegularAddressAddressAction',
+);
+const setMWEBAddressAddressAction = createAction<string>(
+  'address/setMWEBAddressAddressAction',
 );
 
 // functions
@@ -38,6 +48,18 @@ export const getAddress =
     }
   };
 
+export const setRegularAddressAddress =
+  (regularAddress: string): AppThunk =>
+  async dispatch => {
+    dispatch(setRegularAddressAddressAction(regularAddress));
+  };
+
+export const setMWEBAddressAddress =
+  (mwebAddress: string): AppThunk =>
+  async dispatch => {
+    dispatch(setMWEBAddressAddressAction(mwebAddress));
+  };
+
 // slice
 export const addressSlice = createSlice({
   name: 'address',
@@ -46,6 +68,14 @@ export const addressSlice = createSlice({
     getAddressAction: (state, action) => ({
       ...state,
       address: action.payload,
+    }),
+    setRegularAddressAddressAction: (state, action) => ({
+      ...state,
+      regularAddress: action.payload,
+    }),
+    setMWEBAddressAddressAction: (state, action) => ({
+      ...state,
+      mwebAddress: action.payload,
     }),
   },
   extraReducers: builder => {

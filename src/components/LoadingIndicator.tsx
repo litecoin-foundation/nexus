@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {BlurView} from 'expo-blur';
 import Animated, {
@@ -9,15 +9,23 @@ import Animated, {
 } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
 
+import {ScreenSizeContext} from '../context/screenSize';
+
 const AnimatedLottieView = Animated.createAnimatedComponent(LottieView);
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 interface Props {
   visible: boolean;
+  noBlur?: boolean;
+  tinted?: boolean;
 }
 
 const LoadingIndicator: React.FC<Props> = props => {
-  const {visible} = props;
+  const {visible, noBlur, tinted} = props;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, tinted);
 
   // animation
   const progress = useSharedValue(0);
@@ -50,11 +58,13 @@ const LoadingIndicator: React.FC<Props> = props => {
         <></>
       ) : (
         <View style={styles.container}>
-          <AnimatedBlurView
-            intensity={20}
-            style={StyleSheet.absoluteFillObject}
-            tint="default"
-          />
+          {noBlur ? null : (
+            <AnimatedBlurView
+              intensity={20}
+              style={StyleSheet.absoluteFillObject}
+              tint="default"
+            />
+          )}
           <View style={styles.loaderContainer}>
             <Animated.View style={styles.subContainer}>
               <AnimatedLottieView
@@ -72,28 +82,33 @@ const LoadingIndicator: React.FC<Props> = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  loaderContainer: {
-    height: 100,
-    width: 100,
-    borderRadius: 14,
-    backgroundColor: '#133A8A',
-    opacity: 0.6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  subContainer: {
-    height: 150,
-    width: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  tinted?: boolean,
+) =>
+  StyleSheet.create({
+    container: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+    },
+    loaderContainer: {
+      height: screenHeight * 0.1,
+      width: screenHeight * 0.1,
+      borderRadius: screenHeight * 0.015,
+      backgroundColor: '#133A8A',
+      opacity: tinted ? 0.8 : 0.6,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    subContainer: {
+      height: 150,
+      width: 120,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  });
 
 export default LoadingIndicator;

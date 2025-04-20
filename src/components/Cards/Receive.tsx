@@ -1,24 +1,20 @@
 import React, {useEffect, useState, useContext} from 'react';
 import {StyleSheet, View, Pressable} from 'react-native';
-import Animated, {
-  useSharedValue,
-  withTiming,
-  useAnimatedStyle,
-  withRepeat,
-  withDelay,
-  Easing,
-  interpolateColor,
-} from 'react-native-reanimated';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import Share from 'react-native-share';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {getAddress} from '../../reducers/address';
+import {
+  getAddress,
+  setRegularAddressAddress,
+  setMWEBAddressAddress,
+} from '../../reducers/address';
 import NewBlueButton from '../Buttons/NewBlueButton';
 import NewButton from '../Buttons/NewButton';
 import InfoModal from '../Modals/InfoModalContent';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import SkeletonLines from '../../components/SkeletonLines';
 
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -27,82 +23,24 @@ interface Props {}
 
 const Receive: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
-  const address = useAppSelector(state => state.address.address);
+  const {address, regularAddress, mwebAddress} = useAppSelector(
+    state => state.address,
+  );
   const lndActive = useAppSelector(state => state.lightning.lndActive);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, address.length);
 
-  const [regularAddress, setRegularAddress] = useState('');
-  const [mwebAddress, setMwebAddress] = useState('');
+  const [regularAddressState, setRegularAddressState] =
+    useState(regularAddress);
+  const [mwebAddressState, setMwebAddressState] = useState(mwebAddress);
   const [isMwebAddress, setIsMwebAddress] = useState(false);
   const [uri, setURI] = useState('');
   const [isInfoModalVisible, setInfoModalVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const shimmerValue = useSharedValue(0);
-  const shimmerValue2 = useSharedValue(0);
-  const animatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      shimmerValue.value,
-      [0, 1],
-      ['rgba(244, 244, 244, 0.6)', 'rgba(200, 200, 200, 0.9)'],
-    );
-
-    return {
-      backgroundColor,
-      transform: [
-        {
-          translateX: shimmerValue.value * SCREEN_WIDTH,
-        },
-      ],
-    };
-  });
-  const animatedStyle2 = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      shimmerValue2.value,
-      [0, 1],
-      ['rgba(244, 244, 244, 0.6)', 'rgba(200, 200, 200, 0.9)'],
-    );
-
-    return {
-      backgroundColor,
-      transform: [
-        {
-          translateX: shimmerValue2.value * SCREEN_WIDTH * 0.7,
-        },
-      ],
-    };
-  });
-
-  useEffect(() => {
-    shimmerValue.value = withRepeat(
-      withDelay(
-        500,
-        withTiming(1, {
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-        }),
-      ),
-      -1,
-      false,
-    );
-    shimmerValue2.value = withDelay(
-      500,
-      withRepeat(
-        withDelay(
-          500,
-          withTiming(1, {
-            duration: 1000,
-            easing: Easing.inOut(Easing.ease),
-          }),
-        ),
-        -1,
-        false,
-      ),
-    );
-  }, [shimmerValue, shimmerValue2]);
+  const [loading, setLoading] = useState(
+    regularAddress && mwebAddress ? false : true,
+  );
 
   // generate fresh new address on launch
   useEffect(() => {
@@ -118,32 +56,34 @@ const Receive: React.FC<Props> = () => {
   // update qr code when address changes
   useEffect(() => {
     if (isMwebAddress && address.includes('ltcmweb')) {
-      setMwebAddress(address);
+      setMwebAddressState(address);
+      dispatch(setMWEBAddressAddress(address));
       setURI(address);
     } else if (!isMwebAddress && !address.includes('ltcmweb')) {
-      setRegularAddress(address);
+      setRegularAddressState(address);
+      dispatch(setRegularAddressAddress(address));
       setURI(address);
     }
-  }, [address, isMwebAddress]);
+  }, [address, isMwebAddress, dispatch]);
 
   // handle loading indicator
   useEffect(() => {
-    if (isMwebAddress && !mwebAddress) {
+    if (isMwebAddress && !mwebAddressState) {
       setLoading(true);
     }
-    if (!isMwebAddress && !regularAddress) {
+    if (!isMwebAddress && !regularAddressState) {
       setLoading(true);
     }
     var timeout = setTimeout(() => {
       if (isMwebAddress) {
-        setLoading(mwebAddress ? false : true);
+        setLoading(mwebAddressState ? false : true);
       } else {
-        setLoading(regularAddress ? false : true);
+        setLoading(regularAddressState ? false : true);
       }
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [regularAddress, mwebAddress, isMwebAddress]);
+  }, [regularAddressState, mwebAddressState, isMwebAddress]);
 
   const handleCopy = async () => {
     setInfoModalVisible(true);
@@ -199,7 +139,9 @@ const Receive: React.FC<Props> = () => {
                 style={styles.pressableContainer}
                 onPress={() => handleCopy()}>
                 <TranslateText
-                  textValue={isMwebAddress ? mwebAddress : regularAddress}
+                  textValue={
+                    isMwebAddress ? mwebAddressState : regularAddressState
+                  }
                   maxSizeInPixels={SCREEN_HEIGHT * 0.021}
                   textStyle={styles.addressText}
                 />
@@ -211,31 +153,36 @@ const Receive: React.FC<Props> = () => {
               />
             </View>
           ) : (
-            <>
-              <View style={styles.skeleton}>
-                <Animated.View
-                  style={[styles.animatedSkeleton, animatedStyle]}
-                />
-              </View>
-              <View style={[styles.skeleton, styles.skeleton2]}>
-                <Animated.View
-                  style={[styles.animatedSkeleton, animatedStyle2]}
-                />
-              </View>
-            </>
+            <SkeletonLines
+              numberOfLines={isMwebAddress ? 3 : 1}
+              shortLastLine
+              lineHeight={SCREEN_HEIGHT * 0.022}
+              lineGap={SCREEN_HEIGHT * 0.01}
+            />
           )}
 
           <View style={styles.qrContainer}>
-            {uri ? (
+            {!loading && uri ? (
               <QRCode
                 value={uri}
                 size={
                   isMwebAddress ? SCREEN_HEIGHT * 0.18 : SCREEN_HEIGHT * 0.25
                 }
               />
-            ) : null}
+            ) : (
+              <View
+                style={[
+                  styles.qrSkeleton,
+                  {
+                    height: isMwebAddress
+                      ? SCREEN_HEIGHT * 0.18
+                      : SCREEN_HEIGHT * 0.25,
+                  },
+                ]}
+              />
+            )}
 
-            <LoadingIndicator visible={loading} />
+            <LoadingIndicator visible={loading} noBlur tinted />
           </View>
         </View>
 
@@ -325,6 +272,10 @@ const getStyles = (
       justifyContent: 'center',
       marginTop: screenWidth * 0.06,
       paddingVertical: screenHeight * 0.03,
+      overflow: 'hidden',
+    },
+    qrSkeleton: {
+      width: '100%',
     },
     minText: {
       fontFamily: 'Satoshi Variable',
@@ -335,21 +286,6 @@ const getStyles = (
       textAlign: 'center',
       marginTop: screenWidth * 0.03,
       paddingHorizontal: screenWidth * 0.15,
-    },
-    skeleton: {
-      width: '100%',
-      height: screenHeight * 0.022,
-      borderRadius: 3,
-      backgroundColor: '#F4F4F4',
-      overflow: 'hidden',
-      marginTop: screenHeight * 0.01,
-    },
-    skeleton2: {
-      width: '70%',
-    },
-    animatedSkeleton: {
-      width: '100%',
-      height: '100%',
     },
   });
 
