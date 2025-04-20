@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import {Platform, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -41,14 +42,18 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
-  Main: {
+  Send: {
     scanData?: string;
   };
-  ConfirmSend: undefined;
+  Scan: {returnRoute: string};
+  ConfirmSend: {
+    sendAll: boolean;
+  };
 };
 
 interface Props {
-  route: RouteProp<RootStackParamList, 'Main'>;
+  route: RouteProp<RootStackParamList, 'Send'>;
+  navigation: StackNavigationProp<RootStackParamList, 'Send'>;
 }
 
 interface URIHandlerRef {
@@ -60,7 +65,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation<Props['navigation']>();
 
   const scrollViewRef = useRef<ScrollView | null>(null);
 
@@ -89,6 +94,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [amountPickerActive, setAmountPickerActive] = useState(false);
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
   const [noteKey, setNoteKey] = useState<string>('');
+
+  const [activateSendAll, setActivateSendAll] = useState(false);
 
   const [sendOutFee, setSendOutFee] = useState(0);
   // estimate fee
@@ -119,6 +126,17 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     }
   }, [balanceMinus001, address]);
 
+  const setMax = () => {
+    dispatch(
+      updateAmount(
+        parseFloat(
+          String(Number(confirmedBalance) / 100000000 - sendOutFee / 100000000),
+        ).toFixed(6),
+        'ltc',
+      ),
+    );
+  };
+
   // check if ready to send
   useEffect(() => {
     const check = async () => {
@@ -143,14 +161,16 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       // validate balance
       const amountInSats = convertToSats(Number(amount));
       if (amountInSats > Number(confirmedBalance)) {
-        setNoteKey('insufficient_funds');
-        setSendDisabled(true);
+        // setNoteKey('insufficient_funds');
+        // setSendDisabled(true);
+        setMax();
         return;
       }
 
       if (amountInSats > Number(confirmedBalance) - sendOutFee) {
-        setNoteKey('try_less_amount');
-        setSendDisabled(true);
+        // setNoteKey('try_less_amount');
+        // setSendDisabled(true);
+        setMax();
         return;
       }
 
@@ -166,6 +186,13 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         setNoteKey('');
         setSendDisabled(true);
         return;
+      }
+
+      // force send all flag for lnd with 1000 sats margin
+      if (amountInSats + 1000 > Number(confirmedBalance) - sendOutFee) {
+        setActivateSendAll(true);
+      } else {
+        setActivateSendAll(false);
       }
 
       // otherwise enable send
@@ -350,7 +377,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
 
-    navigation.navigate('ConfirmSend');
+    navigation.navigate('ConfirmSend', {sendAll: activateSendAll});
   };
 
   useEffect(() => {
@@ -388,21 +415,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             numberOfLines={1}
           />
           <View style={styles.amountSubContainer}>
-            <Pressable
-              onPress={() => {
-                dispatch(
-                  updateAmount(
-                    parseFloat(
-                      String(
-                        Number(confirmedBalance) / 100000000 -
-                          sendOutFee / 100000000,
-                      ),
-                    ).toFixed(6),
-                    'ltc',
-                  ),
-                );
-              }}
-              style={styles.maxButton}>
+            <Pressable onPress={() => setMax()} style={styles.maxButton}>
               <TranslateText
                 textValue="MAX"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.015}

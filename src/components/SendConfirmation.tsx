@@ -8,7 +8,10 @@ import LoadingIndicator from './LoadingIndicator';
 import GreenButton from './Buttons/GreenButton';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {showError} from '../reducers/errors';
-import {sendOnchainPayment} from '../reducers/transaction';
+import {
+  sendOnchainPayment,
+  sendAllOnchainPayment,
+} from '../reducers/transaction';
 import {estimateFee} from 'react-native-turbo-lnd';
 import {
   satsToSubunitSelector,
@@ -27,11 +30,19 @@ interface Props {
   label: string;
   sendSuccessHandler: (txid: string) => void;
   toDomain?: string;
+  sendAll?: boolean;
 }
 
 const SendConfirmation: React.FC<Props> = props => {
-  const {toAddress, amount, label, fiatAmount, sendSuccessHandler, toDomain} =
-    props;
+  const {
+    toAddress,
+    amount,
+    label,
+    fiatAmount,
+    sendSuccessHandler,
+    toDomain,
+    sendAll,
+  } = props;
   const dispatch = useAppDispatch();
 
   const [loading, setLoading] = useState(false);
@@ -78,9 +89,11 @@ const SendConfirmation: React.FC<Props> = props => {
     setLoading(true);
     try {
       // await is required!
-      const txid = await dispatch(
-        sendOnchainPayment(toAddress, Math.trunc(amount), label),
-      );
+      const txid = sendAll
+        ? await dispatch(sendAllOnchainPayment(toAddress, label))
+        : await dispatch(
+            sendOnchainPayment(toAddress, Math.trunc(amount), label),
+          );
       setLoading(false);
       sendSuccessHandler(txid);
     } catch (error) {
