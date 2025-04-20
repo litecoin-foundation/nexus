@@ -138,10 +138,10 @@
     "enable_camera": "Enable Camera to Scan QR Codes",
     "awesome": "Awesome!",
     "just-sent": "You just sent",
-    "balance_unconfirmed": "Balance is unconfirmed. Wait until all your transactions are loaded in order to create a new one.",
-    "wallet_unsynced": "Wallet is not fully loaded. Wait until all your transactions are loaded in order to create a new one.",
+    "balance_unconfirmed": "Unconfirmed Balance in Wallet",
+    "wallet_unsynced": "Sync in Progress...",
     "try_less_amount": "Try input less amount. It is probably out of your limit, considering estimated fee.",
-    "insufficient_funds": "Insufficient funds. Try less amount."
+    "insufficient_funds": "Insufficient balance."
   },
   "receiveTab": {
     "receive_ltc": "Receive LTC",

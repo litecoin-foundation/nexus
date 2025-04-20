@@ -11,15 +11,16 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {estimateFee} from 'react-native-turbo-lnd';
 
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
+import AmountPicker from '../Buttons/AmountPicker';
+import BuyPad from '../Numpad/BuyPad';
 import {decodeBIP21} from '../../lib/utils/bip21';
 import {validate as validateLtcAddress} from '../../lib/utils/validate';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import AmountPicker from '../Buttons/AmountPicker';
-import BuyPad from '../Numpad/BuyPad';
 import {sleep} from '../../lib/utils/poll';
 import {showError} from '../../reducers/errors';
 import {resetInputs} from '../../reducers/input';
@@ -35,7 +36,6 @@ import {
   updateSendAddress,
   updateSendDomain,
 } from '../../reducers/input';
-import {estimateFee} from 'react-native-turbo-lnd';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -447,18 +447,6 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                 />
               </View>
             </View>
-
-            {noteKey ? (
-              <View style={styles.noteContainer}>
-                <TranslateText
-                  textKey={noteKey}
-                  domain="sendTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-                  textStyle={styles.noteText}
-                  numberOfLines={3}
-                />
-              </View>
-            ) : null}
           </Animated.View>
         )}
       </ScrollView>
@@ -488,6 +476,16 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                 }}
                 disabled={isSendDisabled}
               />
+
+              {noteKey ? (
+                <TranslateText
+                  textKey={noteKey}
+                  domain="sendTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                  textStyle={styles.minText}
+                  numberOfLines={3}
+                />
+              ) : null}
             </View>
           </View>
         </Animated.View>
@@ -580,20 +578,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenWidth,
       bottom: screenHeight * 0.03,
     },
-    noteContainer: {
-      width: '100%',
-      marginTop: screenHeight * 0.08,
-      paddingHorizontal: screenWidth * 0.04,
-    },
-    noteText: {
-      width: '100%',
-      color: '#2E2E2E',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
-      fontStyle: 'normal',
-      fontWeight: '500',
-      textAlign: 'center',
-    },
     bottomBtnsContainer: {
       position: 'absolute',
       left: screenWidth * 0.06,
@@ -619,6 +603,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
       paddingTop: screenHeight * 0.025,
       paddingHorizontal: screenWidth * 0.06,
+    },
+    minText: {
+      color: '#747E87',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.012,
+      textAlign: 'center',
+      marginTop: screenHeight * 0.01,
     },
   });
 
