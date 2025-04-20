@@ -79,12 +79,13 @@ const RecoverLitewallet: React.FC<Props> = props => {
     <>
       <LinearGradient
         colors={['#1162E6', '#0F55C7']}
-        style={
+        style={[
+          styles.container,
           Platform.OS === 'android' && {
             paddingTop: insets.top,
             paddingBottom: insets.bottom,
-          }
-        }>
+          },
+        ]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.flex}
@@ -107,6 +108,9 @@ const RecoverLitewallet: React.FC<Props> = props => {
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    container: {
+      flex: 1,
+    },
     activity: {
       position: 'absolute',
       left: 0,
@@ -116,14 +120,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    container: {
-      backgroundColor: 'rgba(10,10,10,0.8)',
-      height: 100,
-      width: 100,
-      borderRadius: 35,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
+
     headerTitle: {
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
