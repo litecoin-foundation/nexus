@@ -5,6 +5,7 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
+  useLayoutEffect,
 } from 'react';
 import {Platform, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
@@ -98,30 +99,40 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [activateSendAll, setActivateSendAll] = useState(false);
 
   const [sendOutFee, setSendOutFee] = useState(0);
-  // estimate fee
+  // pre estimate fee
+  useLayoutEffect(() => {
+    const calculateFee = async () => {
+      try {
+        const response = await estimateFee({
+          AddrToAmount: {
+            ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus001),
+          },
+          targetConf: 2,
+        });
+        setSendOutFee(Number(response.feeSat));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    calculateFee();
+  }, [balanceMinus001]);
+  // estimate fee with input address
   useEffect(() => {
     if (address) {
       const calculateFee = async () => {
         try {
           const valid = await validateLtcAddress(address);
-
-          const response = await estimateFee({
-            AddrToAmount: valid
-              ? {
-                  [address]: BigInt(balanceMinus001),
-                }
-              : {
-                  ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']:
-                    BigInt(balanceMinus001),
-                },
-            targetConf: 2,
-          });
-          setSendOutFee(Number(response.feeSat));
+          if (valid) {
+            const response = await estimateFee({
+              AddrToAmount: {[address]: BigInt(balanceMinus001)},
+              targetConf: 2,
+            });
+            setSendOutFee(Number(response.feeSat));
+          }
         } catch (error) {
           console.error(error);
         }
       };
-
       calculateFee();
     }
   }, [balanceMinus001, address]);
