@@ -36,14 +36,12 @@
     "@react-native-community/slider": "^4.5.5",
     "@react-native-firebase/app": "21.8.0",
     "@react-native-firebase/messaging": "21.8.0",
-    "@react-native-masked-view/masked-view": "^0.3.2",
     "@react-native-segmented-control/segmented-control": "^2.5.6",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/stack": "^6.4.1",
     "@reduxjs/toolkit": "^1.9.7",
     "@shopify/react-native-skia": "^1.5.10",
     "aez": "^1.0.1",
-    "aezeed": "^0.0.5",
     "base58-js": "1.0.5",
     "bech32": "2.0.0",
     "bip32": "3.1.0",
@@ -69,7 +67,6 @@
     "react-native-device-info": "^11.1.0",
     "react-native-gesture-handler": "^2.21.2",
     "react-native-get-random-values": "^1.11.0",
-    "react-native-icloudstore": "github:manicakes/react-native-icloudstore#20f20106d5c52adcef68ebb5b8833c5160eb4b50",
     "react-native-keychain": "^8.2.0",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-localize": "^3.3.0",
@@ -105,11 +102,9 @@
     "@babel/runtime": "^7.25.0",
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0",
-    "@gorhom/bottom-sheet": "^5.0.6",
     "@react-native-community/cli": "15.0.1",
     "@react-native-community/cli-platform-android": "15.0.1",
     "@react-native-community/cli-platform-ios": "15.0.1",
-    "@react-native-community/datetimepicker": "^8.2.0",
     "@react-native/babel-preset": "0.76.9",
     "@react-native/eslint-config": "0.76.9",
     "@react-native/metro-config": "0.76.9",
@@ -134,7 +129,6 @@
     "node": ">=18"
   },
   "trustedDependencies": [
-    "protobufjs",
-    "react-native-inappbrowser-reborn"
+    "protobufjs"
   ]
 }
