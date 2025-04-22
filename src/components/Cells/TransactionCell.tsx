@@ -9,6 +9,7 @@ import {
   currencySymbolSelector,
 } from '../../reducers/settings';
 import {convertLocalFiatToUSD} from '../../reducers/ticker';
+import {DisplayedMetadataType} from '../../utils/txMetadata';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -21,6 +22,7 @@ interface Props {
     metaLabel: string;
     priceOnDate: number;
     confs: number;
+    providerMeta: DisplayedMetadataType;
   };
   onPress(): void;
 }
@@ -28,7 +30,8 @@ interface Props {
 const TransactionCell: React.FC<Props> = props => {
   const {item, onPress} = props;
 
-  const {time, amount, label, metaLabel, priceOnDate, confs} = item;
+  const {time, amount, label, metaLabel, priceOnDate, confs, providerMeta} =
+    item;
 
   const mathSign = Math.sign(parseFloat(String(amount))) === -1 ? '-' : '';
 
@@ -49,13 +52,21 @@ const TransactionCell: React.FC<Props> = props => {
           };
         case 'Buy':
           return {
-            textKey: 'bought_ltc',
+            textKey: providerMeta?.status
+              ? providerMeta.status === 'pending'
+                ? 'buying_ltc'
+                : 'bought_ltc'
+              : 'bought_ltc',
             txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
           };
         case 'Sell':
           return {
-            textKey: 'sold_ltc',
+            textKey: providerMeta?.status
+              ? providerMeta.status === 'pending'
+                ? 'selling_ltc'
+                : 'sold_ltc'
+              : 'sold_ltc',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
           };
@@ -161,7 +172,7 @@ const TransactionCell: React.FC<Props> = props => {
       </View>
       <View style={styles.right}>
         <TranslateText
-          textKey={`${cryptoAmount}${amountSymbol}`}
+          textKey={`${parseFloat(cryptoAmount).toFixed(8)}${amountSymbol}`}
           domain={'main'}
           maxSizeInPixels={SCREEN_HEIGHT * 0.017}
           textStyle={styles.cryptoText}
