@@ -1,6 +1,7 @@
 import React, {useState, useContext} from 'react';
 import {StyleSheet, FlatList} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {StackNavigationOptions} from '@react-navigation/stack';
 
 import OptionCell from '../../components/Cells/OptionCell';
 import Header from '../../components/Header';
@@ -85,7 +86,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ExplorerNavigationOptions = (navigation: any) => {
+export const ExplorerNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

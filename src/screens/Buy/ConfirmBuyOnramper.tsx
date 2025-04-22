@@ -5,12 +5,14 @@ import {
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import TranslateText from '../../components/TranslateText';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {
@@ -20,6 +22,7 @@ import {
 import {parseQueryString} from '../../lib/utils/querystring';
 import {showError} from '../../reducers/errors';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -240,7 +243,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ConfirmBuyOnramperNavigationOptions = (navigation: any) => {
+export const ConfirmBuyOnramperNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

@@ -1,7 +1,10 @@
 import React from 'react';
 import {StyleSheet, Alert, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 
 import RecoveryField from '../../components/RecoveryField';
 import HeaderButton from '../../components/Buttons/HeaderButton';
@@ -81,7 +84,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ForgotNavigationOptions = (navigation: any) => {
+export const ForgotNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   return {
     headerTitle: () => (
       <TranslateText

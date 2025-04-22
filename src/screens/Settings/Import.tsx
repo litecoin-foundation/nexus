@@ -3,11 +3,14 @@ import {StyleSheet, View, SafeAreaView, Alert, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
+import {RouteProp} from '@react-navigation/native';
 
 import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RouteProp} from '@react-navigation/native';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {publishTransaction} from '../../reducers/transaction';
 import {sweepQrKey} from '../../lib/utils/sweep';
@@ -137,7 +140,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ImportNavigationOptions = (navigation: any) => {
+export const ImportNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

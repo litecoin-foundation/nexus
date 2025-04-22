@@ -8,7 +8,10 @@ import Card from '../../components/Card';
 import {authenticate} from '../../lib/utils/biometric';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import TranslateText from '../../components/TranslateText';
@@ -128,7 +131,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const BiometricNavigationOptions = (navigation: any) => {
+export const BiometricNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

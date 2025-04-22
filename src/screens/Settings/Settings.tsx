@@ -18,22 +18,26 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
+import {useTranslation} from 'react-i18next';
+import messaging from '@react-native-firebase/messaging';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import Header from '../../components/Header';
 import SettingCell from '../../components/Cells/SettingCell';
-import {setBiometricEnabled} from '../../reducers/authentication';
 import PinModalContent from '../../components/Modals/PinModalContent';
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {updateSubunit, setNotificationsEnabled} from '../../reducers/settings';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
+import {setBiometricEnabled} from '../../reducers/authentication';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {updateSubunit, setNotificationsEnabled} from '../../reducers/settings';
+
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import {useTranslation} from 'react-i18next';
-import messaging from '@react-native-firebase/messaging';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   General: undefined;
@@ -345,7 +349,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const SettingsNavigationOptions = (navigation: any) => {
+export const SettingsNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

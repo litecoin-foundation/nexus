@@ -23,6 +23,7 @@ import {
   payment,
   TransactionRequest,
 } from '@flexa/flexa-react-native';
+import {StackNavigationOptions} from '@react-navigation/stack';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -827,7 +828,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const navigationOptions = (navigation: any) => {
+export const navigationOptions = (navigation: any): StackNavigationOptions => {
   return {
     headerStyle: {height: 103},
     headerShown: true,

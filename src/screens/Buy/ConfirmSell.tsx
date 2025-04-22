@@ -5,11 +5,15 @@ import {
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SendConfirmation from '../../components/SendConfirmation';
+import SuccessSell from '../../components/SuccessSell';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {getSignedSellUrl, getSellTransactionHistory} from '../../reducers/buy';
@@ -19,7 +23,6 @@ import {fiatValueSelector} from '../../reducers/ticker';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import SuccessSell from '../../components/SuccessSell';
 
 type RootStackParamList = {
   ConfirmSell: {
@@ -169,7 +172,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ConfirmSellNavigationOptions = (navigation: any) => {
+export const ConfirmSellNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

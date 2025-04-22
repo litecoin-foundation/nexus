@@ -5,7 +5,10 @@ import {
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
@@ -239,7 +242,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ConfirmSellOnramperNavigationOptions = (navigation: any) => {
+export const ConfirmSellOnramperNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

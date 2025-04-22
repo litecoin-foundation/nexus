@@ -27,8 +27,9 @@ import ConfirmSellOnramper, {
 import SearchTransaction, {
   SearchTransactionNavigationOptions,
 } from '../screens/Wallet/SearchTransaction';
+import {NewWalletStackParamList} from './types';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<NewWalletStackParamList>();
 
 function NewWalletStack(): React.JSX.Element {
   return (

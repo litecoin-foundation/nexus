@@ -1,12 +1,16 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 
-import {ScreenSizeContext} from '../../context/screenSize';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 import TranslateText from '../../components/TranslateText';
 
 type RootStackParamList = {
@@ -117,7 +121,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ImportSuccessNavigationOptions = (navigation: any) => {
+export const ImportSuccessNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   return {
     headerTitle: '',
     headerTitleAlign: 'left',

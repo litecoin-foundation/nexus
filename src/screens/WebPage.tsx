@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const WebPageNavigationOptions = navigation => {
+export const WebPageNavigationOptions = (navigation: any) => {
   return {
     ...TransitionPresets.ModalPresentationIOS,
     headerTitle: '',

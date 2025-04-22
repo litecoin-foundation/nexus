@@ -4,15 +4,14 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import OptionCell from '../../components/Cells/OptionCell';
 import Header from '../../components/Header';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setTestPayment} from '../../reducers/settings';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import {moonpayCountries, onramperCountries} from '../../reducers/buy';
+import fiat from '../../assets/fiat';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-
-import fiat from '../../assets/fiat';
-import {moonpayCountries, onramperCountries} from '../../reducers/buy';
 
 const TEST_PAYMENT_ACTIVE: boolean[] = [true, false];
 const TEST_PAYMENT_METHODS: string[] = ['MOONPAY', 'ONRAMPER'];
@@ -218,7 +217,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const TestPaymentNavigationOptions = (navigation: any) => {
+export const TestPaymentNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

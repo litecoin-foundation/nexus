@@ -2,17 +2,17 @@ import React, {useContext} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {Image, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
-
-import {useAppSelector} from '../../store/hooks';
-
-import TranslateText from '../../components/TranslateText';
-import {ScreenSizeContext} from '../../context/screenSize';
 import {
   satsToSubunitSelector,
   subunitCodeSelector,
 } from '../../reducers/settings';
+import {useAppSelector} from '../../store/hooks';
+
+import TranslateText from '../../components/TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   SuccessSend: {

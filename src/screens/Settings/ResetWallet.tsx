@@ -7,22 +7,25 @@ import {
   Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import WhiteButton from '../../components/Buttons/WhiteButton';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import PlasmaModal from '../../components/Modals/PlasmaModal';
+import PinModalContent from '../../components/Modals/PinModalContent';
 import {resetPincode} from '../../reducers/authentication';
 import {useAppDispatch} from '../../store/hooks';
 import {sleep} from '../../lib/utils/poll';
 import {purgeStore} from '../../store';
 import {deleteLNDDir} from '../../lib/utils/file';
 
-import PlasmaModal from '../../components/Modals/PlasmaModal';
-import PinModalContent from '../../components/Modals/PinModalContent';
 import {ScreenSizeContext} from '../../context/screenSize';
-import WhiteButton from '../../components/Buttons/WhiteButton';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import TranslateText from '../../components/TranslateText';
 
 type RootStackParamList = {
@@ -210,7 +213,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const ResetWalletNavigationOptions = (navigation: any) => {
+export const ResetWalletNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   return {
     headerTitle: '',
     headerTitleAlign: 'left',

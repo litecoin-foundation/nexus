@@ -1,7 +1,10 @@
 import React, {useEffect, useContext, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 
 import ProgressBar from '../../components/ProgressBar';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -158,7 +161,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const WelcomeNavigationOptions = () => {
+export const WelcomeNavigationOptions = (): StackNavigationOptions => {
   return {
     headerTitle: () => null,
     headerTitleAlign: 'left',

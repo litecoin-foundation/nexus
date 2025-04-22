@@ -1,7 +1,10 @@
 import React, {useEffect, useContext} from 'react';
 import {KeyboardAvoidingView, Platform, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 
@@ -139,7 +142,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const RecoverNavigationOptions = (navigation: any) => {
+export const RecoverNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

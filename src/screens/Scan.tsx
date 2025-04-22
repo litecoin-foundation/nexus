@@ -14,7 +14,11 @@ import {
   useCodeScanner,
 } from 'react-native-vision-camera';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackScreenProps, TransitionPresets} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackScreenProps,
+  TransitionPresets,
+} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Switch from '../components/Buttons/Switch';
@@ -222,7 +226,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ScanNavigationOptions = (navigation: any) => {
+export const ScanNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
 
   return {

@@ -7,37 +7,28 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackScreenProps,
+} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import RecoveryField from '../../components/RecoveryField';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import {SettingsStackParamList} from '../../navigation/types';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sweepLitewallet} from '../../lib/utils/sweep';
 import {getAddress} from '../../reducers/address';
 import {publishTransaction} from '../../reducers/transaction';
-import {useTranslation} from 'react-i18next';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-type RootStackParamList = {
-  Import: {
-    scanData?: string;
-  };
-  ImportSuccess: {
-    txHash: string;
-  };
-};
-
-interface Props {
-  navigation: StackNavigationProp<RootStackParamList, 'Import'>;
-  navigationOptions: any;
-}
-
-const RecoverLitewallet: React.FC<Props> = props => {
-  const {navigation} = props;
+const RecoverLitewallet = ({
+  navigation,
+}: StackScreenProps<SettingsStackParamList, 'RecoverLitewallet'>) => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
@@ -133,7 +124,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const RecoverLitewalletNavigationOptions = (navigation: any) => {
+export const RecoverLitewalletNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

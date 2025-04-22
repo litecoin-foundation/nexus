@@ -12,13 +12,18 @@ const Stack = createStackNavigator();
 const Theme = {
   ...DefaultTheme,
   colors: {
+    ...DefaultTheme.colors,
     background: '#000000',
   },
 };
 
 const Linking = {
   prefixes: ['litecoin://', 'litecoin:'],
-  config: {},
+  config: {
+    screens: {
+      Loading: '*', // catch all
+    },
+  },
 };
 
 function RootNavigator() {

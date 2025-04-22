@@ -31,8 +31,9 @@ import ResetWallet, {
 import TestPayment, {
   TestPaymentNavigationOptions,
 } from '../screens/Settings/TestPayment';
+import {SettingsStackParamList} from './types';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<SettingsStackParamList>();
 
 function SettingsStack() {
   return (
@@ -53,11 +54,7 @@ function SettingsStack() {
         component={Settings}
         options={({navigation}) => SettingsNavigationOptions(navigation)}
       />
-      <Stack.Screen
-        name="ChangePincode"
-        component={ChangePincode}
-        options={ChangePincode.navigationOptions}
-      />
+      <Stack.Screen name="ChangePincode" component={ChangePincode} />
       <Stack.Screen
         name="Seed"
         component={Seed}

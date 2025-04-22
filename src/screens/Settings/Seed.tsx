@@ -3,6 +3,7 @@ import {View, StyleSheet, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {v4 as uuidv4} from 'uuid';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {StackNavigationOptions} from '@react-navigation/stack';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {updateLastViewSeed} from '../../reducers/settings';
@@ -25,7 +26,7 @@ const Seed: React.FC<Props> = () => {
   const lastViewSeed = useAppSelector(state => state.settings.lastViewSeed);
   const formatedTime =
     lastViewSeed !== null
-      ? `${formatDate(lastViewSeed)}, ${formatTime(new Date(lastViewSeed))}`
+      ? `${formatDate(Number(lastViewSeed))}, ${formatTime(Number(new Date(lastViewSeed)))}`
       : 'Never';
   const n = [...Array(12).keys()];
 
@@ -126,7 +127,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const SeedNavigationOptions = (navigation: any) => {
+export const SeedNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);

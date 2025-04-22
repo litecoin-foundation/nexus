@@ -3,12 +3,12 @@ import {View, StyleSheet, ScrollView, Dimensions} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {StackNavigationOptions} from '@react-navigation/stack';
 
 import TableCell from '../../components/Cells/TableCell';
 import VerticalTableCell from '../../components/Cells/VerticalTableCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import Card from '../../components/Card';
-
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getRecoveryInfo} from '../../reducers/info';
 
@@ -127,7 +127,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const AboutNavigationOptions = (navigation: any) => {
+export const AboutNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   return {
     headerTitle: '',
     headerTitleAlign: 'left',

@@ -11,8 +11,9 @@ import Biometric, {
   BiometricNavigationOptions,
 } from '../screens/Onboarding/Biometric';
 import Welcome, {WelcomeNavigationOptions} from '../screens/Onboarding/Welcome';
+import {OnboardingStackParamList} from './types';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<OnboardingStackParamList>();
 
 function OnboardingStack() {
   return (
@@ -34,21 +35,9 @@ function OnboardingStack() {
         component={InitialWithSeed}
         options={InitialWithSeed.navigationOptions}
       />
-      <Stack.Screen
-        name="Pin"
-        component={Pin}
-        options={Pin.navigationOptions}
-      />
-      <Stack.Screen
-        name="Generate"
-        component={Generate}
-        options={Generate.navigationOptions}
-      />
-      <Stack.Screen
-        name="Verify"
-        component={Verify}
-        options={Verify.navigationOptions}
-      />
+      <Stack.Screen name="Pin" component={Pin} />
+      <Stack.Screen name="Generate" component={Generate} />
+      <Stack.Screen name="Verify" component={Verify} />
       <Stack.Screen
         name="Recover"
         component={Recover}
@@ -62,7 +51,7 @@ function OnboardingStack() {
       <Stack.Screen
         name="Welcome"
         component={Welcome}
-        options={({navigation}) => WelcomeNavigationOptions(navigation)}
+        options={({}) => WelcomeNavigationOptions()}
       />
     </Stack.Navigator>
   );

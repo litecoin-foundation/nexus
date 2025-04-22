@@ -2,6 +2,9 @@ import React, {useRef, useState, useContext, useLayoutEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
+import {useHeaderHeight} from '@react-navigation/elements';
+import {StackNavigationOptions} from '@react-navigation/stack';
+
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TransactionList from '../../components/TransactionList';
 import DropDownButton from '../../components/Buttons/DropDownButton';
@@ -9,13 +12,11 @@ import FilterButton from '../../components/Buttons/FilterButton';
 import SearchBar from '../../components/SearchBar';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import TxDetailModalContent from '../../components/Modals/TxDetailModalContent';
-
 import {useAppSelector} from '../../store/hooks';
 import {txDetailSelector} from '../../reducers/transaction';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import {useHeaderHeight} from '@react-navigation/elements';
 
 type RootStackParamList = {
   SearchTransaction: {
@@ -262,7 +263,9 @@ const getStyles = (
     },
   });
 
-export const SearchTransactionNavigationOptions = (navigation: any) => {
+export const SearchTransactionNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
