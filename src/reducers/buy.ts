@@ -15,7 +15,7 @@ import {
   emptyBuyQuoteAndLimits,
   emptySellQuoteAndLimits,
 } from '../utils/tradeQuotes';
-import {ITrade} from '../utils/txMetadata';
+import {ITrade, getUTCTimeStampFromMetadata} from '../utils/txMetadata';
 
 const MOONPAY_PUBLIC_KEY = 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
 const ONRAMPER_PUBLIC_KEY = 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
@@ -118,21 +118,45 @@ export const getBuyTransactionHistory =
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error);
+        if (__DEV__) {
+          throw new Error(error);
+        } else {
+          return;
+        }
       }
 
       const data: ITrade[] = await res.json();
       let realTxs: any = [];
 
       // filter out prompted but yet unknown txs and failed txs
-      // NOTE: unknown transaction is used in nexus-api to identify
-      // clients of payment providers
+      // NOTE: unknown transaction is used in nexus-api to identify clients that initiated buy/sell
       if (data && data.length > 0) {
         realTxs = data.filter(
           (tx: ITrade) =>
-            tx.providerTxId !== 'unknown' && tx.status !== 'failed',
+            tx.providerTxId !== 'unknown' &&
+            tx.status !== 'failed' &&
+            tx.status !== 'cancelled' &&
+            tx.status !== 'canceled',
         );
       }
+
+      // filter out txs that pending for too long
+      realTxs = realTxs.filter((tx: ITrade) => {
+        const txTimeStamp = getUTCTimeStampFromMetadata(tx.metadata);
+        if (tx.providerTxId !== 'pending') {
+          return true;
+        }
+        if (tx.metadata?.createdAt) {
+          // 30 mins = 1800 secs
+          if (
+            tx.providerTxId === 'pending' &&
+            Number(txTimeStamp) + 1800 > Math.floor(Date.now() / 1000)
+          ) {
+            return true;
+          }
+        }
+        return false;
+      });
 
       dispatch(getBuyTxHistoryAction(realTxs));
     } catch (error) {
@@ -156,7 +180,11 @@ export const getSellTransactionHistory =
 
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error);
+      if (__DEV__) {
+        throw new Error(error);
+      } else {
+        return;
+      }
     }
 
     const data: ITrade[] = await res.json();
@@ -167,9 +195,31 @@ export const getSellTransactionHistory =
     // clients of payment providers
     if (data && data.length > 0) {
       realTxs = data.filter(
-        (tx: ITrade) => tx.providerTxId !== 'unknown' && tx.status !== 'failed',
+        (tx: ITrade) =>
+          tx.providerTxId !== 'unknown' &&
+          tx.status !== 'failed' &&
+          tx.status !== 'cancelled' &&
+          tx.status !== 'canceled',
       );
     }
+
+    // filter out txs that pending for too long
+    realTxs = realTxs.filter((tx: ITrade) => {
+      const txTimeStamp = getUTCTimeStampFromMetadata(tx.metadata);
+      if (tx.providerTxId !== 'pending') {
+        return true;
+      }
+      if (tx.metadata?.createdAt) {
+        // 30 mins = 1800 secs
+        if (
+          tx.providerTxId === 'pending' &&
+          Number(txTimeStamp) + 1800 > Math.floor(Date.now() / 1000)
+        ) {
+          return true;
+        }
+      }
+      return false;
+    });
 
     dispatch(getSellTxHistoryAction(realTxs));
   };

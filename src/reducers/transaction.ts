@@ -278,6 +278,21 @@ export const subscribeTransactions =
     }
   };
 
+function getUnmatchedNexusApiTxsWithLndTxs(lndTxs: any[], nexusApiTxs: any[]) {
+  const unmatchedTxs: any[] = [];
+
+  nexusApiTxs.forEach(nexusApiTx => {
+    const matchedTx = lndTxs.find(
+      lndTx => lndTx.txHash === nexusApiTx.cryptoTxId,
+    );
+    if (!matchedTx) {
+      unmatchedTxs.push(nexusApiTx);
+    }
+  });
+
+  return unmatchedTxs;
+}
+
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   const {buyHistory, sellHistory} = getState().buy;
 
@@ -286,9 +301,24 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       create(GetTransactionsRequestSchema),
     );
 
-    let txs: IDecodedTx[] = [];
-    let unmatchedBuyTxs: string[] = [];
-    let unmatchedSellTxs: string[] = [];
+    const txs: IDecodedTx[] = [];
+
+    // Compare nexus-api txs with lnd txs to append missing ones in lnd
+    const unmatchedBuyTxs = getUnmatchedNexusApiTxsWithLndTxs(
+      transactions.transactions,
+      buyHistory,
+    );
+    const unmatchedSellTxs = getUnmatchedNexusApiTxsWithLndTxs(
+      transactions.transactions,
+      sellHistory,
+    );
+    // Extract the Ids
+    const unmatchedBuyTxsIds: string[] = unmatchedBuyTxs.map(
+      trade => trade.providerTxId,
+    );
+    const unmatchedSellTxsIds: string[] = unmatchedSellTxs.map(
+      trade => trade.providerTxId,
+    );
 
     for await (const tx of transactions.transactions) {
       const outputDetails: IOutputDetails[] = [];
@@ -311,9 +341,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
       // Type of transaction, All denotes unlabeled txs
       let metaLabel = 'All';
-      // Trade transaction is buy/sell tx
+      // Transaction is a Buy/Sell transaction
       let tradeTx = null;
-      // 0 if request fails
+      // Assign 0 if request fails so math won't break
       const priceOnDate = (await getPriceOnDate(Number(tx.timeStamp))) || 0;
 
       if (Math.sign(parseFloat(String(tx.amount))) === -1) {
@@ -323,30 +353,12 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         metaLabel = 'Receive';
       }
 
+      // If tx is present in buyHistory then label it as Buy and include trade metadata
       if (buyHistory && buyHistory.length >= 1) {
-        // Find matching lnd tx with the tx from buyHistory from nexus-api
-        // by comparing cryptoTxId with txHash
-        // to identify transaction as a Buy one.
-        // If lnd fails to return Buy transaction associated with user's wallet
-        // it is added to unmatchedBuyTxs array for further processing
-        const buyTxs = buyHistory.filter(buyTx => {
-          if (buyTx.cryptoTxId === tx.txHash) {
-            return true;
-          }
-          // If tx is valid (not failed) and haven't been pushed in unmatchedBuyTxs yet
-          // add providerTxId in unmatchedSellTxs as a unique id for finding the tx
-          // TODO: make sure fetched trades from providers always have providerTxId
-          if (
-            buyTx.status !== 'failed' &&
-            !unmatchedBuyTxs.includes(buyTx.providerTxId)
-          ) {
-            unmatchedBuyTxs.push(buyTx.providerTxId);
-          }
-          return false;
-        });
-        // Get filtered out trade tx and label it
-        if (buyTxs && buyTxs.length > 0) {
-          const buyTx = buyTxs[0];
+        const buyTx = buyHistory.find(
+          buyHistoryItem => buyHistoryItem.cryptoTxId === tx.txHash,
+        );
+        if (buyTx) {
           tradeTx = buyTx;
           metaLabel = 'Buy';
         }
@@ -356,30 +368,12 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       // wallet will likely show this tx before provider detects it and assigns cryptoTxId to it,
       // this causes a Sell transaction to appear as a Send transaction at first
       // TODO: figure the aforementioned note out
+      // If tx is present in sellHistory then label it as Sell and include trade metadata
       if (sellHistory && sellHistory.length >= 1) {
-        // Find matching lnd tx with the tx from sellHistory from nexus-api
-        // by comparing cryptoTxId with txHash
-        // to identify transaction as a Sell one.
-        // If lnd fails to return Sell transaction associated with user's wallet
-        // it is added to unmatchedSellTxs array for further processing
-        const sellTxs = sellHistory.filter(sellTx => {
-          if (sellTx.cryptoTxId === tx.txHash) {
-            return true;
-          }
-          // If tx is valid (not failed) and haven't been pushed in unmatchedBuyTxs yet
-          // add providerTxId in unmatchedSellTxs as a unique id for finding the tx
-          // TODO: make sure fetched trades from providers always have providerTxId
-          if (
-            sellTx.status !== 'failed' &&
-            !unmatchedSellTxs.includes(sellTx.providerTxId)
-          ) {
-            unmatchedSellTxs.push(sellTx.providerTxId);
-          }
-          return false;
-        });
-        // Get filtered out trade tx and label it
-        if (sellTxs && sellTxs.length > 0) {
-          const sellTx = sellTxs[0];
+        const sellTx = sellHistory.find(
+          sellHistoryItem => sellHistoryItem.cryptoTxId === tx.txHash,
+        );
+        if (sellTx) {
           tradeTx = sellTx;
           metaLabel = 'Sell';
         }
@@ -403,8 +397,8 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       txs.push(decodedTx);
     }
 
-    for await (const unmatchedBuyTx of unmatchedBuyTxs) {
-      const buyTx = buyHistory.find(tx => tx.providerTxId === unmatchedBuyTx);
+    for await (const unmatchedBuyTxId of unmatchedBuyTxsIds) {
+      const buyTx = buyHistory.find(tx => tx.providerTxId === unmatchedBuyTxId);
       // Instead of buyTx.createdAt we extract metadata time since
       // it is a transaction of nexus-api trade type
       const txTimeStamp = getUTCTimeStampFromMetadata(buyTx.metadata);
@@ -413,9 +407,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       txs.push(decodedTx);
     }
 
-    for await (const unmatchedSellTx of unmatchedSellTxs) {
+    for await (const unmatchedSellTxId of unmatchedSellTxsIds) {
       const sellTx = sellHistory.find(
-        tx => tx.providerTxId === unmatchedSellTx,
+        tx => tx.providerTxId === unmatchedSellTxId,
       );
       // Instead of sellTx.createdAt we extract metadata time since
       // it is a transaction of nexus-api trade type
