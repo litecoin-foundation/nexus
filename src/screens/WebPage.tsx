@@ -30,7 +30,7 @@ interface Props {
 const WebPage: React.FC<Props> = props => {
   const {route} = props;
   const insets = useSafeAreaInsets();
-  const WebPageRef = useRef();
+  const WebPageRef = useRef<WebView>(null);
   const navigation = useNavigation();
 
   const [ableToGoBack, setCanGoBack] = useState(false);
@@ -87,14 +87,13 @@ const WebPage: React.FC<Props> = props => {
         onNavigationStateChange={syntheticEvent =>
           setCurrentUrl(syntheticEvent.url)
         }
-        applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${
-          DeviceInfo.getSystemVersion
-        }`}
+        applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${DeviceInfo.getSystemVersion()}`}
+        allowsInlineMediaPlayback={true}
       />
       <View style={styles.optionsContainer}>
         <TouchableOpacity
           onPress={() => {
-            WebPageRef.current.goBack();
+            WebPageRef.current?.goBack();
           }}
           disabled={!ableToGoBack}>
           <Image
@@ -103,7 +102,7 @@ const WebPage: React.FC<Props> = props => {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => WebPageRef.current.reload()}>
+        <TouchableOpacity onPress={() => WebPageRef.current?.reload()}>
           <Image
             source={
               isLoading
@@ -114,7 +113,7 @@ const WebPage: React.FC<Props> = props => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => WebPageRef.current.goForward()}
+          onPress={() => WebPageRef.current?.goForward()}
           disabled={!ableToGoForward}
           style={ableToGoForward ? null : styles.opacity}>
           <Image
