@@ -26,6 +26,7 @@ import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {getTransactions, IDisplayedTx} from '../reducers/transaction';
 import {txDetailSelector} from '../reducers/transaction';
 import {groupTransactions} from '../lib/utils/groupTransactions';
+import {DisplayedMetadataType} from '../utils/txMetadata';
 
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
@@ -62,6 +63,7 @@ type ItemType = {
   metaLabel: string;
   priceOnDate: number;
   confs: number;
+  providerMeta: DisplayedMetadataType;
 };
 
 interface TransactionCellItemProps {

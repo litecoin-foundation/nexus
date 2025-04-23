@@ -20,6 +20,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {useNavigation} from '@react-navigation/native';
+import Share from 'react-native-share';
 import {v4 as uuidv4} from 'uuid';
 
 import InputActionField from '../InputActionField';
@@ -131,13 +132,21 @@ export default function TxDetailModalContent(props: Props) {
           };
         case 'Buy':
           return {
-            textKey: 'bought',
+            textKey: transaction.providerMeta?.status
+              ? transaction.providerMeta.status === 'pending'
+                ? 'buying'
+                : 'bought'
+              : 'bought',
             txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
           };
         case 'Sell':
           return {
-            textKey: 'sold',
+            textKey: transaction.providerMeta?.status
+              ? transaction.providerMeta.status === 'pending'
+                ? 'selling'
+                : 'sold'
+              : 'sold',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
           };
@@ -595,7 +604,11 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
         titleTextKey="tx_id"
         titleTextDomain="main"
         value={
-          status === 'completed' || status === 'sent' ? cryptoTxId : 'pending'
+          status === 'completed' || status === 'sent'
+            ? cryptoTxId
+            : status === 'pending'
+              ? 'Pending'
+              : 'Unknown'
         }
         thick
         valueFontSize={height * 0.012}
@@ -622,6 +635,20 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
               />
             </View>
             <View style={styles.flexBtn2}>
+              <GreenButton
+                textKey="details"
+                textDomain="main"
+                onPress={() => {
+                  navigation.navigate('WebPage', {
+                    uri: txDetailsUrl,
+                  });
+                }}
+              />
+            </View>
+          </View>
+        ) : status === 'pending' ? (
+          <View style={styles.bottomBtns}>
+            <View style={styles.flexBtn}>
               <GreenButton
                 textKey="details"
                 textDomain="main"
@@ -678,33 +705,34 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
     return defaultSize;
   };
 
-  const fromAddressSize = calculateAddressSize(
+  let fromAddressSize = calculateAddressSize(
     allInputAddrs,
     SCREEN_HEIGHT * 0.025,
     SCREEN_HEIGHT * 0.019,
     SCREEN_HEIGHT * 0.017,
   );
 
-  let toAddressSize = SCREEN_HEIGHT * 0.025;
+  let toAddressSize = calculateAddressSize(
+    [...otherOutputAddrs, ...myOutputAddrs],
+    SCREEN_HEIGHT * 0.025,
+    SCREEN_HEIGHT * 0.019,
+    SCREEN_HEIGHT * 0.017,
+  );
 
-  if (!isSend && myOutputAddrs.length > 0) {
-    toAddressSize = calculateAddressSize(
-      myOutputAddrs,
-      SCREEN_HEIGHT * 0.025,
-      SCREEN_HEIGHT * 0.019,
-      SCREEN_HEIGHT * 0.017,
-    );
-  } else if (otherOutputAddrs.length > 0) {
-    toAddressSize = calculateAddressSize(
-      otherOutputAddrs,
-      SCREEN_HEIGHT * 0.025,
-      SCREEN_HEIGHT * 0.019,
-      SCREEN_HEIGHT * 0.017,
-    );
+  if (fromAddressSize >= toAddressSize) {
+    fromAddressSize = toAddressSize;
+  } else {
+    toAddressSize = fromAddressSize;
   }
 
   const ADDR_ROW_LIMIT = 2;
   const CHANGE_ADDR_ROW_LIMIT = 1;
+
+  const handleShare = (message: string) => {
+    if (message) {
+      Share.open({message: message});
+    }
+  };
 
   function renderInputs() {
     if (allInputAddrs.length > 0) {
@@ -716,8 +744,9 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
             ...styles.fromAddressTitle,
             fontSize: fromAddressSize,
           }}
-          numberOfLines={2}
+          numberOfLines={4}
           key={'input-' + index}
+          onPress={() => handleShare(input)}
         />
       ));
     } else {
@@ -750,8 +779,9 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
             fontSize: toAddressSize,
             color: isSend ? '#2c72ff' : '#1ebc73',
           }}
-          numberOfLines={2}
+          numberOfLines={4}
           key={'output-change-' + index}
+          onPress={() => handleShare(output)}
         />
       ));
 
@@ -766,8 +796,9 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
             ...styles.toAddressTitle,
             fontSize: toAddressSize,
           }}
-          numberOfLines={1}
+          numberOfLines={4}
           key={'output-sent-' + index}
+          onPress={() => handleShare(output)}
         />
       ));
     if (isSend) {
@@ -787,14 +818,12 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
         />
       );
     } else {
-      if (isSend) {
-        //
-
+      if (isSend && myOutputElements.length > 0) {
         const changeAddress = <ChangeAddress>{myOutputElements}</ChangeAddress>;
 
         return [...otherOutputElements, changeAddress];
       } else {
-        return myOutputElements;
+        return [...otherOutputElements, ...myOutputElements];
       }
     }
   }
@@ -922,6 +951,7 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
                     />
                     {renderInputs()}
                     {renderInputNote()}
+                    <View style={{paddingBottom: 10}} />
                   </View>
                 </View>
               )}
@@ -954,7 +984,9 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
             titleTextKey="network_fee"
             titleTextDomain="main"
             value={`${
-              blockchainFee ? blockchainFee + amountSymbol : 'Unknown'
+              blockchainFee && blockchainFee !== 'unknown'
+                ? blockchainFee + amountSymbol
+                : 'Unknown'
             }`}
           />
           <TableCell
@@ -1174,7 +1206,6 @@ const getStyles = (
       fontSize: screenHeight * 0.025,
       fontWeight: '700',
       fontFamily: 'Satoshi Variable',
-      paddingBottom: 10,
     },
     toAddressTitle: {
       color: '#1ebc73',
@@ -1262,6 +1293,9 @@ const getStyles = (
       flexDirection: 'row',
       justifyContent: 'space-between',
       padding: screenHeight * 0.03,
+    },
+    flexBtn: {
+      flexBasis: '100%',
     },
     flexBtn1: {
       flexBasis: '55%',

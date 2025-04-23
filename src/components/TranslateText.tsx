@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, StyleSheet, Dimensions} from 'react-native';
+import {StyleSheet, Dimensions, Pressable} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 
@@ -17,6 +17,7 @@ interface Props {
   interpolationObj?: {
     [key: string]: any;
   };
+  onPress?: () => void;
   children?: any;
 }
 
@@ -33,6 +34,7 @@ const TranslateText: React.FC<Props> = props => {
     animatedProps,
     numberOfLines,
     interpolationObj,
+    onPress,
     children,
   } = props;
 
@@ -66,7 +68,9 @@ const TranslateText: React.FC<Props> = props => {
   const {t} = useTranslation(domain);
 
   return (
-    <View style={styles.container}>
+    <Pressable
+      onPress={onPress ? () => onPress() : () => {}}
+      style={styles.container}>
       <Animated.Text
         style={[
           styles.text,
@@ -80,7 +84,7 @@ const TranslateText: React.FC<Props> = props => {
         {textValue ? textValue : textKey ? t(textKey, interpolationObj) : ''}
         {children}
       </Animated.Text>
-    </View>
+    </Pressable>
   );
 };
 
