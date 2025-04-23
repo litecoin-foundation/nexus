@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import CustomSafeAreaView from '../components/CustomSafeAreaView';
 
 const ANIM_DURATION = 200;
 const SPRING_BACK_ANIM_DURATION = 100;
@@ -251,44 +252,47 @@ const RenderCard: React.FC<CardProps> = props => {
     panGesture,
   } = props;
 
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   return (
     <Animated.View>
-      {activeTab === 0 ? (
-        <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>{txView}</View>
-        </GestureDetector>
-      ) : null}
-      {activeTab === 1 ? (
-        <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>{buyView}</View>
-        </GestureDetector>
-      ) : null}
-      {activeTab === 2 ? (
-        <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>{sellView}</View>
-        </GestureDetector>
-      ) : null}
-      {activeTab === 3 ? (
-        <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>{convertView}</View>
-        </GestureDetector>
-      ) : null}
-      {activeTab === 4 ? (
-        <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>{sendView}</View>
-        </GestureDetector>
-      ) : null}
-      {activeTab === 5 ? (
-        <GestureDetector gesture={panGesture}>
-          <View collapsable={false}>{receiveView}</View>
-        </GestureDetector>
-      ) : null}
+      <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+        {activeTab === 0 ? <View>{txView}</View> : null}
+        {activeTab === 1 ? (
+          <GestureDetector gesture={panGesture}>
+            <View>{buyView}</View>
+          </GestureDetector>
+        ) : null}
+        {activeTab === 2 ? (
+          <GestureDetector gesture={panGesture}>
+            <View>{sellView}</View>
+          </GestureDetector>
+        ) : null}
+        {activeTab === 3 ? (
+          <GestureDetector gesture={panGesture}>
+            <View>{convertView}</View>
+          </GestureDetector>
+        ) : null}
+        {activeTab === 4 ? (
+          <GestureDetector gesture={panGesture}>
+            <View>{sendView}</View>
+          </GestureDetector>
+        ) : null}
+        {activeTab === 5 ? (
+          <GestureDetector gesture={panGesture}>
+            <View>{receiveView}</View>
+          </GestureDetector>
+        ) : null}
+      </CustomSafeAreaView>
     </Animated.View>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    safeArea: {},
     bottomSheet: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: '#f7f7f7',

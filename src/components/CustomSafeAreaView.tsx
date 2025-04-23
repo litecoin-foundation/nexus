@@ -1,18 +1,24 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+type Edge = 'top' | 'bottom' | 'left' | 'right';
 
 interface Props {
   children?: React.ReactNode;
   styles?: {
     [key: string]: any;
   };
+  edges?: Edge[];
 }
 
-const EDGES = ['top', 'bottom', 'left', 'right'];
+const CustomSafeAreaView: React.FC<Props> = props => {
+  const {children, styles, edges} = props;
 
-const SafeAreaView: React.FC<Props> = props => {
-  const {children, styles} = props;
+  const EDGES = useMemo(
+    () => (edges ? edges : ['top', 'bottom', 'left', 'right']),
+    [edges],
+  );
 
   const insets = useSafeAreaInsets();
 
@@ -47,9 +53,9 @@ const SafeAreaView: React.FC<Props> = props => {
             0)
         : 0,
     };
-  }, [styles, insets]);
+  }, [styles, insets, EDGES]);
 
   return <View style={[styles, generatePaddings()]}>{children}</View>;
 };
 
-export default SafeAreaView;
+export default CustomSafeAreaView;

@@ -3,7 +3,7 @@ import {View, StyleSheet} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 
-import SafeAreaView from '../../components/SafeAreaView';
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TableCell from '../../components/Cells/TableCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TranslateText from '../../components/TranslateText';
@@ -181,7 +181,7 @@ const ConfirmBuy: React.FC<Props> = props => {
         SuccessScreen
       ) : (
         <>
-          <SafeAreaView>
+          <CustomSafeAreaView>
             <View style={styles.topContainer}>
               <TranslateText
                 textKey={'purchasing'}
@@ -205,7 +205,7 @@ const ConfirmBuy: React.FC<Props> = props => {
                 />
               </View>
             </View>
-          </SafeAreaView>
+          </CustomSafeAreaView>
 
           <View style={styles.bottomSheetContainer}>
             <TableCell
