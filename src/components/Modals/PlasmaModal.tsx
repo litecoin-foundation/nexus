@@ -1,5 +1,6 @@
 import React, {ReactNode, useEffect, useState, useRef, useContext} from 'react';
-import {TouchableOpacity, StyleSheet} from 'react-native';
+import {TouchableOpacity, StyleSheet, Platform} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {
   interpolate,
   useAnimatedProps,
@@ -51,6 +52,8 @@ const SPRING_BACK_ANIM_DURATION = 100;
 const SWIPE_CARDS_ANIM_DURATION = 200;
 
 export default function PlasmaModal(props: Props) {
+  const insets = useSafeAreaInsets();
+
   const {
     isOpened,
     close,
@@ -68,18 +71,24 @@ export default function PlasmaModal(props: Props) {
     renderBody,
   } = props;
 
+  const gapInPixelsWithInsets = isFromBottomToTop
+    ? gapInPixels + insets.bottom
+    : gapInPixels;
+
+  const bottomInsetPadding = Platform.OS === 'ios' ? 0 : insets.bottom;
+
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, bottomInsetPadding);
 
   const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
   const swipeTriggerHeightRange = SCREEN_HEIGHT * 0.15;
   const swipeTriggerWidthRange = SCREEN_WIDTH * 0.15;
   const snapPoints = [
-    isFromBottomToTop ? gapInPixels : SCREEN_HEIGHT,
+    isFromBottomToTop ? gapInPixelsWithInsets : SCREEN_HEIGHT,
     isFromBottomToTop
-      ? gapInPixels + swipeTriggerHeightRange
+      ? gapInPixelsWithInsets + swipeTriggerHeightRange
       : SCREEN_HEIGHT - swipeTriggerHeightRange,
   ];
   const fullyOpenSnapPoint = snapPoints[0];
@@ -266,8 +275,12 @@ export default function PlasmaModal(props: Props) {
           });
         }
       }
-    })
-    .simultaneousWithExternalGesture(panYGesture);
+    });
+
+  const panSimultaneousGestures = Gesture.Simultaneous(
+    panXGesture,
+    panYGesture,
+  );
 
   const animatedContentBodyTranslateStyle = useAnimatedProps(() => {
     return {
@@ -338,7 +351,8 @@ export default function PlasmaModal(props: Props) {
       paginationOpacity.value = withTiming(1, {duration: animDuration});
     } else {
       bodyTranslateY.value = withTiming(
-        (SCREEN_HEIGHT - gapInPixels) * (isFromBottomToTop ? 1 : -1),
+        (SCREEN_HEIGHT - gapInPixelsWithInsets - bottomInsetPadding) *
+          (isFromBottomToTop ? 1 : -1),
         {duration: animDuration},
       );
 
@@ -354,7 +368,7 @@ export default function PlasmaModal(props: Props) {
     bodyTranslateY,
     backOpacity,
     animDuration,
-    gapInPixels,
+    gapInPixelsWithInsets,
     isFromBottomToTop,
     isOpened,
   ]);
@@ -363,18 +377,14 @@ export default function PlasmaModal(props: Props) {
   const gapBgColor = isInternetReachable ? '#1162e6' : '#f36f56';
   const contentBodyConditionStyle = {
     flex: isFromBottomToTop ? 1 : 0,
-    height: SCREEN_HEIGHT - gapInPixels,
+    height: SCREEN_HEIGHT - gapInPixelsWithInsets - bottomInsetPadding,
   };
 
   return (
     <>
       {isVisible ? (
         <GestureDetector
-          gesture={
-            isSwiperActive
-              ? Gesture.Simultaneous(panYGesture, panXGesture)
-              : panYGesture
-          }>
+          gesture={isSwiperActive ? panSimultaneousGestures : panYGesture}>
           <Animated.View
             style={[
               styles.container,
@@ -392,7 +402,7 @@ export default function PlasmaModal(props: Props) {
               style={[
                 styles.gap,
                 {
-                  flexBasis: gapInPixels,
+                  flexBasis: gapInPixelsWithInsets,
                   backgroundColor: gapBgColor,
                 },
                 gapSpecifiedStyle,
@@ -408,22 +418,24 @@ export default function PlasmaModal(props: Props) {
                 }}
               />
             </Animated.View>
-            <Animated.View
-              style={[
-                styles.contentBody,
-                contentBodyConditionStyle,
-                contentBodySpecifiedStyle,
-              ]}>
-              {renderBody(
-                isOpened,
-                true,
-                contentBodyAnimDelay,
-                contentBodyAnimDuration,
-                animatedContentBodyTranslateStyle,
-                animatedCardOpacityStyle,
-                animatedPrevNextCardOpacityStyle,
-                animatedPaginationOpacityStyle,
-              )}
+            <Animated.View style={styles.safeArea}>
+              <Animated.View
+                style={[
+                  styles.contentBody,
+                  contentBodyConditionStyle,
+                  contentBodySpecifiedStyle,
+                ]}>
+                {renderBody(
+                  isOpened,
+                  true,
+                  contentBodyAnimDelay,
+                  contentBodyAnimDuration,
+                  animatedContentBodyTranslateStyle,
+                  animatedCardOpacityStyle,
+                  animatedPrevNextCardOpacityStyle,
+                  animatedPaginationOpacityStyle,
+                )}
+              </Animated.View>
             </Animated.View>
           </Animated.View>
         </GestureDetector>
@@ -434,7 +446,11 @@ export default function PlasmaModal(props: Props) {
   );
 }
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  bottomInset: number,
+) =>
   StyleSheet.create({
     container: {
       position: 'absolute',
@@ -464,5 +480,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       backgroundColor: 'transparent',
       zIndex: 1,
+    },
+    safeArea: {
+      flex: 1,
+      paddingBottom: bottomInset,
     },
   });

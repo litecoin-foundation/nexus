@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import {View, StyleSheet, DeviceEventEmitter} from 'react-native';
+import {View, StyleSheet, DeviceEventEmitter, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import PlasmaModal from './Modals/PlasmaModal';
@@ -20,6 +20,7 @@ import {
 } from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 
+import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -134,87 +135,95 @@ const SendConfirmation: React.FC<Props> = props => {
       </Animated.View> */}
 
       <LinearGradient style={styles.background} colors={['#1162E6', '#0F55C7']}>
-        <View style={styles.body}>
-          <TranslateText
-            textKey="send"
-            domain="main"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-            textStyle={styles.sendText}
-            numberOfLines={1}
-          />
-          <TranslateText
-            textValue={amountInSubunit + ' ' + amountCode}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-            textStyle={styles.amountText}
-            numberOfLines={1}
-          />
-          <View style={styles.fiatAmount}>
+        <CustomSafeAreaView
+          styles={{...styles.safeArea}}
+          edges={
+            Platform.OS === 'ios'
+              ? ['left', 'right']
+              : ['bottom', 'left', 'right']
+          }>
+          <View style={styles.body}>
             <TranslateText
-              textValue={currencySymbol + '' + fiatAmount}
+              textKey="send"
+              domain="main"
               maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-              textStyle={styles.fiatAmountText}
+              textStyle={styles.sendText}
               numberOfLines={1}
             />
-          </View>
-
-          {toDomain ? (
-            <>
-              <TranslateText
-                textKey="to"
-                domain="main"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.valueSubtitle}
-                numberOfLines={1}
-              />
-              <TranslateText
-                textValue={toDomain}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.valueTitle}
-                numberOfLines={1}
-              />
-            </>
-          ) : null}
-          <TranslateText
-            textKey="send_to_address"
-            domain="sendTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.valueSubtitle}
-            numberOfLines={1}
-          />
-          <TranslateText
-            textValue={toAddress}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.valueTitle}
-            numberOfLines={3}
-          />
-          <TranslateText
-            textKey="fee"
-            domain="sendTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.valueSubtitle}
-            numberOfLines={1}
-          />
-          <TranslateText
-            textValue={convertToSubunit(fee) + '' + amountSymbol}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.valueTitle}
-            numberOfLines={1}
-          />
-          <TranslateText
-            textValue={calculateFiatAmount(fee)}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.valueTitle}
-            numberOfLines={1}
-          />
-
-          <View style={styles.confirmButtonContainer}>
-            <GreenButton
-              textKey="confirm_and_send"
-              textDomain="sendTab"
-              onPress={() => handleAuthenticationRequired('send-auth')}
+            <TranslateText
+              textValue={amountInSubunit + ' ' + amountCode}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+              textStyle={styles.amountText}
+              numberOfLines={1}
             />
+            <View style={styles.fiatAmount}>
+              <TranslateText
+                textValue={currencySymbol + '' + fiatAmount}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+                textStyle={styles.fiatAmountText}
+                numberOfLines={1}
+              />
+            </View>
+
+            {toDomain ? (
+              <>
+                <TranslateText
+                  textKey="to"
+                  domain="main"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.valueSubtitle}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={toDomain}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.valueTitle}
+                  numberOfLines={1}
+                />
+              </>
+            ) : null}
+            <TranslateText
+              textKey="send_to_address"
+              domain="sendTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.valueSubtitle}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={toAddress}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.valueTitle}
+              numberOfLines={3}
+            />
+            <TranslateText
+              textKey="fee"
+              domain="sendTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.valueSubtitle}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={convertToSubunit(fee) + '' + amountSymbol}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.valueTitle}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={calculateFiatAmount(fee)}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.valueTitle}
+              numberOfLines={1}
+            />
+
+            <View style={styles.confirmButtonContainer}>
+              <GreenButton
+                textKey="confirm_and_send"
+                textDomain="sendTab"
+                onPress={() => handleAuthenticationRequired('send-auth')}
+              />
+            </View>
           </View>
-        </View>
+        </CustomSafeAreaView>
       </LinearGradient>
 
       <PlasmaModal
@@ -250,6 +259,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
     },
     background: {
+      flex: 1,
+    },
+    safeArea: {
       flex: 1,
     },
     body: {

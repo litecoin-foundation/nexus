@@ -1,5 +1,19 @@
-import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
-import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useRef,
+  useMemo,
+  useContext,
+  useCallback,
+} from 'react';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  DeviceEventEmitter,
+  LayoutChangeEvent,
+} from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
@@ -450,15 +464,12 @@ const Main: React.FC<Props> = props => {
     };
   });
 
+  const walletButtonRef = useRef() as any;
   const walletButton = useMemo(
     () => (
       <Animated.View
-        style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}
-        onLayout={event => {
-          event.target.measure((x, y, width, height, pageX, pageY) => {
-            setPlasmaModalGapInPixels(height + pageY);
-          });
-        }}>
+        ref={walletButtonRef}
+        style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}>
         <ChooseWalletButton
           title={currentWallet}
           onPress={() => {
@@ -475,6 +486,12 @@ const Main: React.FC<Props> = props => {
     ),
     [animatedWalletButton, currentWallet, isWalletsModalOpened],
   );
+
+  useLayoutEffect(() => {
+    walletButtonRef.current?.measure((x, y, width, height, pageX, pageY) => {
+      setPlasmaModalGapInPixels(height + pageY);
+    });
+  });
 
   const fadingTimeout = useRef<NodeJS.Timeout>();
   const walletButtonFadingTimeout = useRef<NodeJS.Timeout>();
