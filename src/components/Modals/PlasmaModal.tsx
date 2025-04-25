@@ -48,8 +48,15 @@ interface Props {
   ) => ReactNode;
 }
 
-const SPRING_BACK_ANIM_DURATION = 100;
-const SWIPE_CARDS_ANIM_DURATION = 200;
+// NOTE: We have to detect old phones since they cannot handle fast animations
+const SPRING_BACK_ANIM_DURATION =
+  Platform.OS === 'android' && Platform.Version <= 31 ? 200 : 100;
+const SWIPE_CARDS_ANIM_DURATION =
+  Platform.OS === 'android' && Platform.Version <= 31
+    ? 350
+    : Platform.OS === 'android'
+      ? 300
+      : 200;
 
 export default function PlasmaModal(props: Props) {
   const insets = useSafeAreaInsets();
@@ -229,24 +236,25 @@ export default function PlasmaModal(props: Props) {
     .onUpdate(e => {
       if (bodyTranslateY.value === 0) {
         bodyTranslateX.value = e.translationX + bodyTranslateXStart.value;
+        // NOTE: doubling the interpolation range is supposed to help with smoothing on android
         cardOpacity.value = interpolate(
           e.translationX,
-          [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH],
+          [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
           [0, 1, 0],
         );
         prevNextCardOpacity.value = interpolate(
           e.translationX,
-          [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH],
+          [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
           [1, 0, 1],
         );
         cardScale.value = interpolate(
           e.translationX,
-          [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH],
+          [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
           [0.7, 1, 0.7],
         );
         prevNextCardScale.value = interpolate(
           e.translationX,
-          [SCREEN_WIDTH * -1, 0, SCREEN_WIDTH],
+          [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
           [1, 0.7, 1],
         );
       }

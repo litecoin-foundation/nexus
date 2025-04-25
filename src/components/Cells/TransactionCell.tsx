@@ -96,6 +96,10 @@ const TransactionCell: React.FC<Props> = props => {
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const currencySymbol = useAppSelector(state => currencySymbolSelector(state));
   const cryptoAmount = convertToSubunit(amount);
+  let cryptoAmountFormatted = cryptoAmount.toFixed(8);
+  if (cryptoAmountFormatted.match(/\./)) {
+    cryptoAmountFormatted = cryptoAmountFormatted.replace(/\.?0+$/, '');
+  }
   // const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   // const fiatAmount = calculateFiatAmount(amount);
 
@@ -172,7 +176,7 @@ const TransactionCell: React.FC<Props> = props => {
       </View>
       <View style={styles.right}>
         <TranslateText
-          textKey={`${parseFloat(cryptoAmount).toFixed(8)}${amountSymbol}`}
+          textKey={`${cryptoAmountFormatted}${amountSymbol}`}
           domain={'main'}
           maxSizeInPixels={SCREEN_HEIGHT * 0.017}
           textStyle={styles.cryptoText}

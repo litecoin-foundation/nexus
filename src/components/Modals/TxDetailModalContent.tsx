@@ -1,6 +1,5 @@
 import React, {
   useEffect,
-  useLayoutEffect,
   useState,
   useCallback,
   useContext,
@@ -235,10 +234,9 @@ export default function TxDetailModalContent(props: Props) {
       opacity: fadeNewDetailsOpacity.value,
     };
   });
-  useLayoutEffect(() => {
-    fadeNewDetailsOpacity.value = 0;
-  }, [transaction, fadeNewDetailsOpacity]);
+
   useEffect(() => {
+    fadeNewDetailsOpacity.value = 0;
     fadeNewDetailsOpacity.value = withTiming(1, {duration: 500});
   }, [transaction, fadeNewDetailsOpacity]);
 
@@ -505,121 +503,123 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
 
   return (
     <Fragment>
-      {/* <Text style={styles.statusText}>{status}</Text> */}
-      <TableCell
-        titleTextKey="total"
-        titleTextDomain="main"
-        value={
-          isSell
-            ? `${cryptoCurrencyAmount}${ltcSymbol} (${fiatSymbol}${fiatCurrencyAmount})`
-            : `${fiatSymbol}${fiatCurrencyAmount}`
-        }
-        blueValue
-        thick
-      />
-      {isSell ? (
+      <View style={styles.topContainer}>
+        {/* <Text style={styles.statusText}>{status}</Text> */}
         <TableCell
-          titleTextKey="rate"
-          titleTextDomain="buyTab"
-          value={`${fiatSymbol}${parseFloat(
-            String(fiatCurrencyAmount / cryptoCurrencyAmount),
-          ).toFixed(2)}`}
+          titleTextKey="total"
+          titleTextDomain="main"
+          value={
+            isSell
+              ? `${cryptoCurrencyAmount}${ltcSymbol} (${fiatSymbol}${fiatCurrencyAmount})`
+              : `${fiatSymbol}${fiatCurrencyAmount}`
+          }
           blueValue
           thick
         />
-      ) : (
-        <></>
-      )}
+        {isSell ? (
+          <TableCell
+            titleTextKey="rate"
+            titleTextDomain="buyTab"
+            value={`${fiatSymbol}${parseFloat(
+              String(fiatCurrencyAmount / cryptoCurrencyAmount),
+            ).toFixed(2)}`}
+            blueValue
+            thick
+          />
+        ) : (
+          <></>
+        )}
 
-      <View style={styles.tableCell}>
-        <View style={styles.tableCellRow}>
-          <TranslateText
-            textKey={'total_fee'}
-            domain={'main'}
-            maxSizeInPixels={height * 0.017}
-            textStyle={styles.tableCellTitle}
-            numberOfLines={1}
-          />
-          <TranslateText
-            textValue={`${fiatSymbol}${totalFee}`}
-            maxSizeInPixels={height * 0.02}
-            textStyle={styles.tableCellValue}
-            numberOfLines={1}
-          />
-        </View>
-        <View style={styles.tableCellRow}>
-          <View style={styles.tableCellSubRow}>
-            <View style={styles.tableCellListDot} />
+        <View style={styles.tableCell}>
+          <View style={styles.tableCellRow}>
             <TranslateText
-              textKey={'network_fee'}
+              textKey={'total_fee'}
               domain={'main'}
               maxSizeInPixels={height * 0.017}
               textStyle={styles.tableCellTitle}
               numberOfLines={1}
             />
-          </View>
-          <TranslateText
-            textValue={
-              blockchainFee !== 'unknown'
-                ? `${fiatSymbol}${blockchainFee}`
-                : 'unknown'
-            }
-            maxSizeInPixels={height * 0.02}
-            textStyle={styles.tableCellSubValue}
-            numberOfLines={1}
-          />
-        </View>
-        <View style={styles.tableCellRow}>
-          <View style={styles.tableCellSubRow}>
-            <View style={styles.tableCellListDot} />
             <TranslateText
-              textKey={'provider_fee'}
-              domain={'main'}
-              maxSizeInPixels={height * 0.017}
-              textStyle={styles.tableCellTitle}
+              textValue={`${fiatSymbol}${totalFee}`}
+              maxSizeInPixels={height * 0.02}
+              textStyle={styles.tableCellValue}
               numberOfLines={1}
             />
           </View>
-          <TranslateText
-            textValue={
-              tipLFFee !== 'unknown' && providerFee !== 'unknown'
-                ? `${fiatSymbol}${Number(tipLFFee) + Number(providerFee)}`
-                : 'unknown'
-            }
-            maxSizeInPixels={height * 0.02}
-            textStyle={styles.tableCellSubValue}
-            numberOfLines={1}
-          />
+          <View style={styles.tableCellRow}>
+            <View style={styles.tableCellSubRow}>
+              <View style={styles.tableCellListDot} />
+              <TranslateText
+                textKey={'network_fee'}
+                domain={'main'}
+                maxSizeInPixels={height * 0.017}
+                textStyle={styles.tableCellTitle}
+                numberOfLines={1}
+              />
+            </View>
+            <TranslateText
+              textValue={
+                blockchainFee !== 'unknown'
+                  ? `${fiatSymbol}${blockchainFee}`
+                  : 'unknown'
+              }
+              maxSizeInPixels={height * 0.02}
+              textStyle={styles.tableCellSubValue}
+              numberOfLines={1}
+            />
+          </View>
+          <View style={styles.tableCellRow}>
+            <View style={styles.tableCellSubRow}>
+              <View style={styles.tableCellListDot} />
+              <TranslateText
+                textKey={'provider_fee'}
+                domain={'main'}
+                maxSizeInPixels={height * 0.017}
+                textStyle={styles.tableCellTitle}
+                numberOfLines={1}
+              />
+            </View>
+            <TranslateText
+              textValue={
+                tipLFFee !== 'unknown' && providerFee !== 'unknown'
+                  ? `${fiatSymbol}${Number(tipLFFee) + Number(providerFee)}`
+                  : 'unknown'
+              }
+              maxSizeInPixels={height * 0.02}
+              textStyle={styles.tableCellSubValue}
+              numberOfLines={1}
+            />
+          </View>
         </View>
+        <TableCell
+          titleTextKey="moonpay_id"
+          titleTextDomain="main"
+          value={providerTxId}
+          thick
+          valueFontSize={height * 0.012}
+          copyable
+        />
+        <TableCell
+          titleTextKey="tx_id"
+          titleTextDomain="main"
+          value={
+            status === 'completed' || status === 'sent'
+              ? cryptoTxId
+              : status === 'pending'
+                ? 'Pending'
+                : 'Unknown'
+          }
+          thick
+          valueFontSize={height * 0.012}
+          copyable
+        />
+        <TableCell
+          titleTextKey="time_date"
+          titleTextDomain="main"
+          value={createdAt}
+          thick
+        />
       </View>
-      <TableCell
-        titleTextKey="moonpay_id"
-        titleTextDomain="main"
-        value={providerTxId}
-        thick
-        valueFontSize={height * 0.012}
-        copyable
-      />
-      <TableCell
-        titleTextKey="tx_id"
-        titleTextDomain="main"
-        value={
-          status === 'completed' || status === 'sent'
-            ? cryptoTxId
-            : status === 'pending'
-              ? 'Pending'
-              : 'Unknown'
-        }
-        thick
-        valueFontSize={height * 0.012}
-        copyable
-      />
-      <TableCell
-        titleTextKey="time_date"
-        titleTextDomain="main"
-        value={createdAt}
-        thick
-      />
       <View style={styles.bottomContainer}>
         {status === 'completed' || status === 'sent' ? (
           <View style={styles.bottomBtns}>
@@ -1071,7 +1071,7 @@ const getStyles = (
       position: 'absolute',
       bottom: 0,
       left: 0,
-      height: screenHeight * 0.06,
+      height: screenHeight * 0.04,
       width: '100%',
       flexDirection: 'row',
       justifyContent: 'center',
@@ -1149,7 +1149,7 @@ const getStyles = (
       paddingBottom: screenHeight * 0.015,
     },
     fromToContainerHeight: {
-      height: isMweb ? screenHeight * 0.18 : screenHeight * 0.23,
+      height: isMweb ? screenHeight * 0.2 : screenHeight * 0.25,
     },
     fromToContainer: {
       width: '100%',
@@ -1279,20 +1279,17 @@ const getStyles = (
     },
     bottomContainer: {
       flexDirection: 'column',
-      justifyContent: 'flex-end',
+      paddingHorizontal: screenWidth * 0.05,
     },
     buttonContainer: {
       width: '100%',
       justifyContent: 'center',
       alignSelf: 'center',
-      padding: screenHeight * 0.03,
     },
     bottomBtns: {
-      width: '100%',
-      display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
-      padding: screenHeight * 0.03,
+      alignItems: 'flex-end',
     },
     flexBtn: {
       flexBasis: '100%',
