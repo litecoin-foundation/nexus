@@ -62,7 +62,7 @@ const SearchTransaction: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
-  // deviceHeaderHeight = insets.top + stack header height
+  // NOTE: deviceHeaderHeight = insets.top + stack header height
   const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
   const searchBarHeight = SCREEN_HEIGHT * 0.05;
   const filterButtonsBarHeight = SCREEN_HEIGHT * 0.065;

@@ -5,7 +5,6 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
-  // interpolate,
 } from 'react-native-reanimated';
 
 import TranslateText from '../../components/TranslateText';
@@ -83,7 +82,7 @@ const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
 
   useEffect(() => {
     if (isOpened) {
-      // Fading in when it's unfolded
+      // NOTE: Fading in when it's unfolded
       opacity.value = withTiming(1, {duration: OPTIONS_ANIM_DURATION * 2});
     } else {
       opacity.value = withTiming(0, {duration: OPTIONS_ANIM_DURATION});
@@ -104,9 +103,6 @@ const DropDownButton: React.FC<Props> = props => {
   const cellHeightMultiplier = 1.45;
   const separatorGapHeight = 0;
   const bottomGapHeight = SCREEN_HEIGHT * 0.01;
-  // const [cellHeightState, setCellHeightState] = useState(
-  //   cellHeight * cellHeightMultiplier,
-  // );
 
   const [isOpened, setIsOpened] = useState(false);
   const [unfoldHeight, setUnfoldHeight] = useState(0);
@@ -120,15 +116,11 @@ const DropDownButton: React.FC<Props> = props => {
   }
 
   const heightSharedValue = useSharedValue(cellHeight);
-  // const rotateArrowAnim = useSharedValue(0);
 
   useEffect(() => {
     heightSharedValue.value = withSpring(isOpened ? unfoldHeight : cellHeight, {
       overshootClamping: true,
     });
-    // rotateArrowAnim.value = withTiming(isOpened ? 1 : 0, {
-    //   duration: FOLDIND_ANIM_DURATION,
-    // });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpened, unfoldHeight]);
 
@@ -137,17 +129,6 @@ const DropDownButton: React.FC<Props> = props => {
       height: heightSharedValue.value,
     };
   });
-
-  // const animatedWalletButtonArrowStyle = useAnimatedStyle(() => {
-  //   const spinIterpolation = interpolate(
-  //     rotateArrowAnim.value,
-  //     [0, 1],
-  //     [270, 90],
-  //   );
-  //   return {
-  //     transform: [{rotate: `${spinIterpolation}deg`}],
-  //   };
-  // });
 
   function foldUnfold(toggle: boolean) {
     setIsOpened(toggle);
@@ -169,7 +150,7 @@ const DropDownButton: React.FC<Props> = props => {
       style={styles.container}
       onPress={() => foldUnfold(!isOpened)}
       onLayout={event => {
-        // Might be useful in case if there're so many options that they don't fit on the screen
+        // NOTE: Might be useful in case if there're so many options that they don't fit on the screen
         // so should be scrolled within the maximum available height
         // eslint-disable-next-line
         event.target.measure((x, y, width, height, pageX, pageY) => {
@@ -192,9 +173,6 @@ const DropDownButton: React.FC<Props> = props => {
             />
           </Animated.View>
         </Animated.View>
-        {/* <Animated.View style={styles.separatorGap}>
-          <Animated.View style={styles.separator} />
-        </Animated.View> */}
         <Animated.View style={styles.optionsContainer}>
           <RenderOptionsWithDelay
             isOpened={isOpened}
