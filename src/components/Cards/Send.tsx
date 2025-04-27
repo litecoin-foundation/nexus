@@ -613,7 +613,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.025,
     },
     cellContainer: {
-      marginTop: screenHeight * 0.03,
+      marginTop: screenHeight * 0.035,
     },
     subtitlesContainer: {
       flexDirection: 'row',
@@ -624,11 +624,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
     },
     subtitleText: {
+      color: '#747e87',
       fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
+      fontSize: screenHeight * 0.015,
       fontWeight: '700',
-      color: '#747E87',
-      fontSize: screenHeight * 0.012,
+      fontStyle: 'normal',
     },
     amountSubContainer: {
       height: '100%',

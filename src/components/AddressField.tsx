@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useContext,
-  useCallback,
-} from 'react';
+import React, {useEffect, useState, useContext, useCallback} from 'react';
 import {
   View,
   TextInput,
@@ -200,82 +194,84 @@ const AddressField: React.FC<Props> = props => {
   }, [address]);
 
   return (
-    <Animated.View style={[styles.container, animatedContainerStyle]}>
-      <View style={styles.hiddenContainer}>
-        <Text style={styles.hiddenText} onLayout={onMeasuredTextLayout}>
-          {addressForMeasurement}
-        </Text>
-      </View>
+    <Animated.View style={styles.container}>
+      <Animated.View style={animatedContainerStyle}>
+        <View style={styles.hiddenContainer}>
+          <Text style={styles.hiddenText} onLayout={onMeasuredTextLayout}>
+            {addressForMeasurement}
+          </Text>
+        </View>
 
-      <TextInput
-        placeholderTextColor="#dbdbdb"
-        placeholder={t('enter_address')}
-        style={styles.text}
-        value={address}
-        autoCorrect={false}
-        autoComplete="off"
-        onChangeText={handleTextChange}
-        blurOnSubmit={true}
-        enterKeyHint={'done'}
-        multiline={true}
-        scrollEnabled={false}
-        maxLength={121}
-        onEndEditing={e => validateAddress(e.nativeEvent.text)}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        allowFontScaling={false}
-      />
+        <TextInput
+          placeholderTextColor="#dbdbdb"
+          placeholder={t('enter_address')}
+          style={styles.text}
+          value={address}
+          autoCorrect={false}
+          autoComplete="off"
+          onChangeText={handleTextChange}
+          blurOnSubmit={true}
+          enterKeyHint={'done'}
+          multiline={true}
+          scrollEnabled={false}
+          maxLength={121}
+          onEndEditing={e => validateAddress(e.nativeEvent.text)}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          allowFontScaling={false}
+        />
 
-      {isActive ? null : (
-        <>
+        {isActive ? null : (
+          <>
+            <Pressable
+              style={[styles.pasteContainer]}
+              onPressIn={() => onPressIn('paste')}
+              onPressOut={() => onPressOut('paste')}
+              onPress={onPastePress}
+              disabled={isActive}>
+              <Animated.View
+                style={[styles.pasteSubContainer, pasteContainerMotionStyle]}>
+                <Animated.Image
+                  style={styles.icon}
+                  source={require('../assets/images/paste.png')}
+                />
+              </Animated.View>
+            </Pressable>
+
+            <Pressable
+              style={[styles.closeContainer]}
+              onPressIn={() => onPressIn('scan')}
+              onPressOut={() => onPressOut('scan')}
+              onPress={onScanPress}
+              disabled={isActive}>
+              <Animated.View
+                style={[styles.scanSubContainer, scanContainerMotionStyle]}>
+                <Animated.Image
+                  source={require('../assets/images/qrcode-btn.png')}
+                />
+              </Animated.View>
+            </Pressable>
+          </>
+        )}
+
+        {!isActive ? null : (
           <Pressable
-            style={[styles.pasteContainer]}
-            onPressIn={() => onPressIn('paste')}
-            onPressOut={() => onPressOut('paste')}
-            onPress={onPastePress}
-            disabled={isActive}>
+            style={styles.closeContainer}
+            disabled={!isActive}
+            onPress={() => {
+              clearInput();
+              validateAddress('');
+            }}>
             <Animated.View
-              style={[styles.pasteSubContainer, pasteContainerMotionStyle]}>
-              <Animated.Image
-                style={styles.icon}
-                source={require('../assets/images/paste.png')}
+              style={[styles.closeSubContainer, closeContainerMotionStyle]}>
+              <Image
+                style={styles.closeIcon}
+                source={require('../assets/images/close.png')}
               />
             </Animated.View>
           </Pressable>
-
-          <Pressable
-            style={[styles.closeContainer]}
-            onPressIn={() => onPressIn('scan')}
-            onPressOut={() => onPressOut('scan')}
-            onPress={onScanPress}
-            disabled={isActive}>
-            <Animated.View
-              style={[styles.scanSubContainer, scanContainerMotionStyle]}>
-              <Animated.Image
-                source={require('../assets/images/qrcode-btn.png')}
-              />
-            </Animated.View>
-          </Pressable>
-        </>
-      )}
-
-      {!isActive ? null : (
-        <Pressable
-          style={styles.closeContainer}
-          disabled={!isActive}
-          onPress={() => {
-            clearInput();
-            validateAddress('');
-          }}>
-          <Animated.View
-            style={[styles.closeSubContainer, closeContainerMotionStyle]}>
-            <Image
-              style={styles.closeIcon}
-              source={require('../assets/images/close.png')}
-            />
-          </Animated.View>
-        </Pressable>
-      )}
+        )}
+      </Animated.View>
     </Animated.View>
   );
 };

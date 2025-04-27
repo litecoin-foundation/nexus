@@ -508,6 +508,7 @@ const Main: React.FC<Props> = props => {
         <HeaderButton
           onPress={() => navigation.navigate('SettingsStack')}
           imageSource={require('../assets/icons/settings-cog.png')}
+          imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
         />
         {isFlexaCustomer ? (
           <HeaderButton
@@ -526,8 +527,9 @@ const Main: React.FC<Props> = props => {
       <Animated.View style={[styles.headerBtns, animatedButton]}>
         <HeaderButton
           onPress={() => navigation.navigate('AlertsStack')}
-          imageSource={require('../assets/icons/charts-icon.png')}
+          imageSource={require('../assets/icons/alerts-icon.png')}
           rightPadding={true}
+          imageXY={{x: SCREEN_HEIGHT * 0.022, y: SCREEN_HEIGHT * 0.022}}
         />
       </Animated.View>
     ),
@@ -632,6 +634,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 4}
         disabled={!isInternetReachable ? true : false}
+        sizePercentage={90}
       />
       <DashboardButton
         textKey="receive"
@@ -642,6 +645,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 5}
         disabled={false}
+        sizePercentage={90}
       />
     </View>
   );
@@ -865,7 +869,7 @@ export const navigationOptions = (navigation: any): StackNavigationOptions => {
     headerRight: () => (
       <HeaderButton
         onPress={() => navigation.navigate('AlertsStack')}
-        imageSource={require('../assets/icons/charts-icon.png')}
+        imageSource={require('../assets/icons/alerts-icon.png')}
         rightPadding={true}
       />
     ),

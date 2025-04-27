@@ -19,6 +19,10 @@ interface Props {
   rightPadding?: boolean;
   marginLeft?: number;
   marginRight?: number;
+  imageXY?: {
+    x: number;
+    y: number;
+  };
 }
 
 const HeaderButton: React.FC<Props> = props => {
@@ -31,6 +35,7 @@ const HeaderButton: React.FC<Props> = props => {
     rightPadding,
     marginLeft,
     marginRight,
+    imageXY,
   } = props;
 
   const MARGIN_LEFT = marginLeft || 0;
@@ -43,6 +48,8 @@ const HeaderButton: React.FC<Props> = props => {
     SCREEN_HEIGHT,
     MARGIN_LEFT,
     MARGIN_RIGHT,
+    imageXY,
+    !title && !textKey,
   );
 
   const textStyle = imageSource
@@ -54,7 +61,7 @@ const HeaderButton: React.FC<Props> = props => {
       onPress={onPress}>
       <View style={styles.subcontainer}>
         {imageSource ? (
-          <Image source={imageSource} style={styles.image} />
+          <Image source={imageSource} style={imageXY ? styles.image : null} />
         ) : null}
         {textKey ? (
           <TranslateText
@@ -82,6 +89,13 @@ const getStyles = (
   screenHeight: number,
   marginLeft: number,
   marginRight: number,
+  imageXY:
+    | {
+        x: number;
+        y: number;
+      }
+    | undefined,
+  onlyImage: boolean,
 ) =>
   StyleSheet.create({
     container: {
@@ -95,12 +109,18 @@ const getStyles = (
       marginLeft: screenWidth * 0.04 + marginLeft,
     },
     subcontainer: {
+      height: '100%',
+      minWidth: screenHeight * 0.035,
       flexDirection: 'row',
+      justifyContent: 'center',
       alignItems: 'center',
-      paddingHorizontal: screenHeight * 0.01,
-      paddingVertical: screenHeight * 0.005,
+      paddingHorizontal: onlyImage ? screenWidth * 0.01 : screenWidth * 0.02,
     },
-    image: {},
+    image: {
+      width: imageXY ? imageXY.x : screenHeight * 0.035,
+      height: imageXY ? imageXY.y : '100%',
+      objectFit: 'cover',
+    },
     title: {
       color: 'white',
       fontFamily: 'Satoshi Variable',

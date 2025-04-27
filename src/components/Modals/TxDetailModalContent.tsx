@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Platform,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -938,7 +939,12 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
               ) : (
                 <View style={styles.fromContainer}>
                   <View style={styles.fromAndToIconContainer}>
-                    <View style={styles.fromAndToIcon} />
+                    <View style={styles.fromAndToIcon}>
+                      <Image
+                        style={styles.fromAndToIconImage}
+                        source={require('../../assets/icons/send-icon.png')}
+                      />
+                    </View>
                     <View style={styles.sentLine} />
                   </View>
                   <View style={styles.fromAndToTitlesContainer}>
@@ -957,7 +963,12 @@ const SendReceiveLayout: React.FC<SendReceiveLayoutProps> = props => {
               )}
               <View style={styles.toContainer}>
                 <View style={styles.fromAndToIconContainer}>
-                  <View style={styles.fromAndToIcon} />
+                  <View style={styles.fromAndToIcon}>
+                    <Image
+                      style={styles.fromAndToIconImage}
+                      source={require('../../assets/icons/receive-icon.png')}
+                    />
+                  </View>
                 </View>
                 <View style={styles.fromAndToTitlesContainer}>
                   <TranslateText
@@ -1181,7 +1192,14 @@ const getStyles = (
       width: screenHeight * 0.035,
       borderRadius: screenHeight * 0.005,
       backgroundColor: '#EAEBED',
+      justifyContent: 'center',
+      alignItems: 'center',
       overflow: 'hidden',
+    },
+    fromAndToIconImage: {
+      width: '50%',
+      height: '50%',
+      objectFit: 'contain',
     },
     sentLine: {
       flex: 1,

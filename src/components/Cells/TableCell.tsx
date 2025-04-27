@@ -122,9 +122,9 @@ const getStyles = (
     },
     title: {
       color: '#747e87',
-      fontSize: screenHeight * 0.015,
-      fontWeight: '600',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '700',
       fontStyle: 'normal',
     },
     text: {

@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
-  interpolate,
+  // interpolate,
 } from 'react-native-reanimated';
 
 import TranslateText from '../../components/TranslateText';
@@ -100,39 +100,35 @@ const DropDownButton: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
 
   const fontSize = Math.round(SCREEN_HEIGHT * 0.02);
-  const arrowHeight = Math.round(SCREEN_HEIGHT * 0.012);
-  const boxHeight = cellHeight;
-  const separatorGapHeight = SCREEN_HEIGHT * 0.01;
+  const arrowHeight = Math.round(SCREEN_HEIGHT * 0.015);
+  const cellHeightMultiplier = 1.45;
+  const separatorGapHeight = 0;
   const bottomGapHeight = SCREEN_HEIGHT * 0.01;
-
-  const styles = getStyles(
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    fontSize,
-    arrowHeight,
-    cellHeight,
-    separatorGapHeight,
-  );
+  // const [cellHeightState, setCellHeightState] = useState(
+  //   cellHeight * cellHeightMultiplier,
+  // );
 
   const [isOpened, setIsOpened] = useState(false);
   const [unfoldHeight, setUnfoldHeight] = useState(0);
 
   function calcUnfoldHeight() {
     setUnfoldHeight(
-      cellHeight * options.length + separatorGapHeight + bottomGapHeight,
+      cellHeight * cellHeightMultiplier * options.length +
+        separatorGapHeight +
+        bottomGapHeight,
     );
   }
 
-  const heightSharedValue = useSharedValue(boxHeight);
-  const rotateArrowAnim = useSharedValue(0);
+  const heightSharedValue = useSharedValue(cellHeight);
+  // const rotateArrowAnim = useSharedValue(0);
 
   useEffect(() => {
-    heightSharedValue.value = withSpring(isOpened ? unfoldHeight : boxHeight, {
+    heightSharedValue.value = withSpring(isOpened ? unfoldHeight : cellHeight, {
       overshootClamping: true,
     });
-    rotateArrowAnim.value = withTiming(isOpened ? 1 : 0, {
-      duration: FOLDIND_ANIM_DURATION,
-    });
+    // rotateArrowAnim.value = withTiming(isOpened ? 1 : 0, {
+    //   duration: FOLDIND_ANIM_DURATION,
+    // });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpened, unfoldHeight]);
 
@@ -142,22 +138,31 @@ const DropDownButton: React.FC<Props> = props => {
     };
   });
 
-  const animatedWalletButtonArrowStyle = useAnimatedStyle(() => {
-    const spinIterpolation = interpolate(
-      rotateArrowAnim.value,
-      [0, 1],
-      [270, 90],
-    );
-    return {
-      transform: [{rotate: `${spinIterpolation}deg`}],
-    };
-  });
+  // const animatedWalletButtonArrowStyle = useAnimatedStyle(() => {
+  //   const spinIterpolation = interpolate(
+  //     rotateArrowAnim.value,
+  //     [0, 1],
+  //     [270, 90],
+  //   );
+  //   return {
+  //     transform: [{rotate: `${spinIterpolation}deg`}],
+  //   };
+  // });
 
   function foldUnfold(toggle: boolean) {
     setIsOpened(toggle);
   }
 
   const [currentOption, setCurrentOption] = useState(initial);
+
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    fontSize,
+    arrowHeight,
+    isOpened ? cellHeight * cellHeightMultiplier : cellHeight,
+    separatorGapHeight,
+  );
 
   return (
     <Pressable
@@ -180,17 +185,16 @@ const DropDownButton: React.FC<Props> = props => {
             textStyle={styles.boxText}
             numberOfLines={1}
           />
-          <Animated.View
-            style={[styles.boxArrow, animatedWalletButtonArrowStyle]}>
+          <Animated.View style={styles.boxArrow}>
             <Image
               style={styles.boxArrowIcon}
-              source={require('../../assets/images/back-icon.png')}
+              source={require('../../assets/icons/tick-icon.png')}
             />
           </Animated.View>
         </Animated.View>
-        <Animated.View style={styles.separatorGap}>
+        {/* <Animated.View style={styles.separatorGap}>
           <Animated.View style={styles.separator} />
-        </Animated.View>
+        </Animated.View> */}
         <Animated.View style={styles.optionsContainer}>
           <RenderOptionsWithDelay
             isOpened={isOpened}
@@ -232,8 +236,6 @@ const getStyles = (
       width: '100%',
       flexDirection: 'column',
       justifyContent: 'flex-start',
-      paddingLeft: screenHeight * 0.02,
-      paddingRight: screenHeight * 0.02,
       overflow: 'hidden',
     },
     boxTitleContainer: {
@@ -242,6 +244,7 @@ const getStyles = (
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      paddingHorizontal: screenHeight * 0.02,
     },
     boxText: {
       color: '#fff',
@@ -265,7 +268,10 @@ const getStyles = (
       width: screenWidth * 0.35,
       height: cellHeight,
       minHeight: 25,
+      borderColor: 'rgba(240,240,240,0.15)',
+      borderTopWidth: 1,
       justifyContent: 'center',
+      paddingHorizontal: screenHeight * 0.02,
     },
     optionBtnText: {
       color: '#fff',
