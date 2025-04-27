@@ -9,16 +9,17 @@ const Stack = createStackNavigator();
 function AlertsStack() {
   return (
     <Stack.Navigator
-      screenOptions={{
-        headerTitleAlign: 'center',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-          color: 'white',
-        },
-        headerTransparent: true,
-        headerBackTitleVisible: false,
-        headerTintColor: 'white',
-      }}>
+    // screenOptions={{
+    //   headerTitleAlign: 'center',
+    //   headerTitleStyle: {
+    //     fontWeight: 'bold',
+    //     color: 'white',
+    //   },
+    //   headerTransparent: true,
+    //   headerBackTitleVisible: false,
+    //   headerTintColor: 'white',
+    // }}
+    >
       <Stack.Screen
         name="Alert"
         component={Alert}

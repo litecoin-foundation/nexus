@@ -4,9 +4,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import Header from '../../components/Header';
 import SlideRuler from '../../components/SlideRuler';
-import BlueButton from '../../components/Buttons/BlueButton';
+import GreenButton from '../../components/Buttons/GreenButton';
 import {addAlert} from '../../reducers/alerts';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {convertLocalFiatToUSD, ltcRateSelector} from '../../reducers/ticker';
@@ -51,13 +50,14 @@ const Dial: React.FC<Props> = props => {
         Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
       ]}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <Header />
       <View style={styles.subContainer}>
         <View style={styles.topContainer}>
-          <Image
-            style={styles.imageContainer}
-            source={require('../../assets/images/alert-art.png')}
-          />
+          <View style={styles.imageContainer}>
+            <Image
+              style={styles.image}
+              source={require('../../assets/images/gramophone-art.png')}
+            />
+          </View>
           <TranslateText
             textKey="alert_me"
             domain="alertsTab"
@@ -125,7 +125,7 @@ const Dial: React.FC<Props> = props => {
         </View>
       </View>
       <View style={styles.buttonContainer}>
-        <BlueButton
+        <GreenButton
           textKey="create_alert"
           textDomain="alertsTab"
           onPress={() => {
@@ -138,7 +138,6 @@ const Dial: React.FC<Props> = props => {
             );
             navigation.goBack();
           }}
-          small={false}
         />
       </View>
     </LinearGradient>
@@ -156,31 +155,39 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
     },
     topContainer: {
-      flexBasis: '72%',
+      width: '100%',
+      height: screenHeight * 0.62,
+      backgroundColor: '#0070F0',
+      borderBottomLeftRadius: screenHeight * 0.07,
+      borderBottomRightRadius: screenHeight * 0.07,
       justifyContent: 'flex-start',
       alignItems: 'center',
     },
     imageContainer: {
-      height: screenHeight * 0.4,
+      width: '100%',
+      height: screenHeight * 0.55,
+      marginBottom: screenHeight * 0.12 * -1,
+    },
+    image: {
+      width: '100%',
+      height: '100%',
       objectFit: 'contain',
-      marginTop: screenHeight * 0.01 * -1,
-      marginBottom: screenHeight * 0.025 * -1,
     },
     text: {
-      color: '#2E2E2E',
+      color: '#fff',
       fontSize: screenHeight * 0.03,
       fontWeight: '500',
     },
     boldText: {
-      color: '#2E2E2E',
+      color: '#fff',
       fontSize: screenHeight * 0.03,
       fontWeight: '700',
     },
     switchContainer: {
-      width: screenWidth * 0.7,
-      height: screenHeight * 0.05,
-      borderRadius: screenHeight * 0.01,
-      borderColor: '#1F2124',
+      width: screenWidth * 0.8,
+      height: screenHeight * 0.056,
+      borderRadius: screenHeight * 0.028,
+      borderColor: '#fff',
       borderWidth: screenHeight < 701 ? 2 : 3,
       backgroundColor: '#fff',
       flexDirection: 'row',
@@ -190,24 +197,24 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     toggle: {
       flexBasis: '50%',
       height: '100%',
-      backgroundColor: '#fff',
+      backgroundColor: '#0070F0',
       justifyContent: 'center',
       alignItems: 'center',
     },
     toggleActive: {
       flexBasis: '50%',
       height: '100%',
-      backgroundColor: '#1F2124',
+      backgroundColor: '#fff',
       justifyContent: 'center',
       alignItems: 'center',
     },
     toggleText: {
-      color: '#2E2E2E',
+      color: '#fff',
       fontSize: screenHeight * 0.02,
       fontWeight: '500',
     },
     toggleTextActive: {
-      color: '#fff',
+      color: '#0070F0',
       fontSize: screenHeight * 0.02,
       fontWeight: '500',
     },
@@ -216,10 +223,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       height: screenHeight * 0.08,
       justifyContent: 'center',
+      marginTop: screenHeight * 0.05,
     },
     valueText: {
       fontSize: screenHeight * 0.07,
-      color: '#2C72FF',
+      color: '#1C1C1C',
       fontWeight: 'bold',
       letterSpacing: -0.39,
     },
@@ -229,9 +237,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     buttonContainer: {
       width: '100%',
-      flexDirection: 'column',
       alignItems: 'center',
-      gap: 15,
       paddingHorizontal: screenWidth * 0.06,
       paddingBottom: screenHeight * 0.03,
     },
@@ -248,7 +254,6 @@ export const DialNavigationOptions = (navigation: any) => {
   return {
     headerTitle: '',
     headerTransparent: true,
-    headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
         textKey="set_alerts"

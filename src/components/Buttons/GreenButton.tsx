@@ -47,7 +47,8 @@ const GreenButton: React.FC<Props> = props => {
       onPress={onPress}
       disabled={disabled}
       onPressIn={onPressIn}
-      onPressOut={onPressOut}>
+      onPressOut={onPressOut}
+      style={small ? styles.small : styles.big}>
       <Animated.View
         style={[
           styles.container,
