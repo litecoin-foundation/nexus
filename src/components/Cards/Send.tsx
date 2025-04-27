@@ -489,7 +489,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               </View>
             </View>
 
-            <View style={styles.cellContainer}>
+            <View style={styles.cellContainerMoreMargin}>
               <TranslateText
                 textKey="description"
                 domain="sendTab"
@@ -595,7 +595,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       // Header margin is 5
       height: screenHeight * 0.76 - 110 - 5,
       backgroundColor: '#f7f7f7',
-      // backgroundColor: 'red',
       paddingHorizontal: screenWidth * 0.06,
       position: 'relative',
     },
@@ -614,6 +613,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     cellContainer: {
       marginTop: screenHeight * 0.035,
+    },
+    cellContainerMoreMargin: {
+      marginTop: screenHeight * 0.06,
     },
     subtitlesContainer: {
       flexDirection: 'row',

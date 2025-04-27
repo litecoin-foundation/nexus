@@ -3,7 +3,6 @@ import {
   View,
   TextInput,
   StyleSheet,
-  Text,
   Pressable,
   Image,
   LayoutChangeEvent,
@@ -149,7 +148,7 @@ const AddressField: React.FC<Props> = props => {
 
   const updateHeightFromMeasurement = useCallback(
     (measuredHeight: number) => {
-      const lines = Math.max(1, Math.ceil(measuredHeight / LINE_HEIGHT)) - 1;
+      const lines = Math.max(1, Math.ceil(measuredHeight / LINE_HEIGHT) - 1);
 
       const newHeight =
         MULTILINE_HEIGHT + (lines > 1 ? lines * LINE_HEIGHT + PADDING : 0);
@@ -194,84 +193,89 @@ const AddressField: React.FC<Props> = props => {
   }, [address]);
 
   return (
-    <Animated.View style={styles.container}>
-      <Animated.View style={animatedContainerStyle}>
-        <View style={styles.hiddenContainer}>
-          <Text style={styles.hiddenText} onLayout={onMeasuredTextLayout}>
-            {addressForMeasurement}
-          </Text>
-        </View>
-
+    <Animated.View style={[styles.container, animatedContainerStyle]}>
+      <View style={styles.hiddenContainer} onLayout={onMeasuredTextLayout}>
         <TextInput
-          placeholderTextColor="#dbdbdb"
-          placeholder={t('enter_address')}
-          style={styles.text}
-          value={address}
+          style={styles.hiddenText}
+          value={addressForMeasurement}
           autoCorrect={false}
           autoComplete="off"
-          onChangeText={handleTextChange}
-          blurOnSubmit={true}
-          enterKeyHint={'done'}
           multiline={true}
           scrollEnabled={false}
           maxLength={121}
-          onEndEditing={e => validateAddress(e.nativeEvent.text)}
-          onFocus={onFocus}
-          onBlur={onBlur}
           allowFontScaling={false}
         />
+      </View>
 
-        {isActive ? null : (
-          <>
-            <Pressable
-              style={[styles.pasteContainer]}
-              onPressIn={() => onPressIn('paste')}
-              onPressOut={() => onPressOut('paste')}
-              onPress={onPastePress}
-              disabled={isActive}>
-              <Animated.View
-                style={[styles.pasteSubContainer, pasteContainerMotionStyle]}>
-                <Animated.Image
-                  style={styles.icon}
-                  source={require('../assets/images/paste.png')}
-                />
-              </Animated.View>
-            </Pressable>
+      <TextInput
+        placeholderTextColor="#dbdbdb"
+        placeholder={t('enter_address')}
+        style={styles.text}
+        value={address}
+        autoCorrect={false}
+        autoComplete="off"
+        onChangeText={handleTextChange}
+        blurOnSubmit={true}
+        enterKeyHint={'done'}
+        multiline={true}
+        scrollEnabled={false}
+        maxLength={121}
+        onEndEditing={e => validateAddress(e.nativeEvent.text)}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        allowFontScaling={false}
+      />
 
-            <Pressable
-              style={[styles.closeContainer]}
-              onPressIn={() => onPressIn('scan')}
-              onPressOut={() => onPressOut('scan')}
-              onPress={onScanPress}
-              disabled={isActive}>
-              <Animated.View
-                style={[styles.scanSubContainer, scanContainerMotionStyle]}>
-                <Animated.Image
-                  source={require('../assets/images/qrcode-btn.png')}
-                />
-              </Animated.View>
-            </Pressable>
-          </>
-        )}
-
-        {!isActive ? null : (
+      {isActive ? null : (
+        <>
           <Pressable
-            style={styles.closeContainer}
-            disabled={!isActive}
-            onPress={() => {
-              clearInput();
-              validateAddress('');
-            }}>
+            style={[styles.pasteContainer]}
+            onPressIn={() => onPressIn('paste')}
+            onPressOut={() => onPressOut('paste')}
+            onPress={onPastePress}
+            disabled={isActive}>
             <Animated.View
-              style={[styles.closeSubContainer, closeContainerMotionStyle]}>
-              <Image
-                style={styles.closeIcon}
-                source={require('../assets/images/close.png')}
+              style={[styles.pasteSubContainer, pasteContainerMotionStyle]}>
+              <Animated.Image
+                style={styles.icon}
+                source={require('../assets/images/paste.png')}
               />
             </Animated.View>
           </Pressable>
-        )}
-      </Animated.View>
+
+          <Pressable
+            style={[styles.closeContainer]}
+            onPressIn={() => onPressIn('scan')}
+            onPressOut={() => onPressOut('scan')}
+            onPress={onScanPress}
+            disabled={isActive}>
+            <Animated.View
+              style={[styles.scanSubContainer, scanContainerMotionStyle]}>
+              <Animated.Image
+                source={require('../assets/images/qrcode-btn.png')}
+              />
+            </Animated.View>
+          </Pressable>
+        </>
+      )}
+
+      {!isActive ? null : (
+        <Pressable
+          style={styles.closeContainer}
+          disabled={!isActive}
+          onPress={() => {
+            clearInput();
+            validateAddress('');
+          }}>
+          <Animated.View
+            style={[styles.closeSubContainer, closeContainerMotionStyle]}>
+            <Image
+              style={styles.closeIcon}
+              source={require('../assets/images/close.png')}
+            />
+          </Animated.View>
+        </Pressable>
+      )}
     </Animated.View>
   );
 };
@@ -297,10 +301,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#20BB74',
-      textAlignVertical: 'top',
       paddingTop: screenHeight * 0.008,
       lineHeight: screenHeight * 0.025,
-      height: 'auto',
+      letterSpacing: 0,
     },
     pasteContainer: {
       right: 54,
@@ -344,15 +347,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.007,
     },
     hiddenContainer: {
+      width: screenWidth * 0.7 + screenHeight * 0.02,
+      maxWidth: screenWidth * 0.7 + screenHeight * 0.02,
       position: 'absolute',
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-      alignItems: 'flex-start',
+      top: 0,
       paddingHorizontal: screenHeight * 0.02,
-      paddingVertical: screenHeight * 0.01,
       opacity: 0,
     },
     hiddenText: {
+      flex: 1,
       width: screenWidth * 0.7,
       maxWidth: screenWidth * 0.7,
       fontFamily: 'Satoshi Variable',
@@ -360,7 +363,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       fontSize: screenHeight * 0.02,
       lineHeight: screenHeight * 0.025,
-      textAlignVertical: 'top',
+      letterSpacing: 0,
       opacity: 0,
     },
     icon: {
