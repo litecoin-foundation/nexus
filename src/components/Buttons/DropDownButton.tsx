@@ -5,7 +5,6 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
-  interpolate,
 } from 'react-native-reanimated';
 
 import TranslateText from '../../components/TranslateText';
@@ -83,7 +82,7 @@ const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
 
   useEffect(() => {
     if (isOpened) {
-      // Fading in when it's unfolded
+      // NOTE: Fading in when it's unfolded
       opacity.value = withTiming(1, {duration: OPTIONS_ANIM_DURATION * 2});
     } else {
       opacity.value = withTiming(0, {duration: OPTIONS_ANIM_DURATION});
@@ -100,38 +99,27 @@ const DropDownButton: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
 
   const fontSize = Math.round(SCREEN_HEIGHT * 0.02);
-  const arrowHeight = Math.round(SCREEN_HEIGHT * 0.012);
-  const boxHeight = cellHeight;
-  const separatorGapHeight = SCREEN_HEIGHT * 0.01;
+  const arrowHeight = Math.round(SCREEN_HEIGHT * 0.015);
+  const cellHeightMultiplier = 1.45;
+  const separatorGapHeight = 0;
   const bottomGapHeight = SCREEN_HEIGHT * 0.01;
-
-  const styles = getStyles(
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    fontSize,
-    arrowHeight,
-    cellHeight,
-    separatorGapHeight,
-  );
 
   const [isOpened, setIsOpened] = useState(false);
   const [unfoldHeight, setUnfoldHeight] = useState(0);
 
   function calcUnfoldHeight() {
     setUnfoldHeight(
-      cellHeight * options.length + separatorGapHeight + bottomGapHeight,
+      cellHeight * cellHeightMultiplier * options.length +
+        separatorGapHeight +
+        bottomGapHeight,
     );
   }
 
-  const heightSharedValue = useSharedValue(boxHeight);
-  const rotateArrowAnim = useSharedValue(0);
+  const heightSharedValue = useSharedValue(cellHeight);
 
   useEffect(() => {
-    heightSharedValue.value = withSpring(isOpened ? unfoldHeight : boxHeight, {
+    heightSharedValue.value = withSpring(isOpened ? unfoldHeight : cellHeight, {
       overshootClamping: true,
-    });
-    rotateArrowAnim.value = withTiming(isOpened ? 1 : 0, {
-      duration: FOLDIND_ANIM_DURATION,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpened, unfoldHeight]);
@@ -142,29 +130,27 @@ const DropDownButton: React.FC<Props> = props => {
     };
   });
 
-  const animatedWalletButtonArrowStyle = useAnimatedStyle(() => {
-    const spinIterpolation = interpolate(
-      rotateArrowAnim.value,
-      [0, 1],
-      [270, 90],
-    );
-    return {
-      transform: [{rotate: `${spinIterpolation}deg`}],
-    };
-  });
-
   function foldUnfold(toggle: boolean) {
     setIsOpened(toggle);
   }
 
   const [currentOption, setCurrentOption] = useState(initial);
 
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    fontSize,
+    arrowHeight,
+    isOpened ? cellHeight * cellHeightMultiplier : cellHeight,
+    separatorGapHeight,
+  );
+
   return (
     <Pressable
       style={styles.container}
       onPress={() => foldUnfold(!isOpened)}
       onLayout={event => {
-        // Might be useful in case if there're so many options that they don't fit on the screen
+        // NOTE: Might be useful in case if there're so many options that they don't fit on the screen
         // so should be scrolled within the maximum available height
         // eslint-disable-next-line
         event.target.measure((x, y, width, height, pageX, pageY) => {
@@ -180,16 +166,12 @@ const DropDownButton: React.FC<Props> = props => {
             textStyle={styles.boxText}
             numberOfLines={1}
           />
-          <Animated.View
-            style={[styles.boxArrow, animatedWalletButtonArrowStyle]}>
+          <Animated.View style={styles.boxArrow}>
             <Image
               style={styles.boxArrowIcon}
-              source={require('../../assets/images/back-icon.png')}
+              source={require('../../assets/icons/tick-icon.png')}
             />
           </Animated.View>
-        </Animated.View>
-        <Animated.View style={styles.separatorGap}>
-          <Animated.View style={styles.separator} />
         </Animated.View>
         <Animated.View style={styles.optionsContainer}>
           <RenderOptionsWithDelay
@@ -232,8 +214,6 @@ const getStyles = (
       width: '100%',
       flexDirection: 'column',
       justifyContent: 'flex-start',
-      paddingLeft: screenHeight * 0.02,
-      paddingRight: screenHeight * 0.02,
       overflow: 'hidden',
     },
     boxTitleContainer: {
@@ -242,6 +222,7 @@ const getStyles = (
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      paddingHorizontal: screenHeight * 0.02,
     },
     boxText: {
       color: '#fff',
@@ -265,7 +246,10 @@ const getStyles = (
       width: screenWidth * 0.35,
       height: cellHeight,
       minHeight: 25,
+      borderColor: 'rgba(240,240,240,0.15)',
+      borderTopWidth: 1,
       justifyContent: 'center',
+      paddingHorizontal: screenHeight * 0.02,
     },
     optionBtnText: {
       color: '#fff',

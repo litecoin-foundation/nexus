@@ -67,10 +67,8 @@ const TranslateText: React.FC<Props> = props => {
 
   const {t} = useTranslation(domain);
 
-  return (
-    <Pressable
-      onPress={onPress ? () => onPress() : () => {}}
-      style={styles.container}>
+  return onPress ? (
+    <Pressable onPress={onPress} style={styles.container}>
       <Animated.Text
         style={[
           styles.text,
@@ -85,6 +83,22 @@ const TranslateText: React.FC<Props> = props => {
         {children}
       </Animated.Text>
     </Pressable>
+  ) : (
+    <Animated.View style={styles.container}>
+      <Animated.Text
+        style={[
+          styles.text,
+          textStyle,
+          styles.textLimits,
+          animatedProps,
+          {includeFontPadding: false},
+        ]}
+        ellipsizeMode="tail"
+        numberOfLines={numberOfLines || 0}>
+        {textValue ? textValue : textKey ? t(textKey, interpolationObj) : ''}
+        {children}
+      </Animated.Text>
+    </Animated.View>
   );
 };
 

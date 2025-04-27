@@ -1,9 +1,8 @@
 import React, {useContext} from 'react';
 import {View, StyleSheet} from 'react-native';
-import SafeAreaView from '../components/SafeAreaView';
+import CustomSafeAreaView from './CustomSafeAreaView';
 
 import TranslateText from './TranslateText';
-
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
@@ -26,7 +25,7 @@ const OnboardingHeader: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, thin || false);
 
   return (
-    <SafeAreaView>
+    <CustomSafeAreaView edges={['top']}>
       <View style={styles.headerContainer}>
         {description ? (
           <TranslateText
@@ -47,7 +46,7 @@ const OnboardingHeader: React.FC<Props> = props => {
 
         {children}
       </View>
-    </SafeAreaView>
+    </CustomSafeAreaView>
   );
 };
 

@@ -4,6 +4,7 @@ import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {StackNavigationOptions} from '@react-navigation/stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TransactionList from '../../components/TransactionList';
@@ -61,9 +62,33 @@ const SearchTransaction: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
+  // NOTE: deviceHeaderHeight = insets.top + stack header height
+  const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
+  const searchBarHeight = SCREEN_HEIGHT * 0.05;
+  const filterButtonsBarHeight = SCREEN_HEIGHT * 0.065;
   const deviceHeaderHeight = useHeaderHeight();
-
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, deviceHeaderHeight);
+  const insets = useSafeAreaInsets();
+  const stackHeaderHeight = deviceHeaderHeight - insets.top;
+  const alignHeaderElementsWithMarginTop = {
+    marginTop: (stackHeaderHeight - headerButtonsHeight) * -1,
+  };
+  const controlsGap = SCREEN_HEIGHT * 0.008;
+  const controlsPaddingTop =
+    deviceHeaderHeight -
+    (stackHeaderHeight - headerButtonsHeight) +
+    controlsGap;
+  const controlsAbsoluteHeightWithGaps =
+    controlsPaddingTop +
+    searchBarHeight +
+    controlsGap +
+    filterButtonsBarHeight +
+    controlsGap;
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    controlsPaddingTop,
+    controlsAbsoluteHeightWithGaps,
+  );
 
   const {t} = useTranslation('searchTab');
 
@@ -78,16 +103,38 @@ const SearchTransaction: React.FC<Props> = props => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      // eslint-disable-next-line react/no-unstable-nested-components
+      /* eslint-disable react/no-unstable-nested-components */
+      headerTitle: () => (
+        <View style={alignHeaderElementsWithMarginTop}>
+          <TranslateText
+            textKey="transactions"
+            domain="searchTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.headerTitle}
+            numberOfLines={1}
+          />
+        </View>
+      ),
+      headerLeft: () => (
+        <View style={alignHeaderElementsWithMarginTop}>
+          <HeaderButton
+            onPress={() => navigation.goBack()}
+            imageSource={require('../../assets/images/back-icon.png')}
+          />
+        </View>
+      ),
       headerRight: () => (
-        <RightHeaderButton
-          txPrivacyTypeFilter={txPrivacyTypeFilter}
-          setTxPrivacyTypeFilter={setTxPrivacyTypeFilter}
-          styles={styles}
-        />
+        <View style={alignHeaderElementsWithMarginTop}>
+          <RightHeaderButton
+            txPrivacyTypeFilter={txPrivacyTypeFilter}
+            setTxPrivacyTypeFilter={setTxPrivacyTypeFilter}
+            styles={styles}
+          />
+        </View>
       ),
     });
-  }, [navigation, styles, txPrivacyTypeFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation, styles, txPrivacyTypeFilter, SCREEN_HEIGHT]);
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   function setTransactionIndex(newTxIndex: number) {
@@ -189,7 +236,8 @@ const SearchTransaction: React.FC<Props> = props => {
 const getStyles = (
   screenWidth: number,
   screenHeight: number,
-  deviceHeaderHeight: number,
+  controlsPaddingTop: number,
+  controlsAbsoluteHeightWithGaps: number,
 ) =>
   StyleSheet.create({
     container: {
@@ -229,22 +277,13 @@ const getStyles = (
       letterSpacing: -0.39,
     },
     filters: {
-      flexBasis: '25%',
       width: '100%',
-      // deviceHeaderHeight - header buttons container + island gap
-      // 0.04 - header buttons container
-      // 0.035 - header buttons
-      // 0.035 - header buttons
-      // 0.008 - padding
-      paddingTop:
-        deviceHeaderHeight -
-        screenHeight * 0.04 +
-        screenHeight * 0.035 +
-        screenHeight * 0.008,
+      height: controlsAbsoluteHeightWithGaps,
+      paddingTop: controlsPaddingTop,
     },
     search: {
       width: '100%',
-      paddingBottom: screenHeight * 0.01,
+      paddingBottom: screenHeight * 0.008,
       paddingHorizontal: screenWidth * 0.04,
     },
     filterContainer: {
@@ -253,7 +292,7 @@ const getStyles = (
       paddingHorizontal: screenWidth * 0.04,
     },
     txListContainer: {
-      flexBasis: '75%',
+      flex: 1,
       width: '100%',
       borderTopLeftRadius: 30,
       borderTopRightRadius: 30,
@@ -267,7 +306,7 @@ export const SearchTransactionNavigationOptions = (
 ): StackNavigationOptions => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
 
   return {
     headerTitle: () => (

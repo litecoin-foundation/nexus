@@ -1,4 +1,11 @@
-import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useRef,
+  useMemo,
+  useContext,
+} from 'react';
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
 import Animated, {
   interpolate,
@@ -450,15 +457,12 @@ const Main: React.FC<Props> = props => {
     };
   });
 
+  const walletButtonRef = useRef() as any;
   const walletButton = useMemo(
     () => (
       <Animated.View
-        style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}
-        onLayout={event => {
-          event.target.measure((x, y, width, height, pageX, pageY) => {
-            setPlasmaModalGapInPixels(height + pageY);
-          });
-        }}>
+        ref={walletButtonRef}
+        style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}>
         <ChooseWalletButton
           title={currentWallet}
           onPress={() => {
@@ -475,6 +479,12 @@ const Main: React.FC<Props> = props => {
     ),
     [animatedWalletButton, currentWallet, isWalletsModalOpened],
   );
+
+  useLayoutEffect(() => {
+    walletButtonRef.current?.measure((x, y, width, height, pageX, pageY) => {
+      setPlasmaModalGapInPixels(height + pageY);
+    });
+  });
 
   const fadingTimeout = useRef<NodeJS.Timeout>();
   const walletButtonFadingTimeout = useRef<NodeJS.Timeout>();
@@ -498,6 +508,7 @@ const Main: React.FC<Props> = props => {
         <HeaderButton
           onPress={() => navigation.navigate('SettingsStack')}
           imageSource={require('../assets/icons/settings-cog.png')}
+          imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
         />
         {isFlexaCustomer ? (
           <HeaderButton
@@ -516,8 +527,9 @@ const Main: React.FC<Props> = props => {
       <Animated.View style={[styles.headerBtns, animatedButton]}>
         <HeaderButton
           onPress={() => navigation.navigate('AlertsStack')}
-          imageSource={require('../assets/icons/charts-icon.png')}
+          imageSource={require('../assets/icons/alerts-icon.png')}
           rightPadding={true}
+          imageXY={{x: SCREEN_HEIGHT * 0.022, y: SCREEN_HEIGHT * 0.022}}
         />
       </Animated.View>
     ),
@@ -622,6 +634,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 4}
         disabled={!isInternetReachable ? true : false}
+        sizePercentage={90}
       />
       <DashboardButton
         textKey="receive"
@@ -632,6 +645,7 @@ const Main: React.FC<Props> = props => {
         }}
         active={activeTab === 5}
         disabled={false}
+        sizePercentage={90}
       />
     </View>
   );
@@ -700,7 +714,7 @@ const Main: React.FC<Props> = props => {
         isFromBottomToTop={true}
         isSwiperActive={transactions.length > 1 ? true : false}
         animDuration={250}
-        gapInPixels={SCREEN_HEIGHT * 0.27}
+        gapInPixels={SCREEN_HEIGHT * 0.22}
         backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
         gapSpecifiedStyle={{backgroundColor: 'transparent'}}
         swipeToPrevTx={swipeToPrevTx}
@@ -855,7 +869,7 @@ export const navigationOptions = (navigation: any): StackNavigationOptions => {
     headerRight: () => (
       <HeaderButton
         onPress={() => navigation.navigate('AlertsStack')}
-        imageSource={require('../assets/icons/charts-icon.png')}
+        imageSource={require('../assets/icons/alerts-icon.png')}
         rightPadding={true}
       />
     ),

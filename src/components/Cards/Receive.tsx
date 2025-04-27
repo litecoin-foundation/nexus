@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useContext} from 'react';
 import {StyleSheet, View, Pressable} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import Share from 'react-native-share';
@@ -22,6 +23,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface Props {}
 
 const Receive: React.FC<Props> = () => {
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const {address, regularAddress, mwebAddress} = useAppSelector(
     state => state.address,
@@ -166,7 +168,9 @@ const Receive: React.FC<Props> = () => {
               <QRCode
                 value={uri}
                 size={
-                  isMwebAddress ? SCREEN_HEIGHT * 0.18 : SCREEN_HEIGHT * 0.25
+                  isMwebAddress
+                    ? SCREEN_HEIGHT * 0.22 - insets.bottom
+                    : SCREEN_HEIGHT * 0.27 - insets.bottom
                 }
               />
             ) : (
@@ -175,8 +179,8 @@ const Receive: React.FC<Props> = () => {
                   styles.qrSkeleton,
                   {
                     height: isMwebAddress
-                      ? SCREEN_HEIGHT * 0.18
-                      : SCREEN_HEIGHT * 0.25,
+                      ? SCREEN_HEIGHT * 0.22 - insets.bottom
+                      : SCREEN_HEIGHT * 0.27 - insets.bottom,
                   },
                 ]}
               />
@@ -271,7 +275,7 @@ const getStyles = (
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: screenWidth * 0.06,
-      paddingVertical: screenHeight * 0.03,
+      paddingVertical: screenHeight * 0.02,
       overflow: 'hidden',
     },
     qrSkeleton: {

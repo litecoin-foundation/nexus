@@ -167,7 +167,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenHeight * 0.025,
       borderTopLeftRadius: screenHeight < 701 ? 2 : 3,
       borderTopRightRadius: screenHeight < 701 ? 2 : 3,
-      backgroundColor: '#3c4ad71a',
+      backgroundColor: '#20bb7420',
       marginBottom: screenHeight * 0.02,
     },
     innerThumb: {
@@ -175,7 +175,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenHeight * 0.009,
       borderTopLeftRadius: screenHeight < 701 ? 2 : 3,
       borderTopRightRadius: screenHeight < 701 ? 2 : 3,
-      backgroundColor: '#2C72FF',
+      backgroundColor: '#20BB74',
       alignSelf: 'center',
       marginTop: screenHeight * 0.01,
     },
@@ -205,7 +205,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '500',
       textAlign: 'center',
       letterSpacing: -0.28,
-      // backgroundColor: 'red',
     },
   });
 

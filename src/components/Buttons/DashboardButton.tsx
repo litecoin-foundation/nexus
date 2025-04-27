@@ -9,7 +9,7 @@ import {
   rect,
   useImage,
 } from '@shopify/react-native-skia';
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useMemo} from 'react';
 import {ImageSourcePropType, Pressable, StyleSheet} from 'react-native';
 import {
   interpolateColor,
@@ -32,16 +32,25 @@ interface Props {
   active: boolean;
   disabled: boolean;
   wider?: boolean;
+  sizePercentage?: number;
 }
 
 const DashboardButton: React.FC<Props> = props => {
-  const {active, handlePress, title, textKey, imageSource, disabled, wider} =
-    props;
+  const {
+    active,
+    handlePress,
+    title,
+    textKey,
+    imageSource,
+    disabled,
+    wider,
+    sizePercentage,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const width = wider ? SCREEN_WIDTH * 0.168 : SCREEN_WIDTH * 0.152;
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, width);
+  const rectWidth = wider ? SCREEN_WIDTH * 0.168 : SCREEN_WIDTH * 0.152;
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, rectWidth);
 
   const {t} = useTranslation('main');
 
@@ -100,6 +109,19 @@ const DashboardButton: React.FC<Props> = props => {
 
   const titleText = title ? title : textKey ? t(textKey) : '';
 
+  const canvasXPadding = useMemo(() => SCREEN_WIDTH * 0.012, [SCREEN_WIDTH]);
+  const imageWidth = useMemo(
+    () =>
+      wider
+        ? (SCREEN_WIDTH * 0.06 * (sizePercentage || 100)) / 100
+        : (SCREEN_WIDTH * 0.05 * (sizePercentage || 100)) / 100,
+    [wider, SCREEN_WIDTH, sizePercentage],
+  );
+  const imageXAlinging = useMemo(
+    () => canvasXPadding + rectWidth / 2 - imageWidth / 2,
+    [imageWidth, canvasXPadding, rectWidth],
+  );
+
   return (
     <>
       <Pressable
@@ -111,9 +133,9 @@ const DashboardButton: React.FC<Props> = props => {
         }}>
         <Canvas style={styles.container}>
           <RoundedRect
-            x={SCREEN_WIDTH * 0.012}
+            x={canvasXPadding}
             y={10}
-            width={width}
+            width={rectWidth}
             height={buttonHeight}
             r={12}
             color={interpolatedButtonColour}>
@@ -129,7 +151,7 @@ const DashboardButton: React.FC<Props> = props => {
           <RoundedRect
             x={SCREEN_WIDTH * 0.012}
             y={10}
-            width={width}
+            width={rectWidth}
             height={buttonHeight}
             r={12}
             color="rgba(216, 210, 210, 0.75)"
@@ -144,13 +166,9 @@ const DashboardButton: React.FC<Props> = props => {
               <Image
                 antiAlias={true}
                 image={image}
-                x={
-                  wider
-                    ? width / 2 - SCREEN_WIDTH * 0.015 - 2.1
-                    : width / 2 - SCREEN_WIDTH * 0.015
-                }
+                x={imageXAlinging}
                 y={10}
-                width={wider ? 25.2 : 21}
+                width={imageWidth}
                 height={50}
               />
             }>

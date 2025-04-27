@@ -1,9 +1,9 @@
 import React, {useState, useContext} from 'react';
 import {View, StyleSheet, FlatList} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useHeaderHeight} from '@react-navigation/elements';
 import {StackNavigationOptions} from '@react-navigation/stack';
 
-import Header from '../../components/Header';
 import AlertCell from '../../components/Cells/AlertCell';
 import AlertModal from '../../components/Modals/AlertModalContent';
 import {removeAlert} from '../../reducers/alerts';
@@ -17,7 +17,8 @@ interface Props {}
 
 const Alert: React.FC<Props> = () => {
   const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
+  const deviceHeaderHeight = useHeaderHeight();
+  const styles = getStyles(width, height, deviceHeaderHeight);
 
   const dispatch = useAppDispatch();
   const [alertModalVisible, setAlertModalVisible] = useState(false);
@@ -52,7 +53,7 @@ const Alert: React.FC<Props> = () => {
     <LinearGradient
       style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <Header />
+      <View style={styles.fakeHeader} />
       <FlatList
         data={alerts}
         renderItem={({item}) => (
@@ -72,10 +73,19 @@ const Alert: React.FC<Props> = () => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  deviceHeaderHeight: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
+    },
+    fakeHeader: {
+      width: screenWidth,
+      height: deviceHeaderHeight + screenHeight * 0.008,
+      backgroundColor: '#0070F0',
     },
     headerRight: {
       paddingRight: screenWidth * 0.04,
@@ -107,9 +117,10 @@ export const AlertNavigationOptions = (
   navigation: any,
 ): StackNavigationOptions => {
   const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
+  const styles = getStyles(width, height, 0);
 
   return {
+    headerTransparent: true,
     headerTitle: () => (
       <TranslateText
         textKey="price_alerts"

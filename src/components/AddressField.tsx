@@ -1,15 +1,8 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useContext,
-  useCallback,
-} from 'react';
+import React, {useEffect, useState, useContext, useCallback} from 'react';
 import {
   View,
   TextInput,
   StyleSheet,
-  Text,
   Pressable,
   Image,
   LayoutChangeEvent,
@@ -155,7 +148,7 @@ const AddressField: React.FC<Props> = props => {
 
   const updateHeightFromMeasurement = useCallback(
     (measuredHeight: number) => {
-      const lines = Math.max(1, Math.ceil(measuredHeight / LINE_HEIGHT)) - 1;
+      const lines = Math.max(1, Math.ceil(measuredHeight / LINE_HEIGHT) - 1);
 
       const newHeight =
         MULTILINE_HEIGHT + (lines > 1 ? lines * LINE_HEIGHT + PADDING : 0);
@@ -201,10 +194,17 @@ const AddressField: React.FC<Props> = props => {
 
   return (
     <Animated.View style={[styles.container, animatedContainerStyle]}>
-      <View style={styles.hiddenContainer}>
-        <Text style={styles.hiddenText} onLayout={onMeasuredTextLayout}>
-          {addressForMeasurement}
-        </Text>
+      <View style={styles.hiddenContainer} onLayout={onMeasuredTextLayout}>
+        <TextInput
+          style={styles.hiddenText}
+          value={addressForMeasurement}
+          autoCorrect={false}
+          autoComplete="off"
+          multiline={true}
+          scrollEnabled={false}
+          maxLength={121}
+          allowFontScaling={false}
+        />
       </View>
 
       <TextInput
@@ -301,10 +301,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#20BB74',
-      textAlignVertical: 'top',
       paddingTop: screenHeight * 0.008,
       lineHeight: screenHeight * 0.025,
-      height: 'auto',
+      letterSpacing: 0,
     },
     pasteContainer: {
       right: 54,
@@ -348,15 +347,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.007,
     },
     hiddenContainer: {
+      width: screenWidth * 0.7 + screenHeight * 0.02,
+      maxWidth: screenWidth * 0.7 + screenHeight * 0.02,
       position: 'absolute',
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-      alignItems: 'flex-start',
+      top: 0,
       paddingHorizontal: screenHeight * 0.02,
-      paddingVertical: screenHeight * 0.01,
       opacity: 0,
     },
     hiddenText: {
+      flex: 1,
       width: screenWidth * 0.7,
       maxWidth: screenWidth * 0.7,
       fontFamily: 'Satoshi Variable',
@@ -364,7 +363,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       fontSize: screenHeight * 0.02,
       lineHeight: screenHeight * 0.025,
-      textAlignVertical: 'top',
+      letterSpacing: 0,
       opacity: 0,
     },
     icon: {
