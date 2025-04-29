@@ -1,19 +1,23 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {Platform, Pressable, StyleSheet} from 'react-native';
-import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
+import {View, Platform, Pressable, StyleSheet} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  interpolateColor,
+} from 'react-native-reanimated';
 import {useAppSelector} from '../../store/hooks';
 import {subunitSymbolSelector} from '../../reducers/settings';
 import {
   Canvas,
-  Image,
   matchFont,
-  RoundedRect,
   Text as SkiaText,
   useFont,
-  useImage,
 } from '@shopify/react-native-skia';
 import {defaultButtonSpring} from '../../theme/spring';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
@@ -22,10 +26,11 @@ interface Props {
   active: boolean;
   handlePress: () => void;
   handleToggle: () => void;
+  setMax: () => void;
 }
 
 const AmountPicker: React.FC<Props> = props => {
-  const {amount, active, handlePress, fiatAmount, handleToggle} = props;
+  const {amount, active, handlePress, fiatAmount, handleToggle, setMax} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -53,8 +58,46 @@ const AmountPicker: React.FC<Props> = props => {
     default: useFont(require('../../fonts/Satoshi-Variable.ttf'), 12),
   });
 
+  const toggleScaler = useSharedValue(1);
+  const maxButtonScaler = useSharedValue(1);
+  const toggleBg = useSharedValue(1);
+  const maxButtonBg = useSharedValue(1);
+  const toggleX = useSharedValue(50);
+  const maxButtonX = useSharedValue(100);
+  const activeOpacity = useSharedValue(0);
+
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
+
+  const toggleContainerMotionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {scale: toggleScaler.value},
+        {translateX: withSpring(toggleX.value, {stiffness: 50})},
+      ],
+      backgroundColor: interpolateColor(
+        toggleBg.value,
+        [0, 1],
+        ['#C5C5C5', '#f7f7f7'],
+      ),
+      opacity: activeOpacity.value,
+    };
+  });
+
+  const maxButtonContainerMotionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {scale: maxButtonScaler.value},
+        {translateX: withSpring(maxButtonX.value, {stiffness: 50})},
+      ],
+      backgroundColor: interpolateColor(
+        maxButtonBg.value,
+        [0, 1],
+        ['#C5C5C5', '#f7f7f7'],
+      ),
+      opacity: activeOpacity.value,
+    };
+  });
 
   const handleFontSizeChange = () => {
     if (toggleLTC && active) {
@@ -76,14 +119,58 @@ const AmountPicker: React.FC<Props> = props => {
       fiatFontY.value = withTiming(SCREEN_HEIGHT * 0.04);
       ltcFontY.value = withTiming(SCREEN_HEIGHT * 0.018);
       switchOpacity.value = withTiming(1);
+
+      toggleX.value = 0;
+      maxButtonX.value = 0;
+      activeOpacity.value = withTiming(1, {duration: 500});
     } else {
       switchX.value = withSpring(SCREEN_HEIGHT * 0.044);
       switchIconX.value = withSpring(SCREEN_HEIGHT * 0.042);
       switchOpacity.value = withTiming(0);
-    }
-  }, [active, fiatFontSize, fiatFontY, ltcFontY, switchIconX, switchX]);
 
-  const switchImage = useImage(require('../../assets/icons/switch-arrow.png'));
+      toggleX.value = 50;
+      maxButtonX.value = 100;
+      activeOpacity.value = withTiming(0, {duration: 230});
+    }
+  }, [
+    active,
+    fiatFontSize,
+    fiatFontY,
+    ltcFontY,
+    switchIconX,
+    switchX,
+    SCREEN_HEIGHT,
+    switchOpacity,
+    activeOpacity,
+    toggleX,
+    maxButtonX,
+  ]);
+
+  const onPressIn = (button: string) => {
+    switch (button) {
+      case 'toggle':
+        toggleScaler.value = withSpring(0.9, {mass: 1});
+        toggleBg.value = withTiming(0);
+        break;
+      case 'maxButton':
+        maxButtonScaler.value = withSpring(0.9, {mass: 1});
+        maxButtonBg.value = withTiming(0);
+        break;
+    }
+  };
+
+  const onPressOut = (button: string) => {
+    switch (button) {
+      case 'toggle':
+        toggleScaler.value = withSpring(1, {mass: 0.7});
+        toggleBg.value = withTiming(1);
+        break;
+      case 'maxButton':
+        maxButtonScaler.value = withSpring(1, {mass: 0.7});
+        maxButtonBg.value = withTiming(1);
+        break;
+    }
+  };
 
   return (
     <Pressable style={styles.container} onPress={handlePress}>
@@ -112,35 +199,48 @@ const AmountPicker: React.FC<Props> = props => {
         />
       </Canvas>
 
-      <Pressable
-        style={{alignSelf: 'center'}}
-        disabled={!active}
-        onPress={() => {
-          setToggleLTC(!toggleLTC);
-          handleToggle();
-          handleFontSizeChange();
-        }}>
-        <Canvas
-          style={{width: SCREEN_HEIGHT * 0.044, height: SCREEN_HEIGHT * 0.044}}>
-          <RoundedRect
-            x={switchX}
-            y={0}
-            width={SCREEN_HEIGHT * 0.044}
-            height={SCREEN_HEIGHT * 0.044}
-            r={SCREEN_HEIGHT * 0.01}
-            color="#F3F3F3"
-            opacity={switchOpacity}
-          />
-          <Image
-            image={switchImage}
-            fit="contain"
-            x={switchIconX}
-            y={SCREEN_HEIGHT * 0.011}
-            width={SCREEN_HEIGHT * 0.02}
-            height={SCREEN_HEIGHT * 0.02}
-          />
-        </Canvas>
-      </Pressable>
+      <View style={styles.pressables}>
+        {setMax ? (
+          <Pressable
+            style={styles.maxButton}
+            disabled={!active}
+            onPressIn={() => onPressIn('maxButton')}
+            onPressOut={() => onPressOut('maxButton')}
+            onPress={() => setMax()}>
+            <Animated.View
+              style={[
+                styles.maxButtonContainer,
+                maxButtonContainerMotionStyle,
+              ]}>
+              <TranslateText
+                textValue="MAX"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.maxButtonText}
+                numberOfLines={1}
+              />
+            </Animated.View>
+          </Pressable>
+        ) : null}
+
+        <Pressable
+          style={[styles.toggle]}
+          disabled={!active}
+          onPressIn={() => onPressIn('toggle')}
+          onPressOut={() => onPressOut('toggle')}
+          onPress={() => {
+            setToggleLTC(!toggleLTC);
+            handleToggle();
+            handleFontSizeChange();
+          }}>
+          <Animated.View
+            style={[styles.toggleContainer, toggleContainerMotionStyle]}>
+            <Animated.Image
+              style={styles.toggleIcon}
+              source={require('../../assets/icons/switch-arrow.png')}
+            />
+          </Animated.View>
+        </Pressable>
+      </View>
     </Pressable>
   );
 };
@@ -148,13 +248,15 @@ const AmountPicker: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
+      width: screenWidth * 0.55,
+      minWidth: 200,
+      height: screenHeight * 0.044 + 20,
       backgroundColor: 'white',
       borderRadius: 11,
       borderWidth: 1,
       borderColor: '#e5e5e5',
       flexDirection: 'row',
       padding: 10,
-      width: 190,
       justifyContent: 'space-between',
     },
     ltcFontSize: {
@@ -178,6 +280,49 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     amountsContainer: {
       flex: 1,
+    },
+    pressables: {
+      height: '100%',
+      justifyContent: 'center',
+    },
+    toggle: {
+      position: 'absolute',
+      right: 0,
+      height: 36,
+      width: 36,
+    },
+    toggleContainer: {
+      borderRadius: screenHeight * 0.007,
+      height: '100%',
+      width: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    toggleIcon: {
+      width: 20,
+      height: 18,
+    },
+    maxButton: {
+      position: 'absolute',
+      right: 42,
+      height: 36,
+      width: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    maxButtonContainer: {
+      height: '100%',
+      width: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: screenHeight * 0.007,
+    },
+    maxButtonText: {
+      color: '#2E2E2E',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.012,
     },
   });
 
