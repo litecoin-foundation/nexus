@@ -24,6 +24,8 @@ interface Props {
   options: string[];
   chooseOptionCallback(option: string): void;
   cellHeight: number;
+  cellHeightExpandMultiplier: number;
+  separatorGapHeightInPx?: number;
 }
 
 interface OptionProps {
@@ -113,15 +115,22 @@ const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
 };
 
 const DropDownButton: React.FC<Props> = props => {
-  const {initial, options, chooseOptionCallback, cellHeight} = props;
+  const {
+    initial,
+    options,
+    chooseOptionCallback,
+    cellHeight,
+    cellHeightExpandMultiplier,
+    separatorGapHeightInPx,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
   const fontSize = Math.round(SCREEN_HEIGHT * 0.02);
   const arrowHeight = Math.round(SCREEN_HEIGHT * 0.015);
-  const cellHeightMultiplier = 1.45;
-  const separatorGapHeight = 0;
+  const cellHeightMultiplier = cellHeightExpandMultiplier;
+  const separatorGapHeight = separatorGapHeightInPx || 0;
 
   const [isOpened, setIsOpened] = useState(false);
   const [unfoldHeight, setUnfoldHeight] = useState(0);

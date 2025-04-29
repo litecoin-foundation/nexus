@@ -111,12 +111,12 @@ export const callRates = (): AppThunk => async (dispatch, getState) => {
     isSellRateApprox = false;
 
   try {
-    // Fetch buy quote
-    const buyQuote: any = await dispatch(setBuyQuote(Number(ltcAmount)));
+    // Fetch buy quote, pass amount of 1 LTC for when ltcAmount is not set yet
+    const buyQuote: any = await dispatch(setBuyQuote(Number(ltcAmount || 1)));
     let buy = buyQuote ? Number(buyQuote.quoteCurrencyPrice) : null;
 
-    // Fetch sell quote
-    const sellQuote: any = await dispatch(setSellQuote(Number(ltcAmount)));
+    // Fetch sell quote, pass amount of 1 LTC for when ltcAmount is not set yet
+    const sellQuote: any = await dispatch(setSellQuote(Number(ltcAmount || 1)));
     let sell = sellQuote ? Number(sellQuote.quoteCurrencyPrice) : null;
 
     // Fetch ltc rates

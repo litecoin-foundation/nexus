@@ -387,41 +387,45 @@ export const getBuyQuote = (
 export const setBuyQuote =
   (cryptoAmount?: number, fiatAmount?: number): AppThunk =>
   async (dispatch, getState) => {
-    const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-    const {testPaymentActive, testPaymentCountry, testPaymentFiat} =
-      getState().settings;
+    return new Promise<IBuyQuoteAndLimits>(async resolve => {
+      const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
+      const {testPaymentActive, testPaymentCountry, testPaymentFiat} =
+        getState().settings;
 
-    const currencyCode = testPaymentActive
-      ? testPaymentFiat
-      : getState().settings.currencyCode;
-    const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
+      const currencyCode = testPaymentActive
+        ? testPaymentFiat
+        : getState().settings.currencyCode;
+      const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
-    let quote: any = await getBuyQuote(
-      isMoonpayCustomer,
-      isOnramperCustomer,
-      currencyCode,
-      cryptoAmount,
-      fiatAmount,
-      countryCode,
-    );
+      let quote: any = await getBuyQuote(
+        isMoonpayCustomer,
+        isOnramperCustomer,
+        currencyCode,
+        cryptoAmount,
+        fiatAmount,
+        countryCode,
+      );
 
-    // if quote does return limits update proceedToGetBuyLimits notification boolean
-    dispatch(
-      setProceedToGetLimitsAction({
-        proceedToGetBuyLimits: quote.buyLimits
-          ? false
-          : getState().buy.proceedToGetBuyLimits,
-        proceedToGetSellLimits: getState().buy.proceedToGetSellLimits,
-      }),
-    );
+      // if quote does return limits update proceedToGetBuyLimits notification boolean
+      dispatch(
+        setProceedToGetLimitsAction({
+          proceedToGetBuyLimits: quote.buyLimits
+            ? false
+            : getState().buy.proceedToGetBuyLimits,
+          proceedToGetSellLimits: getState().buy.proceedToGetSellLimits,
+        }),
+      );
 
-    // set sell limits if available
-    if (quote.buyLimits) {
-      dispatch(setBuyLimitsAction(quote.buyLimits));
-    }
+      // set sell limits if available
+      if (quote.buyLimits) {
+        dispatch(setBuyLimitsAction(quote.buyLimits));
+      }
 
-    // set quote
-    dispatch(setBuyQuoteAction(quote));
+      // set quote
+      dispatch(setBuyQuoteAction(quote));
+
+      resolve(quote);
+    });
   };
 
 const getMoonpaySellQuoteData = (
