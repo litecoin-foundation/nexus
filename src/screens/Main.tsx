@@ -53,7 +53,7 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import Convert from '../components/Cards/Convert';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
-import {unsetDeeplink} from '../reducers/deeplinks';
+import {unsetDeeplink, decodeAppDeeplink} from '../reducers/deeplinks';
 import {sleep} from '../lib/utils/poll';
 import {validate as validateLtcAddress} from '../lib/utils/validate';
 import {showError} from '../reducers/errors';
@@ -347,8 +347,22 @@ const Main: React.FC<Props> = props => {
   // Deeplink handler
   useEffect(() => {
     if (deeplinkSet) {
-      setBottomSheetFolded(false);
-      setActiveTab(4);
+      if (uri.startsWith('litecoin:')) {
+        setBottomSheetFolded(false);
+        setActiveTab(4);
+      } else if (uri.startsWith('nexus://')) {
+        const decodedDeeplink = decodeAppDeeplink(uri);
+        if (
+          decodedDeeplink &&
+          decodedDeeplink.stack.length > 0 &&
+          decodedDeeplink.screen.length > 0
+        ) {
+          navigation.navigate(decodedDeeplink.stack, {
+            screen: decodedDeeplink.screen,
+            params: {scanData: decodedDeeplink.options?.key},
+          });
+        }
+      }
     }
   }, [deeplinkSet]);
 

@@ -2,11 +2,20 @@ import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import {AppThunk} from './types';
 import {decodeBIP21} from '../lib/utils/bip21';
+import qs from 'qs';
 
 // types
 interface IDeeplinkState {
   deeplinkSet: boolean;
   uri: string;
+}
+
+interface IDeeplinkDecoded {
+  stack: string;
+  screen: string;
+  options: {
+    [key: string]: any;
+  } | null;
 }
 
 // initial state
@@ -20,11 +29,45 @@ const setDeeplinkAction = createAction<string>('deeplinks/setDeeplinkAction');
 export const unsetDeeplink = createAction('deeplinks/unsetDeeplink');
 
 // functions
+export function decodeAppDeeplink(deeplink: string): IDeeplinkDecoded {
+  let stack = '';
+  let screen = '';
+  let options = null;
+  if (deeplink.startsWith('nexus://')) {
+    const querySplit = deeplink.indexOf('?');
+    const query = querySplit === -1 ? '' : deeplink.slice(querySplit + 1);
+    options = qs.parse(query);
+
+    const nestedUri = deeplink.slice('nexus://'.length, querySplit);
+    if (nestedUri) {
+      switch (nestedUri) {
+        case 'importprivkey':
+          stack = 'SettingsStack';
+          screen = 'Import';
+          break;
+        default:
+          // stack = 'OnboardingStack';
+          // screen = 'Initial';
+          stack = 'NewWalletStack';
+          screen = 'Main';
+          break;
+      }
+    }
+  }
+  return {
+    stack,
+    screen,
+    options,
+  };
+}
+
 export const setDeeplink =
   (link: string): AppThunk =>
   dispatch => {
     try {
-      decodeBIP21(link);
+      // NOTE: decoding gets called by the Send card
+      // decodeBIP21(link);
+      decodeAppDeeplink(link);
       dispatch(setDeeplinkAction(link));
     } catch (error) {
       console.error(error);
