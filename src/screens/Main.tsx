@@ -31,6 +31,8 @@ import {
   TransactionRequest,
 } from '@flexa/flexa-react-native';
 import {StackNavigationOptions} from '@react-navigation/stack';
+import {useHeaderHeight} from '@react-navigation/elements';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -156,17 +158,24 @@ const Main: React.FC<Props> = props => {
   const {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
-    testDeviceHeaderHeight,
+    // testDeviceHeaderHeight,
   } = useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerStyle: {height: testDeviceHeaderHeight},
-    });
+  const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
+  const deviceHeaderHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
+  const stackHeaderHeight = deviceHeaderHeight - insets.top;
+  const alignHeaderElementsWithMarginTop = useMemo(() => {
+    return {marginTop: (stackHeaderHeight - headerButtonsHeight) * -1};
+  }, [stackHeaderHeight, headerButtonsHeight]);
 
-    /* eslint-disable react-hooks/exhaustive-deps */
-  }, [testDeviceHeaderHeight]);
+  // useEffect(() => {
+  //   navigation.setOptions({
+  //     headerStyle: {height: testDeviceHeaderHeight},
+  //   });
+  //   /* eslint-disable react-hooks/exhaustive-deps */
+  // }, [testDeviceHeaderHeight]);
 
   // fixes a bug where navigating back from ConfirmBuy/Sell WebPage
   // causes header to disappear or not follow inset rules!
@@ -182,7 +191,7 @@ const Main: React.FC<Props> = props => {
         });
       }, 10);
     }
-  }, [route]);
+  }, [route, navigation]);
 
   const SNAP_POINTS_FROM_TOP = [SCREEN_HEIGHT * 0.24, SCREEN_HEIGHT * 0.47];
   const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
@@ -202,7 +211,8 @@ const Main: React.FC<Props> = props => {
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
-  const [currentWallet, setCurrentWallet] = useState('main_wallet');
+  // const [currentWallet, setCurrentWallet] = useState('main_wallet');
+  const currentWallet = 'main_wallet';
   const uniqueId = useAppSelector(state => state.onboarding.uniqueId);
   const totalBalance = useAppSelector(state => state.balance.totalBalance);
   const confirmedBalance = useAppSelector(
@@ -364,7 +374,7 @@ const Main: React.FC<Props> = props => {
         }
       }
     }
-  }, [deeplinkSet]);
+  }, [deeplinkSet, uri, navigation]);
 
   useEffect(() => {
     const callHandleURI = async () => {
@@ -379,7 +389,7 @@ const Main: React.FC<Props> = props => {
       callHandleURI();
       dispatch(unsetDeeplink());
     }
-  }, [activeTab]);
+  }, [activeTab, uri, dispatch]);
 
   // Animation
   const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
@@ -474,30 +484,41 @@ const Main: React.FC<Props> = props => {
   const walletButtonRef = useRef() as any;
   const walletButton = useMemo(
     () => (
-      <Animated.View
-        ref={walletButtonRef}
-        style={[{width: 'auto', height: 'auto'}, animatedWalletButton]}>
-        <ChooseWalletButton
-          title={currentWallet}
-          onPress={() => {
-            setWalletsModalOpened(!isWalletsModalOpened);
-          }}
-          disabled={false}
-          isModalOpened={isWalletsModalOpened}
-          isFromBottomToTop={false}
-          animDuration={walletButtonAnimDuration}
-          rotateArrow={rotateArrow}
-          arrowSpinAnim={animatedWalletButtonArrowStyle}
-        />
-      </Animated.View>
+      <View style={alignHeaderElementsWithMarginTop}>
+        <Animated.View
+          ref={walletButtonRef}
+          style={[styles.walletButton, animatedWalletButton]}>
+          <ChooseWalletButton
+            title={currentWallet}
+            onPress={() => {
+              setWalletsModalOpened(!isWalletsModalOpened);
+            }}
+            disabled={false}
+            isModalOpened={isWalletsModalOpened}
+            isFromBottomToTop={false}
+            animDuration={walletButtonAnimDuration}
+            rotateArrow={rotateArrow}
+            arrowSpinAnim={animatedWalletButtonArrowStyle}
+          />
+        </Animated.View>
+      </View>
     ),
-    [animatedWalletButton, currentWallet, isWalletsModalOpened],
+    /* eslint-disable react-hooks/exhaustive-deps */
+    [
+      animatedWalletButton,
+      currentWallet,
+      isWalletsModalOpened,
+      animatedWalletButtonArrowStyle,
+      alignHeaderElementsWithMarginTop,
+    ],
   );
 
   useLayoutEffect(() => {
-    walletButtonRef.current?.measure((x, y, width, height, pageX, pageY) => {
-      setPlasmaModalGapInPixels(height + pageY);
-    });
+    walletButtonRef.current?.measure(
+      (_: any, __: any, ___: any, height: any, ____: any, pageY: any) => {
+        setPlasmaModalGapInPixels(height + pageY);
+      },
+    );
   });
 
   const fadingTimeout = useRef<NodeJS.Timeout>();
@@ -505,49 +526,64 @@ const Main: React.FC<Props> = props => {
 
   const backHeaderButton = useMemo(
     () => (
-      <HeaderButton
-        onPress={() => {
-          setBottomSheetFolded(true);
-          setActiveTab(0);
-        }}
-        imageSource={require('../assets/images/back-icon.png')}
-      />
+      <View style={alignHeaderElementsWithMarginTop}>
+        <HeaderButton
+          onPress={() => {
+            setBottomSheetFolded(true);
+            setActiveTab(0);
+          }}
+          imageSource={require('../assets/images/back-icon.png')}
+        />
+      </View>
     ),
-    [],
+    [alignHeaderElementsWithMarginTop],
   );
 
   const leftHeaderButton = useMemo(
     () => (
-      <Animated.View style={[styles.headerBtns, animatedButton]}>
-        <HeaderButton
-          onPress={() => navigation.navigate('SettingsStack')}
-          imageSource={require('../assets/icons/settings-cog.png')}
-          imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
-        />
-        {isFlexaCustomer ? (
+      <View style={alignHeaderElementsWithMarginTop}>
+        <Animated.View style={[styles.headerBtns, animatedButton]}>
           <HeaderButton
-            onPress={() => manualPayment()}
-            imageSource={require('../assets/icons/shop.png')}
-            marginLeft={SCREEN_WIDTH * 0.02 * -1}
+            onPress={() => navigation.navigate('SettingsStack')}
+            imageSource={require('../assets/icons/settings-cog.png')}
+            imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
           />
-        ) : null}
-      </Animated.View>
+          {isFlexaCustomer ? (
+            <HeaderButton
+              onPress={() => manualPayment()}
+              imageSource={require('../assets/icons/shop.png')}
+              marginLeft={SCREEN_WIDTH * 0.02 * -1}
+            />
+          ) : null}
+        </Animated.View>
+      </View>
     ),
-    [animatedButton, navigation, isFlexaCustomer],
+    /* eslint-disable react-hooks/exhaustive-deps */
+    [
+      animatedButton,
+      navigation,
+      isFlexaCustomer,
+      SCREEN_HEIGHT,
+      SCREEN_WIDTH,
+      alignHeaderElementsWithMarginTop,
+      styles.headerBtns,
+    ],
   );
 
   const rightHeaderButton = useMemo(
     () => (
-      <Animated.View style={[styles.headerBtns, animatedButton]}>
-        <HeaderButton
-          onPress={() => navigation.navigate('AlertsStack')}
-          imageSource={require('../assets/icons/alerts-icon.png')}
-          rightPadding={true}
-          imageXY={{x: SCREEN_HEIGHT * 0.022, y: SCREEN_HEIGHT * 0.022}}
-        />
-      </Animated.View>
+      <View style={alignHeaderElementsWithMarginTop}>
+        <Animated.View style={[styles.headerBtns, animatedButton]}>
+          <HeaderButton
+            onPress={() => navigation.navigate('AlertsStack')}
+            imageSource={require('../assets/icons/alerts-icon.png')}
+            rightPadding={true}
+            imageXY={{x: SCREEN_HEIGHT * 0.022, y: SCREEN_HEIGHT * 0.022}}
+          />
+        </Animated.View>
+      </View>
     ),
-    [animatedButton, navigation],
+    [animatedButton, navigation, alignHeaderElementsWithMarginTop],
   );
 
   useEffect(() => {
@@ -575,6 +611,7 @@ const Main: React.FC<Props> = props => {
 
       walletButtonFadingTimeout.current = setTimeout(() => {
         navigation.setOptions({
+          /* eslint-disable-next-line react/no-unstable-nested-components */
           headerTitle: () => <></>,
         });
       }, 150);
@@ -688,10 +725,12 @@ const Main: React.FC<Props> = props => {
         folded={isBottomSheetFolded}
         foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
         activeTab={activeTab}
-        buyViewComponent={<Buy route={route} />}
-        sellViewComponent={<Sell route={route} />}
+        buyViewComponent={<Buy />}
+        sellViewComponent={<Sell />}
         convertViewComponent={<Convert />}
-        sendViewComponent={<Send route={route} ref={sendCardRef} />}
+        sendViewComponent={
+          <Send route={route} navigation={navigation} ref={sendCardRef} />
+        }
         receiveViewComponent={<Receive />}
       />
     ),
@@ -705,6 +744,19 @@ const Main: React.FC<Props> = props => {
       route,
     ],
   );
+
+  const plasmaModal_TxDetailModalContent_backSpecifiedStyle = {
+    backgroundColor: 'rgba(17, 74, 175, 0.8)',
+  };
+  const plasmaModal_TxDetailModalContent_gapSpecifiedStyle = {
+    backgroundColor: 'transparent',
+  };
+  const plasmaModal_WalletsModalContent_backSpecifiedStyle = {
+    backgroundColor: 'transparent',
+  };
+  const plasmaModal_PinModalContent_backSpecifiedStyle = {
+    backgroundColor: 'rgba(19,58,138, 0.6)',
+  };
 
   return (
     <Animated.View
@@ -729,8 +781,8 @@ const Main: React.FC<Props> = props => {
         isSwiperActive={transactions.length > 1 ? true : false}
         animDuration={250}
         gapInPixels={SCREEN_HEIGHT * 0.22}
-        backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
-        gapSpecifiedStyle={{backgroundColor: 'transparent'}}
+        backSpecifiedStyle={plasmaModal_TxDetailModalContent_backSpecifiedStyle}
+        gapSpecifiedStyle={plasmaModal_TxDetailModalContent_gapSpecifiedStyle}
         swipeToPrevTx={swipeToPrevTx}
         swipeToNextTx={swipeToNextTx}
         renderBody={(
@@ -768,7 +820,7 @@ const Main: React.FC<Props> = props => {
         isFromBottomToTop={false}
         animDuration={250}
         gapInPixels={plasmaModalGapInPixels}
-        backSpecifiedStyle={{backgroundColor: 'transparent'}}
+        backSpecifiedStyle={plasmaModal_WalletsModalContent_backSpecifiedStyle}
         rotateWalletButtonArrow={rotateArrow}
         renderBody={(
           isOpened: boolean,
@@ -793,7 +845,7 @@ const Main: React.FC<Props> = props => {
         isFromBottomToTop={true}
         animDuration={250}
         gapInPixels={0}
-        backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
+        backSpecifiedStyle={plasmaModal_PinModalContent_backSpecifiedStyle}
         renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
           <PinModalContent
             cardTranslateAnim={cardTranslateAnim}
@@ -834,6 +886,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: 'auto',
       height: 'auto',
       flexDirection: 'row',
+    },
+    walletButton: {
+      width: 'auto',
+      height: 'auto',
     },
     txTitleContainer: {
       width: '100%',

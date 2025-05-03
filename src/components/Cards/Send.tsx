@@ -43,7 +43,7 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
-  Send: {
+  Main: {
     scanData?: string;
   };
   Scan: {returnRoute: string};
@@ -53,8 +53,8 @@ type RootStackParamList = {
 };
 
 interface Props {
-  route: RouteProp<RootStackParamList, 'Send'>;
-  navigation: StackNavigationProp<RootStackParamList, 'Send'>;
+  route: RouteProp<RootStackParamList, 'Main'>;
+  navigation: StackNavigationProp<RootStackParamList, 'Main'>;
 }
 
 interface URIHandlerRef {
