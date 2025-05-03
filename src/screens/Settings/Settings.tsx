@@ -111,6 +111,7 @@ const Settings: React.FC<Props> = props => {
   };
 
   useLayoutEffect(() => {
+    handleNotificationSwitch();
     const subscription = AppState.addEventListener(
       'change',
       handleNotificationSwitch,
