@@ -155,11 +155,8 @@ const TxListComponent: React.FC<TxListComponentProps> = props => {
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
 
-  const {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-    // testDeviceHeaderHeight,
-  } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
@@ -169,13 +166,6 @@ const Main: React.FC<Props> = props => {
   const alignHeaderElementsWithMarginTop = useMemo(() => {
     return {marginTop: (stackHeaderHeight - headerButtonsHeight) * -1};
   }, [stackHeaderHeight, headerButtonsHeight]);
-
-  // useEffect(() => {
-  //   navigation.setOptions({
-  //     headerStyle: {height: testDeviceHeaderHeight},
-  //   });
-  //   /* eslint-disable react-hooks/exhaustive-deps */
-  // }, [testDeviceHeaderHeight]);
 
   // fixes a bug where navigating back from ConfirmBuy/Sell WebPage
   // causes header to disappear or not follow inset rules!
@@ -914,7 +904,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
 
 export const navigationOptions = (navigation: any): StackNavigationOptions => {
   return {
-    headerStyle: {height: 103},
     headerShown: true,
     headerTitle: () => (
       <ChooseWalletButton
