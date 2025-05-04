@@ -117,7 +117,6 @@
     "sell_success": "Sapo ke shitur {{amount}} LTC!"
   },
   "sendTab": {
-    "send_ltc": "Dërgo LTC",
     "send_litecoin": "Dërgo Litecoin",
     "amount": "Shuma",
     "send_to_address": "Dërgo në adresën",
@@ -137,7 +136,7 @@
     "just-sent": "Sapo dërgove"
   },
   "receiveTab": {
-    "receive_ltc": "Merr LTC",
+    "receive_ltc": "Merr Litecoin",
     "receive_privately": "Merr Privatisht",
     "send_privately": "Dërgo Privatisht",
     "my_ltc_address": "ADRESA IME E LTC",

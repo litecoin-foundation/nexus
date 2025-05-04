@@ -117,7 +117,6 @@
     "sell_success": "Anda baru saja menjual {{amount}} LTC!"
   },
   "sendTab": {
-    "send_ltc": "Kirim LTC",
     "send_litecoin": "Kirim Litecoin",
     "amount": "Jumlah",
     "send_to_address": "Kirim ke alamat",
@@ -137,7 +136,7 @@
     "just-sent": "Anda telah mengirim"
   },
   "receiveTab": {
-    "receive_ltc": "Terima LTC",
+    "receive_ltc": "Terima Litecoin",
     "receive_privately": "Terima Secara Privat",
     "send_privately": "Kirim Secara Privat",
     "my_ltc_address": "ALAMAT LTC SAYA",

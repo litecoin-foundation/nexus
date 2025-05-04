@@ -568,7 +568,7 @@ const Main: React.FC<Props> = props => {
             onPress={() => navigation.navigate('AlertsStack')}
             imageSource={require('../assets/icons/alerts-icon.png')}
             rightPadding={true}
-            imageXY={{x: SCREEN_HEIGHT * 0.022, y: SCREEN_HEIGHT * 0.022}}
+            imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
           />
         </Animated.View>
       </View>

@@ -248,7 +248,7 @@ const AmountPicker: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
-      width: screenWidth * 0.55,
+      width: screenWidth * 0.48,
       minWidth: 200,
       height: screenHeight * 0.044 + 20,
       backgroundColor: 'white',

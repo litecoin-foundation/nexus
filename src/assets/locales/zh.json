@@ -117,7 +117,6 @@
     "sell_success": "您刚刚卖出了 {{amount}} LTC!"
   },
   "sendTab": {
-    "send_ltc": "发送莱特币",
     "send_litecoin": "发送莱特币",
     "amount": "数量",
     "send_to_address": "发送到地址",

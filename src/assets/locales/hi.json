@@ -117,7 +117,6 @@
     "sell_success": "आपने {{amount}} LTC बेच दिया है!"
   },
   "sendTab": {
-    "send_ltc": "LTC भेजें",
     "send_litecoin": "लाइटकॉइन भेजें",
     "amount": "राशि",
     "send_to_address": "पते पर भेजें",
@@ -137,7 +136,7 @@
     "just-sent": "आपने अभी भेजा"
   },
   "receiveTab": {
-    "receive_ltc": "LTC प्राप्त करें",
+    "receive_ltc": "Litecoin प्राप्त करें",
     "receive_privately": "गुप्त रूप से प्राप्त करें",
     "send_privately": "गुप्त रूप से भेजें",
     "my_ltc_address": "मेरा LTC पता",

@@ -410,7 +410,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         ref={scrollViewRef}
         contentContainerStyle={styles.scrollViewContent}>
         <TranslateText
-          textKey="send_ltc"
+          textKey="send_litecoin"
           domain="sendTab"
           maxSizeInPixels={SCREEN_HEIGHT * 0.025}
           textStyle={styles.titleText}

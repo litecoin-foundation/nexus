@@ -117,7 +117,6 @@
     "sell_success": "Nagbenta ka lang ng {{amount}} LTC!"
   },
   "sendTab": {
-    "send_ltc": "Ipadala ang LTC",
     "send_litecoin": "Ipadala ang Litecoin",
     "amount": "Halaga",
     "send_to_address": "Ipadala sa address",
@@ -137,7 +136,7 @@
     "just-sent": "Nagpadala ka lang"
   },
   "receiveTab": {
-    "receive_ltc": "Tanggapin ang LTC",
+    "receive_ltc": "Tanggapin ang Litecoin",
     "receive_privately": "Tanggapin nang pribado",
     "send_privately": "Ipadala nang pribado",
     "my_ltc_address": "AKING LTC ADDRESS",

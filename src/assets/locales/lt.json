@@ -117,7 +117,6 @@
     "sell_success": "Jūs ką tik pardavėte {{amount}} LTC!"
   },
   "sendTab": {
-    "send_ltc": "Siųsti LTC",
     "send_litecoin": "Siųsti Litecoin",
     "amount": "Suma",
     "send_to_address": "Siųsti adresu",
@@ -137,7 +136,7 @@
     "just-sent": "Ką tik išsiuntėte"
   },
   "receiveTab": {
-    "receive_ltc": "Gauti LTC",
+    "receive_ltc": "Gauti Litecoin",
     "receive_privately": "Gauti Privačiai",
     "send_privately": "Siųsti Privačiai",
     "my_ltc_address": "MANO LTC ADRESAS",

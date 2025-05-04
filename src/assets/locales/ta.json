@@ -116,7 +116,6 @@
     "sell_success": "நீங்கள் சற்றுமுன் {{amount}} LTC விற்றீர்கள்!"
   },
   "sendTab": {
-    "send_ltc": "LTC அனுப்பவும்",
     "send_litecoin": "லைட்காயின் அனுப்பவும்",
     "amount": "தொகை",
     "send_to_address": "முகவரிக்கு அனுப்பவும்",
@@ -136,7 +135,7 @@
     "just-sent": "நீங்கள் இப்போது அனுப்பினீர்கள்"
   },
   "receiveTab": {
-    "receive_ltc": "LTC பெறவும்",
+    "receive_ltc": "Litecoin பெறவும்",
     "receive_privately": "தனிப்பட்ட முறையில் பெறவும்",
     "send_privately": "தனிப்பட்ட முறையில் அனுப்பவும்",
     "my_ltc_address": "எனது LTC முகவரி",

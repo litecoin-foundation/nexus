@@ -117,7 +117,6 @@
     "sell_success": "Vous venez de vendre {{amount}} LTC !"
   },
   "sendTab": {
-    "send_ltc": "Envoyer du LTC",
     "send_litecoin": "Envoyer du Litecoin",
     "amount": "Montant",
     "send_to_address": "Envoyer à une adresse",
@@ -137,7 +136,7 @@
     "just-sent": "Vous venez d'envoyer"
   },
   "receiveTab": {
-    "receive_ltc": "Recevoir du LTC",
+    "receive_ltc": "Recevoir du Litecoin",
     "receive_privately": "Recevoir en privé",
     "send_privately": "Envoyer en privé",
     "my_ltc_address": "MON ADRESSE LTC",

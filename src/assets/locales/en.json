@@ -124,7 +124,6 @@
     "sell_success": "You just sold {{amount}} LTC!"
   },
   "sendTab": {
-    "send_ltc": "Send LTC",
     "send_litecoin": "Send Litecoin",
     "amount": "Amount",
     "send_to_address": "Send to address",
@@ -148,7 +147,7 @@
     "insufficient_funds": "Insufficient balance."
   },
   "receiveTab": {
-    "receive_ltc": "Receive LTC",
+    "receive_ltc": "Receive Litecoin",
     "receive_privately": "Receive Privately",
     "send_privately": "Send Privately",
     "my_ltc_address": "MY LTC ADDRESS",

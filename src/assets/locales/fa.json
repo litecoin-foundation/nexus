@@ -117,7 +117,6 @@
     "sell_success": "شما {{amount}} LTC فروختید!"
   },
   "sendTab": {
-    "send_ltc": "ارسال LTC",
     "send_litecoin": "ارسال لایت‌کوین",
     "amount": "مقدار",
     "send_to_address": "ارسال به آدرس",
@@ -137,7 +136,7 @@
     "just-sent": "شما ارسال کردید"
   },
   "receiveTab": {
-    "receive_ltc": "دریافت LTC",
+    "receive_ltc": "دریافت Litecoin",
     "receive_privately": "دریافت به صورت خصوصی",
     "send_privately": "ارسال به صورت خصوصی",
     "my_ltc_address": "آدرس LTC من",

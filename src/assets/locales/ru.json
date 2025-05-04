@@ -117,7 +117,6 @@
     "sell_success": "Вы только что продали {{amount}} LTC!"
   },
   "sendTab": {
-    "send_ltc": "Отправить LTC",
     "send_litecoin": "Отправить Litecoin",
     "amount": "Количество",
     "send_to_address": "Адрес отправления",
@@ -137,7 +136,7 @@
     "just-sent": "Вы отправили"
   },
   "receiveTab": {
-    "receive_ltc": "Получить LTC",
+    "receive_ltc": "Получить Litecoin",
     "receive_privately": "Получить Скрытно",
     "send_privately": "Отправить Приватно",
     "my_ltc_address": "МОЙ LTC АДРЕС",
