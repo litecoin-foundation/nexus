@@ -67,18 +67,21 @@ function ResizedView(props: any) {
 }
 
 function ContextExecutable(props: any) {
-  const {languageCode} = useAppSelector(state => state.settings);
-  initI18N(languageCode);
-
   const dispatch = useAppDispatch();
-  dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
-  // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
-  // resulting in missing rates even if the app is being used already.
-  dispatch(updatedRatesInFiat());
-  dispatch(updateHistoricalRatesForAllPeriods());
-  dispatch(getBuyTransactionHistory());
-  dispatch(getSellTransactionHistory());
-  dispatch(checkFlexaCustomer());
+  const {languageCode} = useAppSelector(state => state.settings);
+
+  useLayoutEffect(() => {
+    initI18N(languageCode);
+    dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
+    // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
+    // resulting in missing rates even if the app is being used already.
+    dispatch(updatedRatesInFiat());
+    dispatch(updateHistoricalRatesForAllPeriods());
+    dispatch(getBuyTransactionHistory());
+    dispatch(getSellTransactionHistory());
+    dispatch(checkFlexaCustomer());
+  });
+
   return <></>;
 }
 

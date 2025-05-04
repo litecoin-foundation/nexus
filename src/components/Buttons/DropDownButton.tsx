@@ -1,11 +1,20 @@
-import React, {useEffect, useRef, useState, useContext, Fragment} from 'react';
-import {StyleSheet, Image, Pressable} from 'react-native';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useContext,
+  Fragment,
+  useCallback,
+  useMemo,
+} from 'react';
+import {StyleSheet, Image, Pressable, LayoutChangeEvent} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
+  useAnimatedProps,
 } from 'react-native-reanimated';
+import {v4 as uuidv4} from 'uuid';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -15,6 +24,8 @@ interface Props {
   options: string[];
   chooseOptionCallback(option: string): void;
   cellHeight: number;
+  cellHeightExpandMultiplier: number;
+  separatorGapHeightInPx?: number;
 }
 
 interface OptionProps {
@@ -25,13 +36,21 @@ interface OptionProps {
   styles: {
     [key: string]: any;
   };
+  cellHeightAnimatedStyle: any;
 }
 
-const FOLDIND_ANIM_DURATION = 200;
-const OPTIONS_ANIM_DURATION = FOLDIND_ANIM_DURATION;
+const FOLDING_ANIM_DURATION = 200;
+const OPTIONS_ANIM_DURATION = FOLDING_ANIM_DURATION;
 
 const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
-  const {isOpened, currentOption, options, onPress, styles} = props;
+  const {
+    isOpened,
+    currentOption,
+    options,
+    onPress,
+    styles,
+    cellHeightAnimatedStyle,
+  } = props;
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
 
@@ -42,18 +61,21 @@ const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
         .filter(option => option !== currentOption)
         .map(option => {
           return (
-            <Animated.View style={animatedOpacity}>
-              <Pressable
-                style={styles.optionBtn}
-                onPress={() => onPress(option)}>
-                <TranslateText
-                  textKey={String(option).toLowerCase()}
-                  domain="searchTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.optionBtnText}
-                  numberOfLines={1}
-                />
-              </Pressable>
+            <Animated.View style={animatedOpacity} key={uuidv4()}>
+              <Animated.View
+                style={[styles.optionBtnContainer, cellHeightAnimatedStyle]}>
+                <Pressable
+                  style={styles.optionBtn}
+                  onPress={() => onPress(option)}>
+                  <TranslateText
+                    textKey={String(option).toLowerCase()}
+                    domain="searchTab"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.optionBtnText}
+                    numberOfLines={1}
+                  />
+                </Pressable>
+              </Animated.View>
             </Animated.View>
           );
         }),
@@ -93,34 +115,71 @@ const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
 };
 
 const DropDownButton: React.FC<Props> = props => {
-  const {initial, options, chooseOptionCallback, cellHeight} = props;
+  const {
+    initial,
+    options,
+    chooseOptionCallback,
+    cellHeight,
+    cellHeightExpandMultiplier,
+    separatorGapHeightInPx,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
   const fontSize = Math.round(SCREEN_HEIGHT * 0.02);
   const arrowHeight = Math.round(SCREEN_HEIGHT * 0.015);
-  const cellHeightMultiplier = 1.45;
-  const separatorGapHeight = 0;
-  const bottomGapHeight = SCREEN_HEIGHT * 0.01;
+  const cellHeightMultiplier = cellHeightExpandMultiplier;
+  const separatorGapHeight = separatorGapHeightInPx || 0;
 
   const [isOpened, setIsOpened] = useState(false);
   const [unfoldHeight, setUnfoldHeight] = useState(0);
+  const [currentOption, setCurrentOption] = useState(initial);
 
-  function calcUnfoldHeight() {
-    setUnfoldHeight(
-      cellHeight * cellHeightMultiplier * options.length +
-        separatorGapHeight +
-        bottomGapHeight,
-    );
-  }
+  const styles = useMemo(
+    () =>
+      getStyles(
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        fontSize,
+        arrowHeight,
+        cellHeight,
+        separatorGapHeight,
+      ),
+    [
+      SCREEN_WIDTH,
+      SCREEN_HEIGHT,
+      fontSize,
+      arrowHeight,
+      cellHeight,
+      separatorGapHeight,
+    ],
+  );
+
+  // NOTE: LayoutChangeEvent might be useful in case if there're so many options that they don't fit on the screen
+  // so should be scrolled within the maximum available height
+  const calcUnfoldHeight = useCallback(
+    (event: LayoutChangeEvent) => {
+      setUnfoldHeight(
+        cellHeight * cellHeightMultiplier * options.length + separatorGapHeight,
+      );
+    },
+    [cellHeight, cellHeightMultiplier, separatorGapHeight, options],
+  );
 
   const heightSharedValue = useSharedValue(cellHeight);
+  const cellHeightSharedValue = useSharedValue(cellHeight);
 
   useEffect(() => {
-    heightSharedValue.value = withSpring(isOpened ? unfoldHeight : cellHeight, {
-      overshootClamping: true,
+    heightSharedValue.value = withTiming(isOpened ? unfoldHeight : cellHeight, {
+      duration: FOLDING_ANIM_DURATION,
     });
+    cellHeightSharedValue.value = withTiming(
+      isOpened ? cellHeight * cellHeightMultiplier : cellHeight,
+      {
+        duration: FOLDING_ANIM_DURATION,
+      },
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpened, unfoldHeight]);
 
@@ -130,35 +189,24 @@ const DropDownButton: React.FC<Props> = props => {
     };
   });
 
+  const cellHeightAnimatedStyle = useAnimatedProps(() => {
+    return {
+      height: cellHeightSharedValue.value,
+    };
+  });
+
   function foldUnfold(toggle: boolean) {
     setIsOpened(toggle);
   }
-
-  const [currentOption, setCurrentOption] = useState(initial);
-
-  const styles = getStyles(
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    fontSize,
-    arrowHeight,
-    isOpened ? cellHeight * cellHeightMultiplier : cellHeight,
-    separatorGapHeight,
-  );
 
   return (
     <Pressable
       style={styles.container}
       onPress={() => foldUnfold(!isOpened)}
-      onLayout={event => {
-        // NOTE: Might be useful in case if there're so many options that they don't fit on the screen
-        // so should be scrolled within the maximum available height
-        // eslint-disable-next-line
-        event.target.measure((x, y, width, height, pageX, pageY) => {
-          calcUnfoldHeight();
-        });
-      }}>
+      onLayout={calcUnfoldHeight}>
       <Animated.View style={[styles.dropDownBox, animatedStyle]}>
-        <Animated.View style={styles.boxTitleContainer}>
+        <Animated.View
+          style={[styles.boxTitleContainer, cellHeightAnimatedStyle]}>
           <TranslateText
             textKey={String(currentOption).toLowerCase()}
             domain="searchTab"
@@ -184,6 +232,7 @@ const DropDownButton: React.FC<Props> = props => {
               foldUnfold(false);
             }}
             styles={styles}
+            cellHeightAnimatedStyle={cellHeightAnimatedStyle}
           />
         </Animated.View>
       </Animated.View>
@@ -207,8 +256,6 @@ const getStyles = (
       width: '100%',
       borderRadius: screenHeight * 0.01,
       backgroundColor: '#0F4CAD',
-      justifyContent: 'center',
-      alignItems: 'center',
     },
     dropDownBox: {
       width: '100%',
@@ -242,12 +289,15 @@ const getStyles = (
     optionsContainer: {
       flex: 1,
     },
-    optionBtn: {
+    optionBtnContainer: {
       width: screenWidth * 0.35,
       height: cellHeight,
-      minHeight: 25,
       borderColor: 'rgba(240,240,240,0.15)',
       borderTopWidth: 1,
+    },
+    optionBtn: {
+      width: '100%',
+      height: '100%',
       justifyContent: 'center',
       paddingHorizontal: screenHeight * 0.02,
     },

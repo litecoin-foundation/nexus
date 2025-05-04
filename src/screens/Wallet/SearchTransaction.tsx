@@ -51,6 +51,7 @@ const RightHeaderButton: React.FC<RightHeaderProps> = props => {
           setTxPrivacyTypeFilter(option)
         }
         cellHeight={SCREEN_HEIGHT * 0.035}
+        cellHeightExpandMultiplier={1.45}
       />
     </View>
   );
@@ -256,25 +257,6 @@ const getStyles = (
       width: screenWidth * 0.35,
       height: screenHeight * 0.035,
       marginRight: screenWidth * 0.04 - 1,
-    },
-    mwebFilterBtn: {
-      width: screenWidth * 0.35,
-      height: screenHeight * 0.035,
-      minHeight: 25,
-      borderRadius: screenHeight * 0.01,
-      backgroundColor: '#0F4CAD',
-      justifyContent: 'center',
-      alignItems: 'center',
-      alignSelf: 'flex-end',
-      marginHorizontal: screenWidth * 0.04,
-    },
-    mwebFilterBtnText: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
-      fontStyle: 'normal',
-      fontWeight: '500',
-      letterSpacing: -0.39,
     },
     filters: {
       width: '100%',

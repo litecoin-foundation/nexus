@@ -7,7 +7,7 @@ import React, {
   forwardRef,
   useLayoutEffect,
 } from 'react';
-import {Platform, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {Platform, ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -43,7 +43,7 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
-  Send: {
+  Main: {
     scanData?: string;
   };
   Scan: {returnRoute: string};
@@ -53,8 +53,8 @@ type RootStackParamList = {
 };
 
 interface Props {
-  route: RouteProp<RootStackParamList, 'Send'>;
-  navigation: StackNavigationProp<RootStackParamList, 'Send'>;
+  route: RouteProp<RootStackParamList, 'Main'>;
+  navigation: StackNavigationProp<RootStackParamList, 'Main'>;
 }
 
 interface URIHandlerRef {
@@ -426,14 +426,14 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             numberOfLines={1}
           />
           <View style={styles.amountSubContainer}>
-            <Pressable onPress={() => setMax()} style={styles.maxButton}>
+            {/* <Pressable onPress={() => setMax()} style={styles.maxButton}>
               <TranslateText
                 textValue="MAX"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.015}
                 textStyle={styles.buttonText}
                 numberOfLines={1}
               />
-            </Pressable>
+            </Pressable> */}
             <AmountPicker
               amount={amount}
               fiatAmount={fiatAmount}
@@ -443,6 +443,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                 setAmountPickerActive(true);
               }}
               handleToggle={() => setToggleLTC(!toggleLTC)}
+              setMax={setMax}
             />
           </View>
         </View>
