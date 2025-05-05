@@ -183,7 +183,12 @@ const Main: React.FC<Props> = props => {
     }
   }, [route, navigation]);
 
-  const SNAP_POINTS_FROM_TOP = [SCREEN_HEIGHT * 0.24, SCREEN_HEIGHT * 0.47];
+  // const OFFSET_HEADER_DIFF = SCREEN_HEIGHT * 0.06 - insets.top;
+  const OFFSET_HEADER_DIFF = 0;
+  const SNAP_POINTS_FROM_TOP = [
+    SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF,
+    SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF,
+  ];
   const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
   const CLOSED_SNAP_POINT =
     SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];

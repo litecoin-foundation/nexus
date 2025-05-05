@@ -5,13 +5,15 @@ import {
   StackNavigationOptions,
   StackNavigationProp,
 } from '@react-navigation/stack';
+import {useTranslation} from 'react-i18next';
 
 import RecoveryField from '../../components/RecoveryField';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TranslateText from '../../components/TranslateText';
 
 import {useAppSelector} from '../../store/hooks';
-import {useTranslation} from 'react-i18next';
+
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 
 type RootStackParamList = {
   Forgot: undefined;
@@ -58,19 +60,25 @@ const Forgot: React.FC<Props> = ({navigation}) => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']}>
-      <View style={styles.header} />
-      <RecoveryField
-        handleLogin={seedAttempt => attemptLogin(seedAttempt)}
-        headerText={t('forgot_pin_description')}
-        isLitewalletRecovery={false}
-      />
+      <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+        <View style={styles.header} />
+        <RecoveryField
+          handleLogin={seedAttempt => attemptLogin(seedAttempt)}
+          headerText={t('forgot_pin_description')}
+          isLitewalletRecovery={false}
+        />
+      </CustomSafeAreaView>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: 'white',
+  },
+  safeArea: {
+    height: '100%',
   },
   headerTitle: {
     fontFamily: 'Satoshi Variable',

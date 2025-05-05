@@ -1,12 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Pressable, Platform} from 'react-native';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ConvertField from '../InputFields/ConvertField';
 import BuyPad from '../Numpad/BuyPad';
@@ -25,6 +24,7 @@ import {
 } from '../../reducers/input';
 import {sendConvertPsbtTransaction} from '../../reducers/transaction';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -32,7 +32,6 @@ interface Props {}
 
 const Convert: React.FC<Props> = props => {
   const {} = props;
-  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const [activeField, setActiveField] = useState<'regular' | 'private'>(
     'regular',
@@ -89,7 +88,7 @@ const Convert: React.FC<Props> = props => {
     rotation.value = withTiming(activeField === 'private' ? 180 : 0, {
       duration: 300,
     });
-  }, [activeField]);
+  }, [rotation, activeField]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{rotate: `${rotation.value}deg`}],
@@ -111,85 +110,84 @@ const Convert: React.FC<Props> = props => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-      ]}>
-      <View style={styles.inputsContainer}>
-        <View style={styles.fieldContainer}>
-          <TranslateText
-            textKey="regular_ltc"
-            domain="convertTab"
-            textStyle={styles.smallText}
-          />
-          <ConvertField
-            active={activeField === 'regular'}
-            amount={regularAmount}
-            handlePress={() => {
-              setActiveField('regular');
-              dispatch(resetInputs());
-            }}
-          />
-          <Text style={styles.smallText}>
-            {convertToSubunit(regularConfirmedBalance)}
-            {amountSymbol}
-          </Text>
-        </View>
-
-        <Animated.View style={[styles.arrowButtonContainer, motionStyle]}>
-          <Pressable
-            style={styles.arrowButton}
-            onPress={pressArrow}
-            onPressIn={onPressIn}
-            onPressOut={onPressOut}>
-            <Animated.Image
-              style={[styles.arrowImage, animatedStyle]}
-              source={require('../../assets/images/arrow-convert.png')}
+    <View style={styles.container}>
+      <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+        <View style={styles.inputsContainer}>
+          <View style={styles.fieldContainer}>
+            <TranslateText
+              textKey="regular_ltc"
+              domain="convertTab"
+              textStyle={styles.smallText}
             />
-          </Pressable>
-        </Animated.View>
+            <ConvertField
+              active={activeField === 'regular'}
+              amount={regularAmount}
+              handlePress={() => {
+                setActiveField('regular');
+                dispatch(resetInputs());
+              }}
+            />
+            <Text style={styles.smallText}>
+              {convertToSubunit(regularConfirmedBalance)}
+              {amountSymbol}
+            </Text>
+          </View>
 
-        <View style={styles.fieldContainer}>
-          <TranslateText
-            textKey="private_ltc"
-            domain="convertTab"
-            textStyle={styles.smallText}
-          />
-          <ConvertField
-            active={activeField === 'private'}
-            amount={privateAmount}
-            handlePress={() => {
-              setActiveField('private');
-              dispatch(resetInputs());
-            }}
-          />
-          <Text style={styles.smallText}>
-            {convertToSubunit(privateConfirmedBalance)}
-            {amountSymbol}
-          </Text>
-        </View>
-      </View>
+          <Animated.View style={[styles.arrowButtonContainer, motionStyle]}>
+            <Pressable
+              style={styles.arrowButton}
+              onPress={pressArrow}
+              onPressIn={onPressIn}
+              onPressOut={onPressOut}>
+              <Animated.Image
+                style={[styles.arrowImage, animatedStyle]}
+                source={require('../../assets/images/arrow-convert.png')}
+              />
+            </Pressable>
+          </Animated.View>
 
-      <View style={styles.bottomContainer}>
-        <View style={styles.numpadContainer}>
-          <BuyPad
-            onChange={(value: string) => onChange(value)}
-            currentValue={
-              activeField === 'regular' ? regularAmount : privateAmount
-            }
-          />
+          <View style={styles.fieldContainer}>
+            <TranslateText
+              textKey="private_ltc"
+              domain="convertTab"
+              textStyle={styles.smallText}
+            />
+            <ConvertField
+              active={activeField === 'private'}
+              amount={privateAmount}
+              handlePress={() => {
+                setActiveField('private');
+                dispatch(resetInputs());
+              }}
+            />
+            <Text style={styles.smallText}>
+              {convertToSubunit(privateConfirmedBalance)}
+              {amountSymbol}
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.buttonContainer}>
-          <BlueButton
-            disabled={false}
-            textKey="convert_button"
-            textDomain="convertTab"
-            onPress={() => handleConfirm()}
-          />
+        <View style={styles.bottomContainer}>
+          <View style={styles.numpadContainer}>
+            <BuyPad
+              onChange={(value: string) => onChange(value)}
+              currentValue={
+                activeField === 'regular' ? regularAmount : privateAmount
+              }
+              small
+            />
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <BlueButton
+              disabled={false}
+              textKey="convert_button"
+              textDomain="convertTab"
+              onPress={() => handleConfirm()}
+            />
+          </View>
         </View>
-      </View>
+      </CustomSafeAreaView>
     </View>
   );
 };
@@ -198,29 +196,30 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       width: screenWidth,
-      height: screenHeight * 0.55,
+      height: screenHeight * 0.76 - 110,
       paddingHorizontal: screenWidth * 0.06,
     },
+    safeArea: {
+      height: '100%',
+    },
     inputsContainer: {
-      flex: 1,
+      flexBasis: '20%',
       flexDirection: 'row',
       justifyContent: 'space-evenly',
-    },
-    bottomContainer: {
-      flexBasis: '82%',
-      width: '100%',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    buttonContainer: {
-      flexBasis: '20%',
-      width: '100%',
-      marginVertical: screenHeight * 0.02,
     },
     fieldContainer: {
       flex: 1,
       flexDirection: 'column',
       justifyContent: 'center',
+    },
+    bottomContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingBottom: screenHeight * 0.02,
+    },
+    buttonContainer: {
+      width: '100%',
     },
     numpadContainer: {
       width: screenWidth,

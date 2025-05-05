@@ -1,8 +1,12 @@
-import React from 'react';
-import {StyleSheet} from 'react-native';
+import React, {useContext} from 'react';
+import {StyleSheet, Platform} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 
 import AuthPad from './Numpad/AuthPad';
+
+import CustomSafeAreaView from '../components/CustomSafeAreaView';
+import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
   handleValidationSuccess: () => Promise<void>;
@@ -10,43 +14,39 @@ interface Props {
 }
 
 const Auth: React.FC<Props> = props => {
+  const insets = useSafeAreaInsets();
+
   const {handleValidationSuccess, handleValidationFailure} = props;
 
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, insets.bottom);
+
   return (
-    <>
-      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+    <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+      <CustomSafeAreaView styles={{...styles.safeArea}} edges={['top']}>
         <AuthPad
           handleValidationSuccess={handleValidationSuccess}
           handleValidationFailure={handleValidationFailure}
         />
-      </LinearGradient>
-    </>
+      </CustomSafeAreaView>
+    </LinearGradient>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  headerContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitleText: {
-    fontSize: 20,
-    color: 'white',
-    fontWeight: 'bold',
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  headerDescriptionText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    paddingBottom: 40,
-  },
-  gradient: {
-    flexGrow: 1,
-  },
-});
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  bottomInset: number,
+) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    safeArea: {
+      flex: 1,
+      marginBottom: Platform.OS === 'android' ? bottomInset : 0,
+    },
+  });
 
 export default Auth;

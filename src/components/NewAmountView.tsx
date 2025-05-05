@@ -1,13 +1,5 @@
 import React, {useContext} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Platform,
-  SafeAreaView,
-  Image,
-} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {View, Text, StyleSheet, Image} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
@@ -17,6 +9,7 @@ import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
 import {formatDate, formatTime} from '../lib/utils/date';
 
+import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -32,8 +25,6 @@ const NewAmountView: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  const insets = useSafeAreaInsets();
 
   const chartCursorSelected = useAppSelector(
     state => state.chart.cursorSelected,
@@ -66,12 +57,11 @@ const NewAmountView: React.FC<Props> = props => {
         animatedProps,
         !isInternetReachable ? styles.internetBackground : null,
       ]}>
-      <SafeAreaView>
-        <View
-          style={[
-            styles.subview,
-            Platform.OS === 'android' ? {paddingTop: insets.top + 7} : null,
-          ]}>
+      <CustomSafeAreaView
+        styles={{...styles.safeArea}}
+        edges={['top']}
+        platform="both">
+        <View style={styles.subview}>
           {!chartCursorSelected ? (
             <>
               <TranslateText
@@ -129,7 +119,7 @@ const NewAmountView: React.FC<Props> = props => {
             </View>
           </Animated.View>
         )}
-      </SafeAreaView>
+      </CustomSafeAreaView>
     </Animated.View>
   );
 };
@@ -143,8 +133,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderBottomLeftRadius: screenHeight * 0.03,
       borderBottomRightRadius: screenHeight * 0.03,
     },
+    safeArea: {},
     subview: {
-      top: screenHeight < 701 ? screenHeight * 0.04 : screenHeight * 0.05,
+      top: screenHeight * 0.06,
       flexDirection: 'column',
       alignItems: 'center',
     },
@@ -157,6 +148,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '400',
       color: 'white',
       fontSize: screenHeight * 0.05,
+      lineHeight: screenHeight * 0.05,
     },
     fiat: {
       height: screenHeight * 0.02,

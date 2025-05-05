@@ -10,14 +10,15 @@ interface Props {
   currentValue: string;
   dotDisabled?: boolean;
   onChange: (value: string) => void;
+  small?: boolean;
 }
 
 const BuyPad: React.FC<Props> = props => {
-  const {currentValue, onChange, dotDisabled} = props;
+  const {currentValue, onChange, dotDisabled, small} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, small || false);
 
   const handlePress = (input: string) => {
     let response;
@@ -36,12 +37,12 @@ const BuyPad: React.FC<Props> = props => {
           currentValue.length === 1 && (dotDisabled === false || !dotDisabled)
             ? '0'
             : currentValue.length === 1 && dotDisabled === true
-            ? ''
-            : currentValue.length === 0 &&
-              currentValue === '' &&
-              (dotDisabled === false || !dotDisabled)
-            ? '0'
-            : currentValue.slice(0, -1);
+              ? ''
+              : currentValue.length === 0 &&
+                  currentValue === '' &&
+                  (dotDisabled === false || !dotDisabled)
+                ? '0'
+                : currentValue.slice(0, -1);
         break;
       default:
         response =
@@ -62,6 +63,7 @@ const BuyPad: React.FC<Props> = props => {
           value={value}
           disabled={dotDisabled}
           onPress={() => handlePress(value)}
+          small={small}
         />
       );
     }
@@ -72,26 +74,32 @@ const BuyPad: React.FC<Props> = props => {
           value={value}
           onPress={() => handlePress(value)}
           imageSource={require('../../assets/icons/back-arrow.png')}
+          small={small}
         />
       );
     }
     return (
-      <BuyButton key={value} value={value} onPress={() => handlePress(value)} />
+      <BuyButton
+        key={value}
+        value={value}
+        onPress={() => handlePress(value)}
+        small={small}
+      />
     );
   });
 
   return (
     <>
-      <PadGrid />
+      <PadGrid small={small} />
       <View style={styles.container}>{buttons}</View>
     </>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
   StyleSheet.create({
     container: {
-      height: screenHeight * 0.4,
+      height: small ? screenHeight * 0.36 : screenHeight * 0.4,
       flexDirection: 'row',
       justifyContent: 'space-evenly',
       flexWrap: 'wrap',

@@ -21,14 +21,15 @@ interface Props {
   onPress: () => void;
   disabled?: boolean;
   imageSource?: ImageSourcePropType;
+  small?: boolean;
 }
 
 const BuyButton: React.FC<Props> = props => {
-  const {value, onPress, disabled, imageSource} = props;
+  const {value, onPress, disabled, imageSource, small} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, small || false);
 
   const scaler = useSharedValue(1);
 
@@ -68,11 +69,11 @@ const BuyButton: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
   StyleSheet.create({
     button: {
       width: screenWidth / 3,
-      height: screenHeight * 0.1,
+      height: small ? screenHeight * 0.09 : screenHeight * 0.1,
       justifyContent: 'center',
       alignItems: 'center',
     },

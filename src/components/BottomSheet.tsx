@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState, useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   Gesture,
   GestureDetector,
@@ -49,6 +50,8 @@ interface CardProps {
 }
 
 const BottomSheet: React.FC<Props> = props => {
+  const insets = useSafeAreaInsets();
+
   const {
     txViewComponent,
     buyViewComponent,
@@ -68,9 +71,11 @@ const BottomSheet: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  // const OFFSET_HEADER_DIFF = SCREEN_HEIGHT * 0.06 - insets.top;
+  const OFFSET_HEADER_DIFF = 0;
   const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
-  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24;
-  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
+  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
+  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF;
   const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
   const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 
