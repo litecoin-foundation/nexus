@@ -252,7 +252,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       minWidth: 200,
       height: screenHeight * 0.044 + 20,
       backgroundColor: 'white',
-      borderRadius: 11,
+      borderRadius: 12,
       borderWidth: 1,
       borderColor: '#e5e5e5',
       flexDirection: 'row',

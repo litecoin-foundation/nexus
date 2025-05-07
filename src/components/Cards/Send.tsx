@@ -39,6 +39,7 @@ import {
   updateSendDomain,
 } from '../../reducers/input';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -256,7 +257,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   }));
 
   // validates data before sending!
-  const validate = async data => {
+  const validate = async (data: any) => {
     try {
       // handle BIP21 litecoin URI
       if (data.startsWith('litecoin:')) {
@@ -554,33 +555,30 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       {amountPickerActive ? (
         <Animated.View
-          style={[
-            styles.numpadContainer,
-            {opacity: padOpacity},
-            Platform.OS === 'android'
-              ? {paddingBottom: insets.bottom - 20}
-              : null,
-          ]}>
-          <BuyPad
-            onChange={(value: string) => onChange(value)}
-            currentValue={toggleLTC ? String(amount) : String(fiatAmount)}
-          />
-          <View
-            style={[
-              styles.blueBtnContainerStandalone,
-              Platform.OS === 'android' ? {paddingTop: 0} : null,
-            ]}>
-            <BlueButton
-              textKey="confirm"
-              textDomain="sendTab"
-              onPress={async () => {
-                padOpacity.value = withTiming(0, {duration: 230});
-                await sleep(230);
-                setAmountPickerActive(false);
-              }}
-              disabled={false}
-            />
-          </View>
+          style={[styles.amountPickerActiveBottom, {opacity: padOpacity}]}>
+          <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+            <View style={styles.bottomContainer}>
+              <View style={styles.numpadContainer}>
+                <BuyPad
+                  onChange={(value: string) => onChange(value)}
+                  currentValue={toggleLTC ? String(amount) : String(fiatAmount)}
+                  small
+                />
+              </View>
+              <View style={styles.blueBtnContainer}>
+                <BlueButton
+                  textKey="confirm"
+                  textDomain="sendTab"
+                  onPress={async () => {
+                    padOpacity.value = withTiming(0, {duration: 230});
+                    await sleep(230);
+                    setAmountPickerActive(false);
+                  }}
+                  disabled={false}
+                />
+              </View>
+            </View>
+          </CustomSafeAreaView>
         </Animated.View>
       ) : null}
     </View>
@@ -601,6 +599,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     scrollViewContent: {
       minHeight: screenHeight,
+    },
+    subScrollContainer: {
+      width: '100%',
+      height: screenHeight * 0.76 - 110 - 5,
     },
     subContainer: {
       flex: 1,
@@ -634,8 +636,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
     },
     amountSubContainer: {
+      flexBasis: '70%',
       height: '100%',
       flexDirection: 'row',
+      justifyContent: 'flex-end',
     },
     maxButton: {
       width: 'auto',
@@ -661,18 +665,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     inputFieldContainer: {
       paddingTop: 5,
     },
-    numpadContainer: {
-      position: 'absolute',
-      width: screenWidth,
-      bottom: screenHeight * 0.03,
-    },
     bottomBtnsContainer: {
       position: 'absolute',
       left: screenWidth * 0.06,
       bottom: screenHeight * 0.03,
       width: '100%',
-      flexDirection: 'column',
-      justifyContent: 'flex-end',
     },
     bottomBtns: {
       width: '100%',
@@ -684,13 +681,30 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexBasis: '37%',
     },
     blueBtnContainer: {
+      width: '100%',
+    },
+    safeArea: {
       flex: 1,
     },
-    // this button style regulates relative BuyPad
-    blueBtnContainerStandalone: {
+    amountPickerActiveBottom: {
       flex: 1,
-      paddingTop: screenHeight * 0.025,
-      paddingHorizontal: screenWidth * 0.06,
+      position: 'absolute',
+      left: screenWidth * 0.06,
+      bottom: 0,
+      width: '100%',
+    },
+    bottomContainer: {
+      flex: 1,
+      gap: screenHeight * 0.02,
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingBottom: screenHeight * 0.02,
+    },
+    numpadContainer: {
+      width: screenWidth,
+    },
+    buttonContainer: {
+      width: '100%',
     },
     minText: {
       color: '#747E87',

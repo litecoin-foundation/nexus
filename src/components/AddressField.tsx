@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useContext, useCallback} from 'react';
 import {
+  Platform,
   View,
   TextInput,
   StyleSheet,
@@ -48,7 +49,7 @@ const AddressField: React.FC<Props> = props => {
 
   const {t} = useTranslation('sendTab');
 
-  const MULTILINE_HEIGHT = SCREEN_HEIGHT * 0.04;
+  const MULTILINE_HEIGHT = SCREEN_HEIGHT * 0.063;
   const LINE_HEIGHT = SCREEN_HEIGHT * 0.025; // Line height for text
   const PADDING = SCREEN_HEIGHT * 0.01; // Padding for multiline content
 
@@ -148,7 +149,14 @@ const AddressField: React.FC<Props> = props => {
 
   const updateHeightFromMeasurement = useCallback(
     (measuredHeight: number) => {
-      const lines = Math.max(1, Math.ceil(measuredHeight / LINE_HEIGHT) - 1);
+      // NOTE: flooring the height cause measuredHeight could be > 2x LINE_HEIGHT on some screens
+      // TODO: think of better way to calc height on big screens, investigate measuredHeight
+      const flooredMeasuredHeight = Math.floor(measuredHeight);
+
+      const lines = Math.max(
+        1,
+        Math.floor(flooredMeasuredHeight / LINE_HEIGHT),
+      );
 
       const newHeight =
         MULTILINE_HEIGHT + (lines > 1 ? lines * LINE_HEIGHT + PADDING : 0);
@@ -290,7 +298,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: '#FFFFFF',
       justifyContent: 'center',
       paddingHorizontal: screenHeight * 0.02,
-      paddingVertical: screenHeight * 0.01,
+      // TextInput centers text only on android, set padding to make it look centered on ios
+      paddingVertical: Platform.OS === 'ios' ? screenHeight * 0.012 : 0,
     },
     text: {
       flex: 1,
@@ -301,9 +310,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#20BB74',
-      paddingTop: screenHeight * 0.008,
       lineHeight: screenHeight * 0.025,
-      letterSpacing: 0,
     },
     pasteContainer: {
       right: 54,
@@ -363,7 +370,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       fontSize: screenHeight * 0.02,
       lineHeight: screenHeight * 0.025,
-      letterSpacing: 0,
       opacity: 0,
     },
     icon: {

@@ -218,11 +218,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'space-between',
       paddingBottom: screenHeight * 0.02,
     },
-    buttonContainer: {
-      width: '100%',
-    },
     numpadContainer: {
       width: screenWidth,
+    },
+    buttonContainer: {
+      width: '100%',
     },
     smallText: {
       fontFamily: 'Satoshi Variable',

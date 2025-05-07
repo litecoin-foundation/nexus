@@ -85,14 +85,13 @@ const InputField: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
-      minHeight: screenHeight * 0.06,
+      minHeight: screenHeight * 0.063,
       borderRadius: screenHeight * 0.01,
       borderColor: '#E8E8E8',
       borderWidth: 1,
       backgroundColor: '#FFFFFF',
       justifyContent: 'center',
       paddingHorizontal: screenHeight * 0.02,
-      paddingVertical: screenHeight * 0.01,
     },
     text: {
       fontFamily: 'Satoshi Variable',
