@@ -183,8 +183,7 @@ const Main: React.FC<Props> = props => {
     }
   }, [route, navigation]);
 
-  // const OFFSET_HEADER_DIFF = SCREEN_HEIGHT * 0.06 - insets.top;
-  const OFFSET_HEADER_DIFF = 0;
+  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.06;
   const SNAP_POINTS_FROM_TOP = [
     SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF,
     SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF,
