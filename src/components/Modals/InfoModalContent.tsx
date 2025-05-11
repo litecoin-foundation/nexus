@@ -45,8 +45,8 @@ const InfoModal: React.FC<Props> = props => {
     textColor === 'red'
       ? styles.redText
       : textColor === 'green'
-      ? styles.greenText
-      : null;
+        ? styles.greenText
+        : null;
 
   const modal = (
     <PlasmaModal

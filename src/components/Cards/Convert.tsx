@@ -111,83 +111,85 @@ const Convert: React.FC<Props> = props => {
 
   return (
     <View style={styles.container}>
-      <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
-        <View style={styles.inputsContainer}>
-          <View style={styles.fieldContainer}>
-            <TranslateText
-              textKey="regular_ltc"
-              domain="convertTab"
-              textStyle={styles.smallText}
-            />
-            <ConvertField
-              active={activeField === 'regular'}
-              amount={regularAmount}
-              handlePress={() => {
-                setActiveField('regular');
-                dispatch(resetInputs());
-              }}
-            />
-            <Text style={styles.smallText}>
-              {convertToSubunit(regularConfirmedBalance)}
-              {amountSymbol}
-            </Text>
-          </View>
+      <View style={styles.inputsContainer}>
+        <View style={styles.fieldContainer}>
+          <TranslateText
+            textKey="regular_ltc"
+            domain="convertTab"
+            textStyle={styles.smallText}
+          />
+          <ConvertField
+            active={activeField === 'regular'}
+            amount={regularAmount}
+            handlePress={() => {
+              setActiveField('regular');
+              dispatch(resetInputs());
+            }}
+          />
+          <Text style={styles.smallText}>
+            {convertToSubunit(regularConfirmedBalance)}
+            {amountSymbol}
+          </Text>
+        </View>
 
-          <Animated.View style={[styles.arrowButtonContainer, motionStyle]}>
-            <Pressable
-              style={styles.arrowButton}
-              onPress={pressArrow}
-              onPressIn={onPressIn}
-              onPressOut={onPressOut}>
-              <Animated.Image
-                style={[styles.arrowImage, animatedStyle]}
-                source={require('../../assets/images/arrow-convert.png')}
+        <Animated.View style={[styles.arrowButtonContainer, motionStyle]}>
+          <Pressable
+            style={styles.arrowButton}
+            onPress={pressArrow}
+            onPressIn={onPressIn}
+            onPressOut={onPressOut}>
+            <Animated.Image
+              style={[styles.arrowImage, animatedStyle]}
+              source={require('../../assets/images/arrow-convert.png')}
+            />
+          </Pressable>
+        </Animated.View>
+
+        <View style={styles.fieldContainer}>
+          <TranslateText
+            textKey="private_ltc"
+            domain="convertTab"
+            textStyle={styles.smallText}
+          />
+          <ConvertField
+            active={activeField === 'private'}
+            amount={privateAmount}
+            handlePress={() => {
+              setActiveField('private');
+              dispatch(resetInputs());
+            }}
+          />
+          <Text style={styles.smallText}>
+            {convertToSubunit(privateConfirmedBalance)}
+            {amountSymbol}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.bottomContainer}>
+        <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+          <View style={styles.col}>
+            <View style={styles.numpadContainer}>
+              <BuyPad
+                onChange={(value: string) => onChange(value)}
+                currentValue={
+                  activeField === 'regular' ? regularAmount : privateAmount
+                }
+                small
               />
-            </Pressable>
-          </Animated.View>
+            </View>
 
-          <View style={styles.fieldContainer}>
-            <TranslateText
-              textKey="private_ltc"
-              domain="convertTab"
-              textStyle={styles.smallText}
-            />
-            <ConvertField
-              active={activeField === 'private'}
-              amount={privateAmount}
-              handlePress={() => {
-                setActiveField('private');
-                dispatch(resetInputs());
-              }}
-            />
-            <Text style={styles.smallText}>
-              {convertToSubunit(privateConfirmedBalance)}
-              {amountSymbol}
-            </Text>
+            <View style={styles.buttonContainer}>
+              <BlueButton
+                disabled={false}
+                textKey="convert_button"
+                textDomain="convertTab"
+                onPress={() => handleConfirm()}
+              />
+            </View>
           </View>
-        </View>
-
-        <View style={styles.bottomContainer}>
-          <View style={styles.numpadContainer}>
-            <BuyPad
-              onChange={(value: string) => onChange(value)}
-              currentValue={
-                activeField === 'regular' ? regularAmount : privateAmount
-              }
-              small
-            />
-          </View>
-
-          <View style={styles.buttonContainer}>
-            <BlueButton
-              disabled={false}
-              textKey="convert_button"
-              textDomain="convertTab"
-              onPress={() => handleConfirm()}
-            />
-          </View>
-        </View>
-      </CustomSafeAreaView>
+        </CustomSafeAreaView>
+      </View>
     </View>
   );
 };
@@ -196,7 +198,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       width: screenWidth,
-      height: screenHeight * 0.76 - 110,
+      // BottomSheet is screenHeight * 0.76
+      // DashboardButton is 110
+      // Header margin is 5
+      height: screenHeight * 0.76 - 110 - 5,
       paddingHorizontal: screenWidth * 0.06,
     },
     safeArea: {
@@ -213,10 +218,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
     },
     bottomContainer: {
-      flex: 1,
+      position: 'absolute',
+      left: screenWidth * 0.06,
+      bottom: 0,
+      width: '100%',
+    },
+    col: {
+      gap: screenHeight * 0.03,
       alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingBottom: screenHeight * 0.02,
     },
     numpadContainer: {
       width: screenWidth,

@@ -7,12 +7,11 @@ import React, {
   forwardRef,
   useLayoutEffect,
 } from 'react';
-import {Platform, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {estimateFee} from 'react-native-turbo-lnd';
 
 import InputField from '../InputField';
@@ -65,7 +64,6 @@ interface URIHandlerRef {
 const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const {route} = props;
 
-  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
 
@@ -515,41 +513,37 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       {amountPickerActive ? null : (
         <Animated.View
-          style={[styles.bottomBtnsContainer, {opacity: detailsOpacity}]}>
-          <View style={styles.bottomBtns}>
-            {/* <View style={styles.greenBtnContainer}>
+          style={[styles.bottomContainer, {opacity: detailsOpacity}]}>
+          <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+            <View style={styles.row}>
+              {/* <View style={styles.greenBtnContainer}>
            <GreenButton
             value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
             onPress={() => console.log('pressed fee')}
           />
         </View>  */}
-            <View
-              style={[
-                styles.blueBtnContainer,
-                Platform.OS === 'android'
-                  ? {paddingBottom: insets.bottom}
-                  : null,
-              ]}>
-              <BlueButton
-                textKey="send_litecoin"
-                textDomain="sendTab"
-                onPress={() => {
-                  handleSend();
-                }}
-                disabled={isSendDisabled}
-              />
-
-              {noteKey ? (
-                <TranslateText
-                  textKey={noteKey}
-                  domain="sendTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-                  textStyle={styles.minText}
-                  numberOfLines={3}
+              <View style={styles.blueBtnContainer}>
+                <BlueButton
+                  textKey="send_litecoin"
+                  textDomain="sendTab"
+                  onPress={() => {
+                    handleSend();
+                  }}
+                  disabled={isSendDisabled}
                 />
-              ) : null}
+
+                {noteKey ? (
+                  <TranslateText
+                    textKey={noteKey}
+                    domain="sendTab"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                    textStyle={styles.minText}
+                    numberOfLines={3}
+                  />
+                ) : null}
+              </View>
             </View>
-          </View>
+          </CustomSafeAreaView>
         </Animated.View>
       )}
 
@@ -557,7 +551,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         <Animated.View
           style={[styles.amountPickerActiveBottom, {opacity: padOpacity}]}>
           <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
-            <View style={styles.bottomContainer}>
+            <View style={styles.col}>
               <View style={styles.numpadContainer}>
                 <BuyPad
                   onChange={(value: string) => onChange(value)}
@@ -665,15 +659,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     inputFieldContainer: {
       paddingTop: 5,
     },
-    bottomBtnsContainer: {
+    bottomContainer: {
       position: 'absolute',
       left: screenWidth * 0.06,
-      bottom: screenHeight * 0.03,
+      bottom: 0,
       width: '100%',
     },
-    bottomBtns: {
+    row: {
       width: '100%',
-      display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
     },
@@ -687,18 +680,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
     },
     amountPickerActiveBottom: {
-      flex: 1,
       position: 'absolute',
       left: screenWidth * 0.06,
       bottom: 0,
       width: '100%',
     },
-    bottomContainer: {
-      flex: 1,
-      gap: screenHeight * 0.02,
+    col: {
+      gap: screenHeight * 0.03,
       alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingBottom: screenHeight * 0.02,
     },
     numpadContainer: {
       width: screenWidth,

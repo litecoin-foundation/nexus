@@ -78,10 +78,6 @@ export default function PlasmaModal(props: Props) {
     renderBody,
   } = props;
 
-  const gapInPixelsWithInsets = isFromBottomToTop
-    ? gapInPixels + insets.bottom
-    : gapInPixels;
-
   const bottomInsetPadding = Platform.OS === 'ios' ? 0 : insets.bottom;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -93,9 +89,9 @@ export default function PlasmaModal(props: Props) {
   const swipeTriggerHeightRange = SCREEN_HEIGHT * 0.15;
   const swipeTriggerWidthRange = SCREEN_WIDTH * 0.15;
   const snapPoints = [
-    isFromBottomToTop ? gapInPixelsWithInsets : SCREEN_HEIGHT,
+    isFromBottomToTop ? gapInPixels : SCREEN_HEIGHT,
     isFromBottomToTop
-      ? gapInPixelsWithInsets + swipeTriggerHeightRange
+      ? gapInPixels + swipeTriggerHeightRange
       : SCREEN_HEIGHT - swipeTriggerHeightRange,
   ];
   const fullyOpenSnapPoint = snapPoints[0];
@@ -361,7 +357,7 @@ export default function PlasmaModal(props: Props) {
       paginationOpacity.value = withTiming(1, {duration: animDuration});
     } else {
       bodyTranslateY.value = withTiming(
-        (SCREEN_HEIGHT - gapInPixelsWithInsets - bottomInsetPadding) *
+        (SCREEN_HEIGHT - gapInPixels - bottomInsetPadding) *
           (isFromBottomToTop ? 1 : -1),
         {duration: animDuration},
       );
@@ -378,7 +374,7 @@ export default function PlasmaModal(props: Props) {
     bodyTranslateY,
     backOpacity,
     animDuration,
-    gapInPixelsWithInsets,
+    gapInPixels,
     isFromBottomToTop,
     isOpened,
   ]);
@@ -387,7 +383,7 @@ export default function PlasmaModal(props: Props) {
   const gapBgColor = isInternetReachable ? '#1162e6' : '#f36f56';
   const contentBodyConditionStyle = {
     flex: isFromBottomToTop ? 1 : 0,
-    height: SCREEN_HEIGHT - gapInPixelsWithInsets - bottomInsetPadding,
+    height: SCREEN_HEIGHT - gapInPixels - bottomInsetPadding,
   };
 
   return (
@@ -412,7 +408,7 @@ export default function PlasmaModal(props: Props) {
               style={[
                 styles.gap,
                 {
-                  flexBasis: gapInPixelsWithInsets,
+                  flexBasis: gapInPixels,
                   backgroundColor: gapBgColor,
                 },
                 gapSpecifiedStyle,

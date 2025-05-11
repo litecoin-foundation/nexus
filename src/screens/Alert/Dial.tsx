@@ -2,7 +2,6 @@ import React, {useState, useContext} from 'react';
 import {View, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import SlideRuler from '../../components/SlideRuler';
 import GreenButton from '../../components/Buttons/GreenButton';
@@ -11,6 +10,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {convertLocalFiatToUSD, ltcRateSelector} from '../../reducers/ticker';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -24,7 +24,6 @@ interface Props {
 
 const Dial: React.FC<Props> = props => {
   const {navigation} = props;
-  const insets = useSafeAreaInsets();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -45,101 +44,100 @@ const Dial: React.FC<Props> = props => {
 
   return (
     <LinearGradient
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-      ]}
+      style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <View style={styles.subContainer}>
-        <View style={styles.topContainer}>
-          <View style={styles.imageContainer}>
-            <Image
-              style={styles.image}
-              source={require('../../assets/images/gramophone-art.png')}
+      <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+        <View style={styles.subContainer}>
+          <View style={styles.topContainer}>
+            <View style={styles.imageContainer}>
+              <Image
+                style={styles.image}
+                source={require('../../assets/images/gramophone-art.png')}
+              />
+            </View>
+            <TranslateText
+              textKey="alert_me"
+              domain="alertsTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+              textStyle={styles.text}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textKey="when_ltc"
+              domain="alertsTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+              textStyle={styles.text}
+              numberOfLines={1}
+            />
+
+            <View style={styles.switchContainer}>
+              <View style={!toggleActive ? styles.toggleActive : styles.toggle}>
+                <TranslateText
+                  textKey="below"
+                  domain="alertsTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+                  textStyle={
+                    !toggleActive ? styles.toggleTextActive : styles.toggleText
+                  }
+                  numberOfLines={1}
+                />
+              </View>
+              <View style={toggleActive ? styles.toggleActive : styles.toggle}>
+                <TranslateText
+                  textKey="above"
+                  domain="alertsTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+                  textStyle={
+                    toggleActive ? styles.toggleTextActive : styles.toggleText
+                  }
+                  numberOfLines={1}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.valueContainer}>
+            <TranslateText
+              textValue={currencySymbol + value}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.07}
+              textStyle={styles.valueText}
+              numberOfLines={1}
             />
           </View>
-          <TranslateText
-            textKey="alert_me"
-            domain="alertsTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.04}
-            textStyle={styles.text}
-            numberOfLines={1}
-          />
-          <TranslateText
-            textKey="when_ltc"
-            domain="alertsTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.04}
-            textStyle={styles.text}
-            numberOfLines={1}
-          />
-
-          <View style={styles.switchContainer}>
-            <View style={!toggleActive ? styles.toggleActive : styles.toggle}>
-              <TranslateText
-                textKey="below"
-                domain="alertsTab"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-                textStyle={
-                  !toggleActive ? styles.toggleTextActive : styles.toggleText
-                }
-                numberOfLines={1}
-              />
-            </View>
-            <View style={toggleActive ? styles.toggleActive : styles.toggle}>
-              <TranslateText
-                textKey="above"
-                domain="alertsTab"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-                textStyle={
-                  toggleActive ? styles.toggleTextActive : styles.toggleText
-                }
-                numberOfLines={1}
-              />
-            </View>
+          <View style={styles.rulerContainer}>
+            <SlideRuler
+              onValueChange={(slideValue: number) => {
+                setValue(slideValue);
+                const calculatedValue = Number(
+                  (slideValue * localFiatToUSDRate).toFixed(2),
+                );
+                setUSDValue(calculatedValue);
+              }}
+              maximumValue={maximumValue}
+              decimalPlaces={1}
+              multiplicity={1}
+              arrayLength={1000}
+              initialValue={currentRate}
+            />
           </View>
         </View>
-
-        <View style={styles.valueContainer}>
-          <TranslateText
-            textValue={currencySymbol + value}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.07}
-            textStyle={styles.valueText}
-            numberOfLines={1}
-          />
-        </View>
-        <View style={styles.rulerContainer}>
-          <SlideRuler
-            onValueChange={(slideValue: number) => {
-              setValue(slideValue);
-              const calculatedValue = Number(
-                (slideValue * localFiatToUSDRate).toFixed(2),
+        <View style={styles.buttonContainer}>
+          <GreenButton
+            textKey="create_alert"
+            textDomain="alertsTab"
+            onPress={() => {
+              dispatch(
+                addAlert({
+                  value,
+                  originalValue: usdValue,
+                  isIOS: Platform.OS === 'ios',
+                }),
               );
-              setUSDValue(calculatedValue);
+              navigation.goBack();
             }}
-            maximumValue={maximumValue}
-            decimalPlaces={1}
-            multiplicity={1}
-            arrayLength={1000}
-            initialValue={currentRate}
           />
         </View>
-      </View>
-      <View style={styles.buttonContainer}>
-        <GreenButton
-          textKey="create_alert"
-          textDomain="alertsTab"
-          onPress={() => {
-            dispatch(
-              addAlert({
-                value,
-                originalValue: usdValue,
-                isIOS: Platform.OS === 'ios',
-              }),
-            );
-            navigation.goBack();
-          }}
-        />
-      </View>
+      </CustomSafeAreaView>
     </LinearGradient>
   );
 };
@@ -149,10 +147,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
-    subContainer: {
-      flexDirection: 'column',
-      alignItems: 'center',
+    safeArea: {
       flex: 1,
+    },
+    subContainer: {
+      flex: 1,
+      alignItems: 'center',
     },
     topContainer: {
       width: '100%',
@@ -239,7 +239,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       alignItems: 'center',
       paddingHorizontal: screenWidth * 0.06,
-      paddingBottom: screenHeight * 0.03,
+      paddingBottom: screenHeight * 0.01,
     },
     headerTitle: {
       fontFamily: 'Satoshi Variable',
