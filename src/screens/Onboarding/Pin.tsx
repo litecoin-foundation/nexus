@@ -1,5 +1,11 @@
-import React, {useState, useLayoutEffect, useEffect, useContext} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import React, {
+  useState,
+  useLayoutEffect,
+  useEffect,
+  useContext,
+  useMemo,
+} from 'react';
+import {StyleSheet, View} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
 
@@ -12,7 +18,6 @@ import {resetPincode} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import {ScreenSizeContext} from '../../context/screenSize';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   Pin: undefined;
@@ -27,7 +32,6 @@ interface Props {
 
 const Pin: React.FC<Props> = props => {
   const {navigation} = props;
-  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const {t} = useTranslation('onboarding');
 
@@ -39,21 +43,24 @@ const Pin: React.FC<Props> = props => {
     state => state.authentication.biometricsAvailable,
   );
 
-  useLayoutEffect(() => {
-    const handleBackNavigation = () => {
-      dispatch(resetPincode());
-      navigation.goBack();
-    };
+  const headerLeftMemo = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => {
+          dispatch(resetPincode());
+          navigation.goBack();
+        }}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+    [dispatch, navigation],
+  );
 
+  useLayoutEffect(() => {
     navigation.setOptions({
-      headerLeft: () => (
-        <HeaderButton
-          onPress={() => handleBackNavigation()}
-          imageSource={require('../../assets/images/back-icon.png')}
-        />
-      ),
+      headerLeft: () => headerLeftMemo,
     });
-  }, [dispatch, navigation]);
+  }, [navigation, headerLeftMemo]);
 
   const pin = useAppSelector(state => state.authpad.pin);
   const beingRecovered = useAppSelector(
@@ -62,19 +69,24 @@ const Pin: React.FC<Props> = props => {
   const [newPasscode, setNewPasscode] = useState('');
   const [passcodeInitialSet, setPasscodeInitialSet] = useState(false);
 
+  const headerTitleMemo = useMemo(
+    () => (
+      <TranslateText
+        textKey={passcodeInitialSet ? 'verify_pin' : 'create_pin'}
+        domain="onboarding"
+        textStyle={styles.headerTitle}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+      />
+    ),
+    [passcodeInitialSet, styles.headerTitle, SCREEN_HEIGHT],
+  );
+
   useEffect(() => {
     navigation.setOptions({
       headerTitleAlign: 'center',
-      headerTitle: () => (
-        <TranslateText
-          textKey={passcodeInitialSet ? 'verify_pin' : 'create_pin'}
-          domain="onboarding"
-          textStyle={styles.headerTitle}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        />
-      ),
+      headerTitle: () => headerTitleMemo,
     });
-  }, [passcodeInitialSet]);
+  }, [navigation, headerTitleMemo]);
 
   const handleCompletion = () => {
     setNewPasscode(pin);
@@ -105,11 +117,7 @@ const Pin: React.FC<Props> = props => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
-      ]}>
+    <View style={styles.container}>
       <OnboardingAuthPad
         headerDescriptionText={
           passcodeInitialSet

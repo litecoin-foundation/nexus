@@ -1,8 +1,13 @@
-import React, {useState, useEffect, useLayoutEffect, useContext} from 'react';
-import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useContext,
+  useMemo,
+} from 'react';
+import {View, Text, StyleSheet, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -16,6 +21,7 @@ import randomShuffle from '../../lib/utils/randomShuffle';
 import {useAppDispatch} from '../../store/hooks';
 import {setSeedVerified} from '../../reducers/onboarding';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -29,7 +35,6 @@ interface Props {
 
 const Verify: React.FC<Props> = props => {
   const {navigation} = props;
-  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -42,30 +47,36 @@ const Verify: React.FC<Props> = props => {
 
   const [scrambled, setScrambledArray] = useState([]);
 
-  useLayoutEffect(() => {
-    const handleBackNavigation = () => {
-      navigation.goBack();
-    };
+  const headerTitleMemo = useMemo(
+    () => (
+      <TranslateText
+        textKey="verify_seed"
+        domain="onboarding"
+        textStyle={styles.headerTitle}
+      />
+    ),
+    [styles.headerTitle],
+  );
 
+  const headerLeftMemo = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+    [navigation],
+  );
+
+  useLayoutEffect(() => {
     navigation.setOptions({
       headerTransparent: true,
       headerTitleAlign: 'left',
       headerTintColor: 'white',
-      headerLeft: () => (
-        <HeaderButton
-          onPress={() => handleBackNavigation()}
-          imageSource={require('../../assets/images/back-icon.png')}
-        />
-      ),
-      headerTitle: () => (
-        <TranslateText
-          textKey="verify_seed"
-          domain="onboarding"
-          textStyle={styles.headerTitle}
-        />
-      ),
+      headerTitle: () => headerTitleMemo,
+      headerLeft: () => headerLeftMemo,
     });
-  }, [navigation]);
+  }, [navigation, headerTitleMemo, headerLeftMemo]);
 
   const handlePress = async () => {
     if (multiplier === 8) {
@@ -100,15 +111,8 @@ const Verify: React.FC<Props> = props => {
   }, [seed]);
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#1162E6', '#0F55C7']}
-        style={[
-          styles.gradientContainer,
-          Platform.OS === 'android'
-            ? {paddingTop: insets.top, marginBottom: insets.bottom}
-            : null,
-        ]}>
+    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.gradient}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['top', 'bottom']}>
         <OnboardingHeader
           textKey="verify_seed_description"
           textDomain="onboarding"
@@ -164,8 +168,8 @@ const Verify: React.FC<Props> = props => {
             active={true}
           />
         </View>
-      </LinearGradient>
-    </View>
+      </CustomSafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -178,10 +182,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: 'white',
       fontSize: screenHeight * 0.026,
     },
-    container: {
+    gradient: {
       flex: 1,
     },
-    gradientContainer: {
+    safeArea: {
       flex: 1,
     },
     optionsContainer: {
@@ -225,7 +229,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       gap: 15,
       paddingHorizontal: 30,
-      paddingBottom: 50,
+      paddingBottom: screenHeight * 0.02,
     },
     buttonContainer: {
       flex: 1,

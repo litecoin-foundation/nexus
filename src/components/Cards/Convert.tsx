@@ -1,12 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Pressable, Platform} from 'react-native';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ConvertField from '../InputFields/ConvertField';
 import BuyPad from '../Numpad/BuyPad';
@@ -25,6 +24,7 @@ import {
 } from '../../reducers/input';
 import {sendConvertPsbtTransaction} from '../../reducers/transaction';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -32,7 +32,6 @@ interface Props {}
 
 const Convert: React.FC<Props> = props => {
   const {} = props;
-  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const [activeField, setActiveField] = useState<'regular' | 'private'>(
     'regular',
@@ -89,7 +88,7 @@ const Convert: React.FC<Props> = props => {
     rotation.value = withTiming(activeField === 'private' ? 180 : 0, {
       duration: 300,
     });
-  }, [activeField]);
+  }, [rotation, activeField]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{rotate: `${rotation.value}deg`}],
@@ -111,11 +110,7 @@ const Convert: React.FC<Props> = props => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-      ]}>
+    <View style={styles.container}>
       <View style={styles.inputsContainer}>
         <View style={styles.fieldContainer}>
           <TranslateText
@@ -172,23 +167,28 @@ const Convert: React.FC<Props> = props => {
       </View>
 
       <View style={styles.bottomContainer}>
-        <View style={styles.numpadContainer}>
-          <BuyPad
-            onChange={(value: string) => onChange(value)}
-            currentValue={
-              activeField === 'regular' ? regularAmount : privateAmount
-            }
-          />
-        </View>
+        <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+          <View style={styles.col}>
+            <View style={styles.numpadContainer}>
+              <BuyPad
+                onChange={(value: string) => onChange(value)}
+                currentValue={
+                  activeField === 'regular' ? regularAmount : privateAmount
+                }
+                small
+              />
+            </View>
 
-        <View style={styles.buttonContainer}>
-          <BlueButton
-            disabled={false}
-            textKey="convert_button"
-            textDomain="convertTab"
-            onPress={() => handleConfirm()}
-          />
-        </View>
+            <View style={styles.buttonContainer}>
+              <BlueButton
+                disabled={false}
+                textKey="convert_button"
+                textDomain="convertTab"
+                onPress={() => handleConfirm()}
+              />
+            </View>
+          </View>
+        </CustomSafeAreaView>
       </View>
     </View>
   );
@@ -198,32 +198,40 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       width: screenWidth,
-      height: screenHeight * 0.55,
+      // BottomSheet is screenHeight * 0.76
+      // DashboardButton is 110
+      // Header margin is 5
+      height: screenHeight * 0.76 - 110 - 5,
       paddingHorizontal: screenWidth * 0.06,
     },
+    safeArea: {
+      height: '100%',
+    },
     inputsContainer: {
-      flex: 1,
+      flexBasis: '20%',
       flexDirection: 'row',
       justifyContent: 'space-evenly',
-    },
-    bottomContainer: {
-      flexBasis: '82%',
-      width: '100%',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    buttonContainer: {
-      flexBasis: '20%',
-      width: '100%',
-      marginVertical: screenHeight * 0.02,
     },
     fieldContainer: {
       flex: 1,
       flexDirection: 'column',
       justifyContent: 'center',
     },
+    bottomContainer: {
+      position: 'absolute',
+      left: screenWidth * 0.06,
+      bottom: 0,
+      width: '100%',
+    },
+    col: {
+      gap: screenHeight * 0.03,
+      alignItems: 'center',
+    },
     numpadContainer: {
       width: screenWidth,
+    },
+    buttonContainer: {
+      width: '100%',
     },
     smallText: {
       fontFamily: 'Satoshi Variable',

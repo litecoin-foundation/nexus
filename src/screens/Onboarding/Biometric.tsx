@@ -1,5 +1,5 @@
-import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, SafeAreaView, Platform} from 'react-native';
+import React, {useEffect, useContext, useMemo} from 'react';
+import {View, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -14,9 +14,9 @@ import {
 } from '@react-navigation/stack';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type RootStackParamList = {
   Biometric: undefined;
@@ -29,7 +29,6 @@ interface Props {
 
 const Biometric: React.FC<Props> = props => {
   const {navigation} = props;
-  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -41,86 +40,91 @@ const Biometric: React.FC<Props> = props => {
   );
   const biometryType = faceIDSupported ? 'Face ID' : 'Touch ID';
 
+  const headerTitleMemo = useMemo(
+    () => (
+      <TranslateText
+        textKey={'enable_biometric'}
+        domain={'onboarding'}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+        textStyle={styles.headerTitle}
+        numberOfLines={1}
+        interpolationObj={{biometricType: biometryType}}
+      />
+    ),
+    [SCREEN_HEIGHT, styles.headerTitle, biometryType],
+  );
+
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: () => (
-        <TranslateText
-          textKey={'enable_biometric'}
-          domain={'onboarding'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-          textStyle={styles.headerTitle}
-          numberOfLines={1}
-          interpolationObj={{biometricType: biometryType}}
-        />
-      ),
+      headerTitle: () => headerTitleMemo,
     });
-  }, [navigation, biometryType]);
+  }, [navigation, headerTitleMemo]);
 
   return (
-    <LinearGradient
-      colors={['#1162E6', '#0F55C7']}
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
-      ]}>
-      <SafeAreaView />
+    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.gradient}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['top', 'bottom']}>
+        <Card
+          titleText={biometryType}
+          descTextKey="biometric_description"
+          descTextDomain="onboarding"
+          textInterpolation={{biometricType: biometryType}}
+          imageSource={
+            faceIDSupported
+              ? require('../../assets/images/face-id-blue.png')
+              : require('../../assets/images/touch-id-blue.png')
+          }
+        />
 
-      <Card
-        titleText={biometryType}
-        descTextKey="biometric_description"
-        descTextDomain="onboarding"
-        textInterpolation={{biometricType: biometryType}}
-        imageSource={
-          faceIDSupported
-            ? require('../../assets/images/face-id-blue.png')
-            : require('../../assets/images/touch-id-blue.png')
-        }
-      />
-
-      <View style={styles.subContainer}>
-        <WhiteButton
-          value={`Enable ${biometryType}`}
-          small={false}
-          active={true}
-          onPress={async () => {
-            try {
-              await authenticate(`Enable ${biometryType}`);
-              dispatch(setBiometricEnabled(true));
+        <View style={styles.subContainer}>
+          <WhiteButton
+            value={`Enable ${biometryType}`}
+            small={false}
+            active={true}
+            onPress={async () => {
+              try {
+                await authenticate(`Enable ${biometryType}`);
+                dispatch(setBiometricEnabled(true));
+                navigation.navigate('Welcome');
+              } catch (error) {
+                console.log(error);
+                return;
+              }
+            }}
+          />
+          <WhiteClearButton
+            textKey="maybe"
+            textDomain="onboarding"
+            small={false}
+            onPress={() => {
+              dispatch(setBiometricEnabled(false));
               navigation.navigate('Welcome');
-            } catch (error) {
-              console.log(error);
-              return;
-            }
-          }}
-        />
-        <WhiteClearButton
-          textKey="maybe"
-          textDomain="onboarding"
-          small={false}
-          onPress={() => {
-            dispatch(setBiometricEnabled(false));
-            navigation.navigate('Welcome');
-          }}
-        />
-      </View>
+            }}
+          />
+        </View>
+      </CustomSafeAreaView>
     </LinearGradient>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
-    container: {
+    gradient: {
       flex: 1,
+    },
+    safeArea: {
+      flex: 1,
+      width: '100%',
       alignItems: 'center',
       justifyContent: 'space-between',
+      marginTop: screenHeight * 0.14,
     },
     subContainer: {
       width: '100%',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: 15,
+      gap: screenHeight * 0.02,
       paddingHorizontal: 30,
-      paddingBottom: 50,
+      paddingBottom: screenHeight * 0.02,
     },
     headerTitle: {
       color: '#fff',

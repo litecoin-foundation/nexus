@@ -1,10 +1,23 @@
-import React, {useRef, useState, useContext, useLayoutEffect} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {
+  useRef,
+  useState,
+  useContext,
+  useLayoutEffect,
+  useEffect,
+  useMemo,
+} from 'react';
+import {StyleSheet, View, StyleProp, ViewStyle} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {StackNavigationOptions} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  withDelay,
+} from 'react-native-reanimated';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TransactionList from '../../components/TransactionList';
@@ -70,9 +83,11 @@ const SearchTransaction: React.FC<Props> = props => {
   const deviceHeaderHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
   const stackHeaderHeight = deviceHeaderHeight - insets.top;
-  const alignHeaderElementsWithMarginTop = {
-    marginTop: (stackHeaderHeight - headerButtonsHeight) * -1,
-  };
+  const alignHeaderElementsWithMarginTop = useMemo<
+    StyleProp<ViewStyle>
+  >((): StyleProp<ViewStyle> => {
+    return {marginTop: (stackHeaderHeight - headerButtonsHeight) * -1};
+  }, [headerButtonsHeight, stackHeaderHeight]);
   const controlsGap = SCREEN_HEIGHT * 0.008;
   const controlsPaddingTop =
     deviceHeaderHeight -
@@ -102,11 +117,19 @@ const SearchTransaction: React.FC<Props> = props => {
   const [searchFilter, setSearchFilter] = useState('');
   const [txPrivacyTypeFilter, setTxPrivacyTypeFilter] = useState('All');
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      /* eslint-disable react/no-unstable-nested-components */
-      headerTitle: () => (
-        <View style={alignHeaderElementsWithMarginTop}>
+  const fadingTimeout = useRef<NodeJS.Timeout>();
+  const buttonOpacity = useSharedValue(0);
+
+  const animatedButton = useAnimatedStyle(() => {
+    return {
+      opacity: buttonOpacity.value,
+    };
+  });
+
+  const headerTitleMemo = useMemo(
+    () => (
+      <View style={alignHeaderElementsWithMarginTop}>
+        <Animated.View style={animatedButton}>
           <TranslateText
             textKey="transactions"
             domain="searchTab"
@@ -114,28 +137,92 @@ const SearchTransaction: React.FC<Props> = props => {
             textStyle={styles.headerTitle}
             numberOfLines={1}
           />
-        </View>
-      ),
-      headerLeft: () => (
-        <View style={alignHeaderElementsWithMarginTop}>
+        </Animated.View>
+      </View>
+    ),
+    [
+      alignHeaderElementsWithMarginTop,
+      SCREEN_HEIGHT,
+      styles.headerTitle,
+      animatedButton,
+    ],
+  );
+
+  const headerLeftMemo = useMemo(
+    () => (
+      <View style={alignHeaderElementsWithMarginTop}>
+        <Animated.View style={animatedButton}>
           <HeaderButton
             onPress={() => navigation.goBack()}
             imageSource={require('../../assets/images/back-icon.png')}
           />
-        </View>
-      ),
-      headerRight: () => (
-        <View style={alignHeaderElementsWithMarginTop}>
+        </Animated.View>
+      </View>
+    ),
+    [navigation, alignHeaderElementsWithMarginTop, animatedButton],
+  );
+
+  const headerRightMemo = useMemo(
+    () => (
+      <View style={alignHeaderElementsWithMarginTop}>
+        <Animated.View style={animatedButton}>
           <RightHeaderButton
             txPrivacyTypeFilter={txPrivacyTypeFilter}
             setTxPrivacyTypeFilter={setTxPrivacyTypeFilter}
             styles={styles}
           />
-        </View>
-      ),
+        </Animated.View>
+      </View>
+    ),
+    [
+      alignHeaderElementsWithMarginTop,
+      styles,
+      txPrivacyTypeFilter,
+      animatedButton,
+    ],
+  );
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => headerTitleMemo,
+      headerLeft: () => headerLeftMemo,
+      headerRight: () => headerRightMemo,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, styles, txPrivacyTypeFilter, SCREEN_HEIGHT]);
+  }, [navigation, headerTitleMemo, headerLeftMemo, headerRightMemo]);
+
+  useEffect(() => {
+    if (isTxDetailModalOpened) {
+      buttonOpacity.value = withTiming(0, {duration: 150});
+
+      fadingTimeout.current = setTimeout(() => {
+        navigation.setOptions({
+          /* eslint-disable react/no-unstable-nested-components */
+          headerTitle: () => <></>,
+          headerLeft: () => <></>,
+          headerRight: () => <></>,
+        });
+      }, 150);
+    } else {
+      buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
+
+      navigation.setOptions({
+        headerTitle: () => headerTitleMemo,
+        headerLeft: () => headerLeftMemo,
+        headerRight: () => headerRightMemo,
+      });
+    }
+
+    return () => {
+      clearTimeout(fadingTimeout.current);
+    };
+  }, [
+    navigation,
+    isTxDetailModalOpened,
+    buttonOpacity,
+    headerTitleMemo,
+    headerLeftMemo,
+    headerRightMemo,
+  ]);
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   function setTransactionIndex(newTxIndex: number) {
@@ -165,6 +252,13 @@ const SearchTransaction: React.FC<Props> = props => {
       />
     );
   });
+
+  const plasmaModal_TxDetailModalContent_backSpecifiedStyle = {
+    backgroundColor: 'rgba(17, 74, 175, 0.8)',
+  };
+  const plasmaModal_TxDetailModalContent_gapSpecifiedStyle = {
+    backgroundColor: 'transparent',
+  };
 
   return (
     <View style={styles.container}>
@@ -202,9 +296,9 @@ const SearchTransaction: React.FC<Props> = props => {
         isFromBottomToTop={true}
         isSwiperActive={false ? true : false}
         animDuration={250}
-        gapInPixels={SCREEN_HEIGHT * 0.27}
-        backSpecifiedStyle={{backgroundColor: 'rgba(17, 74, 175, 0.8)'}}
-        gapSpecifiedStyle={{backgroundColor: 'transparent'}}
+        gapInPixels={SCREEN_HEIGHT * 0.22}
+        backSpecifiedStyle={plasmaModal_TxDetailModalContent_backSpecifiedStyle}
+        gapSpecifiedStyle={plasmaModal_TxDetailModalContent_gapSpecifiedStyle}
         renderBody={(
           _,
           __,

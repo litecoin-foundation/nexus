@@ -7,12 +7,11 @@ import React, {
   forwardRef,
   useLayoutEffect,
 } from 'react';
-import {Platform, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {estimateFee} from 'react-native-turbo-lnd';
 
 import InputField from '../InputField';
@@ -39,6 +38,7 @@ import {
   updateSendDomain,
 } from '../../reducers/input';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -64,7 +64,6 @@ interface URIHandlerRef {
 const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const {route} = props;
 
-  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
 
@@ -256,7 +255,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   }));
 
   // validates data before sending!
-  const validate = async data => {
+  const validate = async (data: any) => {
     try {
       // handle BIP21 litecoin URI
       if (data.startsWith('litecoin:')) {
@@ -514,73 +513,66 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       {amountPickerActive ? null : (
         <Animated.View
-          style={[styles.bottomBtnsContainer, {opacity: detailsOpacity}]}>
-          <View style={styles.bottomBtns}>
-            {/* <View style={styles.greenBtnContainer}>
+          style={[styles.bottomContainer, {opacity: detailsOpacity}]}>
+          <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+            <View style={styles.row}>
+              {/* <View style={styles.greenBtnContainer}>
            <GreenButton
             value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
             onPress={() => console.log('pressed fee')}
           />
         </View>  */}
-            <View
-              style={[
-                styles.blueBtnContainer,
-                Platform.OS === 'android'
-                  ? {paddingBottom: insets.bottom}
-                  : null,
-              ]}>
-              <BlueButton
-                textKey="send_litecoin"
-                textDomain="sendTab"
-                onPress={() => {
-                  handleSend();
-                }}
-                disabled={isSendDisabled}
-              />
-
-              {noteKey ? (
-                <TranslateText
-                  textKey={noteKey}
-                  domain="sendTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-                  textStyle={styles.minText}
-                  numberOfLines={3}
+              <View style={styles.blueBtnContainer}>
+                <BlueButton
+                  textKey="send_litecoin"
+                  textDomain="sendTab"
+                  onPress={() => {
+                    handleSend();
+                  }}
+                  disabled={isSendDisabled}
                 />
-              ) : null}
+
+                {noteKey ? (
+                  <TranslateText
+                    textKey={noteKey}
+                    domain="sendTab"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                    textStyle={styles.minText}
+                    numberOfLines={3}
+                  />
+                ) : null}
+              </View>
             </View>
-          </View>
+          </CustomSafeAreaView>
         </Animated.View>
       )}
 
       {amountPickerActive ? (
         <Animated.View
-          style={[
-            styles.numpadContainer,
-            {opacity: padOpacity},
-            Platform.OS === 'android'
-              ? {paddingBottom: insets.bottom - 20}
-              : null,
-          ]}>
-          <BuyPad
-            onChange={(value: string) => onChange(value)}
-            currentValue={toggleLTC ? String(amount) : String(fiatAmount)}
-          />
-          <View
-            style={[
-              styles.blueBtnContainerStandalone,
-              Platform.OS === 'android' ? {paddingTop: 0} : null,
-            ]}>
-            <BlueButton
-              textKey="confirm"
-              textDomain="sendTab"
-              onPress={async () => {
-                padOpacity.value = withTiming(0, {duration: 230});
-                await sleep(230);
-                setAmountPickerActive(false);
-              }}
-              disabled={false}
-            />
-          </View>
+          style={[styles.amountPickerActiveBottom, {opacity: padOpacity}]}>
+          <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+            <View style={styles.col}>
+              <View style={styles.numpadContainer}>
+                <BuyPad
+                  onChange={(value: string) => onChange(value)}
+                  currentValue={toggleLTC ? String(amount) : String(fiatAmount)}
+                  small
+                />
+              </View>
+              <View style={styles.blueBtnContainer}>
+                <BlueButton
+                  textKey="confirm"
+                  textDomain="sendTab"
+                  onPress={async () => {
+                    padOpacity.value = withTiming(0, {duration: 230});
+                    await sleep(230);
+                    setAmountPickerActive(false);
+                  }}
+                  disabled={false}
+                />
+              </View>
+            </View>
+          </CustomSafeAreaView>
         </Animated.View>
       ) : null}
     </View>
@@ -601,6 +593,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     scrollViewContent: {
       minHeight: screenHeight,
+    },
+    subScrollContainer: {
+      width: '100%',
+      height: screenHeight * 0.76 - 110 - 5,
     },
     subContainer: {
       flex: 1,
@@ -634,8 +630,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
     },
     amountSubContainer: {
+      flexBasis: '70%',
       height: '100%',
       flexDirection: 'row',
+      justifyContent: 'flex-end',
     },
     maxButton: {
       width: 'auto',
@@ -661,22 +659,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     inputFieldContainer: {
       paddingTop: 5,
     },
-    numpadContainer: {
-      position: 'absolute',
-      width: screenWidth,
-      bottom: screenHeight * 0.03,
-    },
-    bottomBtnsContainer: {
+    bottomContainer: {
       position: 'absolute',
       left: screenWidth * 0.06,
-      bottom: screenHeight * 0.03,
+      bottom: 0,
       width: '100%',
-      flexDirection: 'column',
-      justifyContent: 'flex-end',
     },
-    bottomBtns: {
+    row: {
       width: '100%',
-      display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
     },
@@ -684,13 +674,26 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexBasis: '37%',
     },
     blueBtnContainer: {
+      width: '100%',
+    },
+    safeArea: {
       flex: 1,
     },
-    // this button style regulates relative BuyPad
-    blueBtnContainerStandalone: {
-      flex: 1,
-      paddingTop: screenHeight * 0.025,
-      paddingHorizontal: screenWidth * 0.06,
+    amountPickerActiveBottom: {
+      position: 'absolute',
+      left: screenWidth * 0.06,
+      bottom: 0,
+      width: '100%',
+    },
+    col: {
+      gap: screenHeight * 0.03,
+      alignItems: 'center',
+    },
+    numpadContainer: {
+      width: screenWidth,
+    },
+    buttonContainer: {
+      width: '100%',
     },
     minText: {
       color: '#747E87',

@@ -5,12 +5,12 @@ import React, {
   useContext,
   useMemo,
 } from 'react';
-import {View, Text, StyleSheet, Image, Platform} from 'react-native';
+import {View, Text, StyleSheet, Image} from 'react-native';
 import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 
 import SeedView from '../../components/SeedView';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -21,8 +21,8 @@ import TranslateText from '../../components/TranslateText';
 import {useAppSelector} from '../../store/hooks';
 import chunk from '../../lib/utils/chunk';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
-import {useTranslation} from 'react-i18next';
 
 type RootStackParamList = {
   Generate: undefined;
@@ -35,7 +35,6 @@ interface Props {
 
 const Generate: React.FC<Props> = props => {
   const {navigation} = props;
-  const insets = useSafeAreaInsets();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -117,15 +116,8 @@ const Generate: React.FC<Props> = props => {
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#1162E6', '#0F55C7']}
-        style={[
-          styles.gradientContainer,
-          Platform.OS === 'android'
-            ? {paddingTop: insets.top, marginBottom: insets.bottom}
-            : null,
-        ]}>
+    <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.gradient}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
         <OnboardingHeader
           description={
             t('seed_phrase_description') +
@@ -143,43 +135,45 @@ const Generate: React.FC<Props> = props => {
         </View>
 
         <View style={styles.bottomContainer}>
-          <View style={styles.bottomTextContainer}>
-            <View style={styles.imageContainer}>
-              <Image
-                style={styles.image}
-                source={require('../../assets/images/attention.png')}
+          <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+            <View style={styles.bottomTextContainer}>
+              <View style={styles.imageContainer}>
+                <Image
+                  style={styles.image}
+                  source={require('../../assets/images/attention.png')}
+                />
+              </View>
+
+              <TranslateText
+                textKey="seed_warning"
+                domain="onboarding"
+                textStyle={styles.warningText}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+                // maxLengthInPixels={SCREEN_WIDTH * 0.7}
+                numberOfLines={2}
               />
             </View>
 
-            <TranslateText
-              textKey="seed_warning"
-              domain="onboarding"
-              textStyle={styles.warningText}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.013}
-              // maxLengthInPixels={SCREEN_WIDTH * 0.7}
-              numberOfLines={2}
+            <WhiteButton
+              textKey={activePage === 5 ? 'confirm_written' : 'scroll_right'}
+              textDomain="onboarding"
+              onPress={() => handlePress()}
+              small={false}
+              active={true}
             />
-          </View>
-
-          <WhiteButton
-            textKey={activePage === 5 ? 'confirm_written' : 'scroll_right'}
-            textDomain="onboarding"
-            onPress={() => handlePress()}
-            small={false}
-            active={true}
-          />
+          </CustomSafeAreaView>
         </View>
-      </LinearGradient>
-    </View>
+      </CustomSafeAreaView>
+    </LinearGradient>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
-    container: {
+    gradient: {
       flex: 1,
     },
-    gradientContainer: {
+    safeArea: {
       flex: 1,
     },
     seedContainer: {
@@ -194,20 +188,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     bottomContainer: {
       position: 'absolute',
       bottom: 0,
-      width: '100%',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 15,
+      left: 0,
       paddingHorizontal: 30,
-      paddingBottom: 50,
+      paddingBottom: screenHeight * 0.02,
     },
     bottomTextContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.17,
       width: '100%',
       height: screenHeight * 0.04,
       flexDirection: 'row',
       alignItems: 'center',
+      marginBottom: screenHeight * 0.02,
     },
     warningText: {
       flexBasis: '85%',

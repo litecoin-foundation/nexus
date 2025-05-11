@@ -78,10 +78,6 @@ export default function PlasmaModal(props: Props) {
     renderBody,
   } = props;
 
-  const gapInPixelsWithInsets = isFromBottomToTop
-    ? gapInPixels + insets.bottom
-    : gapInPixels;
-
   const bottomInsetPadding = Platform.OS === 'ios' ? 0 : insets.bottom;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -93,9 +89,9 @@ export default function PlasmaModal(props: Props) {
   const swipeTriggerHeightRange = SCREEN_HEIGHT * 0.15;
   const swipeTriggerWidthRange = SCREEN_WIDTH * 0.15;
   const snapPoints = [
-    isFromBottomToTop ? gapInPixelsWithInsets : SCREEN_HEIGHT,
+    isFromBottomToTop ? gapInPixels : SCREEN_HEIGHT,
     isFromBottomToTop
-      ? gapInPixelsWithInsets + swipeTriggerHeightRange
+      ? gapInPixels + swipeTriggerHeightRange
       : SCREEN_HEIGHT - swipeTriggerHeightRange,
   ];
   const fullyOpenSnapPoint = snapPoints[0];
@@ -110,7 +106,7 @@ export default function PlasmaModal(props: Props) {
   const bodyTranslateX = useSharedValue(0);
   const bodyTranslateXStart = useSharedValue(0);
   const backOpacity = useSharedValue(0);
-  const cardOpacity = useSharedValue(1);
+  // const cardOpacity = useSharedValue(1);
   const cardScale = useSharedValue(1);
   const prevNextCardOpacity = useSharedValue(0);
   const prevNextCardScale = useSharedValue(0.7);
@@ -121,7 +117,7 @@ export default function PlasmaModal(props: Props) {
       isPrev ? SCREEN_WIDTH : SCREEN_WIDTH * -1,
       {duration: SWIPE_CARDS_ANIM_DURATION},
     );
-    cardOpacity.value = withTiming(0, {duration: SWIPE_CARDS_ANIM_DURATION});
+    // cardOpacity.value = withTiming(0, {duration: SWIPE_CARDS_ANIM_DURATION});
     prevNextCardOpacity.value = withTiming(1, {
       duration: SWIPE_CARDS_ANIM_DURATION,
     });
@@ -132,7 +128,7 @@ export default function PlasmaModal(props: Props) {
 
     setTimeout(() => {
       bodyTranslateX.value = 0;
-      cardOpacity.value = 1;
+      // cardOpacity.value = 1;
       prevNextCardOpacity.value = 0;
       cardScale.value = 1;
       prevNextCardScale.value = 0.7;
@@ -237,11 +233,11 @@ export default function PlasmaModal(props: Props) {
       if (bodyTranslateY.value === 0) {
         bodyTranslateX.value = e.translationX + bodyTranslateXStart.value;
         // NOTE: doubling the interpolation range is supposed to help with smoothing on android
-        cardOpacity.value = interpolate(
-          e.translationX,
-          [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
-          [0, 1, 0],
-        );
+        // cardOpacity.value = interpolate(
+        //   e.translationX,
+        //   [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
+        //   [0, 1, 0],
+        // );
         prevNextCardOpacity.value = interpolate(
           e.translationX,
           [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
@@ -269,9 +265,9 @@ export default function PlasmaModal(props: Props) {
           bodyTranslateX.value = withTiming(bodyTranslateXStart.value, {
             duration: SPRING_BACK_ANIM_DURATION,
           });
-          cardOpacity.value = withTiming(1, {
-            duration: SPRING_BACK_ANIM_DURATION,
-          });
+          // cardOpacity.value = withTiming(1, {
+          //   duration: SPRING_BACK_ANIM_DURATION,
+          // });
           prevNextCardOpacity.value = withTiming(0, {
             duration: SPRING_BACK_ANIM_DURATION,
           });
@@ -307,7 +303,9 @@ export default function PlasmaModal(props: Props) {
 
   const animatedCardOpacityStyle = useAnimatedProps(() => {
     return {
-      opacity: cardOpacity.value,
+      // NOTE: too much flickering by making data cells transparent
+      // in tx details modal, especially on android
+      // opacity: cardOpacity.value,
       transform: [{scale: cardScale.value}],
     };
   });
@@ -359,7 +357,7 @@ export default function PlasmaModal(props: Props) {
       paginationOpacity.value = withTiming(1, {duration: animDuration});
     } else {
       bodyTranslateY.value = withTiming(
-        (SCREEN_HEIGHT - gapInPixelsWithInsets - bottomInsetPadding) *
+        (SCREEN_HEIGHT - gapInPixels - bottomInsetPadding) *
           (isFromBottomToTop ? 1 : -1),
         {duration: animDuration},
       );
@@ -376,7 +374,7 @@ export default function PlasmaModal(props: Props) {
     bodyTranslateY,
     backOpacity,
     animDuration,
-    gapInPixelsWithInsets,
+    gapInPixels,
     isFromBottomToTop,
     isOpened,
   ]);
@@ -385,7 +383,7 @@ export default function PlasmaModal(props: Props) {
   const gapBgColor = isInternetReachable ? '#1162e6' : '#f36f56';
   const contentBodyConditionStyle = {
     flex: isFromBottomToTop ? 1 : 0,
-    height: SCREEN_HEIGHT - gapInPixelsWithInsets - bottomInsetPadding,
+    height: SCREEN_HEIGHT - gapInPixels - bottomInsetPadding,
   };
 
   return (
@@ -410,7 +408,7 @@ export default function PlasmaModal(props: Props) {
               style={[
                 styles.gap,
                 {
-                  flexBasis: gapInPixelsWithInsets,
+                  flexBasis: gapInPixels,
                   backgroundColor: gapBgColor,
                 },
                 gapSpecifiedStyle,

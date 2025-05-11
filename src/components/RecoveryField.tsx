@@ -129,7 +129,9 @@ const RecoveryField: React.FC<Props> = props => {
   };
 
   return (
+    // NOTE: KeyboardAvoidingView in combination with FlatList behave horribly so it's disabled for now
     <KeyboardAvoidingView
+      enabled={false}
       behavior={Platform.OS === 'android' ? 'height' : 'padding'}>
       <View style={styles.container}>
         <TranslateText
@@ -232,7 +234,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '600',
     },
     emptyView: {
-      height: 120,
+      // NOTE: this gap is used to offset the keyboard, since KeyboardAvoidingView isn't working properly
+      height: screenHeight * 0.5,
     },
   });
 

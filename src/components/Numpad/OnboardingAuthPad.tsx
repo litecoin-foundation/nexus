@@ -9,8 +9,8 @@ import BuyButton from './BuyButton';
 import BlueButton from '../Buttons/BlueButton';
 import PasscodeInput from '../PasscodeInput';
 import OnboardingHeader from '../OnboardingHeader';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -34,7 +34,6 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   } = props;
 
   const dispatch = useAppDispatch();
-  const insets = useSafeAreaInsets();
   const pin = useAppSelector(state => state.authpad.pin);
   const passcodeSet = useAppSelector(state => state.authentication.passcodeSet);
 
@@ -123,15 +122,8 @@ const OnboardingAuthPad: React.FC<Props> = props => {
   });
 
   return (
-    <>
-      <LinearGradient
-        style={[
-          {flex: 1},
-          Platform.OS === 'android' ? {paddingTop: insets.top} : null,
-        ]}
-        colors={['#1162E6', '#0F55C7']}>
-        <OnboardingHeader description={headerDescriptionText} />
-      </LinearGradient>
+    <LinearGradient style={styles.gradient} colors={['#1162E6', '#0F55C7']}>
+      <OnboardingHeader description={headerDescriptionText} />
 
       <View style={styles.bottomSheet}>
         <TranslateText
@@ -143,33 +135,43 @@ const OnboardingAuthPad: React.FC<Props> = props => {
           numberOfLines={1}
         />
 
-        <View style={styles.bottomSheetSubContainer}>
-          <PasscodeInput
-            dotsLength={6}
-            activeDotIndex={pin.length}
-            pinInactive={false}
-          />
-          <PadGrid />
-          <View style={styles.buttonContainer}>{buttons}</View>
-        </View>
+        <View style={styles.bottomSubContainer}>
+          <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+            <View style={styles.authContainer}>
+              <View style={styles.pinContainer}>
+                <PasscodeInput
+                  dotsLength={6}
+                  activeDotIndex={pin.length}
+                  pinInactive={false}
+                />
+              </View>
 
-        <View style={styles.confirmButtonContainer}>
-          <BlueButton
-            disabled={pin.length !== 6 ? true : false}
-            textKey="confirm_pin"
-            textDomain="onboarding"
-            onPress={handleSetPin}
-          />
+              <PadGrid />
+              <View style={styles.buttonContainer}>{buttons}</View>
+            </View>
+
+            <View style={styles.confirmButtonContainer}>
+              <BlueButton
+                disabled={pin.length !== 6 ? true : false}
+                textKey="confirm_pin"
+                textDomain="onboarding"
+                onPress={handleSetPin}
+              />
+            </View>
+          </CustomSafeAreaView>
         </View>
       </View>
-    </>
+    </LinearGradient>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     gradient: {
-      flexGrow: 1,
+      flex: 1,
+    },
+    safeArea: {
+      flex: 1,
     },
     bottomSheet: {
       position: 'absolute',
@@ -180,10 +182,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenWidth,
       height: screenHeight * 0.7,
     },
-    confirmButtonContainer: {
-      paddingHorizontal: 34,
+    bottomSubContainer: {
       position: 'absolute',
-      bottom: 28,
+      left: 0,
+      bottom: Platform.OS === 'ios' ? 0 : screenHeight * 0.01,
       width: '100%',
     },
     bottomSheetTitle: {
@@ -195,8 +197,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       textAlign: 'center',
       paddingTop: screenHeight * 0.02,
     },
-    bottomSheetSubContainer: {
-      paddingTop: screenHeight * 0.01,
+    authContainer: {
+      paddingBottom:
+        Platform.OS === 'ios' ? screenHeight * 0.02 : screenHeight * 0.01,
+    },
+    pinContainer: {
+      paddingBottom: Platform.OS === 'ios' ? 0 : screenHeight * 0.01,
+    },
+    confirmButtonContainer: {
+      width: '100%',
+      paddingHorizontal: screenWidth * 0.06,
     },
     buttonContainer: {
       width: screenWidth,
