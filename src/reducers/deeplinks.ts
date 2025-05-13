@@ -65,8 +65,6 @@ export const setDeeplink =
   (link: string): AppThunk =>
   dispatch => {
     try {
-      // NOTE: decoding gets called by the Send card
-      // decodeBIP21(link);
       decodeAppDeeplink(link);
       dispatch(setDeeplinkAction(link));
     } catch (error) {

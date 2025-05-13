@@ -16,6 +16,7 @@ import {publishTransaction} from '../../reducers/transaction';
 import {sweepQrKey} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
+import {unsetDeeplink} from '../../reducers/deeplinks';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -72,6 +73,7 @@ const Import: React.FC<Props> = props => {
 
     if (route.params?.scanData) {
       handleScan(route.params?.scanData);
+      dispatch(unsetDeeplink());
     }
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [address, route.params?.scanData]);
