@@ -149,17 +149,16 @@ const AddressField: React.FC<Props> = props => {
 
   const updateHeightFromMeasurement = useCallback(
     (measuredHeight: number) => {
-      // NOTE: flooring the height cause measuredHeight could be > 2x LINE_HEIGHT on some screens
-      // TODO: think of better way to calc height on big screens, investigate measuredHeight
       const flooredMeasuredHeight = Math.floor(measuredHeight);
-
       const lines = Math.max(
         1,
         Math.floor(flooredMeasuredHeight / LINE_HEIGHT),
       );
 
       const newHeight =
-        MULTILINE_HEIGHT + (lines > 1 ? lines * LINE_HEIGHT + PADDING : 0);
+        MULTILINE_HEIGHT +
+        (lines - 1) * LINE_HEIGHT +
+        (lines > 1 ? PADDING : 0);
 
       animatedHeight.value = withTiming(newHeight, {
         duration: 200,
