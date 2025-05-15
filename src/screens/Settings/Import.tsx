@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {StyleSheet, View, SafeAreaView, Alert, Platform} from 'react-native';
+import {StyleSheet, View, Alert, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -29,6 +29,9 @@ type RootStackParamList = {
   ImportSuccess: {
     txHash: string;
   };
+  Settings: {
+    updateHeader?: boolean;
+  };
 };
 
 interface Props {
@@ -57,11 +60,17 @@ const Import: React.FC<Props> = props => {
     const handleScan = async (scanPayload: string) => {
       try {
         const rawTxs = await sweepQrKey(scanPayload, address);
-        rawTxs.map(rawTx => {
-          rawTx.map(async (txHex: string) => {
-            await publishTransaction(txHex);
-          });
-        });
+
+        await Promise.all(
+          rawTxs.map(async rawTx => {
+            await Promise.all(
+              rawTx.map(async (txHex: string) => {
+                const res = await publishTransaction(txHex);
+                throw new Error(String(res));
+              }),
+            );
+          }),
+        );
 
         navigation.replace('ImportSuccess', {
           txHash: t('success'),
@@ -78,10 +87,19 @@ const Import: React.FC<Props> = props => {
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [address, route.params?.scanData]);
 
+  // override default goBack action with updateHeader param
+  useEffect(() => {
+    navigation.addListener('beforeRemove', e => {
+      if (e.data.action.type === 'NAVIGATE') {
+        return;
+      }
+      e.preventDefault();
+      navigation.navigate('Settings', {updateHeader: true});
+    });
+  }, []);
+
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
-      <SafeAreaView />
-
       <View style={styles.cardContainer}>
         <Card
           titleText={t('import_private_key')}
@@ -164,7 +182,7 @@ export const ImportNavigationOptions = (
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Settings', {updateHeader: true})}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

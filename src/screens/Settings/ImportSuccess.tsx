@@ -129,9 +129,10 @@ export const ImportSuccessNavigationOptions = (
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',
+    gestureEnabled: false,
     headerLeft: () => (
       <HeaderButton
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Settings', {updateHeader: true})}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),
