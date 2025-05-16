@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {Image, Platform, StyleSheet, View} from 'react-native';
+import React, {useEffect, useContext} from 'react';
+import {Image, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {getLocales} from 'react-native-localize';
@@ -14,7 +14,9 @@ import {
   setLanguage,
 } from '../../reducers/settings';
 import {genSeed, getNeutrinoCache} from '../../reducers/onboarding';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Initial: undefined;
@@ -28,8 +30,11 @@ interface Props {
 
 const Initial = (props: Props) => {
   const {navigation} = props;
-  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   useEffect(() => {
     dispatch(detectCurrencyCode());
@@ -57,65 +62,63 @@ const Initial = (props: Props) => {
           />
         </View>
       </View>
-      <View
-        style={[
-          styles.subContainer,
-          Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
-        ]}>
-        <WhiteButton
-          textKey="create_wallet"
-          textDomain="onboarding"
-          small={false}
-          onPress={() => {
-            dispatch(genSeed());
-            navigation.navigate('Pin');
-          }}
-          active={true}
-        />
-        <WhiteClearButton
-          textKey="already_wallet"
-          textDomain="onboarding"
-          small={false}
-          onPress={() => {
-            navigation.navigate('Recover');
-          }}
-        />
+      <View style={styles.subContainer}>
+        <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+          <WhiteButton
+            textKey="create_wallet"
+            textDomain="onboarding"
+            small={false}
+            onPress={() => {
+              dispatch(genSeed());
+              navigation.navigate('Pin');
+            }}
+            active={true}
+          />
+          <WhiteClearButton
+            textKey="already_wallet"
+            textDomain="onboarding"
+            small={false}
+            onPress={() => {
+              navigation.navigate('Recover');
+            }}
+          />
+        </CustomSafeAreaView>
       </View>
     </LinearGradient>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    gap: 30,
-    paddingBottom: 60,
-  },
-  subContainer: {
-    width: '100%',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 15,
-    paddingHorizontal: 30,
-    paddingBottom: 50,
-    position: 'absolute',
-    bottom: 0,
-  },
-  logoText: {
-    opacity: 0.6,
-    color: 'white',
-    fontFamily: 'Satoshi Variable',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  textContainer: {
-    alignItems: 'center',
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    logoContainer: {
+      alignItems: 'center',
+      gap: 30,
+      marginBottom: screenHeight * 0.06,
+    },
+    subContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.01,
+      width: '100%',
+      alignItems: 'center',
+      gap: 15,
+      paddingHorizontal: 30,
+    },
+    logoText: {
+      opacity: 0.6,
+      color: 'white',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.014,
+      fontWeight: '700',
+    },
+    textContainer: {
+      alignItems: 'center',
+    },
+    safeArea: {},
+  });
 
 Initial.navigationOptions = {
   headerTransparent: true,
