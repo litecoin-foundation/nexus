@@ -131,7 +131,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     logoContainer: {
       alignItems: 'center',
       gap: 30,
-      marginBottom: screenHeight * 0.06,
+      marginBottom: screenHeight * 0.04,
     },
     logoText: {
       opacity: 0.6,
@@ -147,7 +147,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.018,
       fontWeight: '700',
       textAlign: 'center',
-      marginBottom: screenHeight * 0.06,
+      marginBottom: screenHeight * 0.1,
     },
     bottomContainer: {
       position: 'absolute',

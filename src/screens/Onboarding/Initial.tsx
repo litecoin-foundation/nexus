@@ -62,8 +62,10 @@ const Initial = (props: Props) => {
           />
         </View>
       </View>
-      <View style={styles.subContainer}>
-        <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+      <View style={styles.bottomContainer}>
+        <CustomSafeAreaView
+          styles={{...styles.safeArea, ...styles.btnsContainer}}
+          edges={['bottom']}>
           <WhiteButton
             textKey="create_wallet"
             textDomain="onboarding"
@@ -99,14 +101,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       gap: 30,
       marginBottom: screenHeight * 0.06,
     },
-    subContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.01,
-      width: '100%',
-      alignItems: 'center',
-      gap: 15,
-      paddingHorizontal: 30,
-    },
     logoText: {
       opacity: 0.6,
       color: 'white',
@@ -116,6 +110,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     textContainer: {
       alignItems: 'center',
+    },
+    bottomContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.02,
+      width: '100%',
+      paddingHorizontal: 30,
+    },
+    btnsContainer: {
+      width: '100%',
+      gap: screenHeight * 0.015,
     },
     safeArea: {},
   });
