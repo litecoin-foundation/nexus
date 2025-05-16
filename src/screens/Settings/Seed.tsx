@@ -25,8 +25,6 @@ const Seed: React.FC<Props> = () => {
   const seedArray = useAppSelector(state => state.onboarding.seed);
   const lastViewSeed = useAppSelector(state => state.settings.lastViewSeed);
   const timestamp = lastViewSeed ? new Date(lastViewSeed).getTime() : 0;
-  console.log(lastViewSeed);
-  console.log(timestamp);
   const formatedTime = timestamp
     ? `${formatDate(timestamp)}, ${formatTime(timestamp)}`
     : 'Never';
