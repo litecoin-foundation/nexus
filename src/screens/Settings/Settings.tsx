@@ -293,12 +293,14 @@ const Settings: React.FC<Props> = props => {
             onPress={() => navigation.navigate('ResetWallet')}
             forward
           />
-          <SettingCell
-            textKey="Test Payment"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('TestPayment')}
-            forward
-          />
+          {__DEV__ ? (
+            <SettingCell
+              textKey="DEBUG: Buy/Sell Settings"
+              textDomain="settingsTab"
+              onPress={() => navigation.navigate('TestPayment')}
+              forward
+            />
+          ) : null}
         </ScrollView>
       </LinearGradient>
 
