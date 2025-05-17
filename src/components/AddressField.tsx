@@ -45,13 +45,21 @@ const AddressField: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const {t} = useTranslation('sendTab');
 
   const MULTILINE_HEIGHT = SCREEN_HEIGHT * 0.063;
-  const LINE_HEIGHT = SCREEN_HEIGHT * 0.025; // Line height for text
-  const PADDING = SCREEN_HEIGHT * 0.01; // Padding for multiline content
+  const LINE_HEIGHT = SCREEN_HEIGHT * 0.025;
+  const PADDING = SCREEN_HEIGHT * 0.01;
+  const PADDING_TOP = Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.012 : 0;
+  const PADDING_ERROR = SCREEN_HEIGHT * 0.004;
+
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    PADDING_TOP,
+    PADDING_ERROR,
+  );
 
   const [isActive, setActive] = useState(false);
   const [addressForMeasurement, setAddressForMeasurement] = useState(address);
@@ -149,11 +157,12 @@ const AddressField: React.FC<Props> = props => {
 
   const updateHeightFromMeasurement = useCallback(
     (measuredHeight: number) => {
-      const flooredMeasuredHeight = Math.floor(measuredHeight);
-      const lines = Math.max(
-        1,
-        Math.floor(flooredMeasuredHeight / LINE_HEIGHT),
+      const hiddenLines = Math.floor(
+        (Number(parseFloat(String(measuredHeight)).toFixed(2)) +
+          PADDING_ERROR) /
+          Number(parseFloat(String(LINE_HEIGHT)).toFixed(2)),
       );
+      const lines = Math.max(1, hiddenLines);
 
       const newHeight =
         MULTILINE_HEIGHT +
@@ -164,7 +173,7 @@ const AddressField: React.FC<Props> = props => {
         duration: 200,
       });
     },
-    [MULTILINE_HEIGHT, LINE_HEIGHT, PADDING, animatedHeight],
+    [MULTILINE_HEIGHT, LINE_HEIGHT, PADDING, PADDING_ERROR, animatedHeight],
   );
 
   const onMeasuredTextLayout = useCallback(
@@ -287,7 +296,12 @@ const AddressField: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  paddingTop: number,
+  paddingError: number,
+) =>
   StyleSheet.create({
     container: {
       minHeight: screenHeight * 0.063,
@@ -297,8 +311,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: '#FFFFFF',
       justifyContent: 'center',
       paddingHorizontal: screenHeight * 0.02,
-      // TextInput centers text only on android, set padding to make it look centered on ios
-      paddingVertical: Platform.OS === 'ios' ? screenHeight * 0.012 : 0,
+      paddingTop: paddingTop,
     },
     text: {
       flex: 1,
@@ -370,6 +383,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.02,
       lineHeight: screenHeight * 0.025,
       opacity: 0,
+      paddingTop: paddingError / 2,
+      paddingBottom: paddingError / 2,
     },
     icon: {
       width: 20,

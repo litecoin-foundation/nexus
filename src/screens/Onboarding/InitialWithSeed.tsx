@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {Image, Platform, StyleSheet, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -7,7 +7,6 @@ import {getLocales} from 'react-native-localize';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
-import TranslateText from '../../components/TranslateText';
 import {useAppDispatch} from '../../store/hooks';
 import {
   detectCurrencyCode,
@@ -19,8 +18,9 @@ import {
   getNeutrinoCache,
   setSeedRecovery,
 } from '../../reducers/onboarding';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -42,7 +42,6 @@ interface Props {
 
 const InitialWithSeed = (props: Props) => {
   const {navigation, route} = props;
-  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -91,32 +90,29 @@ const InitialWithSeed = (props: Props) => {
         maxSizeInPixels={SCREEN_HEIGHT * 0.02}
         numberOfLines={4}
       />
-      <View
-        style={[
-          styles.subContainer,
-          Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
-        ]}>
-        <WhiteButton
-          textKey="proceed_with_existing"
-          textDomain="onboarding"
-          small={false}
-          onPress={() => {
-            // navigation.navigate('Recover', {
-            //   existingSeed: route.params.existingSeed,
-            // });
-            loginWithExistingSeed(route.params.existingSeed);
-          }}
-          active={true}
-        />
-        <WhiteClearButton
-          textKey="create_new_wallet"
-          textDomain="onboarding"
-          small={false}
-          onPress={() => {
-            dispatch(genSeed());
-            navigation.navigate('Pin');
-          }}
-        />
+      <View style={styles.bottomContainer}>
+        <CustomSafeAreaView
+          styles={{...styles.safeArea, ...styles.btnsContainer}}
+          edges={['bottom']}>
+          <WhiteButton
+            textKey="proceed_with_existing"
+            textDomain="onboarding"
+            small={false}
+            onPress={() => {
+              loginWithExistingSeed(route.params.existingSeed);
+            }}
+            active={true}
+          />
+          <WhiteClearButton
+            textKey="create_new_wallet"
+            textDomain="onboarding"
+            small={false}
+            onPress={() => {
+              dispatch(genSeed());
+              navigation.navigate('Pin');
+            }}
+          />
+        </CustomSafeAreaView>
       </View>
     </LinearGradient>
   );
@@ -135,7 +131,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     logoContainer: {
       alignItems: 'center',
       gap: 30,
-      paddingBottom: 50,
+      marginBottom: screenHeight * 0.04,
     },
     logoText: {
       opacity: 0.6,
@@ -151,18 +147,19 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.018,
       fontWeight: '700',
       textAlign: 'center',
-      paddingBottom: 50,
+      marginBottom: screenHeight * 0.1,
     },
-    subContainer: {
+    bottomContainer: {
       position: 'absolute',
-      bottom: 0,
+      bottom: screenHeight * 0.02,
       width: '100%',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 15,
       paddingHorizontal: 30,
-      paddingBottom: 50,
     },
+    btnsContainer: {
+      width: '100%',
+      gap: screenHeight * 0.015,
+    },
+    safeArea: {},
   });
 
 InitialWithSeed.navigationOptions = {

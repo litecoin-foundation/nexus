@@ -162,8 +162,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         return;
       }
 
-      // check user balance
-      if (!amount) {
+      if (!amount || Number(amount) <= 0) {
         setSendDisabled(true);
         return;
       }

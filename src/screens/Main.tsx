@@ -183,14 +183,9 @@ const Main: React.FC<Props> = props => {
     }
   }, [route, navigation]);
 
-  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.06;
-  const SNAP_POINTS_FROM_TOP = [
-    SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF,
-    SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF,
-  ];
-  const OPEN_SNAP_POINT = SNAP_POINTS_FROM_TOP[0];
-  const CLOSED_SNAP_POINT =
-    SNAP_POINTS_FROM_TOP[SNAP_POINTS_FROM_TOP.length - 1];
+  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
+  const OPEN_SNAP_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
+  const CLOSED_SNAP_POINT = SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF;
 
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
@@ -387,6 +382,7 @@ const Main: React.FC<Props> = props => {
 
   // Animation
   const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
+
   const mainSheetsTranslationYStart = useSharedValue(CLOSED_SNAP_POINT);
   const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
   function foldUnfoldBottomSheet(isFolded: boolean) {

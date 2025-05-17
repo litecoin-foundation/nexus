@@ -24,10 +24,10 @@ const Seed: React.FC<Props> = () => {
 
   const seedArray = useAppSelector(state => state.onboarding.seed);
   const lastViewSeed = useAppSelector(state => state.settings.lastViewSeed);
-  const formatedTime =
-    lastViewSeed !== null
-      ? `${formatDate(Number(lastViewSeed))}, ${formatTime(Number(new Date(lastViewSeed)))}`
-      : 'Never';
+  const timestamp = lastViewSeed ? new Date(lastViewSeed).getTime() : 0;
+  const formatedTime = timestamp
+    ? `${formatDate(timestamp)}, ${formatTime(timestamp)}`
+    : 'Never';
   const n = [...Array(12).keys()];
 
   useEffect(() => {
@@ -119,11 +119,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       textAlign: 'left',
     },
     headerTitle: {
+      color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
-      fontSize: 17,
     },
   });
 

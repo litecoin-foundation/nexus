@@ -50,11 +50,17 @@ const RecoverLitewallet = ({
     setLoading(true);
     try {
       const rawTxs = await sweepLitewallet(seed, address);
-      rawTxs.map(rawTx => {
-        rawTx.map(async (tx: string) => {
-          await publishTransaction(tx);
-        });
-      });
+
+      await Promise.all(
+        rawTxs.map(async rawTx => {
+          await Promise.all(
+            rawTx.map(async (txHex: string) => {
+              const res = await publishTransaction(txHex);
+              throw new Error(String(res));
+            }),
+          );
+        }),
+      );
 
       setLoading(false);
       navigation.replace('ImportSuccess', {
@@ -111,13 +117,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-
     headerTitle: {
+      color: '#fff',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: '700',
-      color: 'white',
-      fontSize: 17,
     },
     flex: {
       flex: 1,

@@ -1,5 +1,6 @@
 import React, {useContext} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {Image, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -11,12 +12,17 @@ import {
 } from '../../reducers/settings';
 import {useAppSelector} from '../../store/hooks';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   SuccessSend: {
     txid: string;
+  };
+  SearchTransaction: undefined;
+  Main: {
+    isInitial: boolean;
   };
 };
 
@@ -25,7 +31,7 @@ interface Props {
 }
 
 const SuccessSend: React.FC<Props> = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -70,23 +76,27 @@ const SuccessSend: React.FC<Props> = () => {
           </View>
         </View>
 
-        <View style={styles.confirmButtonContainer}>
-          <WhiteClearButton
-            small={true}
-            value="View Transaction"
-            onPress={() => {
-              navigation.navigate('SearchTransaction');
-            }}
-          />
-          <WhiteButton
-            disabled={false}
-            small={true}
-            active={true}
-            value="Back to Wallet"
-            onPress={() => {
-              navigation.navigate('Main', {isInitial: true});
-            }}
-          />
+        <View style={styles.bottomContainer}>
+          <CustomSafeAreaView
+            styles={{...styles.safeArea, ...styles.btnsContainer}}
+            edges={['bottom']}>
+            <WhiteClearButton
+              small={false}
+              value="View Transaction"
+              onPress={() => {
+                navigation.navigate('SearchTransaction');
+              }}
+            />
+            <WhiteButton
+              disabled={false}
+              small={false}
+              active={true}
+              value="Back to Wallet"
+              onPress={() => {
+                navigation.navigate('Main', {isInitial: true});
+              }}
+            />
+          </CustomSafeAreaView>
         </View>
       </LinearGradient>
     </>
@@ -106,6 +116,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
       alignItems: 'center',
       padding: screenHeight * 0.03,
+      marginBottom: screenHeight * 0.03,
     },
     title: {
       width: '100%',
@@ -146,10 +157,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
       alignItems: 'center',
       marginTop: screenHeight * 0.005,
-      paddingLeft: screenWidth * 0.05,
-      paddingRight: screenWidth * 0.05,
-      paddingTop: screenWidth * 0.02,
-      paddingBottom: screenWidth * 0.02,
+      paddingHorizontal: screenWidth * 0.05,
+      paddingVertical: screenWidth * 0.02,
     },
     toAddressText: {
       color: '#fff',
@@ -159,20 +168,22 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.025,
       textAlign: 'center',
     },
-    confirmButtonContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.03,
-      width: '100%',
-      height: screenHeight * 0.125,
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
     image: {
       height: 16,
       marginTop: 20,
       marginBottom: 20,
     },
+    bottomContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.02,
+      width: '100%',
+      paddingHorizontal: 30,
+    },
+    btnsContainer: {
+      width: '100%',
+      gap: screenHeight * 0.015,
+    },
+    safeArea: {},
   });
 
 export const SuccessSendNavigationOptions = () => {

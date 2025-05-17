@@ -10,8 +10,9 @@ import {RouteProp} from '@react-navigation/native';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
-import {ScreenSizeContext} from '../../context/screenSize';
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   ImportSuccess: {
@@ -55,16 +56,18 @@ const ImportSuccess: React.FC<Props> = props => {
       </View>
 
       <View style={styles.confirmButtonContainer}>
-        <WhiteButton
-          textKey="back_to_wallet"
-          textDomain="settingsTab"
-          disabled={false}
-          small={false}
-          active={true}
-          onPress={() => {
-            navigation.navigate('Main', {isInitial: true});
-          }}
-        />
+        <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+          <WhiteButton
+            textKey="back_to_wallet"
+            textDomain="settingsTab"
+            disabled={false}
+            small={false}
+            active={true}
+            onPress={() => {
+              navigation.navigate('Main', {isInitial: true});
+            }}
+          />
+        </CustomSafeAreaView>
       </View>
     </LinearGradient>
   );
@@ -79,7 +82,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     body: {
       width: '100%',
       height: '100%',
-      flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
       padding: screenHeight * 0.03,
@@ -108,7 +110,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     confirmButtonContainer: {
       position: 'absolute',
-      bottom: screenHeight * 0.03,
+      bottom: screenHeight * 0.01,
       width: '100%',
       paddingHorizontal: screenWidth * 0.06,
     },
@@ -119,6 +121,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
     },
+    safeArea: {},
   });
 
 export const ImportSuccessNavigationOptions = (
@@ -129,9 +132,10 @@ export const ImportSuccessNavigationOptions = (
     headerTitleAlign: 'left',
     headerTransparent: true,
     headerTintColor: 'white',
+    gestureEnabled: false,
     headerLeft: () => (
       <HeaderButton
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Settings', {updateHeader: true})}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

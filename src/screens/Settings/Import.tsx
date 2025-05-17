@@ -1,8 +1,7 @@
 import React, {useEffect, useContext} from 'react';
-import {StyleSheet, View, SafeAreaView, Alert, Platform} from 'react-native';
+import {StyleSheet, View, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   StackNavigationOptions,
   StackNavigationProp,
@@ -18,6 +17,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {unsetDeeplink} from '../../reducers/deeplinks';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -29,6 +29,9 @@ type RootStackParamList = {
   ImportSuccess: {
     txHash: string;
   };
+  Settings: {
+    updateHeader?: boolean;
+  };
 };
 
 interface Props {
@@ -38,7 +41,6 @@ interface Props {
 
 const Import: React.FC<Props> = props => {
   const {navigation, route} = props;
-  const insets = useSafeAreaInsets();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -57,11 +59,17 @@ const Import: React.FC<Props> = props => {
     const handleScan = async (scanPayload: string) => {
       try {
         const rawTxs = await sweepQrKey(scanPayload, address);
-        rawTxs.map(rawTx => {
-          rawTx.map(async (txHex: string) => {
-            await publishTransaction(txHex);
-          });
-        });
+
+        await Promise.all(
+          rawTxs.map(async rawTx => {
+            await Promise.all(
+              rawTx.map(async (txHex: string) => {
+                const res = await publishTransaction(txHex);
+                throw new Error(String(res));
+              }),
+            );
+          }),
+        );
 
         navigation.replace('ImportSuccess', {
           txHash: t('success'),
@@ -78,10 +86,19 @@ const Import: React.FC<Props> = props => {
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [address, route.params?.scanData]);
 
+  // override default goBack action with updateHeader param
+  useEffect(() => {
+    navigation.addListener('beforeRemove', e => {
+      if (e.data.action.type === 'NAVIGATE') {
+        return;
+      }
+      e.preventDefault();
+      navigation.navigate('Settings', {updateHeader: true});
+    });
+  }, []);
+
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
-      <SafeAreaView />
-
       <View style={styles.cardContainer}>
         <Card
           titleText={t('import_private_key')}
@@ -94,21 +111,19 @@ const Import: React.FC<Props> = props => {
         />
       </View>
 
-      <View
-        style={[
-          styles.buttonContainer,
-          Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-        ]}>
-        <WhiteButton
-          textKey="scan_private_key"
-          textDomain="settingsTab"
-          customFontStyles={{textAlign: 'center'}}
-          small={false}
-          active={true}
-          onPress={() => {
-            navigation.navigate('Scan', {returnRoute: 'Import'});
-          }}
-        />
+      <View style={styles.buttonContainer}>
+        <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+          <WhiteButton
+            textKey="scan_private_key"
+            textDomain="settingsTab"
+            customFontStyles={{textAlign: 'center'}}
+            small={false}
+            active={true}
+            onPress={() => {
+              navigation.navigate('Scan', {returnRoute: 'Import'});
+            }}
+          />
+        </CustomSafeAreaView>
       </View>
     </LinearGradient>
   );
@@ -118,7 +133,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-end',
     },
@@ -136,9 +150,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     buttonContainer: {
       position: 'absolute',
-      bottom: screenHeight * 0.03,
+      bottom: screenHeight * 0.01,
       width: '100%',
       paddingHorizontal: screenWidth * 0.06,
+    },
+    safeArea: {
+      width: '100%',
     },
   });
 
@@ -164,7 +181,7 @@ export const ImportNavigationOptions = (
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Settings', {updateHeader: true})}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

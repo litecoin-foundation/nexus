@@ -4,6 +4,7 @@ import React, {
   useContext,
   useLayoutEffect,
   useCallback,
+  useEffect,
 } from 'react';
 import {
   StyleSheet,
@@ -16,6 +17,7 @@ import {
   Linking,
   AppState,
 } from 'react-native';
+import {RouteProp} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import {
@@ -40,7 +42,9 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
-  General: undefined;
+  General: {
+    updateHeader?: boolean;
+  };
   About: undefined;
   ChangePincode: {
     type: null;
@@ -60,12 +64,15 @@ type RootStackParamList = {
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'General'>;
+  route: RouteProp<RootStackParamList, 'General'>;
 }
 
 const Settings: React.FC<Props> = props => {
-  const {navigation} = props;
+  const {navigation, route} = props;
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+
+  const {t} = useTranslation('settingsTab');
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -140,7 +147,20 @@ const Settings: React.FC<Props> = props => {
     });
   };
 
-  const {t} = useTranslation('settingsTab');
+  // fixes a bug where going back from webpage causes header to disappear
+  useEffect(() => {
+    if (route.params?.updateHeader) {
+      navigation.setOptions({
+        headerShown: false,
+      });
+
+      setTimeout(() => {
+        navigation.setOptions({
+          headerShown: true,
+        });
+      }, 10);
+    }
+  }, [route, navigation]);
 
   // NOTE: useMemo won't work here because we need to recalc the function after changing AppState,
   // this is bacause closing/opening the app do not trigger opened component to rerender
