@@ -1,21 +1,6 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useState,
-  useRef,
-  useMemo,
-  useContext,
-} from 'react';
+import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
-import Animated, {
-  interpolate,
-  interpolateColor,
-  useAnimatedProps,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  withDelay,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {
   Canvas,
@@ -31,8 +16,6 @@ import {
   TransactionRequest,
 } from '@flexa/flexa-react-native';
 import {StackNavigationOptions} from '@react-navigation/stack';
-import {useHeaderHeight} from '@react-navigation/elements';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
@@ -61,6 +44,8 @@ import {validate as validateLtcAddress} from '../lib/utils/validate';
 import {showError} from '../reducers/errors';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {useMainAnims} from '../animations/useMainAnims';
+import {useMainLayout} from '../animations/useMainLayout';
 
 interface URIHandlerRef {
   handleURI: (data: string) => void;
@@ -159,34 +144,6 @@ const Main: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
-  const deviceHeaderHeight = useHeaderHeight();
-  const insets = useSafeAreaInsets();
-  const stackHeaderHeight = deviceHeaderHeight - insets.top;
-  const alignHeaderElementsWithMarginTop = useMemo(() => {
-    return {marginTop: (stackHeaderHeight - headerButtonsHeight) * -1};
-  }, [stackHeaderHeight, headerButtonsHeight]);
-
-  // fixes a bug where navigating back from ConfirmBuy/Sell WebPage
-  // causes header to disappear or not follow inset rules!
-  useEffect(() => {
-    if (route.params?.updateHeader) {
-      navigation.setOptions({
-        headerShown: false,
-      });
-
-      setTimeout(() => {
-        navigation.setOptions({
-          headerShown: true,
-        });
-      }, 10);
-    }
-  }, [route, navigation]);
-
-  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
-  const OPEN_SNAP_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const CLOSED_SNAP_POINT = SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF;
-
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
@@ -212,7 +169,37 @@ const Main: React.FC<Props> = props => {
   const pinModalAction = useRef<string>('view-seed-auth');
   const [loading, setLoading] = useState(false);
 
-  // flexa
+  const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
+  function foldUnfoldBottomSheet(isFolded: boolean) {
+    if (isFolded) {
+      setBottomSheetFolded(false);
+    } else {
+      setBottomSheetFolded(true);
+      setActiveTab(0);
+    }
+  }
+  useEffect(() => {
+    if (route.params?.isInitial) {
+      foldUnfoldBottomSheet(false);
+    }
+  }, [route]);
+
+  const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
+
+  const {
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
+    walletButtonAnimDuration,
+    rotateArrow,
+    animatedChartOpacity,
+    animatedTopContainerBackground,
+    animatedTopContainerHeight,
+    animatedHeaderButtonOpacity,
+    animatedWalletButtonOpacity,
+    animatedWalletButtonArrowRotation,
+  } = useMainAnims({isWalletsModalOpened, isTxDetailModalOpened});
+
+  // Flexa
   const flexaAssetAccounts = [
     {
       displayName: 'Main Wallet',
@@ -380,315 +367,87 @@ const Main: React.FC<Props> = props => {
     }
   }, [activeTab, uri, dispatch]);
 
-  // Animation
-  const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
-
-  const mainSheetsTranslationYStart = useSharedValue(CLOSED_SNAP_POINT);
-  const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
-  function foldUnfoldBottomSheet(isFolded: boolean) {
-    if (isFolded) {
-      setBottomSheetFolded(false);
-    } else {
-      setBottomSheetFolded(true);
-      setActiveTab(0);
-    }
-  }
-
-  useEffect(() => {
-    if (route.params?.isInitial) {
-      foldUnfoldBottomSheet(false);
-    }
-  }, [route]);
-
-  const animatedChartStyle = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(
-        mainSheetsTranslationY.value,
-        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [0, 1],
-      ),
-    };
+  useMainLayout({
+    walletButtonAnimDuration,
+    rotateArrow,
+    animatedHeaderButtonOpacity,
+    animatedWalletButtonOpacity,
+    animatedWalletButtonArrowRotation,
+    currentWallet,
+    activeTab,
+    navigation,
+    route,
+    isWalletsModalOpened,
+    setWalletsModalOpened,
+    isTxDetailModalOpened,
+    setPlasmaModalGapInPixels,
+    setBottomSheetFolded,
+    setActiveTab,
+    manualPayment,
+    isFlexaCustomer,
+    styles,
   });
 
-  const animatedHeaderHeight = useAnimatedProps(() => {
-    return {
-      height: mainSheetsTranslationY.value,
-      borderBottomLeftRadius: interpolate(
-        mainSheetsTranslationY.value,
-        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [0, SCREEN_HEIGHT * 0.05],
-      ),
-      borderBottomRightRadius: interpolate(
-        mainSheetsTranslationY.value,
-        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [1, SCREEN_HEIGHT * 0.05],
-      ),
-    };
-  });
-
-  const animatedHeaderContainerBackground = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(
-        mainSheetsTranslationY.value,
-        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [isInternetReachable ? '#1162E6' : '#F36F56', '#f7f7f7'],
-      ),
-    };
-  });
-
-  const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
-
-  const buttonOpacity = useSharedValue(0);
-  const walletButtonOpacity = useSharedValue(0);
-
-  const animatedButton = useAnimatedStyle(() => {
-    return {
-      opacity: buttonOpacity.value,
-    };
-  });
-
-  const animatedWalletButton = useAnimatedStyle(() => {
-    return {
-      opacity: walletButtonOpacity.value,
-    };
-  });
-
-  const walletButtonAnimDuration = 200;
-  const rotateArrowAnim = useSharedValue(0);
-  const rotateArrow = () => {
-    rotateArrowAnim.value = withTiming(isWalletsModalOpened ? 0 : 1, {
-      duration: walletButtonAnimDuration,
-    });
-  };
-  const animatedWalletButtonArrowStyle = useAnimatedProps(() => {
-    const spinIterpolation = interpolate(
-      rotateArrowAnim.value,
-      [0, 1],
-      [270, 90],
-    );
-    return {
-      transform: [{rotate: `${spinIterpolation}deg`}],
-    };
-  });
-
-  const walletButtonRef = useRef() as any;
-  const walletButton = useMemo(
+  // Components
+  const HeaderComponent = useMemo(
     () => (
-      <View style={alignHeaderElementsWithMarginTop}>
-        <Animated.View
-          ref={walletButtonRef}
-          style={[styles.walletButton, animatedWalletButton]}>
-          <ChooseWalletButton
-            title={currentWallet}
-            onPress={() => {
-              setWalletsModalOpened(!isWalletsModalOpened);
-            }}
-            disabled={false}
-            isModalOpened={isWalletsModalOpened}
-            isFromBottomToTop={false}
-            animDuration={walletButtonAnimDuration}
-            rotateArrow={rotateArrow}
-            arrowSpinAnim={animatedWalletButtonArrowStyle}
-          />
-        </Animated.View>
-      </View>
-    ),
-    /* eslint-disable react-hooks/exhaustive-deps */
-    [
-      animatedWalletButton,
-      currentWallet,
-      isWalletsModalOpened,
-      animatedWalletButtonArrowStyle,
-      alignHeaderElementsWithMarginTop,
-    ],
-  );
-
-  useLayoutEffect(() => {
-    walletButtonRef.current?.measure(
-      (_: any, __: any, ___: any, height: any, ____: any, pageY: any) => {
-        setPlasmaModalGapInPixels(height + pageY);
-      },
-    );
-  });
-
-  const fadingTimeout = useRef<NodeJS.Timeout>();
-  const walletButtonFadingTimeout = useRef<NodeJS.Timeout>();
-
-  const backHeaderButton = useMemo(
-    () => (
-      <View style={alignHeaderElementsWithMarginTop}>
-        <HeaderButton
-          onPress={() => {
-            setBottomSheetFolded(true);
-            setActiveTab(0);
+      <View style={styles.headerContainer}>
+        <DashboardButton
+          textKey="buy"
+          imageSource={require('../assets/icons/buy-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(1);
           }}
-          imageSource={require('../assets/images/back-icon.png')}
+          active={activeTab === 1}
+          disabled={!isInternetReachable ? true : false}
+        />
+        <DashboardButton
+          textKey="sell"
+          imageSource={require('../assets/icons/sell-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(2);
+          }}
+          active={activeTab === 2}
+          disabled={!isInternetReachable ? true : false}
+        />
+        <DashboardButton
+          textKey="convert"
+          wider={true}
+          imageSource={require('../assets/icons/convert-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(3);
+          }}
+          active={activeTab === 3}
+          disabled={!isInternetReachable ? true : false}
+        />
+        <DashboardButton
+          textKey="send"
+          imageSource={require('../assets/icons/send-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(4);
+          }}
+          active={activeTab === 4}
+          disabled={!isInternetReachable ? true : false}
+          sizePercentage={90}
+        />
+        <DashboardButton
+          textKey="receive"
+          imageSource={require('../assets/icons/receive-icon.png')}
+          handlePress={() => {
+            setBottomSheetFolded(false);
+            setActiveTab(5);
+          }}
+          active={activeTab === 5}
+          disabled={false}
+          sizePercentage={90}
         />
       </View>
     ),
-    [alignHeaderElementsWithMarginTop],
-  );
-
-  const leftHeaderButton = useMemo(
-    () => (
-      <View style={alignHeaderElementsWithMarginTop}>
-        <Animated.View style={[styles.headerBtns, animatedButton]}>
-          <HeaderButton
-            onPress={() => navigation.navigate('SettingsStack')}
-            imageSource={require('../assets/icons/settings-cog.png')}
-            imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
-          />
-          {isFlexaCustomer ? (
-            <HeaderButton
-              onPress={() => manualPayment()}
-              imageSource={require('../assets/icons/shop.png')}
-              marginLeft={SCREEN_WIDTH * 0.02 * -1}
-            />
-          ) : null}
-        </Animated.View>
-      </View>
-    ),
-    /* eslint-disable react-hooks/exhaustive-deps */
-    [
-      animatedButton,
-      navigation,
-      isFlexaCustomer,
-      SCREEN_HEIGHT,
-      SCREEN_WIDTH,
-      alignHeaderElementsWithMarginTop,
-      styles.headerBtns,
-    ],
-  );
-
-  const rightHeaderButton = useMemo(
-    () => (
-      <View style={alignHeaderElementsWithMarginTop}>
-        <Animated.View style={[styles.headerBtns, animatedButton]}>
-          <HeaderButton
-            onPress={() => navigation.navigate('AlertsStack')}
-            imageSource={require('../assets/icons/alerts-icon.png')}
-            rightPadding={true}
-            imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
-          />
-        </Animated.View>
-      </View>
-    ),
-    [animatedButton, navigation, alignHeaderElementsWithMarginTop],
-  );
-
-  useEffect(() => {
-    if (isWalletsModalOpened || isTxDetailModalOpened) {
-      buttonOpacity.value = withTiming(0, {duration: 150});
-
-      fadingTimeout.current = setTimeout(() => {
-        navigation.setOptions({
-          headerLeft: undefined,
-          headerRight: undefined,
-        });
-      }, 150);
-    } else {
-      buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
-
-      navigation.setOptions({
-        headerLeft: () =>
-          activeTab !== 0 ? backHeaderButton : leftHeaderButton,
-        headerRight: () => rightHeaderButton,
-      });
-    }
-
-    if (isTxDetailModalOpened) {
-      walletButtonOpacity.value = withTiming(0, {duration: 150});
-
-      walletButtonFadingTimeout.current = setTimeout(() => {
-        navigation.setOptions({
-          /* eslint-disable-next-line react/no-unstable-nested-components */
-          headerTitle: () => <></>,
-        });
-      }, 150);
-    } else {
-      walletButtonOpacity.value = withDelay(
-        150,
-        withTiming(1, {duration: 250}),
-      );
-
-      navigation.setOptions({
-        headerTitle: () => walletButton,
-      });
-    }
-
-    return () => {
-      clearTimeout(fadingTimeout.current);
-      clearTimeout(walletButtonFadingTimeout.current);
-    };
-  }, [
-    activeTab,
-    backHeaderButton,
-    leftHeaderButton,
-    rightHeaderButton,
-    walletButton,
-    navigation,
-    isWalletsModalOpened,
-    isTxDetailModalOpened,
-    buttonOpacity,
-    walletButtonOpacity,
-  ]);
-
-  const HeaderComponent = (
-    <View style={styles.headerContainer}>
-      <DashboardButton
-        textKey="buy"
-        imageSource={require('../assets/icons/buy-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(1);
-        }}
-        active={activeTab === 1}
-        disabled={!isInternetReachable ? true : false}
-      />
-      <DashboardButton
-        textKey="sell"
-        imageSource={require('../assets/icons/sell-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(2);
-        }}
-        active={activeTab === 2}
-        disabled={!isInternetReachable ? true : false}
-      />
-      <DashboardButton
-        textKey="convert"
-        wider={true}
-        imageSource={require('../assets/icons/convert-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(3);
-        }}
-        active={activeTab === 3}
-        disabled={!isInternetReachable ? true : false}
-      />
-      <DashboardButton
-        textKey="send"
-        imageSource={require('../assets/icons/send-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(4);
-        }}
-        active={activeTab === 4}
-        disabled={!isInternetReachable ? true : false}
-        sizePercentage={90}
-      />
-      <DashboardButton
-        textKey="receive"
-        imageSource={require('../assets/icons/receive-icon.png')}
-        handlePress={() => {
-          setBottomSheetFolded(false);
-          setActiveTab(5);
-        }}
-        active={activeTab === 5}
-        disabled={false}
-        sizePercentage={90}
-      />
-    </View>
+    [activeTab, isInternetReachable, styles.headerContainer],
   );
 
   const TxListComponentMemo = useMemo(
@@ -702,7 +461,7 @@ const Main: React.FC<Props> = props => {
         styles={styles}
       />
     ),
-    [isBottomSheetFolded],
+    [isBottomSheetFolded, navigation, styles],
   );
 
   const BottomSheetMemo = useMemo(
@@ -732,6 +491,7 @@ const Main: React.FC<Props> = props => {
       isBottomSheetFolded,
       activeTab,
       route,
+      navigation,
     ],
   );
 
@@ -749,12 +509,11 @@ const Main: React.FC<Props> = props => {
   };
 
   return (
-    <Animated.View
-      style={[styles.container, animatedHeaderContainerBackground]}>
+    <Animated.View style={[styles.container, animatedTopContainerBackground]}>
       <NewAmountView
-        animatedProps={animatedHeaderHeight}
-        internetOpacityStyle={animatedChartStyle}>
-        <Animated.View style={[animatedChartStyle, styles.chartContainer]}>
+        animatedProps={animatedTopContainerHeight}
+        internetOpacityStyle={animatedChartOpacity}>
+        <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
           <LineChart />
           <DatePicker />
         </Animated.View>
