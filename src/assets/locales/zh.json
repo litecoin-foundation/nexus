@@ -8,6 +8,9 @@
     "attempts_left_other": "还有{{count}} 剩余尝试次数.",
     "for_litecoin": "FOR 莱特币",
     "create_wallet": "创建钱包",
+    "create_new_wallet": "创建新钱包",
+    "proceed_with_existing": "继续使用现有钱包",
+    "existing_seed_note": "看起来您之前已经设置了一个钱包。您想使用保存的种子短语还是创建一个新钱包？",
     "already_wallet": "已经有钱包了?登陆",
     "recover_wallet": "找回",
     "enter_seed": "输入你的恢复短语/种子短语.",
@@ -58,6 +61,8 @@
     "bought_ltc": "已购买的莱特币",
     "sent_ltc": "已发送的莱特币",
     "sold_ltc": "已卖出的莱特币",
+    "buying_ltc": "正在购买莱特币",
+    "selling_ltc": "正在出售莱特币",
     "received": "已接收",
     "sent": "已发送",
     "from": "来自",
@@ -67,6 +72,8 @@
     "view_on_blockchain": "查看区块链",
     "bought": "已购买",
     "sold": "已花费",
+    "buying": "正在购买",
+    "selling": "正在出售",
     "completed": "完成！",
     "total": "总共",
     "total_fee": "总费用",
@@ -133,14 +140,18 @@
     "camera_disabled": "相机被禁止",
     "enable_camera": "开启相机来扫描二维码",
     "awesome": "漂亮666!",
-    "just-sent": "你刚刚发送"
+    "just-sent": "你刚刚发送",
+    "balance_unconfirmed": "钱包中未确认的余额",
+    "wallet_unsynced": "同步正在进行中...",
+    "try_less_amount": "尝试输入更少的金额。考虑到预估费用，这可能超出了您的限制。",
+    "insufficient_funds": "余额不足。"
   },
   "receiveTab": {
     "receive_ltc": "接收莱特币",
     "receive_privately": "私下秘密接收",
     "send_privately": "私下秘密发送",
     "my_ltc_address": "我的莱特币地址",
-    "recieve_mweb_description": "接收私下隐藏发送者和接收者地址和发送金额."
+    "receive_mweb_description": "接收私下隐藏发送者和接收者地址和发送金额."
   },
   "searchTab": {
     "transactions": "交易",
@@ -197,7 +208,7 @@
     "success": "成功",
     "successfully_reset": "重置您的密码，成功!",
     "enable_face_id": "开启{{faceIDSupported}}",
-    "enable_notifications": "Enable Notifications", // translate
+    "enable_notifications": "启用通知",
     "face_id": "脸部识别",
     "touch_id": "指纹识别",
     "import_private_key": "导入私钥",
@@ -229,6 +240,9 @@
     "success_import": "你已导入莱特币.",
     "back_to_wallet": "返回钱包",
     "reset_warning": "你真的确定以及非常确定要重置您的钱包吗？记得备份你的重置前的私钥.",
+    "resetting_wallet": "正在重置钱包",
+    "resetting_wallet_warning": "警告！重置钱包将删除您当前的种子短语，请先备份！",
+    "mweb_missing_note": "当您将新的种子短语恢复到钱包中时，由于MWEB交易是私密的，它们可能会丢失。",
     "view_tx": "查看交易记录",
     "camera_error": "相机被禁止",
     "cancel": "取消",

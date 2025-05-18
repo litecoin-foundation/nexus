@@ -8,6 +8,9 @@
     "attempts_left_other": "{{count}} mga natitirang pagtatangka.",
     "for_litecoin": "PARA SA LITECOIN",
     "create_wallet": "Lumikha ng pitaka",
+    "create_new_wallet": "Lumikha ng Bagong Pitaka",
+    "proceed_with_existing": "Magpatuloy sa Kasalukuyang Pitaka",
+    "existing_seed_note": "Mukhang mayroon ka nang nakasetup na pitaka dati. Gusto mo bang gamitin ang naka-save na seed o lumikha ng bagong pitaka?",
     "already_wallet": "Mayroon nang pitaka? Mag-login",
     "recover_wallet": "I-recover ang pitaka",
     "enter_seed": "Ilagay ang iyong seed phrase na mga salita sa ibaba.",
@@ -58,6 +61,8 @@
     "bought_ltc": "Bumili ng Litecoin",
     "sent_ltc": "Nagpadala ng Litecoin",
     "sold_ltc": "Nagbenta ng Litecoin",
+    "buying_ltc": "Bumibili ng Litecoin",
+    "selling_ltc": "Nagbebenta ng Litecoin",
     "received": "Tumanggap",
     "sent": "Nagpadala",
     "from": "Mula",
@@ -67,6 +72,8 @@
     "view_on_blockchain": "Tingnan sa Blockchain",
     "bought": "Bumili",
     "sold": "Ginastos",
+    "buying": "Bumibili",
+    "selling": "Nagbebenta",
     "completed": "NAKUMPLETO",
     "total": "KABUUAN",
     "total_fee": "KABUUANG BAYAD",
@@ -133,14 +140,18 @@
     "camera_disabled": "Ang kamera ay hindi gumagana",
     "enable_camera": "Paganahin ang kamera para ma-scan ang QR Codes",
     "awesome": "Kahanga-hanga!",
-    "just-sent": "Nagpadala ka lang"
+    "just-sent": "Nagpadala ka lang",
+    "balance_unconfirmed": "Hindi pa nakumpirmang balanse sa Wallet",
+    "wallet_unsynced": "Sync ay Nagpapatuloy...",
+    "try_less_amount": "Subukan mong mag-input ng mas mababang halaga. Malamang na lampas ito sa iyong limitasyon, isinasaalang-alang ang tinatayang bayad.",
+    "insufficient_funds": "Hindi sapat na balanse."
   },
   "receiveTab": {
     "receive_ltc": "Tanggapin ang Litecoin",
     "receive_privately": "Tanggapin nang pribado",
     "send_privately": "Ipadala nang pribado",
     "my_ltc_address": "AKING LTC ADDRESS",
-    "recieve_mweb_description": "Itinatago ng pribadong pagtanggap ang mga address ng nagpadala at tagatanggap, at halagang ipinapadala."
+    "receive_mweb_description": "Itinatago ng pribadong pagtanggap ang mga address ng nagpadala at tagatanggap, at halagang ipinapadala."
   },
   "searchTab": {
     "transactions": "Mga transaksyon",
@@ -197,7 +208,7 @@
     "success": "Tagumpay",
     "successfully_reset": "Matagumpay na ni-reset ang PIN!",
     "enable_face_id": "Paganahin {{faceIDSupported}}",
-    "enable_notifications": "Enable Notifications", // translate
+    "enable_notifications": "Paganahin ang mga Notification",
     "face_id": "Face ID",
     "touch_id": "Touch ID",
     "import_private_key": "Mag-import ng Pribadong Key",
@@ -229,6 +240,9 @@
     "success_import": "Inimport mo ang Litecoin.",
     "back_to_wallet": "Bumalik sa Wallet",
     "reset_warning": "Sigurado ka bang gusto mong i-reset ang iyong wallet? I-backup ang iyong seed phrase bago i-reset.",
+    "resetting_wallet": "Nire-reset ang Wallet",
+    "resetting_wallet_warning": "Babala! Ang pag-reset ng iyong wallet ay bubura sa iyong kasalukuyang seed phrase, i-backup muna ito!",
+    "mweb_missing_note": "Kapag nagre-recover ka ng bagong seed phrase sa isang wallet, ang mga MWEB transaction ay maaaring mawala dahil pribado ang mga ito.",
     "view_tx": "Tingnan ang mga transaksyon",
     "camera_error": "Hindi gumagana ang kamera",
     "cancel": "Kanselahin",

@@ -8,6 +8,9 @@
     "attempts_left_other": "{{count}} tentativa të mbetura.",
     "for_litecoin": "PËR LITECOIN",
     "create_wallet": "Krijo Portofolin",
+    "create_new_wallet": "Krijo një Portofol të Ri",
+    "proceed_with_existing": "Vazhdo me Portofolin Ekzistues",
+    "existing_seed_note": "Duket se ke pasur një portofol të konfiguruar më parë. A dëshiron të përdorësh seed phrase-in e ruajtur apo të krijosh një portofol të ri?",
     "already_wallet": "Ke një portofol? Kyçu këtu",
     "recover_wallet": "Rikupero Portofolin",
     "enter_seed": "Shkruaj fjalët e seed phrase-it tënd më poshtë.",
@@ -58,6 +61,8 @@
     "bought_ltc": "Litecoin të blerë",
     "sent_ltc": "Litecoin të dërguar",
     "sold_ltc": "Litecoin të shitur",
+    "buying_ltc": "Duke blerë Litecoin",
+    "selling_ltc": "Duke shitur Litecoin",
     "received": "Marrë",
     "sent": "Dërguar",
     "from": "Nga",
@@ -67,6 +72,8 @@
     "view_on_blockchain": "Shiko në Blockchain",
     "bought": "Blerë",
     "sold": "Shpenzuar",
+    "buying": "Duke blerë",
+    "selling": "Duke shitur",
     "completed": "PËRFUNDUAR",
     "total": "TOTALI",
     "total_fee": "TOTALI I TARIFAVE",
@@ -133,14 +140,18 @@
     "camera_disabled": "Kamera e çaktivizuar",
     "enable_camera": "Aktivizo Kamerën për të skanuar Kodet QR",
     "awesome": "Shkëlqyeshëm!",
-    "just-sent": "Sapo dërgove"
+    "just-sent": "Sapo dërgove",
+    "balance_unconfirmed": "Bilanc i pakonfirmuar në Portofol",
+    "wallet_unsynced": "Sinkronizimi në vazhdim...",
+    "try_less_amount": "Provo të vendosësh një shumë më të vogël. Ndoshta është mbi limitin tënd, duke marrë parasysh tarifën e përllogaritur.",
+    "insufficient_funds": "Fonde të pamjaftueshme."
   },
   "receiveTab": {
     "receive_ltc": "Merr Litecoin",
     "receive_privately": "Merr Privatisht",
     "send_privately": "Dërgo Privatisht",
     "my_ltc_address": "ADRESA IME E LTC",
-    "recieve_mweb_description": "Të marrësh privatisht fsheh adresën e dërguesit dhe të marrësit, si dhe shumën që dërgohet."
+    "receive_mweb_description": "Të marrësh privatisht fsheh adresën e dërguesit dhe të marrësit, si dhe shumën që dërgohet."
   },
   "searchTab": {
     "transactions": "Transaksionet",
@@ -197,7 +208,7 @@
     "success": "Sukses",
     "successfully_reset": "PIN-i u rivendos me sukses!",
     "enable_face_id": "Aktivizo {{faceIDSupported}}",
-    "enable_notifications": "Enable Notifications", // translate
+    "enable_notifications": "Aktivizo Njoftimet",
     "face_id": "Identifikim me fytyrë",
     "touch_id": "Shenjë gishti",
     "import_private_key": "Importo Çelësin Privat",
@@ -229,6 +240,9 @@
     "success_import": "Sapo importove Litecoin.",
     "back_to_wallet": "Kthehu te Portofoli",
     "reset_warning": "Je plotësisht i sigurt që do të rivendosësh portofolin tënd? Ruaj një kopje rezervë të seed phrase-it tënd përpara se ta rivendosësh.",
+    "resetting_wallet": "Duke rivendosur Portofolin",
+    "resetting_wallet_warning": "Vëmendje! Rivendosja e portofolit do të fshijë seed phrase-in tënd aktual. Fillimisht, krijo një kopje rezervë!",
+    "mweb_missing_note": "Kur ti rikuperon një seed phrase të ri në portofol, transaksionet MWEB mund të mungojnë sepse ato janë private.",
     "view_tx": "Shiko Transaksionin",
     "camera_error": "Kamera e Çaktivizuar",
     "cancel": "Anulo",
