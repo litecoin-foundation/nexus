@@ -18,6 +18,8 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {useSharedValue, runOnJS} from 'react-native-reanimated';
 
 import TransactionCell from './Cells/TransactionCell';
 import TransactionListEmpty from './TransactionListEmpty';
@@ -42,7 +44,7 @@ interface Props {
   onPress(item: ItemType): void;
   onViewableItemsChanged?(): void;
   folded?: boolean;
-  foldUnfold?: (isFolded: boolean) => void;
+  foldUnfold?: (unfold: boolean) => void;
   transactionType?: string;
   searchFilter?: string;
   mwebFilter?: boolean;
@@ -234,7 +236,10 @@ const TransactionList = forwardRef((props: Props, ref) => {
     </>
   );
 
-  const curFrameY = useRef(-1);
+  const curFrameY = useRef(0);
+  const startClosing = useSharedValue(false);
+  const yStartPos = useSharedValue(-1);
+  const yPos = useSharedValue(-1);
 
   const txSignature = displayedTxs
     .map(section =>
@@ -248,29 +253,29 @@ const TransactionList = forwardRef((props: Props, ref) => {
         bounces={false}
         scrollEventThrottle={1}
         onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          const direction =
-            e.nativeEvent.contentOffset.y > curFrameY.current ? 'down' : 'up';
-          const maxOffset = Math.floor(
-            Number(e.nativeEvent.contentSize.height) -
-              Number(e.nativeEvent.layoutMeasurement.height),
-          );
-          if (direction === 'up' && curFrameY.current === maxOffset) {
-            if (typeof foldUnfold === 'function') {
-              foldUnfold(false);
-            }
+          if (!folded && e.nativeEvent.contentOffset.y === 0) {
+            startClosing.value = true;
+          } else {
+            startClosing.value = false;
           }
         }}
         onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          const maxOffset = Math.floor(
-            Number(e.nativeEvent.contentSize.height) -
-              Number(e.nativeEvent.layoutMeasurement.height),
-          );
-          if (curFrameY.current !== maxOffset) {
-            if (typeof foldUnfold === 'function') {
-              foldUnfold(true);
-            }
+          if (folded && foldUnfold) {
+            startClosing.value = false;
+            foldUnfold(true);
           }
-          curFrameY.current = e.nativeEvent.contentOffset.y;
+          if (!folded && e.nativeEvent.contentOffset.y === 0) {
+            startClosing.value = true;
+          } else {
+            startClosing.value = false;
+          }
+        }}
+        onScrollEndDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          if (!folded && e.nativeEvent.contentOffset.y === 0) {
+            startClosing.value = true;
+          } else {
+            startClosing.value = false;
+          }
         }}
         ref={transactionListRef}
         sections={displayedTxs}
@@ -305,13 +310,41 @@ const TransactionList = forwardRef((props: Props, ref) => {
     ),
     // Extract a unique signature from the transactions to detect changes
     /* eslint-disable react-hooks/exhaustive-deps */
-    [curFrameY, displayedTxs.length, txSignature],
+    [curFrameY, displayedTxs.length, txSignature, folded],
   );
+
+  function onFoldTrigger() {
+    'worklet';
+    if (foldUnfold) {
+      runOnJS(foldUnfold)(false);
+    }
+  }
+
+  const panGesture = Gesture.Pan()
+    .manualActivation(true)
+    .onTouchesDown(e => {
+      yStartPos.value = e.changedTouches[0].y;
+    })
+    .onTouchesMove((e, state) => {
+      if (startClosing.value && e.changedTouches[0].y > yStartPos.value) {
+        state.activate();
+      } else {
+        state.fail();
+      }
+    })
+    .onUpdate(e => {
+      if (yPos.value !== -1 && e.translationY > yPos.value) {
+        onFoldTrigger();
+        yStartPos.value = -1;
+        yPos.value = -1;
+      }
+      yPos.value = e.translationY;
+    });
 
   return renderTxs ? (
     <View style={{height: scrollContainerHeight}}>
       {!syncedToChain ? SyncProgressIndicator : <></>}
-      {SectionListMemo}
+      <GestureDetector gesture={panGesture}>{SectionListMemo}</GestureDetector>
     </View>
   ) : (
     <></>
