@@ -62,6 +62,8 @@
 	<string>App will use your camera to scan QR codes for Litecoin Payments</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Unlock &amp; Authorise payments using Face ID</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to determine the best Buy/Sell Litecoin provider.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Satoshi-Variable.ttf</string>
