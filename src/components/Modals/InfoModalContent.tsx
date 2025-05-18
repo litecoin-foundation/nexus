@@ -118,10 +118,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       letterSpacing: -0.18,
     },
     redText: {
-      color: '#F04E37',
+      color: '#cc3939',
     },
     greenText: {
-      color: '#78C223',
+      color: '#20BB74',
     },
   });
 
