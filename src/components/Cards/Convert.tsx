@@ -181,7 +181,7 @@ const Convert: React.FC<Props> = props => {
 
             <View style={styles.buttonContainer}>
               <BlueButton
-                disabled={false}
+                disabled={true}
                 textKey="convert_button"
                 textDomain="convertTab"
                 onPress={() => handleConfirm()}
