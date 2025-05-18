@@ -55,7 +55,7 @@ const SWIPE_CARDS_ANIM_DURATION =
   Platform.OS === 'android' && Platform.Version <= 31
     ? 350
     : Platform.OS === 'android'
-      ? 300
+      ? 250
       : 200;
 
 export default function PlasmaModal(props: Props) {
@@ -106,7 +106,6 @@ export default function PlasmaModal(props: Props) {
   const bodyTranslateX = useSharedValue(0);
   const bodyTranslateXStart = useSharedValue(0);
   const backOpacity = useSharedValue(0);
-  // const cardOpacity = useSharedValue(1);
   const cardScale = useSharedValue(1);
   const prevNextCardOpacity = useSharedValue(0);
   const prevNextCardScale = useSharedValue(0.7);
@@ -117,7 +116,6 @@ export default function PlasmaModal(props: Props) {
       isPrev ? SCREEN_WIDTH : SCREEN_WIDTH * -1,
       {duration: SWIPE_CARDS_ANIM_DURATION},
     );
-    // cardOpacity.value = withTiming(0, {duration: SWIPE_CARDS_ANIM_DURATION});
     prevNextCardOpacity.value = withTiming(1, {
       duration: SWIPE_CARDS_ANIM_DURATION,
     });
@@ -128,7 +126,6 @@ export default function PlasmaModal(props: Props) {
 
     setTimeout(() => {
       bodyTranslateX.value = 0;
-      // cardOpacity.value = 1;
       prevNextCardOpacity.value = 0;
       cardScale.value = 1;
       prevNextCardScale.value = 0.7;
@@ -147,8 +144,7 @@ export default function PlasmaModal(props: Props) {
     bodyTranslateY.value = withSpring(destSnapPoint, {
       mass: 0.1,
     });
-
-    if (typeof rotateWalletButtonArrow === 'function') {
+    if (rotateWalletButtonArrow) {
       runOnJS(rotateWalletButtonArrow)();
     }
     runOnJS(close)();
@@ -167,7 +163,7 @@ export default function PlasmaModal(props: Props) {
       mass: 0.1,
     });
 
-    if (typeof swipeToPrevTx === 'function') {
+    if (swipeToPrevTx) {
       runOnJS(goPrevNextCard)(true);
       runOnJS(swipeToPrevTx)();
     }
@@ -186,7 +182,7 @@ export default function PlasmaModal(props: Props) {
       mass: 0.1,
     });
 
-    if (typeof swipeToNextTx === 'function') {
+    if (swipeToNextTx) {
       runOnJS(goPrevNextCard)(false);
       runOnJS(swipeToNextTx)();
     }
@@ -232,12 +228,6 @@ export default function PlasmaModal(props: Props) {
     .onUpdate(e => {
       if (bodyTranslateY.value === 0) {
         bodyTranslateX.value = e.translationX + bodyTranslateXStart.value;
-        // NOTE: doubling the interpolation range is supposed to help with smoothing on android
-        // cardOpacity.value = interpolate(
-        //   e.translationX,
-        //   [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
-        //   [0, 1, 0],
-        // );
         prevNextCardOpacity.value = interpolate(
           e.translationX,
           [SCREEN_WIDTH * -2, 0, SCREEN_WIDTH * 2],
@@ -265,9 +255,6 @@ export default function PlasmaModal(props: Props) {
           bodyTranslateX.value = withTiming(bodyTranslateXStart.value, {
             duration: SPRING_BACK_ANIM_DURATION,
           });
-          // cardOpacity.value = withTiming(1, {
-          //   duration: SPRING_BACK_ANIM_DURATION,
-          // });
           prevNextCardOpacity.value = withTiming(0, {
             duration: SPRING_BACK_ANIM_DURATION,
           });
@@ -417,7 +404,7 @@ export default function PlasmaModal(props: Props) {
                 activeOpacity={1}
                 style={styles.closeArea}
                 onPress={() => {
-                  if (typeof rotateWalletButtonArrow === 'function') {
+                  if (rotateWalletButtonArrow) {
                     rotateWalletButtonArrow();
                   }
                   close();
