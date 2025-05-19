@@ -151,7 +151,7 @@
     "receive_privately": "Recibir de forma privada",
     "send_privately": "Enviar de forma privada",
     "my_ltc_address": "Mi dirección LTC",
-    "receive_mweb_description": "Recibir de forma privada oculta las direcciones del remitente y receptor, así como la cantidad enviada."
+    "receive_mweb_description": "Recibir de forma privada, oculta las direcciones del remitente y receptor, así como la cantidad enviada."
   },
   "searchTab": {
     "transactions": "Transacciones",
