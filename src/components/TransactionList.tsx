@@ -239,7 +239,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const curFrameY = useRef(0);
   const startClosing = useSharedValue(false);
   const yStartPos = useSharedValue(-1);
-  const yPos = useSharedValue(-1);
 
   const txSignature = displayedTxs
     .map(section =>
@@ -260,8 +259,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
           }
         }}
         onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          if (folded && foldUnfold) {
-            startClosing.value = false;
+          if (folded && foldUnfold && !startClosing.value) {
             foldUnfold(true);
           }
           if (!folded && e.nativeEvent.contentOffset.y === 0) {
@@ -327,18 +325,11 @@ const TransactionList = forwardRef((props: Props, ref) => {
     })
     .onTouchesMove((e, state) => {
       if (startClosing.value && e.changedTouches[0].y > yStartPos.value) {
-        state.activate();
+        yStartPos.value = -1;
+        onFoldTrigger();
       } else {
         state.fail();
       }
-    })
-    .onUpdate(e => {
-      if (yPos.value !== -1 && e.translationY > yPos.value) {
-        onFoldTrigger();
-        yStartPos.value = -1;
-        yPos.value = -1;
-      }
-      yPos.value = e.translationY;
     });
 
   return renderTxs ? (
