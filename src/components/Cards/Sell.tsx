@@ -11,7 +11,7 @@ import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {checkAllowed} from '../../reducers/buy';
+import {checkAllowed, setSellQuote} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
 import {
@@ -40,8 +40,12 @@ const Sell: React.FC<Props> = () => {
   const {minLTCSellAmount, maxLTCSellAmount} = useAppSelector(
     state => state.buy.sellLimits,
   );
-  const {isMoonpayCustomer, isOnramperCustomer, proceedToGetSellLimits} =
-    useAppSelector(state => state.buy);
+  const {
+    isMoonpayCustomer,
+    isOnramperCustomer,
+    proceedToGetSellLimits,
+    sellQuote,
+  } = useAppSelector(state => state.buy);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -51,17 +55,47 @@ const Sell: React.FC<Props> = () => {
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
 
+  // render moonpay rates
+  const availableAmount =
+    Number(amount) > 0 && sellQuote.ltcAmount > 0
+      ? sellQuote.ltcAmount
+      : Number(amount);
+  const availableQuote =
+    Number(amount) > 0 && sellQuote.fiatAmount > 0
+      ? sellQuote.fiatAmount
+      : Number(fiatAmount);
+
   useEffect(() => {
     dispatch(checkAllowed());
-  }, []);
+    dispatch(setSellQuote(1));
+  }, [dispatch]);
 
   const onChange = (value: string) => {
     if (toggleLTC) {
       dispatch(updateAmount(value, 'sell'));
+      // set quote from moonpay
+      if (
+        Number(value) >= minLTCSellAmount &&
+        Number(value) <= maxLTCSellAmount
+      ) {
+        dispatch(setSellQuote(Number(value)));
+      }
     } else if (!toggleLTC) {
       dispatch(updateFiatAmount(value, 'sell'));
     }
   };
+
+  // wait fot amount update to set quote from moonpay
+  useEffect(() => {
+    if (!toggleLTC) {
+      if (
+        Number(amount) >= minLTCSellAmount &&
+        Number(amount) <= maxLTCSellAmount
+      ) {
+        dispatch(setSellQuote(Number(amount)));
+      }
+    }
+  }, [dispatch, toggleLTC, amount, minLTCSellAmount, maxLTCSellAmount]);
 
   useEffect(() => {
     return function cleanup() {
@@ -108,10 +142,10 @@ const Sell: React.FC<Props> = () => {
       return false;
     }
     if (
-      !fiatAmount ||
-      !amount ||
-      Number(amount) < minLTCSellAmount ||
-      Number(amount) > maxLTCSellAmount
+      !availableQuote ||
+      !availableAmount ||
+      Number(availableAmount) < minLTCSellAmount ||
+      Number(availableAmount) > maxLTCSellAmount
     ) {
       return false;
     }
@@ -137,7 +171,15 @@ const Sell: React.FC<Props> = () => {
                 textStyle={{...styles.buyText, color: '#2C72FF'}}
                 animatedFontSizeValue={ltcFontSize}
                 numberOfLines={1}
-                interpolationObj={{amount: amount === '' ? '0.00' : amount}}
+                interpolationObj={{
+                  amount: toggleLTC
+                    ? amount === ''
+                      ? '0.00'
+                      : amount
+                    : !availableAmount
+                      ? '0.00'
+                      : availableAmount,
+                }}
               />
               <TranslateText
                 textValue=" LTC"
@@ -163,7 +205,13 @@ const Sell: React.FC<Props> = () => {
                 numberOfLines={1}
                 interpolationObj={{
                   currencySymbol,
-                  total: fiatAmount === '' ? '0.00' : fiatAmount,
+                  total: toggleLTC
+                    ? !availableQuote
+                      ? '0.00'
+                      : availableQuote
+                    : fiatAmount === ''
+                      ? '0.00'
+                      : fiatAmount,
                 }}
               />
             </View>
@@ -315,8 +363,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginRight: screenWidth * 0.06 * -1 - 1,
     },
     numpadContainer: {
-      flex: 1,
-      justifyContent: 'center',
       width: screenWidth,
     },
     bottom: {

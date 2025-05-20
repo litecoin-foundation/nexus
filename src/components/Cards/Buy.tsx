@@ -71,7 +71,7 @@ const Buy: React.FC<Props> = () => {
   const onChange = (value: string) => {
     if (toggleLTC) {
       dispatch(updateAmount(value, 'buy'));
-      // fetch quote from moonpay
+      // set quote from moonpay
       if (
         Number(value) >= minLTCBuyAmount &&
         Number(value) <= maxLTCBuyAmount
