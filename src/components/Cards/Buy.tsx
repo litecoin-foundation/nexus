@@ -8,11 +8,7 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-} from 'react-native-reanimated';
+import {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
@@ -41,8 +37,12 @@ const Buy: React.FC<Props> = () => {
   const isBuyAllowed = useAppSelector(state => state.buy.isBuyAllowed);
   const {minBuyAmount, maxBuyAmount, minLTCBuyAmount, maxLTCBuyAmount} =
     useAppSelector(state => state.buy.buyLimits);
-  const {isMoonpayCustomer, isOnramperCustomer, proceedToGetBuyLimits} =
-    useAppSelector(state => state.buy);
+  const {
+    isMoonpayCustomer,
+    isOnramperCustomer,
+    proceedToGetBuyLimits,
+    buyQuote,
+  } = useAppSelector(state => state.buy);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -52,16 +52,26 @@ const Buy: React.FC<Props> = () => {
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
 
+  // render moonpay rates
+  const availableAmount =
+    Number(amount) > 0 && buyQuote.ltcAmount > 0
+      ? buyQuote.ltcAmount
+      : Number(amount);
+  const availableQuote =
+    Number(amount) > 0 && buyQuote.baseCurrencyAmount > 0
+      ? buyQuote.baseCurrencyAmount
+      : Number(fiatAmount);
+
   useEffect(() => {
     dispatch(checkAllowed());
     dispatch(setLimits());
-    dispatch(setBuyQuote(1));
+    // dispatch(setBuyQuote(1));
   }, [dispatch]);
 
   const onChange = (value: string) => {
     if (toggleLTC) {
       dispatch(updateAmount(value, 'buy'));
-      // fetch quote from moonpay
+      // set quote from moonpay
       if (
         Number(value) >= minLTCBuyAmount &&
         Number(value) <= maxLTCBuyAmount
@@ -92,27 +102,15 @@ const Buy: React.FC<Props> = () => {
     }
   };
 
-  const ltcFontSizeStyle = useAnimatedProps(() => {
-    return {
-      fontSize: ltcFontSize.value,
-    };
-  });
-
-  const fiatFontSizeStyle = useAnimatedProps(() => {
-    return {
-      fontSize: fiatFontSize.value,
-    };
-  });
-
   function amountValid(): boolean {
     if (!isBuyAllowed) {
       return false;
     }
     if (
-      !fiatAmount ||
-      !amount ||
-      Number(fiatAmount) < minBuyAmount ||
-      Number(fiatAmount) > maxBuyAmount
+      !availableQuote ||
+      !availableAmount ||
+      Number(availableQuote) < minBuyAmount ||
+      Number(availableQuote) > maxBuyAmount
     ) {
       return false;
     }
@@ -128,44 +126,57 @@ const Buy: React.FC<Props> = () => {
               <TranslateText
                 textKey={'buy'}
                 domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={styles.buyText}
-                animatedProps={ltcFontSizeStyle}
+                animatedFontSizeValue={ltcFontSize}
                 numberOfLines={1}
               />
               <TranslateText
                 textKey={'n_ltc'}
                 domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={{...styles.buyText, color: '#2C72FF'}}
-                animatedProps={ltcFontSizeStyle}
+                animatedFontSizeValue={ltcFontSize}
                 numberOfLines={1}
-                interpolationObj={{amount: amount === '' ? '0.00' : amount}}
+                interpolationObj={{
+                  amount: toggleLTC
+                    ? amount === ''
+                      ? '0.00'
+                      : amount
+                    : !availableAmount
+                      ? '0.00'
+                      : availableAmount,
+                }}
               />
-              <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
-                {' LTC'}
-              </Animated.Text>
+              <TranslateText
+                textValue=" LTC"
+                textStyle={styles.buyText}
+                animatedFontSizeValue={ltcFontSize}
+                numberOfLines={1}
+              />
             </View>
 
             <View style={styles.flexRow}>
               <TranslateText
                 textKey={'for'}
                 domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
                 textStyle={styles.buyText}
-                animatedProps={fiatFontSizeStyle}
+                animatedFontSizeValue={fiatFontSize}
                 numberOfLines={1}
               />
               <TranslateText
                 textKey={'for_total'}
                 domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
                 textStyle={{...styles.buyText, color: '#20BB74'}}
-                animatedProps={fiatFontSizeStyle}
+                animatedFontSizeValue={fiatFontSize}
                 numberOfLines={1}
                 interpolationObj={{
                   currencySymbol,
-                  total: fiatAmount === '' ? '0.00' : fiatAmount,
+                  total: toggleLTC
+                    ? !availableQuote
+                      ? '0.00'
+                      : availableQuote
+                    : fiatAmount === ''
+                      ? '0.00'
+                      : fiatAmount,
                 }}
               />
             </View>

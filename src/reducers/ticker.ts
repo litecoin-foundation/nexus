@@ -5,6 +5,7 @@ import memoize from 'lodash.memoize';
 import {poll} from '../lib/utils/poll';
 import {AppThunk} from './types';
 import {setBuyQuote, setSellQuote, setLimits} from './buy';
+import {IBuyQuote, ISellQuote} from '../utils/tradeQuotes';
 
 // types
 type IRates = {
@@ -112,12 +113,15 @@ export const callRates = (): AppThunk => async (dispatch, getState) => {
 
   try {
     // Fetch buy quote, pass amount of 1 LTC for when ltcAmount is not set yet
-    const buyQuote: any = await dispatch(setBuyQuote(Number(ltcAmount || 1)));
-    let buy = buyQuote ? Number(buyQuote.quoteCurrencyPrice) : null;
-
+    const buyQuote: IBuyQuote = await dispatch(
+      setBuyQuote(Number(ltcAmount || 1)),
+    );
+    let buy = buyQuote ? Number(buyQuote.ltcPrice) : null;
     // Fetch sell quote, pass amount of 1 LTC for when ltcAmount is not set yet
-    const sellQuote: any = await dispatch(setSellQuote(Number(ltcAmount || 1)));
-    let sell = sellQuote ? Number(sellQuote.quoteCurrencyPrice) : null;
+    const sellQuote: ISellQuote = await dispatch(
+      setSellQuote(Number(ltcAmount || 1)),
+    );
+    let sell = sellQuote ? Number(sellQuote.ltcPrice) : null;
 
     // Fetch ltc rates
     const rates = await getTickerData();

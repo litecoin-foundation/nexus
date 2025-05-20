@@ -348,6 +348,16 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
       if (Math.sign(parseFloat(String(tx.amount))) === -1) {
         metaLabel = 'Send';
+        if (
+          tx.numConfirmations === 0 &&
+          Number(tx.timeStamp) + 600 < Math.floor(Date.now() / 1000)
+        ) {
+          try {
+            await publishTransaction(tx.rawTxHex);
+          } catch (error) {
+            console.log('remove tx');
+          }
+        }
       }
       if (Math.sign(parseFloat(String(tx.amount))) === 1) {
         metaLabel = 'Receive';

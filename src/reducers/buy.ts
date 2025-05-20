@@ -1,6 +1,6 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import {AppThunk} from './types';
+import {AppThunk, AppThunkBuyQuote, AppThunkSellQuote} from './types';
 import {getCountry} from 'react-native-localize';
 import {uuidFromSeed} from '../lib/utils/uuid';
 import {
@@ -83,7 +83,7 @@ const setMoonpayCustomer = createAction<boolean>('buy/setMoonpayCustomer');
 const setOnramperCustomer = createAction<boolean>('buy/setOnramperCustomer');
 const setFlexaCustomer = createAction<boolean>('buy/setFlexaCustomer');
 const setBuyQuoteAction = createAction<IBuyQuote>('buy/setBuyQuoteAction');
-// const setSellQuoteAction = createAction<ISellQuote>('buy/setSellQuoteAction');
+const setSellQuoteAction = createAction<ISellQuote>('buy/setSellQuoteAction');
 const getBuyTxHistoryAction = createAction('buy/getBuyTxHistoryAction');
 const getSellTxHistoryAction = createAction('buy/getSellTxHistoryAction');
 const checkAllowedAction = createAction<{
@@ -385,7 +385,7 @@ export const getBuyQuote = (
 };
 
 export const setBuyQuote =
-  (cryptoAmount?: number, fiatAmount?: number): AppThunk =>
+  (cryptoAmount?: number, fiatAmount?: number): AppThunkBuyQuote =>
   async (dispatch, getState) => {
     return new Promise<IBuyQuoteAndLimits>(async resolve => {
       const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
@@ -466,7 +466,9 @@ const getMoonpaySellQuoteData = (
         } else {
           resolve({
             ltcAmount: data.baseCurrencyAmount || 0,
-            ltcPrice: data.quoteCurrencyAmount || 0,
+            ltcPrice:
+              Number(data.quoteCurrencyAmount) /
+                Number(data.baseCurrencyAmount) || 0,
             totalAmount: data.baseCurrencyPrice || 0,
             fiatAmount: data.quoteCurrencyAmount || 0,
             networkFeeAmount: data.networkFeeAmount || 0,
@@ -523,7 +525,7 @@ export const getSellQuote = (
 };
 
 export const setSellQuote =
-  (cryptoAmount: number): AppThunk =>
+  (cryptoAmount: number): AppThunkSellQuote =>
   async (dispatch, getState) => {
     return new Promise<ISellQuoteAndLimits>(async resolve => {
       const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
@@ -559,10 +561,9 @@ export const setSellQuote =
       }
 
       // set quote
-      // NOTE: effectively we never need to set see quote state since
-      // we never show quote preview for user, all we need is ltc amount
-      // user wants to sell which is set by input handle
-      // dispatch(setSellQuoteAction(quote));
+      if (isMoonpayCustomer) {
+        dispatch(setSellQuoteAction(quote));
+      }
 
       resolve(quote);
     });
