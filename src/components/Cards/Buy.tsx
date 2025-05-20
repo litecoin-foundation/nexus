@@ -65,7 +65,7 @@ const Buy: React.FC<Props> = () => {
   useEffect(() => {
     dispatch(checkAllowed());
     dispatch(setLimits());
-    dispatch(setBuyQuote(1));
+    // dispatch(setBuyQuote(1));
   }, [dispatch]);
 
   const onChange = (value: string) => {

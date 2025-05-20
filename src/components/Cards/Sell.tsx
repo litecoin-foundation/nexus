@@ -67,7 +67,7 @@ const Sell: React.FC<Props> = () => {
 
   useEffect(() => {
     dispatch(checkAllowed());
-    dispatch(setSellQuote(1));
+    // dispatch(setSellQuote(1));
   }, [dispatch]);
 
   const onChange = (value: string) => {
