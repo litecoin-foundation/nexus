@@ -7,11 +7,7 @@ import {
   Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-} from 'react-native-reanimated';
+import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -83,18 +79,6 @@ const Sell: React.FC<Props> = () => {
     }
   };
 
-  const ltcFontSizeStyle = useAnimatedProps(() => {
-    return {
-      fontSize: ltcFontSize.value,
-    };
-  });
-
-  const fiatFontSizeStyle = useAnimatedProps(() => {
-    return {
-      fontSize: fiatFontSize.value,
-    };
-  });
-
   const [sellOutFee, setSellOutFee] = useState(0);
   // estimate fee
   useEffect(() => {
@@ -143,40 +127,39 @@ const Sell: React.FC<Props> = () => {
               <TranslateText
                 textKey={'sell'}
                 domain={'sellTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={styles.buyText}
-                animatedProps={ltcFontSizeStyle}
+                animatedFontSizeValue={ltcFontSize}
                 numberOfLines={1}
               />
               <TranslateText
                 textKey={'n_ltc'}
                 domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={{...styles.buyText, color: '#2C72FF'}}
-                animatedProps={ltcFontSizeStyle}
+                animatedFontSizeValue={ltcFontSize}
                 numberOfLines={1}
                 interpolationObj={{amount: amount === '' ? '0.00' : amount}}
               />
-              <Animated.Text style={[styles.buyText, {fontSize: ltcFontSize}]}>
-                {' LTC'}
-              </Animated.Text>
+              <TranslateText
+                textValue=" LTC"
+                textStyle={styles.buyText}
+                animatedFontSizeValue={ltcFontSize}
+                numberOfLines={1}
+              />
             </View>
 
             <View style={styles.flexRow}>
               <TranslateText
                 textKey={'for'}
                 domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
                 textStyle={styles.buyText}
-                animatedProps={fiatFontSizeStyle}
+                animatedFontSizeValue={fiatFontSize}
                 numberOfLines={1}
               />
               <TranslateText
                 textKey={'for_total'}
                 domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
                 textStyle={{...styles.buyText, color: '#20BB74'}}
-                animatedProps={fiatFontSizeStyle}
+                animatedFontSizeValue={fiatFontSize}
                 numberOfLines={1}
                 interpolationObj={{
                   currencySymbol,

@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {StyleSheet, Dimensions, Pressable} from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 
 import {ScreenSizeContext} from '../context/screenSize';
@@ -13,6 +13,7 @@ interface Props {
   maxLengthInPixels?: number;
   textStyle?: any;
   animatedProps?: any;
+  animatedFontSizeValue?: any;
   numberOfLines?: number;
   interpolationObj?: {
     [key: string]: any;
@@ -22,6 +23,7 @@ interface Props {
 }
 
 const DEFAULT_FONT_SIZE = 20;
+const FONT_SCALE = Dimensions.get('window').fontScale;
 
 const TranslateText: React.FC<Props> = props => {
   const {
@@ -32,6 +34,7 @@ const TranslateText: React.FC<Props> = props => {
     maxLengthInPixels,
     textStyle,
     animatedProps,
+    animatedFontSizeValue,
     numberOfLines,
     interpolationObj,
     onPress,
@@ -45,11 +48,8 @@ const TranslateText: React.FC<Props> = props => {
       ? textStyle.fontSize
       : DEFAULT_FONT_SIZE;
 
-  if (
-    maxSizeInPixels &&
-    fontSize * Dimensions.get('window').fontScale > maxSizeInPixels
-  ) {
-    fontSize = maxSizeInPixels / Dimensions.get('window').fontScale;
+  if (maxSizeInPixels && fontSize * FONT_SCALE > maxSizeInPixels) {
+    fontSize = maxSizeInPixels / FONT_SCALE;
   }
 
   const textFlexBasis =
@@ -65,6 +65,20 @@ const TranslateText: React.FC<Props> = props => {
     textFlexBasis,
   );
 
+  const overrideFontSizeWithAnimated = useAnimatedStyle(() => {
+    return {
+      fontSize: animatedFontSizeValue
+        ? animatedFontSizeValue.value / FONT_SCALE
+        : fontSize,
+    };
+  });
+
+  const animatedStyle = animatedFontSizeValue
+    ? overrideFontSizeWithAnimated
+    : animatedProps
+      ? animatedProps
+      : null;
+
   const {t} = useTranslation(domain);
 
   return onPress ? (
@@ -74,7 +88,7 @@ const TranslateText: React.FC<Props> = props => {
           styles.text,
           textStyle,
           styles.textLimits,
-          animatedProps,
+          animatedStyle,
           {includeFontPadding: false},
         ]}
         ellipsizeMode="tail"
@@ -90,7 +104,7 @@ const TranslateText: React.FC<Props> = props => {
           styles.text,
           textStyle,
           styles.textLimits,
-          animatedProps,
+          animatedStyle,
           {includeFontPadding: false},
         ]}
         ellipsizeMode="tail"
