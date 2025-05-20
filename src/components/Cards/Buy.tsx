@@ -37,8 +37,12 @@ const Buy: React.FC<Props> = () => {
   const isBuyAllowed = useAppSelector(state => state.buy.isBuyAllowed);
   const {minBuyAmount, maxBuyAmount, minLTCBuyAmount, maxLTCBuyAmount} =
     useAppSelector(state => state.buy.buyLimits);
-  const {isMoonpayCustomer, isOnramperCustomer, proceedToGetBuyLimits} =
-    useAppSelector(state => state.buy);
+  const {
+    isMoonpayCustomer,
+    isOnramperCustomer,
+    proceedToGetBuyLimits,
+    buyQuote,
+  } = useAppSelector(state => state.buy);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -47,6 +51,16 @@ const Buy: React.FC<Props> = () => {
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
+
+  // render moonpay rates
+  const availableAmount =
+    Number(amount) > 0 && buyQuote.ltcAmount > 0
+      ? buyQuote.ltcAmount
+      : Number(amount);
+  const availableQuote =
+    Number(amount) > 0 && buyQuote.baseCurrencyAmount > 0
+      ? buyQuote.baseCurrencyAmount
+      : Number(fiatAmount);
 
   useEffect(() => {
     dispatch(checkAllowed());
@@ -93,10 +107,10 @@ const Buy: React.FC<Props> = () => {
       return false;
     }
     if (
-      !fiatAmount ||
-      !amount ||
-      Number(fiatAmount) < minBuyAmount ||
-      Number(fiatAmount) > maxBuyAmount
+      !availableQuote ||
+      !availableAmount ||
+      Number(availableQuote) < minBuyAmount ||
+      Number(availableQuote) > maxBuyAmount
     ) {
       return false;
     }
@@ -122,7 +136,15 @@ const Buy: React.FC<Props> = () => {
                 textStyle={{...styles.buyText, color: '#2C72FF'}}
                 animatedFontSizeValue={ltcFontSize}
                 numberOfLines={1}
-                interpolationObj={{amount: amount === '' ? '0.00' : amount}}
+                interpolationObj={{
+                  amount: toggleLTC
+                    ? amount === ''
+                      ? '0.00'
+                      : amount
+                    : !availableAmount
+                      ? '0.00'
+                      : availableAmount,
+                }}
               />
               <TranslateText
                 textValue=" LTC"
@@ -148,7 +170,13 @@ const Buy: React.FC<Props> = () => {
                 numberOfLines={1}
                 interpolationObj={{
                   currencySymbol,
-                  total: fiatAmount === '' ? '0.00' : fiatAmount,
+                  total: toggleLTC
+                    ? !availableQuote
+                      ? '0.00'
+                      : availableQuote
+                    : fiatAmount === ''
+                      ? '0.00'
+                      : fiatAmount,
                 }}
               />
             </View>
