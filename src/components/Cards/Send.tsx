@@ -12,7 +12,7 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
-import {estimateFee} from 'react-native-turbo-lnd';
+import {estimateFee} from 'react-native-turbo-lndltc';
 
 import InputField from '../InputField';
 import AddressField from '../AddressField';

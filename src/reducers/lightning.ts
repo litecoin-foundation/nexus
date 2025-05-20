@@ -6,9 +6,9 @@ import {
   unlockWallet as unlockLndWallet,
   subscribeState,
   stopDaemon,
-} from 'react-native-turbo-lnd';
+} from 'react-native-turbo-lndltc';
 import * as RNFS from '@dr.pogodin/react-native-fs';
-import {WalletState} from 'react-native-turbo-lnd/protos/lightning_pb';
+import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';

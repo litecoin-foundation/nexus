@@ -12,7 +12,7 @@ import {
   sendOnchainPayment,
   sendAllOnchainPayment,
 } from '../reducers/transaction';
-import {estimateFee} from 'react-native-turbo-lnd';
+import {estimateFee} from 'react-native-turbo-lndltc';
 import {
   satsToSubunitSelector,
   subunitCodeSelector,

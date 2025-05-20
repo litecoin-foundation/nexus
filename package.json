@@ -84,7 +84,7 @@
     "react-native-share": "^11.1.0",
     "react-native-svg": "^15.9.0",
     "react-native-touch-id": "^4.4.1",
-    "react-native-turbo-lnd": "github:hsjoberg/react-native-turbo-lnd#f9c563aeefe06e789940331045e7fcbc4a194870",
+    "react-native-turbo-lndltc": "^0.0.3",
     "react-native-turbo-scrypt": "0.0.7",
     "react-native-vision-camera": "^4.6.3",
     "react-native-webview": "13.12.5",
@@ -130,5 +130,6 @@
   },
   "trustedDependencies": [
     "protobufjs"
-  ]
+  ],
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

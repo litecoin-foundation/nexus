@@ -1,7 +1,7 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import {newAddress} from 'react-native-turbo-lnd';
-import {NewAddressResponse} from 'react-native-turbo-lnd/protos/lightning_pb';
+import {newAddress} from 'react-native-turbo-lndltc';
+import {NewAddressResponse} from 'react-native-turbo-lndltc/protos/lightning_pb';
 import {AppThunk} from './types';
 
 // types

@@ -1,7 +1,7 @@
 import React, {useEffect, useLayoutEffect} from 'react';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {subscribeState} from 'react-native-turbo-lnd';
-import {WalletState} from 'react-native-turbo-lnd/protos/lightning_pb';
+import {subscribeState} from 'react-native-turbo-lndltc';
+import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import Auth from '../../components/Auth';
 import {
