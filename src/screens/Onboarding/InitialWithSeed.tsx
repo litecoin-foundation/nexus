@@ -69,47 +69,62 @@ const InitialWithSeed = (props: Props) => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image source={require('../../assets/images/big-nexus-logo.png')} />
-        <View style={styles.imageContainer}>
-          <Image source={require('../../assets/images/nexus-text-logo.png')} />
+      <View style={styles.topContainer}>
+        <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
+          <View style={styles.logoContainer}>
+            <Image source={require('../../assets/images/big-nexus-logo.png')} />
+            <View style={styles.imageContainer}>
+              <Image
+                source={require('../../assets/images/nexus-text-logo.png')}
+              />
+              <TranslateText
+                textKey="for_litecoin"
+                domain="onboarding"
+                textStyle={styles.logoText}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                numberOfLines={1}
+              />
+            </View>
+          </View>
           <TranslateText
-            textKey="for_litecoin"
+            textKey="existing_seed_note"
             domain="onboarding"
-            textStyle={styles.logoText}
+            textStyle={styles.descText}
+            maxLengthInPixels={SCREEN_WIDTH}
             maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            numberOfLines={1}
+            numberOfLines={4}
           />
-        </View>
+        </CustomSafeAreaView>
       </View>
-      <TranslateText
-        textKey="existing_seed_note"
-        domain="onboarding"
-        textStyle={styles.descText}
-        maxLengthInPixels={SCREEN_WIDTH}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-        numberOfLines={4}
-      />
+
       <View style={styles.bottomContainer}>
         <CustomSafeAreaView
           styles={{...styles.safeArea, ...styles.btnsContainer}}
           edges={['bottom']}>
           <WhiteButton
-            textKey="proceed_with_existing"
-            textDomain="onboarding"
-            small={false}
-            onPress={() => {
-              loginWithExistingSeed(route.params.existingSeed);
-            }}
-            active={true}
-          />
-          <WhiteClearButton
             textKey="create_new_wallet"
             textDomain="onboarding"
             small={false}
             onPress={() => {
               dispatch(genSeed());
               navigation.navigate('Pin');
+            }}
+            active={true}
+          />
+          <WhiteClearButton
+            textKey="proceed_with_existing"
+            textDomain="onboarding"
+            small={false}
+            onPress={() => {
+              loginWithExistingSeed(route.params.existingSeed);
+            }}
+          />
+          <WhiteClearButton
+            textKey="already_wallet"
+            textDomain="onboarding"
+            small={false}
+            onPress={() => {
+              navigation.navigate('Recover');
             }}
           />
         </CustomSafeAreaView>
@@ -122,16 +137,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: 'center',
       alignItems: 'center',
     },
-    imageContainer: {
-      alignItems: 'center',
+    topContainer: {
+      flexBasis: '60%',
+      paddingTop: screenHeight * 0.07,
     },
     logoContainer: {
       alignItems: 'center',
-      gap: 30,
-      marginBottom: screenHeight * 0.04,
+      gap: screenHeight * 0.02,
+    },
+    imageContainer: {
+      alignItems: 'center',
     },
     logoText: {
       opacity: 0.6,
@@ -147,7 +164,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.018,
       fontWeight: '700',
       textAlign: 'center',
-      marginBottom: screenHeight * 0.1,
+      paddingTop: screenHeight * 0.02,
     },
     bottomContainer: {
       position: 'absolute',
