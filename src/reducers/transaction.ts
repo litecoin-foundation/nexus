@@ -349,7 +349,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       if (Math.sign(parseFloat(String(tx.amount))) === -1) {
         metaLabel = 'Send';
         if (
-          tx.numConfirmations <= 0 &&
+          tx.numConfirmations === 0 &&
           Number(tx.timeStamp) + 600 < Math.floor(Date.now() / 1000)
         ) {
           try {
