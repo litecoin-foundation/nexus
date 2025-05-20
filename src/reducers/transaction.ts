@@ -7,16 +7,14 @@ import {
   newAddress as newLndAddress,
   walletKitLabelTransaction,
   walletKitListUnspent,
-  walletKitFundPsbt,
-  walletKitFinalizePsbt,
-} from 'react-native-turbo-lnd';
+} from 'react-native-turbo-lndltc';
 import {
   GetTransactionsRequestSchema,
   OutputScriptType,
   PreviousOutPoint,
-  Utxo,
   OutPoint,
-} from 'react-native-turbo-lnd/protos/lightning_pb';
+  AddressType,
+} from 'react-native-turbo-lndltc/protos/lightning_pb';
 import {create} from '@bufbuild/protobuf';
 
 import {AppThunk} from './types';
@@ -61,11 +59,6 @@ type IOutputDetails = {
   outputType: OutputScriptType;
   pkScript: string;
 };
-
-interface Accumulator {
-  selectedUtxos: Utxo[];
-  totalAmountSat: number;
-}
 
 interface ITx {
   txSubscriptionStarted: boolean;
@@ -124,25 +117,7 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
   });
 };
 
-const selectUtxosForConversion = (
-  utxos: Utxo[],
-  amount: number,
-): Accumulator => {
-  return utxos.reduce<Accumulator>(
-    ({selectedUtxos, totalAmountSat}, utxo) => {
-      if (totalAmountSat >= amount) {
-        return {selectedUtxos, totalAmountSat};
-      }
-      return {
-        selectedUtxos: [...selectedUtxos, utxo],
-        totalAmountSat: totalAmountSat + Number(utxo.amountSat),
-      };
-    },
-    {selectedUtxos: [], totalAmountSat: 0},
-  );
-};
-
-export const sendConvertPsbtTransaction = async (
+export const sendConvertWithCoinControl = async (
   amount: number,
   destination: 'regular' | 'private',
 ) => {
@@ -167,23 +142,20 @@ export const sendConvertPsbtTransaction = async (
     // filter mweb and non mweb utxos, sort by largest
     // coin selection will use first largest available
     const mwebUtxos = utxos
-      .filter(utxo => utxo.addressType === 6)
+      .filter(utxo => utxo.addressType === AddressType.MWEB)
       .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
     const nonMwebUtxos = utxos
-      .filter(utxo => utxo.addressType !== 6)
+      .filter(utxo => utxo.addressType !== AddressType.MWEB)
       .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
 
-    const {selectedUtxos, totalAmountSat} = selectUtxosForConversion(
-      destination === 'regular' ? mwebUtxos : nonMwebUtxos,
-      amount,
-    );
+    console.log('MWEB utxos');
+    console.log(mwebUtxos);
+    console.log('canonical utxos');
+    console.log(nonMwebUtxos);
 
-    // check if selected UTXOs satisfy the amount
-    if (totalAmountSat < amount) {
-      throw new Error('Insufficient funds in UTXOs');
-    }
+    const outpoints = destination === 'private' ? nonMwebUtxos : mwebUtxos;
 
-    const outpointsArray = selectedUtxos
+    const outpointsArray = outpoints
       .map(utxo => utxo.outpoint)
       .filter((outpoint): outpoint is OutPoint => outpoint !== undefined);
 
@@ -191,33 +163,19 @@ export const sendConvertPsbtTransaction = async (
       throw new Error('Outpoints empty!');
     }
 
-    const psbt = await walletKitFundPsbt({
-      template: {
-        case: 'raw',
-        value: {
-          inputs: outpointsArray,
-          outputs: {
-            [destinationAddress.address]: BigInt(amount),
-          },
-        },
-      },
-      fees: {
-        case: 'targetConf',
-        value: 3,
-      },
+    if (!destinationAddress || destinationAddress === undefined) {
+      throw new Error('No destination address!');
+    }
+
+    const txid = await sendCoins({
+      addr: destinationAddress.address,
+      amount: BigInt(amount),
+      outpoints: outpointsArray,
+      // Set ghost label if it's undefined in order to prevent default labeling
+      label: ' ',
     });
 
-    const signedPsbt = await walletKitFinalizePsbt({
-      fundedPsbt: psbt.fundedPsbt,
-    });
-    const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
-    const finalPsbt = Buffer.from(signedPsbt.signedPsbt).toString('base64');
-    console.log(txHex);
-    console.log(finalPsbt);
-    console.log(destinationAddress.address);
-
-    // transaction.ts:270 Error: rpc error: code = Unknown desc = error finalizing PSBT: found UTXO tx cde375a5aaa7d6878e44d502e04af28f34af3836ebb139242ae7f8adbfea1662 but it doesn't match PSBT's input 7e237d4d7a8fdfe941f6caa8aaec5fffcb70ce3084e0f8d99a12a87aa0f37059
-    await publishTransaction(txHex);
+    console.log(txid);
   } catch (error) {
     console.error(error);
   }

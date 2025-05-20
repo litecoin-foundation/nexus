@@ -23,7 +23,7 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
-import {estimateFee} from 'react-native-turbo-lnd';
+import {estimateFee} from 'react-native-turbo-lndltc';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';

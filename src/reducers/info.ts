@@ -4,7 +4,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {
   getInfo as getLndInfo,
   getRecoveryInfo as getLndRecoveryInfo,
-} from 'react-native-turbo-lnd';
+} from 'react-native-turbo-lndltc';
 
 import {AppThunk} from './types';
 import {poll} from '../lib/utils/poll';

@@ -1,6 +1,6 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import {walletBalance, walletKitListUnspent} from 'react-native-turbo-lnd';
+import {walletBalance, walletKitListUnspent} from 'react-native-turbo-lndltc';
 
 import {AppThunk} from './types';
 import {poll} from '../lib/utils/poll';

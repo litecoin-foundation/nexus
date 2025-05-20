@@ -22,7 +22,7 @@ import {
   updatePrivateAmount,
   updateRegularAmount,
 } from '../../reducers/input';
-import {sendConvertPsbtTransaction} from '../../reducers/transaction';
+import {sendConvertWithCoinControl} from '../../reducers/transaction';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../TranslateText';
@@ -77,7 +77,7 @@ const Convert: React.FC<Props> = props => {
   const handleConfirm = () => {
     const amt = activeField === 'regular' ? regularAmount : privateAmount;
     const destination = activeField === 'regular' ? 'private' : 'regular';
-    sendConvertPsbtTransaction(convertToSats(Number(amt)), destination);
+    sendConvertWithCoinControl(convertToSats(Number(amt)), destination);
   };
 
   // animation
@@ -181,7 +181,7 @@ const Convert: React.FC<Props> = props => {
 
             <View style={styles.buttonContainer}>
               <BlueButton
-                disabled={true}
+                disabled={false}
                 textKey="convert_button"
                 textDomain="convertTab"
                 onPress={() => handleConfirm()}
