@@ -140,7 +140,7 @@
     "camera_disabled": "相机被禁止",
     "enable_camera": "开启相机来扫描二维码",
     "awesome": "漂亮666!",
-    "just-sent": "你刚刚发送",
+    "just_sent": "你刚刚发送",
     "balance_unconfirmed": "钱包中未确认的余额",
     "wallet_unsynced": "同步正在进行中...",
     "try_less_amount": "尝试输入更少的金额。考虑到预估费用，这可能超出了您的限制。",
@@ -251,7 +251,15 @@
   "convertTab": {
     "convert_button": "转换您的莱特币",
     "regular_ltc": "您的常规莱特币",
-    "private_ltc": "您的私密莱特币"
+    "private_ltc": "您的私密莱特币",
+    "regular": "常规",
+    "private": "私密",
+    "regular_to_private": "从常规转为私密",
+    "private_to_regular": "从私密转为常规",
+    "private_to_regular_note": "将您的私密莱特币转换为常规莱特币将在您的钱包中产生两笔不同的交易。在下一个莱特币区块生成之前（大约2.5–5分钟），您的余额可能不会显示。",
+    "confirm_convert": "确认转换",
+    "awesome": "太棒了！",
+    "just_converted": "您刚刚完成了转换"
   },
   "modals": {
     "delete": "删除",

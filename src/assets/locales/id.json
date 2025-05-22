@@ -140,7 +140,7 @@
     "camera_disabled": "Kamera Dinonaktifkan",
     "enable_camera": "Aktifkan Kamera untuk Scan Kode QR",
     "awesome": "Keren!",
-    "just-sent": "Anda telah mengirim",
+    "just_sent": "Anda telah mengirim",
     "balance_unconfirmed": "Saldo Belum Terkonfirmasi di Dompet",
     "wallet_unsynced": "Sinkronisasi Sedang Berlangsung...",
     "try_less_amount": "Coba masukkan jumlah yang lebih kecil. Mungkin jumlah tersebut melebihi batas Anda, dengan mempertimbangkan biaya yang diperkirakan.",
@@ -251,7 +251,15 @@
   "convertTab": {
     "convert_button": "Konversi LTC Anda",
     "regular_ltc": "LITECOIN BIASA ANDA",
-    "private_ltc": "LITECOIN PRIVAT ANDA"
+    "private_ltc": "LITECOIN PRIVAT ANDA",
+    "regular": "Reguler",
+    "private": "Privat",
+    "regular_to_private": "Dari Reguler ke Privat",
+    "private_to_regular": "Dari Privat ke Reguler",
+    "private_to_regular_note": "Mengonversi Litecoin Privat Anda ke Litecoin Reguler akan menghasilkan 2 transaksi berbeda di dompet Anda. Saldo Anda mungkin tidak muncul hingga blok Litecoin berikutnya (sekitar 2,5–5 menit).",
+    "confirm_convert": "Konfirmasi Konversi",
+    "awesome": "Luar biasa!",
+    "just_converted": "Anda baru saja mengonversi"
   },
   "modals": {
     "delete": "Hapus",

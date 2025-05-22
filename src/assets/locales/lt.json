@@ -140,7 +140,7 @@
     "camara_disabled": "Kamera išjungta",
     "enable_camera": "Įgalinti kamerą nuskaityti QR kodus",
     "awesome": "Nuostabu!",
-    "just-sent": "Ką tik išsiuntėte",
+    "just_sent": "Ką tik išsiuntėte",
     "balance_unconfirmed": "Nepatvirtintas likutis piniginėje",
     "wallet_unsynced": "Vyksta sinchronizacija...",
     "try_less_amount": "Bandykite įvesti mažesnę sumą. Tikriausiai ji viršija jūsų limitą, atsižvelgiant į apskaičiuotą mokestį.",
@@ -251,7 +251,15 @@
   "convertTab": {
     "convert_button": "Konvertuoti jūsų LTC",
     "regular_ltc": "JŪSŲ ĮPRASTAS LITECOIN",
-    "private_ltc": "JŪSŲ PRIVATUS LITECOIN"
+    "private_ltc": "JŪSŲ PRIVATUS LITECOIN",
+    "regular": "Įprastinis",
+    "private": "Privatus",
+    "regular_to_private": "Iš įprastinio į privatų",
+    "private_to_regular": "Iš privataus į įprastinį",
+    "private_to_regular_note": "Konvertavus jūsų privatų Litecoin į įprastinį Litecoin, jūsų piniginėje atsiras 2 skirtingos operacijos. Jūsų balansas gali būti nerodomas iki kito Litecoin bloko (apie 2,5–5 min.).",
+    "confirm_convert": "Patvirtinti konvertavimą",
+    "awesome": "Nuostabu!",
+    "just_converted": "Jūs ką tik konvertavote"
   },
   "modals": {
     "delete": "Ištrinti",

@@ -256,7 +256,7 @@
     "private": "Private",
     "regular_to_private": "Regular to Private",
     "private_to_regular": "Private to Regular",
-    "private_to_regular_note": "You're pegging out from MWEB. Therefore your wallet will display two separate transactions. It might take more time for the wallet to recognize your balance.",
+    "private_to_regular_note": "Converting your Private Litecoin to Regular Litecoin will result in 2 different transactions in your wallet. Your balance may be missing until the next Litecoin block (approx 2.5-5 min).",
     "confirm_convert": "Confirm Convertation",
     "awesome": "Awesome!",
     "just_converted": "You just converted"
