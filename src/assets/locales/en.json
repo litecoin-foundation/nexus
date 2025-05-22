@@ -140,7 +140,7 @@
     "camera_disabled": "Camara disabled",
     "enable_camera": "Enable Camera to Scan QR Codes",
     "awesome": "Awesome!",
-    "just-sent": "You just sent",
+    "just_sent": "You just sent",
     "balance_unconfirmed": "Unconfirmed Balance in Wallet",
     "wallet_unsynced": "Sync in Progress...",
     "try_less_amount": "Try input less amount. It is probably out of your limit, considering estimated fee.",
@@ -251,7 +251,15 @@
   "convertTab": {
     "convert_button": "Convert your LTC",
     "regular_ltc": "YOUR REGULAR LITECOIN",
-    "private_ltc": "YOUR PRIVATE LITECOIN"
+    "private_ltc": "YOUR PRIVATE LITECOIN",
+    "regular": "Regular",
+    "private": "Private",
+    "regular_to_private": "Regular to Private",
+    "private_to_regular": "Private to Regular",
+    "private_to_regular_note": "You're pegging out from MWEB. Therefore your wallet will display two separate transactions. It might take more time for the wallet to recognize your balance.",
+    "confirm_convert": "Confirm Convertation",
+    "awesome": "Awesome!",
+    "just_converted": "You just converted"
   },
   "modals": {
     "delete": "Delete",

@@ -175,9 +175,11 @@ export const sendConvertWithCoinControl = async (
       label: ' ',
     });
 
-    console.log(txid);
+    // console.log(txid);
+    return txid;
   } catch (error) {
-    console.error(error);
+    // console.error(error);
+    throw new Error(String(error));
   }
 };
 
