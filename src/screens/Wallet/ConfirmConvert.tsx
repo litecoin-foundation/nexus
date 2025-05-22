@@ -149,14 +149,14 @@ const ConfirmConvert: React.FC<Props> = props => {
           styles={styles.safeArea}
           edges={
             Platform.OS === 'ios'
-              ? ['left', 'right']
-              : ['bottom', 'left', 'right']
+              ? ['top', 'left', 'right']
+              : ['top', 'bottom', 'left', 'right']
           }>
           <View style={styles.body}>
             <TranslateText
               textKey="convert"
               domain="main"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.03}
               textStyle={styles.convertText}
               numberOfLines={1}
             />
@@ -172,7 +172,7 @@ const ConfirmConvert: React.FC<Props> = props => {
                   isRegular ? 'regular_to_private' : 'private_to_regular'
                 }
                 domain="convertTab"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={styles.fromToText}
                 numberOfLines={1}
               />
@@ -320,10 +320,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       height: '100%',
       display: 'flex',
-      flexDirection: 'column',
       alignItems: 'flex-start',
       position: 'relative',
-      paddingTop: screenHeight * 0.12,
+      paddingTop: screenHeight * 0.05,
       paddingHorizontal: screenWidth * 0.06,
     },
     convertText: {
@@ -331,7 +330,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.025,
+      fontSize: screenHeight * 0.03,
       marginTop: screenHeight * 0.08,
     },
     amountText: {
@@ -350,7 +349,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingBottom: screenHeight * 0.01,
       paddingLeft: screenHeight * 0.014,
       paddingRight: screenHeight * 0.014,
-      marginBottom: screenHeight * 0.1,
+      marginTop: screenHeight * 0.01,
+      marginBottom:
+        Platform.OS === 'ios' ? screenHeight * 0.1 : screenHeight * 0.08,
     },
     fromToText: {
       color: '#fff',
