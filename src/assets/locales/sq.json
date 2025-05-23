@@ -140,7 +140,7 @@
     "camera_disabled": "Kamera e çaktivizuar",
     "enable_camera": "Aktivizo Kamerën për të skanuar Kodet QR",
     "awesome": "Shkëlqyeshëm!",
-    "just-sent": "Sapo dërgove",
+    "just_sent": "Sapo dërgove",
     "balance_unconfirmed": "Bilanc i pakonfirmuar në Portofol",
     "wallet_unsynced": "Sinkronizimi në vazhdim...",
     "try_less_amount": "Provo të vendosësh një shumë më të vogël. Ndoshta është mbi limitin tënd, duke marrë parasysh tarifën e përllogaritur.",
@@ -251,7 +251,15 @@
   "convertTab": {
     "convert_button": "Konverto LTC-në tënde",
     "regular_ltc": "LITECOIN-I YT I ZAKONSHËM",
-    "private_ltc": "LITECOIN-I YT PRIVAT"
+    "private_ltc": "LITECOIN-I YT PRIVAT",
+    "regular": "I rregullt",
+    "private": "Privat",
+    "regular_to_private": "Nga i rregullt në privat",
+    "private_to_regular": "Nga privat në i rregullt",
+    "private_to_regular_note": "Konvertimi i Litecoin-it tuaj privat në Litecoin të rregullt do të rezultojë në 2 transaksione të ndryshme në portofolin tuaj. Bilanci juaj mund të mos shfaqet deri në bllokun tjetër të Litecoin-it (afërsisht 2.5–5 minuta).",
+    "confirm_convert": "Konfirmo konvertimin",
+    "awesome": "E mrekullueshme!",
+    "just_converted": "Sapo konvertove"
   },
   "modals": {
     "delete": "Fshi",

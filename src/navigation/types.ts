@@ -35,6 +35,18 @@ export type NewWalletStackParamList = {
   ConfirmSellOnramper: {
     [key: string]: any;
   };
+  ConfirmConvert: {
+    isRegular: boolean;
+    regularAmount: string;
+    privateAmount: string;
+    regularConfirmedBalance: string;
+    privateConfirmedBalance: string;
+  };
+  SuccessConvert: {
+    txid: string;
+    amount: number;
+    isRegular: boolean;
+  };
 };
 
 export type OnboardingStackParamList = {

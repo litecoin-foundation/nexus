@@ -6,10 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
-import {
-  satsToSubunitSelector,
-  subunitCodeSelector,
-} from '../../reducers/settings';
+import {subunitCodeSelector} from '../../reducers/settings';
 import {useAppSelector} from '../../store/hooks';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
@@ -17,8 +14,10 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
-  SuccessSend: {
+  SuccessConvert: {
     txid: string;
+    amount: number;
+    isRegular: boolean;
   };
   SearchTransaction: undefined;
   Main: {
@@ -27,24 +26,19 @@ type RootStackParamList = {
 };
 
 interface Props {
-  route: RouteProp<RootStackParamList, 'SuccessSend'>;
+  route: RouteProp<RootStackParamList, 'SuccessConvert'>;
 }
 
-const SuccessSend: React.FC<Props> = () => {
+const SuccessConvert: React.FC<Props> = props => {
+  const {route} = props;
+  const {amount, isRegular} = route.params;
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const amount = useAppSelector(state => state.input.send.amount);
-  const toAddress = useAppSelector(state => state.input.send.toAddress);
   const amountCode = useAppSelector(state => subunitCodeSelector(state));
-  const convertToSubunit = useAppSelector(state =>
-    satsToSubunitSelector(state),
-  );
-
-  const amountInSubunit = convertToSubunit(amount);
 
   return (
     <>
@@ -52,27 +46,31 @@ const SuccessSend: React.FC<Props> = () => {
         <View style={styles.body}>
           <TranslateText
             textKey="awesome"
-            domain="sendTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+            domain="convertTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.06}
             textStyle={styles.title}
             numberOfLines={1}
           />
           <TranslateText
-            textKey="just_sent"
-            domain="sendTab"
+            textKey="just_converted"
+            domain="convertTab"
             maxSizeInPixels={SCREEN_HEIGHT * 0.025}
             textStyle={styles.subtitle}
             numberOfLines={1}
           />
-          <Text style={styles.amount}>
-            {amountInSubunit + ' ' + amountCode}
-          </Text>
+          <Text style={styles.amount}>{amount + ' ' + amountCode}</Text>
           <Image
             source={require('../../assets/images/arrow-down.png')}
             style={styles.image}
           />
-          <View style={styles.toAddressContainer}>
-            <Text style={styles.toAddressText}>{toAddress}</Text>
+          <View style={styles.fromToContainer}>
+            <TranslateText
+              textKey={isRegular ? 'regular_to_private' : 'private_to_regular'}
+              domain="convertTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+              textStyle={styles.fromToText}
+              numberOfLines={1}
+            />
           </View>
         </View>
 
@@ -124,7 +122,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.07,
+      fontSize: screenHeight * 0.06,
       textAlign: 'center',
       marginTop: screenHeight * 0.05 * -1,
     },
@@ -134,7 +132,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.016,
+      fontSize: screenHeight * 0.025,
       textAlign: 'center',
       opacity: 0.9,
       marginTop: screenHeight * 0.005,
@@ -145,33 +143,32 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.05,
+      fontSize: screenHeight * 0.04,
       textAlign: 'center',
       marginTop: screenHeight * 0.005,
-    },
-    toAddressContainer: {
-      width: 'auto',
-      height: 'auto',
-      borderRadius: screenHeight * 0.012,
-      backgroundColor: 'rgba(240, 240, 240, 0.1)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: screenHeight * 0.005,
-      paddingHorizontal: screenWidth * 0.05,
-      paddingVertical: screenWidth * 0.02,
-    },
-    toAddressText: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '500',
-      fontSize: screenHeight * 0.025,
-      textAlign: 'center',
     },
     image: {
       height: 16,
       marginTop: 20,
       marginBottom: 20,
+    },
+    fromToContainer: {
+      width: 'auto',
+      borderRadius: screenHeight * 0.01,
+      backgroundColor: '#0F4CAD',
+      paddingTop: screenHeight * 0.01,
+      paddingBottom: screenHeight * 0.01,
+      paddingLeft: screenHeight * 0.014,
+      paddingRight: screenHeight * 0.014,
+    },
+    fromToText: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.02,
+      opacity: 0.4,
+      textTransform: 'uppercase',
     },
     bottomContainer: {
       position: 'absolute',
@@ -186,7 +183,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     safeArea: {},
   });
 
-export const SuccessSendNavigationOptions = () => {
+export const SuccessConvertNavigationOptions = () => {
   return {
     headerTitle: '',
     headerTransparent: true,
@@ -196,4 +193,4 @@ export const SuccessSendNavigationOptions = () => {
   };
 };
 
-export default SuccessSend;
+export default SuccessConvert;

@@ -28,6 +28,12 @@ import SearchTransaction, {
   SearchTransactionNavigationOptions,
 } from '../screens/Wallet/SearchTransaction';
 import {NewWalletStackParamList} from './types';
+import ConfirmConvert, {
+  ConfirmConvertNavigationOptions,
+} from '../screens/Wallet/ConfirmConvert';
+import SuccessConvert, {
+  SuccessConvertNavigationOptions,
+} from '../screens/Wallet/SuccessConvert';
 
 const Stack = createStackNavigator<NewWalletStackParamList>();
 
@@ -99,6 +105,16 @@ function NewWalletStack(): React.JSX.Element {
         options={({navigation}) =>
           SearchTransactionNavigationOptions(navigation)
         }
+      />
+      <Stack.Screen
+        name="ConfirmConvert"
+        component={ConfirmConvert}
+        options={({navigation}) => ConfirmConvertNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="SuccessConvert"
+        component={SuccessConvert}
+        options={({}) => SuccessConvertNavigationOptions()}
       />
     </Stack.Navigator>
   );

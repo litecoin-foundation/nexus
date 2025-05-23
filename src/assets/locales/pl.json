@@ -140,7 +140,7 @@
     "camera_disabled": "Aparat wyłączony",
     "enable_camera": "Włącz uprawnienia aparatu by zeskanować kod QR",
     "awesome": "Świetnie!",
-    "just-sent": "Litecoin został wysłany",
+    "just_sent": "Litecoin został wysłany",
     "balance_unconfirmed": "Niepotwierdzony saldo w portfelu",
     "wallet_unsynced": "Trwa synchronizacja...",
     "try_less_amount": "Spróbuj wpisać mniejszą kwotę. Prawdopodobnie przekracza ona Twój limit, biorąc pod uwagę szacowaną opłatę.",
@@ -251,7 +251,15 @@
   "convertTab": {
     "convert_button": "Wymień swoje LTC",
     "regular_ltc": "TWÓJ ZWYKŁY LITECOIN",
-    "private_ltc": "TWÓJ PRYWATNY LITECOIN"
+    "private_ltc": "TWÓJ PRYWATNY LITECOIN",
+    "regular": "Zwykły",
+    "private": "Prywatny",
+    "regular_to_private": "Ze Zwykłego na Prywatny",
+    "private_to_regular": "Z Prywatnego na Zwykły",
+    "private_to_regular_note": "Konwersja Twojego Prywatnego Litecoina na Zwykłego Litecoina spowoduje dwie oddzielne transakcje w Twoim portfelu. Twój saldo może być niewidoczne do momentu kolejnego bloku Litecoina (około 2,5–5 minut).",
+    "confirm_convert": "Potwierdź konwersję",
+    "awesome": "Świetnie!",
+    "just_converted": "Właśnie dokonałeś konwersji"
   },
   "modals": {
     "delete": "Usuń",

@@ -1,5 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -14,7 +16,6 @@ import {useAppSelector} from '../../store/hooks';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
-  subunitToSatsSelector,
 } from '../../reducers/settings';
 import {useDispatch} from 'react-redux';
 import {
@@ -22,17 +23,33 @@ import {
   updatePrivateAmount,
   updateRegularAmount,
 } from '../../reducers/input';
-import {sendConvertWithCoinControl} from '../../reducers/transaction';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+// interface Props {}
 
-const Convert: React.FC<Props> = props => {
-  const {} = props;
+type RootStackParamList = {
+  Convert: undefined;
+  ConfirmConvert: {
+    isRegular: boolean;
+    regularAmount: string;
+    privateAmount: string;
+    regularConfirmedBalance: string;
+    privateConfirmedBalance: string;
+  };
+};
+
+interface Props {
+  route: RouteProp<RootStackParamList, 'Convert'>;
+  navigation: StackNavigationProp<RootStackParamList, 'Convert'>;
+}
+
+const Convert: React.FC<Props> = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation<Props['navigation']>();
+
   const [activeField, setActiveField] = useState<'regular' | 'private'>(
     'regular',
   );
@@ -45,7 +62,6 @@ const Convert: React.FC<Props> = props => {
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
-  const convertToSats = useAppSelector(state => subunitToSatsSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -72,12 +88,6 @@ const Convert: React.FC<Props> = props => {
     } else if (activeField === 'private') {
       setActiveField('regular');
     }
-  };
-
-  const handleConfirm = () => {
-    const amt = activeField === 'regular' ? regularAmount : privateAmount;
-    const destination = activeField === 'regular' ? 'private' : 'regular';
-    sendConvertWithCoinControl(convertToSats(Number(amt)), destination);
   };
 
   // animation
@@ -107,6 +117,16 @@ const Convert: React.FC<Props> = props => {
 
   const onPressOut = () => {
     scaler.value = withSpring(1, {mass: 0.7});
+  };
+
+  const handleConvert = () => {
+    navigation.navigate('ConfirmConvert', {
+      isRegular: activeField === 'regular',
+      regularAmount,
+      privateAmount,
+      regularConfirmedBalance,
+      privateConfirmedBalance,
+    });
   };
 
   return (
@@ -184,7 +204,7 @@ const Convert: React.FC<Props> = props => {
                 disabled={false}
                 textKey="convert_button"
                 textDomain="convertTab"
-                onPress={() => handleConfirm()}
+                onPress={() => handleConvert()}
               />
             </View>
           </View>

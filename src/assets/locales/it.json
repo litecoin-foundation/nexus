@@ -140,7 +140,7 @@
     "camera_disabled": "Fotocamera disabilitata",
     "enable_camera": "Abilita la camera per scannerizzare i codici QR",
     "awesome": "Fantastico!",
-    "just-sent": "Hai appena inviato",
+    "just_sent": "Hai appena inviato",
     "balance_unconfirmed": "Saldo non confermato nel portafoglio",
     "wallet_unsynced": "Sincronizzazione in corso...",
     "try_less_amount": "Prova a inserire un importo inferiore. Probabilmente supera il tuo limite, considerando la commissione stimata.",
@@ -251,7 +251,15 @@
   "convertTab": {
     "convert_button": "Converti i tuoi LTC",
     "regular_ltc": "I TUOI LITECOIN REGOLARI",
-    "private_ltc": "I TUOI LITECOIN PRIVATI"
+    "private_ltc": "I TUOI LITECOIN PRIVATI",
+    "regular": "Regolare",
+    "private": "Privato",
+    "regular_to_private": "Da Regolare a Privato",
+    "private_to_regular": "Da Privato a Regolare",
+    "private_to_regular_note": "Convertire il tuo Litecoin Privato in Litecoin Regolare comporterà due transazioni distinte nel tuo portafoglio. Il tuo saldo potrebbe non essere visibile fino al prossimo blocco di Litecoin (circa 2,5–5 minuti).",
+    "confirm_convert": "Conferma Conversione",
+    "awesome": "Fantastico!",
+    "just_converted": "Hai appena convertito"
   },
   "modals": {
     "delete": "Elimina",

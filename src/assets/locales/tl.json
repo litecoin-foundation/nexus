@@ -140,7 +140,7 @@
     "camera_disabled": "Ang kamera ay hindi gumagana",
     "enable_camera": "Paganahin ang kamera para ma-scan ang QR Codes",
     "awesome": "Kahanga-hanga!",
-    "just-sent": "Nagpadala ka lang",
+    "just_sent": "Nagpadala ka lang",
     "balance_unconfirmed": "Hindi pa nakumpirmang balanse sa Wallet",
     "wallet_unsynced": "Sync ay Nagpapatuloy...",
     "try_less_amount": "Subukan mong mag-input ng mas mababang halaga. Malamang na lampas ito sa iyong limitasyon, isinasaalang-alang ang tinatayang bayad.",
@@ -251,7 +251,15 @@
   "convertTab": {
     "convert_button": "Palitan ang iyong LTC",
     "regular_ltc": "ANG IYONG REGULAR NA LITECOIN",
-    "private_ltc": "ANG IYONG PRIBADONG LITECOIN"
+    "private_ltc": "ANG IYONG PRIBADONG LITECOIN",
+    "regular": "Regular",
+    "private": "Pribado",
+    "regular_to_private": "Mula Regular papuntang Pribado",
+    "private_to_regular": "Mula Pribado papuntang Regular",
+    "private_to_regular_note": "Ang pagko-convert ng iyong Pribadong Litecoin sa Regular na Litecoin ay magreresulta sa 2 magkahiwalay na transaksyon sa iyong wallet. Maaaring hindi lumabas ang iyong balanse hanggang sa susunod na Litecoin block (mga 2.5–5 minuto).",
+    "confirm_convert": "Kumpirmahin ang Pag-convert",
+    "awesome": "Astig!",
+    "just_converted": "Kakaconvert mo lang"
   },
   "modals": {
     "delete": "Tanggalin",
