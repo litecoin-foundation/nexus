@@ -20,13 +20,19 @@ interface Props {
   walletName: string;
   balance: number;
   fiatBalance: number;
-  priceRate: number;
-  prevRate: number;
+  chartPercentage: number;
+  chartPercentageChange: string;
 }
 
 const WalletTab: React.FC<Props> = (props: Props) => {
-  const {colorStyle, walletName, balance, fiatBalance, priceRate, prevRate} =
-    props;
+  const {
+    colorStyle,
+    walletName,
+    balance,
+    fiatBalance,
+    chartPercentage,
+    chartPercentageChange,
+  } = props;
   const dispatch = useAppDispatch();
 
   const amountCode = useAppSelector(state => subunitCodeSelector(state));
@@ -46,10 +52,6 @@ const WalletTab: React.FC<Props> = (props: Props) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, isWhiteStyle);
-
-  const change: any = (priceRate / prevRate) * 100 - 100;
-  const changeText =
-    change < 0 ? '' : '+' + parseFloat(change).toFixed(2) + '%';
 
   // animation
   const scaler = useSharedValue(1);
@@ -104,9 +106,9 @@ const WalletTab: React.FC<Props> = (props: Props) => {
             textStyle={styles.tabLeftWorth}
             numberOfLines={1}
           />
-          <PriceIndicatorButton value={Number(change)} />
+          <PriceIndicatorButton value={Number(chartPercentage)} />
           <TranslateText
-            textValue={String(changeText)}
+            textValue={String(chartPercentageChange)}
             maxSizeInPixels={SCREEN_HEIGHT * 0.017}
             textStyle={styles.tabLeftWorthChange}
             numberOfLines={1}

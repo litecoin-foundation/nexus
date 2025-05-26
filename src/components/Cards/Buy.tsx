@@ -216,6 +216,7 @@ const Buy: React.FC<Props> = () => {
           <BuyPad
             onChange={(value: string) => onChange(value)}
             currentValue={toggleLTC ? amount : fiatAmount}
+            small
           />
         </View>
       </View>

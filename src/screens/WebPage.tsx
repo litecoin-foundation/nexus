@@ -13,7 +13,8 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 
 import Header from '../components/Header';
 import HeaderButton from '../components/Buttons/HeaderButton';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import CustomSafeAreaView from '../components/CustomSafeAreaView';
 
 type RootStackParamList = {
   WebPage: {
@@ -29,7 +30,6 @@ interface Props {
 
 const WebPage: React.FC<Props> = props => {
   const {route} = props;
-  const insets = useSafeAreaInsets();
   const WebPageRef = useRef<WebView>(null);
   const navigation = useNavigation();
 
@@ -65,12 +65,8 @@ const WebPage: React.FC<Props> = props => {
   }, [currentUrl, observeURL, returnRoute, navigation]);
 
   return (
-    <View
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-      ]}>
-      <Header modal={true} />
+    <CustomSafeAreaView styles={styles.container} edges={['bottom']}>
+      <Header modal={Platform.OS === 'android' ? false : true} />
       <WebView
         style={styles.webview}
         source={{uri: route.params.uri}}
@@ -122,7 +118,7 @@ const WebPage: React.FC<Props> = props => {
           />
         </TouchableOpacity>
       </View>
-    </View>
+    </CustomSafeAreaView>
   );
 };
 
@@ -149,8 +145,10 @@ const styles = StyleSheet.create({
 });
 
 export const WebPageNavigationOptions = (navigation: any) => {
+  const presentation =
+    Platform.OS === 'ios' ? {...TransitionPresets.ModalPresentationIOS} : {};
   return {
-    ...TransitionPresets.ModalPresentationIOS,
+    ...presentation,
     headerTitle: '',
     headerTransparent: true,
     headerBackTitleVisible: false,
