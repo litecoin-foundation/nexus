@@ -13,6 +13,7 @@ import WalletTab from '../Tabs/WalletTab';
 import {useAppSelector} from '../../store/hooks';
 import {satsToSubunitSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
+import {chartPercentageChangeSelector} from '../../reducers/chart';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -45,6 +46,15 @@ export default function WalletsModalContent(props: Props) {
     state => state.info.isInternetReachable,
   );
 
+  const chartPercentageChange = useAppSelector(state =>
+    chartPercentageChangeSelector(state),
+  );
+  const chartPercentage = chartPercentageChange
+    ? Number(
+        chartPercentageChange.substring(0, chartPercentageChange.length - 1),
+      )
+    : 0;
+
   // animation
   const buttonOpacity = useSharedValue(0);
 
@@ -75,8 +85,8 @@ export default function WalletsModalContent(props: Props) {
           walletName={t('main_wallet')}
           balance={balanceAmount}
           fiatBalance={fiatAmount}
-          priceRate={65}
-          prevRate={55}
+          chartPercentage={chartPercentage}
+          chartPercentageChange={String(chartPercentageChange)}
         />
       </Animated.View>
       {/* <Animated.View style={[styles.bodyItem, animatedButton]}>

@@ -1,9 +1,14 @@
-import React, {useEffect, useContext, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useContext,
+  useState,
+} from 'react';
+import {View, StyleSheet, Platform} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 
-import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TableCell from '../../components/Cells/TableCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import TranslateText from '../../components/TranslateText';
@@ -15,6 +20,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {showError} from '../../reducers/errors';
 import {parseQueryString} from '../../lib/utils/querystring';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -81,12 +87,20 @@ const ConfirmBuy: React.FC<Props> = props => {
 
   const address = useAppSelector(state => state.address.address);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     dispatch(getAddress());
-  }, [dispatch]);
+  });
 
-  const openBuyWidget = async () => {
+  const openBuyWidget = useCallback(async () => {
     try {
+      if (!address) {
+        throw new Error('Address not found. Go back and Try again!');
+      }
+
+      if (!baseCurrencyAmount) {
+        throw new Error('Purchase amount not found.');
+      }
+
       // await is important!
       const url = await dispatch(getSignedUrl(address, baseCurrencyAmount));
 
@@ -103,7 +117,8 @@ const ConfirmBuy: React.FC<Props> = props => {
     } catch (error) {
       dispatch(showError(String(error)));
     }
-  };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [address, baseCurrencyAmount]);
 
   // handle successful purchase
   useEffect(() => {
@@ -128,7 +143,7 @@ const ConfirmBuy: React.FC<Props> = props => {
         }
       }
     }
-    /* eslint-disable react-hooks/exhaustive-deps */
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [route.params, navigation]);
 
   const SuccessScreen = (
@@ -181,7 +196,9 @@ const ConfirmBuy: React.FC<Props> = props => {
         SuccessScreen
       ) : (
         <>
-          <CustomSafeAreaView>
+          <CustomSafeAreaView
+            styles={styles.safeArea}
+            edges={Platform.OS === 'android' ? ['top', 'bottom'] : ['top']}>
             <View style={styles.topContainer}>
               <TranslateText
                 textKey={'purchasing'}
@@ -205,39 +222,39 @@ const ConfirmBuy: React.FC<Props> = props => {
                 />
               </View>
             </View>
-          </CustomSafeAreaView>
 
-          <View style={styles.bottomSheetContainer}>
-            <TableCell
-              titleTextKey="rate"
-              titleTextDomain="buyTab"
-              value={`${currencySymbol}${ltcPrice.toFixed(2)} per 1 LTC`}
-              noBorder
-            />
-            <TableCell
-              titleTextKey="total_fee"
-              titleTextDomain="main"
-              value={`${currencySymbol}${feeAmount.toFixed(2)}`}
-            />
-            <TableCell
-              titleTextKey="network_fee"
-              titleTextDomain="main"
-              value={`${currencySymbol}${networkFeeAmount.toFixed(2)}`}
-            />
-            <TableCell
-              titleTextKey="will_spend"
-              titleTextDomain="buyTab"
-              value={`${currencySymbol}${totalAmount.toFixed(2)}`}
-              valueStyle={{color: '#20BB74'}}
-            />
-            <View style={styles.confirmButtonContainer}>
-              <GreenButton
-                textKey="continue_purchase"
-                textDomain="buyTab"
-                onPress={() => openBuyWidget()}
+            <View style={styles.bottomSheetContainer}>
+              <TableCell
+                titleTextKey="rate"
+                titleTextDomain="buyTab"
+                value={`${currencySymbol}${ltcPrice.toFixed(2)} per 1 LTC`}
+                noBorder
               />
+              <TableCell
+                titleTextKey="total_fee"
+                titleTextDomain="main"
+                value={`${currencySymbol}${feeAmount.toFixed(2)}`}
+              />
+              <TableCell
+                titleTextKey="network_fee"
+                titleTextDomain="main"
+                value={`${currencySymbol}${networkFeeAmount.toFixed(2)}`}
+              />
+              <TableCell
+                titleTextKey="will_spend"
+                titleTextDomain="buyTab"
+                value={`${currencySymbol}${totalAmount.toFixed(2)}`}
+                valueStyle={{color: '#20BB74'}}
+              />
+              <View style={styles.confirmButtonContainer}>
+                <GreenButton
+                  textKey="continue_purchase"
+                  textDomain="buyTab"
+                  onPress={() => openBuyWidget()}
+                />
+              </View>
             </View>
-          </View>
+          </CustomSafeAreaView>
         </>
       )}
     </View>
@@ -250,12 +267,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
       backgroundColor: '#1162E6',
     },
+    safeArea: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
     topContainer: {
       paddingHorizontal: screenWidth * 0.04,
     },
     bottomSheetContainer: {
-      position: 'absolute',
-      bottom: 0,
       width: '100%',
       height: screenHeight * 0.36,
       backgroundColor: 'white',
@@ -369,7 +388,7 @@ export const ConfirmBuyNavigationOptions = (navigation: any) => {
       <HeaderButton
         textKey="change"
         textDomain="buyTab"
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Main', {updateHeader: true})}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

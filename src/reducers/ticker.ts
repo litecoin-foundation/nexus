@@ -275,18 +275,22 @@ export const updateHistoricalRates = (): AppThunk => (dispatch, getStore) => {
 
 export const updateHistoricalRatesForAllPeriods =
   (): AppThunk => async dispatch => {
-    let result = await fetchHistoricalRates('1D');
-    dispatch(updateHistoricRateDayAction(result));
-    result = await fetchHistoricalRates('1W');
-    dispatch(updateHistoricRateWeekAction(result));
-    result = await fetchHistoricalRates('1M');
-    dispatch(updateHistoricRateMonthAction(result));
-    result = await fetchHistoricalRates('3M');
-    dispatch(updateHistoricRateQuarterAction(result));
-    result = await fetchHistoricalRates('1Y');
-    dispatch(updateHistoricRateYearAction(result));
-    result = await fetchHistoricalRates('ALL');
-    dispatch(updateHistoricRateAllAction(result));
+    try {
+      let result = await fetchHistoricalRates('1D');
+      dispatch(updateHistoricRateDayAction(result));
+      result = await fetchHistoricalRates('1W');
+      dispatch(updateHistoricRateWeekAction(result));
+      result = await fetchHistoricalRates('1M');
+      dispatch(updateHistoricRateMonthAction(result));
+      result = await fetchHistoricalRates('3M');
+      dispatch(updateHistoricRateQuarterAction(result));
+      result = await fetchHistoricalRates('1Y');
+      dispatch(updateHistoricRateYearAction(result));
+      result = await fetchHistoricalRates('ALL');
+      dispatch(updateHistoricRateAllAction(result));
+    } catch (error) {
+      console.error('Error fetching all historical rates:', error);
+    }
   };
 
 // slice
@@ -407,8 +411,13 @@ export const monthSelector = createSelector(
       data = allData as any[];
     }
 
-    if (data === undefined || data === null) {
-      return;
+    if (data === undefined || data === null || (data && data.length === 0)) {
+      return [
+        {
+          x: new Date(),
+          y: 0,
+        },
+      ];
     }
 
     const result = data.map(item => {
