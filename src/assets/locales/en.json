@@ -257,7 +257,7 @@
     "regular_to_private": "Regular to Private",
     "private_to_regular": "Private to Regular",
     "private_to_regular_note": "Converting your Private Litecoin to Regular Litecoin will result in 2 different transactions in your wallet. Your balance may be missing until the next Litecoin block (approx 2.5-5 min).",
-    "confirm_convert": "Confirm Convertation",
+    "confirm_convert": "Confirm Conversion",
     "awesome": "Awesome!",
     "just_converted": "You just converted"
   },

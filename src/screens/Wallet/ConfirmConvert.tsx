@@ -5,6 +5,7 @@ import {
   DeviceEventEmitter,
   Platform,
   Image,
+  Alert,
 } from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -15,6 +16,7 @@ import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import GreenButton from '../../components/Buttons/GreenButton';
+import {useTranslation} from 'react-i18next';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sendConvertWithCoinControl} from '../../reducers/transaction';
 import {showError} from '../../reducers/errors';
@@ -60,6 +62,8 @@ const ConfirmConvert: React.FC<Props> = props => {
     privateConfirmedBalance,
   } = route.params;
   const dispatch = useAppDispatch();
+
+  const {t} = useTranslation('settingsTab');
 
   const [loading, setLoading] = useState(false);
 
@@ -292,8 +296,13 @@ const ConfirmConvert: React.FC<Props> = props => {
             cardTranslateAnim={cardTranslateAnim}
             close={() => setIsPinModalOpened(false)}
             handleValidationFailure={() =>
-              // TODO: handle pin failure
-              console.log('incorrect pin')
+              Alert.alert('Incorrect Pincode', undefined, [
+                {
+                  text: t('dismiss'),
+                  onPress: () => setIsPinModalOpened(false),
+                  style: 'cancel',
+                },
+              ])
             }
             handleValidationSuccess={() => handleConvert()}
           />

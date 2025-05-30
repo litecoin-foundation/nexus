@@ -1743,7 +1743,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-turbo-lndltc (0.0.3):
+  - react-native-turbo-lndltc (0.1.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2848,7 +2848,7 @@ SPEC CHECKSUMS:
   react-native-segmented-control: df843bb9a27d4397ee7b8f1d72e3d71326eba7d4
   react-native-skia: 31367362a9ba24392e17cb6ef72ee362beea89c5
   react-native-slider: e500e3bac6ce86f2368bfc376e260a1957f6f5d9
-  react-native-turbo-lndltc: 64393673fe2550bae3a6ce9dacfa5f0cd76bbc88
+  react-native-turbo-lndltc: 64e4d576083dcd683eeb4fb11a6475fa64b6f072
   react-native-webview: b8f9b1f9bdb081c239e46d9bf030881d2678f25d
   React-nativeconfig: 8efdb1ef1e9158c77098a93085438f7e7b463678
   React-NativeModulesApple: 958d4f6c5c2ace4c0f427cf7ef82e28ae6538a22
