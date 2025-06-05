@@ -58,6 +58,10 @@ const Import: React.FC<Props> = props => {
   useEffect(() => {
     const handleScan = async (scanPayload: string) => {
       try {
+        if (!address) {
+          throw new Error('Receiving address not found.');
+        }
+
         const rawTxs = await sweepQrKey(scanPayload, address);
 
         await Promise.all(
@@ -65,13 +69,12 @@ const Import: React.FC<Props> = props => {
             await Promise.all(
               rawTx.map(async (txHex: string) => {
                 const res = await publishTransaction(txHex);
-                throw new Error(String(res));
               }),
             );
           }),
         );
 
-        navigation.replace('ImportSuccess', {
+        navigation.navigate('ImportSuccess', {
           txHash: t('success'),
         });
       } catch (error) {

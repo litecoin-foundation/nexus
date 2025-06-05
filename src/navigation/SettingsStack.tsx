@@ -24,6 +24,9 @@ import RecoverLitewallet, {
 import ImportSuccess, {
   ImportSuccessNavigationOptions,
 } from '../screens/Settings/ImportSuccess';
+import ImportDeeplink, {
+  ImportDeeplinkNavigationOptions,
+} from '../screens/Settings/ImportDeeplink';
 import Support, {SupportNavigationOptions} from '../screens/Settings/Support';
 import ResetWallet, {
   ResetWalletNavigationOptions,
@@ -91,16 +94,21 @@ function SettingsStack() {
         options={({navigation}) => ImportNavigationOptions(navigation)}
       />
       <Stack.Screen
+        name="ImportSuccess"
+        component={ImportSuccess}
+        options={() => ImportSuccessNavigationOptions()}
+      />
+      <Stack.Screen
+        name="ImportDeeplink"
+        component={ImportDeeplink}
+        options={() => ImportDeeplinkNavigationOptions()}
+      />
+      <Stack.Screen
         name="RecoverLitewallet"
         component={RecoverLitewallet}
         options={({navigation}) =>
           RecoverLitewalletNavigationOptions(navigation)
         }
-      />
-      <Stack.Screen
-        name="ImportSuccess"
-        component={ImportSuccess}
-        options={({navigation}) => ImportSuccessNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Support"

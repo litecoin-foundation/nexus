@@ -246,7 +246,8 @@
     "view_tx": "View Transaction",
     "camera_error": "Camera Disabled",
     "cancel": "Cancel",
-    "change_login": "Change Login Passcode"
+    "change_login": "Change Login Passcode",
+    "processing": "Processing..."
   },
   "convertTab": {
     "convert_button": "Convert your LTC",

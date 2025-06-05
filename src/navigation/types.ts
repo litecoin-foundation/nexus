@@ -67,7 +67,9 @@ export type OnboardingStackParamList = {
 };
 
 export type SettingsStackParamList = {
-  Settings: undefined;
+  Settings: {
+    updateHeader?: boolean;
+  };
   ChangePincode: undefined;
   Seed: undefined;
   About: undefined;
@@ -80,10 +82,13 @@ export type SettingsStackParamList = {
   Import: {
     scanData?: string;
   };
-  RecoverLitewallet: undefined;
   ImportSuccess: {
     txHash: string;
   };
+  ImportDeeplink: {
+    scanData?: string;
+  };
+  RecoverLitewallet: undefined;
   Support: undefined;
   ResetWallet: undefined;
   TestPayment: undefined;
