@@ -114,14 +114,19 @@
     "buy_blocked": "Buy Litecoin is currently not available in your country/state.",
     "error_title": "Something's wrong!",
     "min_sale": "Minimum sale of {{minAmount}} LTC & max sale of {{maxAmount}} LTC",
-    "buy_success": "Bought Successfully"
+    "buy_success": "Bought Successfully",
+    "exceed_quote_limit": "Exceeded quota limit.",
+    "try_another_currency": "Your currency is not applicable, try setting another one."
   },
   "sellTab": {
     "sell": "Sell ",
     "sell_litecoin": "Sell Litecoin",
     "preview_sell": "Sell LTC",
     "sell_blocked": "Sell Litecoin is currently not available in your country/state.",
-    "sell_success": "You just sold {{amount}} LTC!"
+    "sell_success": "You just sold {{amount}} LTC!",
+    "insufficient_funds": "Insufficient Funds.",
+    "exceed_quote_limit": "Exceeded quota limit.",
+    "try_another_currency": "Your currency is not applicable, try setting another one."
   },
   "sendTab": {
     "send_litecoin": "Send Litecoin",

@@ -740,6 +740,7 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
         }
       }
     }
+
     dispatch(
       checkAllowedAction({
         isBuyAllowed: canBuy,
@@ -914,6 +915,7 @@ export const getSignedOnramperUrl =
         `&defaultFiat=${currencyCode}` +
         `&uuid=${uniqueIdAsUUID}` +
         `&partnerContext=${uniqueId}` +
+        '&hideTopBar=true' +
         '&mode=buy' +
         '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F';
 
@@ -1023,6 +1025,7 @@ export const getSignedSellOnramperUrl =
         `&sell_defaultAmount=${cryptoAmount}` +
         `&uuid=${uniqueIdAsUUID}` +
         `&partnerContext=${uniqueId}` +
+        '&hideTopBar=true' +
         '&mode=sell' +
         '&offrampCashoutRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F' +
         '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell_complete%2F';

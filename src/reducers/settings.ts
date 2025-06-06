@@ -12,7 +12,7 @@ import {
   satsToSubunit,
   subunitToSats,
 } from '../lib/utils/satoshis';
-import {checkFlexaCustomer} from '../reducers/buy';
+import {checkFlexaCustomer, checkBuySellProviderCountry} from '../reducers/buy';
 
 // types
 interface ISettings {
@@ -165,6 +165,7 @@ export const setTestPayment =
       }),
     );
     dispatch(checkFlexaCustomer());
+    dispatch(checkBuySellProviderCountry());
   };
 
 // slice

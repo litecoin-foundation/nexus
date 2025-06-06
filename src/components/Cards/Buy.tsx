@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {useEffect, useState, useContext, useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -84,6 +84,8 @@ const Buy: React.FC<Props> = () => {
         dispatch(setBuyQuote(undefined, Number(value)));
       }
     }
+    // update quote
+    dispatch(callRates());
   };
 
   useEffect(() => {
@@ -102,20 +104,52 @@ const Buy: React.FC<Props> = () => {
     }
   };
 
-  function amountValid(): boolean {
-    if (!isBuyAllowed) {
+  const [errorTextKey, setErrorTextKey] = useState('');
+  const [amountValid, setAmountValid] = useState(true);
+  const [regionValid, setRegionValid] = useState(true);
+
+  const isAmountValid = useCallback(() => {
+    if (isMoonpayCustomer) {
+      if (
+        !availableQuote ||
+        !availableAmount ||
+        Number(availableQuote) < minBuyAmount ||
+        Number(availableQuote) > maxBuyAmount
+      ) {
+        setErrorTextKey('exceed_quote_limit');
+        return false;
+      }
+    }
+    return true;
+  }, [
+    isMoonpayCustomer,
+    availableQuote,
+    availableAmount,
+    minBuyAmount,
+    maxBuyAmount,
+  ]);
+
+  const isRegionValid = useCallback(() => {
+    if (!isMoonpayCustomer && !isOnramperCustomer) {
+      setErrorTextKey('buy_blocked');
       return false;
     }
-    if (
-      !availableQuote ||
-      !availableAmount ||
-      Number(availableQuote) < minBuyAmount ||
-      Number(availableQuote) > maxBuyAmount
-    ) {
+    if (!isBuyAllowed) {
+      setErrorTextKey('try_another_currency');
       return false;
     }
     return true;
-  }
+  }, [isMoonpayCustomer, isOnramperCustomer, isBuyAllowed]);
+
+  useEffect(() => {
+    let isAmountValidVar = isAmountValid();
+    let isRegionValidVar = isRegionValid();
+    setAmountValid(isAmountValidVar);
+    setRegionValid(isRegionValidVar);
+    if (isAmountValidVar && isAmountValidVar) {
+      setErrorTextKey('');
+    }
+  }, [isAmountValid, isRegionValid]);
 
   const BuyContainer = (
     <>
@@ -229,19 +263,19 @@ const Buy: React.FC<Props> = () => {
         styles.container,
         Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
       ]}>
-      {isBuyAllowed ? (
+      {regionValid ? (
         BuyContainer
       ) : (
         <TranslateText
-          textKey="buy_blocked"
+          textKey={errorTextKey}
           domain="buyTab"
           textStyle={styles.disabledBuyText}
           maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         />
       )}
-      <View style={isBuyAllowed ? styles.bottom : styles.bottomStandalone}>
+      <View style={regionValid ? styles.bottom : styles.bottomStandalone}>
         <BlueButton
-          disabled={proceedToGetBuyLimits ? false : !amountValid()}
+          disabled={!(regionValid && amountValid)}
           textKey="preview_buy"
           textDomain="buyTab"
           onPress={() => {
@@ -257,12 +291,44 @@ const Buy: React.FC<Props> = () => {
             }
           }}
         />
-        {proceedToGetBuyLimits ? null : (
+        {errorTextKey ? (
+          <View
+            style={
+              regionValid ? styles.underButtonNotification : {display: 'none'}
+            }>
+            <TranslateText
+              textKey={errorTextKey}
+              domain={'buyTab'}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.minText}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue=" "
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.minText}
+              numberOfLines={1}
+            />
+            {proceedToGetBuyLimits ? null : (
+              <TranslateText
+                textKey={'min_purchase'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.minText}
+                numberOfLines={1}
+                interpolationObj={{
+                  currencySymbol,
+                  minAmountInFiat: minBuyAmount,
+                }}
+              />
+            )}
+          </View>
+        ) : proceedToGetBuyLimits ? null : (
           <TranslateText
             textKey={'min_purchase'}
             domain={'buyTab'}
             maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={isBuyAllowed ? styles.minText : {display: 'none'}}
+            textStyle={styles.minText}
             numberOfLines={1}
             interpolationObj={{currencySymbol, minAmountInFiat: minBuyAmount}}
           />
@@ -374,6 +440,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.012,
       textAlign: 'center',
       marginTop: screenHeight * 0.01,
+    },
+    underButtonNotification: {
+      flexDirection: 'row',
+      justifyContent: 'center',
     },
   });
 

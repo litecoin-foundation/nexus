@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {useEffect, useState, useContext, useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -19,6 +19,7 @@ import {
   updateAmount,
   updateFiatAmount,
 } from '../../reducers/input';
+import {callRates} from '../../reducers/ticker';
 import {estimateFee} from 'react-native-turbo-lndltc';
 
 import TranslateText from '../../components/TranslateText';
@@ -83,6 +84,8 @@ const Sell: React.FC<Props> = () => {
     } else if (!toggleLTC) {
       dispatch(updateFiatAmount(value, 'sell'));
     }
+    // update quote
+    dispatch(callRates());
   };
 
   // wait fot amount update to set quote from moonpay
@@ -133,24 +136,59 @@ const Sell: React.FC<Props> = () => {
     calculateFee();
   }, [balanceMinus001]);
 
-  function amountValid(): boolean {
-    if (!isSellAllowed) {
-      return false;
-    }
+  const [errorTextKey, setErrorTextKey] = useState('');
+  const [amountValid, setAmountValid] = useState(true);
+  const [regionValid, setRegionValid] = useState(true);
+
+  const isAmountValid = useCallback(() => {
     // balance in SATS, amount in LTC
     if (Number(balance) < Number(amount) * 100000000) {
+      setErrorTextKey('insufficient_funds');
       return false;
     }
-    if (
-      !availableQuote ||
-      !availableAmount ||
-      Number(availableAmount) < minLTCSellAmount ||
-      Number(availableAmount) > maxLTCSellAmount
-    ) {
+    if (isMoonpayCustomer) {
+      if (
+        !availableQuote ||
+        !availableAmount ||
+        Number(availableAmount) < minLTCSellAmount ||
+        Number(availableAmount) > maxLTCSellAmount
+      ) {
+        setErrorTextKey('exceed_quote_limit');
+        return false;
+      }
+    }
+    return true;
+  }, [
+    balance,
+    amount,
+    isMoonpayCustomer,
+    availableQuote,
+    availableAmount,
+    minLTCSellAmount,
+    maxLTCSellAmount,
+  ]);
+
+  const isRegionValid = useCallback(() => {
+    if (!isMoonpayCustomer && !isOnramperCustomer) {
+      setErrorTextKey('sell_blocked');
+      return false;
+    }
+    if (!isSellAllowed) {
+      setErrorTextKey('try_another_currency');
       return false;
     }
     return true;
-  }
+  }, [isMoonpayCustomer, isOnramperCustomer, isSellAllowed]);
+
+  useEffect(() => {
+    let isAmountValidVar = isAmountValid();
+    let isRegionValidVar = isRegionValid();
+    setAmountValid(isAmountValidVar);
+    setRegionValid(isRegionValidVar);
+    if (isAmountValidVar && isAmountValidVar) {
+      setErrorTextKey('');
+    }
+  }, [isAmountValid, isRegionValid]);
 
   const SellContainer = (
     <>
@@ -286,19 +324,19 @@ const Sell: React.FC<Props> = () => {
         styles.container,
         Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
       ]}>
-      {isSellAllowed ? (
+      {regionValid ? (
         SellContainer
       ) : (
         <TranslateText
-          textKey="sell_blocked"
+          textKey={errorTextKey}
           domain="sellTab"
           textStyle={styles.disabledBuyText}
           maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         />
       )}
-      <View style={isSellAllowed ? styles.bottom : styles.bottomStandalone}>
+      <View style={regionValid ? styles.bottom : styles.bottomStandalone}>
         <BlueButton
-          disabled={proceedToGetSellLimits ? false : !amountValid()}
+          disabled={!(regionValid && amountValid)}
           textKey="preview_sell"
           textDomain="sellTab"
           onPress={() => {
@@ -311,12 +349,45 @@ const Sell: React.FC<Props> = () => {
             }
           }}
         />
-        {proceedToGetSellLimits ? null : (
+        {errorTextKey ? (
+          <View
+            style={
+              regionValid ? styles.underButtonNotification : {display: 'none'}
+            }>
+            <TranslateText
+              textKey={errorTextKey}
+              domain={'sellTab'}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.minText}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue=" "
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.minText}
+              numberOfLines={1}
+            />
+            {proceedToGetSellLimits ? null : (
+              <TranslateText
+                textKey={'min_sale'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.minText}
+                numberOfLines={1}
+                interpolationObj={{
+                  currencySymbol,
+                  minAmount: minLTCSellAmount,
+                  maxAmount: maxLTCSellAmount,
+                }}
+              />
+            )}
+          </View>
+        ) : proceedToGetSellLimits ? null : (
           <TranslateText
             textKey={'min_sale'}
             domain={'buyTab'}
             maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={isSellAllowed ? styles.minText : {display: 'none'}}
+            textStyle={styles.minText}
             numberOfLines={1}
             interpolationObj={{
               currencySymbol,
@@ -443,6 +514,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.012,
       textAlign: 'center',
       marginTop: screenHeight * 0.01,
+    },
+    underButtonNotification: {
+      flexDirection: 'row',
+      justifyContent: 'center',
     },
   });
 
