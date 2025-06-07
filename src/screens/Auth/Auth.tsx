@@ -47,7 +47,7 @@ const AuthScreen: React.FC<Props> = props => {
         {},
         async state => {
           try {
-            if (state.state === WalletState.WAITING_TO_START) {
+            if (state.state === WalletState.LOCKED) {
               dispatch(unlockWalletWithBiometric());
             }
           } catch (error) {
