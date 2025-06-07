@@ -108,13 +108,6 @@ const SlideRuler: React.FC<Props> = props => {
     onValueChange(setValue);
   };
 
-  const scrollToElement = () =>
-    flatList.current &&
-    flatList.current.scrollToOffset({
-      offset: (value * oneItemWidth) / multiplicity,
-      animated: true,
-    });
-
   const renderItem = (element: any) => (
     <Item oneColumnSize={oneItemWidth} index={element.index} />
   );
@@ -141,10 +134,7 @@ const SlideRuler: React.FC<Props> = props => {
         })}
         scrollEnabled={true}
         horizontal
-        onScrollEndDrag={onSliderMoved}
         onScroll={onSliderMoved}
-        onMomentumScrollBegin={onSliderMoved}
-        onMomentumScrollEnd={scrollToElement}
         showsHorizontalScrollIndicator={false}
       />
       {renderDefaultThumb()}
