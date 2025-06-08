@@ -18,7 +18,8 @@ interface Props {
 const Button: React.FC<Props> = props => {
   const {onPress, disabled} = props;
 
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const scaler = useSharedValue(1);
@@ -45,8 +46,7 @@ const Button: React.FC<Props> = props => {
   };
 
   return (
-    <View
-      style={!biometricsEnabled ? styles.disabled : null}>
+    <View style={!biometricsEnabled ? styles.disabled : null}>
       <TouchableWithoutFeedback
         onPressIn={onPressIn}
         onPressOut={onPressOut}
@@ -70,7 +70,7 @@ const Button: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     button: {
-      width: screenWidth / 3,
+      width: screenWidth * 0.32,
       height: screenHeight * 0.1,
       justifyContent: 'center',
       alignItems: 'center',
@@ -79,7 +79,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.03,
       width: screenHeight * 0.03,
       tintColor: '#293C62',
-      marginLeft: screenHeight * 0.005,
+      marginLeft: screenWidth * 0.04,
     },
     disabled: {
       opacity: 0,

@@ -72,7 +72,7 @@ const BuyButton: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
   StyleSheet.create({
     button: {
-      width: screenWidth / 3,
+      width: screenWidth * 0.32,
       height: small ? screenHeight * 0.09 : screenHeight * 0.1,
       justifyContent: 'center',
       alignItems: 'center',
@@ -83,9 +83,11 @@ const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
       fontWeight: '700',
       color: '#293C62',
       fontSize: screenHeight * 0.024,
+      paddingLeft: screenWidth * 0.04,
     },
     image: {
       tintColor: '#293C62',
+      marginLeft: screenWidth * 0.04,
     },
   });
 

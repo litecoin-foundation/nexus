@@ -136,7 +136,7 @@ const OnboardingAuthPad: React.FC<Props> = props => {
         />
 
         <View style={styles.bottomSubContainer}>
-          <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+          <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
             <View style={styles.authContainer}>
               <View style={styles.pinContainer}>
                 <PasscodeInput
@@ -145,7 +145,6 @@ const OnboardingAuthPad: React.FC<Props> = props => {
                   pinInactive={false}
                 />
               </View>
-
               <PadGrid />
               <View style={styles.buttonContainer}>{buttons}</View>
             </View>
