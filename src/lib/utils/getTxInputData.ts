@@ -23,10 +23,38 @@
 import * as bitcoin from 'bitcoinjs-lib';
 import {LITECOIN} from './litecoin';
 
-function getWitnessUtxo(utxoHex: string, value: number): any {
-  let out = {script: {}, value: 0};
+function getWitnessUtxoDefault(utxoHex: string, value: number): any {
+  let out = {script: {} as Buffer<ArrayBuffer>, value: BigInt(0)};
   out.script = Buffer.from(utxoHex, 'hex');
-  out.value = value;
+  out.value = BigInt(value);
+  return out;
+}
+
+function getWitnessUtxoP2WPKH(publicKey: Buffer, value: number): any {
+  let out = {script: {} as Buffer<ArrayBuffer>, value: BigInt(0)};
+  out.script = bitcoin.payments.p2wpkh({
+    pubkey: publicKey,
+    network: LITECOIN,
+  }).output as Buffer<ArrayBufferLike>;
+  out.value = BigInt(value);
+  return out;
+}
+
+function getWitnessUtxo(
+  utxoHex: string,
+  value: number,
+  redeemType: string,
+  publicKey: Buffer,
+) {
+  let out;
+  switch (redeemType) {
+    case 'P2WPKH':
+      out = getWitnessUtxoP2WPKH(publicKey, value);
+      break;
+    default:
+      out = getWitnessUtxoDefault(utxoHex, value);
+      break;
+  }
   return out;
 }
 
@@ -42,8 +70,7 @@ export default function getTxInputData(
   const nonWitnessUtxo = Buffer.from(utxoHex, 'hex');
 
   // for segwit inputs, you only need the output script and value as an object.
-  //   const witnessUtxo: any = {};
-  const witnessUtxo = getWitnessUtxo(utxoHex, value);
+  const witnessUtxo = getWitnessUtxo(utxoHex, value, redeemType, pubKey);
 
   const mixin = isSegwit ? {witnessUtxo} : {nonWitnessUtxo};
 
