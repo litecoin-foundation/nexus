@@ -49,6 +49,10 @@ const RecoverLitewallet = ({
   const handleLWRecovery = async (seed: string[]) => {
     setLoading(true);
     try {
+      if (!address) {
+        throw new Error('Receiving address not found.');
+      }
+
       const rawTxs = await sweepLitewallet(seed, address);
 
       await Promise.all(
@@ -56,7 +60,6 @@ const RecoverLitewallet = ({
           await Promise.all(
             rawTx.map(async (txHex: string) => {
               const res = await publishTransaction(txHex);
-              throw new Error(String(res));
             }),
           );
         }),
