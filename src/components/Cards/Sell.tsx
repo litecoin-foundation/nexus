@@ -183,12 +183,19 @@ const Sell: React.FC<Props> = () => {
   useEffect(() => {
     let isAmountValidVar = isAmountValid();
     let isRegionValidVar = isRegionValid();
+
+    // neglect onramper filters
+    if (isOnramperCustomer) {
+      isAmountValidVar = true;
+      isRegionValidVar = true;
+    }
+
     setAmountValid(isAmountValidVar);
     setRegionValid(isRegionValidVar);
     if (isAmountValidVar && isAmountValidVar) {
       setErrorTextKey('');
     }
-  }, [isAmountValid, isRegionValid]);
+  }, [isAmountValid, isRegionValid, isOnramperCustomer]);
 
   const SellContainer = (
     <>

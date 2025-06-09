@@ -887,12 +887,18 @@ export const getSignedOnramperUrl =
   (address: string, fiatAmount: number): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {testPaymentActive, testPaymentKey, testPaymentFiat} =
-        getState().settings;
+      const {
+        testPaymentActive,
+        testPaymentKey,
+        testPaymentFiat,
+        // testPaymentCountry,
+      } = getState().settings;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
         : getState().settings.currencyCode;
+
+      // const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
@@ -913,6 +919,7 @@ export const getSignedOnramperUrl =
         `&wallets=ltc_litecoin:${address}` +
         `&defaultAmount=${fiatAmount}` +
         `&defaultFiat=${currencyCode}` +
+        // `&country=${countryCode}` +
         `&uuid=${uniqueIdAsUUID}` +
         `&partnerContext=${uniqueId}` +
         '&hideTopBar=true' +
@@ -997,12 +1004,18 @@ export const getSignedSellOnramperUrl =
   (address: string, cryptoAmount: number): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {testPaymentActive, testPaymentKey, testPaymentFiat} =
-        getState().settings;
+      const {
+        testPaymentActive,
+        testPaymentKey,
+        // testPaymentFiat,
+        testPaymentCountry,
+      } = getState().settings;
 
-      const currencyCode = testPaymentActive
-        ? testPaymentFiat
-        : getState().settings.currencyCode;
+      // const currencyCode = testPaymentActive
+      //   ? testPaymentFiat
+      //   : getState().settings.currencyCode;
+
+      const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
@@ -1020,7 +1033,8 @@ export const getSignedSellOnramperUrl =
       const unsignedURL =
         baseUrl +
         '&sell_onlyCryptos=ltc_litecoin' +
-        `&sell_defaultFiat=${currencyCode}` +
+        // `&sell_defaultFiat=${currencyCode}` +
+        `&country=${countryCode}` +
         '&sell_defaultCrypto=ltc_litecoin' +
         `&sell_defaultAmount=${cryptoAmount}` +
         `&uuid=${uniqueIdAsUUID}` +
