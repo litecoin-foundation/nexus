@@ -486,13 +486,42 @@ export const publishTransaction = (txHex: string) => {
 
       if (!request.ok) {
         const error = await request.text();
-        reject(`Tx Broadcast failed: ${error}`);
+        if (__DEV__) {
+          console.log(`Tx Broadcast failed: ${error}`);
+        }
+
+        await publishTransactionFallback1(txHex);
+      } else {
+        const response = await request.text();
+        // TODO: verify this reponse is just txid
+        resolve(response);
+      }
+    } catch (error) {
+      reject(String(error));
+    }
+  });
+};
+
+export const publishTransactionFallback1 = (txHex: string) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const request = await fetch(
+        'https://api.blockcypher.com/v1/ltc/main/txs/push',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            tx: txHex,
+          }),
+        },
+      );
+
+      if (!request.ok) {
+        const error = await request.text();
+        reject(`Tx Broadcast 2nd failed: ${error}`);
       }
 
-      const response = await request.text();
-      // TODO: verify this reponse is just txid
-
-      resolve(response);
+      const response = await request.json();
+      resolve(response.hash);
     } catch (error) {
       reject(String(error));
     }
