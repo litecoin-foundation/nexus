@@ -29,6 +29,7 @@ buck-out/
 \.buckd/
 *.keystore
 !debug.keystore
+.kotlin/
 */fastlane/report.xml
 */fastlane/Preview.html
 */fastlane/screenshots
