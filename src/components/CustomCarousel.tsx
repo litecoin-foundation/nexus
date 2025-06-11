@@ -68,7 +68,7 @@ const CustomCarousel = forwardRef<CustomCarouselRef, CustomCarouselProps>(
 
       let index = currentIndexRef.current;
 
-      // If scrolled more than 30% of page width, move to next/prev page
+      // If scrolled more than 25% of page width, move to next/prev page
       if (Math.abs(diff) > width * 0.25) {
         if (diff > 0) {
           index = Math.min(currentIndexRef.current + 1, data.length - 1);
