@@ -490,7 +490,8 @@ export const publishTransaction = (txHex: string) => {
           console.log(`Tx Broadcast failed: ${error}`);
         }
 
-        await publishTransactionFallback1(txHex);
+        const fallbackResolve = await publishTransactionFallback1(txHex);
+        resolve(fallbackResolve);
       } else {
         const response = await request.text();
         // TODO: verify this reponse is just txid
@@ -521,6 +522,7 @@ export const publishTransactionFallback1 = (txHex: string) => {
       }
 
       const response = await request.json();
+      // NOTE: works but hash is undefined
       resolve(response.hash);
     } catch (error) {
       reject(String(error));
