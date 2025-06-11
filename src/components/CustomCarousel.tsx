@@ -22,7 +22,10 @@ const CustomCarousel = forwardRef<CustomCarouselRef, CustomCarouselProps>(
 
     useImperativeHandle(ref, () => ({
       next: () => {
-        const nextIndex = Math.min(currentIndexRef.current + 1, data.length - 1);
+        const nextIndex = Math.min(
+          currentIndexRef.current + 1,
+          data.length - 1,
+        );
         scrollToIndex(nextIndex);
       },
       prev: () => {
@@ -48,10 +51,10 @@ const CustomCarousel = forwardRef<CustomCarouselRef, CustomCarouselProps>(
     const handleMomentumScrollEnd = (event: any) => {
       const contentOffset = event.nativeEvent.contentOffset;
       let index = Math.round(contentOffset.x / width);
-      
+
       // Clamp index to valid bounds
       index = Math.max(0, Math.min(index, data.length - 1));
-      
+
       if (index !== currentIndexRef.current) {
         currentIndexRef.current = index;
         onSnapToItem?.(index);
@@ -62,24 +65,24 @@ const CustomCarousel = forwardRef<CustomCarouselRef, CustomCarouselProps>(
       const contentOffset = event.nativeEvent.contentOffset;
       const currentPos = currentIndexRef.current * width;
       const diff = contentOffset.x - currentPos;
-      
+
       let index = currentIndexRef.current;
-      
+
       // If scrolled more than 30% of page width, move to next/prev page
-      if (Math.abs(diff) > width * 0.3) {
+      if (Math.abs(diff) > width * 0.25) {
         if (diff > 0) {
           index = Math.min(currentIndexRef.current + 1, data.length - 1);
         } else {
           index = Math.max(currentIndexRef.current - 1, 0);
         }
       }
-      
+
       // Snap to the determined page
       scrollViewRef.current?.scrollTo({
         x: index * width,
         animated: true,
       });
-      
+
       if (index !== currentIndexRef.current) {
         currentIndexRef.current = index;
         onSnapToItem?.(index);

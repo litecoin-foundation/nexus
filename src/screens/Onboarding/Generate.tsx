@@ -114,57 +114,54 @@ const Generate: React.FC<Props> = props => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.gradient}>
-      <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
-        <OnboardingHeader
-          description={
-            t('seed_phrase_description') +
-            '\n\n' +
-            t('seed_phrase_description_2')
-          }
-          thin
-        />
-        <View style={styles.seedContainer}>
-          {!seed ? <Text>Loading...</Text> : list}
-        </View>
+      <OnboardingHeader
+        description={
+          t('seed_phrase_description') + '\n\n' + t('seed_phrase_description_2')
+        }
+        thin
+      />
 
-        <View style={styles.dotContainer}>
-          <Dots dotsLength={seed.length} activeDotIndex={activePage} />
-        </View>
+      <View style={styles.seedContainer}>
+        {!seed ? <Text>Loading...</Text> : list}
+      </View>
 
-        <View style={styles.bottomContainer}>
-          <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
-            <View style={styles.bottomTextContainer}>
-              <View style={styles.imageContainer}>
-                <Image
-                  style={styles.image}
-                  source={require('../../assets/images/attention.png')}
-                />
-              </View>
+      <View style={styles.dotContainer}>
+        <Dots dotsLength={seed.length} activeDotIndex={activePage} />
+      </View>
 
-              <TranslateText
-                textKey="seed_warning"
-                domain="onboarding"
-                textStyle={styles.warningText}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.013}
-                // maxLengthInPixels={SCREEN_WIDTH * 0.7}
-                numberOfLines={2}
+      <View style={styles.bottomContainer}>
+        <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+          <View style={styles.bottomTextContainer}>
+            <View style={styles.imageContainer}>
+              <Image
+                style={styles.image}
+                source={require('../../assets/images/attention.png')}
               />
             </View>
 
-            <WhiteButton
-              textKey={
-                activePage === seed.length - 1
-                  ? 'confirm_written'
-                  : 'scroll_right'
-              }
-              textDomain="onboarding"
-              onPress={() => handlePress()}
-              small={false}
-              active={true}
+            <TranslateText
+              textKey="seed_warning"
+              domain="onboarding"
+              textStyle={styles.warningText}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+              // maxLengthInPixels={SCREEN_WIDTH * 0.7}
+              numberOfLines={2}
             />
-          </CustomSafeAreaView>
-        </View>
-      </CustomSafeAreaView>
+          </View>
+
+          <WhiteButton
+            textKey={
+              activePage === seed.length - 1
+                ? 'confirm_written'
+                : 'scroll_right'
+            }
+            textDomain="onboarding"
+            onPress={() => handlePress()}
+            small={false}
+            active={true}
+          />
+        </CustomSafeAreaView>
+      </View>
     </LinearGradient>
   );
 };
