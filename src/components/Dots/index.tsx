@@ -14,7 +14,7 @@ const Dots: React.FC<Props> = props => {
 
   const meow = dotsArray.map((val, index) => {
     return (
-      <Dot key={uuidv4()} active={index <= activeDotIndex ? true : false} />
+      <Dot key={uuidv4()} active={index === activeDotIndex ? true : false} />
     );
   });
 
