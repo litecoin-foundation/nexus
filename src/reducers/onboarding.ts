@@ -344,6 +344,17 @@ const extractNeutrinoCache = (): AppThunk => async dispatch => {
   }
 };
 
+export const skipPresync = (): AppThunk => async dispatch => {
+  console.log('skipping presync');
+
+  // delete cached parts
+  for (const part of cacheParts) {
+    RNFS.unlink(`${ReactNativeBlobUtil.fs.dirs.DocumentDir}/${part}`);
+  }
+
+  dispatch(getNeutrinoCacheFailedAction());
+};
+
 // slicer
 export const onboardingSlice = createSlice({
   name: 'onboarding',

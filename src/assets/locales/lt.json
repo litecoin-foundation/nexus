@@ -43,7 +43,12 @@
     "invalid_description": "Šis žodis negalioja - patikrinkite rašybą ir bandykite dar kartą.",
     "try_again": "Pabandykite iš naujo",
     "incorrect": "Neteisingas",
-    "offline_description": "Jūs esate neprisijungę. \nPrisijunkite prie interneto."
+    "offline_description": "Jūs esate neprisijungę. \nPrisijunkite prie interneto.",
+    "skip_presync": "Praleisti pirminių sinchronizaciją",
+    "are_you_sure": "Ar esate tikri?",
+    "skip_presync_description": "Praleidžiant pirminių sinchronizaciją, reikės palaukti, kol jūsų Nexus Wallet visiškai sinchronizuosis, prieš galint siųsti ar gauti sandorius. Šis procesas gali užtrukti iki 30+ minučių.",
+    "cancel": "Atšaukti",
+    "ok": "OK"
   },
   "main": {
     "main_wallet": "Pagrindinė piniginė",
@@ -114,14 +119,19 @@
     "buy_blocked": "Pirkti Litecoin šiuo metu jūsų šalyje/valstybėje negalima.",
     "error_title": "Kažkas negerai!",
     "min_sale": "Minimalus pardavimas {{minAmount}} LTC ir maksimalus pardavimas {{maxAmount}} LTC",
-    "buy_success": "Sėkmingai nupirkta"
+    "buy_success": "Sėkmingai nupirkta",
+    "exceed_quote_limit": "Viršytas kvotos limitas.",
+    "try_another_currency": "Jūsų valiuta netinka, mėginkite nustatyti kitą."
   },
   "sellTab": {
     "sell": "Parduoti ",
     "sell_litecoin": "Parduoti Litecoin",
     "preview_sell": "Parduoti LTC",
     "sell_blocked": "Parduoti Litecoin šiuo metu jūsų šalyje/valstybėje negalima.",
-    "sell_success": "Jūs ką tik pardavėte {{amount}} LTC!"
+    "sell_success": "Jūs ką tik pardavėte {{amount}} LTC!",
+    "insufficient_funds": "Nepakankamas likutis.",
+    "exceed_quote_limit": "Viršytas kvotos limitas.",
+    "try_another_currency": "Pasirinkta valiuta nepasiekiama - bandykite dar kartą su skirtinga valiuta."
   },
   "sendTab": {
     "send_litecoin": "Siųsti Litecoin",
@@ -137,7 +147,7 @@
     "scan_qr": "Nuskanuoti QR Kodą",
     "camera_note": "Programėlė naudos jūsų kamerą QR kodams nuskaityti Litecoin mokėjimams",
     "enable_flash": "Įjungti blykstę",
-    "camara_disabled": "Kamera išjungta",
+    "camera_disabled": "Kamera išjungta",
     "enable_camera": "Įgalinti kamerą nuskaityti QR kodus",
     "awesome": "Nuostabu!",
     "just_sent": "Ką tik išsiuntėte",
@@ -246,7 +256,8 @@
     "view_tx": "Peržiūrėti Transakcijas",
     "camera_error": "Kamera Išjungta",
     "cancel": "Atšaukti",
-    "change_login": "Keisti Prisijungimo Slaptažodį"
+    "change_login": "Keisti Prisijungimo Slaptažodį",
+    "processing": "Apdorojama..."
   },
   "convertTab": {
     "convert_button": "Konvertuoti jūsų LTC",

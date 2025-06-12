@@ -43,7 +43,12 @@
     "invalid_description": "Kata ini tidak tepat - Periksa pengejaan Anda dan coba lagi.",
     "try_again": "Coba Lagi",
     "incorrect": "Salah",
-    "offline_description": "Anda sedang offline. \nHubungkan ke Internet."
+    "offline_description": "Anda sedang offline. \nHubungkan ke Internet.",
+    "skip_presync": "Lewati Presync",
+    "are_you_sure": "Apakah Anda yakin?",
+    "skip_presync_description": "Dengan melewati presync, Anda perlu menunggu Nexus Wallet Anda sepenuhnya tersinkronisasi sebelum Anda dapat mengirim atau menerima transaksi. Proses ini dapat memakan waktu hingga 30+ menit.",
+    "cancel": "Batalkan",
+    "ok": "OK"
   },
   "main": {
     "main_wallet": "Dompet Utama",
@@ -114,14 +119,19 @@
     "buy_blocked": "Membeli Litecoin sedang tidak tersedia di negara/daerah Anda.",
     "error_title": "Ada yang salah!",
     "min_sale": "Pembelian minimum {{minAmount}} LTC & pembelian maksimum {{maxAmount}} LTC",
-    "buy_success": "Berhasil Dibeli"
+    "buy_success": "Berhasil Dibeli",
+    "exceed_quote_limit": "Melebihi batas kuota.",
+    "try_another_currency": "Mata uang Anda tidak dapat digunakan, coba atur yang lain."
   },
   "sellTab": {
     "sell": "Jual ",
     "sell_litecoin": "Jual Litecoin",
     "preview_sell": "Jual LTC",
     "sell_blocked": "Menjual Litecoin sedang tidak tersedia di negara/daerah Anda.",
-    "sell_success": "Anda baru saja menjual {{amount}} LTC!"
+    "sell_success": "Anda baru saja menjual {{amount}} LTC!",
+    "insufficient_funds": "Dana Tidak Mencukupi.",
+    "exceed_quote_limit": "Melebihi batas kuota.",
+    "try_another_currency": "Mata uang yang dipilih tidak tersedia - coba lagi dengan mata uang yang berbeda."
   },
   "sendTab": {
     "send_litecoin": "Kirim Litecoin",
@@ -246,7 +256,8 @@
     "view_tx": "Lihat Transaksi",
     "camera_error": "Kamera Dinonaktifkan",
     "cancel": "Batal",
-    "change_login": "Ganti Kode Sandi Login"
+    "change_login": "Ganti Kode Sandi Login",
+    "processing": "Memproses..."
   },
   "convertTab": {
     "convert_button": "Konversi LTC Anda",
