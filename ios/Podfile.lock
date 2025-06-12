@@ -39,7 +39,7 @@ PODS:
     - Yoga
   - ExpoAsset (11.1.5):
     - ExpoModulesCore
-  - ExpoBlur (14.1.5):
+  - ExpoBlur (14.1.6-canary-20250611-f0afe80):
     - ExpoModulesCore
   - ExpoFileSystem (18.1.10):
     - ExpoModulesCore
@@ -3001,7 +3001,7 @@ SPEC CHECKSUMS:
   EXConstants: be238322d57d084dc055dbd5d6fe6479510504ce
   Expo: 77b39f42396989cbe6fbef9f6fafc9b35186a95b
   ExpoAsset: 3ea3275cca6a7793b3d36fbf1075c590f803fbcb
-  ExpoBlur: 846780b2c90f59e964b9a50385d4deb67174ebfb
+  ExpoBlur: 2c018a42ceb8a67330364d8d75c4055955d2dcf8
   ExpoFileSystem: 3a98ca2a6f13674ecfd97327d1b44a8ace444cbd
   ExpoFont: 312c73403bbd4f98e1d6a5330641a56292583cd2
   ExpoHaptics: 68c215e070f660e0a29c45dcda4f60eeff08aefb
