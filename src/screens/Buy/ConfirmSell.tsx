@@ -193,7 +193,9 @@ export const ConfirmSellNavigationOptions = (
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        onPress={() => navigation.navigate('Main', {updateHeader: true})}
+        onPress={() =>
+          navigation.navigate('Main', {isInitial: true, updateHeader: true})
+        }
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

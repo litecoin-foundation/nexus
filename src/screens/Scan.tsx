@@ -55,6 +55,7 @@ const Scan = ({
             Vibration.vibrate();
             navigation.navigate(route.params.returnRoute, {
               scanData: code.value,
+              updateHeader: true,
             });
           }
         }

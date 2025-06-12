@@ -147,7 +147,7 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
           small={true}
           active={true}
           onPress={() => {
-            navigation.navigate('Main', {isInitial: true});
+            navigation.navigate('Main', {isInitial: true, updateHeader: true});
           }}
         />
       </View>
@@ -264,7 +264,9 @@ export const ConfirmBuyOnramperNavigationOptions = (
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        onPress={() => navigation.navigate('Main', {updateHeader: true})}
+        onPress={() =>
+          navigation.navigate('Main', {isInitial: true, updateHeader: true})
+        }
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),
