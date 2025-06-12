@@ -192,7 +192,7 @@ const Sell: React.FC<Props> = () => {
 
     setAmountValid(isAmountValidVar);
     setRegionValid(isRegionValidVar);
-    if (isAmountValidVar && isAmountValidVar) {
+    if (isAmountValidVar && isRegionValidVar) {
       setErrorTextKey('');
     }
   }, [isAmountValid, isRegionValid, isOnramperCustomer]);
