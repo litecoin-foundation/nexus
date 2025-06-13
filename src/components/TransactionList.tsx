@@ -263,7 +263,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
           numberOfLines={1}
         />
         <TranslateText
-          textValue={` ${percentageProgress}% `}
+          textValue={` (${percentageProgress}%) `}
           maxSizeInPixels={SCREEN_HEIGHT * 0.013}
           textStyle={styles.sectionHeaderText}
           numberOfLines={1}

@@ -91,7 +91,7 @@
     "empty_transactions": "Your transactions will appear here",
     "load_txs": "Loading Transactions",
     "recover_txs": "Recovering Transactions",
-    "taking_too_long": "Too long... Relaunch the wallet or use VPN.",
+    "taking_too_long": "App Restart required.",
     "1d": "1D",
     "1w": "1W",
     "1m": "1M",
@@ -122,7 +122,7 @@
     "min_sale": "Minimum sale of {{minAmount}} LTC & max sale of {{maxAmount}} LTC",
     "buy_success": "Bought Successfully",
     "exceed_quote_limit": "Exceeded quota limit.",
-    "try_another_currency": "Your currency is not applicable, try setting another one."
+    "try_another_currency": "The chosen currency is not available - try again with a different currency."
   },
   "sellTab": {
     "sell": "Sell ",
@@ -154,7 +154,7 @@
     "just_sent": "You just sent",
     "balance_unconfirmed": "Unconfirmed Balance in Wallet",
     "wallet_unsynced": "Sync in Progress...",
-    "try_less_amount": "Try input less amount. It is probably out of your limit, considering estimated fee.",
+    "try_less_amount": "Send a bit less. Network fees eat into your balance, lower the amount for fees.",
     "insufficient_funds": "Insufficient balance."
   },
   "receiveTab": {

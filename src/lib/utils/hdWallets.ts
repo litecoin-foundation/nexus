@@ -172,7 +172,7 @@ async function fetchAddressData(address: string, index: number) {
       );
 
       if (!res.ok) {
-        reject('Unable to fetch balance. Try using VPN.');
+        reject('Failed to connect with API Server - try using a VPN.');
       }
 
       const data = await res.json();
@@ -193,7 +193,7 @@ async function fetchAddressData(address: string, index: number) {
         reject('Invalid request.');
       }
     } catch (err) {
-      reject('Unable to fetch balance. Try using VPN.');
+      reject('Unable to fetch balance. Contact in-app support.');
     }
   });
 }

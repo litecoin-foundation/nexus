@@ -3,7 +3,7 @@
     "forgot_pin": "忘记密码?",
     "forgot_pin_description": "忘记你的密码？\n输入您的恢复短语/种子短语以重置您的密码密码。",
     "enter_pin": "输入您的密码",
-    "reenter_pin": "输入您的密码",
+    "reenter_pin": "重新输入您的密码",
     "attempts_left_one": "还有{{count}} 剩余尝试次数.",
     "attempts_left_other": "还有{{count}} 剩余尝试次数.",
     "for_litecoin": "FOR 莱特币",
@@ -76,7 +76,7 @@
     "network_fee": "交易费",
     "view_on_blockchain": "查看区块链",
     "bought": "已购买",
-    "sold": "已花费",
+    "sold": "已售出",
     "buying": "正在购买",
     "selling": "正在出售",
     "completed": "完成！",
@@ -91,6 +91,7 @@
     "empty_transactions": "您的交易记录会出现在这里",
     "load_txs": "正在加载交易记录…",
     "recover_txs": "交易记录正在恢复中…",
+    "taking_too_long": "需要重启应用程序。",
     "1d": "一天",
     "1w": "一周",
     "1m": "一个月",
@@ -121,7 +122,7 @@
     "min_sale": "最低销售量{{minAmount}}LTC &amp; 最高销售量 {{maxAmount}} LTC",
     "buy_success": "购买成功",
     "exceed_quote_limit": "超过配额限制。",
-    "try_another_currency": "您的货币不适用，请尝试设置另一种货币。"
+    "try_another_currency": "所选货币不可用 - 请尝试使用不同的货币。"
   },
   "sellTab": {
     "sell": "卖",
@@ -153,7 +154,7 @@
     "just_sent": "你刚刚发送",
     "balance_unconfirmed": "钱包中未确认的余额",
     "wallet_unsynced": "同步正在进行中...",
-    "try_less_amount": "尝试输入更少的金额。考虑到预估费用，这可能超出了您的限制。",
+    "try_less_amount": "发送少一点。网络费用会消耗您的余额，请降低金额以支付费用。",
     "insufficient_funds": "余额不足。"
   },
   "receiveTab": {
@@ -233,7 +234,7 @@
     "change_lang": "更改语言",
     "select_lang": "选择语言",
     "view_seed": "查看私钥",
-    "view_paper_key": "查看私钥",
+    "view_paper_key": "查看种子短语",
     "last_time_accessed": "上次访问时间:{{time}}",
     "litecoin_denomination": "莱特币面值",
     "reset_wallet": "重置你的钱包",

@@ -310,14 +310,6 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
     // }).address;
   }
 
-  // console.log(inputsFromAllAddressesWithBalance);
-  // console.log(totalBalance);
-  // console.log(unspentsLength);
-  // console.log(legacyAddress);
-  // console.log(p2shAddress);
-  // console.log(bech32Address);
-  // console.log(bech32mAddress);
-
   if (totalBalance > 0) {
     try {
       const rawTx = createTopUpTx(
@@ -365,7 +357,9 @@ const sweepAddress = (
 
       if (!utxoRes.ok) {
         // const error = await utxoRes.json();
-        reject('Litecoinspace failed fetching utxo. Try using VPN.');
+        reject(
+          'Failed to connect with API Server - try using a VPN. (UTXO Fetch',
+        );
         return;
       }
 
@@ -386,8 +380,10 @@ const sweepAddress = (
           );
 
           if (!txHexRes.ok) {
-            // const error = await txHexRes.text();
-            reject('Litecoinspace failed fetching hex. Try using VPN.');
+            const error = await txHexRes.text();
+            reject(
+              `Failed to connect with API Server - try using a VPN. (TxHex: ${error})`,
+            );
           }
 
           const utxoHex = await txHexRes.text();
@@ -441,7 +437,7 @@ const sweepAddress = (
         });
       }
     } catch (error) {
-      reject('Litecoinspace is unavailable. Try using VPN.');
+      reject('Failed to connect with API Server - try using a VPN.');
     }
   });
 };

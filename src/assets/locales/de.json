@@ -91,6 +91,7 @@
     "empty_transactions": "Die Transaktion erscheint hier",
     "load_txs": "Lade Transaktionen...",
     "recover_txs": "Transaktionen wiederherstellen",
+    "taking_too_long": "App-Neustart erforderlich.",
     "1d": "1T",
     "1w": "1W",
     "1m": "1M",
@@ -121,12 +122,12 @@
     "min_sale": "Mindestverkauf von {{minAmount}} LTC & Höchstverkauf von {{maxAmount}} LTC",
     "buy_success": "Erfolgreich gekauft",
     "exceed_quote_limit": "Kontingentgrenze überschritten.",
-    "try_another_currency": "Ihre Währung ist nicht anwendbar, versuchen Sie es mit einer anderen."
+    "try_another_currency": "Die gewählte Währung ist nicht verfügbar - versuchen Sie es erneut mit einer anderen Währung."
   },
   "sellTab": {
     "sell": "Verkaufen ",
-    "sell_litecoin": "Litecoin verkaufe",
-    "preview_sell": "Verkaufsdaten anzeigen",
+    "sell_litecoin": "Litecoin verkaufen",
+    "preview_sell": "LTC verkaufen",
     "sell_blocked": "Litecoin verkaufen ist in Ihrem Gebiet derzeit nicht verfügbar",
     "sell_success": "Sie haben gerade {{amount}} LTC verkauft!",
     "insufficient_funds": "Unzureichende Mittel.",
@@ -153,7 +154,7 @@
     "just_sent": "Sie haben gerade gesendet",
     "balance_unconfirmed": "Unbestätigtes Guthaben im Wallet",
     "wallet_unsynced": "Synchronisierung läuft...",
-    "try_less_amount": "Versuchen Sie einen geringeren Betrag einzugeben. Der Betrag überschreitet wahrscheinlich Ihr Limit unter Berücksichtigung der geschätzten Gebühr.",
+    "try_less_amount": "Senden Sie etwas weniger. Netzwerkgebühren schmälern Ihr Guthaben, reduzieren Sie den Betrag für Gebühren.",
     "insufficient_funds": "Unzureichendes Guthaben."
   },
   "receiveTab": {
@@ -233,7 +234,7 @@
     "change_lang": "Sprache ändern",
     "select_lang": "Sprache auswählen",
     "view_seed": "Seedphrase anzeigen",
-    "view_paper_key": "Papierschlüssel ansehen",
+    "view_paper_key": "Seed Phrase ansehen",
     "last_time_accessed": "Letzter Zugriff: {{time}}",
     "litecoin_denomination": "Litecoin-Grundeinheit",
     "reset_wallet": "Wallet zurücksetzen?",

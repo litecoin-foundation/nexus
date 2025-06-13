@@ -91,6 +91,7 @@
     "empty_transactions": "Vos transactions apparaîtront ici",
     "load_txs": "Chargement des transactions...",
     "recover_txs": "Récupération des transactions...",
+    "taking_too_long": "Redémarrage de l'application requis.",
     "1d": "1J",
     "1w": "1S",
     "1m": "1M",
@@ -121,12 +122,12 @@
     "min_sale": "Vente minimum de {{minAmount}} LTC et maximum de {{maxAmount}} LTC",
     "buy_success": "Achat réussi",
     "exceed_quote_limit": "Limite de quota dépassée.",
-    "try_another_currency": "Votre devise n'est pas applicable, essayez d'en définir une autre."
+    "try_another_currency": "La devise choisie n'est pas disponible - essayez à nouveau avec une devise différente."
   },
   "sellTab": {
     "sell": "Vendre",
     "sell_litecoin": "Vendre du Litecoin",
-    "preview_sell": "Aperçu de la vente",
+    "preview_sell": "Vendre LTC",
     "sell_blocked": "La vente de Litecoin n'est actuellement pas disponible dans votre pays/état.",
     "sell_success": "Vous venez de vendre {{amount}} LTC !",
     "insufficient_funds": "Fonds insuffisants.",
@@ -153,7 +154,7 @@
     "just_sent": "Vous venez d'envoyer",
     "balance_unconfirmed": "Solde non confirmé dans le portefeuille",
     "wallet_unsynced": "Synchronisation en cours...",
-    "try_less_amount": "Essayez de saisir un montant inférieur. Il dépasse probablement votre limite, en tenant compte des frais estimés.",
+    "try_less_amount": "Envoyez un peu moins. Les frais de réseau réduisent votre solde, diminuez le montant pour les frais.",
     "insufficient_funds": "Solde insuffisant."
   },
   "receiveTab": {

@@ -76,7 +76,7 @@
     "network_fee": "TINKLO MOKESTIS",
     "view_on_blockchain": "Žvilgsnis į blokų grandinę",
     "bought": "Nupirkta",
-    "sold": "Išleista",
+    "sold": "Parduota",
     "buying": "Perkama",
     "selling": "Parduodama",
     "completed": "ĮVYKDYTA",
@@ -91,6 +91,7 @@
     "empty_transactions": "Jūsų sandoriai bus rodomi čia",
     "load_txs": "Operacijų įkėlimas...",
     "recover_txs": "Sandorių atkūrimas...",
+    "taking_too_long": "Reikalingas programos paleidimas iš naujo.",
     "1d": "1D",
     "1w": "1SAV",
     "1m": "1MĖN",
@@ -121,7 +122,7 @@
     "min_sale": "Minimalus pardavimas {{minAmount}} LTC ir maksimalus pardavimas {{maxAmount}} LTC",
     "buy_success": "Sėkmingai nupirkta",
     "exceed_quote_limit": "Viršytas kvotos limitas.",
-    "try_another_currency": "Jūsų valiuta netinka, mėginkite nustatyti kitą."
+    "try_another_currency": "Pasirinkta valiuta nepasiekiama - bandykite dar kartą su skirtinga valiuta."
   },
   "sellTab": {
     "sell": "Parduoti ",
@@ -153,7 +154,7 @@
     "just_sent": "Ką tik išsiuntėte",
     "balance_unconfirmed": "Nepatvirtintas likutis piniginėje",
     "wallet_unsynced": "Vyksta sinchronizacija...",
-    "try_less_amount": "Bandykite įvesti mažesnę sumą. Tikriausiai ji viršija jūsų limitą, atsižvelgiant į apskaičiuotą mokestį.",
+    "try_less_amount": "Siųskite šiek tiek mažiau. Tinklo mokesčiai sumažina jūsų balansą, sumažinkite sumą mokesčiams.",
     "insufficient_funds": "Nepakankamas likutis."
   },
   "receiveTab": {

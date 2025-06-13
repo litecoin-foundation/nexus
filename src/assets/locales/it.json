@@ -3,7 +3,7 @@
     "forgot_pin": "Pincode dimenticato?",
     "forgot_pin_description": "Hai dimenticato il tuo codice PIN?\nInserisci la tua seed phrase per reimpostare il tuo codice PIN.",
     "enter_pin": "Inserisci il tuo PIN",
-    "reenter_pin": "Inserisci il tuo PIN",
+    "reenter_pin": "Reinserisci il tuo PIN",
     "attempts_left_one": "{{count}} tentativo rimanente.",
     "attempts_left_other": "{{count}} tentativi rimanenti.",
     "for_litecoin": "PER LITECOIN",
@@ -91,6 +91,7 @@
     "empty_transactions": "Le tue transazioni appariranno qui",
     "load_txs": "Caricamento Transazioni...",
     "recover_txs": "Recupero Transazioni...",
+    "taking_too_long": "Riavvio dell'app richiesto.",
     "1d": "1G",
     "1w": "1S",
     "1m": "1M",
@@ -121,12 +122,12 @@
     "min_sale": "Vendita minima di {{minAmount}} LTC e vendita massima di {{maxAmount}} LTC",
     "buy_success": "Acquistato con successo",
     "exceed_quote_limit": "Limite di quota superato.",
-    "try_another_currency": "La tua valuta non è applicabile, prova a impostarne un'altra."
+    "try_another_currency": "La valuta scelta non è disponibile - riprova con una valuta diversa."
   },
   "sellTab": {
     "sell": "Vendi ",
     "sell_litecoin": "Vendi Litecoin",
-    "preview_sell": "Anteprima vendita",
+    "preview_sell": "Vendi LTC",
     "sell_blocked": "La vendita di Litecoin non è attualmente disponibile nel tuo paese/stato.",
     "sell_success": "Hai appena venduto {{amount}} LTC!",
     "insufficient_funds": "Fondi Insufficienti.",
@@ -153,7 +154,7 @@
     "just_sent": "Hai appena inviato",
     "balance_unconfirmed": "Saldo non confermato nel portafoglio",
     "wallet_unsynced": "Sincronizzazione in corso...",
-    "try_less_amount": "Prova a inserire un importo inferiore. Probabilmente supera il tuo limite, considerando la commissione stimata.",
+    "try_less_amount": "Invia un po' meno. Le commissioni di rete intaccano il tuo saldo, riduci l'importo per le commissioni.",
     "insufficient_funds": "Fondi insufficienti."
   },
   "receiveTab": {
@@ -233,7 +234,7 @@
     "change_lang": "Cambia Lingua",
     "select_lang": "Seleziona Lingua",
     "view_seed": "Visualizza Seed Phrase",
-    "view_paper_key": "Visualizza Paper key",
+    "view_paper_key": "Visualizza Seed Phrase",
     "last_time_accessed": "Ultimo accesso eseguito: {{time}}",
     "litecoin_denomination": "Denominazione Litecoin",
     "reset_wallet": "Resettare il portafoglio?",

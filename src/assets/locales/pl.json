@@ -91,6 +91,7 @@
     "empty_transactions": "Twoje transakcje pojawią się tutaj",
     "load_txs": "Ładowanie transakcji...",
     "recover_txs": "Odzyskiwanie transakcji...",
+    "taking_too_long": "Wymagany restart aplikacji.",
     "1d": "1D",
     "1w": "1T",
     "1m": "1M",
@@ -121,7 +122,7 @@
     "min_sale": "Minimalna sprzedaż to {{minAmount}} LTC, a maksymalna to {{maxAmount}} LTC",
     "buy_success": "Pomyślnie zakupiono",
     "exceed_quote_limit": "Przekroczono limit kwoty.",
-    "try_another_currency": "Twoja waluta nie jest dostępna, spróbuj ustawić inną."
+    "try_another_currency": "Wybrana waluta nie jest dostępna - spróbuj ponownie z inną walutą."
   },
   "sellTab": {
     "sell": "Sprzedaj ",
@@ -153,7 +154,7 @@
     "just_sent": "Litecoin został wysłany",
     "balance_unconfirmed": "Niepotwierdzony saldo w portfelu",
     "wallet_unsynced": "Trwa synchronizacja...",
-    "try_less_amount": "Spróbuj wpisać mniejszą kwotę. Prawdopodobnie przekracza ona Twój limit, biorąc pod uwagę szacowaną opłatę.",
+    "try_less_amount": "Wyślij trochę mniej. Opłaty sieciowe zmniejszają Twoje saldo, zmniejsz kwotę na opłaty.",
     "insufficient_funds": "Niewystarczające środki."
   },
   "receiveTab": {

@@ -3,7 +3,7 @@
     "forgot_pin": "Nakalimutan ang Pincode?",
     "forgot_pin_description": "Nakalimutan ang iyong Pincode?\nIlagay ang iyong seed phrase upang i-reset ang iyong pincode.",
     "enter_pin": "Ilagay ang iyong PIN",
-    "reenter_pin": "Ilagay ang iyong PIN",
+    "reenter_pin": "Muling ilagay ang iyong PIN",
     "attempts_left_one": "{{count}} natitirang pagtatangka.",
     "attempts_left_other": "{{count}} mga natitirang pagtatangka.",
     "for_litecoin": "PARA SA LITECOIN",
@@ -76,7 +76,7 @@
     "network_fee": "NETWORK FEE",
     "view_on_blockchain": "Tingnan sa Blockchain",
     "bought": "Bumili",
-    "sold": "Ginastos",
+    "sold": "Naibenta",
     "buying": "Bumibili",
     "selling": "Nagbebenta",
     "completed": "NAKUMPLETO",
@@ -91,6 +91,7 @@
     "empty_transactions": "Lalabas dito ang iyong mga transaksyon",
     "load_txs": "Naglo-load ng mga transaksyon...",
     "recover_txs": "Nagre-recover ng mga transaksyon...",
+    "taking_too_long": "Kailangan ng pag-restart ng app.",
     "1d": "1D",
     "1w": "1W",
     "1m": "1M",
@@ -121,7 +122,7 @@
     "min_sale": "Pinakamababang pagbebenta ng {{minAmount}} LTC & max sale ng {{maxAmount}} LTC",
     "buy_success": "Matagumpay na nabili",
     "exceed_quote_limit": "Nalampasan ang quota limit.",
-    "try_another_currency": "Ang inyong currency ay hindi applicable, subukan na magtakda ng iba."
+    "try_another_currency": "Ang napiling currency ay hindi available - subukan ulit gamit ang ibang currency."
   },
   "sellTab": {
     "sell": "Ibenta ",
@@ -153,7 +154,7 @@
     "just_sent": "Nagpadala ka lang",
     "balance_unconfirmed": "Hindi pa nakumpirmang balanse sa Wallet",
     "wallet_unsynced": "Sync ay Nagpapatuloy...",
-    "try_less_amount": "Subukan mong mag-input ng mas mababang halaga. Malamang na lampas ito sa iyong limitasyon, isinasaalang-alang ang tinatayang bayad.",
+    "try_less_amount": "Magpadala ng konti lang. Ang mga network fee ay umuubos sa inyong balance, bawasan ang halaga para sa mga fee.",
     "insufficient_funds": "Hindi sapat na balanse."
   },
   "receiveTab": {

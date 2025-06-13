@@ -3,7 +3,7 @@
     "forgot_pin": "¿Olvidaste tu PIN?",
     "forgot_pin_description": "¿Olvidaste tu código PIN?\nIntroduce tu frase semilla para restablecer tu código PIN.",
     "enter_pin": "Introduce tu PIN",
-    "reenter_pin": "Introduce tu PIN",
+    "reenter_pin": "Reintroduce tu PIN",
     "attempts_left_one": "{{count}} intento restante.",
     "attempts_left_other": "{{count}} intentos restantes.",
     "for_litecoin": "PARA LITECOIN",
@@ -91,6 +91,7 @@
     "empty_transactions": "Tus transacciones aparecerán aquí",
     "load_txs": "Cargando transacciones...",
     "recover_txs": "Recuperando transacciones...",
+    "taking_too_long": "Reinicio de la aplicación requerido.",
     "1d": "1D",
     "1w": "1S",
     "1m": "1M",
@@ -121,7 +122,7 @@
     "min_sale": "Venta mínima de {{minAmount}} LTC y venta máxima de {{maxAmount}} LTC",
     "buy_success": "Comprado con éxito",
     "exceed_quote_limit": "Se excedió el límite de cuota.",
-    "try_another_currency": "Tu moneda no es aplicable, intenta establecer otra."
+    "try_another_currency": "La moneda elegida no está disponible - inténtalo de nuevo con una moneda diferente."
   },
   "sellTab": {
     "sell": "Vender ",
@@ -153,7 +154,7 @@
     "just_sent": "Acabas de enviar",
     "balance_unconfirmed": "Saldo no confirmado en la billetera",
     "wallet_unsynced": "Sincronización en progreso...",
-    "try_less_amount": "Intenta introducir una cantidad menor. Probablemente excede tu límite, considerando la tarifa estimada.",
+    "try_less_amount": "Envía un poco menos. Las tarifas de red consumen tu saldo, reduce la cantidad para tarifas.",
     "insufficient_funds": "Saldo insuficiente."
   },
   "receiveTab": {
@@ -233,7 +234,7 @@
     "change_lang": "Cambiar idioma",
     "select_lang": "Seleccionar idioma",
     "view_seed": "Ver Frase Semilla",
-    "view_paper_key": "Ver Clave de Papel",
+    "view_paper_key": "Ver Seed Phrase",
     "last_time_accessed": "Último acceso: {{time}}",
     "litecoin_denomination": "Denominación de Litecoin",
     "reset_wallet": "¿Restablecer tu billetera?",

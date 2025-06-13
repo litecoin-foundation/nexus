@@ -3,7 +3,7 @@
     "forgot_pin": "Ke harruar kodin PIN?",
     "forgot_pin_description": "Ke harruar kodin PIN?\nShkruj seed phrase-in (24 fjalët) për të rivendosur kodin PIN.",
     "enter_pin": "Vendos kodin PIN",
-    "reenter_pin": "Vendos kodin PIN",
+    "reenter_pin": "Rivendos kodin PIN",
     "attempts_left_one": "{{count}} tentativë e mbetur.",
     "attempts_left_other": "{{count}} tentativa të mbetura.",
     "for_litecoin": "PËR LITECOIN",
@@ -76,7 +76,7 @@
     "network_fee": "TARIFË Netuorku",
     "view_on_blockchain": "Shiko në Blockchain",
     "bought": "Blerë",
-    "sold": "Shpenzuar",
+    "sold": "Shitur",
     "buying": "Duke blerë",
     "selling": "Duke shitur",
     "completed": "PËRFUNDUAR",
@@ -91,6 +91,7 @@
     "empty_transactions": "Transaksionet e tua do të shfaqen këtu",
     "load_txs": "Po ngarkohen transaksionet...",
     "recover_txs": "Po rikuperohen transaksionet...",
+    "taking_too_long": "Kërkohet rianisjimi i aplikacionit.",
     "1d": "1 DITË",
     "1w": "1 JAVË",
     "1m": "1 MUAJ",
@@ -121,7 +122,7 @@
     "min_sale": "Minimumi i shitjes {{minAmount}} LTC dhe maksimumi i shitjes së {{maxAmount}} LTC",
     "buy_success": "Blerja u krye me sukses",
     "exceed_quote_limit": "U tejkalua limiti i kutosës.",
-    "try_another_currency": "Valuta jote nuk është e aplikueshme, provo të vendosish një tjëter."
+    "try_another_currency": "Valuta e zgjedhur nuk është e disponueshme - provo përsëri me një valutë të ndryshme."
   },
   "sellTab": {
     "sell": "Shit ",
@@ -153,7 +154,7 @@
     "just_sent": "Sapo dërgove",
     "balance_unconfirmed": "Bilanc i pakonfirmuar në Portofol",
     "wallet_unsynced": "Sinkronizimi në vazhdim...",
-    "try_less_amount": "Provo të vendosësh një shumë më të vogël. Ndoshta është mbi limitin tënd, duke marrë parasysh tarifën e përllogaritur.",
+    "try_less_amount": "Dërgo pak më pak. Tarifat e rrjetit hanë nga bilanci juaj, ule shumën për tarifat.",
     "insufficient_funds": "Fonde të pamjaftueshme."
   },
   "receiveTab": {

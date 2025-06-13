@@ -3,7 +3,7 @@
     "forgot_pin": "Lupa PIN?",
     "forgot_pin_description": "Lupa kode PIN?\nMasukkan seed phrase untuk mengganti ulang kode PIN Anda.",
     "enter_pin": "Masukkan PIN",
-    "reenter_pin": "Masukkan PIN",
+    "reenter_pin": "Masukkan PIN kembali",
     "attempts_left_one": "{{count}} kesempatan lagi.",
     "attempts_left_other": "{{count}} kesempatan lagi.",
     "for_litecoin": "FOR LITECOIN",
@@ -76,7 +76,7 @@
     "network_fee": "BIAYA JARINGAN",
     "view_on_blockchain": "Lihat di Blockchain",
     "bought": "Dibeli",
-    "sold": "Terbayar",
+    "sold": "Terjual",
     "buying": "Sedang Membeli",
     "selling": "Sedang Menjual",
     "completed": "SELESAI",
@@ -91,6 +91,7 @@
     "empty_transactions": "Transaksi Anda akan muncul di sini.",
     "load_txs": "Memuat Transaksi...",
     "recover_txs": "Memulihkan Transaksi...",
+    "taking_too_long": "Aplikasi perlu direstart.",
     "1d": "1H",
     "1w": "1M",
     "1m": "1B",
@@ -121,7 +122,7 @@
     "min_sale": "Pembelian minimum {{minAmount}} LTC & pembelian maksimum {{maxAmount}} LTC",
     "buy_success": "Berhasil Dibeli",
     "exceed_quote_limit": "Melebihi batas kuota.",
-    "try_another_currency": "Mata uang Anda tidak dapat digunakan, coba atur yang lain."
+    "try_another_currency": "Mata uang yang dipilih tidak tersedia - coba lagi dengan mata uang yang berbeda."
   },
   "sellTab": {
     "sell": "Jual ",
@@ -153,7 +154,7 @@
     "just_sent": "Anda telah mengirim",
     "balance_unconfirmed": "Saldo Belum Terkonfirmasi di Dompet",
     "wallet_unsynced": "Sinkronisasi Sedang Berlangsung...",
-    "try_less_amount": "Coba masukkan jumlah yang lebih kecil. Mungkin jumlah tersebut melebihi batas Anda, dengan mempertimbangkan biaya yang diperkirakan.",
+    "try_less_amount": "Kirim sedikit lebih sedikit. Biaya jaringan mengurangi saldo Anda, kurangi jumlah untuk biaya.",
     "insufficient_funds": "Saldo tidak mencukupi."
   },
   "receiveTab": {
@@ -169,7 +170,7 @@
     "regular": "Regular",
     "mweb": "MWEB",
     "find_tx": "Cari suatu transaksi",
-    "paste": "Salin",
+    "paste": "Tempel",
     "auto_fill": "AutoFill",
     "contact": "Kontak",
     "passwords": "Kata Sandi",
