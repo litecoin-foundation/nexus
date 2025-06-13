@@ -27,7 +27,7 @@ interface IInfo {
   numInactiveChannels: number;
   isInternetReachable: boolean | null;
   startingSyncTimestamp: string;
-  percentSynced: number | undefined;
+  percentSynced: number;
   recoveryProgress: number;
   recoveryFinished: boolean;
   recoveryMode: boolean;

@@ -217,22 +217,68 @@ const TransactionList = forwardRef((props: Props, ref) => {
     setRenderTxs(true);
   }, [folded, SCREEN_HEIGHT, UNFOLD_SHEET_POINT]);
 
+  const decProgress = recoveryMode
+    ? recoveryProgress > 0
+      ? recoveryProgress > 1
+        ? 1
+        : recoveryProgress
+      : 0.01
+    : progress > 0
+      ? progress > 1
+        ? 1
+        : progress
+      : 0.01;
+
+  // Floor it to 1 decimal
+  const percentageProgress =
+    decProgress > 0
+      ? decProgress > 1
+        ? 100
+        : Math.floor(decProgress * 10 * 100) / 10
+      : 1;
+
+  // When loading and not updating the state for more than 10 sec
+  // consider there's a problem with connection and show the note
+  const loadingTimeout = useRef<NodeJS.Timeout>();
+  const [takingTooLong, setTakingTooLong] = useState(false);
+  useEffect(() => {
+    if (percentageProgress < 99) {
+      loadingTimeout.current = setTimeout(() => {
+        setTakingTooLong(true);
+      }, 10000);
+    }
+    return () => {
+      clearTimeout(loadingTimeout.current);
+    };
+  }, [percentageProgress]);
+
   const SyncProgressIndicator = (
     <>
       <View style={styles.headerContainer}>
         <TranslateText
           textKey={recoveryMode ? 'recover_txs' : 'load_txs'}
           domain="main"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.013}
           textStyle={styles.sectionHeaderText}
           numberOfLines={1}
         />
+        <TranslateText
+          textValue={` ${percentageProgress}% `}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+          textStyle={styles.sectionHeaderText}
+          numberOfLines={1}
+        />
+        {takingTooLong ? (
+          <TranslateText
+            textKey={'taking_too_long'}
+            domain="main"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+            textStyle={styles.sectionHeaderText}
+            numberOfLines={1}
+          />
+        ) : null}
       </View>
-      {recoveryMode ? (
-        <ProgressBar progress={recoveryProgress! * 100} />
-      ) : (
-        <ProgressBar progress={progress! * 100} />
-      )}
+      <ProgressBar percentageProgress={percentageProgress} />
     </>
   );
 
@@ -374,6 +420,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.024,
     },
     headerContainer: {
+      flexDirection: 'row',
       paddingBottom: 6,
       borderBottomWidth: 1,
       borderBottomColor: 'rgba(214, 216, 218, 0.3)',
