@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useLayoutEffect} from 'react';
 import {StyleSheet, View, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
@@ -48,46 +48,53 @@ const Import: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
   const {t} = useTranslation('settingsTab');
-  const {address} = useAppSelector(state => state.address);
+  const {regularAddress} = useAppSelector(state => state.address);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     dispatch(getAddress());
   }, [dispatch]);
 
   // handle scanned QR code
   useEffect(() => {
-    const handleScan = async (scanPayload: string) => {
-      try {
-        if (!address) {
-          throw new Error('Receiving address not found.');
+    if (regularAddress) {
+      const handleScan = async (scanPayload: string) => {
+        try {
+          // NOTE: Never show this error, generate address instead
+          if (!regularAddress) {
+            throw new Error('Receiving address not found. Try again.');
+          }
+
+          const rawTxs = await sweepQrKey(scanPayload, regularAddress);
+
+          await Promise.all(
+            rawTxs.map(async rawTx => {
+              await Promise.all(
+                rawTx.map(async (txHex: string) => {
+                  const res = await publishTransaction(txHex);
+                }),
+              );
+            }),
+          );
+
+          navigation.navigate('ImportSuccess', {
+            txHash: t('success'),
+          });
+        } catch (error) {
+          if (error instanceof Error) {
+            Alert.alert(error.message);
+          } else {
+            Alert.alert(String(error));
+          }
         }
+      };
 
-        const rawTxs = await sweepQrKey(scanPayload, address);
-
-        await Promise.all(
-          rawTxs.map(async rawTx => {
-            await Promise.all(
-              rawTx.map(async (txHex: string) => {
-                const res = await publishTransaction(txHex);
-              }),
-            );
-          }),
-        );
-
-        navigation.navigate('ImportSuccess', {
-          txHash: t('success'),
-        });
-      } catch (error) {
-        Alert.alert(String(error));
+      if (route.params?.scanData) {
+        handleScan(route.params?.scanData);
+        dispatch(unsetDeeplink());
       }
-    };
-
-    if (route.params?.scanData) {
-      handleScan(route.params?.scanData);
-      dispatch(unsetDeeplink());
     }
     /* eslint-disable react-hooks/exhaustive-deps */
-  }, [address, route.params?.scanData]);
+  }, [regularAddress, route.params?.scanData]);
 
   // override default goBack action with updateHeader param
   useEffect(() => {

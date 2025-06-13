@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {useLayoutEffect, useState, useContext} from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -32,7 +32,7 @@ const RecoverLitewallet = ({
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
-  const {address} = useAppSelector(state => state.address);
+  const {regularAddress} = useAppSelector(state => state.address);
 
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +40,7 @@ const RecoverLitewallet = ({
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     dispatch(getAddress());
   }, [dispatch]);
 
@@ -48,12 +48,13 @@ const RecoverLitewallet = ({
 
   const handleLWRecovery = async (seed: string[]) => {
     setLoading(true);
+
     try {
-      if (!address) {
-        throw new Error('Receiving address not found.');
+      if (!regularAddress) {
+        throw new Error('Receiving address not found. Try again.');
       }
 
-      const rawTxs = await sweepLitewallet(seed, address);
+      const rawTxs = await sweepLitewallet(seed, regularAddress);
 
       await Promise.all(
         rawTxs.map(async rawTx => {
@@ -71,7 +72,11 @@ const RecoverLitewallet = ({
       });
     } catch (error: any) {
       setLoading(false);
-      Alert.alert(String(error.message));
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      } else {
+        Alert.alert(String(error));
+      }
     }
   };
 
