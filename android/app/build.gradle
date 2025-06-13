@@ -95,6 +95,11 @@ android {
             }
         }
     }
+    packagingOptions {
+        resources {
+            excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
