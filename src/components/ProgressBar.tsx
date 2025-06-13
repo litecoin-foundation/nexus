@@ -2,18 +2,24 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
 interface Props {
-  progress: number;
+  percentageProgress: number;
   white?: boolean;
 }
 
 const ProgressBar = (props: Props) => {
-  const {progress, white} = props;
-  const legitProgress = progress > 0 ? (progress > 100 ? 100 : progress) : 1;
+  const {percentageProgress, white} = props;
+  // Floor it to 1 decimal
+  const filteredProgress =
+    percentageProgress > 0
+      ? percentageProgress > 100
+        ? 100
+        : Math.floor(percentageProgress * 10) / 10
+      : 1;
   return (
     <View
       style={[
         white ? styles.whiteBar : styles.container,
-        {width: `${legitProgress}%`},
+        {width: `${filteredProgress}%`},
       ]}
     />
   );

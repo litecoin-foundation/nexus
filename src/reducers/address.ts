@@ -43,6 +43,12 @@ export const getAddress =
       const address = await newAddress({type});
 
       dispatch(getAddressAction(address.address));
+
+      if (mwebAddress) {
+        dispatch(setMWEBAddressAddressAction(address.address));
+      } else {
+        dispatch(setRegularAddressAddressAction(address.address));
+      }
     } catch (error) {
       console.error(`getAddress error: ${error}`);
     }

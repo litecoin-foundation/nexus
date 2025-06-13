@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useLayoutEffect} from 'react';
 import {StyleSheet, View, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
@@ -11,6 +11,7 @@ import {RouteProp, CommonActions} from '@react-navigation/native';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {unsetDeeplink} from '../../reducers/deeplinks';
 import {publishTransaction} from '../../reducers/transaction';
+import {getAddress} from '../../reducers/address';
 import {sweepQrKey} from '../../lib/utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
@@ -46,49 +47,60 @@ const ImportDeeplink: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
 
-  const {address} = useAppSelector(state => state.address);
+  const {regularAddress} = useAppSelector(state => state.address);
+
+  useLayoutEffect(() => {
+    dispatch(getAddress());
+  }, [dispatch]);
 
   useEffect(() => {
-    const handleDeeplinkPayload = async (deeplinkPayload: string) => {
-      try {
-        if (!address) {
-          throw new Error('Receiving address not found.');
+    if (regularAddress) {
+      const handleDeeplinkPayload = async (deeplinkPayload: string) => {
+        try {
+          // NOTE: Never show this error, generate address instead
+          if (!regularAddress) {
+            throw new Error('Receiving address not found. Try again.');
+          }
+
+          const rawTxs = await sweepQrKey(deeplinkPayload, regularAddress);
+
+          await Promise.all(
+            rawTxs.map(async rawTx => {
+              await Promise.all(
+                rawTx.map(async (txHex: string) => {
+                  const res = await publishTransaction(txHex);
+                }),
+              );
+            }),
+          );
+
+          navigation.navigate('ImportSuccess', {
+            txHash: t('success'),
+          });
+        } catch (error) {
+          if (error instanceof Error) {
+            Alert.alert(error.message);
+          } else {
+            Alert.alert(String(error));
+          }
+
+          const resetAction = CommonActions.reset({
+            index: 0,
+            routes: [
+              {name: 'Main', params: {isInitial: true, updateHeader: true}},
+            ],
+          });
+          navigation.dispatch(resetAction);
         }
+      };
 
-        const rawTxs = await sweepQrKey(deeplinkPayload, address);
-
-        await Promise.all(
-          rawTxs.map(async rawTx => {
-            await Promise.all(
-              rawTx.map(async (txHex: string) => {
-                const res = await publishTransaction(txHex);
-              }),
-            );
-          }),
-        );
-
-        navigation.navigate('ImportSuccess', {
-          txHash: t('success'),
-        });
-      } catch (error) {
-        Alert.alert(String(error));
-
-        const resetAction = CommonActions.reset({
-          index: 0,
-          routes: [
-            {name: 'Main', params: {isInitial: true, updateHeader: true}},
-          ],
-        });
-        navigation.dispatch(resetAction);
+      if (route.params?.scanData) {
+        handleDeeplinkPayload(route.params?.scanData);
+        dispatch(unsetDeeplink());
       }
-    };
-
-    if (route.params?.scanData) {
-      handleDeeplinkPayload(route.params?.scanData);
-      dispatch(unsetDeeplink());
     }
     /* eslint-disable react-hooks/exhaustive-deps */
-  }, [address, route.params?.scanData]);
+  }, [regularAddress, route.params?.scanData]);
 
   return (
     <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>

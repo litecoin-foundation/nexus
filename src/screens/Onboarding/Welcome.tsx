@@ -145,9 +145,9 @@ const Welcome: React.FC<Props> = props => {
 
       <View style={styles.progressBarContainer}>
         {task === 'downloading' ? (
-          <ProgressBar progress={downloadProgress! * 100} />
+          <ProgressBar percentageProgress={downloadProgress! * 100} />
         ) : (
-          <ProgressBar progress={unzipProgress! * 100} />
+          <ProgressBar percentageProgress={unzipProgress! * 100} />
         )}
       </View>
       <Text style={styles.descriptionText}>{task}</Text>
