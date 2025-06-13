@@ -383,14 +383,17 @@ export default function PlasmaModal(props: Props) {
               styles.container,
               {justifyContent: containerJustifyContent},
             ]}>
-            <AnimatedBlurView
-              intensity={disableBlur ? 0 : 14}
+            <Animated.View
               style={[
                 styles.back,
                 backSpecifiedStyle,
                 animatedBackOpacityStyle,
-              ]}
-            />
+              ]}>
+              <BlurView
+                intensity={disableBlur ? 0 : 14}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </Animated.View>
             <Animated.View
               style={[
                 styles.gap,

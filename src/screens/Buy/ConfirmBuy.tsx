@@ -388,7 +388,9 @@ export const ConfirmBuyNavigationOptions = (navigation: any) => {
       <HeaderButton
         textKey="change"
         textDomain="buyTab"
-        onPress={() => navigation.navigate('Main', {updateHeader: true})}
+        onPress={() =>
+          navigation.navigate('Main', {isInitial: true, updateHeader: true})
+        }
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

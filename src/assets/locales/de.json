@@ -43,7 +43,12 @@
     "invalid_description": "Dieses Wort ist nicht gültig - Prüfen Sie die Schreibweise und versuchen Sie es erneut.",
     "try_again": "Erneut versuchen",
     "incorrect": "Falsch",
-    "offline_description": "Sie sind offline. \nVerbinden Sie sich mit dem Internet."
+    "offline_description": "Sie sind offline. \nVerbinden Sie sich mit dem Internet.",
+    "skip_presync": "Vorsynchronisierung überspringen",
+    "are_you_sure": "Sind Sie sicher?",
+    "skip_presync_description": "Wenn Sie die Vorsynchronisierung überspringen, müssen Sie warten, bis Ihr Nexus Wallet vollständig synchronisiert ist, bevor Sie Transaktionen senden oder empfangen können. Dieser Vorgang kann bis zu 30+ Minuten dauern.",
+    "cancel": "Abbrechen",
+    "ok": "OK"
   },
   "main": {
     "main_wallet": "Hauptwallet",
@@ -114,14 +119,19 @@
     "buy_blocked": "Litecoin Kaufen ist in Ihrem Gebiet derzeit nicht verfügbar",
     "error_title": "Etwas ist schiefgelaufen",
     "min_sale": "Mindestverkauf von {{minAmount}} LTC & Höchstverkauf von {{maxAmount}} LTC",
-    "buy_success": "Erfolgreich gekauft"
+    "buy_success": "Erfolgreich gekauft",
+    "exceed_quote_limit": "Kontingentgrenze überschritten.",
+    "try_another_currency": "Ihre Währung ist nicht anwendbar, versuchen Sie es mit einer anderen."
   },
   "sellTab": {
     "sell": "Verkaufen ",
     "sell_litecoin": "Litecoin verkaufe",
     "preview_sell": "Verkaufsdaten anzeigen",
     "sell_blocked": "Litecoin verkaufen ist in Ihrem Gebiet derzeit nicht verfügbar",
-    "sell_success": "Sie haben gerade {{amount}} LTC verkauft!"
+    "sell_success": "Sie haben gerade {{amount}} LTC verkauft!",
+    "insufficient_funds": "Unzureichende Mittel.",
+    "exceed_quote_limit": "Kontingentgrenze überschritten.",
+    "try_another_currency": "Die gewählte Währung ist nicht verfügbar - versuchen Sie es erneut mit einer anderen Währung."
   },
   "sendTab": {
     "send_litecoin": "Litecoin senden",
@@ -246,7 +256,8 @@
     "view_tx": "Transaktion anzeigen",
     "camera_error": "Kamera deaktiviert",
     "cancel": "Abbrechen",
-    "change_login": "Login-PIN ändern"
+    "change_login": "Login-PIN ändern",
+    "processing": "Verarbeitung..."
   },
   "convertTab": {
     "convert_button": "Tauschen Sie Ihr LTC",

@@ -6,7 +6,6 @@ import React, {
   useMemo,
 } from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
-import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -18,6 +17,9 @@ import Dots from '../../components/Dots';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import OnboardingHeader from '../../components/OnboardingHeader';
 import TranslateText from '../../components/TranslateText';
+import CustomCarousel, {
+  CustomCarouselRef,
+} from '../../components/CustomCarousel';
 import {useAppSelector} from '../../store/hooks';
 import chunk from '../../lib/utils/chunk';
 
@@ -42,7 +44,7 @@ const Generate: React.FC<Props> = props => {
 
   const {t} = useTranslation('onboarding');
 
-  const carousel = useRef<ICarouselInstance>(null);
+  const carousel = useRef<CustomCarouselRef>(null);
 
   const seedSelector = createSelector(
     state => state.onboarding.generatedSeed,
@@ -84,17 +86,12 @@ const Generate: React.FC<Props> = props => {
   }, [navigation, headerLeftButton, headerTitle]);
 
   const list = (
-    <Carousel
-      loop={false}
+    <CustomCarousel
       width={SCREEN_WIDTH}
+      height={SCREEN_HEIGHT * 0.4}
       onSnapToItem={index => setActivePage(index)}
       data={seed}
       ref={carousel}
-      mode="parallax"
-      modeConfig={{
-        parallaxScrollingScale: 1,
-        parallaxScrollingOffset: SCREEN_WIDTH * 0.16,
-      }}
       renderItem={({item, index}) => (
         <View style={styles.carouselItem}>
           <SeedView index={4 * (index + 1) - 3} value={item[0]} />
@@ -107,7 +104,7 @@ const Generate: React.FC<Props> = props => {
   );
 
   const handlePress = () => {
-    if (activePage === 5) {
+    if (activePage === seed.length - 1) {
       navigation.navigate('Verify');
       return;
     }
@@ -117,53 +114,54 @@ const Generate: React.FC<Props> = props => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.gradient}>
-      <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
-        <OnboardingHeader
-          description={
-            t('seed_phrase_description') +
-            '\n\n' +
-            t('seed_phrase_description_2')
-          }
-          thin
-        />
-        <View style={styles.seedContainer}>
-          {!seed ? <Text>Loading...</Text> : list}
-        </View>
+      <OnboardingHeader
+        description={
+          t('seed_phrase_description') + '\n\n' + t('seed_phrase_description_2')
+        }
+        thin
+      />
 
-        <View style={styles.dotContainer}>
-          <Dots dotsLength={seed.length} activeDotIndex={activePage} />
-        </View>
+      <View style={styles.seedContainer}>
+        {!seed ? <Text>Loading...</Text> : list}
+      </View>
 
-        <View style={styles.bottomContainer}>
-          <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
-            <View style={styles.bottomTextContainer}>
-              <View style={styles.imageContainer}>
-                <Image
-                  style={styles.image}
-                  source={require('../../assets/images/attention.png')}
-                />
-              </View>
+      <View style={styles.dotContainer}>
+        <Dots dotsLength={seed.length} activeDotIndex={activePage} />
+      </View>
 
-              <TranslateText
-                textKey="seed_warning"
-                domain="onboarding"
-                textStyle={styles.warningText}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.013}
-                // maxLengthInPixels={SCREEN_WIDTH * 0.7}
-                numberOfLines={2}
+      <View style={styles.bottomContainer}>
+        <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+          <View style={styles.bottomTextContainer}>
+            <View style={styles.imageContainer}>
+              <Image
+                style={styles.image}
+                source={require('../../assets/images/attention.png')}
               />
             </View>
 
-            <WhiteButton
-              textKey={activePage === 5 ? 'confirm_written' : 'scroll_right'}
-              textDomain="onboarding"
-              onPress={() => handlePress()}
-              small={false}
-              active={true}
+            <TranslateText
+              textKey="seed_warning"
+              domain="onboarding"
+              textStyle={styles.warningText}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+              // maxLengthInPixels={SCREEN_WIDTH * 0.7}
+              numberOfLines={2}
             />
-          </CustomSafeAreaView>
-        </View>
-      </CustomSafeAreaView>
+          </View>
+
+          <WhiteButton
+            textKey={
+              activePage === seed.length - 1
+                ? 'confirm_written'
+                : 'scroll_right'
+            }
+            textDomain="onboarding"
+            onPress={() => handlePress()}
+            small={false}
+            active={true}
+          />
+        </CustomSafeAreaView>
+      </View>
     </LinearGradient>
   );
 };
@@ -180,17 +178,24 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.4,
       position: 'absolute',
       bottom: screenHeight * 0.25,
+      width: screenWidth,
     },
     carouselItem: {
       gap: screenHeight * 0.024,
-      paddingLeft: 30,
+      width: screenWidth,
+      height: screenHeight * 0.4,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     bottomContainer: {
       position: 'absolute',
       bottom: 0,
       left: 0,
+      right: 0,
       paddingHorizontal: 30,
       paddingBottom: screenHeight * 0.02,
+      zIndex: 10,
+      backgroundColor: 'transparent',
     },
     bottomTextContainer: {
       width: '100%',
@@ -224,8 +229,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     dotContainer: {
       position: 'absolute',
-      bottom: screenHeight * 0.25,
+      bottom: screenHeight * 0.22,
       alignSelf: 'center',
+      zIndex: 10,
+      left: 0,
+      right: 0,
+      alignItems: 'center',
     },
   });
 

@@ -108,6 +108,22 @@ function getDeviceScreenLayout(deviceName: string | undefined) {
 
   // iphone sizes are in CGSize format
   switch (deviceName) {
+    case 'thin':
+      width = 330;
+      height = 750;
+      break;
+    case 'thick':
+      width = 430;
+      height = 750;
+      break;
+    case '500x800':
+      width = 500;
+      height = 800;
+      break;
+    case 'pixel 9 pro':
+      width = 427;
+      height = 952;
+      break;
     case 'iphone 7':
     case 'iphone 8':
     case 'iphone SE':
@@ -171,6 +187,10 @@ function getDeviceScreenLayout(deviceName: string | undefined) {
 
 export const deviceList = [
   'original',
+  'thin',
+  'thick',
+  '500x800',
+  'pixel 9 pro',
   'iphone 7',
   // 'iphone 8',
   // 'iphone SE',

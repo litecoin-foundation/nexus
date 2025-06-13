@@ -71,7 +71,11 @@ export const sweepLitewallet = async (
 
     return rawTopUpTxs;
   } catch (error) {
-    throw new Error(String(error));
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error(String(error));
+    }
   }
 };
 
@@ -116,7 +120,11 @@ export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
 
     return rawTopUpTxs;
   } catch (error) {
-    throw new Error(String(error));
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error(String(error));
+    }
   }
 };
 
@@ -141,7 +149,11 @@ const sweepBase58Ltpv = async (
 
     return rawTopUpTxs;
   } catch (error: any) {
-    throw new Error(String(error.message));
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error(String(error));
+    }
   }
 };
 
@@ -165,7 +177,11 @@ const sweepMnemonic = async (
 
     return rawTopUpTxs;
   } catch (error) {
-    throw new Error(String(error));
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error(String(error));
+    }
   }
 };
 
@@ -215,7 +231,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
     const key = wif.decode(wifString);
     compressed = key.compressed;
   } catch (error) {
-    throw new Error(String(error));
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error(String(error));
+    }
   }
 
   const keyPair = ECPair.fromWIF(wifString, LITECOIN);
@@ -312,7 +332,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
 
       return [rawTx];
     } catch (error) {
-      throw new Error(String(error));
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(String(error));
+      }
     }
   } else {
     throw new Error('Private Key is empty.');
@@ -340,8 +364,8 @@ const sweepAddress = (
       );
 
       if (!utxoRes.ok) {
-        const error = await utxoRes.json();
-        reject(error);
+        // const error = await utxoRes.json();
+        reject('Litecoinspace failed fetching utxo. Try using VPN.');
         return;
       }
 
@@ -362,8 +386,8 @@ const sweepAddress = (
           );
 
           if (!txHexRes.ok) {
-            const error = await txHexRes.text();
-            reject(error);
+            // const error = await txHexRes.text();
+            reject('Litecoinspace failed fetching hex. Try using VPN.');
           }
 
           const utxoHex = await txHexRes.text();
@@ -417,7 +441,7 @@ const sweepAddress = (
         });
       }
     } catch (error) {
-      reject(error);
+      reject('Litecoinspace is unavailable. Try using VPN.');
     }
   });
 };

@@ -1,16 +1,26 @@
 import React, {useEffect, useContext, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Alert, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  Easing,
+} from 'react-native-reanimated';
 import {
   StackNavigationOptions,
   StackNavigationProp,
 } from '@react-navigation/stack';
+import {useTranslation} from 'react-i18next';
 
 import ProgressBar from '../../components/ProgressBar';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import TranslateText from '../../components/TranslateText';
+import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {initWallet, startLnd} from '../../reducers/lightning';
-import {setSeed} from '../../reducers/onboarding';
+import {setSeed, skipPresync} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sleep} from '../../lib/utils/poll';
 
@@ -28,12 +38,19 @@ interface Props {
 const Welcome: React.FC<Props> = props => {
   const {navigation} = props;
 
+  const {t} = useTranslation('onboarding');
+
   const {width, height} = useContext(ScreenSizeContext);
   const styles = getStyles(width, height);
 
   const dispatch = useAppDispatch();
 
   const [loading, setLoading] = useState(false);
+  const [showSkipButton, setShowSkipButton] = useState(false);
+
+  const buttonOpacity = useSharedValue(0);
+  const buttonTranslateY = useSharedValue(20);
+
   const {task, isOnboarded, downloadProgress, unzipProgress} = useAppSelector(
     state => state.onboarding,
   );
@@ -72,6 +89,44 @@ const Welcome: React.FC<Props> = props => {
     }
   }, [dispatch, task]);
 
+  const handleSkipPresync = () => {
+    dispatch(skipPresync());
+  };
+
+  // show skip button after 20 seconds during presyncing
+  useEffect(() => {
+    if (task === 'downloading' || task === 'unzipping') {
+      const timer = setTimeout(() => {
+        setShowSkipButton(true);
+        buttonOpacity.value = withTiming(1, {
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
+        });
+        buttonTranslateY.value = withSpring(0, {
+          damping: 15,
+          stiffness: 150,
+        });
+      }, 20000); // 20 seconds
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowSkipButton(false);
+      buttonOpacity.value = 0;
+      buttonTranslateY.value = 20;
+    }
+  }, [task, buttonOpacity, buttonTranslateY]);
+
+  const animatedButtonStyle = useAnimatedStyle(() => {
+    return {
+      opacity: buttonOpacity.value,
+      transform: [
+        {
+          translateY: buttonTranslateY.value,
+        },
+      ],
+    };
+  });
+
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
       <View style={styles.titleContainer}>
@@ -102,7 +157,36 @@ const Welcome: React.FC<Props> = props => {
   return (
     <>
       <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
-        {task !== 'complete' ? cacheProgress : null}
+        <CustomSafeAreaView styles={styles.safeArea} edges={['top', 'bottom']}>
+          <View style={styles.contentContainer}>
+            {task !== 'complete' ? cacheProgress : null}
+          </View>
+
+          {showSkipButton && (
+            <Animated.View
+              style={[styles.buttonContainer, animatedButtonStyle]}>
+              <WhiteClearButton
+                textKey="skip_presync"
+                textDomain="onboarding"
+                small={false}
+                onPress={() => {
+                  Alert.alert(
+                    t('are_you_sure'),
+                    t('skip_presync_description'),
+                    [
+                      {
+                        text: t('cancel'),
+                        onPress: () => console.log('Cancel Pressed'),
+                        style: 'cancel',
+                      },
+                      {text: t('ok'), onPress: () => handleSkipPresync()},
+                    ],
+                  );
+                }}
+              />
+            </Animated.View>
+          )}
+        </CustomSafeAreaView>
       </LinearGradient>
 
       <LoadingIndicator visible={loading} />
@@ -115,6 +199,23 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
       justifyContent: 'center',
+    },
+    safeArea: {
+      flex: 1,
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    contentContainer: {
+      flex: 1,
+      width: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    buttonContainer: {
+      width: '100%',
+      paddingHorizontal: 30,
+      paddingBottom: screenHeight * 0.02,
     },
     neutrinoCacheContainer: {
       alignSelf: 'center',

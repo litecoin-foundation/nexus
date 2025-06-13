@@ -740,6 +740,7 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
         }
       }
     }
+
     dispatch(
       checkAllowedAction({
         isBuyAllowed: canBuy,
@@ -886,12 +887,18 @@ export const getSignedOnramperUrl =
   (address: string, fiatAmount: number): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {testPaymentActive, testPaymentKey, testPaymentFiat} =
-        getState().settings;
+      const {
+        testPaymentActive,
+        testPaymentKey,
+        testPaymentFiat,
+        // testPaymentCountry,
+      } = getState().settings;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
         : getState().settings.currencyCode;
+
+      // const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
@@ -912,8 +919,10 @@ export const getSignedOnramperUrl =
         `&wallets=ltc_litecoin:${address}` +
         `&defaultAmount=${fiatAmount}` +
         `&defaultFiat=${currencyCode}` +
+        // `&country=${countryCode}` +
         `&uuid=${uniqueIdAsUUID}` +
         `&partnerContext=${uniqueId}` +
+        '&hideTopBar=true' +
         '&mode=buy' +
         '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F';
 
@@ -995,12 +1004,18 @@ export const getSignedSellOnramperUrl =
   (address: string, cryptoAmount: number): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {testPaymentActive, testPaymentKey, testPaymentFiat} =
-        getState().settings;
+      const {
+        testPaymentActive,
+        testPaymentKey,
+        // testPaymentFiat,
+        testPaymentCountry,
+      } = getState().settings;
 
-      const currencyCode = testPaymentActive
-        ? testPaymentFiat
-        : getState().settings.currencyCode;
+      // const currencyCode = testPaymentActive
+      //   ? testPaymentFiat
+      //   : getState().settings.currencyCode;
+
+      const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
@@ -1018,11 +1033,13 @@ export const getSignedSellOnramperUrl =
       const unsignedURL =
         baseUrl +
         '&sell_onlyCryptos=ltc_litecoin' +
-        `&sell_defaultFiat=${currencyCode}` +
+        // `&sell_defaultFiat=${currencyCode}` +
+        `&country=${countryCode}` +
         '&sell_defaultCrypto=ltc_litecoin' +
         `&sell_defaultAmount=${cryptoAmount}` +
         `&uuid=${uniqueIdAsUUID}` +
         `&partnerContext=${uniqueId}` +
+        '&hideTopBar=true' +
         '&mode=sell' +
         '&offrampCashoutRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F' +
         '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell_complete%2F';

@@ -43,7 +43,12 @@
     "invalid_description": "Ang salitang ito ay hindi wasto - suriin ang iyong pagbaybay at subukang muli.",
     "try_again": "Subukang muli",
     "incorrect": "Di-wasto",
-    "offline_description": "Ikaw ay offline. \nKumonekta sa Internet."
+    "offline_description": "Ikaw ay offline. \nKumonekta sa Internet.",
+    "skip_presync": "Laktawan ang Presync",
+    "are_you_sure": "Sigurado ka ba?",
+    "skip_presync_description": "Sa paglaktaw sa presync, kailangan mong maghintay na maging fully sync ang iyong Nexus Wallet bago ka makapagpadala o makatanggap ng mga transaksyon. Ang prosesong ito ay maaaring tumagal ng hanggang 30+ minuto.",
+    "cancel": "Kanselahin",
+    "ok": "OK"
   },
   "main": {
     "main_wallet": "Pangunahing pitaka",
@@ -114,14 +119,19 @@
     "buy_blocked": "Bumili ng Litecoin ay kasalukuyang hindi magagamit sa iyong bansa/estado.",
     "error_title": "May mali!",
     "min_sale": "Pinakamababang pagbebenta ng {{minAmount}} LTC & max sale ng {{maxAmount}} LTC",
-    "buy_success": "Matagumpay na nabili"
+    "buy_success": "Matagumpay na nabili",
+    "exceed_quote_limit": "Nalampasan ang quota limit.",
+    "try_another_currency": "Ang inyong currency ay hindi applicable, subukan na magtakda ng iba."
   },
   "sellTab": {
     "sell": "Ibenta ",
     "sell_litecoin": "Ibenta ang Litecoin",
     "preview_sell": "Ibenta ang LTC",
     "sell_blocked": "Ibenta ang Litecoin.ay kasalukuyang hindi magagamit sa iyong bansa/estado",
-    "sell_success": "Nagbenta ka lang ng {{amount}} LTC!"
+    "sell_success": "Nagbenta ka lang ng {{amount}} LTC!",
+    "insufficient_funds": "Hindi Sapat na Pondo.",
+    "exceed_quote_limit": "Nalampasan ang quota limit.",
+    "try_another_currency": "Ang napiling currency ay hindi available - subukan ulit gamit ang ibang currency."
   },
   "sendTab": {
     "send_litecoin": "Ipadala ang Litecoin",
@@ -246,7 +256,8 @@
     "view_tx": "Tingnan ang mga transaksyon",
     "camera_error": "Hindi gumagana ang kamera",
     "cancel": "Kanselahin",
-    "change_login": "Palitan ang Login Passcode"
+    "change_login": "Palitan ang Login Passcode",
+    "processing": "Nagpo-process..."
   },
   "convertTab": {
     "convert_button": "Palitan ang iyong LTC",

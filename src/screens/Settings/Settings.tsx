@@ -42,7 +42,7 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
-  General: {
+  Settings: {
     updateHeader?: boolean;
   };
   About: undefined;
@@ -63,8 +63,8 @@ type RootStackParamList = {
 };
 
 interface Props {
-  navigation: StackNavigationProp<RootStackParamList, 'General'>;
-  route: RouteProp<RootStackParamList, 'General'>;
+  navigation: StackNavigationProp<RootStackParamList, 'Settings'>;
+  route: RouteProp<RootStackParamList, 'Settings'>;
 }
 
 const Settings: React.FC<Props> = props => {

@@ -43,7 +43,7 @@ export function decodeAppDeeplink(deeplink: string): IDeeplinkDecoded {
       switch (nestedUri) {
         case 'importprivkey':
           stack = 'SettingsStack';
-          screen = 'Import';
+          screen = 'ImportDeeplink';
           break;
         default:
           // stack = 'OnboardingStack';

@@ -43,7 +43,12 @@
     "invalid_description": "To słowo jest nieprawidłowe - sprawdź pisownię i spróbuj ponownie.",
     "try_again": "Spróbuj ponownie",
     "incorrect": "Niepoprawne",
-    "offline_description": "Jesteś offline.\nPołącz się z internetem."
+    "offline_description": "Jesteś offline.\nPołącz się z internetem.",
+    "skip_presync": "Pomiń Presync",
+    "are_you_sure": "Czy jesteś pewien?",
+    "skip_presync_description": "Pomijając presync, będziesz musiał poczekać, aż Twój portfel Nexus zostanie w pełni zsynchronizowany, zanim będziesz mógł wysyłać lub odbierać transakcje. Ten proces może potrwać do 30+ minut.",
+    "cancel": "Anuluj",
+    "ok": "OK"
   },
   "main": {
     "main_wallet": "Główny portfel",
@@ -114,14 +119,19 @@
     "buy_blocked": "Zakup Litecoin nie jest obecnie dostępny w Twoim kraju/województwie.",
     "error_title": "Coś poszło nie tak!",
     "min_sale": "Minimalna sprzedaż to {{minAmount}} LTC, a maksymalna to {{maxAmount}} LTC",
-    "buy_success": "Pomyślnie zakupiono"
+    "buy_success": "Pomyślnie zakupiono",
+    "exceed_quote_limit": "Przekroczono limit kwoty.",
+    "try_another_currency": "Twoja waluta nie jest dostępna, spróbuj ustawić inną."
   },
   "sellTab": {
     "sell": "Sprzedaj ",
     "sell_litecoin": "Sprzedaj Litecoin",
     "preview_sell": "Sprzedaj LTC",
     "sell_blocked": "Sprzedaż Litecoin nie jest obecnie dostępna w Twoim kraju/województwie.",
-    "sell_success": "Właśnie sprzedałeś/aś {{amount}} LTC!"
+    "sell_success": "Właśnie sprzedałeś/aś {{amount}} LTC!",
+    "insufficient_funds": "Niewystarczające środki.",
+    "exceed_quote_limit": "Przekroczono limit kwoty.",
+    "try_another_currency": "Wybrana waluta nie jest dostępna - spróbuj ponownie z inną walutą."
   },
   "sendTab": {
     "send_litecoin": "Wyślij Litecoin",
@@ -246,7 +256,8 @@
     "view_tx": "Zobacz transakcję",
     "camera_error": "Aparat wyłączony",
     "cancel": "Anuluj",
-    "change_login": "Zmień kod logowania"
+    "change_login": "Zmień kod logowania",
+    "processing": "Przetwarzanie..."
   },
   "convertTab": {
     "convert_button": "Wymień swoje LTC",

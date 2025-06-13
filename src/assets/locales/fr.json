@@ -43,7 +43,12 @@
     "invalid_description": "Ce mot n'est pas valide - vérifiez l'orthographe et réessayez.",
     "try_again": "Réessayer",
     "incorrect": "Incorrect",
-    "offline_description": "Vous êtes hors ligne. \nConnectez-vous à Internet."
+    "offline_description": "Vous êtes hors ligne. \nConnectez-vous à Internet.",
+    "skip_presync": "Ignorer la pré-synchronisation",
+    "are_you_sure": "Êtes-vous sûr?",
+    "skip_presync_description": "En ignorant la pré-synchronisation, vous devrez attendre que votre Nexus Wallet se synchronise complètement avant de pouvoir envoyer ou recevoir des transactions. Ce processus peut prendre jusqu'à 30+ minutes.",
+    "cancel": "Annuler",
+    "ok": "OK"
   },
   "main": {
     "main_wallet": "Portefeuille principal",
@@ -114,14 +119,19 @@
     "buy_blocked": "L'achat de Litecoin n'est actuellement pas disponible dans votre pays/état.",
     "error_title": "Un problème est survenu !",
     "min_sale": "Vente minimum de {{minAmount}} LTC et maximum de {{maxAmount}} LTC",
-    "buy_success": "Achat réussi"
+    "buy_success": "Achat réussi",
+    "exceed_quote_limit": "Limite de quota dépassée.",
+    "try_another_currency": "Votre devise n'est pas applicable, essayez d'en définir une autre."
   },
   "sellTab": {
     "sell": "Vendre",
     "sell_litecoin": "Vendre du Litecoin",
     "preview_sell": "Aperçu de la vente",
     "sell_blocked": "La vente de Litecoin n'est actuellement pas disponible dans votre pays/état.",
-    "sell_success": "Vous venez de vendre {{amount}} LTC !"
+    "sell_success": "Vous venez de vendre {{amount}} LTC !",
+    "insufficient_funds": "Fonds insuffisants.",
+    "exceed_quote_limit": "Limite de quota dépassée.",
+    "try_another_currency": "La devise choisie n'est pas disponible - réessayez avec une devise différente."
   },
   "sendTab": {
     "send_litecoin": "Envoyer du Litecoin",
@@ -246,7 +256,8 @@
     "view_tx": "Voir la transaction",
     "camera_error": "Caméra désactivée",
     "cancel": "Annuler",
-    "change_login": "Changer le code d'accès"
+    "change_login": "Changer le code d'accès",
+    "processing": "Traitement en cours..."
   },
   "convertTab": {
     "convert_button": "Convertir vos LTC",

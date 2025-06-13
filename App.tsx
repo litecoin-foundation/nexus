@@ -80,7 +80,7 @@ function ContextExecutable(props: any) {
     dispatch(getBuyTransactionHistory());
     dispatch(getSellTransactionHistory());
     dispatch(checkFlexaCustomer());
-  });
+  }, [dispatch, languageCode, props.deviceToken]);
 
   return <></>;
 }

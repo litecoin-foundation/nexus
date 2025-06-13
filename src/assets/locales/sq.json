@@ -43,7 +43,12 @@
     "invalid_description": "Kjo fjalë nuk është e vlefshme - kontrollo drejtshkrimin dhe provo përsëri.",
     "try_again": "Provo Përsëri",
     "incorrect": "E Pasaktë",
-    "offline_description": "Je offline. \nLidhu me internetin."
+    "offline_description": "Je offline. \nLidhu me internetin.",
+    "skip_presync": "Kalo Presync",
+    "are_you_sure": "A je i sigurt?",
+    "skip_presync_description": "Duke kaluar presync, do të duhet të presesh që portofoli yt Nexus të sinkronizohet plotësisht para se të mund të dërgosh ose marrsh transaksione. Ky proces mund të zgjatë deri në 30+ minuta.",
+    "cancel": "Anulo",
+    "ok": "OK"
   },
   "main": {
     "main_wallet": "Portofoli Kryesor",
@@ -114,14 +119,19 @@
     "buy_blocked": "Blerja e Litecoin-it is aktualisht nuk disponohet në shtetin tuaj.",
     "error_title": "Diçka nuk shkoji mirë!",
     "min_sale": "Minimumi i shitjes {{minAmount}} LTC dhe maksimumi i shitjes së {{maxAmount}} LTC",
-    "buy_success": "Blerja u krye me sukses"
+    "buy_success": "Blerja u krye me sukses",
+    "exceed_quote_limit": "U tejkalua limiti i kutosës.",
+    "try_another_currency": "Valuta jote nuk është e aplikueshme, provo të vendosish një tjëter."
   },
   "sellTab": {
     "sell": "Shit ",
     "sell_litecoin": "Shit Litecoin",
     "preview_sell": "Shit LTC",
     "sell_blocked": "Shitja Litecoin-it aktualisht nuk disponohet në shtetin tuaj.",
-    "sell_success": "Sapo ke shitur {{amount}} LTC!"
+    "sell_success": "Sapo ke shitur {{amount}} LTC!",
+    "insufficient_funds": "Fonde të pamjaftueshme.",
+    "exceed_quote_limit": "U tejkalua limiti i kutosës.",
+    "try_another_currency": "Valuta e zgjedhur nuk është e disponueshme - provo përsëri me një valutë të ndryshme."
   },
   "sendTab": {
     "send_litecoin": "Dërgo Litecoin",
@@ -246,7 +256,8 @@
     "view_tx": "Shiko Transaksionin",
     "camera_error": "Kamera e Çaktivizuar",
     "cancel": "Anulo",
-    "change_login": "Ndrysho Kodin e Kyçjes"
+    "change_login": "Ndrysho Kodin e Kyçjes",
+    "processing": "Duke procesuar..."
   },
   "convertTab": {
     "convert_button": "Konverto LTC-në tënde",

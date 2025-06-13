@@ -1,60 +1,108 @@
-import React, {useContext} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useEffect, useContext} from 'react';
+import {StyleSheet, View, Alert} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useTranslation} from 'react-i18next';
 import {
   StackNavigationOptions,
   StackNavigationProp,
 } from '@react-navigation/stack';
-import {RouteProp} from '@react-navigation/native';
+import {RouteProp, CommonActions} from '@react-navigation/native';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
+import {unsetDeeplink} from '../../reducers/deeplinks';
+import {publishTransaction} from '../../reducers/transaction';
+import {sweepQrKey} from '../../lib/utils/sweep';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
+  ImportDeeplink: {
+    scanData?: string;
+  };
   ImportSuccess: {
     txHash: string;
   };
-  NewWalletStack: undefined;
   Main: {
     isInitial: boolean;
   };
 };
 
 interface Props {
-  navigation: StackNavigationProp<RootStackParamList, 'ImportSuccess'>;
-  route: RouteProp<RootStackParamList, 'ImportSuccess'>;
+  navigation: StackNavigationProp<RootStackParamList, 'ImportDeeplink'>;
+  route: RouteProp<RootStackParamList, 'ImportDeeplink'>;
 }
 
-const ImportSuccess: React.FC<Props> = props => {
-  const {navigation} = props;
+const ImportDeeplink: React.FC<Props> = props => {
+  const {navigation, route} = props;
+
+  const {t} = useTranslation('settingsTab');
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  const dispatch = useAppDispatch();
+
+  const {address} = useAppSelector(state => state.address);
+
+  useEffect(() => {
+    const handleDeeplinkPayload = async (deeplinkPayload: string) => {
+      try {
+        if (!address) {
+          throw new Error('Receiving address not found.');
+        }
+
+        const rawTxs = await sweepQrKey(deeplinkPayload, address);
+
+        await Promise.all(
+          rawTxs.map(async rawTx => {
+            await Promise.all(
+              rawTx.map(async (txHex: string) => {
+                const res = await publishTransaction(txHex);
+              }),
+            );
+          }),
+        );
+
+        navigation.navigate('ImportSuccess', {
+          txHash: t('success'),
+        });
+      } catch (error) {
+        Alert.alert(String(error));
+
+        const resetAction = CommonActions.reset({
+          index: 0,
+          routes: [
+            {name: 'Main', params: {isInitial: true, updateHeader: true}},
+          ],
+        });
+        navigation.dispatch(resetAction);
+      }
+    };
+
+    if (route.params?.scanData) {
+      handleDeeplinkPayload(route.params?.scanData);
+      dispatch(unsetDeeplink());
+    }
+    /* eslint-disable react-hooks/exhaustive-deps */
+  }, [address, route.params?.scanData]);
+
   return (
     <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
       <View style={styles.body}>
         <TranslateText
-          textKey="awesome"
+          textKey="processing"
           domain="settingsTab"
           maxSizeInPixels={SCREEN_HEIGHT * 0.07}
           textStyle={styles.title}
           numberOfLines={1}
         />
-        <TranslateText
-          textKey="success_import"
-          domain="settingsTab"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-          textStyle={styles.subtitle}
-          numberOfLines={3}
-        />
       </View>
 
-      <View style={styles.confirmButtonContainer}>
+      <View style={styles.backButtonContainer}>
         <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
           <WhiteButton
             textKey="back_to_wallet"
@@ -107,7 +155,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       opacity: 0.9,
       marginTop: screenHeight * 0.005,
     },
-    confirmButtonContainer: {
+    backButtonContainer: {
       position: 'absolute',
       bottom: screenHeight * 0.01,
       width: '100%',
@@ -123,7 +171,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     safeArea: {},
   });
 
-export const ImportSuccessNavigationOptions = (): StackNavigationOptions => {
+export const ImportDeeplinkNavigationOptions = (): StackNavigationOptions => {
   return {
     headerTitle: () => null,
     headerTitleAlign: 'left',
@@ -134,4 +182,4 @@ export const ImportSuccessNavigationOptions = (): StackNavigationOptions => {
   };
 };
 
-export default ImportSuccess;
+export default ImportDeeplink;

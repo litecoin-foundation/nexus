@@ -8,9 +8,9 @@
     "attempts_left_other": "{{count}} attempts left.",
     "for_litecoin": "FOR LITECOIN",
     "create_wallet": "Create Wallet",
-    "create_new_wallet": "Create a New One",
-    "proceed_with_existing": "Proceed with Existing Wallet",
-    "existing_seed_note": "Looks like you already had a wallet setup previously. Would you like to use saved seed or create a new wallet?",
+    "create_new_wallet": "Create a New Wallet",
+    "proceed_with_existing": "Continue with Existing Wallet",
+    "existing_seed_note": "It looks like you’ve already set up a wallet. Would you like to use your saved seed or create a new wallet?",
     "already_wallet": "Already have a wallet? Log In",
     "recover_wallet": "Recover Wallet",
     "enter_seed": "Enter your seed phrase words below.",
@@ -20,7 +20,7 @@
     "confirm_pin": "Confirm Pincode",
     "verify_pin": "Verify your Pincode",
     "seed_phrase": "Your Seed Phrase",
-    "seed_phrase_description": "The 24 words below is your seed phrase.",
+    "seed_phrase_description": "The 24 words below are your seed phrase.",
     "seed_phrase_description_2": "Your seed phrase is your password to your Litecoin & Wallet. Write it down and keep it safe somewhere secure!",
     "seed_warning": "WITHOUT THESE WORDS YOU WILL NOT BE ABLE TO ACCESS YOUR WALLET!",
     "scroll_right": "Scroll Right",
@@ -43,7 +43,12 @@
     "invalid_description": "This word is not valid - check your spelling and try again.",
     "try_again": "Try Again",
     "incorrect": "Incorrect",
-    "offline_description": "You are offline. \nConnect to the Internet."
+    "offline_description": "You are offline. \nConnect to the Internet.",
+    "skip_presync": "Skip Presync",
+    "are_you_sure": "Are you sure?",
+    "skip_presync_description": "By skipping presync, you'll need to wait for your Nexus Wallet to fully sync before you can send or receive transactions. This process can take up to 30+ minutes.",
+    "cancel": "Cancel",
+    "ok": "OK"
   },
   "main": {
     "main_wallet": "Main Wallet",
@@ -114,14 +119,19 @@
     "buy_blocked": "Buy Litecoin is currently not available in your country/state.",
     "error_title": "Something's wrong!",
     "min_sale": "Minimum sale of {{minAmount}} LTC & max sale of {{maxAmount}} LTC",
-    "buy_success": "Bought Successfully"
+    "buy_success": "Bought Successfully",
+    "exceed_quote_limit": "Exceeded quota limit.",
+    "try_another_currency": "Your currency is not applicable, try setting another one."
   },
   "sellTab": {
     "sell": "Sell ",
     "sell_litecoin": "Sell Litecoin",
     "preview_sell": "Sell LTC",
     "sell_blocked": "Sell Litecoin is currently not available in your country/state.",
-    "sell_success": "You just sold {{amount}} LTC!"
+    "sell_success": "You just sold {{amount}} LTC!",
+    "insufficient_funds": "Insufficient Funds.",
+    "exceed_quote_limit": "Exceeded quota limit.",
+    "try_another_currency": "The chosen currency is not available - try again with a different currency."
   },
   "sendTab": {
     "send_litecoin": "Send Litecoin",
@@ -242,11 +252,12 @@
     "reset_warning": "Are you absolutely sure you would like to reset your wallet? Backup your seed phrase before resetting.",
     "resetting_wallet": "Resetting Wallet",
     "resetting_wallet_warning": "Warning! Resetting your wallet will erase your current seed phrase, back it up first!",
-    "mweb_missing_note": "When you recover a new seed phrase into a wallet, MWEB transactions may be missing since they're private.",
+    "mweb_missing_note": "Private Litecoin transaction history will be missing if the wallet is recovered in the future.",
     "view_tx": "View Transaction",
     "camera_error": "Camera Disabled",
     "cancel": "Cancel",
-    "change_login": "Change Login Passcode"
+    "change_login": "Change Login Passcode",
+    "processing": "Processing..."
   },
   "convertTab": {
     "convert_button": "Convert your LTC",

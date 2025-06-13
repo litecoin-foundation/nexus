@@ -23,10 +23,54 @@
 import * as bitcoin from 'bitcoinjs-lib';
 import {LITECOIN} from './litecoin';
 
-function getWitnessUtxo(utxoHex: string, value: number): any {
-  let out = {script: {}, value: 0};
+function getWitnessUtxoDefault(utxoHex: string, value: number): any {
+  let out = {script: {} as Buffer<ArrayBuffer>, value: 0};
   out.script = Buffer.from(utxoHex, 'hex');
   out.value = value;
+  return out;
+}
+
+function getWitnessUtxoP2WPKH(publicKey: Buffer, value: number): any {
+  let out = {script: {} as Buffer<ArrayBuffer>, value: 0};
+  out.script = bitcoin.payments.p2wpkh({
+    pubkey: publicKey,
+    network: LITECOIN,
+  }).output as Buffer<ArrayBufferLike>;
+  out.value = value;
+  return out;
+}
+
+function getWitnessUtxoP2SHP2WPKH(publicKey: Buffer, value: number): any {
+  let out = {script: {} as Buffer<ArrayBuffer>, value: 0};
+  out.script = bitcoin.payments.p2sh({
+    redeem: bitcoin.payments.p2wpkh({
+      pubkey: publicKey,
+      network: LITECOIN,
+    }),
+    network: LITECOIN,
+  }).output as Buffer<ArrayBufferLike>;
+  out.value = value;
+  return out;
+}
+
+function getWitnessUtxo(
+  utxoHex: string,
+  value: number,
+  redeemType: string,
+  publicKey: Buffer,
+) {
+  let out;
+  switch (redeemType) {
+    case 'P2WPKH':
+      out = getWitnessUtxoP2WPKH(publicKey, value);
+      break;
+    case 'P2SH-P2WPKH':
+      out = getWitnessUtxoP2SHP2WPKH(publicKey, value);
+      break;
+    default:
+      out = getWitnessUtxoDefault(utxoHex, value);
+      break;
+  }
   return out;
 }
 
@@ -42,41 +86,46 @@ export default function getTxInputData(
   const nonWitnessUtxo = Buffer.from(utxoHex, 'hex');
 
   // for segwit inputs, you only need the output script and value as an object.
-  //   const witnessUtxo: any = {};
-  const witnessUtxo = getWitnessUtxo(utxoHex, value);
+  const witnessUtxo = getWitnessUtxo(utxoHex, value, redeemType, pubKey);
 
   const mixin = isSegwit ? {witnessUtxo} : {nonWitnessUtxo};
 
   const mixin2: any = {};
   switch (redeemType) {
-    case 'P2SH':
-      mixin2.redeemScript = bitcoin.payments.p2sh({
+    case 'P2SH-P2WPKH':
+      mixin2.redeemScript = bitcoin.payments.p2wpkh({
         pubkey: pubKey,
         network: LITECOIN,
-      });
+      }).output;
       break;
-    case 'P2WSH':
-      mixin2.witnessScript = bitcoin.payments.p2wsh({
-        pubkey: pubKey,
-        network: LITECOIN,
-      });
-      break;
-    case 'P2SH-P2WSH':
-      mixin2.witnessScript = bitcoin.payments.p2wsh({
-        redeem: bitcoin.payments.p2sh({
-          pubkey: pubKey,
-          network: LITECOIN,
-        }),
-        network: LITECOIN,
-      });
-      mixin2.redeemScript = bitcoin.payments.p2sh({
-        pubkey: pubKey,
-        network: LITECOIN,
-      });
-      break;
+    // NOTE: not tested
+    // case 'P2SH':
+    //   mixin2.redeemScript = bitcoin.payments.p2sh({
+    //     pubkey: pubKey,
+    //     network: LITECOIN,
+    //   });
+    //   break;
+    // case 'P2WSH':
+    //   mixin2.witnessScript = bitcoin.payments.p2wsh({
+    //     pubkey: pubKey,
+    //     network: LITECOIN,
+    //   });
+    //   break;
+    // case 'P2SH-P2WSH':
+    //   mixin2.witnessScript = bitcoin.payments.p2wsh({
+    //     redeem: bitcoin.payments.p2sh({
+    //       pubkey: pubKey,
+    //       network: LITECOIN,
+    //     }),
+    //     network: LITECOIN,
+    //   });
+    //   mixin2.redeemScript = bitcoin.payments.p2sh({
+    //     pubkey: pubKey,
+    //     network: LITECOIN,
+    //   });
+    //   break;
     case 'P2PKH':
     case 'P2WPKH':
-    case 'P2SH-P2WPKH':
       //noredeem
       break;
   }

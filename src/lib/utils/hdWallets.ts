@@ -34,25 +34,34 @@ export async function getDerivedKeyPairsWithBalance(
 ) {
   const keyPairsWithBalance: AddressWithKeyPair[] = [];
 
-  const sweepableAddresses: SweepableAddress[] = await getDerivedUsedAddresses(
-    startPath,
-    isHardened,
-    mnemonic,
-    seedBase58,
-  );
+  try {
+    const sweepableAddresses: SweepableAddress[] =
+      await getDerivedUsedAddresses(
+        startPath,
+        isHardened,
+        mnemonic,
+        seedBase58,
+      );
 
-  sweepableAddresses.map(sweepableAddress => {
-    if (sweepableAddress.addressData.balance > 0) {
-      // BIP32Interface to ECPairInterface
-      const wifString = sweepableAddress.keyPair.toWIF();
-      const keyPair = ECPair.fromWIF(wifString, LITECOIN);
+    sweepableAddresses.map(sweepableAddress => {
+      if (sweepableAddress.addressData.balance > 0) {
+        // BIP32Interface to ECPairInterface
+        const wifString = sweepableAddress.keyPair.toWIF();
+        const keyPair = ECPair.fromWIF(wifString, LITECOIN);
 
-      keyPairsWithBalance.push({
-        address: sweepableAddress.addressData.address,
-        keyPair: keyPair,
-      });
+        keyPairsWithBalance.push({
+          address: sweepableAddress.addressData.address,
+          keyPair: keyPair,
+        });
+      }
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error(String(error));
     }
-  });
+  }
 
   return keyPairsWithBalance;
 }
@@ -101,7 +110,11 @@ async function getDerivedUsedAddresses(
         currentIndex++;
         currentGap++;
       } else {
-        throw new Error(String(error));
+        if (error instanceof Error) {
+          throw new Error(error.message);
+        } else {
+          throw new Error(String(error));
+        }
       }
     }
   }
@@ -145,7 +158,7 @@ function getPubKeyFromExtendedKey(extendedKey: BIP32Interface) {
   });
 
   if (address === undefined) {
-    throw new Error('error: address derivation');
+    throw new Error('Address derivation failed.');
   }
 
   return address;
@@ -159,7 +172,7 @@ async function fetchAddressData(address: string, index: number) {
       );
 
       if (!res.ok) {
-        reject('Unable to fetch balance. Please try later.');
+        reject('Unable to fetch balance. Try using VPN.');
       }
 
       const data = await res.json();
@@ -180,7 +193,7 @@ async function fetchAddressData(address: string, index: number) {
         reject('Invalid request.');
       }
     } catch (err) {
-      reject('Unable to fetch balance. Please try later.');
+      reject('Unable to fetch balance. Try using VPN.');
     }
   });
 }
