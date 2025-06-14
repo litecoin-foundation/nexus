@@ -58,11 +58,11 @@ const Sell: React.FC<Props> = () => {
 
   // render moonpay rates
   const availableAmount =
-    Number(amount) > 0 && sellQuote.ltcAmount > 0
+    Number(amount) > 0 && (sellQuote?.ltcAmount || 0) > 0
       ? sellQuote.ltcAmount
       : Number(amount);
   const availableQuote =
-    Number(amount) > 0 && sellQuote.fiatAmount > 0
+    Number(amount) > 0 && (sellQuote?.fiatAmount || 0) > 0
       ? sellQuote.fiatAmount
       : Number(fiatAmount);
 
