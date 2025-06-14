@@ -64,6 +64,8 @@
 	<string>Unlock &amp; Authorise payments using Face ID</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used to determine the best Buy/Sell Litecoin provider.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose screenshots to send to in-app support or add photo ID verification.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Satoshi-Variable.ttf</string>
