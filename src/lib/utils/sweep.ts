@@ -23,6 +23,11 @@ interface SweptAddress {
   addressUnspentsLength: number;
 }
 
+interface InputWithKeyPair {
+  input: any;
+  keyPair: ECPairInterface;
+}
+
 function isArrayEmpty(obj: any[]) {
   if (obj.length >= 1) {
     return false;
@@ -189,11 +194,11 @@ const createRawTxsFromHDWallet = async (
   keyPairsWithBalance: AddressWithKeyPair[],
   receiveAddress: string,
 ) => {
-  const rawTxs: any[] = [];
-  const inputsFromAllAddressesWithBalance: any[] = [];
+  const inputsWithKeyPairs: InputWithKeyPair[] = [];
   let totalBalance = 0;
   let unspentsLength = 0;
 
+  // Collect all inputs with their corresponding key pairs
   await Promise.all(
     keyPairsWithBalance.map(async addressWithKeyPair => {
       const sweepy = await sweepAddress(
@@ -203,25 +208,34 @@ const createRawTxsFromHDWallet = async (
       );
 
       const {inputsArr, addressBalance, addressUnspentsLength} = sweepy;
-      inputsFromAllAddressesWithBalance.push(...inputsArr);
+      
+      // Map each input to its key pair
+      inputsArr.forEach(input => {
+        inputsWithKeyPairs.push({
+          input,
+          keyPair: addressWithKeyPair.keyPair
+        });
+      });
+      
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
-
-      const rawTx = createTopUpTx(
-        inputsFromAllAddressesWithBalance,
-        receiveAddress,
-        0,
-        totalBalance,
-        unspentsLength,
-        addressWithKeyPair.keyPair,
-        'P2PKH',
-      );
-
-      rawTxs.push(rawTx);
     }),
   );
 
-  return rawTxs;
+  // Create a single transaction with all inputs
+  if (inputsWithKeyPairs.length > 0) {
+    const rawTx = createTopUpTx(
+      inputsWithKeyPairs,
+      receiveAddress,
+      0,
+      totalBalance,
+      unspentsLength,
+      'P2PKH',
+    );
+    return [rawTx];
+  }
+
+  return [];
 };
 
 export const sweepWIF = async (wifString: string, receiveAddress: string) => {
@@ -312,13 +326,18 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
 
   if (totalBalance > 0) {
     try {
+      // Convert inputs to InputWithKeyPair format
+      const inputsWithKeyPairs: InputWithKeyPair[] = inputsFromAllAddressesWithBalance.map(input => ({
+        input,
+        keyPair
+      }));
+
       const rawTx = createTopUpTx(
-        inputsFromAllAddressesWithBalance,
+        inputsWithKeyPairs,
         receiveAddress,
         0,
         totalBalance,
         unspentsLength,
-        keyPair,
         'P2PKH',
       );
 
@@ -443,18 +462,18 @@ const sweepAddress = (
 };
 
 const createTopUpTx = (
-  inputsArr: any[],
+  inputsWithKeyPairs: InputWithKeyPair[],
   receiveAddress: string,
   feeRate: number,
   totalSum: number,
   unspentsLength: number,
-  keyPair: ECPairInterface,
   inputScript: string,
 ): string => {
   // construct psbt tx
   const psbt = new bitcoin.Psbt({network: LITECOIN});
 
-  inputsArr.map(input => {
+  // Add all inputs
+  inputsWithKeyPairs.forEach(({input}) => {
     psbt.addInput(input);
   });
 
@@ -466,7 +485,11 @@ const createTopUpTx = (
     ),
   });
 
-  psbt.signInput(0, keyPair);
+  // Sign each input with its corresponding key pair
+  inputsWithKeyPairs.forEach(({keyPair}, index) => {
+    psbt.signInput(index, keyPair);
+  });
+  
   psbt.finalizeAllInputs();
 
   const finalTx = psbt.extractTransaction(false);
