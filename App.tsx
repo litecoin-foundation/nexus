@@ -13,8 +13,8 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import messaging from '@react-native-firebase/messaging';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
+import * as Notifications from 'expo-notifications';
 import {FlexaContext} from '@flexa/flexa-react-native';
 import {
   ScreenSizeProvider,
@@ -106,7 +106,7 @@ const App: React.FC = () => {
       // console.log('Permission denied');
     }
 
-    APNSTokenModule.getToken().then(token => {
+    APNSTokenModule.getToken().then((token: string) => {
       if (token) {
         // console.log('APNS Device Token Received', token);
         setDeviceToken(token || '');
@@ -116,19 +116,20 @@ const App: React.FC = () => {
     });
   }
 
+  async function requestAndroidUserPermission() {
+    PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+    );
+    const token = (await Notifications.getDevicePushTokenAsync()).data;
+    // console.log('FCM Device Token Received', token);
+    setDeviceToken(token || '');
+  }
+
   useLayoutEffect(() => {
     if (Platform.OS === 'ios') {
       requestIOSUserPermission();
     } else {
-      PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-      );
-      messaging()
-        .getToken()
-        .then((token: string) => {
-          // console.log('FCM Device Token Received', token);
-          setDeviceToken(token);
-        });
+      requestAndroidUserPermission();
     }
   }, []);
 

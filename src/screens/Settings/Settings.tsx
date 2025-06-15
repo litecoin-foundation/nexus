@@ -25,8 +25,8 @@ import {
   StackNavigationProp,
 } from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
-import messaging from '@react-native-firebase/messaging';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import notifee, {AuthorizationStatus} from '@notifee/react-native';
 
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import Header from '../../components/Header';
@@ -103,12 +103,10 @@ const Settings: React.FC<Props> = props => {
   };
 
   const handleNotificationSwitch = async () => {
-    let enabled;
+    let enabled = true;
     if (Platform.OS === 'ios') {
-      const authStatus = await messaging().hasPermission();
-      enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      const settings = await notifee.requestPermission();
+      enabled = settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED;
     } else {
       enabled = await PermissionsAndroid.check(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,

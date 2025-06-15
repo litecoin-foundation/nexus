@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             UIApplication.shared.registerForRemoteNotifications()
             }
         } else {
-            print("❌ Notification permission not granted:", error?.localizedDescription ?? "unknown error")
+            print("Notification permission not granted:", error?.localizedDescription ?? "unknown error")
         }
         }
 
@@ -57,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     // Called if registration for remote notifications failed
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("❌ Failed to register for APNs: \(error.localizedDescription)")
+        print("Failed to register for APNs: \(error.localizedDescription)")
     }
 }
 

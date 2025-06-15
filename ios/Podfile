@@ -30,12 +30,8 @@ target 'nexus' do
   config = use_native_modules!
 
   pod 'Base32', :modular_headers => true;
-  pod 'FirebaseCore', :modular_headers => true;
-  pod 'FirebaseCoreInternal', :modular_headers => true;
-  pod 'GoogleUtilities', :modular_headers => true;
 
   # use_frameworks! :linkage => :static
-  # $RNFirebaseAsStaticFramework = true
 
   use_react_native!(
     :path => config[:reactNativePath],
