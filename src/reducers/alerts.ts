@@ -1,3 +1,11 @@
+// In order to keep the same instances of alert collection on both client's wallet and
+// api server, we have to sync them interchangably. First we fetch fired alerts
+// from the api server and disable them in the client's app by comparing their indexes.
+// Then we call the server passing the latest state of the alert collection, to keep the server up
+// with user's manual changes such as on/off toggle and price target.
+// updateFiredAlertsFromApiServer() is called on startup and triggers resyncAlertsOnApiServer.
+// Every CRUD operation triggers resyncAlertsOnApiServer.
+
 import {showError} from './errors';
 import {AppThunk} from './types';
 
@@ -47,7 +55,7 @@ export const resyncAlertsOnApiServer =
       return;
     }
 
-    const alertsWithNoId = alerts
+    const alertsWithoutId = alerts
       ? alerts.map((alert: IAlert) => {
           return {
             deviceToken: alert.deviceToken,
@@ -69,7 +77,7 @@ export const resyncAlertsOnApiServer =
         },
         body: JSON.stringify({
           deviceToken: deviceToken,
-          alerts: alertsWithNoId,
+          alerts: alertsWithoutId,
         }),
       });
     } catch (error) {
@@ -86,7 +94,7 @@ export const updateFiredAlertsFromApiServer =
       return;
     }
 
-    const alertsWithNoId = alerts
+    const alertsWithoutId = alerts
       ? alerts.map((alert: IAlert) => {
           return {
             deviceToken: alert.deviceToken,
@@ -108,7 +116,7 @@ export const updateFiredAlertsFromApiServer =
         },
         body: JSON.stringify({
           deviceToken: deviceToken,
-          alerts: alertsWithNoId,
+          alerts: alertsWithoutId,
         }),
       });
 

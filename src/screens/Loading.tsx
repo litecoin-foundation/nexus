@@ -43,8 +43,7 @@ const Loading: React.FC<Props> = props => {
     dispatch(resetLndState());
     if (isOnboarded) {
       dispatch(startLnd());
-      // first sync fired alerts
-      // then resync alerts with nexus-api server
+      // sync alerts
       dispatch(updateFiredAlertsFromApiServer());
     }
   }, [dispatch, isOnboarded]);
