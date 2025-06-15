@@ -2,9 +2,10 @@ import React
 import ReactAppDependencyProvider
 import React_RCTAppDelegate
 import UIKit
+import UserNotifications
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     var window: UIWindow?
 
     var reactNativeDelegate: ReactNativeDelegate?
@@ -29,7 +30,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             launchOptions: launchOptions
         )
 
+        // Request notification permission
+        UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+        if granted {
+            DispatchQueue.main.async {
+            UIApplication.shared.registerForRemoteNotifications()
+            }
+        } else {
+            print("❌ Notification permission not granted:", error?.localizedDescription ?? "unknown error")
+        }
+        }
+
         return true
+    }
+
+    // Called when APNs has assigned the device a token
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+        let token = tokenParts.joined()
+        print("📱 APNs Token: \(token)")
+
+        // Store the token statically
+        APNSTokenModule.sharedToken = token
+    }
+
+    // Called if registration for remote notifications failed
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("❌ Failed to register for APNs: \(error.localizedDescription)")
     }
 }
 
