@@ -12,6 +12,7 @@ import fiat from '../../assets/fiat';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {StackNavigationOptions} from '@react-navigation/stack';
 
 const TEST_PAYMENT_ACTIVE: boolean[] = [true, false];
 const TEST_PAYMENT_METHODS: string[] = ['MOONPAY', 'ONRAMPER'];
@@ -235,6 +236,9 @@ export const TestPaymentNavigationOptions = (
       />
     ),
     headerTitleAlign: 'left',
+    headerTitleContainerStyle: {
+      left: 7,
+    },
     headerTransparent: true,
     headerTintColor: 'white',
     headerLeft: () => (

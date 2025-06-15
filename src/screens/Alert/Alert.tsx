@@ -131,6 +131,9 @@ export const AlertNavigationOptions = (
       />
     ),
     headerTitleAlign: 'left',
+    headerTitleContainerStyle: {
+      left: 7,
+    },
     headerLeft: () => (
       <HeaderButton
         onPress={() => navigation.goBack()}

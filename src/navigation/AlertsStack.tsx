@@ -16,7 +16,7 @@ function AlertsStack() {
     //     color: 'white',
     //   },
     //   headerTransparent: true,
-    //   headerBackTitleVisible: false,
+    //   headerBackButtonDisplayMode: 'minimal',
     //   headerTintColor: 'white',
     // }}
     >

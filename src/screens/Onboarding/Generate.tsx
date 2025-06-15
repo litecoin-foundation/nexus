@@ -79,6 +79,9 @@ const Generate: React.FC<Props> = props => {
     navigation.setOptions({
       headerTransparent: true,
       headerTitleAlign: 'left',
+      headerTitleContainerStyle: {
+        left: 7,
+      },
       headerTintColor: 'white',
       headerLeft: () => headerLeftButton,
       headerTitle: () => headerTitle,

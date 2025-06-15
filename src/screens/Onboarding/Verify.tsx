@@ -72,6 +72,9 @@ const Verify: React.FC<Props> = props => {
     navigation.setOptions({
       headerTransparent: true,
       headerTitleAlign: 'left',
+      headerTitleContainerStyle: {
+        left: 7,
+      },
       headerTintColor: 'white',
       headerTitle: () => headerTitleMemo,
       headerLeft: () => headerLeftMemo,

@@ -23,7 +23,7 @@ function AuthStack(): React.JSX.Element {
       screenOptions={{
         headerTitleAlign: 'center',
         headerTransparent: true,
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTintColor: 'white',
       }}>
       <Stack.Screen

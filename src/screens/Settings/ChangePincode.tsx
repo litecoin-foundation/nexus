@@ -40,6 +40,9 @@ const ChangePincode: React.FC<Props> = props => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitleAlign: 'left',
+      headerTitleContainerStyle: {
+        left: 7,
+      },
       headerTransparent: true,
       headerTintColor: 'white',
       headerLeft: () => (
@@ -174,8 +177,8 @@ const ChangePincode: React.FC<Props> = props => {
             currentPin
               ? t('enter_old_pin')
               : newPin
-              ? t('enter_new_pin')
-              : t('repeat_new_pin')
+                ? t('enter_new_pin')
+                : t('repeat_new_pin')
           }
           maxSizeInPixels={SCREEN_HEIGHT * 0.027}
           maxLengthInPixels={SCREEN_WIDTH}

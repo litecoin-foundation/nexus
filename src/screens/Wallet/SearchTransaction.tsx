@@ -395,6 +395,9 @@ export const SearchTransactionNavigationOptions = (
       />
     ),
     headerTitleAlign: 'left',
+    headerTitleContainerStyle: {
+      left: 7,
+    },
     headerTransparent: true,
     headerTintColor: 'white',
     headerLeft: () => (

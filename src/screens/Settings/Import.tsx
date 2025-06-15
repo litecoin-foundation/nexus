@@ -187,11 +187,16 @@ export const ImportNavigationOptions = (
       />
     ),
     headerTitleAlign: 'left',
+    headerTitleContainerStyle: {
+      left: 7,
+    },
     headerTransparent: true,
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        onPress={() => navigation.navigate('Settings', {updateHeader: true})}
+        onPress={() =>
+          navigation.navigate('Settings', {updateHeader: true, pop: true})
+        }
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

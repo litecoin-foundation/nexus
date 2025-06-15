@@ -49,7 +49,7 @@ function SettingsStack() {
           color: 'white',
         },
         headerTransparent: true,
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTintColor: 'white',
       }}>
       <Stack.Screen

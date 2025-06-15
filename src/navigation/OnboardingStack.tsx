@@ -22,7 +22,7 @@ function OnboardingStack() {
       screenOptions={{
         headerTitleAlign: 'center',
         headerTransparent: true,
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTintColor: 'white',
       }}>
       <Stack.Screen

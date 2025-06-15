@@ -6,8 +6,9 @@ import OnboardingStack from './OnboardingStack';
 import Loading from '../screens/Loading';
 import AuthStack from './AuthStack';
 import NewWalletStack from './NewWalletStack';
+import {RootStackParamList} from './types';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
 const Theme = {
   ...DefaultTheme,
@@ -35,7 +36,7 @@ function RootNavigator() {
           component={Loading}
           options={{
             headerTransparent: true,
-            headerBackTitleVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
             headerTintColor: 'white',
             headerShown: false,
           }}
@@ -46,7 +47,7 @@ function RootNavigator() {
           options={{
             headerTransparent: true,
             headerShown: false,
-            animationEnabled: false,
+            animation: 'none',
           }}
         />
         <Stack.Screen
@@ -55,7 +56,7 @@ function RootNavigator() {
           options={{
             headerTransparent: true,
             headerShown: false,
-            animationEnabled: false,
+            animation: 'none',
           }}
         />
         <Stack.Screen

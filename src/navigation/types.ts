@@ -1,3 +1,21 @@
+export type RootStackParamList = {
+  Loading: undefined;
+  AuthStack: undefined;
+  Onboarding: undefined;
+  NewWalletStack: undefined;
+};
+
+export type AuthStackParamList = {
+  Auth: undefined;
+  Forgot: undefined;
+  ChangePincode: undefined;
+};
+
+export type AlertsStackParamList = {
+  Alert: undefined;
+  Dial: {identifier: string};
+};
+
 export type NewWalletStackParamList = {
   Main: {
     scanData?: string;
