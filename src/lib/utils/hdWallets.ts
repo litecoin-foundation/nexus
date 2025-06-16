@@ -2,7 +2,7 @@ import ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
 import {BIP32Factory, BIP32Interface} from 'bip32';
 import {ECPairFactory, ECPairInterface} from 'ecpair';
-import bip39 from 'bip39';
+import * as bip39 from 'bip39';
 
 import {LITECOIN} from './litecoin';
 
