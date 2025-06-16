@@ -1,6 +1,6 @@
 # Contributing to Nexus Wallet
 
-Thank you for your interest in contributing to Nexus Wallet! This guide will help you get started with contributing to the Litecoin wallet built with React Native.
+Thank you for your interest in contributing to Nexus Wallet! This guide will help you get started with contributing to the Nexus Wallet for Litecoin app, built with React Native.
 
 ## Table of Contents
 

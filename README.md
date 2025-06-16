@@ -1,4 +1,4 @@
-# Nexux Wallet for Litecoin
+# Nexus Wallet for Litecoin
 
 Pay, trade & grow with Litecoin. Nexus Wallet gives you low-fee sends, private Litecoin payments, Flexa checkout, 130 + local buy options — all in one tap.
 
@@ -31,13 +31,6 @@ $ yarn start
 
 You should now be able to open up the project in Android Studio or Xcode and compile a binary.
 
-### Debugging
+### Contributing
 
-We reccommend using React Native DevTools for debugging the frontend. When the app is in debug mode, any Redux store updates will be printed to console.
-
-For debugging the native side, we suggest using Xcode/Android Studio. 
-
-Issues with lndltc can be seen by viewing the lnd debug.log in the Nexus data directory. 
-For iOS viewing this requires a development build of Nexus, opening up Xcode, Window > Devices and Simulator > Select your device > right click and download the Nexus data directory.
-
-A more indepth developer document will be provided in the future.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) if you are interested in contributing code to the Nexus Wallet codebase. More information about debugging is documented in CONTRIBUTING.md.
