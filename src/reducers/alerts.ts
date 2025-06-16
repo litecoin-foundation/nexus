@@ -121,8 +121,10 @@ export const updateFiredAlertsFromApiServer =
       });
 
       if (!res.ok) {
-        // const error = await res.json();
-        // throw new Error(error);
+        if (__DEV__) {
+          const error = await res.json();
+          console.log(error);
+        }
         return;
       }
 
@@ -136,8 +138,6 @@ export const updateFiredAlertsFromApiServer =
         });
       });
 
-      // first sync fired alerts
-      // then resync alerts with nexus-api server
       dispatch(resyncAlertsOnApiServer());
     } catch (error) {
       console.error(error);
