@@ -17,7 +17,7 @@
     "fetch:ios": "curl https://static.nexuswallet.com/lndmobile/lndmobile-ios-v0.17.3-cshared.tar.gz --output lndmobile-ios-v0.17.3-cshared.tar.gz && npm run extract:ios",
     "extract:ios": "tar xzvf lndmobile-ios-v0.17.3-cshared.tar.gz ./ios/liblnd-fat.a && mv ./ios/liblnd-fat.a ./ios/liblnd.a",
     "fetch:android": "curl https://static.nexuswallet.com/lndmobile/lndmobile-android-v0.17.3-cshared.tar.gz --output lndmobile-android-v0.17.3-cshared.tar.gz && npm run extract:android",
-    "extract:android": "tar xzvf lndmobile-android-v0.17.3-cshared.tar.gz --strip-components=1 -C ./android/app/src/main/jniLibs",
+    "extract:android": "mkdir -p ./android/app/src/main/jniLibs && tar xzvf lndmobile-android-v0.17.3-cshared.tar.gz --strip-components=1 -C ./android/app/src/main/jniLibs",
     "postinstall": "bunx patch-package",
     "generate-protos": "@bufbuild/buf generate",
     "pods": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install",
