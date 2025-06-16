@@ -2,13 +2,13 @@ import ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
 import {BIP32Factory, BIP32Interface} from 'bip32';
 import {ECPairFactory, ECPairInterface} from 'ecpair';
+import bip39 from 'bip39';
+
 import {LITECOIN} from './litecoin';
 
-const bip39 = require('bip39');
 const bip32 = BIP32Factory(ecc);
-const GAP_LIMIT = 20;
-
 const ECPair = ECPairFactory(ecc);
+const GAP_LIMIT = 20;
 
 type IMnemonic = string[];
 
@@ -178,8 +178,12 @@ async function fetchAddressData(address: string, index: number) {
       const data = await res.json();
 
       if (data.hasOwnProperty('chain_stats')) {
-        // check if address was used received value > 0
-        if (parseFloat(data.chain_stats.funded_txo_sum) === 0) {
+        // check if address has ever been used (received any funds or sent any tx)
+        if (
+          parseFloat(data.chain_stats.funded_txo_sum) === 0 &&
+          parseFloat(data.chain_stats.spent_txo_sum) === 0 &&
+          data.chain_stats.tx_count === 0
+        ) {
           reject('This address was never used.');
         }
 
