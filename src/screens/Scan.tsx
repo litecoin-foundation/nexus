@@ -19,7 +19,6 @@ import {
   StackScreenProps,
   TransitionPresets,
 } from '@react-navigation/stack';
-import {CommonActions} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Switch from '../components/Buttons/Switch';
@@ -40,7 +39,6 @@ const Scan = ({
   navigation,
   route,
 }: StackScreenProps<RootStackParamList, 'Scan'>) => {
-  console.log('Scan screen mounted with returnRoute:', route.params?.returnRoute);
   const insets = useSafeAreaInsets();
   const [flashEnabled, triggerFlash] = useState(false);
   const [scanned, triggerScanned] = useState(false);
@@ -55,42 +53,10 @@ const Scan = ({
         for (const code of codes) {
           if (code.value !== '') {
             Vibration.vibrate();
-            console.log('Scan: Navigating to returnRoute:', route.params.returnRoute);
-            console.log('Scan: Current navigation state:', navigation.getState());
-            
-            // React Navigation v7 fix: Handle cross-stack navigation properly
-            try {
-              if (route.params.returnRoute === 'Main') {
-                // For Main screen, we need to navigate within NewWalletStack
-                const parentNav = navigation.getParent();
-                if (parentNav) {
-                  parentNav.navigate('Main', {
-                    scanData: code.value,
-                    updateHeader: true,
-                  });
-                } else {
-                  navigation.navigate('Main', {
-                    scanData: code.value,
-                    updateHeader: true,
-                  });
-                }
-              } else if (route.params.returnRoute === 'Import') {
-                // For Import screen, we need to stay within SettingsStack
-                navigation.navigate('Import', {
-                  scanData: code.value,
-                });
-              } else {
-                // Generic fallback for other returnRoutes
-                navigation.navigate(route.params.returnRoute, {
-                  scanData: code.value,
-                  updateHeader: true,
-                });
-              }
-            } catch (error) {
-              console.error('Navigation error:', error);
-              // Fallback: just go back if navigation fails
-              navigation.goBack();
-            }
+            navigation.popTo(route.params.returnRoute, {
+              scanData: code.value,
+              updateHeader: true,
+            });
           }
         }
       }

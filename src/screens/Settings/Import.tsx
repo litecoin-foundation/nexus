@@ -96,17 +96,6 @@ const Import: React.FC<Props> = props => {
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [regularAddress, route.params?.scanData]);
 
-  // override default goBack action with updateHeader param
-  useEffect(() => {
-    navigation.addListener('beforeRemove', e => {
-      if (e.data.action.type === 'NAVIGATE') {
-        return;
-      }
-      e.preventDefault();
-      navigation.navigate('Settings', {updateHeader: true});
-    });
-  }, []);
-
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
       <View style={styles.cardContainer}>
@@ -194,9 +183,7 @@ export const ImportNavigationOptions = (
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        onPress={() =>
-          navigation.navigate('Settings', {updateHeader: true, pop: true})
-        }
+        onPress={() => navigation.popTo('Settings', {updateHeader: true})}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

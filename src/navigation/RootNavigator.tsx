@@ -29,7 +29,10 @@ const Linking = {
 
 function RootNavigator() {
   return (
-    <NavigationContainer theme={Theme} linking={Linking}>
+    <NavigationContainer
+      theme={Theme}
+      linking={Linking}
+      navigationInChildEnabled={true}>
       <Stack.Navigator initialRouteName="Loading">
         <Stack.Screen
           name="Loading"

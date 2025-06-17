@@ -367,6 +367,45 @@ const Main: React.FC<Props> = props => {
     }
   }, [activeTab, uri, dispatch]);
 
+  // Hide header when transaction detail modal is opened
+  useEffect(() => {
+    if (isTxDetailModalOpened) {
+      navigation.setOptions({
+        headerTitle: () => <></>,
+        headerLeft: () => <></>,
+        headerRight: () => <></>,
+      });
+    } else {
+      navigation.setOptions({
+        headerTitle: () => (
+          <ChooseWalletButton
+            title={'Wallet Title'}
+            onPress={() => {}}
+            disabled={false}
+            isModalOpened={false}
+            isFromBottomToTop={false}
+            animDuration={200}
+            rotateArrow={() => {}}
+            arrowSpinAnim={undefined}
+          />
+        ),
+        headerLeft: () => (
+          <HeaderButton
+            onPress={() => navigation.navigate('SettingsStack')}
+            imageSource={require('../assets/icons/settings-cog.png')}
+          />
+        ),
+        headerRight: () => (
+          <HeaderButton
+            onPress={() => navigation.navigate('AlertsStack')}
+            imageSource={require('../assets/icons/alerts-icon.png')}
+            rightPadding={true}
+          />
+        ),
+      });
+    }
+  }, [navigation, isTxDetailModalOpened]);
+
   useMainLayout({
     walletButtonAnimDuration,
     rotateArrow,

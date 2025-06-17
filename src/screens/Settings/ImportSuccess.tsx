@@ -63,7 +63,10 @@ const ImportSuccess: React.FC<Props> = props => {
             small={false}
             active={true}
             onPress={() => {
-              navigation.navigate('Main', {isInitial: true});
+              navigation.reset({
+                index: 0,
+                routes: [{name: 'NewWalletStack', params: {screen: 'Main', params: {isInitial: true}}}],
+              });
             }}
           />
         </CustomSafeAreaView>
