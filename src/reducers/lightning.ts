@@ -22,57 +22,95 @@ import {pollBalance} from './balance';
 import {pollTransactions} from './transaction';
 import {createConfig} from '../lib/utils/config';
 import {stringToUint8Array} from '../lib/utils';
+import {
+  subscribeStateWithTimeout,
+  getLndTimeouts,
+  sleepWithLog
+} from '../lib/utils/lndUtils';
 
 const PASS = 'PASSWORD';
 
 // types
 interface ILightningState {
   lndActive: boolean;
+  lndStartupAttempts: number;
+  lndError: string | null;
 }
 
 // initial state
 const initialState = {
   lndActive: false,
+  lndStartupAttempts: 0,
+  lndError: null,
 } as ILightningState;
 
 // actions
 const lndState = createAction<boolean>('lightning/lndState');
+const incrementStartupAttempts = createAction('lightning/incrementStartupAttempts');
+const setLndError = createAction<string | null>('lightning/setLndError');
 
 // functions
-export const startLnd = (): AppThunk => async dispatch => {
+export const startLnd = (): AppThunk => async (dispatch, getState) => {
+  const timeouts = getLndTimeouts();
+  const {lndStartupAttempts} = getState().lightning;
+  
+  dispatch(incrementStartupAttempts());
+  dispatch(setLndError(null));
+  
+  console.log(`Starting LND attempt ${lndStartupAttempts + 1}`);
+  
   try {
     await createConfig();
 
     // lnd dir path
     const appFolderPath = `${RNFS.DocumentDirectoryPath}/lndltc/`;
-    console.log(appFolderPath);
+    console.log('LND directory:', appFolderPath);
 
     // start LND
     await start(` --lnddir=${appFolderPath}`);
+    console.log('LND start() called successfully');
 
-    // set lndActive when RPC is ready!
-    subscribeState(
-      {},
-      async state => {
-        if (state.state === WalletState.NON_EXISTING) {
-          dispatch(lndState(true));
-        } else if (state.state === WalletState.RPC_ACTIVE) {
-          dispatch(lndState(true));
-        }
-        try {
-        } catch (error) {
-          throw new Error(String(error));
-        }
-      },
-      error => {
-        console.error('LOSHY: ', error);
-      },
-    );
+    // Use timeout wrapper for subscribeState
+    const result = await subscribeStateWithTimeout({
+      timeout: timeouts.startupTimeout,
+      expectedStates: [WalletState.NON_EXISTING, WalletState.RPC_ACTIVE],
+      maxRetries: 2,
+      retryDelay: timeouts.retryDelay
+    });
+
+    if (result.success) {
+      console.log('LND started successfully, setting lndActive=true');
+      dispatch(lndState(true));
+      dispatch(setLndError(null));
+    } else {
+      const error = result.timedOut 
+        ? 'LND startup timed out - device may be too slow'
+        : result.error || 'Unknown LND startup error';
+      
+      console.error('LND startup failed:', error);
+      dispatch(setLndError(error));
+      
+      // Retry logic for slower devices
+      if (lndStartupAttempts < 2) {
+        console.log(`Retrying LND startup in ${timeouts.retryDelay}ms...`);
+        await sleepWithLog(timeouts.retryDelay, 'LND startup retry delay');
+        dispatch(startLnd());
+      } else {
+        console.error('Max LND startup attempts reached');
+        dispatch(setLndError('Failed to start LND after multiple attempts. Device may be too slow.'));
+      }
+    }
   } catch (err) {
-    console.error('CANT start LND');
-    console.error(err);
-
-    // TODO: handle this
+    const error = `LND startup exception: ${String(err)}`;
+    console.error(error);
+    dispatch(setLndError(error));
+    
+    // Retry on exception as well
+    if (lndStartupAttempts < 2) {
+      console.log(`Retrying LND startup after exception in ${timeouts.retryDelay}ms...`);
+      await sleepWithLog(timeouts.retryDelay, 'LND startup exception retry delay');
+      dispatch(startLnd());
+    }
   }
 };
 
@@ -107,12 +145,17 @@ export const resetLndState = (): AppThunk => async dispatch => {
 
 export const initWallet = (): AppThunk => async (dispatch, getState) => {
   const {seed, beingRecovered} = getState().onboarding!;
+  const timeouts = getLndTimeouts();
+
+  console.log('Initializing wallet...');
+  dispatch(setLndError(null));
 
   const password: string = uuidv4();
   await setItem(PASS, password);
 
   try {
     await deleteWalletDB();
+    console.log('Wallet DB deleted successfully');
 
     try {
       await initLndWallet({
@@ -120,44 +163,71 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
         walletPassword: stringToUint8Array(password),
         recoveryWindow: beingRecovered === true ? 3000 : 0,
       });
+      console.log('initLndWallet called successfully');
     } catch (error) {
-      console.error(error);
+      console.error('initLndWallet error:', error);
+      dispatch(setLndError(`Wallet initialization failed: ${String(error)}`));
+      return;
     }
 
-    subscribeState(
-      {},
-      async state => {
-        try {
-          if (state.state === WalletState.UNLOCKED) {
-            // UNLOCKED is before RPC_ACTIVE
-            // we know that onboarding is finished by now!
-            // when isOnboarded, the Welcome screen will initWallet()
-            // and handle navigation
-            dispatch(finishOnboarding());
-          } else if (state.state === WalletState.RPC_ACTIVE) {
-            // RPC_ACTIVE so we are ready to dispatch pollers
-            dispatch(pollInfo());
-            dispatch(pollRates());
-            dispatch(pollTransactions());
-            dispatch(subscribeTransactions());
+    // First wait for UNLOCKED state
+    console.log('Waiting for wallet UNLOCKED state...');
+    const unlockedResult = await subscribeStateWithTimeout({
+      timeout: timeouts.initTimeout,
+      expectedStates: [WalletState.UNLOCKED],
+      maxRetries: 1,
+      retryDelay: timeouts.retryDelay
+    });
 
-            return;
-          }
-        } catch (error) {
-          throw new Error(String(error));
-        }
-      },
-      error => {
-        console.error(error);
-      },
-    );
+    if (!unlockedResult.success) {
+      const error = unlockedResult.timedOut 
+        ? 'Wallet unlock timed out - device may be too slow'
+        : unlockedResult.error || 'Unknown wallet unlock error';
+      console.error('Wallet unlock failed:', error);
+      dispatch(setLndError(error));
+      return;
+    }
+
+    console.log('Wallet UNLOCKED, finishing onboarding...');
+    dispatch(finishOnboarding());
+
+    // Then wait for RPC_ACTIVE state
+    console.log('Waiting for RPC_ACTIVE state...');
+    const rpcResult = await subscribeStateWithTimeout({
+      timeout: timeouts.initTimeout,
+      expectedStates: [WalletState.RPC_ACTIVE],
+      maxRetries: 1,
+      retryDelay: timeouts.retryDelay
+    });
+
+    if (rpcResult.success) {
+      console.log('RPC_ACTIVE achieved, starting pollers...');
+      // RPC_ACTIVE so we are ready to dispatch pollers
+      dispatch(pollInfo());
+      dispatch(pollRates());
+      dispatch(pollTransactions());
+      dispatch(subscribeTransactions());
+    } else {
+      const error = rpcResult.timedOut 
+        ? 'RPC activation timed out - wallet may still be syncing'
+        : rpcResult.error || 'Unknown RPC activation error';
+      console.warn('RPC activation issue:', error);
+      // Don't set this as a critical error since onboarding already finished
+    }
   } catch (error) {
-    console.error(error);
+    const errorMsg = `Wallet initialization exception: ${String(error)}`;
+    console.error(errorMsg);
+    dispatch(setLndError(errorMsg));
   }
 };
 
 export const unlockWallet = (): AppThunk => async dispatch => {
-  return new Promise(async resolve => {
+  const timeouts = getLndTimeouts();
+  
+  return new Promise(async (resolve, reject) => {
+    console.log('Unlocking wallet...');
+    dispatch(setLndError(null));
+    
     const password = await getItem(PASS);
 
     try {
@@ -165,68 +235,63 @@ export const unlockWallet = (): AppThunk => async dispatch => {
         await unlockLndWallet({
           walletPassword: stringToUint8Array(password),
         });
+        console.log('unlockLndWallet called successfully');
       } else {
         throw new Error('wallet password is null');
       }
 
-      subscribeState(
-        {},
-        async state => {
-          try {
-            if (state.state === WalletState.RPC_ACTIVE) {
-              // dispatch pollers
-              dispatch(pollInfo());
-              dispatch(subscribeTransactions());
-              dispatch(pollRates());
-              dispatch(pollTransactions());
-              dispatch(pollBalance());
+      // Use timeout wrapper for unlock state subscription
+      const result = await subscribeStateWithTimeout({
+        timeout: timeouts.unlockTimeout,
+        expectedStates: [WalletState.RPC_ACTIVE],
+        maxRetries: 1,
+        retryDelay: timeouts.retryDelay
+      });
 
-              resolve();
-            }
-          } catch (error) {
-            const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
-
-            if ((await fileExists(dbPath)) === false) {
-              // TODO: users seedphrase is no longer saved to keychain as seed is in mmkv db
-              // we should on initWallet() save the seedphrase to keychain
-              // then if in reinstall fetch the seed from keychain to recover from seedphrase!
-
-              // if no wallet db exists, user has likely uninstalled the app previously
-              // in this case, seed exists in keychain. initialise wallet from seed
-              // enabling recovery mode to scan for addresses
-              // dispatch(setRecoveryMode(true));
-              // console.log('LOSHY: UNLOCKER STARTS INITWALLET!');
-              // dispatch(initWallet());
-              // dispatch(setRecoveryMode(false));
-
-              // TODO: addtional handling here required
-              // TODO: also need to check if seed exist prior to attempting recovery
-
-              // resolve();
-              throw new Error(
-                `UNLOCKWALLET() wallet.db doesn't exist, error: ${error}`,
-              );
-            } else {
-              throw new Error(String(error));
-            }
-          }
-        },
-        error => {
-          console.error(String(error));
-        },
-      );
+      if (result.success) {
+        console.log('Wallet unlocked successfully, RPC_ACTIVE');
+        // dispatch pollers
+        dispatch(pollInfo());
+        dispatch(subscribeTransactions());
+        dispatch(pollRates());
+        dispatch(pollTransactions());
+        dispatch(pollBalance());
+        resolve();
+      } else {
+        // Check if wallet DB exists before throwing error
+        const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+        
+        if ((await fileExists(dbPath)) === false) {
+          const error = 'Wallet database does not exist. App may need to be reinstalled.';
+          console.error(error);
+          dispatch(setLndError(error));
+          reject(new Error(error));
+        } else {
+          const error = result.timedOut 
+            ? 'Wallet unlock timed out - device may be too slow'
+            : result.error || 'Unknown wallet unlock error';
+          console.error('Wallet unlock failed:', error);
+          dispatch(setLndError(error));
+          reject(new Error(error));
+        }
+      }
     } catch (error: any) {
       if (
         error.message ===
         'rpc error: code = Unknown desc = wallet already unlocked, WalletUnlocker service is no longer available'
       ) {
-        console.log('wallet unlocked already!');
+        console.log('Wallet already unlocked!');
         dispatch({
           type: 'UNLOCK_WALLET',
           payload: true,
         });
+        resolve();
+      } else {
+        const errorMsg = `Wallet unlock exception: ${String(error)}`;
+        console.error(errorMsg);
+        dispatch(setLndError(errorMsg));
+        reject(new Error(errorMsg));
       }
-      throw new Error(String(error));
     }
   });
 };
@@ -239,6 +304,14 @@ export const lightningSlice = createSlice({
     lndState: (state, action: PayloadAction<boolean>) => ({
       ...state,
       lndActive: action.payload,
+    }),
+    incrementStartupAttempts: state => ({
+      ...state,
+      lndStartupAttempts: state.lndStartupAttempts + 1,
+    }),
+    setLndError: (state, action: PayloadAction<string | null>) => ({
+      ...state,
+      lndError: action.payload,
     }),
   },
   extraReducers: builder => {

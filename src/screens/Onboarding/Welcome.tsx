@@ -22,7 +22,7 @@ import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {initWallet, startLnd} from '../../reducers/lightning';
 import {setSeed, skipPresync} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sleep} from '../../lib/utils/poll';
+import {getLndTimeouts, sleepWithLog} from '../../lib/utils/lndUtils';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -47,6 +47,7 @@ const Welcome: React.FC<Props> = props => {
 
   const [loading, setLoading] = useState(false);
   const [showSkipButton, setShowSkipButton] = useState(false);
+  const [initializationStep, setInitializationStep] = useState('');
 
   const buttonOpacity = useSharedValue(0);
   const buttonTranslateY = useSharedValue(20);
@@ -54,15 +55,19 @@ const Welcome: React.FC<Props> = props => {
   const {task, isOnboarded, downloadProgress, unzipProgress} = useAppSelector(
     state => state.onboarding,
   );
-  const {lndActive} = useAppSelector(state => state.lightning);
+  const {lndActive, lndError, lndStartupAttempts} = useAppSelector(state => state.lightning);
 
   // calls initWallet() when LND has started!
   useEffect(() => {
     if (lndActive === true) {
-      // TODO
-      // ATM we sleep for 1500ms to make sure LND returns valid subscribeState
-      // values. This should hopefully be fixed in the future.
-      sleep(1500).then(() => {
+      const timeouts = getLndTimeouts();
+      setInitializationStep('Preparing wallet initialization...');
+      // Enhanced sleep with platform-specific timing and better logging
+      sleepWithLog(
+        timeouts.initSleepTime,
+        'Ensuring LND is ready for wallet initialization (Android devices need more time)'
+      ).then(() => {
+        setInitializationStep('Initializing wallet...');
         dispatch(initWallet());
       });
     }
@@ -84,8 +89,12 @@ const Welcome: React.FC<Props> = props => {
   useEffect(() => {
     if (task === 'complete' || task === 'failed') {
       setLoading(true);
+      setInitializationStep('Setting up wallet seed...');
       dispatch(setSeed());
-      dispatch(startLnd());
+      setTimeout(() => {
+        setInitializationStep('Starting Lightning Network daemon...');
+        dispatch(startLnd());
+      }, 500);
     }
   }, [dispatch, task]);
 
@@ -127,6 +136,19 @@ const Welcome: React.FC<Props> = props => {
     };
   });
 
+  const getStatusMessage = () => {
+    if (lndError) {
+      return `Error: ${lndError}`;
+    }
+    if (lndStartupAttempts > 1) {
+      return `Retry attempt ${lndStartupAttempts}/3 - Device may be slow`;
+    }
+    if (initializationStep) {
+      return initializationStep;
+    }
+    return task || 'Preparing...';
+  };
+
   const cacheProgress = (
     <View style={styles.neutrinoCacheContainer}>
       <View style={styles.titleContainer}>
@@ -146,11 +168,20 @@ const Welcome: React.FC<Props> = props => {
       <View style={styles.progressBarContainer}>
         {task === 'downloading' ? (
           <ProgressBar percentageProgress={downloadProgress! * 100} />
-        ) : (
+        ) : task === 'unzipping' ? (
           <ProgressBar percentageProgress={unzipProgress! * 100} />
-        )}
+        ) : loading ? (
+          <ProgressBar percentageProgress={50} />
+        ) : null}
       </View>
-      <Text style={styles.descriptionText}>{task}</Text>
+      <Text style={[styles.descriptionText, lndError && styles.errorText]}>
+        {getStatusMessage()}
+      </Text>
+      {lndStartupAttempts > 0 && (
+        <Text style={styles.hintText}>
+          Slower devices may take longer to initialize
+        </Text>
+      )}
     </View>
   );
 
@@ -259,6 +290,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
+    },
+    errorText: {
+      color: '#FF4444',
+      fontSize: screenHeight * 0.015,
+    },
+    hintText: {
+      textAlign: 'center',
+      color: '#888888',
+      fontSize: screenHeight * 0.014,
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'italic',
+      marginTop: screenHeight * 0.01,
     },
   });
 
