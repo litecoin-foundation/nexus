@@ -48,7 +48,7 @@ const Chart = () => {
       .domain([xExtent[0], xExtent[1]]);
     y.current = scale
       .scaleLinear()
-      .range([height - 5, 5])
+      .range([height - 10, 10])
       .domain([yExtent[0], yExtent[1]]);
 
     const calcLine = d3.shape
