@@ -49,10 +49,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
-        print("📱 APNs Token: \(token)")
 
-        // Store the token statically
-        APNSTokenModule.sharedToken = token
+        // Update the token and notify React Native
+        APNSTokenModule.updateToken(token)
     }
 
     // Called if registration for remote notifications failed

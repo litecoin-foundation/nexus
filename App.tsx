@@ -1,4 +1,10 @@
-import React, {useLayoutEffect, useState, useContext} from 'react';
+import React, {
+  useLayoutEffect,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from 'react';
 import {
   View,
   Platform,
@@ -8,6 +14,7 @@ import {
   Text,
   PermissionsAndroid,
   NativeModules,
+  NativeEventEmitter,
 } from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
@@ -25,6 +32,7 @@ import {PopUpProvider, PopUpContext} from './src/context/popUpContext';
 
 import {useAppDispatch, useAppSelector} from './src/store/hooks';
 import {loginToNexusApi} from './src/reducers/onboarding';
+import {setDeviceNotificationToken} from './src/reducers/settings';
 import {
   updatedRatesInFiat,
   updateHistoricalRatesForAllPeriods,
@@ -89,6 +97,19 @@ function ContextExecutable(props: any) {
   return <></>;
 }
 
+function DeviceTokenHandler(props: any) {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (props.deviceToken) {
+      dispatch(setDeviceNotificationToken(props.deviceToken));
+      dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
+    }
+  }, [dispatch, props.deviceToken]);
+
+  return null;
+}
+
 const App: React.FC = () => {
   function RenderPopUp() {
     const {PopUp} = useContext(PopUpContext);
@@ -97,33 +118,40 @@ const App: React.FC = () => {
 
   const [deviceToken, setDeviceToken] = useState('');
 
-  async function requestIOSUserPermission() {
+  // Function to update token and notify server
+  const updateDeviceToken = useCallback(
+    (newToken: string) => {
+      if (newToken && newToken !== deviceToken) {
+        setDeviceToken(newToken);
+      }
+    },
+    [deviceToken],
+  );
+
+  const requestIOSUserPermission = useCallback(async () => {
     const settings = await notifee.requestPermission();
 
     if (settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED) {
-      // console.log('Permission granted:', settings);
     } else {
       // console.log('Permission denied');
     }
 
     APNSTokenModule.getToken().then((token: string) => {
       if (token) {
-        // console.log('APNS Device Token Received', token);
-        setDeviceToken(token || '');
+        updateDeviceToken(token);
       } else {
         // console.log('No token yet');
       }
     });
-  }
+  }, [updateDeviceToken]);
 
-  async function requestAndroidUserPermission() {
+  const requestAndroidUserPermission = useCallback(async () => {
     PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
     );
     const token = (await Notifications.getDevicePushTokenAsync()).data;
-    // console.log('FCM Device Token Received', token);
-    setDeviceToken(token || '');
-  }
+    updateDeviceToken(token || '');
+  }, [updateDeviceToken]);
 
   useLayoutEffect(() => {
     if (Platform.OS === 'ios') {
@@ -131,7 +159,30 @@ const App: React.FC = () => {
     } else {
       requestAndroidUserPermission();
     }
-  }, []);
+  }, [requestIOSUserPermission, requestAndroidUserPermission]);
+
+  // Set up token refresh listeners
+  useEffect(() => {
+    let subscription: any;
+    if (Platform.OS === 'ios') {
+      // iOS token refresh listener
+      const eventEmitter = new NativeEventEmitter(APNSTokenModule);
+      subscription = eventEmitter.addListener('onTokenRefresh', event => {
+        updateDeviceToken(event.token);
+      });
+    } else {
+      // Android token refresh listener
+      subscription = Notifications.addPushTokenListener(event => {
+        updateDeviceToken(event.data);
+      });
+    }
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, [deviceToken, updateDeviceToken]);
 
   // seamless Flexa login requires extra libs
   // useEffect(() => {
@@ -175,6 +226,7 @@ const App: React.FC = () => {
                 <FlexaContext.FlexaContextProvider
                   publishableKey={flexaPublishableKey}>
                   <ContextExecutable deviceToken={deviceToken} />
+                  <DeviceTokenHandler deviceToken={deviceToken} />
                   <PopUpProvider>
                     <GestureHandlerRootView style={styles.gestureView}>
                       <RenderPopUp />
