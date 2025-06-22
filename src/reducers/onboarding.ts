@@ -197,14 +197,18 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
   if (task === 'complete') {
     console.log('neutrino cache ready!');
     return;
+  } else if (task === 'failed') {
+    console.log('presyncing already failed, not restarting');
+    return;
   } else {
     // Check for free space
-    // 1GB in bytes
+    // 1.5GB in bytes
     const {freeSpace} = await RNFS.getFSInfo();
     console.log(`free space: ${freeSpace}`);
-    if (freeSpace < 1000 * Math.pow(2, 20)) {
-      // TODO: handle presync failure better
-      throw new Error('Device requires at least 1GB of free space to presync!');
+    if (freeSpace < 1.5 * 1000 * Math.pow(2, 20)) {
+      console.log('Insufficient disk space for presyncing, setting to failed state');
+      dispatch(getNeutrinoCacheFailedAction());
+      return;
     }
 
     console.log('fetching mainnet.zip in multipart mode!');
