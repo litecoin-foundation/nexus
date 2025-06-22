@@ -22,6 +22,7 @@ import {PersistGate} from 'redux-persist/integration/react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import * as Notifications from 'expo-notifications';
+import BootSplash from 'react-native-bootsplash';
 import {FlexaContext} from '@flexa/flexa-react-native';
 import {
   ScreenSizeProvider,
@@ -198,6 +199,23 @@ const App: React.FC = () => {
   // }, []);
 
   const [deviceIndex, setDeviceIndex] = useState(0);
+
+  BootSplash.isVisible().then(value => console.log(value));
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 2000)); // simulate loading
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        await BootSplash.hide({fade: true});
+        console.log('BootSplash has been hidden successfully');
+      }
+    }
+
+    prepare();
+  }, []);
 
   return (
     <>

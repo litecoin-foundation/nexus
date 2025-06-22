@@ -3,6 +3,7 @@ import ReactAppDependencyProvider
 import React_RCTAppDelegate
 import UIKit
 import UserNotifications
+import RNBootSplash
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -71,5 +72,10 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
         #else
             Bundle.main.url(forResource: "main", withExtension: "jsbundle")
         #endif
+    }
+
+    override func customize(_ rootView: RCTRootView) {
+        super.customize(rootView)
+        RNBootSplash.initWithStoryboard("BootSplash", rootView: rootView) // ⬅️ initialize the splash screen
     }
 }
