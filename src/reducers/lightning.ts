@@ -161,7 +161,7 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
 
 export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
   return new Promise(async resolve => {
-    const password = await getItem(PASS);
+    let password = await getItem(PASS);
 
     const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
 
@@ -175,6 +175,9 @@ export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
           dispatch(setRecoveryMode(true));
           await dispatch(initWallet());
           dispatch(setRecoveryMode(false));
+
+          // Get the new password generated during initWallet to avoid race condition
+          password = await getItem(PASS);
 
           resolve();
           return;
