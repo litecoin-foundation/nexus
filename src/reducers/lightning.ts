@@ -13,8 +13,8 @@ import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
 import {setItem, getItem} from '../lib/utils/keychain';
-import {deleteWalletDB, fileExists} from '../lib/utils/file';
-import {finishOnboarding} from './onboarding';
+import {deleteWalletDB, deleteLNDDir, fileExists} from '../lib/utils/file';
+import {finishOnboarding, setRecoveryMode} from './onboarding';
 import {subscribeTransactions} from './transaction';
 import {pollInfo} from './info';
 import {pollRates} from './ticker';
@@ -22,6 +22,9 @@ import {pollBalance} from './balance';
 import {pollTransactions} from './transaction';
 import {createConfig} from '../lib/utils/config';
 import {stringToUint8Array} from '../lib/utils';
+import {purgeStore} from '../store';
+import {resetPincode} from './authentication';
+import {resetToLoading} from '../navigation/NavigationService';
 
 const PASS = 'PASSWORD';
 
@@ -156,9 +159,36 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
   }
 };
 
-export const unlockWallet = (): AppThunk => async dispatch => {
+export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
   return new Promise(async resolve => {
     const password = await getItem(PASS);
+
+    const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+
+    // check if wallet exists, otherwise initWallet
+    if ((await fileExists(dbPath)) === false) {
+      const {seed} = getState().onboarding!;
+
+      if (seed && seed.length > 0) {
+        // wallet.db missing but seed phrase exists - attempting recovery
+        try {
+          dispatch(setRecoveryMode(true));
+          await dispatch(initWallet());
+          dispatch(setRecoveryMode(false));
+
+          resolve();
+          return;
+        } catch (recoveryError) {
+          console.error('Failed to recover wallet from seed:', recoveryError);
+          dispatch(setRecoveryMode(false));
+          return;
+        }
+      } else {
+        // No seed phrase available - trigger complete wallet reset
+        await dispatch(handleWalletReset());
+        return;
+      }
+    }
 
     try {
       if (password !== null) {
@@ -184,31 +214,7 @@ export const unlockWallet = (): AppThunk => async dispatch => {
               resolve();
             }
           } catch (error) {
-            const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
-
-            if ((await fileExists(dbPath)) === false) {
-              // TODO: users seedphrase is no longer saved to keychain as seed is in mmkv db
-              // we should on initWallet() save the seedphrase to keychain
-              // then if in reinstall fetch the seed from keychain to recover from seedphrase!
-
-              // if no wallet db exists, user has likely uninstalled the app previously
-              // in this case, seed exists in keychain. initialise wallet from seed
-              // enabling recovery mode to scan for addresses
-              // dispatch(setRecoveryMode(true));
-              // console.log('LOSHY: UNLOCKER STARTS INITWALLET!');
-              // dispatch(initWallet());
-              // dispatch(setRecoveryMode(false));
-
-              // TODO: addtional handling here required
-              // TODO: also need to check if seed exist prior to attempting recovery
-
-              // resolve();
-              throw new Error(
-                `UNLOCKWALLET() wallet.db doesn't exist, error: ${error}`,
-              );
-            } else {
-              throw new Error(String(error));
-            }
+            throw new Error(String(error));
           }
         },
         error => {
@@ -229,6 +235,19 @@ export const unlockWallet = (): AppThunk => async dispatch => {
       throw new Error(String(error));
     }
   });
+};
+
+export const handleWalletReset = (): AppThunk => async dispatch => {
+  try {
+    await dispatch(resetPincode());
+    await purgeStore();
+    await deleteLNDDir();
+
+    resetToLoading();
+  } catch (error) {
+    console.error('Error during wallet reset:', error);
+    throw error;
+  }
 };
 
 // slicer

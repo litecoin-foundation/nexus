@@ -1,6 +1,7 @@
 import React from 'react';
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
+import {navigationRef} from './NavigationService';
 
 import OnboardingStack from './OnboardingStack';
 import Loading from '../screens/Loading';
@@ -30,6 +31,7 @@ const Linking = {
 function RootNavigator() {
   return (
     <NavigationContainer
+      ref={navigationRef}
       theme={Theme}
       linking={Linking}
       navigationInChildEnabled={true}>

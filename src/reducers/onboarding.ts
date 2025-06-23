@@ -87,8 +87,8 @@ const setSupportIdAction = createAction<string>(
 export const loginToNexusApi =
   (deviceToken: string, isIOS: boolean): AppThunk =>
   async (dispatch, getState) => {
-    const {uniqueId, isOnboarded} = getState().onboarding;
-    const {deviceNotificationToken} = getState().settings;
+    const {uniqueId, isOnboarded} = getState().onboarding!;
+    const {deviceNotificationToken} = getState().settings!;
     if (isOnboarded !== true && !uniqueId && !deviceToken) {
       return;
     }
@@ -192,7 +192,7 @@ const cacheParts = [
 ];
 
 export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
-  const {task, lastLoadedCachePart} = getState().onboarding;
+  const {task, lastLoadedCachePart} = getState().onboarding!;
 
   if (task === 'complete') {
     console.log('neutrino cache ready!');
@@ -206,7 +206,9 @@ export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
     const {freeSpace} = await RNFS.getFSInfo();
     console.log(`free space: ${freeSpace}`);
     if (freeSpace < 1.5 * 1000 * Math.pow(2, 20)) {
-      console.log('Insufficient disk space for presyncing, setting to failed state');
+      console.log(
+        'Insufficient disk space for presyncing, setting to failed state',
+      );
       dispatch(getNeutrinoCacheFailedAction());
       return;
     }
