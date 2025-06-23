@@ -13,7 +13,12 @@ import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
 import {setItem, getItem} from '../lib/utils/keychain';
-import {deleteWalletDB, deleteLNDDir, fileExists} from '../lib/utils/file';
+import {
+  deleteWalletDB,
+  deleteLNDDir,
+  deleteMacaroonFiles,
+  fileExists,
+} from '../lib/utils/file';
 import {finishOnboarding, setRecoveryMode} from './onboarding';
 import {subscribeTransactions} from './transaction';
 import {pollInfo} from './info';
@@ -48,7 +53,17 @@ export const startLnd = (): AppThunk => async dispatch => {
 
     // lnd dir path
     const appFolderPath = `${RNFS.DocumentDirectoryPath}/lndltc/`;
-    console.log(appFolderPath);
+
+    // check if wallet.db is missing - if so, clean up stale macaroons before starting LND
+    //
+    // when unlockWallet() is called, if wallet.db doesn't exist, initWallet() will be called
+    // but lnd connections will fail due to existing macaroon. so we clean up macaroons
+    const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+    const walletExists = await fileExists(dbPath);
+
+    if (!walletExists) {
+      await deleteMacaroonFiles();
+    }
 
     // start LND
     await start(` --lnddir=${appFolderPath}`);
