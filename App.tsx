@@ -200,17 +200,14 @@ const App: React.FC = () => {
 
   const [deviceIndex, setDeviceIndex] = useState(0);
 
-  BootSplash.isVisible().then(value => console.log(value));
-
   useEffect(() => {
     async function prepare() {
       try {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // simulate loading
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 sec loading
       } catch (e) {
         console.warn(e);
       } finally {
         await BootSplash.hide({fade: true});
-        console.log('BootSplash has been hidden successfully');
       }
     }
 
