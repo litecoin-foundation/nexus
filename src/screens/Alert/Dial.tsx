@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useCallback} from 'react';
 import {View, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -30,10 +30,10 @@ const Dial: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();
-  const currentRate = Number(useAppSelector(state => ltcRateSelector(state)));
-  const localFiatToUSDRate = useAppSelector(state =>
-    convertLocalFiatToUSD(state),
-  );
+  const currentRate =
+    Number(useAppSelector(state => ltcRateSelector(state))) || 1;
+  const localFiatToUSDRate =
+    useAppSelector(state => convertLocalFiatToUSD(state)) || 1;
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const [value, setValue] = useState(0);
   const [usdValue, setUSDValue] = useState(0);
@@ -41,6 +41,26 @@ const Dial: React.FC<Props> = props => {
   const maximumValue = currentRate > 1000 ? currentRate + 500 : 1000;
 
   const toggleActive = value >= currentRate;
+
+  const Ruler = useCallback(
+    () => (
+      <SlideRuler
+        onValueChange={(slideValue: number) => {
+          setValue(slideValue);
+          const calculatedValue = Number(
+            (slideValue * localFiatToUSDRate).toFixed(2),
+          );
+          setUSDValue(calculatedValue);
+        }}
+        maximumValue={maximumValue}
+        decimalPlaces={1}
+        multiplicity={1}
+        arrayLength={1000}
+        initialValue={currentRate}
+      />
+    ),
+    [currentRate, localFiatToUSDRate, maximumValue],
+  );
 
   return (
     <LinearGradient
@@ -105,7 +125,7 @@ const Dial: React.FC<Props> = props => {
             />
           </View>
           <View style={styles.rulerContainer}>
-            <SlideRuler
+            {/* <SlideRuler
               onValueChange={(slideValue: number) => {
                 setValue(slideValue);
                 const calculatedValue = Number(
@@ -118,7 +138,8 @@ const Dial: React.FC<Props> = props => {
               multiplicity={1}
               arrayLength={1000}
               initialValue={currentRate}
-            />
+            /> */}
+            <Ruler />
           </View>
         </View>
         <View style={styles.buttonContainer}>
