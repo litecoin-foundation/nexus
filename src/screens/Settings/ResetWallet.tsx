@@ -24,6 +24,7 @@ import {useAppDispatch} from '../../store/hooks';
 import {sleep} from '../../lib/utils/poll';
 import {purgeStore} from '../../store';
 import {deleteLNDDir} from '../../lib/utils/file';
+import {resetToLoading} from '../../navigation/NavigationService';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 import TranslateText from '../../components/TranslateText';
@@ -41,8 +42,7 @@ interface Props {
   route: RouteProp<RootStackParamList, 'ResetWallet'>;
 }
 
-const ResetWallet: React.FC<Props> = props => {
-  const {navigation} = props;
+const ResetWallet: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
@@ -80,10 +80,7 @@ const ResetWallet: React.FC<Props> = props => {
     await purgeStore();
     await deleteLNDDir();
     await sleep(4000);
-    navigation.reset({
-      index: 0,
-      routes: [{name: 'Loading'}],
-    });
+    resetToLoading();
   };
 
   return (
