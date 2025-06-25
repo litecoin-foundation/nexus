@@ -346,7 +346,21 @@ const TransactionList = forwardRef((props: Props, ref) => {
         keyExtractor={() => uuidv4()}
         initialNumToRender={9}
         ListEmptyComponent={<TransactionListEmpty />}
-        ListFooterComponent={<View style={styles.emptyView} />}
+        ListFooterComponent={
+          displayedTxs.length === 0 ? (
+            <View style={styles.emptyView}>
+              <TranslateText
+                textKey={'txs_take_time_to_appear'}
+                domain="onboarding"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.noteText}
+                numberOfLines={3}
+              />
+            </View>
+          ) : (
+            <View style={styles.emptyView} />
+          )
+        }
         // refreshControl={
         //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         // }
@@ -407,6 +421,17 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     emptyView: {
       height: screenHeight * 0.2,
+      paddingVertical: screenHeight * 0.01,
+      paddingHorizontal: screenWidth * 0.1,
+    },
+    noteText: {
+      color: '#747E87',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.015,
+      fontStyle: 'normal',
+      fontWeight: '700',
+      letterSpacing: -0.28,
+      textAlign: 'center',
     },
     item: {
       backgroundColor: '#f9c2ff',
