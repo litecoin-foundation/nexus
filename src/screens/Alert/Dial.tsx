@@ -1,4 +1,4 @@
-import React, {useState, useContext, useCallback} from 'react';
+import React, {useState, useContext, useCallback, useMemo} from 'react';
 import {View, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -42,7 +42,7 @@ const Dial: React.FC<Props> = props => {
 
   const toggleActive = value >= currentRate;
 
-  const Ruler = useCallback(
+  const Ruler = useMemo(
     () => (
       <SlideRuler
         onValueChange={(slideValue: number) => {
@@ -59,7 +59,32 @@ const Dial: React.FC<Props> = props => {
         initialValue={currentRate}
       />
     ),
-    [currentRate, localFiatToUSDRate, maximumValue],
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    [],
+  );
+
+  const handlePress = useCallback(() => {
+    dispatch(
+      addAlert({
+        value,
+        originalValue: usdValue,
+        isIOS: Platform.OS === 'ios',
+      }),
+    );
+    navigation.goBack();
+  }, [value, usdValue, dispatch, navigation]);
+
+  const CreateAlertButton = useMemo(
+    () => (
+      <View style={styles.buttonContainer}>
+        <GreenButton
+          textKey="create_alert"
+          textDomain="alertsTab"
+          onPress={() => handlePress()}
+        />
+      </View>
+    ),
+    [styles, handlePress],
   );
 
   return (
@@ -124,40 +149,9 @@ const Dial: React.FC<Props> = props => {
               numberOfLines={1}
             />
           </View>
-          <View style={styles.rulerContainer}>
-            {/* <SlideRuler
-              onValueChange={(slideValue: number) => {
-                setValue(slideValue);
-                const calculatedValue = Number(
-                  (slideValue * localFiatToUSDRate).toFixed(2),
-                );
-                setUSDValue(calculatedValue);
-              }}
-              maximumValue={maximumValue}
-              decimalPlaces={1}
-              multiplicity={1}
-              arrayLength={1000}
-              initialValue={currentRate}
-            /> */}
-            <Ruler />
-          </View>
+          <View style={styles.rulerContainer}>{Ruler}</View>
         </View>
-        <View style={styles.buttonContainer}>
-          <GreenButton
-            textKey="create_alert"
-            textDomain="alertsTab"
-            onPress={() => {
-              dispatch(
-                addAlert({
-                  value,
-                  originalValue: usdValue,
-                  isIOS: Platform.OS === 'ios',
-                }),
-              );
-              navigation.goBack();
-            }}
-          />
-        </View>
+        {CreateAlertButton}
       </CustomSafeAreaView>
     </LinearGradient>
   );
