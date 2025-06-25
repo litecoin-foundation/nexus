@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
-import {RouteProp, useNavigation} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Animated, {
   useAnimatedStyle,
@@ -42,7 +42,6 @@ type RootStackParamList = {
 };
 
 interface Props {
-  route: RouteProp<RootStackParamList, 'Convert'>;
   navigation: StackNavigationProp<RootStackParamList, 'Convert'>;
 }
 

@@ -1,4 +1,11 @@
-import React, {useEffect, useState, useRef, useContext} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useContext,
+  useMemo,
+  memo,
+} from 'react';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
 import Svg, {Path, Line, G, Defs, LinearGradient, Stop} from 'react-native-svg';
@@ -32,9 +39,9 @@ const Chart = () => {
 
   const animationValue = useSharedValue(0);
 
-  useEffect(() => {
+  const {processedLine, processedArea} = useMemo(() => {
     if (data === undefined || data.length === 0) {
-      return;
+      return {processedLine: '', processedArea: ''};
     }
 
     const yValues = data.map(item => item.y);
@@ -42,40 +49,50 @@ const Chart = () => {
     const yExtent = array.extent(yValues);
     const xExtent = array.extent(xValues);
 
-    x.current = scale
+    const xScale = scale
       .scaleTime()
       .range([0, width])
       .domain([xExtent[0], xExtent[1]]);
-    y.current = scale
+    const yScale = scale
       .scaleLinear()
       .range([height - 10, 10])
       .domain([yExtent[0], yExtent[1]]);
 
+    x.current = xScale;
+    y.current = yScale;
+
     const calcLine = d3.shape
       .line()
-      .x(d => x.current(d.x))
-      .y(d => y.current(d.y))
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y))
       .curve(d3.shape.curveBasis)(data);
 
-    const areaPath = `${calcLine} L${x.current(
+    const areaPath = `${calcLine} L${xScale(
       data[data.length - 1].x,
-    )} ${height} L${x.current(data[0].x)} ${height} Z`;
+    )} ${height} L${xScale(data[0].x)} ${height} Z`;
 
-    setArea(areaPath);
-    setLine(calcLine);
-  }, [data]);
+    return {processedLine: calcLine, processedArea: areaPath};
+  }, [data, width, height]);
+
+  useEffect(() => {
+    setArea(processedArea);
+    setLine(processedLine);
+  }, [processedArea, processedLine]);
 
   useEffect(() => {
     animationValue.value = 0;
     animationValue.value = withTiming(1, {duration: 1000});
-  }, [line]);
+  }, [line, animationValue]);
 
   const gradientId = 'areaGradient';
-  const gradientStops = [
-    {offset: '0%', color: '#EEEEEE', opacity: 0.2},
-    {offset: '40%', color: '#EEEEEE', opacity: 0.2},
-    {offset: '100%', color: '#EEEEEE', opacity: 0},
-  ];
+  const gradientStops = useMemo(
+    () => [
+      {offset: '0%', color: '#EEEEEE', opacity: 0.2},
+      {offset: '40%', color: '#EEEEEE', opacity: 0.2},
+      {offset: '100%', color: '#EEEEEE', opacity: 0},
+    ],
+    [],
+  );
 
   const animatedProps = useAnimatedProps(() => {
     return {
@@ -89,39 +106,51 @@ const Chart = () => {
     };
   });
 
-  const Graph = (
-    <Svg height={height} width={width}>
-      <Defs>
-        <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          {gradientStops.map(stop => (
-            <Stop
-              key={stop.offset}
-              offset={stop.offset}
-              stopColor={stop.color}
-              stopOpacity={stop.opacity}
-            />
-          ))}
-        </LinearGradient>
-      </Defs>
-      <AnimatedPath
-        d={area}
-        fill={`url(#${gradientId})`}
-        stroke="none"
-        animatedProps={animatedAreaProps}
-      />
-      <AnimatedPath
-        d={line}
-        fill="none"
-        stroke="white"
-        strokeWidth={3}
-        strokeDasharray={2400}
-        animatedProps={animatedProps}
-      />
-    </Svg>
+  const Graph = useMemo(
+    () => (
+      <Svg height={height} width={width}>
+        <Defs>
+          <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            {gradientStops.map(stop => (
+              <Stop
+                key={stop.offset}
+                offset={stop.offset}
+                stopColor={stop.color}
+                stopOpacity={stop.opacity}
+              />
+            ))}
+          </LinearGradient>
+        </Defs>
+        <AnimatedPath
+          d={area}
+          fill={`url(#${gradientId})`}
+          stroke="none"
+          animatedProps={animatedAreaProps}
+        />
+        <AnimatedPath
+          d={line}
+          fill="none"
+          stroke="white"
+          strokeWidth={3}
+          strokeDasharray={2400}
+          animatedProps={animatedProps}
+        />
+      </Svg>
+    ),
+    [
+      height,
+      width,
+      gradientId,
+      gradientStops,
+      area,
+      animatedAreaProps,
+      line,
+      animatedProps,
+    ],
   );
 
-  const Container = (
-    <Svg height={height} width={width}>
+  const GridLines = useMemo(
+    () => (
       <G>
         <Line
           x1="0"
@@ -151,9 +180,18 @@ const Chart = () => {
           strokeOpacity={0.34}
         />
       </G>
+    ),
+    [],
+  );
 
-      {Graph}
-    </Svg>
+  const Container = useMemo(
+    () => (
+      <Svg height={height} width={width}>
+        {GridLines}
+        {Graph}
+      </Svg>
+    ),
+    [height, width, GridLines, Graph],
   );
 
   return (
@@ -169,4 +207,4 @@ const Chart = () => {
   );
 };
 
-export default Chart;
+export default memo(Chart);
