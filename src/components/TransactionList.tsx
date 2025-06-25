@@ -2,7 +2,6 @@ import React, {
   forwardRef,
   useRef,
   useImperativeHandle,
-  MutableRefObject,
   useLayoutEffect,
   useEffect,
   useState,
@@ -13,11 +12,10 @@ import React, {
 import {
   StyleSheet,
   View,
-  SectionList,
-  SectionListRenderItem,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
+import {FlashList, ListRenderItem} from '@shopify/flash-list';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {useSharedValue, runOnJS} from 'react-native-reanimated';
 
@@ -25,7 +23,7 @@ import TransactionCell from './Cells/TransactionCell';
 import TransactionListEmpty from './TransactionListEmpty';
 
 import {useAppDispatch, useAppSelector} from '../store/hooks';
-import {getTransactions, IDisplayedTx} from '../reducers/transaction';
+import {getTransactions} from '../reducers/transaction';
 import {txDetailSelector} from '../reducers/transaction';
 import {groupTransactions} from '../lib/utils/groupTransactions';
 import {DisplayedMetadataType} from '../utils/txMetadata';
@@ -34,7 +32,7 @@ import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 import ProgressBar from './ProgressBar';
 import {
-  percentSyncedSelector,
+  decimalSyncedSelector,
   recoveryProgressSelector,
 } from '../reducers/info';
 
@@ -52,11 +50,6 @@ interface Props {
   headerBackgroundColor: string;
 }
 
-interface ITransactions {
-  title: string;
-  data: IDisplayedTx[];
-}
-
 type ItemType = {
   hash: string;
   time: Date;
@@ -67,6 +60,8 @@ type ItemType = {
   confs: number;
   providerMeta: DisplayedMetadataType;
 };
+
+type FlashListItemType = ItemType | {type: 'sectionHeader'; title: string};
 
 interface TransactionCellItemProps {
   item: any;
@@ -83,20 +78,8 @@ const TransactionCellMemo = memo(function TransactionCellItem(
 });
 
 const TransactionList = forwardRef((props: Props, ref) => {
-  const transactionListRef = useRef() as MutableRefObject<
-    SectionList<any, ITransactions>
-  >;
-
-  useImperativeHandle(ref, () => ({
-    scrollToLocation: (sectionIndex: number) => {
-      transactionListRef.current?.scrollToLocation({
-        animated: true,
-        sectionIndex: sectionIndex,
-        itemIndex: 0,
-        viewPosition: 0,
-      });
-    },
-  }));
+  const transactionListRef = useRef<any>(null);
+  const [flattenedTxs, setFlattenedTxs] = useState<FlashListItemType[]>([]);
 
   const {
     onPress,
@@ -120,13 +103,41 @@ const TransactionList = forwardRef((props: Props, ref) => {
   // We never scroll folded list, therefore no need to set that height
   // const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
 
-  const {recoveryMode, syncedToChain} = useAppSelector(state => state.info);
-  const progress = useAppSelector(state => percentSyncedSelector(state));
+  const {recoveryMode, syncedToChain} = useAppSelector(state => state.info!);
+  const progress = useAppSelector(state => decimalSyncedSelector(state));
   const recoveryProgress = useAppSelector(state =>
     recoveryProgressSelector(state),
   );
   const transactions = useAppSelector(state => txDetailSelector(state));
-  const [displayedTxs, setDisplayedTxs] = useState<any[]>([]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToLocation: (sectionIndex: number) => {
+        // Find the index of the section header in the flattened array
+        let targetIndex = 0;
+        let currentSectionIndex = 0;
+
+        for (let i = 0; i < flattenedTxs.length; i++) {
+          const item = flattenedTxs[i];
+          if ('type' in item && item.type === 'sectionHeader') {
+            if (currentSectionIndex === sectionIndex) {
+              targetIndex = i;
+              break;
+            }
+            currentSectionIndex++;
+          }
+        }
+
+        transactionListRef.current?.scrollToIndex({
+          animated: true,
+          index: targetIndex,
+          viewPosition: 0,
+        });
+      },
+    }),
+    [flattenedTxs],
+  );
 
   const dispatch = useAppDispatch();
   useLayoutEffect(() => {
@@ -179,7 +190,17 @@ const TransactionList = forwardRef((props: Props, ref) => {
         break;
     }
 
-    setDisplayedTxs(groupTransactions(txArrayFiltered));
+    const groupedTxs = groupTransactions(txArrayFiltered) as Array<{title: string; data: ItemType[]}>;
+
+    // Flatten sections into a single array with headers for FlashList
+    const flattened: FlashListItemType[] = [];
+    groupedTxs.forEach(section => {
+      // section header
+      flattened.push({type: 'sectionHeader', title: section.title});
+      // transactions
+      flattened.push(...section.data);
+    });
+    setFlattenedTxs(flattened);
   };
 
   useEffect(() => {
@@ -193,12 +214,27 @@ const TransactionList = forwardRef((props: Props, ref) => {
     txPrivacyTypeFilter,
   ]);
 
-  const renderItem: SectionListRenderItem<ItemType, ITransactions> = ({
-    item,
-  }) => (
-    // TODO: unique tx id
-    <TransactionCellMemo item={item} onPress={() => onPress(item)} />
-  );
+  const renderItem: ListRenderItem<FlashListItemType> = ({item}) => {
+    if ('type' in item && item.type === 'sectionHeader') {
+      return (
+        <View
+          style={[
+            styles.sectionHeaderContainer,
+            {backgroundColor: headerBackgroundColor},
+          ]}>
+          <TranslateText
+            textValue={item.title}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+            textStyle={styles.sectionHeaderText}
+            numberOfLines={1}
+          />
+        </View>
+      );
+    }
+
+    // Regular transaction item
+    return <TransactionCellMemo item={item as ItemType} onPress={() => onPress(item as ItemType)} />;
+  };
 
   // DashboardButton is 110, txTitleContainer is screenHeight * 0.07 in Main component
   // Gap in SearchTransaction component is 200 + 30 padding
@@ -217,17 +253,18 @@ const TransactionList = forwardRef((props: Props, ref) => {
     setRenderTxs(true);
   }, [folded, SCREEN_HEIGHT, UNFOLD_SHEET_POINT]);
 
+  // Start with 0.1% progress
   const decProgress = recoveryMode
     ? recoveryProgress > 0
       ? recoveryProgress > 1
         ? 1
         : recoveryProgress
-      : 0.01
+      : 0.001
     : progress > 0
       ? progress > 1
         ? 1
         : progress
-      : 0.01;
+      : 0.001;
 
   // Floor it to 1 decimal
   const percentageProgress =
@@ -235,22 +272,25 @@ const TransactionList = forwardRef((props: Props, ref) => {
       ? decProgress > 1
         ? 100
         : Math.floor(decProgress * 10 * 100) / 10
-      : 1;
+      : 0.1;
 
-  // When loading and not updating the state for more than 10 sec
+  // When loading and not updating the state for more than 15 sec
   // consider there's a problem with connection and show the note
-  const loadingTimeout = useRef<NodeJS.Timeout>();
+  const loadingTimeout = useRef<NodeJS.Timeout>(setTimeout(() => {}, 1000));
   const [takingTooLong, setTakingTooLong] = useState(false);
   useEffect(() => {
-    if (percentageProgress < 99) {
+    // Do not restart when in recovery
+    if (percentageProgress < 99 && !recoveryMode) {
       loadingTimeout.current = setTimeout(() => {
         setTakingTooLong(true);
-      }, 10000);
+      }, 15000);
+    } else {
+      clearTimeout(loadingTimeout.current);
     }
     return () => {
       clearTimeout(loadingTimeout.current);
     };
-  }, [percentageProgress]);
+  }, [percentageProgress, recoveryMode]);
 
   const SyncProgressIndicator = (
     <>
@@ -286,15 +326,14 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const startClosing = useSharedValue(false);
   const yStartPos = useSharedValue(-1);
 
-  const txSignature = displayedTxs
-    .map(section =>
-      section.data.map((tx: any) => `${tx.hash}-${tx.confs}`).join(','),
-    )
-    .join('|');
+  const txSignature = flattenedTxs
+    .filter(item => !('type' in item))
+    .map((tx: any) => `${tx.hash}-${tx.confs}`)
+    .join(',');
 
-  const SectionListMemo = useMemo(
+  const FlashListMemo = useMemo(
     () => (
-      <SectionList
+      <FlashList
         bounces={false}
         scrollEventThrottle={1}
         onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -322,39 +361,37 @@ const TransactionList = forwardRef((props: Props, ref) => {
           }
         }}
         ref={transactionListRef}
-        sections={displayedTxs}
-        stickySectionHeadersEnabled={true}
+        data={flattenedTxs}
         renderItem={renderItem}
-        viewabilityConfig={{viewAreaCoveragePercentThreshold: 80}}
-        renderSectionHeader={({section}) => (
-          <View
-            style={[
-              styles.sectionHeaderContainer,
-              {backgroundColor: headerBackgroundColor},
-            ]}>
-            <TranslateText
-              textValue={section.title}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-              textStyle={styles.sectionHeaderText}
-              numberOfLines={1}
-            />
-          </View>
-        )}
-        // TODO: unique tx id
-        // keyExtractor={item => item.hash}
-        keyExtractor={() => uuidv4()}
-        initialNumToRender={9}
+        keyExtractor={(item, index) => {
+          if ('type' in item && item.type === 'sectionHeader') {
+            return `header-${item.title}-${index}`;
+          }
+          return (item as ItemType).hash || `tx-${index}`;
+        }}
+        estimatedItemSize={70}
         ListEmptyComponent={<TransactionListEmpty />}
-        ListFooterComponent={<View style={styles.emptyView} />}
-        // refreshControl={
-        //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        // }
+        ListFooterComponent={
+          flattenedTxs.length === 0 ? (
+            <View style={styles.emptyView}>
+              <TranslateText
+                textKey={'txs_take_time_to_appear'}
+                domain="onboarding"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.noteText}
+                numberOfLines={3}
+              />
+            </View>
+          ) : (
+            <View style={styles.emptyView} />
+          )
+        }
         onViewableItemsChanged={onViewableItemsChanged}
       />
     ),
     // Extract a unique signature from the transactions to detect changes
     /* eslint-disable react-hooks/exhaustive-deps */
-    [curFrameY, displayedTxs.length, txSignature, folded],
+    [curFrameY, flattenedTxs.length, txSignature, folded],
   );
 
   function onFoldTrigger() {
@@ -381,7 +418,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
   return renderTxs ? (
     <View style={{height: scrollContainerHeight}}>
       {!syncedToChain ? SyncProgressIndicator : <></>}
-      <GestureDetector gesture={panGesture}>{SectionListMemo}</GestureDetector>
+      <GestureDetector gesture={panGesture}>{FlashListMemo}</GestureDetector>
     </View>
   ) : (
     <></>
@@ -406,6 +443,17 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     emptyView: {
       height: screenHeight * 0.2,
+      paddingVertical: screenHeight * 0.01,
+      paddingHorizontal: screenWidth * 0.1,
+    },
+    noteText: {
+      color: '#747E87',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.015,
+      fontStyle: 'normal',
+      fontWeight: '700',
+      letterSpacing: -0.28,
+      textAlign: 'center',
     },
     item: {
       backgroundColor: '#f9c2ff',

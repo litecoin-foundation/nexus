@@ -145,11 +145,11 @@ const Main: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const isInternetReachable = useAppSelector(
-    state => state.info.isInternetReachable,
+    state => state.info!.isInternetReachable,
   );
 
   const transactions = useAppSelector(state => txDetailSelector(state));
-  const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks);
+  const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks!);
 
   const dispatch = useAppDispatch();
 
@@ -159,12 +159,12 @@ const Main: React.FC<Props> = props => {
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   // const [currentWallet, setCurrentWallet] = useState('main_wallet');
   const currentWallet = 'main_wallet';
-  const uniqueId = useAppSelector(state => state.onboarding.uniqueId);
-  const totalBalance = useAppSelector(state => state.balance.totalBalance);
+  const uniqueId = useAppSelector(state => state.onboarding!.uniqueId);
+  const totalBalance = useAppSelector(state => state.balance!.totalBalance);
   const confirmedBalance = useAppSelector(
-    state => state.balance.confirmedBalance,
+    state => state.balance!.confirmedBalance,
   );
-  const isFlexaCustomer = useAppSelector(state => state.buy.isFlexaCustomer);
+  const isFlexaCustomer = useAppSelector(state => state.buy!.isFlexaCustomer);
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('view-seed-auth');
   const [loading, setLoading] = useState(false);
@@ -515,7 +515,7 @@ const Main: React.FC<Props> = props => {
         activeTab={activeTab}
         buyViewComponent={<Buy />}
         sellViewComponent={<Sell />}
-        convertViewComponent={<Convert />}
+        convertViewComponent={<Convert navigation={navigation} />}
         sendViewComponent={
           <Send route={route} navigation={navigation} ref={sendCardRef} />
         }
@@ -553,7 +553,7 @@ const Main: React.FC<Props> = props => {
         animatedProps={animatedTopContainerHeight}
         internetOpacityStyle={animatedChartOpacity}>
         <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
-          <LineChart />
+          {isBottomSheetFolded && <LineChart />}
           <DatePicker />
         </Animated.View>
       </NewAmountView>

@@ -8,13 +8,13 @@ interface Props {
 
 const ProgressBar = (props: Props) => {
   const {percentageProgress, white} = props;
-  // Floor it to 1 decimal
+  // Floor it to 1 decimal, min 0.1%
   const filteredProgress =
     percentageProgress > 0
       ? percentageProgress > 100
         ? 100
         : Math.floor(percentageProgress * 10) / 10
-      : 1;
+      : 0.1;
   return (
     <View
       style={[

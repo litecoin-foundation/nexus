@@ -3,6 +3,7 @@ import ReactAppDependencyProvider
 import React_RCTAppDelegate
 import UIKit
 import UserNotifications
+import RNBootSplash
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -49,10 +50,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
-        print("📱 APNs Token: \(token)")
 
-        // Store the token statically
-        APNSTokenModule.sharedToken = token
+        // Update the token and notify React Native
+        APNSTokenModule.updateToken(token)
     }
 
     // Called if registration for remote notifications failed
@@ -72,5 +72,10 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
         #else
             Bundle.main.url(forResource: "main", withExtension: "jsbundle")
         #endif
+    }
+
+    override func customize(_ rootView: RCTRootView) {
+        super.customize(rootView)
+        RNBootSplash.initWithStoryboard("BootSplash", rootView: rootView) // ⬅️ initialize the splash screen
     }
 }

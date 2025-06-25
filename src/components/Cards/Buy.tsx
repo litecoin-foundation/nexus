@@ -145,10 +145,9 @@ const Buy: React.FC<Props> = () => {
     let isAmountValidVar = isAmountValid();
     let isRegionValidVar = isRegionValid();
 
-    // neglect onramper filters
+    // neglect onramper amount limits
     if (isOnramperCustomer) {
       isAmountValidVar = true;
-      isRegionValidVar = true;
     }
 
     setAmountValid(isAmountValidVar);

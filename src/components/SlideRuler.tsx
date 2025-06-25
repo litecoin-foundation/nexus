@@ -1,4 +1,11 @@
-import React, {useRef, useState, useEffect, useContext, Fragment} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  Fragment,
+  useCallback,
+  useMemo,
+} from 'react';
 import {FlatList, View, StyleSheet} from 'react-native';
 import {triggerHeavyFeedback, triggerLightFeedback} from '../lib/utils/haptic';
 
@@ -48,7 +55,6 @@ interface Props {
 
 const SlideRuler: React.FC<Props> = props => {
   const itemAmountPerScreen = 30;
-  const flatList = useRef();
 
   const {
     onValueChange,
@@ -92,37 +98,35 @@ const SlideRuler: React.FC<Props> = props => {
     setOneItemWidth(Math.ceil(width / itemAmountPerScreen));
   };
 
-  const onSliderMoved = (event: any) => {
-    let newValue =
-      Math.floor(event.nativeEvent.contentOffset.x / oneItemWidth) *
-      multiplicity;
-    if (maximumValue && newValue > maximumValue) {
-      newValue = maximumValue;
-    }
+  const onSliderMoved = useCallback(
+    (event: any) => {
+      let newValue =
+        Math.floor(event.nativeEvent.contentOffset.x / oneItemWidth) *
+        multiplicity;
+      if (maximumValue && newValue > maximumValue) {
+        newValue = maximumValue;
+      }
 
-    const setValue = parseFloat(
-      parseFloat(newValue.toString()).toFixed(decimalPlaces),
-    );
+      const setValue = parseFloat(
+        parseFloat(newValue.toString()).toFixed(decimalPlaces),
+      );
 
-    setValueState(setValue);
-    onValueChange(setValue);
-  };
-
-  const renderItem = (element: any) => (
-    <Item oneColumnSize={oneItemWidth} index={element.index} />
+      setValueState(setValue);
+      onValueChange(setValue);
+    },
+    [decimalPlaces, maximumValue, multiplicity, onValueChange, oneItemWidth],
   );
 
-  const renderDefaultThumb = () => (
-    <View style={styles.outerThumb}>
-      <View style={styles.innerThumb} />
-    </View>
+  const renderItem = useCallback(
+    (element: any) => (
+      <Item oneColumnSize={oneItemWidth} index={element.index} />
+    ),
+    [oneItemWidth],
   );
 
-  return (
-    <View style={styles.mainContainer} onLayout={onLayout}>
+  const List = useCallback(
+    () => (
       <FlatList
-        // style={styles.flatList}
-        ref={flatList}
         data={width === 0 ? [] : items}
         renderItem={renderItem}
         keyExtractor={(element, index) => index.toString()}
@@ -137,7 +141,23 @@ const SlideRuler: React.FC<Props> = props => {
         onScroll={onSliderMoved}
         showsHorizontalScrollIndicator={false}
       />
-      {renderDefaultThumb()}
+    ),
+    [width, items, initialValue, onSliderMoved, oneItemWidth, renderItem],
+  );
+
+  const renderThumb = useMemo(
+    () => (
+      <View style={styles.outerThumb}>
+        <View style={styles.innerThumb} />
+      </View>
+    ),
+    [styles],
+  );
+
+  return (
+    <View style={styles.mainContainer} onLayout={onLayout}>
+      <List />
+      {renderThumb}
     </View>
   );
 };

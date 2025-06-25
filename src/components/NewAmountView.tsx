@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, StyleSheet, Image} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
@@ -45,6 +45,12 @@ const NewAmountView: React.FC<Props> = props => {
     satsToSubunitSelector(state),
   );
   const subunitAmount = convertToSubunit(totalBalance);
+  let subunitAmountFormatted = String(
+    parseFloat(String(subunitAmount)).toFixed(9),
+  );
+  if (subunitAmountFormatted.match(/\./)) {
+    subunitAmountFormatted = subunitAmountFormatted.replace(/\.?0+$/, '');
+  }
 
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(totalBalance);
@@ -58,14 +64,14 @@ const NewAmountView: React.FC<Props> = props => {
         !isInternetReachable ? styles.internetBackground : null,
       ]}>
       <CustomSafeAreaView
-        styles={{...styles.safeArea}}
+        styles={styles.safeArea}
         edges={['top']}
         platform="both">
         <View style={styles.subview}>
           {!chartCursorSelected ? (
             <>
               <TranslateText
-                textValue={String(subunitAmount)}
+                textValue={subunitAmountFormatted}
                 domain={'main'}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.05}
                 textStyle={styles.amountText}
@@ -91,11 +97,21 @@ const NewAmountView: React.FC<Props> = props => {
             </>
           ) : (
             <>
-              <Text style={styles.amountText}>${chartCursorValue}</Text>
+              <TranslateText
+                textValue={`$${chartCursorValue}`}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                textStyle={styles.amountText}
+                numberOfLines={1}
+              />
               <View style={styles.fiat}>
-                <Text style={styles.fiatText}>
-                  {formatDate(chartCursorDate)} {formatTime(chartCursorDate)}
-                </Text>
+                <TranslateText
+                  textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.fiatText}
+                  numberOfLines={1}
+                />
               </View>
             </>
           )}
@@ -133,11 +149,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderBottomLeftRadius: screenHeight * 0.03,
       borderBottomRightRadius: screenHeight * 0.03,
     },
-    safeArea: {},
+    safeArea: {
+      flex: 1,
+    },
     subview: {
-      top: screenHeight * 0.06,
-      flexDirection: 'column',
       alignItems: 'center',
+      marginTop: screenHeight * 0.05,
     },
     amount: {
       height: screenHeight * 0.07,
@@ -148,7 +165,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '400',
       color: 'white',
       fontSize: screenHeight * 0.05,
-      lineHeight: screenHeight * 0.05,
+      lineHeight: screenHeight * 0.06,
     },
     fiat: {
       height: screenHeight * 0.02,
@@ -164,10 +181,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.015,
     },
     childrenContainer: {
-      paddingTop: screenHeight * 0.03,
+      marginTop: screenHeight * 0.03 * -1,
     },
     internetContainer: {
-      paddingTop: screenHeight * 0.06,
+      marginTop: screenHeight * 0.03,
     },
     internetText: {
       fontFamily: 'Satoshi Variable',

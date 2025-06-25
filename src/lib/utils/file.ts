@@ -1,7 +1,6 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
 const lndDir = RNFS.DocumentDirectoryPath;
-// const externalStorageDir = RNFS.ExternalStorageDirectoryPath;
 
 // tools
 export const fileExists = async (path: string) => {
@@ -17,6 +16,35 @@ export const deleteWalletDB = async () => {
   } catch (error) {
     // if initial install, then no wallet db will exist
     console.log('no wallet db exists');
+  }
+};
+
+// delete macaroon files
+export const deleteMacaroonFiles = async () => {
+  const macaroonDir = `${lndDir}/lndltc/data/chain/litecoin/mainnet`;
+  const macaroonFiles = [
+    'admin.macaroon',
+    'chainnotifier.macaroon',
+    'invoice.macaroon',
+    'invoices.macaroon',
+    'macaroons.db',
+    'readonly.macaroon',
+    'router.macaroon',
+    'signer.macaroon',
+    'walletkit.macaroon',
+  ];
+
+  for (const file of macaroonFiles) {
+    const filePath = `${macaroonDir}/${file}`;
+    try {
+      const exists = await RNFS.exists(filePath);
+      if (exists) {
+        await RNFS.unlink(filePath);
+        console.log(`Deleted macaroon file: ${file}`);
+      }
+    } catch (error) {
+      console.log(`Could not delete macaroon file ${file}:`, error);
+    }
   }
 };
 

@@ -83,11 +83,9 @@ const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
       fontWeight: '700',
       color: '#293C62',
       fontSize: screenHeight * 0.024,
-      paddingLeft: screenWidth * 0.04,
     },
     image: {
       tintColor: '#293C62',
-      marginLeft: screenWidth * 0.04,
     },
   });
 

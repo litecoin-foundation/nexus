@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useCallback, useMemo} from 'react';
 import {View, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -30,10 +30,10 @@ const Dial: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();
-  const currentRate = Number(useAppSelector(state => ltcRateSelector(state)));
-  const localFiatToUSDRate = useAppSelector(state =>
-    convertLocalFiatToUSD(state),
-  );
+  const currentRate =
+    Number(useAppSelector(state => ltcRateSelector(state))) || 1;
+  const localFiatToUSDRate =
+    useAppSelector(state => convertLocalFiatToUSD(state)) || 1;
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
   const [value, setValue] = useState(0);
   const [usdValue, setUSDValue] = useState(0);
@@ -41,6 +41,51 @@ const Dial: React.FC<Props> = props => {
   const maximumValue = currentRate > 1000 ? currentRate + 500 : 1000;
 
   const toggleActive = value >= currentRate;
+
+  const Ruler = useMemo(
+    () => (
+      <SlideRuler
+        onValueChange={(slideValue: number) => {
+          setValue(slideValue);
+          const calculatedValue = Number(
+            (slideValue * localFiatToUSDRate).toFixed(2),
+          );
+          setUSDValue(calculatedValue);
+        }}
+        maximumValue={maximumValue}
+        decimalPlaces={1}
+        multiplicity={1}
+        arrayLength={1000}
+        initialValue={currentRate}
+      />
+    ),
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    [],
+  );
+
+  const handlePress = useCallback(() => {
+    dispatch(
+      addAlert({
+        value,
+        originalValue: usdValue,
+        isIOS: Platform.OS === 'ios',
+      }),
+    );
+    navigation.goBack();
+  }, [value, usdValue, dispatch, navigation]);
+
+  const CreateAlertButton = useMemo(
+    () => (
+      <View style={styles.buttonContainer}>
+        <GreenButton
+          textKey="create_alert"
+          textDomain="alertsTab"
+          onPress={() => handlePress()}
+        />
+      </View>
+    ),
+    [styles, handlePress],
+  );
 
   return (
     <LinearGradient
@@ -104,39 +149,9 @@ const Dial: React.FC<Props> = props => {
               numberOfLines={1}
             />
           </View>
-          <View style={styles.rulerContainer}>
-            <SlideRuler
-              onValueChange={(slideValue: number) => {
-                setValue(slideValue);
-                const calculatedValue = Number(
-                  (slideValue * localFiatToUSDRate).toFixed(2),
-                );
-                setUSDValue(calculatedValue);
-              }}
-              maximumValue={maximumValue}
-              decimalPlaces={1}
-              multiplicity={1}
-              arrayLength={1000}
-              initialValue={currentRate}
-            />
-          </View>
+          <View style={styles.rulerContainer}>{Ruler}</View>
         </View>
-        <View style={styles.buttonContainer}>
-          <GreenButton
-            textKey="create_alert"
-            textDomain="alertsTab"
-            onPress={() => {
-              dispatch(
-                addAlert({
-                  value,
-                  originalValue: usdValue,
-                  isIOS: Platform.OS === 'ios',
-                }),
-              );
-              navigation.goBack();
-            }}
-          />
-        </View>
+        {CreateAlertButton}
       </CustomSafeAreaView>
     </LinearGradient>
   );

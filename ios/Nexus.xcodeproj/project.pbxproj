@@ -16,10 +16,10 @@
 		1BA2A1372DFFD06700B69460 /* APNSTokenModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA2A1352DFFD06700B69460 /* APNSTokenModule.swift */; };
 		1BBB01C22BF5022900EDCA9B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C12BF5022900EDCA9B /* SwiftProtobuf */; };
 		1BBB01C42BF5022900EDCA9B /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 1BBB01C32BF5022900EDCA9B /* SwiftProtobufPluginLibrary */; };
-		1BD771C82D5B6A6A00280C4E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1BD771C72D5B6A6A00280C4E /* GoogleService-Info.plist */; };
 		2DDE569BBB096BA415333D33 /* libPods-nexus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E5B592172C7FC1E6E87725D4 /* libPods-nexus.a */; };
 		5DC3C87AFE8D411CA6859504 /* Satoshi-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */; };
 		BDFAED61002727AD53812A22 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62BBC85FD6F04675ADBD3FF0 /* ExpoModulesProvider.swift */; };
+		D8A583682E0A1FA900FF887F /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D8A583672E0A1FA900FF887F /* BootSplash.storyboard */; };
 		DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -62,12 +62,12 @@
 		1BA2A1342DFFD06700B69460 /* APNSTokenModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = APNSTokenModule.m; sourceTree = "<group>"; };
 		1BA2A1352DFFD06700B69460 /* APNSTokenModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APNSTokenModule.swift; sourceTree = "<group>"; };
 		1BC3AB132CD547B00024FD9C /* nexus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = nexus.entitlements; path = Nexus/nexus.entitlements; sourceTree = "<group>"; };
-		1BD771C72D5B6A6A00280C4E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1BED719E2BF4CE8700098E26 /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Satoshi-Variable.ttf"; path = "../src/fonts/Satoshi-Variable.ttf"; sourceTree = "<group>"; };
 		4DBDD46D41A5E333A4DE1A4F /* Pods-nexus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexus.debug.xcconfig"; path = "Target Support Files/Pods-nexus/Pods-nexus.debug.xcconfig"; sourceTree = "<group>"; };
 		62BBC85FD6F04675ADBD3FF0 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-nexus/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		6597258BC3F32726D4A39D7C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Nexus/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D8A583672E0A1FA900FF887F /* BootSplash.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BootSplash.storyboard; sourceTree = "<group>"; };
 		E5B592172C7FC1E6E87725D4 /* libPods-nexus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-nexus.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -98,10 +98,10 @@
 		13B07FAE1A68108700A75B9A /* nexus */ = {
 			isa = PBXGroup;
 			children = (
+				D8A583672E0A1FA900FF887F /* BootSplash.storyboard */,
 				1B50CFF12DF9D4FB00494F5C /* AppDelegate.swift */,
 				1BA2A1342DFFD06700B69460 /* APNSTokenModule.m */,
 				1BA2A1352DFFD06700B69460 /* APNSTokenModule.swift */,
-				1BD771C72D5B6A6A00280C4E /* GoogleService-Info.plist */,
 				1B772B672CF8102B009C0FB4 /* liblnd.a */,
 				1B1549572CFFB8A100CC5912 /* nexus-Bridging-Header.h */,
 				1BC3AB132CD547B00024FD9C /* nexus.entitlements */,
@@ -294,7 +294,7 @@
 			files = (
 				1B1549392CFFB7F200CC5912 /* Images.xcassets in Resources */,
 				1B15493B2CFFB7FC00CC5912 /* LaunchScreen.storyboard in Resources */,
-				1BD771C82D5B6A6A00280C4E /* GoogleService-Info.plist in Resources */,
+				D8A583682E0A1FA900FF887F /* BootSplash.storyboard in Resources */,
 				DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */,
 				5DC3C87AFE8D411CA6859504 /* Satoshi-Variable.ttf in Resources */,
 			);
@@ -327,13 +327,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -389,13 +385,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -670,7 +662,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -744,7 +739,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;

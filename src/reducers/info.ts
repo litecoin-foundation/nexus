@@ -27,7 +27,7 @@ interface IInfo {
   numInactiveChannels: number;
   isInternetReachable: boolean | null;
   startingSyncTimestamp: string;
-  percentSynced: number;
+  decimalSynced: number;
   recoveryProgress: number;
   recoveryFinished: boolean;
   recoveryMode: boolean;
@@ -63,8 +63,8 @@ const initialState = {
   numPendingChannels: 0,
   numInactiveChannels: 0,
   isInternetReachable: null,
-  startingSyncTimestamp: '0',
-  percentSynced: 0,
+  startingSyncTimestamp: '1317969544',
+  decimalSynced: 0,
   recoveryProgress: 0,
   recoveryMode: false,
   recoveryFinished: false,
@@ -102,30 +102,30 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
       numActiveChannels: infoRpc.numActiveChannels,
       numPendingChannels: infoRpc.numPendingChannels,
       numInactiveChannels: infoRpc.numInactiveChannels,
-      startingSyncTimestamp: '0',
-      percentSynced: 0,
+      startingSyncTimestamp: '1317969544',
+      decimalSynced: 0,
     };
 
     // TODO: refactor required
     // first get neutrino cache before initwallet
     // then only calculate actual sync progress
-    const {startingSyncTimestamp} = getState().info!;
+    const {startingSyncTimestamp} = getState().info;
 
-    // calculate % synced
-    if (startingSyncTimestamp === undefined) {
-      info.startingSyncTimestamp =
-        String(info.bestHeaderTimestamp) || String(0);
-    }
-    const syncPercentage = await calculateSyncProgress(
-      String(info.bestHeaderTimestamp),
+    // calculate synced in decimal
+    const syncInDecimal = await calculateSyncProgress(
+      info.bestHeaderTimestamp
+        ? String(info.bestHeaderTimestamp)
+        : '1317969544',
       startingSyncTimestamp,
     );
-    if (syncPercentage < 0.9) {
+    if (syncInDecimal < 0.9) {
       info.syncedToChain = false;
     }
     if (!info.syncedToChain) {
-      info.percentSynced = await calculateSyncProgress(
-        String(info.bestHeaderTimestamp),
+      info.decimalSynced = await calculateSyncProgress(
+        info.bestHeaderTimestamp
+          ? String(info.bestHeaderTimestamp)
+          : '1317969544',
         startingSyncTimestamp,
       );
     }
@@ -170,14 +170,20 @@ const calculateSyncProgress = async (
   bestHeaderTimestamp: string,
   startingSyncTimestamp: IInfo['startingSyncTimestamp'],
 ) => {
-  const currentTimestamp = new Date().getTime() / 1000;
-  const progressSoFar = bestHeaderTimestamp
-    ? BigInt(bestHeaderTimestamp) - BigInt(startingSyncTimestamp)!
-    : 0;
-  const totalProgress =
-    currentTimestamp - Number(startingSyncTimestamp)! || 0.001;
-  const percentSynced = (Number(progressSoFar) * 1.0) / totalProgress;
-  return percentSynced;
+  const currentTimestamp: number = parseInt(
+    String(new Date().getTime() / 1000),
+    10,
+  );
+
+  const progressSoFarInSeconds: number =
+    Number(bestHeaderTimestamp) - Number(startingSyncTimestamp);
+
+  const totalProgressInSeconds =
+    currentTimestamp - Number(startingSyncTimestamp);
+
+  const decimalSynced = progressSoFarInSeconds / totalProgressInSeconds;
+
+  return decimalSynced;
 };
 
 // slice
@@ -200,8 +206,8 @@ export const infoSlice = createSlice({
 });
 
 // selectors
-export const percentSyncedSelector = (state: RootState) =>
-  state.info!.percentSynced;
+export const decimalSyncedSelector = (state: RootState) =>
+  state.info!.decimalSynced;
 export const syncStatusSelector = (state: RootState) =>
   state.info!.syncedToChain;
 export const recoveryProgressSelector = (state: RootState) =>

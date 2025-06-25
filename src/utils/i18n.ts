@@ -5,7 +5,9 @@ import {initReactI18next} from 'react-i18next';
 import de_T from '../assets/locales/de.json';
 import en_T from '../assets/locales/en.json';
 import es_T from '../assets/locales/es.json';
+import fa_T from '../assets/locales/fa.json';
 import it_T from '../assets/locales/it.json';
+import lt_T from '../assets/locales/lt.json';
 import pl_T from '../assets/locales/pl.json';
 import ru_T from '../assets/locales/ru.json';
 import fr_T from '../assets/locales/fr.json';
@@ -25,7 +27,9 @@ function initI18N(languageCode: string) {
       de: de_T,
       en: en_T,
       es: es_T,
+      fa: fa_T,
       it: it_T,
+      lt: lt_T,
       pl: pl_T,
       ru: ru_T,
       fr: fr_T,

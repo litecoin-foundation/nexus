@@ -1,5 +1,5 @@
 import React, {useEffect, useContext, useState} from 'react';
-import {Alert, StyleSheet, Text, View} from 'react-native';
+import {Alert, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, {
   useSharedValue,
@@ -134,12 +134,14 @@ const Welcome: React.FC<Props> = props => {
           textKey="presync"
           domain="onboarding"
           textStyle={styles.titleText}
+          maxSizeInPixels={height * 0.025}
+          numberOfLines={1}
         />
-
         <TranslateText
           textKey="presync_description"
           domain="onboarding"
           textStyle={styles.descriptionText}
+          maxSizeInPixels={height * 0.017}
         />
       </View>
 
@@ -150,7 +152,12 @@ const Welcome: React.FC<Props> = props => {
           <ProgressBar percentageProgress={unzipProgress! * 100} />
         )}
       </View>
-      <Text style={styles.descriptionText}>{task}</Text>
+
+      <TranslateText
+        textValue={task}
+        textStyle={styles.descriptionText}
+        maxSizeInPixels={height * 0.017}
+      />
     </View>
   );
 
