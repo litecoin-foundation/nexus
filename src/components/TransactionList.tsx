@@ -2,7 +2,6 @@ import React, {
   forwardRef,
   useRef,
   useImperativeHandle,
-  MutableRefObject,
   useLayoutEffect,
   useEffect,
   useState,
@@ -34,7 +33,7 @@ import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 import ProgressBar from './ProgressBar';
 import {
-  percentSyncedSelector,
+  decimalSyncedSelector,
   recoveryProgressSelector,
 } from '../reducers/info';
 
@@ -83,9 +82,7 @@ const TransactionCellMemo = memo(function TransactionCellItem(
 });
 
 const TransactionList = forwardRef((props: Props, ref) => {
-  const transactionListRef = useRef() as MutableRefObject<
-    SectionList<any, ITransactions>
-  >;
+  const transactionListRef = useRef<any>(null);
 
   useImperativeHandle(ref, () => ({
     scrollToLocation: (sectionIndex: number) => {
@@ -121,7 +118,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
   // const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
 
   const {recoveryMode, syncedToChain} = useAppSelector(state => state.info);
-  const progress = useAppSelector(state => percentSyncedSelector(state));
+  const progress = useAppSelector(state => decimalSyncedSelector(state));
   const recoveryProgress = useAppSelector(state =>
     recoveryProgressSelector(state),
   );
@@ -217,17 +214,18 @@ const TransactionList = forwardRef((props: Props, ref) => {
     setRenderTxs(true);
   }, [folded, SCREEN_HEIGHT, UNFOLD_SHEET_POINT]);
 
+  // Start with 0.1% progress
   const decProgress = recoveryMode
     ? recoveryProgress > 0
       ? recoveryProgress > 1
         ? 1
         : recoveryProgress
-      : 0.01
+      : 0.001
     : progress > 0
       ? progress > 1
         ? 1
         : progress
-      : 0.01;
+      : 0.001;
 
   // Floor it to 1 decimal
   const percentageProgress =
@@ -235,22 +233,25 @@ const TransactionList = forwardRef((props: Props, ref) => {
       ? decProgress > 1
         ? 100
         : Math.floor(decProgress * 10 * 100) / 10
-      : 1;
+      : 0.1;
 
-  // When loading and not updating the state for more than 10 sec
+  // When loading and not updating the state for more than 15 sec
   // consider there's a problem with connection and show the note
-  const loadingTimeout = useRef<NodeJS.Timeout>();
+  const loadingTimeout = useRef<NodeJS.Timeout>(setTimeout(() => {}, 1000));
   const [takingTooLong, setTakingTooLong] = useState(false);
   useEffect(() => {
-    if (percentageProgress < 99) {
+    // Do not restart when in recovery
+    if (percentageProgress < 99 && !recoveryMode) {
       loadingTimeout.current = setTimeout(() => {
         setTakingTooLong(true);
-      }, 10000);
+      }, 15000);
+    } else {
+      clearTimeout(loadingTimeout.current);
     }
     return () => {
       clearTimeout(loadingTimeout.current);
     };
-  }, [percentageProgress]);
+  }, [percentageProgress, recoveryMode]);
 
   const SyncProgressIndicator = (
     <>

@@ -4,7 +4,7 @@ import {StyleSheet, View} from 'react-native';
 import SkeletonTransactionCell from './Cells/SkeletonTransactionCell';
 import {useAppSelector, useAppDispatch} from '../store/hooks';
 import {
-  percentSyncedSelector,
+  decimalSyncedSelector,
   syncStatusSelector,
   getRecoveryInfo,
   pollRecoveryInfo,
@@ -16,7 +16,7 @@ import TranslateText from './TranslateText';
 interface Props {}
 
 const TransactionListEmpty: React.FC<Props> = () => {
-  const progress = useAppSelector(state => percentSyncedSelector(state));
+  const progress = useAppSelector(state => decimalSyncedSelector(state));
   const synced = useAppSelector(state => syncStatusSelector(state));
   const recoveryMode = useAppSelector(state => state.info.recoveryMode);
 
