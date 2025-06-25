@@ -8,16 +8,16 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import {estimateFee} from 'react-native-turbo-lndltc';
 
 import ConvertField from '../InputFields/ConvertField';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
-import {useAppSelector} from '../../store/hooks';
+import {useAppSelector, useAppDispatch} from '../../store/hooks';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
 } from '../../reducers/settings';
-import {useDispatch} from 'react-redux';
 import {
   resetInputs,
   updatePrivateAmount,
@@ -47,17 +47,20 @@ interface Props {
 }
 
 const Convert: React.FC<Props> = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
 
   const [activeField, setActiveField] = useState<'regular' | 'private'>(
     'regular',
   );
+  const [regularFee, setRegularFee] = useState<number>(0);
+  const [privateFee, setPrivateFee] = useState<number>(0);
+
   const {regularConfirmedBalance, privateConfirmedBalance} = useAppSelector(
-    state => state.balance,
+    state => state.balance!,
   );
   const {regularAmount, privateAmount} = useAppSelector(
-    state => state.input.convert,
+    state => state.input!.convert,
   );
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
@@ -73,6 +76,60 @@ const Convert: React.FC<Props> = () => {
       dispatch(resetInputs());
     };
   }, [dispatch]);
+
+  // Fee estimation for max buttons
+  useEffect(() => {
+    const estimateRegularFee = async () => {
+      try {
+        const balance = Number(regularConfirmedBalance);
+
+        if (balance > 1000) {
+          // Only estimate if balance > 1000 sats (0.00001 LTC)
+          // Use a smaller amount for fee estimation, but ensure it's at least 1000 sats
+          const estimationAmount = Math.max(1000, balance - 1000);
+          const response = await estimateFee({
+            AddrToAmount: {
+              ltcmweb1qqdzvazxjnx3drvtrjsv9vqv3fafp3sgx84v5f8cc2yj0pysxdvmhxqacckpk5uml9020uw7d2cv4pcwcruvg36y7gktv45rphyqaxvpkgg55fax6:
+                BigInt(estimationAmount),
+            },
+            targetConf: 2,
+          });
+          setRegularFee(Number(response.feeSat));
+        } else {
+          setRegularFee(2000); // Default minimum fee of 2000 sats for small amounts
+        }
+      } catch (error) {
+        setRegularFee(2000); // Default minimum fee on error
+      }
+    };
+
+    const estimatePrivateFee = async () => {
+      try {
+        const balance = Number(privateConfirmedBalance);
+
+        if (balance > 1000) {
+          // Only estimate if balance > 1000 sats (0.00001 LTC)
+          // Use a smaller amount for fee estimation, but ensure it's at least 1000 sats
+          const estimationAmount = Math.max(1000, balance - 1000);
+          const response = await estimateFee({
+            AddrToAmount: {
+              ltc1qv4dqeaunhlaz4fe87dkes3t3mdq9q2vzczlgje:
+                BigInt(estimationAmount),
+            },
+            targetConf: 2,
+          });
+          setPrivateFee(Number(response.feeSat));
+        } else {
+          setPrivateFee(2000); // Default minimum fee of 2000 sats for small amounts
+        }
+      } catch (error) {
+        setPrivateFee(2000); // Default minimum fee on error
+      }
+    };
+
+    estimateRegularFee();
+    estimatePrivateFee();
+  }, [regularConfirmedBalance, privateConfirmedBalance]);
 
   const onChange = (value: string) => {
     if (activeField === 'regular') {
@@ -119,6 +176,60 @@ const Convert: React.FC<Props> = () => {
     scaler.value = withSpring(1, {mass: 0.7});
   };
 
+  const setRegularMax = () => {
+    // Work in satoshis to avoid floating point precision issues
+    const balanceInSats = Number(regularConfirmedBalance);
+    let feeInSats = Math.ceil(regularFee);
+
+    // For small balances, ensure we have enough for a reasonable fee buffer
+    if (balanceInSats < 50000) {
+      // Less than 0.0005 LTC
+      feeInSats = Math.max(feeInSats, Math.floor(balanceInSats * 0.1)); // Use at least 10% for fees
+    }
+
+    const maxSats = balanceInSats - feeInSats;
+
+    console.log(
+      'Regular Max - Balance:',
+      balanceInSats,
+      'Fee:',
+      feeInSats,
+      'Max:',
+      maxSats,
+    );
+
+    // Convert to LTC, ensuring we don't go below 0 or below dust limit (546 sats)
+    const maxAmountLTC = Math.max(0, maxSats < 546 ? 0 : maxSats) / 100000000;
+    dispatch(updateRegularAmount(maxAmountLTC.toFixed(8)));
+  };
+
+  const setPrivateMax = () => {
+    // Work in satoshis to avoid floating point precision issues
+    const balanceInSats = Number(privateConfirmedBalance);
+    let feeInSats = Math.ceil(privateFee);
+
+    // For small balances, ensure we have enough for a reasonable fee buffer
+    if (balanceInSats < 50000) {
+      // Less than 0.0005 LTC
+      feeInSats = Math.max(feeInSats, Math.floor(balanceInSats * 0.1)); // Use at least 10% for fees
+    }
+
+    const maxSats = balanceInSats - feeInSats;
+
+    console.log(
+      'Private Max - Balance:',
+      balanceInSats,
+      'Fee:',
+      feeInSats,
+      'Max:',
+      maxSats,
+    );
+
+    // Convert to LTC, ensuring we don't go below 0 or below dust limit (546 sats)
+    const maxAmountLTC = Math.max(0, maxSats < 546 ? 0 : maxSats) / 100000000;
+    dispatch(updatePrivateAmount(maxAmountLTC.toFixed(8)));
+  };
+
   const handleConvert = () => {
     navigation.navigate('ConfirmConvert', {
       isRegular: activeField === 'regular',
@@ -145,6 +256,7 @@ const Convert: React.FC<Props> = () => {
               setActiveField('regular');
               dispatch(resetInputs());
             }}
+            setMax={setRegularMax}
           />
           <Text style={styles.smallText}>
             {convertToSubunit(regularConfirmedBalance)}
@@ -178,6 +290,7 @@ const Convert: React.FC<Props> = () => {
               setActiveField('private');
               dispatch(resetInputs());
             }}
+            setMax={setPrivateMax}
           />
           <Text style={styles.smallText}>
             {convertToSubunit(privateConfirmedBalance)}

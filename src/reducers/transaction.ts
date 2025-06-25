@@ -148,11 +148,6 @@ export const sendConvertWithCoinControl = async (
       .filter(utxo => utxo.addressType !== AddressType.MWEB)
       .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
 
-    console.log('MWEB utxos');
-    console.log(mwebUtxos);
-    console.log('canonical utxos');
-    console.log(nonMwebUtxos);
-
     const outpoints = destination === 'private' ? nonMwebUtxos : mwebUtxos;
 
     const outpointsArray = outpoints
@@ -175,10 +170,8 @@ export const sendConvertWithCoinControl = async (
       label: ' ',
     });
 
-    // console.log(txid);
     return txid;
   } catch (error) {
-    // console.error(error);
     throw new Error(String(error));
   }
 };
