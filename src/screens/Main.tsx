@@ -553,8 +553,12 @@ const Main: React.FC<Props> = props => {
         animatedProps={animatedTopContainerHeight}
         internetOpacityStyle={animatedChartOpacity}>
         <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
-          {isBottomSheetFolded && <LineChart />}
-          <DatePicker />
+          {isBottomSheetFolded ? (
+            <>
+              <LineChart />
+              <DatePicker />
+            </>
+          ) : null}
         </Animated.View>
       </NewAmountView>
 
