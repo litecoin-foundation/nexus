@@ -48,7 +48,8 @@
     "are_you_sure": "A je i sigurt?",
     "skip_presync_description": "Duke kaluar presync, do të duhet të presesh që portofoli yt Nexus të sinkronizohet plotësisht para se të mund të dërgosh ose marrsh transaksione. Ky proces mund të zgjatë deri në 30+ minuta.",
     "cancel": "Anulo",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Edhe pse transaksionet tuaja janë ngarkuar, mund të duhet pak kohë që ato të shfaqen dhe të ri-llogaritet balanca juaj. Thjesht lërni aplikacionin të hapur."
   },
   "main": {
     "main_wallet": "Portofoli Kryesor",

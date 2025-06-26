@@ -48,7 +48,8 @@
     "are_you_sure": "Czy jesteś pewien?",
     "skip_presync_description": "Pomijając presync, będziesz musiał poczekać, aż Twój portfel Nexus zostanie w pełni zsynchronizowany, zanim będziesz mógł wysyłać lub odbierać transakcje. Ten proces może potrwać do 30+ minut.",
     "cancel": "Anuluj",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Chociaż Twoje transakcje zostały załadowane, może minąć trochę czasu, zanim się pojawią i saldo zostanie przeliczone. Po prostu pozostaw aplikację otwartą."
   },
   "main": {
     "main_wallet": "Główny portfel",

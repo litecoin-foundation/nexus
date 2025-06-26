@@ -48,7 +48,8 @@
     "are_you_sure": "您确定吗？",
     "skip_presync_description": "跳过预同步，您需要等待Nexus钱包完全同步，然后才能发送或接收交易。此过程可能需要30+分钟。",
     "cancel": "取消",
-    "ok": "确定"
+    "ok": "确定",
+    "txs_take_time_to_appear": "虽然您的交易记录已加载，但可能需要一些时间才能显示并重新计算您的余额。请保持应用程序处于开启状态。"
   },
   "main": {
     "main_wallet": "主钱包",

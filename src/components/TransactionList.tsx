@@ -34,6 +34,8 @@ import ProgressBar from './ProgressBar';
 import {
   decimalSyncedSelector,
   recoveryProgressSelector,
+  getRecoveryInfo,
+  pollRecoveryInfo,
 } from '../reducers/info';
 
 import {v4 as uuidv4} from 'uuid';
@@ -140,9 +142,18 @@ const TransactionList = forwardRef((props: Props, ref) => {
   );
 
   const dispatch = useAppDispatch();
+
   useLayoutEffect(() => {
     dispatch(getTransactions());
+    dispatch(getRecoveryInfo());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (recoveryMode) {
+      dispatch(pollRecoveryInfo());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recoveryMode]);
 
   const filterTransactions = () => {
     const txArray = [];
@@ -190,7 +201,10 @@ const TransactionList = forwardRef((props: Props, ref) => {
         break;
     }
 
-    const groupedTxs = groupTransactions(txArrayFiltered) as Array<{title: string; data: ItemType[]}>;
+    const groupedTxs = groupTransactions(txArrayFiltered) as Array<{
+      title: string;
+      data: ItemType[];
+    }>;
 
     // Flatten sections into a single array with headers for FlashList
     const flattened: FlashListItemType[] = [];
@@ -233,7 +247,12 @@ const TransactionList = forwardRef((props: Props, ref) => {
     }
 
     // Regular transaction item
-    return <TransactionCellMemo item={item as ItemType} onPress={() => onPress(item as ItemType)} />;
+    return (
+      <TransactionCellMemo
+        item={item as ItemType}
+        onPress={() => onPress(item as ItemType)}
+      />
+    );
   };
 
   // DashboardButton is 110, txTitleContainer is screenHeight * 0.07 in Main component
@@ -372,7 +391,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
         estimatedItemSize={70}
         ListEmptyComponent={<TransactionListEmpty />}
         ListFooterComponent={
-          flattenedTxs.length === 0 ? (
+          flattenedTxs.length === 0 && recoveryMode ? (
             <View style={styles.emptyView}>
               <TranslateText
                 textKey={'txs_take_time_to_appear'}

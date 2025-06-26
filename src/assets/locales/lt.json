@@ -48,7 +48,8 @@
     "are_you_sure": "Ar esate tikri?",
     "skip_presync_description": "Praleidžiant pirminių sinchronizaciją, reikės palaukti, kol jūsų Nexus Wallet visiškai sinchronizuosis, prieš galint siųsti ar gauti sandorius. Šis procesas gali užtrukti iki 30+ minučių.",
     "cancel": "Atšaukti",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Nors jūsų operacijos jau įkeltos, gali prireikti šiek tiek laiko, kol jos bus rodomos ir jūsų likutis bus perskaičiuotas. Tiesiog palikite programėlę atidarytą."
   },
   "main": {
     "main_wallet": "Pagrindinė piniginė",

@@ -48,7 +48,8 @@
     "are_you_sure": "Sigurado ka ba?",
     "skip_presync_description": "Sa paglaktaw sa presync, kailangan mong maghintay na maging fully sync ang iyong Nexus Wallet bago ka makapagpadala o makatanggap ng mga transaksyon. Ang prosesong ito ay maaaring tumagal ng hanggang 30+ minuto.",
     "cancel": "Kanselahin",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Kahit na na-load na ang iyong mga transaksyon, maaaring tumagal ng kaunti bago ito lumitaw at ma-recalculate ang iyong balanse. Iwanan mo lang na bukas ang app."
   },
   "main": {
     "main_wallet": "Pangunahing pitaka",

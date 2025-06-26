@@ -48,7 +48,8 @@
     "are_you_sure": "Sei sicuro?",
     "skip_presync_description": "Saltando la presincronizzazione, dovrai aspettare che il tuo Nexus Wallet si sincronizzi completamente prima di poter inviare o ricevere transazioni. Questo processo può richiedere fino a 30+ minuti.",
     "cancel": "Annulla",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Anche se le tue transazioni sono state caricate, potrebbe volerci un po' di tempo prima che vengano visualizzate e che il saldo venga ricalcolato. Lascia semplicemente l'app aperta."
   },
   "main": {
     "main_wallet": "Portafoglio principale",
