@@ -276,6 +276,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenWidth,
       height: screenHeight * 0.4,
       flexDirection: 'row',
+      justifyContent: 'space-evenly',
       flexWrap: 'wrap',
     },
   });
