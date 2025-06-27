@@ -1,5 +1,5 @@
 import React, {useContext, useLayoutEffect, useRef, useState} from 'react';
-import {View, Text, StyleSheet, Alert} from 'react-native';
+import {View, StyleSheet, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -29,7 +29,7 @@ const ChangePincode: React.FC<Props> = props => {
   const navigation = useNavigation<any>();
   const dispatch = useAppDispatch();
   const {t} = useTranslation('settingsTab');
-  const pin = useAppSelector(state => state.authentication.passcode);
+  const pin = useAppSelector(state => state.authentication!.passcode);
 
   const passcodeInputRef = useRef<PasscodeInputRef>(null);
 
@@ -237,6 +237,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenWidth,
       height: screenHeight * 0.4,
       flexDirection: 'row',
+      justifyContent: 'space-evenly',
       flexWrap: 'wrap',
     },
     emptyBuyButton: {
