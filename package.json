@@ -12,7 +12,7 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "reset": "rm -rf node_modules/ && npm cache clear -f && yarn",
+    "reset": "rm -rf node_modules/ && npm cache clear -f && rm -rf android/.gradle && rm -rf android/build && find . name '.cxx' -type d -exec rm -rf {} + 2>/dev/null || true && yarn",
     "test": "jest",
     "fetch:ios": "curl https://static.nexuswallet.com/lndmobile/lndmobile-ios-v0.17.3-cshared.tar.gz --output lndmobile-ios-v0.17.3-cshared.tar.gz && npm run extract:ios",
     "extract:ios": "tar xzvf lndmobile-ios-v0.17.3-cshared.tar.gz ./ios/liblnd-fat.a && mv ./ios/liblnd-fat.a ./ios/liblnd.a",
