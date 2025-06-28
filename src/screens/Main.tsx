@@ -1,4 +1,11 @@
-import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useContext,
+  useCallback,
+} from 'react';
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
@@ -71,9 +78,7 @@ interface TxListComponentProps {
   foldUnfoldBottomSheet: (option: boolean) => void;
   isBottomSheetFolded: boolean;
   navigation: any;
-  styles: {
-    [key: string]: any;
-  };
+  styles: Record<string, any>;
 }
 
 const TxListComponent: React.FC<TxListComponentProps> = props => {
@@ -170,19 +175,19 @@ const Main: React.FC<Props> = props => {
   const [loading, setLoading] = useState(false);
 
   const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
-  function foldUnfoldBottomSheet(isFolded: boolean) {
+  const foldUnfoldBottomSheet = useCallback((isFolded: boolean) => {
     if (isFolded) {
       setBottomSheetFolded(false);
     } else {
       setBottomSheetFolded(true);
       setActiveTab(0);
     }
-  }
+  }, []);
   useEffect(() => {
     if (route.params?.isInitial) {
       foldUnfoldBottomSheet(false);
     }
-  }, [route]);
+  }, [route, foldUnfoldBottomSheet]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
@@ -200,7 +205,7 @@ const Main: React.FC<Props> = props => {
   } = useMainAnims({isWalletsModalOpened, isTxDetailModalOpened});
 
   // Flexa
-  const flexaAssetAccounts = [
+  const flexaAssetAccounts = useMemo(() => [
     {
       displayName: 'Main Wallet',
       assetAccountHash: uniqueId,
@@ -216,13 +221,30 @@ const Main: React.FC<Props> = props => {
       ],
       custodyModel: CUSTODY_MODEL.LOCAL,
     },
-  ];
+  ], [uniqueId, totalBalance, confirmedBalance]);
 
-  const manualPayment = async () => {
-    payment(flexaAssetAccounts, paymentCallback);
-  };
+  const openPinModal = useCallback((action: string) => {
+    pinModalAction.current = action;
+    setIsPinModalOpened(true);
+  }, []);
 
-  const paymentCallback = async (transactionRequest: TransactionRequest) => {
+  const handleAuthenticationRequired = useCallback((action: string): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
+      openPinModal(action);
+      const subscription = DeviceEventEmitter.addListener(action, (bool: boolean) => {
+        if (bool === true) {
+          setIsPinModalOpened(false);
+          subscription.remove();
+          resolve();
+        } else if (bool === false) {
+          subscription.remove();
+          reject(new Error('Authentication failed'));
+        }
+      });
+    });
+  }, [openPinModal]);
+
+  const paymentCallback = useCallback(async (transactionRequest: TransactionRequest) => {
     const {transaction, transactionSent, transactionFailed} =
       transactionRequest;
 
@@ -275,38 +297,21 @@ const Main: React.FC<Props> = props => {
       payment(flexaAssetAccounts, paymentCallback);
       dispatch(showError(String(error)));
     }
-  };
+  }, [dispatch, flexaAssetAccounts, handleAuthenticationRequired]);
 
-  function openPinModal(action: string) {
-    pinModalAction.current = action;
-    setIsPinModalOpened(true);
-  }
-
-  const handleAuthenticationRequired = (action: string) => {
-    return new Promise<void>((resolve, reject) => {
-      openPinModal(action);
-      const subscription = DeviceEventEmitter.addListener(action, bool => {
-        if (bool === true) {
-          setIsPinModalOpened(false);
-          subscription.remove();
-          resolve();
-        } else if (bool === false) {
-          subscription.remove();
-          reject();
-        }
-      });
-    });
-  };
+  const manualPayment = useCallback(async () => {
+    payment(flexaAssetAccounts, paymentCallback);
+  }, [flexaAssetAccounts, paymentCallback]);
 
   // Transaction Detail Modal Swiping
   // const image = useImage(require('../assets/icons/search-icon.png'));
   const sendCardRef = useRef<URIHandlerRef>(null);
 
-  function setTransactionIndex(newTxIndex: number) {
+  const setTransactionIndex = useCallback((newTxIndex: number) => {
     selectTransaction(transactions[newTxIndex]);
-  }
+  }, [transactions]);
 
-  function swipeToPrevTx() {
+  const swipeToPrevTx = useCallback(() => {
     if (selectedTransaction) {
       if (selectedTransaction.hasOwnProperty('renderIndex')) {
         const newTxIndex =
@@ -316,9 +321,9 @@ const Main: React.FC<Props> = props => {
         selectTransaction(transactions[newTxIndex]);
       }
     }
-  }
+  }, [selectedTransaction, transactions]);
 
-  function swipeToNextTx() {
+  const swipeToNextTx = useCallback(() => {
     if (selectedTransaction) {
       if (selectedTransaction.hasOwnProperty('renderIndex')) {
         const newTxIndex =
@@ -328,7 +333,7 @@ const Main: React.FC<Props> = props => {
         selectTransaction(transactions[newTxIndex]);
       }
     }
-  }
+  }, [selectedTransaction, transactions]);
 
   // Deeplink handler
   useEffect(() => {
@@ -367,44 +372,52 @@ const Main: React.FC<Props> = props => {
     }
   }, [activeTab, uri, dispatch]);
 
+  const headerTitle = useMemo(() => (
+    <ChooseWalletButton
+      title={'Wallet Title'}
+      onPress={() => {}}
+      disabled={false}
+      isModalOpened={false}
+      isFromBottomToTop={false}
+      animDuration={200}
+      rotateArrow={() => {}}
+      arrowSpinAnim={undefined}
+    />
+  ), []);
+
+  const headerLeft = useMemo(() => (
+    <HeaderButton
+      onPress={() => navigation.navigate('SettingsStack')}
+      imageSource={require('../assets/icons/settings-cog.png')}
+    />
+  ), [navigation]);
+
+  const headerRight = useMemo(() => (
+    <HeaderButton
+      onPress={() => navigation.navigate('AlertsStack')}
+      imageSource={require('../assets/icons/alerts-icon.png')}
+      rightPadding={true}
+    />
+  ), [navigation]);
+
+  const emptyComponent = useMemo(() => <></>, []);
+
   // Hide header when transaction detail modal is opened
   useEffect(() => {
     if (isTxDetailModalOpened) {
       navigation.setOptions({
-        headerTitle: () => <></>,
-        headerLeft: () => <></>,
-        headerRight: () => <></>,
+        headerTitle: () => emptyComponent,
+        headerLeft: () => emptyComponent,
+        headerRight: () => emptyComponent,
       });
     } else {
       navigation.setOptions({
-        headerTitle: () => (
-          <ChooseWalletButton
-            title={'Wallet Title'}
-            onPress={() => {}}
-            disabled={false}
-            isModalOpened={false}
-            isFromBottomToTop={false}
-            animDuration={200}
-            rotateArrow={() => {}}
-            arrowSpinAnim={undefined}
-          />
-        ),
-        headerLeft: () => (
-          <HeaderButton
-            onPress={() => navigation.navigate('SettingsStack')}
-            imageSource={require('../assets/icons/settings-cog.png')}
-          />
-        ),
-        headerRight: () => (
-          <HeaderButton
-            onPress={() => navigation.navigate('AlertsStack')}
-            imageSource={require('../assets/icons/alerts-icon.png')}
-            rightPadding={true}
-          />
-        ),
+        headerTitle: () => headerTitle,
+        headerLeft: () => headerLeft,
+        headerRight: () => headerRight,
       });
     }
-  }, [navigation, isTxDetailModalOpened]);
+  }, [navigation, isTxDetailModalOpened, headerTitle, headerLeft, headerRight, emptyComponent]);
 
   useMainLayout({
     walletButtonAnimDuration,
@@ -500,7 +513,7 @@ const Main: React.FC<Props> = props => {
         styles={styles}
       />
     ),
-    [isBottomSheetFolded, navigation, styles],
+    [isBottomSheetFolded, navigation, styles, foldUnfoldBottomSheet],
   );
 
   const BottomSheetMemo = useMemo(
@@ -511,7 +524,7 @@ const Main: React.FC<Props> = props => {
         mainSheetsTranslationY={mainSheetsTranslationY}
         mainSheetsTranslationYStart={mainSheetsTranslationYStart}
         folded={isBottomSheetFolded}
-        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
+        foldUnfold={foldUnfoldBottomSheet}
         activeTab={activeTab}
         buyViewComponent={<Buy />}
         sellViewComponent={<Sell />}
@@ -528,6 +541,7 @@ const Main: React.FC<Props> = props => {
       mainSheetsTranslationY,
       mainSheetsTranslationYStart,
       isBottomSheetFolded,
+      foldUnfoldBottomSheet,
       activeTab,
       route,
       navigation,
