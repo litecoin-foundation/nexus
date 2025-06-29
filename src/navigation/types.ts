@@ -90,6 +90,7 @@ export type SettingsStackParamList = {
   };
   ChangePincode: undefined;
   Seed: undefined;
+  RootKey: undefined;
   About: undefined;
   Currency: undefined;
   Explorer: undefined;

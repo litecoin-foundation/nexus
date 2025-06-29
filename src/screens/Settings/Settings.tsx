@@ -54,6 +54,7 @@ type RootStackParamList = {
   Currency: undefined;
   Language: undefined;
   Seed: undefined;
+  RootKey: undefined;
   Import: undefined;
   RecoverLitewallet: undefined;
   Loading: undefined;
@@ -85,17 +86,10 @@ const Settings: React.FC<Props> = props => {
     setIsPinModalOpened(true);
   }
 
-  const biometricsAvailable = useAppSelector(
-    state => state.authentication.biometricsAvailable,
-  );
-  const biometricsEnabled = useAppSelector(
-    state => state.authentication.biometricsEnabled,
-  );
-  const faceIDSupported = useAppSelector(
-    state => state.authentication.faceIDSupported,
-  );
+  const {biometricsAvailable, biometricsEnabled, faceIDSupported} =
+    useAppSelector(state => state.authentication!);
   const {subunit, notificationsEnabled} = useAppSelector(
-    state => state.settings,
+    state => state.settings!,
   );
 
   const openSystemSettings = async () => {
@@ -252,6 +246,24 @@ const Settings: React.FC<Props> = props => {
             onPress={() => {
               handleAuthenticationRequired('view-seed-auth')
                 .then(() => props.navigation.navigate('Seed'))
+                .catch(() =>
+                  Alert.alert('Incorrect Pincode', undefined, [
+                    {
+                      text: t('dismiss'),
+                      onPress: () => setIsPinModalOpened(false),
+                      style: 'cancel',
+                    },
+                  ]),
+                );
+            }}
+            forward
+          />
+          <SettingCell
+            textKey="view_root_key"
+            textDomain="settingsTab"
+            onPress={() => {
+              handleAuthenticationRequired('view-root-key-auth')
+                .then(() => props.navigation.navigate('RootKey'))
                 .catch(() =>
                   Alert.alert('Incorrect Pincode', undefined, [
                     {

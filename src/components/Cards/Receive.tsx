@@ -26,9 +26,9 @@ const Receive: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const {address, regularAddress, mwebAddress} = useAppSelector(
-    state => state.address,
+    state => state.address!,
   );
-  const lndActive = useAppSelector(state => state.lightning.lndActive);
+  const lndActive = useAppSelector(state => state.lightning!.lndActive);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
