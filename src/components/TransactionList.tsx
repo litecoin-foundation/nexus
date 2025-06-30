@@ -15,9 +15,20 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {FlashList, ListRenderItem} from '@shopify/flash-list';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {useSharedValue, runOnJS} from 'react-native-reanimated';
+import {
+  Gesture,
+  GestureDetector,
+  PanGestureHandlerEventPayload,
+} from 'react-native-gesture-handler';
+import {
+  withSpring,
+  withTiming,
+  useSharedValue,
+  SharedValue,
+  runOnJS,
+} from 'react-native-reanimated';
 
 import TransactionCell from './Cells/TransactionCell';
 import TransactionListEmpty from './TransactionListEmpty';
@@ -40,6 +51,8 @@ import {
 
 import {v4 as uuidv4} from 'uuid';
 
+const SPRING_BACK_ANIM_DURATION = 100;
+
 interface Props {
   onPress(item: ItemType): void;
   onViewableItemsChanged?(): void;
@@ -50,6 +63,8 @@ interface Props {
   mwebFilter?: boolean;
   txPrivacyTypeFilter?: string;
   headerBackgroundColor: string;
+  mainSheetsTranslationY?: SharedValue<number>;
+  mainSheetsTranslationYStart?: SharedValue<number>;
 }
 
 type ItemType = {
@@ -80,6 +95,8 @@ const TransactionCellMemo = memo(function TransactionCellItem(
 });
 
 const TransactionList = forwardRef((props: Props, ref) => {
+  const insets = useSafeAreaInsets();
+
   const transactionListRef = useRef<any>(null);
   const [flattenedTxs, setFlattenedTxs] = useState<FlashListItemType[]>([]);
 
@@ -93,6 +110,8 @@ const TransactionList = forwardRef((props: Props, ref) => {
     mwebFilter,
     txPrivacyTypeFilter,
     headerBackgroundColor,
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -101,9 +120,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
   // leads to TransactionCell flickering, use useMemo or React.memo and never put styles in the deps to avoid this
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24;
-  // We never scroll folded list, therefore no need to set that height
-  // const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47;
+  // NOTE: We never scroll folded list, therefore no need to set that height
+  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
+  const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
+  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
+  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF;
+  const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
+  const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 
   const {recoveryMode, syncedToChain} = useAppSelector(state => state.info!);
   const progress = useAppSelector(state => decimalSyncedSelector(state));
@@ -295,7 +318,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   // When loading and not updating the state for more than 15 sec
   // consider there's a problem with connection and show the note
-  const loadingTimeout = useRef<NodeJS.Timeout>(setTimeout(() => {}, 1000));
+  const loadingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [takingTooLong, setTakingTooLong] = useState(false);
   useEffect(() => {
     // Do not restart when in recovery
@@ -341,43 +364,53 @@ const TransactionList = forwardRef((props: Props, ref) => {
     </>
   );
 
+  const [isListScrollable, setIsListScrollable] = useState(false);
   const curFrameY = useRef(0);
   const startClosing = useSharedValue(false);
   const yStartPos = useSharedValue(-1);
+
+  const handleContentSizeChange = (
+    contentWidth: number,
+    contentHeight: number,
+  ) => {
+    const scrollable = contentHeight > scrollContainerHeight;
+    setIsListScrollable(scrollable);
+  };
 
   const txSignature = flattenedTxs
     .filter(item => !('type' in item))
     .map((tx: any) => `${tx.hash}-${tx.confs}`)
     .join(',');
 
+  const handleStartClosing = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (!folded && e.nativeEvent.contentOffset.y === 0) {
+      startClosing.value = true;
+    } else {
+      startClosing.value = false;
+    }
+  };
+
+  const handleFold = () => {
+    if (folded && foldUnfold && !startClosing.value) {
+      foldUnfold(true);
+    }
+  };
+
   const FlashListMemo = useMemo(
     () => (
       <FlashList
         bounces={false}
         scrollEventThrottle={1}
+        onContentSizeChange={handleContentSizeChange}
         onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          if (!folded && e.nativeEvent.contentOffset.y === 0) {
-            startClosing.value = true;
-          } else {
-            startClosing.value = false;
-          }
+          handleStartClosing(e);
         }}
         onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          if (folded && foldUnfold && !startClosing.value) {
-            foldUnfold(true);
-          }
-          if (!folded && e.nativeEvent.contentOffset.y === 0) {
-            startClosing.value = true;
-          } else {
-            startClosing.value = false;
-          }
+          handleFold();
+          handleStartClosing(e);
         }}
         onScrollEndDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          if (!folded && e.nativeEvent.contentOffset.y === 0) {
-            startClosing.value = true;
-          } else {
-            startClosing.value = false;
-          }
+          handleStartClosing(e);
         }}
         ref={transactionListRef}
         data={flattenedTxs}
@@ -391,7 +424,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
         estimatedItemSize={70}
         ListEmptyComponent={<TransactionListEmpty />}
         ListFooterComponent={
-          flattenedTxs.length === 0 && recoveryMode ? (
+          recoveryMode ? (
             <View style={styles.emptyView}>
               <TranslateText
                 textKey={'txs_take_time_to_appear'}
@@ -420,17 +453,124 @@ const TransactionList = forwardRef((props: Props, ref) => {
     }
   }
 
+  const openMenuBarTabOnJS = () => {
+    if (foldUnfold) {
+      foldUnfold(true);
+    }
+  };
+
+  const closeMenuBarTabOnJS = () => {
+    if (foldUnfold) {
+      foldUnfold(false);
+    }
+  };
+
+  const onHandlerEnd = ({
+    translationY,
+    velocityY,
+  }: PanGestureHandlerEventPayload) => {
+    'worklet';
+    if (mainSheetsTranslationY && mainSheetsTranslationYStart) {
+      const dragToss = 0.03;
+      let destSnapPoint = 0;
+      if (
+        translationY + mainSheetsTranslationYStart.value > UNFOLD_SHEET_POINT &&
+        translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
+      ) {
+        destSnapPoint =
+          translationY +
+          mainSheetsTranslationYStart.value +
+          velocityY * dragToss;
+      } else {
+        if (folded) {
+          destSnapPoint = UNFOLD_SHEET_POINT;
+        } else {
+          destSnapPoint = FOLD_SHEET_POINT;
+        }
+      }
+
+      mainSheetsTranslationY.value = withSpring(destSnapPoint, {
+        mass: 0.1,
+      });
+
+      if (folded) {
+        runOnJS(openMenuBarTabOnJS)();
+      } else {
+        runOnJS(closeMenuBarTabOnJS)();
+      }
+    }
+  };
+
+  function onEndTrigger(e: any) {
+    'worklet';
+    if (mainSheetsTranslationY && mainSheetsTranslationYStart) {
+      if (folded) {
+        if (
+          e.translationY + mainSheetsTranslationYStart.value <
+          UNFOLD_SNAP_POINT
+        ) {
+          onHandlerEnd(e);
+        } else {
+          mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {
+            duration: SPRING_BACK_ANIM_DURATION,
+          });
+        }
+      } else {
+        if (
+          e.translationY + mainSheetsTranslationYStart.value >
+          FOLD_SNAP_POINT
+        ) {
+          onHandlerEnd(e);
+        } else {
+          mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {
+            duration: SPRING_BACK_ANIM_DURATION,
+          });
+        }
+      }
+    }
+  }
+
   const panGesture = Gesture.Pan()
-    .manualActivation(true)
+    .shouldCancelWhenOutside(false)
+    .simultaneousWithExternalGesture(transactionListRef)
     .onTouchesDown(e => {
-      yStartPos.value = e.changedTouches[0].y;
+      if (isListScrollable) {
+        yStartPos.value = e.changedTouches[0].y;
+      }
     })
     .onTouchesMove((e, state) => {
-      if (startClosing.value && e.changedTouches[0].y > yStartPos.value) {
-        yStartPos.value = -1;
-        onFoldTrigger();
-      } else {
-        state.fail();
+      if (isListScrollable) {
+        if (startClosing.value && e.changedTouches[0].y > yStartPos.value) {
+          yStartPos.value = -1;
+          onFoldTrigger();
+        } else {
+          state.fail();
+        }
+      }
+    })
+    .onUpdate(e => {
+      if (
+        !isListScrollable &&
+        mainSheetsTranslationY &&
+        mainSheetsTranslationYStart
+      ) {
+        if (
+          e.translationY + mainSheetsTranslationYStart.value >
+            UNFOLD_SHEET_POINT &&
+          e.translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
+        ) {
+          mainSheetsTranslationY.value =
+            e.translationY + mainSheetsTranslationYStart.value;
+        }
+      }
+    })
+    .onEnd(e => {
+      if (
+        !isListScrollable &&
+        mainSheetsTranslationY &&
+        mainSheetsTranslationYStart
+      ) {
+        onEndTrigger(e);
       }
     });
 

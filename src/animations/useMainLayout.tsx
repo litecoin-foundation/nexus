@@ -72,7 +72,7 @@ export function useMainLayout(props: Props) {
     return {marginTop: (stackHeaderHeight - headerButtonsHeight) * -1};
   }, [stackHeaderHeight, headerButtonsHeight]);
 
-  const walletButtonRef = useRef() as any;
+  const walletButtonRef = useRef<View>(null);
   useLayoutEffect(() => {
     walletButtonRef.current?.measure(
       (_: any, __: any, ___: any, height: any, ____: any, pageY: any) => {
@@ -184,8 +184,10 @@ export function useMainLayout(props: Props) {
   /* eslint-disable-next-line react-hooks/exhaustive-deps */
   const emptyFragment = <></>;
 
-  const fadingTimeout = useRef<NodeJS.Timeout>();
-  const walletButtonFadingTimeout = useRef<NodeJS.Timeout>();
+  const fadingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+  const walletButtonFadingTimeout = useRef<NodeJS.Timeout | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (isWalletsModalOpened || isTxDetailModalOpened) {
