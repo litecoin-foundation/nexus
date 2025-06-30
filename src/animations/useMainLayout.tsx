@@ -181,8 +181,7 @@ export function useMainLayout(props: Props) {
     ],
   );
 
-  /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  const emptyFragment = <></>;
+  const emptyFragment = useMemo(() => <></>, []);
 
   const fadingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const walletButtonFadingTimeout = useRef<NodeJS.Timeout | undefined>(
@@ -193,8 +192,8 @@ export function useMainLayout(props: Props) {
     if (isWalletsModalOpened || isTxDetailModalOpened) {
       fadingTimeout.current = setTimeout(() => {
         navigation.setOptions({
-          headerLeft: undefined,
-          headerRight: undefined,
+          headerLeft: () => emptyFragment,
+          headerRight: () => emptyFragment,
         });
       }, 150);
     } else {

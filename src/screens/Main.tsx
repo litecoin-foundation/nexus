@@ -393,69 +393,6 @@ const Main: React.FC<Props> = props => {
     }
   }, [activeTab, uri, dispatch]);
 
-  const headerTitle = useMemo(
-    () => (
-      <ChooseWalletButton
-        title={'Wallet Title'}
-        onPress={() => {}}
-        disabled={false}
-        isModalOpened={false}
-        isFromBottomToTop={false}
-        animDuration={200}
-        rotateArrow={() => {}}
-        arrowSpinAnim={undefined}
-      />
-    ),
-    [],
-  );
-
-  const headerLeft = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => navigation.navigate('SettingsStack')}
-        imageSource={require('../assets/icons/settings-cog.png')}
-      />
-    ),
-    [navigation],
-  );
-
-  const headerRight = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => navigation.navigate('AlertsStack')}
-        imageSource={require('../assets/icons/alerts-icon.png')}
-        rightPadding={true}
-      />
-    ),
-    [navigation],
-  );
-
-  const emptyComponent = useMemo(() => <></>, []);
-
-  // Hide header when transaction detail modal is opened
-  useEffect(() => {
-    if (isTxDetailModalOpened) {
-      navigation.setOptions({
-        headerTitle: () => emptyComponent,
-        headerLeft: () => emptyComponent,
-        headerRight: () => emptyComponent,
-      });
-    } else {
-      navigation.setOptions({
-        headerTitle: () => headerTitle,
-        headerLeft: () => headerLeft,
-        headerRight: () => headerRight,
-      });
-    }
-  }, [
-    navigation,
-    isTxDetailModalOpened,
-    headerTitle,
-    headerLeft,
-    headerRight,
-    emptyComponent,
-  ]);
-
   useMainLayout({
     walletButtonAnimDuration,
     rotateArrow,
