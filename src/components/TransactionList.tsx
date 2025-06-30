@@ -8,12 +8,14 @@ import React, {
   useContext,
   memo,
   useMemo,
+  useCallback,
 } from 'react';
 import {
   StyleSheet,
   View,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Platform,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {FlashList, ListRenderItem} from '@shopify/flash-list';
@@ -120,7 +122,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
   // leads to TransactionCell flickering, use useMemo or React.memo and never put styles in the deps to avoid this
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  // NOTE: We never scroll folded list, therefore no need to set that height
   const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
   const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
   const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
@@ -382,19 +383,28 @@ const TransactionList = forwardRef((props: Props, ref) => {
     .map((tx: any) => `${tx.hash}-${tx.confs}`)
     .join(',');
 
-  const handleStartClosing = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (!folded && e.nativeEvent.contentOffset.y === 0) {
-      startClosing.value = true;
-    } else {
-      startClosing.value = false;
-    }
-  };
+  const handleStartClosing = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (!folded && e.nativeEvent.contentOffset.y === 0) {
+        startClosing.value = true;
+      } else {
+        startClosing.value = false;
+      }
+    },
+    [folded, startClosing],
+  );
 
-  const handleFold = () => {
-    if (folded && foldUnfold && !startClosing.value) {
-      foldUnfold(true);
+  const handleFold = useCallback(() => {
+    if (Platform.OS === 'android') {
+      if (folded && foldUnfold) {
+        foldUnfold(true);
+      }
+    } else {
+      if (folded && foldUnfold && !startClosing.value) {
+        foldUnfold(true);
+      }
     }
-  };
+  }, [folded, foldUnfold, startClosing.value]);
 
   const FlashListMemo = useMemo(
     () => (
