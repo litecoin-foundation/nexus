@@ -322,13 +322,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const loadingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [takingTooLong, setTakingTooLong] = useState(false);
   useEffect(() => {
+    clearTimeout(loadingTimeout.current);
+
     // Do not restart when in recovery
     if (percentageProgress < 99 && !recoveryMode) {
       loadingTimeout.current = setTimeout(() => {
         setTakingTooLong(true);
       }, 15000);
-    } else {
-      clearTimeout(loadingTimeout.current);
     }
     return () => {
       clearTimeout(loadingTimeout.current);

@@ -509,8 +509,8 @@ const Main: React.FC<Props> = props => {
         folded={isBottomSheetFolded}
         foldUnfold={foldUnfoldBottomSheet}
         activeTab={activeTab}
-        buyViewComponent={<Buy />}
-        sellViewComponent={<Sell />}
+        buyViewComponent={<Buy navigation={navigation} />}
+        sellViewComponent={<Sell navigation={navigation} />}
         convertViewComponent={<Convert navigation={navigation} />}
         sendViewComponent={
           <Send route={route} navigation={navigation} ref={sendCardRef} />

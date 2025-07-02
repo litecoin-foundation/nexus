@@ -120,7 +120,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     if (address) {
       const calculateFee = async () => {
         try {
-          const valid = await validateLtcAddress(address);
+          const valid = validateLtcAddress(address);
           if (valid) {
             const response = await estimateFee({
               AddrToAmount: {[address]: BigInt(balanceMinus001)},
@@ -185,7 +185,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       // validate address
       if (address !== '') {
-        const valid = await validateLtcAddress(address);
+        const valid = validateLtcAddress(address);
         if (!valid) {
           setNoteKey('');
           setSendDisabled(true);
@@ -259,7 +259,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       // handle BIP21 litecoin URI
       if (data.startsWith('litecoin:')) {
         const decoded = decodeBIP21(data);
-        const valid = await validateLtcAddress(decoded.address);
+        const valid = validateLtcAddress(decoded.address);
 
         // BIP21 validation
         if (!valid) {
@@ -283,7 +283,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       }
 
       // handle Litecoin Address
-      const valid = await validateLtcAddress(data);
+      const valid = validateLtcAddress(data);
 
       if (!valid) {
         throw new Error('Address');
@@ -333,48 +333,82 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     const matched = endAddress.match(/^[a-zA-Z0-9-]{1,24}\.ltc$/);
 
     if (matched) {
-      const res = await fetch(
-        'https://api.nexuswallet.com/api/domains/resolve-unstoppable',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 10000);
+
+      try {
+        const res = await fetch(
+          'https://api.nexuswallet.com/api/domains/resolve-unstoppable',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              domain: endAddress,
+            }),
+            signal: abortController.signal,
           },
-          body: JSON.stringify({
-            domain: endAddress,
-          }),
-        },
-      );
+        );
 
-      if (!res.ok) {
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          setAddressValid(null);
+          if (res.status >= 500) {
+            dispatch(showError('Domain resolution service temporarily unavailable'));
+          } else if (res.status === 404) {
+            dispatch(showError('Domain not found'));
+          } else {
+            dispatch(showError('Invalid domain name'));
+          }
+          return;
+        }
+
+        const data = await res.json();
+
+        if (data && data.hasOwnProperty('address') && data.address) {
+          addressOnValidation = data.address;
+          // set domain to render in ui
+          setAddressDomain(endAddress);
+          setShowResolvedDomain(true);
+          // update address for another validation function
+          setAddress(addressOnValidation);
+        } else {
+          setAddressValid(null);
+          dispatch(showError('Domain does not resolve to a valid address'));
+          return;
+        }
+      } catch (error) {
+        clearTimeout(timeoutId);
         setAddressValid(null);
-        dispatch(showError('Invalid domain name'));
-        return;
-      }
-
-      const data = await res.json();
-
-      if (data && data.hasOwnProperty('address')) {
-        addressOnValidation = data.address;
-        // set domain to render in ui
-        setAddressDomain(endAddress);
-        setShowResolvedDomain(true);
-        // update address for another validation function
-        setAddress(addressOnValidation);
-      } else {
-        setAddressValid(null);
-        dispatch(showError('Invalid domain name'));
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') {
+            dispatch(showError('Domain resolution timed out'));
+          } else if (error.message.includes('Network request failed')) {
+            dispatch(showError('Network error - check your connection'));
+          } else {
+            dispatch(showError('Domain resolution failed'));
+          }
+        } else {
+          dispatch(showError('Domain resolution failed'));
+        }
         return;
       }
     }
 
-    const valid = await validateLtcAddress(addressOnValidation);
+    try {
+      const valid = validateLtcAddress(addressOnValidation);
 
-    if (valid) {
-      setAddressValid(true);
-    } else {
+      if (valid) {
+        setAddressValid(true);
+      } else {
+        setAddressValid(false);
+      }
+    } catch (error) {
       setAddressValid(false);
+      dispatch(showError('Address validation failed'));
     }
   };
 

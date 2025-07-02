@@ -1,12 +1,9 @@
 import React, {useState, useContext, useLayoutEffect} from 'react';
 import {View, TouchableOpacity, StyleSheet} from 'react-native';
-
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
-
 import LitecoinIcon from '../LitecoinIcon';
 import Switch from '../Buttons/Switch';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setAlertAvailability} from '../../reducers/alerts';
-// import {convertLocalFiatToUSD} from '../../reducers/ticker';
 import {formatTxDate} from '../../lib/utils/date';
 
 import TranslateText from '../../components/TranslateText';
@@ -26,10 +23,6 @@ const AlertCell: React.FC<Props> = props => {
   const item = data;
   const dispatch = useAppDispatch();
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
-  // const localFiatToUSD = useAppSelector(state => convertLocalFiatToUSD(state));
-  // const alertValueInLocalFiat = parseFloat(
-  //   String(item.value / localFiatToUSD),
-  // ).toFixed(2);
   const alertValueInLocalFiat = item.valueInLocal;
 
   const handleSwitch = (value: boolean) => {
@@ -63,9 +56,13 @@ const AlertCell: React.FC<Props> = props => {
 
         if (resData.hasOwnProperty('timestamp')) {
           setLastTimePrice(formatTxDate(resData.timestamp));
+        } else {
+          setLastTimePrice('');
         }
       }
-    } catch {}
+    } catch {
+      setLastTimePrice('');
+    }
   }
 
   useLayoutEffect(() => {
@@ -116,14 +113,16 @@ const AlertCell: React.FC<Props> = props => {
         </View>
       </View>
       <View style={styles.bottomContainer}>
-        <TranslateText
-          textKey="last_time"
-          domain="alertsTab"
-          maxSizeInPixels={height * 0.015}
-          textStyle={styles.dateText}
-          numberOfLines={1}
-          interpolationObj={{date: lastTimePrice}}
-        />
+        {lastTimePrice ? (
+          <TranslateText
+            textKey="last_time"
+            domain="alertsTab"
+            maxSizeInPixels={height * 0.015}
+            textStyle={styles.dateText}
+            numberOfLines={1}
+            interpolationObj={{date: lastTimePrice}}
+          />
+        ) : null}
       </View>
     </TouchableOpacity>
   );

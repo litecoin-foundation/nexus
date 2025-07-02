@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import BuyPad from '../Numpad/BuyPad';
@@ -24,12 +25,23 @@ import {callRates} from '../../reducers/ticker';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+type RootStackParamList = {
+  Buy: undefined;
+  SearchTransaction: {
+    openFilter?: string;
+  };
+  ConfirmBuy: undefined;
+  ConfirmBuyOnramper: undefined;
+};
+
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'Buy'>;
+}
 
 const Buy: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation<Props['navigation']>();
 
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);

@@ -7,6 +7,7 @@ import {
   Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -25,12 +26,23 @@ import {estimateFee} from 'react-native-turbo-lndltc';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+type RootStackParamList = {
+  Sell: undefined;
+  SearchTransaction: {
+    openFilter?: string;
+  };
+  ConfirmSell: undefined;
+  ConfirmSellOnramper: undefined;
+};
+
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'Sell'>;
+}
 
 const Sell: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation<Props['navigation']>();
 
   const balance = useAppSelector(state => state.balance.confirmedBalance);
   const balanceMinus001 = Number(balance) - 1000000;
@@ -121,13 +133,17 @@ const Sell: React.FC<Props> = () => {
   useEffect(() => {
     const calculateFee = async () => {
       try {
-        const response = await estimateFee({
-          AddrToAmount: {
-            ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus001),
-          },
-          targetConf: 2,
-        });
-        setSellOutFee(Number(response.feeSat));
+        if (balanceMinus001 <= 0) {
+          setSellOutFee(0);
+        } else {
+          const response = await estimateFee({
+            AddrToAmount: {
+              ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus001),
+            },
+            targetConf: 2,
+          });
+          setSellOutFee(Number(response.feeSat));
+        }
       } catch (error) {
         console.error(error);
       }
