@@ -78,7 +78,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const {confirmedBalance, totalBalance} = useAppSelector(
     state => state.balance,
   );
-  const balanceMinus001 = Number(confirmedBalance) - 1000000;
+  // NOTE: assume min amount of 0.0001 ltc and subtract it from balance for estimated fee calculations
+  // if this number is below 0 disable sending and show setNoteKey('insufficient_funds')
+  const balanceMinus00001 = Number(confirmedBalance) - 10000;
   const syncedToChain = useAppSelector(state => state.info.syncedToChain);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -96,68 +98,101 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [noteKey, setNoteKey] = useState<string>('');
 
   const [activateSendAll, setActivateSendAll] = useState(false);
+  const [isSettingMax, setIsSettingMax] = useState(false);
+  const [isFeeEstimating, setIsFeeEstimating] = useState(false);
 
-  const [sendOutFee, setSendOutFee] = useState(0);
+  const [sendAllFee, setSendAllFee] = useState(0);
   // pre estimate fee
   useLayoutEffect(() => {
     const calculateFee = async () => {
+      setIsFeeEstimating(true);
       try {
-        const response = await estimateFee({
-          AddrToAmount: {
-            ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus001),
-          },
-          targetConf: 2,
-        });
-        setSendOutFee(Number(response.feeSat));
+        if (balanceMinus00001 <= 0) {
+          setSendAllFee(0);
+        } else {
+          const response = await estimateFee({
+            AddrToAmount: {
+              ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus00001),
+            },
+            targetConf: 2,
+          });
+          setSendAllFee(Number(response.feeSat));
+        }
       } catch (error) {
         console.error(error);
+        setSendAllFee(0);
+      } finally {
+        setIsFeeEstimating(false);
       }
     };
     calculateFee();
-  }, [balanceMinus001]);
-  // estimate fee with input address
+  }, [balanceMinus00001]);
+  // estimate fee with input address and real balance
   useEffect(() => {
     if (address) {
       const calculateFee = async () => {
+        setIsFeeEstimating(true);
         try {
-          const valid = validateLtcAddress(address);
-          if (valid) {
-            const response = await estimateFee({
-              AddrToAmount: {[address]: BigInt(balanceMinus001)},
-              targetConf: 2,
-            });
-            setSendOutFee(Number(response.feeSat));
+          if (balanceMinus00001 <= 0) {
+            setSendAllFee(0);
+          } else {
+            const valid = validateLtcAddress(address);
+            if (valid) {
+              const response = await estimateFee({
+                AddrToAmount: {[address]: BigInt(confirmedBalance)},
+                targetConf: 2,
+              });
+              setSendAllFee(Number(response.feeSat));
+            }
           }
         } catch (error) {
           console.error(error);
+          setSendAllFee(0);
+        } finally {
+          setIsFeeEstimating(false);
         }
       };
       calculateFee();
     }
-  }, [balanceMinus001, address]);
+  }, [balanceMinus00001, confirmedBalance, address]);
 
   const setMax = () => {
-    dispatch(
-      updateAmount(
-        parseFloat(
-          String(Number(confirmedBalance) / 100000000 - sendOutFee / 100000000),
-        ).toFixed(6),
-        'ltc',
-      ),
-    );
+    if (isSettingMax || isFeeEstimating) {
+      return; // Prevent setting max while fee is being estimated or already setting max
+    }
+
+    setIsSettingMax(true);
+    const maxAmount = parseFloat(
+      String(Number(confirmedBalance) / 100000000 - sendAllFee / 100000000),
+    ).toFixed(6);
+
+    // Ensure maxAmount is positive
+    if (Number(maxAmount) <= 0) {
+      setIsSettingMax(false);
+      return;
+    }
+
+    // Only update if the calculated max is different from current amount
+    if (maxAmount !== amount) {
+      dispatch(updateAmount(maxAmount, 'ltc'));
+    }
+
+    // Reset flag after a short delay to allow state updates
+    setTimeout(() => setIsSettingMax(false), 100);
   };
 
   // check if ready to send
   useEffect(() => {
     const check = async () => {
-      // NOTE: when wallet isn't fully synced, balance is showed as not confirmed
-      // hence cannot send the coins
+      // NOTE: when wallet isn't fully synced, balance is showed as unconfirmed
       if (totalBalance !== confirmedBalance) {
+        setSendDisabled(true);
         setNoteKey('balance_unconfirmed');
         return;
       }
 
       if (!syncedToChain) {
+        setSendDisabled(true);
         setNoteKey('wallet_unsynced');
         return;
       }
@@ -169,17 +204,17 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       // validate balance
       const amountInSats = convertToSats(Number(amount));
-      if (amountInSats > Number(confirmedBalance)) {
-        // setNoteKey('insufficient_funds');
-        // setSendDisabled(true);
+
+      // NOTE: instead of displaying setNoteKey('insufficient_funds') or setNoteKey('try_less_amount') error,
+      // set max available amount for sending excluding fee
+      if (amountInSats > Number(confirmedBalance) - sendAllFee && !isSettingMax && !isFeeEstimating) {
         setMax();
         return;
       }
 
-      if (amountInSats > Number(confirmedBalance) - sendOutFee) {
-        // setNoteKey('try_less_amount');
-        // setSendDisabled(true);
-        setMax();
+      if (balanceMinus00001 <= 0) {
+        setSendDisabled(true);
+        setNoteKey('insufficient_funds');
         return;
       }
 
@@ -187,18 +222,17 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       if (address !== '') {
         const valid = validateLtcAddress(address);
         if (!valid) {
-          setNoteKey('');
+          setNoteKey('this_address_invalid');
           setSendDisabled(true);
           return;
         }
       } else {
-        setNoteKey('');
         setSendDisabled(true);
         return;
       }
 
-      // force send all flag for lnd with 1000 sats margin
-      if (amountInSats + 1000 > Number(confirmedBalance) - sendOutFee) {
+      // force the "send all" flag for lnd with a 1000 sats range
+      if (amountInSats + 1000 > Number(confirmedBalance) - sendAllFee) {
         setActivateSendAll(true);
       } else {
         setActivateSendAll(false);
@@ -214,9 +248,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     address,
     description,
     amount,
+    totalBalance,
     confirmedBalance,
     syncedToChain,
-    sendOutFee,
+    sendAllFee,
   ]);
 
   // qr code scanner result handler
@@ -357,7 +392,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         if (!res.ok) {
           setAddressValid(null);
           if (res.status >= 500) {
-            dispatch(showError('Domain resolution service temporarily unavailable'));
+            dispatch(
+              showError('Domain resolution service temporarily unavailable'),
+            );
           } else if (res.status === 404) {
             dispatch(showError('Domain not found'));
           } else {

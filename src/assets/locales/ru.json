@@ -156,7 +156,8 @@
     "balance_unconfirmed": "Неподтвержденный баланс в кошельке",
     "wallet_unsynced": "Идет синхронизация...",
     "try_less_amount": "Попробуйте ввести меньшую сумму. Вероятно, она превышает ваш баланс с учетом комиссии за эту транзакцию.",
-    "insufficient_funds": "Недостаточно средств."
+    "insufficient_funds": "Недостаточно средств.",
+    "this_address_invalid": "Такой адрес не существует."
   },
   "receiveTab": {
     "receive_ltc": "Получить Litecoin",
