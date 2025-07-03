@@ -1,4 +1,10 @@
-import React, {useEffect, useState, useContext, useCallback} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   StyleSheet,
   View,
@@ -45,7 +51,8 @@ const Sell: React.FC<Props> = () => {
   const navigation = useNavigation<Props['navigation']>();
 
   const balance = useAppSelector(state => state.balance.confirmedBalance);
-  const balanceMinus001 = Number(balance) - 1000000;
+  // NOTE: estimate the max fee of 0.0001 ltc when selling the whole balance
+  const balanceMinus00001 = Number(balance) - 10000;
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
   const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
@@ -83,38 +90,79 @@ const Sell: React.FC<Props> = () => {
     // dispatch(setSellQuote(1));
   }, [dispatch]);
 
+  const quoteUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const quoteAbortController = useRef<AbortController | null>(null);
+
   const onChange = (value: string) => {
     if (toggleLTC) {
       dispatch(updateAmount(value, 'sell'));
-      // set quote from moonpay
-      if (
-        Number(value) >= minLTCSellAmount &&
-        Number(value) <= maxLTCSellAmount
-      ) {
-        dispatch(setSellQuote(Number(value)));
-      }
     } else if (!toggleLTC) {
       dispatch(updateFiatAmount(value, 'sell'));
     }
-    // update quote
-    dispatch(callRates());
+
+    if (quoteUpdateTimeoutRef.current) {
+      clearTimeout(quoteUpdateTimeoutRef.current);
+    }
+    if (quoteAbortController.current) {
+      quoteAbortController.current.abort();
+    }
+
+    quoteUpdateTimeoutRef.current = setTimeout(async () => {
+      try {
+        quoteAbortController.current = new AbortController();
+
+        // Set moonpay quote if conditions are met
+        if (
+          toggleLTC &&
+          Number(value) >= minLTCSellAmount &&
+          Number(value) <= maxLTCSellAmount
+        ) {
+          dispatch(setSellQuote(Number(value)));
+        }
+
+        dispatch(callRates());
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Quote update error:', error);
+        }
+      }
+    }, 300); // 300ms debounce for quote updates
   };
 
-  // wait fot amount update to set quote from moonpay
+  // wait for amount update to set quote from moonpay
   useEffect(() => {
     if (!toggleLTC) {
-      if (
-        Number(amount) >= minLTCSellAmount &&
-        Number(amount) <= maxLTCSellAmount
-      ) {
-        dispatch(setSellQuote(Number(amount)));
+      if (quoteUpdateTimeoutRef.current) {
+        clearTimeout(quoteUpdateTimeoutRef.current);
       }
+
+      quoteUpdateTimeoutRef.current = setTimeout(() => {
+        if (
+          Number(amount) >= minLTCSellAmount &&
+          Number(amount) <= maxLTCSellAmount
+        ) {
+          dispatch(setSellQuote(Number(amount)));
+        }
+      }, 300); // 300ms debounce to match onChange
     }
   }, [dispatch, toggleLTC, amount, minLTCSellAmount, maxLTCSellAmount]);
 
   useEffect(() => {
     return function cleanup() {
       dispatch(resetInputs());
+
+      if (quoteUpdateTimeoutRef.current) {
+        clearTimeout(quoteUpdateTimeoutRef.current);
+      }
+      if (quoteAbortController.current) {
+        quoteAbortController.current.abort();
+      }
+      if (feeEstimationAbortController.current) {
+        feeEstimationAbortController.current.abort();
+      }
+      if (feeEstimationTimeoutRef.current) {
+        clearTimeout(feeEstimationTimeoutRef.current);
+      }
     };
   }, [dispatch]);
 
@@ -128,29 +176,64 @@ const Sell: React.FC<Props> = () => {
     }
   };
 
-  const [sellOutFee, setSellOutFee] = useState(0);
+  const [sellAllFee, setSellAllFee] = useState(0);
+  const feeEstimationAbortController = useRef<AbortController | null>(null);
+  const feeEstimationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // estimate fee
   useEffect(() => {
     const calculateFee = async () => {
       try {
-        if (balanceMinus001 <= 0) {
-          setSellOutFee(0);
-        } else {
-          const response = await estimateFee({
-            AddrToAmount: {
-              ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus001),
-            },
-            targetConf: 2,
-          });
-          setSellOutFee(Number(response.feeSat));
+        if (feeEstimationAbortController.current) {
+          feeEstimationAbortController.current.abort();
         }
+
+        if (feeEstimationTimeoutRef.current) {
+          clearTimeout(feeEstimationTimeoutRef.current);
+        }
+
+        if (balanceMinus00001 <= 0) {
+          setSellAllFee(0);
+          return;
+        }
+
+        feeEstimationTimeoutRef.current = setTimeout(async () => {
+          try {
+            feeEstimationAbortController.current = new AbortController();
+
+            const response = await estimateFee({
+              AddrToAmount: {
+                ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']:
+                  BigInt(balanceMinus00001),
+              },
+              targetConf: 2,
+            });
+
+            if (!feeEstimationAbortController.current.signal.aborted) {
+              setSellAllFee(Number(response.feeSat));
+            }
+          } catch (error) {
+            if (error instanceof Error && error.name !== 'AbortError') {
+              console.error('Fee estimation error:', error);
+            }
+          }
+        }, 500); // 500ms debounce
       } catch (error) {
-        console.error(error);
+        console.error('Fee estimation setup error:', error);
       }
     };
 
     calculateFee();
-  }, [balanceMinus001]);
+
+    return () => {
+      if (feeEstimationAbortController.current) {
+        feeEstimationAbortController.current.abort();
+      }
+      if (feeEstimationTimeoutRef.current) {
+        clearTimeout(feeEstimationTimeoutRef.current);
+      }
+    };
+  }, [balanceMinus00001]);
 
   const [errorTextKey, setErrorTextKey] = useState('');
   const [amountValid, setAmountValid] = useState(true);
@@ -284,7 +367,7 @@ const Sell: React.FC<Props> = () => {
                   updateAmount(
                     parseFloat(
                       String(
-                        Number(balance) / 100000000 - sellOutFee / 100000000,
+                        Number(balance) / 100000000 - sellAllFee / 100000000,
                       ),
                     ).toFixed(6),
                     'sell',

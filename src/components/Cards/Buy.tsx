@@ -1,4 +1,10 @@
-import React, {useEffect, useState, useContext, useCallback} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   StyleSheet,
   View,
@@ -80,29 +86,62 @@ const Buy: React.FC<Props> = () => {
     // dispatch(setBuyQuote(1));
   }, [dispatch]);
 
+  const quoteUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const quoteAbortController = useRef<AbortController | null>(null);
+
   const onChange = (value: string) => {
     if (toggleLTC) {
       dispatch(updateAmount(value, 'buy'));
-      // set quote from moonpay
-      if (
-        Number(value) >= minLTCBuyAmount &&
-        Number(value) <= maxLTCBuyAmount
-      ) {
-        dispatch(setBuyQuote(Number(value)));
-      }
     } else if (!toggleLTC) {
       dispatch(updateFiatAmount(value, 'buy'));
-      if (Number(value) >= minBuyAmount && Number(value) <= maxBuyAmount) {
-        dispatch(setBuyQuote(undefined, Number(value)));
-      }
     }
-    // update quote
-    dispatch(callRates());
+
+    if (quoteUpdateTimeoutRef.current) {
+      clearTimeout(quoteUpdateTimeoutRef.current);
+    }
+    if (quoteAbortController.current) {
+      quoteAbortController.current.abort();
+    }
+
+    quoteUpdateTimeoutRef.current = setTimeout(async () => {
+      try {
+        quoteAbortController.current = new AbortController();
+
+        // Set moonpay quote if conditions are met
+        if (
+          toggleLTC &&
+          Number(value) >= minLTCBuyAmount &&
+          Number(value) <= maxLTCBuyAmount
+        ) {
+          dispatch(setBuyQuote(Number(value)));
+        } else if (
+          !toggleLTC &&
+          Number(value) >= minBuyAmount &&
+          Number(value) <= maxBuyAmount
+        ) {
+          dispatch(setBuyQuote(undefined, Number(value)));
+        }
+
+        dispatch(callRates());
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Quote update error:', error);
+        }
+      }
+    }, 300); // 300ms debounce for quote updates
   };
 
   useEffect(() => {
     return function cleanup() {
       dispatch(resetInputs());
+
+      // Cleanup all pending timeouts and abort controllers
+      if (quoteUpdateTimeoutRef.current) {
+        clearTimeout(quoteUpdateTimeoutRef.current);
+      }
+      if (quoteAbortController.current) {
+        quoteAbortController.current.abort();
+      }
     };
   }, [dispatch]);
 
