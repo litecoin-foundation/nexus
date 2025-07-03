@@ -70,7 +70,6 @@ const Buy: React.FC<Props> = () => {
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
 
-  // render moonpay rates
   const availableAmount =
     Number(amount) > 0 && (buyQuote?.ltcAmount || 0) > 0
       ? buyQuote.ltcAmount
@@ -83,7 +82,6 @@ const Buy: React.FC<Props> = () => {
   useEffect(() => {
     dispatch(checkAllowed());
     dispatch(setLimits());
-    // dispatch(setBuyQuote(1));
   }, [dispatch]);
 
   const quoteUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -107,7 +105,6 @@ const Buy: React.FC<Props> = () => {
       try {
         quoteAbortController.current = new AbortController();
 
-        // Set moonpay quote if conditions are met
         if (
           toggleLTC &&
           Number(value) >= minLTCBuyAmount &&
@@ -135,7 +132,6 @@ const Buy: React.FC<Props> = () => {
     return function cleanup() {
       dispatch(resetInputs());
 
-      // Cleanup all pending timeouts and abort controllers
       if (quoteUpdateTimeoutRef.current) {
         clearTimeout(quoteUpdateTimeoutRef.current);
       }
@@ -196,7 +192,7 @@ const Buy: React.FC<Props> = () => {
     let isAmountValidVar = isAmountValid();
     let isRegionValidVar = isRegionValid();
 
-    // neglect onramper amount limits
+    // NOTE(temp): neglect onramper amount limits
     if (isOnramperCustomer) {
       isAmountValidVar = true;
     }

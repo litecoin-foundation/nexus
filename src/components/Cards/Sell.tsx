@@ -75,7 +75,6 @@ const Sell: React.FC<Props> = () => {
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
 
-  // render moonpay rates
   const availableAmount =
     Number(amount) > 0 && (sellQuote?.ltcAmount || 0) > 0
       ? sellQuote.ltcAmount
@@ -87,7 +86,6 @@ const Sell: React.FC<Props> = () => {
 
   useEffect(() => {
     dispatch(checkAllowed());
-    // dispatch(setSellQuote(1));
   }, [dispatch]);
 
   const quoteUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -111,7 +109,6 @@ const Sell: React.FC<Props> = () => {
       try {
         quoteAbortController.current = new AbortController();
 
-        // Set moonpay quote if conditions are met
         if (
           toggleLTC &&
           Number(value) >= minLTCSellAmount &&
@@ -283,7 +280,7 @@ const Sell: React.FC<Props> = () => {
     let isAmountValidVar = isAmountValid();
     let isRegionValidVar = isRegionValid();
 
-    // neglect onramper amount limits
+    // NOTE(temp): neglect onramper amount limits
     if (isOnramperCustomer) {
       isAmountValidVar = true;
     }
