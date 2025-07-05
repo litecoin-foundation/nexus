@@ -31,7 +31,7 @@ const TransactionListEmpty: React.FC<Props> = () => {
 
   const syncingWallet = (
     <>
-      <SkeletonTransactionCell />
+      <SkeletonTransactionCell isFirst />
       <SkeletonTransactionCell />
       <SkeletonTransactionCell />
       <SkeletonTransactionCell />
@@ -68,7 +68,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.012,
     },
     emptySectionListContainer: {
-      marginTop: screenHeight * 0.03,
+      paddingVertical: screenHeight * 0.01,
+      paddingHorizontal: screenWidth * 0.1,
     },
     emptySectionListText: {
       color: '#747E87',

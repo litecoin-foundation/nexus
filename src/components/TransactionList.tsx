@@ -433,21 +433,18 @@ const TransactionList = forwardRef((props: Props, ref) => {
         }}
         estimatedItemSize={70}
         ListEmptyComponent={<TransactionListEmpty />}
-        ListFooterComponent={
+        ListHeaderComponent={
           recoveryMode ? (
-            <View style={styles.emptyView}>
-              <TranslateText
-                textKey={'txs_take_time_to_appear'}
-                domain="onboarding"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                textStyle={styles.noteText}
-                numberOfLines={3}
-              />
-            </View>
-          ) : (
-            <View style={styles.emptyView} />
-          )
+            <TranslateText
+              textKey={'txs_take_time_to_appear'}
+              domain="onboarding"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.noteText}
+              numberOfLines={3}
+            />
+          ) : null
         }
+        ListFooterComponent={<View style={styles.emptyView} />}
         onViewableItemsChanged={onViewableItemsChanged}
       />
     ),
@@ -618,11 +615,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     noteText: {
       color: '#747E87',
       fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.015,
+      fontSize: screenHeight * 0.014,
       fontStyle: 'normal',
       fontWeight: '700',
       letterSpacing: -0.28,
-      textAlign: 'center',
+      // textAlign: 'center',
+      paddingVertical: screenHeight * 0.01,
+      paddingLeft: screenHeight * 0.02,
+      paddingRight: screenWidth * 0.1,
     },
     item: {
       backgroundColor: '#f9c2ff',

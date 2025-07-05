@@ -49,7 +49,7 @@
     "skip_presync_description": "By skipping presync, you'll need to wait for your Nexus Wallet to fully sync before you can send or receive transactions. This process can take up to 30+ minutes.",
     "cancel": "Cancel",
     "ok": "OK",
-    "txs_take_time_to_appear": "Although your transactions have been loaded, it may take some time for them to appear and recalculate your balance. Just leave the app open."
+    "txs_take_time_to_appear": "Your transactions will appear here after syncing is completed. Please wait a while."
   },
   "main": {
     "main_wallet": "Main Wallet",
