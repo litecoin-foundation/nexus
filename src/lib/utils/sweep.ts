@@ -208,15 +208,15 @@ const createRawTxsFromHDWallet = async (
       );
 
       const {inputsArr, addressBalance, addressUnspentsLength} = sweepy;
-      
+
       // Map each input to its key pair
       inputsArr.forEach(input => {
         inputsWithKeyPairs.push({
           input,
-          keyPair: addressWithKeyPair.keyPair
+          keyPair: addressWithKeyPair.keyPair,
         });
       });
-      
+
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
     }),
@@ -329,7 +329,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
       // Convert inputs to InputWithKeyPair format
       const inputsWithKeyPairs: InputWithKeyPair[] = inputsFromAllAddressesWithBalance.map(input => ({
         input,
-        keyPair
+        keyPair,
       }));
 
       const rawTx = createTopUpTx(
@@ -489,7 +489,7 @@ const createTopUpTx = (
   inputsWithKeyPairs.forEach(({keyPair}, index) => {
     psbt.signInput(index, keyPair);
   });
-  
+
   psbt.finalizeAllInputs();
 
   const finalTx = psbt.extractTransaction(false);

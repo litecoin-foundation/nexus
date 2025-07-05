@@ -35,6 +35,7 @@ import ResetWallet, {
 import TestPayment, {
   TestPaymentNavigationOptions,
 } from '../screens/Settings/TestPayment';
+import Products from '../screens/Settings/Products';
 import {SettingsStackParamList} from './types';
 
 const Stack = createStackNavigator<SettingsStackParamList>();
@@ -88,6 +89,10 @@ function SettingsStack() {
         name="Language"
         component={Language}
         options={({navigation}) => LanguageNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="Products"
+        component={Products}
       />
       <Stack.Screen
         name="Scan"

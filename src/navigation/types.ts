@@ -95,6 +95,7 @@ export type SettingsStackParamList = {
   Currency: undefined;
   Explorer: undefined;
   Language: undefined;
+  Products: undefined;
   Scan: {
     returnRoute: string;
   };

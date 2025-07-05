@@ -53,6 +53,7 @@ type RootStackParamList = {
   Explorer: undefined;
   Currency: undefined;
   Language: undefined;
+  Products: undefined;
   Seed: undefined;
   RootKey: undefined;
   Import: undefined;
@@ -238,6 +239,12 @@ const Settings: React.FC<Props> = props => {
             textKey="change_lang"
             textDomain="settingsTab"
             onPress={() => navigation.navigate('Language')}
+            forward
+          />
+          <SettingCell
+            textKey="Products"
+            textDomain="settingsTab"
+            onPress={() => navigation.navigate('Products')}
             forward
           />
           <SettingCell
