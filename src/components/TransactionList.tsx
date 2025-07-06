@@ -317,7 +317,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
         : Math.floor(decProgress * 10 * 100) / 10
       : 0.1;
 
-  // When loading and not updating the state for more than 15 sec
+  // When loading and not updating the state for more than 10 sec
   // consider there's a problem with connection and show the note
   const loadingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [takingTooLong, setTakingTooLong] = useState(false);
@@ -328,7 +328,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     if (percentageProgress < 99 && !recoveryMode) {
       loadingTimeout.current = setTimeout(() => {
         setTakingTooLong(true);
-      }, 15000);
+      }, 10000);
     }
     return () => {
       clearTimeout(loadingTimeout.current);
@@ -434,7 +434,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
         estimatedItemSize={70}
         ListEmptyComponent={<TransactionListEmpty />}
         ListHeaderComponent={
-          recoveryMode ? (
+          recoveryMode || !syncedToChain ? (
             <TranslateText
               textKey={'txs_take_time_to_appear'}
               domain="onboarding"
@@ -448,7 +448,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
         onViewableItemsChanged={onViewableItemsChanged}
       />
     ),
-    // Extract a unique signature from the transactions to detect changes
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [
       curFrameY,
@@ -458,6 +457,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
       handleStartClosing,
       handleFold,
       recoveryMode,
+      syncedToChain,
       styles,
     ],
   );
