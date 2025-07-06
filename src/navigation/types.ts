@@ -73,6 +73,7 @@ export type OnboardingStackParamList = {
     existingSeed: string;
   };
   Pin: undefined;
+  RecoverPin: undefined;
   Generate: undefined;
   Verify: undefined;
   Recover:

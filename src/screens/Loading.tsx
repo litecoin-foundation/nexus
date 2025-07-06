@@ -73,6 +73,8 @@ const Loading: React.FC<Props> = props => {
       }
 
       const seed = await getItem('SEEDPHRASE');
+      const pincode = await getItem('PINCODE');
+
       // uncomment for dev purposes
       // if (__DEV__) {
       //   await resetItem('SEEDPHRASE');
@@ -85,7 +87,8 @@ const Loading: React.FC<Props> = props => {
           navigation.navigate('Onboarding', {screen: 'Welcome'});
         } else {
           dispatch(startOnboarding());
-          if (seed) {
+          // NOTE: seed should go with the latest pincode to verify that the wallet was deleted by a valid user
+          if (seed && pincode) {
             navigation.navigate('Onboarding', {
               screen: 'InitialWithSeed',
               params: {existingSeed: seed},

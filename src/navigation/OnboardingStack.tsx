@@ -4,6 +4,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Initial from '../screens/Onboarding/Initial';
 import InitialWithSeed from '../screens/Onboarding/InitialWithSeed';
 import Pin from '../screens/Onboarding/Pin';
+import RecoverPin from '../screens/Onboarding/RecoverPin';
 import Generate from '../screens/Onboarding/Generate';
 import Verify from '../screens/Onboarding/Verify';
 import Recover, {RecoverNavigationOptions} from '../screens/Onboarding/Recover';
@@ -36,6 +37,7 @@ function OnboardingStack() {
         options={InitialWithSeed.navigationOptions}
       />
       <Stack.Screen name="Pin" component={Pin} />
+      <Stack.Screen name="RecoverPin" component={RecoverPin} />
       <Stack.Screen name="Generate" component={Generate} />
       <Stack.Screen name="Verify" component={Verify} />
       <Stack.Screen

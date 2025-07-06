@@ -7,6 +7,7 @@ import {AppThunk} from './types';
 
 import {authenticate} from '../lib/utils/biometric';
 import {unlockWallet} from './lightning';
+import {resetSeedAction} from './onboarding';
 import {getItem, setItem, resetItem} from '../lib/utils/keychain';
 
 // types
@@ -25,6 +26,7 @@ interface IAuthenticationState {
   dayLock: boolean;
   dayLockAt: number;
   permaLock: boolean;
+  failedRecoverPinAttempts: number;
 }
 
 // initial state
@@ -43,6 +45,7 @@ const initialState = {
   dayLock: false,
   dayLockAt: 0,
   permaLock: false,
+  failedRecoverPinAttempts: 0,
 } as IAuthenticationState;
 
 const MAX_LOGIN_ATTEMPTS = 10;
@@ -50,6 +53,9 @@ const TIME_LOCK_IN_SEC = 3600;
 const DAY_LOCK_IN_SEC = 86400;
 
 // actions
+export const addUpRecoverPinFail = createAction(
+  'authentication/addUpRecoverPinFailAction',
+);
 const addPasscodeAction = createAction<string>(
   'authentication/addPasscodeAction',
 );
@@ -88,6 +94,11 @@ export const resetPincode = (): AppThunk => async dispatch => {
   dispatch(resetPasscodeAction());
 };
 
+export const resetSeed = (): AppThunk => async dispatch => {
+  await resetItem('SEEDPHRASE');
+  dispatch(resetSeedAction());
+};
+
 export const unlockWalletWithPin =
   (pincodeAttempt: any): AppThunk =>
   async (dispatch, getState) => {
@@ -102,8 +113,10 @@ export const unlockWalletWithPin =
 
     const pincode = await getItem('PINCODE');
 
-    // Case 1: Wallet is permanently locked
+    // Case 1: Wallet is permanently locked, erase seed and pincode from both redux store and keychain
     if (permaLock || failedLoginAttempts === undefined) {
+      await dispatch(resetSeed());
+      await dispatch(resetPincode());
       throw new Error('Maxed out pin attempts. Recover with seed.');
     }
 
@@ -272,6 +285,10 @@ export const authenticationSlice = createSlice({
   name: 'authentication',
   initialState,
   reducers: {
+    addUpRecoverPinFailAction: state => ({
+      ...state,
+      failedRecoverPinAttempts: state.failedRecoverPinAttempts + 1,
+    }),
     lockWalletAction: state => ({
       ...state,
       walletUnlocked: false,
