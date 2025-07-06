@@ -78,7 +78,7 @@ const Chart = () => {
     const calcArea = d3.shape
       .area()
       .x(d => xScale(d.x))
-      .y0(height - 10)
+      .y0(height)
       .y1(d => yScale(d.y))
       .curve(d3.shape.curveBasis)(data);
 
@@ -126,8 +126,8 @@ const Chart = () => {
             <LinearGradient
               start={vec(0, 0)}
               end={vec(0, height)}
-              colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0)']}
-              positions={[0, 0.85]}
+              colors={['rgba(238, 238, 238, 0.2)', 'rgba(238, 238, 238, 0.2)', 'rgba(238, 238, 238, 0)']}
+              positions={[0, 0.4, 1]}
             />
           </Path>
         )}
