@@ -1,7 +1,12 @@
 import React, {createRef, useState} from 'react';
 import {View, StyleSheet} from 'react-native';
 import * as array from 'd3-array';
-import Svg, {G, Circle} from 'react-native-svg';
+import {Canvas, Circle, Group} from '@shopify/react-native-skia';
+import {
+  useSharedValue,
+  useDerivedValue,
+  runOnJS,
+} from 'react-native-reanimated';
 import {
   PanGestureHandler,
   State,
@@ -22,8 +27,12 @@ const Cursor = props => {
   const longPressRef = createRef();
 
   const [barVisible, setBarVisible] = useState(false);
-  const [barOffsetX, setbarOffsetX] = useState(0);
-  const [barOffsetY, setbarOffsetY] = useState(0);
+  const barOffsetX = useSharedValue(0);
+  const barOffsetY = useSharedValue(0);
+
+  const transform = useDerivedValue(() => {
+    return [{translateX: barOffsetX.value}, {translateY: barOffsetY.value}];
+  });
 
   const bisectDate = array.bisector(d => d.x).left;
 
@@ -49,28 +58,31 @@ const Cursor = props => {
     const {nativeEvent} = e;
     if (nativeEvent.state === State.ACTIVE) {
       const r = collectHovered(nativeEvent.x);
-      triggerMediumFeedback();
-      setBarVisible(true);
-      dispatch(setCursorSelected(true));
-      setbarOffsetX(r.barOffsetX);
-      setbarOffsetY(r.barOffsetY);
+      runOnJS(triggerMediumFeedback)();
+      runOnJS(setBarVisible)(true);
+      runOnJS(() => dispatch(setCursorSelected(true)))();
+      barOffsetX.value = r.barOffsetX;
+      barOffsetY.value = r.barOffsetY;
     } else if (
       nativeEvent.state === State.END ||
       nativeEvent.state === State.CANCELLED
     ) {
-      setBarVisible(false);
-      dispatch(setCursorSelected(false));
+      runOnJS(setBarVisible)(false);
+      runOnJS(() => dispatch(setCursorSelected(false)))();
     }
   };
 
   const onPanGestureEvent = e => {
     const r = collectHovered(e.nativeEvent.x);
-    if (barOffsetX === r.barOffsetX && barOffsetY === r.barOffsetY) {
+    if (
+      barOffsetX.value === r.barOffsetX &&
+      barOffsetY.value === r.barOffsetY
+    ) {
       return;
     } else {
-      triggerSelectionFeedback();
-      setbarOffsetX(r.barOffsetX);
-      setbarOffsetY(r.barOffsetY);
+      runOnJS(triggerSelectionFeedback)();
+      barOffsetX.value = r.barOffsetX;
+      barOffsetY.value = r.barOffsetY;
     }
   };
 
@@ -88,21 +100,29 @@ const Cursor = props => {
         simultaneousHandlers={panRef}>
         <View style={[styles.container, {height}, {width}]} collapsable={false}>
           {children}
-          <Svg
-            height={height}
-            width={width}
-            style={[styles.svg, barVisible ? styles.active : null]}>
-            <G x={barOffsetX} y={barOffsetY}>
+          <Canvas
+            style={[
+              {
+                height,
+                width,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                opacity: barVisible ? 1 : 0,
+              },
+            ]}>
+            <Group transform={transform}>
+              <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
               <Circle
                 cx={0}
                 cy={0}
                 r={6}
-                stroke="white"
+                style="stroke"
                 strokeWidth={4}
-                fill="#1D67E8"
+                color="white"
               />
-            </G>
-          </Svg>
+            </Group>
+          </Canvas>
         </View>
       </LongPressGestureHandler>
     </PanGestureHandler>
@@ -112,15 +132,6 @@ const Cursor = props => {
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-  },
-  svg: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    opacity: 0,
-  },
-  active: {
-    opacity: 1,
   },
 });
 

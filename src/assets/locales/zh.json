@@ -48,7 +48,9 @@
     "are_you_sure": "您确定吗？",
     "skip_presync_description": "跳过预同步，您需要等待Nexus钱包完全同步，然后才能发送或接收交易。此过程可能需要30+分钟。",
     "cancel": "取消",
-    "ok": "确定"
+    "ok": "确定",
+    "txs_take_time_to_appear": "虽然您的交易记录已加载，但可能需要一些时间才能显示并重新计算您的余额。请保持应用程序处于开启状态。",
+    "recover_pin": "确认PIN"
   },
   "main": {
     "main_wallet": "主钱包",
@@ -155,7 +157,8 @@
     "balance_unconfirmed": "钱包中未确认的余额",
     "wallet_unsynced": "同步正在进行中...",
     "try_less_amount": "发送少一点。网络费用会消耗您的余额，请降低金额以支付费用。",
-    "insufficient_funds": "余额不足。"
+    "insufficient_funds": "余额不足。",
+    "this_address_invalid": "此地址无效。"
   },
   "receiveTab": {
     "receive_ltc": "接收莱特币",
@@ -192,6 +195,8 @@
     "last_time": "LTC 上次达到此价位于 {{date}}."
   },
   "settingsTab": {
+    "general_settings": "通用设置",
+    "wallet_settings": "钱包设置",
     "settings": "设置",
     "need_support": "需要帮助? 请述说你的问题!",
     "back": "返回",
@@ -235,6 +240,13 @@
     "select_lang": "选择语言",
     "view_seed": "查看私钥",
     "view_paper_key": "查看种子短语",
+    "view_root_key": "查看根密钥",
+    "root_key": "根密钥",
+    "root_key_description": "您的BIP32根密钥可用于派生您钱包中的所有地址和私钥。",
+    "key_copied_to_clipboard": "密钥已复制到剪贴板",
+    "root_key_warning": "警告：扩展私钥(xprv/Ltpv)可完全访问您的莱特币钱包。请勿与任何人分享。",
+    "key_type": "密钥类型",
+    "key_format": "密钥格式",
     "last_time_accessed": "上次访问时间:{{time}}",
     "litecoin_denomination": "莱特币面值",
     "reset_wallet": "重置你的钱包",
@@ -258,7 +270,8 @@
     "camera_error": "相机被禁止",
     "cancel": "取消",
     "change_login": "更改登录密码",
-    "processing": "处理中..."
+    "processing": "处理中...",
+    "copied": "已复制"
   },
   "convertTab": {
     "convert_button": "转换您的莱特币",

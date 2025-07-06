@@ -12,6 +12,7 @@ import Language, {
 } from '../screens/Settings/Language';
 import ChangePincode from '../screens/Settings/ChangePincode';
 import Seed, {SeedNavigationOptions} from '../screens/Settings/Seed';
+import RootKey, {RootKeyNavigationOptions} from '../screens/Settings/RootKey';
 import About, {AboutNavigationOptions} from '../screens/Settings/About';
 import Currency, {
   CurrencyNavigationOptions,
@@ -62,6 +63,11 @@ function SettingsStack() {
         name="Seed"
         component={Seed}
         options={({navigation}) => SeedNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="RootKey"
+        component={RootKey}
+        options={({navigation}) => RootKeyNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="About"

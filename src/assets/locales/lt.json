@@ -48,7 +48,9 @@
     "are_you_sure": "Ar esate tikri?",
     "skip_presync_description": "Praleidžiant pirminių sinchronizaciją, reikės palaukti, kol jūsų Nexus Wallet visiškai sinchronizuosis, prieš galint siųsti ar gauti sandorius. Šis procesas gali užtrukti iki 30+ minučių.",
     "cancel": "Atšaukti",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Nors jūsų operacijos jau įkeltos, gali prireikti šiek tiek laiko, kol jos bus rodomos ir jūsų likutis bus perskaičiuotas. Tiesiog palikite programėlę atidarytą.",
+    "recover_pin": "Patvirtinti PIN"
   },
   "main": {
     "main_wallet": "Pagrindinė piniginė",
@@ -155,7 +157,8 @@
     "balance_unconfirmed": "Nepatvirtintas likutis piniginėje",
     "wallet_unsynced": "Vyksta sinchronizacija...",
     "try_less_amount": "Siųskite šiek tiek mažiau. Tinklo mokesčiai sumažina jūsų balansą, sumažinkite sumą mokesčiams.",
-    "insufficient_funds": "Nepakankamas likutis."
+    "insufficient_funds": "Nepakankamas likutis.",
+    "this_address_invalid": "Šis adresas negaliojantis."
   },
   "receiveTab": {
     "receive_ltc": "Gauti Litecoin",
@@ -192,6 +195,8 @@
     "last_time": "Paskutinį kartą LTC šią vertę pasiekė {{date}}."
   },
   "settingsTab": {
+    "general_settings": "Bendrieji nustatymai",
+    "wallet_settings": "Piniginės nustatymai",
     "settings": "Nustatymai",
     "need_support": "Reikia pagalbos? Užduokite klausimą!",
     "back": "Atgal",
@@ -235,6 +240,13 @@
     "select_lang": "Pasirinkti kalbą",
     "view_seed": "Peržiūrėti Seed Frazę",
     "view_paper_key": "Peržiūrėti Seed Frazę",
+    "view_root_key": "Peržiūrėti Šaknį Raktą",
+    "root_key": "Šakninis Raktas",
+    "root_key_description": "Jūsų BIP32 šakninis raktas gali būti naudojamas išvesti visus adresus ir privatė raktus jūsų pinigtinėje.",
+    "key_copied_to_clipboard": "Raktas nukopijuotas į mainų sritį",
+    "root_key_warning": "Įspėjimas: Išplėstasis privatusis raktas (xprv/Ltpv) suteikia pilną prieigą prie jūsų Litecoin Pinigtinės. Niekada nedalinkitės su niekuo.",
+    "key_type": "Rakto Tipas",
+    "key_format": "Rakto Formatas",
     "last_time_accessed": "Paskutinį kartą pasiekta: {{time}}",
     "litecoin_denomination": "Litecoin Nominalas",
     "reset_wallet": "Iš naujo nustatyti piniginę?",
@@ -258,7 +270,8 @@
     "camera_error": "Kamera Išjungta",
     "cancel": "Atšaukti",
     "change_login": "Keisti Prisijungimo Slaptažodį",
-    "processing": "Apdorojama..."
+    "processing": "Apdorojama...",
+    "copied": "Nukopijuota"
   },
   "convertTab": {
     "convert_button": "Konvertuoti jūsų LTC",

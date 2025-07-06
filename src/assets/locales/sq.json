@@ -48,7 +48,9 @@
     "are_you_sure": "A je i sigurt?",
     "skip_presync_description": "Duke kaluar presync, do të duhet të presesh që portofoli yt Nexus të sinkronizohet plotësisht para se të mund të dërgosh ose marrsh transaksione. Ky proces mund të zgjatë deri në 30+ minuta.",
     "cancel": "Anulo",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Edhe pse transaksionet tuaja janë ngarkuar, mund të duhet pak kohë që ato të shfaqen dhe të ri-llogaritet balanca juaj. Thjesht lërni aplikacionin të hapur.",
+    "recover_pin": "Konfirmo PIN"
   },
   "main": {
     "main_wallet": "Portofoli Kryesor",
@@ -155,7 +157,8 @@
     "balance_unconfirmed": "Bilanc i pakonfirmuar në Portofol",
     "wallet_unsynced": "Sinkronizimi në vazhdim...",
     "try_less_amount": "Dërgo pak më pak. Tarifat e rrjetit hanë nga bilanci juaj, ule shumën për tarifat.",
-    "insufficient_funds": "Fonde të pamjaftueshme."
+    "insufficient_funds": "Fonde të pamjaftueshme.",
+    "this_address_invalid": "Kjo adresë është e pavlefshme."
   },
   "receiveTab": {
     "receive_ltc": "Merr Litecoin",
@@ -192,6 +195,8 @@
     "last_time": "Hera e fundit që LTC kapi këtë vlerë ishte {{date}}."
   },
   "settingsTab": {
+    "general_settings": "Cilësimet e Përgjithshme",
+    "wallet_settings": "Cilësimet e Portofolit",
     "settings": "Konfigurimet",
     "need_support": "Të nevojitet ndihmë? Na pyet!",
     "back": "Kalo",
@@ -235,6 +240,13 @@
     "select_lang": "Zgjidh Gjuhën",
     "view_seed": "Shiko Seed Phrase",
     "view_paper_key": "Shiko Seed Phrase",
+    "view_root_key": "Shiko Çelësin Rrënjësor",
+    "root_key": "Çelësi Rrënjësor",
+    "root_key_description": "Çelësi juaj rrënjësor BIP32 mund të përdoret për të nënxjerrë të gjitha adresat dhe çelësat privatë në portofolin tuaj.",
+    "key_copied_to_clipboard": "Çelësi u kopjua në clipboard",
+    "root_key_warning": "PARALAJMËRIM: Çelësi privat i zgjeruar (xprv/Ltpv) jep qasje të plotë në Portofolin tuaj Litecoin. Mos e ndani kurrë me askënd.",
+    "key_type": "Lloji i Çelësit",
+    "key_format": "Formati i Çelësit",
     "last_time_accessed": "Hera e fundit që është aksesuar: {{time}}",
     "litecoin_denomination": "Emërtimi i Litecoin-it",
     "reset_wallet": "Do të rivendosësh portofolin tënd?",
@@ -258,7 +270,8 @@
     "camera_error": "Kamera e Çaktivizuar",
     "cancel": "Anulo",
     "change_login": "Ndrysho Kodin e Kyçjes",
-    "processing": "Duke procesuar..."
+    "processing": "Duke procesuar...",
+    "copied": "Kopjuar"
   },
   "convertTab": {
     "convert_button": "Konverto LTC-në tënde",

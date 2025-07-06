@@ -19,8 +19,19 @@ interface Props {
 const Support: React.FC<Props> = props => {
   const {navigation} = props;
   const {uniqueId, supportId} = useAppSelector(state => state.onboarding);
+  const {languageCode} = useAppSelector(state => state.settings);
 
   console.log(supportId);
+
+  const getChatwootLocale = (appLanguageCode: string): string => {
+    const languageMap: Record<string, string> = {
+      'fr': 'fr',
+      'es': 'es',
+      'ru': 'ru',
+    };
+    
+    return languageMap[appLanguageCode] || 'en';
+  };
 
   const user = {
     identifier: uniqueId,
@@ -32,8 +43,8 @@ const Support: React.FC<Props> = props => {
     nexusversion: 3,
   };
   const websiteToken = 'SH4YF5fA3sHFqhHvKt23aQzz';
-  const baseUrl = 'https://chat.nexuswallet.com';
-  const locale = 'en';
+  const baseUrl = 'https://support.nexuswallet.com';
+  const locale = getChatwootLocale(languageCode);
   return (
     <View style={styles.container}>
       <Header modal={true} />

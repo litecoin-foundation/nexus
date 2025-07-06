@@ -48,7 +48,9 @@
     "are_you_sure": "Apakah Anda yakin?",
     "skip_presync_description": "Dengan melewati presync, Anda perlu menunggu Nexus Wallet Anda sepenuhnya tersinkronisasi sebelum Anda dapat mengirim atau menerima transaksi. Proses ini dapat memakan waktu hingga 30+ menit.",
     "cancel": "Batalkan",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Meskipun transaksi Anda telah dimuat, mungkin perlu sedikit waktu hingga transaksi tersebut muncul dan saldo Anda dihitung ulang. Cukup biarkan aplikasinya tetap terbuka.",
+    "recover_pin": "Konfirmasi PIN"
   },
   "main": {
     "main_wallet": "Dompet Utama",
@@ -155,7 +157,8 @@
     "balance_unconfirmed": "Saldo Belum Terkonfirmasi di Dompet",
     "wallet_unsynced": "Sinkronisasi Sedang Berlangsung...",
     "try_less_amount": "Kirim sedikit lebih sedikit. Biaya jaringan mengurangi saldo Anda, kurangi jumlah untuk biaya.",
-    "insufficient_funds": "Saldo tidak mencukupi."
+    "insufficient_funds": "Saldo tidak mencukupi.",
+    "this_address_invalid": "Alamat ini tidak valid."
   },
   "receiveTab": {
     "receive_ltc": "Terima Litecoin",
@@ -192,6 +195,8 @@
     "last_time": "Terakhir kali LTC mencapai harga ini adalah pada {{date}}."
   },
   "settingsTab": {
+    "general_settings": "Pengaturan Umum",
+    "wallet_settings": "Pengaturan Dompet",
     "settings": "Setelan",
     "need_support": "Butuh bantuan? Tanya kami!",
     "back": "Kembali",
@@ -235,6 +240,13 @@
     "select_lang": "Pilih Bahasa",
     "view_seed": "Lihat Seed Phrase",
     "view_paper_key": "Lihat Seed Phrase",
+    "view_root_key": "Lihat Kunci Root",
+    "root_key": "Kunci Root",
+    "root_key_description": "Kunci root BIP32 Anda dapat digunakan untuk menurunkan semua alamat dan kunci pribadi di dompet Anda.",
+    "key_copied_to_clipboard": "Kunci telah disalin ke clipboard",
+    "root_key_warning": "PERINGATAN: Kunci pribadi yang diperluas (xprv/Ltpv) memberikan akses penuh ke Dompet Litecoin Anda. Jangan pernah berbagi dengan siapa pun.",
+    "key_type": "Jenis Kunci",
+    "key_format": "Format Kunci",
     "last_time_accessed": "Waktu terakhir diakses: {{time}}",
     "litecoin_denomination": "Denominasi Litecoin",
     "reset_wallet": "Setel ulang Dompet Anda?",
@@ -258,7 +270,8 @@
     "camera_error": "Kamera Dinonaktifkan",
     "cancel": "Batal",
     "change_login": "Ganti Kode Sandi Login",
-    "processing": "Memproses..."
+    "processing": "Memproses...",
+    "copied": "Disalin"
   },
   "convertTab": {
     "convert_button": "Konversi LTC Anda",

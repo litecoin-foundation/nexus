@@ -48,7 +48,9 @@
     "are_you_sure": "Êtes-vous sûr?",
     "skip_presync_description": "En ignorant la pré-synchronisation, vous devrez attendre que votre Nexus Wallet se synchronise complètement avant de pouvoir envoyer ou recevoir des transactions. Ce processus peut prendre jusqu'à 30+ minutes.",
     "cancel": "Annuler",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Bien que vos transactions aient été chargées, il se peut qu’elles mettent un certain temps à apparaître et à recalculer votre solde. Laissez simplement l’application ouverte.",
+    "recover_pin": "Confirmer le PIN"
   },
   "main": {
     "main_wallet": "Portefeuille principal",
@@ -155,7 +157,8 @@
     "balance_unconfirmed": "Solde non confirmé dans le portefeuille",
     "wallet_unsynced": "Synchronisation en cours...",
     "try_less_amount": "Envoyez un peu moins. Les frais de réseau réduisent votre solde, diminuez le montant pour les frais.",
-    "insufficient_funds": "Solde insuffisant."
+    "insufficient_funds": "Solde insuffisant.",
+    "this_address_invalid": "Cette adresse n'est pas valide."
   },
   "receiveTab": {
     "receive_ltc": "Recevoir du Litecoin",
@@ -193,6 +196,8 @@
   },
   "settingsTab": {
     "settings": "Paramètres",
+    "general_settings": "Paramètres Généraux",
+    "wallet_settings": "Paramètres de Portefeuille",
     "need_support": "Besoin d'aide ? Posez une question !",
     "back": "Retour",
     "nexus_support_chat": "Chat de support Nexus",
@@ -235,6 +240,13 @@
     "select_lang": "Sélectionner une langue",
     "view_seed": "Voir la phrase de récupération",
     "view_paper_key": "Voir la phrase de récupération",
+    "view_root_key": "Voir la Clé Racine",
+    "root_key": "Clé Racine",
+    "root_key_description": "Votre clé racine BIP32 peut être utilisée pour dériver toutes les adresses et clés privées de votre portefeuille.",
+    "key_copied_to_clipboard": "La clé a été copiée dans le presse-papiers",
+    "root_key_warning": "AVERTISSEMENT : La clé privée étendue (xprv/Ltpv) donne un accès complet à votre Portefeuille Litecoin. Ne la partagez jamais avec personne.",
+    "key_type": "Type de Clé",
+    "key_format": "Format de Clé",
     "last_time_accessed": "Dernier accès : {{time}}",
     "litecoin_denomination": "Dénomination Litecoin",
     "reset_wallet": "Réinitialiser votre portefeuille ?",
@@ -258,7 +270,8 @@
     "camera_error": "Caméra désactivée",
     "cancel": "Annuler",
     "change_login": "Changer le code d'accès",
-    "processing": "Traitement en cours..."
+    "processing": "Traitement en cours...",
+    "copied": "Copié"
   },
   "convertTab": {
     "convert_button": "Convertir vos LTC",

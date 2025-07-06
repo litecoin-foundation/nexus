@@ -8,11 +8,21 @@ import React, {
 } from 'react';
 import * as shape from 'd3-shape';
 import * as array from 'd3-array';
-import Svg, {Path, Line, G, Defs, LinearGradient, Stop} from 'react-native-svg';
-import Animated, {
+import {
+  Canvas,
+  Path,
+  Line,
+  vec,
+  Skia,
+  Group,
+  DashPathEffect,
+  LinearGradient,
+} from '@shopify/react-native-skia';
+import {
   useSharedValue,
-  useAnimatedProps,
   withTiming,
+  withDelay,
+  useDerivedValue,
 } from 'react-native-reanimated';
 import * as scale from 'd3-scale';
 import {useSelector} from 'react-redux';
@@ -24,24 +34,22 @@ import {ScreenSizeContext} from '../../context/screenSize';
 
 const d3 = {shape};
 
-const AnimatedPath = Animated.createAnimatedComponent(Path);
-
 const Chart = () => {
   const {width, height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const height = SCREEN_HEIGHT * 0.15;
 
   const data = useSelector(state => monthSelector(state));
 
-  const [line, setLine] = useState('');
-  const [area, setArea] = useState('');
+  const [line, setLine] = useState({line: '', area: ''});
   const x = useRef(null);
   const y = useRef(null);
 
   const animationValue = useSharedValue(0);
+  const gradientOpacity = useSharedValue(0);
 
-  const {processedLine, processedArea} = useMemo(() => {
+  const processedLine = useMemo(() => {
     if (data === undefined || data.length === 0) {
-      return {processedLine: '', processedArea: ''};
+      return {line: '', area: ''};
     }
 
     const yValues = data.map(item => item.y);
@@ -67,129 +75,110 @@ const Chart = () => {
       .y(d => yScale(d.y))
       .curve(d3.shape.curveBasis)(data);
 
-    const areaPath = `${calcLine} L${xScale(
-      data[data.length - 1].x,
-    )} ${height} L${xScale(data[0].x)} ${height} Z`;
+    const calcArea = d3.shape
+      .area()
+      .x(d => xScale(d.x))
+      .y0(height)
+      .y1(d => yScale(d.y))
+      .curve(d3.shape.curveBasis)(data);
 
-    return {processedLine: calcLine, processedArea: areaPath};
+    return {line: calcLine, area: calcArea};
   }, [data, width, height]);
 
   useEffect(() => {
-    setArea(processedArea);
     setLine(processedLine);
-  }, [processedArea, processedLine]);
+  }, [processedLine]);
 
   useEffect(() => {
     animationValue.value = 0;
+    gradientOpacity.value = 0;
     animationValue.value = withTiming(1, {duration: 1000});
-  }, [line, animationValue]);
+    gradientOpacity.value = withDelay(500, withTiming(1, {duration: 500}));
+  }, [line, animationValue, gradientOpacity]);
 
-  const gradientId = 'areaGradient';
-  const gradientStops = useMemo(
-    () => [
-      {offset: '0%', color: '#EEEEEE', opacity: 0.2},
-      {offset: '40%', color: '#EEEEEE', opacity: 0.2},
-      {offset: '100%', color: '#EEEEEE', opacity: 0},
-    ],
-    [],
-  );
+  const linePath = useMemo(() => {
+    if (!line.line) {
+      return null;
+    }
+    return Skia.Path.MakeFromSVGString(line.line);
+  }, [line.line]);
 
-  const animatedProps = useAnimatedProps(() => {
-    return {
-      strokeDashoffset: 2400 * (1 - animationValue.value),
-    };
+  const areaPath = useMemo(() => {
+    if (!line.area) {
+      return null;
+    }
+    return Skia.Path.MakeFromSVGString(line.area);
+  }, [line.area]);
+
+  const animatedDashOffset = useDerivedValue(() => {
+    return 2400 * (1 - animationValue.value);
   });
 
-  const animatedAreaProps = useAnimatedProps(() => {
-    return {
-      opacity: animationValue.value,
-    };
+  const animatedGradientOpacity = useDerivedValue(() => {
+    return gradientOpacity.value;
   });
 
   const Graph = useMemo(
     () => (
-      <Svg height={height} width={width}>
-        <Defs>
-          <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            {gradientStops.map(stop => (
-              <Stop
-                key={stop.offset}
-                offset={stop.offset}
-                stopColor={stop.color}
-                stopOpacity={stop.opacity}
-              />
-            ))}
-          </LinearGradient>
-        </Defs>
-        <AnimatedPath
-          d={area}
-          fill={`url(#${gradientId})`}
-          stroke="none"
-          animatedProps={animatedAreaProps}
-        />
-        <AnimatedPath
-          d={line}
-          fill="none"
-          stroke="white"
-          strokeWidth={3}
-          strokeDasharray={2400}
-          animatedProps={animatedProps}
-        />
-      </Svg>
+      <Group>
+        {areaPath && (
+          <Path path={areaPath} style="fill" opacity={animatedGradientOpacity}>
+            <LinearGradient
+              start={vec(0, 0)}
+              end={vec(0, height)}
+              colors={['rgba(238, 238, 238, 0.2)', 'rgba(238, 238, 238, 0.2)', 'rgba(238, 238, 238, 0)']}
+              positions={[0, 0.4, 1]}
+            />
+          </Path>
+        )}
+        {linePath && (
+          <Path path={linePath} style="stroke" strokeWidth={3} color="white">
+            <DashPathEffect
+              intervals={[2400, 2400]}
+              phase={animatedDashOffset}
+            />
+          </Path>
+        )}
+      </Group>
     ),
-    [
-      height,
-      width,
-      gradientId,
-      gradientStops,
-      area,
-      animatedAreaProps,
-      line,
-      animatedProps,
-    ],
+    [linePath, areaPath, animatedDashOffset, animatedGradientOpacity, height],
   );
 
   const GridLines = useMemo(
     () => (
-      <G>
+      <Group>
         <Line
-          x1="0"
-          x2="100%"
-          y1="15%"
-          y2="15%"
-          stroke="#1853B3"
-          strokeWidth="1"
-          strokeOpacity={0.34}
+          p1={vec(0, height * 0.15)}
+          p2={vec(width, height * 0.15)}
+          color="#1853B3"
+          strokeWidth={1}
+          opacity={0.34}
         />
         <Line
-          x1="0"
-          x2="100%"
-          y1="50%"
-          y2="50%"
-          stroke="#1853B3"
-          strokeWidth="1"
-          strokeOpacity={0.34}
+          p1={vec(0, height * 0.5)}
+          p2={vec(width, height * 0.5)}
+          color="#1853B3"
+          strokeWidth={1}
+          opacity={0.34}
         />
         <Line
-          x1="0"
-          x2="100%"
-          y1="85%"
-          y2="85%"
-          stroke="#1853B3"
-          strokeWidth="1"
-          strokeOpacity={0.34}
+          p1={vec(0, height * 0.85)}
+          p2={vec(width, height * 0.85)}
+          color="#1853B3"
+          strokeWidth={1}
+          opacity={0.34}
         />
-      </G>
+      </Group>
     ),
-    [],
+    [height, width],
   );
 
   const Container = useMemo(
     () => (
-      <Svg height={height} width={width}>
+      <Canvas style={{height, width}}>
         {GridLines}
         {Graph}
-      </Svg>
+      </Canvas>
     ),
     [height, width, GridLines, Graph],
   );

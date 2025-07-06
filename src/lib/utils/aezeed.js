@@ -6,11 +6,17 @@ import Crypto from 'react-native-quick-crypto';
 import aez from 'aez';
 import {Scrypt} from 'react-native-turbo-scrypt';
 
+import ecc from '@bitcoinerlab/secp256k1';
+import {BIP32Factory, BIP32Interface} from 'bip32';
+
 import wordlist from './bip39/english.json';
 import {checkBIP39Word, getBIP39Index} from './bip39';
 import lpad from './lpad';
 import crc32c from './crc32c';
 import {hexStringToHexArray} from './hexStringToHexArray';
+import {LITECOIN, LITECOIN_WITH_XPRV} from './litecoin';
+
+const bip32 = BIP32Factory(ecc);
 
 const AEZEED_VERSION = 0;
 const BITCOIN_GENESIS_BLOCK_TIMESTAMP = 1231006505;
@@ -175,6 +181,86 @@ export const checkSeedChecksum = async seed => {
       } else {
         resolve();
       }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const decodeSeed = async (mnemonic, passphrase = 'aezeed') => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const words = await mnemonicToSeedBytes(mnemonic);
+      const seed = Buffer.from(words);
+
+      if (!seed || seed.length === 0 || seed[0] !== AEZEED_VERSION) {
+        reject('Invalid seed or version!');
+        return;
+      }
+
+      const salt = seed.slice(SALT_OFFSET, SALT_OFFSET + SALT_LENGTH);
+      const passwordBuffer = new Uint8Array(
+        [...passphrase].map(char => char.charCodeAt(0)),
+      ).buffer;
+      const cipherSeed = seed.slice(1, SALT_OFFSET);
+      const checksum = seed.slice(CHECKSUM_OFFSET);
+
+      const newChecksum = crc32c(seed.slice(0, CHECKSUM_OFFSET));
+      if (newChecksum !== checksum.readUInt32BE(0)) {
+        reject('Invalid seed checksum!');
+        return;
+      }
+
+      const ad = getAD(salt);
+      const saltArrayBuffer = salt.buffer.slice(
+        salt.byteOffset,
+        salt.byteOffset + salt.byteLength,
+      );
+
+      const key = Scrypt.scrypt(
+        passwordBuffer,
+        saltArrayBuffer,
+        SCRYPT_N,
+        SCRYPT_R,
+        SCRYPT_P,
+        SCRYPT_KEY_LENGTH,
+      );
+
+      const keyUInt8Array = new Uint8Array(key);
+      const plainSeedBytes = aez.decrypt(
+        keyUInt8Array,
+        null,
+        [ad],
+        AEZ_TAU,
+        cipherSeed,
+      );
+
+      if (plainSeedBytes == null) {
+        reject('Decryption failed. Invalid passphrase?');
+        return;
+      }
+
+      const plainSeedBuffer = Buffer.from(plainSeedBytes);
+      const entropy = plainSeedBuffer.slice(3).toString('hex');
+
+      const entropyBuffer = Buffer.from(entropy, 'hex');
+
+      const bip32RootKey = bip32.fromSeed(entropyBuffer, LITECOIN);
+
+      const bip32RootKeyXprv = bip32.fromSeed(
+        entropyBuffer,
+        LITECOIN_WITH_XPRV,
+      );
+
+      resolve({
+        version: AEZEED_VERSION,
+        internalVersion: plainSeedBuffer.readUInt8(0),
+        birthday: plainSeedBuffer.readUInt16BE(1),
+        entropy: entropy,
+        salt: salt.toString('hex'),
+        bip32RootKey,
+        bip32RootKeyXprv,
+      });
     } catch (error) {
       reject(error);
     }

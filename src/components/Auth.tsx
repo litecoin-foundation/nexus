@@ -9,14 +9,19 @@ import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
-  handleValidationSuccess: () => Promise<void>;
+  handleValidationSuccess: () => void;
   handleValidationFailure: () => void;
+  keychainPincodeState?: string | null;
 }
 
 const Auth: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
 
-  const {handleValidationSuccess, handleValidationFailure} = props;
+  const {
+    handleValidationSuccess,
+    handleValidationFailure,
+    keychainPincodeState,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -28,6 +33,7 @@ const Auth: React.FC<Props> = props => {
         <AuthPad
           handleValidationSuccess={handleValidationSuccess}
           handleValidationFailure={handleValidationFailure}
+          keychainPincodeState={keychainPincodeState}
         />
       </CustomSafeAreaView>
     </LinearGradient>

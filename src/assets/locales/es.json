@@ -48,7 +48,9 @@
     "are_you_sure": "¿Estás seguro?",
     "skip_presync_description": "Al omitir la presincronización, necesitarás esperar a que tu Nexus Wallet se sincronice completamente antes de poder enviar o recibir transacciones. Este proceso puede tomar hasta 30+ minutos.",
     "cancel": "Cancelar",
-    "ok": "OK"
+    "ok": "OK",
+    "txs_take_time_to_appear": "Aunque tus transacciones se han cargado, puede que tarden un poco en aparecer y recalcular tu saldo. Solo deja la aplicación abierta.",
+    "recover_pin": "Confirmar PIN"
   },
   "main": {
     "main_wallet": "Billetera Principal",
@@ -155,7 +157,8 @@
     "balance_unconfirmed": "Saldo no confirmado en la billetera",
     "wallet_unsynced": "Sincronización en progreso...",
     "try_less_amount": "Envía un poco menos. Las tarifas de red consumen tu saldo, reduce la cantidad para tarifas.",
-    "insufficient_funds": "Saldo insuficiente."
+    "insufficient_funds": "Saldo insuficiente.",
+    "this_address_invalid": "Esta dirección no es válida."
   },
   "receiveTab": {
     "receive_ltc": "Recibir Litecoin",
@@ -193,6 +196,8 @@
   },
   "settingsTab": {
     "settings": "Configuración",
+    "general_settings": "Configuración General",
+    "wallet_settings": "Configuración de Billetera",
     "need_support": "¿Necesitas soporte? ¡Ház una pregunta!",
     "back": "ATRÁS",
     "nexus_support_chat": "Chat de soporte de Nexus",
@@ -235,6 +240,13 @@
     "select_lang": "Seleccionar idioma",
     "view_seed": "Ver Frase Semilla",
     "view_paper_key": "Ver Seed Phrase",
+    "view_root_key": "Ver Clave Raíz",
+    "root_key": "Clave Raíz",
+    "root_key_description": "Tu clave raíz BIP32 puede usarse para derivar todas las direcciones y claves privadas en tu billetera.",
+    "key_copied_to_clipboard": "La clave ha sido copiada al portapapeles",
+    "root_key_warning": "ADVERTENCIA: La clave privada extendida (xprv/Ltpv) da acceso completo a tu Billetera Litecoin. Nunca la compartas con nadie.",
+    "key_type": "Tipo de Clave",
+    "key_format": "Formato de Clave",
     "last_time_accessed": "Último acceso: {{time}}",
     "litecoin_denomination": "Denominación de Litecoin",
     "reset_wallet": "¿Restablecer tu billetera?",
@@ -258,7 +270,8 @@
     "camera_error": "Cámara deshabilitada.",
     "cancel": "Cancelar",
     "change_login": "Cambiar código de acceso",
-    "processing": "Procesando..."
+    "processing": "Procesando...",
+    "copied": "Copiado"
   },
   "convertTab": {
     "convert_button": "Convertir tus LTC",

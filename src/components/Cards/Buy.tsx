@@ -1,4 +1,10 @@
-import React, {useEffect, useState, useContext, useCallback} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +14,7 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import BuyPad from '../Numpad/BuyPad';
@@ -24,12 +31,23 @@ import {callRates} from '../../reducers/ticker';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+type RootStackParamList = {
+  Buy: undefined;
+  SearchTransaction: {
+    openFilter?: string;
+  };
+  ConfirmBuy: undefined;
+  ConfirmBuyOnramper: undefined;
+};
+
+interface Props {
+  navigation: StackNavigationProp<RootStackParamList, 'Buy'>;
+}
 
 const Buy: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation<Props['navigation']>();
 
   const amount = useAppSelector(state => state.input.amount);
   const fiatAmount = useAppSelector(state => state.input.fiatAmount);
@@ -52,7 +70,6 @@ const Buy: React.FC<Props> = () => {
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
 
-  // render moonpay rates
   const availableAmount =
     Number(amount) > 0 && (buyQuote?.ltcAmount || 0) > 0
       ? buyQuote.ltcAmount
@@ -65,32 +82,62 @@ const Buy: React.FC<Props> = () => {
   useEffect(() => {
     dispatch(checkAllowed());
     dispatch(setLimits());
-    // dispatch(setBuyQuote(1));
   }, [dispatch]);
+
+  const quoteUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const quoteAbortController = useRef<AbortController | null>(null);
 
   const onChange = (value: string) => {
     if (toggleLTC) {
       dispatch(updateAmount(value, 'buy'));
-      // set quote from moonpay
-      if (
-        Number(value) >= minLTCBuyAmount &&
-        Number(value) <= maxLTCBuyAmount
-      ) {
-        dispatch(setBuyQuote(Number(value)));
-      }
     } else if (!toggleLTC) {
       dispatch(updateFiatAmount(value, 'buy'));
-      if (Number(value) >= minBuyAmount && Number(value) <= maxBuyAmount) {
-        dispatch(setBuyQuote(undefined, Number(value)));
-      }
     }
-    // update quote
-    dispatch(callRates());
+
+    if (quoteUpdateTimeoutRef.current) {
+      clearTimeout(quoteUpdateTimeoutRef.current);
+    }
+    if (quoteAbortController.current) {
+      quoteAbortController.current.abort();
+    }
+
+    quoteUpdateTimeoutRef.current = setTimeout(async () => {
+      try {
+        quoteAbortController.current = new AbortController();
+
+        if (
+          toggleLTC &&
+          Number(value) >= minLTCBuyAmount &&
+          Number(value) <= maxLTCBuyAmount
+        ) {
+          dispatch(setBuyQuote(Number(value)));
+        } else if (
+          !toggleLTC &&
+          Number(value) >= minBuyAmount &&
+          Number(value) <= maxBuyAmount
+        ) {
+          dispatch(setBuyQuote(undefined, Number(value)));
+        }
+
+        dispatch(callRates());
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Quote update error:', error);
+        }
+      }
+    }, 300); // 300ms debounce for quote updates
   };
 
   useEffect(() => {
     return function cleanup() {
       dispatch(resetInputs());
+
+      if (quoteUpdateTimeoutRef.current) {
+        clearTimeout(quoteUpdateTimeoutRef.current);
+      }
+      if (quoteAbortController.current) {
+        quoteAbortController.current.abort();
+      }
     };
   }, [dispatch]);
 
@@ -116,7 +163,7 @@ const Buy: React.FC<Props> = () => {
         Number(availableQuote) < minBuyAmount ||
         Number(availableQuote) > maxBuyAmount
       ) {
-        setErrorTextKey('exceed_quote_limit');
+        // setErrorTextKey('exceed_quote_limit');
         return false;
       }
     }
@@ -145,7 +192,7 @@ const Buy: React.FC<Props> = () => {
     let isAmountValidVar = isAmountValid();
     let isRegionValidVar = isRegionValid();
 
-    // neglect onramper amount limits
+    // NOTE(temp): neglect onramper amount limits
     if (isOnramperCustomer) {
       isAmountValidVar = true;
     }

@@ -89,7 +89,9 @@ const ConfirmSell: React.FC<Props> = props => {
 
   useEffect(() => {
     dispatch(getAddress(false));
-    openSellWidget();
+    if (!route.params?.queryString) {
+      openSellWidget();
+    }
     setHasBeenMounted(true);
   }, [dispatch]);
 

@@ -1,6 +1,13 @@
-import React, {useEffect, useState, useRef, useMemo, useContext} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useContext,
+  useCallback,
+} from 'react';
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {SharedValue} from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {
   Canvas,
@@ -71,9 +78,9 @@ interface TxListComponentProps {
   foldUnfoldBottomSheet: (option: boolean) => void;
   isBottomSheetFolded: boolean;
   navigation: any;
-  styles: {
-    [key: string]: any;
-  };
+  styles: Record<string, any>;
+  mainSheetsTranslationY: SharedValue<number>;
+  mainSheetsTranslationYStart: SharedValue<number>;
 }
 
 const TxListComponent: React.FC<TxListComponentProps> = props => {
@@ -84,6 +91,8 @@ const TxListComponent: React.FC<TxListComponentProps> = props => {
     isBottomSheetFolded,
     navigation,
     styles,
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
   } = props;
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -132,6 +141,8 @@ const TxListComponent: React.FC<TxListComponentProps> = props => {
         headerBackgroundColor="#F7F7F7"
         folded={isBottomSheetFolded}
         foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
       />
     </View>
   );
@@ -170,19 +181,19 @@ const Main: React.FC<Props> = props => {
   const [loading, setLoading] = useState(false);
 
   const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
-  function foldUnfoldBottomSheet(isFolded: boolean) {
+  const foldUnfoldBottomSheet = useCallback((isFolded: boolean) => {
     if (isFolded) {
       setBottomSheetFolded(false);
     } else {
       setBottomSheetFolded(true);
       setActiveTab(0);
     }
-  }
+  }, []);
   useEffect(() => {
     if (route.params?.isInitial) {
       foldUnfoldBottomSheet(false);
     }
-  }, [route]);
+  }, [route, foldUnfoldBottomSheet]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
@@ -200,113 +211,128 @@ const Main: React.FC<Props> = props => {
   } = useMainAnims({isWalletsModalOpened, isTxDetailModalOpened});
 
   // Flexa
-  const flexaAssetAccounts = [
-    {
-      displayName: 'Main Wallet',
-      assetAccountHash: uniqueId,
-      availableAssets: [
-        {
-          assetId: 'bip122:12a765e31ffd4059bada1e25190f6e98/slip44:2',
-          symbol: 'LTC',
-          displayName: 'Litecoin',
-          balance: Number(totalBalance) / 100000000, // sats -> Litecoin
-          balanceAvailable: Number(confirmedBalance) / 100000000,
-          icon: require('../assets/images/ltc-logo.png'),
-        },
-      ],
-      custodyModel: CUSTODY_MODEL.LOCAL,
-    },
-  ];
+  const flexaAssetAccounts = useMemo(
+    () => [
+      {
+        displayName: 'Main Wallet',
+        assetAccountHash: uniqueId,
+        availableAssets: [
+          {
+            assetId: 'bip122:12a765e31ffd4059bada1e25190f6e98/slip44:2',
+            symbol: 'LTC',
+            displayName: 'Litecoin',
+            balance: Number(totalBalance) / 100000000, // sats -> Litecoin
+            balanceAvailable: Number(confirmedBalance) / 100000000,
+            icon: require('../assets/images/ltc-logo.png'),
+          },
+        ],
+        custodyModel: CUSTODY_MODEL.LOCAL,
+      },
+    ],
+    [uniqueId, totalBalance, confirmedBalance],
+  );
 
-  const manualPayment = async () => {
-    payment(flexaAssetAccounts, paymentCallback);
-  };
-
-  const paymentCallback = async (transactionRequest: TransactionRequest) => {
-    const {transaction, transactionSent, transactionFailed} =
-      transactionRequest;
-
-    dismissAllModals();
-    await sleep(200);
-
-    console.log(transaction);
-    const addrArray = transaction.destinationAddress.split(':');
-
-    // validation of destinationAddress
-    try {
-      if (addrArray.length !== 3) {
-        throw new Error('unknown address length');
-      }
-      if (addrArray[1] !== '12a765e31ffd4059bada1e25190f6e98') {
-        throw new Error('not a litecoin address');
-      }
-      const valid = await validateLtcAddress(addrArray[2]);
-      if (!valid) {
-        throw new Error('invalid litecoin address');
-      }
-    } catch (error) {
-      transactionFailed();
-      payment(flexaAssetAccounts, paymentCallback);
-      dispatch(showError(String(error)));
-    }
-
-    try {
-      // authenticate
-      await handleAuthenticationRequired('view-seed-auth');
-      setLoading(true);
-      // send coins
-      const txid = await dispatch(
-        sendOnchainPayment(
-          addrArray[2],
-          Math.trunc(Number(transaction.amount) * 100000000),
-          'Flexa Payment',
-        ),
-      );
-      console.log(txid);
-      transactionSent(txid);
-      setIsPinModalOpened(false);
-      setLoading(false);
-      // reopen flexa modal
-      payment(flexaAssetAccounts, paymentCallback);
-    } catch (error) {
-      transactionFailed();
-      setIsPinModalOpened(false);
-      setLoading(false);
-      payment(flexaAssetAccounts, paymentCallback);
-      dispatch(showError(String(error)));
-    }
-  };
-
-  function openPinModal(action: string) {
+  const openPinModal = useCallback((action: string) => {
     pinModalAction.current = action;
     setIsPinModalOpened(true);
-  }
+  }, []);
 
-  const handleAuthenticationRequired = (action: string) => {
-    return new Promise<void>((resolve, reject) => {
-      openPinModal(action);
-      const subscription = DeviceEventEmitter.addListener(action, bool => {
-        if (bool === true) {
-          setIsPinModalOpened(false);
-          subscription.remove();
-          resolve();
-        } else if (bool === false) {
-          subscription.remove();
-          reject();
-        }
+  const handleAuthenticationRequired = useCallback(
+    (action: string): Promise<void> => {
+      return new Promise<void>((resolve, reject) => {
+        openPinModal(action);
+        const subscription = DeviceEventEmitter.addListener(
+          action,
+          (bool: boolean) => {
+            if (bool === true) {
+              setIsPinModalOpened(false);
+              subscription.remove();
+              resolve();
+            } else if (bool === false) {
+              subscription.remove();
+              reject(new Error('Authentication failed'));
+            }
+          },
+        );
       });
-    });
-  };
+    },
+    [openPinModal],
+  );
+
+  const paymentCallback = useCallback(
+    async (transactionRequest: TransactionRequest) => {
+      const {transaction, transactionSent, transactionFailed} =
+        transactionRequest;
+
+      dismissAllModals();
+      await sleep(200);
+
+      console.log(transaction);
+      const addrArray = transaction.destinationAddress.split(':');
+
+      // validation of destinationAddress
+      try {
+        if (addrArray.length !== 3) {
+          throw new Error('unknown address length');
+        }
+        if (addrArray[1] !== '12a765e31ffd4059bada1e25190f6e98') {
+          throw new Error('not a litecoin address');
+        }
+        const valid = await validateLtcAddress(addrArray[2]);
+        if (!valid) {
+          throw new Error('invalid litecoin address');
+        }
+      } catch (error) {
+        transactionFailed();
+        payment(flexaAssetAccounts, paymentCallback);
+        dispatch(showError(String(error)));
+      }
+
+      try {
+        // authenticate
+        await handleAuthenticationRequired('view-seed-auth');
+        setLoading(true);
+        // send coins
+        const txid = await dispatch(
+          sendOnchainPayment(
+            addrArray[2],
+            Math.trunc(Number(transaction.amount) * 100000000),
+            'Flexa Payment',
+          ),
+        );
+        console.log(txid);
+        transactionSent(txid);
+        setIsPinModalOpened(false);
+        setLoading(false);
+        // reopen flexa modal
+        payment(flexaAssetAccounts, paymentCallback);
+      } catch (error) {
+        transactionFailed();
+        setIsPinModalOpened(false);
+        setLoading(false);
+        payment(flexaAssetAccounts, paymentCallback);
+        dispatch(showError(String(error)));
+      }
+    },
+    [dispatch, flexaAssetAccounts, handleAuthenticationRequired],
+  );
+
+  const manualPayment = useCallback(async () => {
+    payment(flexaAssetAccounts, paymentCallback);
+  }, [flexaAssetAccounts, paymentCallback]);
 
   // Transaction Detail Modal Swiping
   // const image = useImage(require('../assets/icons/search-icon.png'));
   const sendCardRef = useRef<URIHandlerRef>(null);
 
-  function setTransactionIndex(newTxIndex: number) {
-    selectTransaction(transactions[newTxIndex]);
-  }
+  const setTransactionIndex = useCallback(
+    (newTxIndex: number) => {
+      selectTransaction(transactions[newTxIndex]);
+    },
+    [transactions],
+  );
 
-  function swipeToPrevTx() {
+  const swipeToPrevTx = useCallback(() => {
     if (selectedTransaction) {
       if (selectedTransaction.hasOwnProperty('renderIndex')) {
         const newTxIndex =
@@ -316,9 +342,9 @@ const Main: React.FC<Props> = props => {
         selectTransaction(transactions[newTxIndex]);
       }
     }
-  }
+  }, [selectedTransaction, transactions]);
 
-  function swipeToNextTx() {
+  const swipeToNextTx = useCallback(() => {
     if (selectedTransaction) {
       if (selectedTransaction.hasOwnProperty('renderIndex')) {
         const newTxIndex =
@@ -328,7 +354,7 @@ const Main: React.FC<Props> = props => {
         selectTransaction(transactions[newTxIndex]);
       }
     }
-  }
+  }, [selectedTransaction, transactions]);
 
   // Deeplink handler
   useEffect(() => {
@@ -366,45 +392,6 @@ const Main: React.FC<Props> = props => {
       dispatch(unsetDeeplink());
     }
   }, [activeTab, uri, dispatch]);
-
-  // Hide header when transaction detail modal is opened
-  useEffect(() => {
-    if (isTxDetailModalOpened) {
-      navigation.setOptions({
-        headerTitle: () => <></>,
-        headerLeft: () => <></>,
-        headerRight: () => <></>,
-      });
-    } else {
-      navigation.setOptions({
-        headerTitle: () => (
-          <ChooseWalletButton
-            title={'Wallet Title'}
-            onPress={() => {}}
-            disabled={false}
-            isModalOpened={false}
-            isFromBottomToTop={false}
-            animDuration={200}
-            rotateArrow={() => {}}
-            arrowSpinAnim={undefined}
-          />
-        ),
-        headerLeft: () => (
-          <HeaderButton
-            onPress={() => navigation.navigate('SettingsStack')}
-            imageSource={require('../assets/icons/settings-cog.png')}
-          />
-        ),
-        headerRight: () => (
-          <HeaderButton
-            onPress={() => navigation.navigate('AlertsStack')}
-            imageSource={require('../assets/icons/alerts-icon.png')}
-            rightPadding={true}
-          />
-        ),
-      });
-    }
-  }, [navigation, isTxDetailModalOpened]);
 
   useMainLayout({
     walletButtonAnimDuration,
@@ -498,9 +485,18 @@ const Main: React.FC<Props> = props => {
         isBottomSheetFolded={isBottomSheetFolded}
         navigation={navigation}
         styles={styles}
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
       />
     ),
-    [isBottomSheetFolded, navigation, styles],
+    [
+      isBottomSheetFolded,
+      navigation,
+      styles,
+      foldUnfoldBottomSheet,
+      mainSheetsTranslationY,
+      mainSheetsTranslationYStart,
+    ],
   );
 
   const BottomSheetMemo = useMemo(
@@ -511,10 +507,10 @@ const Main: React.FC<Props> = props => {
         mainSheetsTranslationY={mainSheetsTranslationY}
         mainSheetsTranslationYStart={mainSheetsTranslationYStart}
         folded={isBottomSheetFolded}
-        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
+        foldUnfold={foldUnfoldBottomSheet}
         activeTab={activeTab}
-        buyViewComponent={<Buy />}
-        sellViewComponent={<Sell />}
+        buyViewComponent={<Buy navigation={navigation} />}
+        sellViewComponent={<Sell navigation={navigation} />}
         convertViewComponent={<Convert navigation={navigation} />}
         sendViewComponent={
           <Send route={route} navigation={navigation} ref={sendCardRef} />
@@ -528,6 +524,7 @@ const Main: React.FC<Props> = props => {
       mainSheetsTranslationY,
       mainSheetsTranslationYStart,
       isBottomSheetFolded,
+      foldUnfoldBottomSheet,
       activeTab,
       route,
       navigation,
@@ -553,8 +550,12 @@ const Main: React.FC<Props> = props => {
         animatedProps={animatedTopContainerHeight}
         internetOpacityStyle={animatedChartOpacity}>
         <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
-          {isBottomSheetFolded && <LineChart />}
-          <DatePicker />
+          {isBottomSheetFolded ? (
+            <>
+              <LineChart />
+              <DatePicker />
+            </>
+          ) : null}
         </Animated.View>
       </NewAmountView>
 

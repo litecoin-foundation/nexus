@@ -2356,7 +2356,7 @@
 
 "@notifee/react-native@9.1.8":
   version "9.1.8"
-  resolved "https://registry.yarnpkg.com/@notifee/react-native/-/react-native-9.1.8.tgz#3d55cb3fbcc21f9e35931e366afdf64b294da891"
+  resolved "https://registry.npmjs.org/@notifee/react-native/-/react-native-9.1.8.tgz"
   integrity sha512-Az/dueoPerJsbbjRxu8a558wKY+gONUrfoy3Hs++5OqbeMsR0dYe6P+4oN6twrLFyzAhEA1tEoZRvQTFDRmvQg==
 
 "@pkgjs/parseargs@^0.11.0":
@@ -2806,7 +2806,7 @@
 
 "@react-navigation/native@7.1.11":
   version "7.1.11"
-  resolved "https://registry.yarnpkg.com/@react-navigation/native/-/native-7.1.11.tgz#0f480b83ebfcb27efccdc6d44ce24f9a4cfa6d93"
+  resolved "https://registry.npmjs.org/@react-navigation/native/-/native-7.1.11.tgz"
   integrity sha512-f/UETxy2Nahr8jko9mSSRBvIaDubGc3M2yx5pWxMPxZgLkB4TqPB0O1OFdbcAuRDwLgzXXK+Joh7nTdGug9v2A==
   dependencies:
     "@react-navigation/core" "^7.10.1"
@@ -2824,7 +2824,7 @@
 
 "@react-navigation/stack@7.3.4":
   version "7.3.4"
-  resolved "https://registry.yarnpkg.com/@react-navigation/stack/-/stack-7.3.4.tgz#19d03f0fd4fb5ae6b766a4f3636faaae6d239f71"
+  resolved "https://registry.npmjs.org/@react-navigation/stack/-/stack-7.3.4.tgz"
   integrity sha512-ZLVeiKBpcrXxue7fC4M/X02uEPtmkcO1ySvlDFN/obNEH0PqHn7XxVcJMNEoLe8yoM8TytezDdaQcRdPtEZzUw==
   dependencies:
     "@react-navigation/elements" "^2.4.4"
@@ -2844,7 +2844,7 @@
 
 "@shopify/flash-list@2.0.0-rc.9":
   version "2.0.0-rc.9"
-  resolved "https://registry.yarnpkg.com/@shopify/flash-list/-/flash-list-2.0.0-rc.9.tgz#2b160ef35d8a9f3715fbacd0f889748d6c8eb187"
+  resolved "https://registry.npmjs.org/@shopify/flash-list/-/flash-list-2.0.0-rc.9.tgz"
   integrity sha512-s6sHtXhVeZZ9bx76kgS0fQFDKgXmgVjzzuCxf2ZAWmkmXJQYJho8jOgnEZpcqjUhlHd8jObz9naEJfm7YNTSVg==
   dependencies:
     recyclerlistview "4.2.3"
@@ -5601,7 +5601,7 @@ expo-modules-core@2.4.0:
 
 expo-notifications@0.31.3:
   version "0.31.3"
-  resolved "https://registry.yarnpkg.com/expo-notifications/-/expo-notifications-0.31.3.tgz#eb82c9975e26dcc4fa694b79970792c897ad8d16"
+  resolved "https://registry.npmjs.org/expo-notifications/-/expo-notifications-0.31.3.tgz"
   integrity sha512-AATxKoav5ZvwcRel2SKYNZc+EvOAKvAjxyBezC8y3J5fMNe/uKIhMzh3FN4fKdOi9ao/UBHkvLiUO2MqVnvBNg==
   dependencies:
     "@expo/image-utils" "^0.7.4"
@@ -6236,6 +6236,11 @@ human-signals@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/human-signals/-/human-signals-2.1.0.tgz"
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
+
+husky@^9.1.7:
+  version "9.1.7"
+  resolved "https://registry.npmjs.org/husky/-/husky-9.1.7.tgz"
+  integrity sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==
 
 i18next@24.2.3:
   version "24.2.3"

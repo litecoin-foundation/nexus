@@ -73,6 +73,7 @@ export type OnboardingStackParamList = {
     existingSeed: string;
   };
   Pin: undefined;
+  RecoverPin: undefined;
   Generate: undefined;
   Verify: undefined;
   Recover:
@@ -90,6 +91,7 @@ export type SettingsStackParamList = {
   };
   ChangePincode: undefined;
   Seed: undefined;
+  RootKey: undefined;
   About: undefined;
   Currency: undefined;
   Explorer: undefined;

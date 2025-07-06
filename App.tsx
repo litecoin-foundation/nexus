@@ -85,7 +85,6 @@ function ContextExecutable(props: any) {
 
   useLayoutEffect(() => {
     initI18N(languageCode);
-    dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
     // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
     // resulting in missing rates even if the app is being used already.
     dispatch(updatedRatesInFiat());
