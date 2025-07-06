@@ -93,7 +93,7 @@ const getStyles = (screenWidth: number, screenHeight: number, tint?: boolean) =>
   StyleSheet.create({
     button: {
       height: screenHeight * 0.065,
-      width: screenHeight * 0.06,
+      width: screenWidth * 0.16,
       borderRadius: screenHeight * 0.01,
       backgroundColor: undefined,
       flexDirection: 'column',
