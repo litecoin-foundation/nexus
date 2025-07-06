@@ -176,6 +176,7 @@ export const setSeedRecovery =
     // save seed to keychain
     await setItem('SEEDPHRASE', seedPhrase.join(','));
     dispatch(setSeedRecoveryAction(seedPhrase));
+    dispatch(setSeedVerified(true));
   };
 
 const cacheParts = [
