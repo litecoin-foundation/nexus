@@ -8,7 +8,7 @@ import {LITECOIN} from './litecoin';
 
 const bip32 = BIP32Factory(ecc);
 const ECPair = ECPairFactory(ecc);
-const GAP_LIMIT = 20;
+const GAP_LIMIT = 50;
 
 type IMnemonic = string[];
 
