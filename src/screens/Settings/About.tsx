@@ -9,6 +9,7 @@ import TableCell from '../../components/Cells/TableCell';
 import VerticalTableCell from '../../components/Cells/VerticalTableCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import Card from '../../components/Card';
+import LogViewer from '../../components/LogViewer';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getRecoveryInfo} from '../../reducers/info';
 
@@ -95,6 +96,8 @@ const About: React.FC<Props> = () => {
               textStyle={styles.text}
             />
           </VerticalTableCell>
+
+          <LogViewer maxLines={15} refreshInterval={2000} />
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
