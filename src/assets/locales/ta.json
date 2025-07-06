@@ -193,6 +193,8 @@
     "last_time": "LTC இந்த மதிப்பை கடைசியாக அடைந்த நேரம் {{date}}."
   },
   "settingsTab": {
+    "general_settings": "General Settings",
+    "wallet_settings": "Wallet Settings",
     "settings": "அமைப்புகள்",
     "need_support": "ஆதரவு தேவையா? ஒரு கேள்வியைக் கேளுங்கள்!",
     "back": "பின் செல்லவும்",

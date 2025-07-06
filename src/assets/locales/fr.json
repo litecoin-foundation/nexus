@@ -194,6 +194,8 @@
   },
   "settingsTab": {
     "settings": "Paramètres",
+    "general_settings": "Paramètres Généraux",
+    "wallet_settings": "Paramètres de Portefeuille",
     "need_support": "Besoin d'aide ? Posez une question !",
     "back": "Retour",
     "nexus_support_chat": "Chat de support Nexus",

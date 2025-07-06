@@ -34,6 +34,7 @@ import SettingCell from '../../components/Cells/SettingCell';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
+import SectionHeader from '../../components/SectionHeader';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {updateSubunit, setNotificationsEnabled} from '../../reducers/settings';
@@ -179,19 +180,16 @@ const Settings: React.FC<Props> = props => {
         ]}
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
-        <ScrollView>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}>
           <SupportCell onPress={() => navigation.navigate('Support')} />
 
+          <SectionHeader textKey="general_settings" />
           <SettingCell
             textKey="about"
             textDomain="settingsTab"
             onPress={() => navigation.navigate('About')}
-            forward
-          />
-          <SettingCell
-            textKey="change_wallet_pin"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('ChangePincode', {type: null})}
             forward
           />
           <NotificationsSettingCell />
@@ -209,19 +207,6 @@ const Settings: React.FC<Props> = props => {
               }}
             />
           ) : null}
-
-          <SettingCell
-            textKey="import_private_key"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('Import')}
-            forward
-          />
-          <SettingCell
-            textKey="import_litewallet"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('RecoverLitewallet')}
-            forward
-          />
           <SettingCell
             textKey="block_explorer"
             textDomain="settingsTab"
@@ -238,6 +223,29 @@ const Settings: React.FC<Props> = props => {
             textKey="change_lang"
             textDomain="settingsTab"
             onPress={() => navigation.navigate('Language')}
+            forward
+          />
+
+          <SectionHeader
+            textKey="wallet_settings"
+            marginTopMultiplier={0.037}
+          />
+          <SettingCell
+            textKey="change_wallet_pin"
+            textDomain="settingsTab"
+            onPress={() => navigation.navigate('ChangePincode', {type: null})}
+            forward
+          />
+          <SettingCell
+            textKey="import_private_key"
+            textDomain="settingsTab"
+            onPress={() => navigation.navigate('Import')}
+            forward
+          />
+          <SettingCell
+            textKey="import_litewallet"
+            textDomain="settingsTab"
+            onPress={() => navigation.navigate('RecoverLitewallet')}
             forward
           />
           <SettingCell
@@ -343,6 +351,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
       backgroundColor: '#F7F7F7',
+    },
+    scrollContent: {
+      paddingBottom: screenHeight * 0.04,
     },
     headerTitle: {
       color: '#fff',

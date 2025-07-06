@@ -193,6 +193,8 @@
     "last_time": "LTC 上次达到此价位于 {{date}}."
   },
   "settingsTab": {
+    "general_settings": "General Settings",
+    "wallet_settings": "Wallet Settings",
     "settings": "设置",
     "need_support": "需要帮助? 请述说你的问题!",
     "back": "返回",

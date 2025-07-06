@@ -193,6 +193,8 @@
     "last_time": "Ostatni raz kiedy LTC osiągnął tę wartość był {{date}}."
   },
   "settingsTab": {
+    "general_settings": "General Settings",
+    "wallet_settings": "Wallet Settings",
     "settings": "Ustawienia",
     "need_support": "Potrzebujesz pomocy? Zadaj pytanie!",
     "back": "Wróć",

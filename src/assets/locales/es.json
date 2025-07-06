@@ -194,6 +194,8 @@
   },
   "settingsTab": {
     "settings": "Configuración",
+    "general_settings": "Configuración General",
+    "wallet_settings": "Configuración de Billetera",
     "need_support": "¿Necesitas soporte? ¡Ház una pregunta!",
     "back": "ATRÁS",
     "nexus_support_chat": "Chat de soporte de Nexus",

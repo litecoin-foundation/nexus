@@ -193,6 +193,8 @@
     "last_time": "Paskutinį kartą LTC šią vertę pasiekė {{date}}."
   },
   "settingsTab": {
+    "general_settings": "General Settings",
+    "wallet_settings": "Wallet Settings",
     "settings": "Nustatymai",
     "need_support": "Reikia pagalbos? Užduokite klausimą!",
     "back": "Atgal",

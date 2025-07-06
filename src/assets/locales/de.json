@@ -194,6 +194,8 @@
   },
   "settingsTab": {
     "settings": "Einstellungen",
+    "general_settings": "Allgemeine Einstellungen",
+    "wallet_settings": "Wallet-Einstellungen",
     "need_support": "Unterstützung benötigt? Stellen Sie eine Frage",
     "back": "Zurück",
     "nexus_support_chat": "Nexus Support-Chat",

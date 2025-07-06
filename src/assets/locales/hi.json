@@ -193,6 +193,8 @@
     "last_time": "अंतिम बार जब LTC ने यह मान प्राप्त किया था, वह था {{date}}।"
   },
   "settingsTab": {
+    "general_settings": "General Settings",
+    "wallet_settings": "Wallet Settings",
     "settings": "सेटिंग्स",
     "need_support": "सहायता चाहिए? प्रश्न पूछें!",
     "back": "वापस",
