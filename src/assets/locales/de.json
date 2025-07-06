@@ -49,7 +49,8 @@
     "skip_presync_description": "Wenn Sie die Vorsynchronisierung überspringen, müssen Sie warten, bis Ihr Nexus Wallet vollständig synchronisiert ist, bevor Sie Transaktionen senden oder empfangen können. Dieser Vorgang kann bis zu 30+ Minuten dauern.",
     "cancel": "Abbrechen",
     "ok": "OK",
-    "txs_take_time_to_appear": "Obwohl deine Transaktionen geladen wurden, kann es etwas dauern, bis sie angezeigt werden und dein Kontostand neu berechnet wird. Lass einfach die App geöffnet."
+    "txs_take_time_to_appear": "Obwohl deine Transaktionen geladen wurden, kann es etwas dauern, bis sie angezeigt werden und dein Kontostand neu berechnet wird. Lass einfach die App geöffnet.",
+    "recover_pin": "PIN bestätigen"
   },
   "main": {
     "main_wallet": "Hauptwallet",
@@ -156,7 +157,8 @@
     "balance_unconfirmed": "Unbestätigtes Guthaben im Wallet",
     "wallet_unsynced": "Synchronisierung läuft...",
     "try_less_amount": "Senden Sie etwas weniger. Netzwerkgebühren schmälern Ihr Guthaben, reduzieren Sie den Betrag für Gebühren.",
-    "insufficient_funds": "Unzureichendes Guthaben."
+    "insufficient_funds": "Unzureichendes Guthaben.",
+    "this_address_invalid": "Diese Adresse ist ungültig."
   },
   "receiveTab": {
     "receive_ltc": "Litecoin empfangen",
@@ -268,7 +270,8 @@
     "camera_error": "Kamera deaktiviert",
     "cancel": "Abbrechen",
     "change_login": "Login-PIN ändern",
-    "processing": "Verarbeitung..."
+    "processing": "Verarbeitung...",
+    "copied": "Kopiert"
   },
   "convertTab": {
     "convert_button": "Tauschen Sie Ihr LTC",

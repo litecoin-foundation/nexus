@@ -49,7 +49,8 @@
     "skip_presync_description": "Dengan melewati presync, Anda perlu menunggu Nexus Wallet Anda sepenuhnya tersinkronisasi sebelum Anda dapat mengirim atau menerima transaksi. Proses ini dapat memakan waktu hingga 30+ menit.",
     "cancel": "Batalkan",
     "ok": "OK",
-    "txs_take_time_to_appear": "Meskipun transaksi Anda telah dimuat, mungkin perlu sedikit waktu hingga transaksi tersebut muncul dan saldo Anda dihitung ulang. Cukup biarkan aplikasinya tetap terbuka."
+    "txs_take_time_to_appear": "Meskipun transaksi Anda telah dimuat, mungkin perlu sedikit waktu hingga transaksi tersebut muncul dan saldo Anda dihitung ulang. Cukup biarkan aplikasinya tetap terbuka.",
+    "recover_pin": "Konfirmasi PIN"
   },
   "main": {
     "main_wallet": "Dompet Utama",
@@ -156,7 +157,8 @@
     "balance_unconfirmed": "Saldo Belum Terkonfirmasi di Dompet",
     "wallet_unsynced": "Sinkronisasi Sedang Berlangsung...",
     "try_less_amount": "Kirim sedikit lebih sedikit. Biaya jaringan mengurangi saldo Anda, kurangi jumlah untuk biaya.",
-    "insufficient_funds": "Saldo tidak mencukupi."
+    "insufficient_funds": "Saldo tidak mencukupi.",
+    "this_address_invalid": "Alamat ini tidak valid."
   },
   "receiveTab": {
     "receive_ltc": "Terima Litecoin",
@@ -193,8 +195,8 @@
     "last_time": "Terakhir kali LTC mencapai harga ini adalah pada {{date}}."
   },
   "settingsTab": {
-    "general_settings": "General Settings",
-    "wallet_settings": "Wallet Settings",
+    "general_settings": "Pengaturan Umum",
+    "wallet_settings": "Pengaturan Dompet",
     "settings": "Setelan",
     "need_support": "Butuh bantuan? Tanya kami!",
     "back": "Kembali",
@@ -268,7 +270,8 @@
     "camera_error": "Kamera Dinonaktifkan",
     "cancel": "Batal",
     "change_login": "Ganti Kode Sandi Login",
-    "processing": "Memproses..."
+    "processing": "Memproses...",
+    "copied": "Disalin"
   },
   "convertTab": {
     "convert_button": "Konversi LTC Anda",

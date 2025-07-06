@@ -49,7 +49,8 @@
     "skip_presync_description": "Saltando la presincronizzazione, dovrai aspettare che il tuo Nexus Wallet si sincronizzi completamente prima di poter inviare o ricevere transazioni. Questo processo può richiedere fino a 30+ minuti.",
     "cancel": "Annulla",
     "ok": "OK",
-    "txs_take_time_to_appear": "Anche se le tue transazioni sono state caricate, potrebbe volerci un po' di tempo prima che vengano visualizzate e che il saldo venga ricalcolato. Lascia semplicemente l'app aperta."
+    "txs_take_time_to_appear": "Anche se le tue transazioni sono state caricate, potrebbe volerci un po' di tempo prima che vengano visualizzate e che il saldo venga ricalcolato. Lascia semplicemente l'app aperta.",
+    "recover_pin": "Conferma PIN"
   },
   "main": {
     "main_wallet": "Portafoglio principale",
@@ -156,7 +157,8 @@
     "balance_unconfirmed": "Saldo non confermato nel portafoglio",
     "wallet_unsynced": "Sincronizzazione in corso...",
     "try_less_amount": "Invia un po' meno. Le commissioni di rete intaccano il tuo saldo, riduci l'importo per le commissioni.",
-    "insufficient_funds": "Fondi insufficienti."
+    "insufficient_funds": "Fondi insufficienti.",
+    "this_address_invalid": "Questo indirizzo non è valido."
   },
   "receiveTab": {
     "receive_ltc": "Ricevi Litecoin",
@@ -193,8 +195,8 @@
     "last_time": "L'ultima volta che LTC ha raggiunto questo valore è stato il {{date}}."
   },
   "settingsTab": {
-    "general_settings": "General Settings",
-    "wallet_settings": "Wallet Settings",
+    "general_settings": "Impostazioni Generali",
+    "wallet_settings": "Impostazioni Portafoglio",
     "settings": "Impostazioni",
     "need_support": "Hai bisogno di supporto? Fai una domanda!",
     "back": "Indietro",
@@ -268,7 +270,8 @@
     "camera_error": "Camera Disabilitata",
     "cancel": "Annulla",
     "change_login": "Cambia codice di accesso al login",
-    "processing": "Elaborazione..."
+    "processing": "Elaborazione...",
+    "copied": "Copiato"
   },
   "convertTab": {
     "convert_button": "Converti i tuoi LTC",
