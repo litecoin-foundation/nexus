@@ -593,7 +593,11 @@ const TransactionList = forwardRef((props: Props, ref) => {
   return renderTxs ? (
     <View style={{height: scrollContainerHeight}}>
       {!syncedToChain ? SyncProgressIndicator : <></>}
-      <GestureDetector gesture={panGesture}>{FlashListMemo}</GestureDetector>
+      {mainSheetsTranslationY ? (
+        <GestureDetector gesture={panGesture}>{FlashListMemo}</GestureDetector>
+      ) : (
+        FlashListMemo
+      )}
     </View>
   ) : (
     <></>
@@ -628,7 +632,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       letterSpacing: -0.28,
-      // textAlign: 'center',
       paddingVertical: screenHeight * 0.01,
       paddingLeft: screenHeight * 0.02,
       paddingRight: screenWidth * 0.1,

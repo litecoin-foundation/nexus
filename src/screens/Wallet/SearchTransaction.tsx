@@ -456,6 +456,8 @@ export const SearchTransactionNavigationOptions = (
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),
+    gestureEnabled: true,
+    gestureResponseDistance: 50,
   };
 };
 
