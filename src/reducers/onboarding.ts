@@ -58,6 +58,7 @@ const setSeedAction = createAction<string[]>('onboarding/setSeedAction');
 export const setSeedVerified = createAction<boolean>(
   'onboarding/setSeedVerified',
 );
+export const resetSeedAction = createAction('onboarding/resetSeedAction');
 const setSeedRecoveryAction = createAction<string[]>(
   'onboarding/setSeedRecoveryAction',
 );
@@ -160,13 +161,14 @@ export const genSeed = (): AppThunk => async dispatch => {
 // sets users wallet seed
 export const setSeed = (): AppThunk => async (dispatch, getState) => {
   const {generatedSeed, beingRecovered} = getState().onboarding!;
-  // save seed to keychain
-  await setItem('SEEDPHRASE', generatedSeed.join(','));
-  // another function setSeedRecovery handles seed in recovery mode
-  // in which this one should not be called
+  // NOTE: another function setSeedRecovery handles seed in recovery mode
+  // in which this one should not be called, but sometimes it is in the Welcome component,
+  // therefore skip it whilst beingRecovered to avoid setting undefined generatedSeed
   if (beingRecovered) {
     return;
   }
+  // save seed to both keychain and redux store
+  await setItem('SEEDPHRASE', generatedSeed.join(','));
   dispatch(setSeedAction(generatedSeed));
 };
 
@@ -392,6 +394,11 @@ export const onboardingSlice = createSlice({
     setSeedAction: (state, action: PayloadAction<string[]>) => ({
       ...state,
       seed: action.payload,
+    }),
+    resetSeedAction: state => ({
+      ...state,
+      seed: [],
+      seedVerified: false,
     }),
     setSeedRecoveryAction: (state, action: PayloadAction<string[]>) => ({
       ...state,
