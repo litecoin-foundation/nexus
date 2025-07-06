@@ -429,7 +429,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
           if ('type' in item && item.type === 'sectionHeader') {
             return `header-${item.title}-${index}`;
           }
-          return (item as ItemType).hash || `tx-${index}`;
+          return `tx-${index}`;
         }}
         estimatedItemSize={70}
         ListEmptyComponent={<TransactionListEmpty />}
@@ -449,8 +449,17 @@ const TransactionList = forwardRef((props: Props, ref) => {
       />
     ),
     // Extract a unique signature from the transactions to detect changes
-    /* eslint-disable react-hooks/exhaustive-deps */
-    [curFrameY, flattenedTxs.length, txSignature, folded],
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    [
+      curFrameY,
+      flattenedTxs.length,
+      txSignature,
+      handleContentSizeChange,
+      handleStartClosing,
+      handleFold,
+      recoveryMode,
+      styles,
+    ],
   );
 
   function onFoldTrigger() {
