@@ -1,6 +1,6 @@
 {
   "name": "nexus",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Mobile Litecoin wallet built with React-Native + Redux",
   "license": "MIT",
   "repository": {
