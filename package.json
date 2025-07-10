@@ -41,6 +41,7 @@
     "@reduxjs/toolkit": "2.8.2",
     "@shopify/flash-list": "2.0.0-rc.9",
     "@shopify/react-native-skia": "2.0.3",
+    "@shopify/storefront-api-client": "^1.0.8",
     "aez": "1.0.1",
     "base58-js": "1.0.5",
     "bech32": "2.0.0",

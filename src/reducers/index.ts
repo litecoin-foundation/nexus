@@ -15,6 +15,7 @@ import alerts from './alerts';
 import settings from './settings';
 import deeplinks from './deeplinks';
 import errors from './errors';
+import cart from './cart';
 
 export default combineReducers({
   onboarding,
@@ -33,4 +34,5 @@ export default combineReducers({
   settings,
   deeplinks,
   errors,
+  cart,
 });

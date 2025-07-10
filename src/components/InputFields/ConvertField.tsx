@@ -100,9 +100,9 @@ const ConvertField: React.FC<Props> = props => {
   const getFontSize = () => {
     const baseSize = SCREEN_HEIGHT * 0.028;
     const length = amount.length;
-    if (length > 10) return baseSize * 0.7;
-    if (length > 8) return baseSize * 0.8;
-    if (length > 6) return baseSize * 0.9;
+    if (length > 10) {return baseSize * 0.7;}
+    if (length > 8) {return baseSize * 0.8;}
+    if (length > 6) {return baseSize * 0.9;}
     return baseSize;
   };
 

@@ -13,7 +13,7 @@ export const getRandomBoolean = () => {
 
 export const getRandomValue = (min: number, max: number): number => {
   'worklet';
-  if (min === max) return min;
+  if (min === max) {return min;}
   return Math.random() * (max - min) + min;
 };
 

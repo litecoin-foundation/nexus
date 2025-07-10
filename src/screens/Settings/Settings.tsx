@@ -55,6 +55,7 @@ type RootStackParamList = {
   Explorer: undefined;
   Currency: undefined;
   Language: undefined;
+  Products: undefined;
   Seed: undefined;
   RootKey: undefined;
   Import: undefined;
@@ -288,6 +289,13 @@ const Settings: React.FC<Props> = props => {
       navigation,
     ],
   );
+
+//           <SettingCell
+//             textKey="Products"
+//             textDomain="settingsTab"
+//             onPress={() => navigation.navigate('Products')}
+//             forward
+//           />
 
   const renderItem = useCallback(
     ({item}) => {

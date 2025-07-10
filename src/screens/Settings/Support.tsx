@@ -29,7 +29,7 @@ const Support: React.FC<Props> = props => {
       'es': 'es',
       'ru': 'ru',
     };
-    
+
     return languageMap[appLanguageCode] || 'en';
   };
 

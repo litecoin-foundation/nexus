@@ -72,7 +72,7 @@ export const Confetti = forwardRef<ConfettiMethods, ConfettiProps>(
     const aEndProgress = useDerivedValue(() => endProgress, [endProgress]);
     const progress = useSharedValue(initialProgress);
     const opacity = useDerivedValue(() => {
-      if (!fadeOutOnEnd) return 1;
+      if (!fadeOutOnEnd) {return 1;}
       return interpolate(
         progress.value,
         [1, 1.9, 2],
@@ -160,21 +160,21 @@ export const Confetti = forwardRef<ConfettiMethods, ConfettiProps>(
       const animations: number[] = [];
 
       if (_blastDuration && aHasCannon.value)
-        animations.push(
+        {animations.push(
           withTiming(1, {duration: _blastDuration}, finished => {
-            if (!_fallDuration) onEnd?.(finished);
+            if (!_fallDuration) {onEnd?.(finished);}
           }),
-        );
+        );}
       if (_fallDuration)
-        animations.push(
+        {animations.push(
           withTiming(2, {duration: _fallDuration}, finished => {
             onEnd?.(finished);
           }),
-        );
+        );}
 
       const finalAnimation = withSequence(...animations);
 
-      if (infinite) return withRepeat(finalAnimation, -1, false);
+      if (infinite) {return withRepeat(finalAnimation, -1, false);}
 
       return finalAnimation;
     };
@@ -190,7 +190,7 @@ export const Confetti = forwardRef<ConfettiMethods, ConfettiProps>(
         {infinite: isInfinite, blastDuration, fallDuration},
         finished => {
           'worklet';
-          if (!finished) return;
+          if (!finished) {return;}
           UIOnEnd();
           refreshBoxes();
         },
@@ -198,7 +198,7 @@ export const Confetti = forwardRef<ConfettiMethods, ConfettiProps>(
     };
 
     const resume = () => {
-      if (running.value) return;
+      if (running.value) {return;}
       running.value = true;
 
       const isBlasting = progress.value < 1;
@@ -213,21 +213,21 @@ export const Confetti = forwardRef<ConfettiMethods, ConfettiProps>(
         },
         finished => {
           'worklet';
-          if (!finished) return;
+          if (!finished) {return;}
           progress.value = aInitialProgress.value;
           UIOnEnd();
           refreshBoxes();
 
           if (autoplay)
-            progress.value = runAnimation(
+            {progress.value = runAnimation(
               {infinite: isInfinite, blastDuration, fallDuration},
               _finished => {
                 'worklet';
-                if (!_finished) return;
+                if (!_finished) {return;}
                 UIOnEnd();
                 refreshBoxes();
               },
-            );
+            );}
         },
       );
     };
@@ -271,8 +271,8 @@ export const Confetti = forwardRef<ConfettiMethods, ConfettiProps>(
       runOnUI(() => {
         if (autoplay && !running.value) {
           if (autoStartDelay > 0)
-            animatedTimeout.value = setAnimatedTimeout(restart, autoStartDelay);
-          else restart();
+            {animatedTimeout.value = setAnimatedTimeout(restart, autoStartDelay);}
+          else {restart();}
         }
       })();
 
@@ -288,7 +288,7 @@ export const Confetti = forwardRef<ConfettiMethods, ConfettiProps>(
     const transforms = useRSXformBuffer(count, (val, i) => {
       'worklet';
       const piece = boxes.value[i];
-      if (!piece) return;
+      if (!piece) {return;}
 
       let tx = 0,
         ty = 0;

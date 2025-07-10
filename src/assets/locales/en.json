@@ -238,6 +238,7 @@
     "select_fiat": "Select Fiat Currency",
     "change_lang": "Change Language",
     "select_lang": "Select Language",
+    "Products": "Products",
     "view_seed": "View Seed Phrase",
     "view_paper_key": "View Seed Phrase",
     "view_root_key": "View Root Key",
