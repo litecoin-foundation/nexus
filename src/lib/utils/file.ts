@@ -12,6 +12,10 @@ export const fileExists = async (path: string) => {
 export const deleteWalletDB = async () => {
   const dbPath = `${lndDir}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
   try {
+    // do not error out when file does not exist
+    if ((await fileExists(dbPath)) === false) {
+      return;
+    }
     await RNFS.unlink(dbPath);
   } catch (error) {
     // if initial install, then no wallet db will exist

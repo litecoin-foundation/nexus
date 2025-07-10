@@ -29,6 +29,7 @@ interface Props {
   handleValidationFailure: () => void;
   handleValidationSuccess: () => void;
   handleBiometricPress?: () => void;
+  keychainPincodeState?: string | null;
 }
 
 interface PasscodeInputRef {
@@ -40,6 +41,7 @@ const AuthPad: React.FC<Props> = props => {
     handleValidationFailure,
     handleValidationSuccess,
     handleBiometricPress,
+    keychainPincodeState,
   } = props;
 
   const {t} = useTranslation('onboarding');
@@ -79,7 +81,9 @@ const AuthPad: React.FC<Props> = props => {
   useEffect(() => {
     if (pin.length === 6) {
       setPinInactive(true);
-      if (pin === passcode) {
+      if (keychainPincodeState && keychainPincodeState === pin) {
+        handleValidationSuccess();
+      } else if (pin === passcode) {
         handleValidationSuccess();
       } else {
         passcodeInputRef.current?.playIncorrectAnimation();

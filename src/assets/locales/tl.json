@@ -49,7 +49,8 @@
     "skip_presync_description": "Sa paglaktaw sa presync, kailangan mong maghintay na maging fully sync ang iyong Nexus Wallet bago ka makapagpadala o makatanggap ng mga transaksyon. Ang prosesong ito ay maaaring tumagal ng hanggang 30+ minuto.",
     "cancel": "Kanselahin",
     "ok": "OK",
-    "txs_take_time_to_appear": "Kahit na na-load na ang iyong mga transaksyon, maaaring tumagal ng kaunti bago ito lumitaw at ma-recalculate ang iyong balanse. Iwanan mo lang na bukas ang app."
+    "txs_take_time_to_appear": "Kahit na na-load na ang iyong mga transaksyon, maaaring tumagal ng kaunti bago ito lumitaw at ma-recalculate ang iyong balanse. Iwanan mo lang na bukas ang app.",
+    "recover_pin": "Kumpirmahin ang PIN"
   },
   "main": {
     "main_wallet": "Pangunahing pitaka",
@@ -156,7 +157,8 @@
     "balance_unconfirmed": "Hindi pa nakumpirmang balanse sa Wallet",
     "wallet_unsynced": "Sync ay Nagpapatuloy...",
     "try_less_amount": "Magpadala ng konti lang. Ang mga network fee ay umuubos sa inyong balance, bawasan ang halaga para sa mga fee.",
-    "insufficient_funds": "Hindi sapat na balanse."
+    "insufficient_funds": "Hindi sapat na balanse.",
+    "this_address_invalid": "Ang address na ito ay hindi valid."
   },
   "receiveTab": {
     "receive_ltc": "Tanggapin ang Litecoin",
@@ -193,6 +195,8 @@
     "last_time": "Ang huling beses na naabot ng LTC ang halagang ito ay {{date}}."
   },
   "settingsTab": {
+    "general_settings": "Pangkalahatang mga Setting",
+    "wallet_settings": "Mga Setting ng Wallet",
     "settings": "Mga setting",
     "need_support": "Kailangan ng Suporta? Magtanong ka!",
     "back": "Pabalik",
@@ -266,7 +270,8 @@
     "camera_error": "Hindi gumagana ang kamera",
     "cancel": "Kanselahin",
     "change_login": "Palitan ang Login Passcode",
-    "processing": "Nagpo-process..."
+    "processing": "Nagpo-process...",
+    "copied": "Nakopya"
   },
   "convertTab": {
     "convert_button": "Palitan ang iyong LTC",

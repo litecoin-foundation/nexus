@@ -249,7 +249,7 @@ const Sell: React.FC<Props> = () => {
         Number(availableAmount) < minLTCSellAmount ||
         Number(availableAmount) > maxLTCSellAmount
       ) {
-        setErrorTextKey('exceed_quote_limit');
+        // setErrorTextKey('exceed_quote_limit');
         return false;
       }
     }

@@ -5,10 +5,10 @@ import React, {
   useLayoutEffect,
   useCallback,
   useEffect,
+  useMemo,
 } from 'react';
 import {
   StyleSheet,
-  ScrollView,
   DeviceEventEmitter,
   Alert,
   View,
@@ -17,6 +17,7 @@ import {
   Linking,
   AppState,
 } from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import {RouteProp} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
@@ -34,6 +35,7 @@ import SettingCell from '../../components/Cells/SettingCell';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
+import SectionHeader from '../../components/SectionHeader';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {updateSubunit, setNotificationsEnabled} from '../../reducers/settings';
@@ -78,7 +80,10 @@ const Settings: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_WIDTH, SCREEN_HEIGHT],
+  );
 
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('view-seed-auth');
@@ -155,20 +160,239 @@ const Settings: React.FC<Props> = props => {
     }
   }, [route, navigation]);
 
-  // NOTE: useMemo won't work here because we need to recalc the function after changing AppState,
-  // this is bacause closing/opening the app do not trigger opened component to rerender
-  const NotificationsSettingCell = useCallback(
-    () => (
-      <SettingCell
-        textKey="enable_notifications"
-        textDomain="settingsTab"
-        switchEnabled
-        fakeSwitch
-        switchValue={notificationsEnabled}
-        onPress={() => openSystemSettings()}
-      />
-    ),
-    [notificationsEnabled],
+  const settingsData = useMemo(
+    () => [
+      {id: 'support', type: 'support'},
+      {id: 'general-header', type: 'header', textKey: 'general_settings'},
+      {
+        id: 'about',
+        type: 'cell',
+        textKey: 'about',
+        forward: true,
+        onPress: () => navigation.navigate('About'),
+      },
+      {id: 'notifications', type: 'notifications'},
+      ...(biometricsAvailable ? [{id: 'biometrics', type: 'biometrics'}] : []),
+      {
+        id: 'explorer',
+        type: 'cell',
+        textKey: 'block_explorer',
+        forward: true,
+        onPress: () => navigation.navigate('Explorer'),
+      },
+      {
+        id: 'currency',
+        type: 'cell',
+        textKey: 'change_currency',
+        forward: true,
+        onPress: () => navigation.navigate('Currency'),
+      },
+      {
+        id: 'language',
+        type: 'cell',
+        textKey: 'change_lang',
+        forward: true,
+        onPress: () => navigation.navigate('Language'),
+      },
+      {
+        id: 'wallet-header',
+        type: 'header',
+        textKey: 'wallet_settings',
+        marginTop: true,
+      },
+      {
+        id: 'change-pin',
+        type: 'cell',
+        textKey: 'change_wallet_pin',
+        forward: true,
+        onPress: () => navigation.navigate('ChangePincode', {type: null}),
+      },
+      {
+        id: 'import-key',
+        type: 'cell',
+        textKey: 'import_private_key',
+        forward: true,
+        onPress: () => navigation.navigate('Import'),
+      },
+      {
+        id: 'import-litewallet',
+        type: 'cell',
+        textKey: 'import_litewallet',
+        forward: true,
+        onPress: () => navigation.navigate('RecoverLitewallet'),
+      },
+      {
+        id: 'view-seed',
+        type: 'cell',
+        textKey: 'view_seed',
+        forward: true,
+        onPress: () => {
+          handleAuthenticationRequired('view-seed-auth')
+            .then(() => navigation.navigate('Seed'))
+            .catch(() =>
+              Alert.alert('Incorrect Pincode', undefined, [
+                {
+                  text: t('dismiss'),
+                  onPress: () => setIsPinModalOpened(false),
+                  style: 'cancel',
+                },
+              ]),
+            );
+        },
+      },
+      {
+        id: 'view-root-key',
+        type: 'cell',
+        textKey: 'view_root_key',
+        forward: true,
+        onPress: () => {
+          handleAuthenticationRequired('view-root-key-auth')
+            .then(() => navigation.navigate('RootKey'))
+            .catch(() =>
+              Alert.alert('Incorrect Pincode', undefined, [
+                {
+                  text: t('dismiss'),
+                  onPress: () => setIsPinModalOpened(false),
+                  style: 'cancel',
+                },
+              ]),
+            );
+        },
+      },
+      {id: 'denomination', type: 'denomination'},
+      {
+        id: 'reset-wallet',
+        type: 'cell',
+        textKey: 'reset_wallet',
+        forward: true,
+        onPress: () => navigation.navigate('ResetWallet'),
+      },
+      ...(__DEV__
+        ? [
+            {
+              id: 'debug',
+              type: 'cell',
+              textKey: 'DEBUG: Buy/Sell Settings',
+              forward: true,
+              onPress: () => navigation.navigate('TestPayment'),
+            },
+          ]
+        : []),
+    ],
+    [
+      biometricsAvailable,
+      notificationsEnabled,
+      biometricsEnabled,
+      faceIDSupported,
+      subunit,
+      t,
+      navigation,
+    ],
+  );
+
+//           <SettingCell
+//             textKey="Products"
+//             textDomain="settingsTab"
+//             onPress={() => navigation.navigate('Products')}
+//             forward
+//           />
+
+  const renderItem = useCallback(
+    ({item}) => {
+      switch (item.type) {
+        case 'support':
+          return <SupportCell onPress={() => navigation.navigate('Support')} />;
+        case 'header':
+          return (
+            <SectionHeader
+              textKey={item.textKey}
+              marginTopMultiplier={item.marginTop ? 0.037 : undefined}
+            />
+          );
+        case 'cell':
+          return (
+            <SettingCell
+              textKey={item.textKey}
+              textDomain="settingsTab"
+              onPress={item.onPress}
+              forward={item.forward}
+            />
+          );
+        case 'notifications':
+          return (
+            <SettingCell
+              textKey="enable_notifications"
+              textDomain="settingsTab"
+              switchEnabled
+              fakeSwitch
+              switchValue={notificationsEnabled}
+              onPress={() => openSystemSettings()}
+            />
+          );
+        case 'biometrics':
+          return (
+            <SettingCell
+              textKey="enable_face_id"
+              textDomain="settingsTab"
+              switchEnabled
+              switchValue={biometricsEnabled}
+              handleSwitch={handleBiometricSwitch}
+              interpolationObj={{
+                faceIDSupported: `${faceIDSupported ? t('face_id') : t('touch_id')}`,
+              }}
+            />
+          );
+        case 'denomination':
+          return (
+            <View style={styles.switchContainer}>
+              <TranslateText
+                textKey="litecoin_denomination"
+                domain="settingsTab"
+                textStyle={styles.switchTitleText}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+              />
+              <SegmentedControl
+                values={['LTC', 'Lites', 'Photons']}
+                selectedIndex={subunit}
+                tintColor="#2C72FF"
+                fontStyle={styles.toggleText}
+                activeFontStyle={styles.activeToggleText}
+                backgroundColor="#fff"
+                onChange={event =>
+                  dispatch(
+                    updateSubunit(event.nativeEvent.selectedSegmentIndex),
+                  )
+                }
+              />
+            </View>
+          );
+        default:
+          return null;
+      }
+    },
+    [
+      biometricsEnabled,
+      faceIDSupported,
+      subunit,
+      t,
+      SCREEN_HEIGHT,
+      styles,
+      handleBiometricSwitch,
+      dispatch,
+      navigation,
+      notificationsEnabled,
+    ],
+  );
+
+  const keyExtractor = useCallback(item => item.id, []);
+
+  const getItemLayout = useCallback(
+    (item, index) => ({
+      length: 60,
+      offset: 60 * index,
+      index,
+    }),
+    [],
   );
 
   return (
@@ -180,145 +404,16 @@ const Settings: React.FC<Props> = props => {
         ]}
         colors={['#F2F8FD', '#d2e1ef00']}>
         <Header />
-        <ScrollView>
-          <SupportCell onPress={() => navigation.navigate('Support')} />
-
-          <SettingCell
-            textKey="about"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('About')}
-            forward
-          />
-          <SettingCell
-            textKey="change_wallet_pin"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('ChangePincode', {type: null})}
-            forward
-          />
-          <NotificationsSettingCell />
-          {biometricsAvailable ? (
-            <SettingCell
-              textKey="enable_face_id"
-              textDomain="settingsTab"
-              switchEnabled
-              switchValue={biometricsEnabled}
-              handleSwitch={handleBiometricSwitch}
-              interpolationObj={{
-                faceIDSupported: `${
-                  faceIDSupported ? t('face_id') : t('touch_id')
-                }`,
-              }}
-            />
-          ) : null}
-
-          <SettingCell
-            textKey="import_private_key"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('Import')}
-            forward
-          />
-          <SettingCell
-            textKey="import_litewallet"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('RecoverLitewallet')}
-            forward
-          />
-          <SettingCell
-            textKey="block_explorer"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('Explorer')}
-            forward
-          />
-          <SettingCell
-            textKey="change_currency"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('Currency')}
-            forward
-          />
-          <SettingCell
-            textKey="change_lang"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('Language')}
-            forward
-          />
-          <SettingCell
-            textKey="Products"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('Products')}
-            forward
-          />
-          <SettingCell
-            textKey="view_seed"
-            textDomain="settingsTab"
-            onPress={() => {
-              handleAuthenticationRequired('view-seed-auth')
-                .then(() => props.navigation.navigate('Seed'))
-                .catch(() =>
-                  Alert.alert('Incorrect Pincode', undefined, [
-                    {
-                      text: t('dismiss'),
-                      onPress: () => setIsPinModalOpened(false),
-                      style: 'cancel',
-                    },
-                  ]),
-                );
-            }}
-            forward
-          />
-          <SettingCell
-            textKey="view_root_key"
-            textDomain="settingsTab"
-            onPress={() => {
-              handleAuthenticationRequired('view-root-key-auth')
-                .then(() => props.navigation.navigate('RootKey'))
-                .catch(() =>
-                  Alert.alert('Incorrect Pincode', undefined, [
-                    {
-                      text: t('dismiss'),
-                      onPress: () => setIsPinModalOpened(false),
-                      style: 'cancel',
-                    },
-                  ]),
-                );
-            }}
-            forward
-          />
-
-          <View style={styles.switchContainer}>
-            <TranslateText
-              textKey="litecoin_denomination"
-              domain="settingsTab"
-              textStyle={styles.switchTitleText}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-            />
-            <SegmentedControl
-              values={['LTC', 'Lites', 'Photons']}
-              selectedIndex={subunit}
-              tintColor="#2C72FF"
-              fontStyle={styles.toggleText}
-              activeFontStyle={styles.activeToggleText}
-              backgroundColor="#fff"
-              onChange={event =>
-                dispatch(updateSubunit(event.nativeEvent.selectedSegmentIndex))
-              }
-            />
-          </View>
-
-          <SettingCell
-            textKey="reset_wallet"
-            textDomain="settingsTab"
-            onPress={() => navigation.navigate('ResetWallet')}
-            forward
-          />
-          {__DEV__ ? (
-            <SettingCell
-              textKey="DEBUG: Buy/Sell Settings"
-              textDomain="settingsTab"
-              onPress={() => navigation.navigate('TestPayment')}
-              forward
-            />
-          ) : null}
-        </ScrollView>
+        <FlashList
+          data={settingsData}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          estimatedItemSize={60}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          drawDistance={200}
+          overrideItemLayout={getItemLayout}
+        />
       </LinearGradient>
 
       <PlasmaModal
@@ -350,6 +445,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
       backgroundColor: '#F7F7F7',
+    },
+    scrollContent: {
+      paddingBottom: screenHeight * 0.04,
     },
     headerTitle: {
       color: '#fff',

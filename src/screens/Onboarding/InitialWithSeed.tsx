@@ -28,6 +28,7 @@ type RootStackParamList = {
     existingSeed: string;
   };
   Pin: undefined;
+  RecoverPin: undefined;
   Recover:
     | {
         existingSeed?: string;
@@ -64,7 +65,7 @@ const InitialWithSeed = (props: Props) => {
   const loginWithExistingSeed = async (seedString: string) => {
     const seed = seedString.split(',');
     await dispatch(setSeedRecovery(seed));
-    navigation.navigate('Pin');
+    navigation.navigate('RecoverPin');
   };
 
   return (

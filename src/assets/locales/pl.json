@@ -49,7 +49,8 @@
     "skip_presync_description": "Pomijając presync, będziesz musiał poczekać, aż Twój portfel Nexus zostanie w pełni zsynchronizowany, zanim będziesz mógł wysyłać lub odbierać transakcje. Ten proces może potrwać do 30+ minut.",
     "cancel": "Anuluj",
     "ok": "OK",
-    "txs_take_time_to_appear": "Chociaż Twoje transakcje zostały załadowane, może minąć trochę czasu, zanim się pojawią i saldo zostanie przeliczone. Po prostu pozostaw aplikację otwartą."
+    "txs_take_time_to_appear": "Chociaż Twoje transakcje zostały załadowane, może minąć trochę czasu, zanim się pojawią i saldo zostanie przeliczone. Po prostu pozostaw aplikację otwartą.",
+    "recover_pin": "Potwierdź PIN"
   },
   "main": {
     "main_wallet": "Główny portfel",
@@ -156,7 +157,8 @@
     "balance_unconfirmed": "Niepotwierdzony saldo w portfelu",
     "wallet_unsynced": "Trwa synchronizacja...",
     "try_less_amount": "Wyślij trochę mniej. Opłaty sieciowe zmniejszają Twoje saldo, zmniejsz kwotę na opłaty.",
-    "insufficient_funds": "Niewystarczające środki."
+    "insufficient_funds": "Niewystarczające środki.",
+    "this_address_invalid": "Ten adres jest nieprawidłowy."
   },
   "receiveTab": {
     "receive_ltc": "Odbierz Litecoin",
@@ -193,6 +195,8 @@
     "last_time": "Ostatni raz kiedy LTC osiągnął tę wartość był {{date}}."
   },
   "settingsTab": {
+    "general_settings": "Ustawienia ogólne",
+    "wallet_settings": "Ustawienia portfela",
     "settings": "Ustawienia",
     "need_support": "Potrzebujesz pomocy? Zadaj pytanie!",
     "back": "Wróć",
@@ -266,7 +270,8 @@
     "camera_error": "Aparat wyłączony",
     "cancel": "Anuluj",
     "change_login": "Zmień kod logowania",
-    "processing": "Przetwarzanie..."
+    "processing": "Przetwarzanie...",
+    "copied": "Skopiowano"
   },
   "convertTab": {
     "convert_button": "Wymień swoje LTC",

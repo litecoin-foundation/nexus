@@ -163,7 +163,7 @@ const Buy: React.FC<Props> = () => {
         Number(availableQuote) < minBuyAmount ||
         Number(availableQuote) > maxBuyAmount
       ) {
-        setErrorTextKey('exceed_quote_limit');
+        // setErrorTextKey('exceed_quote_limit');
         return false;
       }
     }
