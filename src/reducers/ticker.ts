@@ -378,6 +378,13 @@ export const fiatValueSelector = createSelector(
     ),
 );
 
+export const confirmSellFiatValueSelector = createSelector(
+  state => state.ticker.rates,
+  state => state.settings.currencyCode,
+  (rates: {[key: string]: any}, currencyCode: string) =>
+    memoize((amount: number) => `${(amount * rates[currencyCode]).toFixed(2)}`),
+);
+
 export const monthSelector = createSelector(
   state => state.chart.graphPeriod,
   state => state.ticker.day,
