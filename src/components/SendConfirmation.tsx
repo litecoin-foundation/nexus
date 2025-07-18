@@ -49,14 +49,20 @@ const SendConfirmation: React.FC<Props> = props => {
   const [loading, setLoading] = useState(false);
   const [fee, setFee] = useState(0);
 
+  const {confirmedBalance} = useAppSelector(state => state.balance!);
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const amountCode = useAppSelector(state => subunitCodeSelector(state));
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
+
+  const sendAmount =
+    sendAll === true ? Number(confirmedBalance) - 5100 : amount;
+  const sendFiatAmount =
+    sendAll === true ? calculateFiatAmount(confirmedBalance) : fiatAmount;
+
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
-  const amountInSubunit = convertToSubunit(amount);
+  const amountInSubunit = convertToSubunit(sendAmount);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -108,9 +114,10 @@ const SendConfirmation: React.FC<Props> = props => {
     const calculateFee = async () => {
       try {
         const response = await estimateFee({
-          AddrToAmount: {[toAddress]: BigInt(amount)},
+          AddrToAmount: {[toAddress]: BigInt(sendAmount)},
           targetConf: 2,
         });
+
         setFee(Number(response.feeSat));
       } catch (error) {
         console.error(error);
@@ -158,7 +165,7 @@ const SendConfirmation: React.FC<Props> = props => {
             />
             <View style={styles.fiatAmount}>
               <TranslateText
-                textValue={currencySymbol + '' + fiatAmount}
+                textValue={sendFiatAmount}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.025}
                 textStyle={styles.fiatAmountText}
                 numberOfLines={1}

@@ -23,11 +23,11 @@ interface Props {
 const ConfirmSend: React.FC<Props> = props => {
   const {navigation, route} = props;
 
-  const amount = useAppSelector(state => state.input.send.amount);
-  const fiatAmount = useAppSelector(state => state.input.fiatAmount);
-  const toAddress = useAppSelector(state => state.input.send.toAddress);
-  const toDomain = useAppSelector(state => state.input.send.toDomain);
-  const label = useAppSelector(state => state.input.send.label);
+  const amount = useAppSelector(state => state.input!.send.amount);
+  const fiatAmount = useAppSelector(state => state.input!.fiatAmount);
+  const toAddress = useAppSelector(state => state.input!.send.toAddress);
+  const toDomain = useAppSelector(state => state.input!.send.toDomain);
+  const label = useAppSelector(state => state.input!.send.label);
 
   const sendAll = route.params?.sendAll || false;
 
