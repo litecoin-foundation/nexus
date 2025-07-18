@@ -37,6 +37,7 @@ const AmountPicker: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [toggleLTC, setToggleLTC] = useState(true);
+  const [sendAllEnabled, setSendAllEnabled] = useState(false);
 
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const ltcFontY = useSharedValue(SCREEN_HEIGHT * 0.027);
@@ -67,8 +68,23 @@ const AmountPicker: React.FC<Props> = props => {
   const activeOpacity = useSharedValue(0);
 
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
+  const currencySymbol = useAppSelector(
+    state => state.settings!.currencySymbol,
+  );
 
+  const handleSetAll = () => {
+    ltcFontY.value = withTiming(SCREEN_HEIGHT * 0.027);
+    fiatFontY.value = withTiming(SCREEN_HEIGHT * 0.06);
+
+    setSendAllEnabled(true);
+    setMax();
+  };
+
+  useEffect(() => {
+    setSendAllEnabled(false);
+  }, [amount, fiatAmount]);
+
+  // animation
   const toggleContainerMotionStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -181,9 +197,11 @@ const AmountPicker: React.FC<Props> = props => {
           x={4}
           y={ltcFontY}
           text={
-            String(amount) === ''
-              ? `0.00${amountSymbol}`
-              : `${amount}${amountSymbol}`
+            sendAllEnabled === true
+              ? 'ALL'
+              : String(amount) === ''
+                ? `0.00${amountSymbol}`
+                : `${amount}${amountSymbol}`
           }
         />
         <SkiaText
@@ -200,27 +218,22 @@ const AmountPicker: React.FC<Props> = props => {
       </Canvas>
 
       <View style={styles.pressables}>
-        {setMax ? (
-          <Pressable
-            style={styles.maxButton}
-            disabled={!active}
-            onPressIn={() => onPressIn('maxButton')}
-            onPressOut={() => onPressOut('maxButton')}
-            onPress={() => setMax()}>
-            <Animated.View
-              style={[
-                styles.maxButtonContainer,
-                maxButtonContainerMotionStyle,
-              ]}>
-              <TranslateText
-                textValue="MAX"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                textStyle={styles.maxButtonText}
-                numberOfLines={1}
-              />
-            </Animated.View>
-          </Pressable>
-        ) : null}
+        <Pressable
+          style={styles.maxButton}
+          disabled={!active}
+          onPressIn={() => onPressIn('maxButton')}
+          onPressOut={() => onPressOut('maxButton')}
+          onPress={() => handleSetAll()}>
+          <Animated.View
+            style={[styles.maxButtonContainer, maxButtonContainerMotionStyle]}>
+            <TranslateText
+              textValue="ALL"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.maxButtonText}
+              numberOfLines={1}
+            />
+          </Animated.View>
+        </Pressable>
 
         <Pressable
           style={[styles.toggle]}

@@ -5,14 +5,12 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
-  useLayoutEffect,
 } from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
-import {estimateFee} from 'react-native-turbo-lndltc';
 
 import InputField from '../InputField';
 import AddressField from '../AddressField';
@@ -73,15 +71,12 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const convertLitecoinToSubunit = useAppSelector(state =>
     litecoinToSubunitSelector(state),
   );
-  const amount = useAppSelector(state => state.input.amount);
-  const fiatAmount = useAppSelector(state => state.input.fiatAmount);
+  const amount = useAppSelector(state => state.input!.amount);
+  const fiatAmount = useAppSelector(state => state.input!.fiatAmount);
   const {confirmedBalance, totalBalance} = useAppSelector(
-    state => state.balance,
+    state => state.balance!,
   );
-  // NOTE: assume min amount of 0.0001 ltc and subtract it from balance for estimated fee calculations
-  // if this number is below 0 disable sending and show setNoteKey('insufficient_funds')
-  const balanceMinus00001 = Number(confirmedBalance) - 10000;
-  const syncedToChain = useAppSelector(state => state.info.syncedToChain);
+  const syncedToChain = useAppSelector(state => state.info!.syncedToChain);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -96,94 +91,16 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [amountPickerActive, setAmountPickerActive] = useState(false);
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
   const [noteKey, setNoteKey] = useState<string>('');
-
-  const [activateSendAll, setActivateSendAll] = useState(false);
-  const [isSettingMax, setIsSettingMax] = useState(false);
-  const [isFeeEstimating, setIsFeeEstimating] = useState(false);
-
-  const [sendAllFee, setSendAllFee] = useState(0);
-  // pre estimate fee
-  useLayoutEffect(() => {
-    const calculateFee = async () => {
-      setIsFeeEstimating(true);
-      try {
-        if (balanceMinus00001 <= 0) {
-          setSendAllFee(0);
-        } else {
-          const response = await estimateFee({
-            AddrToAmount: {
-              ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus00001),
-            },
-            targetConf: 2,
-          });
-          setSendAllFee(Number(response.feeSat));
-        }
-      } catch (error) {
-        console.error(error);
-        setSendAllFee(0);
-      } finally {
-        setIsFeeEstimating(false);
-      }
-    };
-    calculateFee();
-  }, [balanceMinus00001]);
-  // estimate fee with input address and real balance
-  useEffect(() => {
-    if (address) {
-      const calculateFee = async () => {
-        setIsFeeEstimating(true);
-        try {
-          if (balanceMinus00001 <= 0) {
-            setSendAllFee(0);
-          } else {
-            const valid = validateLtcAddress(address);
-            if (valid) {
-              const response = await estimateFee({
-                AddrToAmount: {[address]: BigInt(confirmedBalance)},
-                targetConf: 2,
-              });
-              setSendAllFee(Number(response.feeSat));
-            }
-          }
-        } catch (error) {
-          console.error(error);
-          setSendAllFee(0);
-        } finally {
-          setIsFeeEstimating(false);
-        }
-      };
-      calculateFee();
-    }
-  }, [balanceMinus00001, confirmedBalance, address]);
-
-  const setMax = () => {
-    if (isSettingMax || isFeeEstimating) {
-      return; // Prevent setting max while fee is being estimated or already setting max
-    }
-
-    setIsSettingMax(true);
-    const maxAmount = parseFloat(
-      String(Number(confirmedBalance) / 100000000 - sendAllFee / 100000000),
-    ).toFixed(6);
-
-    // Ensure maxAmount is positive
-    if (Number(maxAmount) <= 0) {
-      setIsSettingMax(false);
-      return;
-    }
-
-    // Only update if the calculated max is different from current amount
-    if (maxAmount !== amount) {
-      dispatch(updateAmount(maxAmount, 'ltc'));
-    }
-
-    // Reset flag after a short delay to allow state updates
-    setTimeout(() => setIsSettingMax(false), 100);
-  };
+  const [sendAll, setSendAll] = useState(false);
 
   // check if ready to send
   useEffect(() => {
     const check = async () => {
+      if ((!amount || Number(amount) <= 0) && sendAll !== true) {
+        setSendDisabled(true);
+        return;
+      }
+
       // NOTE: when wallet isn't fully synced, balance is showed as unconfirmed
       if (totalBalance !== confirmedBalance) {
         setSendDisabled(true);
@@ -197,21 +114,18 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         return;
       }
 
-      if (!amount || Number(amount) <= 0) {
-        setSendDisabled(true);
-        return;
-      }
-
       // validate balance
       const amountInSats = convertToSats(Number(amount));
-
-      // NOTE: instead of displaying setNoteKey('insufficient_funds') or setNoteKey('try_less_amount') error,
-      // set max available amount for sending excluding fee
-      if (amountInSats > Number(confirmedBalance) - sendAllFee && !isSettingMax && !isFeeEstimating) {
-        setMax();
+      // check if amount being sent is > user balance
+      if (amountInSats > Number(confirmedBalance)) {
+        setSendDisabled(true);
+        setNoteKey('try_less_amount');
         return;
       }
 
+      // assume min amount of 0.0001 ltc and subtract it from balance for estimated fee calculations
+      // if this number is below 0 disable sending and show setNoteKey('insufficient_funds')
+      const balanceMinus00001 = Number(confirmedBalance) - 10000;
       if (balanceMinus00001 <= 0) {
         setSendDisabled(true);
         setNoteKey('insufficient_funds');
@@ -231,11 +145,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         return;
       }
 
-      // force the "send all" flag for lnd with a 1000 sats range
-      if (amountInSats + 1000 > Number(confirmedBalance) - sendAllFee) {
-        setActivateSendAll(true);
-      } else {
-        setActivateSendAll(false);
+      // if user attempts to send an amount within a 1000 sats range of the wallet balance
+      // we force sendAll to true
+      if (amountInSats + 1000 > Number(confirmedBalance)) {
+        setSendAll(true);
       }
 
       // otherwise enable send
@@ -251,7 +164,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     totalBalance,
     confirmedBalance,
     syncedToChain,
-    sendAllFee,
+    sendAll,
   ]);
 
   // qr code scanner result handler
@@ -332,6 +245,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   };
 
   const onChange = (value: string) => {
+    setSendAll(false);
+
     if (toggleLTC) {
       dispatch(updateAmount(value, 'ltc'));
     } else if (!toggleLTC) {
@@ -457,7 +372,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
 
-    navigation.navigate('ConfirmSend', {sendAll: activateSendAll});
+    navigation.navigate('ConfirmSend', {sendAll});
   };
 
   useEffect(() => {
@@ -495,14 +410,6 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             numberOfLines={1}
           />
           <View style={styles.amountSubContainer}>
-            {/* <Pressable onPress={() => setMax()} style={styles.maxButton}>
-              <TranslateText
-                textValue="MAX"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                textStyle={styles.buttonText}
-                numberOfLines={1}
-              />
-            </Pressable> */}
             <AmountPicker
               amount={amount}
               fiatAmount={fiatAmount}
@@ -512,7 +419,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                 setAmountPickerActive(true);
               }}
               handleToggle={() => setToggleLTC(!toggleLTC)}
-              setMax={setMax}
+              setMax={() => setSendAll(true)}
             />
           </View>
         </View>
