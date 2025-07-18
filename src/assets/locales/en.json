@@ -158,7 +158,19 @@
     "wallet_unsynced": "Sync in Progress...",
     "try_less_amount": "Send a bit less. Network fees eat into your balance, lower the amount for fees.",
     "insufficient_funds": "Insufficient balance.",
-    "this_address_invalid": "This address is invalid."
+    "this_address_invalid": "This address is invalid.",
+    "select_coins": "Select coins",
+    "private_coins": "PRIVATE COINS",
+    "public_coins": "PUBLIC COINS",
+    "low_privacy_risk": "LOW PRIVACY RISK",
+    "high_privacy_risk": "HIGH PRIVACY RISK",
+    "required": "Required: LTC {{amount}}",
+    "selected": "Selected: LTC {{amount}}",
+    "confirm_selection": "Confirm Selection",
+    "manual_coin_selection": "Manual Coin Selection",
+    "amount_selected": "AMOUNT SELECTED",
+    "amount_selected_number": "{{amount}} LTC",
+    "manual_selection_note": "Please select coins to match the requested {{amount}} LTC"
   },
   "receiveTab": {
     "receive_ltc": "Receive Litecoin",
@@ -272,7 +284,8 @@
     "camera_error": "Camera Disabled",
     "cancel": "Cancel",
     "change_login": "Change Login Passcode",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "manual_coin_selection": "Manual Coin Selection"
   },
   "convertTab": {
     "convert_button": "Convert your LTC",

@@ -16,14 +16,15 @@ interface Props {
   onPress: () => void;
   disabled?: boolean;
   small?: boolean;
+  rounded?: boolean;
 }
 
 const BlueButton: React.FC<Props> = props => {
-  const {value, textKey, textDomain, onPress, disabled, small} = props;
+  const {value, textKey, textDomain, onPress, disabled, small, rounded} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, rounded);
 
   // animation
   const scaler = useSharedValue(1);
@@ -73,12 +74,16 @@ const BlueButton: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  rounded: boolean | undefined,
+) =>
   StyleSheet.create({
     container: {
       height: screenHeight * 0.055,
       backgroundColor: '#2C72FF',
-      borderRadius: screenHeight * 0.01,
+      borderRadius: rounded ? screenHeight * 0.0275 : screenHeight * 0.01,
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: screenHeight * 0.025,
@@ -86,12 +91,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     small: {
       width: screenWidth * 0.7,
       height: screenHeight * 0.055,
-      borderRadius: screenHeight * 0.01,
+      borderRadius: rounded ? screenHeight * 0.0275 : screenHeight * 0.01,
     },
     big: {
       width: '100%',
       height: screenHeight * 0.06,
-      borderRadius: screenHeight * 0.012,
+      borderRadius: rounded ? screenHeight * 0.03 : screenHeight * 0.012,
     },
     text: {
       fontFamily: 'Satoshi Variable',

@@ -38,7 +38,11 @@ import SupportCell from '../../components/Cells/SupportCell';
 import SectionHeader from '../../components/SectionHeader';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {updateSubunit, setNotificationsEnabled} from '../../reducers/settings';
+import {
+  updateSubunit,
+  setNotificationsEnabled,
+  setManualCoinSelectionEnabled,
+} from '../../reducers/settings';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -98,6 +102,10 @@ const Settings: React.FC<Props> = props => {
     state => state.settings!,
   );
 
+  const manualCoinSelectionEnabled = useAppSelector(
+    state => state.settings.manualCoinSelectionEnabled,
+  );
+
   const openSystemSettings = async () => {
     Linking.openSettings();
   };
@@ -127,6 +135,10 @@ const Settings: React.FC<Props> = props => {
 
   const handleBiometricSwitch = () => {
     dispatch(setBiometricEnabled(!biometricsEnabled));
+  };
+
+  const handleManualCoinSelectionSwitch = () => {
+    dispatch(setManualCoinSelectionEnabled(!manualCoinSelectionEnabled));
   };
 
   const handleAuthenticationRequired = (action: string) => {
@@ -200,6 +212,7 @@ const Settings: React.FC<Props> = props => {
         textKey: 'wallet_settings',
         marginTop: true,
       },
+      {id: 'manual_coin_selection', type: 'manual_coin_selection'},
       {
         id: 'change-pin',
         type: 'cell',
@@ -282,6 +295,7 @@ const Settings: React.FC<Props> = props => {
     [
       biometricsAvailable,
       notificationsEnabled,
+      manualCoinSelectionEnabled,
       biometricsEnabled,
       faceIDSupported,
       subunit,
@@ -290,12 +304,12 @@ const Settings: React.FC<Props> = props => {
     ],
   );
 
-//           <SettingCell
-//             textKey="Products"
-//             textDomain="settingsTab"
-//             onPress={() => navigation.navigate('Products')}
-//             forward
-//           />
+  //           <SettingCell
+  //             textKey="Products"
+  //             textDomain="settingsTab"
+  //             onPress={() => navigation.navigate('Products')}
+  //             forward
+  //           />
 
   const renderItem = useCallback(
     ({item}) => {
@@ -342,6 +356,16 @@ const Settings: React.FC<Props> = props => {
               }}
             />
           );
+        case 'manual_coin_selection':
+          return (
+            <SettingCell
+              textKey="manual_coin_selection"
+              textDomain="settingsTab"
+              switchEnabled
+              switchValue={manualCoinSelectionEnabled}
+              handleSwitch={handleManualCoinSelectionSwitch}
+            />
+          );
         case 'denomination':
           return (
             <View style={styles.switchContainer}>
@@ -381,6 +405,7 @@ const Settings: React.FC<Props> = props => {
       dispatch,
       navigation,
       notificationsEnabled,
+      manualCoinSelectionEnabled,
     ],
   );
 

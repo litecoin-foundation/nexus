@@ -6,12 +6,15 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View, Image} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 
+import PlasmaModal from '../Modals/PlasmaModal';
+import SelectCoinsModalContent from '../Modals/SelectCoinsModalContent';
+import Switch from '../Buttons/Switch';
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
@@ -39,6 +42,7 @@ import {
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {PopUpContext} from '../../context/popUpContext';
 
 type RootStackParamList = {
   Main: {
@@ -75,6 +79,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const fiatAmount = useAppSelector(state => state.input!.fiatAmount);
   const {confirmedBalance, totalBalance} = useAppSelector(
     state => state.balance!,
+  );
+  const manualCoinSelectionEnabled = useAppSelector(
+    state => state.settings.manualCoinSelectionEnabled,
   );
   const syncedToChain = useAppSelector(state => state.info!.syncedToChain);
 
@@ -116,6 +123,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       // validate balance
       const amountInSats = convertToSats(Number(amount));
+      
       // check if amount being sent is > user balance
       if (amountInSats > Number(confirmedBalance)) {
         setSendDisabled(true);
@@ -387,6 +395,38 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     }
   };
 
+  const [enableManualSelection, setEnableManualSelection] = useState(false);
+  const {showPopUp} = useContext(PopUpContext);
+  const [modalVisible, setModalVisible] = useState(false);
+  const openManualSelectionModal = () => {
+    setModalVisible(true);
+  };
+  const closeManualSelectionModal = () => {
+    setModalVisible(false);
+  };
+  const manualSelectionModal = (
+    <PlasmaModal
+      isOpened={modalVisible}
+      close={closeManualSelectionModal}
+      isFromBottomToTop={true}
+      animDuration={250}
+      gapInPixels={SCREEN_HEIGHT * 0.15}
+      backSpecifiedStyle={{backgroundColor: 'transparent'}}
+      gapSpecifiedStyle={{backgroundColor: 'transparent'}}
+      disableBlur={false}
+      renderBody={(_, __, ___, ____, cardTranslateAnim) => (
+        <SelectCoinsModalContent
+          close={closeManualSelectionModal}
+          cardTranslateAnim={cardTranslateAnim}
+        />
+      )}
+    />
+  );
+  useEffect(() => {
+    showPopUp(manualSelectionModal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalVisible]);
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -466,7 +506,74 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               </View>
             </View>
 
-            <View style={styles.cellContainerMoreMargin}>
+            {manualCoinSelectionEnabled ? (
+              <View style={styles.cellContainer}>
+                <View style={styles.manualSelectionTop}>
+                  <TranslateText
+                    textKey="manual_coin_selection"
+                    domain="sendTab"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.subtitleText}
+                    numberOfLines={1}
+                  />
+                  <Switch
+                    initialValue={false}
+                    onPress={() =>
+                      setEnableManualSelection(!enableManualSelection)
+                    }
+                  />
+                </View>
+                {enableManualSelection ? (
+                  <Pressable
+                    style={styles.manualSelectionBottom}
+                    onPress={openManualSelectionModal}>
+                    <View style={styles.manualSelectionBottomTitleContainer}>
+                      <TranslateText
+                        textKey="amount_selected"
+                        domain="sendTab"
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                        textStyle={styles.manualSelectionBottomTitle}
+                        numberOfLines={1}
+                      />
+                      <TranslateText
+                        textKey="amount_selected_number"
+                        domain="sendTab"
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                        textStyle={styles.manualSelectionBottomTitle}
+                        numberOfLines={1}
+                        interpolationObj={{amount: 100}}
+                      />
+                    </View>
+                    <View style={styles.manualSelectionBottomNoteContainer}>
+                      <Image
+                        style={styles.manualSelectionBottomNoteIcon}
+                        source={require('../../assets/icons/info-icon.png')}
+                      />
+                      <TranslateText
+                        textKey="manual_selection_note"
+                        domain="sendTab"
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                        textStyle={styles.manualSelectionBottomNote}
+                        numberOfLines={2}
+                        interpolationObj={{amount: 100}}
+                      />
+                    </View>
+                    <View style={styles.manualSelectionBottomArrowContainer}>
+                      <Image
+                        style={styles.manualSelectionBottomArrowIcon}
+                        source={require('../../assets/images/back-icon.png')}
+                      />
+                    </View>
+                  </Pressable>
+                ) : (
+                  <></>
+                )}
+              </View>
+            ) : (
+              <></>
+            )}
+
+            <View style={styles.cellContainer}>
               <TranslateText
                 textKey="description"
                 domain="sendTab"
@@ -586,10 +693,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.025,
     },
     cellContainer: {
-      marginTop: screenHeight * 0.035,
-    },
-    cellContainerMoreMargin: {
-      marginTop: screenHeight * 0.06,
+      marginTop: screenHeight * 0.02,
     },
     subtitlesContainer: {
       flexDirection: 'row',
@@ -680,6 +784,71 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.012,
       textAlign: 'center',
       marginTop: screenHeight * 0.01,
+    },
+    manualSelectionTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingBottom: 5,
+    },
+    manualSelectionBottom: {
+      width: '100%',
+      height: screenHeight * 0.1,
+      borderRadius: screenHeight * 0.015,
+      borderColor: '#E8E8E8',
+      borderWidth: 1,
+      backgroundColor: '#2C72FF',
+      padding: screenHeight * 0.015,
+      gap: 10,
+    },
+    manualSelectionBottomTitleContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: screenWidth * 0.1,
+    },
+    manualSelectionBottomTitle: {
+      flexBasis: '50%',
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '700',
+      fontStyle: 'normal',
+      textTransform: 'uppercase',
+    },
+    manualSelectionBottomNoteContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      gap: 10,
+    },
+    manualSelectionBottomNoteIcon: {
+      width: screenHeight * 0.022,
+      height: screenHeight * 0.022,
+      justifyContent: 'center',
+      alignItems: 'center',
+      objectFit: 'contain',
+      marginTop: screenHeight * 0.003,
+    },
+    manualSelectionBottomNote: {
+      flexBasis: '75%',
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.016,
+      fontWeight: '500',
+      fontStyle: 'normal',
+    },
+    manualSelectionBottomArrowContainer: {
+      position: 'absolute',
+      top: 0,
+      right: screenWidth * 0.03,
+      height: screenHeight * 0.1,
+      justifyContent: 'center',
+    },
+    manualSelectionBottomArrowIcon: {
+      width: screenHeight * 0.016,
+      height: screenHeight * 0.016,
+      objectFit: 'contain',
+      transform: 'rotate(180deg)',
     },
   });
 

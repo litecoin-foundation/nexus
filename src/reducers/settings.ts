@@ -26,6 +26,7 @@ interface ISettings {
   languageTag: string;
   deviceNotificationToken: string;
   notificationsEnabled: boolean;
+  manualCoinSelectionEnabled: boolean;
   testPaymentActive: boolean;
   testPaymentKey: boolean;
   testPaymentMethod: string;
@@ -60,6 +61,7 @@ const initialState = {
   languageTag: 'en-US',
   deviceNotificationToken: '',
   notificationsEnabled: false,
+  manualCoinSelectionEnabled: false,
 } as ISettings;
 
 // actions
@@ -84,6 +86,9 @@ const setDeviceNotificationTokenAction = createAction<string>(
 );
 const enableNotificationsAction = createAction<boolean>(
   'settings/enableNotificationsAction',
+);
+const enableManualCoinSelectionAction = createAction<boolean>(
+  'settings/enableManualCoinSelectionAction',
 );
 const setTestPaymentAction = createAction<TestPaymentType>(
   'settings/setTestPaymentAction',
@@ -146,6 +151,12 @@ export const setNotificationsEnabled =
     dispatch(enableNotificationsAction(isEnabled));
   };
 
+export const setManualCoinSelectionEnabled =
+  (isEnabled: boolean): AppThunk =>
+  dispatch => {
+    dispatch(enableManualCoinSelectionAction(isEnabled));
+  };
+
 export const setTestPayment =
   (
     testPaymentActive: boolean,
@@ -206,6 +217,10 @@ export const settingsSlice = createSlice({
     enableNotificationsAction: (state, action) => ({
       ...state,
       notificationsEnabled: action.payload,
+    }),
+    enableManualCoinSelectionAction: (state, action) => ({
+      ...state,
+      manualCoinSelectionEnabled: action.payload,
     }),
     setTestPaymentAction: (state, action) => ({
       ...state,
