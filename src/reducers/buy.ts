@@ -715,28 +715,27 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
 
   try {
     const res = await fetch(supportedForBuying, req);
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message);
-    }
-    const data = await res.json();
-    if (data.hasOwnProperty('message')) {
-      if (data.message.hasOwnProperty('assets')) {
-        if (data.message.assets[0].crypto.includes('ltc_litecoin')) {
-          canBuy = true;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.hasOwnProperty('message')) {
+        if (data.message.hasOwnProperty('assets')) {
+          if (data.message.assets[0].crypto.includes('ltc_litecoin')) {
+            canBuy = true;
+          }
         }
       }
     }
+
     const res2 = await fetch(supportedForSelling, req);
-    if (!res2.ok) {
-      const error = await res2.json();
-      throw new Error(error.message);
-    }
-    const data2 = await res2.json();
-    if (data2.hasOwnProperty('message')) {
-      if (data2.message.hasOwnProperty('assets')) {
-        if (data2.message.assets[0].fiat.includes(currencyCode.toLowerCase())) {
-          canSell = true;
+    if (res2.ok) {
+      const data2 = await res2.json();
+      if (data2.hasOwnProperty('message')) {
+        if (data2.message.hasOwnProperty('assets')) {
+          if (
+            data2.message.assets[0].fiat.includes(currencyCode.toLowerCase())
+          ) {
+            canSell = true;
+          }
         }
       }
     }
