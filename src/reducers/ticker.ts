@@ -8,8 +8,16 @@ import {setBuyQuote, setSellQuote, setLimits} from './buy';
 import {IBuyQuote, ISellQuote} from '../utils/tradeQuotes';
 
 // types
+type PriceDataPoint = [number, number, number, number, number, number];
+
 type IRates = {
   [key: string]: any;
+};
+
+type TGranulatedPriceData = {
+  hourly: PriceDataPoint[];
+  daily: PriceDataPoint[];
+  all: PriceDataPoint[];
 };
 
 interface ITicker {
@@ -163,24 +171,25 @@ export const pollRates = (): AppThunk => async dispatch => {
   }, 15000);
 };
 
-const fetchHistoricalRates = async (interval: string): Promise<any[]> => {
-  const url = `https://api.nexuswallet.com/api/prices/${interval}`;
-  const headers = {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
+const fetchGranulatedHistoricalRates =
+  async (): Promise<TGranulatedPriceData> => {
+    const url = 'https://api.nexuswallet.com/api/prices/granulated';
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      return {hourly: [], daily: [], all: []} as TGranulatedPriceData;
+    }
+
+    const {data} = await res.json();
+    return data;
   };
-
-  const res = await fetch(url, {method: 'GET', headers});
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to fetch historical rates');
-  }
-
-  const {data} = await res.json();
-
-  return data;
-};
 
 export const updatedRatesInFiat = (): AppThunk => async dispatch => {
   try {
@@ -191,106 +200,58 @@ export const updatedRatesInFiat = (): AppThunk => async dispatch => {
   }
 };
 
-export const getDayHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('1D');
-    dispatch(updateHistoricRateDayAction(result));
-  } catch (error) {
-    console.error('Error fetching day historical rates:', error);
-  }
-};
-
-export const getWeekHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('1W');
-    dispatch(updateHistoricRateWeekAction(result));
-  } catch (error) {
-    console.error('Error fetching week historical rates:', error);
-  }
-};
-
-export const getMonthHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('1M');
-    dispatch(updateHistoricRateMonthAction(result));
-  } catch (error) {
-    console.error('Error fetching month historical rates:', error);
-  }
-};
-
-export const getQuarterHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('3M');
-    dispatch(updateHistoricRateQuarterAction(result));
-  } catch (error) {
-    console.error('Error fetching 3-month historical rates:', error);
-  }
-};
-
-export const getYearHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('1Y');
-    dispatch(updateHistoricRateYearAction(result));
-  } catch (error) {
-    console.error('Error fetching 1-year historical rates:', error);
-  }
-};
-
-export const getAllHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('ALL');
-    dispatch(updateHistoricRateAllAction(result));
-  } catch (error) {
-    console.error('Error fetching All historical rates:', error);
-  }
-};
-
-export const updateHistoricalRates = (): AppThunk => (dispatch, getStore) => {
-  const graphPeriod = getStore().chart.graphPeriod;
-
-  switch (graphPeriod) {
-    case '1D':
-      dispatch(getDayHistoricalRates());
-      break;
-    case '1W':
-      dispatch(getWeekHistoricalRates());
-      break;
-    case '1M':
-      dispatch(getMonthHistoricalRates());
-      break;
-    case '3M':
-      dispatch(getQuarterHistoricalRates());
-      break;
-    case '1Y':
-      dispatch(getYearHistoricalRates());
-      break;
-    case 'ALL':
-      dispatch(getAllHistoricalRates());
-      break;
-    default:
-      dispatch(getDayHistoricalRates());
-      break;
-  }
-};
-
 export const updateHistoricalRatesForAllPeriods =
   (): AppThunk => async dispatch => {
     try {
-      let result = await fetchHistoricalRates('1D');
-      dispatch(updateHistoricRateDayAction(result));
-      result = await fetchHistoricalRates('1W');
-      dispatch(updateHistoricRateWeekAction(result));
-      result = await fetchHistoricalRates('1M');
-      dispatch(updateHistoricRateMonthAction(result));
-      result = await fetchHistoricalRates('3M');
-      dispatch(updateHistoricRateQuarterAction(result));
-      result = await fetchHistoricalRates('1Y');
-      dispatch(updateHistoricRateYearAction(result));
-      result = await fetchHistoricalRates('ALL');
-      dispatch(updateHistoricRateAllAction(result));
+      const granulatedPriceData: TGranulatedPriceData =
+        await fetchGranulatedHistoricalRates();
+      dispatch(segregateHistoricalRatesByPeriods(granulatedPriceData));
     } catch (error) {
-      console.error('Error fetching all historical rates:', error);
+      console.error('Failed to update historical rates:', error);
     }
+  };
+
+const segregateHistoricalRatesByPeriods =
+  (granulatedPriceData: TGranulatedPriceData): AppThunk =>
+  dispatch => {
+    if (!granulatedPriceData) {
+      return;
+    }
+
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+    const dayData = granulatedPriceData.hourly.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= oneDayAgo;
+    });
+    const weekData = granulatedPriceData.hourly.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= oneWeekAgo;
+    });
+    const monthData = granulatedPriceData.daily.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= oneMonthAgo;
+    });
+    const quarterData = granulatedPriceData.daily.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= threeMonthsAgo;
+    });
+    const yearData = granulatedPriceData.daily.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= oneYearAgo;
+    });
+
+    dispatch(updateHistoricRateDayAction(dayData));
+    dispatch(updateHistoricRateWeekAction(weekData));
+    dispatch(updateHistoricRateMonthAction(monthData));
+    dispatch(updateHistoricRateQuarterAction(quarterData));
+    dispatch(updateHistoricRateYearAction(yearData));
+    dispatch(updateHistoricRateAllAction(granulatedPriceData.all));
   };
 
 // slice
