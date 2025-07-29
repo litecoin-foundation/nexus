@@ -327,10 +327,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
   if (totalBalance > 0) {
     try {
       // Convert inputs to InputWithKeyPair format
-      const inputsWithKeyPairs: InputWithKeyPair[] = inputsFromAllAddressesWithBalance.map(input => ({
-        input,
-        keyPair,
-      }));
+      const inputsWithKeyPairs: InputWithKeyPair[] =
+        inputsFromAllAddressesWithBalance.map(input => ({
+          input,
+          keyPair,
+        }));
 
       const rawTx = createTopUpTx(
         inputsWithKeyPairs,
@@ -375,9 +376,9 @@ const sweepAddress = (
       );
 
       if (!utxoRes.ok) {
-        // const error = await utxoRes.json();
+        const error = await utxoRes.json();
         reject(
-          'Failed to connect with API Server - try using a VPN. (UTXO Fetch',
+          `Failed to connect with API Server - try using a VPN. (UTXO Fetch: ${error})`,
         );
         return;
       }
@@ -457,6 +458,99 @@ const sweepAddress = (
       }
     } catch (error) {
       reject('Failed to connect with API Server - try using a VPN.');
+    }
+  });
+};
+
+// NOTE: new endpoint required, the `https://litecoinspace.org/api/address/${address}/utxo-hex`
+// endpoint should return uxto data with the hex value appended to every unspent
+const sweepAddressViaLitecoinspace = (
+  address: string,
+  keyPair: ECPairInterface,
+  inputScript: string,
+): Promise<SweptAddress> => {
+  return new Promise(async (resolve, reject) => {
+    const headers = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      const utxoRes = await fetch(
+        `https://litecoinspace.org/api/address/${address}/utxo-hex`,
+        {
+          method: 'GET',
+          headers,
+        },
+      );
+      if (!utxoRes.ok) {
+        reject(
+          'UTXO fetch error. Failed to connect with API Server, try using VPN.',
+        );
+        return;
+      }
+      const unspents = await utxoRes.json();
+      let inputsArr: any[] = [];
+      let addressBalance = 0;
+
+      unspents.map((utxo: any) => {
+        const utxoHex = utxo.hex;
+        // skip txs with empty hex
+        if (!utxoHex) {
+          return;
+        }
+
+        addressBalance += utxo.value;
+
+        switch (inputScript) {
+          case 'P2PKH':
+            inputsArr.push(
+              getTxInputData(
+                utxo.txid,
+                utxo.vout,
+                utxoHex,
+                utxo.value,
+                false,
+                inputScript,
+                keyPair.publicKey,
+              ),
+            );
+            break;
+          case 'P2SH':
+          case 'P2WPKH':
+          case 'P2SH-P2WPKH':
+          case 'P2WSH':
+          case 'P2SH-P2WSH':
+            inputsArr.push(
+              getTxInputData(
+                utxo.txid,
+                utxo.vout,
+                utxoHex,
+                utxo.value,
+                true,
+                inputScript,
+                keyPair.publicKey,
+              ),
+            );
+            break;
+        }
+      });
+
+      if (addressBalance !== 0) {
+        resolve({
+          inputsArr,
+          addressBalance,
+          addressUnspentsLength: unspents.length,
+        });
+      } else {
+        resolve({
+          inputsArr,
+          addressBalance,
+          addressUnspentsLength: unspents.length,
+        });
+      }
+    } catch (error) {
+      reject('Failed to connect with API Server, try using VPN.');
     }
   });
 };
