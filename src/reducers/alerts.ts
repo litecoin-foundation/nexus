@@ -20,6 +20,8 @@ type IAlert = {
   isIOS: boolean;
   isFired: boolean;
   createdAt: string;
+  lastTimePriceCache: number;
+  lastTimePriceCachedAt: number;
 };
 
 type PostedAlert = {
@@ -41,6 +43,7 @@ const initialState = {
 const ADD_ALERT = 'ADD_ALERT';
 const REMOVE_ALERT = 'REMOVE_ALERT';
 const SET_ALERT_AVAILABILITY = 'SET_ALERT_AVAILABILITY';
+const UPDATE_LAST_TIME_PRICE = 'UPDATE_LAST_TIME_PRICE';
 
 const alertProviderUrl = 'https://api.nexuswallet.com/alert';
 
@@ -174,6 +177,8 @@ export const addAlert =
           isIOS: data.isIOS,
           isFired: false,
           createdAt: new Date().toISOString(),
+          lastTimePriceCache: 0,
+          lastTimePriceCachedAt: 0,
         };
 
         const alertsBuf: IAlert[] = alerts
@@ -199,6 +204,8 @@ export const addAlert =
             isIOS: alerts[i + 1].isIOS,
             isFired: alerts[i + 1].isFired,
             createdAt: alerts[i + 1].createdAt,
+            lastTimePriceCache: alerts[i + 1].lastTimePriceCache,
+            lastTimePriceCachedAt: alerts[i + 1].lastTimePriceCachedAt,
           };
           alertsBuf.push(shiftForwardAlert);
         }
@@ -213,6 +220,8 @@ export const addAlert =
           isIOS: data.isIOS,
           isFired: false,
           createdAt: new Date().toISOString(),
+          lastTimePriceCache: 0,
+          lastTimePriceCachedAt: 0,
         };
         alertsBuf.push(newAlert);
 
@@ -267,6 +276,8 @@ export const removeAlert =
             isIOS: alert.isIOS,
             isFired: alert.isFired,
             createdAt: alert.createdAt,
+            lastTimePriceCache: alert.lastTimePriceCache,
+            lastTimePriceCachedAt: alert.lastTimePriceCachedAt,
           };
           alertsBuf.push(reindexAlert);
         });
@@ -315,12 +326,21 @@ export const setAlertAvailability =
       //     index: Number(index),
       //   }),
       // });
-
       // Or just resync all alerts on api server
       dispatch(resyncAlertsOnApiServer());
     } catch (error) {
       console.error(error);
     }
+  };
+
+export const updateLastTimePrice =
+  (index: number, lastTimePrice: number): AppThunk =>
+  dispatch => {
+    dispatch({
+      type: UPDATE_LAST_TIME_PRICE,
+      index: index,
+      lastTimePrice: lastTimePrice,
+    });
   };
 
 // action handlers
@@ -344,12 +364,33 @@ const actionHandler = {
       }
     }),
   }),
+  [UPDATE_LAST_TIME_PRICE]: (state: any, {index, lastTimePrice}: any) => ({
+    ...state,
+    alerts: state.alerts.map((alert: IAlert) => {
+      if (alert.index === index) {
+        // do not update too often, max every 10 mins
+        if (alert.lastTimePriceCachedAt < Math.floor(Date.now() / 1000) - 600) {
+          const alertBuf = {
+            ...alert,
+            lastTimePriceCache: lastTimePrice,
+            lastTimePriceCachedAt: Math.floor(Date.now() / 1000),
+          };
+          return alertBuf;
+        } else {
+          return alert;
+        }
+      } else {
+        return alert;
+      }
+    }),
+  }),
 };
 
 enum ActionTypes {
   A = ADD_ALERT,
   B = REMOVE_ALERT,
   C = SET_ALERT_AVAILABILITY,
+  D = UPDATE_LAST_TIME_PRICE,
 }
 
 interface IActionA {
@@ -367,7 +408,12 @@ interface IActionC {
   payload: any;
 }
 
-type IAction = IActionA | IActionB | IActionC;
+interface IActionD {
+  type: ActionTypes.D;
+  payload: any;
+}
+
+type IAction = IActionA | IActionB | IActionC | IActionD;
 
 // reducer
 export default function (state = initialState, action: IAction) {
