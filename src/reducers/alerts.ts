@@ -369,7 +369,10 @@ const actionHandler = {
     alerts: state.alerts.map((alert: IAlert) => {
       if (alert.index === index) {
         // do not update too often, max every 10 mins
-        if (alert.lastTimePriceCachedAt < Math.floor(Date.now() / 1000) - 600) {
+        if (
+          (alert.lastTimePriceCachedAt || 0) <
+          Math.floor(Date.now() / 1000) - 600
+        ) {
           const alertBuf = {
             ...alert,
             lastTimePriceCache: lastTimePrice,

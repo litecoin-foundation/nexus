@@ -56,7 +56,10 @@ const AlertCell: React.FC<Props> = props => {
     const getLastTimePrice = async () => {
       try {
         // do not update too often, max every 10 mins
-        if (data.lastTimePriceCachedAt < Math.floor(Date.now() / 1000) - 600) {
+        if (
+          (data.lastTimePriceCachedAt || 0) <
+          Math.floor(Date.now() / 1000) - 600
+        ) {
           const price = data.value;
           const res = await fetch(
             'https://api.nexuswallet.com/api/prices/lastprice',
