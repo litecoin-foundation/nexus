@@ -198,44 +198,52 @@ const createRawTxsFromHDWallet = async (
   let totalBalance = 0;
   let unspentsLength = 0;
 
-  // Collect all inputs with their corresponding key pairs
-  await Promise.all(
-    keyPairsWithBalance.map(async addressWithKeyPair => {
-      const sweepy = await sweepAddress(
-        addressWithKeyPair.address,
-        addressWithKeyPair.keyPair,
+  try {
+    // Collect all inputs with their corresponding key pairs
+    await Promise.all(
+      keyPairsWithBalance.map(async addressWithKeyPair => {
+        const sweepy = await sweepAddressViaLitecoinspace(
+          addressWithKeyPair.address,
+          addressWithKeyPair.keyPair,
+          'P2PKH',
+        );
+
+        const {inputsArr, addressBalance, addressUnspentsLength} = sweepy;
+
+        // Map each input to its key pair
+        inputsArr.forEach(input => {
+          inputsWithKeyPairs.push({
+            input,
+            keyPair: addressWithKeyPair.keyPair,
+          });
+        });
+
+        totalBalance += addressBalance;
+        unspentsLength += addressUnspentsLength;
+      }),
+    );
+
+    // Create a single transaction with all inputs
+    if (inputsWithKeyPairs.length > 0) {
+      const rawTx = createTopUpTx(
+        inputsWithKeyPairs,
+        receiveAddress,
+        0,
+        totalBalance,
+        unspentsLength,
         'P2PKH',
       );
+      return [rawTx];
+    }
 
-      const {inputsArr, addressBalance, addressUnspentsLength} = sweepy;
-
-      // Map each input to its key pair
-      inputsArr.forEach(input => {
-        inputsWithKeyPairs.push({
-          input,
-          keyPair: addressWithKeyPair.keyPair,
-        });
-      });
-
-      totalBalance += addressBalance;
-      unspentsLength += addressUnspentsLength;
-    }),
-  );
-
-  // Create a single transaction with all inputs
-  if (inputsWithKeyPairs.length > 0) {
-    const rawTx = createTopUpTx(
-      inputsWithKeyPairs,
-      receiveAddress,
-      0,
-      totalBalance,
-      unspentsLength,
-      'P2PKH',
-    );
-    return [rawTx];
+    return [];
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error(String(error));
+    }
   }
-
-  return [];
 };
 
 export const sweepWIF = async (wifString: string, receiveAddress: string) => {
@@ -273,7 +281,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
     address = legacyAddress;
     inputScript = 'P2PKH';
     const {inputsArr, addressBalance, addressUnspentsLength} =
-      await sweepAddress(String(address), keyPair, String(inputScript));
+      await sweepAddressViaLitecoinspace(
+        String(address),
+        keyPair,
+        String(inputScript),
+      );
     inputsFromAllAddressesWithBalance.push(...inputsArr);
     totalBalance += addressBalance;
     unspentsLength += addressUnspentsLength;
@@ -294,7 +306,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
       address = p2shAddress;
       inputScript = 'P2SH-P2WPKH';
       const {inputsArr, addressBalance, addressUnspentsLength} =
-        await sweepAddress(String(address), keyPair, String(inputScript));
+        await sweepAddressViaLitecoinspace(
+          String(address),
+          keyPair,
+          String(inputScript),
+        );
       inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
@@ -310,7 +326,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
       address = bech32Address;
       inputScript = 'P2WPKH';
       const {inputsArr, addressBalance, addressUnspentsLength} =
-        await sweepAddress(String(address), keyPair, String(inputScript));
+        await sweepAddressViaLitecoinspace(
+          String(address),
+          keyPair,
+          String(inputScript),
+        );
       inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
@@ -443,19 +463,11 @@ const sweepAddress = (
         }),
       );
 
-      if (addressBalance !== 0) {
-        resolve({
-          inputsArr,
-          addressBalance,
-          addressUnspentsLength: unspents.length,
-        });
-      } else {
-        resolve({
-          inputsArr,
-          addressBalance,
-          addressUnspentsLength: unspents.length,
-        });
-      }
+      resolve({
+        inputsArr,
+        addressBalance,
+        addressUnspentsLength: unspents.length,
+      });
     } catch (error) {
       reject('Failed to connect with API Server - try using a VPN.');
     }
@@ -536,19 +548,11 @@ const sweepAddressViaLitecoinspace = (
         }
       });
 
-      if (addressBalance !== 0) {
-        resolve({
-          inputsArr,
-          addressBalance,
-          addressUnspentsLength: unspents.length,
-        });
-      } else {
-        resolve({
-          inputsArr,
-          addressBalance,
-          addressUnspentsLength: unspents.length,
-        });
-      }
+      resolve({
+        inputsArr,
+        addressBalance,
+        addressUnspentsLength: unspents.length,
+      });
     } catch (error) {
       reject('Failed to connect with API Server, try using VPN.');
     }
