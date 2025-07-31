@@ -5,6 +5,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import Crypto from 'react-native-quick-crypto';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import {Platform} from 'react-native';
+import {getCountry} from 'react-native-localize';
 
 import {AppThunk} from './types';
 import {fileExists} from '../lib/utils/file';
@@ -86,10 +87,11 @@ const setSupportIdAction = createAction<string>(
 
 // functions
 export const loginToNexusApi =
-  (deviceToken: string, isIOS: boolean): AppThunk =>
+  (deviceToken: string, isIOS: boolean, osVersion: string): AppThunk =>
   async (dispatch, getState) => {
     const {uniqueId, isOnboarded} = getState().onboarding!;
-    const {deviceNotificationToken} = getState().settings!;
+    const {deviceNotificationToken, currencyCode, languageCode} =
+      getState().settings!;
     if (isOnboarded !== true && !uniqueId && !deviceToken) {
       return;
     }
@@ -108,6 +110,10 @@ export const loginToNexusApi =
           userAppUniqueId: uniqueId,
           deviceToken: deviceToken,
           isIOS,
+          country: getCountry(),
+          currency: currencyCode,
+          lng: languageCode,
+          osVersion,
         }),
       });
 
