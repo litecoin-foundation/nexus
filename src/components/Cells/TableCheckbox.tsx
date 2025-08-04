@@ -15,6 +15,8 @@ interface Props {
   thick?: boolean;
   noBorder?: boolean;
   bgColor?: string;
+  titleNumberOfLines?: number;
+  titleFontSize?: number;
 }
 
 const TableCheckbox: React.FC<Props> = props => {
@@ -28,10 +30,12 @@ const TableCheckbox: React.FC<Props> = props => {
     thick,
     noBorder,
     bgColor,
+    titleNumberOfLines = 1,
+    titleFontSize,
   } = props;
 
   const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height, thick, noBorder, bgColor);
+  const styles = getStyles(width, height, thick, noBorder, bgColor, titleNumberOfLines);
 
   const [switchState, setSwitchState] = useState(initialState);
 
@@ -54,16 +58,17 @@ const TableCheckbox: React.FC<Props> = props => {
         {title ? (
           <TranslateText
             textValue={title}
-            maxSizeInPixels={height * 0.017}
+            maxSizeInPixels={titleFontSize || height * 0.014}
             textStyle={titleStyle}
+            numberOfLines={titleNumberOfLines}
           />
         ) : titleTextKey && titleTextDomain ? (
           <TranslateText
             textKey={titleTextKey}
             domain={titleTextDomain}
-            maxSizeInPixels={height * 0.017}
+            maxSizeInPixels={titleFontSize || height * 0.014}
             textStyle={titleStyle}
-            numberOfLines={1}
+            numberOfLines={titleNumberOfLines}
           />
         ) : (
           <></>
@@ -86,12 +91,17 @@ const getStyles = (
   thick: boolean | undefined,
   noBorder: boolean | undefined,
   bgColor: string | undefined,
+  titleNumberOfLines: number = 1,
 ) =>
   StyleSheet.create({
     container: {
       width: '100%',
-      height: thick ? screenHeight * 0.065 : screenHeight * 0.055,
-      minHeight: thick ? screenHeight * 0.065 : screenHeight * 0.055,
+      height: titleNumberOfLines > 1 
+        ? (thick ? screenHeight * 0.08 : screenHeight * 0.07)
+        : (thick ? screenHeight * 0.065 : screenHeight * 0.055),
+      minHeight: titleNumberOfLines > 1 
+        ? (thick ? screenHeight * 0.08 : screenHeight * 0.07)
+        : (thick ? screenHeight * 0.065 : screenHeight * 0.055),
       borderTopWidth: noBorder ? 0 : 1,
       borderTopColor: '#eee',
       backgroundColor: bgColor ? bgColor : '#fff',

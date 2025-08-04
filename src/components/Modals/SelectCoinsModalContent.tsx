@@ -1,17 +1,25 @@
-import React, {useContext, Fragment, useMemo} from 'react';
-import {ScrollView, View, StyleSheet, Platform} from 'react-native';
+import React, {
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
+import {View, StyleSheet, Platform} from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import Animated from 'react-native-reanimated';
-import {v4 as uuidv4} from 'uuid';
+import {walletKitListUnspent} from 'react-native-turbo-lndltc';
+import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableTitle from '../Cells/TableTitle';
 import TableCheckbox from '../Cells/TableCheckbox';
 import BlueButton from '../Buttons/BlueButton';
-
-// import {useAppDispatch, useAppSelector} from '../../store/hooks';
-// import {
-//   satsToSubunitSelector,
-// } from '../../reducers/settings';
+import {useAppSelector} from '../../store/hooks';
+import {
+  satsToSubunitSelector,
+  subunitSymbolSelector,
+} from '../../reducers/settings';
 
 import TranslateText from '../../components/TranslateText';
 import ProgressBar from '../../components/ProgressBar';
@@ -23,23 +31,21 @@ interface Props {
   cardTranslateAnim: any;
 }
 
-type PublicCoin = {
+type CoinData = {
   title: string;
-  balance: number;
+  balance: string;
   checked: boolean;
   check: (select: boolean) => void;
+  utxo: any;
 };
 
-type PrivateCoin = {
-  title: string;
-  balance: number;
-  checked: boolean;
-  check: (select: boolean) => void;
-};
+type PublicCoin = CoinData;
+type PrivateCoin = CoinData;
 
 interface SelectCoinsLayoutProps {
   publicCoins: PublicCoin[];
   privateCoins: PrivateCoin[];
+  selectedCoins: Set<string>;
 }
 
 export default function SelectCoinsModalContent(props: Props) {
@@ -49,28 +55,89 @@ export default function SelectCoinsModalContent(props: Props) {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  // const dispatch = useAppDispatch();
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
+  const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
 
-  // const convertToSubunit = useAppSelector(state =>
-  //   satsToSubunitSelector(state),
-  // );
-  // const cryptoAmount = convertToSubunit(transaction.amount);
-  // let cryptoAmountFormatted = cryptoAmount.toFixed(4);
-  // if (cryptoAmountFormatted.match(/\./)) {
-  //   cryptoAmountFormatted = cryptoAmountFormatted.replace(/\.?0+$/, '');
-  // }
+  const [utxos, setUtxos] = useState<Utxo[]>([]);
+  const [selectedCoins, setSelectedCoins] = useState<Set<string>>(new Set());
 
-  const publicCoins: PublicCoin[] = [
-    {title: 'Coin 1', balance: 100, checked: true, check: () => {}},
-    {title: 'Coin 2', balance: 100, checked: false, check: () => {}},
-    {title: 'Coin 3', balance: 100, checked: false, check: () => {}},
-    {title: 'Coin 4', balance: 100, checked: false, check: () => {}},
-    {title: 'Coin 5', balance: 100, checked: false, check: () => {}},
-  ];
-  const privateCoins: PrivateCoin[] = [
-    {title: 'Coin 1', balance: 100, checked: true, check: () => {}},
-    {title: 'Coin 2', balance: 100, checked: false, check: () => {}},
-  ];
+  useEffect(() => {
+    const fetchUtxos = async () => {
+      try {
+        const listUnspentResponse = await walletKitListUnspent({});
+
+        if (!listUnspentResponse || !listUnspentResponse.utxos) {
+          return;
+        }
+
+        setUtxos(listUnspentResponse.utxos);
+      } catch (error) {
+        console.error('Error fetching UTXOs:', error);
+      }
+    };
+
+    fetchUtxos();
+  }, []);
+
+  const toggleCoinSelection = (coinId: string, select: boolean) => {
+    setSelectedCoins(prev => {
+      const newSet = new Set(prev);
+      if (select) {
+        newSet.add(coinId);
+      } else {
+        newSet.delete(coinId);
+      }
+      return newSet;
+    });
+  };
+
+  const publicCoins: PublicCoin[] = useMemo(() => {
+    return utxos
+      .filter(utxo => utxo.addressType !== 6) // Not MWEB
+      .map(utxo => {
+        const balance = `${convertToSubunit(Number(utxo.amountSat))}${amountSymbol}`;
+        const coinId = `${utxo.outpoint?.txidStr}-${utxo.outpoint?.outputIndex}`;
+
+        const fullTitle = `${utxo.address}:${utxo.outpoint?.outputIndex}`;
+        const midPoint = Math.floor(fullTitle.length / 2);
+        const titleWithBreak =
+          fullTitle.slice(0, midPoint) + '\n' + fullTitle.slice(midPoint);
+
+        return {
+          title: titleWithBreak,
+          balance,
+          checked: selectedCoins.has(coinId),
+          check: (select: boolean) => toggleCoinSelection(coinId, select),
+          utxo,
+        };
+      });
+  }, [utxos, selectedCoins]);
+
+  const privateCoins: PrivateCoin[] = useMemo(() => {
+    return utxos
+      .filter(utxo => utxo.addressType === 6) // MWEB address type
+      .map(utxo => {
+        const balance = `${convertToSubunit(Number(utxo.amountSat))}${amountSymbol}`;
+        const coinId = `${utxo.outpoint?.txidStr}-${utxo.outpoint?.outputIndex}`;
+
+        const shortAddress =
+          utxo.address?.slice(0, 20) + '..' + utxo.address?.slice(-20);
+        const fullTitle = `${shortAddress}:${utxo.outpoint?.outputIndex}`;
+        const midPoint = Math.floor(fullTitle.length / 2);
+        const titleWithBreak =
+          fullTitle.slice(0, midPoint) + '\n' + fullTitle.slice(midPoint);
+
+        return {
+          title: titleWithBreak,
+          balance,
+          checked: selectedCoins.has(coinId),
+          check: (select: boolean) => toggleCoinSelection(coinId, select),
+          utxo,
+        };
+      });
+  }, [utxos, selectedCoins]);
 
   return (
     <Animated.View style={[styles.container, cardTranslateAnim]}>
@@ -89,6 +156,7 @@ export default function SelectCoinsModalContent(props: Props) {
           <SelectCoinsLayout
             publicCoins={publicCoins}
             privateCoins={privateCoins}
+            selectedCoins={selectedCoins}
           />
         </View>
       </View>
@@ -97,7 +165,7 @@ export default function SelectCoinsModalContent(props: Props) {
 }
 
 const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
-  const {publicCoins, privateCoins} = props;
+  const {publicCoins, privateCoins, selectedCoins} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -105,40 +173,47 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
 
   const confirmSelection = () => {};
 
-  const renderPublicCoins = useMemo(
-    () =>
-      publicCoins.map(publicCoin => (
-        <TableCheckbox
-          title={publicCoin.title}
-          value={`LTC ${publicCoin.balance}`}
-          callback={publicCoin.check}
-          initialState={publicCoin.checked}
-          noBorder
-          bgColor={'#f7f7f7'}
-          key={uuidv4()}
-        />
-      )),
-    [publicCoins],
-  );
+  const renderPublicCoin = useCallback(({item}: {item: PublicCoin}) => {
+    const coinId = `${item.utxo.outpoint?.txidStr}-${item.utxo.outpoint?.outputIndex}`;
+    return (
+      <TableCheckbox
+        key={`${coinId}-${item.checked}`}
+        title={item.title}
+        value={item.balance}
+        callback={item.check}
+        initialState={item.checked}
+        noBorder
+        bgColor={'#f7f7f7'}
+        titleNumberOfLines={2}
+        titleFontSize={SCREEN_HEIGHT * 0.013}
+      />
+    );
+  }, []);
 
-  const renderPrivateCoins = useMemo(
-    () =>
-      privateCoins.map(privateCoin => (
-        <TableCheckbox
-          title={privateCoin.title}
-          value={`LTC ${privateCoin.balance}`}
-          callback={privateCoin.check}
-          initialState={privateCoin.checked}
-          noBorder
-          bgColor={'#f7f7f7'}
-          key={uuidv4()}
-        />
-      )),
-    [privateCoins],
-  );
+  const renderPrivateCoin = useCallback(({item}: {item: PrivateCoin}) => {
+    const coinId = `${item.utxo.outpoint?.txidStr}-${item.utxo.outpoint?.outputIndex}`;
+    return (
+      <TableCheckbox
+        key={`${coinId}-${item.checked}`}
+        title={item.title}
+        value={item.balance}
+        callback={item.check}
+        initialState={item.checked}
+        noBorder
+        bgColor={'#f7f7f7'}
+        titleNumberOfLines={2}
+        titleFontSize={SCREEN_HEIGHT * 0.013}
+      />
+    );
+  }, []);
+
+  const getItemType = () => 'coin';
+  const keyExtractor = useCallback((item: PublicCoin | PrivateCoin) => {
+    return `${item.utxo.outpoint?.txidStr}-${item.utxo.outpoint?.outputIndex}`;
+  }, []);
 
   return (
-    <Fragment>
+    <>
       <View style={styles.topContainer}>
         <TableTitle
           titleTextKey="private_coins"
@@ -151,9 +226,17 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
           noBorder
           bgColor={'#f7f7f7'}
         />
-        <ScrollView contentContainerStyle={styles.scroll}>
-          {renderPublicCoins}
-        </ScrollView>
+        <View style={styles.flashListContainer}>
+          <FlashList
+            data={privateCoins}
+            renderItem={renderPrivateCoin}
+            keyExtractor={keyExtractor}
+            getItemType={getItemType}
+            estimatedItemSize={80}
+            contentContainerStyle={styles.flashListContent}
+            extraData={selectedCoins}
+          />
+        </View>
         <TableTitle
           titleTextKey="public_coins"
           titleTextDomain="sendTab"
@@ -165,9 +248,17 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
           noBorder
           bgColor={'#f7f7f7'}
         />
-        <ScrollView contentContainerStyle={styles.scroll}>
-          {renderPrivateCoins}
-        </ScrollView>
+        <View style={styles.flashListContainer}>
+          <FlashList
+            data={publicCoins}
+            renderItem={renderPublicCoin}
+            keyExtractor={keyExtractor}
+            getItemType={getItemType}
+            estimatedItemSize={80}
+            contentContainerStyle={styles.flashListContent}
+            extraData={selectedCoins}
+          />
+        </View>
       </View>
       <View style={styles.bottomContainer}>
         <View style={styles.requiredVsSelected}>
@@ -213,7 +304,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
         </View>
         <View style={styles.paginationStrip} />
       </View>
-    </Fragment>
+    </>
   );
 };
 
@@ -262,8 +353,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'column',
       overflow: 'hidden',
     },
-    scroll: {
-      flexBasis: '50%',
+    flashListContainer: {
+      flex: 1,
+      minHeight: 150,
+    },
+    flashListContent: {
+      backgroundColor: '#f7f7f7',
     },
     bottomContainer: {
       flexDirection: 'column',

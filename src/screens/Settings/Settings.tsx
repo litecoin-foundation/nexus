@@ -98,13 +98,8 @@ const Settings: React.FC<Props> = props => {
 
   const {biometricsAvailable, biometricsEnabled, faceIDSupported} =
     useAppSelector(state => state.authentication!);
-  const {subunit, notificationsEnabled} = useAppSelector(
-    state => state.settings!,
-  );
-
-  const manualCoinSelectionEnabled = useAppSelector(
-    state => state.settings.manualCoinSelectionEnabled,
-  );
+  const {subunit, notificationsEnabled, manualCoinSelectionEnabled} =
+    useAppSelector(state => state.settings!);
 
   const openSystemSettings = async () => {
     Linking.openSettings();
@@ -212,7 +207,6 @@ const Settings: React.FC<Props> = props => {
         textKey: 'wallet_settings',
         marginTop: true,
       },
-      {id: 'manual_coin_selection', type: 'manual_coin_selection'},
       {
         id: 'change-pin',
         type: 'cell',
@@ -273,6 +267,7 @@ const Settings: React.FC<Props> = props => {
         },
       },
       {id: 'denomination', type: 'denomination'},
+      {id: 'manual_coin_selection', type: 'manual_coin_selection'},
       {
         id: 'reset-wallet',
         type: 'cell',

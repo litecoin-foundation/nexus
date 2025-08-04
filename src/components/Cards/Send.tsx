@@ -123,7 +123,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
       // validate balance
       const amountInSats = convertToSats(Number(amount));
-      
+
       // check if amount being sent is > user balance
       if (amountInSats > Number(confirmedBalance)) {
         setSendDisabled(true);
