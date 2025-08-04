@@ -10,12 +10,12 @@ export const LITECOIN = {
   wif: 0xb0,
 };
 
-export const LITECOIN_WITH_XPRV = {
+export const LITECOIN_WITH_ZPRV = {
   messagePrefix: '\x19Litecoin Signed Message:\n',
   bech32: 'ltc',
   bip32: {
-    public: 0x0488b21e, // xpub
-    private: 0x0488ade4, // xprv
+    public: 0x04b24746, // zpub
+    private: 0x04b2430c, // zprv
   },
   pubKeyHash: 0x30,
   scriptHash: 0x32,

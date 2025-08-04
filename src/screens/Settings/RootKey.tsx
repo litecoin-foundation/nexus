@@ -48,7 +48,7 @@ const RootKey: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const [selectedFormat, setSelectedFormat] = useState<number>(0); // 0 = Litecoin, 1 = Bitcoin
+  const [selectedFormat, setSelectedFormat] = useState<number>(1); // 0 = Litecoin, 1 = Bitcoin
   const [rootKey, setRootKey] = useState<string>('');
   const [isPrivateKey, setIsPrivateKey] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -68,13 +68,16 @@ const RootKey: React.FC<Props> = props => {
 
           let selectedRootKey;
 
-          if (selectedFormat === 0) {
-            // Litecoin format (Ltpv/Ltub)
-            selectedRootKey = decoded.bip32RootKey;
-          } else {
-            // Bitcoin format (xprv/xpub)
-            selectedRootKey = decoded.bip32RootKeyXprv;
-          }
+          // if (selectedFormat === 0) {
+          //   // Litecoin format (Ltpv/Ltub)
+          //   selectedRootKey = decoded.bip32RootKey;
+          // } else {
+          //   // Bitcoin format (zprv/zpub)
+          //   selectedRootKey = decoded.bip32RootKeyXprv;
+          // }
+
+          // force zprv/zpub until native segwit prefix is submitted to SLIP-132
+          selectedRootKey = decoded.bip32RootKeyXprv;
 
           if (isPrivateKey) {
             setRootKey(selectedRootKey.toBase58());
@@ -137,8 +140,8 @@ const RootKey: React.FC<Props> = props => {
                 }
               />
             </View>
-
-            <View style={styles.toggleContainer}>
+            {/* disable Ltpv/zprv selector until a Litecoin native segwit BIP32 root key prefix is standardised */}
+            {/* <View style={styles.toggleContainer}>
               <TranslateText
                 textKey="key_format"
                 domain="settingsTab"
@@ -156,7 +159,7 @@ const RootKey: React.FC<Props> = props => {
                   setSelectedFormat(event.nativeEvent.selectedSegmentIndex)
                 }
               />
-            </View>
+            </View> */}
           </View>
 
           <View style={styles.qrContainer}>
