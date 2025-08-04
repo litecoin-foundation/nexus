@@ -18,7 +18,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import GreenButton from '../../components/Buttons/GreenButton';
 import {useTranslation} from 'react-i18next';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sendConvertWithCoinControl} from '../../reducers/transaction';
+import {sendConvertWithPsbt} from '../../reducers/transaction';
 import {showError} from '../../reducers/errors';
 import {
   satsToSubunitSelector,
@@ -130,7 +130,7 @@ const ConfirmConvert: React.FC<Props> = props => {
     try {
       const amt = isRegular ? regularAmount : privateAmount;
       const destination = isRegular ? 'private' : 'regular';
-      const txid = await sendConvertWithCoinControl(
+      const txid = await sendConvertWithPsbt(
         convertToSats(Number(amt)),
         destination,
       );

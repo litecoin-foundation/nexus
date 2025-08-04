@@ -8889,10 +8889,10 @@ react-native-touch-id@4.4.1:
   resolved "https://registry.npmjs.org/react-native-touch-id/-/react-native-touch-id-4.4.1.tgz"
   integrity sha512-1jTl8fC+0fxvqegy/XXTyo6vMvPhjzkoDdaqoYZx0OH8AT250NuXnNPyKktvigIcys3+2acciqOeaCall7lrvg==
 
-react-native-turbo-lndltc@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/react-native-turbo-lndltc/-/react-native-turbo-lndltc-0.1.0.tgz"
-  integrity sha512-r6S8B25DkMB4lRDQSYA19kq3IB/i8opos6i/iA6kt4kfAmOH2SCR78H4pla1gotKifbbUJMIw+EnQmBWVUuKnA==
+react-native-turbo-lndltc@0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/react-native-turbo-lndltc/-/react-native-turbo-lndltc-0.1.4.tgz#0c6fba505349ffe47e51322d7a35e9409c7d64a9"
+  integrity sha512-A1z9K3uGuntwUd+wJdJEvH9nthk9VODPqg7Nmsd+JIxUYsZMzp4MMR+2Ozs6hvsEl9jwIbTOY7//0rexDOpEvw==
 
 react-native-turbo-scrypt@0.0.7:
   version "0.0.7"

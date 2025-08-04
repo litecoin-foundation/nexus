@@ -29,6 +29,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface Props {
   close: () => void;
   cardTranslateAnim: any;
+  onConfirmSelection?: (selectedUtxos: Utxo[]) => void;
 }
 
 type CoinData = {
@@ -46,10 +47,13 @@ interface SelectCoinsLayoutProps {
   publicCoins: PublicCoin[];
   privateCoins: PrivateCoin[];
   selectedCoins: Set<string>;
+  selectedBalance: number;
+  selectedUtxos: Utxo[];
+  onConfirmSelection?: (selectedUtxos: Utxo[]) => void;
 }
 
 export default function SelectCoinsModalContent(props: Props) {
-  const {close, cardTranslateAnim} = props;
+  const {close, cardTranslateAnim, onConfirmSelection} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -139,6 +143,24 @@ export default function SelectCoinsModalContent(props: Props) {
       });
   }, [utxos, selectedCoins]);
 
+  const selectedUtxos = useMemo(() => {
+    return utxos.filter(utxo => {
+      const coinId = `${utxo.outpoint?.txidStr}-${utxo.outpoint?.outputIndex}`;
+      return selectedCoins.has(coinId);
+    });
+  }, [utxos, selectedCoins]);
+
+  const selectedBalance = useMemo(() => {
+    return selectedUtxos.reduce(
+      (total, utxo) => total + Number(utxo.amountSat),
+      0,
+    );
+  }, [selectedUtxos]);
+
+  const selectedBalanceInSubunit = useMemo(() => {
+    return convertToSubunit(selectedBalance);
+  }, [selectedBalance, convertToSubunit]);
+
   return (
     <Animated.View style={[styles.container, cardTranslateAnim]}>
       <View style={styles.body}>
@@ -157,6 +179,9 @@ export default function SelectCoinsModalContent(props: Props) {
             publicCoins={publicCoins}
             privateCoins={privateCoins}
             selectedCoins={selectedCoins}
+            selectedBalance={selectedBalanceInSubunit}
+            selectedUtxos={selectedUtxos}
+            onConfirmSelection={onConfirmSelection}
           />
         </View>
       </View>
@@ -165,13 +190,24 @@ export default function SelectCoinsModalContent(props: Props) {
 }
 
 const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
-  const {publicCoins, privateCoins, selectedCoins} = props;
+  const {
+    publicCoins,
+    privateCoins,
+    selectedCoins,
+    selectedBalance,
+    selectedUtxos,
+    onConfirmSelection,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const confirmSelection = () => {};
+  const confirmSelection = () => {
+    if (onConfirmSelection) {
+      onConfirmSelection(selectedUtxos);
+    }
+  };
 
   const renderPublicCoin = useCallback(({item}: {item: PublicCoin}) => {
     const coinId = `${item.utxo.outpoint?.txidStr}-${item.utxo.outpoint?.outputIndex}`;
@@ -270,7 +306,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
               titleFontSize={SCREEN_HEIGHT * 0.017}
               rightTitleTextKey="selected"
               rightTitleTextDomain="sendTab"
-              rightTitleInterpolationObj={{amount: 100}}
+              rightTitleInterpolationObj={{amount: selectedBalance}}
               rightTitleFontSize={SCREEN_HEIGHT * 0.017}
               rightColor="#2C72FF"
               thick

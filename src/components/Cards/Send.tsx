@@ -81,7 +81,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     state => state.balance!,
   );
   const manualCoinSelectionEnabled = useAppSelector(
-    state => state.settings.manualCoinSelectionEnabled,
+    state => state.settings!.manualCoinSelectionEnabled,
   );
   const syncedToChain = useAppSelector(state => state.info!.syncedToChain);
 
@@ -541,7 +541,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                         maxSizeInPixels={SCREEN_HEIGHT * 0.017}
                         textStyle={styles.manualSelectionBottomTitle}
                         numberOfLines={1}
-                        interpolationObj={{amount: 100}}
+                        interpolationObj={{amount}}
                       />
                     </View>
                     <View style={styles.manualSelectionBottomNoteContainer}>
@@ -555,7 +555,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                         maxSizeInPixels={SCREEN_HEIGHT * 0.018}
                         textStyle={styles.manualSelectionBottomNote}
                         numberOfLines={2}
-                        interpolationObj={{amount: 100}}
+                        interpolationObj={{amount}}
                       />
                     </View>
                     <View style={styles.manualSelectionBottomArrowContainer}>

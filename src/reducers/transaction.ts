@@ -7,6 +7,8 @@ import {
   newAddress as newLndAddress,
   walletKitLabelTransaction,
   walletKitListUnspent,
+  walletKitFundPsbt,
+  walletKitFinalizePsbt,
 } from 'react-native-turbo-lndltc';
 import {
   GetTransactionsRequestSchema,
@@ -15,6 +17,7 @@ import {
   OutPoint,
   AddressType,
 } from 'react-native-turbo-lndltc/protos/lightning_pb';
+import {ChangeAddressType} from 'react-native-turbo-lndltc/protos/walletrpc/walletkit_pb';
 import {create} from '@bufbuild/protobuf';
 
 import {AppThunk} from './types';
@@ -117,6 +120,111 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
   });
 };
 
+export const sendConvertWithPsbt = async (
+  amount: number,
+  destination: 'regular' | 'private',
+) => {
+  try {
+    // new destination address
+    let type: number;
+    if (destination === 'private') {
+      type = 7;
+    } else {
+      type = 2;
+    }
+    const destinationAddress = await newLndAddress({type});
+
+    // lookup utxos
+    const listUnspentResponse = await walletKitListUnspent({});
+
+    if (!listUnspentResponse || !listUnspentResponse.utxos) {
+      throw new Error('Invalid response from ListUnspent');
+    }
+    const {utxos} = listUnspentResponse;
+
+    // filter mweb and non mweb utxos, sort by largest
+    // coin selection will use first largest available
+    const mwebUtxos = utxos
+      .filter(utxo => utxo.addressType === AddressType.MWEB)
+      .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
+    const nonMwebUtxos = utxos
+      .filter(utxo => utxo.addressType !== AddressType.MWEB)
+      .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
+
+    const outpoints = destination === 'private' ? nonMwebUtxos : mwebUtxos;
+
+    // Perform coin selection to find minimum inputs needed to satisfy the amount
+    const selectedUtxos = [];
+    let totalSelected = BigInt(-2000);
+    // Convert amount to satoshis (integer) if it's not already
+    const targetAmount = BigInt(Math.floor(amount));
+
+    for (const utxo of outpoints) {
+      if (utxo.outpoint === undefined) {
+        continue;
+      }
+
+      if (utxo.outpoint) {
+        selectedUtxos.push(utxo.outpoint);
+      }
+      totalSelected += utxo.amountSat;
+
+      // Break when we have enough to cover the amount (fees will be calculated by FundPsbt)
+      if (totalSelected >= targetAmount) {
+        break;
+      }
+    }
+
+    if (totalSelected < targetAmount) {
+      throw new Error(
+        `Insufficient funds: need ${targetAmount}, have ${totalSelected}`,
+      );
+    }
+
+    if (selectedUtxos.length < 1) {
+      throw new Error('No valid inputs found!');
+    }
+
+    if (!destinationAddress || destinationAddress === undefined) {
+      throw new Error('No destination address!');
+    }
+
+    const psbt = await walletKitFundPsbt({
+      template: {
+        case: 'raw',
+        value: {
+          inputs: selectedUtxos,
+          outputs: {
+            [destinationAddress.address]: targetAmount,
+          },
+        },
+      },
+      fees: {
+        case: 'satPerVbyte',
+        value: destination === 'private' ? BigInt(30) : BigInt(2000),
+      },
+      changeType:
+        destination === 'private'
+          ? ChangeAddressType.UNSPECIFIED
+          : ChangeAddressType.MWEB,
+    });
+
+    const signedPsbt = await walletKitFinalizePsbt({
+      fundedPsbt: psbt.fundedPsbt,
+    });
+    const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
+
+    // TODO: we should observe for any incoming txs made to this destinationAddress.address
+    // with the targetAmount. Any incoming transaction that matches should be labelled as
+    // a Convert Litecoin Transaction
+
+    const txid = await publishTransaction(txHex);
+    return txid;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const sendConvertWithCoinControl = async (
   amount: number,
   destination: 'regular' | 'private',
@@ -204,7 +312,7 @@ export const labelTransaction = (txid: string, label: string) => async () => {
 
 export const subscribeTransactions =
   (): AppThunk => async (dispatch, getState) => {
-    const {txSubscriptionStarted} = getState().transaction;
+    const {txSubscriptionStarted} = getState().transaction!;
     try {
       if (!txSubscriptionStarted) {
         dispatch(txSubscriptionStartedAction(true));
@@ -247,7 +355,7 @@ function getUnmatchedNexusApiTxsWithLndTxs(lndTxs: any[], nexusApiTxs: any[]) {
 }
 
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
-  const {buyHistory, sellHistory} = getState().buy;
+  const {buyHistory, sellHistory} = getState().buy!;
 
   try {
     const transactions = await getLndTransactions(
@@ -408,7 +516,7 @@ export const sendOnchainPayment =
   (dispatch, getState) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const {confirmedBalance} = getState().balance;
+        const {confirmedBalance} = getState().balance!;
         const sendAll = Number(confirmedBalance) === amount ? true : false;
 
         try {
@@ -447,7 +555,7 @@ export const sendAllOnchainPayment =
     address: string,
     label: string | undefined = undefined,
   ): AppThunk<Promise<string>> =>
-  (dispatch, getState) => {
+  (_, __) => {
     return new Promise(async (resolve, reject) => {
       try {
         try {
@@ -469,7 +577,7 @@ export const sendAllOnchainPayment =
     });
   };
 
-export const publishTransaction = (txHex: string) => {
+export const publishTransaction = (txHex: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
       const request = await fetch('https://litecoinspace.org/api/tx', {
@@ -496,7 +604,7 @@ export const publishTransaction = (txHex: string) => {
   });
 };
 
-export const publishTransactionFallback1 = (txHex: string) => {
+export const publishTransactionFallback1 = (txHex: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
       const request = await fetch(
