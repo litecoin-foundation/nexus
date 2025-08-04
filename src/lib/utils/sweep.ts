@@ -198,44 +198,52 @@ const createRawTxsFromHDWallet = async (
   let totalBalance = 0;
   let unspentsLength = 0;
 
-  // Collect all inputs with their corresponding key pairs
-  await Promise.all(
-    keyPairsWithBalance.map(async addressWithKeyPair => {
-      const sweepy = await sweepAddress(
-        addressWithKeyPair.address,
-        addressWithKeyPair.keyPair,
+  try {
+    // Collect all inputs with their corresponding key pairs
+    await Promise.all(
+      keyPairsWithBalance.map(async addressWithKeyPair => {
+        const sweepy = await sweepAddressViaLitecoinspace(
+          addressWithKeyPair.address,
+          addressWithKeyPair.keyPair,
+          'P2PKH',
+        );
+
+        const {inputsArr, addressBalance, addressUnspentsLength} = sweepy;
+
+        // Map each input to its key pair
+        inputsArr.forEach(input => {
+          inputsWithKeyPairs.push({
+            input,
+            keyPair: addressWithKeyPair.keyPair,
+          });
+        });
+
+        totalBalance += addressBalance;
+        unspentsLength += addressUnspentsLength;
+      }),
+    );
+
+    // Create a single transaction with all inputs
+    if (inputsWithKeyPairs.length > 0) {
+      const rawTx = createTopUpTx(
+        inputsWithKeyPairs,
+        receiveAddress,
+        0,
+        totalBalance,
+        unspentsLength,
         'P2PKH',
       );
+      return [rawTx];
+    }
 
-      const {inputsArr, addressBalance, addressUnspentsLength} = sweepy;
-
-      // Map each input to its key pair
-      inputsArr.forEach(input => {
-        inputsWithKeyPairs.push({
-          input,
-          keyPair: addressWithKeyPair.keyPair,
-        });
-      });
-
-      totalBalance += addressBalance;
-      unspentsLength += addressUnspentsLength;
-    }),
-  );
-
-  // Create a single transaction with all inputs
-  if (inputsWithKeyPairs.length > 0) {
-    const rawTx = createTopUpTx(
-      inputsWithKeyPairs,
-      receiveAddress,
-      0,
-      totalBalance,
-      unspentsLength,
-      'P2PKH',
-    );
-    return [rawTx];
+    return [];
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error(String(error));
+    }
   }
-
-  return [];
 };
 
 export const sweepWIF = async (wifString: string, receiveAddress: string) => {
@@ -273,7 +281,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
     address = legacyAddress;
     inputScript = 'P2PKH';
     const {inputsArr, addressBalance, addressUnspentsLength} =
-      await sweepAddress(String(address), keyPair, String(inputScript));
+      await sweepAddressViaLitecoinspace(
+        String(address),
+        keyPair,
+        String(inputScript),
+      );
     inputsFromAllAddressesWithBalance.push(...inputsArr);
     totalBalance += addressBalance;
     unspentsLength += addressUnspentsLength;
@@ -294,7 +306,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
       address = p2shAddress;
       inputScript = 'P2SH-P2WPKH';
       const {inputsArr, addressBalance, addressUnspentsLength} =
-        await sweepAddress(String(address), keyPair, String(inputScript));
+        await sweepAddressViaLitecoinspace(
+          String(address),
+          keyPair,
+          String(inputScript),
+        );
       inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
@@ -310,7 +326,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
       address = bech32Address;
       inputScript = 'P2WPKH';
       const {inputsArr, addressBalance, addressUnspentsLength} =
-        await sweepAddress(String(address), keyPair, String(inputScript));
+        await sweepAddressViaLitecoinspace(
+          String(address),
+          keyPair,
+          String(inputScript),
+        );
       inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
       unspentsLength += addressUnspentsLength;
@@ -327,10 +347,11 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
   if (totalBalance > 0) {
     try {
       // Convert inputs to InputWithKeyPair format
-      const inputsWithKeyPairs: InputWithKeyPair[] = inputsFromAllAddressesWithBalance.map(input => ({
-        input,
-        keyPair,
-      }));
+      const inputsWithKeyPairs: InputWithKeyPair[] =
+        inputsFromAllAddressesWithBalance.map(input => ({
+          input,
+          keyPair,
+        }));
 
       const rawTx = createTopUpTx(
         inputsWithKeyPairs,
@@ -375,9 +396,9 @@ const sweepAddress = (
       );
 
       if (!utxoRes.ok) {
-        // const error = await utxoRes.json();
+        const error = await utxoRes.json();
         reject(
-          'Failed to connect with API Server - try using a VPN. (UTXO Fetch',
+          `Failed to connect with API Server - try using a VPN. (UTXO Fetch: ${error})`,
         );
         return;
       }
@@ -442,21 +463,98 @@ const sweepAddress = (
         }),
       );
 
-      if (addressBalance !== 0) {
-        resolve({
-          inputsArr,
-          addressBalance,
-          addressUnspentsLength: unspents.length,
-        });
-      } else {
-        resolve({
-          inputsArr,
-          addressBalance,
-          addressUnspentsLength: unspents.length,
-        });
-      }
+      resolve({
+        inputsArr,
+        addressBalance,
+        addressUnspentsLength: unspents.length,
+      });
     } catch (error) {
       reject('Failed to connect with API Server - try using a VPN.');
+    }
+  });
+};
+
+// NOTE: new endpoint required, the `https://litecoinspace.org/api/address/${address}/utxo-hex`
+// endpoint should return uxto data with the hex value appended to every unspent
+const sweepAddressViaLitecoinspace = (
+  address: string,
+  keyPair: ECPairInterface,
+  inputScript: string,
+): Promise<SweptAddress> => {
+  return new Promise(async (resolve, reject) => {
+    const headers = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      const utxoRes = await fetch(
+        `https://litecoinspace.org/api/address/${address}/utxo-hex`,
+        {
+          method: 'GET',
+          headers,
+        },
+      );
+      if (!utxoRes.ok) {
+        reject(
+          'UTXO fetch error. Failed to connect with API Server, try using VPN.',
+        );
+        return;
+      }
+      const unspents = await utxoRes.json();
+      let inputsArr: any[] = [];
+      let addressBalance = 0;
+
+      unspents.map((utxo: any) => {
+        const utxoHex = utxo.hex;
+        // skip txs with empty hex
+        if (!utxoHex) {
+          return;
+        }
+
+        addressBalance += utxo.value;
+
+        switch (inputScript) {
+          case 'P2PKH':
+            inputsArr.push(
+              getTxInputData(
+                utxo.txid,
+                utxo.vout,
+                utxoHex,
+                utxo.value,
+                false,
+                inputScript,
+                keyPair.publicKey,
+              ),
+            );
+            break;
+          case 'P2SH':
+          case 'P2WPKH':
+          case 'P2SH-P2WPKH':
+          case 'P2WSH':
+          case 'P2SH-P2WSH':
+            inputsArr.push(
+              getTxInputData(
+                utxo.txid,
+                utxo.vout,
+                utxoHex,
+                utxo.value,
+                true,
+                inputScript,
+                keyPair.publicKey,
+              ),
+            );
+            break;
+        }
+      });
+
+      resolve({
+        inputsArr,
+        addressBalance,
+        addressUnspentsLength: unspents.length,
+      });
+    } catch (error) {
+      reject('Failed to connect with API Server, try using VPN.');
     }
   });
 };

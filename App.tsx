@@ -103,7 +103,13 @@ function DeviceTokenHandler(props: any) {
   useEffect(() => {
     if (props.deviceToken) {
       dispatch(setDeviceNotificationToken(props.deviceToken));
-      dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
+      dispatch(
+        loginToNexusApi(
+          props.deviceToken,
+          Platform.OS === 'ios',
+          String(Platform.Version),
+        ),
+      );
     }
   }, [dispatch, props.deviceToken]);
 

@@ -126,7 +126,11 @@ const Chart = () => {
             <LinearGradient
               start={vec(0, 0)}
               end={vec(0, height)}
-              colors={['rgba(238, 238, 238, 0.2)', 'rgba(238, 238, 238, 0.2)', 'rgba(238, 238, 238, 0)']}
+              colors={[
+                'rgba(238, 238, 238, 0.2)',
+                'rgba(238, 238, 238, 0.2)',
+                'rgba(238, 238, 238, 0)',
+              ]}
               positions={[0, 0.4, 1]}
             />
           </Path>
