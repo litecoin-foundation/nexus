@@ -15,7 +15,10 @@ type IRates = {
 };
 
 type TGranulatedPriceData = {
+  latestPrice: PriceDataPoint;
+  fifteenMins: PriceDataPoint[];
   hourly: PriceDataPoint[];
+  sixHrs: PriceDataPoint[];
   daily: PriceDataPoint[];
   all: PriceDataPoint[];
 };
@@ -184,7 +187,14 @@ const fetchGranulatedHistoricalRates =
     });
 
     if (!res.ok) {
-      return {hourly: [], daily: [], all: []} as TGranulatedPriceData;
+      return {
+        latestPrice: [0, 0, 0, 0, 0, 0],
+        fifteenMins: [],
+        hourly: [],
+        sixHrs: [],
+        daily: [],
+        all: [],
+      } as TGranulatedPriceData;
     }
 
     const {data} = await res.json();
@@ -225,7 +235,7 @@ const segregateHistoricalRatesByPeriods =
     const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
     const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
-    const dayData = granulatedPriceData.hourly.filter(item => {
+    const dayData = granulatedPriceData.fifteenMins.filter(item => {
       const itemDate = new Date(item[0] * 1000);
       return itemDate >= oneDayAgo;
     });
@@ -233,7 +243,7 @@ const segregateHistoricalRatesByPeriods =
       const itemDate = new Date(item[0] * 1000);
       return itemDate >= oneWeekAgo;
     });
-    const monthData = granulatedPriceData.daily.filter(item => {
+    const monthData = granulatedPriceData.sixHrs.filter(item => {
       const itemDate = new Date(item[0] * 1000);
       return itemDate >= oneMonthAgo;
     });
@@ -245,6 +255,12 @@ const segregateHistoricalRatesByPeriods =
       const itemDate = new Date(item[0] * 1000);
       return itemDate >= oneYearAgo;
     });
+
+    dayData.push(granulatedPriceData.latestPrice);
+    weekData.push(granulatedPriceData.latestPrice);
+    monthData.push(granulatedPriceData.latestPrice);
+    quarterData.push(granulatedPriceData.latestPrice);
+    yearData.push(granulatedPriceData.latestPrice);
 
     dispatch(updateHistoricRateDayAction(dayData));
     dispatch(updateHistoricRateWeekAction(weekData));
