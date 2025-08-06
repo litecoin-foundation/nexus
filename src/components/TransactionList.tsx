@@ -187,6 +187,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
       case 'Sell':
       case 'Send':
       case 'Receive':
+      case 'Convert':
         txArray.push(
           ...transactions.filter((tx: any) => tx.metaLabel === transactionType),
         );

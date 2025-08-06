@@ -9,6 +9,7 @@ import {
   walletKitListUnspent,
   walletKitFundPsbt,
   walletKitFinalizePsbt,
+  walletKitPublishTransaction,
 } from 'react-native-turbo-lndltc';
 import {
   GetTransactionsRequestSchema,
@@ -63,9 +64,17 @@ type IOutputDetails = {
   pkScript: string;
 };
 
+export type IConvertedTx = {
+  destinationAddress: string;
+  targetAmount: number;
+  timestamp: number;
+  conversionType: 'regular' | 'private';
+};
+
 interface ITx {
   txSubscriptionStarted: boolean;
   transactions: IDecodedTx[];
+  convertedTransactions: IConvertedTx[];
 }
 
 // initial state
@@ -74,6 +83,7 @@ const initialState = {
   transactions: [],
   invoices: [],
   memos: [],
+  convertedTransactions: [],
 } as ITx;
 
 // actions
@@ -82,6 +92,9 @@ const getTransactionsAction = createAction<IDecodedTx[]>(
 );
 const txSubscriptionStartedAction = createAction<boolean>(
   'transaction/txSubscriptionStartedAction',
+);
+const addConvertedTransactionAction = createAction<IConvertedTx>(
+  'transaction/addConvertedTransactionAction',
 );
 
 // functions
@@ -120,110 +133,126 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
   });
 };
 
-export const sendConvertWithPsbt = async (
-  amount: number,
-  destination: 'regular' | 'private',
-) => {
-  try {
-    // new destination address
-    let type: number;
-    if (destination === 'private') {
-      type = 7;
-    } else {
-      type = 2;
-    }
-    const destinationAddress = await newLndAddress({type});
+export const sendConvertWithPsbt =
+  (amount: number, destination: 'regular' | 'private'): AppThunk =>
+  async dispatch => {
+    try {
+      // new destination address
+      let type: number;
+      if (destination === 'private') {
+        type = 7;
+      } else {
+        type = 2;
+      }
+      const destinationAddress = await newLndAddress({type});
 
-    // lookup utxos
-    const listUnspentResponse = await walletKitListUnspent({});
+      console.log('LOSHY!!!');
+      // lookup utxos
+      const listUnspentResponse = await walletKitListUnspent({});
 
-    if (!listUnspentResponse || !listUnspentResponse.utxos) {
-      throw new Error('Invalid response from ListUnspent');
-    }
-    const {utxos} = listUnspentResponse;
+      if (!listUnspentResponse || !listUnspentResponse.utxos) {
+        throw new Error('Invalid response from ListUnspent');
+      }
+      const {utxos} = listUnspentResponse;
 
-    // filter mweb and non mweb utxos, sort by largest
-    // coin selection will use first largest available
-    const mwebUtxos = utxos
-      .filter(utxo => utxo.addressType === AddressType.MWEB)
-      .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
-    const nonMwebUtxos = utxos
-      .filter(utxo => utxo.addressType !== AddressType.MWEB)
-      .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
+      // filter mweb and non mweb utxos, sort by largest
+      // coin selection will use first largest available
+      const mwebUtxos = utxos
+        .filter(utxo => utxo.addressType === AddressType.MWEB)
+        .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
+      const nonMwebUtxos = utxos
+        .filter(utxo => utxo.addressType !== AddressType.MWEB)
+        .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
 
-    const outpoints = destination === 'private' ? nonMwebUtxos : mwebUtxos;
+      const outpoints = destination === 'private' ? nonMwebUtxos : mwebUtxos;
 
-    // Perform coin selection to find minimum inputs needed to satisfy the amount
-    const selectedUtxos = [];
-    let totalSelected = BigInt(-2000);
-    // Convert amount to satoshis (integer) if it's not already
-    const targetAmount = BigInt(Math.floor(amount));
+      // Perform coin selection to find minimum inputs needed to satisfy the amount
+      const selectedUtxos = [];
+      let totalSelected = BigInt(-2000);
+      const targetAmount = BigInt(Math.floor(amount));
 
-    for (const utxo of outpoints) {
-      if (utxo.outpoint === undefined) {
-        continue;
+      for (const utxo of outpoints) {
+        if (utxo.outpoint === undefined) {
+          continue;
+        }
+
+        if (utxo.outpoint) {
+          selectedUtxos.push(utxo.outpoint);
+        }
+        totalSelected += utxo.amountSat;
+
+        // Break when we have enough to cover the amount (fees will be calculated by FundPsbt)
+        if (totalSelected >= targetAmount) {
+          break;
+        }
       }
 
-      if (utxo.outpoint) {
-        selectedUtxos.push(utxo.outpoint);
+      if (totalSelected < targetAmount) {
+        throw new Error(
+          `Insufficient funds: need ${targetAmount}, have ${totalSelected}`,
+        );
       }
-      totalSelected += utxo.amountSat;
 
-      // Break when we have enough to cover the amount (fees will be calculated by FundPsbt)
-      if (totalSelected >= targetAmount) {
-        break;
+      if (selectedUtxos.length < 1) {
+        throw new Error('No valid inputs found!');
       }
-    }
 
-    if (totalSelected < targetAmount) {
-      throw new Error(
-        `Insufficient funds: need ${targetAmount}, have ${totalSelected}`,
-      );
-    }
+      if (!destinationAddress || destinationAddress === undefined) {
+        throw new Error('No destination address!');
+      }
 
-    if (selectedUtxos.length < 1) {
-      throw new Error('No valid inputs found!');
-    }
-
-    if (!destinationAddress || destinationAddress === undefined) {
-      throw new Error('No destination address!');
-    }
-
-    const psbt = await walletKitFundPsbt({
-      template: {
-        case: 'raw',
-        value: {
-          inputs: selectedUtxos,
-          outputs: {
-            [destinationAddress.address]: targetAmount,
+      const psbt = await walletKitFundPsbt({
+        template: {
+          case: 'raw',
+          value: {
+            inputs: selectedUtxos,
+            outputs: {
+              [destinationAddress.address]: targetAmount,
+            },
           },
         },
-      },
-      fees: {
-        case: 'satPerVbyte',
-        value: destination === 'private' ? BigInt(30) : BigInt(2000),
-      },
-      changeType:
-        destination === 'private'
-          ? ChangeAddressType.UNSPECIFIED
-          : ChangeAddressType.MWEB,
-    });
+        fees: {
+          case: 'satPerVbyte',
+          value: destination === 'private' ? BigInt(30) : BigInt(2000),
+        },
+        changeType:
+          destination === 'private'
+            ? ChangeAddressType.UNSPECIFIED
+            : ChangeAddressType.MWEB,
+      });
 
-    const signedPsbt = await walletKitFinalizePsbt({
-      fundedPsbt: psbt.fundedPsbt,
-    });
-    const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
+      const signedPsbt = await walletKitFinalizePsbt({
+        fundedPsbt: psbt.fundedPsbt,
+      });
 
-    // TODO: we should observe for any incoming txs made to this destinationAddress.address
-    // with the targetAmount. Any incoming transaction that matches should be labelled as
-    // a Convert Litecoin Transaction
+      if (!signedPsbt || !signedPsbt.rawFinalTx) {
+        throw new Error('Failed to finalize PSBT: rawFinalTx is undefined');
+      }
 
-    const txid = await publishTransaction(txHex);
-    return txid;
-  } catch (error) {
-    console.error(error);
-  }
-};
+      const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
+
+      try {
+        // broadcast transaction
+        await publishTransaction(txHex, 'Converted Litecoin');
+
+        // Store conversion data for transaction matching
+        if (destinationAddress.address) {
+          dispatch(
+            addConvertedTransactionAction({
+              destinationAddress: destinationAddress.address,
+              targetAmount: parseInt(targetAmount.toString(), 10),
+              timestamp: Math.floor(Date.now() / 1000),
+              conversionType: destination,
+            }),
+          );
+        }
+      } catch (error) {
+        throw new Error(error ? String(error) : 'Unknown error occurred');
+      }
+    } catch (error) {
+      console.error('Error in sendConvertWithPsbt:', error || 'Unknown error');
+    }
+  };
 
 export const sendConvertWithCoinControl = async (
   amount: number,
@@ -356,6 +385,7 @@ function getUnmatchedNexusApiTxsWithLndTxs(lndTxs: any[], nexusApiTxs: any[]) {
 
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   const {buyHistory, sellHistory} = getState().buy!;
+  const {convertedTransactions} = getState().transaction!;
 
   try {
     const transactions = await getLndTransactions(
@@ -447,6 +477,54 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         if (sellTx) {
           tradeTx = sellTx;
           metaLabel = 'Sell';
+        }
+      }
+
+      // Check if transaction matches a convert operation
+      if (convertedTransactions && convertedTransactions.length >= 1) {
+        const convertTx = convertedTransactions.find(convertedTx => {
+          // Check if any destination address matches the convert destination
+          const hasDestinationAddress = tx.destAddresses?.includes(
+            convertedTx.destinationAddress,
+          );
+
+          if (!hasDestinationAddress) {
+            return false;
+          }
+
+          // For positive amounts (receive), check if any output matches our target amount
+          if (Number(tx.amount) > 0) {
+            return outputDetails.some(output => {
+              const addressMatch =
+                output.address === convertedTx.destinationAddress;
+              const isOurAddr = output.isOurAddress;
+              const amountDiff = Math.abs(
+                Number(output.amount) - convertedTx.targetAmount,
+              );
+              const amountMatch = amountDiff < 1000;
+              return addressMatch && isOurAddr && amountMatch;
+            });
+          }
+
+          // For negative amounts (send), just check if destination address matches
+          return true;
+        });
+
+        if (convertTx) {
+          // Only show convert transactions for positive amounts (receives)
+          // Hide the negative amount (send) transactions
+          if (Number(tx.amount) > 0) {
+            metaLabel = 'Convert';
+            tradeTx = {
+              conversionType: convertTx.conversionType,
+              destinationAddress: convertTx.destinationAddress,
+              targetAmount: convertTx.targetAmount,
+              timestamp: convertTx.timestamp,
+            };
+          } else {
+            // Skip this transaction (don't add to txs array)
+            continue;
+          }
         }
       }
 
@@ -577,7 +655,48 @@ export const sendAllOnchainPayment =
     });
   };
 
-export const publishTransaction = (txHex: string): Promise<string> => {
+export const publishTransaction = (
+  txHex: string,
+  label?: string,
+): Promise<string> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const txHexArray = Uint8Array.from(Buffer.from(txHex, 'hex'));
+
+      const params = {
+        txHex: txHexArray,
+        // if `label` is undefined we spread an empty object → no `label` key
+        ...(label !== undefined ? {label} : {}),
+      };
+
+      const res = await walletKitPublishTransaction(params);
+
+      if (!res) {
+        throw new Error('walletKitPublishTransaction returned undefined');
+      }
+
+      if (res.publishError) {
+        console.log('peepee');
+        console.info(res);
+        throw new Error(res.publishError);
+      }
+
+      resolve('');
+    } catch (error) {
+      console.info('LNDltc failed to broadcast tx!');
+      console.error(error);
+      console.info('Attempting to broadcast tx via Litecoin Space!');
+      try {
+        const fallbackResolve = await publishTransactionFallback1(txHex);
+        resolve(fallbackResolve);
+      } catch (error2) {
+        reject(error2);
+      }
+    }
+  });
+};
+
+export const publishTransactionFallback1 = (txHex: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
       const request = await fetch('https://litecoinspace.org/api/tx', {
@@ -587,11 +706,10 @@ export const publishTransaction = (txHex: string): Promise<string> => {
 
       if (!request.ok) {
         const error = await request.text();
-        if (__DEV__) {
-          console.log(`Tx Broadcast failed: ${error}`);
-        }
+        console.error(`Failed to broadcast tx via Litecoin Space: ${error}`);
+        console.info('Attempting to broadcast tx via Blockcypher!');
 
-        const fallbackResolve = await publishTransactionFallback1(txHex);
+        const fallbackResolve = await publishTransactionFallback2(txHex);
         resolve(fallbackResolve);
       } else {
         const response = await request.text();
@@ -604,7 +722,7 @@ export const publishTransaction = (txHex: string): Promise<string> => {
   });
 };
 
-export const publishTransactionFallback1 = (txHex: string): Promise<string> => {
+export const publishTransactionFallback2 = (txHex: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
       const request = await fetch(
@@ -705,6 +823,13 @@ export const transactionSlice = createSlice({
     txSubscriptionStartedAction: (state, action) => ({
       ...state,
       txSubscriptionStarted: action.payload,
+    }),
+    addConvertedTransactionAction: (state, action) => ({
+      ...state,
+      convertedTransactions: [
+        ...(state.convertedTransactions || []),
+        action.payload,
+      ],
     }),
   },
   extraReducers: builder => {
