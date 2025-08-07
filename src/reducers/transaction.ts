@@ -69,6 +69,11 @@ export type IConvertedTx = {
   targetAmount: number;
   timestamp: number;
   conversionType: 'regular' | 'private';
+  selectedUtxos: Array<{
+    address?: string;
+    amountSat: number; // Changed from bigint to number for Redux serialization
+    addressType: number;
+  }>;
 };
 
 interface ITx {
@@ -146,7 +151,6 @@ export const sendConvertWithPsbt =
       }
       const destinationAddress = await newLndAddress({type});
 
-      console.log('LOSHY!!!');
       // lookup utxos
       const listUnspentResponse = await walletKitListUnspent({});
 
@@ -168,6 +172,7 @@ export const sendConvertWithPsbt =
 
       // Perform coin selection to find minimum inputs needed to satisfy the amount
       const selectedUtxos = [];
+      const selectedUtxoDetails = []; // Store full UTXO details for Redux
       let totalSelected = BigInt(-2000);
       const targetAmount = BigInt(Math.floor(amount));
 
@@ -178,6 +183,12 @@ export const sendConvertWithPsbt =
 
         if (utxo.outpoint) {
           selectedUtxos.push(utxo.outpoint);
+          // Store the full UTXO details (convert BigInt to number for Redux serialization)
+          selectedUtxoDetails.push({
+            address: utxo.address,
+            amountSat: Number(utxo.amountSat),
+            addressType: utxo.addressType,
+          });
         }
         totalSelected += utxo.amountSat;
 
@@ -243,6 +254,7 @@ export const sendConvertWithPsbt =
               targetAmount: parseInt(targetAmount.toString(), 10),
               timestamp: Math.floor(Date.now() / 1000),
               conversionType: destination,
+              selectedUtxos: selectedUtxoDetails,
             }),
           );
         }
@@ -393,6 +405,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
     );
 
     const txs: IDecodedTx[] = [];
+    const processedConvertTxs = new Set<string>(); // Track processed convert transactions
 
     // Compare nexus-api txs with lnd txs to append missing ones in lnd
     const unmatchedBuyTxs = getUnmatchedNexusApiTxsWithLndTxs(
@@ -487,44 +500,78 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           const hasDestinationAddress = tx.destAddresses?.includes(
             convertedTx.destinationAddress,
           );
-
-          if (!hasDestinationAddress) {
-            return false;
-          }
-
-          // For positive amounts (receive), check if any output matches our target amount
-          if (Number(tx.amount) > 0) {
-            return outputDetails.some(output => {
-              const addressMatch =
-                output.address === convertedTx.destinationAddress;
-              const isOurAddr = output.isOurAddress;
-              const amountDiff = Math.abs(
-                Number(output.amount) - convertedTx.targetAmount,
-              );
-              const amountMatch = amountDiff < 1000;
-              return addressMatch && isOurAddr && amountMatch;
-            });
-          }
-
-          // For negative amounts (send), just check if destination address matches
-          return true;
+          return hasDestinationAddress;
         });
 
         if (convertTx) {
-          // Only show convert transactions for positive amounts (receives)
-          // Hide the negative amount (send) transactions
-          if (Number(tx.amount) > 0) {
-            metaLabel = 'Convert';
-            tradeTx = {
-              conversionType: convertTx.conversionType,
-              destinationAddress: convertTx.destinationAddress,
-              targetAmount: convertTx.targetAmount,
-              timestamp: convertTx.timestamp,
-            };
-          } else {
-            // Skip this transaction (don't add to txs array)
+          const convertKey = `${convertTx.destinationAddress}-${convertTx.timestamp}`;
+          
+          // If we've already processed this convert transaction, skip
+          if (processedConvertTxs.has(convertKey)) {
             continue;
           }
+          
+          // Mark this convert transaction as processed
+          processedConvertTxs.add(convertKey);
+          
+          // Find both send and receive transactions for this convert
+          const relatedTxs = transactions.transactions.filter(relatedTx => 
+            relatedTx.destAddresses?.includes(convertTx.destinationAddress)
+          );
+          
+          // Merge input and output details from both transactions
+          const mergedInputDetails: any[] = [];
+          const mergedOutputDetails: IOutputDetails[] = [];
+          const mergedPreviousOutpoints: any[] = [];
+          let totalFees = 0;
+          let receiveTx = null;
+          let sendTx = null;
+          
+          relatedTxs.forEach(relatedTx => {
+            if (Number(relatedTx.amount) > 0) {
+              receiveTx = relatedTx;
+            } else {
+              sendTx = relatedTx;
+            }
+            
+            // Merge output details
+            relatedTx.outputDetails?.forEach(outputDetail => {
+              const output: IOutputDetails = {
+                address: outputDetail.address,
+                amount: Number(outputDetail.amount),
+                isOurAddress: outputDetail.isOurAddress,
+                outputIndex: Number(outputDetail.outputIndex),
+                outputType: outputDetail.outputType,
+                pkScript: outputDetail.pkScript,
+              };
+              mergedOutputDetails.push(output);
+            });
+            
+            // Merge previous outpoints (these represent inputs)
+            relatedTx.previousOutpoints?.forEach(prevOutpoint => {
+              mergedPreviousOutpoints.push(prevOutpoint);
+            });
+            
+            totalFees += Number(relatedTx.totalFees);
+          });
+          
+          // Use the receive transaction as the base, but with merged data
+          const baseTx = receiveTx || tx;
+          // Don't reassign read-only variables, use the merged data directly in decodedTx
+          
+          metaLabel = 'Convert';
+          tradeTx = {
+            conversionType: convertTx.conversionType,
+            destinationAddress: convertTx.destinationAddress,
+            targetAmount: convertTx.targetAmount,
+            timestamp: convertTx.timestamp,
+            selectedUtxos: convertTx.selectedUtxos,
+            // Store merged transaction data for the modal
+            mergedInputDetails,
+            mergedOutputDetails,
+            sendTxHash: sendTx?.txHash,
+            receiveTxHash: receiveTx?.txHash,
+          };
         }
       }
 
@@ -536,8 +583,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         numConfirmations: tx.numConfirmations,
         timeStamp: String(tx.timeStamp),
         fee: Number(tx.totalFees),
-        outputDetails,
-        previousOutpoints,
+        // Use merged data for convert transactions, otherwise use original data
+        outputDetails: metaLabel === 'Convert' && tradeTx?.mergedOutputDetails ? tradeTx.mergedOutputDetails : outputDetails,
+        previousOutpoints: metaLabel === 'Convert' && tradeTx?.mergedPreviousOutpoints ? tradeTx.mergedPreviousOutpoints : previousOutpoints,
         label: tx.label,
         metaLabel,
         priceOnDate,
@@ -676,8 +724,6 @@ export const publishTransaction = (
       }
 
       if (res.publishError) {
-        console.log('peepee');
-        console.info(res);
         throw new Error(res.publishError);
       }
 
@@ -803,8 +849,11 @@ export const txDetailSelector = createSelector<
       metaLabel: data.metaLabel,
       priceOnDate: data.priceOnDate,
       // if it's buy/sell tx (aka trade tx) fetch its metadata
+      // For convert transactions, use tradeTx directly; for buy/sell, use projection
       providerMeta: data.tradeTx
-        ? displayedTxMetadataProjection(data.tradeTx)
+        ? data.metaLabel === 'Convert'
+          ? data.tradeTx
+          : displayedTxMetadataProjection(data.tradeTx)
         : null,
       renderIndex: index,
     };

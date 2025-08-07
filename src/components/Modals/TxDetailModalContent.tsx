@@ -28,7 +28,9 @@ import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import BlueButton from '../Buttons/BlueButton';
 import GreenButton from '../Buttons/GreenButton';
+import ChangeAddress from '../ChangeAddress';
 import {formatTxDate} from '../../lib/utils/date';
+import {isConvertMetadata, isBuySellMetadata} from '../../utils/txMetadata';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {IDisplayedTx, labelTransaction} from '../../reducers/transaction';
@@ -44,7 +46,6 @@ import {convertLocalFiatToUSD} from '../../reducers/ticker';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import ChangeAddress from '../ChangeAddress';
 
 interface Props {
   close: () => void;
@@ -97,6 +98,24 @@ interface SellBuyLayoutProps {
   currentExplorer: string;
 }
 
+interface ConvertLayoutProps {
+  conversionType: 'regular' | 'private';
+  destinationAddress: string;
+  targetAmount: number;
+  selectedUtxos: Array<{
+    address?: string;
+    amountSat: number;
+    addressType: number;
+  }>;
+  myOutputAddrs: string[];
+  otherOutputAddrs: string[];
+  txId: string;
+  dateString: string;
+  amountSymbol: string;
+  currentExplorer: string;
+  blockchainFee: number | 'unknown';
+}
+
 export default function TxDetailModalContent(props: Props) {
   const {
     close,
@@ -132,23 +151,33 @@ export default function TxDetailModalContent(props: Props) {
           };
         case 'Buy':
           return {
-            textKey: transaction.providerMeta?.status
-              ? transaction.providerMeta.status === 'pending'
-                ? 'buying'
-                : 'bought'
-              : 'bought',
+            textKey:
+              isBuySellMetadata(transaction.providerMeta) &&
+              transaction.providerMeta.status
+                ? transaction.providerMeta.status === 'pending'
+                  ? 'buying'
+                  : 'bought'
+                : 'bought',
             txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
           };
         case 'Sell':
           return {
-            textKey: transaction.providerMeta?.status
-              ? transaction.providerMeta.status === 'pending'
-                ? 'selling'
-                : 'sold'
-              : 'sold',
+            textKey:
+              isBuySellMetadata(transaction.providerMeta) &&
+              transaction.providerMeta.status
+                ? transaction.providerMeta.status === 'pending'
+                  ? 'selling'
+                  : 'sold'
+                : 'sold',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
+          };
+        case 'Convert':
+          return {
+            textKey: 'Converted',
+            txIcon: require('../../assets/icons/converttx.png'),
+            amountColor: '#1162E6',
           };
         default:
           return {
@@ -324,10 +353,10 @@ export default function TxDetailModalContent(props: Props) {
       // let paymentMethodProp = '';
       let currentExplorerProp = '';
 
-      if (transaction.providerMeta) {
-        fiatSymbolProp = getCurrencySymbol(
-          transaction.providerMeta.fiatCurrency,
-        );
+      if (isBuySellMetadata(transaction.providerMeta)) {
+        fiatSymbolProp = transaction.providerMeta.fiatCurrency
+          ? getCurrencySymbol(transaction.providerMeta.fiatCurrency)
+          : '$';
         providerTxIdProp = transaction.providerMeta.providerTxId;
         cryptoTxIdProp = transaction.providerMeta.cryptoTxId;
         createdAtProp = formatTxDate(
@@ -448,6 +477,23 @@ export default function TxDetailModalContent(props: Props) {
                   currentExplorer={currentExplorer}
                   blockchainFee={blockchainFee}
                   labelTx={labelTx}
+                />
+              ) : transaction.metaLabel === 'Convert' &&
+                isConvertMetadata(transaction.providerMeta) ? (
+                <ConvertLayout
+                  conversionType={transaction.providerMeta.conversionType}
+                  destinationAddress={
+                    transaction.providerMeta.destinationAddress
+                  }
+                  targetAmount={transaction.providerMeta.targetAmount}
+                  selectedUtxos={transaction.providerMeta.selectedUtxos}
+                  myOutputAddrs={myOutputs}
+                  otherOutputAddrs={otherOutputs}
+                  txId={transaction.hash}
+                  dateString={dateString}
+                  amountSymbol={amountSymbol}
+                  currentExplorer={currentExplorer}
+                  blockchainFee={blockchainFee}
                 />
               ) : (
                 <SellBuyLayout
@@ -664,6 +710,274 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
         ) : (
           <></>
         )}
+        <View style={styles.paginationStrip} />
+      </View>
+    </Fragment>
+  );
+};
+
+const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
+  const {
+    conversionType,
+    destinationAddress,
+    targetAmount,
+    selectedUtxos,
+    myOutputAddrs,
+    otherOutputAddrs,
+    txId,
+    dateString,
+    amountSymbol,
+    currentExplorer,
+    blockchainFee,
+  } = props;
+
+  const navigation = useNavigation<any>();
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
+  const targetAmountFormatted = convertToSubunit(targetAmount)
+    .toFixed(4)
+    .replace(/\.?0+$/, '');
+
+  // Find change address (not the destination address)
+  const changeAddrs = myOutputAddrs.filter(addr => addr !== destinationAddress);
+
+  // Format UTXO amounts
+  const formattedUtxos = selectedUtxos.map(utxo => ({
+    ...utxo,
+    formattedAmount: convertToSubunit(utxo.amountSat)
+      .toFixed(4)
+      .replace(/\.?0+$/, ''),
+  }));
+
+  const scrollViewRef = useRef<ScrollView | null>(null);
+
+  return (
+    <Fragment>
+      <View style={styles.topContainer}>
+        {/*<View style={styles.fromToContainerHeight}>
+          <View style={styles.fromToContainer}>
+            <View style={styles.fromContainer}>
+              <View style={styles.fromAndToIconContainer}>
+                <View style={styles.fromAndToIcon}>
+                  <Image
+                    style={styles.fromAndToIconImage}
+                    source={require('../../assets/icons/send-icon.png')}
+                  />
+                </View>
+                <View style={styles.sentLine} />
+              </View>
+              <View style={styles.fromAndToTitlesContainer}>
+                <TranslateText
+                  textKey={'from'}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.fromAndToTitle}
+                  numberOfLines={1}
+                />
+                {formattedUtxos.length > 0 ? (
+                  formattedUtxos
+                    .slice(0, 2)
+                    .map((utxo, index) => (
+                      <TranslateText
+                        key={`input-${index}`}
+                        textValue={`${utxo.address || 'Unknown'} (${utxo.formattedAmount}${amountSymbol})`}
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                        textStyle={styles.fromAddressTitle}
+                        numberOfLines={4}
+                      />
+                    ))
+                ) : (
+                  <TranslateText
+                    textValue="Unknown"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.fromAddressTitle}
+                    numberOfLines={1}
+                  />
+                )}
+              </View>
+            </View>
+
+            <View style={styles.toContainer}>
+              <View style={styles.fromAndToIconContainer}>
+                <View style={styles.fromAndToIcon}>
+                  <Image
+                    style={styles.fromAndToIconImage}
+                    source={require('../../assets/icons/receive-icon.png')}
+                  />
+                </View>
+              </View>
+              <View style={styles.fromAndToTitlesContainer}>
+                <TranslateText
+                  textKey={'to'}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.fromAndToTitle}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={
+                    destinationAddress
+                      ? `${destinationAddress} (${targetAmountFormatted}${amountSymbol})`
+                      : `Unknown destination (${targetAmountFormatted}${amountSymbol})`
+                  }
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.toAddressTitle}
+                  numberOfLines={4}
+                />
+                {changeAddrs.length > 0 && (
+                  <Fragment>
+                    <TranslateText
+                      textValue="Change:"
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                      textStyle={styles.changeLabel}
+                      numberOfLines={1}
+                    />
+                    {changeAddrs.slice(0, 1).map((changeAddr, index) => (
+                      <TranslateText
+                        key={`change-${index}`}
+                        textValue={changeAddr}
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                        textStyle={styles.changeAddressTitle}
+                        numberOfLines={4}
+                      />
+                    ))}
+                  </Fragment>
+                )}
+              </View>
+            </View>
+          </View>
+        </View>*/}
+
+        <ScrollView
+          ref={scrollViewRef}
+          scrollEnabled={false}
+          contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.fromToContainerHeight}>
+            <ScrollView contentContainerStyle={styles.fromToContainer}>
+              <View style={styles.fromContainer}>
+                <View style={styles.fromAndToIconContainer}>
+                  <View style={styles.fromAndToIcon}>
+                    <Image
+                      style={styles.fromAndToIconImage}
+                      source={require('../../assets/icons/send-icon.png')}
+                    />
+                  </View>
+                  <View style={styles.sentLine} />
+                </View>
+                <View style={styles.fromAndToTitlesContainer}>
+                  <TranslateText
+                    textKey={'from'}
+                    domain={'main'}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.fromAndToTitle}
+                    numberOfLines={1}
+                  />
+                  {formattedUtxos.length > 0 ? (
+                    formattedUtxos
+                      .slice(0, 2)
+                      .map((utxo, index) => (
+                        <TranslateText
+                          key={`input-${index}`}
+                          textValue={`${utxo.address || 'Unknown'} (${utxo.formattedAmount}${amountSymbol})`}
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                          textStyle={styles.fromAddressTitle}
+                          numberOfLines={4}
+                        />
+                      ))
+                  ) : (
+                    <TranslateText
+                      textValue="Unknown"
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                      textStyle={styles.fromAddressTitle}
+                      numberOfLines={1}
+                    />
+                  )}
+                  <View style={{paddingBottom: 10}} />
+                </View>
+              </View>
+              <View style={styles.toContainer}>
+                <View style={styles.fromAndToIconContainer}>
+                  <View style={styles.fromAndToIcon}>
+                    <Image
+                      style={styles.fromAndToIconImage}
+                      source={require('../../assets/icons/receive-icon.png')}
+                    />
+                  </View>
+                </View>
+                <View style={styles.fromAndToTitlesContainer}>
+                  <TranslateText
+                    textKey={'to'}
+                    domain={'main'}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.fromAndToTitle}
+                    numberOfLines={1}
+                  />
+                  <TranslateText
+                    textValue={
+                      destinationAddress
+                        ? `${destinationAddress} (${targetAmountFormatted}${amountSymbol})`
+                        : `Unknown destination (${targetAmountFormatted}${amountSymbol})`
+                    }
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.toAddressTitle}
+                    numberOfLines={4}
+                  />
+                  {changeAddrs.length > 0 && (
+                    <Fragment>
+                      <TranslateText
+                        textValue="Change:"
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                        textStyle={styles.changeLabel}
+                        numberOfLines={1}
+                      />
+                      {changeAddrs.slice(0, 1).map((changeAddr, index) => (
+                        <TranslateText
+                          key={`change-${index}`}
+                          textValue={changeAddr}
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                          textStyle={styles.changeAddressTitle}
+                          numberOfLines={4}
+                        />
+                      ))}
+                    </Fragment>
+                  )}
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+        </ScrollView>
+
+        <TableCell
+          titleTextKey="tx_id"
+          titleTextDomain="main"
+          value={txId}
+          copyable
+          valueStyle={{paddingLeft: 20}}
+        />
+
+        <TableCell
+          titleTextKey="time_date"
+          titleTextDomain="main"
+          value={dateString}
+        />
+      </View>
+      <View style={styles.bottomContainer}>
+        <View style={styles.buttonContainer}>
+          <BlueButton
+            textKey="view_on_blockchain"
+            textDomain="main"
+            onPress={() => {
+              navigation.navigate('WebPage', {
+                uri: currentExplorer,
+              });
+            }}
+          />
+        </View>
         <View style={styles.paginationStrip} />
       </View>
     </Fragment>
@@ -1320,5 +1634,30 @@ const getStyles = (
     },
     ltcNumColor: {
       color: '#2c72ff',
+    },
+    conversionHeader: {
+      width: '100%',
+      paddingBottom: screenHeight * 0.02,
+      alignItems: 'center',
+    },
+    conversionTitle: {
+      color: '#3b3b3b',
+      fontSize: screenHeight * 0.018,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
+      textAlign: 'center',
+    },
+    changeLabel: {
+      color: '#747e87',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
+      paddingTop: screenHeight * 0.01,
+    },
+    changeAddressTitle: {
+      color: '#2c72ff',
+      fontSize: screenHeight * 0.02,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
     },
   });

@@ -55,7 +55,7 @@ export type IDecodedTx = {
   tradeTx: ITrade;
 };
 
-export type DisplayedMetadataType = {
+export type BuySellMetadataType = {
   providerTxId: string;
   cryptoTxId: string;
   createdAt: string;
@@ -76,7 +76,34 @@ export type DisplayedMetadataType = {
   status: string;
   country: string;
   paymentMethod: string;
-} | null;
+};
+
+export type ConvertMetadataType = {
+  conversionType: 'regular' | 'private';
+  destinationAddress: string;
+  targetAmount: number;
+  timestamp: number;
+  selectedUtxos: Array<{
+    address?: string;
+    amountSat: number;
+    addressType: number;
+  }>;
+  mergedInputDetails?: any[];
+  mergedOutputDetails?: any[];
+  sendTxHash?: string;
+  receiveTxHash?: string;
+};
+
+export type DisplayedMetadataType = BuySellMetadataType | ConvertMetadataType | null;
+
+// Type guard functions
+export function isBuySellMetadata(meta: DisplayedMetadataType): meta is BuySellMetadataType {
+  return meta !== null && 'providerTxId' in meta;
+}
+
+export function isConvertMetadata(meta: DisplayedMetadataType): meta is ConvertMetadataType {
+  return meta !== null && 'conversionType' in meta;
+}
 
 export const decodedTxMetadataProjection = (
   trade: ITrade,
@@ -121,7 +148,7 @@ export const decodedTxMetadataProjection = (
 
 export const displayedTxMetadataProjection = (
   trade: ITrade,
-): DisplayedMetadataType => {
+): BuySellMetadataType => {
   const projectedObj = {
     providerTxId: trade.providerTxId,
     cryptoTxId: trade.cryptoTxId || '',
