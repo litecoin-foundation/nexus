@@ -743,8 +743,20 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
     .toFixed(4)
     .replace(/\.?0+$/, '');
 
+  console.info(otherOutputAddrs);
+
   // Find change address (not the destination address)
   const changeAddrs = myOutputAddrs.filter(addr => addr !== destinationAddress);
+
+  // Calculate change amount (total input - target amount - fees)
+  const totalInputAmount = selectedUtxos.reduce(
+    (sum, utxo) => sum + utxo.amountSat,
+    0,
+  );
+  const changeAmount = totalInputAmount - targetAmount;
+  const changeAmountFormatted = convertToSubunit(changeAmount)
+    .toFixed(4)
+    .replace(/\.?0+$/, '');
 
   // Format UTXO amounts
   const formattedUtxos = selectedUtxos.map(utxo => ({
@@ -754,201 +766,164 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
       .replace(/\.?0+$/, ''),
   }));
 
-  const scrollViewRef = useRef<ScrollView | null>(null);
+  const handleShare = (message: string) => {
+    if (message) {
+      Share.open({message: message});
+    }
+  };
+
+  // Calculate address sizes
+  const calculateAddressSize = (
+    addresses: string[],
+    defaultSize: number,
+    singleThreshold: number,
+    multiThreshold: number,
+  ) => {
+    if (addresses.length > 1) {
+      return multiThreshold;
+    } else if (addresses.length === 1 && addresses[0].length > 75) {
+      return singleThreshold;
+    }
+    return defaultSize;
+  };
+
+  let fromAddressSize = calculateAddressSize(
+    formattedUtxos.map(u => u.address || ''),
+    SCREEN_HEIGHT * 0.025,
+    SCREEN_HEIGHT * 0.019,
+    SCREEN_HEIGHT * 0.017,
+  );
+
+  let toAddressSize = calculateAddressSize(
+    [destinationAddress, ...changeAddrs],
+    SCREEN_HEIGHT * 0.025,
+    SCREEN_HEIGHT * 0.019,
+    SCREEN_HEIGHT * 0.017,
+  );
+
+  if (fromAddressSize >= toAddressSize) {
+    fromAddressSize = toAddressSize;
+  } else {
+    toAddressSize = fromAddressSize;
+  }
+
+  function renderInputs() {
+    if (formattedUtxos.length > 0) {
+      return formattedUtxos.map((utxo, index) => (
+        <TranslateText
+          key={`input-${index}`}
+          textValue={`${utxo.address || 'Unknown'} (${utxo.formattedAmount}${amountSymbol})`}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
+            ...styles.fromAddressTitle,
+            fontSize: fromAddressSize,
+          }}
+          numberOfLines={4}
+          onPress={() => handleShare(utxo.address || '')}
+        />
+      ));
+    } else {
+      return (
+        <TranslateText
+          textValue="Unknown"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
+            ...styles.fromAddressTitle,
+            fontSize: fromAddressSize,
+          }}
+          numberOfLines={1}
+        />
+      );
+    }
+  }
+
+  function renderOutputs() {
+    return (
+      <Fragment>
+        <TranslateText
+          textValue={
+            destinationAddress
+              ? `${destinationAddress} (${targetAmountFormatted}${amountSymbol})`
+              : `Unknown destination (${targetAmountFormatted}${amountSymbol})`
+          }
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
+            ...styles.toAddressTitle,
+            fontSize: toAddressSize,
+          }}
+          numberOfLines={0}
+          onPress={() => handleShare(destinationAddress)}
+        />
+        {changeAddrs.length > 0 && (
+          <ChangeAddress>
+            {changeAddrs.map((changeAddr, index) => (
+              <TranslateText
+                key={`change-${index}`}
+                textValue={`${changeAddr} (${changeAmountFormatted}${amountSymbol})`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={{
+                  color: '#747e87',
+                  fontSize: fromAddressSize,
+                  fontWeight: '700',
+                  fontFamily: 'Satoshi Variable',
+                }}
+                numberOfLines={0}
+                onPress={() => handleShare(changeAddr)}
+              />
+            ))}
+          </ChangeAddress>
+        )}
+      </Fragment>
+    );
+  }
 
   return (
     <Fragment>
       <View style={styles.topContainer}>
-        {/*<View style={styles.fromToContainerHeight}>
-          <View style={styles.fromToContainer}>
-            <View style={styles.fromContainer}>
-              <View style={styles.fromAndToIconContainer}>
-                <View style={styles.fromAndToIcon}>
-                  <Image
-                    style={styles.fromAndToIconImage}
-                    source={require('../../assets/icons/send-icon.png')}
-                  />
-                </View>
-                <View style={styles.sentLine} />
-              </View>
-              <View style={styles.fromAndToTitlesContainer}>
-                <TranslateText
-                  textKey={'from'}
-                  domain={'main'}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.fromAndToTitle}
-                  numberOfLines={1}
+        <ScrollView
+          style={{maxHeight: SCREEN_HEIGHT * 0.4}}
+          contentContainerStyle={styles.fromToContainer}>
+          <View style={styles.fromContainer}>
+            <View style={styles.fromAndToIconContainer}>
+              <View style={styles.fromAndToIcon}>
+                <Image
+                  style={styles.fromAndToIconImage}
+                  source={require('../../assets/icons/send-icon.png')}
                 />
-                {formattedUtxos.length > 0 ? (
-                  formattedUtxos
-                    .slice(0, 2)
-                    .map((utxo, index) => (
-                      <TranslateText
-                        key={`input-${index}`}
-                        textValue={`${utxo.address || 'Unknown'} (${utxo.formattedAmount}${amountSymbol})`}
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                        textStyle={styles.fromAddressTitle}
-                        numberOfLines={4}
-                      />
-                    ))
-                ) : (
-                  <TranslateText
-                    textValue="Unknown"
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.fromAddressTitle}
-                    numberOfLines={1}
-                  />
-                )}
               </View>
+              <View style={styles.sentLine} />
             </View>
-
-            <View style={styles.toContainer}>
-              <View style={styles.fromAndToIconContainer}>
-                <View style={styles.fromAndToIcon}>
-                  <Image
-                    style={styles.fromAndToIconImage}
-                    source={require('../../assets/icons/receive-icon.png')}
-                  />
-                </View>
-              </View>
-              <View style={styles.fromAndToTitlesContainer}>
-                <TranslateText
-                  textKey={'to'}
-                  domain={'main'}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.fromAndToTitle}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={
-                    destinationAddress
-                      ? `${destinationAddress} (${targetAmountFormatted}${amountSymbol})`
-                      : `Unknown destination (${targetAmountFormatted}${amountSymbol})`
-                  }
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.toAddressTitle}
-                  numberOfLines={4}
-                />
-                {changeAddrs.length > 0 && (
-                  <Fragment>
-                    <TranslateText
-                      textValue="Change:"
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                      textStyle={styles.changeLabel}
-                      numberOfLines={1}
-                    />
-                    {changeAddrs.slice(0, 1).map((changeAddr, index) => (
-                      <TranslateText
-                        key={`change-${index}`}
-                        textValue={changeAddr}
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                        textStyle={styles.changeAddressTitle}
-                        numberOfLines={4}
-                      />
-                    ))}
-                  </Fragment>
-                )}
-              </View>
+            <View style={styles.fromAndToTitlesContainer}>
+              <TranslateText
+                textKey={'from'}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.fromAndToTitle}
+                numberOfLines={1}
+              />
+              {renderInputs()}
+              <View style={{paddingBottom: 10}} />
             </View>
           </View>
-        </View>*/}
-
-        <ScrollView
-          ref={scrollViewRef}
-          scrollEnabled={false}
-          contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.fromToContainerHeight}>
-            <ScrollView contentContainerStyle={styles.fromToContainer}>
-              <View style={styles.fromContainer}>
-                <View style={styles.fromAndToIconContainer}>
-                  <View style={styles.fromAndToIcon}>
-                    <Image
-                      style={styles.fromAndToIconImage}
-                      source={require('../../assets/icons/send-icon.png')}
-                    />
-                  </View>
-                  <View style={styles.sentLine} />
-                </View>
-                <View style={styles.fromAndToTitlesContainer}>
-                  <TranslateText
-                    textKey={'from'}
-                    domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.fromAndToTitle}
-                    numberOfLines={1}
-                  />
-                  {formattedUtxos.length > 0 ? (
-                    formattedUtxos
-                      .slice(0, 2)
-                      .map((utxo, index) => (
-                        <TranslateText
-                          key={`input-${index}`}
-                          textValue={`${utxo.address || 'Unknown'} (${utxo.formattedAmount}${amountSymbol})`}
-                          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                          textStyle={styles.fromAddressTitle}
-                          numberOfLines={4}
-                        />
-                      ))
-                  ) : (
-                    <TranslateText
-                      textValue="Unknown"
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                      textStyle={styles.fromAddressTitle}
-                      numberOfLines={1}
-                    />
-                  )}
-                  <View style={{paddingBottom: 10}} />
-                </View>
+          <View style={styles.toContainer}>
+            <View style={styles.fromAndToIconContainer}>
+              <View style={styles.fromAndToIcon}>
+                <Image
+                  style={styles.fromAndToIconImage}
+                  source={require('../../assets/icons/receive-icon.png')}
+                />
               </View>
-              <View style={styles.toContainer}>
-                <View style={styles.fromAndToIconContainer}>
-                  <View style={styles.fromAndToIcon}>
-                    <Image
-                      style={styles.fromAndToIconImage}
-                      source={require('../../assets/icons/receive-icon.png')}
-                    />
-                  </View>
-                </View>
-                <View style={styles.fromAndToTitlesContainer}>
-                  <TranslateText
-                    textKey={'to'}
-                    domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.fromAndToTitle}
-                    numberOfLines={1}
-                  />
-                  <TranslateText
-                    textValue={
-                      destinationAddress
-                        ? `${destinationAddress} (${targetAmountFormatted}${amountSymbol})`
-                        : `Unknown destination (${targetAmountFormatted}${amountSymbol})`
-                    }
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.toAddressTitle}
-                    numberOfLines={4}
-                  />
-                  {changeAddrs.length > 0 && (
-                    <Fragment>
-                      <TranslateText
-                        textValue="Change:"
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                        textStyle={styles.changeLabel}
-                        numberOfLines={1}
-                      />
-                      {changeAddrs.slice(0, 1).map((changeAddr, index) => (
-                        <TranslateText
-                          key={`change-${index}`}
-                          textValue={changeAddr}
-                          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                          textStyle={styles.changeAddressTitle}
-                          numberOfLines={4}
-                        />
-                      ))}
-                    </Fragment>
-                  )}
-                </View>
-              </View>
-            </ScrollView>
+            </View>
+            <View style={styles.fromAndToTitlesContainer}>
+              <TranslateText
+                textKey={'to'}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.fromAndToTitle}
+                numberOfLines={1}
+              />
+              {renderOutputs()}
+            </View>
           </View>
         </ScrollView>
 
@@ -1484,7 +1459,7 @@ const getStyles = (
       paddingVertical: screenHeight * 0.02,
     },
     fromContainer: {
-      flexBasis: '60%',
+      flexShrink: 0,
       width: '100%',
       flexDirection: 'row',
       justifyContent: 'flex-start',
