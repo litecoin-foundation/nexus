@@ -28,6 +28,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 type RootStackParamList = {
   ConfirmBuyOnramper: {
     queryString?: string;
+    prefilledMethod?: string;
   };
   WebPage: {
     uri: string;
@@ -66,7 +67,11 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
     try {
       // await is important!
       const url = await dispatch(
-        getSignedOnramperUrl(refundAddress, Number(fiatAmount)),
+        getSignedOnramperUrl(
+          refundAddress,
+          Number(fiatAmount),
+          route.params.prefilledMethod || '',
+        ),
       );
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {

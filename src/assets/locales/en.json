@@ -109,6 +109,7 @@
     "for": "for ",
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "History",
+    "schedule_buy": "Schedule",
     "preview_buy": "Preview Buy",
     "min_purchase": "Minimum purchase size of {{currencySymbol}}{{minAmountInFiat}}",
     "purchase_history": "Purchase History",

@@ -33,6 +33,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 type RootStackParamList = {
   ConfirmSell: {
     queryString?: string;
+    prefilledMethod?: string;
   };
   WebPage: {
     uri: string;
@@ -85,7 +86,11 @@ const ConfirmSell: React.FC<Props> = props => {
     try {
       // await is important!
       const url = await dispatch(
-        getSignedSellUrl(refundAddress, Number(amount)),
+        getSignedSellUrl(
+          refundAddress,
+          Number(amount),
+          route.params.prefilledMethod || '',
+        ),
       );
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {
@@ -100,7 +105,13 @@ const ConfirmSell: React.FC<Props> = props => {
     } catch (error) {
       dispatch(showError(String(error)));
     }
-  }, [dispatch, refundAddress, amount, navigation]);
+  }, [
+    dispatch,
+    refundAddress,
+    amount,
+    navigation,
+    route.params.prefilledMethod,
+  ]);
 
   useEffect(() => {
     dispatch(getAddress(false));

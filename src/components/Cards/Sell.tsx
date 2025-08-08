@@ -21,6 +21,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, setSellQuote} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
+import WhiteButton from '../Buttons/WhiteButton';
 import {
   resetInputs,
   updateAmount,
@@ -37,8 +38,12 @@ type RootStackParamList = {
   SearchTransaction: {
     openFilter?: string;
   };
-  ConfirmSell: undefined;
-  ConfirmSellOnramper: undefined;
+  ConfirmSell: {
+    prefilledMethod?: string;
+  };
+  ConfirmSellOnramper: {
+    prefilledMethod?: string;
+  };
 };
 
 interface Props {
@@ -84,6 +89,8 @@ const Sell: React.FC<Props> = () => {
       ? sellQuote.fiatAmount
       : Number(fiatAmount);
 
+  const prefilledMethodRef = useRef<string>('');
+
   useEffect(() => {
     dispatch(checkAllowed());
   }, [dispatch]);
@@ -91,7 +98,9 @@ const Sell: React.FC<Props> = () => {
   const quoteUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quoteAbortController = useRef<AbortController | null>(null);
 
-  const onChange = (value: string) => {
+  const onChange = (value: string, prefilledMethod?: string) => {
+    prefilledMethodRef.current = prefilledMethod ? prefilledMethod : '';
+
     if (toggleLTC) {
       dispatch(updateAmount(value, 'sell'));
     } else if (!toggleLTC) {
@@ -392,7 +401,7 @@ const Sell: React.FC<Props> = () => {
               <Image source={require('../../assets/icons/switch-arrow.png')} />
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.historyButton}
               onPress={() =>
                 navigation.navigate('SearchTransaction', {openFilter: 'Sell'})
@@ -405,8 +414,43 @@ const Sell: React.FC<Props> = () => {
                 textStyle={styles.buttonText}
                 numberOfLines={1}
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
+        </View>
+
+        <View style={styles.presetButtons}>
+          <WhiteButton
+            value={toggleLTC ? '1' : `${currencySymbol}100`}
+            onPress={() =>
+              onChange(toggleLTC ? '1' : '100', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '2' : `${currencySymbol}200`}
+            onPress={() =>
+              onChange(toggleLTC ? '2' : '200', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '5' : `${currencySymbol}500`}
+            onPress={() =>
+              onChange(toggleLTC ? '5' : '500', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '10' : `${currencySymbol}1k`}
+            onPress={() =>
+              onChange(toggleLTC ? '10' : '1000', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            customStyles={styles.presetAmountBtn}
+          />
         </View>
 
         <View style={styles.numpadContainer}>
@@ -437,20 +481,37 @@ const Sell: React.FC<Props> = () => {
         />
       )}
       <View style={regionValid ? styles.bottom : styles.bottomStandalone}>
-        <BlueButton
-          disabled={!(regionValid && amountValid)}
-          textKey="preview_sell"
-          textDomain="sellTab"
-          onPress={() => {
-            if (isMoonpayCustomer) {
-              navigation.navigate('ConfirmSell');
-            } else if (isOnramperCustomer) {
-              navigation.navigate('ConfirmSellOnramper');
-            } else {
-              return;
-            }
-          }}
-        />
+        <View style={styles.buttons}>
+          {/* <View style={styles.btn1}>
+            <NewWhiteButton
+              textKey="schedule_buy"
+              textDomain="buyTab"
+              disabled={!(regionValid && amountValid)}
+              onPress={() => {}}
+              imageSource={require('../../assets/icons/schedule-icon.png')}
+            />
+          </View> */}
+          <View style={styles.btn2}>
+            <BlueButton
+              disabled={!(regionValid && amountValid)}
+              textKey="preview_sell"
+              textDomain="sellTab"
+              onPress={() => {
+                if (isMoonpayCustomer) {
+                  navigation.navigate('ConfirmSell', {
+                    prefilledMethod: prefilledMethodRef.current,
+                  });
+                } else if (isOnramperCustomer) {
+                  navigation.navigate('ConfirmSellOnramper', {
+                    prefilledMethod: prefilledMethodRef.current,
+                  });
+                } else {
+                  return;
+                }
+              }}
+            />
+          </View>
+        </View>
         {errorTextKey ? (
           <View
             style={
@@ -533,8 +594,23 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     controlBtns: {
       flexDirection: 'row',
       gap: 8,
-      // History button's border is 1
-      marginRight: screenWidth * 0.06 * -1 - 1,
+    },
+    presetButtons: {
+      flexDirection: 'row',
+      gap: screenWidth * 0.015,
+      marginTop: screenHeight * 0.03,
+    },
+    presetAmountBtn: {
+      flex: 1,
+      height: screenHeight * 0.055,
+      borderRadius: screenHeight * 0.015,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     numpadContainer: {
       width: screenWidth,
@@ -550,10 +626,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       marginVertical: screenHeight * 0.03,
     },
+    buttons: {
+      flexDirection: 'row',
+      gap: screenWidth * 0.015,
+    },
+    btn1: {
+      flexBasis: '42%',
+    },
+    btn2: {
+      flex: 1,
+    },
     maxButton: {
       borderRadius: screenHeight * 0.01,
-      borderWidth: 1,
-      borderColor: '#e5e5e5',
       backgroundColor: '#fff',
       width: 'auto',
       minWidth: screenHeight * 0.05,
@@ -561,16 +645,28 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: screenWidth * 0.02,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     switchButton: {
       borderRadius: screenHeight * 0.01,
-      borderWidth: 1,
-      borderColor: '#e5e5e5',
       backgroundColor: '#fff',
       width: screenHeight * 0.05,
       height: screenHeight * 0.05,
       alignItems: 'center',
       justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     historyButton: {
       borderTopLeftRadius: screenHeight * 0.01,

@@ -836,7 +836,7 @@ export const setLimits = (): AppThunk => async (dispatch, getState) => {
 };
 
 export const getSignedUrl =
-  (address: string, fiatAmount: number): AppThunk =>
+  (address: string, fiatAmount: number, prefilledMethod?: string): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
       const {testPaymentActive, testPaymentFiat} = getState().settings;
@@ -846,6 +846,13 @@ export const getSignedUrl =
         : getState().settings.currencyCode;
 
       const {uniqueId} = getState().onboarding;
+
+      const utmParams = prefilledMethod
+        ? new URLSearchParams({
+            utm_prefilled: prefilledMethod,
+          })
+        : '';
+
       const unsignedURL =
         `https://buy.moonpay.com?apiKey=${MOONPAY_PUBLIC_KEY}` +
         '&currencyCode=ltc' +
@@ -853,7 +860,10 @@ export const getSignedUrl =
         `&walletAddress=${address}` +
         `&baseCurrencyAmount=${fiatAmount}` +
         `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
-        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fmoonpay%2Fsuccess_buy%2F';
+        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fmoonpay%2Fsuccess_buy%2F' +
+        `?${utmParams}`;
+
+      console.log(unsignedURL);
 
       try {
         const res = await fetch(
@@ -883,7 +893,7 @@ export const getSignedUrl =
   };
 
 export const getSignedOnramperUrl =
-  (address: string, fiatAmount: number): AppThunk =>
+  (address: string, fiatAmount: number, prefilledMethod?: string): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
       const {
@@ -901,6 +911,12 @@ export const getSignedOnramperUrl =
 
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
+
+      const utmParams = prefilledMethod
+        ? new URLSearchParams({
+            utm_prefilled: prefilledMethod,
+          })
+        : '';
 
       const signContent = `wallets=ltc_litecoin:${address}`;
       const onramperKey =
@@ -923,7 +939,8 @@ export const getSignedOnramperUrl =
         `&partnerContext=${uniqueId}` +
         '&hideTopBar=true' +
         '&mode=buy' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F';
+        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F' +
+        `?${utmParams}`;
 
       try {
         const res = await fetch(
@@ -958,17 +975,25 @@ export const getSignedOnramperUrl =
   };
 
 export const getSignedSellUrl =
-  (address: string, ltcAmount: number): AppThunk =>
+  (address: string, ltcAmount: number, prefilledMethod?: string): AppThunk =>
   (dispatch, getState) => {
     return new Promise(async (resolve, reject) => {
       const {uniqueId} = getState().onboarding;
+
+      const utmParams = prefilledMethod
+        ? new URLSearchParams({
+            utm_prefilled: prefilledMethod,
+          })
+        : '';
+
       const unsignedURL =
         `https://sell.moonpay.com/?apiKey=${MOONPAY_PUBLIC_KEY}` +
         '&baseCurrencyCode=ltc' +
         `&baseCurrencyAmount=${ltcAmount}` +
         `&externalCustomerId=${uniqueId}` +
         `&refundWalletAddress=${address}` +
-        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fmoonpay%2Fsuccess_sell%2F&mpSdk=%7B%22version%22%3A%221.0.3%22%2C%22environment%22%3A%22production%22%2C%22flow%22%3A%22sell%22%2C%22variant%22%3A%22webview%22%2C%22platform%22%3A%22rn%22%7D';
+        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fmoonpay%2Fsuccess_sell%2F&mpSdk=%7B%22version%22%3A%221.0.3%22%2C%22environment%22%3A%22production%22%2C%22flow%22%3A%22sell%22%2C%22variant%22%3A%22webview%22%2C%22platform%22%3A%22rn%22%7D' +
+        `?${utmParams}`;
 
       try {
         const req = await fetch(
@@ -1000,7 +1025,7 @@ export const getSignedSellUrl =
   };
 
 export const getSignedSellOnramperUrl =
-  (address: string, cryptoAmount: number): AppThunk =>
+  (address: string, cryptoAmount: number, prefilledMethod?: string): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
       const {
@@ -1018,6 +1043,12 @@ export const getSignedSellOnramperUrl =
 
       const {uniqueId} = getState().onboarding;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
+
+      const utmParams = prefilledMethod
+        ? new URLSearchParams({
+            utm_prefilled: prefilledMethod,
+          })
+        : '';
 
       const signContent = `wallets=ltc_litecoin:${address}`;
       const onramperKey =
@@ -1041,7 +1072,8 @@ export const getSignedSellOnramperUrl =
         '&hideTopBar=true' +
         '&mode=sell' +
         '&offrampCashoutRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell_complete%2F';
+        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell_complete%2F' +
+        `?${utmParams}`;
 
       try {
         const res = await fetch(

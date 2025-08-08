@@ -26,6 +26,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 type RootStackParamList = {
   ConfirmBuy: {
     queryString?: string;
+    prefilledMethod?: string;
   };
   WebPage: {
     uri: string;
@@ -102,7 +103,13 @@ const ConfirmBuy: React.FC<Props> = props => {
       }
 
       // await is important!
-      const url = await dispatch(getSignedUrl(address, baseCurrencyAmount));
+      const url = await dispatch(
+        getSignedUrl(
+          address,
+          baseCurrencyAmount,
+          route.params.prefilledMethod || '',
+        ),
+      );
 
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {
@@ -118,7 +125,7 @@ const ConfirmBuy: React.FC<Props> = props => {
       dispatch(showError(String(error)));
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [address, baseCurrencyAmount]);
+  }, [address, baseCurrencyAmount, route.params.prefilledMethod]);
 
   // handle successful purchase
   useEffect(() => {
