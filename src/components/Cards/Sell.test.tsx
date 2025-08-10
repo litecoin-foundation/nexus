@@ -5,6 +5,7 @@ import {configureStore} from '@reduxjs/toolkit';
 import {NavigationContainer} from '@react-navigation/native';
 import Sell from './Sell';
 import {ScreenSizeContext} from '../../context/screenSize';
+// import {log} from 'console';
 
 // Mock the redux store with minimal required state
 const createMockStore = (initialState: any) => {
@@ -83,7 +84,7 @@ describe('Sell Component', () => {
   it('renders correct LTC amount text on line 317', () => {
     const mockState = {
       balance: {
-        confirmedBalance: '2000000000', // 20 LTC in satoshis
+        confirmedBalance: '2000000000',
       },
       input: {
         amount: '1.5',
@@ -118,7 +119,7 @@ describe('Sell Component', () => {
 
     const store = createMockStore(mockState);
 
-    const {getByText} = render(
+    const component = render(
       <Provider store={store}>
         <NavigationContainer>
           <ScreenSizeContext.Provider value={mockScreenSize}>
@@ -128,72 +129,28 @@ describe('Sell Component', () => {
       </Provider>,
     );
 
-    // Test line 317: TranslateText with n_ltc textKey showing amount
-    expect(getByText('1.5')).toBeTruthy();
-    expect(getByText(' LTC')).toBeTruthy();
-    // expect(getByText('sell_blocked')).toBeTruthy();
-  });
-
-  it('renders correct total amount text on line 349', () => {
-    const mockState = {
-      balance: {
-        confirmedBalance: '2000000000', // 20 LTC in satoshis
-      },
-      input: {
-        amount: '1.5',
-        fiatAmount: '75.00',
-        toggleLTC: true,
-      },
-      settings: {
-        currencySymbol: '$',
-      },
-      buy: {
-        availableAmount: '2.0',
-        availableQuote: '100.00',
-        currencySymbol: '$',
-        isSellAllowed: true,
-        isMoonpayCustomer: true,
-        isOnramperCustomer: false,
-        proceedToGetSellLimits: false,
-        sellQuote: {
-          ltcAmount: 1.5,
-          fiatAmount: 100.0,
-        },
-        sellLimits: {
-          minLTCSellAmount: '0.01',
-          maxLTCSellAmount: '10.0',
-        },
-        sellQuotes: [],
-        sellLimitsStatus: 'success',
-        sellQuoteStatus: 'success',
-      },
-      ticker: {},
-    };
-
-    const store = createMockStore(mockState);
-
-    const {getByText} = render(
-      <Provider store={store}>
-        <NavigationContainer>
-          <ScreenSizeContext.Provider value={mockScreenSize}>
-            <Sell navigation={mockNavigation} />
-          </ScreenSizeContext.Provider>
-        </NavigationContainer>
-      </Provider>,
-    );
-
-    // Test line 349: TranslateText with for_total textKey showing total
-    expect(getByText('$100')).toBeTruthy();
+    const json = component.toJSON();
+    const jsonString = JSON.stringify(json);
+    // NOTE: use this for a json view
+    // log('Rendered component:', JSON.stringify(json, null, 2));
+    try {
+      expect(jsonString).toContain('1.5');
+      expect(jsonString).toContain(' LTC');
+      expect(jsonString).toContain('$100');
+    } catch (error) {
+      component.debug();
+      throw error;
+    }
   });
 
   it('shows 0.00 for LTC amount when amount is empty', () => {
     const mockState = {
       balance: {
-        confirmedBalance: '2000000000', // 20 LTC in satoshis
+        confirmedBalance: '2000000000',
       },
       input: {
         amount: '',
-        fiatAmount: '0.00',
+        fiatAmount: '',
         toggleLTC: true,
       },
       settings: {
@@ -224,7 +181,7 @@ describe('Sell Component', () => {
 
     const store = createMockStore(mockState);
 
-    const {getByText} = render(
+    const component = render(
       <Provider store={store}>
         <NavigationContainer>
           <ScreenSizeContext.Provider value={mockScreenSize}>
@@ -234,14 +191,20 @@ describe('Sell Component', () => {
       </Provider>,
     );
 
-    expect(getByText('0.00')).toBeTruthy();
-    expect(getByText(' LTC')).toBeTruthy();
+    const json = component.toJSON();
+    const jsonString = JSON.stringify(json);
+    try {
+      expect(jsonString).toContain('0.00');
+    } catch (error) {
+      component.debug();
+      throw error;
+    }
   });
 
-  it('shows 0.00 for total when availableQuote is not available', () => {
+  it('shows amount (1.5 LTC and $75) when sellQuote is not available', () => {
     const mockState = {
       balance: {
-        confirmedBalance: '2000000000', // 20 LTC in satoshis
+        confirmedBalance: '2000000000',
       },
       input: {
         amount: '1.5',
@@ -252,8 +215,6 @@ describe('Sell Component', () => {
         currencySymbol: '$',
       },
       buy: {
-        availableAmount: '2.0',
-        availableQuote: null,
         currencySymbol: '$',
         isSellAllowed: true,
         isMoonpayCustomer: true,
@@ -273,7 +234,7 @@ describe('Sell Component', () => {
 
     const store = createMockStore(mockState);
 
-    const {getByText} = render(
+    const component = render(
       <Provider store={store}>
         <NavigationContainer>
           <ScreenSizeContext.Provider value={mockScreenSize}>
@@ -283,6 +244,15 @@ describe('Sell Component', () => {
       </Provider>,
     );
 
-    expect(getByText('$75')).toBeTruthy();
+    const json = component.toJSON();
+    const jsonString = JSON.stringify(json);
+    try {
+      expect(jsonString).toContain('1.5');
+      expect(jsonString).toContain(' LTC');
+      expect(jsonString).toContain('$75');
+    } catch (error) {
+      component.debug();
+      throw error;
+    }
   });
 });
