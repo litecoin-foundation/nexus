@@ -7,7 +7,8 @@ import Sell from './Sell';
 import {ScreenSizeContext} from '../../context/screenSize';
 // import {log} from 'console';
 
-// Mock the redux store with minimal required state
+// NOTE: mock the redux store with the state that
+// has values which are being tested
 const createMockStore = (initialState: any) => {
   const rootReducer = (state = initialState) => state;
   return configureStore({
@@ -16,12 +17,11 @@ const createMockStore = (initialState: any) => {
   });
 };
 
-// Mock react-native-turbo-lndltc
 jest.mock('react-native-turbo-lndltc', () => ({
   estimateFee: jest.fn(),
 }));
 
-// Mock TranslateText component
+// NOTE: if TranslateText returns unrecognized textkeys we know to fail a test
 jest.mock('../../components/TranslateText', () => {
   return function MockTranslateText({
     textKey,
@@ -46,11 +46,12 @@ jest.mock('../../components/TranslateText', () => {
   };
 });
 
-// Mock other components
+// NOTE: mock child components
 jest.mock('../Numpad/BuyPad', () => 'BuyPad');
 jest.mock('../Buttons/BlueButton', () => 'BlueButton');
 jest.mock('../Buttons/WhiteButton', () => 'WhiteButton');
 
+// NOTE: mock device and its nav
 const mockScreenSize = {
   width: 375,
   height: 812,
@@ -131,7 +132,7 @@ describe('Sell Component', () => {
 
     const json = component.toJSON();
     const jsonString = JSON.stringify(json);
-    // NOTE: use this for a json view
+    // NOTE: use this to debug the json view of the rendered component
     // log('Rendered component:', JSON.stringify(json, null, 2));
     try {
       expect(jsonString).toContain('1.5');
