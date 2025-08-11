@@ -109,6 +109,11 @@ interface ConvertLayoutProps {
   }>;
   myOutputAddrs: string[];
   otherOutputAddrs: string[];
+  outputDetails: Array<{
+    address: string;
+    amount: number;
+    isOurAddress: boolean;
+  }>;
   txId: string;
   dateString: string;
   amountSymbol: string;
@@ -489,6 +494,7 @@ export default function TxDetailModalContent(props: Props) {
                   selectedUtxos={transaction.providerMeta.selectedUtxos}
                   myOutputAddrs={myOutputs}
                   otherOutputAddrs={otherOutputs}
+                  outputDetails={transaction.providerMeta.mergedOutputDetails || []}
                   txId={transaction.hash}
                   dateString={dateString}
                   amountSymbol={amountSymbol}
@@ -724,6 +730,7 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
     selectedUtxos,
     myOutputAddrs,
     otherOutputAddrs,
+    outputDetails,
     txId,
     dateString,
     amountSymbol,
@@ -745,18 +752,30 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
 
   console.info(otherOutputAddrs);
 
-  // Find change address (not the destination address)
-  const changeAddrs = myOutputAddrs.filter(addr => addr !== destinationAddress);
-
-  // Calculate change amount (total input - target amount - fees)
-  const totalInputAmount = selectedUtxos.reduce(
-    (sum, utxo) => sum + utxo.amountSat,
-    0,
-  );
-  const changeAmount = totalInputAmount - targetAmount;
-  const changeAmountFormatted = convertToSubunit(changeAmount)
-    .toFixed(4)
-    .replace(/\.?0+$/, '');
+  // Find change addresses and their amounts from actual output details
+  // In MWEB, the same address can be both input and output - this is normal!
+  const changeOutputs = outputDetails.filter(output => {
+    // Must be our address and not the destination
+    if (!output.isOurAddress || output.address === destinationAddress) {
+      return false;
+    }
+    
+    // Include all our non-destination addresses as potential change
+    // Even if they were also used as inputs (normal in MWEB)
+    return true;
+  });
+  
+  // Map change addresses to their amounts
+  const changeAddrsWithAmounts = changeOutputs.map(output => ({
+    address: output.address,
+    amount: output.amount,
+    formattedAmount: convertToSubunit(output.amount)
+      .toFixed(4)
+      .replace(/\.?0+$/, ''),
+  }));
+  
+  // Keep legacy changeAddrs for compatibility with existing code
+  const changeAddrs = changeAddrsWithAmounts.map(item => item.address);
 
   // Format UTXO amounts
   const formattedUtxos = selectedUtxos.map(utxo => ({
@@ -854,12 +873,12 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
           numberOfLines={0}
           onPress={() => handleShare(destinationAddress)}
         />
-        {changeAddrs.length > 0 && (
+        {changeAddrsWithAmounts.length > 0 && (
           <ChangeAddress>
-            {changeAddrs.map((changeAddr, index) => (
+            {changeAddrsWithAmounts.map((changeOutput, index) => (
               <TranslateText
                 key={`change-${index}`}
-                textValue={`${changeAddr} (${changeAmountFormatted}${amountSymbol})`}
+                textValue={`${changeOutput.address} (${changeOutput.formattedAmount}${amountSymbol})`}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={{
                   color: '#747e87',
@@ -868,7 +887,7 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
                   fontFamily: 'Satoshi Variable',
                 }}
                 numberOfLines={0}
-                onPress={() => handleShare(changeAddr)}
+                onPress={() => handleShare(changeOutput.address)}
               />
             ))}
           </ChangeAddress>

@@ -9,7 +9,6 @@ import {
   walletKitListUnspent,
   walletKitFundPsbt,
   walletKitFinalizePsbt,
-  walletKitPublishTransaction,
 } from 'react-native-turbo-lndltc';
 import {
   GetTransactionsRequestSchema,
@@ -70,8 +69,8 @@ export type IConvertedTx = {
   timestamp: number;
   conversionType: 'regular' | 'private';
   selectedUtxos: Array<{
-    address?: string;
-    amountSat: number; // Changed from bigint to number for Redux serialization
+    address: string;
+    amountSat: number;
     addressType: number;
   }>;
 };
@@ -244,7 +243,7 @@ export const sendConvertWithPsbt =
 
       try {
         // broadcast transaction
-        await publishTransaction(txHex, 'Converted Litecoin');
+        await publishTransaction(txHex);
 
         // Store conversion data for transaction matching
         if (destinationAddress.address) {
@@ -406,6 +405,224 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
     const txs: IDecodedTx[] = [];
     const processedConvertTxs = new Set<string>(); // Track processed convert transactions
+    const processedConvertTxHashes = new Set<string>(); // Track individual tx hashes that are part of converts
+
+    // Pre-process convert transactions to find all related transactions
+    if (convertedTransactions && convertedTransactions.length > 0) {
+      for (const convertTx of convertedTransactions) {
+        const convertKey = `${convertTx.destinationAddress}-${convertTx.timestamp}`;
+
+        if (processedConvertTxs.has(convertKey)) {
+          continue;
+        }
+
+        // Find the main convert transaction (has destination address)
+        const mainConvertTransaction = transactions.transactions.find(tx =>
+          tx.outputDetails?.some(
+            output => output.address === convertTx.destinationAddress,
+          ),
+        );
+
+        if (!mainConvertTransaction) continue;
+
+        // Find all related transactions using the same logic
+        const directlyRelated = transactions.transactions.filter(relatedTx => {
+          // Include if it has the destination address (main convert tx)
+          const hasDestinationAddress = relatedTx.outputDetails?.some(
+            output => output.address === convertTx.destinationAddress,
+          );
+
+          if (hasDestinationAddress) return true;
+
+          // Check if this transaction uses the selected UTXOs as inputs
+          const totalSelectedAmount = convertTx.selectedUtxos
+            ? convertTx.selectedUtxos.reduce(
+                (sum, utxo) => sum + utxo.amountSat,
+                0,
+              )
+            : 0;
+          const usesSelectedUtxosByAmount =
+            totalSelectedAmount > 0 &&
+            Math.abs(Number(relatedTx.amount)) === totalSelectedAmount;
+
+          const usesSelectedUtxosByOutpoint =
+            convertTx.selectedUtxos &&
+            relatedTx.previousOutpoints?.some(prevOutpoint => {
+              const outpointTxId = prevOutpoint.outpoint?.split(':')[0];
+              return transactions.transactions.some(
+                otherTx =>
+                  otherTx.txHash === outpointTxId &&
+                  otherTx.outputDetails?.some(output =>
+                    convertTx.selectedUtxos.some(
+                      selectedUtxo =>
+                        output.address === selectedUtxo.address &&
+                        Math.abs(
+                          Number(output.amount) - selectedUtxo.amountSat,
+                        ) < 1000,
+                    ),
+                  ),
+              );
+            });
+
+          if (usesSelectedUtxosByAmount || usesSelectedUtxosByOutpoint)
+            return true;
+
+          // Same block transactions - use more intelligent matching
+          const sameBlockAsConvert =
+            relatedTx.blockHeight === mainConvertTransaction.blockHeight &&
+            relatedTx.blockHash === mainConvertTransaction.blockHash;
+
+          if (sameBlockAsConvert) {
+            // For same-block transactions, only include if:
+            // 1. It's a receive to one of our addresses AND
+            // 2. Either the amount matches our target amount (main receive) OR
+            // 3. It has a reasonable relationship to the convert operation
+            const isReceiveToUs =
+              Number(relatedTx.amount) > 0 &&
+              relatedTx.outputDetails?.some(o => o.isOurAddress === true) &&
+              !hasDestinationAddress;
+
+            if (isReceiveToUs) {
+              // Check if this could be a legitimate related transaction
+              const amountMatchesTarget =
+                Math.abs(Number(relatedTx.amount) - convertTx.targetAmount) <
+                1000;
+
+              // Check if this transaction's outputs include any address that appears
+              // in the selected UTXOs (indicating it might be change from the same operation)
+              const hasRelatedAddress =
+                convertTx.selectedUtxos &&
+                relatedTx.outputDetails?.some(output =>
+                  convertTx.selectedUtxos.some(
+                    utxo => utxo.address === output.address,
+                  ),
+                );
+
+              // Check if this transaction receives to an address that appears as an output
+              // in the main convert transaction (indicating it's change being received)
+              const receivesToChangeAddress = relatedTx.outputDetails?.some(
+                output =>
+                  mainConvertTransaction.outputDetails?.some(
+                    mainOutput =>
+                      mainOutput.address === output.address &&
+                      mainOutput.isOurAddress,
+                  ),
+              );
+
+              // Only include if it matches the target amount OR has a related address OR receives to change address
+              return (
+                amountMatchesTarget ||
+                hasRelatedAddress ||
+                receivesToChangeAddress
+              );
+            }
+          }
+
+          return false;
+        });
+
+        // For convert transactions, don't include input transactions (second pass)
+        // This prevents outputs from previously spent transactions from being merged
+        const allRelatedTxs = directlyRelated;
+
+        // Mark all as processed and create a single convert transaction
+        processedConvertTxs.add(convertKey);
+        allRelatedTxs.forEach(tx => {
+          if (tx.txHash) {
+            processedConvertTxHashes.add(tx.txHash);
+          }
+        });
+
+        // Create the merged convert transaction
+        const mergedInputDetails: PreviousOutPoint[] = [];
+        const mergedOutputDetails: IOutputDetails[] = [];
+        const mergedPreviousOutpoints: PreviousOutPoint[] = [];
+        let totalFees = 0;
+        let receiveTx: (typeof allRelatedTxs)[0] | undefined;
+        let sendTx: (typeof allRelatedTxs)[0] | undefined;
+
+        // Use a Map to deduplicate outputs by address
+        const outputMap = new Map<string, IOutputDetails>();
+
+        allRelatedTxs.forEach(relatedTx => {
+          if (Number(relatedTx.amount) > 0) {
+            const hasDestinationAddress = relatedTx.outputDetails?.some(
+              output => output.address === convertTx.destinationAddress,
+            );
+            const amountMatches =
+              Math.abs(Number(relatedTx.amount) - convertTx.targetAmount) <
+              1000;
+
+            if (hasDestinationAddress && amountMatches) {
+              receiveTx = relatedTx;
+            }
+          } else {
+            sendTx = relatedTx;
+          }
+
+          // Merge output details with deduplication
+          relatedTx.outputDetails?.forEach(outputDetail => {
+            const output: IOutputDetails = {
+              address: outputDetail.address,
+              amount: Number(outputDetail.amount),
+              isOurAddress: outputDetail.isOurAddress,
+              outputIndex: Number(outputDetail.outputIndex),
+              outputType: outputDetail.outputType,
+              pkScript: outputDetail.pkScript,
+            };
+
+            // Use address as key for deduplication
+            const key = outputDetail.address;
+            if (!outputMap.has(key)) {
+              outputMap.set(key, output);
+            }
+          });
+
+          // Merge previous outpoints (these represent inputs)
+          relatedTx.previousOutpoints?.forEach(prevOutpoint => {
+            mergedInputDetails.push(prevOutpoint);
+            mergedPreviousOutpoints.push(prevOutpoint);
+          });
+
+          totalFees += Number(relatedTx.totalFees);
+        });
+
+        // Convert the deduplicated outputs map to array
+        outputMap.forEach(output => mergedOutputDetails.push(output));
+
+        // Create the convert transaction using the main convert transaction as base
+        const priceOnDate =
+          (await getPriceOnDate(Number(mainConvertTransaction.timeStamp))) || 0;
+
+        const decodedTx: IDecodedTx = {
+          txHash: mainConvertTransaction.txHash || '',
+          blockHash: mainConvertTransaction.blockHash,
+          blockHeight: mainConvertTransaction.blockHeight,
+          amount: Number(mainConvertTransaction.amount),
+          numConfirmations: mainConvertTransaction.numConfirmations,
+          timeStamp: String(mainConvertTransaction.timeStamp),
+          fee: Number(mainConvertTransaction.totalFees),
+          outputDetails: mergedOutputDetails,
+          previousOutpoints: mergedPreviousOutpoints,
+          label: mainConvertTransaction.label || '',
+          metaLabel: 'Convert',
+          priceOnDate,
+          tradeTx: {
+            conversionType: convertTx.conversionType,
+            destinationAddress: convertTx.destinationAddress,
+            targetAmount: convertTx.targetAmount,
+            timestamp: convertTx.timestamp,
+            selectedUtxos: convertTx.selectedUtxos,
+            mergedInputDetails,
+            mergedOutputDetails,
+            totalFees,
+            ...(sendTx?.txHash && {sendTxHash: sendTx.txHash}),
+            ...(receiveTx?.txHash && {receiveTxHash: receiveTx.txHash}),
+          },
+        };
+        txs.push(decodedTx);
+      }
+    }
 
     // Compare nexus-api txs with lnd txs to append missing ones in lnd
     const unmatchedBuyTxs = getUnmatchedNexusApiTxsWithLndTxs(
@@ -425,6 +642,11 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
     );
 
     for await (const tx of transactions.transactions) {
+      // Skip if this transaction is already part of a convert operation
+      if (tx.txHash && processedConvertTxHashes.has(tx.txHash)) {
+        continue;
+      }
+
       const outputDetails: IOutputDetails[] = [];
       tx.outputDetails?.forEach(outputDetail => {
         const output: IOutputDetails = {
@@ -493,100 +715,19 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         }
       }
 
-      // Check if transaction matches a convert operation
-      if (convertedTransactions && convertedTransactions.length >= 1) {
-        const convertTx = convertedTransactions.find(convertedTx => {
-          // Check if any destination address matches the convert destination
-          const hasDestinationAddress = tx.destAddresses?.includes(
-            convertedTx.destinationAddress,
-          );
-          return hasDestinationAddress;
-        });
+      console.log('about to decodeTx');
 
-        if (convertTx) {
-          const convertKey = `${convertTx.destinationAddress}-${convertTx.timestamp}`;
-          
-          // If we've already processed this convert transaction, skip
-          if (processedConvertTxs.has(convertKey)) {
-            continue;
-          }
-          
-          // Mark this convert transaction as processed
-          processedConvertTxs.add(convertKey);
-          
-          // Find both send and receive transactions for this convert
-          const relatedTxs = transactions.transactions.filter(relatedTx => 
-            relatedTx.destAddresses?.includes(convertTx.destinationAddress)
-          );
-          
-          // Merge input and output details from both transactions
-          const mergedInputDetails: any[] = [];
-          const mergedOutputDetails: IOutputDetails[] = [];
-          const mergedPreviousOutpoints: any[] = [];
-          let totalFees = 0;
-          let receiveTx = null;
-          let sendTx = null;
-          
-          relatedTxs.forEach(relatedTx => {
-            if (Number(relatedTx.amount) > 0) {
-              receiveTx = relatedTx;
-            } else {
-              sendTx = relatedTx;
-            }
-            
-            // Merge output details
-            relatedTx.outputDetails?.forEach(outputDetail => {
-              const output: IOutputDetails = {
-                address: outputDetail.address,
-                amount: Number(outputDetail.amount),
-                isOurAddress: outputDetail.isOurAddress,
-                outputIndex: Number(outputDetail.outputIndex),
-                outputType: outputDetail.outputType,
-                pkScript: outputDetail.pkScript,
-              };
-              mergedOutputDetails.push(output);
-            });
-            
-            // Merge previous outpoints (these represent inputs)
-            relatedTx.previousOutpoints?.forEach(prevOutpoint => {
-              mergedPreviousOutpoints.push(prevOutpoint);
-            });
-            
-            totalFees += Number(relatedTx.totalFees);
-          });
-          
-          // Use the receive transaction as the base, but with merged data
-          const baseTx = receiveTx || tx;
-          // Don't reassign read-only variables, use the merged data directly in decodedTx
-          
-          metaLabel = 'Convert';
-          tradeTx = {
-            conversionType: convertTx.conversionType,
-            destinationAddress: convertTx.destinationAddress,
-            targetAmount: convertTx.targetAmount,
-            timestamp: convertTx.timestamp,
-            selectedUtxos: convertTx.selectedUtxos,
-            // Store merged transaction data for the modal
-            mergedInputDetails,
-            mergedOutputDetails,
-            sendTxHash: sendTx?.txHash,
-            receiveTxHash: receiveTx?.txHash,
-          };
-        }
-      }
-
-      let decodedTx = {
-        txHash: tx.txHash,
+      let decodedTx: IDecodedTx = {
+        txHash: tx.txHash || '',
         blockHash: tx.blockHash,
         blockHeight: tx.blockHeight,
         amount: Number(tx.amount),
         numConfirmations: tx.numConfirmations,
         timeStamp: String(tx.timeStamp),
         fee: Number(tx.totalFees),
-        // Use merged data for convert transactions, otherwise use original data
-        outputDetails: metaLabel === 'Convert' && tradeTx?.mergedOutputDetails ? tradeTx.mergedOutputDetails : outputDetails,
-        previousOutpoints: metaLabel === 'Convert' && tradeTx?.mergedPreviousOutpoints ? tradeTx.mergedPreviousOutpoints : previousOutpoints,
-        label: tx.label,
+        outputDetails,
+        previousOutpoints,
+        label: tx.label || '',
         metaLabel,
         priceOnDate,
         tradeTx,
@@ -703,41 +844,13 @@ export const sendAllOnchainPayment =
     });
   };
 
-export const publishTransaction = (
-  txHex: string,
-  label?: string,
-): Promise<string> => {
+export const publishTransaction = (txHex: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const txHexArray = Uint8Array.from(Buffer.from(txHex, 'hex'));
-
-      const params = {
-        txHex: txHexArray,
-        // if `label` is undefined we spread an empty object → no `label` key
-        ...(label !== undefined ? {label} : {}),
-      };
-
-      const res = await walletKitPublishTransaction(params);
-
-      if (!res) {
-        throw new Error('walletKitPublishTransaction returned undefined');
-      }
-
-      if (res.publishError) {
-        throw new Error(res.publishError);
-      }
-
-      resolve('');
-    } catch (error) {
-      console.info('LNDltc failed to broadcast tx!');
-      console.error(error);
-      console.info('Attempting to broadcast tx via Litecoin Space!');
-      try {
-        const fallbackResolve = await publishTransactionFallback1(txHex);
-        resolve(fallbackResolve);
-      } catch (error2) {
-        reject(error2);
-      }
+      const fallbackResolve = await publishTransactionFallback1(txHex);
+      resolve(fallbackResolve);
+    } catch (error2) {
+      reject(error2);
     }
   });
 };
