@@ -262,6 +262,7 @@ export const sendConvertWithPsbt =
       }
     } catch (error) {
       console.error('Error in sendConvertWithPsbt:', error || 'Unknown error');
+      throw error;
     }
   };
 
