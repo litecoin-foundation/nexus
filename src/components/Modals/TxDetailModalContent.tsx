@@ -494,7 +494,9 @@ export default function TxDetailModalContent(props: Props) {
                   selectedUtxos={transaction.providerMeta.selectedUtxos}
                   myOutputAddrs={myOutputs}
                   otherOutputAddrs={otherOutputs}
-                  outputDetails={transaction.providerMeta.mergedOutputDetails || []}
+                  outputDetails={
+                    transaction.providerMeta.mergedOutputDetails || []
+                  }
                   txId={transaction.hash}
                   dateString={dateString}
                   amountSymbol={amountSymbol}
@@ -750,8 +752,6 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
     .toFixed(4)
     .replace(/\.?0+$/, '');
 
-  console.info(otherOutputAddrs);
-
   // Find change addresses and their amounts from actual output details
   // In MWEB, the same address can be both input and output - this is normal!
   const changeOutputs = outputDetails.filter(output => {
@@ -759,12 +759,12 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
     if (!output.isOurAddress || output.address === destinationAddress) {
       return false;
     }
-    
+
     // Include all our non-destination addresses as potential change
     // Even if they were also used as inputs (normal in MWEB)
     return true;
   });
-  
+
   // Map change addresses to their amounts
   const changeAddrsWithAmounts = changeOutputs.map(output => ({
     address: output.address,
@@ -773,7 +773,7 @@ const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
       .toFixed(4)
       .replace(/\.?0+$/, ''),
   }));
-  
+
   // Keep legacy changeAddrs for compatibility with existing code
   const changeAddrs = changeAddrsWithAmounts.map(item => item.address);
 

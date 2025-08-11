@@ -73,6 +73,7 @@ export type IConvertedTx = {
     amountSat: number;
     addressType: number;
   }>;
+  selectedOutpoints: string[];
 };
 
 interface ITx {
@@ -241,12 +242,21 @@ export const sendConvertWithPsbt =
 
       const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
 
+      console.log(txHex);
+      console.log(Buffer.from(signedPsbt.signedPsbt).toString('hex'));
+
       try {
         // broadcast transaction
         await publishTransaction(txHex);
 
         // Store conversion data for transaction matching
         if (destinationAddress.address) {
+          // Create outpoint strings for efficient lookup
+          const outpointStrings = selectedUtxos.map(
+            outpoint =>
+              `${Buffer.from(outpoint.txidBytes).toString('hex')}:${outpoint.outputIndex}`,
+          );
+
           dispatch(
             addConvertedTransactionAction({
               destinationAddress: destinationAddress.address,
@@ -254,6 +264,7 @@ export const sendConvertWithPsbt =
               timestamp: Math.floor(Date.now() / 1000),
               conversionType: destination,
               selectedUtxos: selectedUtxoDetails,
+              selectedOutpoints: outpointStrings,
             }),
           );
         }
@@ -424,7 +435,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           ),
         );
 
-        if (!mainConvertTransaction) continue;
+        if (!mainConvertTransaction) {
+          continue;
+        }
 
         // Find all related transactions using the same logic
         const directlyRelated = transactions.transactions.filter(relatedTx => {
@@ -433,7 +446,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
             output => output.address === convertTx.destinationAddress,
           );
 
-          if (hasDestinationAddress) return true;
+          if (hasDestinationAddress) {
+            return true;
+          }
 
           // Check if this transaction uses the selected UTXOs as inputs
           const totalSelectedAmount = convertTx.selectedUtxos
@@ -446,27 +461,17 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
             totalSelectedAmount > 0 &&
             Math.abs(Number(relatedTx.amount)) === totalSelectedAmount;
 
+          const selectedOutpointSet = new Set(
+            convertTx.selectedOutpoints || [],
+          );
           const usesSelectedUtxosByOutpoint =
-            convertTx.selectedUtxos &&
-            relatedTx.previousOutpoints?.some(prevOutpoint => {
-              const outpointTxId = prevOutpoint.outpoint?.split(':')[0];
-              return transactions.transactions.some(
-                otherTx =>
-                  otherTx.txHash === outpointTxId &&
-                  otherTx.outputDetails?.some(output =>
-                    convertTx.selectedUtxos.some(
-                      selectedUtxo =>
-                        output.address === selectedUtxo.address &&
-                        Math.abs(
-                          Number(output.amount) - selectedUtxo.amountSat,
-                        ) < 1000,
-                    ),
-                  ),
-              );
-            });
+            relatedTx.previousOutpoints?.some(prevOutpoint =>
+              selectedOutpointSet.has(prevOutpoint.outpoint || ''),
+            ) || false;
 
-          if (usesSelectedUtxosByAmount || usesSelectedUtxosByOutpoint)
+          if (usesSelectedUtxosByAmount || usesSelectedUtxosByOutpoint) {
             return true;
+          }
 
           // Same block transactions - use more intelligent matching
           const sameBlockAsConvert =
@@ -475,46 +480,85 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
           if (sameBlockAsConvert) {
             // For same-block transactions, only include if:
-            // 1. It's a receive to one of our addresses AND
-            // 2. Either the amount matches our target amount (main receive) OR
-            // 3. It has a reasonable relationship to the convert operation
+            // 1) It's a receive to one of our addresses AND
+            // 2) It clearly relates to the convert (see conditions below)
             const isReceiveToUs =
               Number(relatedTx.amount) > 0 &&
               relatedTx.outputDetails?.some(o => o.isOurAddress === true) &&
               !hasDestinationAddress;
 
             if (isReceiveToUs) {
-              // Check if this could be a legitimate related transaction
+              // Main convert receive (exact to destination)
               const amountMatchesTarget =
-                Math.abs(Number(relatedTx.amount) - convertTx.targetAmount) <
-                1000;
+                Math.abs(
+                  Number(relatedTx.amount) - Number(convertTx.targetAmount),
+                ) < 1000;
+
+              // MWEB signal (outputType 12) to one of our addresses
+              const isMWebChange =
+                relatedTx.outputDetails?.some(
+                  od => od.isOurAddress === true && od.outputType === 12,
+                ) ?? false;
+
+              // Receives usually have no inputs
+              const looksLikeReceiveNoInputs =
+                (relatedTx.previousOutpoints?.length ?? 0) === 0;
+
+              // Total selected inputs for this convert
+              const selectedUtxosTotal =
+                convertTx.selectedUtxos?.reduce(
+                  (s, u) => s + Number(u.amountSat),
+                  0,
+                ) ?? 0;
+
+              // Expected change before fees
+              const expectedChangeBudget = Math.max(
+                0,
+                selectedUtxosTotal - Number(convertTx.targetAmount),
+              );
+
+              // Tolerance band: max(25k sats, 0.05% of selected inputs)
+              const tolerance = Math.max(
+                25_000,
+                Math.floor(selectedUtxosTotal * 0.0005),
+              );
+
+              // Budget match
+              const amountMatchesChangeBudget =
+                Math.abs(Number(relatedTx.amount) - expectedChangeBudget) <=
+                tolerance;
 
               // Check if this transaction's outputs include any address that appears
               // in the selected UTXOs (indicating it might be change from the same operation)
               const hasRelatedAddress =
-                convertTx.selectedUtxos &&
-                relatedTx.outputDetails?.some(output =>
-                  convertTx.selectedUtxos.some(
+                !!convertTx.selectedUtxos &&
+                (relatedTx.outputDetails?.some(output =>
+                  convertTx.selectedUtxos!.some(
                     utxo => utxo.address === output.address,
                   ),
-                );
+                ) ??
+                  false);
 
               // Check if this transaction receives to an address that appears as an output
               // in the main convert transaction (indicating it's change being received)
-              const receivesToChangeAddress = relatedTx.outputDetails?.some(
-                output =>
+              const receivesToChangeAddress =
+                relatedTx.outputDetails?.some(output =>
                   mainConvertTransaction.outputDetails?.some(
                     mainOutput =>
                       mainOutput.address === output.address &&
                       mainOutput.isOurAddress,
                   ),
-              );
+                ) ?? false;
 
-              // Only include if it matches the target amount OR has a related address OR receives to change address
+              // Include if it matches target amount, has related address, receives to change address,
+              // or looks like MWEB change (with budget band and no-inputs guard)
               return (
                 amountMatchesTarget ||
                 hasRelatedAddress ||
-                receivesToChangeAddress
+                receivesToChangeAddress ||
+                (isMWebChange &&
+                  looksLikeReceiveNoInputs &&
+                  amountMatchesChangeBudget)
               );
             }
           }
@@ -715,8 +759,6 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           metaLabel = 'Sell';
         }
       }
-
-      console.log('about to decodeTx');
 
       let decodedTx: IDecodedTx = {
         txHash: tx.txHash || '',
