@@ -107,6 +107,7 @@ export type ConvertMetadataType = {
     amountSat: number;
     addressType: number;
   }>;
+  selectedOutpoints?: string[];
   mergedInputDetails?: any[];
   mergedOutputDetails?: any[];
   sendTxHash?: string;
