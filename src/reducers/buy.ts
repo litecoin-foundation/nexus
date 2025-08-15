@@ -848,7 +848,8 @@ export const getSignedUrl =
       const {uniqueId} = getState().onboarding;
 
       const utmParams = prefilledMethod
-        ? new URLSearchParams({
+        ? '&' +
+          new URLSearchParams({
             utm_prefilled: prefilledMethod,
           })
         : '';
@@ -861,9 +862,7 @@ export const getSignedUrl =
         `&baseCurrencyAmount=${fiatAmount}` +
         `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
         '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fmoonpay%2Fsuccess_buy%2F' +
-        `?${utmParams}`;
-
-      console.log(unsignedURL);
+        `${utmParams}`;
 
       try {
         const res = await fetch(
@@ -913,7 +912,8 @@ export const getSignedOnramperUrl =
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
 
       const utmParams = prefilledMethod
-        ? new URLSearchParams({
+        ? '&' +
+          new URLSearchParams({
             utm_prefilled: prefilledMethod,
           })
         : '';
@@ -940,7 +940,7 @@ export const getSignedOnramperUrl =
         '&hideTopBar=true' +
         '&mode=buy' +
         '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F' +
-        `?${utmParams}`;
+        `${utmParams}`;
 
       try {
         const res = await fetch(
@@ -952,7 +952,7 @@ export const getSignedOnramperUrl =
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({signContent: signContent}),
+            body: JSON.stringify({signContent, unsignedURL}),
           },
         );
 
@@ -981,7 +981,8 @@ export const getSignedSellUrl =
       const {uniqueId} = getState().onboarding;
 
       const utmParams = prefilledMethod
-        ? new URLSearchParams({
+        ? '&' +
+          new URLSearchParams({
             utm_prefilled: prefilledMethod,
           })
         : '';
@@ -993,7 +994,7 @@ export const getSignedSellUrl =
         `&externalCustomerId=${uniqueId}` +
         `&refundWalletAddress=${address}` +
         '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fmoonpay%2Fsuccess_sell%2F&mpSdk=%7B%22version%22%3A%221.0.3%22%2C%22environment%22%3A%22production%22%2C%22flow%22%3A%22sell%22%2C%22variant%22%3A%22webview%22%2C%22platform%22%3A%22rn%22%7D' +
-        `?${utmParams}`;
+        `${utmParams}`;
 
       try {
         const req = await fetch(
@@ -1004,9 +1005,7 @@ export const getSignedSellUrl =
               'Content-Type': 'application/json',
               Accept: 'application/json',
             },
-            body: JSON.stringify({
-              unsignedURL: unsignedURL,
-            }),
+            body: JSON.stringify({unsignedURL}),
           },
         );
 
@@ -1045,7 +1044,8 @@ export const getSignedSellOnramperUrl =
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
 
       const utmParams = prefilledMethod
-        ? new URLSearchParams({
+        ? '&' +
+          new URLSearchParams({
             utm_prefilled: prefilledMethod,
           })
         : '';
@@ -1073,7 +1073,7 @@ export const getSignedSellOnramperUrl =
         '&mode=sell' +
         '&offrampCashoutRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F' +
         '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell_complete%2F' +
-        `?${utmParams}`;
+        `${utmParams}`;
 
       try {
         const res = await fetch(
@@ -1085,7 +1085,7 @@ export const getSignedSellOnramperUrl =
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({signContent: signContent}),
+            body: JSON.stringify({signContent, unsignedURL}),
           },
         );
 
