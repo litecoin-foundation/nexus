@@ -21,7 +21,7 @@ import {
 } from '../lib/utils/file';
 import {finishOnboarding, setRecoveryMode} from './onboarding';
 import {subscribeTransactions} from './transaction';
-import {pollInfo} from './info';
+import {pollInfo, pollPeers} from './info';
 import {pollRates} from './ticker';
 import {pollBalance} from './balance';
 import {pollTransactions} from './transaction';
@@ -155,6 +155,7 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
           } else if (state.state === WalletState.RPC_ACTIVE) {
             // RPC_ACTIVE so we are ready to dispatch pollers
             dispatch(pollInfo());
+            dispatch(pollPeers());
             dispatch(pollRates());
             dispatch(pollTransactions());
             dispatch(subscribeTransactions());
@@ -224,6 +225,7 @@ export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
             if (state.state === WalletState.RPC_ACTIVE) {
               // dispatch pollers
               dispatch(pollInfo());
+              dispatch(pollPeers());
               dispatch(subscribeTransactions());
               dispatch(pollRates());
               dispatch(pollTransactions());

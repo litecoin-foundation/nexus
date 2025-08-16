@@ -1,9 +1,9 @@
 import React, {useEffect, useContext, useMemo} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {triggerHeavyFeedback} from '../../lib/utils/haptic';
 import PlasmaModal from './PlasmaModal';
+import BlueButton from '../Buttons/BlueButton';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -12,16 +12,14 @@ import {PopUpContext} from '../../context/popUpContext';
 interface Props {
   isVisible: boolean;
   close: () => void;
-  textColor: string;
   text?: string;
   textKey?: string;
   textDomain?: string;
   disableBlur?: boolean;
 }
 
-const InfoModal: React.FC<Props> = props => {
-  const {isVisible, close, textColor, text, textKey, textDomain, disableBlur} =
-    props;
+const WarningModalContent: React.FC<Props> = props => {
+  const {isVisible, close, text, textKey, textDomain, disableBlur} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -30,26 +28,7 @@ const InfoModal: React.FC<Props> = props => {
     [SCREEN_WIDTH, SCREEN_HEIGHT],
   );
 
-  useEffect(() => {
-    if (isVisible) {
-      triggerHeavyFeedback();
-    }
-  }, [isVisible]);
-
-  useEffect(() => {
-    if (isVisible) {
-      setTimeout(() => close(), 2500);
-    }
-  }, [isVisible, close]);
-
   const {showPopUp} = useContext(PopUpContext);
-
-  const textColorStyle =
-    textColor === 'red'
-      ? styles.redText
-      : textColor === 'green'
-        ? styles.greenText
-        : null;
 
   const modal = useMemo(
     () => (
@@ -65,18 +44,30 @@ const InfoModal: React.FC<Props> = props => {
           <Animated.View style={[styles.modal, cardTranslateAnim]}>
             <View style={styles.textContainer}>
               {text ? (
-                <Text style={[styles.text, textColorStyle]}>{text}</Text>
+                <TranslateText
+                  textValue={text}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.024}
+                  textStyle={styles.text}
+                  numberOfLines={5}
+                />
               ) : textKey && textDomain ? (
                 <TranslateText
                   textKey={textKey}
                   domain={textDomain}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={{...styles.text, ...textColorStyle}}
-                  numberOfLines={1}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.024}
+                  textStyle={styles.text}
+                  numberOfLines={5}
                 />
               ) : (
                 <></>
               )}
+            </View>
+            <View style={styles.button}>
+              <BlueButton
+                textKey="got_it"
+                textDomain="main"
+                onPress={() => close()}
+              />
             </View>
           </Animated.View>
         )}
@@ -85,11 +76,10 @@ const InfoModal: React.FC<Props> = props => {
     [
       isVisible,
       close,
-      disableBlur,
       text,
       textKey,
       textDomain,
-      textColorStyle,
+      disableBlur,
       SCREEN_HEIGHT,
       styles,
     ],
@@ -106,20 +96,23 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     modal: {
       position: 'absolute',
-      bottom: 0,
+      bottom: screenHeight * 0.35,
+      left: screenWidth * 0.1,
       backgroundColor: '#fff',
-      width: screenWidth,
-      height: screenHeight * 0.1,
+      width: screenWidth * 0.8,
+      height: screenHeight * 0.3,
+      alignItems: 'center',
       borderTopLeftRadius: 30,
       borderTopRightRadius: 30,
-      shadowColor: '#000000',
-      shadowOpacity: 0.1,
-      shadowRadius: 5,
-      elevation: 2,
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
+      shadowColor: '#000',
       shadowOffset: {
-        height: -3,
         width: 0,
+        height: 1,
       },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     textContainer: {
       flex: 1,
@@ -128,19 +121,19 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       padding: screenHeight * 0.025,
     },
     text: {
-      fontSize: screenHeight * 0.018,
+      color: '#000',
+      fontSize: screenHeight * 0.02,
       fontWeight: 'bold',
+      textAlign: 'center',
       letterSpacing: -0.18,
     },
-    redText: {
-      color: '#cc3939',
-    },
-    greenText: {
-      color: '#20BB74',
+    button: {
+      width: screenWidth * 0.8 - screenHeight * 0.04,
+      marginBottom: screenHeight * 0.02,
     },
     transparentBackground: {
       backgroundColor: 'transparent',
     },
   });
 
-export default InfoModal;
+export default WarningModalContent;
