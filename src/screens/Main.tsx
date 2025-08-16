@@ -160,7 +160,7 @@ const Main: React.FC<Props> = props => {
     state => state.info!.isInternetReachable,
   );
 
-  const {peers} = useAppSelector(state => state.info!);
+  const peersLength = useAppSelector(state => state.info!.peers.length);
   const noConnectionWarningShowedRef = useRef<boolean>(false);
   const noConnectionWarningTimeoutRef = useRef<number>(
     Math.floor(Date.now() / 1000),
@@ -175,14 +175,14 @@ const Main: React.FC<Props> = props => {
   }
   useEffect(() => {
     if (
-      peers.length <= 0 &&
+      peersLength <= 0 &&
       !noConnectionWarningShowedRef.current &&
       // NOTE: 11sec delay cause peers are polled every 10sec
       noConnectionWarningTimeoutRef.current + 11 < Math.floor(Date.now() / 1000)
     ) {
       showNoConnectionWarning();
     }
-  }, [isWarningModalVisible, peers]);
+  }, [isWarningModalVisible, peersLength]);
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks!);

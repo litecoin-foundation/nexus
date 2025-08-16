@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useMemo} from 'react';
 import {View, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -27,14 +27,14 @@ const WarningModalContent: React.FC<Props> = props => {
 
   const {showPopUp} = useContext(PopUpContext);
 
-  const modal = (
+  const modal = useMemo(() => (
     <PlasmaModal
       isOpened={isVisible}
       close={() => close()}
       isFromBottomToTop={true}
       animDuration={250}
       gapInPixels={0}
-      backSpecifiedStyle={{backgroundColor: 'transparent'}}
+      backSpecifiedStyle={styles.transparentBackground}
       disableBlur={disableBlur}
       renderBody={(_, __, ___, ____, cardTranslateAnim) => (
         <Animated.View style={[styles.modal, cardTranslateAnim]}>
@@ -68,12 +68,11 @@ const WarningModalContent: React.FC<Props> = props => {
         </Animated.View>
       )}
     />
-  );
+  ), [isVisible, close, text, textKey, textDomain, disableBlur, SCREEN_HEIGHT, styles]);
 
   useEffect(() => {
     showPopUp(modal);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible, close, text, disableBlur]);
+  }, [showPopUp, modal]);
 
   return <></>;
 };
@@ -116,6 +115,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     button: {
       width: screenWidth * 0.8 - screenHeight * 0.04,
       marginBottom: screenHeight * 0.02,
+    },
+    transparentBackground: {
+      backgroundColor: 'transparent',
     },
   });
 

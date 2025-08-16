@@ -32,7 +32,7 @@ interface IInfo {
   recoveryProgress: number;
   recoveryFinished: boolean;
   recoveryMode: boolean;
-  peers: any[];
+  peers: string[];
 }
 
 type GetInfoType = Omit<
