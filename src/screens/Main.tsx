@@ -182,7 +182,7 @@ const Main: React.FC<Props> = props => {
     ) {
       showNoConnectionWarning();
     }
-  }, [isWarningModalVisible, peersLength]);
+  }, [peersLength]);
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks!);

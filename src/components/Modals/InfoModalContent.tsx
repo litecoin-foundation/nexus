@@ -25,7 +25,10 @@ const InfoModal: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_WIDTH, SCREEN_HEIGHT],
+  );
 
   useEffect(() => {
     if (isVisible) {
@@ -48,36 +51,49 @@ const InfoModal: React.FC<Props> = props => {
         ? styles.greenText
         : null;
 
-  const modal = useMemo(() => (
-    <PlasmaModal
-      isOpened={isVisible}
-      close={() => close()}
-      isFromBottomToTop={true}
-      animDuration={250}
-      gapInPixels={0}
-      backSpecifiedStyle={styles.transparentBackground}
-      disableBlur={disableBlur}
-      renderBody={(_, __, ___, ____, cardTranslateAnim) => (
-        <Animated.View style={[styles.modal, cardTranslateAnim]}>
-          <View style={styles.textContainer}>
-            {text ? (
-              <Text style={[styles.text, textColorStyle]}>{text}</Text>
-            ) : textKey && textDomain ? (
-              <TranslateText
-                textKey={textKey}
-                domain={textDomain}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={{...styles.text, ...textColorStyle}}
-                numberOfLines={1}
-              />
-            ) : (
-              <></>
-            )}
-          </View>
-        </Animated.View>
-      )}
-    />
-  ), [isVisible, close, disableBlur, text, textKey, textDomain, textColorStyle, SCREEN_HEIGHT, styles]);
+  const modal = useMemo(
+    () => (
+      <PlasmaModal
+        isOpened={isVisible}
+        close={() => close()}
+        isFromBottomToTop={true}
+        animDuration={250}
+        gapInPixels={0}
+        backSpecifiedStyle={styles.transparentBackground}
+        disableBlur={disableBlur}
+        renderBody={(_, __, ___, ____, cardTranslateAnim) => (
+          <Animated.View style={[styles.modal, cardTranslateAnim]}>
+            <View style={styles.textContainer}>
+              {text ? (
+                <Text style={[styles.text, textColorStyle]}>{text}</Text>
+              ) : textKey && textDomain ? (
+                <TranslateText
+                  textKey={textKey}
+                  domain={textDomain}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={{...styles.text, ...textColorStyle}}
+                  numberOfLines={1}
+                />
+              ) : (
+                <></>
+              )}
+            </View>
+          </Animated.View>
+        )}
+      />
+    ),
+    [
+      isVisible,
+      close,
+      disableBlur,
+      text,
+      textKey,
+      textDomain,
+      textColorStyle,
+      SCREEN_HEIGHT,
+      styles,
+    ],
+  );
 
   useEffect(() => {
     showPopUp(modal);
