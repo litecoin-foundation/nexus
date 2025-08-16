@@ -23,7 +23,10 @@
     "storybook-generate": "sb-rn-get-stories",
     "prepare": "husky",
     "test": "jest",
-    "test-sell-card": "jest src/components/Cards/Sell.test.tsx"
+    "test-buy-sell": "jest src/components/Cards/Sell.test.tsx",
+    "test-sell-ui": "jest src/components/Cards/Sell.test.tsx --testNamePattern=\"Sell Component UI\"",
+    "test-buy-reducers": "jest src/components/Cards/Sell.test.tsx --testNamePattern=\"Buy/Sell Reducers\"",
+    "test-buy-api-valid": "jest src/components/Cards/Sell.test.tsx --testNamePattern=\"Moonpay API Validation Tests\""
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "1.2.0",

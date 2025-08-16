@@ -751,7 +751,7 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
   }
 };
 
-const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
+export const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
   const {testPaymentActive, testPaymentFiat} = getState().settings;
 
   const currencyCode = testPaymentActive
