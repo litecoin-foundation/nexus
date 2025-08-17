@@ -29,7 +29,8 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface Props {
   close: () => void;
   cardTranslateAnim: any;
-  onConfirmSelection?: (selectedUtxos: Utxo[]) => void;
+  onConfirmSelection: (selectedUtxos: Utxo[]) => void;
+  targetAmount: number;
 }
 
 type CoinData = {
@@ -50,10 +51,11 @@ interface SelectCoinsLayoutProps {
   selectedBalance: number;
   selectedUtxos: Utxo[];
   onConfirmSelection?: (selectedUtxos: Utxo[]) => void;
+  targetAmount: number;
 }
 
 export default function SelectCoinsModalContent(props: Props) {
-  const {close, cardTranslateAnim, onConfirmSelection} = props;
+  const {close, cardTranslateAnim, onConfirmSelection, targetAmount} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -182,6 +184,7 @@ export default function SelectCoinsModalContent(props: Props) {
             selectedBalance={selectedBalanceInSubunit}
             selectedUtxos={selectedUtxos}
             onConfirmSelection={onConfirmSelection}
+            targetAmount={targetAmount}
           />
         </View>
       </View>
@@ -197,6 +200,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
     selectedBalance,
     selectedUtxos,
     onConfirmSelection,
+    targetAmount,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -302,7 +306,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
             <TableTitle
               titleTextKey="required"
               titleTextDomain="sendTab"
-              titleInterpolationObj={{amount: 100}}
+              titleInterpolationObj={{amount: targetAmount}}
               titleFontSize={SCREEN_HEIGHT * 0.017}
               rightTitleTextKey="selected"
               rightTitleTextDomain="sendTab"
@@ -336,6 +340,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
             textDomain="sendTab"
             onPress={confirmSelection}
             rounded
+            disabled={targetAmount > selectedBalance ? true : false}
           />
         </View>
         <View style={styles.paginationStrip} />

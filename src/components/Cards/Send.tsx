@@ -276,6 +276,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     }
   }, [amountPickerActive, detailsOpacity, padOpacity]);
 
+  const handleCoinSelectionUtxos = selectedUtxos => {
+    //
+  };
+
   const validateAddress = async (endAddress: string) => {
     if (endAddress === '') {
       setAddressValid(null);
@@ -418,6 +422,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         <SelectCoinsModalContent
           close={closeManualSelectionModal}
           cardTranslateAnim={cardTranslateAnim}
+          targetAmount={Number(amount)}
+          onConfirmSelection={selectedUtxos =>
+            handleCoinSelectionUtxos(selectedUtxos)
+          }
         />
       )}
     />
@@ -517,13 +525,14 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                     numberOfLines={1}
                   />
                   <Switch
-                    initialValue={false}
+                    initialValue={enableManualSelection}
                     onPress={() =>
                       setEnableManualSelection(!enableManualSelection)
                     }
                   />
                 </View>
-                {enableManualSelection ? (
+                {enableManualSelection &&
+                !((!amount || Number(amount) <= 0) && sendAll !== true) ? (
                   <Pressable
                     style={styles.manualSelectionBottom}
                     onPress={openManualSelectionModal}>
@@ -541,7 +550,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                         maxSizeInPixels={SCREEN_HEIGHT * 0.017}
                         textStyle={styles.manualSelectionBottomTitle}
                         numberOfLines={1}
-                        interpolationObj={{amount}}
+                        interpolationObj={{
+                          amount: amount !== '' ? amount : '0',
+                        }}
                       />
                     </View>
                     <View style={styles.manualSelectionBottomNoteContainer}>
