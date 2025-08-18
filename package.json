@@ -21,7 +21,12 @@
     "generate-protos": "@bufbuild/buf generate",
     "pods": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install",
     "storybook-generate": "sb-rn-get-stories",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "jest",
+    "test-buy-sell": "jest src/components/Cards/Sell.test.tsx",
+    "test-sell-ui": "jest src/components/Cards/Sell.test.tsx --testNamePattern=\"Sell Component UI\"",
+    "test-buy-reducers": "jest src/components/Cards/Sell.test.tsx --testNamePattern=\"Buy/Sell Reducers\"",
+    "test-buy-api-valid": "jest src/components/Cards/Sell.test.tsx --testNamePattern=\"Moonpay API Validation Tests\""
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "1.2.0",
@@ -115,6 +120,7 @@
     "@storybook/addon-ondevice-actions": "^8.4.3",
     "@storybook/addon-ondevice-controls": "^8.4.3",
     "@storybook/react-native": "^8.4.3",
+    "@testing-library/react-native": "^13.2.2",
     "@types/jest": "^29.5.13",
     "@types/react": "^19.0.0",
     "@types/react-test-renderer": "^19.0.0",

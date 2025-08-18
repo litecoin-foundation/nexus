@@ -101,7 +101,9 @@
     "3m": "3M",
     "1y": "1Y",
     "all_time": "ALL",
-    "order_id": "ORDER ID"
+    "order_id": "ORDER ID",
+    "lnd_no_connection": "Failed connecting to the Litecoin network. Try using a VPN. If you see this message again, please try another VPN.",
+    "got_it": "Got It"
   },
   "buyTab": {
     "buy": "Buy ",

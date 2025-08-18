@@ -4,6 +4,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {
   getInfo as getLndInfo,
   getRecoveryInfo as getLndRecoveryInfo,
+  neutrinoKitStatus,
 } from 'react-native-turbo-lndltc';
 
 import {AppThunk} from './types';
@@ -31,6 +32,7 @@ interface IInfo {
   recoveryProgress: number;
   recoveryFinished: boolean;
   recoveryMode: boolean;
+  peers: string[];
 }
 
 type GetInfoType = Omit<
@@ -68,9 +70,11 @@ const initialState = {
   recoveryProgress: 0,
   recoveryMode: false,
   recoveryFinished: false,
+  peers: [],
 } as IInfo;
 
 // actions
+const getPeersAction = createAction<any[]>('info/getPeersAction');
 const getInfoAction = createAction<GetInfoType>('info/getInfoAction');
 const getRecoveryInfoAction = createAction<IGetRecoveryType>(
   'info/getRecoveryInfoAction',
@@ -80,6 +84,30 @@ const checkInternetReachableAction = createAction<boolean | null>(
 );
 
 // functions
+const getPeers = (): AppThunk => async (dispatch, getState) => {
+  const {lndActive} = getState().lightning;
+  if (!lndActive) {
+    dispatch(getPeersAction([]));
+    return;
+  }
+  try {
+    const statusRpc = await neutrinoKitStatus({});
+
+    if (statusRpc.peers) {
+      dispatch(getPeersAction(statusRpc.peers));
+    } else {
+      dispatch(getPeersAction([]));
+    }
+  } catch (error) {
+    dispatch(getPeersAction([]));
+    console.error(`getPeers error: ${error}`);
+  }
+};
+
+export const pollPeers = (): AppThunk => async dispatch => {
+  await poll(() => dispatch(getPeers()), 10000);
+};
+
 const getInfo = (): AppThunk => async (dispatch, getState) => {
   const {lndActive} = getState().lightning;
   if (!lndActive) {
@@ -87,6 +115,8 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
   }
   try {
     const infoRpc = await getLndInfo({});
+
+    const {peers} = getState().info;
 
     let info = {
       identityPubkey: infoRpc.identityPubkey,
@@ -104,6 +134,7 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
       numInactiveChannels: infoRpc.numInactiveChannels,
       startingSyncTimestamp: '1317969544',
       decimalSynced: 0,
+      peers: peers,
     };
 
     // TODO: refactor required
@@ -191,6 +222,7 @@ export const infoSlice = createSlice({
   name: 'info',
   initialState,
   reducers: {
+    getPeersAction: (state, action) => ({...state, peers: action.payload}),
     getInfoAction: (state, action) => ({...state, ...action.payload}),
     checkInternetReachableAction: (state, action) => ({
       ...state,
