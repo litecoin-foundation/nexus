@@ -72,8 +72,7 @@ declare global {
   }
 }
 
-// const RESIZE_DEACTIVATED = __DEV__ ? false : true;
-const RESIZE_DEACTIVATED = true;
+const RESIZE_DEACTIVATED = __DEV__ ? false : true;
 
 function ResizedView(props: any) {
   const {children} = props;
