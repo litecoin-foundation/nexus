@@ -740,6 +740,9 @@ export const txDetailSelector = createSelector<
   [(state: any) => any],
   IDisplayedTx[]
 >(txSelector, (txs: any) => {
+  if (!txs || !Array.isArray(txs)) {
+    return [];
+  }
   const sortedTxs = [...txs];
 
   sortedTxs.sort((a: any, b: any) => b.timeStamp - a.timeStamp);
