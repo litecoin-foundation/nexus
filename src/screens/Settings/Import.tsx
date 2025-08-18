@@ -12,7 +12,7 @@ import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {publishTransaction} from '../../reducers/transaction';
-import {sweepQrKey} from '../../lib/utils/sweep';
+import {sweepQrKey} from '../../utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {unsetDeeplink} from '../../reducers/deeplinks';

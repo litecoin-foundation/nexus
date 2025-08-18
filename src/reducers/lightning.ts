@@ -12,21 +12,21 @@ import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
-import {setItem, getItem} from '../lib/utils/keychain';
+import {setItem, getItem} from '../utils/keychain';
 import {
   deleteWalletDB,
   deleteLNDDir,
   deleteMacaroonFiles,
   fileExists,
-} from '../lib/utils/file';
+} from '../utils/file';
 import {finishOnboarding, setRecoveryMode} from './onboarding';
 import {subscribeTransactions} from './transaction';
 import {pollInfo, pollPeers} from './info';
 import {pollRates} from './ticker';
 import {pollBalance} from './balance';
 import {pollTransactions} from './transaction';
-import {createConfig} from '../lib/utils/config';
-import {stringToUint8Array} from '../lib/utils';
+import {createConfig} from '../utils/config';
+import {stringToUint8Array} from '../utils';
 import {purgeStore} from '../store';
 import {resetPincode} from './authentication';
 import {resetToLoading} from '../navigation/NavigationService';

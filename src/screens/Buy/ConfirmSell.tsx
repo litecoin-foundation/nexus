@@ -23,7 +23,7 @@ import SuccessSell from '../../components/SuccessSell';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {getSignedSellUrl, getSellTransactionHistory} from '../../reducers/buy';
-import {parseQueryString} from '../../lib/utils/querystring';
+import {parseQueryString} from '../../utils/querystring';
 import {showError} from '../../reducers/errors';
 import {confirmSellFiatValueSelector} from '../../reducers/ticker';
 

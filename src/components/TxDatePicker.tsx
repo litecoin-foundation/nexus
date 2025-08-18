@@ -2,7 +2,7 @@ import {StyleSheet, View, FlatList} from 'react-native';
 import React, {forwardRef, useImperativeHandle, useRef} from 'react';
 
 import WhiteButton from './Buttons/WhiteButton';
-import {formatMonths} from '../lib/utils/date';
+import {formatMonths} from '../utils/date';
 
 interface Props {
   selectedTimestamp: number | null;

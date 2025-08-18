@@ -21,8 +21,8 @@ import {ChangeAddressType} from 'react-native-turbo-lndltc/protos/walletrpc/wall
 import {create} from '@bufbuild/protobuf';
 
 import {AppThunk} from './types';
-import {poll} from '../lib/utils/poll';
-import {formatDate, formatTime} from '../lib/utils/date';
+import {poll} from '../utils/poll';
+import {formatDate, formatTime} from '../utils/date';
 import {
   IDecodedTx,
   DisplayedMetadataType,

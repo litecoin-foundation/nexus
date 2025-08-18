@@ -7,7 +7,7 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 
-import {triggerSelectionFeedback} from '../../lib/utils/haptic';
+import {triggerSelectionFeedback} from '../../utils/haptic';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

@@ -1,7 +1,7 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import {AppThunk} from './types';
-import {decodeBIP21} from '../lib/utils/bip21';
+import {decodeBIP21} from '../utils/bip21';
 import qs from 'qs';
 
 // types

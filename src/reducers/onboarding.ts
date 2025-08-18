@@ -8,12 +8,12 @@ import {Platform} from 'react-native';
 import {getCountry} from 'react-native-localize';
 
 import {AppThunk} from './types';
-import {fileExists} from '../lib/utils/file';
+import {fileExists} from '../utils/file';
 import {showError} from './errors';
 import {setDeviceNotificationToken} from './settings';
-import {generateMnemonic} from '../lib/utils/aezeed';
-import {setItem} from '../lib/utils/keychain';
-import {sleep} from '../lib/utils/poll';
+import {generateMnemonic} from '../utils/aezeed';
+import {setItem} from '../utils/keychain';
+import {sleep} from '../utils/poll';
 
 // types
 interface IOnboardingState {

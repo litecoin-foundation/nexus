@@ -47,8 +47,8 @@ import Convert from '../components/Cards/Convert';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
 import {unsetDeeplink, decodeAppDeeplink} from '../reducers/deeplinks';
-import {sleep} from '../lib/utils/poll';
-import {validate as validateLtcAddress} from '../lib/utils/validate';
+import {sleep} from '../utils/poll';
+import {validate as validateLtcAddress} from '../utils/validate';
 import {showError} from '../reducers/errors';
 
 import {ScreenSizeContext} from '../context/screenSize';

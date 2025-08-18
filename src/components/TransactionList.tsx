@@ -38,7 +38,7 @@ import TransactionListEmpty from './TransactionListEmpty';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {getTransactions} from '../reducers/transaction';
 import {txDetailSelector} from '../reducers/transaction';
-import {groupTransactions} from '../lib/utils/groupTransactions';
+import {groupTransactions} from '../utils/groupTransactions';
 import {DisplayedMetadataType} from '../utils/txMetadata';
 
 import TranslateText from '../components/TranslateText';

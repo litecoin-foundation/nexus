@@ -20,10 +20,10 @@ import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
-import {decodeBIP21} from '../../lib/utils/bip21';
-import {validate as validateLtcAddress} from '../../lib/utils/validate';
+import {decodeBIP21} from '../../utils/bip21';
+import {validate as validateLtcAddress} from '../../utils/validate';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sleep} from '../../lib/utils/poll';
+import {sleep} from '../../utils/poll';
 import {showError} from '../../reducers/errors';
 import {resetInputs} from '../../reducers/input';
 import {

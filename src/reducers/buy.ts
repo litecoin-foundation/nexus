@@ -2,7 +2,7 @@ import {createAction, createSlice} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import {AppThunk, AppThunkBuyQuote, AppThunkSellQuote} from './types';
 import {getCountry} from 'react-native-localize';
-import {uuidFromSeed} from '../lib/utils/uuid';
+import {uuidFromSeed} from '../utils/uuid';
 import {
   IBuyQuote,
   ISellQuote,

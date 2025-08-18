@@ -7,7 +7,7 @@ import {chartPercentageChangeSelector} from '../reducers/chart';
 import {satsToSubunitSelector} from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
-import {formatDate, formatTime} from '../lib/utils/date';
+import {formatDate, formatTime} from '../utils/date';
 
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import TranslateText from '../components/TranslateText';

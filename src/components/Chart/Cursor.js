@@ -17,7 +17,7 @@ import {useDispatch} from 'react-redux';
 import {
   triggerMediumFeedback,
   triggerSelectionFeedback,
-} from '../../lib/utils/haptic';
+} from '../../utils/haptic';
 import {updateCursorValue, setCursorSelected} from '../../reducers/chart';
 
 const Cursor = props => {

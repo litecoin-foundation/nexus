@@ -2,7 +2,7 @@ import React, {useEffect, useContext, useMemo} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {triggerHeavyFeedback} from '../../lib/utils/haptic';
+import {triggerHeavyFeedback} from '../../utils/haptic';
 import PlasmaModal from './PlasmaModal';
 
 import TranslateText from '../../components/TranslateText';

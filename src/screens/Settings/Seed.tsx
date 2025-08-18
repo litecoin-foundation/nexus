@@ -7,7 +7,7 @@ import {StackNavigationOptions} from '@react-navigation/stack';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {updateLastViewSeed} from '../../reducers/settings';
-import {formatDate, formatTime} from '../../lib/utils/date';
+import {formatDate, formatTime} from '../../utils/date';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import TranslateText from '../../components/TranslateText';

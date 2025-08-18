@@ -20,7 +20,7 @@ import {
   getSignedSellOnramperUrl,
   getSellTransactionHistory,
 } from '../../reducers/buy';
-import {parseQueryString} from '../../lib/utils/querystring';
+import {parseQueryString} from '../../utils/querystring';
 import {showError} from '../../reducers/errors';
 
 import TranslateText from '../../components/TranslateText';
