@@ -48,6 +48,7 @@ import {store, pStore} from './src/store';
 import Error from './src/components/Error';
 
 import initI18N from './src/utils/i18n';
+import {startTor} from './src/utils/tor';
 
 const {APNSTokenModule} = NativeModules;
 
@@ -71,7 +72,8 @@ declare global {
   }
 }
 
-const RESIZE_DEACTIVATED = __DEV__ ? false : true;
+// const RESIZE_DEACTIVATED = __DEV__ ? false : true;
+const RESIZE_DEACTIVATED = true;
 
 function ResizedView(props: any) {
   const {children} = props;
@@ -84,6 +86,7 @@ function ContextExecutable(props: any) {
   const {languageCode} = useAppSelector(state => state.settings);
 
   useLayoutEffect(() => {
+    startTor();
     initI18N(languageCode);
     // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
     // resulting in missing rates even if the app is being used already.
