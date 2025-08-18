@@ -112,13 +112,16 @@ export const fetchResolve = (
     try {
       if (useTor && (await isTorReady())) {
         try {
-          await fetchResolveWithTor(url, fetchOptions);
+          const data = await fetchResolveWithTor(url, fetchOptions);
+          resolve(data);
         } catch (torError) {
           // fallback to regular fetch when tor unavailable
-          await fetchResolveRegular(url, fetchOptions);
+          const data = await fetchResolveRegular(url, fetchOptions);
+          resolve(data);
         }
       } else {
-        await fetchResolveRegular(url, fetchOptions);
+        const data = await fetchResolveRegular(url, fetchOptions);
+        resolve(data);
       }
     } catch (error) {
       reject(error);
