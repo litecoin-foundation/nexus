@@ -61,7 +61,7 @@ const RecoverLitewallet = ({
         rawTxs.map(async rawTx => {
           await Promise.all(
             rawTx.map(async (txHex: string) => {
-              const res = await publishTransaction(txHex);
+              const res = await publishTransaction(txHex, torEnabled);
               if (__DEV__) {
                 console.log(res);
               }

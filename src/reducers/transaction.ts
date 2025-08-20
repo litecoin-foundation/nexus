@@ -32,6 +32,7 @@ import {
 } from '../utils/txMetadata';
 import {processConvertTransactions} from '../utils/convertTransactionProcessor';
 import {getBalance} from './balance';
+import {fetchResolve} from '../utils/tor';
 
 // types
 export type IDisplayedTx = {
@@ -104,10 +105,13 @@ const addConvertedTransactionAction = createAction<IConvertedTx>(
 );
 
 // functions
-const getPriceOnDate = (timestamp: number): Promise<number | null> => {
+const getPriceOnDate = (
+  timestamp: number,
+  torEnabled: boolean,
+): Promise<number | null> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const res = await fetch(
+      const res = await fetchResolve(
         'https://api.nexuswallet.com/api/prices/dateprice',
         {
           method: 'POST',
@@ -119,29 +123,24 @@ const getPriceOnDate = (timestamp: number): Promise<number | null> => {
             timestamp,
           }),
         },
+        torEnabled,
       );
 
-      if (!res.ok) {
+      if (res && res.hasOwnProperty('datePrice')) {
+        resolve(res.datePrice);
+      } else {
         // NOTE: resolve null so this request won't break math for the TransactionList
         resolve(null);
       }
-
-      const data = await res.json();
-
-      if (data.hasOwnProperty('datePrice')) {
-        resolve(data.datePrice);
-      } else {
-        resolve(null);
-      }
     } catch (error) {
-      reject(error);
+      resolve(null);
     }
   });
 };
 
 export const sendConvertWithPsbt =
   (amount: number, destination: 'regular' | 'private'): AppThunk =>
-  async dispatch => {
+  async (dispatch, getState) => {
     try {
       // new destination address
       let type: number;
@@ -247,8 +246,9 @@ export const sendConvertWithPsbt =
       console.log(Buffer.from(signedPsbt.signedPsbt).toString('hex'));
 
       try {
+        const {torEnabled} = getState().settings!;
         // broadcast transaction
-        await publishTransaction(txHex);
+        await publishTransaction(txHex, torEnabled);
 
         // Store conversion data for transaction matching
         if (destinationAddress.address) {
@@ -410,6 +410,7 @@ function getUnmatchedNexusApiTxsWithLndTxs(lndTxs: any[], nexusApiTxs: any[]) {
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   const {buyHistory, sellHistory} = getState().buy!;
   const {convertedTransactions} = getState().transaction!;
+  const {torEnabled} = getState().settings!;
 
   try {
     const transactions = await getLndTransactions(
@@ -425,7 +426,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         await processConvertTransactions(
           convertedTransactions,
           transactions,
-          getPriceOnDate,
+          (timestamp: number) => getPriceOnDate(timestamp, torEnabled),
         );
 
       // Add processed convert transactions to the txs array
@@ -497,7 +498,8 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       // Transaction is a Buy/Sell transaction
       let tradeTx = null;
       // Assign 0 if request fails so math won't break
-      const priceOnDate = (await getPriceOnDate(Number(tx.timeStamp))) || 0;
+      const priceOnDate =
+        (await getPriceOnDate(Number(tx.timeStamp), torEnabled)) || 0;
 
       if (Math.sign(parseFloat(String(tx.amount))) === -1) {
         metaLabel = 'Send';
@@ -506,7 +508,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           Number(tx.timeStamp) + 600 < Math.floor(Date.now() / 1000)
         ) {
           try {
-            await publishTransaction(tx.rawTxHex);
+            await publishTransaction(tx.rawTxHex, torEnabled);
           } catch (error) {
             console.log('remove tx');
           }
@@ -565,7 +567,8 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       // Instead of buyTx.createdAt we extract metadata time since
       // it is a transaction of nexus-api trade type
       const txTimeStamp = getUTCTimeStampFromMetadata(buyTx.metadata);
-      const priceOnDate = (await getPriceOnDate(Number(txTimeStamp))) || 0;
+      const priceOnDate =
+        (await getPriceOnDate(Number(txTimeStamp), torEnabled)) || 0;
       const decodedTx = decodedTxMetadataProjection(buyTx, priceOnDate);
       txs.push(decodedTx);
     }
@@ -577,7 +580,8 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       // Instead of sellTx.createdAt we extract metadata time since
       // it is a transaction of nexus-api trade type
       const txTimeStamp = getUTCTimeStampFromMetadata(sellTx.metadata);
-      const priceOnDate = (await getPriceOnDate(Number(txTimeStamp))) || 0;
+      const priceOnDate =
+        (await getPriceOnDate(Number(txTimeStamp), torEnabled)) || 0;
       const decodedTx = decodedTxMetadataProjection(sellTx, priceOnDate);
       txs.push(decodedTx);
     }
@@ -669,10 +673,16 @@ export const sendAllOnchainPayment =
     });
   };
 
-export const publishTransaction = (txHex: string): Promise<string> => {
+export const publishTransaction = (
+  txHex: string,
+  torEnabled: boolean = false,
+): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const fallbackResolve = await publishTransactionFallback1(txHex);
+      const fallbackResolve = await publishTransactionFallback1(
+        txHex,
+        torEnabled,
+      );
       resolve(fallbackResolve);
     } catch (error2) {
       reject(error2);
@@ -680,25 +690,33 @@ export const publishTransaction = (txHex: string): Promise<string> => {
   });
 };
 
-export const publishTransactionFallback1 = (txHex: string): Promise<string> => {
+const publishTransactionFallback1 = (
+  txHex: string,
+  torEnabled: boolean = false,
+): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const request = await fetch('https://litecoinspace.org/api/tx', {
-        method: 'POST',
-        body: txHex,
-      });
+      const response = await fetchResolve(
+        'https://litecoinspace.org/api/tx',
+        {
+          method: 'POST',
+          body: txHex,
+        },
+        torEnabled,
+      );
 
-      if (!request.ok) {
-        const error = await request.text();
-        console.error(`Failed to broadcast tx via Litecoin Space: ${error}`);
+      // TODO: verify this response is just txid
+      if (typeof response === 'string' && response.length > 0) {
+        resolve(response);
+      } else {
+        console.error(`Failed to broadcast tx via Litecoin Space`);
         console.info('Attempting to broadcast tx via Blockcypher!');
 
-        const fallbackResolve = await publishTransactionFallback2(txHex);
+        const fallbackResolve = await publishTransactionFallback2(
+          txHex,
+          torEnabled,
+        );
         resolve(fallbackResolve);
-      } else {
-        const response = await request.text();
-        // TODO: verify this reponse is just txid
-        resolve(response);
       }
     } catch (error) {
       reject(String(error));
@@ -706,27 +724,32 @@ export const publishTransactionFallback1 = (txHex: string): Promise<string> => {
   });
 };
 
-export const publishTransactionFallback2 = (txHex: string): Promise<string> => {
+const publishTransactionFallback2 = (
+  txHex: string,
+  torEnabled: boolean = false,
+): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const request = await fetch(
+      const response = await fetchResolve(
         'https://api.blockcypher.com/v1/ltc/main/txs/push',
         {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({
             tx: txHex,
           }),
         },
+        torEnabled,
       );
 
-      if (!request.ok) {
-        const error = await request.text();
-        reject(`Tx Broadcast 2nd failed: ${error}`);
-      }
-
-      const response = await request.json();
       // NOTE: works but hash is undefined
-      resolve(response.hash);
+      if (response && response.hash) {
+        resolve(response.hash);
+      } else {
+        reject(`Tx Broadcast 2nd failed: Invalid response`);
+      }
     } catch (error) {
       reject(String(error));
     }
