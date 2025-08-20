@@ -14,6 +14,7 @@ import {setDeviceNotificationToken} from './settings';
 import {generateMnemonic} from '../lib/utils/aezeed';
 import {setItem} from '../lib/utils/keychain';
 import {sleep} from '../lib/utils/poll';
+import {fetchResolve} from '../utils/tor';
 
 // types
 interface IOnboardingState {
@@ -90,7 +91,7 @@ export const loginToNexusApi =
   (deviceToken: string, isIOS: boolean, osVersion: string): AppThunk =>
   async (dispatch, getState) => {
     const {uniqueId, isOnboarded} = getState().onboarding!;
-    const {deviceNotificationToken, currencyCode, languageCode} =
+    const {deviceNotificationToken, currencyCode, languageCode, torEnabled} =
       getState().settings!;
     if (isOnboarded !== true && !uniqueId && !deviceToken) {
       return;
@@ -100,43 +101,40 @@ export const loginToNexusApi =
         dispatch(setDeviceNotificationToken(deviceToken));
       }
 
-      const req = await fetch(`${apiAuthUrl}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      await fetchResolve(
+        `${apiAuthUrl}/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            appAuthKey: 'PCUgU3Vcuu4LNRdFPueKLEfsdbcSEgYFUSec4EXx3Ws79f6ckx',
+            userAppUniqueId: uniqueId,
+            deviceToken: deviceToken,
+            isIOS,
+            country: getCountry(),
+            currency: currencyCode,
+            lng: languageCode,
+            osVersion,
+          }),
         },
-        body: JSON.stringify({
-          appAuthKey: 'PCUgU3Vcuu4LNRdFPueKLEfsdbcSEgYFUSec4EXx3Ws79f6ckx',
-          userAppUniqueId: uniqueId,
-          deviceToken: deviceToken,
-          isIOS,
-          country: getCountry(),
-          currency: currencyCode,
-          lng: languageCode,
-          osVersion,
-        }),
-      });
+        torEnabled,
+      );
 
-      if (!req.ok) {
-        return;
-      }
-
-      const req2 = await fetch('https://api.nexuswallet.com/api/support/sign', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchResolve(
+        'https://api.nexuswallet.com/api/support/sign',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            identifier: uniqueId,
+          }),
         },
-        body: JSON.stringify({
-          identifier: uniqueId,
-        }),
-      });
-
-      if (!req2.ok) {
-        const error = await req2.json();
-        throw new Error(String(error));
-      }
-
-      const response = await req2.json();
+        torEnabled,
+      );
       const {hash} = response;
       dispatch(setSupportIdAction(hash));
     } catch (error) {

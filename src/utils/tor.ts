@@ -61,8 +61,13 @@ const fetchResolveRegular = (
       if (__DEV__) {
         console.log('Regular request passed successfully');
       }
-      const data = await res.json();
-      resolve(data);
+      try {
+        const data = await res.json();
+        resolve(data);
+      } catch (jsonError) {
+        // Note: response has no JSON content, resolve with empty object
+        resolve({});
+      }
     } catch (error) {
       reject(error);
     }
@@ -75,12 +80,20 @@ const fetchResolveWithTor = (
 ) => {
   return new Promise<any>(async (resolve, reject) => {
     try {
-      const torResponse = await RnTor.httpGet({
-        url,
-        headers: JSON.stringify(fetchOptions.headers),
-        timeout_ms: 30000,
-      });
-      if (torResponse.status_code !== 200) {
+      const torResponse =
+        fetchOptions.method === 'POST'
+          ? await RnTor.httpPost({
+              url,
+              headers: JSON.stringify(fetchOptions.headers),
+              body: fetchOptions.body || '',
+              timeout_ms: 30000,
+            })
+          : await RnTor.httpGet({
+              url,
+              headers: JSON.stringify(fetchOptions.headers),
+              timeout_ms: 30000,
+            });
+      if (torResponse.status_code < 200 || torResponse.status_code >= 300) {
         console.warn(
           'Tor request failed with status:',
           torResponse.status_code,
@@ -95,8 +108,13 @@ const fetchResolveWithTor = (
       if (__DEV__) {
         console.log('Tor request passed successfully');
       }
-      const {data} = JSON.parse(torResponse.body);
-      resolve(data);
+      try {
+        const data = JSON.parse(torResponse.body);
+        resolve(data);
+      } catch (jsonError) {
+        // Note: response has no JSON content, resolve with empty object
+        resolve({});
+      }
     } catch (error) {
       reject(error);
     }
