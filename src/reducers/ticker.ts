@@ -179,8 +179,11 @@ const fetchGranulatedHistoricalRates = async (
 
   try {
     const data = await fetchResolve(url, fetchOptions, useTor);
+    console.log('data');
+    console.log(data);
     return data;
   } catch (error) {
+    console.log('error fetchGranulatedHistoricalRates');
     return {
       latestPrice: [0, 0, 0, 0, 0, 0],
       fifteenMins: [],
@@ -209,7 +212,9 @@ export const updateHistoricalRatesForAllPeriods =
     try {
       const granulatedPriceData: TGranulatedPriceData =
         await fetchGranulatedHistoricalRates(torEnabled);
-      dispatch(segregateHistoricalRatesByPeriods(granulatedPriceData));
+      if (granulatedPriceData.all.length > 0) {
+        dispatch(segregateHistoricalRatesByPeriods(granulatedPriceData));
+      }
     } catch (error) {
       console.error('Failed to update historical rates:', error);
     }

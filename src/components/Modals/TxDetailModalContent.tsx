@@ -43,6 +43,7 @@ import {
   currencySymbolSelector,
 } from '../../reducers/settings';
 import {convertLocalFiatToUSD} from '../../reducers/ticker';
+import {fetchResolve} from '../../utils/tor';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -138,6 +139,7 @@ export default function TxDetailModalContent(props: Props) {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
 
   const {textKey} = {
     current: function () {
@@ -225,13 +227,13 @@ export default function TxDetailModalContent(props: Props) {
 
   async function getSenderAndFee(abortController: any) {
     try {
-      const req = await fetch(
+      const data: any = await fetchResolve(
         `https://litecoinspace.org/api/tx/${transaction.hash}`,
         {
           signal: abortController.signal,
         },
+        torEnabled,
       );
-      const data: any = await req.json();
 
       if (data.hasOwnProperty('vin')) {
         const inputs: string[] = [];

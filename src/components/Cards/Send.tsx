@@ -38,6 +38,7 @@ import {
   updateSendAddress,
   updateSendDomain,
 } from '../../reducers/input';
+import {fetchResolve} from '../../utils/tor';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -83,6 +84,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const manualCoinSelectionEnabled = useAppSelector(
     state => state.settings!.manualCoinSelectionEnabled,
   );
+  const torEnabled = useAppSelector(state => state.settings!.torEnabled);
   const syncedToChain = useAppSelector(state => state.info!.syncedToChain);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -295,7 +297,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       const timeoutId = setTimeout(() => abortController.abort(), 10000);
 
       try {
-        const res = await fetch(
+        const data = await fetchResolve(
           'https://api.nexuswallet.com/api/domains/resolve-unstoppable',
           {
             method: 'POST',
@@ -308,25 +310,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             }),
             signal: abortController.signal,
           },
+          torEnabled,
         );
 
         clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          setAddressValid(null);
-          if (res.status >= 500) {
-            dispatch(
-              showError('Domain resolution service temporarily unavailable'),
-            );
-          } else if (res.status === 404) {
-            dispatch(showError('Domain not found'));
-          } else {
-            dispatch(showError('Invalid domain name'));
-          }
-          return;
-        }
-
-        const data = await res.json();
 
         if (data && data.hasOwnProperty('address') && data.address) {
           addressOnValidation = data.address;
@@ -348,6 +335,12 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             dispatch(showError('Domain resolution timed out'));
           } else if (error.message.includes('Network request failed')) {
             dispatch(showError('Network error - check your connection'));
+          } else if (error.message.includes('404')) {
+            dispatch(showError('Domain not found'));
+          } else if (error.message.includes('500')) {
+            dispatch(
+              showError('Domain resolution service temporarily unavailable'),
+            );
           } else {
             dispatch(showError('Domain resolution failed'));
           }
