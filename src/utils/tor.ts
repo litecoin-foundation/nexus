@@ -61,7 +61,7 @@ const fetchResolveRegular = (
       if (__DEV__) {
         console.log('Regular request passed successfully');
       }
-      const {data} = await res.json();
+      const data = await res.json();
       resolve(data);
     } catch (error) {
       reject(error);

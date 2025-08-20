@@ -96,8 +96,8 @@ const getTickerData = (useTor: boolean) => {
           'Content-Type': 'application/json',
         },
       };
-      const {rates} = await fetchResolve(url, fetchOptions, useTor);
-      resolve(rates);
+      const {data} = await fetchResolve(url, fetchOptions, useTor);
+      resolve(data.rates);
     } catch (error) {
       reject(error);
     }
@@ -178,7 +178,7 @@ const fetchGranulatedHistoricalRates = async (
   };
 
   try {
-    const data = await fetchResolve(url, fetchOptions, useTor);
+    const {data} = await fetchResolve(url, fetchOptions, useTor);
     return data;
   } catch (error) {
     return {
