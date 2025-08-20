@@ -6,7 +6,14 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from 'react';
-import {Pressable, ScrollView, StyleSheet, View, Image} from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  Image,
+  Modal,
+} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -277,7 +284,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   }, [amountPickerActive, detailsOpacity, padOpacity]);
 
   const handleCoinSelectionUtxos = selectedUtxos => {
-    //
+    // TODO: Handle the selected UTXOs for manual coin selection
+    console.log('Selected UTXOs:', selectedUtxos);
+    closeManualSelectionModal();
   };
 
   const validateAddress = async (endAddress: string) => {
@@ -402,9 +411,11 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [enableManualSelection, setEnableManualSelection] = useState(false);
   const {showPopUp} = useContext(PopUpContext);
   const [modalVisible, setModalVisible] = useState(false);
+
   const openManualSelectionModal = () => {
     setModalVisible(true);
   };
+
   const closeManualSelectionModal = () => {
     setModalVisible(false);
   };
@@ -423,6 +434,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
           close={closeManualSelectionModal}
           cardTranslateAnim={cardTranslateAnim}
           targetAmount={Number(amount)}
+          targetAddress={address}
           onConfirmSelection={selectedUtxos =>
             handleCoinSelectionUtxos(selectedUtxos)
           }
@@ -532,7 +544,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                   />
                 </View>
                 {enableManualSelection &&
-                !((!amount || Number(amount) <= 0) && sendAll !== true) ? (
+                !((!amount || Number(amount) <= 0) && sendAll !== true) &&
+                addressValid ? (
                   <Pressable
                     style={styles.manualSelectionBottom}
                     onPress={openManualSelectionModal}>
@@ -670,6 +683,22 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
           </CustomSafeAreaView>
         </Animated.View>
       ) : null}
+
+      {/*<Modal
+        visible={modalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={closeManualSelectionModal}>
+        <SelectCoinsModalContent
+          close={closeManualSelectionModal}
+          cardTranslateAnim={{}}
+          targetAmount={Number(amount)}
+          targetAddress={address}
+          onConfirmSelection={selectedUtxos =>
+            handleCoinSelectionUtxos(selectedUtxos)
+          }
+        />
+      </Modal>*/}
     </View>
   );
 });
