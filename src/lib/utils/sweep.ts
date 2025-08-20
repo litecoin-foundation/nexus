@@ -422,7 +422,7 @@ const sweepAddress = (
         useTor,
       );
 
-      if (!unspents) {
+      if (!unspents && !Array.isArray(unspents)) {
         reject(
           'Failed to connect with API Server - try using a VPN. (UTXO Fetch)',
         );

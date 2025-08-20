@@ -65,8 +65,9 @@ const fetchResolveRegular = (
         const data = await res.json();
         resolve(data);
       } catch (jsonError) {
-        // Note: response has no JSON content, resolve with empty object
-        resolve({});
+        // Note: response body is text, not JSON - resolve with the text content
+        const textData = await res.text();
+        resolve(textData);
       }
     } catch (error) {
       reject(error);
@@ -112,8 +113,8 @@ const fetchResolveWithTor = (
         const data = JSON.parse(torResponse.body);
         resolve(data);
       } catch (jsonError) {
-        // Note: response has no JSON content, resolve with empty object
-        resolve({});
+        // Note: response body is text, not JSON - resolve with the text content
+        resolve(torResponse.body);
       }
     } catch (error) {
       reject(error);
