@@ -33,6 +33,7 @@ const RecoverLitewallet = ({
   const dispatch = useAppDispatch();
 
   const {regularAddress} = useAppSelector(state => state.address);
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
 
   const [loading, setLoading] = useState(false);
 
@@ -54,13 +55,16 @@ const RecoverLitewallet = ({
         throw new Error('Receiving address not found. Try again.');
       }
 
-      const rawTxs = await sweepLitewallet(seed, regularAddress);
+      const rawTxs = await sweepLitewallet(seed, regularAddress, torEnabled);
 
       await Promise.all(
         rawTxs.map(async rawTx => {
           await Promise.all(
             rawTx.map(async (txHex: string) => {
               const res = await publishTransaction(txHex);
+              if (__DEV__) {
+                console.log(res);
+              }
             }),
           );
         }),

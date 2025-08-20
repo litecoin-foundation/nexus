@@ -39,6 +39,7 @@ function isArrayEmpty(obj: any[]) {
 export const sweepLitewallet = async (
   mnemonic: IMnemonic,
   receiveAddress: string,
+  useTor: boolean,
 ) => {
   const startPath = "m/0'/0/";
   const changePath = "m/0'/1/";
@@ -52,12 +53,14 @@ export const sweepLitewallet = async (
       receiveAddress,
       startPath,
       isChildHardened,
+      useTor,
     );
     const changeTxs = await sweepMnemonic(
       mnemonic,
       receiveAddress,
       changePath,
       isChildHardened,
+      useTor,
     );
 
     if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
@@ -84,7 +87,7 @@ export const sweepLitewallet = async (
   }
 };
 
-export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
+export const sweepQrKey = async (qrKey: string, receiveAddress: string, useTor: boolean) => {
   const startPath = "m/0'/0/";
   const changePath = "m/0'/1/";
   const isChildHardened = false;
@@ -98,12 +101,14 @@ export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
         receiveAddress,
         startPath,
         isChildHardened,
+        useTor,
       );
       const changeTxs = await sweepBase58Ltpv(
         qrKey,
         receiveAddress,
         changePath,
         isChildHardened,
+        useTor,
       );
 
       if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
@@ -138,11 +143,13 @@ const sweepBase58Ltpv = async (
   receiveAddress: string,
   startPath: string,
   isChildHardened: boolean,
+  useTor: boolean,
 ) => {
   try {
     const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
       startPath,
       isChildHardened,
+      useTor,
       undefined,
       seedBase58,
     );
@@ -167,11 +174,13 @@ const sweepMnemonic = async (
   receiveAddress: string,
   startPath: string,
   isChildHardened: boolean,
+  useTor: boolean,
 ) => {
   try {
     const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
       startPath,
       isChildHardened,
+      useTor,
       mnemonic,
     );
 

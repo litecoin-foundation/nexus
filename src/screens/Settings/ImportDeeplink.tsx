@@ -48,6 +48,7 @@ const ImportDeeplink: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
 
   const {regularAddress} = useAppSelector(state => state.address);
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
 
   useLayoutEffect(() => {
     dispatch(getAddress());
@@ -62,13 +63,20 @@ const ImportDeeplink: React.FC<Props> = props => {
             throw new Error('Receiving address not found. Try again.');
           }
 
-          const rawTxs = await sweepQrKey(deeplinkPayload, regularAddress);
+          const rawTxs = await sweepQrKey(
+            deeplinkPayload,
+            regularAddress,
+            torEnabled,
+          );
 
           await Promise.all(
             rawTxs.map(async rawTx => {
               await Promise.all(
                 rawTx.map(async (txHex: string) => {
                   const res = await publishTransaction(txHex);
+                  if (__DEV__) {
+                    console.log(res);
+                  }
                 }),
               );
             }),
@@ -100,7 +108,7 @@ const ImportDeeplink: React.FC<Props> = props => {
       }
     }
     /* eslint-disable react-hooks/exhaustive-deps */
-  }, [regularAddress, route.params?.scanData]);
+  }, [regularAddress, route.params?.scanData, torEnabled]);
 
   return (
     <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
