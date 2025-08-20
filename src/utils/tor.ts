@@ -6,7 +6,11 @@ export const startTor = async () => {
   try {
     // NOTE: ensure directory already exists, otherwise tor won't start
     const torDataDir = `${RNFS.DocumentDirectoryPath}/tor_data`;
-    await RNFS.mkdir(torDataDir).catch(() => {});
+    await RNFS.mkdir(torDataDir).catch(err => {
+      if (__DEV__) {
+        console.error('Failed to create tor data directory:', err);
+      }
+    });
 
     const result = await RnTor.startTorIfNotRunning({
       data_dir: torDataDir,
@@ -53,9 +57,11 @@ const fetchResolveRegular = (
     try {
       const res = await fetch(url, fetchOptions);
       if (!res.ok) {
-        console.warn('Regular request failed with status:');
-        const error = await res.json();
-        reject(error);
+        const errorBody = await res.text();
+        console.warn(`Regular request failed with status: ${res.status}`);
+        reject(
+          new Error(`Request failed with status ${res.status}: ${errorBody}`),
+        );
         return;
       }
       if (__DEV__) {
@@ -65,7 +71,7 @@ const fetchResolveRegular = (
         const data = await res.json();
         resolve(data);
       } catch (jsonError) {
-        // Note: response body is text, not JSON - resolve with the text content
+        // NOTE: response body is text, not JSON - resolve with the text content
         const textData = await res.text();
         resolve(textData);
       }
@@ -133,15 +139,18 @@ export const fetchResolve = (
         try {
           const data = await fetchResolveWithTor(url, fetchOptions);
           resolve(data);
+          return; // NOTE: exit if Tor request is successful
         } catch (torError) {
-          // fallback to regular fetch when tor unavailable
-          const data = await fetchResolveRegular(url, fetchOptions);
-          resolve(data);
+          console.warn(
+            'Tor request failed, falling back to regular fetch:',
+            torError,
+          );
+          // NOTE: proceed to fallback
         }
-      } else {
-        const data = await fetchResolveRegular(url, fetchOptions);
-        resolve(data);
       }
+      // NOTE: fallback to regular fetch if Tor is not used, not ready, or failed
+      const data = await fetchResolveRegular(url, fetchOptions);
+      resolve(data);
     } catch (error) {
       reject(error);
     }
