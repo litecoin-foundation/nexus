@@ -82,20 +82,30 @@ function ResizedView(props: any) {
 
 function ContextExecutable(props: any) {
   const dispatch = useAppDispatch();
-  const {languageCode} = useAppSelector(state => state.settings);
-
+  const {languageCode, torEnabled} = useAppSelector(state => state.settings);
+  const {uniqueId} = useAppSelector(state => state.onboarding);
   useLayoutEffect(() => {
-    startTor();
     initI18N(languageCode);
     // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
     // resulting in missing rates even if the app is being used already.
-    dispatch(updatedRatesInFiat());
-    dispatch(updateHistoricalRatesForAllPeriods());
-    dispatch(getBuyTransactionHistory());
-    dispatch(getSellTransactionHistory());
-    dispatch(checkFlexaCustomer());
-  }, [dispatch, languageCode, props.deviceToken]);
+    // Do not call anything until user is initialized
+    if (uniqueId) {
+      dispatch(updatedRatesInFiat());
+      dispatch(updateHistoricalRatesForAllPeriods());
+      dispatch(getBuyTransactionHistory());
+      dispatch(getSellTransactionHistory());
+      dispatch(checkFlexaCustomer());
+    }
+  }, [dispatch, languageCode, uniqueId, props.deviceToken]);
 
+  useEffect(() => {
+    if (uniqueId && torEnabled) {
+      if (__DEV__) {
+        console.log('startTor');
+      }
+      startTor();
+    }
+  }, [dispatch, torEnabled, uniqueId]);
   return <></>;
 }
 

@@ -35,18 +35,29 @@ export const startTor = async () => {
 };
 
 export const checkTorStatus = async () => {
-  const status = await RnTor.getServiceStatus();
-  if (__DEV__) {
-    console.log(`Current Tor service status: ${status}`);
+  try {
+    const status = await RnTor.getServiceStatus();
+    if (__DEV__) {
+      console.log(`Current Tor service status: ${status}`);
+    }
+    return status;
+  } catch (error) {
+    console.error('Error checking Tor status:', error);
+    return -1;
   }
 };
 
 export const isTorReady = async () => {
-  const status = await RnTor.getServiceStatus();
-  if (__DEV__) {
-    console.log(`Current Tor service status: ${status}`);
+  try {
+    const status = await RnTor.getServiceStatus();
+    if (__DEV__) {
+      console.log(`Current Tor service status: ${status}`);
+    }
+    return status === 1;
+  } catch (error) {
+    console.error('Error checking if Tor is ready:', error);
+    return false;
   }
-  return status === 1;
 };
 
 const fetchResolveRegular = (
@@ -67,13 +78,21 @@ const fetchResolveRegular = (
       if (__DEV__) {
         console.log('Regular request passed successfully');
       }
-      try {
-        const data = await res.json();
-        resolve(data);
-      } catch (jsonError) {
-        // NOTE: response body is text, not JSON - resolve with the text content
-        const textData = await res.text();
-        resolve(textData);
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        try {
+          const data = await res.json();
+          resolve(data);
+        } catch (jsonError) {
+          reject(new Error('Invalid JSON response'));
+        }
+      } else {
+        try {
+          const textData = await res.text();
+          resolve(textData);
+        } catch (textError) {
+          reject(new Error('Failed to read response as text'));
+        }
       }
     } catch (error) {
       reject(error);
@@ -91,13 +110,13 @@ const fetchResolveWithTor = (
         fetchOptions.method === 'POST'
           ? await RnTor.httpPost({
               url,
-              headers: JSON.stringify(fetchOptions.headers),
+              headers: JSON.stringify(fetchOptions.headers || {}),
               body: fetchOptions.body || '',
               timeout_ms: 30000,
             })
           : await RnTor.httpGet({
               url,
-              headers: JSON.stringify(fetchOptions.headers),
+              headers: JSON.stringify(fetchOptions.headers || {}),
               timeout_ms: 30000,
             });
       if (torResponse.status_code < 200 || torResponse.status_code >= 300) {
@@ -115,12 +134,15 @@ const fetchResolveWithTor = (
       if (__DEV__) {
         console.log('Tor request passed successfully');
       }
-      try {
-        const data = JSON.parse(torResponse.body);
-        resolve(data);
-      } catch (jsonError) {
-        // Note: response body is text, not JSON - resolve with the text content
-        resolve(torResponse.body);
+      if (torResponse.body == null) {
+        resolve('');
+      } else {
+        try {
+          const data = JSON.parse(torResponse.body);
+          resolve(data);
+        } catch (jsonError) {
+          resolve(torResponse.body);
+        }
       }
     } catch (error) {
       reject(error);
