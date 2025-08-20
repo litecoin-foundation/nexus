@@ -179,11 +179,8 @@ const fetchGranulatedHistoricalRates = async (
 
   try {
     const data = await fetchResolve(url, fetchOptions, useTor);
-    console.log('data');
-    console.log(data);
     return data;
   } catch (error) {
-    console.log('error fetchGranulatedHistoricalRates');
     return {
       latestPrice: [0, 0, 0, 0, 0, 0],
       fifteenMins: [],
