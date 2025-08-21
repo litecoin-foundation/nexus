@@ -94,7 +94,7 @@
     "react-native-zip-archive": "7.0.1",
     "react-redux": "9.2.0",
     "redux-persist": "6.0.0",
-    "sha.js": "2.4.11",
+    "sha.js": "2.4.12",
     "sha256-uint8array": "0.10.7",
     "stream-browserify": "3.0.0",
     "uuid": "11.1.0"
