@@ -411,11 +411,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [enableManualSelection, setEnableManualSelection] = useState(false);
   const {showPopUp} = useContext(PopUpContext);
   const [modalVisible, setModalVisible] = useState(false);
-
   const openManualSelectionModal = () => {
     setModalVisible(true);
   };
-
   const closeManualSelectionModal = () => {
     setModalVisible(false);
   };
