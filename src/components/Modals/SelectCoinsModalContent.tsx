@@ -7,31 +7,27 @@ import React, {
 } from 'react';
 import {View, StyleSheet, Platform} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {FlashList} from '@shopify/flash-list';
 import {walletKitListUnspent} from 'react-native-turbo-lndltc';
 import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
-import {
-  estimateMWEBTransaction,
-  TransactionSpec,
-} from '../../utils/estimateFee';
-import {getAddressInfo} from '../../utils/validate';
 
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableTitle from '../Cells/TableTitle';
 import TableCheckbox from '../Cells/TableCheckbox';
 import BlueButton from '../Buttons/BlueButton';
+import ProgressBar from '../../components/ProgressBar';
 import {useAppSelector} from '../../store/hooks';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
   subunitToSatsSelector,
 } from '../../reducers/settings';
+import {estimateMWEBTransaction} from '../../utils/estimateFee';
+import {buildTransactionSpec} from '../../utils/estimateFeeConstructor';
+import {getAddressInfo} from '../../utils/validate';
 
 import TranslateText from '../../components/TranslateText';
-import ProgressBar from '../../components/ProgressBar';
-
 import {ScreenSizeContext} from '../../context/screenSize';
-import {FlashList} from '@shopify/flash-list';
 
 interface Props {
   close: () => void;
@@ -75,7 +71,7 @@ export default function SelectCoinsModalContent(props: Props) {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const insets = useSafeAreaInsets();
+
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const convertToSubunit = useAppSelector(state =>
@@ -181,240 +177,6 @@ export default function SelectCoinsModalContent(props: Props) {
     return convertToSubunit(selectedBalance);
   }, [selectedBalance, convertToSubunit]);
 
-  // Helper for MWEB target transactions
-  const buildMWEBTarget = (params: {
-    inputs: Array<{type: string}>;
-    mwebInputs: Array<{}>;
-    outputs: Array<{type: string; fundedBy?: string}>;
-    mwebOutputs: Array<{}>;
-    mwebKernels: Array<{
-      hasStealthExcess?: boolean;
-      pegin?: boolean;
-      pegout?: boolean;
-    }>;
-    regularInputAmount: number;
-    mwebInputAmount: number;
-    sendAmount: number;
-    estimatedFee: number;
-    hasChange: boolean;
-    DUST_THRESHOLD: number;
-  }) => {
-    const {
-      inputs,
-      mwebInputs,
-      outputs,
-      mwebOutputs,
-      mwebKernels,
-      regularInputAmount,
-      mwebInputAmount,
-      sendAmount,
-      estimatedFee,
-      hasChange,
-      DUST_THRESHOLD,
-    } = params;
-
-    if (inputs.length > 0) {
-      // L1 → MWEB (peg-in)
-      outputs.push({type: 'witness_mweb_pegin'});
-      mwebOutputs.push({});
-      mwebKernels.push({hasStealthExcess: true, pegin: true});
-
-      if (hasChange) {
-        // Determine change allocation
-        const totalCost = sendAmount + estimatedFee;
-
-        if (regularInputAmount >= totalCost) {
-          // L1 inputs cover everything, L1 change
-          outputs.push({type: 'P2WPKH', fundedBy: 'L1'});
-        } else if (mwebInputs.length > 0) {
-          // Mixed scenario - distribute change
-          const regularRemainder = Math.max(
-            0,
-            regularInputAmount - estimatedFee,
-          );
-          const mwebRemainder = Math.max(0, mwebInputAmount - sendAmount);
-
-          if (regularRemainder > DUST_THRESHOLD) {
-            outputs.push({type: 'P2WPKH', fundedBy: 'L1'});
-          }
-          if (mwebRemainder > DUST_THRESHOLD) {
-            mwebOutputs.push({}); // MWEB change
-          }
-        }
-      }
-    } else {
-      // Pure MWEB → MWEB
-      mwebOutputs.push({}); // Recipient
-      mwebKernels.push({hasStealthExcess: true});
-
-      if (hasChange) {
-        mwebOutputs.push({}); // Change
-      }
-    }
-
-    return {inputs, outputs, mwebInputs, mwebOutputs, mwebKernels};
-  };
-
-  // Helper for regular target transactions
-  const buildRegularTarget = (params: {
-    inputs: Array<{type: string}>;
-    mwebInputs: Array<{}>;
-    outputs: Array<{type: string; fundedBy?: string}>;
-    mwebOutputs: Array<{}>;
-    mwebKernels: Array<{
-      hasStealthExcess?: boolean;
-      pegin?: boolean;
-      pegout?: boolean;
-    }>;
-    regularInputAmount: number;
-    mwebInputAmount: number;
-    sendAmount: number;
-    estimatedFee: number;
-    hasChange: boolean;
-    DUST_THRESHOLD: number;
-  }) => {
-    const {
-      inputs,
-      mwebInputs,
-      outputs,
-      mwebOutputs,
-      mwebKernels,
-      regularInputAmount,
-      mwebInputAmount,
-      sendAmount,
-      estimatedFee,
-      hasChange,
-      DUST_THRESHOLD,
-    } = params;
-
-    if (mwebInputs.length > 0) {
-      // MWEB inputs present
-      if (inputs.length > 0) {
-        // Mixed inputs - determine funding source
-        if (regularInputAmount >= sendAmount + estimatedFee) {
-          // L1 funds target + fee
-          outputs.push({type: 'P2WPKH', fundedBy: 'L1'});
-
-          if (hasChange) {
-            const regularRemainder =
-              regularInputAmount - sendAmount - estimatedFee;
-            if (regularRemainder > DUST_THRESHOLD) {
-              outputs.push({type: 'P2WPKH', fundedBy: 'L1'});
-            }
-            if (mwebInputAmount > DUST_THRESHOLD) {
-              mwebOutputs.push({}); // MWEB change (all MWEB input becomes change)
-            }
-          }
-        } else {
-          // MWEB funds target (peg-out)
-          outputs.push({type: 'P2WPKH', fundedBy: 'MWEB'});
-          mwebKernels.push({pegout: true});
-
-          if (hasChange) {
-            if (regularInputAmount > estimatedFee + DUST_THRESHOLD) {
-              outputs.push({type: 'P2WPKH', fundedBy: 'L1'});
-            }
-            const mwebRemainder = mwebInputAmount - sendAmount;
-            if (mwebRemainder > DUST_THRESHOLD) {
-              mwebOutputs.push({}); // MWEB change
-            }
-          }
-        }
-      } else {
-        // Pure MWEB → regular (peg-out)
-        outputs.push({type: 'P2WPKH', fundedBy: 'MWEB'});
-        mwebKernels.push({pegout: true});
-
-        if (hasChange) {
-          mwebOutputs.push({}); // MWEB change
-        }
-      }
-    } else {
-      // Pure L1 → regular (standard)
-      outputs.push({type: 'P2WPKH', fundedBy: 'L1'});
-
-      if (hasChange) {
-        outputs.push({type: 'P2WPKH', fundedBy: 'L1'});
-      }
-    }
-
-    return {inputs, outputs, mwebInputs, mwebOutputs, mwebKernels};
-  };
-
-  // Refined version of buildTransactionSpec function
-  const buildTransactionSpec = (params: {
-    regularUtxos: any[];
-    mwebUtxos: any[];
-    regularInputAmount: number;
-    mwebInputAmount: number;
-    sendAmount: number;
-    isTargetMWEB: boolean;
-    estimatedFee: number;
-    totalInputAmount: number;
-    DUST_THRESHOLD: number;
-  }) => {
-    const {
-      regularUtxos,
-      mwebUtxos,
-      regularInputAmount,
-      mwebInputAmount,
-      sendAmount,
-      isTargetMWEB,
-      estimatedFee,
-      totalInputAmount,
-      DUST_THRESHOLD,
-    } = params;
-
-    // Basic transaction structure
-    const inputs = regularUtxos.map(() => ({type: 'P2WPKH'}));
-    const mwebInputs = mwebUtxos.map(() => ({}));
-
-    let outputs: Array<{type: string; fundedBy?: string}> = [];
-    let mwebOutputs: Array<{}> = [];
-    let mwebKernels: Array<{
-      hasStealthExcess?: boolean;
-      pegin?: boolean;
-      pegout?: boolean;
-    }> = [];
-
-    // Calculate total cost and change
-    const totalCost = sendAmount + estimatedFee;
-    const totalChange = totalInputAmount - totalCost;
-    const hasChange = totalChange > DUST_THRESHOLD;
-
-    if (isTargetMWEB) {
-      // Sending to MWEB address
-      return buildMWEBTarget({
-        inputs,
-        mwebInputs,
-        outputs,
-        mwebOutputs,
-        mwebKernels,
-        regularInputAmount,
-        mwebInputAmount,
-        sendAmount,
-        estimatedFee,
-        hasChange,
-        DUST_THRESHOLD,
-      });
-    } else {
-      // Sending to regular address
-      return buildRegularTarget({
-        inputs,
-        mwebInputs,
-        outputs,
-        mwebOutputs,
-        mwebKernels,
-        regularInputAmount,
-        mwebInputAmount,
-        sendAmount,
-        estimatedFee,
-        hasChange,
-        DUST_THRESHOLD,
-      });
-    }
-  };
-
   const estimatedFee = useMemo(() => {
     if (selectedUtxos.length === 0) return 0;
 
@@ -435,9 +197,6 @@ export default function SelectCoinsModalContent(props: Props) {
         (sum, utxo) => sum + Number(utxo.amountSat),
         0,
       );
-      if (totalInputAmount < targetAmountInSats) {
-        return 0; // Insufficient funds
-      }
 
       // Categorize inputs
       const regularUtxos = selectedUtxos.filter(utxo => utxo.addressType !== 6);
