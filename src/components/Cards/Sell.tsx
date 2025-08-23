@@ -31,6 +31,7 @@ import {callRates} from '../../reducers/ticker';
 import {estimateFee} from 'react-native-turbo-lndltc';
 
 import TranslateText from '../../components/TranslateText';
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -74,7 +75,13 @@ const Sell: React.FC<Props> = () => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    insets.bottom,
+    OFFSET_HEADER_DIFF,
+  );
 
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
@@ -425,6 +432,7 @@ const Sell: React.FC<Props> = () => {
               onChange(toggleLTC ? '1' : '100', toggleLTC ? 'ltc' : 'fiat')
             }
             active
+            disabled={!amountValid}
             customStyles={styles.presetAmountBtn}
           />
           <WhiteButton
@@ -433,6 +441,7 @@ const Sell: React.FC<Props> = () => {
               onChange(toggleLTC ? '2' : '200', toggleLTC ? 'ltc' : 'fiat')
             }
             active
+            disabled={!amountValid}
             customStyles={styles.presetAmountBtn}
           />
           <WhiteButton
@@ -441,6 +450,7 @@ const Sell: React.FC<Props> = () => {
               onChange(toggleLTC ? '5' : '500', toggleLTC ? 'ltc' : 'fiat')
             }
             active
+            disabled={!amountValid}
             customStyles={styles.presetAmountBtn}
           />
           <WhiteButton
@@ -449,6 +459,7 @@ const Sell: React.FC<Props> = () => {
               onChange(toggleLTC ? '10' : '1000', toggleLTC ? 'ltc' : 'fiat')
             }
             active
+            disabled={!amountValid}
             customStyles={styles.presetAmountBtn}
           />
         </View>
@@ -465,24 +476,21 @@ const Sell: React.FC<Props> = () => {
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-      ]}>
-      {regionValid ? (
-        SellContainer
-      ) : (
-        <TranslateText
-          textKey={errorTextKey}
-          domain="sellTab"
-          textStyle={styles.disabledBuyText}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        />
-      )}
-      <View style={regionValid ? styles.bottom : styles.bottomStandalone}>
-        <View style={styles.buttons}>
-          {/* <View style={styles.btn1}>
+    <View style={styles.container}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+        {regionValid ? (
+          SellContainer
+        ) : (
+          <TranslateText
+            textKey={errorTextKey}
+            domain="sellTab"
+            textStyle={styles.disabledBuyText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+          />
+        )}
+        <View style={styles.bottom}>
+          <View style={styles.buttons}>
+            {/* <View style={styles.btn1}>
             <NewWhiteButton
               textKey="schedule_buy"
               textDomain="buyTab"
@@ -491,87 +499,99 @@ const Sell: React.FC<Props> = () => {
               imageSource={require('../../assets/icons/schedule-icon.png')}
             />
           </View> */}
-          <View style={styles.btn2}>
-            <BlueButton
-              disabled={!(regionValid && amountValid)}
-              textKey="preview_sell"
-              textDomain="sellTab"
-              onPress={() => {
-                if (isMoonpayCustomer) {
-                  navigation.navigate('ConfirmSell', {
-                    prefilledMethod: prefilledMethodRef.current,
-                  });
-                } else if (isOnramperCustomer) {
-                  navigation.navigate('ConfirmSellOnramper', {
-                    prefilledMethod: prefilledMethodRef.current,
-                  });
-                } else {
-                  return;
-                }
-              }}
-            />
+            <View style={styles.btn2}>
+              <BlueButton
+                disabled={!(regionValid && amountValid)}
+                textKey="preview_sell"
+                textDomain="sellTab"
+                onPress={() => {
+                  if (isMoonpayCustomer) {
+                    navigation.navigate('ConfirmSell', {
+                      prefilledMethod: prefilledMethodRef.current,
+                    });
+                  } else if (isOnramperCustomer) {
+                    navigation.navigate('ConfirmSellOnramper', {
+                      prefilledMethod: prefilledMethodRef.current,
+                    });
+                  } else {
+                    return;
+                  }
+                }}
+              />
+            </View>
           </View>
-        </View>
-        {errorTextKey ? (
-          <View
-            style={
-              regionValid ? styles.underButtonNotification : {display: 'none'}
-            }>
-            <TranslateText
-              textKey={errorTextKey}
-              domain={'sellTab'}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.minText}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue=" "
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.minText}
-              numberOfLines={1}
-            />
-            {proceedToGetSellLimits ? null : (
+          {errorTextKey ? (
+            <View
+              style={
+                regionValid ? styles.underButtonNotification : {display: 'none'}
+              }>
               <TranslateText
-                textKey={'min_sale'}
-                domain={'buyTab'}
+                textKey={errorTextKey}
+                domain={'sellTab'}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={styles.minText}
                 numberOfLines={1}
-                interpolationObj={{
-                  currencySymbol,
-                  minAmount: minLTCSellAmount,
-                  maxAmount: maxLTCSellAmount,
-                }}
               />
-            )}
-          </View>
-        ) : proceedToGetSellLimits ? null : (
-          <TranslateText
-            textKey={'min_sale'}
-            domain={'buyTab'}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.minText}
-            numberOfLines={1}
-            interpolationObj={{
-              currencySymbol,
-              minAmount: minLTCSellAmount,
-              maxAmount: maxLTCSellAmount,
-            }}
-          />
-        )}
-      </View>
+              <TranslateText
+                textValue=" "
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.minText}
+                numberOfLines={1}
+              />
+              {proceedToGetSellLimits ? null : (
+                <TranslateText
+                  textKey={'min_sale'}
+                  domain={'buyTab'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.minText}
+                  numberOfLines={1}
+                  interpolationObj={{
+                    currencySymbol,
+                    minAmount: minLTCSellAmount,
+                    maxAmount: maxLTCSellAmount,
+                  }}
+                />
+              )}
+            </View>
+          ) : proceedToGetSellLimits ? null : (
+            <TranslateText
+              textKey={'min_sale'}
+              domain={'buyTab'}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.minText}
+              numberOfLines={1}
+              interpolationObj={{
+                currencySymbol,
+                minAmount: minLTCSellAmount,
+                maxAmount: maxLTCSellAmount,
+              }}
+            />
+          )}
+        </View>
+      </CustomSafeAreaView>
     </View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  bottomInset: number,
+  offsetHeaderDiff: number,
+) =>
   StyleSheet.create({
     container: {
+      // BottomSheet is screenHeight * 0.76
       // DashboardButton is 110
+      // Header margin is 5
       width: screenWidth,
-      height: screenHeight * 0.76 - 110,
+      height: screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
+    },
+    safeArea: {
+      flex: 1,
+      marginBottom: Platform.OS === 'android' ? bottomInset : 0,
     },
     sellContainer: {
       flexBasis: '80%',
@@ -598,7 +618,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     presetButtons: {
       flexDirection: 'row',
       gap: screenWidth * 0.015,
-      marginTop: screenHeight * 0.03,
+      marginTop:
+        Platform.OS === 'android' ? screenHeight * 0.02 : screenHeight * 0.03,
     },
     presetAmountBtn: {
       flex: 1,
@@ -612,19 +633,28 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       shadowOpacity: 0.07,
       shadowRadius: 3,
     },
+    presetAmountBtnInactive: {
+      flex: 1,
+      height: screenHeight * 0.055,
+      borderRadius: screenHeight * 0.015,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
+      opacity: 0.5,
+    },
     numpadContainer: {
       width: screenWidth,
+      marginTop: Platform.OS === 'android' ? 0 : screenHeight * 0.01,
     },
     bottom: {
-      flexBasis: '20%',
+      position: 'absolute',
+      bottom:
+        Platform.OS === 'android' ? screenHeight * 0.01 : screenHeight * 0.02,
       width: '100%',
-      marginVertical: screenHeight * 0.02,
-    },
-    bottomStandalone: {
-      flex: 1,
-      justifyContent: 'flex-end',
-      width: '100%',
-      marginVertical: screenHeight * 0.03,
     },
     buttons: {
       flexDirection: 'row',
