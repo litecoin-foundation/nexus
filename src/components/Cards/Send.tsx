@@ -241,6 +241,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         //   setDescription(decoded.options.message);
         // }
         setAddress(decoded.address);
+        setAddressValid(true);
 
         return;
       }
@@ -249,9 +250,11 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       const valid = validateLtcAddress(data);
 
       if (!valid) {
+        setAddressValid(null);
         throw new Error('Address');
       } else {
         setAddress(data);
+        setAddressValid(true);
         return;
       }
     } catch (error) {
