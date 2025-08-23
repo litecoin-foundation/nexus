@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useRef, useState, useEffect} from 'react';
 import {View, StyleSheet, Image} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -56,6 +56,36 @@ const NewAmountView: React.FC<Props> = props => {
   const fiatAmount = calculateFiatAmount(totalBalance);
 
   const {isInternetReachable} = useAppSelector(state => state.info);
+
+  // 3s timer
+  const [momentTime, setMomentTime] = useState(Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    setTimeout(() => {
+      const currentTimeInSec = Math.floor(Date.now() / 1000);
+      setMomentTime(currentTimeInSec);
+    }, 3000);
+  }, [momentTime]);
+
+  // check peers
+  const peersLength = useAppSelector(state => state.info!.peers.length);
+  const noConnectionWarningTimeoutRef = useRef<number>(
+    Math.floor(Date.now() / 1000),
+  );
+  const [isConnectedToPeers, setIsConnectedToPeers] = useState(true);
+  useEffect(() => {
+    // NOTE: 11sec delay cause peers are polled every 10sec
+    if (
+      noConnectionWarningTimeoutRef.current + 11 <
+      Math.floor(Date.now() / 1000)
+    ) {
+      if (peersLength <= 0) {
+        setIsConnectedToPeers(false);
+      } else {
+        setIsConnectedToPeers(true);
+      }
+    }
+  }, [peersLength, momentTime]);
+
   return (
     <Animated.View
       style={[
@@ -117,7 +147,27 @@ const NewAmountView: React.FC<Props> = props => {
           )}
         </View>
         {isInternetReachable ? (
-          <View style={styles.childrenContainer}>{children}</View>
+          isConnectedToPeers ? (
+            <View style={styles.childrenContainer}>{children}</View>
+          ) : (
+            <Animated.View style={internetOpacityStyle}>
+              <View style={styles.internetContainer}>
+                <View style={styles.internetImageContainer}>
+                  <Image
+                    style={styles.internetImage}
+                    source={require('../assets/images/no-internet-graph.png')}
+                  />
+                </View>
+                <TranslateText
+                  textKey="lnd_no_connection"
+                  domain="main"
+                  textStyle={styles.peersText}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  numberOfLines={3}
+                />
+              </View>
+            </Animated.View>
+          )
         ) : (
           <Animated.View style={internetOpacityStyle}>
             <View style={styles.internetContainer}>
@@ -131,6 +181,8 @@ const NewAmountView: React.FC<Props> = props => {
                 textKey="offline_description"
                 domain="onboarding"
                 textStyle={styles.internetText}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+                numberOfLines={3}
               />
             </View>
           </Animated.View>
@@ -205,6 +257,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     internetImage: {
       justifyContent: 'center',
       alignSelf: 'center',
+    },
+    peersText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '500',
+      color: 'white',
+      fontSize: screenHeight * 0.02,
+      textAlign: 'center',
+      paddingTop: screenHeight * 0.02,
+      paddingHorizontal: screenWidth * 0.1,
     },
   });
 
