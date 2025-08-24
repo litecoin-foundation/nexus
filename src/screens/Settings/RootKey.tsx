@@ -25,7 +25,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import SkeletonLines from '../../components/SkeletonLines';
 import {useAppSelector} from '../../store/hooks';
-import {decodeSeed} from '../../lib/utils/aezeed';
+import {decodeSeed} from '../../utils/aezeed';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';

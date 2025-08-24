@@ -29,7 +29,7 @@ import TableCell from '../Cells/TableCell';
 import BlueButton from '../Buttons/BlueButton';
 import GreenButton from '../Buttons/GreenButton';
 import ChangeAddress from '../ChangeAddress';
-import {formatTxDate} from '../../lib/utils/date';
+import {formatTxDate} from '../../utils/date';
 import {isConvertMetadata, isBuySellMetadata} from '../../utils/txMetadata';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';

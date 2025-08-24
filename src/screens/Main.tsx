@@ -47,8 +47,8 @@ import Convert from '../components/Cards/Convert';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
 import {unsetDeeplink, decodeAppDeeplink} from '../reducers/deeplinks';
-import {sleep} from '../lib/utils/poll';
-import {validate as validateLtcAddress} from '../lib/utils/validate';
+import {sleep} from '../utils/poll';
+import {validate as validateLtcAddress} from '../utils/validate';
 import {showError} from '../reducers/errors';
 
 import {ScreenSizeContext} from '../context/screenSize';
@@ -160,7 +160,7 @@ const Main: React.FC<Props> = props => {
     state => state.info!.isInternetReachable,
   );
 
-  const peersLength = useAppSelector(state => state.info!.peers.length);
+  const peersLength = useAppSelector(state => state.info?.peers?.length || 0);
   const noConnectionWarningShowedRef = useRef<boolean>(false);
   const noConnectionWarningTimeoutRef = useRef<number>(
     Math.floor(Date.now() / 1000),
@@ -297,7 +297,7 @@ const Main: React.FC<Props> = props => {
 
       // validation of destinationAddress
       try {
-        if (addrArray.length !== 3) {
+        if (!addrArray || addrArray.length !== 3) {
           throw new Error('unknown address length');
         }
         if (addrArray[1] !== '12a765e31ffd4059bada1e25190f6e98') {
@@ -391,8 +391,8 @@ const Main: React.FC<Props> = props => {
         const decodedDeeplink = decodeAppDeeplink(uri);
         if (
           decodedDeeplink &&
-          decodedDeeplink.stack.length > 0 &&
-          decodedDeeplink.screen.length > 0
+          decodedDeeplink.stack?.length > 0 &&
+          decodedDeeplink.screen?.length > 0
         ) {
           navigation.navigate(decodedDeeplink.stack, {
             screen: decodedDeeplink.screen,

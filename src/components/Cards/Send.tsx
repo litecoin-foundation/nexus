@@ -11,6 +11,7 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
+import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import PlasmaModal from '../Modals/PlasmaModal';
 import SelectCoinsModalContent from '../Modals/SelectCoinsModalContent';
@@ -20,10 +21,10 @@ import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
-import {decodeBIP21} from '../../lib/utils/bip21';
-import {validate as validateLtcAddress} from '../../lib/utils/validate';
+import {decodeBIP21} from '../../utils/bip21';
+import {validate as validateLtcAddress} from '../../utils/validate';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sleep} from '../../lib/utils/poll';
+import {sleep} from '../../utils/poll';
 import {showError} from '../../reducers/errors';
 import {resetInputs} from '../../reducers/input';
 import {
@@ -51,6 +52,7 @@ type RootStackParamList = {
   Scan: {returnRoute: string};
   ConfirmSend: {
     sendAll: boolean;
+    selectedUtxos?: Utxo[];
   };
 };
 
@@ -99,6 +101,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
   const [noteKey, setNoteKey] = useState<string>('');
   const [sendAll, setSendAll] = useState(false);
+  const [enableManualSelection, setEnableManualSelection] = useState(false);
+  const [selectedUtxosArray, setSelectedUtxosArray] = useState<Utxo[]>([]);
 
   // check if ready to send
   useEffect(() => {
@@ -159,6 +163,17 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         setSendAll(true);
       }
 
+      // validate manual coin selection
+      if (
+        enableManualSelection &&
+        selectedUtxosArray.length === 0 &&
+        !sendAll
+      ) {
+        setSendDisabled(true);
+        setNoteKey('manual_selection_required');
+        return;
+      }
+
       // otherwise enable send
       setSendDisabled(false);
       setNoteKey('');
@@ -173,6 +188,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     confirmedBalance,
     syncedToChain,
     sendAll,
+    enableManualSelection,
+    selectedUtxosArray,
   ]);
 
   // qr code scanner result handler
@@ -234,6 +251,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         //   setDescription(decoded.options.message);
         // }
         setAddress(decoded.address);
+        setAddressValid(true);
 
         return;
       }
@@ -242,9 +260,11 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       const valid = validateLtcAddress(data);
 
       if (!valid) {
+        setAddressValid(null);
         throw new Error('Address');
       } else {
         setAddress(data);
+        setAddressValid(true);
         return;
       }
     } catch (error) {
@@ -275,6 +295,12 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       });
     }
   }, [amountPickerActive, detailsOpacity, padOpacity]);
+
+  const handleCoinSelectionUtxos = (selectedUtxos: Utxo[]) => {
+    console.log('Selected UTXOs:', selectedUtxos);
+    setSelectedUtxosArray(selectedUtxos);
+    setModalVisible(false);
+  };
 
   const validateAddress = async (endAddress: string) => {
     if (endAddress === '') {
@@ -380,11 +406,22 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
 
-    navigation.navigate('ConfirmSend', {sendAll});
+    navigation.navigate('ConfirmSend', {
+      sendAll,
+      selectedUtxos: selectedUtxosArray,
+    });
   };
+
+  // Reset selected UTXOs when sendAll is enabled
+  useEffect(() => {
+    if (sendAll) {
+      setSelectedUtxosArray([]);
+    }
+  }, [sendAll]);
 
   useEffect(() => {
     return function cleanup() {
+      setSelectedUtxosArray([]);
       dispatch(resetInputs());
     };
   }, [dispatch]);
@@ -395,13 +432,16 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     }
   };
 
-  const [enableManualSelection, setEnableManualSelection] = useState(false);
   const {showPopUp} = useContext(PopUpContext);
   const [modalVisible, setModalVisible] = useState(false);
   const openManualSelectionModal = () => {
     setModalVisible(true);
   };
   const closeManualSelectionModal = () => {
+    // reset any existing selected utxos
+    // when utxos are selected correctly, we directly change
+    // the modalVisible state
+    setSelectedUtxosArray([]);
     setModalVisible(false);
   };
   const manualSelectionModal = (
@@ -418,6 +458,11 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         <SelectCoinsModalContent
           close={closeManualSelectionModal}
           cardTranslateAnim={cardTranslateAnim}
+          targetAmount={Number(amount)}
+          targetAddress={address}
+          onConfirmSelection={selectedUtxos =>
+            handleCoinSelectionUtxos(selectedUtxos)
+          }
         />
       )}
     />
@@ -506,7 +551,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               </View>
             </View>
 
-            {manualCoinSelectionEnabled ? (
+            {/* Manual Coin Selection is only visible when enabled in Settings
+              & user is not sending all*/}
+            {manualCoinSelectionEnabled && !sendAll ? (
               <View style={styles.cellContainer}>
                 <View style={styles.manualSelectionTop}>
                   <TranslateText
@@ -517,57 +564,72 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                     numberOfLines={1}
                   />
                   <Switch
-                    initialValue={false}
-                    onPress={() =>
-                      setEnableManualSelection(!enableManualSelection)
-                    }
+                    initialValue={enableManualSelection}
+                    onPress={() => {
+                      setEnableManualSelection(!enableManualSelection);
+                      // reset selected utxos
+                      setSelectedUtxosArray([]);
+                    }}
                   />
                 </View>
+
                 {enableManualSelection ? (
-                  <Pressable
-                    style={styles.manualSelectionBottom}
-                    onPress={openManualSelectionModal}>
-                    <View style={styles.manualSelectionBottomTitleContainer}>
+                  !amount || Number(amount) <= 0 || !addressValid ? (
+                    <View style={styles.coinSelectionDisabledContainer}>
                       <TranslateText
-                        textKey="amount_selected"
+                        textKey="enter_address_amount_before_coinselection"
                         domain="sendTab"
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-                        textStyle={styles.manualSelectionBottomTitle}
-                        numberOfLines={1}
-                      />
-                      <TranslateText
-                        textKey="amount_selected_number"
-                        domain="sendTab"
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-                        textStyle={styles.manualSelectionBottomTitle}
-                        numberOfLines={1}
-                        interpolationObj={{amount}}
-                      />
-                    </View>
-                    <View style={styles.manualSelectionBottomNoteContainer}>
-                      <Image
-                        style={styles.manualSelectionBottomNoteIcon}
-                        source={require('../../assets/icons/info-icon.png')}
-                      />
-                      <TranslateText
-                        textKey="manual_selection_note"
-                        domain="sendTab"
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                        textStyle={styles.manualSelectionBottomNote}
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                        textStyle={styles.coinSelectionDisabledText}
                         numberOfLines={2}
-                        interpolationObj={{amount}}
                       />
                     </View>
-                    <View style={styles.manualSelectionBottomArrowContainer}>
-                      <Image
-                        style={styles.manualSelectionBottomArrowIcon}
-                        source={require('../../assets/images/back-icon.png')}
-                      />
-                    </View>
-                  </Pressable>
-                ) : (
-                  <></>
-                )}
+                  ) : (
+                    <Pressable
+                      style={styles.manualSelectionBottom}
+                      onPress={openManualSelectionModal}>
+                      <View style={styles.manualSelectionBottomTitleContainer}>
+                        <TranslateText
+                          textKey="amount_selected"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                          textStyle={styles.manualSelectionBottomTitle}
+                          numberOfLines={1}
+                        />
+                        <TranslateText
+                          textKey="amount_selected_number"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                          textStyle={styles.manualSelectionBottomTitle}
+                          numberOfLines={1}
+                          interpolationObj={{
+                            amount: amount !== '' ? amount : '0',
+                          }}
+                        />
+                      </View>
+                      <View style={styles.manualSelectionBottomNoteContainer}>
+                        <Image
+                          style={styles.manualSelectionBottomNoteIcon}
+                          source={require('../../assets/icons/info-icon.png')}
+                        />
+                        <TranslateText
+                          textKey="manual_selection_note"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                          textStyle={styles.manualSelectionBottomNote}
+                          numberOfLines={2}
+                          interpolationObj={{amount}}
+                        />
+                      </View>
+                      <View style={styles.manualSelectionBottomArrowContainer}>
+                        <Image
+                          style={styles.manualSelectionBottomArrowIcon}
+                          source={require('../../assets/images/back-icon.png')}
+                        />
+                      </View>
+                    </Pressable>
+                  )
+                ) : null}
               </View>
             ) : (
               <></>
@@ -849,6 +911,20 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.016,
       objectFit: 'contain',
       transform: 'rotate(180deg)',
+    },
+    coinSelectionDisabledContainer: {
+      backgroundColor: '#f0f0f0',
+      height: 30,
+      borderRadius: 8,
+      justifyContent: 'center',
+    },
+    coinSelectionDisabledText: {
+      paddingLeft: 6,
+      color: '#747e87',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.012,
+      fontWeight: '500',
+      fontStyle: 'normal',
     },
   });
 

@@ -8,7 +8,7 @@ import {
 } from 'react-native-turbo-lndltc';
 
 import {AppThunk} from './types';
-import {poll} from '../lib/utils/poll';
+import {poll} from '../utils/poll';
 import {RootState} from '../store';
 
 // types

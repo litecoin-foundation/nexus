@@ -2,7 +2,7 @@ import {createAction, createSlice, createSelector} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import memoize from 'lodash.memoize';
 
-import {poll} from '../lib/utils/poll';
+import {poll} from '../utils/poll';
 import {AppThunk} from './types';
 import {setBuyQuote, setSellQuote, setLimits} from './buy';
 import {IBuyQuote, ISellQuote} from '../utils/tradeQuotes';

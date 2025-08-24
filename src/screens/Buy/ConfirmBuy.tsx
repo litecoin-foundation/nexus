@@ -18,7 +18,7 @@ import {getSignedUrl, getBuyTransactionHistory} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {showError} from '../../reducers/errors';
-import {parseQueryString} from '../../lib/utils/querystring';
+import {parseQueryString} from '../../utils/querystring';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';

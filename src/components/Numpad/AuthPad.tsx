@@ -12,7 +12,7 @@ import {useTranslation} from 'react-i18next';
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
-import {authenticate} from '../../lib/utils/biometric';
+import {authenticate} from '../../utils/biometric';
 import PasscodeInput from '../PasscodeInput';
 import PadGrid from './PadGrid';
 import BuyButton from './BuyButton';

@@ -4,7 +4,7 @@ import LitecoinIcon from '../LitecoinIcon';
 import Switch from '../Buttons/Switch';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setAlertAvailability, updateLastTimePrice} from '../../reducers/alerts';
-import {formatTxDate} from '../../lib/utils/date';
+import {formatTxDate} from '../../utils/date';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';

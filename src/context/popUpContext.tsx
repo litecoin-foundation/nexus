@@ -1,40 +1,56 @@
-import React, {createContext, useState} from 'react';
+import React, {createContext, useState, useCallback} from 'react';
 
 interface Props {
   children: React.ReactElement;
 }
 
 interface PopUpContextType {
-  showPopUp: (Component: any) => void;
-  hidePopUp: () => void;
-  PopUp: any;
+  showPopUp: (Component: any, id?: string) => void;
+  PopUps: {component: React.JSX.Element; id: string}[];
 }
 
 const PopUpContext = createContext<PopUpContextType>({
   showPopUp: () => {},
-  hidePopUp: () => {},
-  PopUp: <React.Fragment />,
+  PopUps: [
+    {
+      component: <React.Fragment />,
+      id: 'shared-context',
+    },
+  ],
 });
 
 const PopUpProvider: React.FC<Props> = props => {
-  const [popUpComponentState, setPopUpComponentState] = useState(
-    <React.Fragment />,
+  const [popUps, setPopUps] = useState([
+    {
+      component: <React.Fragment />,
+      id: 'shared-context',
+    },
+  ]);
+
+  const showPopUp = useCallback(
+    (Component: any, id: string = 'shared-context') => {
+      setPopUps(prevPopUps => {
+        const existingIndex = prevPopUps.findIndex(popup => popup.id === id);
+
+        if (existingIndex !== -1) {
+          // Update existing popUp
+          const updatedPopUps = [...prevPopUps];
+          updatedPopUps[existingIndex] = {component: Component, id};
+          return updatedPopUps;
+        } else {
+          // Add new popUp
+          return [...prevPopUps, {component: Component, id}];
+        }
+      });
+    },
+    [],
   );
-
-  function showPopUp(Component: any) {
-    setPopUpComponentState(Component);
-  }
-
-  function hidePopUp() {
-    setPopUpComponentState(<React.Fragment />);
-  }
 
   return (
     <PopUpContext.Provider
       value={{
-        showPopUp: (Component: any) => showPopUp(Component),
-        hidePopUp: hidePopUp,
-        PopUp: popUpComponentState,
+        showPopUp,
+        PopUps: popUps,
       }}
       {...props}
     />

@@ -4,14 +4,14 @@ import type {StackNavigationProp} from '@react-navigation/stack';
 
 import {startOnboarding} from '../reducers/onboarding';
 import {resetLndState, startLnd} from '../reducers/lightning';
-import {checkBiometricSupport} from '../lib/utils/biometric';
+import {checkBiometricSupport} from '../utils/biometric';
 import {checkInternetReachable} from '../reducers/info';
 import {subscribeAppState} from '../reducers/authentication';
 import {setDeeplink} from '../reducers/deeplinks';
 import {updateFiredAlertsFromApiServer} from '../reducers/alerts';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {checkBuySellProviderCountry} from '../reducers/buy';
-import {getItem, resetItem} from '../lib/utils/keychain';
+import {getItem} from '../utils/keychain';
 
 type RootStackParamList = {
   Loading: undefined;
