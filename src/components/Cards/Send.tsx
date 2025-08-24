@@ -572,55 +572,64 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                     }}
                   />
                 </View>
-                {enableManualSelection &&
-                !(!amount || Number(amount) <= 0) &&
-                addressValid ? (
-                  <Pressable
-                    style={styles.manualSelectionBottom}
-                    onPress={openManualSelectionModal}>
-                    <View style={styles.manualSelectionBottomTitleContainer}>
+
+                {enableManualSelection ? (
+                  !amount || Number(amount) <= 0 || !addressValid ? (
+                    <View style={styles.coinSelectionDisabledContainer}>
                       <TranslateText
-                        textKey="amount_selected"
+                        textKey="enter_address_amount_before_coinselection"
                         domain="sendTab"
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-                        textStyle={styles.manualSelectionBottomTitle}
-                        numberOfLines={1}
-                      />
-                      <TranslateText
-                        textKey="amount_selected_number"
-                        domain="sendTab"
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-                        textStyle={styles.manualSelectionBottomTitle}
-                        numberOfLines={1}
-                        interpolationObj={{
-                          amount: amount !== '' ? amount : '0',
-                        }}
-                      />
-                    </View>
-                    <View style={styles.manualSelectionBottomNoteContainer}>
-                      <Image
-                        style={styles.manualSelectionBottomNoteIcon}
-                        source={require('../../assets/icons/info-icon.png')}
-                      />
-                      <TranslateText
-                        textKey="manual_selection_note"
-                        domain="sendTab"
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                        textStyle={styles.manualSelectionBottomNote}
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                        textStyle={styles.coinSelectionDisabledText}
                         numberOfLines={2}
-                        interpolationObj={{amount}}
                       />
                     </View>
-                    <View style={styles.manualSelectionBottomArrowContainer}>
-                      <Image
-                        style={styles.manualSelectionBottomArrowIcon}
-                        source={require('../../assets/images/back-icon.png')}
-                      />
-                    </View>
-                  </Pressable>
-                ) : (
-                  <></>
-                )}
+                  ) : (
+                    <Pressable
+                      style={styles.manualSelectionBottom}
+                      onPress={openManualSelectionModal}>
+                      <View style={styles.manualSelectionBottomTitleContainer}>
+                        <TranslateText
+                          textKey="amount_selected"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                          textStyle={styles.manualSelectionBottomTitle}
+                          numberOfLines={1}
+                        />
+                        <TranslateText
+                          textKey="amount_selected_number"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                          textStyle={styles.manualSelectionBottomTitle}
+                          numberOfLines={1}
+                          interpolationObj={{
+                            amount: amount !== '' ? amount : '0',
+                          }}
+                        />
+                      </View>
+                      <View style={styles.manualSelectionBottomNoteContainer}>
+                        <Image
+                          style={styles.manualSelectionBottomNoteIcon}
+                          source={require('../../assets/icons/info-icon.png')}
+                        />
+                        <TranslateText
+                          textKey="manual_selection_note"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                          textStyle={styles.manualSelectionBottomNote}
+                          numberOfLines={2}
+                          interpolationObj={{amount}}
+                        />
+                      </View>
+                      <View style={styles.manualSelectionBottomArrowContainer}>
+                        <Image
+                          style={styles.manualSelectionBottomArrowIcon}
+                          source={require('../../assets/images/back-icon.png')}
+                        />
+                      </View>
+                    </Pressable>
+                  )
+                ) : null}
               </View>
             ) : (
               <></>
@@ -902,6 +911,20 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.016,
       objectFit: 'contain',
       transform: 'rotate(180deg)',
+    },
+    coinSelectionDisabledContainer: {
+      backgroundColor: '#f0f0f0',
+      height: 30,
+      borderRadius: 8,
+      justifyContent: 'center',
+    },
+    coinSelectionDisabledText: {
+      paddingLeft: 6,
+      color: '#747e87',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.012,
+      fontWeight: '500',
+      fontStyle: 'normal',
     },
   });
 
