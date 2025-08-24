@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {View, StyleSheet, DeviceEventEmitter, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import PlasmaModal from './Modals/PlasmaModal';
 import PinModalContent from './Modals/PinModalContent';
@@ -11,6 +12,7 @@ import {showError} from '../reducers/errors';
 import {
   sendOnchainPayment,
   sendAllOnchainPayment,
+  sendOnchainWithCoinSelectionPayment,
 } from '../reducers/transaction';
 import {estimateFee} from 'react-native-turbo-lndltc';
 import {
@@ -32,6 +34,7 @@ interface Props {
   sendSuccessHandler: (txid: string) => void;
   toDomain?: string;
   sendAll?: boolean;
+  coinSelectionUtxos: Utxo[] | null;
 }
 
 const SendConfirmation: React.FC<Props> = props => {
@@ -43,6 +46,7 @@ const SendConfirmation: React.FC<Props> = props => {
     sendSuccessHandler,
     toDomain,
     sendAll,
+    coinSelectionUtxos,
   } = props;
   const dispatch = useAppDispatch();
 
@@ -94,15 +98,30 @@ const SendConfirmation: React.FC<Props> = props => {
   const handleSend = async () => {
     setIsPinModalOpened(false);
     setLoading(true);
+
+    let txid: string;
     try {
-      // await is required!
-      const txid = sendAll
-        ? await dispatch(sendAllOnchainPayment(toAddress, label))
-        : await dispatch(
+      if (coinSelectionUtxos) {
+        if (coinSelectionUtxos.length > 0) {
+          txid = await sendOnchainWithCoinSelectionPayment(
+            toAddress,
+            Math.trunc(amount),
+            // Set ghost label if it's undefined in order to prevent default labeling
+            label || ' ',
+            undefined,
+            coinSelectionUtxos,
+          );
+        } else if (sendAll) {
+          txid = await dispatch(sendAllOnchainPayment(toAddress, label));
+        } else {
+          txid = await dispatch(
             sendOnchainPayment(toAddress, Math.trunc(amount), label),
           );
+        }
+        sendSuccessHandler(txid);
+      }
+
       setLoading(false);
-      sendSuccessHandler(txid);
     } catch (error) {
       setLoading(false);
       dispatch(showError(String(error)));

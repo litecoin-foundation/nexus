@@ -6,18 +6,12 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-  Image,
-  Modal,
-} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View, Image} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
+import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import PlasmaModal from '../Modals/PlasmaModal';
 import SelectCoinsModalContent from '../Modals/SelectCoinsModalContent';
@@ -58,6 +52,7 @@ type RootStackParamList = {
   Scan: {returnRoute: string};
   ConfirmSend: {
     sendAll: boolean;
+    selectedUtxos?: Utxo[];
   };
 };
 
@@ -106,6 +101,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
   const [noteKey, setNoteKey] = useState<string>('');
   const [sendAll, setSendAll] = useState(false);
+  const [selectedUtxosArray, setSelectedUtxosArray] = useState<Utxo[]>([]);
 
   // check if ready to send
   useEffect(() => {
@@ -286,10 +282,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     }
   }, [amountPickerActive, detailsOpacity, padOpacity]);
 
-  const handleCoinSelectionUtxos = selectedUtxos => {
-    // TODO: Handle the selected UTXOs for manual coin selection
+  const handleCoinSelectionUtxos = (selectedUtxos: Utxo[]) => {
     console.log('Selected UTXOs:', selectedUtxos);
-    closeManualSelectionModal();
+    setSelectedUtxosArray(selectedUtxos);
+    setModalVisible(false);
   };
 
   const validateAddress = async (endAddress: string) => {
@@ -396,11 +392,15 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
 
-    navigation.navigate('ConfirmSend', {sendAll});
+    navigation.navigate('ConfirmSend', {
+      sendAll,
+      selectedUtxos: selectedUtxosArray,
+    });
   };
 
   useEffect(() => {
     return function cleanup() {
+      setSelectedUtxosArray([]);
       dispatch(resetInputs());
     };
   }, [dispatch]);
@@ -418,6 +418,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     setModalVisible(true);
   };
   const closeManualSelectionModal = () => {
+    // reset any existing selected utxos
+    // when utxos are selected correctly, we directly change
+    // the modalVisible state
+    setSelectedUtxosArray([]);
     setModalVisible(false);
   };
   const manualSelectionModal = (
@@ -527,7 +531,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               </View>
             </View>
 
-            {manualCoinSelectionEnabled ? (
+            {/* Manual Coin Selection is only visible when enabled in Settings
+              & user is not sending all*/}
+            {manualCoinSelectionEnabled && !sendAll ? (
               <View style={styles.cellContainer}>
                 <View style={styles.manualSelectionTop}>
                   <TranslateText
@@ -539,13 +545,15 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                   />
                   <Switch
                     initialValue={enableManualSelection}
-                    onPress={() =>
-                      setEnableManualSelection(!enableManualSelection)
-                    }
+                    onPress={() => {
+                      setEnableManualSelection(!enableManualSelection);
+                      // reset selected utxos
+                      setSelectedUtxosArray([]);
+                    }}
                   />
                 </View>
                 {enableManualSelection &&
-                !((!amount || Number(amount) <= 0) && sendAll !== true) &&
+                !(!amount || Number(amount) <= 0) &&
                 addressValid ? (
                   <Pressable
                     style={styles.manualSelectionBottom}
@@ -684,22 +692,6 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
           </CustomSafeAreaView>
         </Animated.View>
       ) : null}
-
-      {/*<Modal
-        visible={modalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={closeManualSelectionModal}>
-        <SelectCoinsModalContent
-          close={closeManualSelectionModal}
-          cardTranslateAnim={{}}
-          targetAmount={Number(amount)}
-          targetAddress={address}
-          onConfirmSelection={selectedUtxos =>
-            handleCoinSelectionUtxos(selectedUtxos)
-          }
-        />
-      </Modal>*/}
     </View>
   );
 });
