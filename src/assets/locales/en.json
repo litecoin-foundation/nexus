@@ -174,7 +174,8 @@
     "manual_coin_selection": "Manual Coin Selection",
     "amount_selected": "AMOUNT SELECTED",
     "amount_selected_number": "{{amount}} LTC",
-    "manual_selection_note": "Please select coins to match the requested {{amount}} LTC"
+    "manual_selection_note": "Please select coins to match the requested {{amount}} LTC",
+    "manual_selection_required": "Coin Selection enabled, but no Inputs have been selected"
   },
   "receiveTab": {
     "receive_ltc": "Receive Litecoin",
