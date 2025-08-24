@@ -44,7 +44,7 @@ export interface RegularOutput {
    * Used to infer peg-out counts when present.
    * If funded by MWEB, then this regular output corresponds to a peg-out.
    */
-  fundedBy?: 'MWEB' | 'L1';
+  fundedBy?: 'MWEB' | 'L1' | (string & {});
 }
 
 export interface TransactionSpec {
