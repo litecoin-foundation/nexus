@@ -101,6 +101,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
   const [noteKey, setNoteKey] = useState<string>('');
   const [sendAll, setSendAll] = useState(false);
+  const [enableManualSelection, setEnableManualSelection] = useState(false);
   const [selectedUtxosArray, setSelectedUtxosArray] = useState<Utxo[]>([]);
 
   // check if ready to send
@@ -162,6 +163,17 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         setSendAll(true);
       }
 
+      // validate manual coin selection
+      if (
+        enableManualSelection &&
+        selectedUtxosArray.length === 0 &&
+        !sendAll
+      ) {
+        setSendDisabled(true);
+        setNoteKey('manual_selection_required');
+        return;
+      }
+
       // otherwise enable send
       setSendDisabled(false);
       setNoteKey('');
@@ -176,6 +188,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     confirmedBalance,
     syncedToChain,
     sendAll,
+    enableManualSelection,
+    selectedUtxosArray,
   ]);
 
   // qr code scanner result handler
@@ -418,7 +432,6 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     }
   };
 
-  const [enableManualSelection, setEnableManualSelection] = useState(false);
   const {showPopUp} = useContext(PopUpContext);
   const [modalVisible, setModalVisible] = useState(false);
   const openManualSelectionModal = () => {
