@@ -398,6 +398,13 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     });
   };
 
+  // Reset selected UTXOs when sendAll is enabled
+  useEffect(() => {
+    if (sendAll) {
+      setSelectedUtxosArray([]);
+    }
+  }, [sendAll]);
+
   useEffect(() => {
     return function cleanup() {
       setSelectedUtxosArray([]);
