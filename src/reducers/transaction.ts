@@ -16,6 +16,7 @@ import {
   PreviousOutPoint,
   OutPoint,
   AddressType,
+  Utxo,
 } from 'react-native-turbo-lndltc/protos/lightning_pb';
 import {ChangeAddressType} from 'react-native-turbo-lndltc/protos/walletrpc/walletkit_pb';
 import {create} from '@bufbuild/protobuf';
@@ -177,6 +178,7 @@ export const sendConvertWithPsbt =
       let totalSelected = BigInt(-2000);
       const targetAmount = BigInt(Math.floor(amount));
 
+      // Utxo[] -> OutPoint[]
       for (const utxo of outpoints) {
         if (utxo.outpoint === undefined) {
           continue;
@@ -668,6 +670,81 @@ export const sendAllOnchainPayment =
       }
     });
   };
+
+export const sendOnchainWithCoinSelectionPayment = (
+  address: string,
+  amount: number,
+  label: string | undefined = undefined,
+  fee: number | undefined = undefined,
+  coinSelectionUtxos: Utxo[],
+): Promise<string> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (coinSelectionUtxos.length < 1) {
+        throw new Error('No valid inputs found!');
+      }
+
+      if (!address || address === undefined) {
+        throw new Error('No destination address!');
+      }
+
+      // Utxo[] -> OutPoint[]
+      const selectedUtxos = [];
+      for (const utxo of coinSelectionUtxos) {
+        if (utxo.outpoint === undefined) {
+          continue;
+        }
+
+        if (utxo.outpoint) {
+          selectedUtxos.push(utxo.outpoint);
+        }
+      }
+
+      // construct transaction as psbt
+      const psbt = await walletKitFundPsbt({
+        template: {
+          case: 'raw',
+          value: {
+            inputs: selectedUtxos,
+            outputs: {
+              [address]: BigInt(amount),
+            },
+          },
+        },
+        fees: {
+          case: 'targetConf',
+          value: 3,
+        },
+      });
+
+      const signedPsbt = await walletKitFinalizePsbt({
+        fundedPsbt: psbt.fundedPsbt,
+      });
+
+      if (!signedPsbt || !signedPsbt.rawFinalTx) {
+        throw new Error('Failed to finalize PSBT: rawFinalTx is undefined');
+      }
+
+      const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
+
+      console.log(txHex);
+      console.log(Buffer.from(signedPsbt.signedPsbt).toString('hex'));
+
+      try {
+        const txid = await publishTransaction(txHex);
+        resolve(txid);
+      } catch (error) {
+        throw new Error(error ? String(error) : 'Unknown error occurred');
+      }
+    } catch (error) {
+      console.error(
+        'Error in sendOnchainWithCoinSelectionPayment:',
+        error || 'Unknown error',
+      );
+      reject(String(error));
+    }
+  });
+};
 
 export const publishTransaction = (txHex: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
