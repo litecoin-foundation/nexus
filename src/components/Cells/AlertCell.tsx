@@ -1,10 +1,11 @@
 import React, {useState, useContext, useLayoutEffect, useCallback} from 'react';
 import {View, TouchableOpacity, StyleSheet} from 'react-native';
+
 import LitecoinIcon from '../LitecoinIcon';
 import Switch from '../Buttons/Switch';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setAlertAvailability, updateLastTimePrice} from '../../reducers/alerts';
-import {formatTxDate} from '../../lib/utils/date';
+import {formatTxDate} from '../../utils/date';
 import {fetchResolve} from '../../utils/tor';
 
 import TranslateText from '../../components/TranslateText';
@@ -36,8 +37,10 @@ const AlertCell: React.FC<Props> = props => {
   const styles = getStyles(width, height);
 
   const dispatch = useAppDispatch();
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
-  const torEnabled = useAppSelector(state => state.settings.torEnabled);
+  const currencySymbol = useAppSelector(
+    state => state.settings!.currencySymbol,
+  );
+  const torEnabled = useAppSelector(state => state.settings!.torEnabled);
 
   const handleSwitch = useCallback(
     (value: boolean) => {

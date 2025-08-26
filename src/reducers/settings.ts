@@ -11,7 +11,7 @@ import {
   litecoinToSubunit,
   satsToSubunit,
   subunitToSats,
-} from '../lib/utils/satoshis';
+} from '../utils/satoshis';
 import {checkFlexaCustomer, checkBuySellProviderCountry} from '../reducers/buy';
 
 // types

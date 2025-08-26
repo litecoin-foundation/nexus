@@ -12,7 +12,7 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import {unsetDeeplink} from '../../reducers/deeplinks';
 import {publishTransaction} from '../../reducers/transaction';
 import {getAddress} from '../../reducers/address';
-import {sweepQrKey} from '../../lib/utils/sweep';
+import {sweepQrKey} from '../../utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';

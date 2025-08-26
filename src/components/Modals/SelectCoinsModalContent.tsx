@@ -6,8 +6,8 @@ import React, {
   useCallback,
 } from 'react';
 import {View, StyleSheet, Platform} from 'react-native';
-import {FlashList} from '@shopify/flash-list';
 import Animated from 'react-native-reanimated';
+import {FlashList} from '@shopify/flash-list';
 import {walletKitListUnspent} from 'react-native-turbo-lndltc';
 import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
@@ -15,21 +15,26 @@ import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableTitle from '../Cells/TableTitle';
 import TableCheckbox from '../Cells/TableCheckbox';
 import BlueButton from '../Buttons/BlueButton';
+import ProgressBar from '../../components/ProgressBar';
 import {useAppSelector} from '../../store/hooks';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
+  subunitToSatsSelector,
 } from '../../reducers/settings';
+import {estimateMWEBTransaction} from '../../utils/estimateFee';
+import {buildTransactionSpec} from '../../utils/estimateFeeConstructor';
+import {getAddressInfo} from '../../utils/validate';
 
 import TranslateText from '../../components/TranslateText';
-import ProgressBar from '../../components/ProgressBar';
-
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   close: () => void;
   cardTranslateAnim: any;
-  onConfirmSelection?: (selectedUtxos: Utxo[]) => void;
+  onConfirmSelection: (selectedUtxos: Utxo[]) => void;
+  targetAmount: number;
+  targetAddress: string;
 }
 
 type CoinData = {
@@ -50,18 +55,29 @@ interface SelectCoinsLayoutProps {
   selectedBalance: number;
   selectedUtxos: Utxo[];
   onConfirmSelection?: (selectedUtxos: Utxo[]) => void;
+  targetAmount: number;
+  realTargetAmount: number;
+  estimatedFee: number;
 }
 
 export default function SelectCoinsModalContent(props: Props) {
-  const {close, cardTranslateAnim, onConfirmSelection} = props;
+  const {
+    close,
+    cardTranslateAnim,
+    onConfirmSelection,
+    targetAmount,
+    targetAddress,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
+  const convertToSats = useAppSelector(state => subunitToSatsSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
 
   const [utxos, setUtxos] = useState<Utxo[]>([]);
@@ -161,6 +177,95 @@ export default function SelectCoinsModalContent(props: Props) {
     return convertToSubunit(selectedBalance);
   }, [selectedBalance, convertToSubunit]);
 
+  const estimatedFee = useMemo(() => {
+    if (selectedUtxos.length === 0) return 0;
+
+    try {
+      // Validate required inputs
+      if (
+        !targetAddress ||
+        typeof targetAddress !== 'string' ||
+        targetAddress.trim() === ''
+      ) {
+        return 0; // No valid target address
+      }
+
+      // Convert targetAmount from subunit to sats for calculations
+      const targetAmountInSats = convertToSats(targetAmount);
+
+      const totalInputAmount = selectedUtxos.reduce(
+        (sum, utxo) => sum + Number(utxo.amountSat),
+        0,
+      );
+
+      // Categorize inputs
+      const regularUtxos = selectedUtxos.filter(utxo => utxo.addressType !== 6);
+      const mwebUtxos = selectedUtxos.filter(utxo => utxo.addressType === 6);
+
+      const regularInputAmount = regularUtxos.reduce(
+        (sum, utxo) => sum + Number(utxo.amountSat),
+        0,
+      );
+      const mwebInputAmount = mwebUtxos.reduce(
+        (sum, utxo) => sum + Number(utxo.amountSat),
+        0,
+      );
+
+      // Determine target type
+      let targetAddressInfo;
+      try {
+        targetAddressInfo = getAddressInfo(targetAddress.trim());
+      } catch (addressError) {
+        console.error(
+          'Invalid target address format:',
+          targetAddress,
+          addressError,
+        );
+        return 0; // Invalid address format
+      }
+
+      const isTargetMWEB = targetAddressInfo.type === 'mweb';
+
+      // Use iterative approach to handle change calculation
+      let feeEstimate = 0;
+      let previousFee = 0;
+      let iterations = 0;
+      const maxIterations = 5;
+      const DUST_THRESHOLD = 546;
+
+      // Iteratively refine fee estimate until it stabilizes
+      do {
+        previousFee = feeEstimate;
+
+        const spec = buildTransactionSpec({
+          regularUtxos,
+          mwebUtxos,
+          regularInputAmount,
+          mwebInputAmount,
+          sendAmount: targetAmountInSats,
+          isTargetMWEB,
+          estimatedFee: feeEstimate,
+          totalInputAmount,
+          DUST_THRESHOLD,
+        });
+
+        const estimate = estimateMWEBTransaction(spec, 10, 100);
+        feeEstimate = estimate.fees.total;
+        iterations++;
+      } while (
+        Math.abs(feeEstimate - previousFee) > 1 &&
+        iterations < maxIterations
+      );
+
+      return feeEstimate;
+    } catch (error) {
+      console.error('Error estimating fee:', error);
+      return 0;
+    }
+  }, [selectedUtxos, targetAddress, targetAmount, convertToSats]);
+
+  const realTargetAmount = targetAmount + convertToSubunit(estimatedFee);
+
   return (
     <Animated.View style={[styles.container, cardTranslateAnim]}>
       <View style={styles.body}>
@@ -182,6 +287,9 @@ export default function SelectCoinsModalContent(props: Props) {
             selectedBalance={selectedBalanceInSubunit}
             selectedUtxos={selectedUtxos}
             onConfirmSelection={onConfirmSelection}
+            targetAmount={targetAmount}
+            realTargetAmount={realTargetAmount}
+            estimatedFee={convertToSubunit(estimatedFee)}
           />
         </View>
       </View>
@@ -197,6 +305,9 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
     selectedBalance,
     selectedUtxos,
     onConfirmSelection,
+    targetAmount,
+    realTargetAmount,
+    estimatedFee,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -302,7 +413,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
             <TableTitle
               titleTextKey="required"
               titleTextDomain="sendTab"
-              titleInterpolationObj={{amount: 100}}
+              titleInterpolationObj={{amount: realTargetAmount}}
               titleFontSize={SCREEN_HEIGHT * 0.017}
               rightTitleTextKey="selected"
               rightTitleTextDomain="sendTab"
@@ -336,6 +447,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
             textDomain="sendTab"
             onPress={confirmSelection}
             rounded
+            disabled={realTargetAmount > selectedBalance ? true : false}
           />
         </View>
         <View style={styles.paginationStrip} />
@@ -395,6 +507,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     flashListContent: {
       backgroundColor: '#f7f7f7',
+      paddingBottom: 10,
     },
     bottomContainer: {
       flexDirection: 'column',

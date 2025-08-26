@@ -15,9 +15,9 @@ import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import TranslateText from '../../components/TranslateText';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
-import {getBIP39Word} from '../../lib/utils/bip39';
+import {getBIP39Word} from '../../utils/bip39';
 import {useAppSelector} from '../../store/hooks';
-import randomShuffle from '../../lib/utils/randomShuffle';
+import randomShuffle from '../../utils/randomShuffle';
 import {useAppDispatch} from '../../store/hooks';
 import {setSeedVerified} from '../../reducers/onboarding';
 

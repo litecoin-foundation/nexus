@@ -129,9 +129,12 @@ function DeviceTokenHandler(props: any) {
 }
 
 const App: React.FC = () => {
-  function RenderPopUp() {
-    const {PopUp} = useContext(PopUpContext);
-    return PopUp;
+  function RenderPopUps() {
+    const {PopUps} = useContext(PopUpContext);
+    const renderPopUps = PopUps.map(popUp => (
+      <View key={popUp.id}>{popUp.component}</View>
+    ));
+    return renderPopUps;
   }
 
   const [deviceToken, setDeviceToken] = useState('');
@@ -261,7 +264,7 @@ const App: React.FC = () => {
                   <DeviceTokenHandler deviceToken={deviceToken} />
                   <PopUpProvider>
                     <GestureHandlerRootView style={styles.gestureView}>
-                      <RenderPopUp />
+                      <RenderPopUps />
                       <RootNavigator />
                       <Error />
                     </GestureHandlerRootView>

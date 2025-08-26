@@ -5,10 +5,10 @@ import {subscribeState} from 'react-native-turbo-lndltc';
 import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 import {AppThunk} from './types';
 
-import {authenticate} from '../lib/utils/biometric';
+import {authenticate} from '../utils/biometric';
 import {unlockWallet} from './lightning';
 import {resetSeedAction} from './onboarding';
-import {getItem, setItem, resetItem} from '../lib/utils/keychain';
+import {getItem, setItem, resetItem} from '../utils/keychain';
 
 // types
 interface IAuthenticationState {
@@ -109,7 +109,7 @@ export const unlockWalletWithPin =
       dayLock,
       dayLockAt,
       permaLock,
-    } = getState().authentication;
+    } = getState().authentication!;
 
     const pincode = await getItem('PINCODE');
 
@@ -253,7 +253,7 @@ export const setBiometricEnabled =
 
 export const subscribeAppState = (): AppThunk => (dispatch, getState) => {
   AppState.addEventListener('change', nextAppState => {
-    const {appState} = getState().authentication;
+    const {appState} = getState().authentication!;
 
     // when app goes into background for long periods of time
     // lnd may lock the user wallet
@@ -263,7 +263,7 @@ export const subscribeAppState = (): AppThunk => (dispatch, getState) => {
         {},
         async state => {
           try {
-            if (state === WalletState.LOCKED) {
+            if (state.state === WalletState.LOCKED) {
               // TODO: handle lnd locking in background, by present Auth Screen!
               console.warn('bg: user wallet locked!');
             }

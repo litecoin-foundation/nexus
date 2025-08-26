@@ -21,9 +21,9 @@ import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import {resetPincode} from '../../reducers/authentication';
 import {useAppDispatch} from '../../store/hooks';
-import {sleep} from '../../lib/utils/poll';
+import {sleep} from '../../utils/poll';
 import {purgeStore} from '../../store';
-import {deleteLNDDir} from '../../lib/utils/file';
+import {deleteLNDDir} from '../../utils/file';
 import {resetToLoading} from '../../navigation/NavigationService';
 
 import {ScreenSizeContext} from '../../context/screenSize';

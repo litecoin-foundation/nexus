@@ -189,6 +189,9 @@ export default function PlasmaModal(props: Props) {
   };
 
   const panYGesture = Gesture.Pan()
+    .activeOffsetX(
+      Platform.OS === 'android' && !isSwiperActive ? [-10, 10] : [0, 0],
+    )
     .onUpdate(e => {
       if (bodyTranslateX.value === 0 || !isSwiperActive) {
         if (isFromBottomToTop) {

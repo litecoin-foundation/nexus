@@ -9,7 +9,7 @@ import BuyButton from '../../components/Numpad/BuyButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {addPincode} from '../../reducers/authentication';
-import {setItem} from '../../lib/utils/keychain';
+import {setItem} from '../../utils/keychain';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 import {useTranslation} from 'react-i18next';

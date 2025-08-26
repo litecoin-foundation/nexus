@@ -18,7 +18,7 @@ import {
   addUpRecoverPinFail,
 } from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {getItem} from '../../lib/utils/keychain';
+import {getItem} from '../../utils/keychain';
 import {resetToLoading} from '../../navigation/NavigationService';
 
 import {ScreenSizeContext} from '../../context/screenSize';

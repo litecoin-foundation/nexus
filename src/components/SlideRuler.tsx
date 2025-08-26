@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from 'react';
 import {FlatList, View, StyleSheet} from 'react-native';
-import {triggerHeavyFeedback, triggerLightFeedback} from '../lib/utils/haptic';
+import {triggerHeavyFeedback, triggerLightFeedback} from '../utils/haptic';
 
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';

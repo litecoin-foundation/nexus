@@ -19,7 +19,7 @@ import RecoveryField from '../../components/RecoveryField';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import {SettingsStackParamList} from '../../navigation/types';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sweepLitewallet} from '../../lib/utils/sweep';
+import {sweepLitewallet} from '../../utils/sweep';
 import {getAddress} from '../../reducers/address';
 import {publishTransaction} from '../../reducers/transaction';
 

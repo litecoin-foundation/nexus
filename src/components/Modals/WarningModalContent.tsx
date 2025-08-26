@@ -34,7 +34,7 @@ const WarningModalContent: React.FC<Props> = props => {
     () => (
       <PlasmaModal
         isOpened={isVisible}
-        close={() => close()}
+        close={close}
         isFromBottomToTop={true}
         animDuration={250}
         gapInPixels={0}
@@ -63,11 +63,7 @@ const WarningModalContent: React.FC<Props> = props => {
               )}
             </View>
             <View style={styles.button}>
-              <BlueButton
-                textKey="got_it"
-                textDomain="main"
-                onPress={() => close()}
-              />
+              <BlueButton textKey="got_it" textDomain="main" onPress={close} />
             </View>
           </Animated.View>
         )}
@@ -86,8 +82,9 @@ const WarningModalContent: React.FC<Props> = props => {
   );
 
   useEffect(() => {
-    showPopUp(modal);
-  }, [showPopUp, modal]);
+    showPopUp(modal, 'warning-modal');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
 
   return <></>;
 };

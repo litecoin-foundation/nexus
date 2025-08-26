@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
 
-import {checkBIP39Word, checkLitewalletBIP39Word} from '../lib/utils/bip39/';
-import {checkSeedChecksum} from '../lib/utils/aezeed';
+import {checkBIP39Word, checkLitewalletBIP39Word} from '../utils/bip39/';
+import {checkSeedChecksum} from '../utils/aezeed';
 
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';

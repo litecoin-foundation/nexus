@@ -1,7 +1,7 @@
 import {createAction, createSlice, createSelector} from '@reduxjs/toolkit';
 
 import {AppThunk} from './types';
-import percentageDiff from '../lib/utils/percentageDiff';
+import percentageDiff from '../utils/percentageDiff';
 import {RootState} from '../store';
 
 // types
