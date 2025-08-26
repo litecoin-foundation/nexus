@@ -47,9 +47,10 @@ const initialState = {
 const lndState = createAction<boolean>('lightning/lndState');
 
 // functions
-export const startLnd = (): AppThunk => async dispatch => {
+export const startLnd = (): AppThunk => async (dispatch, getState) => {
   try {
-    await createConfig();
+    const {torEnabled} = getState().settings;
+    await createConfig(torEnabled);
 
     // lnd dir path
     const appFolderPath = `${RNFS.DocumentDirectoryPath}/lndltc/`;

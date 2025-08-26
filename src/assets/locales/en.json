@@ -291,7 +291,8 @@
     "cancel": "Cancel",
     "change_login": "Change Login Passcode",
     "processing": "Processing...",
-    "manual_coin_selection": "Manual Coin Selection"
+    "manual_coin_selection": "Manual Coin Selection",
+    "enable_tor": "Enable Tor"
   },
   "convertTab": {
     "convert_button": "Convert your LTC",

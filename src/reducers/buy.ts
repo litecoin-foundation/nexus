@@ -16,6 +16,7 @@ import {
   emptySellQuoteAndLimits,
 } from '../utils/tradeQuotes';
 import {ITrade, getUTCTimeStampFromMetadata} from '../utils/txMetadata';
+import {fetchResolve} from '../utils/tor';
 
 const MOONPAY_PUBLIC_KEY = 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
 const ONRAMPER_PUBLIC_KEY = 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
@@ -103,29 +104,25 @@ const setProceedToGetLimitsAction = createAction<{
 export const getBuyTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
     const {uniqueId} = getState().onboarding;
+    const {torEnabled} = getState().settings;
 
     try {
-      const res = await fetch('https://api.nexuswallet.com/api/trades/buy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+      const res = await fetchResolve(
+        'https://api.nexuswallet.com/api/trades/buy',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            userAppUniqueId: uniqueId,
+          }),
         },
-        body: JSON.stringify({
-          userAppUniqueId: uniqueId,
-        }),
-      });
+        torEnabled,
+      );
 
-      if (!res.ok) {
-        const error = await res.json();
-        if (__DEV__) {
-          throw new Error(error);
-        } else {
-          return;
-        }
-      }
-
-      const data: ITrade[] = await res.json();
+      const data: ITrade[] = res;
       let realTxs: any = [];
 
       // filter out prompted but yet unknown txs and failed txs
@@ -167,61 +164,61 @@ export const getBuyTransactionHistory =
 export const getSellTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
     const {uniqueId} = getState().onboarding;
+    const {torEnabled} = getState().settings;
 
-    const res = await fetch('https://api.nexuswallet.com/api/trades/sell', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userAppUniqueId: uniqueId,
-      }),
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      if (__DEV__) {
-        throw new Error(error);
-      } else {
-        return;
-      }
-    }
-
-    const data: ITrade[] = await res.json();
-    let realTxs: any = [];
-
-    // filter out prompted but yet unknown txs and failed txs
-    // NOTE: unknown transaction is used in nexus-api to identify
-    // clients of payment providers
-    if (data && data.length > 0) {
-      realTxs = data.filter(
-        (tx: ITrade) =>
-          tx.providerTxId !== 'unknown' &&
-          tx.status !== 'failed' &&
-          tx.status !== 'cancelled' &&
-          tx.status !== 'canceled',
+    try {
+      const res = await fetchResolve(
+        'https://api.nexuswallet.com/api/trades/sell',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userAppUniqueId: uniqueId,
+          }),
+        },
+        torEnabled,
       );
-    }
 
-    // filter out txs that pending for too long
-    realTxs = realTxs.filter((tx: ITrade) => {
-      const txTimeStamp = getUTCTimeStampFromMetadata(tx.metadata);
-      if (tx.providerTxId !== 'pending') {
-        return true;
+      const data: ITrade[] = res;
+      let realTxs: any = [];
+
+      // filter out prompted but yet unknown txs and failed txs
+      // NOTE: unknown transaction is used in nexus-api to identify
+      // clients of payment providers
+      if (data && data.length > 0) {
+        realTxs = data.filter(
+          (tx: ITrade) =>
+            tx.providerTxId !== 'unknown' &&
+            tx.status !== 'failed' &&
+            tx.status !== 'cancelled' &&
+            tx.status !== 'canceled',
+        );
       }
-      if (tx.metadata?.createdAt) {
-        // 30 mins = 1800 secs
-        if (
-          tx.providerTxId === 'pending' &&
-          Number(txTimeStamp) + 1800 > Math.floor(Date.now() / 1000)
-        ) {
+
+      // filter out txs that pending for too long
+      realTxs = realTxs.filter((tx: ITrade) => {
+        const txTimeStamp = getUTCTimeStampFromMetadata(tx.metadata);
+        if (tx.providerTxId !== 'pending') {
           return true;
         }
-      }
-      return false;
-    });
+        if (tx.metadata?.createdAt) {
+          // 30 mins = 1800 secs
+          if (
+            tx.providerTxId === 'pending' &&
+            Number(txTimeStamp) + 1800 > Math.floor(Date.now() / 1000)
+          ) {
+            return true;
+          }
+        }
+        return false;
+      });
 
-    dispatch(getSellTxHistoryAction(realTxs));
+      dispatch(getSellTxHistoryAction(realTxs));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
 export const checkFlexaCustomer =
@@ -244,6 +241,7 @@ export const checkFlexaCustomer =
 
 const getMoonpayBuyQuoteData = (
   currencyCode: string,
+  torEnabled: boolean,
   cryptoAmount?: number,
   fiatAmount?: number,
 ) => {
@@ -255,20 +253,17 @@ const getMoonpayBuyQuoteData = (
     );
 
     try {
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+      const data = await fetchResolve(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
         },
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        reject(error);
-      }
-
-      const data = await res.json();
+        torEnabled,
+      );
 
       if (data && data.hasOwnProperty('quoteCurrencyPrice')) {
         // check if response is number
@@ -339,10 +334,11 @@ const getOnramperBuyQuoteData = (
   });
 };
 
-export const getBuyQuote = (
+const getBuyQuote = (
   isMoonpayCustomer: boolean,
   isOnramperCustomer: boolean,
   currencyCode: string,
+  torEnabled: boolean,
   cryptoAmount?: number,
   fiatAmount?: number,
   countryCode?: string,
@@ -363,6 +359,7 @@ export const getBuyQuote = (
       if (isMoonpayCustomer) {
         quote = await getMoonpayBuyQuoteData(
           currencyCode,
+          torEnabled,
           cryptoAmount,
           fiatAmount,
         );
@@ -389,8 +386,12 @@ export const setBuyQuote =
   async (dispatch, getState) => {
     return new Promise<IBuyQuoteAndLimits>(async resolve => {
       const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-      const {testPaymentActive, testPaymentCountry, testPaymentFiat} =
-        getState().settings;
+      const {
+        testPaymentActive,
+        testPaymentCountry,
+        testPaymentFiat,
+        torEnabled,
+      } = getState().settings;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
@@ -401,6 +402,7 @@ export const setBuyQuote =
         isMoonpayCustomer,
         isOnramperCustomer,
         currencyCode,
+        torEnabled,
         cryptoAmount,
         fiatAmount,
         countryCode,
@@ -431,25 +433,23 @@ export const setBuyQuote =
 const getMoonpaySellQuoteData = (
   currencyCode: string,
   cryptoAmount: number,
+  torEnabled: boolean,
 ) => {
   return new Promise<ISellQuoteAndLimits>(async (resolve, reject) => {
     const url = getMoonpaySellQuoteDataUrl(cryptoAmount, currencyCode);
 
     try {
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+      const data = await fetchResolve(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
         },
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        reject(error);
-      }
-
-      const data = await res.json();
+        torEnabled,
+      );
 
       if (data && data.hasOwnProperty('quoteCurrencyAmount')) {
         // set sell limits
@@ -485,11 +485,12 @@ const getMoonpaySellQuoteData = (
   });
 };
 
-export const getSellQuote = (
+const getSellQuote = (
   isMoonpayCustomer: boolean,
   isOnramperCustomer: boolean,
   currencyCode: string,
   cryptoAmount: number,
+  torEnabled: boolean,
   countryCode?: string,
 ) => {
   return new Promise<ISellQuoteAndLimits>(async resolve => {
@@ -505,7 +506,11 @@ export const getSellQuote = (
 
     try {
       if (isMoonpayCustomer) {
-        quote = await getMoonpaySellQuoteData(currencyCode, cryptoAmount);
+        quote = await getMoonpaySellQuoteData(
+          currencyCode,
+          cryptoAmount,
+          torEnabled,
+        );
       } else if (isOnramperCustomer) {
         // not supported by onramper
         // quote = await getOnramperSellQuoteData(
@@ -529,8 +534,12 @@ export const setSellQuote =
   async (dispatch, getState) => {
     return new Promise<ISellQuoteAndLimits>(async resolve => {
       const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-      const {testPaymentActive, testPaymentCountry, testPaymentFiat} =
-        getState().settings;
+      const {
+        testPaymentActive,
+        testPaymentCountry,
+        testPaymentFiat,
+        torEnabled,
+      } = getState().settings;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
@@ -542,6 +551,7 @@ export const setSellQuote =
         isOnramperCustomer,
         currencyCode,
         cryptoAmount,
+        torEnabled,
         countryCode,
       );
 
@@ -605,7 +615,8 @@ export const checkAllowed = (): AppThunk => async (dispatch, getState) => {
 };
 
 const checkMoonpayAllowed = (): AppThunk => async (dispatch, getState) => {
-  const {testPaymentActive, testPaymentCountry} = getState().settings;
+  const {testPaymentActive, testPaymentCountry, torEnabled} =
+    getState().settings;
 
   const ipCheckURL = `https://api.moonpay.com/v3/ip_address?apiKey=${MOONPAY_PUBLIC_KEY}`;
   const supportedCountriesURL = 'https://api.moonpay.com/v3/countries';
@@ -625,13 +636,7 @@ const checkMoonpayAllowed = (): AppThunk => async (dispatch, getState) => {
 
   try {
     // check if buy/sell is allowed based on user ip
-    const res = await fetch(ipCheckURL, req);
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error);
-    }
-
-    const ipResponse = await res.json();
+    const ipResponse = await fetchResolve(ipCheckURL, req, torEnabled);
     const {isBuyAllowed, isSellAllowed} = ipResponse;
     canBuyIP = isBuyAllowed;
     canSellIP = isSellAllowed;
@@ -639,12 +644,7 @@ const checkMoonpayAllowed = (): AppThunk => async (dispatch, getState) => {
     // check if buy/sell is allowed based on device country config
     const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
-    const res2 = await fetch(supportedCountriesURL, req);
-    if (!res2.ok) {
-      const error = await res2.json();
-      throw new Error(error);
-    }
-    const data = await res2.json();
+    const data = await fetchResolve(supportedCountriesURL, req, torEnabled);
 
     const country = data.find((c: any) => c.alpha2 === countryCode);
     if (!country) {
@@ -676,6 +676,7 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
     testPaymentKey,
     testPaymentCountry,
     testPaymentFiat,
+    torEnabled,
   } = getState().settings;
 
   // check if buy/sell is allowed based on user ip and preferred currency
@@ -714,28 +715,20 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
   // };
 
   try {
-    const res = await fetch(supportedForBuying, req);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.hasOwnProperty('message')) {
-        if (data.message.hasOwnProperty('assets')) {
-          if (data.message.assets[0].crypto.includes('ltc_litecoin')) {
-            canBuy = true;
-          }
+    const data = await fetchResolve(supportedForBuying, req, torEnabled);
+    if (data.hasOwnProperty('message')) {
+      if (data.message.hasOwnProperty('assets')) {
+        if (data.message.assets[0].crypto.includes('ltc_litecoin')) {
+          canBuy = true;
         }
       }
     }
 
-    const res2 = await fetch(supportedForSelling, req);
-    if (res2.ok) {
-      const data2 = await res2.json();
-      if (data2.hasOwnProperty('message')) {
-        if (data2.message.hasOwnProperty('assets')) {
-          if (
-            data2.message.assets[0].fiat.includes(currencyCode.toLowerCase())
-          ) {
-            canSell = true;
-          }
+    const data2 = await fetchResolve(supportedForSelling, req, torEnabled);
+    if (data2.hasOwnProperty('message')) {
+      if (data2.message.hasOwnProperty('assets')) {
+        if (data2.message.assets[0].fiat.includes(currencyCode.toLowerCase())) {
+          canSell = true;
         }
       }
     }
@@ -752,7 +745,7 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
 };
 
 export const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
-  const {testPaymentActive, testPaymentFiat} = getState().settings;
+  const {testPaymentActive, testPaymentFiat, torEnabled} = getState().settings;
 
   const currencyCode = testPaymentActive
     ? testPaymentFiat
@@ -761,19 +754,17 @@ export const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
   const url = `https://api.moonpay.com/v3/currencies/ltc/limits?apiKey=${MOONPAY_PUBLIC_KEY}&baseCurrencyCode=${currencyCode}`;
 
   try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+    const data = await fetchResolve(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
       },
-    });
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error);
-    }
-
-    const data = await res.json();
+      torEnabled,
+    );
 
     // set limits when possible
     const buyLimits = {
@@ -839,7 +830,8 @@ export const getSignedUrl =
   (address: string, fiatAmount: number, prefilledMethod?: string): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {testPaymentActive, testPaymentFiat} = getState().settings;
+      const {testPaymentActive, testPaymentFiat, torEnabled} =
+        getState().settings;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
@@ -865,7 +857,7 @@ export const getSignedUrl =
         `${utmParams}`;
 
       try {
-        const res = await fetch(
+        const response = await fetchResolve(
           'https://api.nexuswallet.com/api/buy/moonpay/sign',
           {
             method: 'POST',
@@ -874,18 +866,11 @@ export const getSignedUrl =
             },
             body: JSON.stringify({unsignedURL}),
           },
+          torEnabled,
         );
-
-        if (!res.ok) {
-          const {message} = await res.json();
-          reject(String(message));
-        }
-
-        const response = await res.json();
         const {urlWithSignature} = response;
         resolve(urlWithSignature);
       } catch (error) {
-        // handle error
         reject(error);
       }
     });
@@ -899,6 +884,7 @@ export const getSignedOnramperUrl =
         testPaymentActive,
         testPaymentKey,
         testPaymentFiat,
+        torEnabled,
         // testPaymentCountry,
       } = getState().settings;
 
@@ -943,7 +929,7 @@ export const getSignedOnramperUrl =
         `${utmParams}`;
 
       try {
-        const res = await fetch(
+        const response = await fetchResolve(
           testPaymentActive && testPaymentKey
             ? 'https://api.nexuswallet.com/api/buy/onramper/sign_test'
             : 'https://api.nexuswallet.com/api/buy/onramper/sign',
@@ -954,21 +940,14 @@ export const getSignedOnramperUrl =
             },
             body: JSON.stringify({signContent, unsignedURL}),
           },
+          torEnabled,
         );
-
-        if (!res.ok) {
-          const {message} = await res.json();
-          reject(String(message));
-        }
-
-        const response = await res.json();
 
         const signature = response;
         const signedUrl = `${unsignedURL}&signature=${signature}`;
 
         resolve(signedUrl);
       } catch (error) {
-        // handle error
         reject(error);
       }
     });
@@ -979,6 +958,7 @@ export const getSignedSellUrl =
   (dispatch, getState) => {
     return new Promise(async (resolve, reject) => {
       const {uniqueId} = getState().onboarding;
+      const {torEnabled} = getState().settings;
 
       const utmParams = prefilledMethod
         ? '&' +
@@ -997,7 +977,7 @@ export const getSignedSellUrl =
         `${utmParams}`;
 
       try {
-        const req = await fetch(
+        const data = await fetchResolve(
           'https://api.nexuswallet.com/api/sell/moonpay/sign',
           {
             method: 'POST',
@@ -1007,14 +987,8 @@ export const getSignedSellUrl =
             },
             body: JSON.stringify({unsignedURL}),
           },
+          torEnabled,
         );
-
-        if (!req.ok) {
-          const error = await req.text();
-          throw new Error(error);
-        }
-
-        const data = await req.json();
         const {urlWithSignature} = data;
         resolve(urlWithSignature);
       } catch (error) {
@@ -1030,6 +1004,7 @@ export const getSignedSellOnramperUrl =
       const {
         testPaymentActive,
         testPaymentKey,
+        torEnabled,
         // testPaymentFiat,
         testPaymentCountry,
       } = getState().settings;
@@ -1076,7 +1051,7 @@ export const getSignedSellOnramperUrl =
         `${utmParams}`;
 
       try {
-        const res = await fetch(
+        const response = await fetchResolve(
           testPaymentActive && testPaymentKey
             ? 'https://api.nexuswallet.com/api/buy/onramper/sign_test'
             : 'https://api.nexuswallet.com/api/buy/onramper/sign',
@@ -1087,21 +1062,14 @@ export const getSignedSellOnramperUrl =
             },
             body: JSON.stringify({signContent, unsignedURL}),
           },
+          torEnabled,
         );
-
-        if (!res.ok) {
-          const {message} = await res.json();
-          reject(String(message));
-        }
-
-        const response = await res.json();
 
         const signature = response;
         const signedUrl = `${unsignedURL}&signature=${signature}`;
 
         resolve(signedUrl);
       } catch (error) {
-        // handle error
         reject(error);
       }
     });

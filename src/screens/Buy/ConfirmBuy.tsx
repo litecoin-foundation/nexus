@@ -153,6 +153,22 @@ const ConfirmBuy: React.FC<Props> = props => {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [route.params, navigation]);
 
+  // NOTE: overrides swipe back gesture to fix a bug with missing header,
+  // screen swiping animation looks awful, consider turning off back gesture completely
+  useEffect(() => {
+    const onBackPress = (e: any) => {
+      if (!e.data.action) {
+        return;
+      }
+      e.preventDefault();
+      navigation.navigate('Main', {isInitial: true, updateHeader: true});
+    };
+    navigation.addListener('beforeRemove', onBackPress);
+    return () => {
+      navigation.removeListener('beforeRemove', onBackPress);
+    };
+  }, [navigation]);
+
   const SuccessScreen = (
     <>
       <View style={styles.body}>

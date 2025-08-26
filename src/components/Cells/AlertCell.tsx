@@ -1,10 +1,12 @@
 import React, {useState, useContext, useLayoutEffect, useCallback} from 'react';
 import {View, TouchableOpacity, StyleSheet} from 'react-native';
+
 import LitecoinIcon from '../LitecoinIcon';
 import Switch from '../Buttons/Switch';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setAlertAvailability, updateLastTimePrice} from '../../reducers/alerts';
 import {formatTxDate} from '../../utils/date';
+import {fetchResolve} from '../../utils/tor';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -35,7 +37,10 @@ const AlertCell: React.FC<Props> = props => {
   const styles = getStyles(width, height);
 
   const dispatch = useAppDispatch();
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
+  const currencySymbol = useAppSelector(
+    state => state.settings!.currencySymbol,
+  );
+  const torEnabled = useAppSelector(state => state.settings!.torEnabled);
 
   const handleSwitch = useCallback(
     (value: boolean) => {
@@ -61,7 +66,7 @@ const AlertCell: React.FC<Props> = props => {
           Math.floor(Date.now() / 1000) - 600
         ) {
           const price = data.value;
-          const res = await fetch(
+          const resData: LastPriceResponse = await fetchResolve(
             'https://api.nexuswallet.com/api/prices/lastprice',
             {
               method: 'POST',
@@ -74,14 +79,8 @@ const AlertCell: React.FC<Props> = props => {
               }),
               signal: abortController.signal,
             },
+            torEnabled,
           );
-
-          if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.message || 'Failed to fetch last price');
-          }
-
-          const resData: LastPriceResponse = await res.json();
 
           if (resData.timestamp) {
             dispatch(updateLastTimePrice(data.index, resData.timestamp));
@@ -105,7 +104,7 @@ const AlertCell: React.FC<Props> = props => {
     return () => {
       abortController.abort();
     };
-  }, [dispatch, data]);
+  }, [dispatch, data, torEnabled]);
 
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress}>

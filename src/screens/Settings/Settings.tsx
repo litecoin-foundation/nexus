@@ -42,6 +42,7 @@ import {
   updateSubunit,
   setNotificationsEnabled,
   setManualCoinSelectionEnabled,
+  setTorEnabled,
 } from '../../reducers/settings';
 
 import TranslateText from '../../components/TranslateText';
@@ -98,8 +99,12 @@ const Settings: React.FC<Props> = props => {
 
   const {biometricsAvailable, biometricsEnabled, faceIDSupported} =
     useAppSelector(state => state.authentication!);
-  const {subunit, notificationsEnabled, manualCoinSelectionEnabled} =
-    useAppSelector(state => state.settings!);
+  const {
+    subunit,
+    notificationsEnabled,
+    manualCoinSelectionEnabled,
+    torEnabled,
+  } = useAppSelector(state => state.settings!);
 
   const openSystemSettings = async () => {
     Linking.openSettings();
@@ -134,6 +139,10 @@ const Settings: React.FC<Props> = props => {
 
   const handleManualCoinSelectionSwitch = () => {
     dispatch(setManualCoinSelectionEnabled(!manualCoinSelectionEnabled));
+  };
+
+  const handleTorSwitch = () => {
+    dispatch(setTorEnabled(!torEnabled));
   };
 
   const handleAuthenticationRequired = (action: string) => {
@@ -180,6 +189,7 @@ const Settings: React.FC<Props> = props => {
       },
       {id: 'notifications', type: 'notifications'},
       ...(biometricsAvailable ? [{id: 'biometrics', type: 'biometrics'}] : []),
+      {id: 'tor', type: 'tor'},
       {
         id: 'explorer',
         type: 'cell',
@@ -291,6 +301,7 @@ const Settings: React.FC<Props> = props => {
       biometricsAvailable,
       notificationsEnabled,
       manualCoinSelectionEnabled,
+      torEnabled,
       biometricsEnabled,
       faceIDSupported,
       subunit,
@@ -307,7 +318,7 @@ const Settings: React.FC<Props> = props => {
   //           />
 
   const renderItem = useCallback(
-    ({item}) => {
+    ({item}: {item: any}) => {
       switch (item.type) {
         case 'support':
           return <SupportCell onPress={() => navigation.navigate('Support')} />;
@@ -361,6 +372,16 @@ const Settings: React.FC<Props> = props => {
               handleSwitch={handleManualCoinSelectionSwitch}
             />
           );
+        case 'tor':
+          return (
+            <SettingCell
+              textKey="enable_tor"
+              textDomain="settingsTab"
+              switchEnabled
+              switchValue={torEnabled}
+              handleSwitch={handleTorSwitch}
+            />
+          );
         case 'denomination':
           return (
             <View style={styles.switchContainer}>
@@ -404,10 +425,10 @@ const Settings: React.FC<Props> = props => {
     ],
   );
 
-  const keyExtractor = useCallback(item => item.id, []);
+  const keyExtractor = useCallback((item: any) => item.id, []);
 
   const getItemLayout = useCallback(
-    (item, index) => ({
+    (_item: any, index: number) => ({
       length: 60,
       offset: 60 * index,
       index,
@@ -460,7 +481,7 @@ const Settings: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,

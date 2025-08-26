@@ -6,6 +6,7 @@ import {poll} from '../utils/poll';
 import {AppThunk} from './types';
 import {setBuyQuote, setSellQuote, setLimits} from './buy';
 import {IBuyQuote, ISellQuote} from '../utils/tradeQuotes';
+import {fetchResolve} from '../utils/tor';
 
 // types
 type PriceDataPoint = [number, number, number, number, number, number];
@@ -84,29 +85,19 @@ function isObjectEmpty(obj: {[key: string]: any}) {
   }
 }
 
-const getTickerData = () => {
+const getTickerData = (useTor: boolean) => {
   return new Promise<{[key: string]: string}>(async (resolve, reject) => {
     try {
-      const res = await fetch(
-        'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
+      const url = 'https://api.coinbase.com/v2/exchange-rates?currency=LTC';
+      const fetchOptions = {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
-      );
-      if (!res.ok) {
-        const error = await res.json();
-        reject(error);
-      }
-
-      const {
-        data: {rates},
-      } = await res.json();
-
-      resolve(rates);
+      };
+      const {data} = await fetchResolve(url, fetchOptions, useTor);
+      resolve(data.rates);
     } catch (error) {
       reject(error);
     }
@@ -116,7 +107,7 @@ const getTickerData = () => {
 // NOTE: if we will call buy and sell quotes separately depending on what
 // screen user's at it will be half amount of requests
 export const callRates = (): AppThunk => async (dispatch, getState) => {
-  const {currencyCode} = getState().settings;
+  const {currencyCode, torEnabled} = getState().settings;
   const {amount: ltcAmount} = getState().input;
 
   let isBuyRateApprox = false,
@@ -135,7 +126,7 @@ export const callRates = (): AppThunk => async (dispatch, getState) => {
     let sell = sellQuote ? Number(sellQuote.ltcPrice) : null;
 
     // Fetch ltc rates
-    const rates = await getTickerData();
+    const rates = await getTickerData(torEnabled);
     let ltc = 0;
     if (rates && !isObjectEmpty(rates)) {
       ltc = Number(rates[currencyCode]);
@@ -174,48 +165,53 @@ export const pollRates = (): AppThunk => async dispatch => {
   }, 15000);
 };
 
-const fetchGranulatedHistoricalRates =
-  async (): Promise<TGranulatedPriceData> => {
-    const url = 'https://api.nexuswallet.com/api/prices/granulated';
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!res.ok) {
-      return {
-        latestPrice: [0, 0, 0, 0, 0, 0],
-        fifteenMins: [],
-        hourly: [],
-        sixHrs: [],
-        daily: [],
-        all: [],
-      } as TGranulatedPriceData;
-    }
-
-    const {data} = await res.json();
-    return data;
+const fetchGranulatedHistoricalRates = async (
+  useTor: boolean,
+): Promise<TGranulatedPriceData> => {
+  const url = 'https://api.nexuswallet.com/api/prices/granulated';
+  const fetchOptions = {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
   };
 
-export const updatedRatesInFiat = (): AppThunk => async dispatch => {
   try {
-    const rates = await getTickerData();
-    dispatch(getTickerAction(rates));
+    const {data} = await fetchResolve(url, fetchOptions, useTor);
+    return data;
   } catch (error) {
-    console.error('Error fetching day historical rates:', error);
+    return {
+      latestPrice: [0, 0, 0, 0, 0, 0],
+      fifteenMins: [],
+      hourly: [],
+      sixHrs: [],
+      daily: [],
+      all: [],
+    } as TGranulatedPriceData;
   }
 };
 
+export const updatedRatesInFiat =
+  (): AppThunk => async (dispatch, getState) => {
+    const {torEnabled} = getState().settings;
+    try {
+      const rates = await getTickerData(torEnabled);
+      dispatch(getTickerAction(rates));
+    } catch (error) {
+      console.error('Error fetching day historical rates:', error);
+    }
+  };
+
 export const updateHistoricalRatesForAllPeriods =
-  (): AppThunk => async dispatch => {
+  (): AppThunk => async (dispatch, getState) => {
+    const {torEnabled} = getState().settings;
     try {
       const granulatedPriceData: TGranulatedPriceData =
-        await fetchGranulatedHistoricalRates();
-      dispatch(segregateHistoricalRatesByPeriods(granulatedPriceData));
+        await fetchGranulatedHistoricalRates(torEnabled);
+      if (granulatedPriceData.all.length > 0) {
+        dispatch(segregateHistoricalRatesByPeriods(granulatedPriceData));
+      }
     } catch (error) {
       console.error('Failed to update historical rates:', error);
     }

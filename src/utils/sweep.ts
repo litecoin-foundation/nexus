@@ -7,6 +7,7 @@ import {LITECOIN} from './litecoin';
 import getTxInputData from './getTxInputData';
 import {estimateTxSize} from './estimateTxSize';
 import {getDerivedKeyPairsWithBalance} from './hdWallets';
+import {fetchResolve} from '../../utils/tor';
 
 const ECPair = ECPairFactory(ecc);
 
@@ -39,6 +40,7 @@ function isArrayEmpty(obj: any[]) {
 export const sweepLitewallet = async (
   mnemonic: IMnemonic,
   receiveAddress: string,
+  useTor: boolean,
 ) => {
   const startPath = "m/0'/0/";
   const changePath = "m/0'/1/";
@@ -52,12 +54,14 @@ export const sweepLitewallet = async (
       receiveAddress,
       startPath,
       isChildHardened,
+      useTor,
     );
     const changeTxs = await sweepMnemonic(
       mnemonic,
       receiveAddress,
       changePath,
       isChildHardened,
+      useTor,
     );
 
     if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
@@ -84,7 +88,11 @@ export const sweepLitewallet = async (
   }
 };
 
-export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
+export const sweepQrKey = async (
+  qrKey: string,
+  receiveAddress: string,
+  useTor: boolean,
+) => {
   const startPath = "m/0'/0/";
   const changePath = "m/0'/1/";
   const isChildHardened = false;
@@ -98,12 +106,14 @@ export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
         receiveAddress,
         startPath,
         isChildHardened,
+        useTor,
       );
       const changeTxs = await sweepBase58Ltpv(
         qrKey,
         receiveAddress,
         changePath,
         isChildHardened,
+        useTor,
       );
 
       if (isArrayEmpty(mainTxs) && isArrayEmpty(changeTxs)) {
@@ -118,7 +128,7 @@ export const sweepQrKey = async (qrKey: string, receiveAddress: string) => {
         rawTopUpTxs.push(changeTxs);
       }
     } else {
-      const txs = await sweepWIF(qrKey, receiveAddress);
+      const txs = await sweepWIF(qrKey, receiveAddress, useTor);
 
       rawTopUpTxs.push(txs);
     }
@@ -138,11 +148,13 @@ const sweepBase58Ltpv = async (
   receiveAddress: string,
   startPath: string,
   isChildHardened: boolean,
+  useTor: boolean,
 ) => {
   try {
     const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
       startPath,
       isChildHardened,
+      useTor,
       undefined,
       seedBase58,
     );
@@ -150,6 +162,7 @@ const sweepBase58Ltpv = async (
     const rawTopUpTxs = await createRawTxsFromHDWallet(
       keyPairsWithBalance,
       receiveAddress,
+      useTor,
     );
 
     return rawTopUpTxs;
@@ -167,17 +180,20 @@ const sweepMnemonic = async (
   receiveAddress: string,
   startPath: string,
   isChildHardened: boolean,
+  useTor: boolean,
 ) => {
   try {
     const keyPairsWithBalance = await getDerivedKeyPairsWithBalance(
       startPath,
       isChildHardened,
+      useTor,
       mnemonic,
     );
 
     const rawTopUpTxs = await createRawTxsFromHDWallet(
       keyPairsWithBalance,
       receiveAddress,
+      useTor,
     );
 
     return rawTopUpTxs;
@@ -193,6 +209,7 @@ const sweepMnemonic = async (
 const createRawTxsFromHDWallet = async (
   keyPairsWithBalance: AddressWithKeyPair[],
   receiveAddress: string,
+  useTor: boolean = false,
 ) => {
   const inputsWithKeyPairs: InputWithKeyPair[] = [];
   let totalBalance = 0;
@@ -206,6 +223,7 @@ const createRawTxsFromHDWallet = async (
           addressWithKeyPair.address,
           addressWithKeyPair.keyPair,
           'P2PKH',
+          useTor,
         );
 
         const {inputsArr, addressBalance, addressUnspentsLength} = sweepy;
@@ -246,7 +264,11 @@ const createRawTxsFromHDWallet = async (
   }
 };
 
-export const sweepWIF = async (wifString: string, receiveAddress: string) => {
+export const sweepWIF = async (
+  wifString: string,
+  receiveAddress: string,
+  useTor: boolean = false,
+) => {
   let compressed;
 
   try {
@@ -285,6 +307,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
         String(address),
         keyPair,
         String(inputScript),
+        useTor,
       );
     inputsFromAllAddressesWithBalance.push(...inputsArr);
     totalBalance += addressBalance;
@@ -310,6 +333,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
           String(address),
           keyPair,
           String(inputScript),
+          useTor,
         );
       inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
@@ -330,6 +354,7 @@ export const sweepWIF = async (wifString: string, receiveAddress: string) => {
           String(address),
           keyPair,
           String(inputScript),
+          useTor,
         );
       inputsFromAllAddressesWithBalance.push(...inputsArr);
       totalBalance += addressBalance;
@@ -379,6 +404,7 @@ const sweepAddress = (
   address: string,
   keyPair: ECPairInterface,
   inputScript: string,
+  useTor: boolean = false,
 ): Promise<SweptAddress> => {
   return new Promise(async (resolve, reject) => {
     const headers = {
@@ -387,23 +413,21 @@ const sweepAddress = (
     };
 
     try {
-      const utxoRes = await fetch(
+      const unspents = await fetchResolve(
         `https://litecoinspace.org/api/address/${address}/utxo`,
         {
           method: 'GET',
           headers,
         },
+        useTor,
       );
 
-      if (!utxoRes.ok) {
-        const error = await utxoRes.json();
+      if (!unspents && !Array.isArray(unspents)) {
         reject(
-          `Failed to connect with API Server - try using a VPN. (UTXO Fetch: ${error})`,
+          'Failed to connect with API Server - try using a VPN. (UTXO Fetch)',
         );
         return;
       }
-
-      const unspents = await utxoRes.json();
       let inputsArr: any[] = [];
       let addressBalance = 0;
 
@@ -411,22 +435,21 @@ const sweepAddress = (
         unspents.map(async (utxo: any) => {
           addressBalance += utxo.value;
 
-          const txHexRes = await fetch(
+          const utxoHex = await fetchResolve(
             `https://litecoinspace.org/api/tx/${utxo.txid}/hex`,
             {
               method: 'GET',
               headers,
             },
+            useTor,
           );
 
-          if (!txHexRes.ok) {
-            const error = await txHexRes.text();
+          if (!utxoHex) {
             reject(
-              `Failed to connect with API Server - try using a VPN. (TxHex: ${error})`,
+              `Failed to connect with API Server - try using a VPN. (TxHex)`,
             );
+            return;
           }
-
-          const utxoHex = await txHexRes.text();
 
           switch (inputScript) {
             case 'P2PKH':
@@ -480,6 +503,7 @@ const sweepAddressViaLitecoinspace = (
   address: string,
   keyPair: ECPairInterface,
   inputScript: string,
+  useTor: boolean = false,
 ): Promise<SweptAddress> => {
   return new Promise(async (resolve, reject) => {
     const headers = {
@@ -488,20 +512,20 @@ const sweepAddressViaLitecoinspace = (
     };
 
     try {
-      const utxoRes = await fetch(
+      const unspents = await fetchResolve(
         `https://litecoinspace.org/api/address/${address}/utxo-hex`,
         {
           method: 'GET',
           headers,
         },
+        useTor,
       );
-      if (!utxoRes.ok) {
+      if (!unspents) {
         reject(
           'UTXO fetch error. Failed to connect with API Server, try using VPN.',
         );
         return;
       }
-      const unspents = await utxoRes.json();
       let inputsArr: any[] = [];
       let addressBalance = 0;
 

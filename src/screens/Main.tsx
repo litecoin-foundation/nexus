@@ -35,7 +35,6 @@ import Sell from '../components/Cards/Sell';
 import PlasmaModal from './../components/Modals/PlasmaModal';
 import WalletsModalContent from './../components/Modals/WalletsModalContent';
 import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
-import WarningModalContent from './../components/Modals/WarningModalContent';
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
@@ -159,30 +158,6 @@ const Main: React.FC<Props> = props => {
   const isInternetReachable = useAppSelector(
     state => state.info!.isInternetReachable,
   );
-
-  const peersLength = useAppSelector(state => state.info?.peers?.length || 0);
-  const noConnectionWarningShowedRef = useRef<boolean>(false);
-  const noConnectionWarningTimeoutRef = useRef<number>(
-    Math.floor(Date.now() / 1000),
-  );
-  const [isWarningModalVisible, setWarningModalVisible] = useState(false);
-  function showNoConnectionWarning() {
-    setWarningModalVisible(true);
-    noConnectionWarningShowedRef.current = true;
-  }
-  function closeNoConnectionWarning() {
-    setWarningModalVisible(false);
-  }
-  useEffect(() => {
-    if (
-      peersLength <= 0 &&
-      !noConnectionWarningShowedRef.current &&
-      // NOTE: 11sec delay cause peers are polled every 10sec
-      noConnectionWarningTimeoutRef.current + 11 < Math.floor(Date.now() / 1000)
-    ) {
-      showNoConnectionWarning();
-    }
-  }, [peersLength]);
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks!);
@@ -674,13 +649,6 @@ const Main: React.FC<Props> = props => {
             }}
           />
         )}
-      />
-
-      <WarningModalContent
-        isVisible={isWarningModalVisible}
-        close={() => closeNoConnectionWarning()}
-        textKey="lnd_no_connection"
-        textDomain="main"
       />
 
       <LoadingIndicator visible={loading} />

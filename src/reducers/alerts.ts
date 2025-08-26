@@ -8,6 +8,7 @@
 
 import {showError} from './errors';
 import {AppThunk} from './types';
+import {fetchResolve} from '../utils/tor';
 
 // types
 type IAlert = {
@@ -52,6 +53,7 @@ const MAX_ALERTS = 5;
 export const resyncAlertsOnApiServer =
   (): AppThunk => async (dispatch, getState) => {
     const deviceToken = getState().settings.deviceNotificationToken;
+    const torEnabled = getState().settings.torEnabled;
     const alerts = getState().alerts.alerts;
 
     if (!deviceToken) {
@@ -73,16 +75,20 @@ export const resyncAlertsOnApiServer =
       : [];
 
     try {
-      fetch(`${alertProviderUrl}/resync`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      fetchResolve(
+        `${alertProviderUrl}/resync`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            deviceToken: deviceToken,
+            alerts: alertsWithoutId,
+          }),
         },
-        body: JSON.stringify({
-          deviceToken: deviceToken,
-          alerts: alertsWithoutId,
-        }),
-      });
+        torEnabled,
+      );
     } catch (error) {
       console.error(error);
     }
@@ -91,6 +97,7 @@ export const resyncAlertsOnApiServer =
 export const updateFiredAlertsFromApiServer =
   (): AppThunk => async (dispatch, getState) => {
     const deviceToken = getState().settings.deviceNotificationToken;
+    const torEnabled = getState().settings.torEnabled;
     const alerts = getState().alerts.alerts;
 
     if (!deviceToken) {
@@ -112,26 +119,20 @@ export const updateFiredAlertsFromApiServer =
       : [];
 
     try {
-      const res = await fetch(`${alertProviderUrl}/get-fired`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const data = await fetchResolve(
+        `${alertProviderUrl}/get-fired`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            deviceToken: deviceToken,
+            alerts: alertsWithoutId,
+          }),
         },
-        body: JSON.stringify({
-          deviceToken: deviceToken,
-          alerts: alertsWithoutId,
-        }),
-      });
-
-      if (!res.ok) {
-        if (__DEV__) {
-          const error = await res.json();
-          console.log(error);
-        }
-        return;
-      }
-
-      const data = await res.json();
+        torEnabled,
+      );
 
       data.map((serverFiredAlert: any) => {
         dispatch({

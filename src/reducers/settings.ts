@@ -27,6 +27,7 @@ interface ISettings {
   deviceNotificationToken: string;
   notificationsEnabled: boolean;
   manualCoinSelectionEnabled: boolean;
+  torEnabled: boolean;
   testPaymentActive: boolean;
   testPaymentKey: boolean;
   testPaymentMethod: string;
@@ -62,6 +63,7 @@ const initialState = {
   deviceNotificationToken: '',
   notificationsEnabled: false,
   manualCoinSelectionEnabled: false,
+  torEnabled: false,
 } as ISettings;
 
 // actions
@@ -90,6 +92,7 @@ const enableNotificationsAction = createAction<boolean>(
 const enableManualCoinSelectionAction = createAction<boolean>(
   'settings/enableManualCoinSelectionAction',
 );
+const enableTorAction = createAction<boolean>('settings/enableTorAction');
 const setTestPaymentAction = createAction<TestPaymentType>(
   'settings/setTestPaymentAction',
 );
@@ -156,6 +159,11 @@ export const setManualCoinSelectionEnabled =
   dispatch => {
     dispatch(enableManualCoinSelectionAction(isEnabled));
   };
+export const setTorEnabled =
+  (isEnabled: boolean): AppThunk =>
+  dispatch => {
+    dispatch(enableTorAction(isEnabled));
+  };
 
 export const setTestPayment =
   (
@@ -221,6 +229,10 @@ export const settingsSlice = createSlice({
     enableManualCoinSelectionAction: (state, action) => ({
       ...state,
       manualCoinSelectionEnabled: action.payload,
+    }),
+    enableTorAction: (state, action) => ({
+      ...state,
+      torEnabled: action.payload,
     }),
     setTestPaymentAction: (state, action) => ({
       ...state,
