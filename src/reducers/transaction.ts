@@ -429,6 +429,20 @@ function getUnmatchedNexusApiTxsWithLndTxs(
   return unmatchedTxs;
 }
 
+const checkTxCache = (
+  cachedTxHashSet: Set<string>,
+  transactionsByHash: Map<string, IDecodedTx>,
+  txHash: string,
+): IDecodedTx | null => {
+  if (cachedTxHashSet.has(txHash)) {
+    const cachedTx = transactionsByHash.get(txHash);
+    if (cachedTx) {
+      return cachedTx;
+    }
+  }
+  return null;
+};
+
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   const {buyHistory, sellHistory} = getState().buy!;
   const {transactions, convertedTransactions, cachedTxHashes} =
@@ -449,6 +463,9 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
     const txs: IDecodedTx[] = [];
     const cachedTxHashesBuf: string[] = [...cachedTxHashes];
 
+    const cachedTxHashSet = new Set(cachedTxHashes);
+    const transactionsByHash = new Map(transactions.map(tx => [tx.txHash, tx]));
+
     let processedConvertTxHashes = new Set<string>();
 
     // Process convert transactions using the extracted utility function
@@ -465,16 +482,15 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         // NOTE: skip processing if tx was cached before
         // TODO: move the skipping to the processConvertTransactions
         // when it's finished and stable to avoid getPriceOnDate calls
-        if (cachedTxHashes.includes(processedTx.txHash)) {
-          const cachedTx = transactions.find(
-            transaction => transaction.txHash === processedTx.txHash,
-          );
-          if (cachedTx) {
-            txs.push(cachedTx);
-            return;
-          }
+        const cachedTx = checkTxCache(
+          cachedTxHashSet,
+          transactionsByHash,
+          processedTx.txHash,
+        );
+        if (cachedTx) {
+          txs.push(cachedTx);
+          return;
         }
-
         const decodedTx: IDecodedTx = {
           txHash: processedTx.txHash,
           blockHash: processedTx.blockHash,
@@ -509,14 +525,14 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
     for await (const tx of lndTransactions.transactions) {
       // NOTE: skip processing if tx was cached before
-      if (cachedTxHashes.includes(tx.txHash)) {
-        const cachedTx = transactions.find(
-          transaction => transaction.txHash === tx.txHash,
-        );
-        if (cachedTx) {
-          txs.push(cachedTx);
-          continue;
-        }
+      const cachedTx = checkTxCache(
+        cachedTxHashSet,
+        transactionsByHash,
+        tx.txHash,
+      );
+      if (cachedTx) {
+        txs.push(cachedTx);
+        continue;
       }
       // Skip if this transaction is already part of a convert operation
       if (tx.txHash && processedConvertTxHashes.has(tx.txHash)) {
@@ -611,21 +627,24 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       cachedTxHashesBuf.push(decodedTx.txHash);
     }
 
+    const buyHistoryMap = new Map(buyHistory.map(tx => [tx.providerTxId, tx]));
+    const sellHistoryMap = new Map(
+      sellHistory.map(tx => [tx.providerTxId, tx]),
+    );
+
     for await (const unmatchedBuyTx of unmatchedBuyTxs) {
       // NOTE: skip processing if tx was cached before
-      if (cachedTxHashes.includes(unmatchedBuyTx.cryptoTxId)) {
-        const cachedTx = transactions.find(
-          transaction => transaction.txHash === unmatchedBuyTx.cryptoTxId,
-        );
-        if (cachedTx) {
-          txs.push(cachedTx);
-          continue;
-        }
+      const cachedTx = checkTxCache(
+        cachedTxHashSet,
+        transactionsByHash,
+        unmatchedBuyTx.cryptoTxId,
+      );
+      if (cachedTx) {
+        txs.push(cachedTx);
+        continue;
       }
 
-      const buyTx = buyHistory.find(
-        tx => tx.providerTxId === unmatchedBuyTx.providerTxId,
-      );
+      const buyTx = buyHistoryMap.get(unmatchedBuyTx.providerTxId);
       // Instead of buyTx.createdAt we extract metadata time since
       // it is a transaction of nexus-api trade type
       const txTimeStamp = getUTCTimeStampFromMetadata(buyTx.metadata);
@@ -638,19 +657,17 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
     for await (const unmatchedSellTx of unmatchedSellTxs) {
       // NOTE: skip processing if tx was cached before
-      if (cachedTxHashes.includes(unmatchedSellTx.cryptoTxId)) {
-        const cachedTx = transactions.find(
-          transaction => transaction.txHash === unmatchedSellTx.cryptoTxId,
-        );
-        if (cachedTx) {
-          txs.push(cachedTx);
-          continue;
-        }
+      const cachedTx = checkTxCache(
+        cachedTxHashSet,
+        transactionsByHash,
+        unmatchedSellTx.cryptoTxId,
+      );
+      if (cachedTx) {
+        txs.push(cachedTx);
+        continue;
       }
 
-      const sellTx = sellHistory.find(
-        tx => tx.providerTxId === unmatchedSellTx.providerTxId,
-      );
+      const sellTx = sellHistoryMap.get(unmatchedSellTx.providerTxId);
       // Instead of sellTx.createdAt we extract metadata time since
       // it is a transaction of nexus-api trade type
       const txTimeStamp = getUTCTimeStampFromMetadata(sellTx.metadata);
