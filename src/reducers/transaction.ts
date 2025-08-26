@@ -26,6 +26,7 @@ import {poll} from '../utils/poll';
 import {formatDate, formatTime} from '../utils/date';
 import {
   IDecodedTx,
+  ITrade,
   DisplayedMetadataType,
   decodedTxMetadataProjection,
   displayedTxMetadataProjection,
@@ -79,10 +80,18 @@ export type IConvertedTx = {
   selectedOutpoints: string[];
 };
 
+interface ITxHashWithExtraData {
+  hash: string;
+  inputAddrs: string[];
+  fee: number;
+}
+
 interface ITx {
   txSubscriptionStarted: boolean;
   transactions: IDecodedTx[];
   convertedTransactions: IConvertedTx[];
+  cachedTxHashes: string[];
+  txHashesWithExtraData: ITxHashWithExtraData[];
 }
 
 // initial state
@@ -92,11 +101,19 @@ const initialState = {
   invoices: [],
   memos: [],
   convertedTransactions: [],
+  cachedTxHashes: [],
+  txHashesWithExtraData: [],
 } as ITx;
 
 // actions
 const getTransactionsAction = createAction<IDecodedTx[]>(
   'transaction/getTransactionsAction',
+);
+const setCachedTxHashes = createAction<string[]>(
+  'transaction/setCachedTxHashes',
+);
+const setTxHashesWithExtraData = createAction<ITxHashWithExtraData[]>(
+  'transaction/setTxHashesWithExtraData',
 );
 const txSubscriptionStartedAction = createAction<boolean>(
   'transaction/txSubscriptionStartedAction',
@@ -394,7 +411,10 @@ export const subscribeTransactions =
     }
   };
 
-function getUnmatchedNexusApiTxsWithLndTxs(lndTxs: any[], nexusApiTxs: any[]) {
+function getUnmatchedNexusApiTxsWithLndTxs(
+  lndTxs: any[],
+  nexusApiTxs: ITrade[],
+) {
   const unmatchedTxs: any[] = [];
 
   nexusApiTxs.forEach(nexusApiTx => {
@@ -411,15 +431,24 @@ function getUnmatchedNexusApiTxsWithLndTxs(lndTxs: any[], nexusApiTxs: any[]) {
 
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   const {buyHistory, sellHistory} = getState().buy!;
-  const {convertedTransactions} = getState().transaction!;
+  const {transactions, convertedTransactions, cachedTxHashes} =
+    getState().transaction!;
   const {torEnabled} = getState().settings!;
 
   try {
-    const transactions = await getLndTransactions(
+    const lndTransactions = await getLndTransactions(
       create(GetTransactionsRequestSchema),
     );
 
+    // NOTE: for older versions with missing cachedTxHashes in the initial state
+    if (!cachedTxHashes) {
+      dispatch(setCachedTxHashes([]));
+      return;
+    }
+
     const txs: IDecodedTx[] = [];
+    const cachedTxHashesBuf: string[] = [...cachedTxHashes];
+
     let processedConvertTxHashes = new Set<string>();
 
     // Process convert transactions using the extracted utility function
@@ -427,12 +456,25 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       const {processedTransactions, processedTxHashes} =
         await processConvertTransactions(
           convertedTransactions,
-          transactions,
+          lndTransactions,
           (timestamp: number) => getPriceOnDate(timestamp, torEnabled),
         );
 
       // Add processed convert transactions to the txs array
       processedTransactions.forEach(processedTx => {
+        // NOTE: skip processing if tx was cached before
+        // TODO: move the skipping to the processConvertTransactions
+        // when it's finished and stable to avoid getPriceOnDate calls
+        if (cachedTxHashes.includes(processedTx.txHash)) {
+          const cachedTx = transactions.find(
+            transaction => transaction.txHash === processedTx.txHash,
+          );
+          if (cachedTx) {
+            txs.push(cachedTx);
+            return;
+          }
+        }
+
         const decodedTx: IDecodedTx = {
           txHash: processedTx.txHash,
           blockHash: processedTx.blockHash,
@@ -449,29 +491,33 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           tradeTx: processedTx.tradeTx,
         };
         txs.push(decodedTx);
+        cachedTxHashesBuf.push(decodedTx.txHash);
       });
 
       processedConvertTxHashes = processedTxHashes;
     }
 
     // Compare nexus-api txs with lnd txs to append missing ones in lnd
-    const unmatchedBuyTxs = getUnmatchedNexusApiTxsWithLndTxs(
-      transactions.transactions,
+    const unmatchedBuyTxs: ITrade[] = getUnmatchedNexusApiTxsWithLndTxs(
+      lndTransactions.transactions,
       buyHistory,
     );
-    const unmatchedSellTxs = getUnmatchedNexusApiTxsWithLndTxs(
-      transactions.transactions,
+    const unmatchedSellTxs: ITrade[] = getUnmatchedNexusApiTxsWithLndTxs(
+      lndTransactions.transactions,
       sellHistory,
     );
-    // Extract the Ids
-    const unmatchedBuyTxsIds: string[] = unmatchedBuyTxs.map(
-      trade => trade.providerTxId,
-    );
-    const unmatchedSellTxsIds: string[] = unmatchedSellTxs.map(
-      trade => trade.providerTxId,
-    );
 
-    for await (const tx of transactions.transactions) {
+    for await (const tx of lndTransactions.transactions) {
+      // NOTE: skip processing if tx was cached before
+      if (cachedTxHashes.includes(tx.txHash)) {
+        const cachedTx = transactions.find(
+          transaction => transaction.txHash === tx.txHash,
+        );
+        if (cachedTx) {
+          txs.push(cachedTx);
+          continue;
+        }
+      }
       // Skip if this transaction is already part of a convert operation
       if (tx.txHash && processedConvertTxHashes.has(tx.txHash)) {
         continue;
@@ -562,10 +608,24 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         tradeTx,
       };
       txs.push(decodedTx);
+      cachedTxHashesBuf.push(decodedTx.txHash);
     }
 
-    for await (const unmatchedBuyTxId of unmatchedBuyTxsIds) {
-      const buyTx = buyHistory.find(tx => tx.providerTxId === unmatchedBuyTxId);
+    for await (const unmatchedBuyTx of unmatchedBuyTxs) {
+      // NOTE: skip processing if tx was cached before
+      if (cachedTxHashes.includes(unmatchedBuyTx.cryptoTxId)) {
+        const cachedTx = transactions.find(
+          transaction => transaction.txHash === unmatchedBuyTx.cryptoTxId,
+        );
+        if (cachedTx) {
+          txs.push(cachedTx);
+          continue;
+        }
+      }
+
+      const buyTx = buyHistory.find(
+        tx => tx.providerTxId === unmatchedBuyTx.providerTxId,
+      );
       // Instead of buyTx.createdAt we extract metadata time since
       // it is a transaction of nexus-api trade type
       const txTimeStamp = getUTCTimeStampFromMetadata(buyTx.metadata);
@@ -573,11 +633,23 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         (await getPriceOnDate(Number(txTimeStamp), torEnabled)) || 0;
       const decodedTx = decodedTxMetadataProjection(buyTx, priceOnDate);
       txs.push(decodedTx);
+      cachedTxHashesBuf.push(decodedTx.txHash);
     }
 
-    for await (const unmatchedSellTxId of unmatchedSellTxsIds) {
+    for await (const unmatchedSellTx of unmatchedSellTxs) {
+      // NOTE: skip processing if tx was cached before
+      if (cachedTxHashes.includes(unmatchedSellTx.cryptoTxId)) {
+        const cachedTx = transactions.find(
+          transaction => transaction.txHash === unmatchedSellTx.cryptoTxId,
+        );
+        if (cachedTx) {
+          txs.push(cachedTx);
+          continue;
+        }
+      }
+
       const sellTx = sellHistory.find(
-        tx => tx.providerTxId === unmatchedSellTxId,
+        tx => tx.providerTxId === unmatchedSellTx.providerTxId,
       );
       // Instead of sellTx.createdAt we extract metadata time since
       // it is a transaction of nexus-api trade type
@@ -586,9 +658,11 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         (await getPriceOnDate(Number(txTimeStamp), torEnabled)) || 0;
       const decodedTx = decodedTxMetadataProjection(sellTx, priceOnDate);
       txs.push(decodedTx);
+      cachedTxHashesBuf.push(decodedTx.txHash);
     }
 
     dispatch(getTransactionsAction(txs));
+    dispatch(setCachedTxHashes(cachedTxHashesBuf));
   } catch (error) {
     console.error(error);
   }
@@ -909,6 +983,14 @@ export const transactionSlice = createSlice({
     getTransactionsAction: (state, action) => ({
       ...state,
       transactions: action.payload,
+    }),
+    setCachedTxHashes: (state, action) => ({
+      ...state,
+      cachedTxHashes: action.payload,
+    }),
+    setTxHashesWithExtraData: (state, action) => ({
+      ...state,
+      txHashesWithExtraData: action.payload,
     }),
     txSubscriptionStartedAction: (state, action) => ({
       ...state,

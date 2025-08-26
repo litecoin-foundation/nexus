@@ -7,7 +7,7 @@ import {LITECOIN} from './litecoin';
 import getTxInputData from './getTxInputData';
 import {estimateTxSize} from './estimateTxSize';
 import {getDerivedKeyPairsWithBalance} from './hdWallets';
-import {fetchResolve} from '../../utils/tor';
+import {fetchResolve} from '../utils/tor';
 
 const ECPair = ECPairFactory(ecc);
 
