@@ -21,7 +21,7 @@ import {
 import {ChangeAddressType} from 'react-native-turbo-lndltc/protos/walletrpc/walletkit_pb';
 import {create} from '@bufbuild/protobuf';
 
-import {AppThunk} from './types';
+import {AppThunk, AppThunkTxHashesWithExtraData} from './types';
 import {poll} from '../utils/poll';
 import {formatDate, formatTime} from '../utils/date';
 import {
@@ -80,7 +80,7 @@ export type IConvertedTx = {
   selectedOutpoints: string[];
 };
 
-interface ITxHashWithExtraData {
+export interface ITxHashWithExtraData {
   hash: string;
   inputAddrs: string[];
   fee: number;
@@ -442,6 +442,42 @@ const checkTxCache = (
   }
   return null;
 };
+
+export const addToTxHashesWithExtraData =
+  (hashWithData: ITxHashWithExtraData): AppThunk =>
+  (dispatch, getState) => {
+    const {txHashesWithExtraData} = getState().transaction!;
+    if (txHashesWithExtraData) {
+      const alreadyExist = txHashesWithExtraData.find(
+        tx => tx.hash === hashWithData.hash,
+      );
+      if (!alreadyExist) {
+        const txHashesWithExtraDataBuf: ITxHashWithExtraData[] =
+          txHashesWithExtraData ? [...txHashesWithExtraData] : [];
+        txHashesWithExtraDataBuf.push(hashWithData);
+        dispatch(setTxHashesWithExtraData(txHashesWithExtraDataBuf));
+      }
+    } else {
+      dispatch(setTxHashesWithExtraData([hashWithData]));
+    }
+  };
+
+export const checkTxHashesWithExtraData =
+  (hash: String): AppThunkTxHashesWithExtraData =>
+  (dispatch, getState) => {
+    const {txHashesWithExtraData} = getState().transaction!;
+    // NOTE: for older versions with missing txHashesWithExtraData in the initial state
+    if (!txHashesWithExtraData) {
+      dispatch(setTxHashesWithExtraData([]));
+      return null;
+    }
+    const alreadyExist = txHashesWithExtraData.find(tx => tx.hash === hash);
+    if (!alreadyExist) {
+      return null;
+    } else {
+      return alreadyExist;
+    }
+  };
 
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   const {buyHistory, sellHistory} = getState().buy!;

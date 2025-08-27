@@ -1,6 +1,7 @@
 import {ThunkAction, Action} from '@reduxjs/toolkit';
 import {RootState} from '../store';
 import {IBuyQuote, ISellQuote} from '../utils/tradeQuotes';
+import {ITxHashWithExtraData} from './transaction';
 
 export type AppThunk<ReturnType = void> = ThunkAction<
   ReturnType,
@@ -8,6 +9,10 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   unknown,
   Action<string>
 >;
+
+export type AppThunkTxHashesWithExtraData<
+  ReturnType = ITxHashWithExtraData | null,
+> = ThunkAction<ReturnType, RootState, unknown, Action<string>>;
 
 export type AppThunkBuyQuote<ReturnType = Promise<IBuyQuote>> = ThunkAction<
   ReturnType,
