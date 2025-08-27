@@ -83,7 +83,7 @@ export type IConvertedTx = {
 export interface ITxHashWithExtraData {
   hash: string;
   inputAddrs: string[];
-  fee: number;
+  fee: number | null;
 }
 
 interface ITx {
@@ -452,8 +452,9 @@ export const addToTxHashesWithExtraData =
         tx => tx.hash === hashWithData.hash,
       );
       if (!alreadyExist) {
-        const txHashesWithExtraDataBuf: ITxHashWithExtraData[] =
-          txHashesWithExtraData ? [...txHashesWithExtraData] : [];
+        const txHashesWithExtraDataBuf: ITxHashWithExtraData[] = [
+          ...txHashesWithExtraData,
+        ];
         txHashesWithExtraDataBuf.push(hashWithData);
         dispatch(setTxHashesWithExtraData(txHashesWithExtraDataBuf));
       }
@@ -463,7 +464,7 @@ export const addToTxHashesWithExtraData =
   };
 
 export const checkTxHashesWithExtraData =
-  (hash: String): AppThunkTxHashesWithExtraData =>
+  (hash: string): AppThunkTxHashesWithExtraData =>
   (dispatch, getState) => {
     const {txHashesWithExtraData} = getState().transaction!;
     // NOTE: for older versions with missing txHashesWithExtraData in the initial state

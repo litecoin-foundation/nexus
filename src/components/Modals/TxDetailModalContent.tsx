@@ -223,9 +223,7 @@ export default function TxDetailModalContent(props: Props) {
   );
 
   const [allInputAddrs, setAllInputAddrs] = useState<string[]>([]);
-  const [fetchedTxFee, setFetchedTxFee] = useState<number | undefined>(
-    undefined,
-  );
+  const [fetchedTxFee, setFetchedTxFee] = useState<number | null>(null);
 
   const myOutputs = transaction.myOutputs || [];
   const otherOutputs = transaction.otherOutputs || [];
@@ -243,27 +241,21 @@ export default function TxDetailModalContent(props: Props) {
         );
 
         let inputAddrs: string[] = [];
-        let fee = 0;
+        let fee: number | null = 0;
 
-        if (data.hasOwnProperty('vin')) {
-          const inputs: string[] = [];
-
-          data.vin.forEach((input: any) => {
-            inputs.push(input.prevout.scriptpubkey_address);
-          });
-
-          inputAddrs = inputs;
-          setAllInputAddrs(inputAddrs);
-        } else {
-          setAllInputAddrs(inputAddrs);
+        if (data.hasOwnProperty('vin') && Array.isArray(data.vin)) {
+          inputAddrs = data.vin.map(
+            (input: any) => input.prevout.scriptpubkey_address,
+          );
         }
+        setAllInputAddrs(inputAddrs);
 
         if (data.hasOwnProperty('fee')) {
           fee = data.fee / 100000000;
           setFetchedTxFee(fee);
         } else {
-          fee = 0;
-          setFetchedTxFee(undefined);
+          fee = null;
+          setFetchedTxFee(fee);
         }
 
         dispatch(
@@ -279,7 +271,7 @@ export default function TxDetailModalContent(props: Props) {
       }
     } catch (err) {
       setAllInputAddrs([]);
-      setFetchedTxFee(undefined);
+      setFetchedTxFee(null);
     }
   }
 
