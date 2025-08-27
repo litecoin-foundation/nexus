@@ -609,6 +609,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                           textKey="manual_selection_note"
                           domain="sendTab"
                           maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                          maxLengthInPixels={SCREEN_WIDTH * 0.7}
                           textStyle={styles.manualSelectionBottomNote}
                           numberOfLines={2}
                           interpolationObj={{amount}}
@@ -628,24 +629,28 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               <></>
             )}
 
-            <View style={styles.cellContainer}>
-              <TranslateText
-                textKey="description"
-                domain="sendTab"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.subtitleText}
-                numberOfLines={1}
-              />
-              <View style={styles.inputFieldContainer}>
-                <InputField
-                  value={description}
-                  onChangeText={text => setDescription(text)}
-                  onBlur={() => scrollToInput(0)}
-                  onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
-                  clearInput={() => setDescription('')}
+            {!enableManualSelection ? (
+              <View style={styles.cellContainer}>
+                <TranslateText
+                  textKey="description"
+                  domain="sendTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.subtitleText}
+                  numberOfLines={1}
                 />
+                <View style={styles.inputFieldContainer}>
+                  <InputField
+                    value={description}
+                    onChangeText={text => setDescription(text)}
+                    onBlur={() => scrollToInput(0)}
+                    onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
+                    clearInput={() => setDescription('')}
+                  />
+                </View>
               </View>
-            </View>
+            ) : (
+              <></>
+            )}
           </Animated.View>
         )}
       </ScrollView>
@@ -848,12 +853,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     manualSelectionBottom: {
       width: '100%',
-      height: screenHeight * 0.1,
+      minHeight: screenHeight * 0.1,
       borderRadius: screenHeight * 0.015,
-      borderColor: '#E8E8E8',
-      borderWidth: 1,
       backgroundColor: '#2C72FF',
-      padding: screenHeight * 0.015,
+      paddingTop: screenHeight * 0.01,
+      paddingBottom: screenHeight * 0.005,
+      paddingHorizontal: screenHeight * 0.015,
       gap: 10,
     },
     manualSelectionBottomTitleContainer: {
@@ -885,7 +890,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginTop: screenHeight * 0.003,
     },
     manualSelectionBottomNote: {
-      flexBasis: '75%',
+      height: 'auto',
       color: '#fff',
       fontFamily: 'Satoshi Variable',
       fontSize: screenHeight * 0.016,
