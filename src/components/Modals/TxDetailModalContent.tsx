@@ -33,7 +33,12 @@ import {formatTxDate} from '../../utils/date';
 import {isConvertMetadata, isBuySellMetadata} from '../../utils/txMetadata';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {IDisplayedTx, labelTransaction} from '../../reducers/transaction';
+import {
+  IDisplayedTx,
+  labelTransaction,
+  addToTxHashesWithExtraData,
+  checkTxHashesWithExtraData,
+} from '../../reducers/transaction';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
@@ -218,43 +223,55 @@ export default function TxDetailModalContent(props: Props) {
   );
 
   const [allInputAddrs, setAllInputAddrs] = useState<string[]>([]);
-  const [fetchedTxFee, setFetchedTxFee] = useState<number | undefined>(
-    undefined,
-  );
+  const [fetchedTxFee, setFetchedTxFee] = useState<number | null>(null);
 
   const myOutputs = transaction.myOutputs || [];
   const otherOutputs = transaction.otherOutputs || [];
 
   async function getSenderAndFee(abortController: any) {
     try {
-      const data: any = await fetchResolve(
-        `https://litecoinspace.org/api/tx/${transaction.hash}`,
-        {
-          signal: abortController.signal,
-        },
-        torEnabled,
-      );
+      const cached = dispatch(checkTxHashesWithExtraData(transaction.hash));
+      if (!cached) {
+        const data: any = await fetchResolve(
+          `https://litecoinspace.org/api/tx/${transaction.hash}`,
+          {
+            signal: abortController.signal,
+          },
+          torEnabled,
+        );
 
-      if (data.hasOwnProperty('vin')) {
-        const inputs: string[] = [];
+        let inputAddrs: string[] = [];
+        let fee: number | null = 0;
 
-        data.vin.forEach((input: any) => {
-          inputs.push(input.prevout.scriptpubkey_address);
-        });
+        if (data.hasOwnProperty('vin') && Array.isArray(data.vin)) {
+          inputAddrs = data.vin.map(
+            (input: any) => input.prevout.scriptpubkey_address,
+          );
+        }
+        setAllInputAddrs(inputAddrs);
 
-        setAllInputAddrs(inputs);
+        if (data.hasOwnProperty('fee')) {
+          fee = data.fee / 100000000;
+          setFetchedTxFee(fee);
+        } else {
+          fee = null;
+          setFetchedTxFee(fee);
+        }
+
+        dispatch(
+          addToTxHashesWithExtraData({
+            hash: transaction.hash,
+            inputAddrs,
+            fee,
+          }),
+        );
       } else {
-        setAllInputAddrs([]);
+        setAllInputAddrs(cached.inputAddrs);
+        setFetchedTxFee(cached.fee);
       }
-
-      if (data.hasOwnProperty('fee')) {
-        setFetchedTxFee(data.fee / 100000000);
-      } else {
-        setFetchedTxFee(undefined);
-      }
-    } catch {
+    } catch (err) {
       setAllInputAddrs([]);
-      setFetchedTxFee(undefined);
+      setFetchedTxFee(null);
     }
   }
 
@@ -383,7 +400,7 @@ export default function TxDetailModalContent(props: Props) {
         statusProp = transaction.providerMeta.status;
         // paymentMethodProp = transaction.providerMeta.paymentMethod;
       } else {
-        // Fetching fee data from explorer due to incorrect response from lnd
+        // NOTE: fetching fee data from explorer due to incorrect response from lnd
         // totalFeeProp = transaction.fee;
         // blockchainFeeProp = transaction.fee;
         totalFeeProp = fetchedTxFee || 'unknown';

@@ -5,7 +5,7 @@ import {ECPairFactory, ECPairInterface} from 'ecpair';
 import * as bip39 from 'bip39';
 
 import {LITECOIN} from './litecoin';
-import {fetchResolve} from '../../utils/tor';
+import {fetchResolve} from '../utils/tor';
 
 const bip32 = BIP32Factory(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -103,7 +103,11 @@ async function getDerivedUsedAddresses(
 
     // check address for txs
     try {
-      const response: any = await fetchAddressData(address, currentIndex, useTor);
+      const response: any = await fetchAddressData(
+        address,
+        currentIndex,
+        useTor,
+      );
       currentIndex++;
       sweepableAddresses.push({
         addressData: response,
@@ -168,7 +172,11 @@ function getPubKeyFromExtendedKey(extendedKey: BIP32Interface) {
   return address;
 }
 
-async function fetchAddressData(address: string, index: number, useTor: boolean) {
+async function fetchAddressData(
+  address: string,
+  index: number,
+  useTor: boolean,
+) {
   return new Promise(async (resolve, reject) => {
     try {
       const data = await fetchResolve(
@@ -203,7 +211,10 @@ async function fetchAddressData(address: string, index: number, useTor: boolean)
         reject('Invalid request.');
       }
     } catch (err) {
-      if (err instanceof Error && err.message.includes('Failed to connect with API Server')) {
+      if (
+        err instanceof Error &&
+        err.message.includes('Failed to connect with API Server')
+      ) {
         reject('Failed to connect with API Server - try using a VPN.');
       } else {
         reject('Unable to fetch balance. Contact in-app support.');
