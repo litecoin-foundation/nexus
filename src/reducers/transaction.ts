@@ -561,6 +561,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
     );
 
     for await (const tx of lndTransactions.transactions) {
+      // Skip if this transaction is already part of a convert operation
+      if (tx.txHash && processedConvertTxHashes.has(tx.txHash)) {
+        continue;
+      }
       // NOTE: skip processing if tx was cached before
       const cachedTx = checkTxCache(
         cachedTxHashSet,
@@ -569,10 +573,6 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       );
       if (cachedTx) {
         txs.push(cachedTx);
-        continue;
-      }
-      // Skip if this transaction is already part of a convert operation
-      if (tx.txHash && processedConvertTxHashes.has(tx.txHash)) {
         continue;
       }
 
