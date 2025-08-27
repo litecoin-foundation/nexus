@@ -526,25 +526,25 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         );
         if (cachedTx) {
           txs.push(cachedTx);
-          return;
+        } else {
+          const decodedTx: IDecodedTx = {
+            txHash: processedTx.txHash,
+            blockHash: processedTx.blockHash,
+            blockHeight: processedTx.blockHeight,
+            amount: processedTx.amount,
+            numConfirmations: processedTx.numConfirmations,
+            timeStamp: processedTx.timeStamp,
+            fee: processedTx.fee,
+            outputDetails: processedTx.outputDetails,
+            previousOutpoints: processedTx.previousOutpoints,
+            label: processedTx.label,
+            metaLabel: processedTx.metaLabel,
+            priceOnDate: processedTx.priceOnDate,
+            tradeTx: processedTx.tradeTx,
+          };
+          txs.push(decodedTx);
+          cachedTxHashesBuf.push(decodedTx.txHash);
         }
-        const decodedTx: IDecodedTx = {
-          txHash: processedTx.txHash,
-          blockHash: processedTx.blockHash,
-          blockHeight: processedTx.blockHeight,
-          amount: processedTx.amount,
-          numConfirmations: processedTx.numConfirmations,
-          timeStamp: processedTx.timeStamp,
-          fee: processedTx.fee,
-          outputDetails: processedTx.outputDetails,
-          previousOutpoints: processedTx.previousOutpoints,
-          label: processedTx.label,
-          metaLabel: processedTx.metaLabel,
-          priceOnDate: processedTx.priceOnDate,
-          tradeTx: processedTx.tradeTx,
-        };
-        txs.push(decodedTx);
-        cachedTxHashesBuf.push(decodedTx.txHash);
       });
 
       processedConvertTxHashes = processedTxHashes;
