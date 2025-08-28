@@ -43,15 +43,14 @@ const Tor: React.FC<Props> = props => {
   const [torStatus, setTorStatus] = useState('');
   const [torSwitchInProcess, setTorSwitchInProcess] = useState(false);
 
-  // 2s timer
+  // 1s timer
   const [tick, setTick] = useState(Math.floor(Date.now() / 1000));
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const currentTimeInSec = Math.floor(Date.now() / 1000);
-      setTick(currentTimeInSec);
+    const intervalId = setInterval(() => {
+      setTick(Math.floor(Date.now() / 1000));
     }, 1000);
-    return () => clearTimeout(timer);
-  }, [tick]);
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     const abortController = new AbortController();

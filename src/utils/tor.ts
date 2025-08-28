@@ -36,14 +36,6 @@ export const startTor = async () => {
 
 export const stopTor = async () => {
   try {
-    // NOTE: ensure directory already exists, otherwise tor won't start
-    const torDataDir = `${RNFS.DocumentDirectoryPath}/tor_data`;
-    await RNFS.mkdir(torDataDir).catch(err => {
-      if (__DEV__) {
-        console.error('Failed to create tor data directory:', err);
-      }
-    });
-
     const result = await RnTor.shutdownService();
 
     if (result) {
