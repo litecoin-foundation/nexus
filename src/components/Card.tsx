@@ -54,7 +54,7 @@ const Card: React.FC<Props> = props => {
             domain={descTextDomain}
             maxSizeInPixels={SCREEN_HEIGHT * 0.022}
             textStyle={styles.descriptionText}
-            numberOfLines={2}
+            numberOfLines={6}
             interpolationObj={textInterpolation}
           />
         ) : (

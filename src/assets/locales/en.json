@@ -292,7 +292,16 @@
     "change_login": "Change Login Passcode",
     "processing": "Processing...",
     "manual_coin_selection": "Manual Coin Selection",
-    "enable_tor": "Enable Tor"
+    "enable_tor": "Enable Tor",
+    "enable_tor_note": "Tor significantly increases online privacy by encrypting your internet traffic and routing it through multiple volunteer-run servers, sometimes it can be unavailable.",
+    "turn_tor_on": "Turn Tor On",
+    "turn_tor_off": "Turn Tor Off",
+    "tor_status": "Status:",
+    "tor_error": "Error",
+    "tor_starting": "Starting",
+    "tor_stopping": "Stopping",
+    "tor_running": "Running",
+    "tor_stopped": "Stopped"
   },
   "convertTab": {
     "convert_button": "Convert your LTC",
