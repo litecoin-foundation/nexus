@@ -32,8 +32,6 @@ interface Props {
 }
 
 const Tor: React.FC<Props> = props => {
-  // const {navigation, route} = props;
-
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -133,6 +131,7 @@ const Tor: React.FC<Props> = props => {
             small={false}
             active={true}
             onPress={handleTorSwitch}
+            disabled={torSwitchInProcess}
           />
         </CustomSafeAreaView>
       </View>

@@ -12,7 +12,7 @@ import {
   satsToSubunit,
   subunitToSats,
 } from '../utils/satoshis';
-import {stopTor} from '../utils/tor';
+import {startTor, stopTor} from '../utils/tor';
 import {checkFlexaCustomer, checkBuySellProviderCountry} from '../reducers/buy';
 
 // types
@@ -160,6 +160,7 @@ export const setManualCoinSelectionEnabled =
   dispatch => {
     dispatch(enableManualCoinSelectionAction(isEnabled));
   };
+
 export const setTorEnabled =
   (isEnabled: boolean): AppThunkBoolean<Promise<boolean>> =>
   async dispatch => {
@@ -167,9 +168,16 @@ export const setTorEnabled =
       const result = await stopTor();
       if (result) {
         dispatch(enableTorAction(isEnabled));
+      } else {
+        dispatch(enableTorAction(false));
       }
     } else {
-      dispatch(enableTorAction(isEnabled));
+      const result = await startTor();
+      if (result) {
+        dispatch(enableTorAction(isEnabled));
+      } else {
+        dispatch(enableTorAction(false));
+      }
     }
     return true;
   };
