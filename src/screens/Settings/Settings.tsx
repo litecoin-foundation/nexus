@@ -2,7 +2,6 @@ import React, {
   useState,
   useRef,
   useContext,
-  useLayoutEffect,
   useCallback,
   useEffect,
   useMemo,
@@ -119,11 +118,12 @@ const Settings: React.FC<Props> = props => {
     dispatch(setNotificationsEnabled(enabled));
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     handleNotificationSwitch();
-    const subscription = AppState.addEventListener(
-      'change',
-      handleNotificationSwitch,
+    const subscription = AppState.addEventListener('change', () =>
+      setTimeout(() => {
+        handleNotificationSwitch();
+      }, 200),
     );
     return () => subscription.remove();
     /* eslint-disable react-hooks/exhaustive-deps */
@@ -179,7 +179,7 @@ const Settings: React.FC<Props> = props => {
         forward: true,
         onPress: () => navigation.navigate('About'),
       },
-      {id: 'notifications', type: 'notifications'},
+      {id: 'notifications', type: 'notifications', notificationsEnabled},
       ...(biometricsAvailable ? [{id: 'biometrics', type: 'biometrics'}] : []),
       {
         id: 'tor',
@@ -342,7 +342,7 @@ const Settings: React.FC<Props> = props => {
               textDomain="settingsTab"
               switchEnabled
               fakeSwitch
-              switchValue={notificationsEnabled}
+              switchValue={item.notificationsEnabled}
               onPress={() => openSystemSettings()}
             />
           );
@@ -441,6 +441,7 @@ const Settings: React.FC<Props> = props => {
           showsVerticalScrollIndicator={false}
           drawDistance={200}
           overrideItemLayout={getItemLayout}
+          key={`flashlist-${notificationsEnabled}`}
         />
       </LinearGradient>
 
