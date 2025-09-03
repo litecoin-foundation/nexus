@@ -4,7 +4,7 @@ import {createSelector} from '@reduxjs/toolkit';
 import memoize from 'lodash.memoize';
 import {getCurrencies} from 'react-native-localize';
 
-import {AppThunk} from './types';
+import {AppThunk, AppThunkBoolean} from './types';
 import fiat from '../assets/fiat';
 import explorers from '../assets/explorers';
 import {
@@ -12,6 +12,7 @@ import {
   satsToSubunit,
   subunitToSats,
 } from '../utils/satoshis';
+import {startTor, stopTor} from '../utils/tor';
 import {checkFlexaCustomer, checkBuySellProviderCountry} from '../reducers/buy';
 
 // types
@@ -159,10 +160,26 @@ export const setManualCoinSelectionEnabled =
   dispatch => {
     dispatch(enableManualCoinSelectionAction(isEnabled));
   };
+
 export const setTorEnabled =
-  (isEnabled: boolean): AppThunk =>
-  dispatch => {
-    dispatch(enableTorAction(isEnabled));
+  (isEnabled: boolean): AppThunkBoolean<Promise<boolean>> =>
+  async dispatch => {
+    if (!isEnabled) {
+      const result = await stopTor();
+      if (result) {
+        dispatch(enableTorAction(isEnabled));
+      } else {
+        dispatch(enableTorAction(false));
+      }
+    } else {
+      const result = await startTor();
+      if (result) {
+        dispatch(enableTorAction(isEnabled));
+      } else {
+        dispatch(enableTorAction(false));
+      }
+    }
+    return true;
   };
 
 export const setTestPayment =

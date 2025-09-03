@@ -10,6 +10,13 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   Action<string>
 >;
 
+export type AppThunkBoolean<ReturnType = boolean> = ThunkAction<
+  ReturnType,
+  RootState,
+  unknown,
+  Action<string>
+>;
+
 export type AppThunkTxHashesWithExtraData<
   ReturnType = ITxHashWithExtraData | null,
 > = ThunkAction<ReturnType, RootState, unknown, Action<string>>;

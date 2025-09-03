@@ -34,6 +34,25 @@ export const startTor = async () => {
   }
 };
 
+export const stopTor = async () => {
+  try {
+    const result = await RnTor.shutdownService();
+
+    if (result) {
+      if (__DEV__) {
+        console.log('Tor stopped successfully');
+      }
+      return true;
+    } else {
+      console.error('Tor stopping failed');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error stopping Tor:', error);
+    return false;
+  }
+};
+
 export const checkTorStatus = async () => {
   try {
     const status = await RnTor.getServiceStatus();

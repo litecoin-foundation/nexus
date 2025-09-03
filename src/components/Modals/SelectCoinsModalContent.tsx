@@ -178,7 +178,9 @@ export default function SelectCoinsModalContent(props: Props) {
   }, [selectedBalance, convertToSubunit]);
 
   const estimatedFee = useMemo(() => {
-    if (selectedUtxos.length === 0) return 0;
+    if (selectedUtxos.length === 0) {
+      return 0;
+    }
 
     try {
       // Validate required inputs
@@ -359,6 +361,20 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
     return `${item.utxo.outpoint?.txidStr}-${item.utxo.outpoint?.outputIndex}`;
   }, []);
 
+  let realTargetAmountFormatted = String(
+    parseFloat(String(realTargetAmount)).toFixed(6),
+  );
+  if (realTargetAmountFormatted.match(/\./)) {
+    realTargetAmountFormatted = realTargetAmountFormatted.replace(/\.?0+$/, '');
+  }
+
+  let selectedBalanceFormatted = String(
+    parseFloat(String(selectedBalance)).toFixed(6),
+  );
+  if (selectedBalanceFormatted.match(/\./)) {
+    selectedBalanceFormatted = selectedBalanceFormatted.replace(/\.?0+$/, '');
+  }
+
   return (
     <>
       <View style={styles.topContainer}>
@@ -413,11 +429,11 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
             <TableTitle
               titleTextKey="required"
               titleTextDomain="sendTab"
-              titleInterpolationObj={{amount: realTargetAmount}}
+              titleInterpolationObj={{amount: realTargetAmountFormatted}}
               titleFontSize={SCREEN_HEIGHT * 0.017}
               rightTitleTextKey="selected"
               rightTitleTextDomain="sendTab"
-              rightTitleInterpolationObj={{amount: selectedBalance}}
+              rightTitleInterpolationObj={{amount: selectedBalanceFormatted}}
               rightTitleFontSize={SCREEN_HEIGHT * 0.017}
               rightColor="#2C72FF"
               thick

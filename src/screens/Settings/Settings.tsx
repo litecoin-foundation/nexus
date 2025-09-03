@@ -2,7 +2,6 @@ import React, {
   useState,
   useRef,
   useContext,
-  useLayoutEffect,
   useCallback,
   useEffect,
   useMemo,
@@ -42,7 +41,6 @@ import {
   updateSubunit,
   setNotificationsEnabled,
   setManualCoinSelectionEnabled,
-  setTorEnabled,
 } from '../../reducers/settings';
 
 import TranslateText from '../../components/TranslateText';
@@ -69,6 +67,7 @@ type RootStackParamList = {
   Support: undefined;
   ResetWallet: undefined;
   TestPayment: undefined;
+  Tor: undefined;
 };
 
 interface Props {
@@ -99,12 +98,8 @@ const Settings: React.FC<Props> = props => {
 
   const {biometricsAvailable, biometricsEnabled, faceIDSupported} =
     useAppSelector(state => state.authentication!);
-  const {
-    subunit,
-    notificationsEnabled,
-    manualCoinSelectionEnabled,
-    torEnabled,
-  } = useAppSelector(state => state.settings!);
+  const {subunit, notificationsEnabled, manualCoinSelectionEnabled} =
+    useAppSelector(state => state.settings!);
 
   const openSystemSettings = async () => {
     Linking.openSettings();
@@ -123,11 +118,12 @@ const Settings: React.FC<Props> = props => {
     dispatch(setNotificationsEnabled(enabled));
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     handleNotificationSwitch();
-    const subscription = AppState.addEventListener(
-      'change',
-      handleNotificationSwitch,
+    const subscription = AppState.addEventListener('change', () =>
+      setTimeout(() => {
+        handleNotificationSwitch();
+      }, 200),
     );
     return () => subscription.remove();
     /* eslint-disable react-hooks/exhaustive-deps */
@@ -139,10 +135,6 @@ const Settings: React.FC<Props> = props => {
 
   const handleManualCoinSelectionSwitch = () => {
     dispatch(setManualCoinSelectionEnabled(!manualCoinSelectionEnabled));
-  };
-
-  const handleTorSwitch = () => {
-    dispatch(setTorEnabled(!torEnabled));
   };
 
   const handleAuthenticationRequired = (action: string) => {
@@ -187,9 +179,15 @@ const Settings: React.FC<Props> = props => {
         forward: true,
         onPress: () => navigation.navigate('About'),
       },
-      {id: 'notifications', type: 'notifications'},
+      {id: 'notifications', type: 'notifications', notificationsEnabled},
       ...(biometricsAvailable ? [{id: 'biometrics', type: 'biometrics'}] : []),
-      {id: 'tor', type: 'tor'},
+      {
+        id: 'tor',
+        type: 'cell',
+        textKey: 'enable_tor',
+        forward: true,
+        onPress: () => navigation.navigate('Tor'),
+      },
       {
         id: 'explorer',
         type: 'cell',
@@ -301,7 +299,6 @@ const Settings: React.FC<Props> = props => {
       biometricsAvailable,
       notificationsEnabled,
       manualCoinSelectionEnabled,
-      torEnabled,
       biometricsEnabled,
       faceIDSupported,
       subunit,
@@ -345,7 +342,7 @@ const Settings: React.FC<Props> = props => {
               textDomain="settingsTab"
               switchEnabled
               fakeSwitch
-              switchValue={notificationsEnabled}
+              switchValue={item.notificationsEnabled}
               onPress={() => openSystemSettings()}
             />
           );
@@ -370,16 +367,6 @@ const Settings: React.FC<Props> = props => {
               switchEnabled
               switchValue={manualCoinSelectionEnabled}
               handleSwitch={handleManualCoinSelectionSwitch}
-            />
-          );
-        case 'tor':
-          return (
-            <SettingCell
-              textKey="enable_tor"
-              textDomain="settingsTab"
-              switchEnabled
-              switchValue={torEnabled}
-              handleSwitch={handleTorSwitch}
             />
           );
         case 'denomination':
@@ -454,6 +441,7 @@ const Settings: React.FC<Props> = props => {
           showsVerticalScrollIndicator={false}
           drawDistance={200}
           overrideItemLayout={getItemLayout}
+          key={`flashlist-${notificationsEnabled}`}
         />
       </LinearGradient>
 
