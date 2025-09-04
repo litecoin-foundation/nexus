@@ -11,6 +11,7 @@ import {RouteProp} from '@react-navigation/native';
 import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import WarningModalContent from '../../components/Modals/WarningModalContent';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setTorEnabled} from '../../reducers/settings';
 import {checkTorStatus} from '../../utils/tor';
@@ -38,10 +39,11 @@ const Tor: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
   const {t} = useTranslation('settingsTab');
-  const torEnabled = useAppSelector(state => state.settings.torEnabled);
+  const torEnabled = useAppSelector(state => state.settings!.torEnabled);
 
   const [torStatus, setTorStatus] = useState('');
   const [torSwitchInProcess, setTorSwitchInProcess] = useState(false);
+  const [showRestartModal, setShowRestartModal] = useState(false);
 
   // 1s timer
   const [tick, setTick] = useState(Math.floor(Date.now() / 1000));
@@ -101,6 +103,7 @@ const Tor: React.FC<Props> = props => {
     const processed = await dispatch(setTorEnabled(!torEnabled));
     if (processed) {
       setTorSwitchInProcess(false);
+      setShowRestartModal(true);
     }
   };
 
@@ -134,6 +137,13 @@ const Tor: React.FC<Props> = props => {
           />
         </CustomSafeAreaView>
       </View>
+
+      <WarningModalContent
+        isVisible={showRestartModal}
+        close={() => setShowRestartModal(false)}
+        textDomain="settingsTab"
+        textKey="restart_required_message"
+      />
     </LinearGradient>
   );
 };
