@@ -8858,6 +8858,11 @@ react-native-nitro-modules@0.26.2:
   resolved "https://registry.npmjs.org/react-native-nitro-modules/-/react-native-nitro-modules-0.26.2.tgz"
   integrity sha512-PvTUOryU/J1RDsPh1IvmAEDkYVVL32wCIYxkg6HsKgq+Dl+C8lth/MtW7cRZ+fJ0qW21NILbhBdhSXFzBx51fA==
 
+react-native-nitro-tor@^0.2.8:
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/react-native-nitro-tor/-/react-native-nitro-tor-0.2.8.tgz#4ec24046a117843f19b6ee3abd98e579e0c9a3ed"
+  integrity sha512-FstL8MOzJw6cS5vko82HUxtdU8oCkY7jTssdAK5nns7wghc13o6sRJfZcNKChiE3I5eUiBCS53etWdzZVoiGbA==
+
 react-native-qrcode-svg@6.3.15:
   version "6.3.15"
   resolved "https://registry.npmjs.org/react-native-qrcode-svg/-/react-native-qrcode-svg-6.3.15.tgz"
