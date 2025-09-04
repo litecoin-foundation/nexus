@@ -121,8 +121,16 @@ const Tor: React.FC<Props> = props => {
       <View style={styles.buttonContainer}>
         <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
           <TranslateText
-            textValue={t('tor_status') + ' ' + t(torStatus)}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            textValue={
+              t('tor_status_enabled') +
+              ' ' +
+              torEnabled +
+              '          ' +
+              t('tor_status') +
+              ' ' +
+              t(torStatus)
+            }
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
             textStyle={styles.statusTitle}
             numberOfLines={1}
           />
@@ -182,11 +190,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     statusTitle: {
       textAlign: 'center',
       color: '#fff',
-      fontSize: screenHeight * 0.025,
+      fontSize: screenHeight * 0.017,
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
-      fontWeight: '700',
-      paddingBottom: screenHeight * 0.01,
+      fontWeight: '600',
+      paddingBottom: screenHeight * 0.015,
     },
   });
 
@@ -200,7 +208,7 @@ export const TorNavigationOptions = (
   return {
     headerTitle: () => (
       <TranslateText
-        textKey="Tor"
+        textKey="enable_tor"
         domain="settingsTab"
         maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         textStyle={styles.headerTitle}
