@@ -18,7 +18,7 @@ interface Props {
   disableBlur?: boolean;
 }
 
-const WarningModalContent: React.FC<Props> = props => {
+const WarningModal: React.FC<Props> = props => {
   const {isVisible, close, text, textKey, textDomain, disableBlur} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -133,4 +133,4 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export default WarningModalContent;
+export default WarningModal;

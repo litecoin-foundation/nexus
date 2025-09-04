@@ -11,7 +11,7 @@ import {RouteProp} from '@react-navigation/native';
 import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import WarningModalContent from '../../components/Modals/WarningModalContent';
+import WarningModal from '../../components/Modals/WarningModal';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setTorEnabled} from '../../reducers/settings';
 import {checkTorStatus} from '../../utils/tor';
@@ -146,7 +146,7 @@ const Tor: React.FC<Props> = props => {
         </CustomSafeAreaView>
       </View>
 
-      <WarningModalContent
+      <WarningModal
         isVisible={showRestartModal}
         close={() => setShowRestartModal(false)}
         textDomain="settingsTab"
