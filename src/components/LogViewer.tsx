@@ -125,12 +125,18 @@ const LogViewer: React.FC<LogViewerProps> = ({
         return;
       }
 
-      const content = await RNFS.readFile(logFilePath, 'utf8');
+      const tempLogPath = `${RNFS.CachesDirectoryPath}/nexus_logs_${Date.now()}.txt`;
+      await RNFS.copyFile(logFilePath, tempLogPath);
+
       Share.open({
-        message: content,
+        url: `file://${tempLogPath}`,
+        type: 'text/plain',
         title: 'LND Logs',
+      }).finally(() => {
+        RNFS.unlink(tempLogPath).catch(() => {});
       });
     } catch (err) {
+      console.error('Share error:', err);
       Alert.alert('Error', 'Failed to share logs');
     }
   };
