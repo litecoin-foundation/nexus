@@ -27,20 +27,21 @@ const NewAmountView: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const chartCursorSelected = useAppSelector(
-    state => state.chart.cursorSelected,
+    state => state.chart!.cursorSelected,
   );
-  const chartCursorValue = useAppSelector(state => state.chart.cursorValue);
-  const chartCursorDate = useAppSelector(state => state.chart.cursorDate);
+  const chartCursorValue = useAppSelector(state => state.chart!.cursorValue);
+  const chartCursorDate = useAppSelector(state => state.chart!.cursorDate);
   const chartPercentageChange = useAppSelector(state =>
     chartPercentageChangeSelector(state),
   );
-  const chartPercentage = chartPercentageChange
-    ? Number(
-        chartPercentageChange.substring(0, chartPercentageChange.length - 1),
-      )
-    : 0;
+  const chartPercentage =
+    chartPercentageChange && chartPercentageChange.length > 0
+      ? Number(
+          chartPercentageChange.substring(0, chartPercentageChange.length - 1),
+        )
+      : 0;
 
-  const totalBalance = useAppSelector(state => state.balance.totalBalance);
+  const totalBalance = useAppSelector(state => state.balance!.totalBalance);
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
@@ -55,7 +56,7 @@ const NewAmountView: React.FC<Props> = props => {
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(totalBalance);
 
-  const {isInternetReachable} = useAppSelector(state => state.info);
+  const {isInternetReachable} = useAppSelector(state => state.info!);
 
   // 3s timer
   const [momentTime, setMomentTime] = useState(Math.floor(Date.now() / 1000));
@@ -67,7 +68,7 @@ const NewAmountView: React.FC<Props> = props => {
   }, [momentTime]);
 
   // check peers
-  const peersLength = useAppSelector(state => state.info!.peers.length);
+  const peersLength = useAppSelector(state => state.info?.peers?.length || 0);
   const noConnectionWarningTimeoutRef = useRef<number>(
     Math.floor(Date.now() / 1000),
   );
