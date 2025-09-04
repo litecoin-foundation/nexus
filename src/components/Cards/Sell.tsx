@@ -56,22 +56,24 @@ const Sell: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
 
-  const balance = useAppSelector(state => state.balance.confirmedBalance);
+  const balance = useAppSelector(state => state.balance!.confirmedBalance);
   // NOTE: estimate the max fee of 0.0001 ltc when selling the whole balance
   const balanceMinus00001 = Number(balance) - 10000;
-  const amount = useAppSelector(state => state.input.amount);
-  const fiatAmount = useAppSelector(state => state.input.fiatAmount);
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
-  const isSellAllowed = useAppSelector(state => state.buy.isSellAllowed);
+  const amount = useAppSelector(state => state.input!.amount);
+  const fiatAmount = useAppSelector(state => state.input!.fiatAmount);
+  const currencySymbol = useAppSelector(
+    state => state.settings!.currencySymbol,
+  );
+  const isSellAllowed = useAppSelector(state => state.buy!.isSellAllowed);
   const {minLTCSellAmount, maxLTCSellAmount} = useAppSelector(
-    state => state.buy.sellLimits,
+    state => state.buy!.sellLimits,
   );
   const {
     isMoonpayCustomer,
     isOnramperCustomer,
     proceedToGetSellLimits,
     sellQuote,
-  } = useAppSelector(state => state.buy);
+  } = useAppSelector(state => state.buy!);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -251,6 +253,7 @@ const Sell: React.FC<Props> = () => {
   const [errorTextKey, setErrorTextKey] = useState('');
   const [amountValid, setAmountValid] = useState(true);
   const [regionValid, setRegionValid] = useState(true);
+  const [prefillButtonsEnabled, setPrefillButtonsEnabled] = useState(true);
 
   const isAmountValid = useCallback(() => {
     // balance in SATS, amount in LTC
@@ -292,9 +295,31 @@ const Sell: React.FC<Props> = () => {
     return true;
   }, [isMoonpayCustomer, isOnramperCustomer, isSellAllowed]);
 
+  const isPrefillButtonsEnabled = useCallback(() => {
+    // Check if region is valid for selling
+    if (!isMoonpayCustomer && !isOnramperCustomer) {
+      return false;
+    }
+    if (!isSellAllowed) {
+      return false;
+    }
+    // Check if wallet has sufficient balance for minimum amounts
+    if (Number(balance) < minLTCSellAmount * 100000000) {
+      return false;
+    }
+    return true;
+  }, [
+    isMoonpayCustomer,
+    isOnramperCustomer,
+    isSellAllowed,
+    balance,
+    minLTCSellAmount,
+  ]);
+
   useEffect(() => {
     let isAmountValidVar = isAmountValid();
     let isRegionValidVar = isRegionValid();
+    let isPrefillButtonsEnabledVar = isPrefillButtonsEnabled();
 
     // NOTE(temp): neglect onramper amount limits
     if (isOnramperCustomer) {
@@ -303,10 +328,16 @@ const Sell: React.FC<Props> = () => {
 
     setAmountValid(isAmountValidVar);
     setRegionValid(isRegionValidVar);
+    setPrefillButtonsEnabled(isPrefillButtonsEnabledVar);
     if (isAmountValidVar && isRegionValidVar) {
       setErrorTextKey('');
     }
-  }, [isAmountValid, isRegionValid, isOnramperCustomer]);
+  }, [
+    isAmountValid,
+    isRegionValid,
+    isPrefillButtonsEnabled,
+    isOnramperCustomer,
+  ]);
 
   const SellContainer = (
     <>
@@ -432,7 +463,7 @@ const Sell: React.FC<Props> = () => {
               onChange(toggleLTC ? '1' : '100', toggleLTC ? 'ltc' : 'fiat')
             }
             active
-            disabled={!amountValid}
+            disabled={!prefillButtonsEnabled}
             customStyles={styles.presetAmountBtn}
           />
           <WhiteButton
@@ -441,7 +472,7 @@ const Sell: React.FC<Props> = () => {
               onChange(toggleLTC ? '2' : '200', toggleLTC ? 'ltc' : 'fiat')
             }
             active
-            disabled={!amountValid}
+            disabled={!prefillButtonsEnabled}
             customStyles={styles.presetAmountBtn}
           />
           <WhiteButton
@@ -450,7 +481,7 @@ const Sell: React.FC<Props> = () => {
               onChange(toggleLTC ? '5' : '500', toggleLTC ? 'ltc' : 'fiat')
             }
             active
-            disabled={!amountValid}
+            disabled={!prefillButtonsEnabled}
             customStyles={styles.presetAmountBtn}
           />
           <WhiteButton
@@ -459,7 +490,7 @@ const Sell: React.FC<Props> = () => {
               onChange(toggleLTC ? '10' : '1000', toggleLTC ? 'ltc' : 'fiat')
             }
             active
-            disabled={!amountValid}
+            disabled={!prefillButtonsEnabled}
             customStyles={styles.presetAmountBtn}
           />
         </View>
