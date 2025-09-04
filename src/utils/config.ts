@@ -22,20 +22,27 @@ const getMainnetConfig = (torEnabled: boolean = false) => {
 
   [Neutrino]
   neutrino.addpeer=88.198.50.4:9333
+  neutrino.addpeer=95.164.53.38:9333
+  neutrino.addpeer=51.178.97.131:9333
+  neutrino.addpeer=61.19.252.171:9333
+  neutrino.addpeer=70.16.140.32:9333
   neutrino.addpeer=51.222.109.157:9333
   neutrino.addpeer=12.34.98.148:9333
   neutrino.addpeer=115.179.102.163:9333
   neutrino.addpeer=104.172.235.227:9333
+  neutrino.addpeer=174.60.78.162:9333
   neutrino.feeurl=https://litecoinspace.org/api/v1/fees/recommended-lnd`;
 
   if (torEnabled) {
-    return baseConfig + `
+    return (
+      baseConfig +
+      `
 
   [tor]
   tor.active=1
   tor.socks=127.0.0.1:9150
-  tor.dns=soa.nodes.lightning.directory:53
-  tor.streamisolation=1`;
+  tor.streamisolation=1`
+    );
   }
 
   return baseConfig;
@@ -50,7 +57,7 @@ export const createConfig = (torEnabled: boolean = false) => {
       if (!lndDirExists) {
         await RNFS.mkdir(lndDir);
       }
-      
+
       const config = getMainnetConfig(torEnabled);
       RNFS.writeFile(lndConfPath, config).then(() => {
         resolve(true);
