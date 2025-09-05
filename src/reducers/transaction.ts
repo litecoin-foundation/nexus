@@ -525,7 +525,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           processedTx.txHash,
         );
         if (cachedTx) {
-          txs.push(cachedTx);
+          txs.push({
+            ...cachedTx,
+            numConfirmations: processedTx.numConfirmations,
+          });
         } else {
           const decodedTx: IDecodedTx = {
             txHash: processedTx.txHash,
@@ -572,7 +575,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
         tx.txHash,
       );
       if (cachedTx) {
-        txs.push(cachedTx);
+        txs.push({
+          ...cachedTx,
+          numConfirmations: tx.numConfirmations,
+        });
         continue;
       }
 
