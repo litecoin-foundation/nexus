@@ -206,7 +206,7 @@ export default function TxDetailModalContent(props: Props) {
     satsToSubunitSelector(state),
   );
   const cryptoAmount = convertToSubunit(transaction.amount);
-  let cryptoAmountFormatted = cryptoAmount.toFixed(4);
+  let cryptoAmountFormatted = cryptoAmount.toString();
   if (cryptoAmountFormatted.match(/\./)) {
     cryptoAmountFormatted = cryptoAmountFormatted.replace(/\.?0+$/, '');
   }
