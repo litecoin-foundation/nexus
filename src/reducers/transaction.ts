@@ -242,8 +242,8 @@ export const sendConvertWithPsbt =
           },
         },
         fees: {
-          case: 'satPerVbyte',
-          value: destination === 'private' ? BigInt(30) : BigInt(2000),
+          case: 'targetConf',
+          value: 3,
         },
         changeType:
           destination === 'private'

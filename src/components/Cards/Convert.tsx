@@ -8,7 +8,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {estimateFee} from 'react-native-turbo-lndltc';
+import {estimateFee, walletKitListUnspent} from 'react-native-turbo-lndltc';
 
 import ConvertField from '../InputFields/ConvertField';
 import BuyPad from '../Numpad/BuyPad';
@@ -17,6 +17,7 @@ import {useAppSelector, useAppDispatch} from '../../store/hooks';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
+  subunitToSatsSelector,
 } from '../../reducers/settings';
 import {
   resetInputs,
@@ -27,6 +28,9 @@ import {
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {estimateMWEBTransaction} from '../../utils/estimateFee';
+import {buildTransactionSpec} from '../../utils/estimateFeeConstructor';
+import {getAddressInfo} from '../../utils/validate';
 
 // interface Props {}
 
@@ -64,6 +68,7 @@ const Convert: React.FC<Props> = () => {
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
+  const convertToSats = useAppSelector(state => subunitToSatsSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -175,31 +180,82 @@ const Convert: React.FC<Props> = () => {
     scaler.value = withSpring(1, {mass: 0.7});
   };
 
-  const setRegularMax = () => {
-    // Work in satoshis to avoid floating point precision issues
-    const balanceInSats = Number(regularConfirmedBalance);
-    let feeInSats = Math.ceil(regularFee);
+  const setRegularMax = async () => {
+    try {
+      // Fetch all UTXOs
+      const listUnspentResponse = await walletKitListUnspent({});
+      if (!listUnspentResponse || !listUnspentResponse.utxos) {
+        console.error('No UTXOs available for fee estimation');
+        return;
+      }
 
-    // For small balances, ensure we have enough for a reasonable fee buffer
-    if (balanceInSats < 50000) {
-      // Less than 0.0005 LTC
-      feeInSats = Math.max(feeInSats, Math.floor(balanceInSats * 0.1)); // Use at least 10% for fees
+      // Filter for non-MWEB UTXOs (regular/public UTXOs)
+      const regularUtxos = listUnspentResponse.utxos.filter(
+        utxo => utxo.addressType !== 6,
+      );
+
+      if (regularUtxos.length === 0) {
+        console.log('No regular UTXOs available for conversion');
+        dispatch(updateRegularAmount('0'));
+        return;
+      }
+
+      // Calculate total input amount from regular UTXOs
+      const totalInputAmount = regularUtxos.reduce(
+        (sum, utxo) => sum + Number(utxo.amountSat),
+        0,
+      );
+
+      // Calculate max amount by iteratively estimating fee
+      let bestMaxAmount = 0;
+      let iterations = 0;
+      const maxIterations = 5;
+      const DUST_THRESHOLD = 546;
+
+      let testAmount = totalInputAmount - 2000; // Start with a conservative fee estimate
+
+      while (testAmount > DUST_THRESHOLD && iterations < maxIterations) {
+        iterations++;
+
+        try {
+          // For MAX conversion, we want to send all available funds without change
+          // So we calculate the spec as if we're sending exactly what we have minus fees
+          const spec = buildTransactionSpec({
+            regularUtxos,
+            mwebUtxos: [],
+            regularInputAmount: totalInputAmount,
+            mwebInputAmount: 0,
+            sendAmount: testAmount,
+            isTargetMWEB: true,
+            estimatedFee: totalInputAmount - testAmount,
+            totalInputAmount,
+            DUST_THRESHOLD,
+          });
+
+          // Estimate fee for this transaction
+          const estimate = estimateMWEBTransaction(spec, 10, 100);
+          const estimatedFee = estimate.fees.total;
+
+          // Check if this amount + fee fits within our inputs
+          if (testAmount + estimatedFee <= totalInputAmount) {
+            bestMaxAmount = testAmount;
+            break;
+          } else {
+            // Reduce test amount and try again
+            testAmount = totalInputAmount - estimatedFee - 100; // Add small buffer
+          }
+        } catch (error) {
+          console.error('Error estimating fee for amount:', testAmount, error);
+          testAmount = Math.floor(testAmount * 0.9); // Reduce by 10% and try again
+        }
+      }
+
+      // Convert to LTC and update the input
+      const maxAmountLTC = Math.max(0, bestMaxAmount) / 100000000;
+      dispatch(updateRegularAmount(maxAmountLTC.toFixed(8)));
+    } catch (error) {
+      console.error('Error in setRegularMax:', error);
     }
-
-    const maxSats = balanceInSats - feeInSats;
-
-    console.log(
-      'Regular Max - Balance:',
-      balanceInSats,
-      'Fee:',
-      feeInSats,
-      'Max:',
-      maxSats,
-    );
-
-    // Convert to LTC, ensuring we don't go below 0 or below dust limit (546 sats)
-    const maxAmountLTC = Math.max(0, maxSats < 546 ? 0 : maxSats) / 100000000;
-    dispatch(updateRegularAmount(maxAmountLTC.toFixed(8)));
   };
 
   const setPrivateMax = () => {
