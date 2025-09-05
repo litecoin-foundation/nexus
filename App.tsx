@@ -44,9 +44,10 @@ import {
   checkFlexaCustomer,
 } from './src/reducers/buy';
 import RootNavigator from './src/navigation/RootNavigator';
-import {store, pStore} from './src/store';
 import Error from './src/components/Error';
+import {store, pStore} from './src/store';
 
+import {startTor} from './src/utils/tor';
 import initI18N from './src/utils/i18n';
 
 const {APNSTokenModule} = NativeModules;
@@ -81,8 +82,8 @@ function ResizedView(props: any) {
 
 function ContextExecutable(props: any) {
   const dispatch = useAppDispatch();
-  const {languageCode} = useAppSelector(state => state.settings);
-  const {uniqueId} = useAppSelector(state => state.onboarding);
+  const {languageCode, torEnabled} = useAppSelector(state => state.settings!);
+  const {uniqueId} = useAppSelector(state => state.onboarding!);
   useLayoutEffect(() => {
     initI18N(languageCode);
     // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
@@ -96,6 +97,16 @@ function ContextExecutable(props: any) {
       dispatch(checkFlexaCustomer());
     }
   }, [dispatch, languageCode, uniqueId, props.deviceToken]);
+
+  useEffect(() => {
+    if (uniqueId && torEnabled) {
+      if (__DEV__) {
+        console.log('startTor');
+      }
+
+      startTor();
+    }
+  }, [dispatch, torEnabled, uniqueId]);
   return <></>;
 }
 

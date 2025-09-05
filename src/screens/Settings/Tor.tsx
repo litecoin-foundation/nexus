@@ -11,6 +11,7 @@ import {RouteProp} from '@react-navigation/native';
 import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import WarningModal from '../../components/Modals/WarningModal';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setTorEnabled} from '../../reducers/settings';
 import {checkTorStatus} from '../../utils/tor';
@@ -38,10 +39,11 @@ const Tor: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
   const {t} = useTranslation('settingsTab');
-  const torEnabled = useAppSelector(state => state.settings.torEnabled);
+  const torEnabled = useAppSelector(state => state.settings!.torEnabled);
 
   const [torStatus, setTorStatus] = useState('');
   const [torSwitchInProcess, setTorSwitchInProcess] = useState(false);
+  const [showRestartModal, setShowRestartModal] = useState(false);
 
   // 1s timer
   const [tick, setTick] = useState(Math.floor(Date.now() / 1000));
@@ -101,6 +103,7 @@ const Tor: React.FC<Props> = props => {
     const processed = await dispatch(setTorEnabled(!torEnabled));
     if (processed) {
       setTorSwitchInProcess(false);
+      setShowRestartModal(true);
     }
   };
 
@@ -118,8 +121,16 @@ const Tor: React.FC<Props> = props => {
       <View style={styles.buttonContainer}>
         <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
           <TranslateText
-            textValue={t('tor_status') + ' ' + t(torStatus)}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            textValue={
+              t('tor_status_enabled') +
+              ' ' +
+              torEnabled +
+              '          ' +
+              t('tor_status') +
+              ' ' +
+              t(torStatus)
+            }
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
             textStyle={styles.statusTitle}
             numberOfLines={1}
           />
@@ -134,6 +145,13 @@ const Tor: React.FC<Props> = props => {
           />
         </CustomSafeAreaView>
       </View>
+
+      <WarningModal
+        isVisible={showRestartModal}
+        close={() => setShowRestartModal(false)}
+        textDomain="settingsTab"
+        textKey="restart_required_message"
+      />
     </LinearGradient>
   );
 };
@@ -172,11 +190,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     statusTitle: {
       textAlign: 'center',
       color: '#fff',
-      fontSize: screenHeight * 0.025,
+      fontSize: screenHeight * 0.017,
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
-      fontWeight: '700',
-      paddingBottom: screenHeight * 0.01,
+      fontWeight: '600',
+      paddingBottom: screenHeight * 0.015,
     },
   });
 
@@ -190,7 +208,7 @@ export const TorNavigationOptions = (
   return {
     headerTitle: () => (
       <TranslateText
-        textKey="Tor"
+        textKey="enable_tor"
         domain="settingsTab"
         maxSizeInPixels={SCREEN_HEIGHT * 0.022}
         textStyle={styles.headerTitle}

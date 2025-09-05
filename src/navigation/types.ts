@@ -114,4 +114,5 @@ export type SettingsStackParamList = {
   ResetWallet: undefined;
   TestPayment: undefined;
   Tor: undefined;
+  ExportElectrum: undefined;
 };

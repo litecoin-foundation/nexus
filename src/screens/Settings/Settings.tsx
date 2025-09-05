@@ -274,8 +274,27 @@ const Settings: React.FC<Props> = props => {
             );
         },
       },
-      {id: 'denomination', type: 'denomination'},
+      {
+        id: 'export_electrum',
+        type: 'cell',
+        textKey: 'export_electrum',
+        forward: true,
+        onPress: () => {
+          handleAuthenticationRequired('export_electrum-auth')
+            .then(() => navigation.navigate('ExportElectrum'))
+            .catch(() =>
+              Alert.alert('Incorrect Pincode', undefined, [
+                {
+                  text: t('dismiss'),
+                  onPress: () => setIsPinModalOpened(false),
+                  style: 'cancel',
+                },
+              ]),
+            );
+        },
+      },
       {id: 'manual_coin_selection', type: 'manual_coin_selection'},
+      {id: 'denomination', type: 'denomination'},
       {
         id: 'reset-wallet',
         type: 'cell',

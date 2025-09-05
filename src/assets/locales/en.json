@@ -102,7 +102,7 @@
     "1y": "1Y",
     "all_time": "ALL",
     "order_id": "ORDER ID",
-    "lnd_no_connection": "Failed connecting to the Litecoin network. Try using a VPN. If you see this message again, please try another VPN.",
+    "lnd_no_connection": "Failed connecting to the Litecoin network. Try using a VPN or enabling Tor.",
     "got_it": "Got It"
   },
   "buyTab": {
@@ -189,7 +189,7 @@
     "transactions": "Transactions",
     "all": "All",
     "regular": "Regular",
-    "mweb": "MWEB",
+    "mweb": "Private",
     "find_tx": "Find a transaction",
     "paste": "Paste",
     "auto_fill": "AutoFill",
@@ -262,9 +262,12 @@
     "view_root_key": "View Root Key",
     "root_key": "Root Key",
     "root_key_description": "Your BIP32 root key can be used to derive all addresses and private keys in your wallet.",
+    "export_electrum": "Export Wallet to Electrum",
+    "export_electrum_description": "The private key below (zprv) allows you to access your Regular Litecoin using Electrum-LTC. Visit our Help Centre to learn more.",
+    "export_electrum_warning": "WARNING: The extended private key gives full access to your account. Never share it with anyone.",
     "copied": "Copied",
     "key_copied_to_clipboard": "Key has been copied to clipboard",
-    "root_key_warning": "WARNING: The extended private key (xprv/Ltpv) gives full access to your Litecoin Wallet. Never share it with anyone.",
+    "root_key_warning": "WARNING: The extended private key (zprv) gives full access to your Litecoin Wallet. Never share it with anyone.",
     "key_type": "Key Type",
     "key_format": "Key Format",
     "last_time_accessed": "Last time accessed: {{time}}",
@@ -293,7 +296,7 @@
     "processing": "Processing...",
     "manual_coin_selection": "Manual Coin Selection",
     "enable_tor": "Enable Tor",
-    "enable_tor_note": "Tor significantly increases online privacy by encrypting your internet traffic and routing it through multiple volunteer-run servers, sometimes it can be unavailable.",
+    "enable_tor_note": "Tor increases online privacy by encrypting your internet traffic and routing it through multiple volunteer-run servers.\n\nIf unavailable, use a VPN before enabling Tor.",
     "turn_tor_on": "Turn Tor On",
     "turn_tor_off": "Turn Tor Off",
     "tor_status": "Status:",
@@ -301,7 +304,11 @@
     "tor_starting": "Starting",
     "tor_stopping": "Stopping",
     "tor_running": "Running",
-    "tor_stopped": "Stopped"
+    "tor_stopped": "Stopped",
+    "tor_status_enabled": "Enabled:",
+    "restart_required": "Restart Required",
+    "restart_required_message": "Tor settings have been changed. Please restart the app for changes to take effect.",
+    "restart_later": "Restart Later"
   },
   "convertTab": {
     "convert_button": "Convert your LTC",
@@ -311,7 +318,7 @@
     "private": "Private",
     "regular_to_private": "Regular to Private",
     "private_to_regular": "Private to Regular",
-    "private_to_regular_note": "Converting your Private Litecoin to Regular Litecoin will result in 2 different transactions in your wallet. Your balance may be missing until the next Litecoin block (approx 2.5-5 min).",
+    "private_to_regular_note": "Converting your Private Litecoin to Regular Litecoin will temporarily show a reduced balance.\n\nFunds will take up to 6 confirmations before being available (15 - 20mins).",
     "confirm_convert": "Confirm Conversion",
     "awesome": "Awesome!",
     "just_converted": "You just converted"

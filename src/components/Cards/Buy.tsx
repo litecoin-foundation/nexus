@@ -296,6 +296,22 @@ const Buy: React.FC<Props> = () => {
               style={styles.switchButton}>
               <Image source={require('../../assets/icons/switch-arrow.png')} />
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.historyButton}
+              onPress={() =>
+                navigation.navigate('SearchTransaction', {openFilter: 'Buy'})
+              }>
+              <Image source={require('../../assets/icons/history-icon.png')} />
+
+              <TranslateText
+                textKey={'history'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.buttonText}
+                numberOfLines={1}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -481,6 +497,9 @@ const getStyles = (
     },
     controlBtns: {
       flexDirection: 'row',
+      gap: 8,
+      // History button's border is 1
+      marginRight: screenWidth * 0.06 * -1 - 1,
     },
     presetButtons: {
       flexDirection: 'row',
@@ -539,7 +558,7 @@ const getStyles = (
       borderTopLeftRadius: screenHeight * 0.01,
       borderBottomLeftRadius: screenHeight * 0.01,
       borderWidth: 1,
-      borderColor: '#e5e5e5',
+      borderColor: 'white',
       borderRightColor: 'white',
       backgroundColor: '#fff',
       width: screenHeight * 0.1,
@@ -548,6 +567,13 @@ const getStyles = (
       justifyContent: 'center',
       flexDirection: 'row',
       gap: 7,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     buyText: {
       fontFamily: 'Satoshi Variable',
