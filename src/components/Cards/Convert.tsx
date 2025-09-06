@@ -56,9 +56,6 @@ const Convert: React.FC<Props> = () => {
   const [activeField, setActiveField] = useState<'regular' | 'private'>(
     'regular',
   );
-  const [regularFee, setRegularFee] = useState<number>(0);
-  const [privateFee, setPrivateFee] = useState<number>(0);
-
   const {regularConfirmedBalance, privateConfirmedBalance} = useAppSelector(
     state => state.balance!,
   );
@@ -80,60 +77,6 @@ const Convert: React.FC<Props> = () => {
       dispatch(resetInputs());
     };
   }, [dispatch]);
-
-  // Fee estimation for max buttons
-  useEffect(() => {
-    const estimateRegularFee = async () => {
-      try {
-        const balance = Number(regularConfirmedBalance);
-
-        if (balance > 1000) {
-          // Only estimate if balance > 1000 sats (0.00001 LTC)
-          // Use a smaller amount for fee estimation, but ensure it's at least 1000 sats
-          const estimationAmount = Math.max(1000, balance - 1000);
-          const response = await estimateFee({
-            AddrToAmount: {
-              ltcmweb1qqdzvazxjnx3drvtrjsv9vqv3fafp3sgx84v5f8cc2yj0pysxdvmhxqacckpk5uml9020uw7d2cv4pcwcruvg36y7gktv45rphyqaxvpkgg55fax6:
-                BigInt(estimationAmount),
-            },
-            targetConf: 2,
-          });
-          setRegularFee(Number(response.feeSat));
-        } else {
-          setRegularFee(2000); // Default minimum fee of 2000 sats for small amounts
-        }
-      } catch (error) {
-        setRegularFee(2000); // Default minimum fee on error
-      }
-    };
-
-    const estimatePrivateFee = async () => {
-      try {
-        const balance = Number(privateConfirmedBalance);
-
-        if (balance > 1000) {
-          // Only estimate if balance > 1000 sats (0.00001 LTC)
-          // Use a smaller amount for fee estimation, but ensure it's at least 1000 sats
-          const estimationAmount = Math.max(1000, balance - 1000);
-          const response = await estimateFee({
-            AddrToAmount: {
-              ltc1qv4dqeaunhlaz4fe87dkes3t3mdq9q2vzczlgje:
-                BigInt(estimationAmount),
-            },
-            targetConf: 2,
-          });
-          setPrivateFee(Number(response.feeSat));
-        } else {
-          setPrivateFee(2000); // Default minimum fee of 2000 sats for small amounts
-        }
-      } catch (error) {
-        setPrivateFee(2000); // Default minimum fee on error
-      }
-    };
-
-    estimateRegularFee();
-    estimatePrivateFee();
-  }, [regularConfirmedBalance, privateConfirmedBalance]);
 
   const onChange = (value: string) => {
     if (activeField === 'regular') {
@@ -180,7 +123,7 @@ const Convert: React.FC<Props> = () => {
     scaler.value = withSpring(1, {mass: 0.7});
   };
 
-  const setRegularMax = async () => {
+  const calculateMaxFee = async (destination: 'regular' | 'private') => {
     try {
       // Fetch all UTXOs
       const listUnspentResponse = await walletKitListUnspent({});
@@ -194,95 +137,82 @@ const Convert: React.FC<Props> = () => {
         utxo => utxo.addressType !== 6,
       );
 
-      if (regularUtxos.length === 0) {
-        console.log('No regular UTXOs available for conversion');
+      // Filter for MWEB UTXOs (private UTXOs)
+      const mwebUtxos = listUnspentResponse.utxos.filter(
+        utxo => utxo.addressType === 6,
+      );
+
+      if (regularUtxos.length === 0 && destination === 'private') {
+        console.log('Convert ALL (regular -> private): no regular balance');
         dispatch(updateRegularAmount('0'));
         return;
       }
 
+      if (mwebUtxos.length === 0) {
+        console.log('Convert ALL (private -> regular): no private balance');
+        dispatch(updatePrivateAmount('0'));
+        return;
+      }
+
+      // input structure
+      const regularInputs = regularUtxos.map(() => ({type: 'P2WPKH'}));
+      const mwebInputs = mwebUtxos.map(() => ({}));
+
+      // MWEB to P2WPKH (peg-out)
+      const pegOut = {
+        inputs: [],
+        outputs: [{type: 'P2WPKH'}], // Regular output
+        mwebInputs: mwebInputs,
+        mwebOutputs: [{}], // MWEB change output
+        mwebKernels: [{pegout: true}], // Peg-out kernel with weight 4
+      };
+
+      // P2WPKH to MWEB (peg-in)
+      const pegIn = {
+        inputs: regularInputs,
+        outputs: [
+          {type: 'witness_mweb_pegin'}, // Peg-in output
+        ],
+        mwebOutputs: [{}, {}], // 2 MWEB outputs (actual + change)
+        mwebKernels: [{hasStealthExcess: true, pegin: true}], // Peg-in kernel with stealth
+      };
+
+      // Estimate fee for this transaction
+      const estimate = estimateMWEBTransaction(
+        destination === 'private' ? pegIn : pegOut,
+        10,
+        100,
+      );
+      const estimatedFee = estimate.fees.total;
+
       // Calculate total input amount from regular UTXOs
-      const totalInputAmount = regularUtxos.reduce(
+      const totalRegularInputAmount = regularUtxos.reduce(
         (sum, utxo) => sum + Number(utxo.amountSat),
         0,
       );
 
-      // Calculate max amount by iteratively estimating fee
-      let bestMaxAmount = 0;
-      let iterations = 0;
-      const maxIterations = 5;
-      const DUST_THRESHOLD = 546;
+      // Calculate total input amount from private UTXOs
+      const totalPrivateInputAmount = mwebUtxos.reduce(
+        (sum, utxo) => sum + Number(utxo.amountSat),
+        0,
+      );
 
-      let testAmount = totalInputAmount - 2000; // Start with a conservative fee estimate
-
-      while (testAmount > DUST_THRESHOLD && iterations < maxIterations) {
-        iterations++;
-
-        try {
-          // For MAX conversion, we want to send all available funds without change
-          // So we calculate the spec as if we're sending exactly what we have minus fees
-          const spec = buildTransactionSpec({
-            regularUtxos,
-            mwebUtxos: [],
-            regularInputAmount: totalInputAmount,
-            mwebInputAmount: 0,
-            sendAmount: testAmount,
-            isTargetMWEB: true,
-            estimatedFee: totalInputAmount - testAmount,
-            totalInputAmount,
-            DUST_THRESHOLD,
-          });
-
-          // Estimate fee for this transaction
-          const estimate = estimateMWEBTransaction(spec, 10, 100);
-          const estimatedFee = estimate.fees.total;
-
-          // Check if this amount + fee fits within our inputs
-          if (testAmount + estimatedFee <= totalInputAmount) {
-            bestMaxAmount = testAmount;
-            break;
-          } else {
-            // Reduce test amount and try again
-            testAmount = totalInputAmount - estimatedFee - 100; // Add small buffer
-          }
-        } catch (error) {
-          console.error('Error estimating fee for amount:', testAmount, error);
-          testAmount = Math.floor(testAmount * 0.9); // Reduce by 10% and try again
-        }
+      if (destination === 'private') {
+        const total = totalRegularInputAmount - estimatedFee;
+        const fee = Math.max(0, total) / 100000000;
+        dispatch(updateRegularAmount(fee.toFixed(8)));
+      } else if (destination === 'regular') {
+        const total = totalPrivateInputAmount - estimatedFee - 99;
+        const fee = Math.max(0, total) / 100000000;
+        dispatch(updatePrivateAmount(fee.toFixed(8)));
       }
-
-      // Convert to LTC and update the input
-      const maxAmountLTC = Math.max(0, bestMaxAmount) / 100000000;
-      dispatch(updateRegularAmount(maxAmountLTC.toFixed(8)));
     } catch (error) {
-      console.error('Error in setRegularMax:', error);
+      if (destination === 'private') {
+        dispatch(updateRegularAmount('0'));
+      } else {
+        dispatch(updatePrivateAmount('0'));
+      }
     }
-  };
-
-  const setPrivateMax = () => {
-    // Work in satoshis to avoid floating point precision issues
-    const balanceInSats = Number(privateConfirmedBalance);
-    let feeInSats = Math.ceil(privateFee);
-
-    // For small balances, ensure we have enough for a reasonable fee buffer
-    if (balanceInSats < 50000) {
-      // Less than 0.0005 LTC
-      feeInSats = Math.max(feeInSats, Math.floor(balanceInSats * 0.1)); // Use at least 10% for fees
-    }
-
-    const maxSats = balanceInSats - feeInSats;
-
-    console.log(
-      'Private Max - Balance:',
-      balanceInSats,
-      'Fee:',
-      feeInSats,
-      'Max:',
-      maxSats,
-    );
-
-    // Convert to LTC, ensuring we don't go below 0 or below dust limit (546 sats)
-    const maxAmountLTC = Math.max(0, maxSats < 546 ? 0 : maxSats) / 100000000;
-    dispatch(updatePrivateAmount(maxAmountLTC.toFixed(8)));
   };
 
   const handleConvert = () => {
@@ -311,7 +241,7 @@ const Convert: React.FC<Props> = () => {
               setActiveField('regular');
               dispatch(resetInputs());
             }}
-            setMax={setRegularMax}
+            setMax={() => calculateMaxFee('private')}
           />
           <Text style={styles.smallText}>
             {convertToSubunit(regularConfirmedBalance)}
@@ -345,7 +275,7 @@ const Convert: React.FC<Props> = () => {
               setActiveField('private');
               dispatch(resetInputs());
             }}
-            setMax={setPrivateMax}
+            setMax={() => calculateMaxFee('regular')}
           />
           <Text style={styles.smallText}>
             {convertToSubunit(privateConfirmedBalance)}
