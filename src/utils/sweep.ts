@@ -603,7 +603,7 @@ const createTopUpTx = (
   psbt.addOutput({
     address: receiveAddress,
     value: Math.floor(
-      totalSum - Math.ceil(estimateTxSize(inputScript, unspentsLength) * 18.8),
+      totalSum - Math.ceil(estimateTxSize(inputScript, unspentsLength) * 1.2),
     ),
   });
 
