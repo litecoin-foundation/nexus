@@ -111,15 +111,19 @@ const SendConfirmation: React.FC<Props> = props => {
             undefined,
             coinSelectionUtxos,
           );
-        } else if (sendAll) {
-          txid = await dispatch(sendAllOnchainPayment(toAddress, label));
         } else {
-          txid = await dispatch(
-            sendOnchainPayment(toAddress, Math.trunc(amount), label),
+          throw new Error(
+            'Manual Coin Selection enabled, but not Inputs selected.',
           );
         }
-        sendSuccessHandler(txid);
+      } else if (sendAll) {
+        txid = await dispatch(sendAllOnchainPayment(toAddress, label));
+      } else {
+        txid = await dispatch(
+          sendOnchainPayment(toAddress, Math.trunc(amount), label),
+        );
       }
+      sendSuccessHandler(txid);
 
       setLoading(false);
     } catch (error) {
