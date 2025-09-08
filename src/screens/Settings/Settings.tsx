@@ -2,7 +2,6 @@ import React, {
   useState,
   useRef,
   useContext,
-  useLayoutEffect,
   useCallback,
   useEffect,
   useMemo,
@@ -37,8 +36,13 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
 import SectionHeader from '../../components/SectionHeader';
 import {setBiometricEnabled} from '../../reducers/authentication';
+import {canUseTorOnThisDevice} from '../../utils/tor';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {updateSubunit, setNotificationsEnabled} from '../../reducers/settings';
+import {
+  updateSubunit,
+  setNotificationsEnabled,
+  setManualCoinSelectionEnabled,
+} from '../../reducers/settings';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -64,6 +68,8 @@ type RootStackParamList = {
   Support: undefined;
   ResetWallet: undefined;
   TestPayment: undefined;
+  Tor: undefined;
+  ExportElectrum: undefined;
 };
 
 interface Props {
@@ -85,6 +91,7 @@ const Settings: React.FC<Props> = props => {
     [SCREEN_WIDTH, SCREEN_HEIGHT],
   );
 
+  const [torDeviceCompatible, setTorDeviceCompatible] = useState(false);
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('view-seed-auth');
   function openPinModal(action: string) {
@@ -94,9 +101,8 @@ const Settings: React.FC<Props> = props => {
 
   const {biometricsAvailable, biometricsEnabled, faceIDSupported} =
     useAppSelector(state => state.authentication!);
-  const {subunit, notificationsEnabled} = useAppSelector(
-    state => state.settings!,
-  );
+  const {subunit, notificationsEnabled, manualCoinSelectionEnabled} =
+    useAppSelector(state => state.settings!);
 
   const openSystemSettings = async () => {
     Linking.openSettings();
@@ -115,18 +121,27 @@ const Settings: React.FC<Props> = props => {
     dispatch(setNotificationsEnabled(enabled));
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     handleNotificationSwitch();
-    const subscription = AppState.addEventListener(
-      'change',
-      handleNotificationSwitch,
+    const subscription = AppState.addEventListener('change', () =>
+      setTimeout(() => {
+        handleNotificationSwitch();
+      }, 200),
     );
     return () => subscription.remove();
     /* eslint-disable react-hooks/exhaustive-deps */
   }, []);
 
+  useEffect(() => {
+    canUseTorOnThisDevice().then(setTorDeviceCompatible);
+  }, []);
+
   const handleBiometricSwitch = () => {
     dispatch(setBiometricEnabled(!biometricsEnabled));
+  };
+
+  const handleManualCoinSelectionSwitch = () => {
+    dispatch(setManualCoinSelectionEnabled(!manualCoinSelectionEnabled));
   };
 
   const handleAuthenticationRequired = (action: string) => {
@@ -171,8 +186,19 @@ const Settings: React.FC<Props> = props => {
         forward: true,
         onPress: () => navigation.navigate('About'),
       },
-      {id: 'notifications', type: 'notifications'},
+      {id: 'notifications', type: 'notifications', notificationsEnabled},
       ...(biometricsAvailable ? [{id: 'biometrics', type: 'biometrics'}] : []),
+      ...(torDeviceCompatible
+        ? [
+            {
+              id: 'tor',
+              type: 'cell',
+              textKey: 'enable_tor',
+              forward: true,
+              onPress: () => navigation.navigate('Tor'),
+            },
+          ]
+        : []),
       {
         id: 'explorer',
         type: 'cell',
@@ -259,6 +285,26 @@ const Settings: React.FC<Props> = props => {
             );
         },
       },
+      {
+        id: 'export_electrum',
+        type: 'cell',
+        textKey: 'export_electrum',
+        forward: true,
+        onPress: () => {
+          handleAuthenticationRequired('export_electrum-auth')
+            .then(() => navigation.navigate('ExportElectrum'))
+            .catch(() =>
+              Alert.alert('Incorrect Pincode', undefined, [
+                {
+                  text: t('dismiss'),
+                  onPress: () => setIsPinModalOpened(false),
+                  style: 'cancel',
+                },
+              ]),
+            );
+        },
+      },
+      {id: 'manual_coin_selection', type: 'manual_coin_selection'},
       {id: 'denomination', type: 'denomination'},
       {
         id: 'reset-wallet',
@@ -281,7 +327,9 @@ const Settings: React.FC<Props> = props => {
     ],
     [
       biometricsAvailable,
+      torDeviceCompatible,
       notificationsEnabled,
+      manualCoinSelectionEnabled,
       biometricsEnabled,
       faceIDSupported,
       subunit,
@@ -290,15 +338,15 @@ const Settings: React.FC<Props> = props => {
     ],
   );
 
-//           <SettingCell
-//             textKey="Products"
-//             textDomain="settingsTab"
-//             onPress={() => navigation.navigate('Products')}
-//             forward
-//           />
+  //           <SettingCell
+  //             textKey="Products"
+  //             textDomain="settingsTab"
+  //             onPress={() => navigation.navigate('Products')}
+  //             forward
+  //           />
 
   const renderItem = useCallback(
-    ({item}) => {
+    ({item}: {item: any}) => {
       switch (item.type) {
         case 'support':
           return <SupportCell onPress={() => navigation.navigate('Support')} />;
@@ -325,7 +373,7 @@ const Settings: React.FC<Props> = props => {
               textDomain="settingsTab"
               switchEnabled
               fakeSwitch
-              switchValue={notificationsEnabled}
+              switchValue={item.notificationsEnabled}
               onPress={() => openSystemSettings()}
             />
           );
@@ -340,6 +388,16 @@ const Settings: React.FC<Props> = props => {
               interpolationObj={{
                 faceIDSupported: `${faceIDSupported ? t('face_id') : t('touch_id')}`,
               }}
+            />
+          );
+        case 'manual_coin_selection':
+          return (
+            <SettingCell
+              textKey="manual_coin_selection"
+              textDomain="settingsTab"
+              switchEnabled
+              switchValue={manualCoinSelectionEnabled}
+              handleSwitch={handleManualCoinSelectionSwitch}
             />
           );
         case 'denomination':
@@ -381,13 +439,14 @@ const Settings: React.FC<Props> = props => {
       dispatch,
       navigation,
       notificationsEnabled,
+      manualCoinSelectionEnabled,
     ],
   );
 
-  const keyExtractor = useCallback(item => item.id, []);
+  const keyExtractor = useCallback((item: any) => item.id, []);
 
   const getItemLayout = useCallback(
-    (item, index) => ({
+    (_item: any, index: number) => ({
       length: 60,
       offset: 60 * index,
       index,
@@ -413,6 +472,7 @@ const Settings: React.FC<Props> = props => {
           showsVerticalScrollIndicator={false}
           drawDistance={200}
           overrideItemLayout={getItemLayout}
+          key={`flashlist-${notificationsEnabled}`}
         />
       </LinearGradient>
 
@@ -440,7 +500,7 @@ const Settings: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,

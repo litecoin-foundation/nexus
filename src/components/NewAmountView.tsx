@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useRef, useState, useEffect} from 'react';
 import {View, StyleSheet, Image} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -7,7 +7,7 @@ import {chartPercentageChangeSelector} from '../reducers/chart';
 import {satsToSubunitSelector} from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
-import {formatDate, formatTime} from '../lib/utils/date';
+import {formatDate, formatTime} from '../utils/date';
 
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import TranslateText from '../components/TranslateText';
@@ -27,20 +27,21 @@ const NewAmountView: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const chartCursorSelected = useAppSelector(
-    state => state.chart.cursorSelected,
+    state => state.chart!.cursorSelected,
   );
-  const chartCursorValue = useAppSelector(state => state.chart.cursorValue);
-  const chartCursorDate = useAppSelector(state => state.chart.cursorDate);
+  const chartCursorValue = useAppSelector(state => state.chart!.cursorValue);
+  const chartCursorDate = useAppSelector(state => state.chart!.cursorDate);
   const chartPercentageChange = useAppSelector(state =>
     chartPercentageChangeSelector(state),
   );
-  const chartPercentage = chartPercentageChange
-    ? Number(
-        chartPercentageChange.substring(0, chartPercentageChange.length - 1),
-      )
-    : 0;
+  const chartPercentage =
+    chartPercentageChange && chartPercentageChange.length > 0
+      ? Number(
+          chartPercentageChange.substring(0, chartPercentageChange.length - 1),
+        )
+      : 0;
 
-  const totalBalance = useAppSelector(state => state.balance.totalBalance);
+  const totalBalance = useAppSelector(state => state.balance!.totalBalance);
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
@@ -55,7 +56,37 @@ const NewAmountView: React.FC<Props> = props => {
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const fiatAmount = calculateFiatAmount(totalBalance);
 
-  const {isInternetReachable} = useAppSelector(state => state.info);
+  const {isInternetReachable} = useAppSelector(state => state.info!);
+
+  // 3s timer
+  const [momentTime, setMomentTime] = useState(Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    setTimeout(() => {
+      const currentTimeInSec = Math.floor(Date.now() / 1000);
+      setMomentTime(currentTimeInSec);
+    }, 3000);
+  }, [momentTime]);
+
+  // check peers
+  const peersLength = useAppSelector(state => state.info?.peers?.length || 0);
+  const noConnectionWarningTimeoutRef = useRef<number>(
+    Math.floor(Date.now() / 1000),
+  );
+  const [isConnectedToPeers, setIsConnectedToPeers] = useState(true);
+  useEffect(() => {
+    // NOTE: 11sec delay cause peers are polled every 10sec
+    if (
+      noConnectionWarningTimeoutRef.current + 11 <
+      Math.floor(Date.now() / 1000)
+    ) {
+      if (peersLength <= 0) {
+        setIsConnectedToPeers(false);
+      } else {
+        setIsConnectedToPeers(true);
+      }
+    }
+  }, [peersLength, momentTime]);
+
   return (
     <Animated.View
       style={[
@@ -117,7 +148,27 @@ const NewAmountView: React.FC<Props> = props => {
           )}
         </View>
         {isInternetReachable ? (
-          <View style={styles.childrenContainer}>{children}</View>
+          isConnectedToPeers ? (
+            <View style={styles.childrenContainer}>{children}</View>
+          ) : (
+            <Animated.View style={internetOpacityStyle}>
+              <View style={styles.internetContainer}>
+                <View style={styles.internetImageContainer}>
+                  <Image
+                    style={styles.internetImage}
+                    source={require('../assets/images/no-internet-graph.png')}
+                  />
+                </View>
+                <TranslateText
+                  textKey="lnd_no_connection"
+                  domain="main"
+                  textStyle={styles.peersText}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  numberOfLines={3}
+                />
+              </View>
+            </Animated.View>
+          )
         ) : (
           <Animated.View style={internetOpacityStyle}>
             <View style={styles.internetContainer}>
@@ -131,6 +182,8 @@ const NewAmountView: React.FC<Props> = props => {
                 textKey="offline_description"
                 domain="onboarding"
                 textStyle={styles.internetText}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+                numberOfLines={3}
               />
             </View>
           </Animated.View>
@@ -205,6 +258,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     internetImage: {
       justifyContent: 'center',
       alignSelf: 'center',
+    },
+    peersText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '500',
+      color: 'white',
+      fontSize: screenHeight * 0.02,
+      textAlign: 'center',
+      paddingTop: screenHeight * 0.02,
+      paddingHorizontal: screenWidth * 0.1,
     },
   });
 

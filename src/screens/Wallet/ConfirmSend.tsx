@@ -1,6 +1,7 @@
 import React from 'react';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SendConfirmation from '../../components/SendConfirmation';
@@ -9,6 +10,7 @@ import {useAppSelector} from '../../store/hooks';
 type RootStackParamList = {
   ConfirmSend: {
     sendAll?: boolean;
+    selectedUtxos?: Utxo[];
   };
   SuccessSend: {
     txid: string;
@@ -23,13 +25,18 @@ interface Props {
 const ConfirmSend: React.FC<Props> = props => {
   const {navigation, route} = props;
 
-  const amount = useAppSelector(state => state.input.send.amount);
-  const fiatAmount = useAppSelector(state => state.input.fiatAmount);
-  const toAddress = useAppSelector(state => state.input.send.toAddress);
-  const toDomain = useAppSelector(state => state.input.send.toDomain);
-  const label = useAppSelector(state => state.input.send.label);
+  const amount = useAppSelector(state => state.input!.send.amount);
+  const fiatAmount = useAppSelector(state => state.input!.fiatAmount);
+  const toAddress = useAppSelector(state => state.input!.send.toAddress);
+  const toDomain = useAppSelector(state => state.input!.send.toDomain);
+  const label = useAppSelector(state => state.input!.send.label);
 
   const sendAll = route.params?.sendAll || false;
+  const coinSelectionUtxos =
+    route.params.selectedUtxos === undefined ||
+    route.params.selectedUtxos!.length < 1
+      ? null
+      : route.params.selectedUtxos!;
 
   return (
     <SendConfirmation
@@ -40,6 +47,7 @@ const ConfirmSend: React.FC<Props> = props => {
       label={label}
       sendSuccessHandler={txid => navigation.navigate('SuccessSend', {txid})}
       sendAll={sendAll}
+      coinSelectionUtxos={coinSelectionUtxos}
     />
   );
 };

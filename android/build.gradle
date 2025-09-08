@@ -41,4 +41,20 @@ allprojects {
     }
 }
 
+// react-native-nitro-tor: build only 64-bit + x86, never armeabi-v7a
+subprojects { p ->
+    if (p.name == "react-native-nitro-tor") {
+        p.ext.set("reactNativeArchitectures", "arm64-v8a,x86,x86_64")
+
+        p.plugins.withId("com.android.library") {
+            def androidExt = p.extensions.findByName("android")
+            if (androidExt != null) {
+                androidExt.defaultConfig {
+                    ndk { abiFilters "arm64-v8a", "x86", "x86_64" }
+                }
+            }
+        }
+    }
+}
+
 apply plugin: "com.facebook.react.rootproject"

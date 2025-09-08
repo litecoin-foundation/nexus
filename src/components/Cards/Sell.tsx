@@ -21,6 +21,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, setSellQuote} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
+import WhiteButton from '../Buttons/WhiteButton';
 import {
   resetInputs,
   updateAmount,
@@ -30,6 +31,7 @@ import {callRates} from '../../reducers/ticker';
 import {estimateFee} from 'react-native-turbo-lndltc';
 
 import TranslateText from '../../components/TranslateText';
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -37,8 +39,12 @@ type RootStackParamList = {
   SearchTransaction: {
     openFilter?: string;
   };
-  ConfirmSell: undefined;
-  ConfirmSellOnramper: undefined;
+  ConfirmSell: {
+    prefilledMethod?: string;
+  };
+  ConfirmSellOnramper: {
+    prefilledMethod?: string;
+  };
 };
 
 interface Props {
@@ -50,26 +56,34 @@ const Sell: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
 
-  const balance = useAppSelector(state => state.balance.confirmedBalance);
+  const balance = useAppSelector(state => state.balance!.confirmedBalance);
   // NOTE: estimate the max fee of 0.0001 ltc when selling the whole balance
   const balanceMinus00001 = Number(balance) - 10000;
-  const amount = useAppSelector(state => state.input.amount);
-  const fiatAmount = useAppSelector(state => state.input.fiatAmount);
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
-  const isSellAllowed = useAppSelector(state => state.buy.isSellAllowed);
+  const amount = useAppSelector(state => state.input!.amount);
+  const fiatAmount = useAppSelector(state => state.input!.fiatAmount);
+  const currencySymbol = useAppSelector(
+    state => state.settings!.currencySymbol,
+  );
+  const isSellAllowed = useAppSelector(state => state.buy!.isSellAllowed);
   const {minLTCSellAmount, maxLTCSellAmount} = useAppSelector(
-    state => state.buy.sellLimits,
+    state => state.buy!.sellLimits,
   );
   const {
     isMoonpayCustomer,
     isOnramperCustomer,
     proceedToGetSellLimits,
     sellQuote,
-  } = useAppSelector(state => state.buy);
+  } = useAppSelector(state => state.buy!);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    insets.bottom,
+    OFFSET_HEADER_DIFF,
+  );
 
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
@@ -84,6 +98,8 @@ const Sell: React.FC<Props> = () => {
       ? sellQuote.fiatAmount
       : Number(fiatAmount);
 
+  const prefilledMethodRef = useRef<string>('');
+
   useEffect(() => {
     dispatch(checkAllowed());
   }, [dispatch]);
@@ -91,7 +107,9 @@ const Sell: React.FC<Props> = () => {
   const quoteUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quoteAbortController = useRef<AbortController | null>(null);
 
-  const onChange = (value: string) => {
+  const onChange = (value: string, prefilledMethod?: string) => {
+    prefilledMethodRef.current = prefilledMethod ? prefilledMethod : '';
+
     if (toggleLTC) {
       dispatch(updateAmount(value, 'sell'));
     } else if (!toggleLTC) {
@@ -235,6 +253,7 @@ const Sell: React.FC<Props> = () => {
   const [errorTextKey, setErrorTextKey] = useState('');
   const [amountValid, setAmountValid] = useState(true);
   const [regionValid, setRegionValid] = useState(true);
+  const [prefillButtonsEnabled, setPrefillButtonsEnabled] = useState(true);
 
   const isAmountValid = useCallback(() => {
     // balance in SATS, amount in LTC
@@ -276,9 +295,31 @@ const Sell: React.FC<Props> = () => {
     return true;
   }, [isMoonpayCustomer, isOnramperCustomer, isSellAllowed]);
 
+  const isPrefillButtonsEnabled = useCallback(() => {
+    // Check if region is valid for selling
+    if (!isMoonpayCustomer && !isOnramperCustomer) {
+      return false;
+    }
+    if (!isSellAllowed) {
+      return false;
+    }
+    // Check if wallet has sufficient balance for minimum amounts
+    if (Number(balance) < minLTCSellAmount * 100000000) {
+      return false;
+    }
+    return true;
+  }, [
+    isMoonpayCustomer,
+    isOnramperCustomer,
+    isSellAllowed,
+    balance,
+    minLTCSellAmount,
+  ]);
+
   useEffect(() => {
     let isAmountValidVar = isAmountValid();
     let isRegionValidVar = isRegionValid();
+    let isPrefillButtonsEnabledVar = isPrefillButtonsEnabled();
 
     // NOTE(temp): neglect onramper amount limits
     if (isOnramperCustomer) {
@@ -287,10 +328,16 @@ const Sell: React.FC<Props> = () => {
 
     setAmountValid(isAmountValidVar);
     setRegionValid(isRegionValidVar);
+    setPrefillButtonsEnabled(isPrefillButtonsEnabledVar);
     if (isAmountValidVar && isRegionValidVar) {
       setErrorTextKey('');
     }
-  }, [isAmountValid, isRegionValid, isOnramperCustomer]);
+  }, [
+    isAmountValid,
+    isRegionValid,
+    isPrefillButtonsEnabled,
+    isOnramperCustomer,
+  ]);
 
   const SellContainer = (
     <>
@@ -392,7 +439,7 @@ const Sell: React.FC<Props> = () => {
               <Image source={require('../../assets/icons/switch-arrow.png')} />
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.historyButton}
               onPress={() =>
                 navigation.navigate('SearchTransaction', {openFilter: 'Sell'})
@@ -405,8 +452,47 @@ const Sell: React.FC<Props> = () => {
                 textStyle={styles.buttonText}
                 numberOfLines={1}
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
+        </View>
+
+        <View style={styles.presetButtons}>
+          <WhiteButton
+            value={toggleLTC ? '1' : `${currencySymbol}100`}
+            onPress={() =>
+              onChange(toggleLTC ? '1' : '100', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            disabled={!prefillButtonsEnabled}
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '2' : `${currencySymbol}200`}
+            onPress={() =>
+              onChange(toggleLTC ? '2' : '200', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            disabled={!prefillButtonsEnabled}
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '5' : `${currencySymbol}500`}
+            onPress={() =>
+              onChange(toggleLTC ? '5' : '500', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            disabled={!prefillButtonsEnabled}
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '10' : `${currencySymbol}1k`}
+            onPress={() =>
+              onChange(toggleLTC ? '10' : '1000', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            disabled={!prefillButtonsEnabled}
+            customStyles={styles.presetAmountBtn}
+          />
         </View>
 
         <View style={styles.numpadContainer}>
@@ -421,96 +507,122 @@ const Sell: React.FC<Props> = () => {
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-      ]}>
-      {regionValid ? (
-        SellContainer
-      ) : (
-        <TranslateText
-          textKey={errorTextKey}
-          domain="sellTab"
-          textStyle={styles.disabledBuyText}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        />
-      )}
-      <View style={regionValid ? styles.bottom : styles.bottomStandalone}>
-        <BlueButton
-          disabled={!(regionValid && amountValid)}
-          textKey="preview_sell"
-          textDomain="sellTab"
-          onPress={() => {
-            if (isMoonpayCustomer) {
-              navigation.navigate('ConfirmSell');
-            } else if (isOnramperCustomer) {
-              navigation.navigate('ConfirmSellOnramper');
-            } else {
-              return;
-            }
-          }}
-        />
-        {errorTextKey ? (
-          <View
-            style={
-              regionValid ? styles.underButtonNotification : {display: 'none'}
-            }>
-            <TranslateText
-              textKey={errorTextKey}
-              domain={'sellTab'}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.minText}
-              numberOfLines={1}
+    <View style={styles.container}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+        {regionValid ? (
+          SellContainer
+        ) : (
+          <TranslateText
+            textKey={errorTextKey}
+            domain="sellTab"
+            textStyle={styles.disabledBuyText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+          />
+        )}
+        <View style={styles.bottom}>
+          <View style={styles.buttons}>
+            {/* <View style={styles.btn1}>
+            <NewWhiteButton
+              textKey="schedule_buy"
+              textDomain="buyTab"
+              disabled={!(regionValid && amountValid)}
+              onPress={() => {}}
+              imageSource={require('../../assets/icons/schedule-icon.png')}
             />
-            <TranslateText
-              textValue=" "
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.minText}
-              numberOfLines={1}
-            />
-            {proceedToGetSellLimits ? null : (
+          </View> */}
+            <View style={styles.btn2}>
+              <BlueButton
+                disabled={!(regionValid && amountValid)}
+                textKey="preview_sell"
+                textDomain="sellTab"
+                onPress={() => {
+                  if (isMoonpayCustomer) {
+                    navigation.navigate('ConfirmSell', {
+                      prefilledMethod: prefilledMethodRef.current,
+                    });
+                  } else if (isOnramperCustomer) {
+                    navigation.navigate('ConfirmSellOnramper', {
+                      prefilledMethod: prefilledMethodRef.current,
+                    });
+                  } else {
+                    return;
+                  }
+                }}
+              />
+            </View>
+          </View>
+          {errorTextKey ? (
+            <View
+              style={
+                regionValid ? styles.underButtonNotification : {display: 'none'}
+              }>
               <TranslateText
-                textKey={'min_sale'}
-                domain={'buyTab'}
+                textKey={errorTextKey}
+                domain={'sellTab'}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={styles.minText}
                 numberOfLines={1}
-                interpolationObj={{
-                  currencySymbol,
-                  minAmount: minLTCSellAmount,
-                  maxAmount: maxLTCSellAmount,
-                }}
               />
-            )}
-          </View>
-        ) : proceedToGetSellLimits ? null : (
-          <TranslateText
-            textKey={'min_sale'}
-            domain={'buyTab'}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.minText}
-            numberOfLines={1}
-            interpolationObj={{
-              currencySymbol,
-              minAmount: minLTCSellAmount,
-              maxAmount: maxLTCSellAmount,
-            }}
-          />
-        )}
-      </View>
+              <TranslateText
+                textValue=" "
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.minText}
+                numberOfLines={1}
+              />
+              {proceedToGetSellLimits ? null : (
+                <TranslateText
+                  textKey={'min_sale'}
+                  domain={'buyTab'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.minText}
+                  numberOfLines={1}
+                  interpolationObj={{
+                    currencySymbol,
+                    minAmount: minLTCSellAmount,
+                    maxAmount: maxLTCSellAmount,
+                  }}
+                />
+              )}
+            </View>
+          ) : proceedToGetSellLimits ? null : (
+            <TranslateText
+              textKey={'min_sale'}
+              domain={'buyTab'}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.minText}
+              numberOfLines={1}
+              interpolationObj={{
+                currencySymbol,
+                minAmount: minLTCSellAmount,
+                maxAmount: maxLTCSellAmount,
+              }}
+            />
+          )}
+        </View>
+      </CustomSafeAreaView>
     </View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  bottomInset: number,
+  offsetHeaderDiff: number,
+) =>
   StyleSheet.create({
     container: {
+      // BottomSheet is screenHeight * 0.76
       // DashboardButton is 110
+      // Header margin is 5
       width: screenWidth,
-      height: screenHeight * 0.76 - 110,
+      height: screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
+    },
+    safeArea: {
+      flex: 1,
+      marginBottom: Platform.OS === 'android' ? bottomInset : 0,
     },
     sellContainer: {
       flexBasis: '80%',
@@ -533,27 +645,60 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     controlBtns: {
       flexDirection: 'row',
       gap: 8,
-      // History button's border is 1
-      marginRight: screenWidth * 0.06 * -1 - 1,
+    },
+    presetButtons: {
+      flexDirection: 'row',
+      gap: screenWidth * 0.015,
+      marginTop:
+        Platform.OS === 'android' ? screenHeight * 0.02 : screenHeight * 0.03,
+    },
+    presetAmountBtn: {
+      flex: 1,
+      height: screenHeight * 0.055,
+      borderRadius: screenHeight * 0.015,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
+    },
+    presetAmountBtnInactive: {
+      flex: 1,
+      height: screenHeight * 0.055,
+      borderRadius: screenHeight * 0.015,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
+      opacity: 0.5,
     },
     numpadContainer: {
       width: screenWidth,
+      marginTop: Platform.OS === 'android' ? 0 : screenHeight * 0.01,
     },
     bottom: {
-      flexBasis: '20%',
+      position: 'absolute',
+      bottom:
+        Platform.OS === 'android' ? screenHeight * 0.01 : screenHeight * 0.02,
       width: '100%',
-      marginVertical: screenHeight * 0.02,
     },
-    bottomStandalone: {
+    buttons: {
+      flexDirection: 'row',
+      gap: screenWidth * 0.015,
+    },
+    btn1: {
+      flexBasis: '42%',
+    },
+    btn2: {
       flex: 1,
-      justifyContent: 'flex-end',
-      width: '100%',
-      marginVertical: screenHeight * 0.03,
     },
     maxButton: {
       borderRadius: screenHeight * 0.01,
-      borderWidth: 1,
-      borderColor: '#e5e5e5',
       backgroundColor: '#fff',
       width: 'auto',
       minWidth: screenHeight * 0.05,
@@ -561,16 +706,28 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: screenWidth * 0.02,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     switchButton: {
       borderRadius: screenHeight * 0.01,
-      borderWidth: 1,
-      borderColor: '#e5e5e5',
       backgroundColor: '#fff',
       width: screenHeight * 0.05,
       height: screenHeight * 0.05,
       alignItems: 'center',
       justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     historyButton: {
       borderTopLeftRadius: screenHeight * 0.01,

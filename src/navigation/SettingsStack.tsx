@@ -36,6 +36,10 @@ import TestPayment, {
   TestPaymentNavigationOptions,
 } from '../screens/Settings/TestPayment';
 import Products from '../screens/Settings/Products';
+import Tor, {TorNavigationOptions} from '../screens/Settings/Tor';
+import ExportElectrum, {
+  ExportElectrumNavigationOptions,
+} from '../screens/Settings/ExportElectrum';
 import {SettingsStackParamList} from './types';
 
 const Stack = createStackNavigator<SettingsStackParamList>();
@@ -90,10 +94,7 @@ function SettingsStack() {
         component={Language}
         options={({navigation}) => LanguageNavigationOptions(navigation)}
       />
-      <Stack.Screen
-        name="Products"
-        component={Products}
-      />
+      <Stack.Screen name="Products" component={Products} />
       <Stack.Screen
         name="Scan"
         component={Scan}
@@ -135,6 +136,16 @@ function SettingsStack() {
         name="TestPayment"
         component={TestPayment}
         options={({navigation}) => TestPaymentNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="Tor"
+        component={Tor}
+        options={({navigation}) => TorNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="ExportElectrum"
+        component={ExportElectrum}
+        options={({navigation}) => ExportElectrumNavigationOptions(navigation)}
       />
     </Stack.Navigator>
   );

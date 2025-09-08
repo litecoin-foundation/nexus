@@ -1,7 +1,7 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import {AppThunk} from './types';
-import {satsToSubunit, subunitToSats} from '../lib/utils/satoshis';
+import {satsToSubunit, subunitToSats} from '../utils/satoshis';
 
 // types
 interface IInputState {

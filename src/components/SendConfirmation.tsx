@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {View, StyleSheet, DeviceEventEmitter, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import PlasmaModal from './Modals/PlasmaModal';
 import PinModalContent from './Modals/PinModalContent';
@@ -11,6 +12,7 @@ import {showError} from '../reducers/errors';
 import {
   sendOnchainPayment,
   sendAllOnchainPayment,
+  sendOnchainWithCoinSelectionPayment,
 } from '../reducers/transaction';
 import {estimateFee} from 'react-native-turbo-lndltc';
 import {
@@ -32,6 +34,7 @@ interface Props {
   sendSuccessHandler: (txid: string) => void;
   toDomain?: string;
   sendAll?: boolean;
+  coinSelectionUtxos: Utxo[] | null;
 }
 
 const SendConfirmation: React.FC<Props> = props => {
@@ -43,20 +46,27 @@ const SendConfirmation: React.FC<Props> = props => {
     sendSuccessHandler,
     toDomain,
     sendAll,
+    coinSelectionUtxos,
   } = props;
   const dispatch = useAppDispatch();
 
   const [loading, setLoading] = useState(false);
   const [fee, setFee] = useState(0);
 
+  const {confirmedBalance} = useAppSelector(state => state.balance!);
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const amountCode = useAppSelector(state => subunitCodeSelector(state));
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
+
+  const sendAmount =
+    sendAll === true ? Number(confirmedBalance) - 5100 : amount;
+  const sendFiatAmount =
+    sendAll === true ? calculateFiatAmount(confirmedBalance) : fiatAmount;
+
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
-  const amountInSubunit = convertToSubunit(amount);
+  const amountInSubunit = convertToSubunit(sendAmount);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -88,15 +98,34 @@ const SendConfirmation: React.FC<Props> = props => {
   const handleSend = async () => {
     setIsPinModalOpened(false);
     setLoading(true);
+
+    let txid: string;
     try {
-      // await is required!
-      const txid = sendAll
-        ? await dispatch(sendAllOnchainPayment(toAddress, label))
-        : await dispatch(
-            sendOnchainPayment(toAddress, Math.trunc(amount), label),
+      if (coinSelectionUtxos) {
+        if (coinSelectionUtxos.length > 0) {
+          txid = await sendOnchainWithCoinSelectionPayment(
+            toAddress,
+            Math.trunc(amount),
+            // Set ghost label if it's undefined in order to prevent default labeling
+            label || ' ',
+            undefined,
+            coinSelectionUtxos,
           );
-      setLoading(false);
+        } else {
+          throw new Error(
+            'Manual Coin Selection enabled, but not Inputs selected.',
+          );
+        }
+      } else if (sendAll) {
+        txid = await dispatch(sendAllOnchainPayment(toAddress, label));
+      } else {
+        txid = await dispatch(
+          sendOnchainPayment(toAddress, Math.trunc(amount), label),
+        );
+      }
       sendSuccessHandler(txid);
+
+      setLoading(false);
     } catch (error) {
       setLoading(false);
       dispatch(showError(String(error)));
@@ -108,9 +137,10 @@ const SendConfirmation: React.FC<Props> = props => {
     const calculateFee = async () => {
       try {
         const response = await estimateFee({
-          AddrToAmount: {[toAddress]: BigInt(amount)},
+          AddrToAmount: {[toAddress]: BigInt(sendAmount)},
           targetConf: 2,
         });
+
         setFee(Number(response.feeSat));
       } catch (error) {
         console.error(error);
@@ -158,7 +188,7 @@ const SendConfirmation: React.FC<Props> = props => {
             />
             <View style={styles.fiatAmount}>
               <TranslateText
-                textValue={currencySymbol + '' + fiatAmount}
+                textValue={sendFiatAmount}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.025}
                 textStyle={styles.fiatAmountText}
                 numberOfLines={1}

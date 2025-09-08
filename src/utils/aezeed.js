@@ -7,14 +7,14 @@ import aez from 'aez';
 import {Scrypt} from 'react-native-turbo-scrypt';
 
 import ecc from '@bitcoinerlab/secp256k1';
-import {BIP32Factory, BIP32Interface} from 'bip32';
+import {BIP32Factory} from 'bip32';
 
 import wordlist from './bip39/english.json';
 import {checkBIP39Word, getBIP39Index} from './bip39';
 import lpad from './lpad';
 import crc32c from './crc32c';
 import {hexStringToHexArray} from './hexStringToHexArray';
-import {LITECOIN, LITECOIN_WITH_XPRV} from './litecoin';
+import {LITECOIN, LITECOIN_WITH_ZPRV} from './litecoin';
 
 const bip32 = BIP32Factory(ecc);
 
@@ -249,7 +249,7 @@ export const decodeSeed = async (mnemonic, passphrase = 'aezeed') => {
 
       const bip32RootKeyXprv = bip32.fromSeed(
         entropyBuffer,
-        LITECOIN_WITH_XPRV,
+        LITECOIN_WITH_ZPRV,
       );
 
       resolve({

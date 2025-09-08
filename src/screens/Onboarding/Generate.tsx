@@ -21,7 +21,7 @@ import CustomCarousel, {
   CustomCarouselRef,
 } from '../../components/CustomCarousel';
 import {useAppSelector} from '../../store/hooks';
-import chunk from '../../lib/utils/chunk';
+import chunk from '../../utils/chunk';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';

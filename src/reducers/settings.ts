@@ -4,14 +4,15 @@ import {createSelector} from '@reduxjs/toolkit';
 import memoize from 'lodash.memoize';
 import {getCurrencies} from 'react-native-localize';
 
-import {AppThunk} from './types';
+import {AppThunk, AppThunkBoolean} from './types';
 import fiat from '../assets/fiat';
 import explorers from '../assets/explorers';
 import {
   litecoinToSubunit,
   satsToSubunit,
   subunitToSats,
-} from '../lib/utils/satoshis';
+} from '../utils/satoshis';
+import {startTor, stopTor} from '../utils/tor';
 import {checkFlexaCustomer, checkBuySellProviderCountry} from '../reducers/buy';
 
 // types
@@ -26,6 +27,8 @@ interface ISettings {
   languageTag: string;
   deviceNotificationToken: string;
   notificationsEnabled: boolean;
+  manualCoinSelectionEnabled: boolean;
+  torEnabled: boolean;
   testPaymentActive: boolean;
   testPaymentKey: boolean;
   testPaymentMethod: string;
@@ -60,6 +63,8 @@ const initialState = {
   languageTag: 'en-US',
   deviceNotificationToken: '',
   notificationsEnabled: false,
+  manualCoinSelectionEnabled: false,
+  torEnabled: false,
 } as ISettings;
 
 // actions
@@ -85,6 +90,10 @@ const setDeviceNotificationTokenAction = createAction<string>(
 const enableNotificationsAction = createAction<boolean>(
   'settings/enableNotificationsAction',
 );
+const enableManualCoinSelectionAction = createAction<boolean>(
+  'settings/enableManualCoinSelectionAction',
+);
+const enableTorAction = createAction<boolean>('settings/enableTorAction');
 const setTestPaymentAction = createAction<TestPaymentType>(
   'settings/setTestPaymentAction',
 );
@@ -144,6 +153,33 @@ export const setNotificationsEnabled =
   (isEnabled: boolean): AppThunk =>
   dispatch => {
     dispatch(enableNotificationsAction(isEnabled));
+  };
+
+export const setManualCoinSelectionEnabled =
+  (isEnabled: boolean): AppThunk =>
+  dispatch => {
+    dispatch(enableManualCoinSelectionAction(isEnabled));
+  };
+
+export const setTorEnabled =
+  (isEnabled: boolean): AppThunkBoolean<Promise<boolean>> =>
+  async dispatch => {
+    if (!isEnabled) {
+      const result = await stopTor();
+      if (result) {
+        dispatch(enableTorAction(isEnabled));
+      } else {
+        dispatch(enableTorAction(false));
+      }
+    } else {
+      const result = await startTor();
+      if (result) {
+        dispatch(enableTorAction(isEnabled));
+      } else {
+        dispatch(enableTorAction(false));
+      }
+    }
+    return true;
   };
 
 export const setTestPayment =
@@ -206,6 +242,14 @@ export const settingsSlice = createSlice({
     enableNotificationsAction: (state, action) => ({
       ...state,
       notificationsEnabled: action.payload,
+    }),
+    enableManualCoinSelectionAction: (state, action) => ({
+      ...state,
+      manualCoinSelectionEnabled: action.payload,
+    }),
+    enableTorAction: (state, action) => ({
+      ...state,
+      torEnabled: action.payload,
     }),
     setTestPaymentAction: (state, action) => ({
       ...state,

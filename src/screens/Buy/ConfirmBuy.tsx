@@ -18,7 +18,7 @@ import {getSignedUrl, getBuyTransactionHistory} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {showError} from '../../reducers/errors';
-import {parseQueryString} from '../../lib/utils/querystring';
+import {parseQueryString} from '../../utils/querystring';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -26,6 +26,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 type RootStackParamList = {
   ConfirmBuy: {
     queryString?: string;
+    prefilledMethod?: string;
   };
   WebPage: {
     uri: string;
@@ -102,7 +103,13 @@ const ConfirmBuy: React.FC<Props> = props => {
       }
 
       // await is important!
-      const url = await dispatch(getSignedUrl(address, baseCurrencyAmount));
+      const url = await dispatch(
+        getSignedUrl(
+          address,
+          baseCurrencyAmount,
+          route.params.prefilledMethod || '',
+        ),
+      );
 
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {
@@ -118,7 +125,7 @@ const ConfirmBuy: React.FC<Props> = props => {
       dispatch(showError(String(error)));
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [address, baseCurrencyAmount]);
+  }, [address, baseCurrencyAmount, route.params.prefilledMethod]);
 
   // handle successful purchase
   useEffect(() => {
@@ -145,6 +152,22 @@ const ConfirmBuy: React.FC<Props> = props => {
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [route.params, navigation]);
+
+  // NOTE: overrides swipe back gesture to fix a bug with missing header,
+  // screen swiping animation looks awful, consider turning off back gesture completely
+  useEffect(() => {
+    const onBackPress = (e: any) => {
+      if (!e.data.action) {
+        return;
+      }
+      e.preventDefault();
+      navigation.navigate('Main', {isInitial: true, updateHeader: true});
+    };
+    navigation.addListener('beforeRemove', onBackPress);
+    return () => {
+      navigation.removeListener('beforeRemove', onBackPress);
+    };
+  }, [navigation]);
 
   const SuccessScreen = (
     <>

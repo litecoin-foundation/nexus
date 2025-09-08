@@ -19,6 +19,7 @@ import {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import BuyPad from '../Numpad/BuyPad';
 import BlueButton from '../Buttons/BlueButton';
+import WhiteButton from '../Buttons/WhiteButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, setLimits, setBuyQuote} from '../../reducers/buy';
 import {
@@ -29,6 +30,7 @@ import {
 import {callRates} from '../../reducers/ticker';
 
 import TranslateText from '../../components/TranslateText';
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -36,8 +38,12 @@ type RootStackParamList = {
   SearchTransaction: {
     openFilter?: string;
   };
-  ConfirmBuy: undefined;
-  ConfirmBuyOnramper: undefined;
+  ConfirmBuy: {
+    prefilledMethod?: string;
+  };
+  ConfirmBuyOnramper: {
+    prefilledMethod?: string;
+  };
 };
 
 interface Props {
@@ -64,8 +70,13 @@ const Buy: React.FC<Props> = () => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
+  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    insets.bottom,
+    OFFSET_HEADER_DIFF,
+  );
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
@@ -79,6 +90,8 @@ const Buy: React.FC<Props> = () => {
       ? buyQuote.baseCurrencyAmount
       : Number(fiatAmount);
 
+  const prefilledMethodRef = useRef<string>('');
+
   useEffect(() => {
     dispatch(checkAllowed());
     dispatch(setLimits());
@@ -87,7 +100,9 @@ const Buy: React.FC<Props> = () => {
   const quoteUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const quoteAbortController = useRef<AbortController | null>(null);
 
-  const onChange = (value: string) => {
+  const onChange = (value: string, prefilledMethod?: string) => {
+    prefilledMethodRef.current = prefilledMethod ? prefilledMethod : '';
+
     if (toggleLTC) {
       dispatch(updateAmount(value, 'buy'));
     } else if (!toggleLTC) {
@@ -288,6 +303,7 @@ const Buy: React.FC<Props> = () => {
                 navigation.navigate('SearchTransaction', {openFilter: 'Buy'})
               }>
               <Image source={require('../../assets/icons/history-icon.png')} />
+
               <TranslateText
                 textKey={'history'}
                 domain={'buyTab'}
@@ -297,6 +313,41 @@ const Buy: React.FC<Props> = () => {
               />
             </TouchableOpacity>
           </View>
+        </View>
+
+        <View style={styles.presetButtons}>
+          <WhiteButton
+            value={toggleLTC ? '1' : `${currencySymbol}100`}
+            onPress={() =>
+              onChange(toggleLTC ? '1' : '100', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '2' : `${currencySymbol}200`}
+            onPress={() =>
+              onChange(toggleLTC ? '2' : '200', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '5' : `${currencySymbol}500`}
+            onPress={() =>
+              onChange(toggleLTC ? '5' : '500', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            customStyles={styles.presetAmountBtn}
+          />
+          <WhiteButton
+            value={toggleLTC ? '10' : `${currencySymbol}1k`}
+            onPress={() =>
+              onChange(toggleLTC ? '10' : '1000', toggleLTC ? 'ltc' : 'fiat')
+            }
+            active
+            customStyles={styles.presetAmountBtn}
+          />
         </View>
 
         <View style={styles.numpadContainer}>
@@ -311,94 +362,120 @@ const Buy: React.FC<Props> = () => {
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
-      ]}>
-      {regionValid ? (
-        BuyContainer
-      ) : (
-        <TranslateText
-          textKey={errorTextKey}
-          domain="buyTab"
-          textStyle={styles.disabledBuyText}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        />
-      )}
-      <View style={regionValid ? styles.bottom : styles.bottomStandalone}>
-        <BlueButton
-          disabled={!(regionValid && amountValid)}
-          textKey="preview_buy"
-          textDomain="buyTab"
-          onPress={() => {
-            // NOTE: quote's polled every 15 sec but we have to
-            // instant update it for preview
-            dispatch(callRates());
-            if (isMoonpayCustomer) {
-              navigation.navigate('ConfirmBuy');
-            } else if (isOnramperCustomer) {
-              navigation.navigate('ConfirmBuyOnramper');
-            } else {
-              return;
-            }
-          }}
-        />
-        {errorTextKey ? (
-          <View
-            style={
-              regionValid ? styles.underButtonNotification : {display: 'none'}
-            }>
-            <TranslateText
-              textKey={errorTextKey}
-              domain={'buyTab'}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.minText}
-              numberOfLines={1}
+    <View style={styles.container}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+        {regionValid ? (
+          BuyContainer
+        ) : (
+          <TranslateText
+            textKey={errorTextKey}
+            domain="buyTab"
+            textStyle={styles.disabledBuyText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+          />
+        )}
+        <View style={styles.bottom}>
+          <View style={styles.buttons}>
+            {/* <View style={styles.btn1}>
+            <NewWhiteButton
+              textKey="schedule_buy"
+              textDomain="buyTab"
+              disabled={!(regionValid && amountValid)}
+              onPress={() => {}}
+              imageSource={require('../../assets/icons/schedule-icon.png')}
             />
-            <TranslateText
-              textValue=" "
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.minText}
-              numberOfLines={1}
-            />
-            {proceedToGetBuyLimits ? null : (
+          </View> */}
+            <View style={styles.btn2}>
+              <BlueButton
+                disabled={!(regionValid && amountValid)}
+                textKey="preview_buy"
+                textDomain="buyTab"
+                onPress={() => {
+                  // NOTE: quote's polled every 15 sec but we have to
+                  // instant update it for preview
+                  dispatch(callRates());
+                  if (isMoonpayCustomer) {
+                    navigation.navigate('ConfirmBuy', {
+                      prefilledMethod: prefilledMethodRef.current,
+                    });
+                  } else if (isOnramperCustomer) {
+                    navigation.navigate('ConfirmBuyOnramper', {
+                      prefilledMethod: prefilledMethodRef.current,
+                    });
+                  } else {
+                    return;
+                  }
+                }}
+              />
+            </View>
+          </View>
+          {errorTextKey ? (
+            <View
+              style={
+                regionValid ? styles.underButtonNotification : {display: 'none'}
+              }>
               <TranslateText
-                textKey={'min_purchase'}
+                textKey={errorTextKey}
                 domain={'buyTab'}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={styles.minText}
                 numberOfLines={1}
-                interpolationObj={{
-                  currencySymbol,
-                  minAmountInFiat: minBuyAmount,
-                }}
               />
-            )}
-          </View>
-        ) : proceedToGetBuyLimits ? null : (
-          <TranslateText
-            textKey={'min_purchase'}
-            domain={'buyTab'}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.minText}
-            numberOfLines={1}
-            interpolationObj={{currencySymbol, minAmountInFiat: minBuyAmount}}
-          />
-        )}
-      </View>
+              <TranslateText
+                textValue=" "
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.minText}
+                numberOfLines={1}
+              />
+              {proceedToGetBuyLimits ? null : (
+                <TranslateText
+                  textKey={'min_purchase'}
+                  domain={'buyTab'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.minText}
+                  numberOfLines={1}
+                  interpolationObj={{
+                    currencySymbol,
+                    minAmountInFiat: minBuyAmount,
+                  }}
+                />
+              )}
+            </View>
+          ) : proceedToGetBuyLimits ? null : (
+            <TranslateText
+              textKey={'min_purchase'}
+              domain={'buyTab'}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.minText}
+              numberOfLines={1}
+              interpolationObj={{currencySymbol, minAmountInFiat: minBuyAmount}}
+            />
+          )}
+        </View>
+      </CustomSafeAreaView>
     </View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  bottomInset: number,
+  offsetHeaderDiff: number,
+) =>
   StyleSheet.create({
     container: {
+      // BottomSheet is screenHeight * 0.76
       // DashboardButton is 110
+      // Header margin is 5
       width: screenWidth,
-      height: screenHeight * 0.76 - 110,
+      height: screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
+    },
+    safeArea: {
+      flex: 1,
+      marginBottom: Platform.OS === 'android' ? bottomInset : 0,
     },
     buyContainer: {
       flexBasis: '80%',
@@ -424,35 +501,64 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       // History button's border is 1
       marginRight: screenWidth * 0.06 * -1 - 1,
     },
+    presetButtons: {
+      flexDirection: 'row',
+      gap: screenWidth * 0.015,
+      marginTop:
+        Platform.OS === 'android' ? screenHeight * 0.02 : screenHeight * 0.03,
+    },
+    presetAmountBtn: {
+      flex: 1,
+      height: screenHeight * 0.055,
+      borderRadius: screenHeight * 0.015,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
+    },
     numpadContainer: {
       width: screenWidth,
+      marginTop: Platform.OS === 'android' ? 0 : screenHeight * 0.01,
     },
     bottom: {
-      flexBasis: '20%',
+      position: 'absolute',
+      bottom:
+        Platform.OS === 'android' ? screenHeight * 0.01 : screenHeight * 0.02,
       width: '100%',
-      marginVertical: screenHeight * 0.02,
     },
-    bottomStandalone: {
+    buttons: {
+      flexDirection: 'row',
+      gap: screenWidth * 0.015,
+    },
+    btn1: {
+      flexBasis: '42%',
+    },
+    btn2: {
       flex: 1,
-      justifyContent: 'flex-end',
-      width: '100%',
-      marginVertical: screenHeight * 0.03,
     },
     switchButton: {
-      borderRadius: screenHeight * 0.01,
-      borderWidth: 1,
-      borderColor: '#e5e5e5',
-      backgroundColor: '#fff',
       width: screenHeight * 0.05,
       height: screenHeight * 0.05,
+      borderRadius: screenHeight * 0.01,
+      backgroundColor: '#fff',
       alignItems: 'center',
       justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     historyButton: {
       borderTopLeftRadius: screenHeight * 0.01,
       borderBottomLeftRadius: screenHeight * 0.01,
       borderWidth: 1,
-      borderColor: '#e5e5e5',
+      borderColor: 'white',
       borderRightColor: 'white',
       backgroundColor: '#fff',
       width: screenHeight * 0.1,
@@ -461,6 +567,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
       flexDirection: 'row',
       gap: 7,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.07,
+      shadowRadius: 3,
     },
     buyText: {
       fontFamily: 'Satoshi Variable',

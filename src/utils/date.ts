@@ -1,4 +1,4 @@
-import {store} from '../../store';
+import {store} from '../store';
 
 const todayTranslations = {
   'en-US': 'Today',
@@ -18,16 +18,14 @@ const todayTranslations = {
 export const formatDate = (date: number) => {
   const state = store.getState();
   const {languageTag} = state.settings;
-  const ONE_DAY = 60 * 60 * 24 * 1000;
   const jsDate = new Date(date);
-  const time = new Date();
-  const diff = time - jsDate;
+  const today = new Date();
 
-  if (diff < ONE_DAY) {
+  if (jsDate.toDateString() === today.toDateString()) {
     return todayTranslations[languageTag] || 'Today';
   }
 
-  if (diff > ONE_DAY && jsDate.getFullYear() === time.getFullYear()) {
+  if (jsDate.getFullYear() === today.getFullYear()) {
     return jsDate.toLocaleDateString(languageTag, {
       month: 'long',
       day: 'numeric',

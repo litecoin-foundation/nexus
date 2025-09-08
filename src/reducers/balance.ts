@@ -3,7 +3,7 @@ import {PURGE} from 'redux-persist';
 import {walletBalance, walletKitListUnspent} from 'react-native-turbo-lndltc';
 
 import {AppThunk} from './types';
-import {poll} from '../lib/utils/poll';
+import {poll} from '../utils/poll';
 
 // types
 type UtxoBalance = {

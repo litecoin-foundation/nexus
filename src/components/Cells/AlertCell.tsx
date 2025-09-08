@@ -1,16 +1,32 @@
-import React, {useState, useContext, useLayoutEffect} from 'react';
+import React, {useState, useContext, useLayoutEffect, useCallback} from 'react';
 import {View, TouchableOpacity, StyleSheet} from 'react-native';
+
 import LitecoinIcon from '../LitecoinIcon';
 import Switch from '../Buttons/Switch';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {setAlertAvailability} from '../../reducers/alerts';
-import {formatTxDate} from '../../lib/utils/date';
+import {setAlertAvailability, updateLastTimePrice} from '../../reducers/alerts';
+import {formatTxDate} from '../../utils/date';
+import {fetchResolve} from '../../utils/tor';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
+interface AlertData {
+  index: number;
+  value: number;
+  valueInLocal: string;
+  isPositive: boolean;
+  isFired: boolean;
+  lastTimePriceCache: number;
+  lastTimePriceCachedAt: number;
+}
+
+interface LastPriceResponse {
+  timestamp?: number;
+}
+
 interface Props {
-  data: any;
+  data: AlertData;
   onPress: (index: number) => void;
 }
 
@@ -20,60 +36,78 @@ const AlertCell: React.FC<Props> = props => {
   const {width, height} = useContext(ScreenSizeContext);
   const styles = getStyles(width, height);
 
-  const item = data;
   const dispatch = useAppDispatch();
-  const currencySymbol = useAppSelector(state => state.settings.currencySymbol);
-  const alertValueInLocalFiat = item.valueInLocal;
+  const currencySymbol = useAppSelector(
+    state => state.settings!.currencySymbol,
+  );
+  const torEnabled = useAppSelector(state => state.settings!.torEnabled);
 
-  const handleSwitch = (value: boolean) => {
-    dispatch(setAlertAvailability(item.index, value));
-  };
+  const handleSwitch = useCallback(
+    (value: boolean) => {
+      dispatch(setAlertAvailability(data.index, value));
+    },
+    [dispatch, data.index],
+  );
+
+  const handlePress = useCallback(() => {
+    onPress(data.index);
+  }, [onPress, data.index]);
 
   const [lastTimePrice, setLastTimePrice] = useState('');
 
-  async function getLastTimePrice() {
-    try {
-      const price = item.value;
-      const res = await fetch(
-        'https://api.nexuswallet.com/api/prices/lastprice',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            price,
-          }),
-        },
-      );
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error);
-      } else {
-        const resData: any = await res.json();
-
-        if (resData.hasOwnProperty('timestamp')) {
-          setLastTimePrice(formatTxDate(resData.timestamp));
-        } else {
-          setLastTimePrice('');
-        }
-      }
-    } catch {
-      setLastTimePrice('');
-    }
-  }
-
   useLayoutEffect(() => {
+    const abortController = new AbortController();
+
+    const getLastTimePrice = async () => {
+      try {
+        // do not update too often, max every 10 mins
+        if (
+          (data.lastTimePriceCachedAt || 0) <
+          Math.floor(Date.now() / 1000) - 600
+        ) {
+          const price = data.value;
+          const resData: LastPriceResponse = await fetchResolve(
+            'https://api.nexuswallet.com/api/prices/lastprice',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+              },
+              body: JSON.stringify({
+                price,
+              }),
+              signal: abortController.signal,
+            },
+            torEnabled,
+          );
+
+          if (resData.timestamp) {
+            dispatch(updateLastTimePrice(data.index, resData.timestamp));
+            setLastTimePrice(formatTxDate(resData.timestamp));
+          } else {
+            setLastTimePrice('');
+          }
+        } else {
+          setLastTimePrice(formatTxDate(data.lastTimePriceCache));
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
+        setLastTimePrice('');
+      }
+    };
+
     getLastTimePrice();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item]);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [dispatch, data, torEnabled]);
 
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={() => onPress(item.index)}>
+    <TouchableOpacity style={styles.container} onPress={handlePress}>
       <View style={styles.topContainer}>
         <View style={styles.subContainer}>
           <LitecoinIcon size={height * 0.046} />
@@ -93,15 +127,15 @@ const AlertCell: React.FC<Props> = props => {
                 numberOfLines={1}
               />
               <TranslateText
-                textKey={item.isPositive ? 'above' : 'below'}
+                textKey={data.isPositive ? 'above' : 'below'}
                 domain="alertsTab"
                 maxSizeInPixels={height * 0.02}
-                textStyle={{...styles.text, textTransform: 'lowercase'}}
+                textStyle={styles.lowercaseText}
                 numberOfLines={1}
               />
             </View>
             <TranslateText
-              textValue={`${currencySymbol}${alertValueInLocalFiat}`}
+              textValue={`${currencySymbol}${data.valueInLocal}`}
               maxSizeInPixels={height * 0.025}
               textStyle={styles.valueText}
               numberOfLines={1}
@@ -109,7 +143,7 @@ const AlertCell: React.FC<Props> = props => {
           </View>
         </View>
         <View style={styles.switchContainer}>
-          <Switch initialValue={!item.isFired} onPress={handleSwitch} />
+          <Switch initialValue={!data.isFired} onPress={handleSwitch} />
         </View>
       </View>
       <View style={styles.bottomContainer}>
@@ -172,6 +206,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '600',
       letterSpacing: -0.28,
     },
+    lowercaseText: {
+      color: '#484859',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '700',
+      letterSpacing: -0.18,
+      textTransform: 'lowercase',
+    },
   });
 
-export default AlertCell;
+export default React.memo(AlertCell);

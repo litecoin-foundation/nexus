@@ -19,7 +19,7 @@ import RecoveryField from '../../components/RecoveryField';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import {SettingsStackParamList} from '../../navigation/types';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sweepLitewallet} from '../../lib/utils/sweep';
+import {sweepLitewallet} from '../../utils/sweep';
 import {getAddress} from '../../reducers/address';
 import {publishTransaction} from '../../reducers/transaction';
 
@@ -33,6 +33,7 @@ const RecoverLitewallet = ({
   const dispatch = useAppDispatch();
 
   const {regularAddress} = useAppSelector(state => state.address);
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
 
   const [loading, setLoading] = useState(false);
 
@@ -54,13 +55,16 @@ const RecoverLitewallet = ({
         throw new Error('Receiving address not found. Try again.');
       }
 
-      const rawTxs = await sweepLitewallet(seed, regularAddress);
+      const rawTxs = await sweepLitewallet(seed, regularAddress, torEnabled);
 
       await Promise.all(
         rawTxs.map(async rawTx => {
           await Promise.all(
             rawTx.map(async (txHex: string) => {
-              const res = await publishTransaction(txHex);
+              const res = await publishTransaction(txHex, torEnabled);
+              if (__DEV__) {
+                console.log(res);
+              }
             }),
           );
         }),

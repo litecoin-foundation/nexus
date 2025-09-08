@@ -5,14 +5,16 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import Crypto from 'react-native-quick-crypto';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import {Platform} from 'react-native';
+import {getCountry} from 'react-native-localize';
 
 import {AppThunk} from './types';
-import {fileExists} from '../lib/utils/file';
+import {fileExists} from '../utils/file';
 import {showError} from './errors';
 import {setDeviceNotificationToken} from './settings';
-import {generateMnemonic} from '../lib/utils/aezeed';
-import {setItem} from '../lib/utils/keychain';
-import {sleep} from '../lib/utils/poll';
+import {generateMnemonic} from '../utils/aezeed';
+import {setItem} from '../utils/keychain';
+import {sleep} from '../utils/poll';
+import {fetchResolve} from '../utils/tor';
 
 // types
 interface IOnboardingState {
@@ -86,10 +88,11 @@ const setSupportIdAction = createAction<string>(
 
 // functions
 export const loginToNexusApi =
-  (deviceToken: string, isIOS: boolean): AppThunk =>
+  (deviceToken: string, isIOS: boolean, osVersion: string): AppThunk =>
   async (dispatch, getState) => {
     const {uniqueId, isOnboarded} = getState().onboarding!;
-    const {deviceNotificationToken} = getState().settings!;
+    const {deviceNotificationToken, currencyCode, languageCode, torEnabled} =
+      getState().settings!;
     if (isOnboarded !== true && !uniqueId && !deviceToken) {
       return;
     }
@@ -98,39 +101,40 @@ export const loginToNexusApi =
         dispatch(setDeviceNotificationToken(deviceToken));
       }
 
-      const req = await fetch(`${apiAuthUrl}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      await fetchResolve(
+        `${apiAuthUrl}/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            appAuthKey: 'PCUgU3Vcuu4LNRdFPueKLEfsdbcSEgYFUSec4EXx3Ws79f6ckx',
+            userAppUniqueId: uniqueId,
+            deviceToken: deviceToken,
+            isIOS,
+            country: getCountry(),
+            currency: currencyCode,
+            lng: languageCode,
+            osVersion,
+          }),
         },
-        body: JSON.stringify({
-          appAuthKey: 'PCUgU3Vcuu4LNRdFPueKLEfsdbcSEgYFUSec4EXx3Ws79f6ckx',
-          userAppUniqueId: uniqueId,
-          deviceToken: deviceToken,
-          isIOS,
-        }),
-      });
+        torEnabled,
+      );
 
-      if (!req.ok) {
-        return;
-      }
-
-      const req2 = await fetch('https://api.nexuswallet.com/api/support/sign', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchResolve(
+        'https://api.nexuswallet.com/api/support/sign',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            identifier: uniqueId,
+          }),
         },
-        body: JSON.stringify({
-          identifier: uniqueId,
-        }),
-      });
-
-      if (!req2.ok) {
-        const error = await req2.json();
-        throw new Error(String(error));
-      }
-
-      const response = await req2.json();
+        torEnabled,
+      );
       const {hash} = response;
       dispatch(setSupportIdAction(hash));
     } catch (error) {

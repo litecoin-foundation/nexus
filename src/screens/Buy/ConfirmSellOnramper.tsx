@@ -20,7 +20,7 @@ import {
   getSignedSellOnramperUrl,
   getSellTransactionHistory,
 } from '../../reducers/buy';
-import {parseQueryString} from '../../lib/utils/querystring';
+import {parseQueryString} from '../../utils/querystring';
 import {showError} from '../../reducers/errors';
 
 import TranslateText from '../../components/TranslateText';
@@ -29,6 +29,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 type RootStackParamList = {
   ConfirmSellOnramper: {
     queryString?: string;
+    prefilledMethod?: string;
   };
   WebPage: {
     uri: string;
@@ -70,7 +71,11 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
     try {
       // await is important!
       const url = await dispatch(
-        getSignedSellOnramperUrl(refundAddress, Number(amount)),
+        getSignedSellOnramperUrl(
+          refundAddress,
+          Number(amount),
+          route.params.prefilledMethod || '',
+        ),
       );
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {

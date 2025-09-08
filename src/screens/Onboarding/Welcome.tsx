@@ -22,7 +22,7 @@ import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {initWallet, startLnd} from '../../reducers/lightning';
 import {setSeed, skipPresync} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sleep} from '../../lib/utils/poll';
+import {sleep} from '../../utils/poll';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 

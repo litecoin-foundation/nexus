@@ -71,6 +71,7 @@ const BottomSheet: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  // TODO: put this config in a style reducer
   const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
   const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
   const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;

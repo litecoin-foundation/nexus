@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import Card from '../../components/Card';
-import {authenticate} from '../../lib/utils/biometric';
+import {authenticate} from '../../utils/biometric';
 import {setBiometricEnabled} from '../../reducers/authentication';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {

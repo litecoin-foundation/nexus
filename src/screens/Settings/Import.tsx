@@ -12,7 +12,7 @@ import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import {publishTransaction} from '../../reducers/transaction';
-import {sweepQrKey} from '../../lib/utils/sweep';
+import {sweepQrKey} from '../../utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {unsetDeeplink} from '../../reducers/deeplinks';
@@ -49,6 +49,7 @@ const Import: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
   const {t} = useTranslation('settingsTab');
   const {regularAddress} = useAppSelector(state => state.address);
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
 
   useLayoutEffect(() => {
     dispatch(getAddress());
@@ -64,13 +65,20 @@ const Import: React.FC<Props> = props => {
             throw new Error('Receiving address not found. Try again.');
           }
 
-          const rawTxs = await sweepQrKey(scanPayload, regularAddress);
+          const rawTxs = await sweepQrKey(
+            scanPayload,
+            regularAddress,
+            torEnabled,
+          );
 
           await Promise.all(
             rawTxs.map(async rawTx => {
               await Promise.all(
                 rawTx.map(async (txHex: string) => {
-                  const res = await publishTransaction(txHex);
+                  const res = await publishTransaction(txHex, torEnabled);
+                  if (__DEV__) {
+                    console.log(res);
+                  }
                 }),
               );
             }),
@@ -94,7 +102,7 @@ const Import: React.FC<Props> = props => {
       }
     }
     /* eslint-disable react-hooks/exhaustive-deps */
-  }, [regularAddress, route.params?.scanData]);
+  }, [regularAddress, route.params?.scanData, torEnabled]);
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
@@ -115,7 +123,7 @@ const Import: React.FC<Props> = props => {
           <WhiteButton
             textKey="scan_private_key"
             textDomain="settingsTab"
-            customFontStyles={{textAlign: 'center'}}
+            customFontStyles={styles.buttonCustomStyle}
             small={false}
             active={true}
             onPress={() => {
@@ -152,6 +160,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       bottom: screenHeight * 0.01,
       width: '100%',
       paddingHorizontal: screenWidth * 0.06,
+    },
+    buttonCustomStyle: {
+      textAlign: 'center',
     },
     safeArea: {
       width: '100%',

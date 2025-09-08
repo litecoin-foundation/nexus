@@ -5,6 +5,7 @@ import {ECPairFactory, ECPairInterface} from 'ecpair';
 import * as bip39 from 'bip39';
 
 import {LITECOIN} from './litecoin';
+import {fetchResolve} from '../utils/tor';
 
 const bip32 = BIP32Factory(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -29,6 +30,7 @@ interface AddressWithKeyPair {
 export async function getDerivedKeyPairsWithBalance(
   startPath: string,
   isHardened: boolean,
+  useTor: boolean,
   mnemonic?: IMnemonic,
   seedBase58?: string,
 ) {
@@ -39,6 +41,7 @@ export async function getDerivedKeyPairsWithBalance(
       await getDerivedUsedAddresses(
         startPath,
         isHardened,
+        useTor,
         mnemonic,
         seedBase58,
       );
@@ -69,6 +72,7 @@ export async function getDerivedKeyPairsWithBalance(
 async function getDerivedUsedAddresses(
   startPath: string,
   isHardened: boolean,
+  useTor: boolean,
   mnemonic?: IMnemonic,
   seedBase58?: string,
 ): Promise<SweepableAddress[]> {
@@ -99,7 +103,11 @@ async function getDerivedUsedAddresses(
 
     // check address for txs
     try {
-      const response: any = await fetchAddressData(address, currentIndex);
+      const response: any = await fetchAddressData(
+        address,
+        currentIndex,
+        useTor,
+      );
       currentIndex++;
       sweepableAddresses.push({
         addressData: response,
@@ -164,18 +172,24 @@ function getPubKeyFromExtendedKey(extendedKey: BIP32Interface) {
   return address;
 }
 
-async function fetchAddressData(address: string, index: number) {
+async function fetchAddressData(
+  address: string,
+  index: number,
+  useTor: boolean,
+) {
   return new Promise(async (resolve, reject) => {
     try {
-      const res = await fetch(
+      const data = await fetchResolve(
         `https://litecoinspace.org/api/address/${address}`,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        },
+        useTor,
       );
-
-      if (!res.ok) {
-        reject('Failed to connect with API Server - try using a VPN.');
-      }
-
-      const data = await res.json();
 
       if (data.hasOwnProperty('chain_stats')) {
         // check if address has ever been used (received any funds or sent any tx)
@@ -197,7 +211,14 @@ async function fetchAddressData(address: string, index: number) {
         reject('Invalid request.');
       }
     } catch (err) {
-      reject('Unable to fetch balance. Contact in-app support.');
+      if (
+        err instanceof Error &&
+        err.message.includes('Failed to connect with API Server')
+      ) {
+        reject('Failed to connect with API Server - try using a VPN.');
+      } else {
+        reject('Unable to fetch balance. Contact in-app support.');
+      }
     }
   });
 }

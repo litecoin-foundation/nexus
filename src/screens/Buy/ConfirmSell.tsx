@@ -1,4 +1,10 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {
   RouteProp,
@@ -17,9 +23,9 @@ import SuccessSell from '../../components/SuccessSell';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {getAddress} from '../../reducers/address';
 import {getSignedSellUrl, getSellTransactionHistory} from '../../reducers/buy';
-import {parseQueryString} from '../../lib/utils/querystring';
+import {parseQueryString} from '../../utils/querystring';
 import {showError} from '../../reducers/errors';
-import {fiatValueSelector} from '../../reducers/ticker';
+import {confirmSellFiatValueSelector} from '../../reducers/ticker';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -27,6 +33,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 type RootStackParamList = {
   ConfirmSell: {
     queryString?: string;
+    prefilledMethod?: string;
   };
   WebPage: {
     uri: string;
@@ -51,27 +58,40 @@ const ConfirmSell: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_WIDTH, SCREEN_HEIGHT],
+  );
 
   const [hasBeenMounted, setHasBeenMounted] = useState(false);
   const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [saleTxid, setSaleTxid] = useState('');
   const [toAmount, setToAmount] = useState(0);
-  const [fiatAmount, setFiatAmount] = useState('');
   const [toAddress, setToAddress] = useState('');
 
   const {amount} = useAppSelector(state => state.input);
   const refundAddress = useAppSelector(state => state.address.address);
-  const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
+  const calculateFiatAmount = useAppSelector(state =>
+    confirmSellFiatValueSelector(state),
+  );
+  const [fiatAmount, setFiatAmount] = useState('0.00');
 
-  const openSellWidget = async () => {
+  const handleSendSuccess = useCallback((txid: string) => {
+    console.log(txid);
+    setPaymentSuccess(true);
+  }, []);
+
+  const openSellWidget = useCallback(async () => {
     try {
       // await is important!
       const url = await dispatch(
-        getSignedSellUrl(refundAddress, Number(amount)),
+        getSignedSellUrl(
+          refundAddress,
+          Number(amount),
+          route.params.prefilledMethod || '',
+        ),
       );
-
       if (typeof url === 'string') {
         navigation.navigate('WebPage', {
           uri: url,
@@ -85,7 +105,13 @@ const ConfirmSell: React.FC<Props> = props => {
     } catch (error) {
       dispatch(showError(String(error)));
     }
-  };
+  }, [
+    dispatch,
+    refundAddress,
+    amount,
+    navigation,
+    route.params.prefilledMethod,
+  ]);
 
   useEffect(() => {
     dispatch(getAddress(false));
@@ -93,6 +119,7 @@ const ConfirmSell: React.FC<Props> = props => {
       openSellWidget();
     }
     setHasBeenMounted(true);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [dispatch]);
 
   // if exited WebPage before successful sell, go back!
@@ -101,14 +128,13 @@ const ConfirmSell: React.FC<Props> = props => {
       if (hasBeenMounted && hasNavigatedBack && !route.params?.queryString) {
         navigation.navigate('Main', {updateHeader: true});
       }
-    }, [hasBeenMounted, hasNavigatedBack, route.params]),
+    }, [hasBeenMounted, hasNavigatedBack, route.params, navigation]),
   );
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {
       setHasNavigatedBack(true);
     });
-
     return unsubscribe;
   }, [navigation]);
 
@@ -128,10 +154,12 @@ const ConfirmSell: React.FC<Props> = props => {
         setSaleTxid(sellRequest.transactionId);
         setToAmount(Number(sellRequest.baseCurrencyAmount) * 100000000);
         setToAddress(sellRequest.depositWalletAddress);
-        setFiatAmount(calculateFiatAmount(sellRequest.baseCurrencyAmount));
+        setFiatAmount(
+          calculateFiatAmount(Number(sellRequest.baseCurrencyAmount)),
+        );
       }
     }
-  }, [route.params]);
+  }, [route.params, dispatch, calculateFiatAmount]);
 
   return (
     <View style={styles.container}>
@@ -146,13 +174,9 @@ const ConfirmSell: React.FC<Props> = props => {
             amount={toAmount}
             fiatAmount={fiatAmount}
             label="Sell Litecoin via Moonpay"
-            sendSuccessHandler={txid => {
-              console.log(txid);
-              setPaymentSuccess(true);
-            }}
+            sendSuccessHandler={handleSendSuccess}
           />
         ) : (
-          // payment success!
           <SuccessSell toAmount={toAmount} saleTxid={saleTxid} />
         )}
       </LinearGradient>
@@ -160,7 +184,7 @@ const ConfirmSell: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (_screenWidth: number, _screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,

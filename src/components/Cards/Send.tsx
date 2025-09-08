@@ -5,24 +5,26 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
-  useLayoutEffect,
 } from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View, Image} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
-import {estimateFee} from 'react-native-turbo-lndltc';
+import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
+import PlasmaModal from '../Modals/PlasmaModal';
+import SelectCoinsModalContent from '../Modals/SelectCoinsModalContent';
+import Switch from '../Buttons/Switch';
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
-import {decodeBIP21} from '../../lib/utils/bip21';
-import {validate as validateLtcAddress} from '../../lib/utils/validate';
+import {decodeBIP21} from '../../utils/bip21';
+import {validate as validateLtcAddress} from '../../utils/validate';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {sleep} from '../../lib/utils/poll';
+import {sleep} from '../../utils/poll';
 import {showError} from '../../reducers/errors';
 import {resetInputs} from '../../reducers/input';
 import {
@@ -37,10 +39,12 @@ import {
   updateSendAddress,
   updateSendDomain,
 } from '../../reducers/input';
+import {fetchResolve} from '../../utils/tor';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {PopUpContext} from '../../context/popUpContext';
 
 type RootStackParamList = {
   Main: {
@@ -49,6 +53,7 @@ type RootStackParamList = {
   Scan: {returnRoute: string};
   ConfirmSend: {
     sendAll: boolean;
+    selectedUtxos?: Utxo[];
   };
 };
 
@@ -73,15 +78,16 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const convertLitecoinToSubunit = useAppSelector(state =>
     litecoinToSubunitSelector(state),
   );
-  const amount = useAppSelector(state => state.input.amount);
-  const fiatAmount = useAppSelector(state => state.input.fiatAmount);
+  const amount = useAppSelector(state => state.input!.amount);
+  const fiatAmount = useAppSelector(state => state.input!.fiatAmount);
   const {confirmedBalance, totalBalance} = useAppSelector(
-    state => state.balance,
+    state => state.balance!,
   );
-  // NOTE: assume min amount of 0.0001 ltc and subtract it from balance for estimated fee calculations
-  // if this number is below 0 disable sending and show setNoteKey('insufficient_funds')
-  const balanceMinus00001 = Number(confirmedBalance) - 10000;
-  const syncedToChain = useAppSelector(state => state.info.syncedToChain);
+  const manualCoinSelectionEnabled = useAppSelector(
+    state => state.settings!.manualCoinSelectionEnabled,
+  );
+  const torEnabled = useAppSelector(state => state.settings!.torEnabled);
+  const syncedToChain = useAppSelector(state => state.info!.syncedToChain);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -96,94 +102,18 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [amountPickerActive, setAmountPickerActive] = useState(false);
   const [isSendDisabled, setSendDisabled] = useState<boolean>(true);
   const [noteKey, setNoteKey] = useState<string>('');
-
-  const [activateSendAll, setActivateSendAll] = useState(false);
-  const [isSettingMax, setIsSettingMax] = useState(false);
-  const [isFeeEstimating, setIsFeeEstimating] = useState(false);
-
-  const [sendAllFee, setSendAllFee] = useState(0);
-  // pre estimate fee
-  useLayoutEffect(() => {
-    const calculateFee = async () => {
-      setIsFeeEstimating(true);
-      try {
-        if (balanceMinus00001 <= 0) {
-          setSendAllFee(0);
-        } else {
-          const response = await estimateFee({
-            AddrToAmount: {
-              ['MQd1fJwqBJvwLuyhr17PhEFx1swiqDbPQS']: BigInt(balanceMinus00001),
-            },
-            targetConf: 2,
-          });
-          setSendAllFee(Number(response.feeSat));
-        }
-      } catch (error) {
-        console.error(error);
-        setSendAllFee(0);
-      } finally {
-        setIsFeeEstimating(false);
-      }
-    };
-    calculateFee();
-  }, [balanceMinus00001]);
-  // estimate fee with input address and real balance
-  useEffect(() => {
-    if (address) {
-      const calculateFee = async () => {
-        setIsFeeEstimating(true);
-        try {
-          if (balanceMinus00001 <= 0) {
-            setSendAllFee(0);
-          } else {
-            const valid = validateLtcAddress(address);
-            if (valid) {
-              const response = await estimateFee({
-                AddrToAmount: {[address]: BigInt(confirmedBalance)},
-                targetConf: 2,
-              });
-              setSendAllFee(Number(response.feeSat));
-            }
-          }
-        } catch (error) {
-          console.error(error);
-          setSendAllFee(0);
-        } finally {
-          setIsFeeEstimating(false);
-        }
-      };
-      calculateFee();
-    }
-  }, [balanceMinus00001, confirmedBalance, address]);
-
-  const setMax = () => {
-    if (isSettingMax || isFeeEstimating) {
-      return; // Prevent setting max while fee is being estimated or already setting max
-    }
-
-    setIsSettingMax(true);
-    const maxAmount = parseFloat(
-      String(Number(confirmedBalance) / 100000000 - sendAllFee / 100000000),
-    ).toFixed(6);
-
-    // Ensure maxAmount is positive
-    if (Number(maxAmount) <= 0) {
-      setIsSettingMax(false);
-      return;
-    }
-
-    // Only update if the calculated max is different from current amount
-    if (maxAmount !== amount) {
-      dispatch(updateAmount(maxAmount, 'ltc'));
-    }
-
-    // Reset flag after a short delay to allow state updates
-    setTimeout(() => setIsSettingMax(false), 100);
-  };
+  const [sendAll, setSendAll] = useState(false);
+  const [enableManualSelection, setEnableManualSelection] = useState(false);
+  const [selectedUtxosArray, setSelectedUtxosArray] = useState<Utxo[]>([]);
 
   // check if ready to send
   useEffect(() => {
     const check = async () => {
+      if ((!amount || Number(amount) <= 0) && sendAll !== true) {
+        setSendDisabled(true);
+        return;
+      }
+
       // NOTE: when wallet isn't fully synced, balance is showed as unconfirmed
       if (totalBalance !== confirmedBalance) {
         setSendDisabled(true);
@@ -197,21 +127,19 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         return;
       }
 
-      if (!amount || Number(amount) <= 0) {
-        setSendDisabled(true);
-        return;
-      }
-
       // validate balance
       const amountInSats = convertToSats(Number(amount));
 
-      // NOTE: instead of displaying setNoteKey('insufficient_funds') or setNoteKey('try_less_amount') error,
-      // set max available amount for sending excluding fee
-      if (amountInSats > Number(confirmedBalance) - sendAllFee && !isSettingMax && !isFeeEstimating) {
-        setMax();
+      // check if amount being sent is > user balance
+      if (amountInSats > Number(confirmedBalance)) {
+        setSendDisabled(true);
+        setNoteKey('try_less_amount');
         return;
       }
 
+      // assume min amount of 0.0001 ltc and subtract it from balance for estimated fee calculations
+      // if this number is below 0 disable sending and show setNoteKey('insufficient_funds')
+      const balanceMinus00001 = Number(confirmedBalance) - 10000;
       if (balanceMinus00001 <= 0) {
         setSendDisabled(true);
         setNoteKey('insufficient_funds');
@@ -231,11 +159,21 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         return;
       }
 
-      // force the "send all" flag for lnd with a 1000 sats range
-      if (amountInSats + 1000 > Number(confirmedBalance) - sendAllFee) {
-        setActivateSendAll(true);
-      } else {
-        setActivateSendAll(false);
+      // if user attempts to send an amount within a 1000 sats range of the wallet balance
+      // we force sendAll to true
+      if (amountInSats + 1000 > Number(confirmedBalance)) {
+        setSendAll(true);
+      }
+
+      // validate manual coin selection
+      if (
+        enableManualSelection &&
+        selectedUtxosArray.length === 0 &&
+        !sendAll
+      ) {
+        setSendDisabled(true);
+        setNoteKey('manual_selection_required');
+        return;
       }
 
       // otherwise enable send
@@ -251,7 +189,9 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     totalBalance,
     confirmedBalance,
     syncedToChain,
-    sendAllFee,
+    sendAll,
+    enableManualSelection,
+    selectedUtxosArray,
   ]);
 
   // qr code scanner result handler
@@ -313,6 +253,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         //   setDescription(decoded.options.message);
         // }
         setAddress(decoded.address);
+        setAddressValid(true);
 
         return;
       }
@@ -321,9 +262,11 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       const valid = validateLtcAddress(data);
 
       if (!valid) {
+        setAddressValid(null);
         throw new Error('Address');
       } else {
         setAddress(data);
+        setAddressValid(true);
         return;
       }
     } catch (error) {
@@ -332,6 +275,8 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   };
 
   const onChange = (value: string) => {
+    setSendAll(false);
+
     if (toggleLTC) {
       dispatch(updateAmount(value, 'ltc'));
     } else if (!toggleLTC) {
@@ -353,6 +298,12 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     }
   }, [amountPickerActive, detailsOpacity, padOpacity]);
 
+  const handleCoinSelectionUtxos = (selectedUtxos: Utxo[]) => {
+    console.log('Selected UTXOs:', selectedUtxos);
+    setSelectedUtxosArray(selectedUtxos);
+    setModalVisible(false);
+  };
+
   const validateAddress = async (endAddress: string) => {
     if (endAddress === '') {
       setAddressValid(null);
@@ -372,7 +323,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       const timeoutId = setTimeout(() => abortController.abort(), 10000);
 
       try {
-        const res = await fetch(
+        const data = await fetchResolve(
           'https://api.nexuswallet.com/api/domains/resolve-unstoppable',
           {
             method: 'POST',
@@ -385,25 +336,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             }),
             signal: abortController.signal,
           },
+          torEnabled,
         );
 
         clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          setAddressValid(null);
-          if (res.status >= 500) {
-            dispatch(
-              showError('Domain resolution service temporarily unavailable'),
-            );
-          } else if (res.status === 404) {
-            dispatch(showError('Domain not found'));
-          } else {
-            dispatch(showError('Invalid domain name'));
-          }
-          return;
-        }
-
-        const data = await res.json();
 
         if (data && data.hasOwnProperty('address') && data.address) {
           addressOnValidation = data.address;
@@ -425,6 +361,12 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             dispatch(showError('Domain resolution timed out'));
           } else if (error.message.includes('Network request failed')) {
             dispatch(showError('Network error - check your connection'));
+          } else if (error.message.includes('404')) {
+            dispatch(showError('Domain not found'));
+          } else if (error.message.includes('500')) {
+            dispatch(
+              showError('Domain resolution service temporarily unavailable'),
+            );
           } else {
             dispatch(showError('Domain resolution failed'));
           }
@@ -457,11 +399,22 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     dispatch(updateSendLabel(description));
     // dispatch(updateSendFee(recommendedFeeInSatsVByte));
 
-    navigation.navigate('ConfirmSend', {sendAll: activateSendAll});
+    navigation.navigate('ConfirmSend', {
+      sendAll,
+      selectedUtxos: selectedUtxosArray,
+    });
   };
+
+  // Reset selected UTXOs when sendAll is enabled
+  useEffect(() => {
+    if (sendAll) {
+      setSelectedUtxosArray([]);
+    }
+  }, [sendAll]);
 
   useEffect(() => {
     return function cleanup() {
+      setSelectedUtxosArray([]);
       dispatch(resetInputs());
     };
   }, [dispatch]);
@@ -471,6 +424,46 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
       scrollViewRef.current.scrollTo({y, animated: true});
     }
   };
+
+  const {showPopUp} = useContext(PopUpContext);
+  const [modalVisible, setModalVisible] = useState(false);
+  const openManualSelectionModal = () => {
+    setModalVisible(true);
+  };
+  const closeManualSelectionModal = () => {
+    // reset any existing selected utxos
+    // when utxos are selected correctly, we directly change
+    // the modalVisible state
+    setSelectedUtxosArray([]);
+    setModalVisible(false);
+  };
+  const manualSelectionModal = (
+    <PlasmaModal
+      isOpened={modalVisible}
+      close={closeManualSelectionModal}
+      isFromBottomToTop={true}
+      animDuration={250}
+      gapInPixels={SCREEN_HEIGHT * 0.15}
+      backSpecifiedStyle={{backgroundColor: 'transparent'}}
+      gapSpecifiedStyle={{backgroundColor: 'transparent'}}
+      disableBlur={false}
+      renderBody={(_, __, ___, ____, cardTranslateAnim) => (
+        <SelectCoinsModalContent
+          close={closeManualSelectionModal}
+          cardTranslateAnim={cardTranslateAnim}
+          targetAmount={Number(amount)}
+          targetAddress={address}
+          onConfirmSelection={selectedUtxos =>
+            handleCoinSelectionUtxos(selectedUtxos)
+          }
+        />
+      )}
+    />
+  );
+  useEffect(() => {
+    showPopUp(manualSelectionModal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalVisible]);
 
   return (
     <View style={styles.container}>
@@ -495,14 +488,6 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
             numberOfLines={1}
           />
           <View style={styles.amountSubContainer}>
-            {/* <Pressable onPress={() => setMax()} style={styles.maxButton}>
-              <TranslateText
-                textValue="MAX"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                textStyle={styles.buttonText}
-                numberOfLines={1}
-              />
-            </Pressable> */}
             <AmountPicker
               amount={amount}
               fiatAmount={fiatAmount}
@@ -512,7 +497,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                 setAmountPickerActive(true);
               }}
               handleToggle={() => setToggleLTC(!toggleLTC)}
-              setMax={setMax}
+              setMax={() => setSendAll(true)}
             />
           </View>
         </View>
@@ -559,24 +544,113 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               </View>
             </View>
 
-            <View style={styles.cellContainerMoreMargin}>
-              <TranslateText
-                textKey="description"
-                domain="sendTab"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.subtitleText}
-                numberOfLines={1}
-              />
-              <View style={styles.inputFieldContainer}>
-                <InputField
-                  value={description}
-                  onChangeText={text => setDescription(text)}
-                  onBlur={() => scrollToInput(0)}
-                  onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
-                  clearInput={() => setDescription('')}
-                />
+            {/* Manual Coin Selection is only visible when enabled in Settings
+              & user is not sending all*/}
+            {manualCoinSelectionEnabled && !sendAll ? (
+              <View style={styles.cellContainer}>
+                <View style={styles.manualSelectionTop}>
+                  <TranslateText
+                    textKey="manual_coin_selection"
+                    domain="sendTab"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.subtitleText}
+                    numberOfLines={1}
+                  />
+                  <Switch
+                    initialValue={enableManualSelection}
+                    onPress={() => {
+                      setEnableManualSelection(!enableManualSelection);
+                      // reset selected utxos
+                      setSelectedUtxosArray([]);
+                    }}
+                  />
+                </View>
+
+                {enableManualSelection ? (
+                  !amount || Number(amount) <= 0 || !addressValid ? (
+                    <View style={styles.coinSelectionDisabledContainer}>
+                      <TranslateText
+                        textKey="enter_address_amount_before_coinselection"
+                        domain="sendTab"
+                        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                        textStyle={styles.coinSelectionDisabledText}
+                        numberOfLines={2}
+                      />
+                    </View>
+                  ) : (
+                    <Pressable
+                      style={styles.manualSelectionBottom}
+                      onPress={openManualSelectionModal}>
+                      <View style={styles.manualSelectionBottomTitleContainer}>
+                        <TranslateText
+                          textKey="amount_selected"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                          textStyle={styles.manualSelectionBottomTitle}
+                          numberOfLines={1}
+                        />
+                        <TranslateText
+                          textKey="amount_selected_number"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                          textStyle={styles.manualSelectionBottomTitle}
+                          numberOfLines={1}
+                          interpolationObj={{
+                            amount: amount !== '' ? amount : '0',
+                          }}
+                        />
+                      </View>
+                      <View style={styles.manualSelectionBottomNoteContainer}>
+                        <Image
+                          style={styles.manualSelectionBottomNoteIcon}
+                          source={require('../../assets/icons/info-icon.png')}
+                        />
+                        <TranslateText
+                          textKey="manual_selection_note"
+                          domain="sendTab"
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                          maxLengthInPixels={SCREEN_WIDTH * 0.7}
+                          textStyle={styles.manualSelectionBottomNote}
+                          numberOfLines={2}
+                          interpolationObj={{amount}}
+                        />
+                      </View>
+                      <View style={styles.manualSelectionBottomArrowContainer}>
+                        <Image
+                          style={styles.manualSelectionBottomArrowIcon}
+                          source={require('../../assets/images/back-icon.png')}
+                        />
+                      </View>
+                    </Pressable>
+                  )
+                ) : null}
               </View>
-            </View>
+            ) : (
+              <></>
+            )}
+
+            {!enableManualSelection ? (
+              <View style={styles.cellContainer}>
+                <TranslateText
+                  textKey="description"
+                  domain="sendTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.subtitleText}
+                  numberOfLines={1}
+                />
+                <View style={styles.inputFieldContainer}>
+                  <InputField
+                    value={description}
+                    onChangeText={text => setDescription(text)}
+                    onBlur={() => scrollToInput(0)}
+                    onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
+                    clearInput={() => setDescription('')}
+                  />
+                </View>
+              </View>
+            ) : (
+              <></>
+            )}
           </Animated.View>
         )}
       </ScrollView>
@@ -679,10 +753,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.025,
     },
     cellContainer: {
-      marginTop: screenHeight * 0.035,
-    },
-    cellContainerMoreMargin: {
-      marginTop: screenHeight * 0.06,
+      marginTop: screenHeight * 0.02,
     },
     subtitlesContainer: {
       flexDirection: 'row',
@@ -773,6 +844,85 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.012,
       textAlign: 'center',
       marginTop: screenHeight * 0.01,
+    },
+    manualSelectionTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingBottom: 5,
+    },
+    manualSelectionBottom: {
+      width: '100%',
+      minHeight: screenHeight * 0.1,
+      borderRadius: screenHeight * 0.015,
+      backgroundColor: '#2C72FF',
+      paddingTop: screenHeight * 0.01,
+      paddingBottom: screenHeight * 0.005,
+      paddingHorizontal: screenHeight * 0.015,
+      gap: 10,
+    },
+    manualSelectionBottomTitleContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: screenWidth * 0.1,
+    },
+    manualSelectionBottomTitle: {
+      flexBasis: '50%',
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '700',
+      fontStyle: 'normal',
+      textTransform: 'uppercase',
+    },
+    manualSelectionBottomNoteContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      gap: 10,
+    },
+    manualSelectionBottomNoteIcon: {
+      width: screenHeight * 0.022,
+      height: screenHeight * 0.022,
+      justifyContent: 'center',
+      alignItems: 'center',
+      objectFit: 'contain',
+      marginTop: screenHeight * 0.003,
+    },
+    manualSelectionBottomNote: {
+      height: 'auto',
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.016,
+      fontWeight: '500',
+      fontStyle: 'normal',
+    },
+    manualSelectionBottomArrowContainer: {
+      position: 'absolute',
+      top: 0,
+      right: screenWidth * 0.03,
+      height: screenHeight * 0.1,
+      justifyContent: 'center',
+    },
+    manualSelectionBottomArrowIcon: {
+      width: screenHeight * 0.016,
+      height: screenHeight * 0.016,
+      objectFit: 'contain',
+      transform: 'rotate(180deg)',
+    },
+    coinSelectionDisabledContainer: {
+      backgroundColor: '#f0f0f0',
+      height: 30,
+      borderRadius: 8,
+      justifyContent: 'center',
+    },
+    coinSelectionDisabledText: {
+      paddingLeft: 6,
+      color: '#747e87',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.012,
+      fontWeight: '500',
+      fontStyle: 'normal',
     },
   });
 

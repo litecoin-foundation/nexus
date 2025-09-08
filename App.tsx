@@ -44,9 +44,10 @@ import {
   checkFlexaCustomer,
 } from './src/reducers/buy';
 import RootNavigator from './src/navigation/RootNavigator';
-import {store, pStore} from './src/store';
 import Error from './src/components/Error';
+import {store, pStore} from './src/store';
 
+import {startTor} from './src/utils/tor';
 import initI18N from './src/utils/i18n';
 
 const {APNSTokenModule} = NativeModules;
@@ -81,19 +82,31 @@ function ResizedView(props: any) {
 
 function ContextExecutable(props: any) {
   const dispatch = useAppDispatch();
-  const {languageCode} = useAppSelector(state => state.settings);
-
+  const {languageCode, torEnabled} = useAppSelector(state => state.settings!);
+  const {uniqueId} = useAppSelector(state => state.onboarding!);
   useLayoutEffect(() => {
     initI18N(languageCode);
     // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
     // resulting in missing rates even if the app is being used already.
-    dispatch(updatedRatesInFiat());
-    dispatch(updateHistoricalRatesForAllPeriods());
-    dispatch(getBuyTransactionHistory());
-    dispatch(getSellTransactionHistory());
-    dispatch(checkFlexaCustomer());
-  }, [dispatch, languageCode, props.deviceToken]);
+    // Do not call anything until user is initialized
+    if (uniqueId) {
+      dispatch(updatedRatesInFiat());
+      dispatch(updateHistoricalRatesForAllPeriods());
+      dispatch(getBuyTransactionHistory());
+      dispatch(getSellTransactionHistory());
+      dispatch(checkFlexaCustomer());
+    }
+  }, [dispatch, languageCode, uniqueId, props.deviceToken]);
 
+  useEffect(() => {
+    if (uniqueId && torEnabled) {
+      if (__DEV__) {
+        console.log('startTor');
+      }
+
+      startTor();
+    }
+  }, [dispatch, torEnabled, uniqueId]);
   return <></>;
 }
 
@@ -103,7 +116,13 @@ function DeviceTokenHandler(props: any) {
   useEffect(() => {
     if (props.deviceToken) {
       dispatch(setDeviceNotificationToken(props.deviceToken));
-      dispatch(loginToNexusApi(props.deviceToken, Platform.OS === 'ios'));
+      dispatch(
+        loginToNexusApi(
+          props.deviceToken,
+          Platform.OS === 'ios',
+          String(Platform.Version),
+        ),
+      );
     }
   }, [dispatch, props.deviceToken]);
 
@@ -111,9 +130,12 @@ function DeviceTokenHandler(props: any) {
 }
 
 const App: React.FC = () => {
-  function RenderPopUp() {
-    const {PopUp} = useContext(PopUpContext);
-    return PopUp;
+  function RenderPopUps() {
+    const {PopUps} = useContext(PopUpContext);
+    const renderPopUps = PopUps.map(popUp => (
+      <View key={popUp.id}>{popUp.component}</View>
+    ));
+    return renderPopUps;
   }
 
   const [deviceToken, setDeviceToken] = useState('');
@@ -243,7 +265,7 @@ const App: React.FC = () => {
                   <DeviceTokenHandler deviceToken={deviceToken} />
                   <PopUpProvider>
                     <GestureHandlerRootView style={styles.gestureView}>
-                      <RenderPopUp />
+                      <RenderPopUps />
                       <RootNavigator />
                       <Error />
                     </GestureHandlerRootView>

@@ -12,21 +12,21 @@ import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
-import {setItem, getItem} from '../lib/utils/keychain';
+import {setItem, getItem} from '../utils/keychain';
 import {
   deleteWalletDB,
   deleteLNDDir,
   deleteMacaroonFiles,
   fileExists,
-} from '../lib/utils/file';
+} from '../utils/file';
 import {finishOnboarding, setRecoveryMode} from './onboarding';
 import {subscribeTransactions} from './transaction';
-import {pollInfo} from './info';
+import {pollInfo, pollPeers} from './info';
 import {pollRates} from './ticker';
 import {pollBalance} from './balance';
 import {pollTransactions} from './transaction';
-import {createConfig} from '../lib/utils/config';
-import {stringToUint8Array} from '../lib/utils';
+import {createConfig} from '../utils/config';
+import {stringToUint8Array} from '../utils';
 import {purgeStore} from '../store';
 import {resetPincode} from './authentication';
 import {resetToLoading} from '../navigation/NavigationService';
@@ -47,9 +47,10 @@ const initialState = {
 const lndState = createAction<boolean>('lightning/lndState');
 
 // functions
-export const startLnd = (): AppThunk => async dispatch => {
+export const startLnd = (): AppThunk => async (dispatch, getState) => {
   try {
-    await createConfig();
+    const {torEnabled} = getState().settings;
+    await createConfig(torEnabled);
 
     // lnd dir path
     const appFolderPath = `${RNFS.DocumentDirectoryPath}/lndltc/`;
@@ -155,6 +156,7 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
           } else if (state.state === WalletState.RPC_ACTIVE) {
             // RPC_ACTIVE so we are ready to dispatch pollers
             dispatch(pollInfo());
+            dispatch(pollPeers());
             dispatch(pollRates());
             dispatch(pollTransactions());
             dispatch(subscribeTransactions());
@@ -224,6 +226,7 @@ export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
             if (state.state === WalletState.RPC_ACTIVE) {
               // dispatch pollers
               dispatch(pollInfo());
+              dispatch(pollPeers());
               dispatch(subscribeTransactions());
               dispatch(pollRates());
               dispatch(pollTransactions());

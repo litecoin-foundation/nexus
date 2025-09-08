@@ -39,8 +39,27 @@ type IOutputDetails = {
   pkScript: string;
 };
 
+type ISelectedUtxo = {
+  address: string;
+  amountSat: number;
+  addressType: number;
+};
+
+export type IConvertTradeTx = {
+  conversionType: 'regular' | 'private';
+  destinationAddress: string;
+  targetAmount: number;
+  timestamp: number;
+  selectedUtxos: ISelectedUtxo[];
+  mergedInputDetails: PreviousOutPoint[];
+  mergedOutputDetails: IOutputDetails[];
+  totalFees: number;
+  sendTxHash?: string;
+  receiveTxHash?: string;
+};
+
 export type IDecodedTx = {
-  txHash: string | null;
+  txHash: string;
   blockHash: string;
   blockHeight: number;
   amount: number;
@@ -49,13 +68,13 @@ export type IDecodedTx = {
   fee: number;
   outputDetails: IOutputDetails[];
   previousOutpoints: PreviousOutPoint[];
-  label: string | null | undefined;
+  label: string;
   metaLabel: string;
-  priceOnDate: number | null;
-  tradeTx: ITrade;
+  priceOnDate: number;
+  tradeTx: ITrade | IConvertTradeTx | null;
 };
 
-export type DisplayedMetadataType = {
+export type BuySellMetadataType = {
   providerTxId: string;
   cryptoTxId: string;
   createdAt: string;
@@ -76,14 +95,49 @@ export type DisplayedMetadataType = {
   status: string;
   country: string;
   paymentMethod: string;
-} | null;
+};
+
+export type ConvertMetadataType = {
+  conversionType: 'regular' | 'private';
+  destinationAddress: string;
+  targetAmount: number;
+  timestamp: number;
+  selectedUtxos: Array<{
+    address?: string;
+    amountSat: number;
+    addressType: number;
+  }>;
+  selectedOutpoints?: string[];
+  mergedInputDetails?: any[];
+  mergedOutputDetails?: any[];
+  sendTxHash?: string;
+  receiveTxHash?: string;
+};
+
+export type DisplayedMetadataType =
+  | BuySellMetadataType
+  | ConvertMetadataType
+  | null;
+
+// Type guard functions
+export function isBuySellMetadata(
+  meta: DisplayedMetadataType,
+): meta is BuySellMetadataType {
+  return meta !== null && 'providerTxId' in meta;
+}
+
+export function isConvertMetadata(
+  meta: DisplayedMetadataType,
+): meta is ConvertMetadataType {
+  return meta !== null && 'conversionType' in meta;
+}
 
 export const decodedTxMetadataProjection = (
   trade: ITrade,
   priceOnDate: number,
 ): IDecodedTx => {
   const projectedObj = {
-    txHash: trade.cryptoTxId || null,
+    txHash: trade.cryptoTxId || '',
     blockHash: '',
     blockHeight: 0,
     amount: trade.amountInLTC * 100000000 || 0,
@@ -121,7 +175,7 @@ export const decodedTxMetadataProjection = (
 
 export const displayedTxMetadataProjection = (
   trade: ITrade,
-): DisplayedMetadataType => {
+): BuySellMetadataType => {
   const projectedObj = {
     providerTxId: trade.providerTxId,
     cryptoTxId: trade.cryptoTxId || '',

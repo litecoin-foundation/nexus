@@ -1,8 +1,8 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useMemo} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {triggerHeavyFeedback} from '../../lib/utils/haptic';
+import {triggerHeavyFeedback} from '../../utils/haptic';
 import PlasmaModal from './PlasmaModal';
 
 import TranslateText from '../../components/TranslateText';
@@ -25,19 +25,22 @@ const InfoModal: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_WIDTH, SCREEN_HEIGHT],
+  );
 
   useEffect(() => {
     if (isVisible) {
       triggerHeavyFeedback();
     }
-  });
+  }, [isVisible]);
 
   useEffect(() => {
     if (isVisible) {
       setTimeout(() => close(), 2500);
     }
-  });
+  }, [isVisible, close]);
 
   const {showPopUp} = useContext(PopUpContext);
 
@@ -48,41 +51,53 @@ const InfoModal: React.FC<Props> = props => {
         ? styles.greenText
         : null;
 
-  const modal = (
-    <PlasmaModal
-      isOpened={isVisible}
-      close={() => close()}
-      isFromBottomToTop={true}
-      animDuration={250}
-      gapInPixels={0}
-      backSpecifiedStyle={{backgroundColor: 'transparent'}}
-      disableBlur={disableBlur}
-      renderBody={(_, __, ___, ____, cardTranslateAnim) => (
-        <Animated.View style={[styles.modal, cardTranslateAnim]}>
-          <View style={styles.textContainer}>
-            {text ? (
-              <Text style={[styles.text, textColorStyle]}>{text}</Text>
-            ) : textKey && textDomain ? (
-              <TranslateText
-                textKey={textKey}
-                domain={textDomain}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={{...styles.text, ...textColorStyle}}
-                numberOfLines={1}
-              />
-            ) : (
-              <></>
-            )}
-          </View>
-        </Animated.View>
-      )}
-    />
+  const modal = useMemo(
+    () => (
+      <PlasmaModal
+        isOpened={isVisible}
+        close={() => close()}
+        isFromBottomToTop={true}
+        animDuration={250}
+        gapInPixels={0}
+        backSpecifiedStyle={styles.transparentBackground}
+        disableBlur={disableBlur}
+        renderBody={(_, __, ___, ____, cardTranslateAnim) => (
+          <Animated.View style={[styles.modal, cardTranslateAnim]}>
+            <View style={styles.textContainer}>
+              {text ? (
+                <Text style={[styles.text, textColorStyle]}>{text}</Text>
+              ) : textKey && textDomain ? (
+                <TranslateText
+                  textKey={textKey}
+                  domain={textDomain}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={{...styles.text, ...textColorStyle}}
+                  numberOfLines={1}
+                />
+              ) : (
+                <></>
+              )}
+            </View>
+          </Animated.View>
+        )}
+      />
+    ),
+    [
+      isVisible,
+      close,
+      disableBlur,
+      text,
+      textKey,
+      textDomain,
+      textColorStyle,
+      SCREEN_HEIGHT,
+      styles,
+    ],
   );
 
   useEffect(() => {
     showPopUp(modal);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible, close, textColor, text, disableBlur]);
+  }, [showPopUp, modal]);
 
   return <></>;
 };
@@ -122,6 +137,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     greenText: {
       color: '#20BB74',
+    },
+    transparentBackground: {
+      backgroundColor: 'transparent',
     },
   });
 

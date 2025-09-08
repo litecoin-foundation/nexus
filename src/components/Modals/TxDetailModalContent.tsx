@@ -28,10 +28,17 @@ import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableCell from '../Cells/TableCell';
 import BlueButton from '../Buttons/BlueButton';
 import GreenButton from '../Buttons/GreenButton';
-import {formatTxDate} from '../../lib/utils/date';
+import ChangeAddress from '../ChangeAddress';
+import {formatTxDate} from '../../utils/date';
+import {isConvertMetadata, isBuySellMetadata} from '../../utils/txMetadata';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {IDisplayedTx, labelTransaction} from '../../reducers/transaction';
+import {
+  IDisplayedTx,
+  labelTransaction,
+  addToTxHashesWithExtraData,
+  checkTxHashesWithExtraData,
+} from '../../reducers/transaction';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
@@ -41,10 +48,10 @@ import {
   currencySymbolSelector,
 } from '../../reducers/settings';
 import {convertLocalFiatToUSD} from '../../reducers/ticker';
+import {fetchResolve} from '../../utils/tor';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import ChangeAddress from '../ChangeAddress';
 
 interface Props {
   close: () => void;
@@ -97,6 +104,29 @@ interface SellBuyLayoutProps {
   currentExplorer: string;
 }
 
+interface ConvertLayoutProps {
+  conversionType: 'regular' | 'private';
+  destinationAddress: string;
+  targetAmount: number;
+  selectedUtxos: Array<{
+    address?: string;
+    amountSat: number;
+    addressType: number;
+  }>;
+  myOutputAddrs: string[];
+  otherOutputAddrs: string[];
+  outputDetails: Array<{
+    address: string;
+    amount: number;
+    isOurAddress: boolean;
+  }>;
+  txId: string;
+  dateString: string;
+  amountSymbol: string;
+  currentExplorer: string;
+  blockchainFee: number | 'unknown';
+}
+
 export default function TxDetailModalContent(props: Props) {
   const {
     close,
@@ -114,6 +144,7 @@ export default function TxDetailModalContent(props: Props) {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
 
   const {textKey} = {
     current: function () {
@@ -132,23 +163,33 @@ export default function TxDetailModalContent(props: Props) {
           };
         case 'Buy':
           return {
-            textKey: transaction.providerMeta?.status
-              ? transaction.providerMeta.status === 'pending'
-                ? 'buying'
-                : 'bought'
-              : 'bought',
+            textKey:
+              isBuySellMetadata(transaction.providerMeta) &&
+              transaction.providerMeta.status
+                ? transaction.providerMeta.status === 'pending'
+                  ? 'buying'
+                  : 'bought'
+                : 'bought',
             txIcon: require('../../assets/icons/buytx.png'),
             amountColor: '#1162E6',
           };
         case 'Sell':
           return {
-            textKey: transaction.providerMeta?.status
-              ? transaction.providerMeta.status === 'pending'
-                ? 'selling'
-                : 'sold'
-              : 'sold',
+            textKey:
+              isBuySellMetadata(transaction.providerMeta) &&
+              transaction.providerMeta.status
+                ? transaction.providerMeta.status === 'pending'
+                  ? 'selling'
+                  : 'sold'
+                : 'sold',
             txIcon: require('../../assets/icons/selltx.png'),
             amountColor: '#212124',
+          };
+        case 'Convert':
+          return {
+            textKey: 'Converted',
+            txIcon: require('../../assets/icons/converttx.png'),
+            amountColor: '#1162E6',
           };
         default:
           return {
@@ -165,7 +206,7 @@ export default function TxDetailModalContent(props: Props) {
     satsToSubunitSelector(state),
   );
   const cryptoAmount = convertToSubunit(transaction.amount);
-  let cryptoAmountFormatted = cryptoAmount.toFixed(4);
+  let cryptoAmountFormatted = cryptoAmount.toString();
   if (cryptoAmountFormatted.match(/\./)) {
     cryptoAmountFormatted = cryptoAmountFormatted.replace(/\.?0+$/, '');
   }
@@ -182,43 +223,55 @@ export default function TxDetailModalContent(props: Props) {
   );
 
   const [allInputAddrs, setAllInputAddrs] = useState<string[]>([]);
-  const [fetchedTxFee, setFetchedTxFee] = useState<number | undefined>(
-    undefined,
-  );
+  const [fetchedTxFee, setFetchedTxFee] = useState<number | null>(null);
 
   const myOutputs = transaction.myOutputs || [];
   const otherOutputs = transaction.otherOutputs || [];
 
   async function getSenderAndFee(abortController: any) {
     try {
-      const req = await fetch(
-        `https://litecoinspace.org/api/tx/${transaction.hash}`,
-        {
-          signal: abortController.signal,
-        },
-      );
-      const data: any = await req.json();
+      const cached = dispatch(checkTxHashesWithExtraData(transaction.hash));
+      if (!cached) {
+        const data: any = await fetchResolve(
+          `https://litecoinspace.org/api/tx/${transaction.hash}`,
+          {
+            signal: abortController.signal,
+          },
+          torEnabled,
+        );
 
-      if (data.hasOwnProperty('vin')) {
-        const inputs: string[] = [];
+        let inputAddrs: string[] = [];
+        let fee: number | null = 0;
 
-        data.vin.forEach((input: any) => {
-          inputs.push(input.prevout.scriptpubkey_address);
-        });
+        if (data.hasOwnProperty('vin') && Array.isArray(data.vin)) {
+          inputAddrs = data.vin.map(
+            (input: any) => input.prevout.scriptpubkey_address,
+          );
+        }
+        setAllInputAddrs(inputAddrs);
 
-        setAllInputAddrs(inputs);
+        if (data.hasOwnProperty('fee')) {
+          fee = data.fee / 100000000;
+          setFetchedTxFee(fee);
+        } else {
+          fee = null;
+          setFetchedTxFee(fee);
+        }
+
+        dispatch(
+          addToTxHashesWithExtraData({
+            hash: transaction.hash,
+            inputAddrs,
+            fee,
+          }),
+        );
       } else {
-        setAllInputAddrs([]);
+        setAllInputAddrs(cached.inputAddrs);
+        setFetchedTxFee(cached.fee);
       }
-
-      if (data.hasOwnProperty('fee')) {
-        setFetchedTxFee(data.fee / 100000000);
-      } else {
-        setFetchedTxFee(undefined);
-      }
-    } catch {
+    } catch (err) {
       setAllInputAddrs([]);
-      setFetchedTxFee(undefined);
+      setFetchedTxFee(null);
     }
   }
 
@@ -324,10 +377,10 @@ export default function TxDetailModalContent(props: Props) {
       // let paymentMethodProp = '';
       let currentExplorerProp = '';
 
-      if (transaction.providerMeta) {
-        fiatSymbolProp = getCurrencySymbol(
-          transaction.providerMeta.fiatCurrency,
-        );
+      if (isBuySellMetadata(transaction.providerMeta)) {
+        fiatSymbolProp = transaction.providerMeta.fiatCurrency
+          ? getCurrencySymbol(transaction.providerMeta.fiatCurrency)
+          : '$';
         providerTxIdProp = transaction.providerMeta.providerTxId;
         cryptoTxIdProp = transaction.providerMeta.cryptoTxId;
         createdAtProp = formatTxDate(
@@ -347,7 +400,7 @@ export default function TxDetailModalContent(props: Props) {
         statusProp = transaction.providerMeta.status;
         // paymentMethodProp = transaction.providerMeta.paymentMethod;
       } else {
-        // Fetching fee data from explorer due to incorrect response from lnd
+        // NOTE: fetching fee data from explorer due to incorrect response from lnd
         // totalFeeProp = transaction.fee;
         // blockchainFeeProp = transaction.fee;
         totalFeeProp = fetchedTxFee || 'unknown';
@@ -448,6 +501,26 @@ export default function TxDetailModalContent(props: Props) {
                   currentExplorer={currentExplorer}
                   blockchainFee={blockchainFee}
                   labelTx={labelTx}
+                />
+              ) : transaction.metaLabel === 'Convert' &&
+                isConvertMetadata(transaction.providerMeta) ? (
+                <ConvertLayout
+                  conversionType={transaction.providerMeta.conversionType}
+                  destinationAddress={
+                    transaction.providerMeta.destinationAddress
+                  }
+                  targetAmount={transaction.providerMeta.targetAmount}
+                  selectedUtxos={transaction.providerMeta.selectedUtxos}
+                  myOutputAddrs={myOutputs}
+                  otherOutputAddrs={otherOutputs}
+                  outputDetails={
+                    transaction.providerMeta.mergedOutputDetails || []
+                  }
+                  txId={transaction.hash}
+                  dateString={dateString}
+                  amountSymbol={amountSymbol}
+                  currentExplorer={currentExplorer}
+                  blockchainFee={blockchainFee}
                 />
               ) : (
                 <SellBuyLayout
@@ -664,6 +737,260 @@ const SellBuyLayout: React.FC<SellBuyLayoutProps> = props => {
         ) : (
           <></>
         )}
+        <View style={styles.paginationStrip} />
+      </View>
+    </Fragment>
+  );
+};
+
+const ConvertLayout: React.FC<ConvertLayoutProps> = props => {
+  const {
+    conversionType,
+    destinationAddress,
+    targetAmount,
+    selectedUtxos,
+    myOutputAddrs,
+    otherOutputAddrs,
+    outputDetails,
+    txId,
+    dateString,
+    amountSymbol,
+    currentExplorer,
+    blockchainFee,
+  } = props;
+
+  const navigation = useNavigation<any>();
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const convertToSubunit = useAppSelector(state =>
+    satsToSubunitSelector(state),
+  );
+  const targetAmountFormatted = convertToSubunit(targetAmount)
+    .toFixed(4)
+    .replace(/\.?0+$/, '');
+
+  // Find change addresses and their amounts from actual output details
+  // In MWEB, the same address can be both input and output - this is normal!
+  const changeOutputs = outputDetails.filter(output => {
+    // Must be our address and not the destination
+    if (!output.isOurAddress || output.address === destinationAddress) {
+      return false;
+    }
+
+    // Include all our non-destination addresses as potential change
+    // Even if they were also used as inputs (normal in MWEB)
+    return true;
+  });
+
+  // Map change addresses to their amounts
+  const changeAddrsWithAmounts = changeOutputs.map(output => ({
+    address: output.address,
+    amount: output.amount,
+    formattedAmount: convertToSubunit(output.amount)
+      .toFixed(4)
+      .replace(/\.?0+$/, ''),
+  }));
+
+  // Keep legacy changeAddrs for compatibility with existing code
+  const changeAddrs = changeAddrsWithAmounts.map(item => item.address);
+
+  // Format UTXO amounts
+  const formattedUtxos = selectedUtxos.map(utxo => ({
+    ...utxo,
+    formattedAmount: convertToSubunit(utxo.amountSat)
+      .toFixed(4)
+      .replace(/\.?0+$/, ''),
+  }));
+
+  const handleShare = (message: string) => {
+    if (message) {
+      Share.open({message: message});
+    }
+  };
+
+  // Calculate address sizes
+  const calculateAddressSize = (
+    addresses: string[],
+    defaultSize: number,
+    singleThreshold: number,
+    multiThreshold: number,
+  ) => {
+    if (addresses.length > 1) {
+      return multiThreshold;
+    } else if (addresses.length === 1 && addresses[0].length > 75) {
+      return singleThreshold;
+    }
+    return defaultSize;
+  };
+
+  let fromAddressSize = calculateAddressSize(
+    formattedUtxos.map(u => u.address || ''),
+    SCREEN_HEIGHT * 0.025,
+    SCREEN_HEIGHT * 0.019,
+    SCREEN_HEIGHT * 0.017,
+  );
+
+  let toAddressSize = calculateAddressSize(
+    [destinationAddress, ...changeAddrs],
+    SCREEN_HEIGHT * 0.025,
+    SCREEN_HEIGHT * 0.019,
+    SCREEN_HEIGHT * 0.017,
+  );
+
+  if (fromAddressSize >= toAddressSize) {
+    fromAddressSize = toAddressSize;
+  } else {
+    toAddressSize = fromAddressSize;
+  }
+
+  function renderInputs() {
+    if (formattedUtxos.length > 0) {
+      return formattedUtxos.map((utxo, index) => (
+        <TranslateText
+          key={`input-${index}`}
+          textValue={`${utxo.address || 'Unknown'} (${utxo.formattedAmount}${amountSymbol})`}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
+            ...styles.fromAddressTitle,
+            fontSize: fromAddressSize,
+          }}
+          numberOfLines={4}
+          onPress={() => handleShare(utxo.address || '')}
+        />
+      ));
+    } else {
+      return (
+        <TranslateText
+          textValue="Unknown"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
+            ...styles.fromAddressTitle,
+            fontSize: fromAddressSize,
+          }}
+          numberOfLines={1}
+        />
+      );
+    }
+  }
+
+  function renderOutputs() {
+    return (
+      <Fragment>
+        <TranslateText
+          textValue={
+            destinationAddress
+              ? `${destinationAddress} (${targetAmountFormatted}${amountSymbol})`
+              : `Unknown destination (${targetAmountFormatted}${amountSymbol})`
+          }
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={{
+            ...styles.toAddressTitle,
+            fontSize: toAddressSize,
+          }}
+          numberOfLines={0}
+          onPress={() => handleShare(destinationAddress)}
+        />
+        {changeAddrsWithAmounts.length > 0 && (
+          <ChangeAddress>
+            {changeAddrsWithAmounts.map((changeOutput, index) => (
+              <TranslateText
+                key={`change-${index}`}
+                textValue={`${changeOutput.address} (${changeOutput.formattedAmount}${amountSymbol})`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={{
+                  color: '#747e87',
+                  fontSize: fromAddressSize,
+                  fontWeight: '700',
+                  fontFamily: 'Satoshi Variable',
+                }}
+                numberOfLines={0}
+                onPress={() => handleShare(changeOutput.address)}
+              />
+            ))}
+          </ChangeAddress>
+        )}
+      </Fragment>
+    );
+  }
+
+  return (
+    <Fragment>
+      <View style={styles.topContainer}>
+        <ScrollView
+          style={{maxHeight: SCREEN_HEIGHT * 0.4}}
+          contentContainerStyle={styles.fromToContainer}>
+          <View style={styles.fromContainer}>
+            <View style={styles.fromAndToIconContainer}>
+              <View style={styles.fromAndToIcon}>
+                <Image
+                  style={styles.fromAndToIconImage}
+                  source={require('../../assets/icons/send-icon.png')}
+                />
+              </View>
+              <View style={styles.sentLine} />
+            </View>
+            <View style={styles.fromAndToTitlesContainer}>
+              <TranslateText
+                textKey={'from'}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.fromAndToTitle}
+                numberOfLines={1}
+              />
+              {renderInputs()}
+              <View style={{paddingBottom: 10}} />
+            </View>
+          </View>
+          <View style={styles.toContainer}>
+            <View style={styles.fromAndToIconContainer}>
+              <View style={styles.fromAndToIcon}>
+                <Image
+                  style={styles.fromAndToIconImage}
+                  source={require('../../assets/icons/receive-icon.png')}
+                />
+              </View>
+            </View>
+            <View style={styles.fromAndToTitlesContainer}>
+              <TranslateText
+                textKey={'to'}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.fromAndToTitle}
+                numberOfLines={1}
+              />
+              {renderOutputs()}
+            </View>
+          </View>
+        </ScrollView>
+
+        <TableCell
+          titleTextKey="tx_id"
+          titleTextDomain="main"
+          value={txId}
+          copyable
+          valueStyle={{paddingLeft: 20}}
+        />
+
+        <TableCell
+          titleTextKey="time_date"
+          titleTextDomain="main"
+          value={dateString}
+        />
+      </View>
+      <View style={styles.bottomContainer}>
+        <View style={styles.buttonContainer}>
+          <BlueButton
+            textKey="view_on_blockchain"
+            textDomain="main"
+            onPress={() => {
+              navigation.navigate('WebPage', {
+                uri: currentExplorer,
+              });
+            }}
+          />
+        </View>
         <View style={styles.paginationStrip} />
       </View>
     </Fragment>
@@ -1170,7 +1497,7 @@ const getStyles = (
       paddingVertical: screenHeight * 0.02,
     },
     fromContainer: {
-      flexBasis: '60%',
+      flexShrink: 0,
       width: '100%',
       flexDirection: 'row',
       justifyContent: 'flex-start',
@@ -1320,5 +1647,30 @@ const getStyles = (
     },
     ltcNumColor: {
       color: '#2c72ff',
+    },
+    conversionHeader: {
+      width: '100%',
+      paddingBottom: screenHeight * 0.02,
+      alignItems: 'center',
+    },
+    conversionTitle: {
+      color: '#3b3b3b',
+      fontSize: screenHeight * 0.018,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
+      textAlign: 'center',
+    },
+    changeLabel: {
+      color: '#747e87',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
+      paddingTop: screenHeight * 0.01,
+    },
+    changeAddressTitle: {
+      color: '#2c72ff',
+      fontSize: screenHeight * 0.02,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
     },
   });

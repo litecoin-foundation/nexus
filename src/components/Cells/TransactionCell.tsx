@@ -50,6 +50,12 @@ const TransactionCell: React.FC<Props> = props => {
             txIcon: require('../../assets/icons/receivetx.png'),
             amountColor: '#1162E6',
           };
+        case 'Convert':
+          return {
+            textKey: 'converted_ltc',
+            txIcon: require('../../assets/icons/converttx.png'),
+            amountColor: '#1162E6',
+          };
         case 'Buy':
           return {
             textKey: providerMeta?.status

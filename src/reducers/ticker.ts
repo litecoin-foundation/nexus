@@ -2,14 +2,26 @@ import {createAction, createSlice, createSelector} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import memoize from 'lodash.memoize';
 
-import {poll} from '../lib/utils/poll';
+import {poll} from '../utils/poll';
 import {AppThunk} from './types';
 import {setBuyQuote, setSellQuote, setLimits} from './buy';
 import {IBuyQuote, ISellQuote} from '../utils/tradeQuotes';
+import {fetchResolve} from '../utils/tor';
 
 // types
+type PriceDataPoint = [number, number, number, number, number, number];
+
 type IRates = {
   [key: string]: any;
+};
+
+type TGranulatedPriceData = {
+  latestPrice: PriceDataPoint;
+  fifteenMins: PriceDataPoint[];
+  hourly: PriceDataPoint[];
+  sixHrs: PriceDataPoint[];
+  daily: PriceDataPoint[];
+  all: PriceDataPoint[];
 };
 
 interface ITicker {
@@ -73,29 +85,19 @@ function isObjectEmpty(obj: {[key: string]: any}) {
   }
 }
 
-const getTickerData = () => {
+const getTickerData = (useTor: boolean) => {
   return new Promise<{[key: string]: string}>(async (resolve, reject) => {
     try {
-      const res = await fetch(
-        'https://api.coinbase.com/v2/exchange-rates?currency=LTC',
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
+      const url = 'https://api.coinbase.com/v2/exchange-rates?currency=LTC';
+      const fetchOptions = {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
-      );
-      if (!res.ok) {
-        const error = await res.json();
-        reject(error);
-      }
-
-      const {
-        data: {rates},
-      } = await res.json();
-
-      resolve(rates);
+      };
+      const {data} = await fetchResolve(url, fetchOptions, useTor);
+      resolve(data.rates);
     } catch (error) {
       reject(error);
     }
@@ -105,7 +107,7 @@ const getTickerData = () => {
 // NOTE: if we will call buy and sell quotes separately depending on what
 // screen user's at it will be half amount of requests
 export const callRates = (): AppThunk => async (dispatch, getState) => {
-  const {currencyCode} = getState().settings;
+  const {currencyCode, torEnabled} = getState().settings;
   const {amount: ltcAmount} = getState().input;
 
   let isBuyRateApprox = false,
@@ -124,7 +126,7 @@ export const callRates = (): AppThunk => async (dispatch, getState) => {
     let sell = sellQuote ? Number(sellQuote.ltcPrice) : null;
 
     // Fetch ltc rates
-    const rates = await getTickerData();
+    const rates = await getTickerData(torEnabled);
     let ltc = 0;
     if (rates && !isObjectEmpty(rates)) {
       ltc = Number(rates[currencyCode]);
@@ -163,134 +165,105 @@ export const pollRates = (): AppThunk => async dispatch => {
   }, 15000);
 };
 
-const fetchHistoricalRates = async (interval: string): Promise<any[]> => {
-  const url = `https://api.nexuswallet.com/api/prices/${interval}`;
-  const headers = {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
+const fetchGranulatedHistoricalRates = async (
+  useTor: boolean,
+): Promise<TGranulatedPriceData> => {
+  const url = 'https://api.nexuswallet.com/api/prices/granulated';
+  const fetchOptions = {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
   };
 
-  const res = await fetch(url, {method: 'GET', headers});
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to fetch historical rates');
-  }
-
-  const {data} = await res.json();
-
-  return data;
-};
-
-export const updatedRatesInFiat = (): AppThunk => async dispatch => {
   try {
-    const rates = await getTickerData();
-    dispatch(getTickerAction(rates));
+    const {data} = await fetchResolve(url, fetchOptions, useTor);
+    return data;
   } catch (error) {
-    console.error('Error fetching day historical rates:', error);
+    return {
+      latestPrice: [0, 0, 0, 0, 0, 0],
+      fifteenMins: [],
+      hourly: [],
+      sixHrs: [],
+      daily: [],
+      all: [],
+    } as TGranulatedPriceData;
   }
 };
 
-export const getDayHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('1D');
-    dispatch(updateHistoricRateDayAction(result));
-  } catch (error) {
-    console.error('Error fetching day historical rates:', error);
-  }
-};
-
-export const getWeekHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('1W');
-    dispatch(updateHistoricRateWeekAction(result));
-  } catch (error) {
-    console.error('Error fetching week historical rates:', error);
-  }
-};
-
-export const getMonthHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('1M');
-    dispatch(updateHistoricRateMonthAction(result));
-  } catch (error) {
-    console.error('Error fetching month historical rates:', error);
-  }
-};
-
-export const getQuarterHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('3M');
-    dispatch(updateHistoricRateQuarterAction(result));
-  } catch (error) {
-    console.error('Error fetching 3-month historical rates:', error);
-  }
-};
-
-export const getYearHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('1Y');
-    dispatch(updateHistoricRateYearAction(result));
-  } catch (error) {
-    console.error('Error fetching 1-year historical rates:', error);
-  }
-};
-
-export const getAllHistoricalRates = (): AppThunk => async dispatch => {
-  try {
-    const result = await fetchHistoricalRates('ALL');
-    dispatch(updateHistoricRateAllAction(result));
-  } catch (error) {
-    console.error('Error fetching All historical rates:', error);
-  }
-};
-
-export const updateHistoricalRates = (): AppThunk => (dispatch, getStore) => {
-  const graphPeriod = getStore().chart.graphPeriod;
-
-  switch (graphPeriod) {
-    case '1D':
-      dispatch(getDayHistoricalRates());
-      break;
-    case '1W':
-      dispatch(getWeekHistoricalRates());
-      break;
-    case '1M':
-      dispatch(getMonthHistoricalRates());
-      break;
-    case '3M':
-      dispatch(getQuarterHistoricalRates());
-      break;
-    case '1Y':
-      dispatch(getYearHistoricalRates());
-      break;
-    case 'ALL':
-      dispatch(getAllHistoricalRates());
-      break;
-    default:
-      dispatch(getDayHistoricalRates());
-      break;
-  }
-};
+export const updatedRatesInFiat =
+  (): AppThunk => async (dispatch, getState) => {
+    const {torEnabled} = getState().settings;
+    try {
+      const rates = await getTickerData(torEnabled);
+      dispatch(getTickerAction(rates));
+    } catch (error) {
+      console.error('Error fetching day historical rates:', error);
+    }
+  };
 
 export const updateHistoricalRatesForAllPeriods =
-  (): AppThunk => async dispatch => {
+  (): AppThunk => async (dispatch, getState) => {
+    const {torEnabled} = getState().settings;
     try {
-      let result = await fetchHistoricalRates('1D');
-      dispatch(updateHistoricRateDayAction(result));
-      result = await fetchHistoricalRates('1W');
-      dispatch(updateHistoricRateWeekAction(result));
-      result = await fetchHistoricalRates('1M');
-      dispatch(updateHistoricRateMonthAction(result));
-      result = await fetchHistoricalRates('3M');
-      dispatch(updateHistoricRateQuarterAction(result));
-      result = await fetchHistoricalRates('1Y');
-      dispatch(updateHistoricRateYearAction(result));
-      result = await fetchHistoricalRates('ALL');
-      dispatch(updateHistoricRateAllAction(result));
+      const granulatedPriceData: TGranulatedPriceData =
+        await fetchGranulatedHistoricalRates(torEnabled);
+      if (granulatedPriceData.all.length > 0) {
+        dispatch(segregateHistoricalRatesByPeriods(granulatedPriceData));
+      }
     } catch (error) {
-      console.error('Error fetching all historical rates:', error);
+      console.error('Failed to update historical rates:', error);
     }
+  };
+
+const segregateHistoricalRatesByPeriods =
+  (granulatedPriceData: TGranulatedPriceData): AppThunk =>
+  dispatch => {
+    if (!granulatedPriceData) {
+      return;
+    }
+
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+    const dayData = granulatedPriceData.fifteenMins.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= oneDayAgo;
+    });
+    const weekData = granulatedPriceData.hourly.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= oneWeekAgo;
+    });
+    const monthData = granulatedPriceData.sixHrs.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= oneMonthAgo;
+    });
+    const quarterData = granulatedPriceData.daily.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= threeMonthsAgo;
+    });
+    const yearData = granulatedPriceData.daily.filter(item => {
+      const itemDate = new Date(item[0] * 1000);
+      return itemDate >= oneYearAgo;
+    });
+
+    dayData.push(granulatedPriceData.latestPrice);
+    weekData.push(granulatedPriceData.latestPrice);
+    monthData.push(granulatedPriceData.latestPrice);
+    quarterData.push(granulatedPriceData.latestPrice);
+    yearData.push(granulatedPriceData.latestPrice);
+
+    dispatch(updateHistoricRateDayAction(dayData));
+    dispatch(updateHistoricRateWeekAction(weekData));
+    dispatch(updateHistoricRateMonthAction(monthData));
+    dispatch(updateHistoricRateQuarterAction(quarterData));
+    dispatch(updateHistoricRateYearAction(yearData));
+    dispatch(updateHistoricRateAllAction(granulatedPriceData.all));
   };
 
 // slice
@@ -376,6 +349,13 @@ export const fiatValueSelector = createSelector(
           rates[currencyCode]
         ).toFixed(2)}`,
     ),
+);
+
+export const confirmSellFiatValueSelector = createSelector(
+  state => state.ticker.rates,
+  state => state.settings.currencyCode,
+  (rates: {[key: string]: any}, currencyCode: string) =>
+    memoize((amount: number) => `${(amount * rates[currencyCode]).toFixed(2)}`),
 );
 
 export const monthSelector = createSelector(

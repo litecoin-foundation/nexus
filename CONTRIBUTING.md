@@ -103,9 +103,6 @@ nexus/
 │   │   ├── Modals/         # Modal dialog components
 │   │   └── Numpad/         # Numeric input components
 │   ├── context/           # React context providers
-│   ├── lib/               # Utility libraries and type definitions
-│   │   ├── typedef/        # TypeScript definitions for external libraries
-│   │   └── utils/          # Utility functions
 │   ├── navigation/        # Navigation stacks and routing
 │   ├── reducers/          # Redux slices and state management
 │   ├── screens/           # Screen components organized by feature
@@ -116,7 +113,8 @@ nexus/
 │   │   └── Wallet/        # Dashboard screens
 │   ├── store/             # Redux store configuration
 │   ├── theme/             # Theme and styling utilities
-│   └── utils/             # App-specific utilities
+│   ├── typedef/           # TypeScript definitions for external libraries
+│   └── utils/             # utility functions
 ├── android/               # Android-specific files
 ├── ios/                   # iOS-specific files
 ```

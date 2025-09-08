@@ -1,6 +1,6 @@
 import TouchID from 'react-native-touch-id';
 
-import {setBiometricAvailability} from '../../reducers/authentication';
+import {setBiometricAvailability} from '../reducers/authentication';
 
 const biometricConfig = {
   title: 'Authentication Required',
@@ -17,17 +17,17 @@ const supportConfig = {
   passcodeFallback: false,
 };
 
-export const authenticate = (reason) => {
+export const authenticate = reason => {
   return new Promise((resolve, reject) => {
     TouchID.authenticate(reason, biometricConfig)
-      .then((success) => resolve())
-      .catch((error) => reject(error));
+      .then(success => resolve())
+      .catch(error => reject(error));
   });
 };
 
-export const checkBiometricSupport = () => (dispatch) => {
+export const checkBiometricSupport = () => dispatch => {
   TouchID.isSupported(supportConfig)
-    .then((biometryType) => {
+    .then(biometryType => {
       if (biometryType === 'FaceID') {
         dispatch(setBiometricAvailability(true, true));
       } else {
