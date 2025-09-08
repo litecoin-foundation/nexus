@@ -8,7 +8,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {estimateFee, walletKitListUnspent} from 'react-native-turbo-lndltc';
+import {walletKitListUnspent} from 'react-native-turbo-lndltc';
 
 import ConvertField from '../InputFields/ConvertField';
 import BuyPad from '../Numpad/BuyPad';
@@ -29,8 +29,6 @@ import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {estimateMWEBTransaction} from '../../utils/estimateFee';
-import {buildTransactionSpec} from '../../utils/estimateFeeConstructor';
-import {getAddressInfo} from '../../utils/validate';
 
 // interface Props {}
 

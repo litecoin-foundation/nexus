@@ -55,9 +55,7 @@ interface SelectCoinsLayoutProps {
   selectedBalance: number;
   selectedUtxos: Utxo[];
   onConfirmSelection?: (selectedUtxos: Utxo[]) => void;
-  targetAmount: number;
   realTargetAmount: number;
-  estimatedFee: number;
 }
 
 export default function SelectCoinsModalContent(props: Props) {
@@ -289,9 +287,7 @@ export default function SelectCoinsModalContent(props: Props) {
             selectedBalance={selectedBalanceInSubunit}
             selectedUtxos={selectedUtxos}
             onConfirmSelection={onConfirmSelection}
-            targetAmount={targetAmount}
             realTargetAmount={realTargetAmount}
-            estimatedFee={convertToSubunit(estimatedFee)}
           />
         </View>
       </View>
@@ -307,9 +303,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
     selectedBalance,
     selectedUtxos,
     onConfirmSelection,
-    targetAmount,
     realTargetAmount,
-    estimatedFee,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -442,7 +436,10 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
           </View>
           <View style={styles.progressBarContainer}>
             <ProgressBar
-              percentageProgress={10}
+              percentageProgress={Math.min(
+                100,
+                (selectedBalance / realTargetAmount) * 100,
+              )}
               color={'#d8d8d8'}
               height={SCREEN_HEIGHT * 0.005}
               rounded
@@ -450,7 +447,7 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
           </View>
           <View style={styles.progressBarContainer}>
             <ProgressBar
-              percentageProgress={80}
+              percentageProgress={100}
               color={'#2C72FF'}
               height={SCREEN_HEIGHT * 0.005}
               rounded
