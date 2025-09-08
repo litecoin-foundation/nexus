@@ -36,6 +36,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
 import SectionHeader from '../../components/SectionHeader';
 import {setBiometricEnabled} from '../../reducers/authentication';
+import {canUseTorOnThisDevice} from '../../utils/tor';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {
   updateSubunit,
@@ -68,6 +69,7 @@ type RootStackParamList = {
   ResetWallet: undefined;
   TestPayment: undefined;
   Tor: undefined;
+  ExportElectrum: undefined;
 };
 
 interface Props {
@@ -89,6 +91,7 @@ const Settings: React.FC<Props> = props => {
     [SCREEN_WIDTH, SCREEN_HEIGHT],
   );
 
+  const [torDeviceCompatible, setTorDeviceCompatible] = useState(false);
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('view-seed-auth');
   function openPinModal(action: string) {
@@ -127,6 +130,10 @@ const Settings: React.FC<Props> = props => {
     );
     return () => subscription.remove();
     /* eslint-disable react-hooks/exhaustive-deps */
+  }, []);
+
+  useEffect(() => {
+    canUseTorOnThisDevice().then(setTorDeviceCompatible);
   }, []);
 
   const handleBiometricSwitch = () => {
@@ -181,13 +188,17 @@ const Settings: React.FC<Props> = props => {
       },
       {id: 'notifications', type: 'notifications', notificationsEnabled},
       ...(biometricsAvailable ? [{id: 'biometrics', type: 'biometrics'}] : []),
-      {
-        id: 'tor',
-        type: 'cell',
-        textKey: 'enable_tor',
-        forward: true,
-        onPress: () => navigation.navigate('Tor'),
-      },
+      ...(torDeviceCompatible
+        ? [
+            {
+              id: 'tor',
+              type: 'cell',
+              textKey: 'enable_tor',
+              forward: true,
+              onPress: () => navigation.navigate('Tor'),
+            },
+          ]
+        : []),
       {
         id: 'explorer',
         type: 'cell',
@@ -316,6 +327,7 @@ const Settings: React.FC<Props> = props => {
     ],
     [
       biometricsAvailable,
+      torDeviceCompatible,
       notificationsEnabled,
       manualCoinSelectionEnabled,
       biometricsEnabled,

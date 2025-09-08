@@ -1,8 +1,62 @@
-import {RnTor} from 'react-native-nitro-tor';
+import {Platform, NativeModules} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import * as RNFS from '@dr.pogodin/react-native-fs';
+
+type TorSpec = typeof import('react-native-nitro-tor').RnTor;
+
+// cache the loaded module result (null means "not available")
+let cachedTor: TorSpec | null | undefined;
+
+// check if NitroTor is available
+// currently only not available on Android arm32 (armeabi-v7a)
+export const canUseTorOnThisDevice = async (): Promise<boolean> => {
+  if (Platform.OS !== 'android') {
+    return true;
+  }
+
+  try {
+    if (DeviceInfo?.supportedAbis) {
+      const abis: string[] = await DeviceInfo.supportedAbis();
+      return abis.some(a => a === 'arm64-v8a' || a === 'x86_64' || a === 'x86');
+    }
+  } catch {
+    // ignore
+  }
+
+  // fallback where DeviceInfo fails
+  const abis: string[] | undefined =
+    NativeModules.PlatformConstants.supportedAbis;
+  return Array.isArray(abis)
+    ? abis.some(a => a === 'arm64-v8a' || a === 'x86_64' || a === 'x86')
+    : false;
+};
+
+// lazily load the nitro-tor module if supported
+export const getTor = async (): Promise<TorSpec | null> => {
+  if (cachedTor !== undefined) {
+    return cachedTor;
+  }
+  const ok = await canUseTorOnThisDevice();
+  if (!ok) {
+    return (cachedTor = null);
+  }
+  try {
+    const mod = require('react-native-nitro-tor');
+    return (cachedTor = mod);
+  } catch {
+    return (cachedTor = null);
+  }
+};
 
 // NOTE: takes 30 to 60 seconds to start for the first time
 export const startTor = async () => {
+  const RnTor = await getTor();
+
+  if (!RnTor) {
+    console.log('NitroTor unavailable');
+    return false;
+  }
+
   try {
     // NOTE: ensure directory already exists, otherwise tor won't start
     const torDataDir = `${RNFS.DocumentDirectoryPath}/tor_data`;
@@ -35,6 +89,12 @@ export const startTor = async () => {
 };
 
 export const stopTor = async () => {
+  const RnTor = await getTor();
+
+  if (!RnTor) {
+    return false;
+  }
+
   try {
     const result = await RnTor.shutdownService();
 
@@ -54,6 +114,12 @@ export const stopTor = async () => {
 };
 
 export const checkTorStatus = async () => {
+  const RnTor = await getTor();
+
+  if (!RnTor) {
+    return -1;
+  }
+
   try {
     const status = await RnTor.getServiceStatus();
     if (__DEV__) {
@@ -67,6 +133,12 @@ export const checkTorStatus = async () => {
 };
 
 export const isTorReady = async () => {
+  const RnTor = await getTor();
+
+  if (!RnTor) {
+    return false;
+  }
+
   try {
     const status = await RnTor.getServiceStatus();
     if (__DEV__) {
@@ -88,15 +160,15 @@ const fetchResolveRegular = (
       const res = await fetch(url, fetchOptions);
       if (!res.ok) {
         const errorBody = await res.text();
-        console.warn(`Regular request failed with status: ${res.status}`);
+        console.warn(
+          `Regular request failed with status: ${res.status}. URL ${url}`,
+        );
         reject(
           new Error(`Request failed with status ${res.status}: ${errorBody}`),
         );
         return;
       }
-      if (__DEV__) {
-        console.log('Regular request passed successfully');
-      }
+
       const contentType = res.headers.get('content-type') || '';
       if (contentType.includes('application/json')) {
         try {
@@ -125,6 +197,12 @@ const fetchResolveWithTor = (
 ) => {
   return new Promise<any>(async (resolve, reject) => {
     try {
+      const RnTor = await getTor();
+
+      if (!RnTor) {
+        throw new Error('Tor unavailable on device.');
+      }
+
       const torResponse =
         fetchOptions.method === 'POST'
           ? await RnTor.httpPost({
