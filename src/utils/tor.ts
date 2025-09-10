@@ -41,8 +41,8 @@ export const getTor = async (): Promise<TorSpec | null> => {
     return (cachedTor = null);
   }
   try {
-    const mod = require('react-native-nitro-tor');
-    return (cachedTor = mod);
+    const mod = await import('react-native-nitro-tor');
+    return (cachedTor = mod.RnTor);
   } catch {
     return (cachedTor = null);
   }
