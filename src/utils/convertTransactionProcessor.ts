@@ -51,7 +51,7 @@ export type ProcessedConvertTransaction = {
 export async function processConvertTransactions(
   convertedTransactions: IConvertedTx[],
   transactions: any, // Accept the raw TransactionDetails from LND
-  getPriceOnDate: (timestamp: number) => Promise<number | null>
+  getPriceOnDate: (timestamp: number) => Promise<number | null>,
 ): Promise<{
   processedTransactions: ProcessedConvertTransaction[];
   processedTxHashes: Set<string>;
@@ -67,12 +67,34 @@ export async function processConvertTransactions(
       continue;
     }
 
-    // Find the main convert transaction (has destination address)
-    const mainConvertTransaction = transactions.transactions.find(tx =>
-      tx.outputDetails?.some(
+    // Find the main convert transaction (has destination address AND matches convert criteria)
+    const mainConvertTransaction = transactions.transactions.find(tx => {
+      const hasDestinationAddress = tx.outputDetails?.some(
         output => output.address === convertTx.destinationAddress,
-      ),
-    );
+      );
+
+      if (!hasDestinationAddress) {
+        return false;
+      }
+
+      // Additional validation: check if transaction uses selected outpoints
+      const selectedOutpointSet = new Set(convertTx.selectedOutpoints || []);
+      const usesSelectedOutpoints = tx.previousOutpoints?.some(prevOutpoint =>
+        selectedOutpointSet.has(prevOutpoint.outpoint || ''),
+      );
+
+      // Additional validation: check amount proximity to target amount
+      const amountMatches =
+        Math.abs(Number(tx.amount) - Number(convertTx.targetAmount)) <
+        Math.max(1000, Number(convertTx.targetAmount) * 0.01); // 1000 sats or 1% tolerance
+
+      // Additional validation: check timestamp proximity (within 1 hour)
+      const timestampMatches =
+        Math.abs(Number(tx.timeStamp) - convertTx.timestamp) < 3600;
+
+      // Must use selected outpoints OR have matching amount AND timestamp
+      return usesSelectedOutpoints || (amountMatches && timestampMatches);
+    });
 
     if (!mainConvertTransaction) {
       continue;
@@ -91,18 +113,13 @@ export async function processConvertTransactions(
 
       // Check if this transaction uses the selected UTXOs as inputs
       const totalSelectedAmount = convertTx.selectedUtxos
-        ? convertTx.selectedUtxos.reduce(
-            (sum, utxo) => sum + utxo.amountSat,
-            0,
-          )
+        ? convertTx.selectedUtxos.reduce((sum, utxo) => sum + utxo.amountSat, 0)
         : 0;
       const usesSelectedUtxosByAmount =
         totalSelectedAmount > 0 &&
         Math.abs(Number(relatedTx.amount)) === totalSelectedAmount;
 
-      const selectedOutpointSet = new Set(
-        convertTx.selectedOutpoints || [],
-      );
+      const selectedOutpointSet = new Set(convertTx.selectedOutpoints || []);
       const usesSelectedUtxosByOutpoint =
         relatedTx.previousOutpoints?.some(prevOutpoint =>
           selectedOutpointSet.has(prevOutpoint.outpoint || ''),
@@ -234,8 +251,7 @@ export async function processConvertTransactions(
           output => output.address === convertTx.destinationAddress,
         );
         const amountMatches =
-          Math.abs(Number(relatedTx.amount) - convertTx.targetAmount) <
-          1000;
+          Math.abs(Number(relatedTx.amount) - convertTx.targetAmount) < 1000;
 
         if (hasDestinationAddress && amountMatches) {
           receiveTx = relatedTx;

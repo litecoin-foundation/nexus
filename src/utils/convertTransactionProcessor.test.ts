@@ -918,3 +918,117 @@ describe('processConvertTransactions', () => {
     });
   });
 });
+
+describe('invalid processConvertTransactions', () => {
+  const mockGetPriceOnDate = jest.fn().mockResolvedValue(50000);
+
+  const convertTx: IConvertedTx[] = [
+    {
+      destinationAddress: 'ltc1q737ettl0szl4gzzd0g3apzscr4ft6ctgdn37t2',
+      targetAmount: 14000000,
+      timestamp: 1757075968,
+      conversionType: 'regular',
+      selectedUtxos: [
+        {
+          address:
+            'ltcmweb1qq0l2z6ka7nk8yv2wflmvf62jpg2ud9mywcmhr0vvkanwhg9pptes7qmxm0ujztp4sm4zw99x2e7c0ga3l3496qhejj9e7djlj9ymedc00yjlvhrh',
+          amountSat: 649991210,
+          addressType: 6,
+        },
+      ],
+      selectedOutpoints: [
+        '6259a0850b1c53244d3a0d40520ee1c2d713faa254455c4c2c084e78979283b7:0',
+      ],
+    },
+    {
+      destinationAddress:
+        'ltcmweb1qqfe6trjhtk4ty2uj6wln96tas70t5a80h2cd9slw9gey9x6getfsjq635ry3jy7ty44hpmexcgaunahr4gxmwt38krpmv0jdqh7ugqqd8q9grqm8',
+      targetAmount: 163995500,
+      timestamp: 1757089389,
+      conversionType: 'private',
+      selectedUtxos: [
+        {
+          address: 'ltc1q4axlz8tct3uwpvhx0fmgyt79yhlkvqfwvkkusq',
+          amountSat: 150000000,
+          addressType: 0,
+        },
+        {
+          address: 'ltc1q737ettl0szl4gzzd0g3apzscr4ft6ctgdn37t2',
+          amountSat: 14000000,
+          addressType: 0,
+        },
+      ],
+      selectedOutpoints: [
+        'a524668b17fe9d55ea9445efadb23aaa91d7241c856f64e6e73a72d260012062:2',
+        '2ac8c5dac760dd84d5ae9a89111ea486486b23f59564e1a10b423d80df14d525:1',
+      ],
+    },
+  ];
+
+  const realTransaction = {
+    transactions: [
+      {
+        $typeName: 'lnrpc.Transaction',
+        txHash:
+          'c2da37a74d0dfc279a658db366925fc58de1d7bd762607fae82a1f15f365e8b0',
+        amount: {},
+        numConfirmations: 248,
+        blockHash:
+          'a66967f6c55257f70791629a30c45d684271cb07ce7f15f2ecb0309515c7767a',
+        blockHeight: 2965708,
+        timeStamp: {},
+        totalFees: {},
+        destAddresses: [
+          'ltc1qal9el8nfmds5xp7uyt2hqvwpzmjlgrsp560sj6',
+          'ltc1q737ettl0szl4gzzd0g3apzscr4ft6ctgdn37t2',
+        ],
+        outputDetails: [
+          {
+            $typeName: 'lnrpc.OutputDetail',
+            outputType: 2,
+            address: 'ltc1qal9el8nfmds5xp7uyt2hqvwpzmjlgrsp560sj6',
+            pkScript: '0014efcb9f9e69db614307dc22d57031c116e5f40e01',
+            outputIndex: {},
+            amount: {},
+            isOurAddress: false,
+          },
+          {
+            $typeName: 'lnrpc.OutputDetail',
+            outputType: 2,
+            address: 'ltc1q737ettl0szl4gzzd0g3apzscr4ft6ctgdn37t2',
+            pkScript: '0014f47d95afef80bf54084d7a23d08a181d52bd6168',
+            outputIndex: {},
+            amount: {},
+            isOurAddress: true,
+          },
+        ],
+        rawTxHex:
+          '010000000001015bf9cd7227a8a3fd0ecfabfdef4cbdc1e8463e29f759881689593ee07f44262e0100000000ffffffff02d2e2160000000000160014efcb9f9e69db614307dc22d57031c116e5f40e0120a1070000000000160014f47d95afef80bf54084d7a23d08a181d52bd616802483045022100a58f3646a605a3f14c38c52acde1eed12b3c97da6a3d7bdb51274fb73f23f64f0220527daa817516310552336e2ba8578c333ab310c34c938c5301d3eb33e68892ca01210358f84c90b72e4b316288075ec884c202b88ad4e051eb5c15af9b0ee1154e328000000000',
+        label: '',
+        previousOutpoints: [
+          {
+            $typeName: 'lnrpc.PreviousOutPoint',
+            outpoint:
+              '2e26447fe03e5989168859f7293e46e8c1bd4ceffdabcf0efda3a82772cdf95b:1',
+            isOurOutput: false,
+          },
+        ],
+      },
+    ],
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should NOT incorrectly identify an unrelated received pegout as a convertTx', async () => {
+    const result = await processConvertTransactions(
+      convertTx,
+      realTransaction,
+      mockGetPriceOnDate,
+    );
+
+    expect(result.processedTransactions).toHaveLength(0);
+    expect(result.processedTxHashes).toEqual(new Set());
+  });
+});
