@@ -103,8 +103,8 @@ const setProceedToGetLimitsAction = createAction<{
 // functions
 export const getBuyTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
-    const {uniqueId} = getState().onboarding;
-    const {torEnabled} = getState().settings;
+    const {uniqueId} = getState().onboarding!;
+    const {torEnabled} = getState().settings!;
 
     try {
       const res = await fetchResolve(
@@ -163,8 +163,8 @@ export const getBuyTransactionHistory =
 
 export const getSellTransactionHistory =
   (): AppThunk => async (dispatch, getState) => {
-    const {uniqueId} = getState().onboarding;
-    const {torEnabled} = getState().settings;
+    const {uniqueId} = getState().onboarding!;
+    const {torEnabled} = getState().settings!;
 
     try {
       const res = await fetchResolve(
@@ -223,7 +223,7 @@ export const getSellTransactionHistory =
 
 export const checkFlexaCustomer =
   (): AppThunk => async (dispatch, getState) => {
-    const {testPaymentActive, testPaymentCountry} = getState().settings;
+    const {testPaymentActive, testPaymentCountry} = getState().settings!;
     const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
     let isFlexaCustomer = false;
     switch (countryCode) {
@@ -253,17 +253,21 @@ const getMoonpayBuyQuoteData = (
     );
 
     try {
-      const data = await fetchResolve(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
-        torEnabled,
-      );
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        reject(error);
+        return;
+      }
+
+      const data = await res.json();
 
       if (data && data.hasOwnProperty('quoteCurrencyPrice')) {
         // check if response is number
@@ -385,17 +389,17 @@ export const setBuyQuote =
   (cryptoAmount?: number, fiatAmount?: number): AppThunkBuyQuote =>
   async (dispatch, getState) => {
     return new Promise<IBuyQuoteAndLimits>(async resolve => {
-      const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
+      const {isMoonpayCustomer, isOnramperCustomer} = getState().buy!;
       const {
         testPaymentActive,
         testPaymentCountry,
         testPaymentFiat,
         torEnabled,
-      } = getState().settings;
+      } = getState().settings!;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
-        : getState().settings.currencyCode;
+        : getState().settings!.currencyCode;
       const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
       let quote: any = await getBuyQuote(
@@ -413,8 +417,8 @@ export const setBuyQuote =
         setProceedToGetLimitsAction({
           proceedToGetBuyLimits: quote.buyLimits
             ? false
-            : getState().buy.proceedToGetBuyLimits,
-          proceedToGetSellLimits: getState().buy.proceedToGetSellLimits,
+            : getState().buy!.proceedToGetBuyLimits,
+          proceedToGetSellLimits: getState().buy!.proceedToGetSellLimits,
         }),
       );
 
@@ -491,7 +495,6 @@ const getSellQuote = (
   currencyCode: string,
   cryptoAmount: number,
   torEnabled: boolean,
-  countryCode?: string,
 ) => {
   return new Promise<ISellQuoteAndLimits>(async resolve => {
     let quote: ISellQuoteAndLimits = {
@@ -533,18 +536,13 @@ export const setSellQuote =
   (cryptoAmount: number): AppThunkSellQuote =>
   async (dispatch, getState) => {
     return new Promise<ISellQuoteAndLimits>(async resolve => {
-      const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
-      const {
-        testPaymentActive,
-        testPaymentCountry,
-        testPaymentFiat,
-        torEnabled,
-      } = getState().settings;
+      const {isMoonpayCustomer, isOnramperCustomer} = getState().buy!;
+      const {testPaymentActive, testPaymentFiat, torEnabled} =
+        getState().settings!;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
-        : getState().settings.currencyCode;
-      const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
+        : getState().settings!.currencyCode;
 
       const quote: ISellQuoteAndLimits = await getSellQuote(
         isMoonpayCustomer,
@@ -552,16 +550,15 @@ export const setSellQuote =
         currencyCode,
         cryptoAmount,
         torEnabled,
-        countryCode,
       );
 
       // if quote does return limits update proceedToGetSellLimits notification boolean
       dispatch(
         setProceedToGetLimitsAction({
-          proceedToGetBuyLimits: getState().buy.proceedToGetBuyLimits,
+          proceedToGetBuyLimits: getState().buy!.proceedToGetBuyLimits,
           proceedToGetSellLimits: quote.sellLimits
             ? false
-            : getState().buy.proceedToGetSellLimits,
+            : getState().buy!.proceedToGetSellLimits,
         }),
       );
 
@@ -582,7 +579,7 @@ export const setSellQuote =
 export const checkBuySellProviderCountry =
   (): AppThunk => (dispatch, getState) => {
     const {testPaymentActive, testPaymentCountry, testPaymentMethod} =
-      getState().settings;
+      getState().settings!;
 
     const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
@@ -603,7 +600,7 @@ export const checkBuySellProviderCountry =
   };
 
 export const checkAllowed = (): AppThunk => async (dispatch, getState) => {
-  const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
+  const {isMoonpayCustomer, isOnramperCustomer} = getState().buy!;
 
   if (isMoonpayCustomer) {
     dispatch(checkMoonpayAllowed());
@@ -615,8 +612,7 @@ export const checkAllowed = (): AppThunk => async (dispatch, getState) => {
 };
 
 const checkMoonpayAllowed = (): AppThunk => async (dispatch, getState) => {
-  const {testPaymentActive, testPaymentCountry, torEnabled} =
-    getState().settings;
+  const {testPaymentActive, testPaymentCountry} = getState().settings!;
 
   const ipCheckURL = `https://api.moonpay.com/v3/ip_address?apiKey=${MOONPAY_PUBLIC_KEY}`;
   const supportedCountriesURL = 'https://api.moonpay.com/v3/countries';
@@ -636,7 +632,13 @@ const checkMoonpayAllowed = (): AppThunk => async (dispatch, getState) => {
 
   try {
     // check if buy/sell is allowed based on user ip
-    const ipResponse = await fetchResolve(ipCheckURL, req, torEnabled);
+    const res = await fetch(ipCheckURL, req);
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error);
+    }
+
+    const ipResponse = await res.json();
     const {isBuyAllowed, isSellAllowed} = ipResponse;
     canBuyIP = isBuyAllowed;
     canSellIP = isSellAllowed;
@@ -644,7 +646,12 @@ const checkMoonpayAllowed = (): AppThunk => async (dispatch, getState) => {
     // check if buy/sell is allowed based on device country config
     const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
-    const data = await fetchResolve(supportedCountriesURL, req, torEnabled);
+    const res2 = await fetch(supportedCountriesURL, req);
+    if (!res2.ok) {
+      const error = await res2.json();
+      throw new Error(error);
+    }
+    const data = await res2.json();
 
     const country = data.find((c: any) => c.alpha2 === countryCode);
     if (!country) {
@@ -671,18 +678,13 @@ const checkMoonpayAllowed = (): AppThunk => async (dispatch, getState) => {
 };
 
 const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
-  const {
-    testPaymentActive,
-    testPaymentKey,
-    testPaymentCountry,
-    testPaymentFiat,
-    torEnabled,
-  } = getState().settings;
+  const {testPaymentActive, testPaymentCountry, testPaymentFiat, torEnabled} =
+    getState().settings!;
 
   // check if buy/sell is allowed based on user ip and preferred currency
   const currencyCode = testPaymentActive
     ? testPaymentFiat
-    : getState().settings.currencyCode;
+    : getState().settings!.currencyCode;
   const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
   // ltc_litecoin code
@@ -745,26 +747,28 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
 };
 
 export const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
-  const {testPaymentActive, testPaymentFiat, torEnabled} = getState().settings;
+  const {testPaymentActive, testPaymentFiat} = getState().settings!;
 
   const currencyCode = testPaymentActive
     ? testPaymentFiat
-    : getState().settings.currencyCode;
+    : getState().settings!.currencyCode;
 
   const url = `https://api.moonpay.com/v3/currencies/ltc/limits?apiKey=${MOONPAY_PUBLIC_KEY}&baseCurrencyCode=${currencyCode}`;
 
   try {
-    const data = await fetchResolve(
-      url,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-      torEnabled,
-    );
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error);
+    }
+    const data = await res.json();
 
     // set limits when possible
     const buyLimits = {
@@ -781,7 +785,7 @@ export const getMoonpayLimits = (): AppThunk => async (dispatch, getState) => {
     dispatch(
       setProceedToGetLimitsAction({
         proceedToGetBuyLimits: false,
-        proceedToGetSellLimits: getState().buy.proceedToGetSellLimits,
+        proceedToGetSellLimits: getState().buy!.proceedToGetSellLimits,
       }),
     );
   } catch (error) {
@@ -816,7 +820,7 @@ const getOnramperLimits = (): AppThunk => async dispatch => {
 };
 
 export const setLimits = (): AppThunk => async (dispatch, getState) => {
-  const {isMoonpayCustomer, isOnramperCustomer} = getState().buy;
+  const {isMoonpayCustomer, isOnramperCustomer} = getState().buy!;
   if (isMoonpayCustomer) {
     dispatch(getMoonpayLimits());
   } else if (isOnramperCustomer) {
@@ -831,13 +835,13 @@ export const getSignedUrl =
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
       const {testPaymentActive, testPaymentFiat, torEnabled} =
-        getState().settings;
+        getState().settings!;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
-        : getState().settings.currencyCode;
+        : getState().settings!.currencyCode;
 
-      const {uniqueId} = getState().onboarding;
+      const {uniqueId} = getState().onboarding!;
 
       const utmParams = prefilledMethod
         ? '&' +
@@ -880,21 +884,14 @@ export const getSignedOnramperUrl =
   (address: string, fiatAmount: number, prefilledMethod?: string): AppThunk =>
   (_, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {
-        testPaymentActive,
-        testPaymentKey,
-        testPaymentFiat,
-        torEnabled,
-        // testPaymentCountry,
-      } = getState().settings;
+      const {testPaymentActive, testPaymentKey, testPaymentFiat, torEnabled} =
+        getState().settings!;
 
       const currencyCode = testPaymentActive
         ? testPaymentFiat
-        : getState().settings.currencyCode;
+        : getState().settings!.currencyCode!;
 
-      // const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
-
-      const {uniqueId} = getState().onboarding;
+      const {uniqueId} = getState().onboarding!;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
 
       const utmParams = prefilledMethod
@@ -920,7 +917,6 @@ export const getSignedOnramperUrl =
         `&wallets=ltc_litecoin:${address}` +
         `&defaultAmount=${fiatAmount}` +
         `&defaultFiat=${currencyCode}` +
-        // `&country=${countryCode}` +
         `&uuid=${uniqueIdAsUUID}` +
         `&partnerContext=${uniqueId}` +
         '&hideTopBar=true' +
@@ -957,8 +953,8 @@ export const getSignedSellUrl =
   (address: string, ltcAmount: number, prefilledMethod?: string): AppThunk =>
   (dispatch, getState) => {
     return new Promise(async (resolve, reject) => {
-      const {uniqueId} = getState().onboarding;
-      const {torEnabled} = getState().settings;
+      const {uniqueId} = getState().onboarding!;
+      const {torEnabled} = getState().settings!;
 
       const utmParams = prefilledMethod
         ? '&' +
@@ -1005,17 +1001,12 @@ export const getSignedSellOnramperUrl =
         testPaymentActive,
         testPaymentKey,
         torEnabled,
-        // testPaymentFiat,
         testPaymentCountry,
-      } = getState().settings;
-
-      // const currencyCode = testPaymentActive
-      //   ? testPaymentFiat
-      //   : getState().settings.currencyCode;
+      } = getState().settings!;
 
       const countryCode = testPaymentActive ? testPaymentCountry : getCountry();
 
-      const {uniqueId} = getState().onboarding;
+      const {uniqueId} = getState().onboarding!;
       const uniqueIdAsUUID = uuidFromSeed(uniqueId);
 
       const utmParams = prefilledMethod
