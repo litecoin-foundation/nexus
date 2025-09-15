@@ -2,6 +2,8 @@ import {Platform, NativeModules} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
+import fetch from './fetch';
+
 type TorSpec = typeof import('react-native-nitro-tor').RnTor;
 
 // cache the loaded module result (null means "not available")
@@ -151,46 +153,6 @@ export const isTorReady = async () => {
   }
 };
 
-const fetchResolveRegular = (
-  url: string,
-  fetchOptions: {[key: string]: any},
-) => {
-  return new Promise<any>(async (resolve, reject) => {
-    try {
-      const res = await fetch(url, fetchOptions);
-      if (!res.ok) {
-        const errorBody = await res.text();
-        console.warn(
-          `Regular request failed with status: ${res.status}. URL ${url}`,
-        );
-        reject(
-          new Error(`Request failed with status ${res.status}: ${errorBody}`),
-        );
-        return;
-      }
-
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        try {
-          const data = await res.json();
-          resolve(data);
-        } catch (jsonError) {
-          reject(new Error('Invalid JSON response'));
-        }
-      } else {
-        try {
-          const textData = await res.text();
-          resolve(textData);
-        } catch (textError) {
-          reject(new Error('Failed to read response as text'));
-        }
-      }
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
 const fetchResolveWithTor = (
   url: string,
   fetchOptions: {[key: string]: any},
@@ -268,7 +230,7 @@ export const fetchResolve = (
         }
       }
       // NOTE: fallback to regular fetch if Tor is not used, not ready, or failed
-      const data = await fetchResolveRegular(url, fetchOptions);
+      const data = await fetch(url, fetchOptions);
       resolve(data);
     } catch (error) {
       reject(error);
