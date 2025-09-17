@@ -37,7 +37,6 @@ type RootStackParamList = {
   };
   Main: {
     isInitial?: boolean;
-    updateHeader?: boolean;
   };
 };
 
@@ -99,7 +98,7 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
   useFocusEffect(
     React.useCallback(() => {
       if (hasBeenMounted && hasNavigatedBack && !route.params?.queryString) {
-        navigation.navigate('Main', {updateHeader: true});
+        navigation.goBack();
       }
       /* eslint-disable react-hooks/exhaustive-deps */
     }, [hasBeenMounted, hasNavigatedBack, route.params]),
@@ -152,7 +151,7 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
           small={true}
           active={true}
           onPress={() => {
-            navigation.navigate('Main', {isInitial: true, updateHeader: true});
+            navigation.goBack();
           }}
         />
       </View>
@@ -272,9 +271,7 @@ export const ConfirmBuyOnramperNavigationOptions = (
     headerTintColor: 'white',
     headerLeft: () => (
       <HeaderButton
-        onPress={() =>
-          navigation.navigate('Main', {isInitial: true, updateHeader: true})
-        }
+        onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

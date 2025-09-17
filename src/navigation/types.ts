@@ -20,7 +20,6 @@ export type NewWalletStackParamList = {
   Main: {
     scanData?: string;
     isInitial?: boolean;
-    updateHeader?: boolean;
   };
   SettingsStack: undefined;
   AlertsStack: undefined;

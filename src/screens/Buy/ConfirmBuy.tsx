@@ -54,9 +54,7 @@ const LeftHeaderButton: React.FC<LeftHeaderProps> = props => {
     <HeaderButton
       textKey="back"
       textDomain="buyTab"
-      onPress={() =>
-        navigation.navigate('Main', {isInitial: true, updateHeader: true})
-      }
+      onPress={() => navigation.goBack()}
       imageSource={require('../../assets/images/back-icon.png')}
     />
   );
@@ -153,21 +151,8 @@ const ConfirmBuy: React.FC<Props> = props => {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [route.params, navigation]);
 
-  // NOTE: overrides swipe back gesture to fix a bug with missing header,
-  // screen swiping animation looks awful, consider turning off back gesture completely
-  useEffect(() => {
-    const onBackPress = (e: any) => {
-      if (!e.data.action) {
-        return;
-      }
-      e.preventDefault();
-      navigation.navigate('Main', {isInitial: true, updateHeader: true});
-    };
-    navigation.addListener('beforeRemove', onBackPress);
-    return () => {
-      navigation.removeListener('beforeRemove', onBackPress);
-    };
-  }, [navigation]);
+  // NOTE: Removed beforeRemove listener that was causing navigation issues
+  // The listener was preventing proper back navigation and causing infinite loops
 
   const SuccessScreen = (
     <>
@@ -206,7 +191,7 @@ const ConfirmBuy: React.FC<Props> = props => {
           disabled={false}
           active
           onPress={() => {
-            navigation.navigate('Main', {isInitial: true, updateHeader: true});
+            navigation.goBack();
           }}
         />
       </View>
@@ -411,9 +396,7 @@ export const ConfirmBuyNavigationOptions = (navigation: any) => {
       <HeaderButton
         textKey="change"
         textDomain="buyTab"
-        onPress={() =>
-          navigation.navigate('Main', {isInitial: true, updateHeader: true})
-        }
+        onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),

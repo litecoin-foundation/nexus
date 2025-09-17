@@ -62,7 +62,6 @@ type RootStackParamList = {
   Main: {
     scanData?: string;
     isInitial?: boolean;
-    updateHeader?: boolean;
   };
   SearchTransaction: undefined;
 };
