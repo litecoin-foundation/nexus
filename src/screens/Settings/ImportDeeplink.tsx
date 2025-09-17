@@ -95,7 +95,7 @@ const ImportDeeplink: React.FC<Props> = props => {
           const resetAction = CommonActions.reset({
             index: 0,
             routes: [
-              {name: 'Main', params: {isInitial: true, updateHeader: true}},
+              {name: 'Main', params: {isInitial: true}},
             ],
           });
           navigation.dispatch(resetAction);

@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import {View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useHeaderHeight} from '@react-navigation/elements';
@@ -232,19 +233,25 @@ export function useMainLayout(props: Props) {
     isTxDetailModalOpened,
   ]);
 
-  // fixes a bug where navigating back from ConfirmBuy/Sell WebPage
-  // causes header to disappear or not follow inset rules!
-  useEffect(() => {
-    if (route.params?.updateHeader) {
-      navigation.setOptions({
-        headerShown: false,
-      });
 
-      setTimeout(() => {
+  // fixes header disappearing when navigating back from screens with headerTransparent: true
+  // like ConfirmBuy, ConfirmSell, WebPage, etc.
+  useFocusEffect(
+    React.useCallback(() => {
+      // Small delay to ensure the screen is fully focused before applying header fix
+      const timeoutId = setTimeout(() => {
         navigation.setOptions({
-          headerShown: true,
+          headerShown: false,
         });
-      }, 10);
-    }
-  }, [route, navigation]);
+
+        setTimeout(() => {
+          navigation.setOptions({
+            headerShown: true,
+          });
+        }, 10);
+      }, 50);
+
+      return () => clearTimeout(timeoutId);
+    }, [navigation]),
+  );
 }
