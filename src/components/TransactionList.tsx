@@ -326,7 +326,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     clearTimeout(loadingTimeout.current);
 
     // Do not restart when in recovery
-    if (percentageProgress < 99 && !recoveryMode) {
+    if (percentageProgress < 99 && !recoveryMode && recoveryProgress !== 0) {
       loadingTimeout.current = setTimeout(() => {
         setTakingTooLong(true);
       }, 10000);
@@ -334,7 +334,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     return () => {
       clearTimeout(loadingTimeout.current);
     };
-  }, [percentageProgress, recoveryMode]);
+  }, [percentageProgress, recoveryMode, recoveryProgress]);
 
   const SyncProgressIndicator = (
     <>
