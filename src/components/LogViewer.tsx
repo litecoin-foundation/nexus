@@ -6,9 +6,9 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  AppState,
 } from 'react-native';
 import * as RNFS from '@dr.pogodin/react-native-fs';
-import Clipboard from '@react-native-clipboard/clipboard';
 import Share from 'react-native-share';
 
 import TranslateText from './TranslateText';
@@ -32,6 +32,8 @@ const LogViewer: React.FC<LogViewerProps> = ({
   const scrollViewRef = useRef<ScrollView>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastSizeRef = useRef<number>(0);
+  const isMountedRef = useRef<boolean>(true);
+  const isActiveRef = useRef<boolean>(true);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -43,35 +45,48 @@ const LogViewer: React.FC<LogViewerProps> = ({
 
   const readLogFile = async () => {
     try {
+      // Don't read if component is unmounted or app is not active
+      if (!isMountedRef.current || !isActiveRef.current) {
+        return;
+      }
+
       if (!RNFS || !RNFS.DocumentDirectoryPath) {
-        setError('File system not available');
-        setLoading(false);
+        if (isMountedRef.current) {
+          setError('File system not available');
+          setLoading(false);
+        }
         return;
       }
 
       if (!logFilePath) {
-        setError('Log file path not available');
-        setLoading(false);
+        if (isMountedRef.current) {
+          setError('Log file path not available');
+          setLoading(false);
+        }
         return;
       }
 
       const exists = await RNFS.exists(logFilePath);
       if (!exists) {
-        setFileExists(false);
-        setError('Log file not found');
-        setLoading(false);
+        if (isMountedRef.current) {
+          setFileExists(false);
+          setError('Log file not found');
+          setLoading(false);
+        }
         return;
       }
 
-      setFileExists(true);
-      setError(null);
+      if (isMountedRef.current) {
+        setFileExists(true);
+        setError(null);
+      }
 
       // Get file stats to check if it has changed
       const stats = await RNFS.stat(logFilePath);
       const currentSize = stats.size;
 
-      // Only read if file has changed
-      if (currentSize !== lastSizeRef.current) {
+      // Only read if file has changed and component is still mounted
+      if (currentSize !== lastSizeRef.current && isMountedRef.current) {
         lastSizeRef.current = currentSize;
 
         // Read the file content
@@ -80,35 +95,21 @@ const LogViewer: React.FC<LogViewerProps> = ({
 
         // Keep only the last maxLines
         const recentLines = lines.slice(-maxLines);
-        setLogs(recentLines);
+        
+        if (isMountedRef.current) {
+          setLogs(recentLines);
+        }
       }
 
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     } catch (err) {
       console.error('Error reading log file:', err);
-      setError('Failed to read log file');
-      setLoading(false);
-    }
-  };
-
-  const copyAllLogs = async () => {
-    try {
-      if (!RNFS || !logFilePath) {
-        Alert.alert('Error', 'File system not available');
-        return;
+      if (isMountedRef.current) {
+        setError('Failed to read log file');
+        setLoading(false);
       }
-
-      const exists = await RNFS.exists(logFilePath);
-      if (!exists) {
-        Alert.alert('Error', 'Log file not found');
-        return;
-      }
-
-      const content = await RNFS.readFile(logFilePath, 'utf8');
-      await Clipboard.setString(content);
-      Alert.alert('Copied', 'Copied Nexus Logs to Clipboard.');
-    } catch (err) {
-      Alert.alert('Error', 'Failed to copy logs');
     }
   };
 
@@ -142,6 +143,26 @@ const LogViewer: React.FC<LogViewerProps> = ({
   };
 
   useEffect(() => {
+    // Handle app state changes
+    const handleAppStateChange = (nextAppState: string) => {
+      isActiveRef.current = nextAppState === 'active';
+      
+      if (nextAppState === 'active') {
+        // Restart interval when app becomes active
+        if (!intervalRef.current) {
+          intervalRef.current = setInterval(readLogFile, refreshInterval);
+        }
+      } else {
+        // Stop interval when app goes to background
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      }
+    };
+
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+
     // Initial read
     readLogFile();
 
@@ -149,18 +170,28 @@ const LogViewer: React.FC<LogViewerProps> = ({
     intervalRef.current = setInterval(readLogFile, refreshInterval);
 
     return () => {
+      isMountedRef.current = false;
+      
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
+      
+      appStateSubscription?.remove();
     };
   }, [refreshInterval]);
 
   // Auto-scroll to bottom when new logs arrive
   useEffect(() => {
-    if (logs.length > 0) {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({animated: true});
-      }, 100);
+    if (logs.length > 0 && isMountedRef.current && isActiveRef.current) {
+      // Use a longer delay and non-animated scroll to avoid conflicts
+      const timeoutId = setTimeout(() => {
+        if (isMountedRef.current && scrollViewRef.current) {
+          scrollViewRef.current.scrollToEnd({animated: false});
+        }
+      }, 200);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [logs]);
 
@@ -205,11 +236,6 @@ const LogViewer: React.FC<LogViewerProps> = ({
           textStyle={styles.title}
         />
         <View style={styles.buttonContainer}>
-          <NewButton
-            onPress={copyAllLogs}
-            imageSource={require('../assets/icons/copy-icon.png')}
-            small={true}
-          />
           <NewButton
             onPress={shareAllLogs}
             imageSource={require('../assets/icons/share-icon.png')}

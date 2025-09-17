@@ -1,9 +1,10 @@
-import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, ScrollView, Dimensions} from 'react-native';
+import React, {useEffect, useContext, useState} from 'react';
+import {View, StyleSheet, ScrollView, Dimensions, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StackNavigationOptions} from '@react-navigation/stack';
+import {useFocusEffect} from '@react-navigation/native';
 
 import TableCell from '../../components/Cells/TableCell';
 import VerticalTableCell from '../../components/Cells/VerticalTableCell';
@@ -28,13 +29,14 @@ const About: React.FC<Props> = () => {
     bestHeaderTimestamp,
     version,
     recoveryProgress,
-  } = useAppSelector(state => state.info);
-  const {lndActive} = useAppSelector(state => state.lightning);
-  const onboarding = useAppSelector(state => state.onboarding.onboarding);
-  const isOnboarded = useAppSelector(state => state.onboarding.isOnboarded);
-  const {beingRecovered} = useAppSelector(state => state.onboarding);
+  } = useAppSelector(state => state.info!);
+  const {lndActive} = useAppSelector(state => state.lightning!);
+  const {onboarding, isOnboarded, beingRecovered, uniqueId} = useAppSelector(
+    state => state.onboarding!,
+  );
 
   const dispatch = useAppDispatch();
+  const [isFocused, setIsFocused] = useState(true);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -43,6 +45,15 @@ const About: React.FC<Props> = () => {
   useEffect(() => {
     dispatch(getRecoveryInfo());
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setIsFocused(true);
+      return () => {
+        setIsFocused(false);
+      };
+    }, [])
+  );
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.container}>
@@ -97,7 +108,8 @@ const About: React.FC<Props> = () => {
             />
           </VerticalTableCell>
 
-          <LogViewer maxLines={15} refreshInterval={2000} />
+          {isFocused && <LogViewer maxLines={15} refreshInterval={2000} />}
+          <Text style={styles.idText}>{uniqueId}</Text>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -127,6 +139,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: Dimensions.get('screen').height,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    idText: {
+      color: 'white',
+      fontSize: 8,
+      fontWeight: '400',
+      paddingTop: 10,
+      alignSelf: 'center',
     },
   });
 
