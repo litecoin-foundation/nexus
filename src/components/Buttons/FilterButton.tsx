@@ -74,13 +74,7 @@ const FilterButton: React.FC<Props> = props => {
         {title ? (
           <Text style={styles.text}>{title}</Text>
         ) : textKey && textDomain ? (
-          <TranslateText
-            textKey={textKey}
-            domain={textDomain}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.012}
-            textStyle={styles.text}
-            numberOfLines={1}
-          />
+          <Text style={styles.text}>{String(textKey)}</Text>
         ) : (
           <></>
         )}

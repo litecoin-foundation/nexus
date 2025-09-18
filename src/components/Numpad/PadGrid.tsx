@@ -25,7 +25,7 @@ const PadGrid: React.FC<Props> = props => {
   const v = [thirdOfWidth, twoThirdOfWidth];
 
   return (
-    <View>
+    <View pointerEvents="none">
       <Canvas style={styles.container}>
         {h.map(y => (
           <Rect

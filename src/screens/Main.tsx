@@ -111,7 +111,7 @@ const TxListComponent: React.FC<TxListComponentProps> = props => {
         />
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={styles.txSearchBtnCanvas}>
+          <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
             <RoundedRect
               x={SCREEN_HEIGHT * 0.02}
               y={SCREEN_HEIGHT * 0.01}

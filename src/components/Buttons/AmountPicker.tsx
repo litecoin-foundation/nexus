@@ -190,7 +190,7 @@ const AmountPicker: React.FC<Props> = props => {
 
   return (
     <Pressable style={styles.container} onPress={handlePress}>
-      <Canvas style={styles.amountsContainer}>
+      <Canvas style={styles.amountsContainer} pointerEvents="none">
         <SkiaText
           font={font}
           color={toggleLTC ? '#2C72FF' : '#747E87'}
