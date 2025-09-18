@@ -568,17 +568,42 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       if (tx.txHash && processedConvertTxHashes.has(tx.txHash)) {
         continue;
       }
-      // NOTE: skip processing if tx was cached before
+      // NOTE: optimisation to skip cached transactions (over 2 weeks old)
       const cachedTx = checkTxCache(
         cachedTxHashSet,
         transactionsByHash,
         tx.txHash,
       );
       if (cachedTx) {
-        txs.push({
-          ...cachedTx,
-          numConfirmations: tx.numConfirmations,
-        });
+        // for cachedTxs with less than 8096 confirmations we still attempt to
+        // match them with buy/sell history
+        let updatedCachedTx = {...cachedTx, numConfirmations: tx.numConfirmations};
+        
+        if (tx.numConfirmations < 8096) {
+          // Check if it's a buy transaction
+          if (buyHistory && buyHistory.length >= 1) {
+            const buyTx = buyHistory.find(
+              buyHistoryItem => buyHistoryItem.cryptoTxId === tx.txHash,
+            );
+            if (buyTx) {
+              updatedCachedTx.tradeTx = buyTx;
+              updatedCachedTx.metaLabel = 'Buy';
+            }
+          }
+          
+          // Check if it's a sell transaction
+          if (sellHistory && sellHistory.length >= 1) {
+            const sellTx = sellHistory.find(
+              sellHistoryItem => sellHistoryItem.cryptoTxId === tx.txHash,
+            );
+            if (sellTx) {
+              updatedCachedTx.tradeTx = sellTx;
+              updatedCachedTx.metaLabel = 'Sell';
+            }
+          }
+        }
+        
+        txs.push(updatedCachedTx);
         continue;
       }
 
