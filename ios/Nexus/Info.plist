@@ -75,6 +75,8 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+	<key>UIDesignRequiresCompatibility</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>BootSplash</string>
 	<key>UIRequiredDeviceCapabilities</key>
