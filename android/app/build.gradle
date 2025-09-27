@@ -82,7 +82,7 @@ android {
         applicationId "com.litecoin.nexus"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 13
+        versionCode 15
         versionName "1.1.0"
 
         ndk {
