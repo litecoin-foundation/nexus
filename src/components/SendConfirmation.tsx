@@ -34,7 +34,7 @@ interface Props {
   sendSuccessHandler: (txid: string) => void;
   toDomain?: string;
   sendAll?: boolean;
-  coinSelectionUtxos: Utxo[] | null;
+  coinSelectionUtxos?: Utxo[] | null;
 }
 
 const SendConfirmation: React.FC<Props> = props => {
@@ -148,7 +148,7 @@ const SendConfirmation: React.FC<Props> = props => {
     };
 
     calculateFee();
-  }, [amount, toAddress]);
+  }, [amount, toAddress, sendAmount]);
 
   return (
     <>
@@ -223,8 +223,26 @@ const SendConfirmation: React.FC<Props> = props => {
               textValue={toAddress}
               maxSizeInPixels={SCREEN_HEIGHT * 0.02}
               textStyle={styles.valueTitle}
-              numberOfLines={3}
+              numberOfLines={4}
             />
+            {label ? (
+              <>
+                <TranslateText
+                  textKey="description"
+                  domain="sendTab"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.valueSubtitle}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={label}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.valueTitle}
+                  numberOfLines={4}
+                />
+              </>
+            ) : null}
+
             <TranslateText
               textKey="fee"
               domain="sendTab"
