@@ -9,7 +9,11 @@ import {useTranslation} from 'react-i18next';
 
 import RecoveryField from '../../components/RecoveryField';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import {setSeedRecovery} from '../../reducers/onboarding';
+import {
+  setSeedRecovery,
+  resetSeedAction,
+  setRecoveryMode,
+} from '../../reducers/onboarding';
 import {useAppDispatch} from '../../store/hooks';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
@@ -60,6 +64,15 @@ const Recover: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      dispatch(resetSeedAction());
+      dispatch(setRecoveryMode(false));
+    });
+
+    return unsubscribe;
+  }, [navigation, dispatch]);
 
   useEffect(() => {
     if (__DEV__) {

@@ -15,6 +15,7 @@ import TranslateText from '../../components/TranslateText';
 import {addPincode} from '../../reducers/authentication';
 import {clearValues} from '../../reducers/authpad';
 import {resetPincode} from '../../reducers/authentication';
+import {resetSeedAction} from '../../reducers/onboarding';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -39,21 +40,33 @@ const Pin: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const biometricsAvailable = useAppSelector(
-    state => state.authentication.biometricsAvailable,
-  );
+  const [newPasscode, setNewPasscode] = useState('');
+  const [passcodeInitialSet, setPasscodeInitialSet] = useState(false);
+  const {pin} = useAppSelector(state => state.authpad!);
+  const {beingRecovered} = useAppSelector(state => state.onboarding!);
+  const {biometricsAvailable} = useAppSelector(state => state.authentication!);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      dispatch(resetPincode());
+      if (beingRecovered) {
+        dispatch(resetSeedAction());
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, dispatch, beingRecovered]);
 
   const headerLeftMemo = useMemo(
     () => (
       <HeaderButton
         onPress={() => {
-          dispatch(resetPincode());
           navigation.goBack();
         }}
         imageSource={require('../../assets/images/back-icon.png')}
       />
     ),
-    [dispatch, navigation],
+    [navigation],
   );
 
   useLayoutEffect(() => {
@@ -61,13 +74,6 @@ const Pin: React.FC<Props> = props => {
       headerLeft: () => headerLeftMemo,
     });
   }, [navigation, headerLeftMemo]);
-
-  const pin = useAppSelector(state => state.authpad.pin);
-  const beingRecovered = useAppSelector(
-    state => state.onboarding.beingRecovered,
-  );
-  const [newPasscode, setNewPasscode] = useState('');
-  const [passcodeInitialSet, setPasscodeInitialSet] = useState(false);
 
   const headerTitleMemo = useMemo(
     () => (
