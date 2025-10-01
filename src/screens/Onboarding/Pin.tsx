@@ -47,10 +47,13 @@ const Pin: React.FC<Props> = props => {
   const {biometricsAvailable} = useAppSelector(state => state.authentication!);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', () => {
-      dispatch(resetPincode());
-      if (beingRecovered) {
-        dispatch(resetSeedAction());
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // Only reset if going back, not when navigating forward
+      if (e.data.action.type === 'GO_BACK' || e.data.action.type === 'POP') {
+        dispatch(resetPincode());
+        if (beingRecovered) {
+          dispatch(resetSeedAction());
+        }
       }
     });
 

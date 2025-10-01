@@ -66,9 +66,12 @@ const Recover: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', () => {
-      dispatch(resetSeedAction());
-      dispatch(setRecoveryMode(false));
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // Only reset if going back, not when navigating forward
+      if (e.data.action.type === 'GO_BACK' || e.data.action.type === 'POP') {
+        dispatch(resetSeedAction());
+        dispatch(setRecoveryMode(false));
+      }
     });
 
     return unsubscribe;
