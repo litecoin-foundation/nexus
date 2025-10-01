@@ -32,8 +32,8 @@ const RecoverLitewallet = ({
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
-  const {regularAddress} = useAppSelector(state => state.address);
-  const torEnabled = useAppSelector(state => state.settings.torEnabled);
+  const {regularAddress} = useAppSelector(state => state.address!);
+  const {torEnabled} = useAppSelector(state => state.settings!);
 
   const [loading, setLoading] = useState(false);
 

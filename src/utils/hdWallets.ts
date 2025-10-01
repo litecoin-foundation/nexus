@@ -49,8 +49,12 @@ export async function getDerivedKeyPairsWithBalance(
     sweepableAddresses.map(sweepableAddress => {
       if (sweepableAddress.addressData.balance > 0) {
         // BIP32Interface to ECPairInterface
-        const wifString = sweepableAddress.keyPair.toWIF();
-        const keyPair = ECPair.fromWIF(wifString, LITECOIN);
+        // Convert privateKey Uint8Array to Buffer to avoid "Expected Buffer, got Uint8Array" error
+        const privateKeyBuffer = Buffer.from(sweepableAddress.keyPair.privateKey!);
+        const keyPair = ECPair.fromPrivateKey(privateKeyBuffer, {
+          network: LITECOIN,
+          compressed: true,
+        });
 
         keyPairsWithBalance.push({
           address: sweepableAddress.addressData.address,
