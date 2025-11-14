@@ -20,7 +20,11 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import notifee, {AuthorizationStatus, EventType} from '@notifee/react-native';
+import notifee, {
+  AuthorizationStatus,
+  EventType,
+  // AndroidImportance,
+} from '@notifee/react-native';
 import * as Notifications from 'expo-notifications';
 import BootSplash from 'react-native-bootsplash';
 import {FlexaContext} from '@flexa/flexa-react-native';
@@ -260,27 +264,107 @@ const App: React.FC = () => {
     prepare();
   }, []);
 
+  // NOTE: for android local notifications
+  // const [androidChannelSet, setSndroidChannelSet] = useState(false);
+
   useEffect(() => {
-    return notifee.onForegroundEvent(({type, detail}) => {
-      switch (type) {
-        case EventType.DISMISSED:
-          // console.log('User dismissed notification', detail.notification);
-          setOpenedNotificationData(null);
-          break;
-        case EventType.PRESS:
-          // console.log('User pressed notification', detail.notification);
-          if (detail.notification) {
-            setOpenedNotificationData(detail.notification);
-          } else {
+    // NOTE: for android local notifications
+    // if (Platform.OS === 'android') {
+    //   async function setupNotifee() {
+    //     await notifee.createChannel({
+    //       id: 'default',
+    //       name: 'Default Notifications',
+    //       importance: AndroidImportance.HIGH,
+    //       sound: 'default',
+    //     });
+    //     setSndroidChannelSet(true);
+    //     if (__DEV__) {
+    //       console.log('Notifee channel created');
+    //     }
+    //   }
+    //   setupNotifee();
+    // }
+
+    if (Platform.OS === 'ios') {
+      return notifee.onForegroundEvent(({type, detail}) => {
+        switch (type) {
+          case EventType.DISMISSED:
             setOpenedNotificationData(null);
-          }
-          break;
-        default:
-          setOpenedNotificationData(null);
-          break;
-      }
-    });
+            break;
+          case EventType.PRESS:
+            if (detail.notification) {
+              setOpenedNotificationData(detail.notification);
+            } else {
+              setOpenedNotificationData(null);
+            }
+            break;
+          default:
+            setOpenedNotificationData(null);
+            break;
+        }
+      });
+    }
+
+    if (Platform.OS === 'android') {
+      // Handle FCM notification tap when app was closed
+      Notifications.getLastNotificationResponseAsync().then(response => {
+        if (response) {
+          const data = response.notification.request.content.data;
+          setOpenedNotificationData({
+            title: data.title,
+            body: data.body,
+            data: data,
+          });
+        }
+      });
+    }
   }, []);
+
+  // NOTE: for android local notifications
+  // useEffect(() => {
+  //   if (Platform.OS === 'android' && androidChannelSet) {
+  //     async function checkPendingNavigation() {
+  //       const initialNotification = await notifee.getInitialNotification();
+
+  //       if (initialNotification) {
+  //         console.log('Initial notification:', initialNotification);
+  //         setOpenedNotificationData(initialNotification.notification);
+  //       } else {
+  //         setOpenedNotificationData(null);
+  //       }
+  //     }
+  //     checkPendingNavigation();
+  //   }
+  // }, [androidChannelSet]);
+
+  // NOTE: for android local notifications
+  // const sendAndroidTestNotif = async () => {
+  //   if (__DEV__) {
+  //     await notifee.createChannel({
+  //       id: 'default',
+  //       name: 'Default',
+  //       importance: AndroidImportance.HIGH,
+  //     });
+
+  //     await notifee.displayNotification({
+  //       title: '🔔 TEST NOTIFICATION',
+  //       body: 'Close app and tap this!',
+  //       data: {
+  //         subText:
+  //           'Dreamt up & brought to life with love and care by Litecoin Foundation x SquareBlack. Finish syncing to see your transactions.',
+  //       },
+  //       android: {
+  //         channelId: 'default',
+  //         pressAction: {
+  //           id: 'default',
+  //         },
+  //         importance: AndroidImportance.HIGH,
+  //       },
+  //     });
+
+  //     console.log('Test notification sent!');
+  //   }
+  // };
 
   return (
     <>

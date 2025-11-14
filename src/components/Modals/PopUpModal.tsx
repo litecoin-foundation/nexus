@@ -171,7 +171,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       left: screenWidth * 0.05,
       backgroundColor: '#fff',
       width: screenWidth * 0.9,
-      height: screenHeight * 0.3,
+      height: screenHeight * 0.35,
       borderTopLeftRadius: 40,
       borderTopRightRadius: 40,
       borderBottomLeftRadius: 40,
