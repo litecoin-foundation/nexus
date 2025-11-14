@@ -41,11 +41,13 @@ import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
 import DatePicker from '../components/DatePicker';
 import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
+import PopUpModal from '../components/Modals/PopUpModal';
 import LoadingIndicator from '../components/LoadingIndicator';
 import Convert from '../components/Cards/Convert';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
 import {unsetDeeplink, decodeAppDeeplink} from '../reducers/deeplinks';
+import {setOpenedNotification} from '../reducers/settings';
 import {sleep} from '../utils/poll';
 import {validate as validateLtcAddress} from '../utils/validate';
 import {showError} from '../reducers/errors';
@@ -160,6 +162,7 @@ const Main: React.FC<Props> = props => {
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks!);
+  const {openedNotification} = useAppSelector(state => state.settings!);
 
   const dispatch = useAppDispatch();
 
@@ -167,6 +170,7 @@ const Main: React.FC<Props> = props => {
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
+  const [isPopUpModalOpened, setIsPopUpModalOpened] = useState(false);
   // const [currentWallet, setCurrentWallet] = useState('main_wallet');
   const currentWallet = 'main_wallet';
   const uniqueId = useAppSelector(state => state.onboarding!.uniqueId);
@@ -193,6 +197,17 @@ const Main: React.FC<Props> = props => {
       foldUnfoldBottomSheet(false);
     }
   }, [route, foldUnfoldBottomSheet]);
+
+  // Handle PopUpModal
+  const closePopUpModalHandler = useCallback(() => {
+    setIsPopUpModalOpened(false);
+    dispatch(setOpenedNotification(null));
+  }, [dispatch]);
+  useEffect(() => {
+    if (openedNotification) {
+      setIsPopUpModalOpened(true);
+    }
+  }, [openedNotification]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
@@ -648,6 +663,21 @@ const Main: React.FC<Props> = props => {
             }}
           />
         )}
+      />
+
+      <PopUpModal
+        isVisible={isPopUpModalOpened}
+        title={openedNotification?.title || 'Nexus Wallet'}
+        text={
+          openedNotification?.body ||
+          'Welcome to Nexus - a non-custodial Litecoin wallet'
+        }
+        subText={
+          openedNotification?.data?.subText ||
+          // 'Dreamt up & brought to life with love and care by Litecoin Foundation x SquareBlack. Finish syncing to see your transactions.'
+          ''
+        }
+        close={() => closePopUpModalHandler()}
       />
 
       <LoadingIndicator visible={loading} />

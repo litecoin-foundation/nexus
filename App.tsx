@@ -20,7 +20,7 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import notifee, {AuthorizationStatus} from '@notifee/react-native';
+import notifee, {AuthorizationStatus, EventType} from '@notifee/react-native';
 import * as Notifications from 'expo-notifications';
 import BootSplash from 'react-native-bootsplash';
 import {FlexaContext} from '@flexa/flexa-react-native';
@@ -33,7 +33,10 @@ import {PopUpProvider, PopUpContext} from './src/context/popUpContext';
 
 import {useAppDispatch, useAppSelector} from './src/store/hooks';
 import {loginToNexusApi} from './src/reducers/onboarding';
-import {setDeviceNotificationToken} from './src/reducers/settings';
+import {
+  setDeviceNotificationToken,
+  setOpenedNotification,
+} from './src/reducers/settings';
 import {
   updatedRatesInFiat,
   updateHistoricalRatesForAllPeriods,
@@ -129,6 +132,26 @@ function DeviceTokenHandler(props: any) {
   return null;
 }
 
+function OpenNotificationHandler(props: any) {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (props.notification) {
+      dispatch(
+        setOpenedNotification({
+          title: props.notification?.title,
+          body: props.notification?.body,
+          data: props.notification?.data,
+        }),
+      );
+    } else {
+      dispatch(setOpenedNotification(null));
+    }
+  }, [dispatch, props.notification]);
+
+  return null;
+}
+
 const App: React.FC = () => {
   function RenderPopUps() {
     const {PopUps} = useContext(PopUpContext);
@@ -139,6 +162,8 @@ const App: React.FC = () => {
   }
 
   const [deviceToken, setDeviceToken] = useState('');
+  const [openedNotificationData, setOpenedNotificationData] =
+    useState<any>(null);
 
   // Function to update token and notify server
   const updateDeviceToken = useCallback(
@@ -235,6 +260,28 @@ const App: React.FC = () => {
     prepare();
   }, []);
 
+  useEffect(() => {
+    return notifee.onForegroundEvent(({type, detail}) => {
+      switch (type) {
+        case EventType.DISMISSED:
+          // console.log('User dismissed notification', detail.notification);
+          setOpenedNotificationData(null);
+          break;
+        case EventType.PRESS:
+          // console.log('User pressed notification', detail.notification);
+          if (detail.notification) {
+            setOpenedNotificationData(detail.notification);
+          } else {
+            setOpenedNotificationData(null);
+          }
+          break;
+        default:
+          setOpenedNotificationData(null);
+          break;
+      }
+    });
+  }, []);
+
   return (
     <>
       <SafeAreaProvider>
@@ -263,6 +310,9 @@ const App: React.FC = () => {
                   publishableKey={flexaPublishableKey}>
                   <ContextExecutable deviceToken={deviceToken} />
                   <DeviceTokenHandler deviceToken={deviceToken} />
+                  <OpenNotificationHandler
+                    notification={openedNotificationData}
+                  />
                   <PopUpProvider>
                     <GestureHandlerRootView style={styles.gestureView}>
                       <RenderPopUps />
