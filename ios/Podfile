@@ -1,5 +1,3 @@
-source 'https://cdn.cocoapods.org/'
-
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
@@ -18,7 +16,6 @@ if linkage != nil
 end
 
 target 'nexus' do
-  # use_modular_headers!
   use_expo_modules!
   post_integrate do |installer|
     begin
@@ -31,8 +28,6 @@ target 'nexus' do
 
   pod 'Base32', :modular_headers => true;
 
-  # use_frameworks! :linkage => :static
-
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
@@ -40,7 +35,6 @@ target 'nexus' do
   )
 
   post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
       config[:reactNativePath],

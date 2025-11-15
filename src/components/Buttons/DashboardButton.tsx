@@ -131,7 +131,7 @@ const DashboardButton: React.FC<Props> = props => {
             handlePress();
           }
         }}>
-        <Canvas style={styles.container}>
+        <Canvas style={styles.container} pointerEvents="none">
           <RoundedRect
             x={canvasXPadding}
             y={10}

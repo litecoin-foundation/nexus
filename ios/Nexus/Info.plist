@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -66,6 +68,8 @@
 	<string>Your location is used to determine the best Buy/Sell Litecoin provider.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose screenshots to send to in-app support or add photo ID verification.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Satoshi-Variable.ttf</string>
@@ -76,7 +80,7 @@
 		<string>remote-notification</string>
 	</array>
 	<key>UIDesignRequiresCompatibility</key>
-	<true/>
+	<false/>
 	<key>UILaunchStoryboardName</key>
 	<string>BootSplash</string>
 	<key>UIRequiredDeviceCapabilities</key>

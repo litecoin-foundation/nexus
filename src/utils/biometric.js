@@ -1,37 +1,39 @@
-import TouchID from 'react-native-touch-id';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 import {setBiometricAvailability} from '../reducers/authentication';
 
-const biometricConfig = {
-  title: 'Authentication Required',
-  imageColor: '#e00606',
-  imageErrorColor: '#ff0000',
-  sensorDescription: 'Touch sensor',
-  sensorErrorDescription: 'Failed',
-  cancelText: 'Cancel',
-  unifiedErrors: false,
-  passcodeFallback: false,
-};
-
-const supportConfig = {
-  passcodeFallback: false,
-};
-
 export const authenticate = reason => {
   return new Promise((resolve, reject) => {
-    TouchID.authenticate(reason, biometricConfig)
-      .then(success => resolve())
+    LocalAuthentication.authenticateAsync({
+      promptMessage: reason,
+      cancelLabel: 'Cancel',
+      disableDeviceFallback: true,
+    })
+      .then(result => {
+        if (result.success) {
+          resolve();
+        } else {
+          reject(new Error(result.error || 'Authentication failed'));
+        }
+      })
       .catch(error => reject(error));
   });
 };
 
 export const checkBiometricSupport = () => dispatch => {
-  TouchID.isSupported(supportConfig)
-    .then(biometryType => {
-      if (biometryType === 'FaceID') {
-        dispatch(setBiometricAvailability(true, true));
+  Promise.all([
+    LocalAuthentication.hasHardwareAsync(),
+    LocalAuthentication.isEnrolledAsync(),
+    LocalAuthentication.supportedAuthenticationTypesAsync(),
+  ])
+    .then(([hasHardware, isEnrolled, supportedTypes]) => {
+      if (hasHardware && isEnrolled) {
+        const isFaceID = supportedTypes.includes(
+          LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+        );
+        dispatch(setBiometricAvailability(true, isFaceID));
       } else {
-        dispatch(setBiometricAvailability(true, false));
+        dispatch(setBiometricAvailability(false, false));
       }
     })
     .catch(() => dispatch(setBiometricAvailability(false, false)));
