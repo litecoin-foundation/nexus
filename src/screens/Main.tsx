@@ -204,7 +204,10 @@ const Main: React.FC<Props> = props => {
     dispatch(setOpenedNotification(null));
   }, [dispatch]);
   useEffect(() => {
-    if (openedNotification) {
+    if (
+      openedNotification &&
+      openedNotification?.data?.showInAppPopUp === 'true'
+    ) {
       setIsPopUpModalOpened(true);
     }
   }, [openedNotification]);
