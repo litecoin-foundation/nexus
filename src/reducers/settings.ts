@@ -29,6 +29,7 @@ interface ISettings {
   notificationsEnabled: boolean;
   manualCoinSelectionEnabled: boolean;
   torEnabled: boolean;
+  openedNotification: OpenedNotificationType;
   testPaymentActive: boolean;
   testPaymentKey: boolean;
   testPaymentMethod: string;
@@ -50,6 +51,13 @@ type TestPaymentType = {
   testPaymentCountry: string;
   testPaymentFiat: string;
 };
+type OpenedNotificationType = {
+  title: string;
+  body: string;
+  data: {
+    [key: string]: any;
+  };
+} | null;
 
 // initial state
 const initialState = {
@@ -65,6 +73,7 @@ const initialState = {
   notificationsEnabled: false,
   manualCoinSelectionEnabled: false,
   torEnabled: false,
+  openedNotification: null,
 } as ISettings;
 
 // actions
@@ -86,6 +95,9 @@ const setLanguageAction = createAction<LanguageType>(
 );
 const setDeviceNotificationTokenAction = createAction<string>(
   'settings/setDeviceNotificationTokenAction',
+);
+const setOpenedNotificationAction = createAction<OpenedNotificationType>(
+  'settings/setOpenedNotificationAction',
 );
 const enableNotificationsAction = createAction<boolean>(
   'settings/enableNotificationsAction',
@@ -147,6 +159,12 @@ export const setDeviceNotificationToken =
   (deviceToken: string): AppThunk =>
   dispatch => {
     dispatch(setDeviceNotificationTokenAction(deviceToken));
+  };
+
+export const setOpenedNotification =
+  (openedNotification: OpenedNotificationType): AppThunk =>
+  dispatch => {
+    dispatch(setOpenedNotificationAction(openedNotification));
   };
 
 export const setNotificationsEnabled =
@@ -238,6 +256,10 @@ export const settingsSlice = createSlice({
     setDeviceNotificationTokenAction: (state, action) => ({
       ...state,
       deviceNotificationToken: action.payload,
+    }),
+    setOpenedNotificationAction: (state, action) => ({
+      ...state,
+      openedNotification: action.payload,
     }),
     enableNotificationsAction: (state, action) => ({
       ...state,
