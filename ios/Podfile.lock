@@ -3383,7 +3383,7 @@ PODS:
   - SSZipArchive (2.5.5)
   - SVGView (1.0.6)
   - SwiftUIIntrospect (0.12.0)
-  - TurboScryptiOS (0.0.7):
+  - TurboScryptiOS (0.1.0):
     - boost
     - CryptoSwift
     - DoubleConversion
@@ -3544,7 +3544,7 @@ DEPENDENCIES:
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - RNZipArchive (from `../node_modules/react-native-zip-archive`)
   - SocketRocket (~> 0.7.1)
-  - TurboScryptiOS (from `../node_modules/react-native-turbo-scrypt`)
+  - TurboScryptiOS (from `../node_modules/react-native-nitro-scrypt`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -3812,7 +3812,7 @@ EXTERNAL SOURCES:
   RNZipArchive:
     :path: "../node_modules/react-native-zip-archive"
   TurboScryptiOS:
-    :path: "../node_modules/react-native-turbo-scrypt"
+    :path: "../node_modules/react-native-nitro-scrypt"
   VisionCamera:
     :path: "../node_modules/react-native-vision-camera"
   Yoga:
@@ -3958,7 +3958,7 @@ SPEC CHECKSUMS:
   SSZipArchive: c69881e8ac5521f0e622291387add5f60f30f3c4
   SVGView: 4a9fa6296a5fdb6232dec7450aa98f169d0e274f
   SwiftUIIntrospect: 89f443402f701a9197e9e54e3c2ed00b10c32e6d
-  TurboScryptiOS: 456f53ee7fbb6755092d1d8012d881beeeab3800
+  TurboScryptiOS: 6e6fc3c5a47593a168ad9d43d8a4b27877fb0d0b
   VisionCamera: 3ea10c46a5c612f5f89fb46a54bef4a0de8b58a7
   Yoga: 689c8e04277f3ad631e60fe2a08e41d411daf8eb
 

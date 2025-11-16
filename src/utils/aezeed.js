@@ -4,7 +4,7 @@
 import {Buffer} from 'buffer';
 import Crypto from 'react-native-quick-crypto';
 import aez from 'aez';
-import {Scrypt} from 'react-native-turbo-scrypt';
+import {Scrypt} from 'react-native-nitro-scrypt';
 
 import ecc from '@bitcoinerlab/secp256k1';
 import {BIP32Factory} from 'bip32';

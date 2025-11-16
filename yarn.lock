@@ -5958,7 +5958,7 @@ expo-keep-awake@15.0.8-canary-20251031-b135dff:
   resolved "https://registry.yarnpkg.com/expo-keep-awake/-/expo-keep-awake-15.0.8-canary-20251031-b135dff.tgz#6f5594f7120af2b56487ef6b4d69fae92e20be23"
   integrity sha512-HTRZd47x5EcOFqGZQVx+a096kPOxZljFmlVvF5w0bKta/2aAqFlkQ9Hhix1Say8/p0kuvDnntc3qtqQCpH92iw==
 
-expo-local-authentication@^17.0.8-canary-20251031-b135dff:
+expo-local-authentication@17.0.8-canary-20251031-b135dff:
   version "17.0.8-canary-20251031-b135dff"
   resolved "https://registry.yarnpkg.com/expo-local-authentication/-/expo-local-authentication-17.0.8-canary-20251031-b135dff.tgz#762a3a5061ffd0869cbb40ae1f7e5d3463958b6a"
   integrity sha512-vtHOnwm2FegSIj20utsqQ/XwRnmasEJzDat+3APNh5SE3AVkUm0QzO6JdWKXwmD6G5PM853m6kbUsr6Vqxl19A==
@@ -9438,6 +9438,11 @@ react-native-nitro-modules@0.31.6:
   resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-0.31.6.tgz#b5804be14a2fa0253c2fef607d594c3d53379389"
   integrity sha512-EcKuLgYwOPrWSGC0VqxqTXjxsQBLCjl/1+ryuKwKDA4iyLr9C/8CBCn6sDS3wbmZDlNl+EPWTPU+VWC6SnPW8Q==
 
+react-native-nitro-scrypt@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-nitro-scrypt/-/react-native-nitro-scrypt-0.1.0.tgz#156ad5fb30f311a9001809b35e0d7bca73daa647"
+  integrity sha512-8M17YSnkgnHzdsm329EuUT57Vt9YRcU4psV31ui+zX7MMDjonh68SMxQ7phCd9bqb8u+5k2RNstZuXd+PVo68w==
+
 react-native-nitro-tor@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/react-native-nitro-tor/-/react-native-nitro-tor-0.2.8.tgz#4ec24046a117843f19b6ee3abd98e579e0c9a3ed"
@@ -9528,11 +9533,6 @@ react-native-turbo-lndltc@0.1.5:
   resolved "https://registry.yarnpkg.com/react-native-turbo-lndltc/-/react-native-turbo-lndltc-0.1.5.tgz#9ffebd21329a65c018c9f15092f306da58000b66"
   integrity sha512-g5RP7GCi+Sr+g4dD9ui5016vZM07pdO9YVj6Gf4wSxYaQfjprAvvLlnRcHynZu9KS7/PKkeQ7duu3oyYLycV6w==
 
-react-native-turbo-scrypt@0.0.7:
-  version "0.0.7"
-  resolved "https://registry.npmjs.org/react-native-turbo-scrypt/-/react-native-turbo-scrypt-0.0.7.tgz"
-  integrity sha512-AXJIKLlW71vZFScw29K7fIr228Gv0UseCoxPddDIwmpnVHQcguXtglWyJEtwyyyUpwMDd+Ll2KU31mY7dLtVxA==
-
 react-native-url-polyfill@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/react-native-url-polyfill/-/react-native-url-polyfill-2.0.0.tgz"
@@ -9553,7 +9553,7 @@ react-native-webview@13.15.0:
     escape-string-regexp "^4.0.0"
     invariant "2.2.4"
 
-react-native-worklets@^0.6.1:
+react-native-worklets@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/react-native-worklets/-/react-native-worklets-0.6.1.tgz#daa56dea896c7bdcead064b675ef341ac1f41029"
   integrity sha512-URca8l7c7Uog7gv4mcg9KILdJlnbvwdS5yfXQYf5TDkD2W1VY1sduEKrD+sA3lUPXH/TG1vmXAvNxCNwPMYgGg==
