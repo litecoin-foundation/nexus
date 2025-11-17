@@ -70,7 +70,7 @@ const FilterButton: React.FC<Props> = props => {
   return (
     <Pressable onPressIn={onPressIn} onPressOut={onPressOut}>
       <Animated.View style={[styles.button, motionStyle]}>
-        <Image style={[styles.image, motionStyle]} source={imageSource} />
+        <Image style={styles.image} source={imageSource} />
         {title ? (
           <Text style={styles.text}>{title}</Text>
         ) : textKey && textDomain ? (
