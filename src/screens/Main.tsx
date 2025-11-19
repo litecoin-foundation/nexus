@@ -419,7 +419,6 @@ const Main: React.FC<Props> = props => {
     currentWallet,
     activeTab,
     navigation,
-    route,
     isWalletsModalOpened,
     setWalletsModalOpened,
     isTxDetailModalOpened,
