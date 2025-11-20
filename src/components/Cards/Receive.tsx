@@ -172,6 +172,8 @@ const Receive: React.FC<Props> = () => {
                     ? SCREEN_HEIGHT * 0.22 - insets.bottom
                     : SCREEN_HEIGHT * 0.27 - insets.bottom
                 }
+                color="#000"
+                backgroundColor="#fff"
               />
             ) : (
               <View
