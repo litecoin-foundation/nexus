@@ -172,11 +172,17 @@ const SendReceiveTxLayout: React.FC<SendReceiveLayoutProps> = props => {
     } else {
       if (isSend) {
         // does/doesn't have a change address
-        if (myOutputElements.length > 0) {
+        if (myOutputElements.length > 0 && otherOutputElements.length > 0) {
           const changeAddress = (
             <ChangeAddress>{myOutputElements}</ChangeAddress>
           );
           return [...otherOutputElements, changeAddress];
+        } else if (
+          myOutputElements.length > 0 &&
+          otherOutputElements.length === 0
+        ) {
+          // when change address is the only recipient address then don't fold it using ChangeAddress
+          return myOutputElements;
         } else {
           return otherOutputElements;
         }
