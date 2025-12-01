@@ -18,11 +18,15 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({onSelectBrand}) => {
   const {account} = useSelector((state: any) => state.nexusshopaccount);
   const isLoggedIn = account && account.isLoggedIn;
 
+  // Initialize client with uniqueId
   const client = useMemo(() => {
     return uniqueId ? new GiftCardClient(uniqueId) : null;
   }, [uniqueId]);
 
   const handleBrandSelect = (brand: Brand) => {
+    if (__DEV__) {
+      console.log('handleBrandSelect');
+    }
     if (onSelectBrand) {
       onSelectBrand(brand);
     }

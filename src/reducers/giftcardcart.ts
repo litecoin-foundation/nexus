@@ -10,31 +10,31 @@ interface GiftCardCartItem {
   quantity: number;
 }
 
-interface IGiftCardsCart {
+interface IGiftCardCart {
   items: GiftCardCartItem[];
   loading: boolean;
   error: string | null;
   checkoutLoading: boolean;
 }
 
-const initialState: IGiftCardsCart = {
+const initialState: IGiftCardCart = {
   items: [],
   loading: false,
   error: null,
   checkoutLoading: false,
 };
 
-export const giftCardsCartSlice = createSlice({
-  name: 'giftcardscart',
+export const giftCardCartSlice = createSlice({
+  name: 'giftcardcart',
   initialState,
   reducers: {
-    setGiftCardsCartLoading: (state, action: PayloadAction<boolean>) => {
+    setGiftCardCartLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
       if (action.payload) {
         state.error = null;
       }
     },
-    setGiftCardsCartError: (state, action: PayloadAction<string>) => {
+    setGiftCardCartError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
       state.loading = false;
       state.checkoutLoading = false;
@@ -56,9 +56,11 @@ export const giftCardsCartSlice = createSlice({
     ) => {
       const {brand, amount, currency, quantity = 1} = action.payload;
       const itemId = `${brand.slug}-${amount}-${currency}`;
-      
-      const existingItemIndex = state.items.findIndex(item => item.id === itemId);
-      
+
+      const existingItemIndex = state.items.findIndex(
+        item => item.id === itemId,
+      );
+
       if (existingItemIndex !== -1) {
         state.items[existingItemIndex].quantity += quantity;
       } else {
@@ -82,7 +84,7 @@ export const giftCardsCartSlice = createSlice({
     ) => {
       const {itemId, quantity} = action.payload;
       const itemIndex = state.items.findIndex(item => item.id === itemId);
-      
+
       if (itemIndex !== -1) {
         if (quantity <= 0) {
           state.items.splice(itemIndex, 1);
@@ -91,7 +93,7 @@ export const giftCardsCartSlice = createSlice({
         }
       }
     },
-    clearGiftCardsCart: state => {
+    clearGiftCardCart: state => {
       state.items = [];
       state.loading = false;
       state.error = null;
@@ -105,57 +107,66 @@ export const giftCardsCartSlice = createSlice({
 
 export const calculateCartTotal = (items: GiftCardCartItem[]) => {
   return items.reduce((total, item) => {
-    return total + (item.amount * item.quantity);
+    return total + item.amount * item.quantity;
   }, 0);
 };
 
-export const createBTCPayInvoice = 
-  (items: GiftCardCartItem[], currency: string = 'USD') => 
+export const createBTCPayInvoice =
+  (items: GiftCardCartItem[], currency: string = 'USD') =>
   async (dispatch: any) => {
     try {
       dispatch(setCheckoutLoading(true));
-      
+
       const totalAmount = calculateCartTotal(items);
-      
-      const response = await fetch('https://api.nexuswallet.com/btcpay/create-invoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+
+      const response = await fetch(
+        'https://api.nexuswallet.com/btcpay/create-invoice',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: totalAmount,
+            currency: currency,
+            items: items.map(item => ({
+              id: item.id,
+              brand: item.brand.name,
+              amount: item.amount,
+              quantity: item.quantity,
+            })),
+          }),
         },
-        body: JSON.stringify({
-          amount: totalAmount,
-          currency: currency,
-          items: items.map(item => ({
-            id: item.id,
-            brand: item.brand.name,
-            amount: item.amount,
-            quantity: item.quantity,
-          })),
-        }),
-      });
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to create BTCPay invoice: ${response.statusText}`);
+        throw new Error(
+          `Failed to create BTCPay invoice: ${response.statusText}`,
+        );
       }
 
       const data = await response.json();
       dispatch(setCheckoutLoading(false));
-      
+
       return data.checkoutUrl;
     } catch (error) {
-      dispatch(setGiftCardsCartError(error instanceof Error ? error.message : 'Failed to create checkout'));
+      dispatch(
+        setGiftCardCartError(
+          error instanceof Error ? error.message : 'Failed to create checkout',
+        ),
+      );
       throw error;
     }
   };
 
 export const {
-  setGiftCardsCartLoading,
-  setGiftCardsCartError,
+  setGiftCardCartLoading,
+  setGiftCardCartError,
   setCheckoutLoading,
   addGiftCardToCart,
   removeGiftCardFromCart,
   updateGiftCardQuantity,
-  clearGiftCardsCart,
-} = giftCardsCartSlice.actions;
+  clearGiftCardCart,
+} = giftCardCartSlice.actions;
 
-export default giftCardsCartSlice.reducer;
+export default giftCardCartSlice.reducer;

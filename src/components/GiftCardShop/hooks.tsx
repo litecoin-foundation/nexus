@@ -30,7 +30,7 @@ export function GiftCardProvider({client, children}: GiftCardProviderProps) {
   );
 }
 
-export function useGiftCardClient(): GiftCardClient {
+function useGiftCardClient(): GiftCardClient {
   const client = useContext(GiftCardClientContext);
   if (!client) {
     throw new Error('useGiftCardClient must be used within a GiftCardProvider');
