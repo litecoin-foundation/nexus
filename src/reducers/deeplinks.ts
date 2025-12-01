@@ -45,6 +45,10 @@ export function decodeAppDeeplink(deeplink: string): IDeeplinkDecoded {
           stack = 'SettingsStack';
           screen = 'ImportDeeplink';
           break;
+        case 'verifyotp':
+          stack = 'NexusShopStack';
+          screen = 'VerifyOTP';
+          break;
         default:
           // stack = 'OnboardingStack';
           // screen = 'Initial';

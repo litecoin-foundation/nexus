@@ -149,6 +149,13 @@ export function useMainLayout(props: Props) {
               marginLeft={SCREEN_WIDTH * 0.02 * -1}
             />
           ) : null}
+          {__DEV__ ? (
+            <HeaderButton
+              onPress={() => navigation.navigate('NexusShopStack')}
+              imageSource={require('../assets/icons/shop.png')}
+              marginLeft={SCREEN_WIDTH * 0.02 * -1}
+            />
+          ) : null}
         </Animated.View>
       </View>
     ),

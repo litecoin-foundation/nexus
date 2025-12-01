@@ -4,6 +4,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Main, {navigationOptions} from '../screens/Main';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import SettingsStack from './SettingsStack';
+import NexusShopStack from './NexusShopStack';
 import WebPage, {WebPageNavigationOptions} from '../screens/WebPage';
 import ConfirmSend, {
   ConfirmSendNavigationOptions,
@@ -48,6 +49,11 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="SettingsStack"
         component={SettingsStack}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="NexusShopStack"
+        component={NexusShopStack}
         options={{headerShown: false}}
       />
       <Stack.Screen

@@ -379,6 +379,18 @@ const Main: React.FC<Props> = props => {
       if (uri.startsWith('litecoin:')) {
         setBottomSheetFolded(false);
         setActiveTab(4);
+      } else if (uri.startsWith('nexus://verifyotp')) {
+        const decodedDeeplink = decodeAppDeeplink(uri);
+        if (
+          decodedDeeplink &&
+          decodedDeeplink.stack?.length > 0 &&
+          decodedDeeplink.screen?.length > 0
+        ) {
+          navigation.navigate(decodedDeeplink.stack, {
+            screen: decodedDeeplink.screen,
+            params: {otpCode: decodedDeeplink.options?.otp},
+          });
+        }
       } else if (uri.startsWith('nexus://')) {
         const decodedDeeplink = decodeAppDeeplink(uri);
         if (

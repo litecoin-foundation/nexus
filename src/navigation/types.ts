@@ -22,6 +22,7 @@ export type NewWalletStackParamList = {
     isInitial?: boolean;
   };
   SettingsStack: undefined;
+  NexusShopStack: undefined;
   AlertsStack: undefined;
   Scan: {
     returnRoute: string;
