@@ -15,6 +15,7 @@ import {
   verifyOtpCode,
   verifyOtpCodeTest,
 } from '../../reducers/nexusshopaccount';
+import {unsetDeeplink} from '../../reducers/deeplinks';
 import {
   colors,
   spacing,
@@ -47,7 +48,10 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   useEffect(() => {
     const handleParamsOTP = async (code: string) => {
       if (!account?.email || !uniqueId) {
-        Alert.alert('Error', 'Missing account information. Please sign up first.');
+        Alert.alert(
+          'Error',
+          'Missing account information. Please sign up first.',
+        );
         return;
       }
 
@@ -57,7 +61,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         } else {
           await dispatch(verifyOtpCode(account.email, uniqueId, code));
         }
-        
+
         if (!error) {
           setShowVerified(true);
           setTimeout(() => {
@@ -74,7 +78,16 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       setOtpCode(otpCodeFromParams);
       handleParamsOTP(otpCodeFromParams);
     }
-  }, [route?.params?.otpCode, account?.email, uniqueId, dispatch, error, navigation]);
+
+    dispatch(unsetDeeplink());
+  }, [
+    route?.params?.otpCode,
+    account?.email,
+    uniqueId,
+    dispatch,
+    error,
+    navigation,
+  ]);
 
   // Check if user is already logged in
   useEffect(() => {
