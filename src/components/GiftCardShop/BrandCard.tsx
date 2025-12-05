@@ -1,7 +1,9 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {View, Text, TouchableOpacity, Image, StyleSheet} from 'react-native';
-import {Brand} from '../../services/giftcards';
-import {colors, spacing, borderRadius, fontSize} from './theme';
+import {Brand, formatCurrency} from '../../services/giftcards';
+import {colors, getSpacing, getBorderRadius, getFontSize} from './theme';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface BrandCardProps {
   brand: Brand;
@@ -9,11 +11,17 @@ interface BrandCardProps {
 }
 
 export function BrandCard({brand, onPress}: BrandCardProps) {
-  const minAmount =
-    brand.digital_face_value_limits?.minimum || brand.denominations?.[0];
-  const maxAmount =
-    brand.digital_face_value_limits?.maximum ||
-    brand.denominations?.[brand.denominations.length - 1];
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const minAmount = Number(
+    brand.digital_face_value_limits?.lower || brand.denominations?.[0],
+  );
+  const maxAmount = Number(
+    brand.digital_face_value_limits?.upper ||
+      brand.denominations?.[brand.denominations.length - 1],
+  );
 
   return (
     <TouchableOpacity
@@ -30,54 +38,63 @@ export function BrandCard({brand, onPress}: BrandCardProps) {
       <Text style={styles.brandName} numberOfLines={1}>
         {brand.name}
       </Text>
-      {minAmount && maxAmount && (
+      {typeof minAmount === 'number' &&
+      !isNaN(minAmount) &&
+      typeof maxAmount === 'number' &&
+      !isNaN(maxAmount) &&
+      brand.currency ? (
         <Text style={styles.brandPrice}>
-          {minAmount === maxAmount ? minAmount : `${minAmount} - ${maxAmount}`}
+          {minAmount === maxAmount
+            ? formatCurrency(minAmount, brand.currency)
+            : `${formatCurrency(minAmount, brand.currency)} - ${formatCurrency(maxAmount, brand.currency)}`}
         </Text>
+      ) : (
+        <></>
       )}
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  brandCard: {
-    width: '48%',
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  brandLogo: {
-    width: 60,
-    height: 60,
-    borderRadius: borderRadius.sm,
-    marginBottom: spacing.sm,
-  },
-  brandLogoPlaceholder: {
-    backgroundColor: colors.grayLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  brandLogoText: {
-    fontSize: fontSize.xl,
-    fontWeight: '700',
-    color: colors.gray,
-  },
-  brandName: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-    textAlign: 'center',
-  },
-  brandPrice: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-});
+const getStyles = (screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    brandCard: {
+      width: screenWidth * 0.45,
+      backgroundColor: colors.white,
+      borderRadius: getBorderRadius(screenHeight).md,
+      padding: getSpacing(screenHeight).md,
+      marginBottom: getSpacing(screenHeight).md,
+      alignItems: 'center',
+      shadowColor: colors.black,
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    brandLogo: {
+      width: screenWidth * 0.2,
+      height: screenWidth * 0.2,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      marginBottom: getSpacing(screenHeight).sm,
+    },
+    brandLogoPlaceholder: {
+      backgroundColor: colors.grayLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    brandLogoText: {
+      fontSize: getFontSize(screenHeight).xl,
+      fontWeight: '700',
+      color: colors.gray,
+    },
+    brandName: {
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '600',
+      color: colors.text,
+      textAlign: 'center',
+    },
+    brandPrice: {
+      fontSize: getFontSize(screenHeight).sm,
+      color: colors.textSecondary,
+      marginTop: getSpacing(screenHeight).xs,
+    },
+  });

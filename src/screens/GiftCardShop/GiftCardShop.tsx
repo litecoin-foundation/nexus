@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useContext} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {useSelector} from 'react-redux';
 import type {StackNavigationOptions} from '@react-navigation/stack';
@@ -9,6 +9,8 @@ import {commonStyles} from '../../components/GiftCardShop/theme';
 import {GiftCardClient} from '../../services/giftcards';
 import {GiftCardProvider} from '../../components/GiftCardShop/hooks';
 
+import {ScreenSizeContext} from '../../context/screenSize';
+
 interface GiftCardShopProps {
   onSelectBrand?: (brand: Brand) => void;
 }
@@ -17,6 +19,10 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({onSelectBrand}) => {
   const {uniqueId} = useSelector((state: any) => state.onboarding);
   const {account} = useSelector((state: any) => state.nexusshopaccount);
   const isLoggedIn = account && account.isLoggedIn;
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // Initialize client with uniqueId
   const client = useMemo(() => {
@@ -33,7 +39,11 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({onSelectBrand}) => {
   };
 
   return (
-    <View style={[commonStyles.container, styles.container]}>
+    <View
+      style={[
+        commonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).container,
+        styles.container,
+      ]}>
       {!client ? (
         <SignUpForm />
       ) : (
@@ -49,11 +59,12 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({onSelectBrand}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+const getStyles = (_screenWidth: number, _screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+  });
 
 export const navigationOptions = (): StackNavigationOptions => ({
   title: 'Gift Card Shop',

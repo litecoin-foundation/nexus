@@ -16,7 +16,7 @@ import settings from './settings';
 import deeplinks from './deeplinks';
 import errors from './errors';
 import cart from './cart';
-import giftcardscart from './giftcardscart';
+import giftcardcart from './giftcardcart';
 import nexusshopaccount from './nexusshopaccount';
 
 export default combineReducers({
@@ -37,6 +37,6 @@ export default combineReducers({
   deeplinks,
   errors,
   cart,
-  giftcardscart,
+  giftcardcart,
   nexusshopaccount,
 });

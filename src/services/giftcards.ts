@@ -6,11 +6,12 @@ export interface FaceValue {
 export interface Brand {
   slug: string; // Unique brand identifier
   name: string;
+  currency: string;
   logo_url?: string;
   categories?: string[];
   digital_face_value_limits?: {
-    minimum: number;
-    maximum: number;
+    lower: number;
+    upper: number;
     minor_unit: number;
   };
   denominations?: number[];
@@ -78,90 +79,6 @@ export class GiftCardClient {
   }
 
   async getBrands(): Promise<Brand[]> {
-    if (__DEV__) {
-      return [
-        {
-          slug: 'amazon',
-          name: 'Amazon',
-          logo_url: 'https://logo.clearbit.com/amazon.com',
-          categories: ['retail', 'marketplace'],
-          digital_face_value_limits: { minimum: 10, maximum: 500, minor_unit: 1 },
-          type: 'gift-card',
-        },
-        {
-          slug: 'starbucks',
-          name: 'Starbucks',
-          logo_url: 'https://logo.clearbit.com/starbucks.com',
-          categories: ['food', 'coffee'],
-          denominations: [5, 10, 15, 25, 50, 100],
-          type: 'gift-card',
-        },
-        {
-          slug: 'target',
-          name: 'Target',
-          logo_url: 'https://logo.clearbit.com/target.com',
-          categories: ['retail', 'department-store'],
-          digital_face_value_limits: { minimum: 5, maximum: 300, minor_unit: 0.5 },
-          type: 'gift-card',
-        },
-        {
-          slug: 'spotify',
-          name: 'Spotify',
-          logo_url: 'https://logo.clearbit.com/spotify.com',
-          categories: ['entertainment', 'music'],
-          denominations: [10, 30, 50],
-          type: 'gift-card',
-        },
-        {
-          slug: 'netflix',
-          name: 'Netflix',
-          logo_url: 'https://logo.clearbit.com/netflix.com',
-          categories: ['entertainment', 'streaming'],
-          denominations: [15, 25, 50, 100],
-          type: 'gift-card',
-        },
-        {
-          slug: 'walmart',
-          name: 'Walmart',
-          logo_url: 'https://logo.clearbit.com/walmart.com',
-          categories: ['retail', 'grocery'],
-          digital_face_value_limits: { minimum: 20, maximum: 1000, minor_unit: 1 },
-          type: 'gift-card',
-        },
-        {
-          slug: 'apple',
-          name: 'Apple',
-          logo_url: 'https://logo.clearbit.com/apple.com',
-          categories: ['technology', 'apps'],
-          denominations: [10, 25, 50, 100],
-          type: 'gift-card',
-        },
-        {
-          slug: 'google-play',
-          name: 'Google Play',
-          logo_url: 'https://logo.clearbit.com/play.google.com',
-          categories: ['technology', 'apps'],
-          denominations: [10, 25, 50],
-          type: 'gift-card',
-        },
-        {
-          slug: 'uber',
-          name: 'Uber',
-          logo_url: 'https://logo.clearbit.com/uber.com',
-          categories: ['transportation', 'delivery'],
-          digital_face_value_limits: { minimum: 15, maximum: 200, minor_unit: 1 },
-          type: 'gift-card',
-        },
-        {
-          slug: 'steam',
-          name: 'Steam',
-          logo_url: 'https://logo.clearbit.com/steampowered.com',
-          categories: ['gaming', 'entertainment'],
-          denominations: [5, 10, 20, 50, 100],
-          type: 'gift-card',
-        },
-      ];
-    }
     return this.request<Brand[]>('GET', '/api/gift-cards/brands');
   }
 
@@ -215,13 +132,13 @@ export function validateAmount(
   }
 
   if (brand.digital_face_value_limits) {
-    const {minimum, maximum, minor_unit} = brand.digital_face_value_limits;
+    const {lower, upper, minor_unit} = brand.digital_face_value_limits;
 
-    if (amount < minimum) {
-      return {valid: false, error: `Minimum amount is ${minimum}`};
+    if (amount < lower) {
+      return {valid: false, error: `Minimum amount is ${lower}`};
     }
-    if (amount > maximum) {
-      return {valid: false, error: `Maximum amount is ${maximum}`};
+    if (amount > upper) {
+      return {valid: false, error: `Maximum amount is ${upper}`};
     }
 
     const multiplier = 1 / minor_unit;
@@ -247,6 +164,18 @@ export function daysUntilExpiration(giftCard: GiftCard): number {
   const expiration = new Date(giftCard.expirationDate);
   const diffTime = expiration.getTime() - now.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+export function formatCurrency(amount: number, currency: string): string {
+  const symbols: Record<string, string> = {
+    GBP: '£',
+    USD: '$',
+    EUR: '€',
+    CAD: 'C$',
+    AUD: 'A$',
+  };
+  const symbol = symbols[currency] || currency + ' ';
+  return `${symbol}${amount.toFixed(2)}`;
 }
 
 export function createGiftCardClient(uniqueId: string): GiftCardClient {

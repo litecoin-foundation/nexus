@@ -57,7 +57,11 @@ export function useBrands(): UseQueryResult<Brand[]> {
     setError(null);
     try {
       const brands = await client.getBrands();
-      setData(brands);
+      if (Array.isArray(brands)) {
+        setData(brands);
+      } else {
+        setError('Invalid brands data format');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch brands');
     } finally {
