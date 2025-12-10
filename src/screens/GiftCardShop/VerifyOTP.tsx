@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -18,11 +18,13 @@ import {
 import {unsetDeeplink} from '../../reducers/deeplinks';
 import {
   colors,
-  spacing,
-  fontSize,
-  commonStyles,
+  getSpacing,
+  getFontSize,
+  getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 import OTPVerified from './OTPVerified';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface VerifyOTPProps {
   route?: {
@@ -33,6 +35,11 @@ interface VerifyOTPProps {
 }
 
 const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
   const [showVerified, setShowVerified] = useState(false);
@@ -198,29 +205,30 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    padding: spacing.lg,
-    justifyContent: 'center',
-  },
-  subtitle: {
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-    color: colors.textSecondary,
-  },
-  inputContainer: {
-    marginBottom: spacing.lg,
-  },
-  otpInput: {
-    textAlign: 'center',
-    fontSize: fontSize.xl,
-    letterSpacing: 8,
-    fontFamily: 'monospace',
-  },
-  inputError: {
-    borderColor: colors.danger,
-  },
-});
+const getStyles = (_screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      padding: getSpacing(screenHeight).lg,
+      justifyContent: 'center',
+    },
+    subtitle: {
+      textAlign: 'center',
+      marginBottom: getSpacing(screenHeight).xl,
+      color: colors.textSecondary,
+    },
+    inputContainer: {
+      marginBottom: getSpacing(screenHeight).lg,
+    },
+    otpInput: {
+      textAlign: 'center',
+      fontSize: getFontSize(screenHeight).xl,
+      letterSpacing: 8,
+      fontFamily: 'monospace',
+    },
+    inputError: {
+      borderColor: colors.danger,
+    },
+  });
 
 export const navigationOptions = (): StackNavigationOptions => ({
   title: 'Verify Email',

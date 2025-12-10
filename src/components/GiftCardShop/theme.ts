@@ -82,7 +82,7 @@ export const getFontSize = (screenHeight: number) => {
   };
 };
 
-export const commonStyles = (screenWidth: number, screenHeight: number) =>
+export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     // Layout
     container: {
@@ -252,5 +252,5 @@ export default {
   spacing,
   borderRadius,
   fontSize,
-  commonStyles,
+  getCommonStyles,
 };

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -14,12 +14,19 @@ import {
   loginToNexusShop,
   loginToNexusShopTest,
 } from '../../reducers/nexusshopaccount';
-import {colors, spacing, commonStyles} from './theme';
+import {colors, getSpacing, getCommonStyles} from './theme';
 import PopUpModal from '../Modals/PopUpModal';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {}
 
 const SignUpForm: React.FC<Props> = () => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -122,16 +129,17 @@ const SignUpForm: React.FC<Props> = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    padding: spacing.lg,
-  },
-  inputContainer: {
-    marginBottom: spacing.md,
-  },
-  inputError: {
-    borderColor: colors.danger,
-  },
-});
+const getStyles = (_screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    container: {
+      padding: getSpacing(screenHeight).lg,
+    },
+    inputContainer: {
+      marginBottom: getSpacing(screenHeight).md,
+    },
+    inputError: {
+      borderColor: colors.danger,
+    },
+  });
 
 export default SignUpForm;

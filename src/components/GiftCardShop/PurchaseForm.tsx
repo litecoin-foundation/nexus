@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useContext} from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,15 @@ import {
 } from 'react-native';
 import {Brand, GiftCard} from '../../services/giftcards';
 import {usePurchaseFlow} from './hooks';
-import {colors, spacing, borderRadius, fontSize, commonStyles} from './theme';
+import {
+  colors,
+  getSpacing,
+  getBorderRadius,
+  getFontSize,
+  getCommonStyles,
+} from './theme';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface PurchaseFormProps {
   brand: Brand;
@@ -31,7 +39,12 @@ export function PurchaseForm({brand, onBack, onSuccess}: PurchaseFormProps) {
     purchasedCard,
   } = usePurchaseFlow(brand);
 
-  React.useEffect(() => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  useEffect(() => {
     if (purchasedCard) {
       onSuccess(purchasedCard);
     }
@@ -110,8 +123,12 @@ export function PurchaseForm({brand, onBack, onSuccess}: PurchaseFormProps) {
         )}
 
         {brand.digital_face_value_limits && (
-          <Text style={[commonStyles.caption, {marginTop: spacing.sm}]}>
-            {`Min: ${brand.digital_face_value_limits.minimum} | Max: ${brand.digital_face_value_limits.maximum}`}
+          <Text
+            style={[
+              commonStyles.caption,
+              {marginTop: getSpacing(SCREEN_HEIGHT).sm},
+            ]}>
+            {`Min: ${brand.digital_face_value_limits.lower} | Max: ${brand.digital_face_value_limits.upper}`}
           </Text>
         )}
       </View>
@@ -141,97 +158,98 @@ export function PurchaseForm({brand, onBack, onSuccess}: PurchaseFormProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  formContainer: {
-    padding: spacing.md,
-  },
-  backButton: {
-    marginBottom: spacing.md,
-  },
-  backButtonText: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-  },
-  brandHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  brandHeaderLogo: {
-    width: 50,
-    height: 50,
-    borderRadius: borderRadius.sm,
-    marginRight: spacing.md,
-  },
-  brandLogoPlaceholder: {
-    backgroundColor: colors.grayLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  brandLogoText: {
-    fontSize: fontSize.xl,
-    fontWeight: '700',
-    color: colors.gray,
-  },
-  formSection: {
-    marginBottom: spacing.lg,
-  },
-  denominationGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  denominationButton: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: borderRadius.sm,
-    marginRight: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  denominationButtonSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary,
-  },
-  denominationText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  denominationTextSelected: {
-    color: colors.white,
-  },
-  amountInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.white,
-  },
-  currencySymbol: {
-    paddingHorizontal: spacing.md,
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    backgroundColor: colors.grayLight,
-    paddingVertical: spacing.md,
-  },
-  amountInput: {
-    flex: 1,
-    fontSize: fontSize.xl,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-  },
-  errorContainer: {
-    backgroundColor: colors.dangerLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.sm,
-    marginBottom: spacing.md,
-  },
-  errorMessage: {
-    color: colors.danger,
-    fontSize: fontSize.sm,
-  },
-});
+const getStyles = (_screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    formContainer: {
+      padding: getSpacing(screenHeight).md,
+    },
+    backButton: {
+      marginBottom: getSpacing(screenHeight).md,
+    },
+    backButtonText: {
+      fontSize: getFontSize(screenHeight).md,
+      color: colors.primary,
+    },
+    brandHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: getSpacing(screenHeight).lg,
+    },
+    brandHeaderLogo: {
+      width: 50,
+      height: 50,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      marginRight: getSpacing(screenHeight).md,
+    },
+    brandLogoPlaceholder: {
+      backgroundColor: colors.grayLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    brandLogoText: {
+      fontSize: getFontSize(screenHeight).xl,
+      fontWeight: '700',
+      color: colors.gray,
+    },
+    formSection: {
+      marginBottom: getSpacing(screenHeight).lg,
+    },
+    denominationGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: getSpacing(screenHeight).sm,
+    },
+    denominationButton: {
+      paddingVertical: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenHeight).lg,
+      borderWidth: 2,
+      borderColor: colors.border,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      marginRight: getSpacing(screenHeight).sm,
+      marginBottom: getSpacing(screenHeight).sm,
+    },
+    denominationButtonSelected: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary,
+    },
+    denominationText: {
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    denominationTextSelected: {
+      color: colors.white,
+    },
+    amountInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: colors.border,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      backgroundColor: colors.white,
+    },
+    currencySymbol: {
+      paddingHorizontal: getSpacing(screenHeight).md,
+      fontSize: getFontSize(screenHeight).lg,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      backgroundColor: colors.grayLight,
+      paddingVertical: getSpacing(screenHeight).md,
+    },
+    amountInput: {
+      flex: 1,
+      fontSize: getFontSize(screenHeight).xl,
+      paddingHorizontal: getSpacing(screenHeight).md,
+      paddingVertical: getSpacing(screenHeight).md,
+    },
+    errorContainer: {
+      backgroundColor: colors.dangerLight,
+      padding: getSpacing(screenHeight).md,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      marginBottom: getSpacing(screenHeight).md,
+    },
+    errorMessage: {
+      color: colors.danger,
+      fontSize: getFontSize(screenHeight).sm,
+    },
+  });
