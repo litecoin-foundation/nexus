@@ -14,7 +14,7 @@ import {
   validateAmount,
 } from '../../services/giftcards';
 
-// Context
+// Context ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 const GiftCardClientContext = createContext<GiftCardClient | null>(null);
 
 interface GiftCardProviderProps {
@@ -38,7 +38,7 @@ function useGiftCardClient(): GiftCardClient {
   return client;
 }
 
-// Queries
+// Queries ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 interface UseQueryResult<T> {
   data: T | null;
   loading: boolean;
@@ -160,7 +160,7 @@ export function useGiftCard(id: string): UseQueryResult<GiftCard> {
   return {data, loading, error, refetch: fetch};
 }
 
-// Mutations
+// Mutations ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 interface UseMutationResult<TData, TVariables> {
   mutate: (variables: TVariables) => Promise<TData>;
   data: TData | null;
@@ -169,6 +169,7 @@ interface UseMutationResult<TData, TVariables> {
   reset: () => void;
 }
 
+// Purchase call
 export function usePurchaseGiftCard(): UseMutationResult<
   GiftCard,
   PurchaseRequest
@@ -206,6 +207,7 @@ export function usePurchaseGiftCard(): UseMutationResult<
   return {mutate, data, loading, error, reset};
 }
 
+// Mark as redeemed call
 export function useRedeemGiftCard(): UseMutationResult<GiftCard, string> {
   const client = useGiftCardClient();
   const [data, setData] = useState<GiftCard | null>(null);
@@ -239,7 +241,8 @@ export function useRedeemGiftCard(): UseMutationResult<GiftCard, string> {
   return {mutate, data, loading, error, reset};
 }
 
-// Purchase Flow
+// Flows ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Purchase flow
 export function usePurchaseFlow(brand: Brand | null) {
   const [amount, setAmount] = useState<number>(0);
   const [currency, setCurrency] = useState<string>('GBP');

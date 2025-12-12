@@ -103,7 +103,7 @@ const GiftCardCart: React.FC = () => {
       <TouchableOpacity
         style={styles.removeButton}
         onPress={() => handleRemoveItem(item.id)}>
-        <Text style={styles.removeButtonText}>×</Text>
+        <Text style={styles.removeButtonText}>X</Text>
       </TouchableOpacity>
     </View>
   );

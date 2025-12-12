@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useContext, useLayoutEffect} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import {useSelector} from 'react-redux';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import {GiftCardClient, Brand, GiftCard} from '../../services/giftcards';
@@ -8,6 +8,7 @@ import {PurchaseForm} from '../../components/GiftCardShop/PurchaseForm';
 import {PurchaseSuccess} from '../../components/GiftCardShop/PurchaseSuccess';
 import {MyGiftCards} from '../../components/GiftCardShop/MyGiftCards';
 import SignUpForm from '../../components/GiftCardShop/SignUpForm';
+import TripleSwitch from '../../components/Buttons/TripleSwitch';
 
 import {
   colors,
@@ -27,7 +28,8 @@ type ScreenState =
   | {type: 'browse'}
   | {type: 'purchase'; brand: Brand}
   | {type: 'success'; brand: Brand; giftCard: GiftCard}
-  | {type: 'my-cards'};
+  | {type: 'my-cards'}
+  | {type: 'favourites'};
 
 const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
   const {uniqueId} = useSelector((state: any) => state.onboarding);
@@ -39,6 +41,39 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [screen, setScreen] = useState<ScreenState>({type: 'browse'});
+
+  if (__DEV__) {
+    console.log('User uniqueId: ' + uniqueId);
+    console.log('Giftcard client logged in: ' + isLoggedIn);
+    console.log('Screen: ' + JSON.stringify(screen, null, 2));
+  }
+
+  const getSelectedIndex = () => {
+    switch (screen.type) {
+      case 'browse':
+        return 0;
+      case 'favourites':
+        return 1;
+      case 'my-cards':
+        return 2;
+      default:
+        return 0;
+    }
+  };
+
+  const handleSwitchChange = (index: number) => {
+    switch (index) {
+      case 0:
+        setScreen({type: 'browse'});
+        break;
+      case 1:
+        setScreen({type: 'favourites'});
+        break;
+      case 2:
+        setScreen({type: 'my-cards'});
+        break;
+    }
+  };
 
   const handleSelectBrand = (brand: Brand) => {
     setScreen({type: 'purchase', brand});
@@ -81,21 +116,19 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
       ) : (
         <GiftCardProvider client={client}>
           {isLoggedIn ? (
-            <View>
-              <View style={styles.header}>
-                <Text style={styles.headerTitle}>Gift Cards</Text>
-                <TouchableOpacity
-                  onPress={() =>
-                    setScreen(
-                      screen.type === 'my-cards'
-                        ? {type: 'browse'}
-                        : {type: 'my-cards'},
-                    )
-                  }>
-                  <Text style={styles.headerButton}>
-                    {screen.type === 'my-cards' ? 'Browse' : 'My Cards'}
-                  </Text>
-                </TouchableOpacity>
+            <View style={styles.container}>
+              <View style={styles.switchContainer}>
+                <TripleSwitch
+                  options={['Browse', 'Favourites', 'My Cards']}
+                  selectedIndex={getSelectedIndex()}
+                  onSelectionChange={handleSwitchChange}
+                  width={SCREEN_WIDTH - getSpacing(SCREEN_HEIGHT).md * 2}
+                  height={44}
+                  activeColor={colors.primary}
+                  inactiveColor={colors.grayLight}
+                  textColor={colors.textSecondary}
+                  activeTextColor={colors.white}
+                />
               </View>
 
               {screen.type === 'browse' && (
@@ -119,6 +152,14 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
               )}
 
               {screen.type === 'my-cards' && <MyGiftCards />}
+
+              {screen.type === 'favourites' && (
+                <View style={styles.placeholderContainer}>
+                  <Text style={styles.placeholderText}>
+                    Favourites coming soon!
+                  </Text>
+                </View>
+              )}
             </View>
           ) : (
             <SignUpForm />
@@ -134,25 +175,21 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+    switchContainer: {
       paddingHorizontal: getSpacing(screenHeight).md,
       paddingVertical: getSpacing(screenHeight).md,
       backgroundColor: colors.white,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
     },
-    headerTitle: {
-      fontSize: getFontSize(screenHeight).xl,
-      fontWeight: '700',
-      color: colors.text,
+    placeholderContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: getSpacing(screenHeight).md,
     },
-    headerButton: {
-      fontSize: getFontSize(screenHeight).md,
-      color: colors.primary,
-      fontWeight: '600',
+    placeholderText: {
+      fontSize: getFontSize(screenHeight).lg,
+      color: colors.textSecondary,
+      textAlign: 'center',
     },
   });
 

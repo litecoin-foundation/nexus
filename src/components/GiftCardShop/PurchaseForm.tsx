@@ -59,6 +59,18 @@ export function PurchaseForm({brand, onBack, onSuccess}: PurchaseFormProps) {
     } catch {}
   };
 
+  if (__DEV__) {
+    // console.log('Brand: ' + JSON.stringify(brand, null, 2));
+    console.log('PurchaseForm state:', {
+      amount,
+      validation,
+      loading,
+      error,
+      hasDenominations,
+      currency,
+    });
+  }
+
   return (
     <ScrollView
       style={commonStyles.container}
