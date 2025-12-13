@@ -7,7 +7,7 @@ import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
 import {PurchaseForm} from '../../components/GiftCardShop/PurchaseForm';
 import {PurchaseSuccess} from '../../components/GiftCardShop/PurchaseSuccess';
 import {MyGiftCards} from '../../components/GiftCardShop/MyGiftCards';
-import {MyFavouriteCards} from '../../components/GiftCardShop/MyFavouriteCards';
+import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
 import SignUpForm from '../../components/GiftCardShop/SignUpForm';
 import TripleSwitch from '../../components/Buttons/TripleSwitch';
 
@@ -30,7 +30,7 @@ type ScreenState =
   | {type: 'purchase'; brand: Brand}
   | {type: 'success'; brand: Brand; giftCard: GiftCard}
   | {type: 'my-cards'}
-  | {type: 'favourites'};
+  | {type: 'wishlist'};
 
 const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
   const {uniqueId} = useSelector((state: any) => state.onboarding);
@@ -53,7 +53,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
     switch (screen.type) {
       case 'browse':
         return 0;
-      case 'favourites':
+      case 'wishlist':
         return 1;
       case 'my-cards':
         return 2;
@@ -68,7 +68,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
         setScreen({type: 'browse'});
         break;
       case 1:
-        setScreen({type: 'favourites'});
+        setScreen({type: 'wishlist'});
         break;
       case 2:
         setScreen({type: 'my-cards'});
@@ -120,7 +120,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
             <View style={styles.container}>
               <View style={styles.switchContainer}>
                 <TripleSwitch
-                  options={['Browse', 'Favourites', 'My Cards']}
+                  options={['Browse', 'Wishlist', 'My Cards']}
                   selectedIndex={getSelectedIndex()}
                   onSelectionChange={handleSwitchChange}
                   width={SCREEN_WIDTH - getSpacing(SCREEN_HEIGHT).md * 2}
@@ -154,7 +154,9 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
 
               {screen.type === 'my-cards' && <MyGiftCards />}
 
-              {screen.type === 'favourites' && <MyFavouriteCards />}
+              {screen.type === 'wishlist' && (
+                <MyWishlistBrands onSelectBrand={handleSelectBrand} />
+              )}
             </View>
           ) : (
             <SignUpForm />

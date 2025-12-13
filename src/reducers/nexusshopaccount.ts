@@ -1,6 +1,6 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import {GiftCard, GiftCardInApp} from '../services/giftcards';
+import {GiftCard, GiftCardInApp, Brand} from '../services/giftcards';
 
 interface UserAccount {
   email: string;
@@ -12,6 +12,7 @@ interface UserAccount {
 interface INexusShopAccount {
   account: UserAccount | null;
   giftCards: GiftCardInApp[];
+  wishlistBrands: Brand[];
   loading: boolean;
   error: string | null;
   loginLoading: boolean;
@@ -20,6 +21,7 @@ interface INexusShopAccount {
 const initialState: INexusShopAccount = {
   account: null,
   giftCards: [],
+  wishlistBrands: [],
   loading: false,
   error: null,
   loginLoading: false,
@@ -55,9 +57,13 @@ export const nexusShopAccountSlice = createSlice({
     clearAccount: state => {
       state.account = null;
       state.giftCards = [];
+      state.wishlistBrands = [];
       state.loading = false;
       state.loginLoading = false;
       state.error = null;
+    },
+    resetWishlist: state => {
+      state.wishlistBrands = [];
     },
     setGiftCards: (state, action: PayloadAction<GiftCardInApp[]>) => {
       state.giftCards = action.payload;
@@ -96,6 +102,29 @@ export const nexusShopAccountSlice = createSlice({
       const giftCard = state.giftCards.find(card => card.id === action.payload);
       if (giftCard) {
         giftCard.favoured = !giftCard.favoured;
+      }
+    },
+    addToWishlist: (state, action: PayloadAction<Brand>) => {
+      const existingIndex = state.wishlistBrands.findIndex(
+        brand => brand.slug === action.payload.slug,
+      );
+      if (existingIndex === -1) {
+        state.wishlistBrands.push(action.payload);
+      }
+    },
+    removeFromWishlist: (state, action: PayloadAction<string>) => {
+      state.wishlistBrands = state.wishlistBrands.filter(
+        brand => brand.slug !== action.payload,
+      );
+    },
+    toggleWishlistBrand: (state, action: PayloadAction<Brand>) => {
+      const existingIndex = state.wishlistBrands.findIndex(
+        brand => brand.slug === action.payload.slug,
+      );
+      if (existingIndex !== -1) {
+        state.wishlistBrands.splice(existingIndex, 1);
+      } else {
+        state.wishlistBrands.push(action.payload);
       }
     },
     verifyOtpSuccess: state => {
@@ -280,11 +309,15 @@ export const {
   setAccountError,
   setAccount,
   clearAccount,
+  resetWishlist,
   setGiftCards,
   addGiftCard,
   updateGiftCardStatus,
   removeGiftCard,
   markAsFavoured,
+  addToWishlist,
+  removeFromWishlist,
+  toggleWishlistBrand,
   verifyOtpSuccess,
 } = nexusShopAccountSlice.actions;
 

@@ -5,6 +5,7 @@ import React, {
   createContext,
   useContext,
   ReactNode,
+  useRef,
 } from 'react';
 import {
   GiftCardClient,
@@ -111,9 +112,13 @@ export function useMyGiftCards(): UseQueryResult<GiftCard[]> {
   const existingGiftCards = useAppSelector(
     state => state.nexusshopaccount.giftCards,
   );
+  const existingGiftCardsRef = useRef(existingGiftCards);
   const [data, setData] = useState<GiftCard[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Update ref when existingGiftCards changes
+  existingGiftCardsRef.current = existingGiftCards;
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -122,9 +127,9 @@ export function useMyGiftCards(): UseQueryResult<GiftCard[]> {
       const cards = await client.getMyGiftCards();
       setData(cards);
 
-      // Preserve favoured state from existing cards
+      // Preserve favoured state from existing cards using ref
       const cardsWithPreservedFavoured = cards.map(newCard => {
-        const existingCard = existingGiftCards.find(
+        const existingCard = existingGiftCardsRef.current.find(
           existing => existing.id === newCard.id,
         );
         return {
@@ -141,7 +146,7 @@ export function useMyGiftCards(): UseQueryResult<GiftCard[]> {
     } finally {
       setLoading(false);
     }
-  }, [client, dispatch, existingGiftCards]);
+  }, [client, dispatch]);
 
   useEffect(() => {
     fetch();
