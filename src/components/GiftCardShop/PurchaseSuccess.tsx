@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,15 @@ import {
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {Brand, GiftCard} from '../../services/giftcards';
-import {colors, spacing, borderRadius, fontSize, commonStyles} from './theme';
+import {
+  colors,
+  getSpacing,
+  getBorderRadius,
+  getFontSize,
+  getCommonStyles,
+} from './theme';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface PurchaseSuccessProps {
   giftCard: GiftCard;
@@ -23,6 +31,11 @@ export function PurchaseSuccess({
   brand,
   onDone,
 }: PurchaseSuccessProps) {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const copyCode = () => {
     if (giftCard.redeemCode) {
       Clipboard.setString(giftCard.redeemCode);
@@ -66,7 +79,7 @@ export function PurchaseSuccess({
               </TouchableOpacity>
             </View>
             {giftCard.pin && (
-              <View style={{marginTop: spacing.md}}>
+              <View style={{marginTop: getSpacing(SCREEN_HEIGHT).md}}>
                 <Text style={commonStyles.label}>PIN</Text>
                 <Text style={styles.codeText}>{giftCard.pin}</Text>
               </View>
@@ -74,7 +87,11 @@ export function PurchaseSuccess({
           </View>
         )}
 
-        <Text style={[commonStyles.caption, {marginTop: spacing.md}]}>
+        <Text
+          style={[
+            commonStyles.caption,
+            {marginTop: getSpacing(SCREEN_HEIGHT).md},
+          ]}>
           Expires: {new Date(giftCard.expirationDate).toLocaleDateString()}
         </Text>
       </View>
@@ -88,77 +105,78 @@ export function PurchaseSuccess({
   );
 }
 
-const styles = StyleSheet.create({
-  successContainer: {
-    padding: spacing.lg,
-    alignItems: 'center',
-  },
-  successIconText: {
-    fontSize: 40,
-    color: colors.white,
-  },
-  giftCardDisplay: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    width: '100%',
-    alignItems: 'center',
-    marginVertical: spacing.lg,
-    shadowColor: colors.black,
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  giftCardBrand: {
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  giftCardAmount: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: colors.success,
-    marginVertical: spacing.sm,
-  },
-  redeemButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: borderRadius.sm,
-    marginTop: spacing.md,
-  },
-  redeemButtonText: {
-    color: colors.white,
-    fontSize: fontSize.md,
-    fontWeight: '600',
-  },
-  codeContainer: {
-    backgroundColor: colors.grayLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.sm,
-    width: '100%',
-    marginTop: spacing.md,
-  },
-  codeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  codeText: {
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    fontFamily: 'monospace',
-    letterSpacing: 2,
-  },
-  copyButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.sm,
-  },
-  copyButtonText: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-});
+const getStyles = (_screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    successContainer: {
+      padding: getSpacing(screenHeight).lg,
+      alignItems: 'center',
+    },
+    successIconText: {
+      fontSize: 40,
+      color: colors.white,
+    },
+    giftCardDisplay: {
+      backgroundColor: colors.white,
+      borderRadius: getBorderRadius(screenHeight).lg,
+      padding: getSpacing(screenHeight).lg,
+      width: '100%',
+      alignItems: 'center',
+      marginVertical: getSpacing(screenHeight).lg,
+      shadowColor: colors.black,
+      shadowOffset: {width: 0, height: 4},
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 5,
+    },
+    giftCardBrand: {
+      fontSize: getFontSize(screenHeight).lg,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    giftCardAmount: {
+      fontSize: 36,
+      fontWeight: '700',
+      color: colors.success,
+      marginVertical: getSpacing(screenHeight).sm,
+    },
+    redeemButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenHeight).xl,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      marginTop: getSpacing(screenHeight).md,
+    },
+    redeemButtonText: {
+      color: colors.white,
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '600',
+    },
+    codeContainer: {
+      backgroundColor: colors.grayLight,
+      padding: getSpacing(screenHeight).md,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      width: '100%',
+      marginTop: getSpacing(screenHeight).md,
+    },
+    codeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    codeText: {
+      fontSize: getFontSize(screenHeight).lg,
+      fontWeight: '600',
+      fontFamily: 'monospace',
+      letterSpacing: 2,
+    },
+    copyButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: getSpacing(screenHeight).sm,
+      paddingHorizontal: getSpacing(screenHeight).md,
+      borderRadius: getBorderRadius(screenHeight).sm,
+    },
+    copyButtonText: {
+      color: colors.white,
+      fontWeight: '600',
+    },
+  });

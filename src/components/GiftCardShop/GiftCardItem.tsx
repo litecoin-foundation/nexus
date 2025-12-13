@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,15 @@ import {
   daysUntilExpiration,
 } from '../../services/giftcards';
 import {useRedeemGiftCard} from './hooks';
-import {colors, spacing, borderRadius, fontSize, commonStyles} from './theme';
+import {
+  colors,
+  getSpacing,
+  getBorderRadius,
+  getFontSize,
+  getCommonStyles,
+} from './theme';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface GiftCardItemProps {
   giftCard: GiftCard;
@@ -23,6 +31,11 @@ interface GiftCardItemProps {
 }
 
 export function GiftCardItem({giftCard, onPress, onUpdate}: GiftCardItemProps) {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const [expanded, setExpanded] = useState(false);
   const {mutate: redeem, loading: redeeming} = useRedeemGiftCard();
 
@@ -99,7 +112,10 @@ export function GiftCardItem({giftCard, onPress, onUpdate}: GiftCardItemProps) {
             <Text
               style={[
                 commonStyles.caption,
-                {color: colors.warning, marginTop: spacing.xs},
+                {
+                  color: colors.warning,
+                  marginTop: getSpacing(SCREEN_HEIGHT).xs,
+                },
               ]}>
               {daysLeft} days left
             </Text>
@@ -129,7 +145,7 @@ export function GiftCardItem({giftCard, onPress, onUpdate}: GiftCardItemProps) {
                 </TouchableOpacity>
               </View>
               {giftCard.pin && (
-                <View style={{marginTop: spacing.sm}}>
+                <View style={{marginTop: getSpacing(SCREEN_HEIGHT).sm}}>
                   <Text style={commonStyles.label}>PIN</Text>
                   <Text style={styles.detailCode}>{giftCard.pin}</Text>
                 </View>
@@ -160,66 +176,67 @@ export function GiftCardItem({giftCard, onPress, onUpdate}: GiftCardItemProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  cardBrandName: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-    textTransform: 'capitalize',
-  },
-  cardAmount: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.success,
-    marginTop: spacing.xs,
-  },
-  cardDetails: {
-    marginTop: spacing.md,
-  },
-  detailButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.sm,
-    alignSelf: 'flex-start',
-    marginBottom: spacing.md,
-  },
-  detailButtonText: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-  codeSection: {
-    backgroundColor: colors.grayLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.sm,
-    marginBottom: spacing.md,
-  },
-  detailCode: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    fontFamily: 'monospace',
-  },
-  copySmallButton: {
-    marginLeft: spacing.md,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    backgroundColor: colors.grayMedium,
-    borderRadius: borderRadius.sm,
-  },
-  copySmallText: {
-    fontSize: fontSize.xs,
-    fontWeight: '600',
-  },
-  markRedeemedButton: {
-    marginTop: spacing.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.gray,
-    borderRadius: borderRadius.sm,
-    alignSelf: 'flex-start',
-  },
-  markRedeemedText: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-});
+const getStyles = (_screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    cardBrandName: {
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '600',
+      color: colors.text,
+      textTransform: 'capitalize',
+    },
+    cardAmount: {
+      fontSize: getFontSize(screenHeight).lg,
+      fontWeight: '700',
+      color: colors.success,
+      marginTop: getSpacing(screenHeight).xs,
+    },
+    cardDetails: {
+      marginTop: getSpacing(screenHeight).md,
+    },
+    detailButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: getSpacing(screenHeight).sm,
+      paddingHorizontal: getSpacing(screenHeight).md,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      alignSelf: 'flex-start',
+      marginBottom: getSpacing(screenHeight).md,
+    },
+    detailButtonText: {
+      color: colors.white,
+      fontWeight: '600',
+    },
+    codeSection: {
+      backgroundColor: colors.grayLight,
+      padding: getSpacing(screenHeight).md,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      marginBottom: getSpacing(screenHeight).md,
+    },
+    detailCode: {
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '600',
+      fontFamily: 'monospace',
+    },
+    copySmallButton: {
+      marginLeft: getSpacing(screenHeight).md,
+      paddingVertical: getSpacing(screenHeight).xs,
+      paddingHorizontal: getSpacing(screenHeight).sm,
+      backgroundColor: colors.grayMedium,
+      borderRadius: getBorderRadius(screenHeight).sm,
+    },
+    copySmallText: {
+      fontSize: getFontSize(screenHeight).xs,
+      fontWeight: '600',
+    },
+    markRedeemedButton: {
+      marginTop: getSpacing(screenHeight).md,
+      paddingVertical: getSpacing(screenHeight).sm,
+      paddingHorizontal: getSpacing(screenHeight).md,
+      backgroundColor: colors.gray,
+      borderRadius: getBorderRadius(screenHeight).sm,
+      alignSelf: 'flex-start',
+    },
+    markRedeemedText: {
+      color: colors.white,
+      fontWeight: '600',
+    },
+  });

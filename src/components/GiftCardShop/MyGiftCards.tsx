@@ -1,12 +1,14 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {ScrollView, View, Text, StyleSheet, RefreshControl} from 'react-native';
 import {GiftCard, isExpired} from '../../services/giftcards';
 import {useMyGiftCards} from './hooks';
-import {spacing, commonStyles} from './theme';
+import {getSpacing, getCommonStyles} from './theme';
 import {LoadingView} from './LoadingView';
 import {ErrorView} from './ErrorView';
 import {EmptyView} from './EmptyView';
 import {GiftCardItem} from './GiftCardItem';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 interface MyGiftCardsProps {
   onViewCard?: (giftCard: GiftCard) => void;
@@ -14,6 +16,12 @@ interface MyGiftCardsProps {
 
 export function MyGiftCards({onViewCard}: MyGiftCardsProps) {
   const {data: giftCards, loading, error, refetch} = useMyGiftCards();
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -79,8 +87,9 @@ export function MyGiftCards({onViewCard}: MyGiftCardsProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    marginBottom: spacing.lg,
-  },
-});
+const getStyles = (_screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    section: {
+      marginBottom: getSpacing(screenHeight).lg,
+    },
+  });
