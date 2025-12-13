@@ -1,6 +1,6 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import {GiftCard} from '../services/giftcards';
+import {GiftCard, GiftCardInApp} from '../services/giftcards';
 
 interface UserAccount {
   email: string;
@@ -11,7 +11,7 @@ interface UserAccount {
 
 interface INexusShopAccount {
   account: UserAccount | null;
-  giftCards: GiftCard[];
+  giftCards: GiftCardInApp[];
   loading: boolean;
   error: string | null;
   loginLoading: boolean;
@@ -59,12 +59,12 @@ export const nexusShopAccountSlice = createSlice({
       state.loginLoading = false;
       state.error = null;
     },
-    setGiftCards: (state, action: PayloadAction<GiftCard[]>) => {
+    setGiftCards: (state, action: PayloadAction<GiftCardInApp[]>) => {
       state.giftCards = action.payload;
       state.loading = false;
       state.error = null;
     },
-    addGiftCard: (state, action: PayloadAction<GiftCard>) => {
+    addGiftCard: (state, action: PayloadAction<GiftCardInApp>) => {
       const existingIndex = state.giftCards.findIndex(
         card => card.id === action.payload.id,
       );
@@ -91,6 +91,12 @@ export const nexusShopAccountSlice = createSlice({
       state.giftCards = state.giftCards.filter(
         card => card.id !== action.payload,
       );
+    },
+    markAsFavoured: (state, action: PayloadAction<string>) => {
+      const giftCard = state.giftCards.find(card => card.id === action.payload);
+      if (giftCard) {
+        giftCard.favoured = !giftCard.favoured;
+      }
     },
     verifyOtpSuccess: state => {
       if (state.account) {
@@ -254,7 +260,11 @@ export const fetchUserGiftCards =
       }
 
       const giftCards: GiftCard[] = await response.json();
-      dispatch(setGiftCards(giftCards));
+      const giftCardsWithFavoured: GiftCardInApp[] = giftCards.map(card => ({
+        ...card,
+        favoured: false,
+      }));
+      dispatch(setGiftCards(giftCardsWithFavoured));
     } catch (error) {
       dispatch(
         setAccountError(
@@ -274,6 +284,7 @@ export const {
   addGiftCard,
   updateGiftCardStatus,
   removeGiftCard,
+  markAsFavoured,
   verifyOtpSuccess,
 } = nexusShopAccountSlice.actions;
 

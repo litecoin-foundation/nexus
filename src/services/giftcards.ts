@@ -31,6 +31,19 @@ export interface GiftCard {
   status: 'active' | 'redeemed' | 'cancelled' | 'expired';
 }
 
+export interface GiftCardInApp {
+  id: string;
+  brand: string;
+  redeemUrl?: string;
+  redeemCode?: string;
+  pin?: string;
+  faceValue: FaceValue;
+  expirationDate: string;
+  purchasedAt: string;
+  status: 'active' | 'redeemed' | 'cancelled' | 'expired';
+  favoured: boolean;
+}
+
 export interface PurchaseRequest {
   brand: string;
   amount: number;
@@ -45,7 +58,9 @@ export interface ApiResponse<T> {
 }
 
 export class GiftCardClient {
-  private baseUrl: string = 'https://api.nexuswallet.com';
+  private baseUrl: string = __DEV__
+    ? 'http://mylocalip:3000'
+    : 'https://api.nexuswallet.com';
   private uuid: string;
 
   constructor(uuid: string) {

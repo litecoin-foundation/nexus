@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useContext, useLayoutEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import {useSelector} from 'react-redux';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import {GiftCardClient, Brand, GiftCard} from '../../services/giftcards';
@@ -7,6 +7,7 @@ import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
 import {PurchaseForm} from '../../components/GiftCardShop/PurchaseForm';
 import {PurchaseSuccess} from '../../components/GiftCardShop/PurchaseSuccess';
 import {MyGiftCards} from '../../components/GiftCardShop/MyGiftCards';
+import {MyFavouriteCards} from '../../components/GiftCardShop/MyFavouriteCards';
 import SignUpForm from '../../components/GiftCardShop/SignUpForm';
 import TripleSwitch from '../../components/Buttons/TripleSwitch';
 
@@ -153,13 +154,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
 
               {screen.type === 'my-cards' && <MyGiftCards />}
 
-              {screen.type === 'favourites' && (
-                <View style={styles.placeholderContainer}>
-                  <Text style={styles.placeholderText}>
-                    Favourites coming soon!
-                  </Text>
-                </View>
-              )}
+              {screen.type === 'favourites' && <MyFavouriteCards />}
             </View>
           ) : (
             <SignUpForm />

@@ -13,6 +13,8 @@ import {
   PurchaseRequest,
   validateAmount,
 } from '../../services/giftcards';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {setGiftCards} from '../../reducers/nexusshopaccount';
 
 // Context ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 const GiftCardClientContext = createContext<GiftCardClient | null>(null);
@@ -105,6 +107,10 @@ export function useBrand(slug: string): UseQueryResult<Brand> {
 
 export function useMyGiftCards(): UseQueryResult<GiftCard[]> {
   const client = useGiftCardClient();
+  const dispatch = useAppDispatch();
+  const existingGiftCards = useAppSelector(
+    state => state.nexusshopaccount.giftCards,
+  );
   const [data, setData] = useState<GiftCard[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,6 +121,19 @@ export function useMyGiftCards(): UseQueryResult<GiftCard[]> {
     try {
       const cards = await client.getMyGiftCards();
       setData(cards);
+
+      // Preserve favoured state from existing cards
+      const cardsWithPreservedFavoured = cards.map(newCard => {
+        const existingCard = existingGiftCards.find(
+          existing => existing.id === newCard.id,
+        );
+        return {
+          ...newCard,
+          favoured: existingCard ? existingCard.favoured : false,
+        };
+      });
+
+      dispatch(setGiftCards(cardsWithPreservedFavoured));
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Failed to fetch gift cards',
@@ -122,7 +141,7 @@ export function useMyGiftCards(): UseQueryResult<GiftCard[]> {
     } finally {
       setLoading(false);
     }
-  }, [client]);
+  }, [client, dispatch, existingGiftCards]);
 
   useEffect(() => {
     fetch();
