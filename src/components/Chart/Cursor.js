@@ -1,4 +1,4 @@
-import React, {createRef, useState} from 'react';
+import React, {createRef, useState, useEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
 import * as array from 'd3-array';
 import {Canvas, Circle, Group} from '@shopify/react-native-skia';
@@ -6,7 +6,12 @@ import {
   useSharedValue,
   useDerivedValue,
   runOnJS,
+  withTiming,
+  useAnimatedStyle,
+  Easing,
+  useAnimatedReaction,
 } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
   State,
@@ -20,18 +25,41 @@ import {
 } from '../../utils/haptic';
 import {updateCursorValue, setCursorSelected} from '../../reducers/chart';
 
+const lesterDown = require('../../assets/images/lester-down.png');
+const lesterFlat = require('../../assets/images/lester-flat.png');
+const lesterUp = require('../../assets/images/lester-up.png');
+
 const Cursor = props => {
   const dispatch = useDispatch();
   const {height, width, x, y, data, children} = props;
   const panRef = createRef();
   const longPressRef = createRef();
+  const easterEggRef = createRef();
 
   const [barVisible, setBarVisible] = useState(false);
+  const [lesterActive, setLesterActive] = useState(false);
+  const [lesterImage, setLesterImage] = useState(lesterFlat);
+
   const barOffsetX = useSharedValue(0);
   const barOffsetY = useSharedValue(0);
+  const lesterProgress = useSharedValue(0);
+  const lesterX = useSharedValue(0);
+  const lesterY = useSharedValue(0);
+  const lesterOpacity = useSharedValue(0);
 
   const transform = useDerivedValue(() => {
     return [{translateX: barOffsetX.value}, {translateY: barOffsetY.value}];
+  });
+
+  const lesterAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      position: 'absolute',
+      left: lesterX.value - 25, // Center horizontally (assuming 50px width)
+      top: lesterY.value - 70, // Bottom of image touches the line (assuming 50px height)
+      width: 70,
+      height: 70,
+      opacity: lesterOpacity.value,
+    };
   });
 
   const bisectDate = array.bisector(d => d.x).left;
@@ -52,6 +80,86 @@ const Cursor = props => {
       barOffsetX: x(d.x),
       barOffsetY: y(d.y),
     };
+  };
+
+  const updateLesterPosition = progress => {
+    if (!data || data.length === 0 || !x || !y) {
+      return;
+    }
+
+    // Calculate the index based on progress (0 to 1)
+    const index = Math.floor(progress * (data.length - 1));
+    const nextIndex = Math.min(index + 1, data.length - 1);
+
+    const currentPoint = data[index];
+    const nextPoint = data[nextIndex];
+
+    if (!currentPoint || !nextPoint) return;
+
+    // Get the x, y coordinates using the scale functions
+    const xPos = x(currentPoint.x);
+    const yPos = y(currentPoint.y);
+
+    // Calculate slope for image selection
+    const nextXPos = x(nextPoint.x);
+    const nextYPos = y(nextPoint.y);
+    const slope = (nextYPos - yPos) / (nextXPos - xPos || 1);
+
+    // Update shared values
+    lesterX.value = xPos;
+    lesterY.value = yPos;
+
+    // Update image based on slope
+    const threshold = 0.1;
+    if (slope < -threshold) {
+      setLesterImage(lesterUp);
+    } else if (slope > threshold) {
+      setLesterImage(lesterDown);
+    } else {
+      setLesterImage(lesterFlat);
+    }
+  };
+
+  // Watch for progress changes and update position on JS thread
+  useAnimatedReaction(
+    () => lesterProgress.value,
+    progress => {
+      if (lesterActive) {
+        runOnJS(updateLesterPosition)(progress);
+      }
+    },
+    [lesterActive, data, x, y],
+  );
+
+  // Trigger animation when easter egg is activated
+  useEffect(() => {
+    if (lesterActive) {
+      lesterProgress.value = 0;
+      lesterOpacity.value = 1;
+      lesterProgress.value = withTiming(
+        1,
+        {
+          duration: 3000,
+          easing: Easing.linear,
+        },
+        finished => {
+          if (finished) {
+            lesterOpacity.value = withTiming(0, {duration: 200});
+            runOnJS(setLesterActive)(false);
+          }
+        },
+      );
+    } else {
+      lesterOpacity.value = 0;
+    }
+  }, [lesterActive]);
+
+  const onEasterEggHandlerStateChange = e => {
+    const {nativeEvent} = e;
+    if (nativeEvent.state === State.ACTIVE && data && data.length > 0) {
+      runOnJS(triggerMediumFeedback)();
+      runOnJS(setLesterActive)(true);
+    }
   };
 
   const onHandlerStateChange = e => {
@@ -87,45 +195,62 @@ const Cursor = props => {
   };
 
   return (
-    <PanGestureHandler
-      onHandlerStateChange={onHandlerStateChange}
-      onGestureEvent={onPanGestureEvent}
-      maxPointers={1}
-      minDeltaX={10}
-      maxDeltaY={20}
-      simultaneousHandlers={longPressRef}>
-      <LongPressGestureHandler
+    <LongPressGestureHandler
+      ref={easterEggRef}
+      onHandlerStateChange={onEasterEggHandlerStateChange}
+      minDurationMs={3000}
+      maxDist={10000}
+      simultaneousHandlers={[panRef, longPressRef]}>
+      <PanGestureHandler
+        ref={panRef}
         onHandlerStateChange={onHandlerStateChange}
         onGestureEvent={onPanGestureEvent}
-        simultaneousHandlers={panRef}>
-        <View style={[styles.container, {height}, {width}]} collapsable={false}>
-          {children}
-          <Canvas
-            style={[
-              {
-                height,
-                width,
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                opacity: barVisible ? 1 : 0,
-              },
-            ]}>
-            <Group transform={transform}>
-              <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
-              <Circle
-                cx={0}
-                cy={0}
-                r={6}
-                style="stroke"
-                strokeWidth={4}
-                color="white"
-              />
-            </Group>
-          </Canvas>
-        </View>
-      </LongPressGestureHandler>
-    </PanGestureHandler>
+        maxPointers={1}
+        minDeltaX={10}
+        maxDeltaY={20}
+        simultaneousHandlers={[longPressRef, easterEggRef]}>
+        <LongPressGestureHandler
+          ref={longPressRef}
+          onHandlerStateChange={onHandlerStateChange}
+          onGestureEvent={onPanGestureEvent}
+          simultaneousHandlers={[panRef, easterEggRef]}>
+          <View
+            style={[styles.container, {height}, {width}]}
+            collapsable={false}>
+            {children}
+            <Canvas
+              style={[
+                {
+                  height,
+                  width,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  opacity: barVisible ? 1 : 0,
+                },
+              ]}>
+              <Group transform={transform}>
+                <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
+                <Circle
+                  cx={0}
+                  cy={0}
+                  r={6}
+                  style="stroke"
+                  strokeWidth={4}
+                  color="white"
+                />
+              </Group>
+            </Canvas>
+            <Animated.Image
+              source={lesterImage}
+              style={lesterAnimatedStyle}
+              resizeMode="contain"
+              pointerEvents="none"
+            />
+          </View>
+        </LongPressGestureHandler>
+      </PanGestureHandler>
+    </LongPressGestureHandler>
   );
 };
 
