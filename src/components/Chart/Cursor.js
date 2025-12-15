@@ -45,6 +45,7 @@ const Cursor = props => {
   const lesterProgress = useSharedValue(0);
   const lesterX = useSharedValue(0);
   const lesterY = useSharedValue(0);
+  const lesterTargetY = useSharedValue(0);
   const lesterOpacity = useSharedValue(0);
 
   const transform = useDerivedValue(() => {
@@ -88,8 +89,10 @@ const Cursor = props => {
     }
 
     // Calculate the index based on progress (0 to 1)
-    const index = Math.floor(progress * (data.length - 1));
+    const exactIndex = progress * (data.length - 1);
+    const index = Math.floor(exactIndex);
     const nextIndex = Math.min(index + 1, data.length - 1);
+    const fraction = exactIndex - index; // Fractional part for interpolation
 
     const currentPoint = data[index];
     const nextPoint = data[nextIndex];
@@ -99,18 +102,32 @@ const Cursor = props => {
     // Get the x, y coordinates using the scale functions
     const xPos = x(currentPoint.x);
     const yPos = y(currentPoint.y);
-
-    // Calculate slope for image selection
     const nextXPos = x(nextPoint.x);
     const nextYPos = y(nextPoint.y);
-    const slope = (nextYPos - yPos) / (nextXPos - xPos || 1);
+
+    // Interpolate between current and next point for smoother movement
+    const interpolatedX = xPos + (nextXPos - xPos) * fraction;
+    const interpolatedY = yPos + (nextYPos - yPos) * fraction;
+
+    // Calculate slope for image selection using a wider range for smoother transitions
+    const lookAhead = Math.min(5, data.length - 1 - index);
+    const futurePoint = data[Math.min(index + lookAhead, data.length - 1)];
+    const futureYPos = y(futurePoint.y);
+    const futureXPos = x(futurePoint.x);
+    const slope = (futureYPos - yPos) / (futureXPos - xPos || 1);
 
     // Update shared values
-    lesterX.value = xPos;
-    lesterY.value = yPos;
+    lesterX.value = interpolatedX;
+    lesterTargetY.value = interpolatedY;
+
+    // Smooth Y position with spring-like dampening
+    lesterY.value = withTiming(lesterTargetY.value, {
+      duration: 100,
+      easing: Easing.out(Easing.ease),
+    });
 
     // Update image based on slope
-    const threshold = 0.1;
+    const threshold = 0.15;
     if (slope < -threshold) {
       setLesterImage(lesterUp);
     } else if (slope > threshold) {
