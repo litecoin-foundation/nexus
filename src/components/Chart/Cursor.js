@@ -1,4 +1,4 @@
-import React, {createRef, useState, useEffect} from 'react';
+import React, {createRef, useState, useEffect, useRef} from 'react';
 import {View, StyleSheet} from 'react-native';
 import * as array from 'd3-array';
 import {Canvas, Circle, Group} from '@shopify/react-native-skia';
@@ -9,7 +9,6 @@ import {
   withTiming,
   useAnimatedStyle,
   Easing,
-  useAnimatedReaction,
 } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import {
@@ -48,6 +47,31 @@ const Cursor = props => {
   const lesterTargetY = useSharedValue(0);
   const lesterOpacity = useSharedValue(0);
 
+  const lesterFrames = 50;
+  const lesterDuration = 3000;
+  const threshold = 0.15;
+  const steepThreshold = 4.0; // Ratio Y to X in pixels for when backflip triggers
+
+  const lastStep = useSharedValue(0);
+  const nextLesterX = useSharedValue(0);
+  const nextLesterY = useSharedValue(0);
+  const sendLester = useSharedValue(false);
+  const lesterRotation = useSharedValue(0);
+  const backflipInProccess = useSharedValue(false);
+  const lesterAngleChangeTimeoutRef = useRef(null);
+  const lesterFinishedTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (lesterAngleChangeTimeoutRef.current) {
+        clearTimeout(lesterAngleChangeTimeoutRef.current);
+      }
+      if (lesterFinishedTimeoutRef.current) {
+        clearTimeout(lesterFinishedTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const transform = useDerivedValue(() => {
     return [{translateX: barOffsetX.value}, {translateY: barOffsetY.value}];
   });
@@ -60,6 +84,7 @@ const Cursor = props => {
       width: 70,
       height: 70,
       opacity: lesterOpacity.value,
+      transform: [{rotate: `${lesterRotation.value}deg`}],
     };
   });
 
@@ -87,6 +112,8 @@ const Cursor = props => {
     if (!data || data.length === 0 || !x || !y) {
       return;
     }
+
+    sendLester.value = false;
 
     // Calculate the index based on progress (0 to 1)
     const exactIndex = progress * (data.length - 1);
@@ -117,36 +144,82 @@ const Cursor = props => {
     const slope = (futureYPos - yPos) / (futureXPos - xPos || 1);
 
     // Update shared values
-    lesterX.value = interpolatedX;
+    nextLesterX.value = interpolatedX;
     lesterTargetY.value = interpolatedY;
 
     // Smooth Y position with spring-like dampening
-    lesterY.value = withTiming(lesterTargetY.value, {
+    nextLesterY.value = withTiming(lesterTargetY.value, {
       duration: 100,
       easing: Easing.out(Easing.ease),
     });
 
-    // Update image based on slope
-    const threshold = 0.15;
-    if (slope < -threshold) {
-      setLesterImage(lesterUp);
-    } else if (slope > threshold) {
-      setLesterImage(lesterDown);
-    } else {
-      setLesterImage(lesterFlat);
+    // Tilt Lester
+    if (lesterAngleChangeTimeoutRef.current) {
+      clearTimeout(lesterAngleChangeTimeoutRef.current);
+    }
+    lesterAngleChangeTimeoutRef.current = setTimeout(
+      () => {
+        if (Math.abs(slope) > steepThreshold) {
+          // Backflip
+          backflipInProccess.value = true;
+          // Jump Lester in the air to lend a proper backflip
+          nextLesterY.value = nextLesterY.value - 20;
+          lesterRotation.value = withTiming(
+            -360,
+            {
+              duration: 400,
+              easing: Easing.out(Easing.ease),
+            },
+            finished => {
+              if (finished) {
+                lesterRotation.value = 0;
+                backflipInProccess.value = false;
+              }
+            },
+          );
+        } else if (slope < -threshold) {
+          setLesterImage(lesterUp);
+        } else if (slope > threshold) {
+          setLesterImage(lesterDown);
+        } else {
+          setLesterImage(lesterFlat);
+        }
+      },
+      lesterDuration / lesterFrames / 2,
+    );
+
+    if (!backflipInProccess.value) {
+      const rotationAngle = (Math.atan(slope) * (180 / Math.PI)) / 2;
+      lesterRotation.value = withTiming(rotationAngle, {
+        duration: lesterDuration / lesterFrames,
+        easing: Easing.out(Easing.ease),
+      });
+    }
+
+    sendLester.value = true;
+    sendLesterToNextPoint();
+  };
+
+  const sendLesterToNextPoint = () => {
+    if (sendLester.value) {
+      lesterX.value = withTiming(nextLesterX.value, {
+        duration: lesterDuration / lesterFrames,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
+      });
+      lesterY.value = withTiming(nextLesterY.value, {
+        duration: lesterDuration / lesterFrames,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
+      });
     }
   };
 
-  // Watch for progress changes and update position on JS thread
-  useAnimatedReaction(
-    () => lesterProgress.value,
-    progress => {
-      if (lesterActive) {
-        runOnJS(updateLesterPosition)(progress);
-      }
-    },
-    [lesterActive, data, x, y],
-  );
+  useDerivedValue(() => {
+    const currentStep = Math.floor(lesterProgress.value / (1 / lesterFrames));
+    if (currentStep !== lastStep.value) {
+      lastStep.value = currentStep;
+      runOnJS(updateLesterPosition)(currentStep * (1 / lesterFrames));
+    }
+  });
 
   // Trigger animation when easter egg is activated
   useEffect(() => {
@@ -156,13 +229,24 @@ const Cursor = props => {
       lesterProgress.value = withTiming(
         1,
         {
-          duration: 3000,
+          duration: lesterDuration,
           easing: Easing.linear,
         },
         finished => {
           if (finished) {
             lesterOpacity.value = withTiming(0, {duration: 200});
-            runOnJS(setLesterActive)(false);
+
+            // Wait for animation to finish
+            if (lesterFinishedTimeoutRef.current) {
+              clearTimeout(lesterFinishedTimeoutRef.current);
+            }
+            lesterFinishedTimeoutRef.current = setTimeout(() => {
+              lesterX.value = 0;
+              lesterY.value = 0;
+              nextLesterX.value = 0;
+              nextLesterY.value = 0;
+              runOnJS(setLesterActive)(false);
+            }, 200);
           }
         },
       );
