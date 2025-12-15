@@ -50,7 +50,7 @@ const Cursor = props => {
   const lesterFrames = 50;
   const lesterDuration = 3000;
   const threshold = 0.15;
-  const steepThreshold = 4.0; // Ratio Y to X in pixels for when backflip triggers
+  const steepThreshold = 3.5; // Ratio Y to X in pixels for when backflip triggers
 
   const lastStep = useSharedValue(0);
   const nextLesterX = useSharedValue(0);
@@ -162,7 +162,7 @@ const Cursor = props => {
         if (Math.abs(slope) > steepThreshold) {
           // Backflip
           backflipInProccess.value = true;
-          // Jump Lester in the air to lend a proper backflip
+          // Jump Lester in the air to land a proper backflip
           nextLesterY.value = nextLesterY.value - 20;
           lesterRotation.value = withTiming(
             -360,
