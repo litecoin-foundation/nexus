@@ -67,6 +67,7 @@ type RootStackParamList = {
   Loading: undefined;
   Support: undefined;
   ResetWallet: undefined;
+  RescanWallet: undefined;
   TestPayment: undefined;
   Tor: undefined;
   ExportElectrum: undefined;
@@ -306,6 +307,13 @@ const Settings: React.FC<Props> = props => {
       },
       {id: 'manual_coin_selection', type: 'manual_coin_selection'},
       {id: 'denomination', type: 'denomination'},
+      {
+        id: 'rescan-wallet',
+        type: 'cell',
+        textKey: 'rescan_wallet',
+        forward: true,
+        onPress: () => navigation.navigate('RescanWallet'),
+      },
       {
         id: 'reset-wallet',
         type: 'cell',
