@@ -15,6 +15,7 @@ import {RouteProp} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
+import BlueButton from '../../components/Buttons/BlueButton';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
@@ -46,13 +47,29 @@ const RescanWallet: React.FC<Props> = ({navigation}) => {
 
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const [isRescanning, setIsRescanning] = useState(false);
+  const [rescanComplete, setRescanComplete] = useState(false);
+  const [hasSeenSyncedFalse, setHasSeenSyncedFalse] = useState(false);
   const pinModalAction = useRef<string>('rescan-wallet-auth');
 
   const {isRescanningWallet} = useAppSelector(state => state.lightning!);
+  const {syncedToChain} = useAppSelector(state => state.info!);
 
   useEffect(() => {
     setIsRescanning(isRescanningWallet);
   }, [isRescanningWallet]);
+
+  useEffect(() => {
+    // Track when syncedToChain goes to false during rescanning
+    if (isRescanning && !syncedToChain && !hasSeenSyncedFalse) {
+      setHasSeenSyncedFalse(true);
+    }
+
+    // Only mark as complete if we've seen it go to false first, then back to true
+    if (isRescanning && syncedToChain && hasSeenSyncedFalse && !rescanComplete) {
+      setRescanComplete(true);
+      dispatch(setRescanningWallet(false));
+    }
+  }, [isRescanning, syncedToChain, hasSeenSyncedFalse, rescanComplete, dispatch]);
 
   function openPinModal(action: string) {
     pinModalAction.current = action;
@@ -86,6 +103,13 @@ const RescanWallet: React.FC<Props> = ({navigation}) => {
     }
   };
 
+  const handleExitRescan = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{name: 'Settings'}],
+    });
+  };
+
   return (
     <>
       <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
@@ -99,16 +123,18 @@ const RescanWallet: React.FC<Props> = ({navigation}) => {
           />
           <TranslateText
             textKey={
-              isRescanning
-                ? 'rescanning_in_progress'
-                : 'rescanning_wallet_warning'
+              rescanComplete
+                ? 'rescan_complete'
+                : isRescanning
+                  ? 'rescanning_in_progress'
+                  : 'rescanning_wallet_warning'
             }
             domain="settingsTab"
             maxSizeInPixels={SCREEN_HEIGHT * 0.022}
             textStyle={styles.subtitle}
             numberOfLines={6}
           />
-          {isRescanning && (
+          {isRescanning && !rescanComplete && (
             <>
               <ActivityIndicator
                 size="large"
@@ -131,20 +157,29 @@ const RescanWallet: React.FC<Props> = ({navigation}) => {
             styles.confirmButtonContainer,
             Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
           ]}>
-          <WhiteButton
-            textKey={isRescanning ? 'rescanning' : 'continue_rescan'}
-            textDomain="settingsTab"
-            disabled={isRescanning}
-            small={false}
-            active={!isRescanning}
-            onPress={() => {
-              handleAuthenticationRequired('rescan-wallet-auth')
-                .then(() => handleRescan())
-                .catch(() => {
-                  setIsPinModalOpened(false);
-                });
-            }}
-          />
+          {rescanComplete ? (
+            <BlueButton
+              textKey="exit_rescan"
+              textDomain="settingsTab"
+              small={false}
+              onPress={handleExitRescan}
+            />
+          ) : (
+            <WhiteButton
+              textKey={isRescanning ? 'rescanning' : 'continue_rescan'}
+              textDomain="settingsTab"
+              disabled={isRescanning}
+              small={false}
+              active={!isRescanning}
+              onPress={() => {
+                handleAuthenticationRequired('rescan-wallet-auth')
+                  .then(() => handleRescan())
+                  .catch(() => {
+                    setIsPinModalOpened(false);
+                  });
+              }}
+            />
+          )}
         </View>
       </LinearGradient>
 
