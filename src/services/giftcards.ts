@@ -50,6 +50,37 @@ export interface PurchaseRequest {
   currency: string;
 }
 
+export interface PendingGiftCardPurchase {
+  id: string;
+  userId: string;
+  brand: string;
+  amount: number;
+  currency: string;
+  deliveryMethod: 'code' | 'url';
+  btcpayInvoiceId: string;
+  btcpayPaymentAddress: string;
+  btcpayPaymentAmountLtc: string;
+  status:
+    | 'pending_payment'
+    | 'payment_received'
+    | 'completed'
+    | 'expired'
+    | 'failed';
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface InitiatePurchaseResponseData {
+  pendingPurchaseId: string;
+  brand: string;
+  amount: number;
+  currency: string;
+  paymentAddress: string;
+  paymentAmountLtc: string;
+  checkoutLink: string;
+  expiresAt: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -103,6 +134,16 @@ export class GiftCardClient {
 
   async purchase(request: PurchaseRequest): Promise<GiftCard> {
     return this.request<GiftCard>('POST', '/api/gift-cards/purchase', request);
+  }
+
+  async initiatePurchase(
+    request: PurchaseRequest,
+  ): Promise<InitiatePurchaseResponseData> {
+    return this.request<InitiatePurchaseResponseData>(
+      'POST',
+      '/api/gift-cards/purchase',
+      request,
+    );
   }
 
   async getMyGiftCards(): Promise<GiftCard[]> {

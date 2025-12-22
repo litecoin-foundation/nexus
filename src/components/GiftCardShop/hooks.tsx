@@ -11,6 +11,7 @@ import {
   GiftCardClient,
   Brand,
   GiftCard,
+  InitiatePurchaseResponseData,
   PurchaseRequest,
   validateAmount,
 } from '../../services/giftcards';
@@ -193,6 +194,45 @@ interface UseMutationResult<TData, TVariables> {
   reset: () => void;
 }
 
+// Initiate purchase call
+export function useInitiatePurchaseGiftCard(): UseMutationResult<
+  InitiatePurchaseResponseData,
+  PurchaseRequest
+> {
+  const client = useGiftCardClient();
+  const [data, setData] = useState<InitiatePurchaseResponseData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = useCallback(
+    async (request: PurchaseRequest): Promise<InitiatePurchaseResponseData> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const initiatePurchaseResponseData =
+          await client.initiatePurchase(request);
+        setData(initiatePurchaseResponseData);
+        return initiatePurchaseResponseData;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to purchase';
+        setError(message);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client],
+  );
+
+  const reset = useCallback(() => {
+    setData(null);
+    setError(null);
+  }, []);
+
+  return {mutate, data, loading, error, reset};
+}
+
 // Purchase call
 export function usePurchaseGiftCard(): UseMutationResult<
   GiftCard,
@@ -269,7 +309,8 @@ export function useRedeemGiftCard(): UseMutationResult<GiftCard, string> {
 // Purchase flow
 export function usePurchaseFlow(brand: Brand | null) {
   const [amount, setAmount] = useState<number>(0);
-  const [currency, setCurrency] = useState<string>('GBP');
+  // NOTE: currency is set by...
+  const [currency, setCurrency] = useState<string>('USD');
   const [validation, setValidation] = useState<{
     valid: boolean;
     error?: string;
@@ -277,12 +318,12 @@ export function usePurchaseFlow(brand: Brand | null) {
     valid: false,
   });
   const {
-    mutate: purchase,
+    mutate: initiatePurchase,
     loading,
     error,
-    data: purchasedCard,
+    data: initiateResponse,
     reset,
-  } = usePurchaseGiftCard();
+  } = useInitiatePurchaseGiftCard();
 
   useEffect(() => {
     if (!brand) {
@@ -299,12 +340,12 @@ export function usePurchaseFlow(brand: Brand | null) {
   const submit = useCallback(async () => {
     if (!brand || !validation.valid) return null;
 
-    return purchase({
+    return initiatePurchase({
       brand: brand.slug,
       amount,
       currency,
     });
-  }, [brand, amount, currency, validation.valid, purchase]);
+  }, [brand, amount, currency, validation.valid, initiatePurchase]);
 
   const resetFlow = useCallback(() => {
     setAmount(0);
@@ -320,7 +361,7 @@ export function usePurchaseFlow(brand: Brand | null) {
     submit,
     loading,
     error,
-    purchasedCard,
+    initiateResponse,
     resetFlow,
   };
 }

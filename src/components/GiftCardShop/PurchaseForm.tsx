@@ -9,7 +9,7 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import {Brand, GiftCard} from '../../services/giftcards';
+import {Brand, InitiatePurchaseResponseData} from '../../services/giftcards';
 import {usePurchaseFlow} from './hooks';
 import {
   colors,
@@ -24,10 +24,10 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface PurchaseFormProps {
   brand: Brand;
   onBack: () => void;
-  onSuccess: (giftCard: GiftCard) => void;
+  onInitiate: (initiateResponse: InitiatePurchaseResponseData) => void;
 }
 
-export function PurchaseForm({brand, onBack, onSuccess}: PurchaseFormProps) {
+export function PurchaseForm({brand, onBack, onInitiate}: PurchaseFormProps) {
   const {
     amount,
     setAmount,
@@ -36,7 +36,7 @@ export function PurchaseForm({brand, onBack, onSuccess}: PurchaseFormProps) {
     submit,
     loading,
     error,
-    purchasedCard,
+    initiateResponse,
   } = usePurchaseFlow(brand);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -45,10 +45,10 @@ export function PurchaseForm({brand, onBack, onSuccess}: PurchaseFormProps) {
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   useEffect(() => {
-    if (purchasedCard) {
-      onSuccess(purchasedCard);
+    if (initiateResponse) {
+      onInitiate(initiateResponse);
     }
-  }, [purchasedCard, onSuccess]);
+  }, [initiateResponse, onInitiate]);
 
   const hasDenominations =
     brand.denominations && brand.denominations.length > 0;
@@ -161,9 +161,7 @@ export function PurchaseForm({brand, onBack, onSuccess}: PurchaseFormProps) {
         {loading ? (
           <ActivityIndicator color={colors.white} />
         ) : (
-          <Text style={commonStyles.buttonText}>
-            Purchase {amount > 0 ? amount : ''} Gift Card
-          </Text>
+          <Text style={commonStyles.buttonText}>Continue to Payment</Text>
         )}
       </TouchableOpacity>
     </ScrollView>

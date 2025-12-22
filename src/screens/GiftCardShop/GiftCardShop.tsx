@@ -2,9 +2,15 @@ import React, {useState, useMemo, useContext, useLayoutEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {useSelector} from 'react-redux';
 import type {StackNavigationOptions} from '@react-navigation/stack';
-import {GiftCardClient, Brand, GiftCard} from '../../services/giftcards';
+import {
+  GiftCardClient,
+  Brand,
+  GiftCard,
+  InitiatePurchaseResponseData,
+} from '../../services/giftcards';
 import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
 import {PurchaseForm} from '../../components/GiftCardShop/PurchaseForm';
+import {PayForGiftCard} from '../../components/GiftCardShop/PayForGiftCard';
 import {PurchaseSuccess} from '../../components/GiftCardShop/PurchaseSuccess';
 import {MyGiftCards} from '../../components/GiftCardShop/MyGiftCards';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
@@ -28,6 +34,11 @@ interface GiftCardShopProps {
 type ScreenState =
   | {type: 'browse'}
   | {type: 'purchase'; brand: Brand}
+  | {
+      type: 'payment';
+      brand: Brand;
+      initiateResponse: InitiatePurchaseResponseData;
+    }
   | {type: 'success'; brand: Brand; giftCard: GiftCard}
   | {type: 'my-cards'}
   | {type: 'wishlist'};
@@ -80,9 +91,21 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
     setScreen({type: 'purchase', brand});
   };
 
-  const handlePurchaseSuccess = (giftCard: GiftCard) => {
+  const handleInitiate = (initiateResponse: InitiatePurchaseResponseData) => {
     if (screen.type === 'purchase') {
+      setScreen({type: 'payment', brand: screen.brand, initiateResponse});
+    }
+  };
+
+  const handlePurchaseSuccess = (giftCard: GiftCard) => {
+    if (screen.type === 'payment') {
       setScreen({type: 'success', brand: screen.brand, giftCard});
+    }
+  };
+
+  const handlePaymentBack = () => {
+    if (screen.type === 'payment') {
+      setScreen({type: 'purchase', brand: screen.brand});
     }
   };
 
@@ -140,6 +163,14 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
                 <PurchaseForm
                   brand={screen.brand}
                   onBack={handleBack}
+                  onInitiate={handleInitiate}
+                />
+              )}
+
+              {screen.type === 'payment' && (
+                <PayForGiftCard
+                  initiateResponse={screen.initiateResponse}
+                  onBack={handlePaymentBack}
                   onSuccess={handlePurchaseSuccess}
                 />
               )}
