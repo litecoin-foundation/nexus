@@ -31,6 +31,7 @@ const NewAmountView: React.FC<Props> = props => {
   );
   const chartCursorValue = useAppSelector(state => state.chart!.cursorValue);
   const chartCursorDate = useAppSelector(state => state.chart!.cursorDate);
+  const chartMode = useAppSelector(state => state.settings!.chartMode);
   const chartPercentageChange = useAppSelector(state =>
     chartPercentageChangeSelector(state),
   );
@@ -119,6 +120,25 @@ const NewAmountView: React.FC<Props> = props => {
                 <PriceIndicatorButton value={chartPercentage} />
                 <TranslateText
                   textValue={String(chartPercentageChange)}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.fiatText}
+                  numberOfLines={1}
+                />
+              </View>
+            </>
+          ) : chartMode === 'balance' ? (
+            <>
+              <TranslateText
+                textValue={`${chartCursorValue.toFixed(8)} LTC`}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                textStyle={styles.amountText}
+                numberOfLines={1}
+              />
+              <View style={styles.fiat}>
+                <TranslateText
+                  textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
                   domain={'main'}
                   maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                   textStyle={styles.fiatText}

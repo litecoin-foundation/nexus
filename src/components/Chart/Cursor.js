@@ -1,7 +1,14 @@
 import React, {createRef, useState, useEffect, useRef} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Platform} from 'react-native';
 import * as array from 'd3-array';
-import {Canvas, Circle, Group} from '@shopify/react-native-skia';
+import {
+  Canvas,
+  Circle,
+  Group,
+  RoundedRect,
+  Text,
+  matchFont,
+} from '@shopify/react-native-skia';
 import {
   useSharedValue,
   useDerivedValue,
@@ -16,7 +23,7 @@ import {
   State,
   LongPressGestureHandler,
 } from 'react-native-gesture-handler';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import {
   triggerMediumFeedback,
@@ -31,6 +38,15 @@ const lesterUp = require('../../assets/images/lester-up.png');
 const Cursor = props => {
   const dispatch = useDispatch();
   const {height, width, x, y, data, children} = props;
+
+  const chartMode = useSelector(state => state.settings.chartMode);
+  const cursorValueFiat = useSelector(state => state.chart.cursorValueFiat);
+  const currencySymbol = useSelector(state => state.settings.currencySymbol);
+  const currencyRate = useSelector(state => {
+    const rates = state.ticker.rates;
+    const currencyCode = state.settings.currencyCode;
+    return rates[currencyCode] || 0;
+  });
   const panRef = createRef();
   const longPressRef = createRef();
   const easterEggRef = createRef();
@@ -41,6 +57,18 @@ const Cursor = props => {
 
   const barOffsetX = useSharedValue(0);
   const barOffsetY = useSharedValue(0);
+  const [fiatLabelY, setFiatLabelY] = useState(-35);
+
+  const fontFamily = Platform.select({
+    ios: 'Satoshi Variable',
+    default: 'Satoshi',
+  });
+  const fontStyle = {
+    fontFamily,
+    fontSize: 12,
+    fontWeight: '700',
+  };
+  const font = matchFont(fontStyle);
   const lesterProgress = useSharedValue(0);
   const lesterX = useSharedValue(0);
   const lesterY = useSharedValue(0);
@@ -91,16 +119,39 @@ const Cursor = props => {
   const bisectDate = array.bisector(d => d.x).left;
 
   const collectHovered = xPos => {
+    if (!data || data.length === 0 || !x || !y) {
+      return {barOffsetX: 0, barOffsetY: 0};
+    }
+
     const x0 = Math.round(xPos);
     const hoveredDate = x.invert(x0);
     const i = bisectDate(data, hoveredDate, 1);
     const d0 = data[i - 1];
     const d1 = data[i] || d0;
+
+    if (!d0 || !d1) {
+      return {barOffsetX: 0, barOffsetY: 0};
+    }
+
     const xLeft = x(d0.x);
     const xRight = x(d1.x);
     const d = Math.abs(x0 - xLeft) < Math.abs(x0 - xRight) ? d0 : d1;
 
-    dispatch(updateCursorValue(d.x, d.y));
+    // Calculate fiat value on-the-fly for balance mode
+    // This prevents chart recalculation when exchange rates update
+    const yFiat = d.yFiat !== undefined ? d.yFiat : d.y * currencyRate;
+
+    dispatch(updateCursorValue(d.x, d.y, yFiat));
+
+    const yPosition = y(d.y);
+
+    // Position fiat label above cursor if there's room, otherwise below
+    // If cursor is within 40px of top, show label below cursor
+    if (yPosition < 40) {
+      runOnJS(setFiatLabelY)(15); // Below cursor
+    } else {
+      runOnJS(setFiatLabelY)(-35); // Above cursor (default)
+    }
 
     return {
       barOffsetX: x(d.x),
@@ -331,6 +382,42 @@ const Cursor = props => {
                 },
               ]}>
               <Group transform={transform}>
+                {chartMode === 'balance' &&
+                  cursorValueFiat !== undefined &&
+                  (() => {
+                    const fiatText = `${currencySymbol}${cursorValueFiat.toFixed(2)}`;
+                    const textWidth = font
+                      ? font.measureText(fiatText).width
+                      : 40;
+                    const rectWidth = textWidth + 16; // Add padding
+                    const rectX = -rectWidth / 2;
+                    const textX = rectX + 8; // Left padding
+
+                    // Dynamic text Y position based on where the rectangle is
+                    const textY = fiatLabelY + 15; // 15px from top of rectangle
+
+                    return (
+                      <>
+                        {/* Rounded rectangle for fiat value */}
+                        <RoundedRect
+                          x={rectX}
+                          y={fiatLabelY}
+                          width={rectWidth}
+                          height={20}
+                          r={10}
+                          color="rgba(255, 255, 255, 0.85)"
+                        />
+                        {/* Fiat value text */}
+                        <Text
+                          x={textX}
+                          y={textY}
+                          text={fiatText}
+                          font={font}
+                          color="rgb(29, 103, 232)"
+                        />
+                      </>
+                    );
+                  })()}
                 <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
                 <Circle
                   cx={0}

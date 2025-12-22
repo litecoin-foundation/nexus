@@ -29,6 +29,7 @@ import {useSelector} from 'react-redux';
 
 import Cursor from './Cursor';
 import {monthSelector} from '../../reducers/ticker';
+import {walletBalanceHistorySelector} from '../../reducers/transaction';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -38,7 +39,13 @@ const Chart = () => {
   const {width, height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const height = SCREEN_HEIGHT * 0.15;
 
-  const data = useSelector(state => monthSelector(state));
+  const chartMode = useSelector(state => state.settings.chartMode);
+  const priceData = useSelector(state => monthSelector(state));
+  const balanceData = useSelector(state => walletBalanceHistorySelector(state));
+
+  // Use balance data when in balance mode, otherwise use price data
+  // Ensure data is always an array, never null/undefined
+  const data = chartMode === 'balance' ? balanceData || [] : priceData || [];
 
   const [line, setLine] = useState({line: '', area: ''});
   const x = useRef(null);
@@ -49,6 +56,11 @@ const Chart = () => {
 
   const processedLine = useMemo(() => {
     if (data === undefined || data.length === 0) {
+      // Still initialize scales even with empty data
+      // This ensures Lester animation can check for their existence
+      const defaultScale = scale.scaleLinear().range([0, width]).domain([0, 1]);
+      x.current = defaultScale;
+      y.current = defaultScale;
       return {line: '', area: ''};
     }
 

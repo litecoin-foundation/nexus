@@ -302,6 +302,7 @@
     "change_login": "Change Login Passcode",
     "processing": "Processing...",
     "manual_coin_selection": "Manual Coin Selection",
+    "chart_mode": "Show Wallet Balance on Chart",
     "enable_tor": "Enable Tor",
     "enable_tor_note": "Tor increases online privacy by encrypting your internet traffic and routing it through multiple volunteer-run servers.\n\nIf unavailable, use a VPN before enabling Tor.",
     "turn_tor_on": "Turn Tor On",
