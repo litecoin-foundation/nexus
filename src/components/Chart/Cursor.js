@@ -16,6 +16,8 @@ import {
   withTiming,
   useAnimatedStyle,
   Easing,
+  withDelay,
+  cancelAnimation,
 } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import {
@@ -84,18 +86,15 @@ const Cursor = props => {
   const nextLesterX = useSharedValue(0);
   const nextLesterY = useSharedValue(0);
   const sendLester = useSharedValue(false);
+  const isLesterAnimating = useSharedValue(false);
   const lesterRotation = useSharedValue(0);
   const backflipInProccess = useSharedValue(false);
   const lesterAngleChangeTimeoutRef = useRef(null);
-  const lesterFinishedTimeoutRef = useRef(null);
 
   useEffect(() => {
     return () => {
       if (lesterAngleChangeTimeoutRef.current) {
         clearTimeout(lesterAngleChangeTimeoutRef.current);
-      }
-      if (lesterFinishedTimeoutRef.current) {
-        clearTimeout(lesterFinishedTimeoutRef.current);
       }
     };
   }, []);
@@ -160,6 +159,10 @@ const Cursor = props => {
   };
 
   const updateLesterPosition = progress => {
+    if (!isLesterAnimating.value) {
+      return;
+    }
+
     if (!data || data.length === 0 || !x || !y) {
       return;
     }
@@ -175,7 +178,9 @@ const Cursor = props => {
     const currentPoint = data[index];
     const nextPoint = data[nextIndex];
 
-    if (!currentPoint || !nextPoint) return;
+    if (!currentPoint || !nextPoint) {
+      return;
+    }
 
     // Get the x, y coordinates using the scale functions
     const xPos = x(currentPoint.x);
@@ -275,6 +280,7 @@ const Cursor = props => {
   // Trigger animation when easter egg is activated
   useEffect(() => {
     if (lesterActive) {
+      isLesterAnimating.value = true;
       lesterProgress.value = 0;
       lesterOpacity.value = 1;
       lesterProgress.value = withTiming(
@@ -285,26 +291,37 @@ const Cursor = props => {
         },
         finished => {
           if (finished) {
-            lesterOpacity.value = withTiming(0, {duration: 200});
+            isLesterAnimating.value = false;
+            sendLester.value = false;
 
-            // Wait for animation to finish
-            if (lesterFinishedTimeoutRef.current) {
-              clearTimeout(lesterFinishedTimeoutRef.current);
-            }
-            lesterFinishedTimeoutRef.current = setTimeout(() => {
-              lesterX.value = 0;
-              lesterY.value = 0;
-              nextLesterX.value = 0;
-              nextLesterY.value = 0;
+            cancelAnimation(lesterX);
+            cancelAnimation(lesterY);
+
+            lesterOpacity.value = withTiming(0, {duration: 190}, () => {
               runOnJS(setLesterActive)(false);
-            }, 200);
+            });
+
+            lesterX.value = withDelay(200, withTiming(0, {duration: 0}));
+            lesterY.value = withDelay(200, withTiming(0, {duration: 0}));
+            nextLesterX.value = withDelay(200, withTiming(0, {duration: 0}));
+            nextLesterY.value = withDelay(200, withTiming(0, {duration: 0}));
           }
         },
       );
     } else {
       lesterOpacity.value = 0;
     }
-  }, [lesterActive]);
+  }, [
+    lesterActive,
+    lesterProgress,
+    lesterOpacity,
+    lesterX,
+    lesterY,
+    nextLesterX,
+    nextLesterY,
+    sendLester,
+    isLesterAnimating,
+  ]);
 
   const onEasterEggHandlerStateChange = e => {
     const {nativeEvent} = e;
