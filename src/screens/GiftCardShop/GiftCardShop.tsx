@@ -16,6 +16,7 @@ import {MyGiftCards} from '../../components/GiftCardShop/MyGiftCards';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
 import SignUpForm from '../../components/GiftCardShop/SignUpForm';
 import TripleSwitch from '../../components/Buttons/TripleSwitch';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import {
   colors,
@@ -25,6 +26,7 @@ import {
 } from '../../components/GiftCardShop/theme';
 import {GiftCardProvider} from '../../components/GiftCardShop/hooks';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface GiftCardShopProps {
@@ -46,6 +48,7 @@ type ScreenState =
 const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
   const {uniqueId} = useSelector((state: any) => state.onboarding);
   const {account} = useSelector((state: any) => state.nexusshopaccount);
+  const shopUserEmail = account && account.email;
   const isLoggedIn = account && account.isLoggedIn;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -57,6 +60,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
   if (__DEV__) {
     console.log('User uniqueId: ' + uniqueId);
     console.log('Giftcard client logged in: ' + isLoggedIn);
+    console.log('Giftcard client email: ' + shopUserEmail);
     console.log('Screen: ' + JSON.stringify(screen, null, 2));
   }
 
@@ -219,17 +223,51 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       color: colors.textSecondary,
       textAlign: 'center',
     },
+    headerTitle: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
+      fontStyle: 'normal',
+      fontWeight: '700',
+    },
   });
 
-export const navigationOptions = (): StackNavigationOptions => ({
-  title: 'Gift Card Shop',
-  headerStyle: {
-    backgroundColor: '#007AFF',
-  },
-  headerTintColor: '#fff',
-  headerTitleStyle: {
-    fontWeight: '700' as const,
-  },
-});
+export const GiftCardShopNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => {
+  const {width, height} = useContext(ScreenSizeContext);
+  const styles = getStyles(width, height);
+
+  return {
+    headerTransparent: true,
+    headerTitle: () => (
+      <TranslateText
+        textKey="shop"
+        domain="nexusShop"
+        maxSizeInPixels={height * 0.02}
+        textStyle={styles.headerTitle}
+        numberOfLines={1}
+      />
+    ),
+    headerTitleAlign: 'left',
+    headerTitleContainerStyle: {
+      left: 7,
+    },
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+    headerRight: () => (
+      <HeaderButton
+        textKey="flexa"
+        textDomain="nexusShop"
+        onPress={() => {}}
+        rightPadding={true}
+      />
+    ),
+  };
+};
 
 export default GiftCardShop;

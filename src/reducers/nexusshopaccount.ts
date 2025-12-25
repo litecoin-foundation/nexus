@@ -1,6 +1,8 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import {GiftCard, GiftCardInApp, Brand} from '../services/giftcards';
+import {Platform} from 'react-native';
+import {getCountry} from 'react-native-localize';
 
 interface UserAccount {
   email: string;
@@ -26,6 +28,10 @@ const initialState: INexusShopAccount = {
   error: null,
   loginLoading: false,
 };
+
+const BASE_API_URL = __DEV__
+  ? 'http://mylocalip:3000'
+  : 'https://api.nexuswallet.com';
 
 export const nexusShopAccountSlice = createSlice({
   name: 'nexusshopaccount',
@@ -142,28 +148,35 @@ export const nexusShopAccountSlice = createSlice({
 });
 
 export const loginToNexusShop =
-  (email: string, uniqueId: string) => async (dispatch: any) => {
+  (email: string, uniqueId: string) => async (dispatch: any, getState: any) => {
+    const {deviceNotificationToken, currencyCode, languageCode} =
+      getState().settings!;
+
     try {
       dispatch(setLoginLoading(true));
 
-      const response = await fetch(
-        'https://api.nexuswallet.com/shop/register',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            uniqueId,
-          }),
+      const response = await fetch(`${BASE_API_URL}/shop/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          email,
+          uniqueId,
+          deviceToken: deviceNotificationToken,
+          isIOS: Platform.OS === 'ios',
+          countryCode: getCountry(),
+          currencyCode: currencyCode,
+          language: languageCode,
+          osVersion: String(Platform.Version),
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`Registration failed: ${response.statusText}`);
       }
 
+      // Check if json valid
       await response.json();
 
       const userAccount: UserAccount = {
@@ -174,12 +187,33 @@ export const loginToNexusShop =
       };
 
       dispatch(setAccount(userAccount));
+
+      // Send OTP after loggining
+      const resSendOtp = await fetch(`${BASE_API_URL}/shop/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          uniqueId,
+        }),
+      });
+
+      if (!resSendOtp.ok) {
+        throw new Error(`OTP sending failed: ${response.statusText}`);
+      }
+
+      // Check if json valid
+      await resSendOtp.json();
     } catch (error) {
       dispatch(
         setAccountError(
           error instanceof Error ? error.message : 'Login failed',
         ),
       );
+    } finally {
+      dispatch(setLoginLoading(false));
     }
   };
 
@@ -189,26 +223,25 @@ export const verifyOtpCode =
     try {
       dispatch(setLoginLoading(true));
 
-      const response = await fetch(
-        'https://api.nexuswallet.com/shop/verify-otp',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            uniqueId,
-            otpCode,
-          }),
+      const response = await fetch(`${BASE_API_URL}/shop/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          email,
+          uniqueId,
+          otpCode,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`OTP verification failed: ${response.statusText}`);
       }
 
+      // Check if json valid
       await response.json();
+
       dispatch(verifyOtpSuccess());
     } catch (error) {
       dispatch(
@@ -274,7 +307,7 @@ export const fetchUserGiftCards =
       dispatch(setAccountLoading(true));
 
       const response = await fetch(
-        `https://api.nexuswallet.com/shop/giftcards/${uniqueId}`,
+        `${BASE_API_URL}/shop/giftcards/${uniqueId}`,
         {
           method: 'GET',
           headers: {

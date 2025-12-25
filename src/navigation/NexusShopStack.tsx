@@ -1,17 +1,22 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import GiftCardShop, {navigationOptions as GiftCardShopNavigationOptions} from '../screens/GiftCardShop/GiftCardShop';
-import VerifyOTP, {navigationOptions as VerifyOTPNavigationOptions} from '../screens/GiftCardShop/VerifyOTP';
+import GiftCardShop, {
+  GiftCardShopNavigationOptions,
+} from '../screens/GiftCardShop/GiftCardShop';
+import VerifyOTP, {
+  VerifyOTPNavigationOptions,
+} from '../screens/GiftCardShop/VerifyOTP';
 
 export type NexusShopStackParamList = {
   GiftCardShop: undefined;
-  VerifyOTP: {
-    otpCode?: string;
-  };
+  VerifyOTP:
+    | {
+        otpCode?: string;
+      }
+    | undefined;
 };
 
 const Stack = createStackNavigator<NexusShopStackParamList>();
-
 
 function NexusShopStack(): React.JSX.Element {
   return (
@@ -19,12 +24,12 @@ function NexusShopStack(): React.JSX.Element {
       <Stack.Screen
         name="GiftCardShop"
         component={GiftCardShop}
-        options={GiftCardShopNavigationOptions}
+        options={({navigation}) => GiftCardShopNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="VerifyOTP"
         component={VerifyOTP}
-        options={VerifyOTPNavigationOptions}
+        options={({navigation}) => VerifyOTPNavigationOptions(navigation)}
       />
     </Stack.Navigator>
   );

@@ -331,5 +331,9 @@
     "fee_description": "Higher fees prioritise your transaction to confirm faster.",
     "fee_estimate": "1 block = ~2.5 mins",
     "view_change": "View Change Address"
+  },
+  "nexusShop": {
+    "shop": "Shop",
+    "flexa": "Flexa"
   }
 }

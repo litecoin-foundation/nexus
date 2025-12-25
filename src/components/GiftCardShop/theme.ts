@@ -1,7 +1,7 @@
 import {StyleSheet} from 'react-native';
 
 export const colors = {
-  primary: '#007AFF',
+  primary: '#0070F0',
   primaryDark: '#0056b3',
   success: '#34C759',
   successLight: '#d4edda',
@@ -115,9 +115,9 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
 
     // Typography
     title: {
-      fontSize: getFontSize(screenHeight).xl,
+      fontSize: getFontSize(screenHeight).xxl,
       fontWeight: '700',
-      color: colors.text,
+      color: colors.white,
       marginBottom: getSpacing(screenHeight).md,
     },
     subtitle: {
@@ -135,24 +135,43 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       color: colors.textSecondary,
     },
     label: {
-      fontSize: getFontSize(screenHeight).sm,
+      fontSize: getFontSize(screenHeight).md,
       fontWeight: '600',
-      color: colors.textSecondary,
-      marginBottom: getSpacing(screenHeight).xs,
+      color: colors.white,
+      textTransform: 'uppercase',
+      marginBottom: getSpacing(screenHeight).sm,
     },
 
     // Buttons
     button: {
+      height: screenHeight * 0.06,
       backgroundColor: colors.primary,
-      paddingVertical: getSpacing(screenHeight).md,
-      paddingHorizontal: getSpacing(screenHeight).lg,
-      borderRadius: getBorderRadius(screenHeight).sm,
       alignItems: 'center',
       justifyContent: 'center',
+      paddingVertical: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenHeight).lg,
+    },
+    buttonRounded: {
+      height: screenHeight * 0.06,
+      backgroundColor: colors.primary,
+      borderRadius: screenHeight * 0.03,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenHeight).lg,
+    },
+    buttonRoundedGreen: {
+      height: screenHeight * 0.06,
+      backgroundColor: colors.success,
+      borderRadius: screenHeight * 0.03,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenHeight).lg,
     },
     buttonText: {
       color: colors.white,
-      fontSize: getFontSize(screenHeight).md,
+      fontSize: getFontSize(screenHeight).lg,
       fontWeight: '600',
     },
     buttonDisabled: {
@@ -176,10 +195,10 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: colors.white,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: getBorderRadius(screenHeight).sm,
+      borderRadius: getBorderRadius(screenHeight).md,
       paddingVertical: getSpacing(screenHeight).md,
       paddingHorizontal: getSpacing(screenHeight).md,
-      fontSize: getFontSize(screenHeight).md,
+      fontSize: getFontSize(screenHeight).lg,
     },
     inputFocused: {
       borderColor: colors.primary,
@@ -235,6 +254,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       color: colors.danger,
       fontSize: getFontSize(screenHeight).sm,
       marginTop: getSpacing(screenHeight).xs,
+      paddingVertical: getSpacing(screenHeight).xs,
+      paddingHorizontal: getSpacing(screenHeight).md,
     },
     successIcon: {
       width: 80,

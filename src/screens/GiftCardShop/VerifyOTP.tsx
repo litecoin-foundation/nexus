@@ -136,7 +136,8 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
 
     try {
       if (__DEV__) {
-        await dispatch(verifyOtpCodeTest(account.email, uniqueId, code));
+        // await dispatch(verifyOtpCodeTest(account.email, uniqueId, code));
+        await dispatch(verifyOtpCode(account.email, uniqueId, code));
       } else {
         await dispatch(verifyOtpCode(account.email, uniqueId, code));
       }
@@ -230,7 +231,9 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const navigationOptions = (): StackNavigationOptions => ({
+export const VerifyOTPNavigationOptions = (
+  navigation: any,
+): StackNavigationOptions => ({
   title: 'Verify Email',
   headerStyle: {
     backgroundColor: '#007AFF',
