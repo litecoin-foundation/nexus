@@ -334,6 +334,8 @@
   },
   "nexusShop": {
     "shop": "Shop",
-    "flexa": "Flexa"
+    "flexa": "Flexa",
+    "verify": "Verify",
+    "enter_your_code": "Enter your code"
   }
 }

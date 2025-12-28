@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useContext, useLayoutEffect} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
 import {useSelector} from 'react-redux';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import {
@@ -25,6 +25,8 @@ import {
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 import {GiftCardProvider} from '../../components/GiftCardShop/hooks';
+import {clearAccount} from '../../reducers/nexusshopaccount';
+import {useAppDispatch} from '../../store/hooks';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -57,12 +59,19 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
 
   const [screen, setScreen] = useState<ScreenState>({type: 'browse'});
 
+  const dispatch = useAppDispatch();
   if (__DEV__) {
     console.log('User uniqueId: ' + uniqueId);
     console.log('Giftcard client logged in: ' + isLoggedIn);
     console.log('Giftcard client email: ' + shopUserEmail);
     console.log('Screen: ' + JSON.stringify(screen, null, 2));
   }
+
+  const handleResetShopUser = () => {
+    if (__DEV__) {
+      dispatch(clearAccount());
+    }
+  };
 
   const getSelectedIndex = () => {
     switch (screen.type) {
@@ -191,6 +200,16 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
 
               {screen.type === 'wishlist' && (
                 <MyWishlistBrands onSelectBrand={handleSelectBrand} />
+              )}
+
+              {__DEV__ ? (
+                <View style={{position: 'absolute', bottom: 50}}>
+                  <TouchableOpacity onPress={handleResetShopUser}>
+                    <Text>Reset Shop User</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <></>
               )}
             </View>
           ) : (

@@ -17,7 +17,7 @@ import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
 import {useAppDispatch} from '../../store/hooks';
 import {
   loginToNexusShop,
-  loginToNexusShopTest,
+  // loginToNexusShopTest,
   clearAccount,
 } from '../../reducers/nexusshopaccount';
 import {colors, getSpacing, getCommonStyles} from './theme';

@@ -1,8 +1,13 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useMemo,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
@@ -11,10 +16,7 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {
-  verifyOtpCode,
-  verifyOtpCodeTest,
-} from '../../reducers/nexusshopaccount';
+import {verifyOtpCode} from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
 import {
   colors,
@@ -23,7 +25,11 @@ import {
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 import OTPVerified from './OTPVerified';
+import NumpadInput from '../../components/Numpad/NumpadInput';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface VerifyOTPProps {
@@ -51,6 +57,10 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   );
   const {uniqueId} = useAppSelector((state: any) => state.onboarding);
 
+  const validateOtpCode = useCallback((code: string): boolean => {
+    return code.length === 6 && /^\d+$/.test(code);
+  }, []);
+
   // Handle OTP code from navigation params (from deeplink)
   useEffect(() => {
     const handleParamsOTP = async (code: string) => {
@@ -63,17 +73,10 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       }
 
       try {
-        if (__DEV__) {
-          await dispatch(verifyOtpCodeTest(account.email, uniqueId, code));
-        } else {
-          await dispatch(verifyOtpCode(account.email, uniqueId, code));
-        }
+        await dispatch(verifyOtpCode(account.email, uniqueId, code));
 
         if (!error) {
           setShowVerified(true);
-          setTimeout(() => {
-            navigation.goBack();
-          }, 2000);
         }
       } catch {
         Alert.alert('Verification Failed', 'Please try again later.');
@@ -94,21 +97,19 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     dispatch,
     error,
     navigation,
+    validateOtpCode,
   ]);
 
   // Check if user is already logged in
   useEffect(() => {
     if (account?.isLoggedIn) {
       setShowVerified(true);
-      setTimeout(() => {
-        navigation.goBack();
-      }, 2000);
+      // Hide header for verified screen
+      navigation.setOptions({
+        headerShown: false,
+      });
     }
   }, [account?.isLoggedIn, navigation]);
-
-  const validateOtpCode = (code: string): boolean => {
-    return code.length === 6 && /^\d+$/.test(code);
-  };
 
   const handleOtpChange = (text: string) => {
     const numericText = text.replace(/[^0-9]/g, '');
@@ -118,79 +119,41 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     }
   };
 
-  const handleVerifyOTP = async (codeToVerify?: string) => {
-    const code = codeToVerify || otpCode;
+  const handleVerifyOTP = useCallback(
+    async (codeToVerify?: string) => {
+      const code = codeToVerify || otpCode;
 
-    if (!validateOtpCode(code)) {
-      setOtpError('Please enter a valid 6-digit OTP code');
-      return;
-    }
-
-    if (!account?.email || !uniqueId) {
-      Alert.alert(
-        'Error',
-        'Missing account information. Please sign up first.',
-      );
-      return;
-    }
-
-    try {
-      if (__DEV__) {
-        // await dispatch(verifyOtpCodeTest(account.email, uniqueId, code));
-        await dispatch(verifyOtpCode(account.email, uniqueId, code));
-      } else {
-        await dispatch(verifyOtpCode(account.email, uniqueId, code));
+      if (!validateOtpCode(code)) {
+        setOtpError('Please enter a valid 6-digit OTP code');
+        return;
       }
 
-      if (!error) {
-        setShowVerified(true);
-        setTimeout(() => {
-          navigation.goBack();
-        }, 2000);
+      if (!account?.email || !uniqueId) {
+        Alert.alert(
+          'Error',
+          'Missing account information. Please sign up first.',
+        );
+        return;
       }
-    } catch {
-      Alert.alert('Verification Failed', 'Please try again later.');
-    }
-  };
 
-  if (showVerified) {
-    return <OTPVerified />;
-  }
+      try {
+        await dispatch(verifyOtpCode(account.email, uniqueId, code));
 
-  return (
-    <View style={[commonStyles.container, styles.container]}>
-      <Text style={commonStyles.title}>Verify Your Email</Text>
-      <Text style={[commonStyles.body, styles.subtitle]}>
-        Enter the 6-digit code sent to {account?.email || 'your email'}
-      </Text>
+        if (!error) {
+          setShowVerified(true);
+        }
+      } catch {
+        Alert.alert('Verification Failed', 'Please try again later.');
+      }
+    },
+    [otpCode, validateOtpCode, account?.email, uniqueId, dispatch, error],
+  );
 
-      <View style={styles.inputContainer}>
-        <Text style={commonStyles.label}>Verification Code</Text>
-        <TextInput
-          style={[
-            commonStyles.input,
-            styles.otpInput,
-            otpError ? styles.inputError : null,
-          ]}
-          value={otpCode}
-          onChangeText={handleOtpChange}
-          placeholder="000000"
-          placeholderTextColor={colors.textSecondary}
-          keyboardType="numeric"
-          maxLength={6}
-          autoFocus={true}
-          editable={!loginLoading}
-        />
-        {otpError ? (
-          <Text style={commonStyles.errorText}>{otpError}</Text>
-        ) : null}
-      </View>
-
-      {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
-
+  const submitButton = useMemo(
+    () => (
       <TouchableOpacity
         style={[
-          commonStyles.button,
+          commonStyles.buttonRounded,
           loginLoading ? commonStyles.buttonDisabled : null,
           !validateOtpCode(otpCode) ? commonStyles.buttonDisabled : null,
         ]}
@@ -202,46 +165,105 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
           <Text style={commonStyles.buttonText}>Verify Code</Text>
         )}
       </TouchableOpacity>
+    ),
+    [commonStyles, handleVerifyOTP, validateOtpCode, loginLoading, otpCode],
+  );
+
+  if (showVerified) {
+    return <OTPVerified />;
+  }
+
+  return (
+    <View style={styles.container}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
+        <Text style={[commonStyles.title, styles.title]}>Check your email</Text>
+        <Text style={[commonStyles.subtitle, styles.subtitle]}>
+          We've sent a one-time verification code to{' '}
+          {account?.email || 'your email'}
+        </Text>
+        <Text style={[commonStyles.subtitle, styles.subtitle]}>
+          Please check your inbox and enter the code to complete your
+          registration
+        </Text>
+        <Text style={[commonStyles.errorText, styles.errorText]}>
+          {otpError}
+        </Text>
+
+        {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
+      </CustomSafeAreaView>
+      <NumpadInput
+        submitButton={submitButton}
+        currentCode={otpCode}
+        onChange={handleOtpChange}
+        titleKey="enter_your_code"
+        titleDomain="nexusShop"
+        dotDisabled
+        small
+      />
     </View>
   );
 };
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    safeArea: {
+      flex: 1,
+    },
     container: {
-      padding: getSpacing(screenHeight).lg,
-      justifyContent: 'center',
+      flex: 1,
+      backgroundColor: '#0070F0',
+      paddingHorizontal: screenWidth * 0.05,
+    },
+    title: {
+      paddingTop: getSpacing(screenHeight).header,
     },
     subtitle: {
-      textAlign: 'center',
-      marginBottom: getSpacing(screenHeight).xl,
-      color: colors.textSecondary,
+      fontSize: getFontSize(screenHeight).lg,
+      paddingTop: getSpacing(screenHeight).xs,
     },
-    inputContainer: {
-      marginBottom: getSpacing(screenHeight).lg,
-    },
-    otpInput: {
-      textAlign: 'center',
-      fontSize: getFontSize(screenHeight).xl,
-      letterSpacing: 8,
-      fontFamily: 'monospace',
+    errorText: {
+      paddingTop: getSpacing(screenHeight).xs,
     },
     inputError: {
       borderColor: colors.danger,
+    },
+    headerTitle: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
+      fontStyle: 'normal',
+      fontWeight: '700',
     },
   });
 
 export const VerifyOTPNavigationOptions = (
   navigation: any,
-): StackNavigationOptions => ({
-  title: 'Verify Email',
-  headerStyle: {
-    backgroundColor: '#007AFF',
-  },
-  headerTintColor: '#fff',
-  headerTitleStyle: {
-    fontWeight: '700' as const,
-  },
-});
+): StackNavigationOptions => {
+  const {width, height} = useContext(ScreenSizeContext);
+  const styles = getStyles(width, height);
+
+  return {
+    headerTransparent: true,
+    headerTitle: () => (
+      <TranslateText
+        textKey="verify"
+        domain="nexusShop"
+        maxSizeInPixels={height * 0.02}
+        textStyle={styles.headerTitle}
+        numberOfLines={1}
+      />
+    ),
+    headerTitleAlign: 'left',
+    headerTitleContainerStyle: {
+      left: 7,
+    },
+    headerLeft: () => (
+      <HeaderButton
+        onPress={() => navigation.goBack()}
+        imageSource={require('../../assets/images/back-icon.png')}
+      />
+    ),
+  };
+};
 
 export default VerifyOTP;

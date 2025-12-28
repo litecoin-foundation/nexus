@@ -41,6 +41,7 @@ export const getSpacing = (screenHeight: number) => {
     lg: screenHeight * 0.024,
     xl: screenHeight * 0.032,
     xxl: screenHeight * 0.048,
+    header: screenHeight * 0.055,
   };
 };
 
@@ -123,12 +124,12 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     subtitle: {
       fontSize: getFontSize(screenHeight).lg,
       fontWeight: '600',
-      color: colors.text,
+      color: colors.white,
       marginBottom: getSpacing(screenHeight).sm,
     },
     body: {
       fontSize: getFontSize(screenHeight).md,
-      color: colors.text,
+      color: colors.white,
     },
     caption: {
       fontSize: getFontSize(screenHeight).sm,
@@ -252,7 +253,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     },
     errorText: {
       color: colors.danger,
-      fontSize: getFontSize(screenHeight).sm,
+      fontSize: getFontSize(screenHeight).lg,
+      alignSelf: 'center',
       marginTop: getSpacing(screenHeight).xs,
       paddingVertical: getSpacing(screenHeight).xs,
       paddingHorizontal: getSpacing(screenHeight).md,
