@@ -1156,7 +1156,12 @@ export const walletBalanceHistorySelector = createSelector(
         txIndex < sortedTxs.length &&
         Number(sortedTxs[txIndex].timeStamp) * 1000 <= time
       ) {
-        currentBalance += sortedTxs[txIndex].amount;
+        // Sell transactions should always decrease balance
+        if (sortedTxs[txIndex].metaLabel === 'Sell') {
+          currentBalance -= Math.abs(sortedTxs[txIndex].amount);
+        } else {
+          currentBalance += sortedTxs[txIndex].amount;
+        }
         txIndex++;
       }
 
@@ -1171,7 +1176,12 @@ export const walletBalanceHistorySelector = createSelector(
 
     // Add final point at current time with current balance
     while (txIndex < sortedTxs.length) {
-      currentBalance += sortedTxs[txIndex].amount;
+      // Sell transactions should always decrease balance
+      if (sortedTxs[txIndex].metaLabel === 'Sell') {
+        currentBalance -= Math.abs(sortedTxs[txIndex].amount);
+      } else {
+        currentBalance += sortedTxs[txIndex].amount;
+      }
       txIndex++;
     }
 
