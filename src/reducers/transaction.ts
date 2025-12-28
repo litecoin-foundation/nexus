@@ -1097,6 +1097,11 @@ export const walletBalanceHistorySelector = createSelector(
       return [];
     }
 
+    // Sort transactions by timestamp (oldest first)
+    const sortedTxs = [...filteredTxs].sort(
+      (a: any, b: any) => Number(a.timeStamp) - Number(b.timeStamp),
+    );
+
     // Determine time range based on graphPeriod
     const now = Date.now();
     let startTime = 0;
@@ -1124,24 +1129,28 @@ export const walletBalanceHistorySelector = createSelector(
         interval = 24 * 60 * 60 * 1000; // 1 day
         break;
       case 'ALL':
-        // Find the earliest transaction
-        const sortedTxs = [...filteredTxs].sort(
-          (a: any, b: any) => Number(a.timeStamp) - Number(b.timeStamp),
-        );
         if (sortedTxs.length > 0) {
-          startTime = Number(sortedTxs[0].timeStamp) * 1000;
+          // Add 1 day buffer before first transaction to start at 0 LTC
+          startTime =
+            Number(sortedTxs[0].timeStamp) * 1000 - 24 * 60 * 60 * 1000;
+
+          // Calculate interval dynamically based on total duration
+          const totalDurationMs = now - startTime;
+          const targetPoints = 150;
+          interval = Math.max(
+            60 * 60 * 1000, // minimum 1 hour
+            Math.floor(totalDurationMs / targetPoints),
+          );
+        } else {
+          // Fallback if no transactions
+          startTime = now - 24 * 60 * 60 * 1000;
+          interval = 15 * 60 * 1000;
         }
-        interval = 7 * 24 * 60 * 60 * 1000; // 1 week for ALL
         break;
       default:
         startTime = now - 24 * 60 * 60 * 1000;
         interval = 15 * 60 * 1000;
     }
-
-    // Sort transactions by timestamp (oldest first)
-    const sortedTxs = [...filteredTxs].sort(
-      (a: any, b: any) => Number(a.timeStamp) - Number(b.timeStamp),
-    );
 
     // Calculate balance at each time point
     // NOTE: We only store LTC balances, fiat values calculated on-the-fly
