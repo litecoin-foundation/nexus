@@ -35,7 +35,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 
 const d3 = {shape};
 
-const Chart = () => {
+const Chart = ({triggerLester}) => {
   const {width, height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const height = SCREEN_HEIGHT * 0.15;
 
@@ -206,7 +206,8 @@ const Chart = () => {
       data={data}
       x={x.current}
       y={y.current}
-      useCounterValue={false}>
+      useCounterValue={false}
+      triggerLester={triggerLester}>
       {Container}
     </Cursor>
   );

@@ -39,7 +39,7 @@ const lesterUp = require('../../assets/images/lester-up.png');
 
 const Cursor = props => {
   const dispatch = useDispatch();
-  const {height, width, x, y, data, children} = props;
+  const {height, width, x, y, data, children, triggerLester} = props;
 
   const chartMode = useSelector(state => state.settings.chartMode);
   const cursorValueFiat = useSelector(state => state.chart.cursorValueFiat);
@@ -51,7 +51,6 @@ const Cursor = props => {
   });
   const panRef = createRef();
   const longPressRef = createRef();
-  const easterEggRef = createRef();
 
   const [barVisible, setBarVisible] = useState(false);
   const [lesterActive, setLesterActive] = useState(false);
@@ -277,6 +276,13 @@ const Cursor = props => {
     }
   });
 
+  // Trigger animation from external prop
+  useEffect(() => {
+    if (triggerLester && data && data.length > 0) {
+      setLesterActive(true);
+    }
+  }, [triggerLester, data]);
+
   // Trigger animation when easter egg is activated
   useEffect(() => {
     if (lesterActive) {
@@ -323,14 +329,6 @@ const Cursor = props => {
     isLesterAnimating,
   ]);
 
-  const onEasterEggHandlerStateChange = e => {
-    const {nativeEvent} = e;
-    if (nativeEvent.state === State.ACTIVE && data && data.length > 0) {
-      runOnJS(triggerMediumFeedback)();
-      runOnJS(setLesterActive)(true);
-    }
-  };
-
   const onHandlerStateChange = e => {
     const {nativeEvent} = e;
     if (nativeEvent.state === State.ACTIVE) {
@@ -364,98 +362,91 @@ const Cursor = props => {
   };
 
   return (
-    <LongPressGestureHandler
-      ref={easterEggRef}
-      onHandlerStateChange={onEasterEggHandlerStateChange}
-      minDurationMs={3000}
-      maxDist={10000}
-      simultaneousHandlers={[panRef, longPressRef]}>
-      <PanGestureHandler
-        ref={panRef}
+    <PanGestureHandler
+      ref={panRef}
+      onHandlerStateChange={onHandlerStateChange}
+      onGestureEvent={onPanGestureEvent}
+      maxPointers={1}
+      minDeltaX={10}
+      maxDeltaY={20}
+      simultaneousHandlers={[longPressRef]}>
+      <LongPressGestureHandler
+        ref={longPressRef}
         onHandlerStateChange={onHandlerStateChange}
         onGestureEvent={onPanGestureEvent}
-        maxPointers={1}
-        minDeltaX={10}
-        maxDeltaY={20}
-        simultaneousHandlers={[longPressRef, easterEggRef]}>
-        <LongPressGestureHandler
-          ref={longPressRef}
-          onHandlerStateChange={onHandlerStateChange}
-          onGestureEvent={onPanGestureEvent}
-          simultaneousHandlers={[panRef, easterEggRef]}>
-          <View
-            style={[styles.container, {height}, {width}]}
-            collapsable={false}>
-            {children}
-            <Canvas
-              style={[
-                {
-                  height,
-                  width,
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  opacity: barVisible ? 1 : 0,
-                },
-              ]}>
-              <Group transform={transform}>
-                {chartMode === 'balance' &&
-                  cursorValueFiat !== undefined &&
-                  (() => {
-                    const fiatText = `${currencySymbol}${cursorValueFiat.toFixed(2)}`;
-                    const textWidth = font
-                      ? font.measureText(fiatText).width
-                      : 40;
-                    const rectWidth = textWidth + 16; // Add padding
-                    const rectX = -rectWidth / 2;
-                    const textX = rectX + 8; // Left padding
+        simultaneousHandlers={[panRef]}>
+        <View
+          style={[styles.container, {height}, {width}]}
+          collapsable={false}>
+          {children}
+          <Canvas
+            style={[
+              {
+                height,
+                width,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                opacity: barVisible ? 1 : 0,
+              },
+            ]}>
+            <Group transform={transform}>
+              {chartMode === 'balance' &&
+                cursorValueFiat !== undefined &&
+                (() => {
+                  const fiatText = `${currencySymbol}${cursorValueFiat.toFixed(2)}`;
+                  const textWidth = font
+                    ? font.measureText(fiatText).width
+                    : 40;
+                  const rectWidth = textWidth + 16; // Add padding
+                  const rectX = -rectWidth / 2;
+                  const textX = rectX + 8; // Left padding
 
-                    // Dynamic text Y position based on where the rectangle is
-                    const textY = fiatLabelY + 15; // 15px from top of rectangle
+                  // Dynamic text Y position based on where the rectangle is
+                  const textY = fiatLabelY + 15; // 15px from top of rectangle
 
-                    return (
-                      <>
-                        {/* Rounded rectangle for fiat value */}
-                        <RoundedRect
-                          x={rectX}
-                          y={fiatLabelY}
-                          width={rectWidth}
-                          height={20}
-                          r={10}
-                          color="rgba(255, 255, 255, 0.85)"
-                        />
-                        {/* Fiat value text */}
-                        <Text
-                          x={textX}
-                          y={textY}
-                          text={fiatText}
-                          font={font}
-                          color="rgb(29, 103, 232)"
-                        />
-                      </>
-                    );
-                  })()}
-                <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
-                <Circle
-                  cx={0}
-                  cy={0}
-                  r={6}
-                  style="stroke"
-                  strokeWidth={4}
-                  color="white"
-                />
-              </Group>
-            </Canvas>
-            <Animated.Image
-              source={lesterImage}
-              style={lesterAnimatedStyle}
-              resizeMode="contain"
-              pointerEvents="none"
-            />
-          </View>
-        </LongPressGestureHandler>
-      </PanGestureHandler>
-    </LongPressGestureHandler>
+                  return (
+                    <>
+                      {/* Rounded rectangle for fiat value */}
+                      <RoundedRect
+                        x={rectX}
+                        y={fiatLabelY}
+                        width={rectWidth}
+                        height={20}
+                        r={10}
+                        color="rgba(255, 255, 255, 0.85)"
+                      />
+                      {/* Fiat value text */}
+                      <Text
+                        x={textX}
+                        y={textY}
+                        text={fiatText}
+                        font={font}
+                        color="rgb(29, 103, 232)"
+                      />
+                    </>
+                  );
+                })()}
+              <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
+              <Circle
+                cx={0}
+                cy={0}
+                r={6}
+                style="stroke"
+                strokeWidth={4}
+                color="white"
+              />
+            </Group>
+          </Canvas>
+          <Animated.Image
+            source={lesterImage}
+            style={lesterAnimatedStyle}
+            resizeMode="contain"
+            pointerEvents="none"
+          />
+        </View>
+      </LongPressGestureHandler>
+    </PanGestureHandler>
   );
 };
 
