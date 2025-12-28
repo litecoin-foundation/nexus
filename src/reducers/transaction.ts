@@ -1063,37 +1063,84 @@ export const txDetailSelector = createSelector<
   });
 });
 
-// Create a stable transactions fingerprint selector
-const txFingerprintSelector = createSelector(txSelector, (txs: any) => {
+// Create a memoized filtered transactions selector
+// This returns the same array reference if the transaction data hasn't changed
+const filteredTxSelector = createSelector(txSelector, (txs: any) => {
   if (!txs || !Array.isArray(txs)) {
-    return '';
+    return [];
   }
-  // Create a fingerprint of transactions excluding Convert transactions
-  // This ensures we only recalculate if actual transaction data changes
-  const filteredTxs = txs.filter((tx: any) => tx.metaLabel !== 'Convert');
-  return filteredTxs
-    .map((tx: any) => `${tx.txHash}:${tx.timeStamp}:${tx.amount}`)
-    .join('|');
+  // Filter out convert transactions and create fingerprint for memoization
+  const filtered = txs.filter((tx: any) => tx.metaLabel !== 'Convert');
+  return filtered;
 });
+
+// Create a stable transactions fingerprint selector
+const txFingerprintSelector = createSelector(
+  filteredTxSelector,
+  (filteredTxs: any) => {
+    if (!filteredTxs || filteredTxs.length === 0) {
+      return '';
+    }
+    // Create a fingerprint of transactions excluding Convert transactions
+    // This ensures we only recalculate if actual transaction data changes
+    return filteredTxs
+      .map((tx: any) => `${tx.txHash}:${tx.timeStamp}:${tx.amount}`)
+      .join('|');
+  },
+);
+
+// Create a stable timestamp selector that rounds to appropriate intervals
+// This prevents chart from recalculating every second during polling
+const stableTimestampSelector = createSelector(
+  (state: any) => state.chart.graphPeriod,
+  (graphPeriod: string) => {
+    const now = Date.now();
+    let roundingInterval = 0;
+
+    switch (graphPeriod) {
+      case '1D':
+        roundingInterval = 5 * 60 * 1000; // Round to 5 minutes
+        break;
+      case '1W':
+        roundingInterval = 30 * 60 * 1000; // Round to 30 minutes
+        break;
+      case '1M':
+        roundingInterval = 2 * 60 * 60 * 1000; // Round to 2 hours
+        break;
+      case '3M':
+        roundingInterval = 6 * 60 * 60 * 1000; // Round to 6 hours
+        break;
+      case '1Y':
+        roundingInterval = 12 * 60 * 60 * 1000; // Round to 12 hours
+        break;
+      case 'ALL':
+        roundingInterval = 24 * 60 * 60 * 1000; // Round to 1 day
+        break;
+      default:
+        roundingInterval = 5 * 60 * 1000; // Default 5 minutes
+    }
+
+    // Round down to nearest interval
+    return Math.floor(now / roundingInterval) * roundingInterval;
+  },
+);
 
 // Wallet balance history selector
 // NOTE: We only calculate LTC balances here, NOT fiat values
 // Fiat values are calculated on-the-fly in the Cursor component to prevent
 // unnecessary chart recalculations when exchange rates update
 export const walletBalanceHistorySelector = createSelector(
-  txSelector,
+  filteredTxSelector,
   txFingerprintSelector,
   (state: any) => state.chart.graphPeriod,
-  (txs: any, _fingerprint: string, graphPeriod: string) => {
-    if (!txs || !Array.isArray(txs) || txs.length === 0) {
-      return [];
-    }
-
-    // Filter out convert transactions as they are internal transfers
-    // that don't change the total balance (you're sending coins to yourself)
-    const filteredTxs = txs.filter((tx: any) => tx.metaLabel !== 'Convert');
-
-    if (filteredTxs.length === 0) {
+  stableTimestampSelector,
+  (
+    filteredTxs: any,
+    _fingerprint: string,
+    graphPeriod: string,
+    now: number,
+  ) => {
+    if (!filteredTxs || filteredTxs.length === 0) {
       return [];
     }
 
@@ -1103,7 +1150,6 @@ export const walletBalanceHistorySelector = createSelector(
     );
 
     // Determine time range based on graphPeriod
-    const now = Date.now();
     let startTime = 0;
     let interval = 0; // Sampling interval in ms
 
