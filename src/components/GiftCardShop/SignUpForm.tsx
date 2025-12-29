@@ -107,7 +107,7 @@ const SignUpForm: React.FC<Props> = () => {
     <LinearGradient
       style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         <View style={styles.topContainer}>
           <View style={styles.imageContainer}>
             <Image

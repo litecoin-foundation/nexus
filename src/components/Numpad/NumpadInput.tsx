@@ -34,7 +34,6 @@ const NumpadInput: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, small || false);
 
-  console.log(currentCode);
   const handlePress = (input: string) => {
     switch (input) {
       case '⌫':

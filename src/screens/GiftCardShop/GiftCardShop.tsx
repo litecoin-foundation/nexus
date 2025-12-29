@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useContext, useLayoutEffect} from 'react';
-import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import {View, StyleSheet, TouchableOpacity, Text, Image} from 'react-native';
 import {useSelector} from 'react-redux';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import {
@@ -28,6 +28,7 @@ import {GiftCardProvider} from '../../components/GiftCardShop/hooks';
 import {clearAccount} from '../../reducers/nexusshopaccount';
 import {useAppDispatch} from '../../store/hooks';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -154,18 +155,29 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
         <GiftCardProvider client={client}>
           {isLoggedIn ? (
             <View style={styles.container}>
-              <View style={styles.switchContainer}>
-                <TripleSwitch
-                  options={['Browse', 'Wishlist', 'My Cards']}
-                  selectedIndex={getSelectedIndex()}
-                  onSelectionChange={handleSwitchChange}
-                  width={SCREEN_WIDTH - getSpacing(SCREEN_HEIGHT).md * 2}
-                  height={44}
-                  activeColor={colors.primary}
-                  inactiveColor={colors.grayLight}
-                  textColor={colors.textSecondary}
-                  activeTextColor={colors.white}
-                />
+              <View style={styles.headerContainer}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    style={styles.image}
+                    source={require('../../assets/images/gramophone-art.png')}
+                  />
+                </View>
+
+                <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
+                  <View style={styles.switchContainer}>
+                    <TripleSwitch
+                      options={['Browse', 'Wishlist', 'My Cards']}
+                      selectedIndex={getSelectedIndex()}
+                      onSelectionChange={handleSwitchChange}
+                      width={SCREEN_WIDTH - getSpacing(SCREEN_HEIGHT).md * 2}
+                      height={SCREEN_HEIGHT * 0.05}
+                      activeColor={colors.white}
+                      inactiveColor={colors.primaryDark}
+                      textColor={colors.white}
+                      activeTextColor={colors.black}
+                    />
+                  </View>
+                </CustomSafeAreaView>
               </View>
 
               {screen.type === 'browse' && (
@@ -226,10 +238,29 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
+    safeArea: {
+      backgroundColor: colors.primary,
+      paddingTop: getSpacing(screenHeight).header,
+    },
+    headerContainer: {
+      overflow: 'hidden',
+    },
+    imageContainer: {
+      position: 'absolute',
+      top: 0,
+      width: '100%',
+      height: screenHeight * 0.3,
+      alignItems: 'center',
+      zIndex: 1,
+    },
+    image: {
+      height: '100%',
+      objectFit: 'contain',
+    },
     switchContainer: {
       paddingHorizontal: getSpacing(screenHeight).md,
-      paddingVertical: getSpacing(screenHeight).md,
-      backgroundColor: colors.white,
+      paddingBottom: getSpacing(screenHeight).md,
+      zIndex: 2,
     },
     placeholderContainer: {
       flex: 1,

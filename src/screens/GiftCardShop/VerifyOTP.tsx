@@ -14,7 +14,11 @@ import {
   Alert,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import type {StackNavigationOptions} from '@react-navigation/stack';
+import type {
+  StackNavigationProp,
+  StackNavigationOptions,
+} from '@react-navigation/stack';
+import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {verifyOtpCode} from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
@@ -24,7 +28,6 @@ import {
   getFontSize,
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
-import OTPVerified from './OTPVerified';
 import NumpadInput from '../../components/Numpad/NumpadInput';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
@@ -48,10 +51,10 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
 
   const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
-  const [showVerified, setShowVerified] = useState(false);
 
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<StackNavigationProp<NexusShopStackParamList>>();
   const {account, loginLoading, error} = useAppSelector(
     (state: any) => state.nexusshopaccount,
   );
@@ -76,7 +79,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         await dispatch(verifyOtpCode(account.email, uniqueId, code));
 
         if (!error) {
-          setShowVerified(true);
+          navigation.navigate('OTPVerified');
         }
       } catch {
         Alert.alert('Verification Failed', 'Please try again later.');
@@ -103,11 +106,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   // Check if user is already logged in
   useEffect(() => {
     if (account?.isLoggedIn) {
-      setShowVerified(true);
-      // Hide header for verified screen
-      navigation.setOptions({
-        headerShown: false,
-      });
+      navigation.navigate('OTPVerified');
     }
   }, [account?.isLoggedIn, navigation]);
 
@@ -140,13 +139,21 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         await dispatch(verifyOtpCode(account.email, uniqueId, code));
 
         if (!error) {
-          setShowVerified(true);
+          navigation.navigate('OTPVerified');
         }
       } catch {
         Alert.alert('Verification Failed', 'Please try again later.');
       }
     },
-    [otpCode, validateOtpCode, account?.email, uniqueId, dispatch, error],
+    [
+      otpCode,
+      validateOtpCode,
+      account?.email,
+      uniqueId,
+      dispatch,
+      error,
+      navigation,
+    ],
   );
 
   const submitButton = useMemo(
@@ -168,10 +175,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     ),
     [commonStyles, handleVerifyOTP, validateOtpCode, loginLoading, otpCode],
   );
-
-  if (showVerified) {
-    return <OTPVerified />;
-  }
 
   return (
     <View style={styles.container}>

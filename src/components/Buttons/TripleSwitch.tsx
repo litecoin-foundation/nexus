@@ -1,12 +1,33 @@
-import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import React, {useContext} from 'react';
+import {View, TouchableOpacity, StyleSheet, Text} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  interpolate,
-  interpolateColor,
 } from 'react-native-reanimated';
+
+import {ScreenSizeContext} from '../../context/screenSize';
+
+const to75Transparent = (color: string): string => {
+  if (color.startsWith('rgba')) {
+    return color.replace(/[\d.]+\)$/, '0.75)');
+  }
+  if (color.startsWith('rgb')) {
+    return color.replace('rgb', 'rgba').replace(')', ', 0.75)');
+  }
+  if (color.startsWith('#')) {
+    const hex = color.slice(1);
+    const fullHex =
+      hex.length === 3
+        ? hex
+            .split('')
+            .map(c => c + c)
+            .join('')
+        : hex.slice(0, 6);
+    return `#${fullHex}BF`;
+  }
+  return color;
+};
 
 interface TripleSwitchProps {
   options: string[];
@@ -31,12 +52,21 @@ const TripleSwitch: React.FC<TripleSwitchProps> = ({
   textColor = '#666',
   activeTextColor = '#FFFFFF',
 }) => {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    to75Transparent(inactiveColor),
+    height / 2,
+  );
+
   const animatedIndex = useSharedValue(selectedIndex);
 
   React.useEffect(() => {
     animatedIndex.value = withSpring(selectedIndex, {
-      damping: 20,
-      stiffness: 200,
+      damping: 50,
+      stiffness: 500,
     });
   }, [selectedIndex, animatedIndex]);
 
@@ -51,27 +81,6 @@ const TripleSwitch: React.FC<TripleSwitchProps> = ({
       ],
     };
   });
-
-  const getTextStyle = (index: number) => {
-    return useAnimatedStyle(() => {
-      const isSelected = interpolate(
-        animatedIndex.value,
-        [index - 0.5, index, index + 0.5],
-        [0, 1, 0],
-        'clamp',
-      );
-
-      const color = interpolateColor(
-        isSelected,
-        [0, 1],
-        [textColor, activeTextColor],
-      );
-
-      return {
-        color,
-      };
-    });
-  };
 
   return (
     <View style={[styles.container, {width, height}]}>
@@ -92,39 +101,49 @@ const TripleSwitch: React.FC<TripleSwitchProps> = ({
           style={[styles.button, {width: buttonWidth}]}
           onPress={() => onSelectionChange(index)}
           activeOpacity={0.7}>
-          <Animated.Text style={[styles.buttonText, getTextStyle(index)]}>
+          <Text
+            style={[
+              styles.buttonText,
+              {color: index === selectedIndex ? activeTextColor : textColor},
+            ]}>
             {option}
-          </Animated.Text>
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
-    position: 'relative',
-  },
-  indicator: {
-    position: 'absolute',
-    borderRadius: 20,
-    top: 0,
-    left: 0,
-  },
-  button: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
-    zIndex: 1,
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Satoshi Variable',
-  },
-});
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  inactiveColor: string,
+  buttonRadius: number,
+) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      backgroundColor: inactiveColor,
+      borderRadius: buttonRadius,
+      position: 'relative',
+    },
+    indicator: {
+      position: 'absolute',
+      borderRadius: buttonRadius,
+      top: 0,
+      left: 0,
+    },
+    button: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100%',
+      zIndex: 1,
+    },
+    buttonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
+    },
+  });
 
 export default TripleSwitch;

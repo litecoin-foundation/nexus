@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -22,8 +22,22 @@ const OTPVerified: React.FC = () => {
   const navigation =
     useNavigation<StackNavigationProp<NexusShopStackParamList>>();
 
+  // TODO: gestureEnabled: false is currently not working, check on it later
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', e => {
+      // Allow reset actions (from handleGoBack), block back gestures
+      if (e.data.action.type !== 'RESET') {
+        e.preventDefault();
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   const handleGoBack = () => {
-    navigation.goBack();
+    navigation.reset({
+      index: 0,
+      routes: [{name: 'GiftCardShop'}],
+    });
   };
 
   return (
