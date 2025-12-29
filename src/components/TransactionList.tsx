@@ -401,11 +401,15 @@ const TransactionList = forwardRef((props: Props, ref) => {
         foldUnfold(true);
       }
     } else {
-      if (folded && foldUnfold && !startClosing.value) {
-        foldUnfold(true);
+      if (folded && foldUnfold) {
+        'worklet';
+        const shouldFold = !startClosing.value;
+        if (shouldFold) {
+          runOnJS(foldUnfold)(true);
+        }
       }
     }
-  }, [folded, foldUnfold, startClosing.value]);
+  }, [folded, foldUnfold, startClosing]);
 
   const FlashListMemo = useMemo(
     () => (

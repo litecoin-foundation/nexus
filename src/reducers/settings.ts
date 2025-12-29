@@ -29,11 +29,13 @@ interface ISettings {
   notificationsEnabled: boolean;
   manualCoinSelectionEnabled: boolean;
   torEnabled: boolean;
+  openedNotification: OpenedNotificationType;
   testPaymentActive: boolean;
   testPaymentKey: boolean;
   testPaymentMethod: string;
   testPaymentCountry: string;
   testPaymentFiat: string;
+  chartMode: 'price' | 'balance';
 }
 type CurrencyCodeType = {
   currencyCode: string;
@@ -50,6 +52,13 @@ type TestPaymentType = {
   testPaymentCountry: string;
   testPaymentFiat: string;
 };
+type OpenedNotificationType = {
+  title: string;
+  body: string;
+  data: {
+    [key: string]: any;
+  };
+} | null;
 
 // initial state
 const initialState = {
@@ -65,6 +74,8 @@ const initialState = {
   notificationsEnabled: false,
   manualCoinSelectionEnabled: false,
   torEnabled: false,
+  openedNotification: null,
+  chartMode: 'price',
 } as ISettings;
 
 // actions
@@ -87,6 +98,9 @@ const setLanguageAction = createAction<LanguageType>(
 const setDeviceNotificationTokenAction = createAction<string>(
   'settings/setDeviceNotificationTokenAction',
 );
+const setOpenedNotificationAction = createAction<OpenedNotificationType>(
+  'settings/setOpenedNotificationAction',
+);
 const enableNotificationsAction = createAction<boolean>(
   'settings/enableNotificationsAction',
 );
@@ -96,6 +110,9 @@ const enableManualCoinSelectionAction = createAction<boolean>(
 const enableTorAction = createAction<boolean>('settings/enableTorAction');
 const setTestPaymentAction = createAction<TestPaymentType>(
   'settings/setTestPaymentAction',
+);
+const setChartModeAction = createAction<'price' | 'balance'>(
+  'settings/setChartModeAction',
 );
 
 // functions
@@ -147,6 +164,12 @@ export const setDeviceNotificationToken =
   (deviceToken: string): AppThunk =>
   dispatch => {
     dispatch(setDeviceNotificationTokenAction(deviceToken));
+  };
+
+export const setOpenedNotification =
+  (openedNotification: OpenedNotificationType): AppThunk =>
+  dispatch => {
+    dispatch(setOpenedNotificationAction(openedNotification));
   };
 
 export const setNotificationsEnabled =
@@ -204,6 +227,12 @@ export const setTestPayment =
     dispatch(checkBuySellProviderCountry());
   };
 
+export const setChartMode =
+  (mode: 'price' | 'balance'): AppThunk =>
+  dispatch => {
+    dispatch(setChartModeAction(mode));
+  };
+
 // slice
 export const settingsSlice = createSlice({
   name: 'settings',
@@ -239,6 +268,10 @@ export const settingsSlice = createSlice({
       ...state,
       deviceNotificationToken: action.payload,
     }),
+    setOpenedNotificationAction: (state, action) => ({
+      ...state,
+      openedNotification: action.payload,
+    }),
     enableNotificationsAction: (state, action) => ({
       ...state,
       notificationsEnabled: action.payload,
@@ -258,6 +291,10 @@ export const settingsSlice = createSlice({
       testPaymentMethod: action.payload.testPaymentMethod,
       testPaymentCountry: action.payload.testPaymentCountry,
       testPaymentFiat: action.payload.testPaymentFiat,
+    }),
+    setChartModeAction: (state, action) => ({
+      ...state,
+      chartMode: action.payload,
     }),
   },
   extraReducers: builder => {

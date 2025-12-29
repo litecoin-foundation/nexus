@@ -185,7 +185,7 @@ const AuthPad: React.FC<Props> = props => {
           key="biometric-button-key"
           onPress={async () => {
             if (handleBiometricPress) {
-              await authenticate();
+              await authenticate('Unlock Wallet');
               handleBiometricPress();
             } else {
               dispatch(unlockWalletWithBiometric());

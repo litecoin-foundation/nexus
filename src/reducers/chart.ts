@@ -10,12 +10,14 @@ type GraphPeriodType = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
 interface ICursorValue {
   x: string;
   y: number;
+  yFiat?: number;
 }
 
 interface IChart {
   cursorSelected: boolean;
   cursorDate: number;
   cursorValue: number;
+  cursorValueFiat: number;
   graphPeriod: GraphPeriodType;
 }
 
@@ -24,6 +26,7 @@ const initialState = {
   cursorSelected: false,
   cursorDate: 0,
   cursorValue: 0,
+  cursorValueFiat: 0,
   graphPeriod: '1D',
 } as IChart;
 
@@ -46,9 +49,9 @@ export const changeGraphPeriod =
   };
 
 export const updateCursorValue =
-  (x: object, y: number): AppThunk =>
+  (x: object, y: number, yFiat?: number): AppThunk =>
   dispatch => {
-    dispatch(updateCursorValueAction({x: `${x}`, y}));
+    dispatch(updateCursorValueAction({x: `${x}`, y, yFiat}));
   };
 
 export const setCursorSelected =
@@ -169,6 +172,7 @@ export const chartSlice = createSlice({
       ...state,
       cursorDate: action.payload.x,
       cursorValue: action.payload.y,
+      cursorValueFiat: action.payload.yFiat || 0,
     }),
     setCursorSelectedAction: (state, action) => ({
       ...state,

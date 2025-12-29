@@ -32,19 +32,25 @@ import {resetPincode} from './authentication';
 import {resetToLoading} from '../navigation/NavigationService';
 
 const PASS = 'PASSWORD';
+const RESCAN_FLAG = 'RESCAN_WALLET_TRANSACTIONS';
 
 // types
 interface ILightningState {
   lndActive: boolean;
+  isRescanningWallet: boolean;
 }
 
 // initial state
 const initialState = {
   lndActive: false,
+  isRescanningWallet: false,
 } as ILightningState;
 
 // actions
 const lndState = createAction<boolean>('lightning/lndState');
+export const setRescanningWallet = createAction<boolean>(
+  'lightning/setRescanningWallet',
+);
 
 // functions
 export const startLnd = (): AppThunk => async (dispatch, getState) => {
@@ -66,8 +72,17 @@ export const startLnd = (): AppThunk => async (dispatch, getState) => {
       await deleteMacaroonFiles();
     }
 
+    // check if we need to rescan wallet transactions
+    const needsRescan = await getItem(RESCAN_FLAG);
+    let startFlags = ` --lnddir=${appFolderPath}`;
+
+    if (needsRescan === 'true') {
+      startFlags += ' --reset-wallet-transactions';
+      console.log('Starting LND with --reset-wallet-transactions flag');
+    }
+
     // start LND
-    await start(` --lnddir=${appFolderPath}`);
+    await start(startFlags);
 
     // set lndActive when RPC is ready!
     subscribeState(
@@ -77,6 +92,13 @@ export const startLnd = (): AppThunk => async (dispatch, getState) => {
           dispatch(lndState(true));
         } else if (state.state === WalletState.RPC_ACTIVE) {
           dispatch(lndState(true));
+
+          // wallet started with rescan, clear the flag but keep rescanning state
+          // (rescanning state will be cleared separately after rescan completes)
+          if (needsRescan === 'true') {
+            await setItem(RESCAN_FLAG, 'false');
+            console.log('wallet rescan flag cleared, rescanning in progress');
+          }
         }
         try {
         } catch (error) {
@@ -96,28 +118,50 @@ export const startLnd = (): AppThunk => async (dispatch, getState) => {
 };
 
 export const stopLnd = (): AppThunk => async dispatch => {
-  try {
-    await stopDaemon({});
-    subscribeState(
-      {},
-      async _ => {
-        try {
-        } catch (error) {
-          throw new Error(String(error));
-        }
-      },
-      error => {
-        if (error.includes('error reading from server')) {
-          dispatch(lndState(false));
-          return;
-        }
-      },
-    );
-  } catch (err) {
-    console.error('CANT stop LND');
-    console.error(err);
-    // TODO: handle this
-  }
+  return new Promise<void>(resolve => {
+    stopDaemon({})
+      .then(() => {
+        console.log('STOPLND: stopping LND');
+
+        // Subscribe to state to confirm LND has stopped
+        subscribeState(
+          {},
+          async _ => {
+            // State callback - LND might still be running
+            try {
+            } catch (error) {
+              throw new Error(String(error));
+            }
+          },
+          error => {
+            // Error callback - this fires when LND stops
+            console.log('STOPLND: subscribeState error:', error);
+            if (error.includes('error reading from server')) {
+              console.log('STOPLND: LND Stopped confirmed');
+
+              // Stop all active pollers
+              // Reset transaction subscription flag
+              // Set LND state to false
+              // stopAllPollers();
+              // dispatch(resetTxSubscription());
+              dispatch(lndState(false));
+
+              resolve();
+              return;
+            }
+          },
+        );
+      })
+      .catch(err => {
+        console.error('STOPLND: Error calling stopDaemon:', err);
+        // Even if stopDaemon errors, LND might have stopped
+        // Clean up pollers and reset state
+        // stopAllPollers();
+        // dispatch(resetTxSubscription());
+        dispatch(lndState(false));
+        resolve();
+      });
+  });
 };
 
 export const resetLndState = (): AppThunk => async dispatch => {
@@ -258,6 +302,46 @@ export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
   });
 };
 
+export const rescanWallet = (): AppThunk => async dispatch => {
+  try {
+    console.log('RESCAN: Start wallet rescan');
+    // Set flag to rescan on next LND start
+    dispatch(setRescanningWallet(true));
+    await setItem(RESCAN_FLAG, 'true');
+
+    // Stop LND
+    console.log('RESCAN: Stopping LND');
+    await dispatch(stopLnd());
+    console.log('RESCAN: LND has been stopped');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Start LND (which will now include --reset-wallet-transactions flag)
+    console.log('RESCAN: Starting LND with rescan flag');
+    await dispatch(startLnd());
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Unlock wallet automatically
+    console.log('RESCAN: Auto-unlock wallet');
+    try {
+      const password = await getItem(PASS);
+      if (password !== null) {
+        await unlockLndWallet({
+          walletPassword: stringToUint8Array(password),
+        });
+      } else {
+        throw new Error('wallet password is null');
+      }
+    } catch (error) {
+      throw new Error(String(error));
+    }
+  } catch (error) {
+    console.error('RESCAN: Error during wallet rescan:', error);
+    dispatch(setRescanningWallet(false));
+    await setItem(RESCAN_FLAG, 'false');
+    throw error;
+  }
+};
+
 export const handleWalletReset = (): AppThunk => async dispatch => {
   try {
     await dispatch(resetPincode());
@@ -279,6 +363,10 @@ export const lightningSlice = createSlice({
     lndState: (state, action: PayloadAction<boolean>) => ({
       ...state,
       lndActive: action.payload,
+    }),
+    setRescanningWallet: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      isRescanningWallet: action.payload,
     }),
   },
   extraReducers: builder => {

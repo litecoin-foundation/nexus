@@ -25,7 +25,6 @@ interface Props {
   currentWallet: string;
   activeTab: number;
   navigation: any;
-  route: any;
   isWalletsModalOpened: boolean;
   setWalletsModalOpened: (isOpened: boolean) => void;
   isTxDetailModalOpened: boolean;
@@ -49,7 +48,6 @@ export function useMainLayout(props: Props) {
     currentWallet,
     activeTab,
     navigation,
-    route,
     isWalletsModalOpened,
     setWalletsModalOpened,
     isTxDetailModalOpened,
@@ -116,17 +114,23 @@ export function useMainLayout(props: Props) {
   const backHeaderButton = useMemo(
     () => (
       <View style={alignHeaderElementsWithMarginTop}>
-        <HeaderButton
-          onPress={() => {
-            setBottomSheetFolded(true);
-            setActiveTab(0);
-          }}
-          imageSource={require('../assets/images/back-icon.png')}
-        />
+        <Animated.View style={[styles.headerBtns, animatedHeaderButtonOpacity]}>
+          <HeaderButton
+            onPress={() => {
+              setBottomSheetFolded(true);
+              setActiveTab(0);
+            }}
+            imageSource={require('../assets/images/back-icon.png')}
+          />
+        </Animated.View>
       </View>
     ),
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [alignHeaderElementsWithMarginTop],
+    [
+      animatedHeaderButtonOpacity,
+      alignHeaderElementsWithMarginTop,
+      styles.headerBtns,
+    ],
   );
 
   const leftHeaderButton = useMemo(
@@ -232,7 +236,6 @@ export function useMainLayout(props: Props) {
     isWalletsModalOpened,
     isTxDetailModalOpened,
   ]);
-
 
   // fixes header disappearing when navigating back from screens with headerTransparent: true
   // like ConfirmBuy, ConfirmSell, WebPage, etc.

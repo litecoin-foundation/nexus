@@ -1,4 +1,5 @@
-import {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import {
   interpolate,
   interpolateColor,
@@ -103,27 +104,52 @@ export function useMainAnims(props: Props) {
     };
   });
 
-  useEffect(() => {
-    if (isWalletsModalOpened || isTxDetailModalOpened) {
-      buttonOpacity.value = withTiming(0, {duration: 150});
-    } else {
-      buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
-    }
+  const [preRendered, setPreRendered] = useState(false);
 
-    if (isTxDetailModalOpened) {
-      walletButtonOpacity.value = withTiming(0, {duration: 150});
+  useEffect(() => {
+    if (preRendered) {
+      if (isWalletsModalOpened || isTxDetailModalOpened) {
+        buttonOpacity.value = withTiming(0, {duration: 150});
+      } else {
+        buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
+      }
+
+      if (isTxDetailModalOpened) {
+        walletButtonOpacity.value = withTiming(0, {duration: 150});
+      } else {
+        walletButtonOpacity.value = withDelay(
+          150,
+          withTiming(1, {duration: 250}),
+        );
+      }
     } else {
-      walletButtonOpacity.value = withDelay(
-        150,
-        withTiming(1, {duration: 250}),
-      );
+      buttonOpacity.value = 0;
+      walletButtonOpacity.value = 0;
     }
   }, [
     isWalletsModalOpened,
     isTxDetailModalOpened,
     buttonOpacity,
     walletButtonOpacity,
+    preRendered,
   ]);
+
+  // NOTE: make header buttons invisible on unfocus so when you go back to
+  // the main screen they fade in smoothly, timeout should be always synced
+  // with the useMainLayout timeout that rerenders these header buttons
+  useFocusEffect(
+    React.useCallback(() => {
+      const timeoutId = setTimeout(() => {
+        setPreRendered(true);
+      }, 60);
+      return () => {
+        clearTimeout(timeoutId);
+        setPreRendered(false);
+        buttonOpacity.value = 0;
+        walletButtonOpacity.value = 0;
+      };
+    }, []),
+  );
 
   return {
     mainSheetsTranslationY,

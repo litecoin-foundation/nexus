@@ -577,8 +577,11 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       if (cachedTx) {
         // for cachedTxs with less than 8096 confirmations we still attempt to
         // match them with buy/sell history
-        let updatedCachedTx = {...cachedTx, numConfirmations: tx.numConfirmations};
-        
+        let updatedCachedTx = {
+          ...cachedTx,
+          numConfirmations: tx.numConfirmations,
+        };
+
         if (tx.numConfirmations < 8096) {
           // Check if it's a buy transaction
           if (buyHistory && buyHistory.length >= 1) {
@@ -590,7 +593,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
               updatedCachedTx.metaLabel = 'Buy';
             }
           }
-          
+
           // Check if it's a sell transaction
           if (sellHistory && sellHistory.length >= 1) {
             const sellTx = sellHistory.find(
@@ -602,7 +605,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
             }
           }
         }
-        
+
         txs.push(updatedCachedTx);
         continue;
       }
@@ -1059,6 +1062,194 @@ export const txDetailSelector = createSelector<
     };
   });
 });
+
+// Create a memoized filtered transactions selector
+// This returns the same array reference if the transaction data hasn't changed
+const filteredTxSelector = createSelector(txSelector, (txs: any) => {
+  if (!txs || !Array.isArray(txs)) {
+    return [];
+  }
+  // Filter out convert transactions and create fingerprint for memoization
+  const filtered = txs.filter((tx: any) => tx.metaLabel !== 'Convert');
+  return filtered;
+});
+
+// Create a stable transactions fingerprint selector
+const txFingerprintSelector = createSelector(
+  filteredTxSelector,
+  (filteredTxs: any) => {
+    if (!filteredTxs || filteredTxs.length === 0) {
+      return '';
+    }
+    // Create a fingerprint of transactions excluding Convert transactions
+    // This ensures we only recalculate if actual transaction data changes
+    return filteredTxs
+      .map((tx: any) => `${tx.txHash}:${tx.timeStamp}:${tx.amount}`)
+      .join('|');
+  },
+);
+
+// Create a stable timestamp selector that rounds to appropriate intervals
+// This prevents chart from recalculating every second during polling
+const stableTimestampSelector = createSelector(
+  (state: any) => state.chart.graphPeriod,
+  (graphPeriod: string) => {
+    const now = Date.now();
+    let roundingInterval = 0;
+
+    switch (graphPeriod) {
+      case '1D':
+        roundingInterval = 5 * 60 * 1000; // Round to 5 minutes
+        break;
+      case '1W':
+        roundingInterval = 30 * 60 * 1000; // Round to 30 minutes
+        break;
+      case '1M':
+        roundingInterval = 2 * 60 * 60 * 1000; // Round to 2 hours
+        break;
+      case '3M':
+        roundingInterval = 6 * 60 * 60 * 1000; // Round to 6 hours
+        break;
+      case '1Y':
+        roundingInterval = 12 * 60 * 60 * 1000; // Round to 12 hours
+        break;
+      case 'ALL':
+        roundingInterval = 24 * 60 * 60 * 1000; // Round to 1 day
+        break;
+      default:
+        roundingInterval = 5 * 60 * 1000; // Default 5 minutes
+    }
+
+    // Round down to nearest interval
+    return Math.floor(now / roundingInterval) * roundingInterval;
+  },
+);
+
+// Wallet balance history selector
+// NOTE: We only calculate LTC balances here, NOT fiat values
+// Fiat values are calculated on-the-fly in the Cursor component to prevent
+// unnecessary chart recalculations when exchange rates update
+export const walletBalanceHistorySelector = createSelector(
+  filteredTxSelector,
+  txFingerprintSelector,
+  (state: any) => state.chart.graphPeriod,
+  stableTimestampSelector,
+  (
+    filteredTxs: any,
+    _fingerprint: string,
+    graphPeriod: string,
+    now: number,
+  ) => {
+    if (!filteredTxs || filteredTxs.length === 0) {
+      return [];
+    }
+
+    // Sort transactions by timestamp (oldest first)
+    const sortedTxs = [...filteredTxs].sort(
+      (a: any, b: any) => Number(a.timeStamp) - Number(b.timeStamp),
+    );
+
+    // Determine time range based on graphPeriod
+    let startTime = 0;
+    let interval = 0; // Sampling interval in ms
+
+    switch (graphPeriod) {
+      case '1D':
+        startTime = now - 24 * 60 * 60 * 1000;
+        interval = 15 * 60 * 1000; // 15 minutes
+        break;
+      case '1W':
+        startTime = now - 7 * 24 * 60 * 60 * 1000;
+        interval = 60 * 60 * 1000; // 1 hour
+        break;
+      case '1M':
+        startTime = now - 30 * 24 * 60 * 60 * 1000;
+        interval = 6 * 60 * 60 * 1000; // 6 hours
+        break;
+      case '3M':
+        startTime = now - 90 * 24 * 60 * 60 * 1000;
+        interval = 24 * 60 * 60 * 1000; // 1 day
+        break;
+      case '1Y':
+        startTime = now - 365 * 24 * 60 * 60 * 1000;
+        interval = 24 * 60 * 60 * 1000; // 1 day
+        break;
+      case 'ALL':
+        if (sortedTxs.length > 0) {
+          // Add 1 day buffer before first transaction to start at 0 LTC
+          startTime =
+            Number(sortedTxs[0].timeStamp) * 1000 - 24 * 60 * 60 * 1000;
+
+          // Calculate interval dynamically based on total duration
+          const totalDurationMs = now - startTime;
+          const targetPoints = 150;
+          interval = Math.max(
+            60 * 60 * 1000, // minimum 1 hour
+            Math.floor(totalDurationMs / targetPoints),
+          );
+        } else {
+          // Fallback if no transactions
+          startTime = now - 24 * 60 * 60 * 1000;
+          interval = 15 * 60 * 1000;
+        }
+        break;
+      default:
+        startTime = now - 24 * 60 * 60 * 1000;
+        interval = 15 * 60 * 1000;
+    }
+
+    // Calculate balance at each time point
+    // NOTE: We only store LTC balances, fiat values calculated on-the-fly
+    const balancePoints: Array<{x: Date; y: number}> = [];
+    let currentBalance = 0;
+    let txIndex = 0;
+
+    // Generate time points from start to now
+    for (let time = startTime; time <= now; time += interval) {
+      // Apply all transactions up to this time point
+      while (
+        txIndex < sortedTxs.length &&
+        Number(sortedTxs[txIndex].timeStamp) * 1000 <= time
+      ) {
+        // Sell transactions should always decrease balance
+        if (sortedTxs[txIndex].metaLabel === 'Sell') {
+          currentBalance -= Math.abs(sortedTxs[txIndex].amount);
+        } else {
+          currentBalance += sortedTxs[txIndex].amount;
+        }
+        txIndex++;
+      }
+
+      // Convert satoshis to LTC
+      const balanceInLTC = currentBalance / 100000000;
+
+      balancePoints.push({
+        x: new Date(time),
+        y: balanceInLTC,
+      });
+    }
+
+    // Add final point at current time with current balance
+    while (txIndex < sortedTxs.length) {
+      // Sell transactions should always decrease balance
+      if (sortedTxs[txIndex].metaLabel === 'Sell') {
+        currentBalance -= Math.abs(sortedTxs[txIndex].amount);
+      } else {
+        currentBalance += sortedTxs[txIndex].amount;
+      }
+      txIndex++;
+    }
+
+    const finalBalanceInLTC = currentBalance / 100000000;
+
+    balancePoints.push({
+      x: new Date(now),
+      y: finalBalanceInLTC,
+    });
+
+    return balancePoints;
+  },
+);
 
 // slice
 export const transactionSlice = createSlice({

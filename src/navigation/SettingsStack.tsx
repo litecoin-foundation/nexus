@@ -32,6 +32,9 @@ import Support, {SupportNavigationOptions} from '../screens/Settings/Support';
 import ResetWallet, {
   ResetWalletNavigationOptions,
 } from '../screens/Settings/ResetWallet';
+import RescanWallet, {
+  RescanWalletNavigationOptions,
+} from '../screens/Settings/RescanWallet';
 import TestPayment, {
   TestPaymentNavigationOptions,
 } from '../screens/Settings/TestPayment';
@@ -131,6 +134,11 @@ function SettingsStack() {
         name="ResetWallet"
         component={ResetWallet}
         options={({navigation}) => ResetWalletNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="RescanWallet"
+        component={RescanWallet}
+        options={({navigation}) => RescanWalletNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="TestPayment"

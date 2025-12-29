@@ -65,7 +65,7 @@ export const setDeeplink =
   (link: string): AppThunk =>
   dispatch => {
     try {
-      decodeAppDeeplink(link);
+      // decodeAppDeeplink(link);
       dispatch(setDeeplinkAction(link));
     } catch (error) {
       console.error(error);

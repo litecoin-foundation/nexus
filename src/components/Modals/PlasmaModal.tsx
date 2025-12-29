@@ -84,8 +84,6 @@ export default function PlasmaModal(props: Props) {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, bottomInsetPadding);
 
-  const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
-
   const swipeTriggerHeightRange = SCREEN_HEIGHT * 0.15;
   const swipeTriggerWidthRange = SCREEN_WIDTH * 0.15;
   const snapPoints = [
@@ -320,7 +318,7 @@ export default function PlasmaModal(props: Props) {
   // Make conter render a bit faster than modal
   const contentBodyAnimDuration = animDuration - 50;
 
-  const animTimeout = useRef<NodeJS.Timeout>();
+  const animTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     // Wait for animation to finish before hiding modal
@@ -335,11 +333,9 @@ export default function PlasmaModal(props: Props) {
     // Play opening/closing animation
     if (isOpened) {
       bodyTranslateY.value = withSpring(0, {
-        duration: animDuration + 900,
+        duration: animDuration + 200,
         dampingRatio: 1,
-        stiffness: 80,
-        restDisplacementThreshold: 0.01,
-        restSpeedThreshold: 0.01,
+        mass: 0.5,
         reduceMotion: ReduceMotion.Never,
       });
 
