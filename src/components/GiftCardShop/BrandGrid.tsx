@@ -11,7 +11,7 @@ import {BrandCard} from './BrandCard';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface BrandGridProps {
-  onSelectBrand: (brand: Brand) => void;
+  onSelectBrand: (brand: Brand, initialAmount?: number) => void;
 }
 
 export function BrandGrid({onSelectBrand}: BrandGridProps) {
@@ -44,14 +44,15 @@ export function BrandGrid({onSelectBrand}: BrandGridProps) {
     <FlatList
       data={brands}
       keyExtractor={item => item.slug}
-      numColumns={2}
       contentContainerStyle={styles.gridContainer}
-      columnWrapperStyle={styles.gridRow}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       renderItem={({item}) => (
-        <BrandCard brand={item} onPress={() => onSelectBrand(item)} />
+        <BrandCard
+          brand={item}
+          onPress={(amount?: number) => onSelectBrand(item, amount)}
+        />
       )}
       extraData={brands?.length}
     />
@@ -62,8 +63,5 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     gridContainer: {
       padding: getSpacing(screenHeight).md,
-    },
-    gridRow: {
-      justifyContent: 'space-between',
     },
   });

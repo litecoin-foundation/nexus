@@ -38,7 +38,7 @@ interface GiftCardShopProps {
 
 type ScreenState =
   | {type: 'browse'}
-  | {type: 'purchase'; brand: Brand}
+  | {type: 'purchase'; brand: Brand; initialAmount?: number}
   | {
       type: 'payment';
       brand: Brand;
@@ -101,8 +101,8 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
     }
   };
 
-  const handleSelectBrand = (brand: Brand) => {
-    setScreen({type: 'purchase', brand});
+  const handleSelectBrand = (brand: Brand, initialAmount?: number) => {
+    setScreen({type: 'purchase', brand, initialAmount});
   };
 
   const handleInitiate = (initiateResponse: InitiatePurchaseResponseData) => {
@@ -187,6 +187,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
               {screen.type === 'purchase' && (
                 <PurchaseForm
                   brand={screen.brand}
+                  initialAmount={screen.initialAmount}
                   onBack={handleBack}
                   onInitiate={handleInitiate}
                 />

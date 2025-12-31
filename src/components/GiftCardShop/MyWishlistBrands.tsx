@@ -10,7 +10,7 @@ import {BrandCard} from './BrandCard';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface MyWishlistBrandsProps {
-  onSelectBrand?: (brand: Brand) => void;
+  onSelectBrand?: (brand: Brand, initialAmount?: number) => void;
 }
 
 export function MyWishlistBrands({onSelectBrand}: MyWishlistBrandsProps) {
@@ -57,7 +57,10 @@ export function MyWishlistBrands({onSelectBrand}: MyWishlistBrandsProps) {
             <View
               key={brand.slug}
               style={index % 2 === 0 ? styles.leftCard : styles.rightCard}>
-              <BrandCard brand={brand} onPress={() => onSelectBrand?.(brand)} />
+              <BrandCard
+                brand={brand}
+                onPress={(amount?: number) => onSelectBrand?.(brand, amount)}
+              />
             </View>
           ))}
         </View>

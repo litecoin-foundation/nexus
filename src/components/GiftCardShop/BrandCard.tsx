@@ -1,15 +1,16 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {View, Text, TouchableOpacity, Image, StyleSheet} from 'react-native';
+
 import {Brand, formatCurrency} from '../../services/giftcards';
 import {colors, getSpacing, getBorderRadius, getFontSize} from './theme';
-import {toggleWishlistBrand} from '../../reducers/nexusshopaccount';
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
+const backIcon = require('../../assets/images/back-icon.png');
+
 interface BrandCardProps {
   brand: Brand;
-  onPress: () => void;
+  onPress: (amount?: number) => void;
 }
 
 export function BrandCard({brand, onPress}: BrandCardProps) {
@@ -17,14 +18,8 @@ export function BrandCard({brand, onPress}: BrandCardProps) {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const dispatch = useAppDispatch();
-  const wishlistBrands = useAppSelector(
-    state => state.nexusshopaccount?.wishlistBrands,
-  );
-
-  const isInWishlist = wishlistBrands
-    ? wishlistBrands.some(wishlistBrand => wishlistBrand.slug === brand.slug)
-    : false;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
 
   const minAmount = Number(
     brand.digital_face_value_limits?.lower || brand.denominations?.[0],
@@ -34,46 +29,111 @@ export function BrandCard({brand, onPress}: BrandCardProps) {
       brand.denominations?.[brand.denominations.length - 1],
   );
 
-  const handleWishlistToggle = () => {
-    dispatch(toggleWishlistBrand(brand));
+  const defaultDenominations = [10, 15, 20, 50, 100].filter(
+    d => d >= minAmount && d <= maxAmount,
+  );
+  const denominations = (brand.denominations || defaultDenominations).slice(
+    0,
+    5,
+  );
+
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const handleAmountSelect = (amount: number) => {
+    setSelectedAmount(amount);
+  };
+
+  const handlePurchase = () => {
+    onPress(selectedAmount || undefined);
+  };
+
+  const formatDenomination = (value: number | string) => {
+    const num = Number(value);
+    return Number.isInteger(num)
+      ? num.toString()
+      : num.toFixed(2).replace(/\.00$/, '');
   };
 
   return (
     <View style={styles.brandCardContainer}>
       <TouchableOpacity
         style={styles.brandCard}
-        onPress={onPress}
+        onPress={handleToggle}
         activeOpacity={0.7}>
-        {brand.logo_url ? (
-          <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
-        ) : (
-          <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-            <Text style={styles.brandLogoText}>{brand.name.charAt(0)}</Text>
-          </View>
-        )}
-        <Text style={styles.brandName} numberOfLines={1}>
-          {brand.name}
-        </Text>
-        {typeof minAmount === 'number' &&
-        !isNaN(minAmount) &&
-        typeof maxAmount === 'number' &&
-        !isNaN(maxAmount) &&
-        brand.currency ? (
-          <Text style={styles.brandPrice}>
-            {minAmount === maxAmount
-              ? formatCurrency(minAmount, brand.currency)
-              : `${formatCurrency(minAmount, brand.currency)} - ${formatCurrency(maxAmount, brand.currency)}`}
+        <View style={styles.logoContainer}>
+          {brand.logo_url ? (
+            <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
+          ) : (
+            <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
+              <Text style={styles.brandLogoText}>{brand.name.charAt(0)}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.brandInfo}>
+          <Text style={styles.brandName} numberOfLines={1}>
+            {brand.name}
           </Text>
-        ) : (
-          <></>
-        )}
+          {typeof minAmount === 'number' &&
+          !isNaN(minAmount) &&
+          typeof maxAmount === 'number' &&
+          !isNaN(maxAmount) ? (
+            <Text style={styles.brandPrice}>
+              {minAmount === maxAmount
+                ? `${minAmount}`
+                : `${minAmount} - ${maxAmount}`}
+            </Text>
+          ) : null}
+        </View>
+        <View style={styles.chevronContainer}>
+          <Image
+            source={backIcon}
+            style={[
+              styles.chevronIcon,
+              {transform: [{rotate: isExpanded ? '90deg' : '-90deg'}]},
+            ]}
+          />
+        </View>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.wishlistButton}
-        onPress={handleWishlistToggle}
-        activeOpacity={0.7}>
-        <Text style={styles.wishlistIcon}>{isInWishlist ? '♥' : '♡'}</Text>
-      </TouchableOpacity>
+
+      {isExpanded && (
+        <View style={styles.expandedContent}>
+          <View
+            style={[
+              styles.denominationsRow,
+              denominations.length < 5 && styles.denominationsRowLeft,
+            ]}>
+            {denominations.map(amount => (
+              <TouchableOpacity
+                key={amount}
+                style={[
+                  styles.denominationButton,
+                  selectedAmount === amount &&
+                    styles.denominationButtonSelected,
+                ]}
+                onPress={() => handleAmountSelect(Number(amount))}
+                activeOpacity={0.7}>
+                <Text
+                  style={[
+                    styles.denominationText,
+                    selectedAmount === amount &&
+                      styles.denominationTextSelected,
+                  ]}>
+                  {brand.currency === 'USD' ? '$' : ''}
+                  {formatDenomination(amount)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TouchableOpacity
+            style={styles.purchaseButton}
+            onPress={handlePurchase}
+            activeOpacity={0.7}>
+            <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -81,48 +141,38 @@ export function BrandCard({brand, onPress}: BrandCardProps) {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     brandCardContainer: {
-      position: 'relative',
-    },
-    brandCard: {
-      width: screenWidth * 0.45,
       backgroundColor: colors.white,
-      borderRadius: getBorderRadius(screenHeight).md,
-      padding: getSpacing(screenHeight).md,
+      borderRadius: getBorderRadius(screenHeight).lg,
       marginBottom: getSpacing(screenHeight).md,
-      alignItems: 'center',
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 2},
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
       elevation: 3,
+      overflow: 'hidden',
     },
-    wishlistButton: {
-      position: 'absolute',
-      top: getSpacing(screenHeight).sm,
-      right: getSpacing(screenHeight).sm,
-      width: screenWidth * 0.08,
-      height: screenWidth * 0.08,
-      borderRadius: screenWidth * 0.04,
-      backgroundColor: colors.white,
+    brandCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: getSpacing(screenHeight).md,
+    },
+    logoContainer: {
+      width: screenWidth * 0.2,
+      height: screenWidth * 0.15,
+      backgroundColor: colors.grayLight,
+      borderRadius: getBorderRadius(screenHeight).md,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: colors.black,
-      shadowOffset: {width: 0, height: 1},
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-      elevation: 2,
-    },
-    wishlistIcon: {
-      fontSize: getFontSize(screenHeight).lg,
-      color: colors.primary,
+      overflow: 'hidden',
     },
     brandLogo: {
-      width: screenWidth * 0.2,
-      height: screenWidth * 0.2,
-      borderRadius: getBorderRadius(screenHeight).sm,
-      marginBottom: getSpacing(screenHeight).sm,
+      width: '80%',
+      height: '80%',
+      resizeMode: 'contain',
     },
     brandLogoPlaceholder: {
+      width: '100%',
+      height: '100%',
       backgroundColor: colors.grayLight,
       justifyContent: 'center',
       alignItems: 'center',
@@ -132,15 +182,76 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       color: colors.gray,
     },
+    brandInfo: {
+      flex: 1,
+      marginLeft: getSpacing(screenHeight).md,
+    },
     brandName: {
       fontSize: getFontSize(screenHeight).md,
-      fontWeight: '600',
+      fontWeight: '500',
       color: colors.text,
-      textAlign: 'center',
     },
     brandPrice: {
-      fontSize: getFontSize(screenHeight).sm,
-      color: colors.textSecondary,
+      fontSize: getFontSize(screenHeight).lg,
+      fontWeight: '600',
+      color: colors.text,
       marginTop: getSpacing(screenHeight).xs,
+    },
+    chevronContainer: {
+      width: screenWidth * 0.1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    chevronIcon: {
+      width: screenWidth * 0.05,
+      height: screenWidth * 0.05,
+      tintColor: colors.gray,
+      resizeMode: 'contain',
+    },
+    expandedContent: {
+      paddingHorizontal: getSpacing(screenHeight).md,
+      paddingBottom: getSpacing(screenHeight).md,
+    },
+    denominationsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: getSpacing(screenHeight).md,
+    },
+    denominationsRowLeft: {
+      justifyContent: 'flex-start',
+      gap: getSpacing(screenHeight).sm,
+    },
+    denominationButton: {
+      paddingVertical: getSpacing(screenHeight).sm,
+      paddingHorizontal: getSpacing(screenHeight).md,
+      borderRadius: getBorderRadius(screenHeight).md,
+      borderWidth: 1,
+      borderColor: colors.grayLight,
+      backgroundColor: colors.white,
+      minWidth: screenWidth * 0.15,
+      alignItems: 'center',
+    },
+    denominationButtonSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    denominationText: {
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '500',
+      color: colors.text,
+    },
+    denominationTextSelected: {
+      color: colors.white,
+    },
+    purchaseButton: {
+      backgroundColor: colors.primary,
+      borderRadius: getBorderRadius(screenHeight).lg,
+      paddingVertical: getSpacing(screenHeight).md,
+      alignItems: 'center',
+    },
+    purchaseButtonText: {
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '600',
+      color: colors.white,
     },
   });
