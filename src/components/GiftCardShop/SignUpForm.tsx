@@ -17,11 +17,10 @@ import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
 import {useAppDispatch} from '../../store/hooks';
 import {
   loginToNexusShop,
-  // loginToNexusShopTest,
+  registerOnNexusShop,
   clearAccount,
 } from '../../reducers/nexusshopaccount';
 import {colors, getSpacing, getCommonStyles} from './theme';
-// import PopUpModal from '../Modals/PopUpModal';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -39,7 +38,6 @@ const SignUpForm: React.FC<Props> = () => {
 
   const [email, setEmail] = useState(shopUserEmail || '');
   const [emailError, setEmailError] = useState('');
-  // const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const dispatch = useAppDispatch();
   const navigation =
@@ -81,14 +79,7 @@ const SignUpForm: React.FC<Props> = () => {
     if (hasErrors) return;
 
     try {
-      if (__DEV__) {
-        // dispatch(loginToNexusShopTest(email.trim(), uniqueId));
-        dispatch(loginToNexusShop(email.trim(), uniqueId));
-      } else {
-        dispatch(loginToNexusShop(email.trim(), uniqueId));
-      }
-
-      // setShowSuccessModal(true);
+      dispatch(registerOnNexusShop(email.trim(), uniqueId));
       navigation.navigate('VerifyOTP');
     } catch {
       Alert.alert('Sign Up Failed', 'Please try again later.');
@@ -180,14 +171,6 @@ const SignUpForm: React.FC<Props> = () => {
         ) : (
           <></>
         )}
-
-        {/* <PopUpModal
-          isVisible={showSuccessModal}
-          close={() => setShowSuccessModal(false)}
-          title="Check Your Email"
-          text="We've sent a one-time verification code to your email address."
-          subText="Please check your inbox and enter the code to complete your registration."
-        /> */}
       </CustomSafeAreaView>
     </LinearGradient>
   );

@@ -3,6 +3,7 @@ import {PURGE} from 'redux-persist';
 import {GiftCard, GiftCardInApp, Brand} from '../services/giftcards';
 import {Platform} from 'react-native';
 import {getCountry} from 'react-native-localize';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UserAccount {
   email: string;
@@ -147,7 +148,7 @@ export const nexusShopAccountSlice = createSlice({
   },
 });
 
-export const loginToNexusShop =
+export const registerOnNexusShop =
   (email: string, uniqueId: string) => async (dispatch: any, getState: any) => {
     const {deviceNotificationToken, currencyCode, languageCode} =
       getState().settings!;
@@ -155,7 +156,7 @@ export const loginToNexusShop =
     try {
       dispatch(setLoginLoading(true));
 
-      const response = await fetch(`${BASE_API_URL}/shop/register`, {
+      const response = await fetch(`${BASE_API_URL}/api/shop/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,8 +176,6 @@ export const loginToNexusShop =
       if (!response.ok) {
         throw new Error(`Registration failed: ${response.statusText}`);
       }
-
-      // Check if json valid
       await response.json();
 
       const userAccount: UserAccount = {
@@ -187,24 +186,35 @@ export const loginToNexusShop =
       };
 
       dispatch(setAccount(userAccount));
+    } catch (error) {
+      dispatch(
+        setAccountError(
+          error instanceof Error ? error.message : 'Registration failed',
+        ),
+      );
+    } finally {
+      dispatch(setLoginLoading(false));
+    }
+  };
 
-      // Send OTP after loggining
-      const resSendOtp = await fetch(`${BASE_API_URL}/shop/send-otp`, {
+export const loginToNexusShop =
+  (email: string) => async (dispatch: any, getState: any) => {
+    try {
+      dispatch(setLoginLoading(true));
+
+      const resSendOtp = await fetch(`${BASE_API_URL}/api/shop/send-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           email,
-          uniqueId,
         }),
       });
 
       if (!resSendOtp.ok) {
-        throw new Error(`OTP sending failed: ${response.statusText}`);
+        throw new Error(`Login failed: ${resSendOtp.statusText}`);
       }
-
-      // Check if json valid
       await resSendOtp.json();
     } catch (error) {
       dispatch(
@@ -223,7 +233,7 @@ export const verifyOtpCode =
     try {
       dispatch(setLoginLoading(true));
 
-      const response = await fetch(`${BASE_API_URL}/shop/verify-otp`, {
+      const response = await fetch(`${BASE_API_URL}/api/shop/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -239,8 +249,12 @@ export const verifyOtpCode =
         throw new Error(`OTP verification failed: ${response.statusText}`);
       }
 
-      // Check if json valid
-      await response.json();
+      const data = await response.json();
+      const {session} = data.data;
+
+      if (session) {
+        await AsyncStorage.setItem('sessionToken', session);
+      }
 
       dispatch(verifyOtpSuccess());
     } catch (error) {

@@ -1,3 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 export interface FaceValue {
   amount: number;
   currency: string;
@@ -103,11 +105,15 @@ export class GiftCardClient {
     endpoint: string,
     body?: object,
   ): Promise<T> {
+    const token = await AsyncStorage.getItem('sessionToken');
+    console.log('token');
+    console.log(token);
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method,
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.uuid}`,
+        // Authorization: `Bearer ${this.uuid}`,
+        Authorization: `Bearer ${token}`,
       },
       body: body ? JSON.stringify(body) : undefined,
     });
