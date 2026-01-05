@@ -58,9 +58,9 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     verifiedText: {
       width: '100%',
-      fontSize: getFontSize(screenHeight).xxl,
-      fontWeight: '700',
-      color: colors.success,
+      fontSize: getFontSize(screenHeight).xxxl,
+      fontWeight: '600',
+      color: colors.lightBlack,
       textAlign: 'center',
     },
     buttonContainer: {

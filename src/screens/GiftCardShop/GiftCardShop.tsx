@@ -1,4 +1,10 @@
-import React, {useState, useMemo, useContext, useLayoutEffect} from 'react';
+import React, {
+  useState,
+  useMemo,
+  useContext,
+  useLayoutEffect,
+  useEffect,
+} from 'react';
 import {View, StyleSheet, TouchableOpacity, Text, Image} from 'react-native';
 import {useSelector} from 'react-redux';
 import type {StackNavigationOptions} from '@react-navigation/stack';
@@ -11,7 +17,8 @@ import {
 import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
 import {PurchaseForm} from '../../components/GiftCardShop/PurchaseForm';
 import {PayForGiftCard} from '../../components/GiftCardShop/PayForGiftCard';
-import {PurchaseSuccess} from '../../components/GiftCardShop/PurchaseSuccess';
+import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
+// import {PurchaseSuccess} from '../../components/GiftCardShop/PurchaseSuccess';
 import {MyGiftCards} from '../../components/GiftCardShop/MyGiftCards';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
 import SignUpForm from '../../components/GiftCardShop/SignUpForm';
@@ -44,6 +51,7 @@ type ScreenState =
       brand: Brand;
       initiateResponse: InitiatePurchaseResponseData;
     }
+  | {type: 'payment-sent'; txid: string}
   | {type: 'success'; brand: Brand; giftCard: GiftCard}
   | {type: 'my-cards'}
   | {type: 'wishlist'};
@@ -54,11 +62,27 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
   const shopUserEmail = account && account.email;
   const isLoggedIn = account && account.isLoggedIn;
 
+  const [screen, setScreen] = useState<ScreenState>({type: 'browse'});
+  const [isHeaderOverflowHiddenState, setIsHeaderOverflowHidden] =
+    useState<boolean>(true);
+
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, isHeaderOverflowHiddenState),
+    [SCREEN_WIDTH, SCREEN_HEIGHT, isHeaderOverflowHiddenState],
+  );
 
-  const [screen, setScreen] = useState<ScreenState>({type: 'browse'});
+  useEffect(() => {
+    switch (screen.type) {
+      case 'my-cards':
+        setIsHeaderOverflowHidden(false);
+        break;
+      default:
+        setIsHeaderOverflowHidden(true);
+        break;
+    }
+  }, [screen]);
 
   const dispatch = useAppDispatch();
   if (__DEV__) {
@@ -78,9 +102,9 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
     switch (screen.type) {
       case 'browse':
         return 0;
-      case 'wishlist':
-        return 1;
       case 'my-cards':
+        return 1;
+      case 'wishlist':
         return 2;
       default:
         return 0;
@@ -93,10 +117,10 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
         setScreen({type: 'browse'});
         break;
       case 1:
-        setScreen({type: 'wishlist'});
+        setScreen({type: 'my-cards'});
         break;
       case 2:
-        setScreen({type: 'my-cards'});
+        setScreen({type: 'wishlist'});
         break;
     }
   };
@@ -111,15 +135,23 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
     }
   };
 
-  const handlePurchaseSuccess = (giftCard: GiftCard) => {
+  const handlePaymentSent = (txid: string) => {
     if (screen.type === 'payment') {
-      setScreen({type: 'success', brand: screen.brand, giftCard});
+      setScreen({type: 'payment-sent', txid});
     }
   };
 
+  // NOTE: Keep it, used for when giftcards purchased bypassing cryptotransaction,
+  // for purchases using balance or dev purposes
+  // const handlePurchaseSuccess = (giftCard: GiftCard) => {
+  //   if (screen.type === 'payment') {
+  //     setScreen({type: 'success', brand: screen.brand, giftCard});
+  //   }
+  // };
+
   const handlePaymentBack = () => {
     if (screen.type === 'payment') {
-      setScreen({type: 'purchase', brand: screen.brand});
+      setScreen({type: 'browse'});
     }
   };
 
@@ -159,14 +191,14 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
                 <View style={styles.imageContainer}>
                   <Image
                     style={styles.image}
-                    source={require('../../assets/images/gramophone-art.png')}
+                    source={require('../../assets/images/shop-card.png')}
                   />
                 </View>
 
                 <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
                   <View style={styles.switchContainer}>
                     <TripleSwitch
-                      options={['Browse', 'Wishlist', 'My Cards']}
+                      options={['Gift Cards', 'Available', 'Wishlist']}
                       selectedIndex={getSelectedIndex()}
                       onSelectionChange={handleSwitchChange}
                       width={SCREEN_WIDTH - getSpacing(SCREEN_HEIGHT).md * 2}
@@ -197,17 +229,21 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
                 <PayForGiftCard
                   initiateResponse={screen.initiateResponse}
                   onBack={handlePaymentBack}
-                  onSuccess={handlePurchaseSuccess}
+                  onSuccess={handlePaymentSent}
                 />
               )}
 
-              {screen.type === 'success' && (
+              {screen.type === 'payment-sent' && (
+                <PaymentSent txid={screen.txid} onDone={handleDone} />
+              )}
+
+              {/* {screen.type === 'success' && (
                 <PurchaseSuccess
                   brand={screen.brand}
                   giftCard={screen.giftCard}
                   onDone={handleDone}
                 />
-              )}
+              )} */}
 
               {screen.type === 'my-cards' && <MyGiftCards />}
 
@@ -234,7 +270,11 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({initialBrand}) => {
   );
 };
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  _screenWidth: number,
+  screenHeight: number,
+  isHeaderOverflowHidden: boolean,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -244,7 +284,7 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       paddingTop: getSpacing(screenHeight).header,
     },
     headerContainer: {
-      overflow: 'hidden',
+      overflow: isHeaderOverflowHidden ? 'hidden' : 'visible',
     },
     imageContainer: {
       position: 'absolute',
@@ -255,8 +295,10 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       zIndex: 1,
     },
     image: {
+      width: '80%',
       height: '100%',
       objectFit: 'contain',
+      opacity: 0.5,
     },
     switchContainer: {
       paddingHorizontal: getSpacing(screenHeight).md,
@@ -287,7 +329,7 @@ export const GiftCardShopNavigationOptions = (
   navigation: any,
 ): StackNavigationOptions => {
   const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
+  const styles = getStyles(width, height, true);
 
   return {
     headerTransparent: true,

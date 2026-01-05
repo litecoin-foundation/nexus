@@ -233,7 +233,7 @@ export function useInitiatePurchaseGiftCard(): UseMutationResult<
   return {mutate, data, loading, error, reset};
 }
 
-// Purchase call
+// Purchase call FOR TESTING ONLY
 export function usePurchaseGiftCard(): UseMutationResult<
   GiftCard,
   PurchaseRequest

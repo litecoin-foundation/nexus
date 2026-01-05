@@ -112,7 +112,7 @@ const SignUpForm: React.FC<Props> = () => {
           <View style={styles.imageContainer}>
             <Image
               style={styles.image}
-              source={require('../../assets/images/gramophone-art.png')}
+              source={require('../../assets/images/shop-card.png')}
             />
           </View>
 
@@ -203,7 +203,7 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     topContainer: {
       width: '100%',
-      height: screenHeight * 0.62,
+      height: screenHeight * 0.55,
       backgroundColor: '#0070F0',
       borderBottomLeftRadius: screenHeight * 0.04,
       borderBottomRightRadius: screenHeight * 0.04,
@@ -212,13 +212,16 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     imageContainer: {
       width: '100%',
-      height: screenHeight * 0.55,
+      height: screenHeight * 0.4,
+      alignItems: 'center',
+      zIndex: 1,
       marginBottom: screenHeight * 0.12 * -1,
     },
     image: {
-      width: '100%',
+      width: '80%',
       height: '100%',
       objectFit: 'contain',
+      opacity: 0.5,
     },
     formContainer: {
       width: '100%',

@@ -1,6 +1,6 @@
 import React, {useState, useContext} from 'react';
 import {ScrollView, View, Text, StyleSheet, RefreshControl} from 'react-native';
-import {GiftCardInApp, isExpired} from '../../services/giftcards';
+import {isExpired} from '../../services/giftcards';
 import {useAppSelector} from '../../store/hooks';
 import {getSpacing, getCommonStyles} from './theme';
 import {LoadingView} from './LoadingView';
@@ -9,11 +9,7 @@ import {GiftCardItem} from './GiftCardItem';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface MyFavouriteCardsProps {
-  onViewCard?: (giftCard: GiftCardInApp) => void;
-}
-
-export function MyFavouriteCards({onViewCard}: MyFavouriteCardsProps) {
+export function MyFavouriteCards() {
   const giftCards = useAppSelector(state => state.nexusshopaccount.giftCards);
   const loading = useAppSelector(state => state.nexusshopaccount.loading);
 
@@ -62,12 +58,7 @@ export function MyFavouriteCards({onViewCard}: MyFavouriteCardsProps) {
         <View style={styles.section}>
           <Text style={commonStyles.subtitle}>Active Favourite Cards</Text>
           {activeFavouriteCards.map(gc => (
-            <GiftCardItem
-              key={gc.id}
-              giftCard={gc}
-              onPress={() => onViewCard?.(gc)}
-              onUpdate={() => {}} // No need for refetch as we're using Redux store
-            />
+            <GiftCardItem key={gc.id} giftCard={gc} />
           ))}
         </View>
       )}
@@ -76,12 +67,7 @@ export function MyFavouriteCards({onViewCard}: MyFavouriteCardsProps) {
         <View style={[styles.section, {opacity: 0.7}]}>
           <Text style={commonStyles.subtitle}>Past Favourite Cards</Text>
           {otherFavouriteCards.map(gc => (
-            <GiftCardItem
-              key={gc.id}
-              giftCard={gc}
-              onPress={() => onViewCard?.(gc)}
-              onUpdate={() => {}} // No need for refetch as we're using Redux store
-            />
+            <GiftCardItem key={gc.id} giftCard={gc} />
           ))}
         </View>
       )}

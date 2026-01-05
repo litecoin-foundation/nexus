@@ -6,51 +6,26 @@ import {
   StyleSheet,
   Linking,
   Alert,
+  Image,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {
-  GiftCard,
-  isExpired,
-  daysUntilExpiration,
-} from '../../services/giftcards';
-import {useRedeemGiftCard} from './hooks';
-import {
-  colors,
-  getSpacing,
-  getBorderRadius,
-  getFontSize,
-  getCommonStyles,
-} from './theme';
+import {GiftCard} from '../../services/giftcards';
+import {colors, getSpacing, getBorderRadius, getFontSize} from './theme';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
+const backIcon = require('../../assets/images/back-icon.png');
+
 interface GiftCardItemProps {
   giftCard: GiftCard;
-  onPress?: () => void;
-  onUpdate: () => void;
 }
 
-export function GiftCardItem({giftCard, onPress, onUpdate}: GiftCardItemProps) {
+export function GiftCardItem({giftCard}: GiftCardItemProps) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [expanded, setExpanded] = useState(false);
-  const {mutate: redeem, loading: redeeming} = useRedeemGiftCard();
-
-  const expired = isExpired(giftCard);
-  const daysLeft = daysUntilExpiration(giftCard);
-
-  const handleRedeem = async () => {
-    try {
-      await redeem(giftCard.id);
-      onUpdate();
-      Alert.alert('Success', 'Gift card marked as redeemed');
-    } catch {
-      Alert.alert('Error', 'Failed to mark gift card as redeemed');
-    }
-  };
 
   const openUrl = () => {
     if (giftCard.redeemUrl) {
@@ -65,177 +40,173 @@ export function GiftCardItem({giftCard, onPress, onUpdate}: GiftCardItemProps) {
     }
   };
 
-  const getStatusBadgeStyle = () => {
-    if (expired)
-      return {
-        container: commonStyles.badgeExpired,
-        text: commonStyles.badgeExpiredText,
-      };
-    switch (giftCard.status) {
-      case 'active':
-        return {
-          container: commonStyles.badgeActive,
-          text: commonStyles.badgeActiveText,
-        };
-      case 'redeemed':
-        return {
-          container: commonStyles.badgeRedeemed,
-          text: commonStyles.badgeRedeemedText,
-        };
-      default:
-        return {
-          container: commonStyles.badgeRedeemed,
-          text: commonStyles.badgeRedeemedText,
-        };
-    }
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   };
 
-  const badgeStyle = getStatusBadgeStyle();
-
   return (
-    <TouchableOpacity
-      style={commonStyles.card}
-      onPress={() => setExpanded(!expanded)}
-      activeOpacity={0.7}>
-      <View style={commonStyles.spaceBetween}>
-        <View>
-          <Text style={styles.cardBrandName}>{giftCard.brand}</Text>
-          <Text style={styles.cardAmount}>{giftCard.faceValue.amount}</Text>
+    <View style={styles.cardContainer}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => setExpanded(!expanded)}
+        activeOpacity={0.7}>
+        <View style={styles.logoContainer}>
+          <Text style={styles.brandLogoText}>{giftCard.brand}</Text>
         </View>
-        <View style={{alignItems: 'flex-end'}}>
-          <View style={[commonStyles.badge, badgeStyle.container]}>
-            <Text style={badgeStyle.text}>
-              {expired ? 'EXPIRED' : giftCard.status.toUpperCase()}
-            </Text>
-          </View>
-          {!expired && giftCard.status === 'active' && daysLeft <= 30 && (
-            <Text
-              style={[
-                commonStyles.caption,
-                {
-                  color: colors.warning,
-                  marginTop: getSpacing(SCREEN_HEIGHT).xs,
-                },
-              ]}>
-              {daysLeft} days left
-            </Text>
-          )}
+        <View style={styles.cardInfo}>
+          <Text style={styles.cardDate}>
+            {formatDate(giftCard.purchasedAt)}
+          </Text>
+          <Text style={styles.cardAmount}>
+            {giftCard.faceValue.currency === 'USD' ? '$' : ''}
+            {giftCard.faceValue.amount}
+          </Text>
         </View>
-      </View>
+        <View style={styles.chevronContainer}>
+          <Image
+            source={backIcon}
+            style={[
+              styles.chevronIcon,
+              {transform: [{rotate: expanded ? '90deg' : '-90deg'}]},
+            ]}
+          />
+        </View>
+      </TouchableOpacity>
 
       {expanded && (
-        <View style={styles.cardDetails}>
-          <View style={commonStyles.divider} />
-
-          {giftCard.redeemUrl && (
-            <TouchableOpacity style={styles.detailButton} onPress={openUrl}>
-              <Text style={styles.detailButtonText}>View Gift Card →</Text>
-            </TouchableOpacity>
-          )}
-
-          {giftCard.redeemCode && (
-            <View style={styles.codeSection}>
-              <Text style={commonStyles.label}>Code</Text>
-              <View style={commonStyles.row}>
-                <Text style={styles.detailCode}>{giftCard.redeemCode}</Text>
-                <TouchableOpacity
-                  onPress={copyCode}
-                  style={styles.copySmallButton}>
-                  <Text style={styles.copySmallText}>Copy</Text>
-                </TouchableOpacity>
+        <View style={styles.expandedContent}>
+          {giftCard.redeemCode ? (
+            <View style={styles.codeRow}>
+              <View style={styles.codePill}>
+                <Text style={styles.codePillText}>{giftCard.redeemCode}</Text>
               </View>
-              {giftCard.pin && (
-                <View style={{marginTop: getSpacing(SCREEN_HEIGHT).sm}}>
-                  <Text style={commonStyles.label}>PIN</Text>
-                  <Text style={styles.detailCode}>{giftCard.pin}</Text>
-                </View>
-              )}
+              <TouchableOpacity
+                onPress={copyCode}
+                style={styles.copyIconButton}>
+                <Text style={styles.copyIcon}>⧉</Text>
+              </TouchableOpacity>
             </View>
-          )}
-
-          <Text style={commonStyles.caption}>
-            Purchased: {new Date(giftCard.purchasedAt).toLocaleDateString()}
-          </Text>
-          <Text style={commonStyles.caption}>
-            Expires: {new Date(giftCard.expirationDate).toLocaleDateString()}
-          </Text>
-
-          {giftCard.status === 'active' && !expired && (
-            <TouchableOpacity
-              style={[styles.markRedeemedButton, redeeming && {opacity: 0.5}]}
-              onPress={handleRedeem}
-              disabled={redeeming}>
-              <Text style={styles.markRedeemedText}>
-                {redeeming ? 'Updating...' : 'Mark as Redeemed'}
-              </Text>
-            </TouchableOpacity>
+          ) : (
+            giftCard.redeemUrl && (
+              <TouchableOpacity style={styles.detailButton} onPress={openUrl}>
+                <Text style={styles.detailButtonText}>View Gift Card</Text>
+              </TouchableOpacity>
+            )
           )}
         </View>
       )}
-    </TouchableOpacity>
+    </View>
   );
 }
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
-    cardBrandName: {
-      fontSize: getFontSize(screenHeight).md,
-      fontWeight: '600',
+    cardContainer: {
+      backgroundColor: colors.white,
+      borderRadius: getBorderRadius(screenHeight).lg,
+      marginBottom: getSpacing(screenHeight).md,
+      shadowColor: colors.black,
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 3,
+      overflow: 'hidden',
+    },
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: getSpacing(screenHeight).md,
+    },
+    logoContainer: {
+      width: screenWidth * 0.2,
+      height: screenWidth * 0.15,
+      backgroundColor: colors.grayLight,
+      borderRadius: getBorderRadius(screenHeight).md,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      padding: getSpacing(screenHeight).sm,
+    },
+    brandLogoText: {
+      fontSize: getFontSize(screenHeight).sm,
+      fontWeight: '700',
       color: colors.text,
       textTransform: 'capitalize',
+      textAlign: 'center',
+    },
+    cardInfo: {
+      flex: 1,
+      marginLeft: getSpacing(screenHeight).md,
+    },
+    cardDate: {
+      fontSize: getFontSize(screenHeight).sm,
+      color: colors.gray,
     },
     cardAmount: {
       fontSize: getFontSize(screenHeight).lg,
-      fontWeight: '700',
-      color: colors.success,
+      fontWeight: '600',
+      color: colors.text,
       marginTop: getSpacing(screenHeight).xs,
     },
-    cardDetails: {
-      marginTop: getSpacing(screenHeight).md,
+    chevronContainer: {
+      width: screenWidth * 0.1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    chevronIcon: {
+      width: screenWidth * 0.05,
+      height: screenWidth * 0.05,
+      tintColor: colors.gray,
+      resizeMode: 'contain',
+    },
+    expandedContent: {
+      paddingHorizontal: getSpacing(screenHeight).md,
+      paddingBottom: getSpacing(screenHeight).md,
+    },
+    codeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    codePill: {
+      backgroundColor: colors.text,
+      paddingVertical: getSpacing(screenHeight).sm,
+      paddingHorizontal: getSpacing(screenHeight).lg,
+      borderRadius: getBorderRadius(screenHeight).md,
+    },
+    codePillText: {
+      color: colors.white,
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '600',
+      fontFamily: 'monospace',
+      letterSpacing: 1,
+    },
+    copyIconButton: {
+      marginLeft: getSpacing(screenHeight).sm,
+      padding: getSpacing(screenHeight).sm,
+      borderWidth: 1,
+      borderColor: colors.grayMedium,
+      borderRadius: getBorderRadius(screenHeight).sm,
+    },
+    copyIcon: {
+      fontSize: getFontSize(screenHeight).lg,
+      color: colors.text,
     },
     detailButton: {
+      width: '100%',
+      height: screenHeight * 0.04,
       backgroundColor: colors.primary,
       paddingVertical: getSpacing(screenHeight).sm,
       paddingHorizontal: getSpacing(screenHeight).md,
       borderRadius: getBorderRadius(screenHeight).sm,
-      alignSelf: 'flex-start',
-      marginBottom: getSpacing(screenHeight).md,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     detailButtonText: {
-      color: colors.white,
-      fontWeight: '600',
-    },
-    codeSection: {
-      backgroundColor: colors.grayLight,
-      padding: getSpacing(screenHeight).md,
-      borderRadius: getBorderRadius(screenHeight).sm,
-      marginBottom: getSpacing(screenHeight).md,
-    },
-    detailCode: {
-      fontSize: getFontSize(screenHeight).md,
-      fontWeight: '600',
-      fontFamily: 'monospace',
-    },
-    copySmallButton: {
-      marginLeft: getSpacing(screenHeight).md,
-      paddingVertical: getSpacing(screenHeight).xs,
-      paddingHorizontal: getSpacing(screenHeight).sm,
-      backgroundColor: colors.grayMedium,
-      borderRadius: getBorderRadius(screenHeight).sm,
-    },
-    copySmallText: {
-      fontSize: getFontSize(screenHeight).xs,
-      fontWeight: '600',
-    },
-    markRedeemedButton: {
-      marginTop: getSpacing(screenHeight).md,
-      paddingVertical: getSpacing(screenHeight).sm,
-      paddingHorizontal: getSpacing(screenHeight).md,
-      backgroundColor: colors.gray,
-      borderRadius: getBorderRadius(screenHeight).sm,
-      alignSelf: 'flex-start',
-    },
-    markRedeemedText: {
       color: colors.white,
       fontWeight: '600',
     },

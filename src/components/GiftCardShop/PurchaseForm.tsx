@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect, useContext, useState} from 'react';
 import {
   View,
   Text,
@@ -50,6 +50,21 @@ export function PurchaseForm({
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  const [amountText, setAmountText] = useState(
+    amount > 0 ? amount.toString() : '',
+  );
+
+  // Sync text when amount changes externally (e.g., denomination buttons)
+  useEffect(() => {
+    const parsedText = parseFloat(amountText.replace(',', '.'));
+    if (amount > 0 && amount !== parsedText) {
+      setAmountText(amount.toString());
+    } else if (amount === 0 && parsedText > 0) {
+      setAmountText('');
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [amount]);
+
   useEffect(() => {
     if (initiateResponse) {
       onInitiate(initiateResponse);
@@ -59,6 +74,7 @@ export function PurchaseForm({
   useEffect(() => {
     if (initialAmount) {
       setAmount(initialAmount);
+      setAmountText(initialAmount.toString());
     }
   }, [initialAmount, setAmount]);
 
@@ -143,8 +159,13 @@ export function PurchaseForm({
             </Text>
             <TextInput
               style={styles.amountInput}
-              value={amount > 0 ? amount.toString() : ''}
-              onChangeText={text => setAmount(parseFloat(text) || 0)}
+              value={amountText}
+              onChangeText={text => {
+                setAmountText(text);
+                const normalized = text.replace(',', '.');
+                const parsed = parseFloat(normalized);
+                setAmount(isNaN(parsed) ? 0 : parsed);
+              }}
               placeholder={`${minAmount} - ${maxAmount}`}
               keyboardType="decimal-pad"
               placeholderTextColor={colors.grayMedium}
@@ -196,7 +217,7 @@ export function PurchaseForm({
         {loading ? (
           <ActivityIndicator color={colors.white} />
         ) : (
-          <Text style={styles.purchaseButtonText}>Confirm purchase</Text>
+          <Text style={styles.purchaseButtonText}>Proceed</Text>
         )}
       </TouchableOpacity>
     </ScrollView>
@@ -312,7 +333,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: getFontSize(screenHeight).lg,
       fontWeight: '600',
       color: colors.text,
-      backgroundColor: colors.grayLight,
     },
     amountInput: {
       flex: 1,

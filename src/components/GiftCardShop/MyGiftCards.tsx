@@ -1,6 +1,6 @@
 import React, {useState, useContext} from 'react';
 import {ScrollView, View, Text, StyleSheet, RefreshControl} from 'react-native';
-import {GiftCard, isExpired} from '../../services/giftcards';
+import {isExpired} from '../../services/giftcards';
 import {useMyGiftCards} from './hooks';
 import {getSpacing, getCommonStyles} from './theme';
 import {LoadingView} from './LoadingView';
@@ -10,11 +10,7 @@ import {GiftCardItem} from './GiftCardItem';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface MyGiftCardsProps {
-  onViewCard?: (giftCard: GiftCard) => void;
-}
-
-export function MyGiftCards({onViewCard}: MyGiftCardsProps) {
+export function MyGiftCards() {
   const {data: giftCards, loading, error, refetch} = useMyGiftCards();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -50,45 +46,41 @@ export function MyGiftCards({onViewCard}: MyGiftCardsProps) {
   );
 
   return (
-    <ScrollView
-      style={commonStyles.container}
-      contentContainerStyle={commonStyles.scrollContainer}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
-      {activeCards.length > 0 && (
-        <View style={styles.section}>
-          <Text style={commonStyles.subtitle}>Active Gift Cards</Text>
-          {activeCards.map(gc => (
-            <GiftCardItem
-              key={gc.id}
-              giftCard={gc}
-              onPress={() => onViewCard?.(gc)}
-              onUpdate={refetch}
-            />
-          ))}
-        </View>
-      )}
+    <View style={commonStyles.containerPrimary}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={commonStyles.scrollContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        {activeCards.length > 0 && (
+          <View style={styles.section}>
+            <Text style={commonStyles.subtitle}>Active Gift Cards</Text>
+            {activeCards.map(gc => (
+              <GiftCardItem key={gc.id} giftCard={gc} />
+            ))}
+          </View>
+        )}
 
-      {otherCards.length > 0 && (
-        <View style={[styles.section, {opacity: 0.7}]}>
-          <Text style={commonStyles.subtitle}>Past Gift Cards</Text>
-          {otherCards.map(gc => (
-            <GiftCardItem
-              key={gc.id}
-              giftCard={gc}
-              onPress={() => onViewCard?.(gc)}
-              onUpdate={refetch}
-            />
-          ))}
-        </View>
-      )}
-    </ScrollView>
+        {otherCards.length > 0 && (
+          <View style={[styles.section, {opacity: 0.8}]}>
+            <Text style={commonStyles.subtitle}>Past Gift Cards</Text>
+            {otherCards.map(gc => (
+              <GiftCardItem key={gc.id} giftCard={gc} />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const getStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    scrollView: {
+      flex: 1,
+      zIndex: 1,
+    },
     section: {
       marginBottom: getSpacing(screenHeight).lg,
     },

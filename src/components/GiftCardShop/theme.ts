@@ -3,6 +3,7 @@ import {StyleSheet} from 'react-native';
 export const colors = {
   primary: '#0070F0',
   primaryDark: '#0056b3',
+  secondary: '#F2F2F7',
   success: '#34C759',
   successLight: '#d4edda',
   successDark: '#155724',
@@ -17,6 +18,7 @@ export const colors = {
   grayDark: '#636366',
   white: '#FFFFFF',
   black: '#000000',
+  lightBlack: '#333',
   background: '#F2F2F7',
   card: '#FFFFFF',
   text: '#000000',
@@ -80,6 +82,7 @@ export const getFontSize = (screenHeight: number) => {
     lg: screenHeight * 0.018,
     xl: screenHeight * 0.024,
     xxl: screenHeight * 0.032,
+    xxxl: screenHeight * 0.036,
   };
 };
 
@@ -89,6 +92,10 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    containerPrimary: {
+      flex: 1,
+      backgroundColor: colors.primary,
     },
     scrollContainer: {
       flexGrow: 1,
@@ -119,6 +126,12 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: getFontSize(screenHeight).xxl,
       fontWeight: '700',
       color: colors.white,
+      marginBottom: getSpacing(screenHeight).md,
+    },
+    titleBlack: {
+      fontSize: getFontSize(screenHeight).xxl,
+      fontWeight: '700',
+      color: colors.lightBlack,
       marginBottom: getSpacing(screenHeight).md,
     },
     subtitle: {
@@ -170,8 +183,24 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       paddingVertical: getSpacing(screenHeight).md,
       paddingHorizontal: getSpacing(screenHeight).lg,
     },
+    buttonRoundedSecondary: {
+      height: screenHeight * 0.06,
+      backgroundColor: colors.secondary,
+      borderRadius: screenHeight * 0.03,
+      borderWidth: 1,
+      borderColor: colors.grayMedium,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenHeight).lg,
+    },
     buttonText: {
       color: colors.white,
+      fontSize: getFontSize(screenHeight).lg,
+      fontWeight: '600',
+    },
+    buttonTextBlack: {
+      color: colors.lightBlack,
       fontSize: getFontSize(screenHeight).lg,
       fontWeight: '600',
     },
