@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 export interface FaceValue {
   amount: number;
@@ -105,9 +105,8 @@ export class GiftCardClient {
     endpoint: string,
     body?: object,
   ): Promise<T> {
-    const token = await AsyncStorage.getItem('sessionToken');
-    console.log('token');
-    console.log(token);
+    const token = await SecureStore.getItemAsync('sessionToken');
+
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method,
       headers: {

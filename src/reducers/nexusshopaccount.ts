@@ -3,7 +3,7 @@ import {PURGE} from 'redux-persist';
 import {GiftCard, GiftCardInApp, Brand} from '../services/giftcards';
 import {Platform} from 'react-native';
 import {getCountry} from 'react-native-localize';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 interface UserAccount {
   email: string;
@@ -253,7 +253,7 @@ export const verifyOtpCode =
       const {session} = data.data;
 
       if (session) {
-        await AsyncStorage.setItem('sessionToken', session);
+        await SecureStore.setItemAsync('sessionToken', session);
       }
 
       dispatch(verifyOtpSuccess());
