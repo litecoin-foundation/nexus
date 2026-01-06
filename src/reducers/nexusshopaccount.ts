@@ -173,10 +173,11 @@ export const registerOnNexusShop =
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Registration failed: ${response.statusText}`);
+        throw new Error(data.error || 'Registration failed');
       }
-      await response.json();
 
       const userAccount: UserAccount = {
         email,
@@ -187,45 +188,59 @@ export const registerOnNexusShop =
 
       dispatch(setAccount(userAccount));
     } catch (error) {
-      dispatch(
-        setAccountError(
-          error instanceof Error ? error.message : 'Registration failed',
-        ),
-      );
-    } finally {
-      dispatch(setLoginLoading(false));
-    }
-  };
-
-export const loginToNexusShop =
-  (email: string) => async (dispatch: any, getState: any) => {
-    try {
-      dispatch(setLoginLoading(true));
-
-      const resSendOtp = await fetch(`${BASE_API_URL}/api/shop/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      if (
+        error instanceof Error &&
+        error.message ===
+          'An account with this email already exists. Please sign in instead.'
+      ) {
+        const userAccount: UserAccount = {
           email,
-        }),
-      });
-
-      if (!resSendOtp.ok) {
-        throw new Error(`Login failed: ${resSendOtp.statusText}`);
+          uniqueId,
+          isLoggedIn: false,
+          registrationDate: Math.floor(Date.now() / 1000),
+        };
+        dispatch(setAccount(userAccount));
+        await dispatch(loginToNexusShop(email));
+      } else {
+        dispatch(
+          setAccountError(
+            error instanceof Error ? error.message : 'Registration failed',
+          ),
+        );
+        throw error;
       }
-      await resSendOtp.json();
-    } catch (error) {
-      dispatch(
-        setAccountError(
-          error instanceof Error ? error.message : 'Login failed',
-        ),
-      );
     } finally {
       dispatch(setLoginLoading(false));
     }
   };
+
+const loginToNexusShop = (email: string) => async (dispatch: any) => {
+  try {
+    dispatch(setLoginLoading(true));
+
+    const response = await fetch(`${BASE_API_URL}/api/shop/send-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Login failed');
+    }
+  } catch (error) {
+    dispatch(
+      setAccountError(error instanceof Error ? error.message : 'Login failed'),
+    );
+  } finally {
+    dispatch(setLoginLoading(false));
+  }
+};
 
 export const verifyOtpCode =
   (email: string, uniqueId: string, otpCode: string) =>
@@ -245,11 +260,12 @@ export const verifyOtpCode =
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`OTP verification failed: ${response.statusText}`);
+        throw new Error(data.error || 'OTP verification failed');
       }
 
-      const data = await response.json();
       const {session} = data.data;
 
       if (session) {
@@ -263,55 +279,7 @@ export const verifyOtpCode =
           error instanceof Error ? error.message : 'OTP verification failed',
         ),
       );
-    }
-  };
-
-export const loginToNexusShopTest =
-  (email: string, uniqueId: string) => async (dispatch: any) => {
-    try {
-      dispatch(setLoginLoading(true));
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const userAccount: UserAccount = {
-        email,
-        uniqueId,
-        isLoggedIn: false,
-        registrationDate: Math.floor(Date.now() / 1000),
-      };
-
-      dispatch(setAccount(userAccount));
-    } catch (error) {
-      dispatch(
-        setAccountError(
-          error instanceof Error ? error.message : 'Login failed',
-        ),
-      );
-    }
-  };
-
-export const verifyOtpCodeTest =
-  (email: string, uniqueId: string, otpCode: string) =>
-  async (dispatch: any) => {
-    try {
-      dispatch(setLoginLoading(true));
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Simple test validation - accept any 6-digit code
-      if (otpCode.length === 6 && /^\d+$/.test(otpCode)) {
-        dispatch(verifyOtpSuccess());
-      } else {
-        throw new Error('Invalid OTP code. Please enter a 6-digit code.');
-      }
-    } catch (error) {
-      dispatch(
-        setAccountError(
-          error instanceof Error ? error.message : 'OTP verification failed',
-        ),
-      );
+      throw error;
     }
   };
 
@@ -331,11 +299,13 @@ export const fetchUserGiftCards =
         },
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch gift cards: ${response.statusText}`);
+        throw new Error(data.error || 'Failed to fetch gift cards');
       }
 
-      const giftCards: GiftCard[] = await response.json();
+      const giftCards: GiftCard[] = data;
       const giftCardsWithFavoured: GiftCardInApp[] = giftCards.map(card => ({
         ...card,
         favoured: false,

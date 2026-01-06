@@ -191,8 +191,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         <Text style={[commonStyles.errorText, styles.errorText]}>
           {otpError}
         </Text>
-
-        {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
       </CustomSafeAreaView>
       <NumpadInput
         submitButton={submitButton}

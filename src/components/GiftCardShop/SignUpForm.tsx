@@ -16,7 +16,6 @@ import {useSelector} from 'react-redux';
 import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
 import {useAppDispatch} from '../../store/hooks';
 import {
-  loginToNexusShop,
   registerOnNexusShop,
   clearAccount,
 } from '../../reducers/nexusshopaccount';
@@ -79,7 +78,7 @@ const SignUpForm: React.FC<Props> = () => {
     if (hasErrors) return;
 
     try {
-      dispatch(registerOnNexusShop(email.trim(), uniqueId));
+      await dispatch(registerOnNexusShop(email.trim(), uniqueId));
       navigation.navigate('VerifyOTP');
     } catch {
       Alert.alert('Sign Up Failed', 'Please try again later.');
@@ -153,7 +152,7 @@ const SignUpForm: React.FC<Props> = () => {
               {loginLoading ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Text style={commonStyles.buttonText}>Sign Up</Text>
+                <Text style={commonStyles.buttonText}>Sign Up / Sign In</Text>
               )}
             </TouchableOpacity>
           )}
