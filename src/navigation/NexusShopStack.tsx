@@ -2,7 +2,7 @@ import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import GiftCardShop, {
   GiftCardShopNavigationOptions,
-} from '../screens/GiftCardShop/GiftCardShop';
+} from '../screens/GiftCardShop/GiftCardShopDeprecated';
 import VerifyOTP, {
   VerifyOTPNavigationOptions,
 } from '../screens/GiftCardShop/VerifyOTP';

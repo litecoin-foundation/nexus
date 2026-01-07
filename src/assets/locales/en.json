@@ -61,6 +61,7 @@
     "buy": "Buy",
     "sell": "Sell",
     "convert": "Convert",
+    "shop": "Shop",
     "send": "Send",
     "receive": "Receive",
     "latest_txs": "Latest Transactions",

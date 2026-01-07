@@ -10,10 +10,7 @@ import {
   Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
 import {useSelector} from 'react-redux';
-import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
 import {useAppDispatch} from '../../store/hooks';
 import {
   registerOnNexusShop,
@@ -24,9 +21,11 @@ import {colors, getSpacing, getCommonStyles} from './theme';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+interface Props {
+  navigation: any;
+}
 
-const SignUpForm: React.FC<Props> = () => {
+const SignUpForm: React.FC<Props> = ({navigation}) => {
   const {account} = useSelector((state: any) => state.nexusshopaccount);
   const shopUserEmail = account && account.email;
 
@@ -39,8 +38,6 @@ const SignUpForm: React.FC<Props> = () => {
   const [emailError, setEmailError] = useState('');
 
   const dispatch = useAppDispatch();
-  const navigation =
-    useNavigation<StackNavigationProp<NexusShopStackParamList>>();
   const {loginLoading, error} = useSelector(
     (state: any) => state.nexusshopaccount,
   );
@@ -79,14 +76,14 @@ const SignUpForm: React.FC<Props> = () => {
 
     try {
       await dispatch(registerOnNexusShop(email.trim(), uniqueId));
-      navigation.navigate('VerifyOTP');
+      navigation.navigate('NexusShopStack', {screen: 'VerifyOTP'});
     } catch {
       Alert.alert('Sign Up Failed', 'Please try again later.');
     }
   };
 
   const handleToVerification = () => {
-    navigation.navigate('VerifyOTP');
+    navigation.navigate('NexusShopStack', {screen: 'VerifyOTP'});
   };
 
   const handleResetShopUser = () => {
@@ -156,20 +153,19 @@ const SignUpForm: React.FC<Props> = () => {
               )}
             </TouchableOpacity>
           )}
-        </View>
 
-        {__DEV__ ? (
-          <View style={styles.buttonContainer}>
-            <Text style={commonStyles.errorText}>DEV</Text>
-            <TouchableOpacity
-              style={commonStyles.buttonRounded}
-              onPress={handleResetShopUser}>
-              <Text style={commonStyles.buttonText}>Reset Shop User</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <></>
-        )}
+          {__DEV__ ? (
+            <View style={styles.resetButtonContainer}>
+              <TouchableOpacity
+                style={commonStyles.buttonRounded}
+                onPress={handleResetShopUser}>
+                <Text style={commonStyles.buttonText}>Reset Shop User</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <></>
+          )}
+        </View>
       </CustomSafeAreaView>
     </LinearGradient>
   );
@@ -185,8 +181,8 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     topContainer: {
       width: '100%',
-      height: screenHeight * 0.55,
-      backgroundColor: '#0070F0',
+      height: screenHeight * 0.42,
+      backgroundColor: colors.primaryLight,
       borderBottomLeftRadius: screenHeight * 0.04,
       borderBottomRightRadius: screenHeight * 0.04,
       justifyContent: 'space-between',
@@ -194,7 +190,7 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     imageContainer: {
       width: '100%',
-      height: screenHeight * 0.4,
+      height: screenHeight * 0.32,
       alignItems: 'center',
       zIndex: 1,
       marginBottom: screenHeight * 0.12 * -1,
@@ -210,6 +206,7 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       paddingLeft: getSpacing(screenHeight).xl,
       paddingRight: getSpacing(screenHeight).xl,
       paddingBottom: getSpacing(screenHeight).xl,
+      zIndex: 2,
     },
     inputContainer: {},
     inputError: {
@@ -218,6 +215,9 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     buttonContainer: {
       width: '100%',
       padding: getSpacing(screenHeight).xl,
+    },
+    resetButtonContainer: {
+      paddingTop: 10,
     },
   });
 

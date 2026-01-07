@@ -94,10 +94,12 @@ export class GiftCardClient {
   private baseUrl: string = __DEV__
     ? 'http://mylocalip:3000'
     : 'https://api.nexuswallet.com';
-  private uuid: string;
+  private email: string;
+  private uniqueId: string;
 
-  constructor(uuid: string) {
-    this.uuid = uuid;
+  constructor(email: string, uniqueId: string) {
+    this.email = email;
+    this.uniqueId = uniqueId;
   }
 
   private async request<T>(
@@ -111,7 +113,6 @@ export class GiftCardClient {
       method,
       headers: {
         'Content-Type': 'application/json',
-        // Authorization: `Bearer ${this.uuid}`,
         Authorization: `Bearer ${token}`,
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -239,6 +240,9 @@ export function formatCurrency(amount: number, currency: string): string {
   return `${symbol}${amount.toFixed(2)}`;
 }
 
-export function createGiftCardClient(uniqueId: string): GiftCardClient {
-  return new GiftCardClient(uniqueId);
+export function createGiftCardClient(
+  email: string,
+  uniqueId: string,
+): GiftCardClient {
+  return new GiftCardClient(email, uniqueId);
 }

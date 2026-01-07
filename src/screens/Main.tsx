@@ -43,7 +43,8 @@ import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
 import LoadingIndicator from '../components/LoadingIndicator';
-import Convert from '../components/Cards/Convert';
+// import Convert from '../components/Cards/Convert';
+import GiftCardShop from '../components/Cards/GiftCardShop';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
 import {unsetDeeplink, decodeAppDeeplink} from '../reducers/deeplinks';
@@ -467,15 +468,16 @@ const Main: React.FC<Props> = props => {
           disabled={!isInternetReachable ? true : false}
         />
         <DashboardButton
-          textKey="convert"
+          textKey="shop"
           wider={true}
-          imageSource={require('../assets/icons/convert-icon.png')}
+          imageSource={require('../assets/icons/shop.png')}
           handlePress={() => {
             setBottomSheetFolded(false);
             setActiveTab(3);
           }}
           active={activeTab === 3}
           disabled={!isInternetReachable ? true : false}
+          sizePercentage={80}
         />
         <DashboardButton
           textKey="send"
@@ -539,7 +541,8 @@ const Main: React.FC<Props> = props => {
         activeTab={activeTab}
         buyViewComponent={<Buy navigation={navigation} />}
         sellViewComponent={<Sell navigation={navigation} />}
-        convertViewComponent={<Convert navigation={navigation} />}
+        // convertViewComponent={<Convert navigation={navigation} />}
+        shopViewComponent={<GiftCardShop navigation={navigation} />}
         sendViewComponent={
           <Send route={route} navigation={navigation} ref={sendCardRef} />
         }

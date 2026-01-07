@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {FlatList, StyleSheet, RefreshControl} from 'react-native';
+import {FlatList, StyleSheet, RefreshControl, View} from 'react-native';
 import {Brand} from '../../services/giftcards';
 import {useBrands} from './hooks';
 import {getSpacing} from './theme';
@@ -41,26 +41,32 @@ export function BrandGrid({onSelectBrand}: BrandGridProps) {
   }
 
   return (
-    <FlatList
-      data={brands}
-      keyExtractor={item => item.slug}
-      contentContainerStyle={styles.gridContainer}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      renderItem={({item}) => (
-        <BrandCard
-          brand={item}
-          onPress={(amount?: number) => onSelectBrand(item, amount)}
-        />
-      )}
-      extraData={brands?.length}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={brands}
+        keyExtractor={item => item.slug}
+        contentContainerStyle={styles.gridContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        renderItem={({item}) => (
+          <BrandCard
+            brand={item}
+            onPress={(amount?: number) => onSelectBrand(item, amount)}
+          />
+        )}
+        extraData={brands?.length}
+      />
+    </View>
   );
 }
 
 const getStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    container: {
+      flex: 1,
+      zIndex: 1,
+    },
     gridContainer: {
       padding: getSpacing(screenHeight).md,
     },

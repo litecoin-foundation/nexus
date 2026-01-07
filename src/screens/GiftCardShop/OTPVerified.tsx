@@ -2,7 +2,7 @@ import React, {useContext, useEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
+import {NewWalletStackParamList} from '../../navigation/types';
 
 import {
   colors,
@@ -20,7 +20,7 @@ const OTPVerified: React.FC = () => {
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const navigation =
-    useNavigation<StackNavigationProp<NexusShopStackParamList>>();
+    useNavigation<StackNavigationProp<NewWalletStackParamList>>();
 
   // TODO: gestureEnabled: false is currently not working, check on it later
   useEffect(() => {
@@ -34,10 +34,11 @@ const OTPVerified: React.FC = () => {
   }, [navigation]);
 
   const handleGoBack = () => {
-    navigation.reset({
-      index: 0,
-      routes: [{name: 'GiftCardShop'}],
-    });
+    // navigation.reset({
+    //   index: 0,
+    //   routes: [{name: 'GiftCardShop'}],
+    // });
+    navigation.navigate({name: 'Main', params: {}});
   };
 
   return (

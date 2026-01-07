@@ -102,7 +102,7 @@ export function PurchaseForm({
 
   return (
     <ScrollView
-      style={commonStyles.container}
+      style={styles.scrollView}
       contentContainerStyle={styles.formContainer}>
       <View style={styles.headerCard}>
         <View style={styles.logoContainer}>
@@ -226,6 +226,10 @@ export function PurchaseForm({
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    scrollView: {
+      flex: 1,
+      zIndex: 1,
+    },
     formContainer: {
       padding: getSpacing(screenHeight).md,
       paddingBottom: getSpacing(screenHeight).xl,
