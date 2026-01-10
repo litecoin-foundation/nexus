@@ -337,6 +337,12 @@
     "shop": "Shop",
     "flexa": "Flexa",
     "verify": "Verify",
-    "enter_your_code": "Enter your code"
+    "verify_code": "Verify Code",
+    "enter_your_code": "Enter your code",
+    "active_gif_cards": "Active Gift Cards",
+    "past_gif_cards": "Past Gift Cards",
+    "check_email": "Check your email",
+    "we_sent_code_to": "We've sent a one-time verification code to {{email}}",
+    "pls_check_email": "Please check your inbox and enter the code to complete your registration"
   }
 }

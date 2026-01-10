@@ -4,8 +4,9 @@ import {GiftCard, GiftCardInApp, Brand} from '../services/giftcards';
 import {Platform} from 'react-native';
 import {getCountry} from 'react-native-localize';
 import * as SecureStore from 'expo-secure-store';
+import {AppThunk} from './types';
 
-interface UserAccount {
+interface IUserAccount {
   email: string;
   uniqueId: string;
   isLoggedIn: boolean;
@@ -13,12 +14,15 @@ interface UserAccount {
 }
 
 interface INexusShopAccount {
-  account: UserAccount | null;
+  account: IUserAccount | null;
   giftCards: GiftCardInApp[];
   wishlistBrands: Brand[];
   loading: boolean;
   error: string | null;
   loginLoading: boolean;
+  failedLoginAttempts: number;
+  timeLock: boolean;
+  timeLockAt: number;
 }
 
 const initialState: INexusShopAccount = {
@@ -28,10 +32,16 @@ const initialState: INexusShopAccount = {
   loading: false,
   error: null,
   loginLoading: false,
+  failedLoginAttempts: 0,
+  timeLock: false,
+  timeLockAt: 0,
 };
 
+const MAX_LOGIN_ATTEMPTS = 3;
+const TIME_LOCK_IN_SEC = 900;
+
 const BASE_API_URL = __DEV__
-  ? 'http://mylocalip:3000'
+  ? 'https://stage-api.nexuswallet.com'
   : 'https://api.nexuswallet.com';
 
 export const nexusShopAccountSlice = createSlice({
@@ -55,7 +65,7 @@ export const nexusShopAccountSlice = createSlice({
       state.loading = false;
       state.loginLoading = false;
     },
-    setAccount: (state, action: PayloadAction<UserAccount>) => {
+    setAccount: (state, action: PayloadAction<IUserAccount>) => {
       state.account = action.payload;
       state.loading = false;
       state.loginLoading = false;
@@ -68,6 +78,34 @@ export const nexusShopAccountSlice = createSlice({
       state.loading = false;
       state.loginLoading = false;
       state.error = null;
+    },
+    resetAccount: state => {
+      state.account = null;
+      state.giftCards = [];
+      state.wishlistBrands = [];
+      state.loading = false;
+      state.loginLoading = false;
+      state.error = null;
+      state.failedLoginAttempts = 0;
+      state.timeLock = false;
+      state.timeLockAt = 0;
+    },
+    addFailedLoginAttempt: state => {
+      state.failedLoginAttempts =
+        state.failedLoginAttempts === undefined
+          ? 1
+          : state.failedLoginAttempts + 1;
+    },
+    timeLockNSAccount: state => {
+      state.failedLoginAttempts = 0;
+      state.timeLock = true;
+      state.timeLockAt = Math.floor(Date.now() / 1000);
+      // state.account = null;
+      // state.giftCards = [];
+      // state.wishlistBrands = [];
+      // state.loading = false;
+      // state.loginLoading = false;
+      // state.error = null;
     },
     resetWishlist: state => {
       state.wishlistBrands = [];
@@ -148,6 +186,44 @@ export const nexusShopAccountSlice = createSlice({
   },
 });
 
+/**
+ * Handle failed login attempts
+ */
+const handleFailedAttempt =
+  (failedLoginAttempts: any): AppThunk =>
+  dispatch => {
+    const nextAttemptCount = failedLoginAttempts + 1;
+
+    if (nextAttemptCount >= MAX_LOGIN_ATTEMPTS) {
+      dispatch(timeLockNSAccount());
+    } else {
+      dispatch(addFailedLoginAttempt());
+    }
+  };
+
+/**
+ * Check if a lock period has expired
+ */
+const isLockExpired = (lockTime: any, lockDuration: any) => {
+  return Number(lockTime || 0) + lockDuration < Math.floor(Date.now() / 1000);
+};
+
+/**
+ * Calculate time left in a lock period
+ */
+const calculateTimeLeft = (lockTime: any, lockDuration: any) => {
+  return lockDuration - (Math.floor(Date.now() / 1000) - lockTime);
+};
+
+export const resetFromNexusShop = () => async (dispatch: any) => {
+  await SecureStore.deleteItemAsync('sessionToken');
+  dispatch(resetAccount());
+};
+export const logoutFromNexusShop = () => async (dispatch: any) => {
+  await SecureStore.deleteItemAsync('sessionToken');
+  dispatch(clearAccount());
+};
+
 export const registerOnNexusShop =
   (email: string, uniqueId: string) => async (dispatch: any, getState: any) => {
     const {deviceNotificationToken, currencyCode, languageCode} =
@@ -179,7 +255,7 @@ export const registerOnNexusShop =
         throw new Error(data.error || 'Registration failed');
       }
 
-      const userAccount: UserAccount = {
+      const userAccount: IUserAccount = {
         email,
         uniqueId,
         isLoggedIn: false,
@@ -193,7 +269,7 @@ export const registerOnNexusShop =
         error.message ===
           'An account with this email already exists. Please sign in instead.'
       ) {
-        const userAccount: UserAccount = {
+        const userAccount: IUserAccount = {
           email,
           uniqueId,
           isLoggedIn: false,
@@ -214,39 +290,89 @@ export const registerOnNexusShop =
     }
   };
 
-const loginToNexusShop = (email: string) => async (dispatch: any) => {
-  try {
-    dispatch(setLoginLoading(true));
+const loginToNexusShop =
+  (email: string): AppThunk =>
+  async (dispatch, getState) => {
+    const {timeLock, timeLockAt} = getState().nexusshopaccount!;
 
-    const response = await fetch(`${BASE_API_URL}/api/shop/send-otp`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Login failed');
-    }
-  } catch (error) {
-    dispatch(
-      setAccountError(error instanceof Error ? error.message : 'Login failed'),
-    );
-  } finally {
-    dispatch(setLoginLoading(false));
-  }
-};
-
-export const verifyOtpCode =
-  (email: string, uniqueId: string, otpCode: string) =>
-  async (dispatch: any) => {
     try {
       dispatch(setLoginLoading(true));
+
+      // Maxed out login attempts
+      if (timeLock) {
+        if (isLockExpired(timeLockAt, TIME_LOCK_IN_SEC)) {
+          if (__DEV__) {
+            console.log('NS Account timelock expired');
+          }
+        } else {
+          const timeLeftInSec = calculateTimeLeft(timeLockAt, TIME_LOCK_IN_SEC);
+          throw new Error(
+            `Maxed out login attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`,
+          );
+        }
+      }
+
+      const response = await fetch(`${BASE_API_URL}/api/shop/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+    } catch (error) {
+      dispatch(
+        setAccountError(
+          error instanceof Error ? error.message : 'Login failed',
+        ),
+      );
+      /**
+       * If loginToNexusShop threw, it would propagate to SignUp.tsx and show "Sign Up Failed",
+       * but sign-up didn't fail, just OTP sending.
+       */
+      // throw error;
+    } finally {
+      dispatch(setLoginLoading(false));
+    }
+  };
+
+/**
+ * It is imperative to not setLoginLoading from this function
+ * since it operates in a separate screen, whilst setLoginLoading
+ * rerenders other NexusShopStack screens causing app to crash.
+ */
+export const verifyOtpCode =
+  (
+    email: string,
+    uniqueId: string,
+    otpCode: string,
+    signal?: AbortSignal,
+  ): AppThunk =>
+  async (dispatch, getState) => {
+    const {failedLoginAttempts, timeLock, timeLockAt} =
+      getState().nexusshopaccount!;
+
+    try {
+      // Maxed out code verification attempts
+      if (timeLock) {
+        if (isLockExpired(timeLockAt, TIME_LOCK_IN_SEC)) {
+          if (__DEV__) {
+            console.log('NS Account timelock expired');
+          }
+        } else {
+          const timeLeftInSec = calculateTimeLeft(timeLockAt, TIME_LOCK_IN_SEC);
+          throw new Error(
+            `Maxed out code verification attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`,
+          );
+        }
+      }
 
       const response = await fetch(`${BASE_API_URL}/api/shop/verify-otp`, {
         method: 'POST',
@@ -258,11 +384,13 @@ export const verifyOtpCode =
           uniqueId,
           otpCode,
         }),
+        signal,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        dispatch(handleFailedAttempt(failedLoginAttempts));
         throw new Error(data.error || 'OTP verification failed');
       }
 
@@ -274,6 +402,10 @@ export const verifyOtpCode =
 
       dispatch(verifyOtpSuccess());
     } catch (error) {
+      // Don't dispatch error if request was aborted
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
       dispatch(
         setAccountError(
           error instanceof Error ? error.message : 'OTP verification failed',
@@ -326,6 +458,9 @@ export const {
   setAccountError,
   setAccount,
   clearAccount,
+  resetAccount,
+  timeLockNSAccount,
+  addFailedLoginAttempt,
   resetWishlist,
   setGiftCards,
   addGiftCard,

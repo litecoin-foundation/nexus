@@ -3,6 +3,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import GiftCardShop, {
   GiftCardShopNavigationOptions,
 } from '../screens/GiftCardShop/GiftCardShopDeprecated';
+import SignUp, {SignUpNavigationOptions} from '../screens/GiftCardShop/SignUp';
 import VerifyOTP, {
   VerifyOTPNavigationOptions,
 } from '../screens/GiftCardShop/VerifyOTP';
@@ -10,6 +11,7 @@ import OTPVerified from '../screens/GiftCardShop/OTPVerified';
 
 export type NexusShopStackParamList = {
   GiftCardShop: undefined;
+  SignUp: undefined;
   VerifyOTP:
     | {
         otpCode?: string;
@@ -27,6 +29,11 @@ function NexusShopStack(): React.JSX.Element {
         name="GiftCardShop"
         component={GiftCardShop}
         options={({navigation}) => GiftCardShopNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="SignUp"
+        component={SignUp}
+        options={({navigation}) => SignUpNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="VerifyOTP"

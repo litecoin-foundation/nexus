@@ -92,15 +92,10 @@ export interface ApiResponse<T> {
 
 export class GiftCardClient {
   private baseUrl: string = __DEV__
-    ? 'http://mylocalip:3000'
+    ? 'https://stage-api.nexuswallet.com'
     : 'https://api.nexuswallet.com';
-  private email: string;
-  private uniqueId: string;
 
-  constructor(email: string, uniqueId: string) {
-    this.email = email;
-    this.uniqueId = uniqueId;
-  }
+  constructor() {}
 
   private async request<T>(
     method: string,
@@ -238,11 +233,4 @@ export function formatCurrency(amount: number, currency: string): string {
   };
   const symbol = symbols[currency] || currency + ' ';
   return `${symbol}${amount.toFixed(2)}`;
-}
-
-export function createGiftCardClient(
-  email: string,
-  uniqueId: string,
-): GiftCardClient {
-  return new GiftCardClient(email, uniqueId);
 }

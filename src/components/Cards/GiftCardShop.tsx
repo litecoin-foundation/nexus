@@ -6,7 +6,6 @@ import React, {
   useEffect,
 } from 'react';
 import {View, StyleSheet, TouchableOpacity, Text, Image} from 'react-native';
-import {useSelector} from 'react-redux';
 import {
   GiftCardClient,
   Brand,
@@ -17,9 +16,8 @@ import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
 import {PurchaseForm} from '../../components/GiftCardShop/PurchaseForm';
 import {PayForGiftCard} from '../../components/GiftCardShop/PayForGiftCard';
 import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
-import {MyGiftCards} from '../../components/GiftCardShop/MyGiftCards';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
-import SignUpForm from '../../components/GiftCardShop/SignUpForm';
+import MyGiftCards from '../../components/GiftCardShop/MyGiftCards';
 import TripleSwitch from '../../components/Buttons/TripleSwitch';
 
 import {
@@ -28,8 +26,11 @@ import {
   getFontSize,
 } from '../../components/GiftCardShop/theme';
 import {GiftCardProvider} from '../../components/GiftCardShop/hooks';
-import {clearAccount} from '../../reducers/nexusshopaccount';
-import {useAppDispatch} from '../../store/hooks';
+import {
+  logoutFromNexusShop,
+  resetFromNexusShop,
+} from '../../reducers/nexusshopaccount';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 // import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -56,8 +57,10 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   initialBrand,
   navigation,
 }) => {
-  const {uniqueId} = useSelector((state: any) => state.onboarding);
-  const {account} = useSelector((state: any) => state.nexusshopaccount);
+  const uniqueId = useAppSelector((state: any) => state.onboarding.uniqueId);
+  const account = useAppSelector(
+    (state: any) => state.nexusshopaccount.account,
+  );
   const shopUserEmail = account && account.email;
   const isLoggedIn = account && account.isLoggedIn;
 
@@ -82,6 +85,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
         setIsHeaderOverflowHidden(false);
         break;
     }
+    return () => {};
   }, [screen]);
 
   const dispatch = useAppDispatch();
@@ -94,7 +98,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
 
   const handleResetShopUser = () => {
     if (__DEV__) {
-      dispatch(clearAccount());
+      dispatch(resetFromNexusShop());
     }
   };
 
@@ -155,10 +159,14 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
     setScreen({type: 'browse'});
   };
 
-  // Initialize client with email and uniqueId
-  const client = useMemo(() => {
-    return shopUserEmail ? new GiftCardClient(shopUserEmail, uniqueId) : null;
-  }, [shopUserEmail, uniqueId]);
+  /**
+   * Initialize client with email and uniqueId
+   * Allow init client even without nexus shop account reged,
+   * so that users can browse cards and see the my cards page.
+   * Since reg wasn't done, any reqs from the GiftCardClient will
+   * throw an error which should fallback to signing in.
+   */
+  const client = useMemo(() => new GiftCardClient(), []);
 
   // Open preset brand
   useLayoutEffect(() => {
@@ -167,89 +175,90 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
     }
   }, [initialBrand]);
 
+  // useEffect(() => {
+  //   if (!client || !isLoggedIn) {
+  //     navigation.navigate('NexusShopStack', {screen: 'SignUp'});
+  //   }
+  //   return () => {};
+  // }, [navigation, isLoggedIn, client]);
+
   return (
     <View style={styles.container}>
-      {!client ? (
-        <View style={styles.signUpFormContainer}>
-          <SignUpForm navigation={navigation} />
+      <GiftCardProvider client={client}>
+        <View style={styles.subContainer}>
+          <View style={styles.headerContainer}>
+            <View style={styles.imageContainer}>
+              <Image
+                style={styles.image}
+                source={require('../../assets/images/shop-card.png')}
+              />
+            </View>
+
+            <View style={styles.switchContainer}>
+              <TripleSwitch
+                options={
+                  isLoggedIn
+                    ? ['Shop', 'My cards', 'Wishlist']
+                    : ['Shop', 'My cards']
+                }
+                selectedIndex={getSelectedIndex()}
+                onSelectionChange={handleSwitchChange}
+                width={SCREEN_WIDTH - getSpacing(SCREEN_HEIGHT).md * 2}
+                height={SCREEN_HEIGHT * 0.05}
+                activeColor={colors.white}
+                inactiveColor={colors.primaryDark}
+                textColor={colors.white}
+                activeTextColor={colors.black}
+              />
+            </View>
+          </View>
+
+          <View style={styles.body}>
+            {screen.type === 'browse' && (
+              <BrandGrid onSelectBrand={handleSelectBrand} />
+            )}
+
+            {screen.type === 'purchase' && (
+              <PurchaseForm
+                brand={screen.brand}
+                initialAmount={screen.initialAmount}
+                onBack={handleBack}
+                onInitiate={handleInitiate}
+              />
+            )}
+
+            {screen.type === 'payment' && (
+              <PayForGiftCard
+                initiateResponse={screen.initiateResponse}
+                onBack={handlePaymentBack}
+                onSuccess={handlePaymentSent}
+              />
+            )}
+
+            {screen.type === 'payment-sent' && (
+              <PaymentSent txid={screen.txid} onDone={handleDone} />
+            )}
+
+            {screen.type === 'my-cards' && (
+              <MyGiftCards navigation={navigation} />
+            )}
+
+            {screen.type === 'wishlist' && (
+              <MyWishlistBrands onSelectBrand={handleSelectBrand} />
+            )}
+
+            {__DEV__ ? (
+              <View style={{position: 'absolute', bottom: 50, zIndex: 100}}>
+                <TouchableOpacity onPress={handleResetShopUser}>
+                  <Text>Reset Shop User</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <></>
+            )}
+          </View>
         </View>
-      ) : (
-        <GiftCardProvider client={client}>
-          {isLoggedIn ? (
-            <View style={styles.subContainer}>
-              <View style={styles.headerContainer}>
-                <View style={styles.imageContainer}>
-                  <Image
-                    style={styles.image}
-                    source={require('../../assets/images/shop-card.png')}
-                  />
-                </View>
-
-                <View style={styles.switchContainer}>
-                  <TripleSwitch
-                    options={['Gift Cards', 'Available', 'Wishlist']}
-                    selectedIndex={getSelectedIndex()}
-                    onSelectionChange={handleSwitchChange}
-                    width={SCREEN_WIDTH - getSpacing(SCREEN_HEIGHT).md * 2}
-                    height={SCREEN_HEIGHT * 0.05}
-                    activeColor={colors.white}
-                    inactiveColor={colors.primaryDark}
-                    textColor={colors.white}
-                    activeTextColor={colors.black}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.body}>
-                {screen.type === 'browse' && (
-                  <BrandGrid onSelectBrand={handleSelectBrand} />
-                )}
-
-                {screen.type === 'purchase' && (
-                  <PurchaseForm
-                    brand={screen.brand}
-                    initialAmount={screen.initialAmount}
-                    onBack={handleBack}
-                    onInitiate={handleInitiate}
-                  />
-                )}
-
-                {screen.type === 'payment' && (
-                  <PayForGiftCard
-                    initiateResponse={screen.initiateResponse}
-                    onBack={handlePaymentBack}
-                    onSuccess={handlePaymentSent}
-                  />
-                )}
-
-                {screen.type === 'payment-sent' && (
-                  <PaymentSent txid={screen.txid} onDone={handleDone} />
-                )}
-
-                {screen.type === 'my-cards' && <MyGiftCards />}
-
-                {screen.type === 'wishlist' && (
-                  <MyWishlistBrands onSelectBrand={handleSelectBrand} />
-                )}
-
-                {__DEV__ ? (
-                  <View style={{position: 'absolute', bottom: 50}}>
-                    <TouchableOpacity onPress={handleResetShopUser}>
-                      <Text>Reset Shop User</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <></>
-                )}
-              </View>
-            </View>
-          ) : (
-            <View style={styles.signUpFormContainer}>
-              <SignUpForm navigation={navigation} />
-            </View>
-          )}
-        </GiftCardProvider>
-      )}
+      </GiftCardProvider>
     </View>
   );
 };

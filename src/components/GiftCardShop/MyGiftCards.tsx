@@ -1,5 +1,5 @@
-import React, {useState, useContext} from 'react';
-import {ScrollView, View, Text, StyleSheet, RefreshControl} from 'react-native';
+import React, {useEffect, useState, useContext} from 'react';
+import {ScrollView, View, StyleSheet, RefreshControl} from 'react-native';
 import {isExpired} from '../../services/giftcards';
 import {useMyGiftCards} from './hooks';
 import {getSpacing, getCommonStyles} from './theme';
@@ -8,9 +8,16 @@ import {ErrorView} from './ErrorView';
 import {EmptyView} from './EmptyView';
 import {GiftCardItem} from './GiftCardItem';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-export function MyGiftCards() {
+interface Props {
+  navigation: any;
+}
+
+const MyGiftCards: React.FC<Props> = props => {
+  const {navigation} = props;
+
   const {data: giftCards, loading, error, refetch} = useMyGiftCards();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -18,20 +25,41 @@ export function MyGiftCards() {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const [refreshing, setRefreshing] = useState(false);
+  const toSignUp = () => {
+    navigation.navigate('NexusShopStack', {screen: 'SignUp'});
+  };
 
+  const [refreshing, setRefreshing] = useState(false);
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
   };
 
+  const [errorText, setErrorText] = useState<string>('');
+  useEffect(() => {
+    switch (error) {
+      case 'Unauthorized':
+        setErrorText('To access your giftcards sign in to Nexus Shop account');
+        break;
+      default:
+        setErrorText(error || '');
+        break;
+    }
+  }, [error]);
+
   if (loading && !refreshing) {
     return <LoadingView message="Loading your gift cards..." />;
   }
 
   if (error) {
-    return <ErrorView message={error} onRetry={refetch} />;
+    return (
+      <ErrorView
+        message={errorText}
+        onRetry={error === 'Unauthorized' ? toSignUp : refetch}
+        onRetryText={error === 'Unauthorized' ? 'Sign In' : undefined}
+      />
+    );
   }
 
   if (!giftCards || giftCards.length === 0) {
@@ -55,7 +83,12 @@ export function MyGiftCards() {
         }>
         {activeCards.length > 0 && (
           <View style={styles.section}>
-            <Text style={commonStyles.subtitle}>Active Gift Cards</Text>
+            <TranslateText
+              textKey="active_gif_cards"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={commonStyles.subtitle}
+            />
             {activeCards.map(gc => (
               <GiftCardItem key={gc.id} giftCard={gc} />
             ))}
@@ -64,7 +97,12 @@ export function MyGiftCards() {
 
         {otherCards.length > 0 && (
           <View style={[styles.section, {opacity: 0.8}]}>
-            <Text style={commonStyles.subtitle}>Past Gift Cards</Text>
+            <TranslateText
+              textKey="past_gif_cards"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={commonStyles.subtitle}
+            />
             {otherCards.map(gc => (
               <GiftCardItem key={gc.id} giftCard={gc} />
             ))}
@@ -73,7 +111,7 @@ export function MyGiftCards() {
       </ScrollView>
     </View>
   );
-}
+};
 
 const getStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
@@ -85,3 +123,5 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       marginBottom: getSpacing(screenHeight).lg,
     },
   });
+
+export default MyGiftCards;

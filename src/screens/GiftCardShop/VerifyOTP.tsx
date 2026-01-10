@@ -2,23 +2,19 @@ import React, {
   useEffect,
   useState,
   useContext,
-  useMemo,
   useCallback,
+  useMemo,
+  useRef,
 } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
   Alert,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import type {
-  StackNavigationProp,
-  StackNavigationOptions,
-} from '@react-navigation/stack';
-import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
+import type {StackNavigationOptions} from '@react-navigation/stack';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {verifyOtpCode} from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
@@ -30,8 +26,8 @@ import {
 } from '../../components/GiftCardShop/theme';
 import NumpadInput from '../../components/Numpad/NumpadInput';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -51,64 +47,81 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
 
   const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const dispatch = useAppDispatch();
-  const navigation =
-    useNavigation<StackNavigationProp<NexusShopStackParamList>>();
-  const {account, loginLoading, error} = useAppSelector(
-    (state: any) => state.nexusshopaccount,
+  const navigation = useNavigation<any>();
+  const account = useAppSelector(
+    (state: any) => state.nexusshopaccount.account,
   );
+  const [loading, setLoading] = useState(false);
   const {uniqueId} = useAppSelector((state: any) => state.onboarding);
 
   const validateOtpCode = useCallback((code: string): boolean => {
     return code.length === 6 && /^\d+$/.test(code);
   }, []);
 
+  // Navigate if user is already logged in
+  useEffect(() => {
+    if (account?.isLoggedIn) {
+      navigation.navigate('NewWalletStack', {screen: 'Main', params: {}});
+    }
+  }, [account?.isLoggedIn, navigation]);
+
+  // Abort any pending request on unmount
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   // Handle OTP code from navigation params (from deeplink)
   useEffect(() => {
-    const handleParamsOTP = async (code: string) => {
-      if (!account?.email || !uniqueId) {
-        Alert.alert(
-          'Error',
-          'Missing account information. Please sign up first.',
-        );
-        return;
-      }
-
-      try {
-        await dispatch(verifyOtpCode(account.email, uniqueId, code));
-
-        if (!error) {
-          navigation.navigate('OTPVerified');
+    if (route?.params?.otpCode) {
+      const handleParamsOTP = async (code: string) => {
+        if (!account?.email || !uniqueId) {
+          Alert.alert(
+            'Error',
+            'Missing account information. Please sign up first.',
+          );
+          return;
         }
-      } catch {
-        Alert.alert('Verification Failed', 'Please try again later.');
+
+        // Abort any previous request
+        abortControllerRef.current?.abort();
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
+
+        try {
+          await dispatch(
+            verifyOtpCode(
+              account.email,
+              uniqueId,
+              code,
+              abortController.signal,
+            ),
+          );
+          // NOTE: after verifyOtpCode navigation is handled by the useEffect that watches account?.isLoggedIn
+        } catch {
+          Alert.alert('Verification Failed', 'Please try again later.');
+        }
+      };
+
+      const otpCodeFromParams = route?.params?.otpCode;
+      if (otpCodeFromParams && validateOtpCode(otpCodeFromParams)) {
+        setOtpCode(otpCodeFromParams);
+        handleParamsOTP(otpCodeFromParams);
       }
-    };
 
-    const otpCodeFromParams = route?.params?.otpCode;
-    if (otpCodeFromParams && validateOtpCode(otpCodeFromParams)) {
-      setOtpCode(otpCodeFromParams);
-      handleParamsOTP(otpCodeFromParams);
+      dispatch(unsetDeeplink());
     }
-
-    dispatch(unsetDeeplink());
   }, [
     route?.params?.otpCode,
     account?.email,
     uniqueId,
     dispatch,
-    error,
-    navigation,
     validateOtpCode,
   ]);
-
-  // Check if user is already logged in
-  useEffect(() => {
-    if (account?.isLoggedIn) {
-      navigation.navigate('OTPVerified');
-    }
-  }, [account?.isLoggedIn, navigation]);
 
   const handleOtpChange = (text: string) => {
     const numericText = text.replace(/[^0-9]/g, '');
@@ -135,62 +148,92 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         return;
       }
 
-      try {
-        await dispatch(verifyOtpCode(account.email, uniqueId, code));
+      // Abort any previous request
+      abortControllerRef.current?.abort();
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
-        if (!error) {
-          navigation.navigate('OTPVerified');
-        }
-      } catch {
-        Alert.alert('Verification Failed', 'Please try again later.');
+      try {
+        await dispatch(
+          verifyOtpCode(account.email, uniqueId, code, abortController.signal),
+        );
+        // Navigation is handled by the useEffect that watches account?.isLoggedIn
+      } catch (errorCatch) {
+        console.log(
+          errorCatch instanceof Error
+            ? errorCatch.message
+            : 'Verification failed. Please try again.',
+        );
+        setOtpError(
+          errorCatch instanceof Error
+            ? errorCatch.message
+            : 'Verification failed. Please try again.',
+        );
       }
     },
-    [
-      otpCode,
-      validateOtpCode,
-      account?.email,
-      uniqueId,
-      dispatch,
-      error,
-      navigation,
-    ],
+    [otpCode, validateOtpCode, account?.email, uniqueId, dispatch],
   );
+
+  const isButtonDisabled = loading || !validateOtpCode(otpCode);
 
   const submitButton = useMemo(
     () => (
       <TouchableOpacity
         style={[
           commonStyles.buttonRounded,
-          loginLoading ? commonStyles.buttonDisabled : null,
-          !validateOtpCode(otpCode) ? commonStyles.buttonDisabled : null,
+          isButtonDisabled ? commonStyles.buttonDisabled : null,
         ]}
-        onPress={() => handleVerifyOTP()}
-        disabled={loginLoading || !validateOtpCode(otpCode)}>
-        {loginLoading ? (
+        onPress={async () => {
+          await handleVerifyOTP();
+        }}
+        disabled={isButtonDisabled}>
+        {loading ? (
           <ActivityIndicator color={colors.white} />
         ) : (
-          <Text style={commonStyles.buttonText}>Verify Code</Text>
+          <TranslateText
+            textKey="verify_code"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={commonStyles.buttonText}
+            numberOfLines={1}
+          />
         )}
       </TouchableOpacity>
     ),
-    [commonStyles, handleVerifyOTP, validateOtpCode, loginLoading, otpCode],
+    [SCREEN_HEIGHT, commonStyles, isButtonDisabled, loading, handleVerifyOTP],
   );
 
   return (
     <View style={styles.container}>
       <CustomSafeAreaView styles={styles.safeArea} edges={['top']}>
-        <Text style={[commonStyles.title, styles.title]}>Check your email</Text>
-        <Text style={[commonStyles.subtitle, styles.subtitle]}>
-          We've sent a one-time verification code to{' '}
-          {account?.email || 'your email'}
-        </Text>
-        <Text style={[commonStyles.subtitle, styles.subtitle]}>
-          Please check your inbox and enter the code to complete your
-          registration
-        </Text>
-        <Text style={[commonStyles.errorText, styles.errorText]}>
-          {otpError}
-        </Text>
+        <TranslateText
+          textKey="check_email"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={[commonStyles.title, styles.title]}
+          numberOfLines={1}
+        />
+        <TranslateText
+          textKey="we_sent_code_to"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={[commonStyles.subtitle, styles.subtitle]}
+          numberOfLines={2}
+          interpolationObj={{email: account?.email || 'your email'}}
+        />
+        <TranslateText
+          textKey="pls_check_email"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={[commonStyles.subtitle, styles.subtitle]}
+          numberOfLines={2}
+        />
+        <TranslateText
+          textValue={otpError}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+          textStyle={[commonStyles.errorText, styles.errorText]}
+          numberOfLines={2}
+        />
       </CustomSafeAreaView>
       <NumpadInput
         submitButton={submitButton}
@@ -224,6 +267,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     errorText: {
       paddingTop: getSpacing(screenHeight).xs,
+      textAlign: 'center',
     },
     inputError: {
       borderColor: colors.danger,
@@ -237,23 +281,26 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
+const HeaderTitle: React.FC = React.memo(() => {
+  const {height} = useContext(ScreenSizeContext);
+  const styles = getStyles(0, height);
+  return (
+    <TranslateText
+      textKey="verify"
+      domain="nexusShop"
+      maxSizeInPixels={height * 0.02}
+      textStyle={styles.headerTitle}
+      numberOfLines={1}
+    />
+  );
+});
+
 export const VerifyOTPNavigationOptions = (
   navigation: any,
 ): StackNavigationOptions => {
-  const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
-
   return {
     headerTransparent: true,
-    headerTitle: () => (
-      <TranslateText
-        textKey="verify"
-        domain="nexusShop"
-        maxSizeInPixels={height * 0.02}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
+    headerTitle: () => <HeaderTitle />,
     headerTitleAlign: 'left',
     headerTitleContainerStyle: {
       left: 7,
