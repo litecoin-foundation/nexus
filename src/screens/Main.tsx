@@ -65,6 +65,7 @@ type RootStackParamList = {
   Main: {
     scanData?: string;
     isInitial?: boolean;
+    activeCard?: number;
   };
   SearchTransaction: undefined;
 };
@@ -196,6 +197,9 @@ const Main: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params?.isInitial) {
       foldUnfoldBottomSheet(false);
+    } else if (route.params?.activeCard) {
+      setActiveTab(route.params?.activeCard);
+      setBottomSheetFolded(false);
     }
   }, [route, foldUnfoldBottomSheet]);
 
@@ -285,7 +289,7 @@ const Main: React.FC<Props> = props => {
       dismissAllModals();
       await sleep(200);
 
-      console.log(transaction);
+      // console.log(transaction);
       const addrArray = transaction.destinationAddress.split(':');
 
       // validation of destinationAddress
@@ -318,7 +322,7 @@ const Main: React.FC<Props> = props => {
             'Flexa Payment',
           ),
         );
-        console.log(txid);
+        // console.log(txid);
         transactionSent(txid);
         setIsPinModalOpened(false);
         setLoading(false);

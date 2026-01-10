@@ -37,7 +37,13 @@ const initialState: INexusShopAccount = {
   timeLockAt: 0,
 };
 
-const MAX_LOGIN_ATTEMPTS = 3;
+/**
+ * Let's combine login/register/verify/send-code attempts to one counter
+ * and make it 10 instead of 3 for each one, because it's basically shared logic.
+ * User should not be able to brute force or ddos any of these mathods, so we can
+ * imply that, e.g. maxing out verify attempts means maxing out send-code attempts.
+ */
+const MAX_LOGIN_ATTEMPTS = 10;
 const TIME_LOCK_IN_SEC = 900;
 
 const BASE_API_URL = __DEV__
@@ -290,7 +296,7 @@ export const registerOnNexusShop =
     }
   };
 
-const loginToNexusShop =
+export const loginToNexusShop =
   (email: string): AppThunk =>
   async (dispatch, getState) => {
     const {timeLock, timeLockAt} = getState().nexusshopaccount!;

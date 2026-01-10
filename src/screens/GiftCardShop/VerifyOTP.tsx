@@ -16,7 +16,7 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {verifyOtpCode} from '../../reducers/nexusshopaccount';
+import {verifyOtpCode, loginToNexusShop} from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
 import {
   colors,
@@ -64,7 +64,10 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   // Navigate if user is already logged in
   useEffect(() => {
     if (account?.isLoggedIn) {
-      navigation.navigate('NewWalletStack', {screen: 'Main', params: {}});
+      navigation.navigate('NewWalletStack', {
+        screen: 'Main',
+        params: {activeCard: 3},
+      });
     }
   }, [account?.isLoggedIn, navigation]);
 
@@ -159,11 +162,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         );
         // Navigation is handled by the useEffect that watches account?.isLoggedIn
       } catch (errorCatch) {
-        console.log(
-          errorCatch instanceof Error
-            ? errorCatch.message
-            : 'Verification failed. Please try again.',
-        );
         setOtpError(
           errorCatch instanceof Error
             ? errorCatch.message
@@ -173,6 +171,26 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     },
     [otpCode, validateOtpCode, account?.email, uniqueId, dispatch],
   );
+
+  const handleSendOTP = useCallback(async () => {
+    if (!account?.email || !uniqueId) {
+      Alert.alert(
+        'Error',
+        'Missing account information. Please sign up first.',
+      );
+      return;
+    }
+
+    try {
+      await dispatch(loginToNexusShop(account.email));
+    } catch (errorCatch) {
+      setOtpError(
+        errorCatch instanceof Error
+          ? errorCatch.message
+          : 'Sending failed. Please try again.',
+      );
+    }
+  }, [account?.email, uniqueId, dispatch]);
 
   const isButtonDisabled = loading || !validateOtpCode(otpCode);
 
@@ -201,6 +219,29 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       </TouchableOpacity>
     ),
     [SCREEN_HEIGHT, commonStyles, isButtonDisabled, loading, handleVerifyOTP],
+  );
+
+  const secondaryButton = useMemo(
+    () => (
+      <TouchableOpacity
+        style={[
+          commonStyles.buttonRoundedSecondary,
+          loading ? commonStyles.buttonDisabled : null,
+        ]}
+        onPress={async () => {
+          await handleSendOTP();
+        }}
+        disabled={loading}>
+        <TranslateText
+          textKey="resend_code"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={commonStyles.buttonTextBlack}
+          numberOfLines={1}
+        />
+      </TouchableOpacity>
+    ),
+    [SCREEN_HEIGHT, commonStyles, loading, handleSendOTP],
   );
 
   return (
@@ -243,6 +284,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         titleDomain="nexusShop"
         dotDisabled
         small
+        secondaryButton={secondaryButton}
       />
     </View>
   );

@@ -17,6 +17,7 @@ interface Props {
   titleDomain: string;
   dotDisabled?: boolean;
   small?: boolean;
+  secondaryButton?: React.ReactNode;
 }
 
 const NumpadInput: React.FC<Props> = props => {
@@ -28,6 +29,7 @@ const NumpadInput: React.FC<Props> = props => {
     titleDomain,
     dotDisabled,
     small,
+    secondaryButton,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -102,6 +104,7 @@ const NumpadInput: React.FC<Props> = props => {
       <View style={styles.pinButtonContainer}>{buttons}</View>
 
       <View style={styles.confirmButtonContainer}>{submitButton}</View>
+      <View style={styles.secondaryButtonContainer}>{secondaryButton}</View>
     </CustomSafeAreaView>
   );
 };
@@ -112,7 +115,7 @@ const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
       position: 'absolute',
       bottom: 0,
       width: screenWidth,
-      height: screenHeight * 0.65,
+      height: screenHeight * 0.68,
       backgroundColor: '#ffffff',
       borderTopLeftRadius: screenHeight * 0.03,
       borderTopRightRadius: screenHeight * 0.03,
@@ -142,6 +145,11 @@ const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
     confirmButtonContainer: {
       width: '100%',
       paddingTop: screenHeight * 0.02,
+      paddingHorizontal: screenWidth * 0.06,
+    },
+    secondaryButtonContainer: {
+      width: '100%',
+      paddingTop: screenHeight * 0.01,
       paddingHorizontal: screenWidth * 0.06,
     },
   });

@@ -20,6 +20,7 @@ export type NewWalletStackParamList = {
   Main: {
     scanData?: string;
     isInitial?: boolean;
+    activeCard?: number;
   };
   SettingsStack: undefined;
   NexusShopStack: undefined;

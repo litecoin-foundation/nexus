@@ -50,10 +50,9 @@ const SignUp: React.FC<Props> = () => {
 
   const [email, setEmail] = useState(shopUserEmail || '');
   const [emailError, setEmailError] = useState('');
+  const [loginError, setLoginError] = useState('');
 
-  const {loginLoading, error} = useSelector(
-    (state: any) => state.nexusshopaccount,
-  );
+  const {loginLoading} = useSelector((state: any) => state.nexusshopaccount);
   const {uniqueId} = useSelector((state: any) => state.onboarding);
 
   const validateEmail = (emailProp: string): boolean => {
@@ -95,9 +94,9 @@ const SignUp: React.FC<Props> = () => {
     }
   };
 
-  const handleToVerification = () => {
-    navigation.navigate('VerifyOTP');
-  };
+  // const handleToVerification = () => {
+  //   navigation.navigate('VerifyOTP');
+  // };
 
   const handleResetShopUser = () => {
     dispatch(clearAccount());
@@ -143,9 +142,11 @@ const SignUp: React.FC<Props> = () => {
         </View>
 
         <View style={styles.buttonContainer}>
-          {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
+          {loginError ? (
+            <Text style={commonStyles.errorText}>{loginError}</Text>
+          ) : null}
 
-          {shopUserEmail === email ? (
+          {/* {shopUserEmail === email ? (
             <TouchableOpacity
               style={commonStyles.buttonRoundedGreen}
               onPress={handleToVerification}>
@@ -165,7 +166,21 @@ const SignUp: React.FC<Props> = () => {
                 <Text style={commonStyles.buttonText}>Sign Up / Sign In</Text>
               )}
             </TouchableOpacity>
-          )}
+          )} */}
+
+          <TouchableOpacity
+            style={[
+              commonStyles.buttonRounded,
+              loginLoading ? commonStyles.buttonDisabled : null,
+            ]}
+            onPress={handleSignUp}
+            disabled={loginLoading}>
+            {loginLoading ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Text style={commonStyles.buttonText}>Sign In</Text>
+            )}
+          </TouchableOpacity>
 
           {__DEV__ ? (
             <View style={styles.resetButtonContainer}>

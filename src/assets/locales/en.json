@@ -338,6 +338,8 @@
     "flexa": "Flexa",
     "verify": "Verify",
     "verify_code": "Verify Code",
+    "send_code": "Send Code",
+    "resend_code": "Resend Code",
     "enter_your_code": "Enter your code",
     "active_gif_cards": "Active Gift Cards",
     "past_gif_cards": "Past Gift Cards",
