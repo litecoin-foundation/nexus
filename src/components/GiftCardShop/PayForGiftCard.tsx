@@ -195,10 +195,10 @@ export function PayForGiftCard({
   );
 }
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
-      padding: getSpacing(screenHeight).md,
+      padding: getSpacing(screenWidth, screenHeight).md,
     },
     title: {
       fontSize: getFontSize(screenHeight).xl,
@@ -206,20 +206,20 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       textAlign: 'center',
     },
     backButton: {
-      marginBottom: getSpacing(screenHeight).md,
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
     },
     paymentDetails: {
       backgroundColor: colors.primary,
       borderRadius: getBorderRadius(screenHeight).lg,
-      paddingVertical: getSpacing(screenHeight).xl,
-      paddingHorizontal: getSpacing(screenHeight).lg,
-      marginBottom: getSpacing(screenHeight).lg,
+      paddingVertical: getSpacing(screenWidth, screenHeight).xl,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
+      marginBottom: getSpacing(screenWidth, screenHeight).lg,
     },
     detailRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: getSpacing(screenHeight).md,
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
     },
     detailLabel: {
       fontSize: getFontSize(screenHeight).md,
@@ -240,9 +240,9 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     errorContainer: {
       backgroundColor: colors.dangerLight,
-      padding: getSpacing(screenHeight).md,
+      padding: getSpacing(screenWidth, screenHeight).md,
       borderRadius: getBorderRadius(screenHeight).lg,
-      marginBottom: getSpacing(screenHeight).lg,
+      marginBottom: getSpacing(screenWidth, screenHeight).lg,
     },
     errorMessage: {
       color: colors.danger,

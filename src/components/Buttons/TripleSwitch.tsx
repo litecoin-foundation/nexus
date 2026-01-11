@@ -1,11 +1,12 @@
 import React, {useContext} from 'react';
-import {View, TouchableOpacity, StyleSheet, Text} from 'react-native';
+import {View, TouchableOpacity, StyleSheet} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const to75Transparent = (color: string): string => {
@@ -101,13 +102,15 @@ const TripleSwitch: React.FC<TripleSwitchProps> = ({
           style={[styles.button, {width: buttonWidth}]}
           onPress={() => onSelectionChange(index)}
           activeOpacity={0.7}>
-          <Text
-            style={[
+          <TranslateText
+            textKey={option.toLowerCase().replace(/ /g, '_')}
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+            textStyle={[
               styles.buttonText,
               {color: index === selectedIndex ? activeTextColor : textColor},
-            ]}>
-            {option}
-          </Text>
+            ]}
+          />
         </TouchableOpacity>
       ))}
     </View>
@@ -140,7 +143,7 @@ const getStyles = (
       zIndex: 1,
     },
     buttonText: {
-      fontSize: 14,
+      fontSize: screenHeight * 0.017,
       fontWeight: '600',
       fontFamily: 'Satoshi Variable',
     },

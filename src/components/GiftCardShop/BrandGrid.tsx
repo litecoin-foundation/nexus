@@ -8,6 +8,7 @@ import {ErrorView} from './ErrorView';
 import {EmptyView} from './EmptyView';
 import {BrandCard} from './BrandCard';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface BrandGridProps {
@@ -42,6 +43,14 @@ export function BrandGrid({onSelectBrand}: BrandGridProps) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.section}>
+        <TranslateText
+          textKey="available_gif_cards"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+          textStyle={styles.title}
+        />
+      </View>
       <FlatList
         data={brands}
         keyExtractor={item => item.slug}
@@ -61,13 +70,26 @@ export function BrandGrid({onSelectBrand}: BrandGridProps) {
   );
 }
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
       zIndex: 1,
+      paddingTop: screenHeight * 0.01,
     },
     gridContainer: {
-      padding: getSpacing(screenHeight).md,
+      padding: getSpacing(screenWidth, screenHeight).md,
+    },
+    section: {
+      // marginBottom: getSpacing(screenHeight).lg,
+    },
+    title: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: screenHeight * 0.015,
+      textTransform: 'uppercase',
+      paddingHorizontal: screenWidth * 0.06,
     },
   });

@@ -79,7 +79,8 @@ export function PurchaseSuccess({
               </TouchableOpacity>
             </View>
             {giftCard.pin && (
-              <View style={{marginTop: getSpacing(SCREEN_HEIGHT).md}}>
+              <View
+                style={{marginTop: getSpacing(SCREEN_WIDTH, SCREEN_HEIGHT).md}}>
                 <Text style={commonStyles.label}>PIN</Text>
                 <Text style={styles.codeText}>{giftCard.pin}</Text>
               </View>
@@ -90,7 +91,7 @@ export function PurchaseSuccess({
         <Text
           style={[
             commonStyles.caption,
-            {marginTop: getSpacing(SCREEN_HEIGHT).md},
+            {marginTop: getSpacing(SCREEN_WIDTH, SCREEN_HEIGHT).md},
           ]}>
           Expires: {new Date(giftCard.expirationDate).toLocaleDateString()}
         </Text>
@@ -105,10 +106,10 @@ export function PurchaseSuccess({
   );
 }
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     successContainer: {
-      padding: getSpacing(screenHeight).lg,
+      padding: getSpacing(screenWidth, screenHeight).lg,
       alignItems: 'center',
     },
     successIconText: {
@@ -118,10 +119,10 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     giftCardDisplay: {
       backgroundColor: colors.white,
       borderRadius: getBorderRadius(screenHeight).lg,
-      padding: getSpacing(screenHeight).lg,
+      padding: getSpacing(screenWidth, screenHeight).lg,
       width: '100%',
       alignItems: 'center',
-      marginVertical: getSpacing(screenHeight).lg,
+      marginVertical: getSpacing(screenWidth, screenHeight).lg,
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 4},
       shadowOpacity: 0.15,
@@ -137,14 +138,14 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       fontSize: 36,
       fontWeight: '700',
       color: colors.success,
-      marginVertical: getSpacing(screenHeight).sm,
+      marginVertical: getSpacing(screenWidth, screenHeight).sm,
     },
     redeemButton: {
       backgroundColor: colors.primary,
-      paddingVertical: getSpacing(screenHeight).md,
-      paddingHorizontal: getSpacing(screenHeight).xl,
+      paddingVertical: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).xl,
       borderRadius: getBorderRadius(screenHeight).sm,
-      marginTop: getSpacing(screenHeight).md,
+      marginTop: getSpacing(screenWidth, screenHeight).md,
     },
     redeemButtonText: {
       color: colors.white,
@@ -153,10 +154,10 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     codeContainer: {
       backgroundColor: colors.grayLight,
-      padding: getSpacing(screenHeight).md,
+      padding: getSpacing(screenWidth, screenHeight).md,
       borderRadius: getBorderRadius(screenHeight).sm,
       width: '100%',
-      marginTop: getSpacing(screenHeight).md,
+      marginTop: getSpacing(screenWidth, screenHeight).md,
     },
     codeRow: {
       flexDirection: 'row',
@@ -171,8 +172,8 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     copyButton: {
       backgroundColor: colors.primary,
-      paddingVertical: getSpacing(screenHeight).sm,
-      paddingHorizontal: getSpacing(screenHeight).md,
+      paddingVertical: getSpacing(screenWidth, screenHeight).sm,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
       borderRadius: getBorderRadius(screenHeight).sm,
     },
     copyButtonText: {

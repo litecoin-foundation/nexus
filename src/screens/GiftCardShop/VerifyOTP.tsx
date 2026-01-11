@@ -301,14 +301,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenWidth * 0.05,
     },
     title: {
-      paddingTop: getSpacing(screenHeight).header,
+      paddingTop: getSpacing(screenWidth, screenHeight).header,
     },
     subtitle: {
       fontSize: getFontSize(screenHeight).lg,
-      paddingTop: getSpacing(screenHeight).xs,
+      paddingTop: getSpacing(screenWidth, screenHeight).xs,
     },
     errorText: {
-      paddingTop: getSpacing(screenHeight).xs,
+      paddingTop: getSpacing(screenWidth, screenHeight).xs,
       textAlign: 'center',
     },
     inputError: {

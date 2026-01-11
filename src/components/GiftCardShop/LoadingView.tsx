@@ -14,7 +14,7 @@ export function LoadingView({message = 'Loading...'}: {message?: string}) {
       <Text
         style={[
           getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).body,
-          {marginTop: getSpacing(SCREEN_HEIGHT).md},
+          {marginTop: getSpacing(SCREEN_WIDTH, SCREEN_HEIGHT).md},
         ]}>
         {message}
       </Text>

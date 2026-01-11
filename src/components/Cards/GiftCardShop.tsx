@@ -5,7 +5,7 @@ import React, {
   useLayoutEffect,
   useEffect,
 } from 'react';
-import {View, StyleSheet, TouchableOpacity, Text, Image} from 'react-native';
+import {View, StyleSheet, Image} from 'react-native';
 import {
   GiftCardClient,
   Brand,
@@ -19,6 +19,7 @@ import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
 import MyGiftCards from '../../components/GiftCardShop/MyGiftCards';
 import TripleSwitch from '../../components/Buttons/TripleSwitch';
+import NewBlueButton from '../Buttons/NewBlueButton';
 
 import {
   colors,
@@ -32,7 +33,7 @@ import {
 } from '../../reducers/nexusshopaccount';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-// import TranslateText from '../../components/TranslateText';
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface GiftCardShopProps {
@@ -95,6 +96,12 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
     console.log('Giftcard client email: ' + shopUserEmail);
     console.log('Screen: ' + JSON.stringify(screen, null, 2));
   }
+
+  const handleLogoutShopUser = () => {
+    if (__DEV__) {
+      dispatch(logoutFromNexusShop());
+    }
+  };
 
   const handleResetShopUser = () => {
     if (__DEV__) {
@@ -187,12 +194,52 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
       <GiftCardProvider client={client}>
         <View style={styles.subContainer}>
           <View style={styles.headerContainer}>
-            <View style={styles.imageContainer}>
+            <View style={styles.topBarContainer}>
+              <TranslateText
+                textKey="nexus_shop"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.027}
+                textStyle={styles.titleText}
+                numberOfLines={1}
+              />
+
+              <View style={styles.topButtons}>
+                <View style={styles.topBtn}>
+                  <NewBlueButton
+                    textKey="reset_acc"
+                    textDomain="nexusShop"
+                    active={false}
+                    onPress={handleResetShopUser}
+                    autoWidth
+                  />
+                </View>
+                <View style={styles.topBtn}>
+                  <NewBlueButton
+                    textKey="flexa"
+                    textDomain="nexusShop"
+                    active={false}
+                    onPress={() => {}}
+                    autoWidth
+                  />
+                </View>
+                <View style={styles.topBtn}>
+                  <NewBlueButton
+                    textKey="logout"
+                    textDomain="nexusShop"
+                    active={true}
+                    onPress={handleLogoutShopUser}
+                    autoWidth
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* <View style={styles.imageContainer}>
               <Image
                 style={styles.image}
                 source={require('../../assets/images/shop-card.png')}
               />
-            </View>
+            </View> */}
 
             <View style={styles.switchContainer}>
               <TripleSwitch
@@ -203,11 +250,13 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
                 }
                 selectedIndex={getSelectedIndex()}
                 onSelectionChange={handleSwitchChange}
-                width={SCREEN_WIDTH - getSpacing(SCREEN_HEIGHT).md * 2}
+                width={
+                  SCREEN_WIDTH - getSpacing(SCREEN_WIDTH, SCREEN_HEIGHT).md * 2
+                }
                 height={SCREEN_HEIGHT * 0.05}
                 activeColor={colors.white}
-                inactiveColor={colors.primaryDark}
-                textColor={colors.white}
+                inactiveColor={colors.grayMedium}
+                textColor={colors.grayDark}
                 activeTextColor={colors.black}
               />
             </View>
@@ -246,16 +295,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
             {screen.type === 'wishlist' && (
               <MyWishlistBrands onSelectBrand={handleSelectBrand} />
             )}
-
-            {__DEV__ ? (
-              <View style={{position: 'absolute', bottom: 50, zIndex: 100}}>
-                <TouchableOpacity onPress={handleResetShopUser}>
-                  <Text>Reset Shop User</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <></>
-            )}
           </View>
         </View>
       </GiftCardProvider>
@@ -289,23 +328,41 @@ const getStyles = (
       overflow: 'hidden',
     },
     headerContainer: {
-      height: 190,
-      minHeight: 190,
-      maxHeight: 190,
+      height: 115 + screenHeight * 0.13,
+      minHeight: 115 + screenHeight * 0.13,
+      maxHeight: 115 + screenHeight * 0.13,
       borderTopLeftRadius: screenHeight * 0.03,
       borderTopRightRadius: screenHeight * 0.03,
-      backgroundColor: colors.primaryLight,
       justifyContent: 'flex-end',
       // DashboardButton is 110
       // Header margin is 5
       marginTop: -115,
       overflow: isHeaderOverflowHidden ? 'hidden' : 'visible',
     },
+    topBarContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: screenWidth * 0.06,
+      paddingBottom: screenHeight * 0.02,
+    },
+    titleText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: screenHeight * 0.027,
+    },
+    topButtons: {
+      flexDirection: 'row',
+    },
+    topBtn: {
+      marginLeft: screenWidth * 0.02,
+    },
     body: {
       // TODO: there's weird gap at the bottom out of nowhere
-      maxHeight: screenHeight * 0.76 - 190,
+      maxHeight: screenHeight * 0.76 - (115 + screenHeight * 0.13),
       flex: 1,
-      backgroundColor: colors.primaryLight,
     },
     imageContainer: {
       position: 'absolute',
@@ -322,15 +379,15 @@ const getStyles = (
       opacity: 0.5,
     },
     switchContainer: {
-      paddingHorizontal: getSpacing(screenHeight).md,
-      paddingBottom: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
+      paddingBottom: getSpacing(screenWidth, screenHeight).md,
       zIndex: 2,
     },
     placeholderContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      paddingHorizontal: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
     },
     placeholderText: {
       fontSize: getFontSize(screenHeight).lg,

@@ -86,11 +86,11 @@ export function ErrorView({
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     text: {
-      // color: colors.danger,
+      color: colors.lightBlack,
       textAlign: 'center',
     },
     buttonContainer: {
       width: screenWidth,
-      padding: getSpacing(screenHeight).xl,
+      padding: getSpacing(screenWidth, screenHeight).xl,
     },
   });

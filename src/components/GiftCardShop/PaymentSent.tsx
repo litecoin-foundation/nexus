@@ -33,7 +33,7 @@ export function PaymentSent({txid, onDone}: PaymentSentProps) {
   );
 }
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     verifiedText: {
       width: '100%',
@@ -41,10 +41,10 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       fontWeight: '600',
       color: colors.lightBlack,
       textAlign: 'center',
-      marginTop: getSpacing(screenHeight).xl * -1,
+      marginTop: getSpacing(screenWidth, screenHeight).xl * -1,
     },
     buttonContainer: {
       width: '100%',
-      padding: getSpacing(screenHeight).xl,
+      padding: getSpacing(screenWidth, screenHeight).xl,
     },
   });

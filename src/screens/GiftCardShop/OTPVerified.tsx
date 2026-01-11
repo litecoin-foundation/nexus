@@ -55,7 +55,7 @@ const OTPVerified: React.FC = () => {
   );
 };
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     verifiedText: {
       width: '100%',
@@ -66,8 +66,8 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     buttonContainer: {
       width: '100%',
-      paddingTop: getSpacing(screenHeight).xxl,
-      paddingHorizontal: getSpacing(screenHeight).xl,
+      paddingTop: getSpacing(screenWidth, screenHeight).xxl,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).xl,
     },
   });
 

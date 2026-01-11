@@ -199,7 +199,7 @@ const SignUp: React.FC<Props> = () => {
   );
 };
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -231,9 +231,9 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     formContainer: {
       width: '100%',
-      paddingLeft: getSpacing(screenHeight).xl,
-      paddingRight: getSpacing(screenHeight).xl,
-      paddingBottom: getSpacing(screenHeight).xl,
+      paddingLeft: getSpacing(screenWidth, screenHeight).xl,
+      paddingRight: getSpacing(screenWidth, screenHeight).xl,
+      paddingBottom: getSpacing(screenWidth, screenHeight).xl,
       zIndex: 2,
     },
     inputContainer: {},
@@ -242,7 +242,7 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
     },
     buttonContainer: {
       width: '100%',
-      padding: getSpacing(screenHeight).xl,
+      padding: getSpacing(screenWidth, screenHeight).xl,
     },
     resetButtonContainer: {
       paddingTop: 10,

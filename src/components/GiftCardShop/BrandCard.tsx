@@ -143,7 +143,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     brandCardContainer: {
       backgroundColor: colors.white,
       borderRadius: getBorderRadius(screenHeight).lg,
-      marginBottom: getSpacing(screenHeight).md,
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 2},
       shadowOpacity: 0.08,
@@ -154,7 +154,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     brandCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: getSpacing(screenHeight).md,
+      padding: getSpacing(screenWidth, screenHeight).md,
     },
     logoContainer: {
       width: screenWidth * 0.2,
@@ -184,7 +184,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     brandInfo: {
       flex: 1,
-      marginLeft: getSpacing(screenHeight).md,
+      marginLeft: getSpacing(screenWidth, screenHeight).md,
     },
     brandName: {
       fontSize: getFontSize(screenHeight).md,
@@ -195,7 +195,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: getFontSize(screenHeight).lg,
       fontWeight: '600',
       color: colors.text,
-      marginTop: getSpacing(screenHeight).xs,
+      marginTop: getSpacing(screenWidth, screenHeight).xs,
     },
     chevronContainer: {
       width: screenWidth * 0.1,
@@ -209,21 +209,21 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       resizeMode: 'contain',
     },
     expandedContent: {
-      paddingHorizontal: getSpacing(screenHeight).md,
-      paddingBottom: getSpacing(screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
+      paddingBottom: getSpacing(screenWidth, screenHeight).md,
     },
     denominationsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: getSpacing(screenHeight).md,
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
     },
     denominationsRowLeft: {
       justifyContent: 'flex-start',
-      gap: getSpacing(screenHeight).sm,
+      gap: getSpacing(screenWidth, screenHeight).sm,
     },
     denominationButton: {
-      paddingVertical: getSpacing(screenHeight).sm,
-      paddingHorizontal: getSpacing(screenHeight).md,
+      paddingVertical: getSpacing(screenWidth, screenHeight).sm,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
       borderRadius: getBorderRadius(screenHeight).md,
       borderWidth: 1,
       borderColor: colors.grayLight,
@@ -246,7 +246,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     purchaseButton: {
       backgroundColor: colors.primary,
       borderRadius: getBorderRadius(screenHeight).lg,
-      paddingVertical: getSpacing(screenHeight).md,
+      paddingVertical: getSpacing(screenWidth, screenHeight).md,
       alignItems: 'center',
     },
     purchaseButtonText: {

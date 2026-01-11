@@ -15,14 +15,15 @@ interface Props {
   textDomain?: string;
   active: boolean;
   onPress: () => void;
+  autoWidth?: boolean;
 }
 
 const NewBlueButton: React.FC<Props> = props => {
-  const {title, textKey, textDomain, active, onPress} = props;
+  const {title, textKey, textDomain, active, onPress, autoWidth} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, autoWidth || false);
 
   const textStyle = active
     ? {
@@ -75,18 +76,22 @@ const NewBlueButton: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  autoWidth: boolean,
+) =>
   StyleSheet.create({
     container: {
       height: screenHeight * 0.044,
-      minWidth: screenHeight * 0.15,
+      minWidth: autoWidth ? 'auto' : screenHeight * 0.15,
       borderRadius: screenHeight * 0.012,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: '#FEFEFE',
       borderWidth: 1,
       borderColor: 'rgba(216,210,210,75)',
-      paddingHorizontal: screenWidth * 0.02,
+      paddingHorizontal: autoWidth ? screenWidth * 0.04 : screenWidth * 0.02,
     },
     active: {
       backgroundColor: '#2C72FF',

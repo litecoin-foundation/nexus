@@ -1,8 +1,5 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import GiftCardShop, {
-  GiftCardShopNavigationOptions,
-} from '../screens/GiftCardShop/GiftCardShopDeprecated';
 import SignUp, {SignUpNavigationOptions} from '../screens/GiftCardShop/SignUp';
 import VerifyOTP, {
   VerifyOTPNavigationOptions,
@@ -24,12 +21,7 @@ const Stack = createStackNavigator<NexusShopStackParamList>();
 
 function NexusShopStack(): React.JSX.Element {
   return (
-    <Stack.Navigator initialRouteName="GiftCardShop">
-      <Stack.Screen
-        name="GiftCardShop"
-        component={GiftCardShop}
-        options={({navigation}) => GiftCardShopNavigationOptions(navigation)}
-      />
+    <Stack.Navigator initialRouteName="SignUp">
       <Stack.Screen
         name="SignUp"
         component={SignUp}

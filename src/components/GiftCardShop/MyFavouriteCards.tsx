@@ -75,9 +75,9 @@ export function MyFavouriteCards() {
   );
 }
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     section: {
-      marginBottom: getSpacing(screenHeight).lg,
+      marginBottom: getSpacing(screenWidth, screenHeight).lg,
     },
   });

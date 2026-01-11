@@ -15,7 +15,7 @@ export const colors = {
   warningDark: '#856404',
   gray: '#8E8E93',
   grayLight: '#F2F2F7',
-  grayMedium: '#C7C7CC',
+  grayMedium: '#dddddd',
   grayDark: '#636366',
   white: '#FFFFFF',
   black: '#000000',
@@ -36,7 +36,7 @@ export const spacing = {
   xxl: 48,
 };
 
-export const getSpacing = (screenHeight: number) => {
+export const getSpacing = (screenWidth: number, screenHeight: number) => {
   return {
     xs: screenHeight * 0.004,
     sm: screenHeight * 0.008,
@@ -45,6 +45,7 @@ export const getSpacing = (screenHeight: number) => {
     xl: screenHeight * 0.032,
     xxl: screenHeight * 0.048,
     header: screenHeight * 0.055,
+    bottomSheetCard: screenWidth * 0.055,
   };
 };
 
@@ -100,21 +101,21 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     },
     scrollContainer: {
       flexGrow: 1,
-      padding: getSpacing(screenHeight).md,
+      padding: getSpacing(screenWidth, screenHeight).md,
     },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: getSpacing(screenHeight).lg,
+      padding: getSpacing(screenWidth, screenHeight).lg,
     },
 
     // Cards
     card: {
       backgroundColor: colors.card,
       borderRadius: getBorderRadius(screenHeight).md,
-      padding: getSpacing(screenHeight).md,
-      marginBottom: getSpacing(screenHeight).md,
+      padding: getSpacing(screenWidth, screenHeight).md,
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 2},
       shadowOpacity: 0.1,
@@ -127,19 +128,19 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: getFontSize(screenHeight).xxl,
       fontWeight: '700',
       color: colors.white,
-      marginBottom: getSpacing(screenHeight).md,
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
     },
     titleBlack: {
       fontSize: getFontSize(screenHeight).xxl,
       fontWeight: '700',
       color: colors.lightBlack,
-      marginBottom: getSpacing(screenHeight).md,
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
     },
     subtitle: {
       fontSize: getFontSize(screenHeight).lg,
       fontWeight: '600',
       color: colors.white,
-      marginBottom: getSpacing(screenHeight).sm,
+      marginBottom: getSpacing(screenWidth, screenHeight).sm,
     },
     body: {
       fontSize: getFontSize(screenHeight).md,
@@ -154,7 +155,7 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '600',
       color: colors.white,
       textTransform: 'uppercase',
-      marginBottom: getSpacing(screenHeight).sm,
+      marginBottom: getSpacing(screenWidth, screenHeight).sm,
     },
 
     // Buttons
@@ -163,8 +164,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: colors.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: getSpacing(screenHeight).md,
-      paddingHorizontal: getSpacing(screenHeight).lg,
+      paddingVertical: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
     },
     buttonRounded: {
       height: screenHeight * 0.06,
@@ -172,8 +173,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.03,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: getSpacing(screenHeight).md,
-      paddingHorizontal: getSpacing(screenHeight).lg,
+      paddingVertical: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
     },
     buttonRoundedGreen: {
       height: screenHeight * 0.06,
@@ -181,8 +182,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.03,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: getSpacing(screenHeight).md,
-      paddingHorizontal: getSpacing(screenHeight).lg,
+      paddingVertical: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
     },
     buttonRoundedSecondary: {
       height: screenHeight * 0.06,
@@ -192,8 +193,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       borderColor: colors.grayMedium,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: getSpacing(screenHeight).md,
-      paddingHorizontal: getSpacing(screenHeight).lg,
+      paddingVertical: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
     },
     buttonText: {
       color: colors.white,
@@ -217,8 +218,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       color: colors.primary,
     },
     buttonSmall: {
-      paddingVertical: getSpacing(screenHeight).sm,
-      paddingHorizontal: getSpacing(screenHeight).md,
+      paddingVertical: getSpacing(screenWidth, screenHeight).sm,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
     },
 
     // Inputs
@@ -227,8 +228,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: getBorderRadius(screenHeight).md,
-      paddingVertical: getSpacing(screenHeight).md,
-      paddingHorizontal: getSpacing(screenHeight).md,
+      paddingVertical: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
       fontSize: getFontSize(screenHeight).lg,
     },
     inputFocused: {
@@ -237,8 +238,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
 
     // Status badges
     badge: {
-      paddingVertical: getSpacing(screenHeight).xs,
-      paddingHorizontal: getSpacing(screenHeight).sm,
+      paddingVertical: getSpacing(screenWidth, screenHeight).xs,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).sm,
       borderRadius: getBorderRadius(screenHeight).sm,
     },
     badgeActive: {
@@ -270,7 +271,7 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     divider: {
       height: 1,
       backgroundColor: colors.border,
-      marginVertical: getSpacing(screenHeight).md,
+      marginVertical: getSpacing(screenWidth, screenHeight).md,
     },
     row: {
       flexDirection: 'row',
@@ -285,9 +286,9 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       color: colors.danger,
       fontSize: getFontSize(screenHeight).lg,
       alignSelf: 'center',
-      marginTop: getSpacing(screenHeight).xs,
-      paddingVertical: getSpacing(screenHeight).xs,
-      paddingHorizontal: getSpacing(screenHeight).md,
+      marginTop: getSpacing(screenWidth, screenHeight).xs,
+      paddingVertical: getSpacing(screenWidth, screenHeight).xs,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
     },
     successIcon: {
       width: 80,
@@ -296,7 +297,7 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: colors.success,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: getSpacing(screenHeight).lg,
+      marginBottom: getSpacing(screenWidth, screenHeight).lg,
     },
   });
 

@@ -69,10 +69,10 @@ export function MyWishlistBrands({onSelectBrand}: MyWishlistBrandsProps) {
   );
 }
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     section: {
-      marginBottom: getSpacing(screenHeight).lg,
+      marginBottom: getSpacing(screenWidth, screenHeight).lg,
     },
     brandsGrid: {
       flexDirection: 'row',
@@ -80,9 +80,9 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       justifyContent: 'space-between',
     },
     leftCard: {
-      marginRight: getSpacing(screenHeight).xs,
+      marginRight: getSpacing(screenWidth, screenHeight).xs,
     },
     rightCard: {
-      marginLeft: getSpacing(screenHeight).xs,
+      marginLeft: getSpacing(screenWidth, screenHeight).xs,
     },
   });

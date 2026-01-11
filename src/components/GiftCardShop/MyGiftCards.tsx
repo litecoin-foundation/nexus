@@ -113,14 +113,14 @@ const MyGiftCards: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     scrollView: {
       flex: 1,
       zIndex: 1,
     },
     section: {
-      marginBottom: getSpacing(screenHeight).lg,
+      marginBottom: getSpacing(screenWidth, screenHeight).lg,
     },
   });
 
