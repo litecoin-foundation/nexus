@@ -234,3 +234,7 @@ export function formatCurrency(amount: number, currency: string): string {
   const symbol = symbols[currency] || currency + ' ';
   return `${symbol}${amount.toFixed(2)}`;
 }
+
+export function createGiftCardClient(): GiftCardClient {
+  return new GiftCardClient();
+}

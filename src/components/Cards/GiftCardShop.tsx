@@ -1,20 +1,7 @@
-import React, {
-  useState,
-  useMemo,
-  useContext,
-  useLayoutEffect,
-  useEffect,
-} from 'react';
-import {View, StyleSheet, Image} from 'react-native';
-import {
-  GiftCardClient,
-  Brand,
-  GiftCard,
-  InitiatePurchaseResponseData,
-} from '../../services/giftcards';
+import React, {useState, useMemo, useContext, useEffect} from 'react';
+import {View, StyleSheet} from 'react-native';
+import {GiftCardClient, Brand, GiftCard} from '../../services/giftcards';
 import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
-import {PurchaseForm} from '../../components/GiftCardShop/PurchaseForm';
-import {PayForGiftCard} from '../../components/GiftCardShop/PayForGiftCard';
 import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
 import MyGiftCards from '../../components/GiftCardShop/MyGiftCards';
@@ -43,12 +30,6 @@ interface GiftCardShopProps {
 
 type ScreenState =
   | {type: 'browse'}
-  | {type: 'purchase'; brand: Brand; initialAmount?: number}
-  | {
-      type: 'payment';
-      brand: Brand;
-      initiateResponse: InitiatePurchaseResponseData;
-    }
   | {type: 'payment-sent'; txid: string}
   | {type: 'success'; brand: Brand; giftCard: GiftCard}
   | {type: 'my-cards'}
@@ -66,28 +47,13 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   const isLoggedIn = account && account.isLoggedIn;
 
   const [screen, setScreen] = useState<ScreenState>({type: 'browse'});
-  const [isHeaderOverflowHiddenState, setIsHeaderOverflowHidden] =
-    useState<boolean>(true);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = useMemo(
-    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, isHeaderOverflowHiddenState),
-    [SCREEN_WIDTH, SCREEN_HEIGHT, isHeaderOverflowHiddenState],
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_WIDTH, SCREEN_HEIGHT],
   );
-
-  useEffect(() => {
-    switch (screen.type) {
-      case 'my-cards':
-        setIsHeaderOverflowHidden(false);
-        break;
-      default:
-        // setIsHeaderOverflowHidden(true);
-        setIsHeaderOverflowHidden(false);
-        break;
-    }
-    return () => {};
-  }, [screen]);
 
   const dispatch = useAppDispatch();
   if (__DEV__) {
@@ -137,32 +103,19 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   };
 
   const handleSelectBrand = (brand: Brand, initialAmount?: number) => {
-    setScreen({type: 'purchase', brand, initialAmount});
-  };
-
-  const handleInitiate = (initiateResponse: InitiatePurchaseResponseData) => {
-    if (screen.type === 'purchase') {
-      setScreen({type: 'payment', brand: screen.brand, initiateResponse});
-    }
-  };
-
-  const handlePaymentSent = (txid: string) => {
-    if (screen.type === 'payment') {
-      setScreen({type: 'payment-sent', txid});
-    }
-  };
-
-  const handlePaymentBack = () => {
-    if (screen.type === 'payment') {
-      setScreen({type: 'browse'});
-    }
+    navigation.navigate('NexusShopStack', {
+      screen: 'PurchaseForm',
+      params: {
+        brand,
+        initialAmount,
+        onPaymentSuccess: (txid: string) => {
+          setScreen({type: 'payment-sent', txid});
+        },
+      },
+    });
   };
 
   const handleDone = () => {
-    setScreen({type: 'browse'});
-  };
-
-  const handleBack = () => {
     setScreen({type: 'browse'});
   };
 
@@ -173,21 +126,20 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
    * Since reg wasn't done, any reqs from the GiftCardClient will
    * throw an error which should fallback to signing in.
    */
+  /**
+   * Since some components of the GiftCardShop are separate screens now,
+   * they initialize client again for their use. The GiftCardClient class is stateless
+   * and multiple instances do not break anything.
+   */
   const client = useMemo(() => new GiftCardClient(), []);
 
   // Open preset brand
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (initialBrand) {
       handleSelectBrand(initialBrand);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialBrand]);
-
-  // useEffect(() => {
-  //   if (!client || !isLoggedIn) {
-  //     navigation.navigate('NexusShopStack', {screen: 'SignUp'});
-  //   }
-  //   return () => {};
-  // }, [navigation, isLoggedIn, client]);
 
   return (
     <View style={styles.container}>
@@ -234,13 +186,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
               </View>
             </View>
 
-            {/* <View style={styles.imageContainer}>
-              <Image
-                style={styles.image}
-                source={require('../../assets/images/shop-card.png')}
-              />
-            </View> */}
-
             <View style={styles.switchContainer}>
               <TripleSwitch
                 options={
@@ -267,23 +212,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
               <BrandGrid onSelectBrand={handleSelectBrand} />
             )}
 
-            {screen.type === 'purchase' && (
-              <PurchaseForm
-                brand={screen.brand}
-                initialAmount={screen.initialAmount}
-                onBack={handleBack}
-                onInitiate={handleInitiate}
-              />
-            )}
-
-            {screen.type === 'payment' && (
-              <PayForGiftCard
-                initiateResponse={screen.initiateResponse}
-                onBack={handlePaymentBack}
-                onSuccess={handlePaymentSent}
-              />
-            )}
-
             {screen.type === 'payment-sent' && (
               <PaymentSent txid={screen.txid} onDone={handleDone} />
             )}
@@ -302,11 +230,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   );
 };
 
-const getStyles = (
-  screenWidth: number,
-  screenHeight: number,
-  isHeaderOverflowHidden: boolean,
-) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       width: screenWidth,
@@ -314,6 +238,10 @@ const getStyles = (
       // DashboardButton is 110
       // Header margin is 5
       height: screenHeight * 0.76,
+      // height: screenHeight,
+      // backgroundColor: 'red',
+      // marginTop: screenHeight * 0.24 * -1,
+      // zIndex: 1,
     },
     subContainer: {
       flex: 1,
@@ -337,7 +265,7 @@ const getStyles = (
       // DashboardButton is 110
       // Header margin is 5
       marginTop: -115,
-      overflow: isHeaderOverflowHidden ? 'hidden' : 'visible',
+      overflow: 'hidden',
     },
     topBarContainer: {
       flexDirection: 'row',

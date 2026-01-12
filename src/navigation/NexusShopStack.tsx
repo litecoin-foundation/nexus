@@ -5,6 +5,13 @@ import VerifyOTP, {
   VerifyOTPNavigationOptions,
 } from '../screens/GiftCardShop/VerifyOTP';
 import OTPVerified from '../screens/GiftCardShop/OTPVerified';
+import PurchaseFormScreen, {
+  PurchaseFormScreenOptions,
+} from '../screens/GiftCardShop/PurchaseFormScreen';
+import PayForGiftCardScreen, {
+  PayForGiftCardScreenOptions,
+} from '../screens/GiftCardShop/PayForGiftCardScreen';
+import {Brand, InitiatePurchaseResponseData} from '../services/giftcards';
 
 export type NexusShopStackParamList = {
   GiftCardShop: undefined;
@@ -15,6 +22,15 @@ export type NexusShopStackParamList = {
       }
     | undefined;
   OTPVerified: undefined;
+  PurchaseForm: {
+    brand: Brand;
+    initialAmount?: number;
+    onPaymentSuccess: (txid: string) => void;
+  };
+  PayForGiftCard: {
+    initiateResponse: InitiatePurchaseResponseData;
+    onPaymentSuccess: (txid: string) => void;
+  };
 };
 
 const Stack = createStackNavigator<NexusShopStackParamList>();
@@ -40,6 +56,16 @@ function NexusShopStack(): React.JSX.Element {
           gestureEnabled: false,
           gestureResponseDistance: 0,
         }}
+      />
+      <Stack.Screen
+        name="PurchaseForm"
+        component={PurchaseFormScreen}
+        options={({navigation}) => PurchaseFormScreenOptions(navigation)}
+      />
+      <Stack.Screen
+        name="PayForGiftCard"
+        component={PayForGiftCardScreen}
+        options={({navigation}) => PayForGiftCardScreenOptions(navigation)}
       />
     </Stack.Navigator>
   );

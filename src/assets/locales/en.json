@@ -342,6 +342,7 @@
     "flexa": "Flexa",
     "logout": "Logout",
     "verify": "Verify",
+    "sign_in": "Sign In",
     "verify_code": "Verify Code",
     "send_code": "Send Code",
     "resend_code": "Resend Code",

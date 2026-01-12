@@ -266,7 +266,7 @@ export const SignUpNavigationOptions = (
     headerTransparent: true,
     headerTitle: () => (
       <TranslateText
-        textKey="verify"
+        textKey="sign_in"
         domain="nexusShop"
         maxSizeInPixels={height * 0.02}
         textStyle={styles.headerTitle}
