@@ -12,10 +12,11 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface BrandGridProps {
+  currency: string;
   onSelectBrand: (brand: Brand, initialAmount?: number) => void;
 }
 
-export function BrandGrid({onSelectBrand}: BrandGridProps) {
+export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -61,6 +62,7 @@ export function BrandGrid({onSelectBrand}: BrandGridProps) {
         renderItem={({item}) => (
           <BrandCard
             brand={item}
+            currency={currency}
             onPress={(amount?: number) => onSelectBrand(item, amount)}
           />
         )}

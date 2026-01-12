@@ -307,10 +307,12 @@ export function useRedeemGiftCard(): UseMutationResult<GiftCard, string> {
 
 // Flows ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Purchase flow
-export function usePurchaseFlow(brand: Brand | null) {
+export function usePurchaseFlow(
+  brand: Brand | null,
+  initialCurrency: string = 'USD',
+) {
   const [amount, setAmount] = useState<number>(0);
-  // NOTE: currency is set by...
-  const [currency, setCurrency] = useState<string>('USD');
+  const [currency, setCurrency] = useState<string>(initialCurrency);
   const [validation, setValidation] = useState<{
     valid: boolean;
     error?: string;

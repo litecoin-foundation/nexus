@@ -10,10 +10,11 @@ const backIcon = require('../../assets/images/back-icon.png');
 
 interface BrandCardProps {
   brand: Brand;
+  currency: string;
   onPress: (amount?: number) => void;
 }
 
-export function BrandCard({brand, onPress}: BrandCardProps) {
+export function BrandCard({brand, currency, onPress}: BrandCardProps) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -120,7 +121,7 @@ export function BrandCard({brand, onPress}: BrandCardProps) {
                     selectedAmount === amount &&
                       styles.denominationTextSelected,
                   ]}>
-                  {brand.currency === 'USD' ? '$' : ''}
+                  {formatCurrency(currency)}
                   {formatDenomination(amount)}
                 </Text>
               </TouchableOpacity>

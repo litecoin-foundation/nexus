@@ -6,7 +6,8 @@ import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
 import MyGiftCards from '../../components/GiftCardShop/MyGiftCards';
 import TripleSwitch from '../../components/Buttons/TripleSwitch';
-import NewBlueButton from '../Buttons/NewBlueButton';
+import NewBlueButton from '../../components/Buttons/NewBlueButton';
+import DropDownButton from '../../components/Buttons/DropDownButton';
 
 import {
   colors,
@@ -35,6 +36,8 @@ type ScreenState =
   | {type: 'my-cards'}
   | {type: 'wishlist'};
 
+const SHOP_CURRENCIES = ['USD', 'CAD', 'AUD', 'EUR', 'GBP'];
+
 const GiftCardShop: React.FC<GiftCardShopProps> = ({
   initialBrand,
   navigation,
@@ -47,6 +50,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   const isLoggedIn = account && account.isLoggedIn;
 
   const [screen, setScreen] = useState<ScreenState>({type: 'browse'});
+  const [shopCurrency, setShopCurrency] = useState('USD');
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -64,9 +68,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   }
 
   const handleLogoutShopUser = () => {
-    if (__DEV__) {
-      dispatch(logoutFromNexusShop());
-    }
+    dispatch(logoutFromNexusShop());
   };
 
   const handleResetShopUser = () => {
@@ -108,6 +110,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
       params: {
         brand,
         initialAmount,
+        currency: shopCurrency,
         onPaymentSuccess: (txid: string) => {
           setScreen({type: 'payment-sent', txid});
         },
@@ -156,15 +159,19 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
               />
 
               <View style={styles.topButtons}>
-                <View style={styles.topBtn}>
-                  <NewBlueButton
-                    textKey="reset_acc"
-                    textDomain="nexusShop"
-                    active={false}
-                    onPress={handleResetShopUser}
-                    autoWidth
-                  />
-                </View>
+                {/* {__DEV__ ? (
+                  <View style={styles.topBtn}>
+                    <NewBlueButton
+                      textKey="reset_acc"
+                      textDomain="nexusShop"
+                      active={false}
+                      onPress={handleResetShopUser}
+                      autoWidth
+                    />
+                  </View>
+                ) : (
+                  <></>
+                )} */}
                 <View style={styles.topBtn}>
                   <NewBlueButton
                     textKey="flexa"
@@ -172,6 +179,19 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
                     active={false}
                     onPress={() => {}}
                     autoWidth
+                  />
+                </View>
+                <View style={styles.dropdownWrapper}>
+                  <DropDownButton
+                    initial={shopCurrency}
+                    options={SHOP_CURRENCIES}
+                    chooseOptionCallback={setShopCurrency}
+                    cellHeight={SCREEN_HEIGHT * 0.044}
+                    cellHeightExpandMultiplier={1.45}
+                    textDomain="nexusShop"
+                    tickDisabled
+                    smallPadding
+                    centerText
                   />
                 </View>
                 <View style={styles.topBtn}>
@@ -209,7 +229,10 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
 
           <View style={styles.body}>
             {screen.type === 'browse' && (
-              <BrandGrid onSelectBrand={handleSelectBrand} />
+              <BrandGrid
+                currency={shopCurrency}
+                onSelectBrand={handleSelectBrand}
+              />
             )}
 
             {screen.type === 'payment-sent' && (
@@ -265,7 +288,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       // DashboardButton is 110
       // Header margin is 5
       marginTop: -115,
-      overflow: 'hidden',
     },
     topBarContainer: {
       flexDirection: 'row',
@@ -285,7 +307,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
     },
     topBtn: {
+      height: screenHeight * 0.044,
       marginLeft: screenWidth * 0.02,
+    },
+    dropdownWrapper: {
+      width: screenWidth * 0.14,
+      height: screenHeight * 0.044,
+      marginLeft: screenWidth * 0.02,
+      zIndex: 3,
     },
     body: {
       // TODO: there's weird gap at the bottom out of nowhere

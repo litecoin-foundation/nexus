@@ -223,16 +223,28 @@ export function daysUntilExpiration(giftCard: GiftCard): number {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-export function formatCurrency(amount: number, currency: string): string {
+export function formatAmount(amount: number, currency: string): string {
   const symbols: Record<string, string> = {
-    GBP: '£',
     USD: '$',
-    EUR: '€',
     CAD: 'C$',
     AUD: 'A$',
+    EUR: '€',
+    GBP: '£',
   };
   const symbol = symbols[currency] || currency + ' ';
   return `${symbol}${amount.toFixed(2)}`;
+}
+
+export function formatCurrency(currency: string): string {
+  const symbols: Record<string, string> = {
+    USD: '$',
+    CAD: 'C$',
+    AUD: 'A$',
+    EUR: '€',
+    GBP: '£',
+  };
+  const symbol = symbols[currency] || currency + ' ';
+  return symbol;
 }
 
 export function createGiftCardClient(): GiftCardClient {

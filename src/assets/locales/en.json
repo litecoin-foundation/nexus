@@ -352,6 +352,16 @@
     "past_gif_cards": "Past Gift Cards",
     "check_email": "Check your email",
     "we_sent_code_to": "We've sent a one-time verification code to {{email}}",
-    "pls_check_email": "Please check your inbox and enter the code to complete your registration"
+    "pls_check_email": "Please check your inbox and enter the code to complete your registration",
+    "USD": "US$",
+    "usd": "US$",
+    "CAD": "CA$",
+    "cad": "CA$",
+    "AUD": "AU$",
+    "aud": "AU$",
+    "EUR": "€",
+    "eur": "€",
+    "GBP": "£",
+    "gbp": "£"
   }
 }

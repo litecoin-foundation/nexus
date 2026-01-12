@@ -16,6 +16,7 @@ import {
   Brand,
   GiftCardClient,
   InitiatePurchaseResponseData,
+  formatCurrency,
 } from '../../services/giftcards';
 import {
   GiftCardProvider,
@@ -38,6 +39,7 @@ interface PurchaseFormScreenProps {
     params: {
       brand: Brand;
       initialAmount?: number;
+      currency: string;
       onPaymentSuccess: (txid: string) => void;
     };
   };
@@ -47,24 +49,25 @@ interface PurchaseFormScreenProps {
 interface PurchaseFormContentProps {
   brand: Brand;
   initialAmount?: number;
+  currency: string;
   onInitiate: (initiateResponse: InitiatePurchaseResponseData) => void;
 }
 
 const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   brand,
   initialAmount,
+  currency,
   onInitiate,
 }) => {
   const {
     amount,
     setAmount,
-    currency,
     validation,
     submit,
     loading,
     error,
     initiateResponse,
-  } = usePurchaseFlow(brand);
+  } = usePurchaseFlow(brand, currency);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -170,7 +173,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                   styles.denominationText,
                   amount === denom && styles.denominationTextSelected,
                 ]}>
-                {currency === 'USD' ? '$' : ''}
+                {formatCurrency(currency)}
                 {denom}
               </Text>
             </TouchableOpacity>
@@ -182,7 +185,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
             <Text style={styles.sectionTitle}>ENTER AMOUNT</Text>
             <View style={styles.amountInputContainer}>
               <Text style={styles.currencySymbol}>
-                {currency === 'USD' ? '$' : currency}
+                {formatCurrency(currency)}
               </Text>
               <TextInput
                 style={styles.amountInput}
@@ -256,7 +259,7 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
   route,
   navigation,
 }) => {
-  const {brand, initialAmount, onPaymentSuccess} = route.params;
+  const {brand, initialAmount, currency, onPaymentSuccess} = route.params;
   const client = useMemo(() => new GiftCardClient(), []);
 
   const handleInitiate = (initiateResponse: InitiatePurchaseResponseData) => {
@@ -271,6 +274,7 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
       <PurchaseFormContent
         brand={brand}
         initialAmount={initialAmount}
+        currency={currency}
         onInitiate={handleInitiate}
       />
     </GiftCardProvider>
