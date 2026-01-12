@@ -51,6 +51,7 @@ interface PurchaseFormContentProps {
   initialAmount?: number;
   currency: string;
   onInitiate: (initiateResponse: InitiatePurchaseResponseData) => void;
+  navigation: any;
 }
 
 const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
@@ -58,6 +59,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   initialAmount,
   currency,
   onInitiate,
+  navigation,
 }) => {
   const {
     amount,
@@ -123,6 +125,24 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     try {
       await submit();
     } catch {}
+  };
+
+  const [errorText, setErrorText] = useState<string>('');
+  useEffect(() => {
+    switch (error) {
+      case 'Unauthorized':
+        setErrorText(
+          'To proceed with the purchase sign in to Nexus Shop account',
+        );
+        break;
+      default:
+        setErrorText(error || '');
+        break;
+    }
+  }, [error]);
+
+  const toSignUp = () => {
+    navigation.navigate('NexusShopStack', {screen: 'SignUp'});
   };
 
   return (
@@ -224,9 +244,9 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
           </Text>
         </View>
 
-        {error && (
+        {errorText && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorMessage}>{error}</Text>
+            <Text style={styles.errorMessage}>{errorText}</Text>
           </View>
         )}
 
@@ -236,20 +256,41 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
           </Text>
         )}
 
-        <TouchableOpacity
-          style={[
-            styles.purchaseButton,
-            (!validation.valid || loading) && styles.purchaseButtonDisabled,
-          ]}
-          onPress={handleSubmit}
-          disabled={!validation.valid || loading}
-          activeOpacity={0.7}>
-          {loading ? (
-            <ActivityIndicator color={colors.white} />
-          ) : (
-            <Text style={styles.purchaseButtonText}>Proceed</Text>
-          )}
-        </TouchableOpacity>
+        {error === 'Unauthorized' ? (
+          <TouchableOpacity
+            style={styles.purchaseButton}
+            onPress={toSignUp}
+            activeOpacity={0.7}>
+            <TranslateText
+              textKey="sign_in"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.purchaseButtonText}
+              numberOfLines={1}
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.purchaseButton,
+              (!validation.valid || loading) && styles.purchaseButtonDisabled,
+            ]}
+            onPress={handleSubmit}
+            disabled={!validation.valid || loading}
+            activeOpacity={0.7}>
+            {loading ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <TranslateText
+                textKey="proceed"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.purchaseButtonText}
+                numberOfLines={1}
+              />
+            )}
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </LinearGradient>
   );
@@ -276,6 +317,7 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
         initialAmount={initialAmount}
         currency={currency}
         onInitiate={handleInitiate}
+        navigation={navigation}
       />
     </GiftCardProvider>
   );

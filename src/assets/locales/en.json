@@ -343,6 +343,8 @@
     "logout": "Logout",
     "verify": "Verify",
     "sign_in": "Sign In",
+    "proceed": "Proceed",
+    "payment": "Payment",
     "verify_code": "Verify Code",
     "send_code": "Send Code",
     "resend_code": "Resend Code",

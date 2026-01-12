@@ -122,6 +122,10 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
     setScreen({type: 'browse'});
   };
 
+  const toSignUp = () => {
+    navigation.navigate('NexusShopStack', {screen: 'SignUp'});
+  };
+
   /**
    * Initialize client with email and uniqueId
    * Allow init client even without nexus shop account reged,
@@ -195,13 +199,23 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
                   />
                 </View>
                 <View style={styles.topBtn}>
-                  <NewBlueButton
-                    textKey="logout"
-                    textDomain="nexusShop"
-                    active={true}
-                    onPress={handleLogoutShopUser}
-                    autoWidth
-                  />
+                  {isLoggedIn ? (
+                    <NewBlueButton
+                      textKey="logout"
+                      textDomain="nexusShop"
+                      active={true}
+                      onPress={handleLogoutShopUser}
+                      autoWidth
+                    />
+                  ) : (
+                    <NewBlueButton
+                      textKey="sign_in"
+                      textDomain="nexusShop"
+                      active={true}
+                      onPress={toSignUp}
+                      autoWidth
+                    />
+                  )}
                 </View>
               </View>
             </View>
