@@ -258,7 +258,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
             )}
 
             {screen.type === 'wishlist' && (
-              <MyWishlistBrands onSelectBrand={handleSelectBrand} />
+              <MyWishlistBrands currency={shopCurrency} onSelectBrand={handleSelectBrand} />
             )}
           </View>
         </View>

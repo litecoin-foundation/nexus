@@ -1,19 +1,24 @@
-import React, {useState, useContext} from 'react';
-import {ScrollView, View, Text, StyleSheet, RefreshControl} from 'react-native';
+import React, {useContext} from 'react';
+import {FlatList, View, StyleSheet} from 'react-native';
 import {Brand} from '../../services/giftcards';
 import {useAppSelector} from '../../store/hooks';
-import {getSpacing, getCommonStyles} from './theme';
+import {getSpacing} from './theme';
 import {LoadingView} from './LoadingView';
 import {EmptyView} from './EmptyView';
 import {BrandCard} from './BrandCard';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface MyWishlistBrandsProps {
+  currency: string;
   onSelectBrand?: (brand: Brand, initialAmount?: number) => void;
 }
 
-export function MyWishlistBrands({onSelectBrand}: MyWishlistBrandsProps) {
+export function MyWishlistBrands({
+  currency,
+  onSelectBrand,
+}: MyWishlistBrandsProps) {
   const wishlistBrands = useAppSelector(
     state => state.nexusshopaccount.wishlistBrands,
   );
@@ -22,18 +27,8 @@ export function MyWishlistBrands({onSelectBrand}: MyWishlistBrandsProps) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const [refreshing, setRefreshing] = useState(false);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    // No need to refetch as we're reading from Redux store
-    // The data is already synced when brands are added to wishlist
-    setRefreshing(false);
-  };
-
-  if (loading && !refreshing) {
+  if (loading) {
     return <LoadingView message="Loading your wishlist..." />;
   }
 
@@ -44,45 +39,50 @@ export function MyWishlistBrands({onSelectBrand}: MyWishlistBrandsProps) {
   }
 
   return (
-    <ScrollView
-      style={commonStyles.container}
-      contentContainerStyle={commonStyles.scrollContainer}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
+    <View style={styles.container}>
       <View style={styles.section}>
-        <Text style={commonStyles.subtitle}>Your Wishlist</Text>
-        <View style={styles.brandsGrid}>
-          {wishlistBrands.map((brand, index) => (
-            <View
-              key={brand.slug}
-              style={index % 2 === 0 ? styles.leftCard : styles.rightCard}>
-              <BrandCard
-                brand={brand}
-                onPress={(amount?: number) => onSelectBrand?.(brand, amount)}
-              />
-            </View>
-          ))}
-        </View>
+        <TranslateText
+          textKey="your_wishlist"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+          textStyle={styles.title}
+        />
       </View>
-    </ScrollView>
+      <FlatList
+        data={wishlistBrands}
+        keyExtractor={item => item.slug}
+        contentContainerStyle={styles.gridContainer}
+        renderItem={({item}) => (
+          <BrandCard
+            brand={item}
+            currency={currency}
+            onPress={(amount?: number) => onSelectBrand?.(item, amount)}
+          />
+        )}
+        extraData={wishlistBrands?.length}
+      />
+    </View>
   );
 }
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
-    section: {
-      marginBottom: getSpacing(screenWidth, screenHeight).lg,
+    container: {
+      flex: 1,
+      zIndex: 1,
+      paddingTop: screenHeight * 0.01,
     },
-    brandsGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
+    gridContainer: {
+      padding: getSpacing(screenWidth, screenHeight).md,
     },
-    leftCard: {
-      marginRight: getSpacing(screenWidth, screenHeight).xs,
-    },
-    rightCard: {
-      marginLeft: getSpacing(screenWidth, screenHeight).xs,
+    section: {},
+    title: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: screenHeight * 0.015,
+      textTransform: 'uppercase',
+      paddingHorizontal: screenWidth * 0.06,
     },
   });

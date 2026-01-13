@@ -1,6 +1,8 @@
 import React, {useContext, useState} from 'react';
 import {View, Text, TouchableOpacity, Image, StyleSheet} from 'react-native';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
+import {toggleWishlistBrand} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
 import {colors, getSpacing, getBorderRadius, getFontSize} from './theme';
 
@@ -19,8 +21,22 @@ export function BrandCard({brand, currency, onPress}: BrandCardProps) {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  const dispatch = useAppDispatch();
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+
+  const wishlistBrands = useAppSelector(
+    state => state.nexusshopaccount?.wishlistBrands,
+  );
+
+  const isInWishlist = wishlistBrands
+    ? wishlistBrands.some(wishlistBrand => wishlistBrand.slug === brand.slug)
+    : false;
+
+  const handleWishlistToggle = () => {
+    dispatch(toggleWishlistBrand(brand));
+  };
 
   const minAmount = Number(
     brand.digital_face_value_limits?.lower || brand.denominations?.[0],
@@ -135,6 +151,13 @@ export function BrandCard({brand, currency, onPress}: BrandCardProps) {
           </TouchableOpacity>
         </View>
       )}
+
+      <TouchableOpacity
+        style={styles.wishlistButton}
+        onPress={handleWishlistToggle}
+        activeOpacity={0.7}>
+        <Text style={styles.wishlistIcon}>{isInWishlist ? '♥' : '♡'}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -150,7 +173,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       shadowOpacity: 0.08,
       shadowRadius: 8,
       elevation: 3,
-      overflow: 'hidden',
     },
     brandCard: {
       flexDirection: 'row',
@@ -254,5 +276,25 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: getFontSize(screenHeight).md,
       fontWeight: '600',
       color: colors.white,
+    },
+    wishlistButton: {
+      position: 'absolute',
+      top: -10,
+      right: 80,
+      width: screenWidth * 0.08,
+      height: screenWidth * 0.08,
+      borderRadius: screenWidth * 0.04,
+      backgroundColor: colors.white,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: colors.black,
+      shadowOffset: {width: 0, height: 1},
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    wishlistIcon: {
+      fontSize: getFontSize(screenHeight).lg,
+      color: colors.primary,
     },
   });
