@@ -115,5 +115,6 @@ export type SettingsStackParamList = {
   ResetWallet: undefined;
   TestPayment: undefined;
   Tor: undefined;
+  LitecoinBackend: undefined;
   ExportElectrum: undefined;
 };

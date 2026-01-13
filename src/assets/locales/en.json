@@ -309,7 +309,13 @@
     "tor_status_enabled": "Enabled:",
     "restart_required": "Restart Required",
     "restart_required_message": "Tor settings have been changed. Please restart the app for changes to take effect.",
-    "restart_later": "Restart Later"
+    "restart_later": "Restart Later",
+    "litecoin_backend": "Litecoin Backend",
+    "litecoin_backend_description": "Choose how your wallet connects to the Litecoin network.",
+    "neutrino_backend": "Neutrino",
+    "electrum_backend": "Electrum",
+    "neutrino_description": "Connects directly to the Litecoin Network. Greater privacy, but may have sync issues.",
+    "electrum_description": "More reliable with faster sync. Lower privacy connection."
   },
   "convertTab": {
     "convert_button": "Convert your LTC",

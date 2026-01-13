@@ -1,7 +1,10 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import {fileExists} from './file';
 
-const getMainnetConfig = (torEnabled: boolean = false) => {
+const getMainnetConfig = (
+  torEnabled: boolean = false,
+  litecoinBackend: 'neutrino' | 'electrum' = 'neutrino',
+) => {
   const baseConfig = `
   [Application Options]
   debuglevel=info
@@ -18,7 +21,7 @@ const getMainnetConfig = (torEnabled: boolean = false) => {
   [Litecoin]
   litecoin.active=1
   litecoin.mainnet=1
-  litecoin.node=neutrino
+  litecoin.node=${litecoinBackend}
 
   [Neutrino]
   neutrino.addpeer=88.198.50.4:9333
@@ -31,7 +34,13 @@ const getMainnetConfig = (torEnabled: boolean = false) => {
   neutrino.addpeer=115.179.102.163:9333
   neutrino.addpeer=104.172.235.227:9333
   neutrino.addpeer=174.60.78.162:9333
-  neutrino.feeurl=https://litecoinspace.org/api/v1/fees/recommended-lnd`;
+  neutrino.feeurl=https://litecoinspace.org/api/v1/fees/recommended-lnd
+
+  [electrum]
+  electrum.server=fallacy.fiatfaucet.com:50002
+  electrum.resturl=https://litecoinspace.org/api
+  electrum.ssl=true
+  `;
 
   if (torEnabled) {
     return (
@@ -48,7 +57,10 @@ const getMainnetConfig = (torEnabled: boolean = false) => {
   return baseConfig;
 };
 
-export const createConfig = (torEnabled: boolean = false) => {
+export const createConfig = (
+  torEnabled: boolean = false,
+  litecoinBackend: 'neutrino' | 'electrum' = 'neutrino',
+) => {
   return new Promise(async (resolve, reject) => {
     const lndConfPath = `${RNFS.DocumentDirectoryPath}/lndltc/lnd.conf`;
     try {
@@ -58,7 +70,7 @@ export const createConfig = (torEnabled: boolean = false) => {
         await RNFS.mkdir(lndDir);
       }
 
-      const config = getMainnetConfig(torEnabled);
+      const config = getMainnetConfig(torEnabled, litecoinBackend);
       RNFS.writeFile(lndConfPath, config).then(() => {
         resolve(true);
       });

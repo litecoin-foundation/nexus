@@ -214,6 +214,13 @@ const Settings: React.FC<Props> = props => {
         onPress: () => navigation.navigate('Currency'),
       },
       {
+        id: 'litecoin-backend',
+        type: 'cell',
+        textKey: 'litecoin_backend',
+        forward: true,
+        onPress: () => navigation.navigate('LitecoinBackend'),
+      },
+      {
         id: 'language',
         type: 'cell',
         textKey: 'change_lang',
