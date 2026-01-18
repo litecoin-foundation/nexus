@@ -57,7 +57,7 @@ const MyGiftCards: React.FC<Props> = props => {
       <ErrorView
         message={errorText}
         onRetry={error === 'Unauthorized' ? toSignUp : refetch}
-        onRetryText={error === 'Unauthorized' ? 'Sign In' : undefined}
+        onRetryText={error === 'Unauthorized' ? 'Sign In' : 'Try Again'}
       />
     );
   }

@@ -58,7 +58,7 @@ export function ErrorView({
             onPress={onRetry}>
             {onRetryText ? (
               <TranslateText
-                textValue={onRetryText || 'Try Again'}
+                textValue={onRetryText}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={
                   getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).buttonText
@@ -74,7 +74,13 @@ export function ErrorView({
                 }
               />
             ) : (
-              <></>
+              <TranslateText
+                textValue="Try Again"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={
+                  getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).buttonText
+                }
+              />
             )}
           </TouchableOpacity>
         </View>

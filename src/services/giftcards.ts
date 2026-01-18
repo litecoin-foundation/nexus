@@ -104,16 +104,34 @@ export class GiftCardClient {
   ): Promise<T> {
     const token = await SecureStore.getItemAsync('sessionToken');
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (error: any) {
+      console.warn(String(error));
+      throw new GiftCardError(
+        'Unable to connect to server. Please check your connection and try again.',
+        0,
+      );
+    }
 
-    const data: ApiResponse<T> = await response.json();
+    let data: ApiResponse<T>;
+    try {
+      data = await response.json();
+    } catch (error: any) {
+      console.warn(String(error));
+      throw new GiftCardError(
+        'Unable to connect to server. Please try again later.',
+        response.status,
+      );
+    }
 
     if (!response.ok || !data.success) {
       throw new GiftCardError(

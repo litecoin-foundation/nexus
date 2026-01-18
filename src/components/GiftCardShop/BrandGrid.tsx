@@ -35,7 +35,9 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   }
 
   if (error) {
-    return <ErrorView message={error} onRetry={refetch} />;
+    return (
+      <ErrorView message={error} onRetry={refetch} onRetryText="Try Again" />
+    );
   }
 
   if (!brands || brands.length === 0) {
