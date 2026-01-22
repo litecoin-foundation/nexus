@@ -90,6 +90,12 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+interface ValidateUserResponse {
+  userId: string;
+  email: string;
+  authenticated: boolean;
+}
+
 export class GiftCardClient {
   private baseUrl: string = __DEV__
     ? 'https://stage-api.nexuswallet.com'
@@ -162,6 +168,16 @@ export class GiftCardClient {
       'POST',
       '/api/gift-cards/purchase',
       request,
+    );
+  }
+
+  async validateUser(email: string): Promise<ValidateUserResponse> {
+    return this.request<ValidateUserResponse>(
+      'POST',
+      '/api/gift-cards/validate-user',
+      {
+        email,
+      },
     );
   }
 

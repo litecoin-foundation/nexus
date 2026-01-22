@@ -1,4 +1,10 @@
-import React, {useState, useMemo, useContext, useEffect} from 'react';
+import React, {
+  useState,
+  useMemo,
+  useContext,
+  useEffect,
+  useCallback,
+} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {GiftCardClient, Brand, GiftCard} from '../../services/giftcards';
 import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
@@ -141,6 +147,26 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
    * and multiple instances do not break anything.
    */
   const client = useMemo(() => new GiftCardClient(), []);
+
+  const validateShopUser = useCallback(
+    async (clientProp: GiftCardClient, shopUserEmailProp: string) => {
+      try {
+        const res = await clientProp.validateUser(shopUserEmailProp);
+        if (!res.authenticated) {
+          dispatch(logoutFromNexusShop());
+        }
+      } catch {
+        dispatch(logoutFromNexusShop());
+      }
+    },
+    [dispatch],
+  );
+
+  useEffect(() => {
+    if (client && isLoggedIn && shopUserEmail) {
+      validateShopUser(client, shopUserEmail);
+    }
+  }, [client, isLoggedIn, shopUserEmail, validateShopUser]);
 
   // Open preset brand
   useEffect(() => {
