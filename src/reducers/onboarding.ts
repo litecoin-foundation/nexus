@@ -49,6 +49,7 @@ const initialState = {
 } as IOnboardingState;
 
 const apiAuthUrl = 'https://api.nexuswallet.com/auth';
+const apiSupportSignUrl = 'https://api.nexuswallet.com/api/support/sign';
 
 // actions
 export const startOnboarding = createAction('onboarding/startOnboarding');
@@ -123,7 +124,7 @@ export const loginToNexusApi =
       );
 
       const response = await fetchResolve(
-        'https://api.nexuswallet.com/api/support/sign',
+        apiSupportSignUrl,
         {
           method: 'POST',
           headers: {
