@@ -17,7 +17,7 @@ import {
 import {GiftCardProvider} from '../../components/GiftCardShop/hooks';
 import {
   logoutFromNexusShop,
-  resetFromNexusShop,
+  clearSessionToken,
 } from '../../reducers/nexusshopaccount';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
@@ -60,6 +60,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   );
 
   const dispatch = useAppDispatch();
+
   if (__DEV__) {
     console.log('User uniqueId: ' + uniqueId);
     console.log('Giftcard client logged in: ' + isLoggedIn);
@@ -67,14 +68,15 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
     console.log('Screen: ' + JSON.stringify(screen, null, 2));
   }
 
+  // Clear session token
+  useEffect(() => {
+    if (!isLoggedIn) {
+      dispatch(clearSessionToken());
+    }
+  }, [isLoggedIn, dispatch]);
+
   const handleLogoutShopUser = () => {
     dispatch(logoutFromNexusShop());
-  };
-
-  const handleResetShopUser = () => {
-    if (__DEV__) {
-      dispatch(resetFromNexusShop());
-    }
   };
 
   const getSelectedIndex = () => {
@@ -163,19 +165,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
               />
 
               <View style={styles.topButtons}>
-                {/* {__DEV__ ? (
-                  <View style={styles.topBtn}>
-                    <NewBlueButton
-                      textKey="reset_acc"
-                      textDomain="nexusShop"
-                      active={false}
-                      onPress={handleResetShopUser}
-                      autoWidth
-                    />
-                  </View>
-                ) : (
-                  <></>
-                )} */}
                 <View style={styles.topBtn}>
                   <NewBlueButton
                     textKey="flexa"
@@ -258,7 +247,10 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
             )}
 
             {screen.type === 'wishlist' && (
-              <MyWishlistBrands currency={shopCurrency} onSelectBrand={handleSelectBrand} />
+              <MyWishlistBrands
+                currency={shopCurrency}
+                onSelectBrand={handleSelectBrand}
+              />
             )}
           </View>
         </View>

@@ -225,9 +225,15 @@ export const resetFromNexusShop = () => async (dispatch: any) => {
   await SecureStore.deleteItemAsync('sessionToken');
   dispatch(resetAccount());
 };
+
 export const logoutFromNexusShop = () => async (dispatch: any) => {
   await SecureStore.deleteItemAsync('sessionToken');
   dispatch(clearAccount());
+};
+
+export const clearSessionToken = (): AppThunk => async (dispatch, getState) => {
+  const {account} = getState().nexusshopaccount!;
+  if (!account?.isLoggedIn) await SecureStore.deleteItemAsync('sessionToken');
 };
 
 export const registerOnNexusShop =
