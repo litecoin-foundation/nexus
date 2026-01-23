@@ -9,8 +9,10 @@ import {
   Image,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {GiftCard} from '../../services/giftcards';
+import {GiftCard, PendingGiftCardPurchase} from '../../services/giftcards';
 import {colors, getSpacing, getBorderRadius, getFontSize} from './theme';
+
+import TranslateText from '../TranslateText';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -100,6 +102,65 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
           )}
         </View>
       )}
+    </View>
+  );
+}
+
+interface PendingGiftCardItemProps {
+  pendingGiftCard: PendingGiftCardPurchase;
+}
+
+export function PendingGiftCardItem({
+  pendingGiftCard,
+}: PendingGiftCardItemProps) {
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const getStatusTextKey = (status: PendingGiftCardPurchase['status']) => {
+    switch (status) {
+      case 'pending_payment':
+        return 'pending_payment';
+      case 'payment_received':
+        return 'payment_received';
+      default:
+        return 'pending';
+    }
+  };
+
+  return (
+    <View style={styles.pendingCardContainer}>
+      <View style={styles.pendingCard}>
+        <View style={styles.pendingLogoContainer}>
+          <Text style={styles.brandLogoText}>{pendingGiftCard.brand}</Text>
+        </View>
+        <View style={styles.pendingCardInfo}>
+          <Text style={styles.cardDate}>
+            {formatDate(pendingGiftCard.createdAt)}
+          </Text>
+          <Text style={styles.pendingCardAmount}>
+            {pendingGiftCard.currency === 'USD' ? '$' : ''}
+            {pendingGiftCard.amount}
+          </Text>
+        </View>
+        <View style={styles.statusBadge}>
+          <TranslateText
+            textKey={getStatusTextKey(pendingGiftCard.status)}
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+            textStyle={styles.statusText}
+          />
+        </View>
+      </View>
     </View>
   );
 }
@@ -209,5 +270,52 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     detailButtonText: {
       color: colors.white,
       fontWeight: '600',
+    },
+    statusBadge: {
+      backgroundColor: colors.warning,
+      paddingVertical: getSpacing(screenWidth, screenHeight).xs,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).sm,
+      borderRadius: getBorderRadius(screenHeight).sm,
+    },
+    statusText: {
+      color: colors.white,
+      fontSize: getFontSize(screenHeight).sm,
+      fontWeight: '600',
+    },
+    pendingCardContainer: {
+      width: screenWidth * 0.7,
+      backgroundColor: colors.white,
+      borderRadius: getBorderRadius(screenHeight).lg,
+      shadowColor: colors.black,
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 3,
+      overflow: 'hidden',
+    },
+    pendingCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: getSpacing(screenWidth, screenHeight).sm,
+    },
+    pendingLogoContainer: {
+      width: screenWidth * 0.15,
+      height: screenWidth * 0.15,
+      backgroundColor: colors.grayLight,
+      borderRadius: getBorderRadius(screenHeight).md,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      padding: getSpacing(screenWidth, screenHeight).xs,
+    },
+    pendingCardInfo: {
+      flex: 1,
+      marginLeft: getSpacing(screenWidth, screenHeight).sm,
+    },
+    pendingCardAmount: {
+      fontSize: getFontSize(screenHeight).md,
+      fontWeight: '600',
+      color: colors.text,
+      marginTop: getSpacing(screenWidth, screenHeight).xs,
     },
   });

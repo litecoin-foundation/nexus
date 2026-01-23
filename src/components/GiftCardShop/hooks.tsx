@@ -11,6 +11,7 @@ import {
   GiftCardClient,
   Brand,
   GiftCard,
+  PendingGiftCardPurchase,
   InitiatePurchaseResponseData,
   PurchaseRequest,
   validateAmount,
@@ -107,14 +108,20 @@ export function useBrand(slug: string): UseQueryResult<Brand> {
   return {data, loading, error, refetch: fetch};
 }
 
-export function useMyGiftCards(): UseQueryResult<GiftCard[]> {
+export function useMyGiftCards(): UseQueryResult<{
+  giftCards: GiftCard[];
+  pendingGiftCards: PendingGiftCardPurchase[];
+}> {
   const client = useGiftCardClient();
   const dispatch = useAppDispatch();
   const existingGiftCards = useAppSelector(
     state => state.nexusshopaccount.giftCards,
   );
   const existingGiftCardsRef = useRef(existingGiftCards);
-  const [data, setData] = useState<GiftCard[] | null>(null);
+  const [data, setData] = useState<{
+    giftCards: GiftCard[];
+    pendingGiftCards: PendingGiftCardPurchase[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -125,8 +132,14 @@ export function useMyGiftCards(): UseQueryResult<GiftCard[]> {
     setLoading(true);
     setError(null);
     try {
-      const cards = await client.getMyGiftCards();
-      setData(cards);
+      const cards: GiftCard[] = await client.getMyGiftCards();
+      const pendingCards: PendingGiftCardPurchase[] =
+        await client.getMyPendingGiftCards();
+
+      setData({
+        giftCards: cards,
+        pendingGiftCards: pendingCards,
+      });
 
       // Preserve favoured state from existing cards using ref
       const cardsWithPreservedFavoured = cards.map(newCard => {

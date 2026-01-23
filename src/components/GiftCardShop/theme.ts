@@ -93,7 +93,6 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     // Layout
     container: {
       flex: 1,
-      backgroundColor: colors.background,
     },
     containerPrimary: {
       flex: 1,

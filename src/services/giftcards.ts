@@ -185,6 +185,13 @@ export class GiftCardClient {
     return this.request<GiftCard[]>('GET', '/api/gift-cards');
   }
 
+  async getMyPendingGiftCards(): Promise<PendingGiftCardPurchase[]> {
+    return this.request<PendingGiftCardPurchase[]>(
+      'GET',
+      '/api/gift-cards/pending',
+    );
+  }
+
   async getGiftCard(id: string): Promise<GiftCard> {
     return this.request<GiftCard>('GET', `/api/gift-cards/${id}`);
   }
