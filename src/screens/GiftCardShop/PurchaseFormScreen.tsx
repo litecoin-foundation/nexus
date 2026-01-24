@@ -527,7 +527,7 @@ export const PurchaseFormScreenOptions = (
     headerTransparent: true,
     headerTitle: () => (
       <TranslateText
-        textKey="sign_in"
+        textKey="purchase"
         domain="nexusShop"
         maxSizeInPixels={height * 0.02}
         textStyle={styles.headerTitle}

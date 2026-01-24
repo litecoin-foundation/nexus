@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView,
   StyleSheet,
   DeviceEventEmitter,
 } from 'react-native';
@@ -17,7 +16,6 @@ import {sendOnchainPayment} from '../../reducers/transaction';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import TranslateText from '../../components/TranslateText';
 
 import {
   colors,
@@ -26,6 +24,9 @@ import {
   getFontSize,
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
+
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const formatExpiryDate = (dateString: string): string => {
@@ -114,98 +115,115 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
     <LinearGradient
       style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <View style={styles.fakeHeader} />
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}>
-        <Text style={[commonStyles.titleBlack, styles.title]}>
-          Complete payment by sending coins to this invoice
-        </Text>
-
-        <View style={styles.paymentDetails}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Brand</Text>
-            <Text style={styles.detailValue}>{initiateResponse.brand}</Text>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+        <View style={styles.topContainer}>
+          <View style={styles.fakeHeader} />
+          <View style={styles.titles}>
+            <TranslateText
+              textKey="complete_payment"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.029}
+              textStyle={styles.title}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textKey="send_to_invoice"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.subtitle}
+              numberOfLines={2}
+            />
           </View>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount</Text>
-            <Text style={styles.detailValue}>
-              {initiateResponse.amount} {initiateResponse.currency}
-            </Text>
-          </View>
+          <View style={styles.paymentDetails}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Brand</Text>
+              <Text style={styles.detailValue}>{initiateResponse.brand}</Text>
+            </View>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount (LTC)</Text>
-            <Text style={styles.detailValue}>
-              {initiateResponse.paymentAmountLtc}
-            </Text>
-          </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Amount</Text>
+              <Text style={styles.detailValue}>
+                {initiateResponse.amount} {initiateResponse.currency}
+              </Text>
+            </View>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Payment To</Text>
-            <Text style={[styles.detailValue, styles.addressText]}>
-              {initiateResponse.paymentAddress}
-            </Text>
-          </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Amount (LTC)</Text>
+              <Text style={styles.detailValue}>
+                {initiateResponse.paymentAmountLtc}
+              </Text>
+            </View>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Expires At</Text>
-            <Text style={styles.detailValue}>
-              {formatExpiryDate(initiateResponse.expiresAt)}
-            </Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Payment To</Text>
+              <Text style={[styles.detailValue, styles.addressText]}>
+                {initiateResponse.paymentAddress}
+              </Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Expires At</Text>
+              <Text style={styles.detailValue}>
+                {formatExpiryDate(initiateResponse.expiresAt)}
+              </Text>
+            </View>
           </View>
         </View>
 
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorMessage}>{error}</Text>
-          </View>
-        )}
-
-        <TouchableOpacity
-          style={[commonStyles.buttonRoundedSecondary, styles.backButton]}
-          onPress={() => navigation.goBack()}
-          disabled={loading}>
-          <Text style={commonStyles.buttonTextBlack}>Back</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            commonStyles.buttonRounded,
-            loading && commonStyles.buttonDisabled,
-          ]}
-          onPress={() => handleAuthenticationRequired('send-giftcard-payment')}
-          disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color={colors.white} />
-          ) : (
-            <Text style={commonStyles.buttonText}>Send Payment</Text>
+        <View style={styles.buttonContainer}>
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorMessage}>{error}</Text>
+            </View>
           )}
-        </TouchableOpacity>
-      </ScrollView>
 
-      <PlasmaModal
-        isOpened={isPinModalOpened}
-        close={() => {
-          setIsPinModalOpened(false);
-        }}
-        isFromBottomToTop={true}
-        animDuration={250}
-        gapInPixels={0}
-        backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
-        renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
-          <PinModalContent
-            cardTranslateAnim={cardTranslateAnim}
-            close={() => setIsPinModalOpened(false)}
-            handleValidationFailure={() =>
-              // TODO: handle pin failure
-              console.log('incorrect pin')
+          <TouchableOpacity
+            style={[commonStyles.buttonRoundedSecondary, styles.backButton]}
+            onPress={() => navigation.goBack()}
+            disabled={loading}>
+            <Text style={commonStyles.buttonTextBlack}>Back</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              commonStyles.buttonRounded,
+              loading && commonStyles.buttonDisabled,
+            ]}
+            onPress={() =>
+              handleAuthenticationRequired('send-giftcard-payment')
             }
-            handleValidationSuccess={() => handleCompletePurchase()}
-          />
-        )}
-      />
+            disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Text style={commonStyles.buttonText}>Send Payment</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <PlasmaModal
+          isOpened={isPinModalOpened}
+          close={() => {
+            setIsPinModalOpened(false);
+          }}
+          isFromBottomToTop={true}
+          animDuration={250}
+          gapInPixels={0}
+          backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
+          renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
+            <PinModalContent
+              cardTranslateAnim={cardTranslateAnim}
+              close={() => setIsPinModalOpened(false)}
+              handleValidationFailure={() =>
+                // TODO: handle pin failure
+                console.log('incorrect pin')
+              }
+              handleValidationSuccess={() => handleCompletePurchase()}
+            />
+          )}
+        />
+      </CustomSafeAreaView>
     </LinearGradient>
   );
 };
@@ -219,34 +237,53 @@ const getStyles = (
     container: {
       flex: 1,
     },
+    safeArea: {
+      flex: 1,
+    },
+    topContainer: {
+      width: '100%',
+      height: screenHeight * 0.65,
+      backgroundColor: colors.primary,
+      borderBottomLeftRadius: screenHeight * 0.04,
+      borderBottomRightRadius: screenHeight * 0.04,
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: getSpacing(screenWidth, screenHeight).lg,
+    },
     fakeHeader: {
       width: screenWidth,
       height: deviceHeaderHeight + screenHeight * 0.008,
       backgroundColor: '#0070F0',
     },
-    scrollView: {
-      flex: 1,
-      zIndex: 1,
-    },
-    scrollContent: {
-      padding: getSpacing(screenWidth, screenHeight).md,
+    titles: {
+      width: '100%',
     },
     title: {
-      fontSize: getFontSize(screenHeight).xl,
+      color: '#fff',
+      fontSize: screenHeight * 0.029,
       fontWeight: '600',
       textAlign: 'center',
+      textTransform: 'uppercase',
+    },
+    subtitle: {
+      color: '#fff',
+      fontSize: screenHeight * 0.02,
+      fontWeight: '700',
+      textAlign: 'center',
+      paddingTop: screenHeight * 0.01,
     },
     backButton: {
       marginBottom: getSpacing(screenWidth, screenHeight).md,
     },
     paymentDetails: {
-      backgroundColor: colors.primary,
-      borderRadius: getBorderRadius(screenHeight).lg,
+      width: '100%',
+      backgroundColor: colors.white,
+      borderRadius: screenHeight * 0.025,
       paddingVertical: getSpacing(screenWidth, screenHeight).xl,
       paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
-      marginBottom: getSpacing(screenWidth, screenHeight).lg,
     },
     detailRow: {
+      height: screenHeight * 0.035,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
@@ -261,7 +298,7 @@ const getStyles = (
     detailValue: {
       fontSize: getFontSize(screenHeight).lg,
       fontWeight: '600',
-      color: colors.white,
+      color: colors.text,
       flex: 2,
       textAlign: 'right',
     },
@@ -278,6 +315,10 @@ const getStyles = (
     errorMessage: {
       color: colors.danger,
       fontSize: getFontSize(screenHeight).sm,
+    },
+    buttonContainer: {
+      width: '100%',
+      padding: getSpacing(screenWidth, screenHeight).xl,
     },
     headerTitle: {
       color: '#fff',
