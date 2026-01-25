@@ -8,7 +8,7 @@ export const colors = {
   success: '#34C759',
   successLight: '#d4edda',
   successDark: '#155724',
-  danger: '#FF3B30',
+  danger: '#ef3329',
   dangerLight: '#f8d7da',
   warning: '#FF9500',
   warningLight: '#fff3cd',
@@ -23,7 +23,7 @@ export const colors = {
   background: '#F2F2F7',
   card: '#FFFFFF',
   text: '#000000',
-  textSecondary: '#636366',
+  textSecondary: '#717174',
   border: '#E5E5EA',
 };
 
@@ -82,6 +82,7 @@ export const getFontSize = (screenHeight: number) => {
     sm: screenHeight * 0.014,
     md: screenHeight * 0.016,
     lg: screenHeight * 0.018,
+    lg2: screenHeight * 0.02,
     xl: screenHeight * 0.024,
     xxl: screenHeight * 0.032,
     xxxl: screenHeight * 0.036,
@@ -151,7 +152,7 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     },
     label: {
       fontSize: getFontSize(screenHeight).md,
-      fontWeight: '600',
+      fontWeight: '700',
       color: colors.white,
       textTransform: 'uppercase',
       marginBottom: getSpacing(screenWidth, screenHeight).sm,
@@ -198,12 +199,12 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     buttonText: {
       color: colors.white,
       fontSize: getFontSize(screenHeight).lg,
-      fontWeight: '600',
+      fontWeight: '700',
     },
     buttonTextBlack: {
       color: colors.lightBlack,
       fontSize: getFontSize(screenHeight).lg,
-      fontWeight: '600',
+      fontWeight: '700',
     },
     buttonDisabled: {
       backgroundColor: colors.grayMedium,
@@ -223,13 +224,14 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
 
     // Inputs
     input: {
+      fontSize: getFontSize(screenHeight).lg,
+      fontWeight: '500',
       backgroundColor: colors.white,
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: getBorderRadius(screenHeight).md,
       paddingVertical: getSpacing(screenWidth, screenHeight).md,
       paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
-      fontSize: getFontSize(screenHeight).lg,
     },
     inputFocused: {
       borderColor: colors.primary,
@@ -283,7 +285,8 @@ export const getCommonStyles = (screenWidth: number, screenHeight: number) =>
     },
     errorText: {
       color: colors.danger,
-      fontSize: getFontSize(screenHeight).lg,
+      fontSize: getFontSize(screenHeight).lg2,
+      fontWeight: '600',
       alignSelf: 'center',
       marginTop: getSpacing(screenWidth, screenHeight).xs,
       paddingVertical: getSpacing(screenWidth, screenHeight).xs,

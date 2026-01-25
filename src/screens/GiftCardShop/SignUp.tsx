@@ -1,7 +1,6 @@
 import React, {useState, useContext} from 'react';
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   Alert,
@@ -10,6 +9,7 @@ import {
   Image,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {useTranslation} from 'react-i18next';
 import type {
   StackNavigationProp,
   StackNavigationOptions,
@@ -36,6 +36,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 interface Props {}
 
 const SignUp: React.FC<Props> = () => {
+  const {t} = useTranslation('nexusShop');
   const {account} = useSelector((state: any) => state.nexusshopaccount);
   const shopUserEmail = account && account.email;
 
@@ -52,6 +53,8 @@ const SignUp: React.FC<Props> = () => {
   const [emailError, setEmailError] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  console.log(emailError);
+
   const {loginLoading} = useSelector((state: any) => state.nexusshopaccount);
   const {uniqueId} = useSelector((state: any) => state.onboarding);
 
@@ -65,14 +68,28 @@ const SignUp: React.FC<Props> = () => {
     if (emailError) setEmailError('');
   };
 
+  const translateEmailErrorForLocale = (text: string) => {
+    switch (text) {
+      case 'Email is required':
+        setEmailError('email_address');
+        break;
+      case 'Please enter a valid email address is required':
+        setEmailError('enter_valid_email');
+        break;
+      default:
+        setEmailError(text);
+        break;
+    }
+  };
+
   const handleSignUp = async () => {
     let hasErrors = false;
 
     if (!email.trim()) {
-      setEmailError('Email is required');
+      translateEmailErrorForLocale('Email is required');
       hasErrors = true;
     } else if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email address');
+      translateEmailErrorForLocale('Please enter a valid email address');
       hasErrors = true;
     }
 
@@ -94,10 +111,6 @@ const SignUp: React.FC<Props> = () => {
     }
   };
 
-  // const handleToVerification = () => {
-  //   navigation.navigate('VerifyOTP');
-  // };
-
   const handleResetShopUser = () => {
     dispatch(clearAccount());
   };
@@ -116,10 +129,37 @@ const SignUp: React.FC<Props> = () => {
           </View>
 
           <View style={styles.formContainer}>
-            <Text style={commonStyles.title}>Sign Up for Nexus Shop</Text>
+            <View style={styles.titleContainer}>
+              <TranslateText
+                textKey="sign_up_for"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.028}
+                textStyle={styles.title}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textValue=" "
+                maxSizeInPixels={SCREEN_HEIGHT * 0.028}
+                textStyle={styles.title}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textKey="nexus_shop"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.027}
+                textStyle={styles.titleBold}
+                numberOfLines={1}
+              />
+            </View>
 
             <View style={styles.inputContainer}>
-              <Text style={commonStyles.label}>Email Address</Text>
+              <TranslateText
+                textKey="email_address"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.emailLabel}
+                numberOfLines={1}
+              />
               <TextInput
                 style={[
                   commonStyles.input,
@@ -127,7 +167,7 @@ const SignUp: React.FC<Props> = () => {
                 ]}
                 value={email}
                 onChangeText={handleEmailChange}
-                placeholder="Enter your email"
+                placeholder={t('enter_your_email')}
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -135,7 +175,13 @@ const SignUp: React.FC<Props> = () => {
                 editable={!loginLoading}
               />
               {emailError ? (
-                <Text style={commonStyles.errorText}>{emailError}</Text>
+                <TranslateText
+                  textKey={emailError}
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                  textStyle={commonStyles.errorText}
+                  numberOfLines={2}
+                />
               ) : null}
             </View>
           </View>
@@ -143,30 +189,13 @@ const SignUp: React.FC<Props> = () => {
 
         <View style={styles.buttonContainer}>
           {loginError ? (
-            <Text style={commonStyles.errorText}>{loginError}</Text>
+            <TranslateText
+              textValue={loginError}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={commonStyles.errorText}
+              numberOfLines={2}
+            />
           ) : null}
-
-          {/* {shopUserEmail === email ? (
-            <TouchableOpacity
-              style={commonStyles.buttonRoundedGreen}
-              onPress={handleToVerification}>
-              <Text style={commonStyles.buttonText}>Verify</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[
-                commonStyles.buttonRounded,
-                loginLoading ? commonStyles.buttonDisabled : null,
-              ]}
-              onPress={handleSignUp}
-              disabled={loginLoading}>
-              {loginLoading ? (
-                <ActivityIndicator color={colors.white} />
-              ) : (
-                <Text style={commonStyles.buttonText}>Sign Up / Sign In</Text>
-              )}
-            </TouchableOpacity>
-          )} */}
 
           <TouchableOpacity
             style={[
@@ -178,7 +207,13 @@ const SignUp: React.FC<Props> = () => {
             {loginLoading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={commonStyles.buttonText}>Sign In</Text>
+              <TranslateText
+                textKey="sign_in"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={commonStyles.buttonText}
+                numberOfLines={1}
+              />
             )}
           </TouchableOpacity>
 
@@ -187,7 +222,13 @@ const SignUp: React.FC<Props> = () => {
               <TouchableOpacity
                 style={commonStyles.buttonRounded}
                 onPress={handleResetShopUser}>
-                <Text style={commonStyles.buttonText}>Reset Shop User</Text>
+                <TranslateText
+                  textKey="reset_shop_user"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={commonStyles.buttonText}
+                  numberOfLines={1}
+                />
               </TouchableOpacity>
             </View>
           ) : (
@@ -209,7 +250,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     topContainer: {
       width: '100%',
-      height: screenHeight * 0.42,
+      height: screenHeight * 0.6,
       backgroundColor: colors.primary,
       borderBottomLeftRadius: screenHeight * 0.04,
       borderBottomRightRadius: screenHeight * 0.04,
@@ -221,10 +262,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.32,
       alignItems: 'center',
       zIndex: 1,
-      marginBottom: screenHeight * 0.12 * -1,
+      marginTop: screenHeight * 0.08,
     },
     image: {
-      width: '80%',
+      width: '90%',
       height: '100%',
       objectFit: 'contain',
       opacity: 0.5,
@@ -236,13 +277,40 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingBottom: getSpacing(screenWidth, screenHeight).xl,
       zIndex: 2,
     },
+    titleContainer: {
+      flexDirection: 'row',
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
+    },
+    title: {
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.028,
+      fontWeight: '600',
+      color: '#fff',
+    },
+    titleBold: {
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.028,
+      fontWeight: '700',
+      color: '#fff',
+    },
     inputContainer: {},
     inputError: {
+      borderWidth: 2,
       borderColor: colors.danger,
     },
+    emailLabel: {
+      fontSize: screenHeight * 0.015,
+      fontWeight: '700',
+      color: '#fff',
+      textTransform: 'uppercase',
+      marginBottom: getSpacing(screenWidth, screenHeight).sm,
+    },
     buttonContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.03,
+      left: 0,
       width: '100%',
-      padding: getSpacing(screenWidth, screenHeight).xl,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).xl,
     },
     resetButtonContainer: {
       paddingTop: 10,
@@ -266,7 +334,7 @@ export const SignUpNavigationOptions = (
     headerTransparent: true,
     headerTitle: () => (
       <TranslateText
-        textKey="sign_in"
+        textKey="sign_up"
         domain="nexusShop"
         maxSizeInPixels={height * 0.02}
         textStyle={styles.headerTitle}

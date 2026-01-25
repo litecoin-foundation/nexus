@@ -251,7 +251,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
           textKey="check_email"
           domain="nexusShop"
           maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-          textStyle={[commonStyles.title, styles.title]}
+          textStyle={[commonStyles.subtitle, styles.title]}
           numberOfLines={1}
         />
         <TranslateText
@@ -301,10 +301,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenWidth * 0.05,
     },
     title: {
+      fontWeight: '700',
       paddingTop: getSpacing(screenWidth, screenHeight).header,
     },
     subtitle: {
-      fontSize: getFontSize(screenHeight).lg,
       paddingTop: getSpacing(screenWidth, screenHeight).xs,
     },
     errorText: {

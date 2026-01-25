@@ -1,7 +1,6 @@
 import React, {useContext, useState, useRef} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
@@ -117,64 +116,110 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
       <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         <View style={styles.topContainer}>
-          <View style={styles.fakeHeader} />
-          <View style={styles.titles}>
-            <TranslateText
-              textKey="complete_payment"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.029}
-              textStyle={styles.title}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textKey="send_to_invoice"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.subtitle}
-              numberOfLines={2}
-            />
-          </View>
-
-          <View style={styles.paymentDetails}>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Brand</Text>
-              <Text style={styles.detailValue}>{initiateResponse.brand}</Text>
+          <CustomSafeAreaView styles={styles.safeArea2} edges={['top']}>
+            <View style={styles.titles}>
+              <TranslateText
+                textKey="send_to_invoice"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={[commonStyles.subtitle, styles.title]}
+                numberOfLines={2}
+              />
             </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Amount</Text>
-              <Text style={styles.detailValue}>
-                {initiateResponse.amount} {initiateResponse.currency}
-              </Text>
-            </View>
+            <View style={styles.paymentDetails}>
+              <View style={styles.detailRow}>
+                <TranslateText
+                  textKey="brand"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={styles.detailLabel}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={initiateResponse.brand}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={styles.detailValue}
+                  numberOfLines={1}
+                />
+              </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Amount (LTC)</Text>
-              <Text style={styles.detailValue}>
-                {initiateResponse.paymentAmountLtc}
-              </Text>
-            </View>
+              <View style={styles.detailRow}>
+                <TranslateText
+                  textKey="amount"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={styles.detailLabel}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={`${initiateResponse.amount} ${initiateResponse.currency}`}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={styles.detailValue}
+                  numberOfLines={1}
+                />
+              </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Payment To</Text>
-              <Text style={[styles.detailValue, styles.addressText]}>
-                {initiateResponse.paymentAddress}
-              </Text>
-            </View>
+              <View style={styles.detailRow}>
+                <TranslateText
+                  textKey="amount_ltc"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={styles.detailLabel}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={initiateResponse.paymentAmountLtc}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={styles.detailValue}
+                  numberOfLines={1}
+                />
+              </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Expires At</Text>
-              <Text style={styles.detailValue}>
-                {formatExpiryDate(initiateResponse.expiresAt)}
-              </Text>
+              <View style={styles.detailRow}>
+                <TranslateText
+                  textKey="payment_to"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={styles.detailLabel}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={initiateResponse.paymentAddress}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={styles.detailValue}
+                  numberOfLines={3}
+                />
+              </View>
+
+              <View style={styles.detailRow}>
+                <TranslateText
+                  textKey="expires_at"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={styles.detailLabel}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={formatExpiryDate(initiateResponse.expiresAt)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={styles.detailValue}
+                  numberOfLines={1}
+                />
+              </View>
             </View>
-          </View>
+          </CustomSafeAreaView>
         </View>
 
         <View style={styles.buttonContainer}>
           {error && (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorMessage}>{error}</Text>
+              <TranslateText
+                textValue={error}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+                textStyle={styles.errorMessage}
+                numberOfLines={1}
+              />
             </View>
           )}
 
@@ -182,7 +227,13 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
             style={[commonStyles.buttonRoundedSecondary, styles.backButton]}
             onPress={() => navigation.goBack()}
             disabled={loading}>
-            <Text style={commonStyles.buttonTextBlack}>Back</Text>
+            <TranslateText
+              textKey="back"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={commonStyles.buttonTextBlack}
+              numberOfLines={1}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -197,7 +248,13 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
             {loading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={commonStyles.buttonText}>Send Payment</Text>
+              <TranslateText
+                textKey="send_payment"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={commonStyles.buttonText}
+                numberOfLines={1}
+              />
             )}
           </TouchableOpacity>
         </View>
@@ -240,40 +297,26 @@ const getStyles = (
     safeArea: {
       flex: 1,
     },
+    safeArea2: {
+      width: '100%',
+      height: '100%',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
     topContainer: {
       width: '100%',
       height: screenHeight * 0.65,
       backgroundColor: colors.primary,
       borderBottomLeftRadius: screenHeight * 0.04,
       borderBottomRightRadius: screenHeight * 0.04,
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: getSpacing(screenWidth, screenHeight).lg,
-    },
-    fakeHeader: {
-      width: screenWidth,
-      height: deviceHeaderHeight + screenHeight * 0.008,
-      backgroundColor: '#0070F0',
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
+      paddingBottom: getSpacing(screenWidth, screenHeight).lg,
     },
     titles: {
       width: '100%',
     },
     title: {
-      color: '#fff',
-      fontSize: screenHeight * 0.029,
-      fontWeight: '600',
-      textAlign: 'center',
-      textTransform: 'uppercase',
-    },
-    subtitle: {
-      color: '#fff',
-      fontSize: screenHeight * 0.02,
-      fontWeight: '700',
-      textAlign: 'center',
-      paddingTop: screenHeight * 0.01,
-    },
-    backButton: {
-      marginBottom: getSpacing(screenWidth, screenHeight).md,
+      paddingTop: getSpacing(screenWidth, screenHeight).header,
     },
     paymentDetails: {
       width: '100%',
@@ -283,23 +326,24 @@ const getStyles = (
       paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
     },
     detailRow: {
-      height: screenHeight * 0.035,
+      width: '100%',
+      minHeight: screenHeight * 0.035,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
       marginBottom: getSpacing(screenWidth, screenHeight).md,
     },
     detailLabel: {
+      flexBasis: '35%',
       fontSize: getFontSize(screenHeight).md,
       fontWeight: '600',
       color: colors.text,
-      flex: 1,
     },
     detailValue: {
+      flexBasis: '65%',
       fontSize: getFontSize(screenHeight).lg,
       fontWeight: '600',
       color: colors.text,
-      flex: 2,
       textAlign: 'right',
     },
     addressText: {
@@ -317,8 +361,14 @@ const getStyles = (
       fontSize: getFontSize(screenHeight).sm,
     },
     buttonContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.03,
+      left: 0,
       width: '100%',
-      padding: getSpacing(screenWidth, screenHeight).xl,
+      paddingHorizontal: getSpacing(screenWidth, screenHeight).xl,
+    },
+    backButton: {
+      marginBottom: getSpacing(screenWidth, screenHeight).md,
     },
     headerTitle: {
       color: '#fff',
@@ -340,7 +390,7 @@ export const PayForGiftCardScreenOptions = (
     headerTransparent: true,
     headerTitle: () => (
       <TranslateText
-        textKey="payment"
+        textKey="complete_payment"
         domain="nexusShop"
         maxSizeInPixels={height * 0.02}
         textStyle={styles.headerTitle}
