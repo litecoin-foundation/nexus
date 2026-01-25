@@ -137,6 +137,7 @@ const getStyles = (
     textLimits: {
       fontSize: fontSize,
       flexBasis: null,
+      width: '100%',
     },
   });
 
