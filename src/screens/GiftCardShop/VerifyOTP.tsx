@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
@@ -21,7 +22,6 @@ import {unsetDeeplink} from '../../reducers/deeplinks';
 import {
   colors,
   getSpacing,
-  getFontSize,
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 import NumpadInput from '../../components/Numpad/NumpadInput';
@@ -324,8 +324,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   });
 
 const HeaderTitle: React.FC = React.memo(() => {
-  const {height} = useContext(ScreenSizeContext);
-  const styles = getStyles(0, height);
+  const {width, height} = useContext(ScreenSizeContext);
+  const styles = getStyles(width, height);
   return (
     <TranslateText
       textKey="verify"
@@ -340,6 +340,8 @@ const HeaderTitle: React.FC = React.memo(() => {
 export const VerifyOTPNavigationOptions = (
   navigation: any,
 ): StackNavigationOptions => {
+  const {width} = useContext(ScreenSizeContext);
+
   return {
     headerTransparent: true,
     headerTitle: () => <HeaderTitle />,
@@ -351,8 +353,13 @@ export const VerifyOTPNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && width >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && width >= 414 ? {marginEnd: -5} : null,
   };
 };
 

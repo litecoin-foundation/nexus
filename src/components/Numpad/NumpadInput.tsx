@@ -103,8 +103,8 @@ const NumpadInput: React.FC<Props> = props => {
       <PadGrid small={small} />
       <View style={styles.pinButtonContainer}>{buttons}</View>
 
-      <View style={styles.confirmButtonContainer}>{submitButton}</View>
       <View style={styles.secondaryButtonContainer}>{secondaryButton}</View>
+      <View style={styles.confirmButtonContainer}>{submitButton}</View>
     </CustomSafeAreaView>
   );
 };
@@ -142,12 +142,12 @@ const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
       justifyContent: 'space-evenly',
       flexWrap: 'wrap',
     },
-    confirmButtonContainer: {
+    secondaryButtonContainer: {
       width: '100%',
       paddingTop: screenHeight * 0.02,
       paddingHorizontal: screenWidth * 0.06,
     },
-    secondaryButtonContainer: {
+    confirmButtonContainer: {
       width: '100%',
       paddingTop: screenHeight * 0.01,
       paddingHorizontal: screenWidth * 0.06,

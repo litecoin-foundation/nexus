@@ -27,7 +27,7 @@ export function ErrorView({
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return (
-    <View style={getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).centered}>
+    <View style={styles.container}>
       {message ? (
         <TranslateText
           textValue={message}
@@ -36,6 +36,7 @@ export function ErrorView({
             getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).subtitle,
             styles.text,
           ]}
+          numberOfLines={3}
         />
       ) : messageKey && messageDomain ? (
         <TranslateText
@@ -46,6 +47,7 @@ export function ErrorView({
             getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).subtitle,
             styles.text,
           ]}
+          numberOfLines={3}
         />
       ) : (
         <></>
@@ -91,12 +93,18 @@ export function ErrorView({
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: getSpacing(screenWidth, screenHeight).xl,
+    },
     text: {
+      width: '100%',
       color: colors.lightBlack,
       textAlign: 'center',
     },
     buttonContainer: {
-      width: screenWidth,
-      padding: getSpacing(screenWidth, screenHeight).xl,
+      width: '100%',
+      marginTop: getSpacing(screenWidth, screenHeight).lg,
     },
   });

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Image,
+  Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
@@ -52,8 +53,6 @@ const SignUp: React.FC<Props> = () => {
   const [email, setEmail] = useState(shopUserEmail || '');
   const [emailError, setEmailError] = useState('');
   const [loginError, setLoginError] = useState('');
-
-  console.log(emailError);
 
   const {loginLoading} = useSelector((state: any) => state.nexusshopaccount);
   const {uniqueId} = useSelector((state: any) => state.onboarding);
@@ -208,7 +207,7 @@ const SignUp: React.FC<Props> = () => {
               <ActivityIndicator color={colors.white} />
             ) : (
               <TranslateText
-                textKey="sign_in"
+                textKey="sign_up"
                 domain="nexusShop"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.018}
                 textStyle={commonStyles.buttonText}
@@ -349,8 +348,13 @@ export const SignUpNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && width >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && width >= 414 ? {marginEnd: -5} : null,
   };
 };
 

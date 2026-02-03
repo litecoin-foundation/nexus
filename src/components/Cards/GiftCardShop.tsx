@@ -190,7 +190,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
                 numberOfLines={1}
               />
 
-              <View style={styles.topButtons}>
+              {/* <View style={styles.topButtons}>
                 <View style={styles.topBtn}>
                   <NewBlueButton
                     textKey="flexa"
@@ -232,7 +232,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
                     />
                   )}
                 </View>
-              </View>
+              </View> */}
             </View>
 
             <View style={styles.switchContainer}>

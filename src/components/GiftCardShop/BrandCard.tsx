@@ -4,7 +4,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import {toggleWishlistBrand} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
-import {colors, getSpacing, getBorderRadius, getFontSize} from './theme';
+import {colors, getSpacing, getFontSize} from './theme';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -97,6 +97,7 @@ export function BrandCard({brand, currency, onPress}: BrandCardProps) {
           typeof maxAmount === 'number' &&
           !isNaN(maxAmount) ? (
             <Text style={styles.brandPrice}>
+              {formatCurrency(currency)}
               {minAmount === maxAmount
                 ? `${minAmount}`
                 : `${minAmount} - ${maxAmount}`}
@@ -166,7 +167,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     brandCardContainer: {
       backgroundColor: colors.white,
-      borderRadius: getBorderRadius(screenHeight).lg,
+      borderRadius: screenHeight * 0.016,
       marginBottom: getSpacing(screenWidth, screenHeight).md,
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 2},
@@ -177,13 +178,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     brandCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: getSpacing(screenWidth, screenHeight).md,
+      padding: screenHeight * 0.01,
     },
     logoContainer: {
       width: screenWidth * 0.2,
-      height: screenWidth * 0.15,
+      height: screenHeight * 0.08,
       backgroundColor: colors.grayLight,
-      borderRadius: getBorderRadius(screenHeight).md,
+      borderRadius: screenHeight * 0.012,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
@@ -207,18 +208,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     brandInfo: {
       flex: 1,
-      marginLeft: getSpacing(screenWidth, screenHeight).md,
+      marginLeft: screenWidth * 0.03,
     },
     brandName: {
-      fontSize: getFontSize(screenHeight).md,
+      fontSize: screenHeight * 0.018,
       fontWeight: '500',
       color: colors.text,
     },
     brandPrice: {
-      fontSize: getFontSize(screenHeight).lg,
-      fontWeight: '600',
+      fontSize: screenHeight * 0.018,
+      fontWeight: '500',
       color: colors.text,
-      marginTop: getSpacing(screenWidth, screenHeight).xs,
+      marginTop: screenHeight * 0.005,
     },
     chevronContainer: {
       width: screenWidth * 0.1,
@@ -232,34 +233,35 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       resizeMode: 'contain',
     },
     expandedContent: {
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
-      paddingBottom: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: screenHeight * 0.01,
+      paddingBottom: screenHeight * 0.01,
     },
     denominationsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: getSpacing(screenWidth, screenHeight).md,
+      marginBottom: screenHeight * 0.01,
     },
     denominationsRowLeft: {
-      justifyContent: 'flex-start',
-      gap: getSpacing(screenWidth, screenHeight).sm,
+      // justifyContent: 'flex-start',
+      justifyContent: 'center',
+      gap: screenWidth * 0.03,
     },
     denominationButton: {
-      paddingVertical: getSpacing(screenWidth, screenHeight).sm,
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
-      borderRadius: getBorderRadius(screenHeight).md,
+      minWidth: screenWidth * 0.15,
+      minHeight: screenWidth * 0.12,
       borderWidth: 1,
       borderColor: colors.grayLight,
       backgroundColor: colors.white,
-      minWidth: screenWidth * 0.15,
       alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: screenHeight * 0.012,
     },
     denominationButtonSelected: {
       backgroundColor: colors.primary,
       borderColor: colors.primary,
     },
     denominationText: {
-      fontSize: getFontSize(screenHeight).md,
+      fontSize: screenHeight * 0.017,
       fontWeight: '500',
       color: colors.text,
     },
@@ -267,34 +269,30 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: colors.white,
     },
     purchaseButton: {
+      width: '100%',
+      minHeight: screenWidth * 0.12,
       backgroundColor: colors.primary,
-      borderRadius: getBorderRadius(screenHeight).lg,
-      paddingVertical: getSpacing(screenWidth, screenHeight).md,
+      borderRadius: screenHeight * 0.012,
       alignItems: 'center',
+      justifyContent: 'center',
     },
     purchaseButtonText: {
-      fontSize: getFontSize(screenHeight).md,
+      fontSize: screenHeight * 0.015,
       fontWeight: '600',
       color: colors.white,
+      textTransform: 'uppercase',
     },
     wishlistButton: {
       position: 'absolute',
-      top: -10,
-      right: 80,
-      width: screenWidth * 0.08,
-      height: screenWidth * 0.08,
-      borderRadius: screenWidth * 0.04,
-      backgroundColor: colors.white,
+      top: (screenHeight * 0.1) / 2 - (screenWidth * 0.1) / 2,
+      right: screenWidth * 0.15,
+      width: screenWidth * 0.1,
+      height: screenWidth * 0.1,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: colors.black,
-      shadowOffset: {width: 0, height: 1},
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-      elevation: 2,
     },
     wishlistIcon: {
-      fontSize: getFontSize(screenHeight).lg,
+      fontSize: screenHeight * 0.03,
       color: colors.primary,
     },
   });

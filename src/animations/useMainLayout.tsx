@@ -6,7 +6,7 @@ import React, {
   useContext,
 } from 'react';
 import {useFocusEffect} from '@react-navigation/native';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -27,8 +27,11 @@ interface Props {
   navigation: any;
   isWalletsModalOpened: boolean;
   setWalletsModalOpened: (isOpened: boolean) => void;
+  isShopAccountModalOpened: boolean;
+  setShopAccountModalOpened: (isOpened: boolean) => void;
   isTxDetailModalOpened: boolean;
   setPlasmaModalGapInPixels: (gapInPixels: number) => void;
+  setPlasma2ModalXY: (xy: {x: number; y: number}) => void;
   setBottomSheetFolded: (isFolded: boolean) => void;
   setActiveTab: (tabNum: number) => void;
   manualPayment: () => void;
@@ -50,8 +53,11 @@ export function useMainLayout(props: Props) {
     navigation,
     isWalletsModalOpened,
     setWalletsModalOpened,
+    isShopAccountModalOpened,
+    setShopAccountModalOpened,
     isTxDetailModalOpened,
     setPlasmaModalGapInPixels,
+    setPlasma2ModalXY,
     setBottomSheetFolded,
     setActiveTab,
     manualPayment,
@@ -62,7 +68,6 @@ export function useMainLayout(props: Props) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
-  // header align
   const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
   const deviceHeaderHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
@@ -72,6 +77,7 @@ export function useMainLayout(props: Props) {
   }, [stackHeaderHeight, headerButtonsHeight]);
 
   const walletButtonRef = useRef<View>(null);
+  const shopAccountButtonRef = useRef<View>(null);
   useLayoutEffect(() => {
     walletButtonRef.current?.measure(
       (_: any, __: any, ___: any, height: any, ____: any, pageY: any) => {
@@ -79,6 +85,15 @@ export function useMainLayout(props: Props) {
       },
     );
   });
+
+  const measureAndToggleShopAccountModal = () => {
+    shopAccountButtonRef.current?.measure(
+      (_: any, __: any, width: any, ____: any, pageX: any, pageY: any) => {
+        setPlasma2ModalXY({x: pageX + width, y: pageY});
+        setShopAccountModalOpened(!isShopAccountModalOpened);
+      },
+    );
+  };
 
   const walletButton = useMemo(
     () => (
@@ -121,6 +136,7 @@ export function useMainLayout(props: Props) {
               setActiveTab(0);
             }}
             imageSource={require('../assets/images/back-icon.png')}
+            leftPadding
           />
         </Animated.View>
       </View>
@@ -141,12 +157,13 @@ export function useMainLayout(props: Props) {
             onPress={() => navigation.navigate('SettingsStack')}
             imageSource={require('../assets/icons/settings-cog.png')}
             imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
+            leftPadding
           />
           {isFlexaCustomer ? (
             <HeaderButton
               onPress={() => manualPayment()}
               imageSource={require('../assets/icons/shop.png')}
-              marginLeft={SCREEN_WIDTH * 0.02 * -1}
+              leftPadding
             />
           ) : null}
         </Animated.View>
@@ -171,8 +188,8 @@ export function useMainLayout(props: Props) {
           <HeaderButton
             onPress={() => navigation.navigate('AlertsStack')}
             imageSource={require('../assets/icons/alerts-icon.png')}
-            rightPadding={true}
             imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
+            rightPadding
           />
         </Animated.View>
       </View>
@@ -186,11 +203,50 @@ export function useMainLayout(props: Props) {
     ],
   );
 
+  const nexusShopAccountButton = useMemo(
+    () => (
+      <View style={alignHeaderElementsWithMarginTop} ref={shopAccountButtonRef}>
+        <Animated.View style={[styles.headerBtns, animatedHeaderButtonOpacity]}>
+          <HeaderButton
+            onPress={measureAndToggleShopAccountModal}
+            imageSource={require('../assets/icons/account-settings-icon.png')}
+            imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
+            rightPadding
+            backgroundColorSpecified={
+              isShopAccountModalOpened ? '#0070F0' : undefined
+            }
+          />
+        </Animated.View>
+      </View>
+    ),
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    [
+      isShopAccountModalOpened,
+      animatedHeaderButtonOpacity,
+      alignHeaderElementsWithMarginTop,
+      SCREEN_HEIGHT,
+      styles.headerBtns,
+    ],
+  );
+
   const emptyFragment = useMemo(() => <></>, []);
 
   const fadingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const walletButtonFadingTimeout = useRef<NodeJS.Timeout | undefined>(
     undefined,
+  );
+
+  // NOTE: React Navigation applies marginHorizontal: 5 to the header content
+  // on iOS screens wider than 414px (IPAD_MINI_MEDIUM_WIDTH). Cancel it out.
+  const noHeaderContainerMargin = useMemo(
+    () =>
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414
+        ? {
+            headerLeftContainerStyle: {marginStart: -5},
+            headerRightContainerStyle: {marginEnd: -5},
+          }
+        : {},
+    [SCREEN_WIDTH],
   );
 
   useEffect(() => {
@@ -201,15 +257,23 @@ export function useMainLayout(props: Props) {
           headerRight: () => emptyFragment,
         });
       }, 150);
+    } else if (activeTab === 3) {
+      navigation.setOptions({
+        ...noHeaderContainerMargin,
+        headerLeft: () =>
+          isShopAccountModalOpened ? emptyFragment : backHeaderButton,
+        headerRight: () => nexusShopAccountButton,
+      });
     } else {
       navigation.setOptions({
+        ...noHeaderContainerMargin,
         headerLeft: () =>
           activeTab !== 0 ? backHeaderButton : leftHeaderButton,
         headerRight: () => rightHeaderButton,
       });
     }
 
-    if (isTxDetailModalOpened) {
+    if (isTxDetailModalOpened || activeTab === 3) {
       walletButtonFadingTimeout.current = setTimeout(() => {
         navigation.setOptions({
           headerTitle: () => emptyFragment,
@@ -230,14 +294,17 @@ export function useMainLayout(props: Props) {
     backHeaderButton,
     leftHeaderButton,
     rightHeaderButton,
+    nexusShopAccountButton,
     walletButton,
     emptyFragment,
     navigation,
     isWalletsModalOpened,
     isTxDetailModalOpened,
+    isShopAccountModalOpened,
+    noHeaderContainerMargin,
   ]);
 
-  // fixes header disappearing when navigating back from screens with headerTransparent: true
+  // NOTE: fixes header disappearing when navigating back from screens with headerTransparent: true
   // like ConfirmBuy, ConfirmSell, WebPage, etc.
   useFocusEffect(
     React.useCallback(() => {

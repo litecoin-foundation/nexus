@@ -5,10 +5,10 @@ import {
   ActivityIndicator,
   StyleSheet,
   DeviceEventEmitter,
+  Platform,
 } from 'react-native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
-import {useHeaderHeight} from '@react-navigation/elements';
 import {InitiatePurchaseResponseData} from '../../services/giftcards';
 import {useAppDispatch} from '../../store/hooks';
 import {sendOnchainPayment} from '../../reducers/transaction';
@@ -60,8 +60,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const deviceHeaderHeight = useHeaderHeight();
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, deviceHeaderHeight);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();
@@ -285,11 +284,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
   );
 };
 
-const getStyles = (
-  screenWidth: number,
-  screenHeight: number,
-  deviceHeaderHeight: number,
-) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -383,8 +378,7 @@ export const PayForGiftCardScreenOptions = (
   navigation: any,
 ): StackNavigationOptions => {
   const {width, height} = useContext(ScreenSizeContext);
-  const deviceHeaderHeight = useHeaderHeight();
-  const styles = getStyles(width, height, deviceHeaderHeight);
+  const styles = getStyles(width, height);
 
   return {
     headerTransparent: true,
@@ -405,8 +399,13 @@ export const PayForGiftCardScreenOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && width >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && width >= 414 ? {marginEnd: -5} : null,
   };
 };
 

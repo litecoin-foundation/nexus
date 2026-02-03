@@ -16,6 +16,7 @@ interface Props {
   title?: string;
   textKey?: string;
   textDomain?: string;
+  leftPadding?: boolean;
   rightPadding?: boolean;
   marginLeft?: number;
   marginRight?: number;
@@ -23,6 +24,7 @@ interface Props {
     x: number;
     y: number;
   };
+  backgroundColorSpecified?: string;
 }
 
 const HeaderButton: React.FC<Props> = props => {
@@ -32,10 +34,12 @@ const HeaderButton: React.FC<Props> = props => {
     title,
     textKey,
     textDomain,
+    leftPadding,
     rightPadding,
     marginLeft,
     marginRight,
     imageXY,
+    backgroundColorSpecified,
   } = props;
 
   const MARGIN_LEFT = marginLeft || 0;
@@ -50,6 +54,7 @@ const HeaderButton: React.FC<Props> = props => {
     MARGIN_RIGHT,
     imageXY,
     !title && !textKey,
+    backgroundColorSpecified,
   );
 
   const textStyle = imageSource
@@ -57,7 +62,11 @@ const HeaderButton: React.FC<Props> = props => {
     : styles.title;
   return (
     <TouchableOpacity
-      style={[styles.container, rightPadding ? styles.padRight : null]}
+      style={[
+        styles.container,
+        leftPadding ? styles.padLeft : null,
+        rightPadding ? styles.padRight : null,
+      ]}
       onPress={onPress}>
       <View style={styles.subcontainer}>
         {imageSource ? (
@@ -96,17 +105,23 @@ const getStyles = (
       }
     | undefined,
   onlyImage: boolean,
+  backgroundColorSpecified?: string,
 ) =>
   StyleSheet.create({
     container: {
       borderRadius: screenHeight * 0.01,
-      backgroundColor: 'rgba(216,216,216,0.2)',
+      backgroundColor: backgroundColorSpecified || 'rgba(216,216,216,0.2)',
       height: screenHeight * 0.035,
       minWidth: screenHeight * 0.035,
       minHeight: 25,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    padLeft: {
       marginLeft: screenWidth * 0.04 + marginLeft,
+    },
+    padRight: {
+      marginRight: screenWidth * 0.04 + marginRight,
     },
     subcontainer: {
       height: '100%',
@@ -130,9 +145,6 @@ const getStyles = (
     },
     titleWithImage: {
       marginLeft: screenHeight * 0.01,
-    },
-    padRight: {
-      marginRight: screenWidth * 0.04 + marginRight,
     },
   });
 

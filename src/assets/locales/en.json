@@ -381,6 +381,7 @@
     "amount_ltc": "Amount (LTC)",
     "payment_to": "Payment To",
     "expires_at": "Expires At",
+    "active_cards": "Active Cards",
     "USD": "US$",
     "usd": "US$",
     "CAD": "CA$",
