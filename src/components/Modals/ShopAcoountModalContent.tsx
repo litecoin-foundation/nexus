@@ -1,18 +1,36 @@
 import React, {useState, useContext, useMemo} from 'react';
-import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  FlatList,
+  Image,
+} from 'react-native';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {ErrorView} from '../GiftCardShop/ErrorView';
 import {getCommonStyles} from '../GiftCardShop/theme';
-import {logoutFromNexusShop} from '../../reducers/nexusshopaccount';
+import {
+  logoutFromNexusShop,
+  setUserCurrency,
+} from '../../reducers/nexusshopaccount';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import OptionCell from '../../components/Cells/OptionCell';
+import fiat from '../../assets/fiat';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+
+const backIcon = require('../../assets/images/back-icon.png');
 
 interface Props {
   navigation: any;
 }
 
-const SHOP_CURRENCIES = ['USD', 'CAD', 'AUD', 'EUR', 'GBP'];
+// NOTE: we can filter currencies specifically for the shop by
+// specifying this array instead of showing all currencies from assets/fiat
+// const SHOP_CURRENCIES = ['USD', 'CAD', 'AUD', 'EUR', 'GBP'];
+const SHOP_CURRENCIES = fiat.map((item: any) => item.key);
 
 const ShopAcoountModalContent: React.FC<Props> = props => {
   const {navigation} = props;
@@ -35,7 +53,18 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
   );
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const [shopCurrency, setShopCurrency] = useState('USD');
+  const shopCurrency = account?.userCurrency || 'USD';
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+
+  const shopFiat = useMemo(
+    () => fiat.filter((item: any) => SHOP_CURRENCIES.includes(item.key)),
+    [],
+  );
+
+  const handleCurrencySelect = (code: string) => {
+    dispatch(setUserCurrency(code));
+    setShowCurrencyPicker(false);
+  };
 
   const toSignUp = () => {
     navigation.navigate('NexusShopStack', {screen: 'SignUp'});
@@ -44,6 +73,32 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
   const logout = () => {
     dispatch(logoutFromNexusShop());
   };
+
+  if (showCurrencyPicker) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.currencyPickerHeader}>
+          <HeaderButton
+            onPress={() => setShowCurrencyPicker(false)}
+            imageSource={require('../../assets/images/back-icon.png')}
+            backgroundColorSpecified="#0070F0"
+          />
+        </View>
+        <FlatList
+          data={shopFiat}
+          keyExtractor={(item: any) => item.key}
+          renderItem={({item}: {item: any}) => (
+            <OptionCell
+              title={`${item.name} (${item.symbol_native})`}
+              key={item.key}
+              onPress={() => handleCurrencySelect(item.key)}
+              selected={shopCurrency === item.key}
+            />
+          )}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -87,30 +142,18 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
               textStyle={styles.title}
               numberOfLines={1}
             />
-            <View style={styles.currenciesRow}>
-              {SHOP_CURRENCIES.map(currencyItem => (
-                <TouchableOpacity
-                  key={currencyItem}
-                  style={[
-                    styles.currencyButton,
-                    shopCurrency === currencyItem &&
-                      styles.currencyButtonSelected,
-                  ]}
-                  onPress={() => setShopCurrency(currencyItem)}
-                  activeOpacity={0.7}>
-                  <Text
-                    style={[
-                      styles.currencyText,
-                      shopCurrency === currencyItem &&
-                        styles.currencyTextSelected,
-                    ]}>
-                    {currencyItem}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <TouchableOpacity
+              style={styles.currencyButton}
+              onPress={() => setShowCurrencyPicker(true)}
+              activeOpacity={0.7}>
+              <Text style={styles.currencyTitle}>{shopCurrency}</Text>
+              <Image
+                source={backIcon}
+                style={[styles.chevronIcon, {transform: [{rotate: '-90deg'}]}]}
+              />
+            </TouchableOpacity>
           </View>
-          <View style={styles.nexusTitleContainer}>
+          <View style={styles.nexusTitleAbsoluteContainer}>
             <TranslateText
               textValue="NEXUS SHOP"
               maxSizeInPixels={SCREEN_HEIGHT * 0.04}
@@ -153,7 +196,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     accountContainer: {
       flex: 1,
-      paddingTop: screenHeight * 0.05,
+      paddingTop: screenHeight * 0.1,
       paddingBottom: screenWidth * 0.04,
       paddingHorizontal: screenWidth * 0.04,
     },
@@ -179,37 +222,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '600',
       marginTop: screenHeight * 0.005,
     },
-    currenciesRow: {
-      width: '100%',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: screenHeight * 0.01,
-    },
-    currencyButton: {
-      minWidth: screenWidth * 0.15,
-      minHeight: screenWidth * 0.12,
-      borderWidth: 1,
-      borderColor: '#F2F2F7',
-      backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: screenHeight * 0.012,
-    },
-    currencyButtonSelected: {
-      backgroundColor: '#0070F0',
-      borderColor: '#0070F0',
-    },
-    currencyText: {
-      fontSize: screenHeight * 0.017,
-      fontWeight: '500',
-      color: '#000',
-    },
-    currencyTextSelected: {
-      color: '#fff',
-    },
     nexusTitleContainer: {
       alignItems: 'center',
       paddingTop: screenHeight * 0.18,
+    },
+    nexusTitleAbsoluteContainer: {
+      position: 'absolute',
+      top: screenWidth * 0.025,
+      left: screenWidth * 0.035,
     },
     nexusTitle: {
       color: '#d4d4d44f',
@@ -222,6 +242,36 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     logoutButton: {
       borderRadius: screenHeight * 0.01,
+    },
+    currencyPickerHeader: {
+      height: screenHeight * 0.07,
+      flexDirection: 'row',
+      paddingTop: screenWidth * 0.01,
+      paddingHorizontal: screenWidth * 0.01,
+    },
+    currencyButton: {
+      width: screenWidth * 0.3,
+      height: screenWidth * 0.12,
+      borderWidth: 1,
+      borderColor: '#ccc',
+      backgroundColor: '#fff',
+      flexDirection: 'row',
+      gap: screenWidth * 0.03,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: screenHeight * 0.012,
+      marginTop: screenHeight * 0.01,
+    },
+    currencyTitle: {
+      color: '#000',
+      fontSize: screenHeight * 0.022,
+      fontWeight: '600',
+    },
+    chevronIcon: {
+      width: screenWidth * 0.05,
+      height: screenWidth * 0.05,
+      tintColor: '#ccc',
+      resizeMode: 'contain',
     },
   });
 

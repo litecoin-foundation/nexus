@@ -41,7 +41,9 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   }
 
   if (!brands || brands.length === 0) {
-    return <EmptyView message="No gift cards available" />;
+    return (
+      <EmptyView message="No gift cards available for your region/currency." />
+    );
   }
 
   return (

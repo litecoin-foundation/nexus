@@ -11,6 +11,8 @@ interface IUserAccount {
   uniqueId: string;
   isLoggedIn: boolean;
   registrationDate: number;
+  userCountry: string;
+  userCurrency: string;
 }
 
 interface INexusShopAccount {
@@ -178,6 +180,11 @@ export const nexusShopAccountSlice = createSlice({
         state.wishlistBrands.push(action.payload);
       }
     },
+    setUserCurrency: (state, action: PayloadAction<string>) => {
+      if (state.account) {
+        state.account.userCurrency = action.payload;
+      }
+    },
     verifyOtpSuccess: state => {
       if (state.account) {
         state.account.isLoggedIn = true;
@@ -272,6 +279,8 @@ export const registerOnNexusShop =
         uniqueId,
         isLoggedIn: false,
         registrationDate: Math.floor(Date.now() / 1000),
+        userCountry: getCountry(),
+        userCurrency: currencyCode,
       };
 
       dispatch(setAccount(userAccount));
@@ -286,6 +295,8 @@ export const registerOnNexusShop =
           uniqueId,
           isLoggedIn: false,
           registrationDate: Math.floor(Date.now() / 1000),
+          userCountry: getCountry(),
+          userCurrency: currencyCode,
         };
         dispatch(setAccount(userAccount));
         await dispatch(loginToNexusShop(email));
@@ -482,6 +493,7 @@ export const {
   addToWishlist,
   removeFromWishlist,
   toggleWishlistBrand,
+  setUserCurrency,
   verifyOtpSuccess,
 } = nexusShopAccountSlice.actions;
 

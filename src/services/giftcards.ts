@@ -8,7 +8,8 @@ export interface FaceValue {
 export interface Brand {
   slug: string; // Unique brand identifier
   name: string;
-  currency: string;
+  currency: string; // ISO currency code (e.g., 'USD', 'EUR', 'GBP')
+  countries_served?: string[]; // ISO country codes (e.g., ['US', 'CA'])
   logo_url?: string;
   categories?: string[];
   digital_face_value_limits?: {
@@ -149,8 +150,24 @@ export class GiftCardClient {
     return data.data as T;
   }
 
-  async getBrands(): Promise<Brand[]> {
-    return this.request<Brand[]>('GET', '/api/gift-cards/brands');
+  // NOTE: Deprecate unfiltered brands fetching since we have to make sure that
+  // users do not accidentally purchase giftcards for a wrong region
+  // async getBrands(): Promise<Brand[]> {
+  //   return this.request<Brand[]>('GET', '/api/gift-cards/brands');
+  // }
+
+  async getBrandsFiltered(options?: {
+    country?: string;
+    currency?: string;
+  }): Promise<Brand[]> {
+    const params = new URLSearchParams();
+    if (options?.country) params.append('country', options.country);
+    if (options?.currency) params.append('currency', options.currency);
+    const query = params.toString();
+    return this.request<Brand[]>(
+      'GET',
+      `/api/gift-cards/brands-filtered${query ? `?${query}` : ''}`,
+    );
   }
 
   async getBrand(slug: string): Promise<Brand> {
@@ -290,4 +307,25 @@ export function formatCurrency(currency: string): string {
 
 export function createGiftCardClient(): GiftCardClient {
   return new GiftCardClient();
+}
+
+// Filter brands by country code (e.g., 'US', 'DE', 'GB')
+export function filterBrandsByCountry(
+  brands: Brand[],
+  countryCode: string,
+): Brand[] {
+  return brands.filter(
+    brand =>
+      brand.countries_served?.includes(countryCode.toUpperCase()) ?? false,
+  );
+}
+
+// Filter brands by currency (e.g., 'USD', 'EUR', 'GBP')
+export function filterBrandsByCurrency(
+  brands: Brand[],
+  currency: string,
+): Brand[] {
+  return brands.filter(
+    brand => brand.currency.toUpperCase() === currency.toUpperCase(),
+  );
 }

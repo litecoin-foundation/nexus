@@ -688,7 +688,7 @@ const Main: React.FC<Props> = props => {
         }}
         originX={plasma2ModalXY.x - SCREEN_WIDTH * 0.03}
         originY={plasma2ModalXY.y - SCREEN_WIDTH * 0.01}
-        gapVertical={SCREEN_HEIGHT * 0.1}
+        gapVertical={SCREEN_HEIGHT * 0.4}
         gapHorizontal={SCREEN_WIDTH * 0.03}
         growDirection="top-right"
         animDuration={250}

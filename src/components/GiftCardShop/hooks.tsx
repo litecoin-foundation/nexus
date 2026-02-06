@@ -7,6 +7,7 @@ import React, {
   ReactNode,
   useRef,
 } from 'react';
+import {getCountry} from 'react-native-localize';
 import {
   GiftCardClient,
   Brand,
@@ -15,6 +16,8 @@ import {
   InitiatePurchaseResponseData,
   PurchaseRequest,
   validateAmount,
+  filterBrandsByCountry,
+  filterBrandsByCurrency,
 } from '../../services/giftcards';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setGiftCards} from '../../reducers/nexusshopaccount';
@@ -53,15 +56,29 @@ interface UseQueryResult<T> {
 
 export function useBrands(): UseQueryResult<Brand[]> {
   const client = useGiftCardClient();
+  const account = useAppSelector(state => state.nexusshopaccount.account);
   const [data, setData] = useState<Brand[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Fallback to user location and USD if user unlogged
+  const userCountry = account?.userCountry || getCountry();
+  const userCurrency = account?.userCurrency || 'USD';
 
   const fetch = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const brands = await client.getBrands();
+      // Get filtered brands from api
+      let brands = await client.getBrandsFiltered({
+        country: userCountry,
+        currency: userCurrency,
+      });
+
+      // Client side filtering as a safety net
+      brands = filterBrandsByCountry(brands, userCountry);
+      brands = filterBrandsByCurrency(brands, userCurrency);
+
       if (Array.isArray(brands)) {
         setData(brands);
       } else {
@@ -72,7 +89,7 @@ export function useBrands(): UseQueryResult<Brand[]> {
     } finally {
       setLoading(false);
     }
-  }, [client]);
+  }, [client, userCountry, userCurrency]);
 
   useEffect(() => {
     fetch();
