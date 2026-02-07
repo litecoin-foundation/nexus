@@ -394,6 +394,9 @@
     "EUR": "€",
     "eur": "€",
     "GBP": "£",
-    "gbp": "£"
+    "gbp": "£",
+    "currency": "Currency",
+    "email": "Email",
+    "region": "Region"
   }
 }

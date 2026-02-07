@@ -686,10 +686,14 @@ const Main: React.FC<Props> = props => {
         close={() => {
           setShopAccountModalOpened(false);
         }}
-        originX={plasma2ModalXY.x - SCREEN_WIDTH * 0.03}
-        originY={plasma2ModalXY.y - SCREEN_WIDTH * 0.01}
-        gapVertical={SCREEN_HEIGHT * 0.4}
-        gapHorizontal={SCREEN_WIDTH * 0.03}
+        // originX={plasma2ModalXY.x - SCREEN_WIDTH * 0.03}
+        // originY={plasma2ModalXY.y - SCREEN_WIDTH * 0.01}
+        // gapVertical={SCREEN_HEIGHT * 0.4}
+        // gapHorizontal={SCREEN_WIDTH * 0.03}
+        originX={SCREEN_WIDTH}
+        originY={0}
+        gapVertical={0}
+        gapHorizontal={SCREEN_WIDTH * 0.3}
         growDirection="top-right"
         animDuration={250}
         backSpecifiedStyle={
@@ -702,7 +706,10 @@ const Main: React.FC<Props> = props => {
           plasmaModal_ShopAcoountModalContent_animatedRectStyle
         }
         renderBody={(_, __, ___, ____) => (
-          <ShopAcoountModalContent navigation={navigation} />
+          <ShopAcoountModalContent
+            navigation={navigation}
+            headerButtonXY={plasma2ModalXY}
+          />
         )}
       />
 

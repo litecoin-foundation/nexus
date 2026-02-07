@@ -13,10 +13,12 @@ import {getCommonStyles} from '../GiftCardShop/theme';
 import {
   logoutFromNexusShop,
   setUserCurrency,
+  setUserCountry,
 } from '../../reducers/nexusshopaccount';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import OptionCell from '../../components/Cells/OptionCell';
 import fiat from '../../assets/fiat';
+import countries from '../../assets/countries';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -25,6 +27,10 @@ const backIcon = require('../../assets/images/back-icon.png');
 
 interface Props {
   navigation: any;
+  headerButtonXY: {
+    x: number;
+    y: number;
+  };
 }
 
 // NOTE: we can filter currencies specifically for the shop by
@@ -33,28 +39,26 @@ interface Props {
 const SHOP_CURRENCIES = fiat.map((item: any) => item.key);
 
 const ShopAcoountModalContent: React.FC<Props> = props => {
-  const {navigation} = props;
+  const {navigation, headerButtonXY} = props;
   const dispatch = useAppDispatch();
   const account = useAppSelector(
     (state: any) => state.nexusshopaccount.account,
   );
-  const giftCards = useAppSelector(
-    (state: any) => state.nexusshopaccount.giftCards,
-  );
   const shopUserEmail = account && account.email;
   const isLoggedIn = account && account.isLoggedIn;
-  const giftCardsCounter = giftCards ? String(giftCards.length) : 'unfound';
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = useMemo(
-    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
-    [SCREEN_WIDTH, SCREEN_HEIGHT],
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, headerButtonXY.y),
+    [SCREEN_WIDTH, SCREEN_HEIGHT, headerButtonXY],
   );
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const shopCurrency = account?.userCurrency || 'USD';
+  const shopCountry = account?.userCountry || 'US';
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const [showRegionPicker, setShowRegionPicker] = useState(false);
 
   const shopFiat = useMemo(
     () => fiat.filter((item: any) => SHOP_CURRENCIES.includes(item.key)),
@@ -66,6 +70,11 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
     setShowCurrencyPicker(false);
   };
 
+  const handleRegionSelect = (code: string) => {
+    dispatch(setUserCountry(code));
+    setShowRegionPicker(false);
+  };
+
   const toSignUp = () => {
     navigation.navigate('NexusShopStack', {screen: 'SignUp'});
   };
@@ -73,6 +82,32 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
   const logout = () => {
     dispatch(logoutFromNexusShop());
   };
+
+  if (showRegionPicker) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.currencyPickerHeader}>
+          <HeaderButton
+            onPress={() => setShowRegionPicker(false)}
+            imageSource={require('../../assets/images/back-icon.png')}
+            backgroundColorSpecified="#0070F0"
+          />
+        </View>
+        <FlatList
+          data={countries}
+          keyExtractor={item => item.code}
+          renderItem={({item}) => (
+            <OptionCell
+              title={item.name}
+              key={item.code}
+              onPress={() => handleRegionSelect(item.code)}
+              selected={shopCountry === item.code}
+            />
+          )}
+        />
+      </View>
+    );
+  }
 
   if (showCurrencyPicker) {
     return (
@@ -104,6 +139,14 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
     <View style={styles.container}>
       {isLoggedIn ? (
         <View style={styles.accountContainer}>
+          <View style={styles.nexusTitleContainer}>
+            <TranslateText
+              textValue="NEXUS SHOP"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+              textStyle={styles.nexusTitle}
+              numberOfLines={1}
+            />
+          </View>
           <View style={styles.optionContainer}>
             <TranslateText
               textKey="email"
@@ -114,21 +157,6 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
             />
             <TranslateText
               textValue={shopUserEmail ? shopUserEmail : 'unfound'}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-              textStyle={styles.value}
-              numberOfLines={1}
-            />
-          </View>
-          <View style={styles.optionContainer}>
-            <TranslateText
-              textKey="active_cards"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-              textStyle={styles.title}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue={giftCardsCounter}
               maxSizeInPixels={SCREEN_HEIGHT * 0.022}
               textStyle={styles.value}
               numberOfLines={1}
@@ -153,14 +181,35 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
               />
             </TouchableOpacity>
           </View>
-          <View style={styles.nexusTitleAbsoluteContainer}>
+          <View style={styles.optionContainer}>
             <TranslateText
-              textValue="NEXUS SHOP"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.04}
+              textKey="region"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+              textStyle={styles.title}
+              numberOfLines={1}
+            />
+            <TouchableOpacity
+              style={styles.currencyButton}
+              onPress={() => setShowRegionPicker(true)}
+              activeOpacity={0.7}>
+              <Text style={styles.currencyTitle}>{shopCountry}</Text>
+              <Image
+                source={backIcon}
+                style={[styles.chevronIcon, {transform: [{rotate: '-90deg'}]}]}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.nexusTitleContainer}>
+            <TranslateText
+              textValue="Alerts"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.03}
               textStyle={styles.nexusTitle}
               numberOfLines={1}
             />
           </View>
+
           <View style={styles.logoutButtonContainer}>
             <TouchableOpacity
               style={[commonStyles.buttonRounded, styles.logoutButton]}
@@ -188,7 +237,11 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  headerButtonY: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -224,7 +277,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     nexusTitleContainer: {
       alignItems: 'center',
-      paddingTop: screenHeight * 0.18,
+      paddingTop: screenHeight * 0.04,
+      paddingBottom: screenHeight * 0.03,
     },
     nexusTitleAbsoluteContainer: {
       position: 'absolute',
@@ -235,19 +289,21 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#d4d4d44f',
       fontSize: screenHeight * 0.04,
       fontWeight: '700',
+      textTransform: 'uppercase',
     },
     logoutButtonContainer: {
       flex: 1,
+      width: '80%',
       justifyContent: 'flex-end',
     },
     logoutButton: {
       borderRadius: screenHeight * 0.01,
     },
     currencyPickerHeader: {
-      height: screenHeight * 0.07,
+      height: headerButtonY + screenHeight * 0.05,
       flexDirection: 'row',
-      paddingTop: screenWidth * 0.01,
-      paddingHorizontal: screenWidth * 0.01,
+      paddingTop: headerButtonY,
+      paddingHorizontal: screenWidth * 0.04,
     },
     currencyButton: {
       width: screenWidth * 0.3,
