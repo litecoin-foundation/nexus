@@ -259,22 +259,22 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
 
         {error === 'Unauthorized' ? (
           <TouchableOpacity
-            style={styles.purchaseButton}
+            style={commonStyles.buttonRounded}
             onPress={toSignUp}
             activeOpacity={0.7}>
             <TranslateText
               textKey="sign_in"
               domain="nexusShop"
               maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.purchaseButtonText}
+              textStyle={commonStyles.buttonText}
               numberOfLines={1}
             />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
             style={[
-              styles.purchaseButton,
-              (!validation.valid || loading) && styles.purchaseButtonDisabled,
+              commonStyles.buttonRounded,
+              (!validation.valid || loading) && commonStyles.buttonDisabled,
             ]}
             onPress={handleSubmit}
             disabled={!validation.valid || loading}
@@ -286,7 +286,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                 textKey="proceed"
                 domain="nexusShop"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.purchaseButtonText}
+                textStyle={commonStyles.buttonText}
                 numberOfLines={1}
               />
             )}
@@ -305,7 +305,7 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
   const client = useMemo(() => new GiftCardClient(), []);
 
   const handleInitiate = (initiateResponse: InitiatePurchaseResponseData) => {
-    navigation.replace('PayForGiftCard', {
+    navigation.navigate('PayForGiftCard', {
       initiateResponse,
       onPaymentSuccess,
     });
@@ -403,28 +403,28 @@ const getStyles = (
     denominationsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: getSpacing(screenWidth, screenHeight).lg,
+      marginBottom: screenHeight * 0.04,
     },
     denominationsRowLeft: {
-      justifyContent: 'flex-start',
-      gap: getSpacing(screenWidth, screenHeight).sm,
+      justifyContent: 'center',
+      gap: screenWidth * 0.03,
     },
     denominationButton: {
-      paddingVertical: getSpacing(screenWidth, screenHeight).sm,
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
-      borderRadius: getBorderRadius(screenHeight).md,
+      minWidth: screenWidth * 0.15,
+      minHeight: screenWidth * 0.12,
       borderWidth: 1,
       borderColor: colors.grayLight,
       backgroundColor: colors.white,
-      minWidth: screenWidth * 0.15,
       alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: screenHeight * 0.012,
     },
     denominationButtonSelected: {
       backgroundColor: colors.primary,
       borderColor: colors.primary,
     },
     denominationText: {
-      fontSize: getFontSize(screenHeight).md,
+      fontSize: screenHeight * 0.017,
       fontWeight: '500',
       color: colors.text,
     },
@@ -492,21 +492,6 @@ const getStyles = (
     },
     validationError: {
       marginBottom: getSpacing(screenWidth, screenHeight).md,
-    },
-    purchaseButton: {
-      backgroundColor: colors.primary,
-      borderRadius: getBorderRadius(screenHeight).lg,
-      paddingVertical: getSpacing(screenWidth, screenHeight).md,
-      alignItems: 'center',
-      marginTop: getSpacing(screenWidth, screenHeight).md,
-    },
-    purchaseButtonDisabled: {
-      opacity: 0.6,
-    },
-    purchaseButtonText: {
-      fontSize: getFontSize(screenHeight).md,
-      fontWeight: '600',
-      color: colors.white,
     },
     headerTitle: {
       color: '#fff',

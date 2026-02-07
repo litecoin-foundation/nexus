@@ -12,8 +12,6 @@ import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
 import MyGiftCards from '../../components/GiftCardShop/MyGiftCards';
 import TripleSwitch from '../../components/Buttons/TripleSwitch';
-import NewBlueButton from '../../components/Buttons/NewBlueButton';
-import DropDownButton from '../../components/Buttons/DropDownButton';
 
 import {
   colors,
@@ -42,8 +40,6 @@ type ScreenState =
   | {type: 'my-cards'}
   | {type: 'wishlist'};
 
-const SHOP_CURRENCIES = ['USD', 'CAD', 'AUD', 'EUR', 'GBP'];
-
 const GiftCardShop: React.FC<GiftCardShopProps> = ({
   initialBrand,
   navigation,
@@ -56,7 +52,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   const isLoggedIn = account && account.isLoggedIn;
 
   const [screen, setScreen] = useState<ScreenState>({type: 'browse'});
-  const [shopCurrency, setShopCurrency] = useState('USD');
+  const shopCurrency = account?.userCurrency || 'USD';
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -80,10 +76,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
       dispatch(clearSessionToken());
     }
   }, [isLoggedIn, dispatch]);
-
-  const handleLogoutShopUser = () => {
-    dispatch(logoutFromNexusShop());
-  };
 
   const getSelectedIndex = () => {
     switch (screen.type) {
@@ -128,10 +120,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
 
   const handleDone = () => {
     setScreen({type: 'browse'});
-  };
-
-  const toSignUp = () => {
-    navigation.navigate('NexusShopStack', {screen: 'SignUp'});
   };
 
   /**
@@ -189,50 +177,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
                 textStyle={styles.titleText}
                 numberOfLines={1}
               />
-
-              {/* <View style={styles.topButtons}>
-                <View style={styles.topBtn}>
-                  <NewBlueButton
-                    textKey="flexa"
-                    textDomain="nexusShop"
-                    active={false}
-                    onPress={() => {}}
-                    autoWidth
-                  />
-                </View>
-                <View style={styles.dropdownWrapper}>
-                  <DropDownButton
-                    initial={shopCurrency}
-                    options={SHOP_CURRENCIES}
-                    chooseOptionCallback={setShopCurrency}
-                    cellHeight={SCREEN_HEIGHT * 0.044}
-                    cellHeightExpandMultiplier={1.45}
-                    textDomain="nexusShop"
-                    tickDisabled
-                    smallPadding
-                    centerText
-                  />
-                </View>
-                <View style={styles.topBtn}>
-                  {isLoggedIn ? (
-                    <NewBlueButton
-                      textKey="logout"
-                      textDomain="nexusShop"
-                      active={true}
-                      onPress={handleLogoutShopUser}
-                      autoWidth
-                    />
-                  ) : (
-                    <NewBlueButton
-                      textKey="sign_in"
-                      textDomain="nexusShop"
-                      active={true}
-                      onPress={toSignUp}
-                      autoWidth
-                    />
-                  )}
-                </View>
-              </View> */}
             </View>
 
             <View style={styles.switchContainer}>
@@ -293,10 +237,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       // DashboardButton is 110
       // Header margin is 5
       height: screenHeight * 0.76,
-      // height: screenHeight,
-      // backgroundColor: 'red',
-      // marginTop: screenHeight * 0.24 * -1,
-      // zIndex: 1,
     },
     subContainer: {
       flex: 1,
