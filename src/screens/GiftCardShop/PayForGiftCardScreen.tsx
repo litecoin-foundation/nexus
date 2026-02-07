@@ -1,4 +1,4 @@
-import React, {useContext, useState, useRef} from 'react';
+import React, {useContext, useState, useRef, useEffect} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -28,17 +28,6 @@ import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-const formatExpiryDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  const day = date.getDate();
-  const month = date.toLocaleString('en-US', {month: 'short'});
-  const hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const hour12 = hours % 12 || 12;
-  return `${day} ${month} ${hour12}:${minutes} ${ampm}`;
-};
-
 interface PayForGiftCardScreenProps {
   route: {
     params: {
@@ -57,6 +46,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [paymentCountdown, setPaymentCountdown] = useState(0);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -71,6 +61,29 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
     pinModalAction.current = action;
     setIsPinModalOpened(true);
   }
+
+  // Payment expiry countdown
+  useEffect(() => {
+    const calcRemaining = () => {
+      const expiresAtMs = new Date(initiateResponse.expiresAt).getTime();
+      return Math.max(0, Math.floor((expiresAtMs - Date.now()) / 1000));
+    };
+    setPaymentCountdown(calcRemaining());
+    const interval = setInterval(() => {
+      const remaining = calcRemaining();
+      setPaymentCountdown(remaining);
+      if (remaining <= 0) clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [initiateResponse.expiresAt]);
+
+  const isPaymentExpired = paymentCountdown <= 0;
+
+  const formatCountdown = (totalSeconds: number): string => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleAuthenticationRequired = (action: string) => {
     return new Promise<void>((resolve, reject) => {
@@ -190,22 +203,6 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
                   numberOfLines={3}
                 />
               </View>
-
-              <View style={styles.detailRow}>
-                <TranslateText
-                  textKey="expires_at"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                  textStyle={styles.detailLabel}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={formatExpiryDate(initiateResponse.expiresAt)}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={styles.detailValue}
-                  numberOfLines={1}
-                />
-              </View>
             </View>
           </CustomSafeAreaView>
         </View>
@@ -222,6 +219,39 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
             </View>
           )}
 
+          {!isPaymentExpired && (
+            <TranslateText
+              textKey="make_payment_in"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+              textStyle={styles.countdownText}
+              numberOfLines={1}
+              interpolationObj={{time: formatCountdown(paymentCountdown)}}
+            />
+          )}
+
+          <TouchableOpacity
+            style={[
+              commonStyles.buttonRounded,
+              (loading || isPaymentExpired) && commonStyles.buttonDisabled,
+            ]}
+            onPress={() =>
+              handleAuthenticationRequired('send-giftcard-payment')
+            }
+            disabled={loading || isPaymentExpired}>
+            {loading ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <TranslateText
+                textKey={isPaymentExpired ? 'payment_expired' : 'send_payment'}
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={commonStyles.buttonText}
+                numberOfLines={1}
+              />
+            )}
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[commonStyles.buttonRoundedSecondary, styles.backButton]}
             onPress={() => navigation.goBack()}
@@ -233,28 +263,6 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
               textStyle={commonStyles.buttonTextBlack}
               numberOfLines={1}
             />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              commonStyles.buttonRounded,
-              loading && commonStyles.buttonDisabled,
-            ]}
-            onPress={() =>
-              handleAuthenticationRequired('send-giftcard-payment')
-            }
-            disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color={colors.white} />
-            ) : (
-              <TranslateText
-                textKey="send_payment"
-                domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                textStyle={commonStyles.buttonText}
-                numberOfLines={1}
-              />
-            )}
           </TouchableOpacity>
         </View>
 
@@ -322,7 +330,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     detailRow: {
       width: '100%',
-      minHeight: screenHeight * 0.035,
+      minHeight: screenHeight * 0.04,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
@@ -363,7 +371,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: getSpacing(screenWidth, screenHeight).xl,
     },
     backButton: {
-      marginBottom: getSpacing(screenWidth, screenHeight).md,
+      marginTop: screenHeight * 0.012,
+    },
+    countdownText: {
+      color: '#000',
+      fontSize: screenHeight * 0.017,
+      fontWeight: '600',
+      textAlign: 'center',
+      marginBottom: screenHeight * 0.015,
     },
     headerTitle: {
       color: '#fff',

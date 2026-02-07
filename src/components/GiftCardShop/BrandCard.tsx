@@ -242,7 +242,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginBottom: screenHeight * 0.01,
     },
     denominationsRowLeft: {
-      // justifyContent: 'flex-start',
       justifyContent: 'center',
       gap: screenWidth * 0.03,
     },

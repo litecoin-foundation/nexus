@@ -46,7 +46,7 @@ const initialState: INexusShopAccount = {
  * imply that, e.g. maxing out verify attempts means maxing out send-code attempts.
  */
 const MAX_LOGIN_ATTEMPTS = 10;
-const TIME_LOCK_IN_SEC = 900;
+export const TIME_LOCK_IN_SEC = 900;
 
 const BASE_API_URL = __DEV__
   ? 'https://stage-api.nexuswallet.com'
