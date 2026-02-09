@@ -33,6 +33,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import Turnstile from '../../components/Turnstile';
 
 interface Props {}
 
@@ -53,6 +54,7 @@ const SignUp: React.FC<Props> = () => {
   const [email, setEmail] = useState(shopUserEmail || '');
   const [emailError, setEmailError] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   const {loginLoading} = useSelector((state: any) => state.nexusshopaccount);
   const {uniqueId} = useSelector((state: any) => state.onboarding);
@@ -196,10 +198,13 @@ const SignUp: React.FC<Props> = () => {
             />
           ) : null}
 
+          <Turnstile onTokenReceived={setTurnstileToken} />
+
           <TouchableOpacity
             style={[
               commonStyles.buttonRounded,
               loginLoading ? commonStyles.buttonDisabled : null,
+              styles.signUpButton,
             ]}
             onPress={handleSignUp}
             disabled={loginLoading}>
@@ -313,6 +318,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     resetButtonContainer: {
       paddingTop: 10,
+    },
+    signUpButton: {
+      marginTop: getSpacing(screenWidth, screenHeight).md,
     },
     headerTitle: {
       color: '#fff',
