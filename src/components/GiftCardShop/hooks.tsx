@@ -6,6 +6,7 @@ import React, {
   useContext,
   ReactNode,
   useRef,
+  useMemo,
 } from 'react';
 import {getCountry} from 'react-native-localize';
 import {
@@ -263,44 +264,6 @@ export function useInitiatePurchaseGiftCard(): UseMutationResult<
   return {mutate, data, loading, error, reset};
 }
 
-// Purchase call FOR TESTING ONLY
-// export function usePurchaseGiftCard(): UseMutationResult<
-//   GiftCard,
-//   PurchaseRequest
-// > {
-//   const client = useGiftCardClient();
-//   const [data, setData] = useState<GiftCard | null>(null);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
-
-//   const mutate = useCallback(
-//     async (request: PurchaseRequest): Promise<GiftCard> => {
-//       setLoading(true);
-//       setError(null);
-//       try {
-//         const card = await client.purchase(request);
-//         setData(card);
-//         return card;
-//       } catch (err) {
-//         const message =
-//           err instanceof Error ? err.message : 'Failed to purchase';
-//         setError(message);
-//         throw err;
-//       } finally {
-//         setLoading(false);
-//       }
-//     },
-//     [client],
-//   );
-
-//   const reset = useCallback(() => {
-//     setData(null);
-//     setError(null);
-//   }, []);
-
-//   return {mutate, data, loading, error, reset};
-// }
-
 // Mark as redeemed call
 export function useRedeemGiftCard(): UseMutationResult<GiftCard, string> {
   const client = useGiftCardClient();
@@ -357,6 +320,19 @@ export function usePurchaseFlow(
     reset,
   } = useInitiatePurchaseGiftCard();
 
+  const confirmedBalance = useAppSelector(
+    state => state.balance.confirmedBalance,
+  );
+  const rates = useAppSelector(
+    state => (state.ticker as any).rates as {[key: string]: number} | undefined,
+  );
+
+  const availableBalanceFiat = useMemo(() => {
+    const rate = rates?.[currency.toUpperCase()];
+    if (!rate || !confirmedBalance) return undefined;
+    return (Number(confirmedBalance) / 1e8) * rate;
+  }, [confirmedBalance, rates, currency]);
+
   useEffect(() => {
     if (!brand) {
       setValidation({valid: false, error: 'Select a brand'});
@@ -366,8 +342,8 @@ export function usePurchaseFlow(
       setValidation({valid: false, error: 'Enter an amount'});
       return;
     }
-    setValidation(validateAmount(brand, amount));
-  }, [brand, amount]);
+    setValidation(validateAmount(brand, amount, availableBalanceFiat));
+  }, [brand, amount, availableBalanceFiat]);
 
   const submit = useCallback(async () => {
     if (!brand || !validation.valid) return null;

@@ -81,6 +81,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   const [amountText, setAmountText] = useState(
     amount > 0 ? amount.toString() : '',
   );
+  const [showInputAmount, setShowInputAmount] = useState(false);
 
   // Sync text when amount changes externally (e.g., denomination buttons)
   useEffect(() => {
@@ -128,19 +129,9 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     } catch {}
   };
 
-  const [errorText, setErrorText] = useState<string>('');
-  useEffect(() => {
-    switch (error) {
-      case 'Unauthorized':
-        setErrorText(
-          'To proceed with the purchase sign in to Nexus Shop account',
-        );
-        break;
-      default:
-        setErrorText(error || '');
-        break;
-    }
-  }, [error]);
+  const errorTextKey =
+    error === 'Unauthorized' ? 'unauthorized_purchase_error' : undefined;
+  const errorTextValue = error && error !== 'Unauthorized' ? error : undefined;
 
   const toSignUp = () => {
     navigation.navigate('NexusShopStack', {screen: 'SignUp'});
@@ -202,59 +193,120 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
         </View>
 
         {!brand.denominations ? (
-          <View style={styles.amountInputSection}>
-            <Text style={styles.sectionTitle}>ENTER AMOUNT</Text>
-            <View style={styles.amountInputContainer}>
-              <Text style={styles.currencySymbol}>
-                {formatCurrency(currency)}
-              </Text>
-              <TextInput
-                style={styles.amountInput}
-                value={amountText}
-                onChangeText={text => {
-                  setAmountText(text);
-                  const normalized = text.replace(',', '.');
-                  const parsed = parseFloat(normalized);
-                  setAmount(isNaN(parsed) ? 0 : parsed);
+          showInputAmount ? (
+            <View style={styles.amountInputSection}>
+              <TranslateText
+                textKey="enter_amount"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={styles.sectionTitle}
+                numberOfLines={1}
+              />
+              <View style={styles.amountInputContainer}>
+                <Text style={styles.currencySymbol}>
+                  {formatCurrency(currency)}
+                </Text>
+                <TextInput
+                  style={styles.amountInput}
+                  value={amountText}
+                  onChangeText={text => {
+                    setAmountText(text);
+                    const normalized = text.replace(',', '.');
+                    const parsed = parseFloat(normalized);
+                    setAmount(isNaN(parsed) ? 0 : parsed);
+                  }}
+                  placeholder={`${minAmount} - ${maxAmount}`}
+                  keyboardType="decimal-pad"
+                  placeholderTextColor={colors.grayMedium}
+                />
+              </View>
+              <TranslateText
+                textKey="enter_amount_hint"
+                domain="nexusShop"
+                interpolationObj={{
+                  currencySymbol: formatCurrency(currency),
+                  min: minAmount,
+                  max: maxAmount,
                 }}
-                placeholder={`${minAmount} - ${maxAmount}`}
-                keyboardType="decimal-pad"
-                placeholderTextColor={colors.grayMedium}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.amountHint}
+                numberOfLines={1}
               />
             </View>
-            <Text style={styles.amountHint}>
-              Enter amount between {minAmount} and {maxAmount}
-            </Text>
-          </View>
+          ) : (
+            <View style={styles.amountInputSection}>
+              <TouchableOpacity
+                style={commonStyles.buttonRoundedSecondary}
+                onPress={() => setShowInputAmount(true)}
+                activeOpacity={0.7}>
+                <TranslateText
+                  textKey="other_amount"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={commonStyles.buttonTextBlack}
+                  numberOfLines={1}
+                />
+              </TouchableOpacity>
+            </View>
+          )
         ) : (
           <></>
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>DESCRIPTION</Text>
-          <Text style={styles.sectionText}>
-            {brand.name} gift card can be redeemed for merchandise at any{' '}
-            {brand.name} location or online store.
-          </Text>
+          <TranslateText
+            textKey="description_title"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={styles.sectionTitle}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textKey="gift_card_description"
+            domain="nexusShop"
+            interpolationObj={{brandName: brand.name}}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={styles.sectionText}
+          />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>REDEEM INSTRUCTIONS</Text>
-          <Text style={styles.sectionText}>
-            You can redeem the card by providing the code at checkout.
-          </Text>
+          <TranslateText
+            textKey="redeem_instructions_title"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={styles.sectionTitle}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textKey="redeem_instructions_text"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={styles.sectionText}
+          />
         </View>
 
-        {errorText && (
+        {(errorTextKey || errorTextValue) && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorMessage}>{errorText}</Text>
+            <TranslateText
+              textKey={errorTextKey}
+              textValue={errorTextValue}
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.errorText}
+            />
           </View>
         )}
 
         {!validation.valid && validation.error && amount > 0 && (
-          <Text style={[commonStyles.errorText, styles.validationError]}>
-            {validation.error}
-          </Text>
+          <View style={styles.errorContainer}>
+            <TranslateText
+              textValue={validation.error}
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.errorText}
+            />
+          </View>
         )}
 
         {error === 'Unauthorized' ? (
@@ -343,8 +395,7 @@ const getStyles = (
       zIndex: 1,
     },
     formContainer: {
-      padding: getSpacing(screenWidth, screenHeight).md,
-      paddingBottom: getSpacing(screenWidth, screenHeight).xl,
+      padding: screenWidth * 0.04,
     },
     headerCard: {
       flexDirection: 'row',
@@ -352,7 +403,7 @@ const getStyles = (
       backgroundColor: colors.white,
       borderRadius: getBorderRadius(screenHeight).lg,
       padding: getSpacing(screenWidth, screenHeight).md,
-      marginBottom: getSpacing(screenWidth, screenHeight).md,
+      marginBottom: screenHeight * 0.02,
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 2},
       shadowOpacity: 0.08,
@@ -403,7 +454,7 @@ const getStyles = (
     denominationsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: screenHeight * 0.04,
+      marginBottom: screenHeight * 0.02,
     },
     denominationsRowLeft: {
       justifyContent: 'center',
@@ -432,7 +483,7 @@ const getStyles = (
       color: colors.white,
     },
     amountInputSection: {
-      marginBottom: getSpacing(screenWidth, screenHeight).lg,
+      marginBottom: screenHeight * 0.04,
     },
     amountInputContainer: {
       flexDirection: 'row',
@@ -459,39 +510,34 @@ const getStyles = (
     },
     amountHint: {
       marginTop: getSpacing(screenWidth, screenHeight).sm,
-      fontSize: getFontSize(screenHeight).sm,
+      fontSize: screenHeight * 0.016,
       color: colors.textSecondary,
     },
     section: {
-      marginBottom: getSpacing(screenWidth, screenHeight).lg,
       borderBottomWidth: 1,
       borderBottomColor: colors.grayLight,
-      paddingBottom: getSpacing(screenWidth, screenHeight).md,
+      marginBottom: screenHeight * 0.04,
     },
     sectionTitle: {
-      fontSize: getFontSize(screenHeight).sm,
+      fontSize: screenHeight * 0.016,
       fontWeight: '600',
       color: colors.primary,
       marginBottom: getSpacing(screenWidth, screenHeight).sm,
       letterSpacing: 0.5,
     },
     sectionText: {
-      fontSize: getFontSize(screenHeight).md,
+      fontSize: screenHeight * 0.016,
       color: colors.text,
       lineHeight: getFontSize(screenHeight).md * 1.5,
     },
     errorContainer: {
-      backgroundColor: colors.dangerLight,
-      padding: getSpacing(screenWidth, screenHeight).md,
-      borderRadius: getBorderRadius(screenHeight).sm,
-      marginBottom: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: screenWidth * 0.02,
+      marginBottom: screenHeight * 0.02,
     },
-    errorMessage: {
+    errorText: {
       color: colors.danger,
-      fontSize: getFontSize(screenHeight).sm,
-    },
-    validationError: {
-      marginBottom: getSpacing(screenWidth, screenHeight).md,
+      fontSize: screenHeight * 0.018,
+      textAlign: 'center',
     },
     headerTitle: {
       color: '#fff',

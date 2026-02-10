@@ -235,6 +235,7 @@ export class GiftCardError extends Error {
 export function validateAmount(
   brand: Brand,
   amount: number,
+  availableBalanceFiat?: number,
 ): {valid: boolean; error?: string} {
   if (brand.denominations && brand.denominations.length > 0) {
     if (!brand.denominations.includes(amount)) {
@@ -242,6 +243,9 @@ export function validateAmount(
         valid: false,
         error: `Amount must be one of: ${brand.denominations.join(', ')}`,
       };
+    }
+    if (availableBalanceFiat !== undefined && amount > availableBalanceFiat) {
+      return {valid: false, error: 'Insufficient balance'};
     }
     return {valid: true};
   }
@@ -264,7 +268,15 @@ export function validateAmount(
       };
     }
 
+    if (availableBalanceFiat !== undefined && amount > availableBalanceFiat) {
+      return {valid: false, error: 'Insufficient balance'};
+    }
+
     return {valid: true};
+  }
+
+  if (availableBalanceFiat !== undefined && amount > availableBalanceFiat) {
+    return {valid: false, error: 'Insufficient balance'};
   }
 
   return {valid: true};

@@ -385,6 +385,7 @@
     "payment_to": "Payment To",
     "expires_at": "Expires At",
     "active_cards": "Active Cards",
+    "other_amount": "Other Amount",
     "USD": "US$",
     "usd": "US$",
     "CAD": "CA$",
@@ -397,6 +398,13 @@
     "gbp": "£",
     "currency": "Currency",
     "email": "Email",
-    "region": "Region"
+    "region": "Region",
+    "enter_amount": "ENTER AMOUNT",
+    "enter_amount_hint": "Min: {{currencySymbol}}{{min}} - Max: {{currencySymbol}}{{max}}",
+    "description_title": "DESCRIPTION",
+    "gift_card_description": "{{brandName}} gift card can be redeemed for merchandise at any {{brandName}} location or online store.",
+    "redeem_instructions_title": "REDEEM INSTRUCTIONS",
+    "redeem_instructions_text": "You can redeem the card by providing the code at checkout.",
+    "unauthorized_purchase_error": "To proceed with the purchase sign in to Nexus Shop account"
   }
 }
