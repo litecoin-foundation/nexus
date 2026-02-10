@@ -150,6 +150,11 @@ export const nexusShopAccountSlice = createSlice({
         state.account.userCurrency = action.payload;
       }
     },
+    setUserCountry: (state, action: PayloadAction<string>) => {
+      if (state.account) {
+        state.account.userCountry = action.payload;
+      }
+    },
     verifyOtpSuccess: state => {
       if (state.account) {
         state.account.isLoggedIn = true;
@@ -404,6 +409,7 @@ export const {
   removeFromWishlist,
   toggleWishlistBrand,
   setUserCurrency,
+  setUserCountry,
   verifyOtpSuccess,
 } = nexusShopAccountSlice.actions;
 

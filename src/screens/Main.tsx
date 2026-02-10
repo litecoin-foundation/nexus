@@ -9,6 +9,7 @@ import React, {
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
 import Animated, {SharedValue} from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
+import {useDrawerStatus} from '@react-navigation/drawer';
 import {
   Canvas,
   Image,
@@ -33,9 +34,7 @@ import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
 import PlasmaModal from './../components/Modals/PlasmaModal';
-import Plasma2Modal from './../components/Modals/Plasma2Modal';
 import WalletsModalContent from './../components/Modals/WalletsModalContent';
-import ShopAcoountModalContent from './../components/Modals/ShopAcoountModalContent';
 import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
@@ -170,11 +169,13 @@ const Main: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
 
+  const drawerStatus = useDrawerStatus();
+  const isShopAccountDrawerOpen = drawerStatus === 'open';
+
   const [activeTab, setActiveTab] = useState(0);
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
-  const [isShopAccountModalOpened, setShopAccountModalOpened] = useState(false);
   const [isPopUpModalOpened, setIsPopUpModalOpened] = useState(false);
   // const [currentWallet, setCurrentWallet] = useState('main_wallet');
   const currentWallet = 'main_wallet';
@@ -221,7 +222,24 @@ const Main: React.FC<Props> = props => {
   }, [openedNotification]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
-  const [plasma2ModalXY, setPlasma2ModalXY] = useState({x: 0, y: 0});
+
+  // Drawer toggle function
+  const toggleShopAccountDrawer = useCallback(() => {
+    if (activeTab === 3) {
+      if (isShopAccountDrawerOpen) {
+        navigation.closeDrawer?.();
+      } else {
+        navigation.openDrawer?.();
+      }
+    }
+  }, [activeTab, isShopAccountDrawerOpen, navigation]);
+
+  // Auto-close drawer when leaving Shop tab
+  useEffect(() => {
+    if (activeTab !== 3 && isShopAccountDrawerOpen) {
+      navigation.closeDrawer?.();
+    }
+  }, [activeTab, isShopAccountDrawerOpen, navigation]);
 
   const {
     mainSheetsTranslationY,
@@ -442,11 +460,10 @@ const Main: React.FC<Props> = props => {
     navigation,
     isWalletsModalOpened,
     setWalletsModalOpened,
-    isShopAccountModalOpened,
-    setShopAccountModalOpened,
+    isShopAccountDrawerOpen,
+    toggleShopAccountDrawer,
     isTxDetailModalOpened,
     setPlasmaModalGapInPixels,
-    setPlasma2ModalXY,
     setBottomSheetFolded,
     setActiveTab,
     manualPayment,
@@ -585,17 +602,6 @@ const Main: React.FC<Props> = props => {
   const plasmaModal_PinModalContent_backSpecifiedStyle = {
     backgroundColor: 'rgba(19,58,138, 0.6)',
   };
-  const plasmaModal_ShopAcoountModalContent_backSpecifiedStyle = {
-    backgroundColor: 'rgba(17, 74, 175, 0.8)',
-  };
-  const plasmaModal_ShopAcoountModalContent_bodyStyle = {
-    borderRadius: SCREEN_HEIGHT * 0.012,
-    overflow: 'hidden',
-  };
-  const plasmaModal_ShopAcoountModalContent_animatedRectStyle = {
-    borderRadius: SCREEN_HEIGHT * 0.012,
-    overflow: 'hidden',
-  };
 
   return (
     <Animated.View style={[styles.container, animatedTopContainerBackground]}>
@@ -677,38 +683,6 @@ const Main: React.FC<Props> = props => {
             animDelay={animDelay}
             animDuration={animDuration}
             cardTranslateAnim={cardTranslateAnim}
-          />
-        )}
-      />
-
-      <Plasma2Modal
-        isOpened={isShopAccountModalOpened}
-        close={() => {
-          setShopAccountModalOpened(false);
-        }}
-        // originX={plasma2ModalXY.x - SCREEN_WIDTH * 0.03}
-        // originY={plasma2ModalXY.y - SCREEN_WIDTH * 0.01}
-        // gapVertical={SCREEN_HEIGHT * 0.4}
-        // gapHorizontal={SCREEN_WIDTH * 0.03}
-        originX={SCREEN_WIDTH}
-        originY={0}
-        gapVertical={0}
-        gapHorizontal={SCREEN_WIDTH * 0.3}
-        growDirection="top-right"
-        animDuration={250}
-        backSpecifiedStyle={
-          plasmaModal_ShopAcoountModalContent_backSpecifiedStyle
-        }
-        contentBodySpecifiedStyle={
-          plasmaModal_ShopAcoountModalContent_bodyStyle
-        }
-        animatedRectSpecifiedStyle={
-          plasmaModal_ShopAcoountModalContent_animatedRectStyle
-        }
-        renderBody={(_, __, ___, ____) => (
-          <ShopAcoountModalContent
-            navigation={navigation}
-            headerButtonXY={plasma2ModalXY}
           />
         )}
       />

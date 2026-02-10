@@ -1,7 +1,8 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import Main, {navigationOptions} from '../screens/Main';
+import {navigationOptions} from '../screens/Main';
+import MainDrawer from './MainDrawer';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import SettingsStack from './SettingsStack';
 import NexusShopStack from './NexusShopStack';
@@ -43,7 +44,7 @@ function NewWalletStack(): React.JSX.Element {
     <Stack.Navigator initialRouteName="Main">
       <Stack.Screen
         name="Main"
-        component={Main}
+        component={MainDrawer}
         options={({navigation}) => navigationOptions(navigation)}
       />
       <Stack.Screen
