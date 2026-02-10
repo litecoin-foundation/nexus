@@ -17,6 +17,8 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
+import Svg, {Circle} from 'react-native-svg';
+
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {verifyOtpCode, loginToNexusShop} from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
@@ -27,7 +29,7 @@ import {
 } from '../../components/GiftCardShop/theme';
 import NumpadInput from '../../components/Numpad/NumpadInput';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-import Svg, {Circle} from 'react-native-svg';
+import WarningModal from '../../components/Modals/WarningModal';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -101,6 +103,8 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
 
   const [otpCode, setOtpCode] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [showMaxAttemptsModal, setShowMaxAttemptsModal] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -239,12 +243,32 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         await dispatch(
           verifyOtpCode(account.email, uniqueId, code, abortController.signal),
         );
+        // Reset failed attempts on success
+        setFailedAttempts(0);
         // Navigation is handled by the useEffect that watches account?.isLoggedIn
       } catch (errorCatch) {
-        // Error is handled by warning modal
+        // Increment failed attempts
+        const newFailedAttempts = failedAttempts + 1;
+        setFailedAttempts(newFailedAttempts);
+
+        // Clear the OTP input
+        setOtpCode('');
+
+        // Show modal after 3 failed attempts
+        if (newFailedAttempts >= 3) {
+          setShowMaxAttemptsModal(true);
+        }
+        // Error is also handled by warning modal in the reducer
       }
     },
-    [otpCode, validateOtpCode, account?.email, uniqueId, dispatch],
+    [
+      otpCode,
+      validateOtpCode,
+      account?.email,
+      uniqueId,
+      dispatch,
+      failedAttempts,
+    ],
   );
 
   const handleSendOTP = useCallback(async () => {
@@ -260,12 +284,19 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       await dispatch(loginToNexusShop(account.email));
       // Start 60 second countdown
       setResendCountdown(60);
+      // Reset failed attempts when successfully resending OTP
+      setFailedAttempts(0);
     } catch (errorCatch) {
       // Error is handled by warning modal
     }
   }, [account?.email, uniqueId, dispatch]);
 
-  const isButtonDisabled = loading || !validateOtpCode(otpCode);
+  const handleCloseMaxAttemptsModal = useCallback(() => {
+    setShowMaxAttemptsModal(false);
+  }, []);
+
+  const isButtonDisabled =
+    loading || !validateOtpCode(otpCode) || failedAttempts >= 3;
 
   const submitButton = useMemo(
     () => (
@@ -381,6 +412,11 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         dotDisabled
         small
         secondaryButton={secondaryButton}
+      />
+      <WarningModal
+        isVisible={showMaxAttemptsModal}
+        close={handleCloseMaxAttemptsModal}
+        text="Too many incorrect attempts. To get a new code, press Resend Code."
       />
     </View>
   );
