@@ -20,7 +20,6 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {
   verifyOtpCode,
   loginToNexusShop,
-  TIME_LOCK_IN_SEC,
 } from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
 import {
@@ -60,10 +59,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   );
   const [loading, setLoading] = useState(false);
   const {uniqueId} = useAppSelector((state: any) => state.onboarding);
-  const {timeLock, timeLockAt} = useAppSelector(
-    (state: any) => state.nexusshopaccount,
-  );
-  const [resendCountdown, setResendCountdown] = useState(0);
 
   const validateOtpCode = useCallback((code: string): boolean => {
     return code.length === 6 && /^\d+$/.test(code);
@@ -85,26 +80,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       abortControllerRef.current?.abort();
     };
   }, []);
-
-  // Resend countdown timer
-  useEffect(() => {
-    if (!timeLock) {
-      setResendCountdown(0);
-      return;
-    }
-    const calcRemaining = () => {
-      const remaining =
-        timeLockAt + TIME_LOCK_IN_SEC - Math.floor(Date.now() / 1000);
-      return Math.max(0, remaining);
-    };
-    setResendCountdown(calcRemaining());
-    const interval = setInterval(() => {
-      const remaining = calcRemaining();
-      setResendCountdown(remaining);
-      if (remaining <= 0) clearInterval(interval);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timeLock, timeLockAt]);
 
   // Handle OTP code from navigation params (from deeplink)
   useEffect(() => {
@@ -220,7 +195,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     }
   }, [account?.email, uniqueId, dispatch]);
 
-  const isButtonDisabled = loading || !validateOtpCode(otpCode) || timeLock;
+  const isButtonDisabled = loading || !validateOtpCode(otpCode);
 
   const submitButton = useMemo(
     () => (
@@ -249,7 +224,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     [SCREEN_HEIGHT, commonStyles, isButtonDisabled, loading, handleVerifyOTP],
   );
 
-  const isResendDisabled = loading || resendCountdown > 0;
+  const isResendDisabled = loading;
 
   const secondaryButton = useMemo(
     () => (
@@ -262,33 +237,16 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
           await handleSendOTP();
         }}
         disabled={isResendDisabled}>
-        {resendCountdown > 0 ? (
-          <TranslateText
-            textKey="resend_code_in"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={commonStyles.buttonTextBlack}
-            numberOfLines={1}
-            interpolationObj={{seconds: String(resendCountdown)}}
-          />
-        ) : (
-          <TranslateText
-            textKey="resend_code"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={commonStyles.buttonTextBlack}
-            numberOfLines={1}
-          />
-        )}
+        <TranslateText
+          textKey="resend_code"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+          textStyle={commonStyles.buttonTextBlack}
+          numberOfLines={1}
+        />
       </TouchableOpacity>
     ),
-    [
-      SCREEN_HEIGHT,
-      commonStyles,
-      isResendDisabled,
-      resendCountdown,
-      handleSendOTP,
-    ],
+    [SCREEN_HEIGHT, commonStyles, isResendDisabled, handleSendOTP],
   );
 
   return (

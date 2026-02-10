@@ -22,9 +22,6 @@ interface INexusShopAccount {
   loading: boolean;
   error: string | null;
   loginLoading: boolean;
-  failedLoginAttempts: number;
-  timeLock: boolean;
-  timeLockAt: number;
 }
 
 const initialState: INexusShopAccount = {
@@ -34,19 +31,7 @@ const initialState: INexusShopAccount = {
   loading: false,
   error: null,
   loginLoading: false,
-  failedLoginAttempts: 0,
-  timeLock: false,
-  timeLockAt: 0,
 };
-
-/**
- * Let's combine login/register/verify/send-code attempts to one counter
- * and make it 10 instead of 3 for each one, because it's basically shared logic.
- * User should not be able to brute force or ddos any of these mathods, so we can
- * imply that, e.g. maxing out verify attempts means maxing out send-code attempts.
- */
-const MAX_LOGIN_ATTEMPTS = 10;
-export const TIME_LOCK_IN_SEC = 900;
 
 const BASE_API_URL = __DEV__
   ? 'https://stage-api.nexuswallet.com'
@@ -94,26 +79,6 @@ export const nexusShopAccountSlice = createSlice({
       state.loading = false;
       state.loginLoading = false;
       state.error = null;
-      state.failedLoginAttempts = 0;
-      state.timeLock = false;
-      state.timeLockAt = 0;
-    },
-    addFailedLoginAttempt: state => {
-      state.failedLoginAttempts =
-        state.failedLoginAttempts === undefined
-          ? 1
-          : state.failedLoginAttempts + 1;
-    },
-    timeLockNSAccount: state => {
-      state.failedLoginAttempts = 0;
-      state.timeLock = true;
-      state.timeLockAt = Math.floor(Date.now() / 1000);
-      // state.account = null;
-      // state.giftCards = [];
-      // state.wishlistBrands = [];
-      // state.loading = false;
-      // state.loginLoading = false;
-      // state.error = null;
     },
     resetWishlist: state => {
       state.wishlistBrands = [];
@@ -198,35 +163,6 @@ export const nexusShopAccountSlice = createSlice({
     builder.addCase(createAction(PURGE), () => initialState);
   },
 });
-
-/**
- * Handle failed login attempts
- */
-const handleFailedAttempt =
-  (failedLoginAttempts: any): AppThunk =>
-  dispatch => {
-    const nextAttemptCount = failedLoginAttempts + 1;
-
-    if (nextAttemptCount >= MAX_LOGIN_ATTEMPTS) {
-      dispatch(timeLockNSAccount());
-    } else {
-      dispatch(addFailedLoginAttempt());
-    }
-  };
-
-/**
- * Check if a lock period has expired
- */
-const isLockExpired = (lockTime: any, lockDuration: any) => {
-  return Number(lockTime || 0) + lockDuration < Math.floor(Date.now() / 1000);
-};
-
-/**
- * Calculate time left in a lock period
- */
-const calculateTimeLeft = (lockTime: any, lockDuration: any) => {
-  return lockDuration - (Math.floor(Date.now() / 1000) - lockTime);
-};
 
 export const resetFromNexusShop = () => async (dispatch: any) => {
   await SecureStore.deleteItemAsync('sessionToken');
@@ -326,24 +262,8 @@ export const registerOnNexusShop =
 export const loginToNexusShop =
   (email: string): AppThunk =>
   async (dispatch, getState) => {
-    const {timeLock, timeLockAt} = getState().nexusshopaccount!;
-
     try {
       dispatch(setLoginLoading(true));
-
-      // Maxed out login attempts
-      if (timeLock) {
-        if (isLockExpired(timeLockAt, TIME_LOCK_IN_SEC)) {
-          if (__DEV__) {
-            console.log('NS Account timelock expired');
-          }
-        } else {
-          const timeLeftInSec = calculateTimeLeft(timeLockAt, TIME_LOCK_IN_SEC);
-          throw new Error(
-            `Maxed out login attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`,
-          );
-        }
-      }
 
       const response = await fetch(`${BASE_API_URL}/api/shop/send-otp`, {
         method: 'POST',
@@ -389,24 +309,7 @@ export const verifyOtpCode =
     signal?: AbortSignal,
   ): AppThunk =>
   async (dispatch, getState) => {
-    const {failedLoginAttempts, timeLock, timeLockAt} =
-      getState().nexusshopaccount!;
-
     try {
-      // Maxed out code verification attempts
-      if (timeLock) {
-        if (isLockExpired(timeLockAt, TIME_LOCK_IN_SEC)) {
-          if (__DEV__) {
-            console.log('NS Account timelock expired');
-          }
-        } else {
-          const timeLeftInSec = calculateTimeLeft(timeLockAt, TIME_LOCK_IN_SEC);
-          throw new Error(
-            `Maxed out code verification attempts. Try again in ${Math.ceil(timeLeftInSec / 60)} minutes.`,
-          );
-        }
-      }
-
       const response = await fetch(`${BASE_API_URL}/api/shop/verify-otp`, {
         method: 'POST',
         headers: {
@@ -423,7 +326,6 @@ export const verifyOtpCode =
       const data = await response.json();
 
       if (!response.ok) {
-        dispatch(handleFailedAttempt(failedLoginAttempts));
         throw new Error(data.error || 'OTP verification failed');
       }
 
@@ -492,8 +394,6 @@ export const {
   setAccount,
   clearAccount,
   resetAccount,
-  timeLockNSAccount,
-  addFailedLoginAttempt,
   resetWishlist,
   setGiftCards,
   addGiftCard,
