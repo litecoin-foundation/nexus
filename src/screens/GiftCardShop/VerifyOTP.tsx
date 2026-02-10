@@ -13,14 +13,12 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  Text,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {
-  verifyOtpCode,
-  loginToNexusShop,
-} from '../../reducers/nexusshopaccount';
+import {verifyOtpCode, loginToNexusShop} from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
 import {
   colors,
@@ -29,6 +27,7 @@ import {
 } from '../../components/GiftCardShop/theme';
 import NumpadInput from '../../components/Numpad/NumpadInput';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import Svg, {Circle} from 'react-native-svg';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -42,6 +41,58 @@ interface VerifyOTPProps {
   };
 }
 
+interface CircularProgressProps {
+  size: number;
+  strokeWidth: number;
+  progress: number;
+  color: string;
+  backgroundColor: string;
+}
+
+const CircularProgress: React.FC<CircularProgressProps> = ({
+  size,
+  strokeWidth,
+  progress,
+  color,
+  backgroundColor,
+}) => {
+  // Add padding to prevent clipping
+  const padding = strokeWidth;
+  const viewBoxSize = size + padding * 2;
+  const center = viewBoxSize / 2;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}>
+      <Circle
+        stroke={backgroundColor}
+        fill="none"
+        cx={center}
+        cy={center}
+        r={radius}
+        strokeWidth={strokeWidth}
+      />
+      <Circle
+        stroke={color}
+        fill="none"
+        cx={center}
+        cy={center}
+        r={radius}
+        strokeWidth={strokeWidth}
+        strokeDasharray={`${circumference} ${circumference}`}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${center} ${center})`}
+      />
+    </Svg>
+  );
+};
+
 const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -50,7 +101,9 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
 
   const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
+  const [resendCountdown, setResendCountdown] = useState(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
@@ -74,12 +127,38 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     }
   }, [account?.isLoggedIn, navigation]);
 
-  // Abort any pending request on unmount
+  // Abort any pending request on unmount and clear countdown timer
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
+      if (countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current);
+      }
     };
   }, []);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      countdownTimerRef.current = setInterval(() => {
+        setResendCountdown(prev => {
+          if (prev <= 1) {
+            if (countdownTimerRef.current) {
+              clearInterval(countdownTimerRef.current);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => {
+        if (countdownTimerRef.current) {
+          clearInterval(countdownTimerRef.current);
+        }
+      };
+    }
+  }, [resendCountdown]);
 
   // Handle OTP code from navigation params (from deeplink)
   useEffect(() => {
@@ -186,6 +265,8 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
 
     try {
       await dispatch(loginToNexusShop(account.email));
+      // Start 60 second countdown
+      setResendCountdown(60);
     } catch (errorCatch) {
       setOtpError(
         errorCatch instanceof Error
@@ -224,30 +305,57 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     [SCREEN_HEIGHT, commonStyles, isButtonDisabled, loading, handleVerifyOTP],
   );
 
-  const isResendDisabled = loading;
+  const isResendDisabled = loading || resendCountdown > 0;
 
-  const secondaryButton = useMemo(
-    () => (
+  const secondaryButton = useMemo(() => {
+    // Progress should go from 100% (at 60s) to 0% (at 0s) - counting DOWN
+    const progressPercentage =
+      resendCountdown > 0 ? (resendCountdown / 60) * 100 : 0;
+
+    return (
       <TouchableOpacity
         style={[
           commonStyles.buttonRoundedSecondary,
-          isResendDisabled ? commonStyles.buttonDisabled : null,
+          isResendDisabled ? styles.buttonResendDisabled : null,
         ]}
         onPress={async () => {
           await handleSendOTP();
         }}
         disabled={isResendDisabled}>
-        <TranslateText
-          textKey="resend_code"
-          domain="nexusShop"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-          textStyle={commonStyles.buttonTextBlack}
-          numberOfLines={1}
-        />
+        <View style={styles.resendButtonContent}>
+          <TranslateText
+            textKey="resend_code"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={[
+              commonStyles.buttonTextBlack,
+              isResendDisabled ? styles.resendTextDisabled : null,
+            ]}
+            numberOfLines={1}
+          />
+          {resendCountdown > 0 && (
+            <View style={styles.countdownContainerAbsolute}>
+              <CircularProgress
+                size={SCREEN_HEIGHT * 0.035}
+                strokeWidth={3}
+                progress={progressPercentage}
+                color="#0070F0"
+                backgroundColor="rgba(0, 112, 240, 0.15)"
+              />
+              <Text style={styles.countdownText}>{resendCountdown}</Text>
+            </View>
+          )}
+        </View>
       </TouchableOpacity>
-    ),
-    [SCREEN_HEIGHT, commonStyles, isResendDisabled, handleSendOTP],
-  );
+    );
+  }, [
+    SCREEN_HEIGHT,
+    commonStyles,
+    isResendDisabled,
+    handleSendOTP,
+    resendCountdown,
+    styles,
+  ]);
 
   return (
     <View style={styles.container}>
@@ -325,6 +433,36 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.02,
       fontStyle: 'normal',
       fontWeight: '700',
+    },
+    buttonResendDisabled: {
+      backgroundColor: 'rgba(242, 242, 247, 0.6)',
+      borderColor: 'rgba(142, 142, 147, 0.2)',
+    },
+    resendTextDisabled: {
+      color: 'rgba(51, 51, 51, 0.5)',
+    },
+    resendButtonContent: {
+      position: 'relative',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      height: '100%',
+    },
+    countdownContainerAbsolute: {
+      position: 'absolute',
+      left: getSpacing(screenWidth, screenHeight).lg,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: screenHeight * 0.045,
+      height: screenHeight * 0.045,
+      overflow: 'visible',
+    },
+    countdownText: {
+      position: 'absolute',
+      fontSize: screenHeight * 0.0135,
+      fontWeight: '700',
+      color: colors.primary,
     },
   });
 
