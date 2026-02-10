@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {
   View,
   TextInput,
@@ -22,18 +22,20 @@ import {useAppDispatch} from '../../store/hooks';
 import {
   registerOnNexusShop,
   clearAccount,
+  setAccountError,
 } from '../../reducers/nexusshopaccount';
 import {
   colors,
   getSpacing,
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 
+import HeaderButton from '../../components/Buttons/HeaderButton';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import Turnstile from '../../components/Turnstile';
+import WarningModal from '../../components/Modals/WarningModal';
 
 interface Props {}
 
@@ -53,10 +55,14 @@ const SignUp: React.FC<Props> = () => {
 
   const [email, setEmail] = useState(shopUserEmail || '');
   const [emailError, setEmailError] = useState('');
-  const [loginError, setLoginError] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const {loginLoading} = useSelector((state: any) => state.nexusshopaccount);
+  const {loginLoading, error: reduxError} = useSelector(
+    (state: any) => state.nexusshopaccount,
+  );
   const {uniqueId} = useSelector((state: any) => state.onboarding);
 
   const validateEmail = (emailProp: string): boolean => {
@@ -67,6 +73,45 @@ const SignUp: React.FC<Props> = () => {
   const handleEmailChange = (text: string) => {
     setEmail(text);
     if (emailError) setEmailError('');
+  };
+
+  const handleTurnstileTokenReceived = (token: string) => {
+    setTurnstileToken(token);
+  };
+
+  const handleTurnstileExpired = () => {
+    // Clear token and force new validation
+    setTurnstileToken('');
+    setTurnstileResetKey(prev => prev + 1);
+    setErrorMessage(
+      'Verification expired. Please complete the challenge again.',
+    );
+    setShowErrorModal(true);
+  };
+
+  const handleTurnstileError = () => {
+    // Clear token and force new validation
+    setTurnstileToken('');
+    setTurnstileResetKey(prev => prev + 1);
+    setErrorMessage('Verification failed. Please try again.');
+    setShowErrorModal(true);
+  };
+
+  // Watch for Redux errors and display in modal
+  useEffect(() => {
+    if (reduxError) {
+      setErrorMessage(reduxError);
+      setShowErrorModal(true);
+    }
+  }, [reduxError]);
+
+  const handleCloseErrorModal = () => {
+    setShowErrorModal(false);
+    setErrorMessage('');
+    // Clear Redux error when modal is closed
+    if (reduxError) {
+      dispatch(setAccountError(''));
+    }
   };
 
   const translateEmailErrorForLocale = (text: string) => {
@@ -102,13 +147,32 @@ const SignUp: React.FC<Props> = () => {
       return;
     }
 
+    if (!turnstileToken) {
+      setErrorMessage('Please complete the verification challenge');
+      setShowErrorModal(true);
+      return;
+    }
+
     if (hasErrors) return;
 
     try {
-      await dispatch(registerOnNexusShop(email.trim(), uniqueId));
+      await dispatch(
+        registerOnNexusShop(email.trim(), uniqueId, turnstileToken),
+      );
       navigation.navigate('VerifyOTP');
-    } catch {
-      Alert.alert('Sign Up Failed', 'Please try again later.');
+    } catch (error) {
+      const errMsg =
+        error instanceof Error ? error.message : 'Please try again later.';
+      setErrorMessage(errMsg);
+      setShowErrorModal(true);
+      // Reset turnstile widget on verification failure
+      if (
+        error instanceof Error &&
+        error.message.toLowerCase().includes('verification')
+      ) {
+        setTurnstileToken('');
+        setTurnstileResetKey(prev => prev + 1);
+      }
     }
   };
 
@@ -189,25 +253,32 @@ const SignUp: React.FC<Props> = () => {
         </View>
 
         <View style={styles.buttonContainer}>
-          {loginError ? (
-            <TranslateText
-              textValue={loginError}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-              textStyle={commonStyles.errorText}
-              numberOfLines={2}
-            />
-          ) : null}
-
-          <Turnstile onTokenReceived={setTurnstileToken} />
+          <Turnstile
+            onTokenReceived={handleTurnstileTokenReceived}
+            onTokenExpired={handleTurnstileExpired}
+            onError={handleTurnstileError}
+            action="register"
+            resetKey={turnstileResetKey}
+          />
 
           <TouchableOpacity
             style={[
               commonStyles.buttonRounded,
-              loginLoading ? commonStyles.buttonDisabled : null,
+              loginLoading ||
+              !turnstileToken ||
+              !email.trim() ||
+              !validateEmail(email)
+                ? commonStyles.buttonDisabled
+                : null,
               styles.signUpButton,
             ]}
             onPress={handleSignUp}
-            disabled={loginLoading}>
+            disabled={
+              loginLoading ||
+              !turnstileToken ||
+              !email.trim() ||
+              !validateEmail(email)
+            }>
             {loginLoading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
@@ -240,6 +311,11 @@ const SignUp: React.FC<Props> = () => {
           )}
         </View>
       </CustomSafeAreaView>
+      <WarningModal
+        isVisible={showErrorModal}
+        close={handleCloseErrorModal}
+        text={errorMessage}
+      />
     </LinearGradient>
   );
 };

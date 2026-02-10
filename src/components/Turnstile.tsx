@@ -2,15 +2,27 @@ import React, {useState} from 'react';
 import {View, StyleSheet} from 'react-native';
 import WebView, {WebViewMessageEvent} from 'react-native-webview';
 
-const TURNSTILE_BASE_URL = 'https://stage-api.nexuswallet.com';
+const TURNSTILE_BASE_URL = __DEV__
+  ? 'https://stage-api.nexuswallet.com'
+  : 'https://api.nexuswallet.com';
 const TURNSTILE_SITE_KEY = '0x4AAAAAACNSgnC0ANAjDu9H';
 const TURNSTILE_SIZE = 'normal';
 
 interface TurnstileProps {
   onTokenReceived: (token: string) => void;
+  onTokenExpired?: () => void;
+  onError?: () => void;
+  action?: string;
+  resetKey?: number;
 }
 
-const Turnstile: React.FC<TurnstileProps> = ({onTokenReceived}) => {
+const Turnstile: React.FC<TurnstileProps> = ({
+  onTokenReceived,
+  onTokenExpired,
+  onError,
+  action = '',
+  resetKey = 0,
+}) => {
   const [webViewHeight, setWebViewHeight] = useState(80);
   const handleMessage = (event: WebViewMessageEvent) => {
     const data = JSON.parse(event.nativeEvent.data);
@@ -18,11 +30,16 @@ const Turnstile: React.FC<TurnstileProps> = ({onTokenReceived}) => {
       setWebViewHeight(data.height);
     } else if (data.type === 'token') {
       onTokenReceived(data.token);
+    } else if (data.type === 'expired') {
+      onTokenExpired?.();
+    } else if (data.type === 'error') {
+      onError?.();
     }
   };
   return (
     <View style={[styles.container, {height: webViewHeight}]}>
       <WebView
+        key={resetKey}
         originWhitelist={['*']}
         onMessage={handleMessage}
         source={{
@@ -56,8 +73,15 @@ const Turnstile: React.FC<TurnstileProps> = ({onTokenReceived}) => {
                     turnstile.render('#myWidget', {
                       sitekey: '${TURNSTILE_SITE_KEY}',
                       size: '${TURNSTILE_SIZE}',
+                      action: '${action}',
                       callback: (token) => {
                         window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'token', token }));
+                      },
+                      'expired-callback': () => {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'expired' }));
+                      },
+                      'error-callback': () => {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error' }));
                       },
                     });
                     setTimeout(() => {

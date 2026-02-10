@@ -244,33 +244,43 @@ export const clearSessionToken = (): AppThunk => async (dispatch, getState) => {
 };
 
 export const registerOnNexusShop =
-  (email: string, uniqueId: string) => async (dispatch: any, getState: any) => {
+  (email: string, uniqueId: string, turnstileToken: string) =>
+  async (dispatch: any, getState: any) => {
     const {deviceNotificationToken, currencyCode, languageCode} =
       getState().settings!;
 
     try {
       dispatch(setLoginLoading(true));
 
+      const body = JSON.stringify({
+        email,
+        uniqueId,
+        'cf-turnstile-response': turnstileToken,
+        deviceToken: deviceNotificationToken,
+        isIOS: Platform.OS === 'ios',
+        countryCode: getCountry(),
+        currencyCode: currencyCode,
+        language: languageCode,
+        osVersion: String(Platform.Version),
+      });
+
       const response = await fetch(`${BASE_API_URL}/api/shop/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          uniqueId,
-          deviceToken: deviceNotificationToken,
-          isIOS: Platform.OS === 'ios',
-          countryCode: getCountry(),
-          currencyCode: currencyCode,
-          language: languageCode,
-          osVersion: String(Platform.Version),
-        }),
+        body,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle turnstile validation failure (403)
+        if (response.status === 403) {
+          throw new Error(
+            data.error || 'Verification failed. Please try again.',
+          );
+        }
         throw new Error(data.error || 'Registration failed');
       }
 

@@ -9438,7 +9438,7 @@ react-native-nitro-modules@0.31.6:
   resolved "https://registry.yarnpkg.com/react-native-nitro-modules/-/react-native-nitro-modules-0.31.6.tgz#b5804be14a2fa0253c2fef607d594c3d53379389"
   integrity sha512-EcKuLgYwOPrWSGC0VqxqTXjxsQBLCjl/1+ryuKwKDA4iyLr9C/8CBCn6sDS3wbmZDlNl+EPWTPU+VWC6SnPW8Q==
 
-react-native-nitro-scrypt@^0.1.0:
+react-native-nitro-scrypt@0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/react-native-nitro-scrypt/-/react-native-nitro-scrypt-0.1.0.tgz#156ad5fb30f311a9001809b35e0d7bca73daa647"
   integrity sha512-8M17YSnkgnHzdsm329EuUT57Vt9YRcU4psV31ui+zX7MMDjonh68SMxQ7phCd9bqb8u+5k2RNstZuXd+PVo68w==
