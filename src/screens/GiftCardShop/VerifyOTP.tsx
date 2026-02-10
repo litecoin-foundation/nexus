@@ -100,7 +100,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [otpCode, setOtpCode] = useState('');
-  const [otpError, setOtpError] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
   const abortControllerRef = useRef<AbortController | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -212,7 +211,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     const numericText = text.replace(/[^0-9]/g, '');
     if (numericText.length <= 6) {
       setOtpCode(numericText);
-      if (otpError) setOtpError('');
     }
   };
 
@@ -221,7 +219,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       const code = codeToVerify || otpCode;
 
       if (!validateOtpCode(code)) {
-        setOtpError('Please enter a valid 6-digit OTP code');
         return;
       }
 
@@ -244,11 +241,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         );
         // Navigation is handled by the useEffect that watches account?.isLoggedIn
       } catch (errorCatch) {
-        setOtpError(
-          errorCatch instanceof Error
-            ? errorCatch.message
-            : 'Verification failed. Please try again.',
-        );
+        // Error is handled by warning modal
       }
     },
     [otpCode, validateOtpCode, account?.email, uniqueId, dispatch],
@@ -268,11 +261,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       // Start 60 second countdown
       setResendCountdown(60);
     } catch (errorCatch) {
-      setOtpError(
-        errorCatch instanceof Error
-          ? errorCatch.message
-          : 'Sending failed. Please try again.',
-      );
+      // Error is handled by warning modal
     }
   }, [account?.email, uniqueId, dispatch]);
 
@@ -382,12 +371,6 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
           textStyle={[commonStyles.subtitle, styles.subtitle]}
           numberOfLines={2}
         />
-        <TranslateText
-          textValue={otpError}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-          textStyle={[commonStyles.errorText, styles.errorText]}
-          numberOfLines={2}
-        />
       </CustomSafeAreaView>
       <NumpadInput
         submitButton={submitButton}
@@ -419,13 +402,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     subtitle: {
       paddingTop: getSpacing(screenWidth, screenHeight).xs,
-    },
-    errorText: {
-      paddingTop: getSpacing(screenWidth, screenHeight).xs,
-      textAlign: 'center',
-    },
-    inputError: {
-      borderColor: colors.danger,
     },
     headerTitle: {
       color: '#fff',
