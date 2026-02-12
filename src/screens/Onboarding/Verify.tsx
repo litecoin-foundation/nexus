@@ -5,7 +5,7 @@ import React, {
   useContext,
   useMemo,
 } from 'react';
-import {View, Text, StyleSheet, Alert} from 'react-native';
+import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
@@ -63,6 +63,7 @@ const Verify: React.FC<Props> = props => {
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
     [navigation],
@@ -78,8 +79,12 @@ const Verify: React.FC<Props> = props => {
       headerTintColor: 'white',
       headerTitle: () => headerTitleMemo,
       headerLeft: () => headerLeftMemo,
+      headerLeftContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+      headerRightContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
     });
-  }, [navigation, headerTitleMemo, headerLeftMemo]);
+  }, [navigation, headerTitleMemo, headerLeftMemo, SCREEN_WIDTH]);
 
   const handlePress = async () => {
     if (multiplier === 8) {

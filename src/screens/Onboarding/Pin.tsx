@@ -1,11 +1,5 @@
-import React, {
-  useState,
-  useLayoutEffect,
-  useEffect,
-  useContext,
-  useMemo,
-} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useState, useEffect, useContext, useMemo} from 'react';
+import {StyleSheet, View, Platform} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
 
@@ -47,7 +41,7 @@ const Pin: React.FC<Props> = props => {
   const {biometricsAvailable} = useAppSelector(state => state.authentication!);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+    const unsubscribe = navigation.addListener('beforeRemove', e => {
       // Only reset if going back, not when navigating forward
       if (e.data.action.type === 'GO_BACK' || e.data.action.type === 'POP') {
         dispatch(resetPincode());
@@ -59,24 +53,6 @@ const Pin: React.FC<Props> = props => {
 
     return unsubscribe;
   }, [navigation, dispatch, beingRecovered]);
-
-  const headerLeftMemo = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => {
-          navigation.goBack();
-        }}
-        imageSource={require('../../assets/images/back-icon.png')}
-      />
-    ),
-    [navigation],
-  );
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => headerLeftMemo,
-    });
-  }, [navigation, headerLeftMemo]);
 
   const headerTitleMemo = useMemo(
     () => (
@@ -90,12 +66,30 @@ const Pin: React.FC<Props> = props => {
     [passcodeInitialSet, styles.headerTitle, SCREEN_HEIGHT],
   );
 
+  const headerLeftMemo = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => {
+          navigation.goBack();
+        }}
+        imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
+      />
+    ),
+    [navigation],
+  );
+
   useEffect(() => {
     navigation.setOptions({
       headerTitleAlign: 'center',
       headerTitle: () => headerTitleMemo,
+      headerLeft: () => headerLeftMemo,
+      headerLeftContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+      headerRightContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
     });
-  }, [navigation, headerTitleMemo]);
+  }, [navigation, headerTitleMemo, headerLeftMemo, SCREEN_WIDTH]);
 
   const handleCompletion = () => {
     setNewPasscode(pin);

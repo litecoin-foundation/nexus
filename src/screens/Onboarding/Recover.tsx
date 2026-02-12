@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   StackNavigationOptions,
@@ -66,7 +66,7 @@ const Recover: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+    const unsubscribe = navigation.addListener('beforeRemove', e => {
       // Only reset if going back, not when navigating forward
       if (e.data.action.type === 'GO_BACK' || e.data.action.type === 'POP') {
         dispatch(resetSeedAction());
@@ -88,7 +88,7 @@ const Recover: React.FC<Props> = props => {
               dispatch(setSeedRecovery(debugSeed));
               navigation.navigate('Pin');
             }}
-            rightPadding={true}
+            rightPadding
           />
         ),
       });
@@ -158,8 +158,13 @@ export const RecoverNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 
