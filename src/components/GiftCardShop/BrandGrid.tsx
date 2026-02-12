@@ -24,11 +24,18 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
 
   const {data: brands, loading, error, refetch} = useBrands();
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedBrandSlug, setExpandedBrandSlug] = useState<string | null>(
+    null,
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
+  };
+
+  const handleToggleBrand = (brandSlug: string) => {
+    setExpandedBrandSlug(prev => (prev === brandSlug ? null : brandSlug));
   };
 
   if (loading && !refreshing) {
@@ -86,9 +93,11 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
             brand={item}
             currency={currency}
             onPress={(amount?: number) => onSelectBrand(item, amount)}
+            isExpanded={expandedBrandSlug === item.slug}
+            onToggle={() => handleToggleBrand(item.slug)}
           />
         )}
-        extraData={brands?.length}
+        extraData={[brands?.length, expandedBrandSlug]}
       />
     </View>
   );

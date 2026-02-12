@@ -9,7 +9,7 @@ import Animated, {
   interpolateColor,
 } from 'react-native-reanimated';
 
-import {colors, getSpacing, getBorderRadius} from './theme';
+import {colors, getSpacing} from './theme';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 export function SkeletonGiftCardItem() {
@@ -71,25 +71,22 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     cardContainer: {
       backgroundColor: colors.white,
-      borderRadius: getBorderRadius(screenHeight).lg,
-      marginBottom: getSpacing(screenWidth, screenHeight).md,
-      shadowColor: colors.black,
-      shadowOffset: {width: 0, height: 2},
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 3,
+      borderRadius: screenHeight * 0.016,
+      borderWidth: screenHeight * 0.002,
+      borderColor: '#F0F0F0',
+      marginBottom: getSpacing(screenWidth, screenHeight).sm,
       overflow: 'hidden',
     },
     card: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: getSpacing(screenWidth, screenHeight).md,
+      padding: screenHeight * 0.0085,
     },
     logoContainer: {
-      width: screenWidth * 0.2,
-      height: screenWidth * 0.15,
+      width: screenWidth * 0.17,
+      height: screenHeight * 0.06,
       backgroundColor: colors.grayLight,
-      borderRadius: getBorderRadius(screenHeight).md,
+      borderRadius: screenHeight * 0.01,
       overflow: 'hidden',
     },
     logoSkeleton: {
@@ -98,22 +95,22 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     cardInfo: {
       flex: 1,
-      marginLeft: getSpacing(screenWidth, screenHeight).md,
+      marginLeft: screenWidth * 0.025,
     },
     cardDateSkeleton: {
       width: '50%',
-      height: screenHeight * 0.014,
+      height: screenHeight * 0.0135,
       borderRadius: 3,
       backgroundColor: '#F4F4F4',
       overflow: 'hidden',
     },
     cardAmountSkeleton: {
       width: '40%',
-      height: screenHeight * 0.018,
+      height: screenHeight * 0.0155,
       borderRadius: 3,
       backgroundColor: '#F4F4F4',
       overflow: 'hidden',
-      marginTop: getSpacing(screenWidth, screenHeight).xs,
+      marginTop: screenHeight * 0.003,
     },
     skeletonLine: {
       width: '100%',

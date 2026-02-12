@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {FlatList, View, StyleSheet} from 'react-native';
 
 import {Brand} from '../../services/giftcards';
@@ -28,6 +28,14 @@ export function MyWishlistBrands({
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const [expandedBrandSlug, setExpandedBrandSlug] = useState<string | null>(
+    null,
+  );
+
+  const handleToggleBrand = (brandSlug: string) => {
+    setExpandedBrandSlug(prev => (prev === brandSlug ? null : brandSlug));
+  };
 
   if (loading) {
     return (
@@ -76,9 +84,11 @@ export function MyWishlistBrands({
             brand={item}
             currency={currency}
             onPress={(amount?: number) => onSelectBrand?.(item, amount)}
+            isExpanded={expandedBrandSlug === item.slug}
+            onToggle={() => handleToggleBrand(item.slug)}
           />
         )}
-        extraData={wishlistBrands?.length}
+        extraData={[wishlistBrands?.length, expandedBrandSlug]}
       />
     </View>
   );
