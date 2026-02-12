@@ -1,13 +1,14 @@
 import React, {useEffect, useState, useContext} from 'react';
 import {ScrollView, View, StyleSheet, RefreshControl} from 'react-native';
+
 import {isExpired, PendingGiftCardPurchase} from '../../services/giftcards';
-import {useMyGiftCards} from './hooks';
-import {getSpacing} from './theme';
-import {LoadingView} from './LoadingView';
 import {ErrorView} from './ErrorView';
 import {EmptyView} from './EmptyView';
 import {GiftCardItem, PendingGiftCardItem} from './GiftCardItem';
+import {SkeletonGiftCardItem} from './SkeletonGiftCardItem';
 
+import {getSpacing} from './theme';
+import {useMyGiftCards} from './hooks';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -50,7 +51,25 @@ const MyGiftCards: React.FC<Props> = props => {
   }, [error]);
 
   if (loading && !refreshing) {
-    return <LoadingView message="Loading your gift cards..." />;
+    return (
+      <View style={styles.container}>
+        <View style={styles.mainSection}>
+          <TranslateText
+            textKey="my_cards"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+            textStyle={styles.title}
+          />
+          <View style={styles.scrollContainer}>
+            <SkeletonGiftCardItem />
+            <SkeletonGiftCardItem />
+            <SkeletonGiftCardItem />
+            <SkeletonGiftCardItem />
+            <SkeletonGiftCardItem />
+          </View>
+        </View>
+      </View>
+    );
   }
 
   if (error) {

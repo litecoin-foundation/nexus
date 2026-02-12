@@ -6,12 +6,14 @@ import React, {
   useCallback,
 } from 'react';
 import {View, StyleSheet} from 'react-native';
+
 import {GiftCardClient, Brand, GiftCard} from '../../services/giftcards';
 import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
 import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
 import MyGiftCards from '../../components/GiftCardShop/MyGiftCards';
 import TripleSwitch from '../../components/Buttons/TripleSwitch';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import {
   colors,
@@ -23,8 +25,6 @@ import {
   logoutFromNexusShop,
   clearSessionToken,
 } from '../../reducers/nexusshopaccount';
-import {useAppDispatch, useAppSelector} from '../../store/hooks';
-
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -273,7 +273,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#2E2E2E',
-      fontSize: screenHeight * 0.027,
+      fontSize: screenHeight * 0.025,
     },
     topButtons: {
       flexDirection: 'row',

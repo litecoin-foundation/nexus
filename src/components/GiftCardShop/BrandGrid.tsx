@@ -1,13 +1,14 @@
 import React, {useState, useContext} from 'react';
 import {FlatList, StyleSheet, RefreshControl, View} from 'react-native';
-import {Brand} from '../../services/giftcards';
-import {useBrands} from './hooks';
-import {getSpacing} from './theme';
-import {LoadingView} from './LoadingView';
+
 import {ErrorView} from './ErrorView';
 import {EmptyView} from './EmptyView';
 import {BrandCard} from './BrandCard';
+import {SkeletonBrandCard} from './SkeletonBrandCard';
+import {Brand} from '../../services/giftcards';
 
+import {getSpacing} from './theme';
+import {useBrands} from './hooks';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -31,7 +32,26 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   };
 
   if (loading && !refreshing) {
-    return <LoadingView message="Loading gift cards..." />;
+    return (
+      <View style={styles.container}>
+        <View style={styles.section}>
+          <TranslateText
+            textKey="available_gif_cards"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+            textStyle={styles.title}
+          />
+        </View>
+        <View style={styles.gridContainer}>
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+        </View>
+      </View>
+    );
   }
 
   if (error) {
@@ -41,9 +61,7 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   }
 
   if (!brands || brands.length === 0) {
-    return (
-      <EmptyView message="No gift cards available for your region/currency." />
-    );
+    return <EmptyView message="No giftcards available in your country." />;
   }
 
   return (

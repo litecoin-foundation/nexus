@@ -4,8 +4,8 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import {toggleWishlistBrand} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
-import {colors, getSpacing, getFontSize} from './theme';
 
+import {colors, getSpacing, getFontSize} from './theme';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const backIcon = require('../../assets/images/back-icon.png');
@@ -204,6 +204,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     brandLogoText: {
       fontSize: getFontSize(screenHeight).xl,
       fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
       color: colors.gray,
     },
     brandInfo: {
@@ -213,11 +214,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     brandName: {
       fontSize: screenHeight * 0.018,
       fontWeight: '500',
+      fontFamily: 'Satoshi Variable',
       color: colors.text,
     },
     brandPrice: {
       fontSize: screenHeight * 0.018,
       fontWeight: '500',
+      fontFamily: 'Satoshi Variable',
       color: colors.text,
       marginTop: screenHeight * 0.005,
     },
@@ -262,6 +265,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     denominationText: {
       fontSize: screenHeight * 0.017,
       fontWeight: '500',
+      fontFamily: 'Satoshi Variable',
       color: colors.text,
     },
     denominationTextSelected: {
@@ -277,7 +281,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     purchaseButtonText: {
       fontSize: screenHeight * 0.015,
-      fontWeight: '600',
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
       color: colors.white,
       textTransform: 'uppercase',
     },

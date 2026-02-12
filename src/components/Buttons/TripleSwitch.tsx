@@ -143,8 +143,8 @@ const getStyles = (
       zIndex: 1,
     },
     buttonText: {
-      fontSize: screenHeight * 0.017,
-      fontWeight: '600',
+      fontSize: screenHeight * 0.015,
+      fontWeight: '700',
       fontFamily: 'Satoshi Variable',
     },
   });

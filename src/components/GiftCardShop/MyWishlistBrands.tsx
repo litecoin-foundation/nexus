@@ -1,12 +1,13 @@
 import React, {useContext} from 'react';
 import {FlatList, View, StyleSheet} from 'react-native';
+
 import {Brand} from '../../services/giftcards';
-import {useAppSelector} from '../../store/hooks';
-import {getSpacing} from './theme';
-import {LoadingView} from './LoadingView';
 import {EmptyView} from './EmptyView';
 import {BrandCard} from './BrandCard';
+import {SkeletonBrandCard} from './SkeletonBrandCard';
+import {useAppSelector} from '../../store/hooks';
 
+import {getSpacing} from './theme';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -29,7 +30,25 @@ export function MyWishlistBrands({
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   if (loading) {
-    return <LoadingView message="Loading your wishlist..." />;
+    return (
+      <View style={styles.container}>
+        <View style={styles.section}>
+          <TranslateText
+            textKey="your_wishlist"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+            textStyle={styles.title}
+          />
+        </View>
+        <View style={styles.gridContainer}>
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+          <SkeletonBrandCard />
+        </View>
+      </View>
+    );
   }
 
   if (!wishlistBrands || wishlistBrands.length === 0) {

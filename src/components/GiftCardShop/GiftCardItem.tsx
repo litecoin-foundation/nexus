@@ -9,11 +9,11 @@ import {
   Image,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
+
 import {GiftCard, PendingGiftCardPurchase} from '../../services/giftcards';
+
 import {colors, getSpacing, getBorderRadius, getFontSize} from './theme';
-
 import TranslateText from '../TranslateText';
-
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const backIcon = require('../../assets/images/back-icon.png');
@@ -196,6 +196,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     brandLogoText: {
       fontSize: getFontSize(screenHeight).sm,
       fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
       color: colors.text,
       textTransform: 'capitalize',
       textAlign: 'center',
@@ -206,11 +207,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     cardDate: {
       fontSize: getFontSize(screenHeight).sm,
+      fontFamily: 'Satoshi Variable',
       color: colors.gray,
     },
     cardAmount: {
       fontSize: getFontSize(screenHeight).lg,
-      fontWeight: '600',
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
       color: colors.text,
       marginTop: getSpacing(screenWidth, screenHeight).xs,
     },
@@ -269,7 +272,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     detailButtonText: {
       color: colors.white,
-      fontWeight: '600',
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
     },
     statusBadge: {
       backgroundColor: colors.warning,
@@ -280,7 +284,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     statusText: {
       color: colors.white,
       fontSize: getFontSize(screenHeight).sm,
-      fontWeight: '600',
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
     },
     pendingCardContainer: {
       width: screenWidth * 0.7,
@@ -314,7 +319,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     pendingCardAmount: {
       fontSize: getFontSize(screenHeight).md,
-      fontWeight: '600',
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
       color: colors.text,
       marginTop: getSpacing(screenWidth, screenHeight).xs,
     },
