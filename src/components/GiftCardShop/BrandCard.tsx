@@ -11,7 +11,6 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  runOnJS,
 } from 'react-native-reanimated';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
@@ -209,7 +208,7 @@ export function BrandCard({
                   key={amount}
                   style={[
                     styles.denominationButton,
-                    selectedAmount === amount &&
+                    selectedAmount === Number(amount) &&
                       styles.denominationButtonSelected,
                   ]}
                   onPress={() => handleAmountSelect(Number(amount))}
@@ -217,7 +216,7 @@ export function BrandCard({
                   <Text
                     style={[
                       styles.denominationText,
-                      selectedAmount === amount &&
+                      selectedAmount === Number(amount) &&
                         styles.denominationTextSelected,
                     ]}>
                     {formatCurrency(currency)}

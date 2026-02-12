@@ -176,14 +176,14 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
               key={denom}
               style={[
                 styles.denominationButton,
-                amount === denom && styles.denominationButtonSelected,
+                amount === Number(denom) && styles.denominationButtonSelected,
               ]}
               onPress={() => setAmount(Number(denom))}
               activeOpacity={0.7}>
               <Text
                 style={[
                   styles.denominationText,
-                  amount === denom && styles.denominationTextSelected,
+                  amount === Number(denom) && styles.denominationTextSelected,
                 ]}>
                 {formatCurrency(currency)}
                 {denom}

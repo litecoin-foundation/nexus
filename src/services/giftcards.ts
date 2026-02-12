@@ -17,7 +17,8 @@ export interface Brand {
     upper: number;
     minor_unit: number;
   };
-  denominations?: number[];
+  denominations?: string[];
+  digital_denominations?: number[];
   async_only?: boolean;
   type?: 'gift-card' | 'choice-link';
 }
@@ -238,7 +239,7 @@ export function validateAmount(
   availableBalanceFiat?: number,
 ): {valid: boolean; error?: string} {
   if (brand.denominations && brand.denominations.length > 0) {
-    if (!brand.denominations.includes(amount)) {
+    if (!brand.denominations.some(d => Number(d) === Number(amount))) {
       return {
         valid: false,
         error: `Amount must be one of: ${brand.denominations.join(', ')}`,
