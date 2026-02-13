@@ -1,9 +1,10 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 
 import {setBiometricAvailability} from '../reducers/authentication';
+import {AppDispatch} from '../store';
 
-export const authenticate = reason => {
-  return new Promise((resolve, reject) => {
+export const authenticate = (reason: string) => {
+  return new Promise<void>((resolve, reject) => {
     LocalAuthentication.authenticateAsync({
       promptMessage: reason,
       cancelLabel: 'Cancel',
@@ -20,7 +21,7 @@ export const authenticate = reason => {
   });
 };
 
-export const checkBiometricSupport = () => dispatch => {
+export const checkBiometricSupport = () => (dispatch: AppDispatch) => {
   Promise.all([
     LocalAuthentication.hasHardwareAsync(),
     LocalAuthentication.isEnrolledAsync(),
@@ -29,7 +30,7 @@ export const checkBiometricSupport = () => dispatch => {
     .then(([hasHardware, isEnrolled, supportedTypes]) => {
       if (hasHardware && isEnrolled) {
         const isFaceID = supportedTypes.includes(
-          LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+          LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION,
         );
         dispatch(setBiometricAvailability(true, isFaceID));
       } else {
