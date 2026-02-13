@@ -241,29 +241,12 @@ export const registerOnNexusShop =
 
       dispatch(setAccount(userAccount));
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message ===
-          'An account with this email already exists. Please sign in instead.'
-      ) {
-        const userAccount: IUserAccount = {
-          email,
-          uniqueId,
-          isLoggedIn: false,
-          registrationDate: Math.floor(Date.now() / 1000),
-          userCountry: getCountry(),
-          userCurrency: currencyCode,
-        };
-        dispatch(setAccount(userAccount));
-        await dispatch(loginToNexusShop(email));
-      } else {
-        dispatch(
-          setAccountError(
-            error instanceof Error ? error.message : 'Registration failed',
-          ),
-        );
-        throw error;
-      }
+      dispatch(
+        setAccountError(
+          error instanceof Error ? error.message : 'Registration failed',
+        ),
+      );
+      throw error;
     } finally {
       dispatch(setLoginLoading(false));
     }
@@ -271,7 +254,7 @@ export const registerOnNexusShop =
 
 export const loginToNexusShop =
   (email: string): AppThunk =>
-  async (dispatch, getState) => {
+  async dispatch => {
     try {
       dispatch(setLoginLoading(true));
 
