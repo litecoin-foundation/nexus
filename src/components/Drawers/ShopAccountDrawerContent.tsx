@@ -88,6 +88,11 @@ const ShopAccountDrawerContent: React.FC<
   const [showCountryModal, setShowCountryModal] = useState(false);
   const slideAnim = useSharedValue(0);
 
+  // Reset country picker state when component mounts
+  useEffect(() => {
+    dispatch(setCountryPickerOpen(false));
+  }, [dispatch]);
+
   // Cleanup: ensure drawer toggle button reappears when drawer closes
   useEffect(() => {
     return () => {

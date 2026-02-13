@@ -81,16 +81,21 @@ export function useMainLayout(props: Props) {
 
   // Animate drawer toggle button visibility based on country picker state
   useEffect(() => {
-    drawerToggleOpacity.value = withTiming(isCountryPickerOpen ? 0 : 1, {
-      duration: 250,
-    });
-  }, [isCountryPickerOpen, drawerToggleOpacity]);
+    if (isCountryPickerOpen) {
+      drawerToggleOpacity.value = withTiming(0, {
+        duration: 250,
+      });
+    } else {
+      drawerToggleOpacity.value = withTiming(1, {
+        duration: 250,
+      });
+    }
+  }, [isCountryPickerOpen]);
 
   // Animated style for drawer toggle button
   const animatedDrawerToggleStyle = useAnimatedStyle(() => {
     return {
       opacity: drawerToggleOpacity.value,
-      pointerEvents: drawerToggleOpacity.value === 0 ? 'none' : 'auto',
     };
   });
 
