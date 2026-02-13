@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useCallback,
 } from 'react';
-import {StyleSheet, View, StyleProp, ViewStyle} from 'react-native';
+import {StyleSheet, View, StyleProp, ViewStyle, Platform} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {useHeaderHeight} from '@react-navigation/elements';
@@ -186,6 +186,7 @@ const SearchTransaction: React.FC<Props> = props => {
           <HeaderButton
             onPress={() => navigation.goBack()}
             imageSource={require('../../assets/images/back-icon.png')}
+            leftPadding
           />
         </Animated.View>
       </View>
@@ -454,10 +455,15 @@ export const SearchTransactionNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
     gestureEnabled: true,
     gestureResponseDistance: 50,
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 
