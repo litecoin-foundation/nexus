@@ -163,7 +163,6 @@ export class GiftCardClient {
   }): Promise<Brand[]> {
     const params = new URLSearchParams();
     if (options?.country) params.append('country', options.country);
-    if (options?.currency) params.append('currency', options.currency);
     const query = params.toString();
     return this.request<Brand[]>(
       'GET',
@@ -330,15 +329,5 @@ export function filterBrandsByCountry(
   return brands.filter(
     brand =>
       brand.countries_served?.includes(countryCode.toUpperCase()) ?? false,
-  );
-}
-
-// Filter brands by currency (e.g., 'USD', 'EUR', 'GBP')
-export function filterBrandsByCurrency(
-  brands: Brand[],
-  currency: string,
-): Brand[] {
-  return brands.filter(
-    brand => brand.currency.toUpperCase() === currency.toUpperCase(),
   );
 }

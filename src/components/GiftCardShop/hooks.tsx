@@ -19,7 +19,6 @@ import {
   PurchaseRequest,
   validateAmount,
   filterBrandsByCountry,
-  filterBrandsByCurrency,
 } from '../../services/giftcards';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setGiftCards} from '../../reducers/nexusshopaccount';
@@ -63,9 +62,8 @@ export function useBrands(): UseQueryResult<Brand[]> {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fallback to user location and USD if user unlogged
+  // Fallback to user location if user unlogged
   const userCountry = account?.userCountry || getCountry();
-  const userCurrency = account?.userCurrency || 'USD';
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -74,12 +72,10 @@ export function useBrands(): UseQueryResult<Brand[]> {
       // Get filtered brands from api
       let brands = await client.getBrandsFiltered({
         country: userCountry,
-        currency: userCurrency,
       });
 
       // Client side filtering as a safety net
       brands = filterBrandsByCountry(brands, userCountry);
-      brands = filterBrandsByCurrency(brands, userCurrency);
 
       if (Array.isArray(brands)) {
         setData(brands);
@@ -91,7 +87,7 @@ export function useBrands(): UseQueryResult<Brand[]> {
     } finally {
       setLoading(false);
     }
-  }, [client, userCountry, userCurrency]);
+  }, [client, userCountry]);
 
   useEffect(() => {
     fetch();
