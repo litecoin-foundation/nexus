@@ -1,5 +1,5 @@
-import React from 'react';
-import {View, StyleSheet} from 'react-native';
+import React, {useContext} from 'react';
+import {View, StyleSheet, Platform} from 'react-native';
 
 import {StackNavigationProp, TransitionPresets} from '@react-navigation/stack';
 
@@ -7,6 +7,8 @@ import Header from '../../components/Header';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import ChatwootModal from '../../components/Modals/ChatwootModal';
 import {useAppSelector} from '../../store/hooks';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Support: undefined;
@@ -25,9 +27,9 @@ const Support: React.FC<Props> = props => {
 
   const getChatwootLocale = (appLanguageCode: string): string => {
     const languageMap: Record<string, string> = {
-      'fr': 'fr',
-      'es': 'es',
-      'ru': 'ru',
+      fr: 'fr',
+      es: 'es',
+      ru: 'ru',
     };
 
     return languageMap[appLanguageCode] || 'en';
@@ -84,7 +86,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export const SupportNavigationOptions = navigation => {
+export const SupportNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
+
   return {
     ...TransitionPresets.ModalPresentationIOS,
     headerTitle: '',
@@ -98,9 +102,14 @@ export const SupportNavigationOptions = navigation => {
           imageSource={require('../../assets/images/back-icon.png')}
           textKey="back"
           textDomain="buyTab"
+          leftPadding
         />
       </View>
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

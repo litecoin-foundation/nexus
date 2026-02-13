@@ -213,6 +213,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
 export const ResetWalletNavigationOptions = (
   navigation: any,
 ): StackNavigationOptions => {
+  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
+
   return {
     headerTitle: '',
     headerTitleAlign: 'left',
@@ -225,8 +227,13 @@ export const ResetWalletNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

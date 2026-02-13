@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {StyleSheet, FlatList, View, Text} from 'react-native';
+import {StyleSheet, FlatList, View, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import OptionCell from '../../components/Cells/OptionCell';
@@ -245,8 +245,13 @@ export const TestPaymentNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

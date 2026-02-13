@@ -1,5 +1,5 @@
 import React, {useEffect, useContext, useState} from 'react';
-import {View, StyleSheet, ScrollView, Dimensions, Text} from 'react-native';
+import {View, StyleSheet, ScrollView, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -44,7 +44,7 @@ const About: React.FC<Props> = () => {
 
   useEffect(() => {
     dispatch(getRecoveryInfo());
-  }, []);
+  }, [dispatch]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -52,7 +52,7 @@ const About: React.FC<Props> = () => {
       return () => {
         setIsFocused(false);
       };
-    }, [])
+    }, []),
   );
 
   return (
@@ -136,7 +136,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: 'bold',
     },
     creditsContainer: {
-      height: Dimensions.get('screen').height,
+      height: screenHeight,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -152,6 +152,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
 export const AboutNavigationOptions = (
   navigation: any,
 ): StackNavigationOptions => {
+  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
+
   return {
     headerTitle: '',
     headerTitleAlign: 'left',
@@ -164,8 +166,13 @@ export const AboutNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

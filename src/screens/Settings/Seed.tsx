@@ -1,5 +1,5 @@
 import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {v4 as uuidv4} from 'uuid';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -154,8 +154,13 @@ export const SeedNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

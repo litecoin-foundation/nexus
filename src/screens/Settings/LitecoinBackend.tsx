@@ -1,5 +1,12 @@
 import React, {useState, useContext} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Image} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Platform,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 import {
@@ -12,7 +19,6 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 import WarningModal from '../../components/Modals/WarningModal';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setLitecoinBackend} from '../../reducers/settings';
-import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -167,7 +173,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.28,
       width: screenWidth - 60,
       borderRadius: screenHeight * 0.02,
-      backgroundColor: 'white',
+      backgroundColor: '#fff',
       shadowColor: 'rgb(82,84,103);',
       shadowOpacity: 0.12,
       shadowRadius: screenHeight * 0.015,
@@ -178,7 +184,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       },
       textAlign: 'center',
       alignContent: 'center',
-      backgroundColor: '#fff',
     },
     internalCardContainer: {
       paddingLeft: screenHeight * 0.025,
@@ -261,8 +266,13 @@ export const LitecoinBackendNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.popTo('Settings', {updateHeader: true})}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

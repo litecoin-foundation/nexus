@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {StyleSheet, FlatList} from 'react-native';
+import {StyleSheet, FlatList, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StackNavigationOptions} from '@react-navigation/stack';
@@ -59,7 +59,7 @@ const Currency: React.FC = () => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (_screenWidth: number, _screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -101,8 +101,13 @@ export const CurrencyNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

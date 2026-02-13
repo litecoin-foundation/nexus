@@ -1,5 +1,5 @@
 import React, {useContext, useLayoutEffect, useRef, useState} from 'react';
-import {View, StyleSheet, Alert} from 'react-native';
+import {View, StyleSheet, Alert, Platform} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -49,6 +49,7 @@ const ChangePincode: React.FC<Props> = props => {
         <HeaderButton
           onPress={() => navigation.goBack()}
           imageSource={require('../../assets/images/back-icon.png')}
+          leftPadding
         />
       ),
       headerTitle: () => (
@@ -60,6 +61,10 @@ const ChangePincode: React.FC<Props> = props => {
           numberOfLines={1}
         />
       ),
+      headerLeftContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+      headerRightContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
     });
   });
 
