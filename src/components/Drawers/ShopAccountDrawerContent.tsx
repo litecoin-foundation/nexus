@@ -1,4 +1,4 @@
-import React, {useState, useContext, useMemo} from 'react';
+import React, {useState, useContext, useMemo, useEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -6,30 +6,53 @@ import {
   Text,
   FlatList,
   Image,
+  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+  runOnJS,
+} from 'react-native-reanimated';
 import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {ErrorView} from '../GiftCardShop/ErrorView';
-import {getCommonStyles} from '../GiftCardShop/theme';
 import {
   logoutFromNexusShop,
-  setUserCurrency,
   setUserCountry,
+  setCountryPickerOpen,
 } from '../../reducers/nexusshopaccount';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import OptionCell from '../../components/Cells/OptionCell';
-import fiat from '../../assets/fiat';
 import countries from '../../assets/countries';
+import LinearGradient from 'react-native-linear-gradient';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import WhiteButton from '../Buttons/WhiteButton';
+import CustomSafeAreaView from '../CustomSafeAreaView';
+import StatCard from '../Cards/StatCard';
 
 const backIcon = require('../../assets/images/back-icon.png');
 
-// NOTE: we can filter currencies specifically for the shop by
-// specifying this array instead of showing all currencies from assets/fiat
-// const SHOP_CURRENCIES = ['USD', 'CAD', 'AUD', 'EUR', 'GBP'];
-const SHOP_CURRENCIES = fiat.map((item: any) => item.key);
+// Helper function to format member since date
+const formatMemberSince = (timestamp: number): string => {
+  if (!timestamp) return 'Recently';
+  const date = new Date(timestamp * 1000);
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
+// Helper function to get country name from code
+const getCountryName = (code: string): string => {
+  const country = countries.find(c => c.code === code);
+  return country?.name || code;
+};
 
 const ShopAccountDrawerContent: React.FC<
   DrawerContentComponentProps
@@ -41,9 +64,18 @@ const ShopAccountDrawerContent: React.FC<
   const giftCards = useAppSelector(
     (state: any) => state.nexusshopaccount.giftCards,
   );
+  const wishlistBrands = useAppSelector(
+    (state: any) => state.nexusshopaccount.wishlistBrands || [],
+  );
+  const loading = useAppSelector(
+    (state: any) => state.nexusshopaccount.loading,
+  );
+
   const shopUserEmail = account && account.email;
   const isLoggedIn = account && account.isLoggedIn;
   const numberOfCards = giftCards.length;
+  const numberOfWishlistBrands = wishlistBrands.length;
+  const memberSince = account?.registrationDate;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -51,27 +83,70 @@ const ShopAccountDrawerContent: React.FC<
     () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
     [SCREEN_WIDTH, SCREEN_HEIGHT],
   );
-  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const shopCurrency = account?.userCurrency || 'USD';
   const shopCountry = account?.userCountry || 'US';
-  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
-  const [showRegionPicker, setShowRegionPicker] = useState(false);
+  const [showCountryModal, setShowCountryModal] = useState(false);
+  const slideAnim = useSharedValue(0);
 
-  const shopFiat = useMemo(
-    () => fiat.filter((item: any) => SHOP_CURRENCIES.includes(item.key)),
-    [],
-  );
+  // Cleanup: ensure drawer toggle button reappears when drawer closes
+  useEffect(() => {
+    return () => {
+      dispatch(setCountryPickerOpen(false));
+    };
+  }, [dispatch]);
 
-  const handleCurrencySelect = (code: string) => {
-    dispatch(setUserCurrency(code));
-    setShowCurrencyPicker(false);
-  };
-
-  const handleRegionSelect = (code: string) => {
+  const handleCountrySelect = (code: string) => {
     dispatch(setUserCountry(code));
-    setShowRegionPicker(false);
+    closeCountryPicker();
   };
+
+  const openCountryPicker = () => {
+    setShowCountryModal(true);
+    dispatch(setCountryPickerOpen(true));
+    slideAnim.value = withTiming(1, {
+      duration: 350,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+    });
+  };
+
+  const closeCountryPicker = () => {
+    dispatch(setCountryPickerOpen(false));
+    slideAnim.value = withTiming(
+      0,
+      {
+        duration: 350,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      },
+      finished => {
+        if (finished) {
+          runOnJS(setShowCountryModal)(false);
+        }
+      },
+    );
+  };
+
+  // Animated styles for main content
+  const mainContentStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: slideAnim.value * -SCREEN_WIDTH,
+        },
+      ],
+      opacity: 1 - slideAnim.value * 0.3,
+    };
+  });
+
+  // Animated styles for country picker
+  const countryPickerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: (1 - slideAnim.value) * SCREEN_WIDTH,
+        },
+      ],
+    };
+  });
 
   const toSignUp = () => {
     props.navigation.closeDrawer();
@@ -84,172 +159,173 @@ const ShopAccountDrawerContent: React.FC<
     dispatch(logoutFromNexusShop());
   };
 
-  if (showRegionPicker) {
+  // Loading state
+  if (loading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.pickerHeader}>
-          <HeaderButton
-            onPress={() => setShowRegionPicker(false)}
-            imageSource={require('../../assets/images/back-icon.png')}
-            backgroundColorSpecified="#0070F0"
-          />
-        </View>
-        <FlatList
-          data={countries}
-          keyExtractor={item => item.code}
-          renderItem={({item}) => (
-            <OptionCell
-              title={item.name}
-              key={item.code}
-              onPress={() => handleRegionSelect(item.code)}
-              selected={shopCountry === item.code}
-            />
-          )}
-        />
-      </View>
+      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+        <SafeAreaView style={styles.loadingContainer} edges={['top', 'bottom']}>
+          <ActivityIndicator size="large" color="#FFFFFF" />
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
-  if (showCurrencyPicker) {
+  // Not logged in state
+  if (!isLoggedIn || !account) {
     return (
-      <View style={styles.container}>
-        <View style={styles.pickerHeader}>
-          <HeaderButton
-            onPress={() => setShowCurrencyPicker(false)}
-            imageSource={require('../../assets/images/back-icon.png')}
-            backgroundColorSpecified="#0070F0"
-          />
-        </View>
-        <FlatList
-          data={shopFiat}
-          keyExtractor={(item: any) => item.key}
-          renderItem={({item}: {item: any}) => (
-            <OptionCell
-              title={`${item.name} (${item.symbol_native})`}
-              key={item.key}
-              onPress={() => handleCurrencySelect(item.key)}
-              selected={shopCurrency === item.key}
-            />
-          )}
-        />
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      {isLoggedIn ? (
-        <View style={styles.accountContainer}>
-          <View style={styles.nexusTitleContainer}>
-            <TranslateText
-              textValue="NEXUS SHOP"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-              textStyle={styles.nexusTitle}
-              numberOfLines={1}
-            />
-          </View>
-          <View style={styles.optionContainer}>
-            <TranslateText
-              textKey="email"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-              textStyle={styles.title}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue={shopUserEmail ? shopUserEmail : 'unfound'}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-              textStyle={styles.value}
-              numberOfLines={1}
-            />
-          </View>
-          <View style={styles.optionContainer}>
-            <TranslateText
-              textKey="cards"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-              textStyle={styles.title}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue={String(numberOfCards)}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-              textStyle={styles.value}
-              numberOfLines={1}
-            />
-          </View>
-          <View style={styles.optionContainer}>
-            <TranslateText
-              textKey="currency"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-              textStyle={styles.title}
-              numberOfLines={1}
-            />
-            <TouchableOpacity
-              style={styles.currencyButton}
-              onPress={() => setShowCurrencyPicker(true)}
-              activeOpacity={0.7}>
-              <Text style={styles.currencyTitle}>{shopCurrency}</Text>
-              <Image
-                source={backIcon}
-                style={[styles.chevronIcon, {transform: [{rotate: '-90deg'}]}]}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.optionContainer}>
-            <TranslateText
-              textKey="region"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-              textStyle={styles.title}
-              numberOfLines={1}
-            />
-            <TouchableOpacity
-              style={styles.currencyButton}
-              onPress={() => setShowRegionPicker(true)}
-              activeOpacity={0.7}>
-              <Text style={styles.currencyTitle}>{shopCountry}</Text>
-              <Image
-                source={backIcon}
-                style={[styles.chevronIcon, {transform: [{rotate: '-90deg'}]}]}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.nexusTitleContainer}>
-            <TranslateText
-              textValue="Alerts"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-              textStyle={styles.nexusTitle}
-              numberOfLines={1}
-            />
-          </View>
-
-          <View style={styles.logoutButtonContainer}>
-            <TouchableOpacity
-              style={[commonStyles.buttonRounded, styles.logoutButton]}
-              onPress={logout}>
-              <TranslateText
-                textKey="logout"
-                domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                textStyle={commonStyles.buttonText}
-                numberOfLines={1}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.signInContainer}>
+      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+        <SafeAreaView style={styles.errorContainer} edges={['top', 'bottom']}>
           <ErrorView
-            message={'Sign in to Nexus Shop account'}
+            message="Sign in to Nexus Shop account"
             onRetry={toSignUp}
-            onRetryText={'Sign In'}
+            onRetryText="Sign In"
           />
-        </View>
-      )}
-    </View>
+        </SafeAreaView>
+      </LinearGradient>
+    );
+  }
+
+  // Main render - logged in state
+  return (
+    <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+      <View style={styles.outerContainer}>
+        {/* Main Content - Animated */}
+        <Animated.View style={[styles.animatedContainer, mainContentStyle]}>
+          <SafeAreaView style={styles.safeAreaContent} edges={['top']}>
+            <ScrollView
+              style={styles.scrollView}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={!showCountryModal}>
+              {/* Nexus Shop Title */}
+              <View style={styles.titleContainer}>
+                <TranslateText
+                  textValue="Nexus Shop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+                  textStyle={styles.title}
+                  numberOfLines={1}
+                />
+              </View>
+
+              {/* Account Info Section */}
+              <View style={styles.accountInfoSection}>
+                {/* Email */}
+                <View style={styles.infoRow}>
+                  <TranslateText
+                    textKey="email"
+                    domain="nexusShop"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+                    textStyle={styles.label}
+                    numberOfLines={1}
+                  />
+                  <TranslateText
+                    textValue={shopUserEmail || 'Not available'}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                    textStyle={styles.value}
+                    numberOfLines={1}
+                  />
+                </View>
+
+                {/* Member Since */}
+                <View style={styles.infoRow}>
+                  <TranslateText
+                    textValue="MEMBER SINCE"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+                    textStyle={styles.label}
+                    numberOfLines={1}
+                  />
+                  <TranslateText
+                    textValue={formatMemberSince(memberSince)}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                    textStyle={styles.value}
+                    numberOfLines={1}
+                  />
+                </View>
+              </View>
+
+              {/* Stats Section */}
+              <View style={styles.statsSection}>
+                <StatCard label="Purchased Cards" value={numberOfCards} />
+                <View style={styles.statsSpacer} />
+                <StatCard
+                  label="Wishlist Brands"
+                  value={numberOfWishlistBrands}
+                />
+              </View>
+
+              {/* Region Selector */}
+              <View style={styles.regionSection}>
+                <TranslateText
+                  textKey="region"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+                  textStyle={styles.label}
+                  numberOfLines={1}
+                />
+                <TouchableOpacity
+                  style={styles.regionButton}
+                  onPress={openCountryPicker}
+                  activeOpacity={0.7}>
+                  <Text style={styles.regionText}>
+                    {getCountryName(shopCountry)}
+                  </Text>
+                  <Image
+                    source={backIcon}
+                    style={[
+                      styles.chevronIcon,
+                      {transform: [{rotate: '-90deg'}]},
+                    ]}
+                  />
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+
+            {/* Sign Out Button (Fixed to Bottom) */}
+            <View style={styles.bottomContainer}>
+              <CustomSafeAreaView
+                styles={styles.buttonContainer}
+                edges={['bottom']}>
+                <WhiteButton
+                  value="Sign Out"
+                  onPress={logout}
+                  small={false}
+                  disabled={false}
+                  active={true}
+                />
+              </CustomSafeAreaView>
+            </View>
+          </SafeAreaView>
+        </Animated.View>
+
+        {/* Country Picker - Animated (slides in from right) */}
+        {showCountryModal && (
+          <Animated.View
+            style={[styles.countryPickerContainer, countryPickerStyle]}>
+            <SafeAreaView style={styles.safeAreaContent} edges={['top']}>
+              <View style={styles.pickerHeader}>
+                <HeaderButton
+                  onPress={closeCountryPicker}
+                  imageSource={backIcon}
+                  leftPadding
+                />
+              </View>
+              <FlatList
+                data={countries}
+                keyExtractor={item => item.code}
+                renderItem={({item}) => (
+                  <OptionCell
+                    title={item.name}
+                    onPress={() => handleCountrySelect(item.code)}
+                    selected={shopCountry === item.code}
+                  />
+                )}
+                contentContainerStyle={styles.listContainer}
+              />
+            </SafeAreaView>
+          </Animated.View>
+        )}
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -257,84 +333,125 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#fff',
     },
-    accountContainer: {
+    outerContainer: {
       flex: 1,
-      paddingTop: screenHeight * 0.1,
-      paddingBottom: screenWidth * 0.04,
-      paddingHorizontal: screenWidth * 0.04,
+      overflow: 'hidden',
     },
-    signInContainer: {
+    safeAreaContent: {
       flex: 1,
-      padding: screenWidth * 0.04,
     },
-    optionContainer: {
+    animatedContainer: {
+      position: 'absolute',
       width: '100%',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      marginBottom: screenHeight * 0.02,
+      height: '100%',
     },
-    title: {
-      color: '#0070F0',
-      fontSize: screenHeight * 0.022,
-      fontWeight: '600',
-      textTransform: 'uppercase',
+    countryPickerContainer: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'transparent',
     },
-    value: {
-      color: '#000',
-      fontSize: screenHeight * 0.022,
-      fontWeight: '600',
-      marginTop: screenHeight * 0.005,
-    },
-    nexusTitleContainer: {
-      alignItems: 'center',
-      paddingTop: screenHeight * 0.04,
-      paddingBottom: screenHeight * 0.03,
-    },
-    nexusTitle: {
-      color: '#d4d4d44f',
-      fontSize: screenHeight * 0.04,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-    },
-    logoutButtonContainer: {
+    loadingContainer: {
       flex: 1,
-      width: '80%',
-      justifyContent: 'flex-end',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
-    logoutButton: {
-      borderRadius: screenHeight * 0.01,
+    errorContainer: {
+      flex: 1,
+      padding: screenWidth * 0.05,
     },
     pickerHeader: {
-      height: screenHeight * 0.08,
-      flexDirection: 'row',
+      paddingLeft: 0,
+      paddingRight: screenWidth * 0.05,
       paddingTop: screenHeight * 0.02,
-      paddingHorizontal: screenWidth * 0.04,
-    },
-    currencyButton: {
-      width: screenWidth * 0.3,
-      height: screenWidth * 0.12,
-      borderWidth: 1,
-      borderColor: '#ccc',
-      backgroundColor: '#fff',
+      paddingBottom: screenHeight * 0.015,
       flexDirection: 'row',
-      gap: screenWidth * 0.03,
       alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: screenHeight * 0.012,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: screenWidth * 0.05,
+      paddingBottom: screenHeight * 0.12, // Extra padding for fixed button at bottom
+    },
+    titleContainer: {
+      alignItems: 'flex-start',
+      paddingTop: screenHeight * 0.02,
+      paddingBottom: screenHeight * 0.025,
+    },
+    title: {
+      color: 'rgba(255, 255, 255, 0.5)',
+      fontSize: screenHeight * 0.03,
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
+      letterSpacing: 0.5,
+    },
+    accountInfoSection: {
+      marginBottom: screenHeight * 0.025,
+    },
+    infoRow: {
+      marginBottom: screenHeight * 0.02,
+    },
+    label: {
+      color: 'rgba(255, 255, 255, 0.7)',
+      fontSize: screenHeight * 0.014,
+      fontWeight: '600',
+      fontFamily: 'Satoshi Variable',
+      textTransform: 'uppercase',
+      marginBottom: screenHeight * 0.005,
+    },
+    value: {
+      color: '#FFFFFF',
+      fontSize: screenHeight * 0.018,
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
+    },
+    statsSection: {
+      flexDirection: 'row',
+      marginBottom: screenHeight * 0.025,
+    },
+    statsSpacer: {
+      width: screenWidth * 0.03,
+    },
+    regionSection: {
+      marginBottom: screenHeight * 0.025,
+    },
+    regionButton: {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderRadius: screenHeight * 0.015,
+      paddingHorizontal: screenWidth * 0.04,
+      paddingVertical: screenHeight * 0.018,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       marginTop: screenHeight * 0.01,
     },
-    currencyTitle: {
-      color: '#000',
-      fontSize: screenHeight * 0.022,
-      fontWeight: '600',
+    regionText: {
+      color: '#FFFFFF',
+      fontSize: screenHeight * 0.018,
+      fontWeight: '700',
+      fontFamily: 'Satoshi Variable',
+      flex: 1,
     },
     chevronIcon: {
       width: screenWidth * 0.05,
       height: screenWidth * 0.05,
-      tintColor: '#ccc',
+      tintColor: 'rgba(255, 255, 255, 0.5)',
       resizeMode: 'contain',
+    },
+    bottomContainer: {
+      position: 'absolute',
+      bottom: 0,
+      width: '100%',
+      paddingHorizontal: screenWidth * 0.05,
+    },
+    buttonContainer: {
+      width: '100%',
+    },
+    listContainer: {
+      paddingBottom: screenHeight * 0.02,
     },
   });
 

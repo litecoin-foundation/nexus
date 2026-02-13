@@ -22,6 +22,7 @@ interface INexusShopAccount {
   loading: boolean;
   error: string | null;
   loginLoading: boolean;
+  isCountryPickerOpen: boolean;
 }
 
 const initialState: INexusShopAccount = {
@@ -31,6 +32,7 @@ const initialState: INexusShopAccount = {
   loading: false,
   error: null,
   loginLoading: false,
+  isCountryPickerOpen: false,
 };
 
 const BASE_API_URL = __DEV__
@@ -154,6 +156,9 @@ export const nexusShopAccountSlice = createSlice({
       if (state.account) {
         state.account.userCountry = action.payload;
       }
+    },
+    setCountryPickerOpen: (state, action: PayloadAction<boolean>) => {
+      state.isCountryPickerOpen = action.payload;
     },
     verifyOtpSuccess: state => {
       if (state.account) {
@@ -313,7 +318,7 @@ export const verifyOtpCode =
     otpCode: string,
     signal?: AbortSignal,
   ): AppThunk =>
-  async (dispatch, getState) => {
+  async dispatch => {
     try {
       const response = await fetch(`${BASE_API_URL}/api/shop/verify-otp`, {
         method: 'POST',
@@ -410,6 +415,7 @@ export const {
   toggleWishlistBrand,
   setUserCurrency,
   setUserCountry,
+  setCountryPickerOpen,
   verifyOtpSuccess,
 } = nexusShopAccountSlice.actions;
 

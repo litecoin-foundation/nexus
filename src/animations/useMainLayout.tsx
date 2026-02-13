@@ -7,7 +7,11 @@ import React, {
 } from 'react';
 import {useFocusEffect} from '@react-navigation/native';
 import {Platform, View} from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -15,6 +19,7 @@ import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
 import HeaderButton from '../components/Buttons/HeaderButton';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {useAppSelector} from '../store/hooks';
 
 interface Props {
   walletButtonAnimDuration: any;
@@ -65,6 +70,29 @@ export function useMainLayout(props: Props) {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+
+  // Read country picker state from Redux
+  const isCountryPickerOpen = useAppSelector(
+    (state: any) => state.nexusshopaccount.isCountryPickerOpen,
+  );
+
+  // Animated opacity for drawer toggle button
+  const drawerToggleOpacity = useSharedValue(1);
+
+  // Animate drawer toggle button visibility based on country picker state
+  useEffect(() => {
+    drawerToggleOpacity.value = withTiming(isCountryPickerOpen ? 0 : 1, {
+      duration: 250,
+    });
+  }, [isCountryPickerOpen, drawerToggleOpacity]);
+
+  // Animated style for drawer toggle button
+  const animatedDrawerToggleStyle = useAnimatedStyle(() => {
+    return {
+      opacity: drawerToggleOpacity.value,
+      pointerEvents: drawerToggleOpacity.value === 0 ? 'none' : 'auto',
+    };
+  });
 
   const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
   const deviceHeaderHeight = useHeaderHeight();
@@ -194,7 +222,12 @@ export function useMainLayout(props: Props) {
   const nexusShopAccountButton = useMemo(
     () => (
       <View style={alignHeaderElementsWithMarginTop}>
-        <Animated.View style={[styles.headerBtns, animatedHeaderButtonOpacity]}>
+        <Animated.View
+          style={[
+            styles.headerBtns,
+            animatedHeaderButtonOpacity,
+            animatedDrawerToggleStyle,
+          ]}>
           <HeaderButton
             onPress={toggleShopAccountDrawer}
             imageSource={require('../assets/icons/account-settings-icon.png')}
@@ -212,6 +245,7 @@ export function useMainLayout(props: Props) {
       isShopAccountDrawerOpen,
       toggleShopAccountDrawer,
       animatedHeaderButtonOpacity,
+      animatedDrawerToggleStyle,
       alignHeaderElementsWithMarginTop,
       SCREEN_HEIGHT,
       styles.headerBtns,
