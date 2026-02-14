@@ -125,7 +125,10 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     if (account?.isLoggedIn) {
       navigation.navigate('NewWalletStack', {
         screen: 'Main',
-        params: {activeCard: 3},
+        params: {
+          screen: 'MainScreen',
+          params: {activeCard: 3},
+        },
       });
     }
   }, [account?.isLoggedIn, navigation]);
