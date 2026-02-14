@@ -178,7 +178,7 @@ const ShopAccountDrawerContent: React.FC<
   // Not logged in state
   if (!isLoggedIn || !account) {
     return (
-      <LinearGradient style={styles.container} colors={['#1162E6', '#0F55C7']}>
+      <View style={styles.notLoggedInContainer}>
         <SafeAreaView style={styles.errorContainer} edges={['top', 'bottom']}>
           <ErrorView
             message="Sign in to Nexus Shop account"
@@ -186,7 +186,7 @@ const ShopAccountDrawerContent: React.FC<
             onRetryText="Sign In"
           />
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 
@@ -338,6 +338,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
+    },
+    notLoggedInContainer: {
+      flex: 1,
+      backgroundColor: '#fff',
     },
     outerContainer: {
       flex: 1,
