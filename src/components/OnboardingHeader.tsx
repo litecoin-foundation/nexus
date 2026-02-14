@@ -31,7 +31,7 @@ const OnboardingHeader: React.FC<Props> = props => {
           <TranslateText
             textValue={description}
             textStyle={styles.headerDescriptionText}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
           />
         ) : textKey && textDomain ? (
           <TranslateText
@@ -39,6 +39,7 @@ const OnboardingHeader: React.FC<Props> = props => {
             domain={textDomain}
             interpolationObj={textInterpolation}
             textStyle={styles.headerDescriptionText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
           />
         ) : (
           <></>
@@ -60,9 +61,13 @@ const getStyles = (screenWidth: number, screenHeight: number, thin: boolean) =>
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: thin ? '500' : '600',
-      fontSize: screenHeight * 0.015,
-      // screenHeight * 0.002 is approx font diff offset
-      paddingHorizontal: screenWidth * 0.15 + screenHeight * 0.002,
+      fontSize: screenHeight * 0.017,
+      // screenWidth * 0.04 = header button left padding
+      // screenHeight * 0.035 = header back button width
+      // 7 = header title padding
+      // screenHeight * 0.005 = approx difference between desc and title
+      paddingHorizontal:
+        screenWidth * 0.04 + screenHeight * 0.035 + 7 + screenHeight * 0.005,
     },
   });
 

@@ -152,7 +152,6 @@ const Generate: React.FC<Props> = props => {
               domain="onboarding"
               textStyle={styles.warningText}
               maxSizeInPixels={SCREEN_HEIGHT * 0.013}
-              // maxLengthInPixels={SCREEN_WIDTH * 0.7}
               numberOfLines={2}
             />
           </View>

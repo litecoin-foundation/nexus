@@ -81,7 +81,10 @@ const Pin: React.FC<Props> = props => {
 
   useEffect(() => {
     navigation.setOptions({
-      headerTitleAlign: 'center',
+      headerTitleAlign: 'left',
+      headerTitleContainerStyle: {
+        left: 7,
+      },
       headerTitle: () => headerTitleMemo,
       headerLeft: () => headerLeftMemo,
       headerLeftContainerStyle:
@@ -142,17 +145,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
-    // left absolute margin is screenWidth * 0.15
-    // used for subtitles alinging
     headerTitle: {
-      position: 'absolute',
-      top: screenHeight * 0.014 * -1,
-      left: screenWidth * 0.5 * -1 + screenWidth * 0.15,
-      color: '#fff',
       fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: 'bold',
+      color: 'white',
+      fontSize: screenHeight * 0.026,
     },
   });
 

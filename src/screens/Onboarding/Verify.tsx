@@ -120,7 +120,7 @@ const Verify: React.FC<Props> = props => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.gradient}>
-      <CustomSafeAreaView styles={styles.safeArea} edges={['top', 'bottom']}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         <OnboardingHeader
           textKey="verify_seed_description"
           textDomain="onboarding"
@@ -200,7 +200,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       alignSelf: 'center',
       gap: screenWidth * 0.1,
-      paddingVertical: screenHeight * 0.1,
+      paddingVertical: screenHeight * 0.13,
     },
     optionSubContainer: {
       height: screenHeight * 0.08,
