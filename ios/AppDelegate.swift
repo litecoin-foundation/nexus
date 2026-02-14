@@ -1,23 +1,23 @@
+internal import Expo
 import React
 import ReactAppDependencyProvider
-import React_RCTAppDelegate
 import UIKit
 import UserNotifications
 import RNBootSplash
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: ExpoAppDelegate, UNUserNotificationCenterDelegate {
     var window: UIWindow?
 
-    var reactNativeDelegate: ReactNativeDelegate?
+    var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
     var reactNativeFactory: RCTReactNativeFactory?
 
-    func application(
+    public override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         let delegate = ReactNativeDelegate()
-        let factory = RCTReactNativeFactory(delegate: delegate)
+        let factory = ExpoReactNativeFactory(delegate: delegate)
         delegate.dependencyProvider = RCTAppDependencyProvider()
 
         reactNativeDelegate = delegate
@@ -43,11 +43,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         }
 
-        return true
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
     // Called when APNs has assigned the device a token
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
 
@@ -56,14 +56,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     // Called if registration for remote notifications failed
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register for APNs: \(error.localizedDescription)")
     }
 }
 
-class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
     override func sourceURL(for bridge: RCTBridge) -> URL? {
-        self.bundleURL()
+        bridge.bundleURL ?? bundleURL()
     }
 
     override func bundleURL() -> URL? {
@@ -79,3 +79,4 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
         RNBootSplash.initWithStoryboard("BootSplash", rootView: rootView) // ⬅️ initialize the splash screen
     }
 }
+
