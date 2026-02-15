@@ -63,7 +63,6 @@ const Convert: React.FC<Props> = () => {
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
-  const convertToSats = useAppSelector(state => subunitToSatsSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =

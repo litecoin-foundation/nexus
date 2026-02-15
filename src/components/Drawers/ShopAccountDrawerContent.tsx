@@ -252,10 +252,7 @@ const ShopAccountDrawerContent: React.FC<
               <View style={styles.statsSection}>
                 <StatCard label="Purchased Cards" value={numberOfCards} />
                 <View style={styles.statsSpacer} />
-                <StatCard
-                  label="Wishlist Brands"
-                  value={numberOfWishlistBrands}
-                />
+                <StatCard label="Wishlist" value={numberOfWishlistBrands} />
               </View>
 
               {/* Region Selector */}
