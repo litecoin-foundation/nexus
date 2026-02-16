@@ -65,6 +65,9 @@ export const resetSeedAction = createAction('onboarding/resetSeedAction');
 const setSeedRecoveryAction = createAction<string[]>(
   'onboarding/setSeedRecoveryAction',
 );
+const unsetSeedRecoveryAction = createAction(
+  'onboarding/unsetSeedRecoveryAction',
+);
 export const setRecoveryMode = createAction<boolean>(
   'onboarding/setRecoveryMode',
 );
@@ -185,6 +188,10 @@ export const setSeedRecovery =
     dispatch(setSeedRecoveryAction(seedPhrase));
     dispatch(setSeedVerified(true));
   };
+
+export const unsetSeedRecovery = (): AppThunk => dispatch => {
+  dispatch(unsetSeedRecoveryAction());
+};
 
 const cacheParts = [
   'cache.z00',
@@ -409,6 +416,11 @@ export const onboardingSlice = createSlice({
       ...state,
       seed: action.payload,
       beingRecovered: true,
+    }),
+    unsetSeedRecoveryAction: state => ({
+      ...state,
+      beingRecovered: false,
+      seedVerified: false,
     }),
     setRecoveryMode: (state, action: PayloadAction<boolean>) => ({
       ...state,
