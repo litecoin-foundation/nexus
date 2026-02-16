@@ -1,6 +1,13 @@
-import React, {useState, useEffect, useContext, useMemo} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useMemo,
+} from 'react';
 import {StyleSheet, View, Platform} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useFocusEffect} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
@@ -39,6 +46,14 @@ const Pin: React.FC<Props> = props => {
   const {pin} = useAppSelector(state => state.authpad!);
   const {beingRecovered} = useAppSelector(state => state.onboarding!);
   const {biometricsAvailable} = useAppSelector(state => state.authentication!);
+
+  useFocusEffect(
+    useCallback(() => {
+      setNewPasscode('');
+      setPasscodeInitialSet(false);
+      dispatch(clearValues());
+    }, [dispatch]),
+  );
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', e => {
