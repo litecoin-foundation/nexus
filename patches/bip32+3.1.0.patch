@@ -1,0 +1,42 @@
+diff --git a/node_modules/bip32/src/crypto.js b/node_modules/bip32/src/crypto.js
+index 2380bd9..2df4b6d 100644
+--- a/node_modules/bip32/src/crypto.js
++++ b/node_modules/bip32/src/crypto.js
+@@ -1,31 +1,17 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+-const RipeMd160 = require("ripemd160");
+-const createHash = require('create-hash');
+-const createHmac = require('create-hmac');
++const crypto = require('crypto');
+ function hash160(buffer) {
+-    const sha256Hash = createHash('sha256')
++    const sha256Hash = crypto.createHash('sha256')
+         .update(buffer)
+         .digest();
+-    try {
+-        return createHash('rmd160')
+-            .update(sha256Hash)
+-            .digest();
+-    }
+-    catch (err) {
+-        try {
+-            return createHash('ripemd160')
+-                .update(sha256Hash)
+-                .digest();
+-        }
+-        catch (err2) {
+-            return new RipeMd160().update(sha256Hash).digest();
+-        }
+-    }
++    return crypto.createHash('ripemd160')
++        .update(sha256Hash)
++        .digest();
+ }
+ exports.hash160 = hash160;
+ function hmacSHA512(key, data) {
+-    return createHmac('sha512', key)
++    return crypto.createHmac('sha512', key)
+         .update(data)
+         .digest();
+ }

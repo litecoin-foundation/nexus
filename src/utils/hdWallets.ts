@@ -154,7 +154,7 @@ function deriveChildExtendedKey(
   derivationPath: string,
   indexForHardened?: number,
 ) {
-  if (indexForHardened) {
+  if (indexForHardened !== undefined) {
     var childExtendedKey = bip32RootKey.deriveHardened(indexForHardened);
   } else {
     var childExtendedKey = bip32RootKey.derivePath(derivationPath);
