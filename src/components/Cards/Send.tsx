@@ -45,6 +45,7 @@ import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
+import Convert from './Convert';
 
 type RootStackParamList = {
   Main: {
@@ -105,6 +106,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [sendAll, setSendAll] = useState(false);
   const [enableManualSelection, setEnableManualSelection] = useState(false);
   const [selectedUtxosArray, setSelectedUtxosArray] = useState<Utxo[]>([]);
+  const [showConvert, setShowConvert] = useState(false);
 
   // check if ready to send
   useEffect(() => {
@@ -465,19 +467,51 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalVisible]);
 
+  if (showConvert) {
+    return (
+      <View style={styles.container}>
+        <Pressable
+          style={styles.backToSendButton}
+          onPress={() => setShowConvert(false)}>
+          <TranslateText
+            textKey="send_litecoin"
+            domain="sendTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={styles.backToSendText}
+            numberOfLines={1}
+          />
+        </Pressable>
+        <Convert navigation={navigation as any} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView
         scrollEnabled={false}
         ref={scrollViewRef}
         contentContainerStyle={styles.scrollViewContent}>
-        <TranslateText
-          textKey="send_litecoin"
-          domain="sendTab"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-          textStyle={styles.titleText}
-          numberOfLines={1}
-        />
+        <View style={styles.titleRow}>
+          <TranslateText
+            textKey="send_litecoin"
+            domain="sendTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            textStyle={styles.titleText}
+            numberOfLines={1}
+          />
+          <Pressable
+            style={styles.convertButton}
+            onPress={() => setShowConvert(true)}>
+            <TranslateText
+              textKey="convert_button"
+              domain="convertTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.convertButtonText}
+              numberOfLines={1}
+            />
+          </Pressable>
+        </View>
 
         <View style={styles.amountContainer}>
           <TranslateText
@@ -751,6 +785,35 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       color: '#2E2E2E',
       fontSize: screenHeight * 0.025,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    convertButton: {
+      backgroundColor: '#2C72FF',
+      borderRadius: screenHeight * 0.01,
+      paddingHorizontal: screenWidth * 0.04,
+      paddingVertical: screenHeight * 0.008,
+    },
+    convertButtonText: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.015,
+    },
+    backToSendButton: {
+      alignSelf: 'flex-start',
+      paddingVertical: screenHeight * 0.005,
+    },
+    backToSendText: {
+      color: '#2C72FF',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.015,
     },
     cellContainer: {
       marginTop: screenHeight * 0.02,

@@ -169,7 +169,48 @@ export const sendConvertWithPsbt =
       }
       const destinationAddress = await newLndAddress({type});
 
-      // lookup utxos
+      if (!destinationAddress || destinationAddress === undefined) {
+        throw new Error('No destination address!');
+      }
+
+      const targetAmount = BigInt(Math.floor(amount));
+      let txHex: string;
+      const selectedUtxoDetails: Array<{
+        address: string;
+        amountSat: number;
+        addressType: number;
+      }> = [];
+
+      if (destination === 'regular') {
+        // MWEB -> Regular: use sendCoins without specifying outpoints
+        // The native Go side doesn't support TxInput.mwebId in FundPsbt,
+        // so we let lnd handle MWEB coin selection internally via sendCoins
+        const result = await sendCoins({
+          addr: destinationAddress.address,
+          amount: targetAmount,
+          targetConf: 3,
+          label: ' ',
+          spendUnconfirmed: false,
+        });
+
+        // Store conversion data
+        if (destinationAddress.address) {
+          dispatch(
+            addConvertedTransactionAction({
+              destinationAddress: destinationAddress.address,
+              targetAmount: parseInt(targetAmount.toString(), 10),
+              timestamp: Math.floor(Date.now() / 1000),
+              conversionType: destination,
+              selectedUtxos: [],
+              selectedOutpoints: [],
+            }),
+          );
+        }
+
+        return result.txid;
+      }
+
+      // Regular -> MWEB: use FundPsbt with regular outpoints
       const listUnspentResponse = await walletKitListUnspent({});
 
       if (!listUnspentResponse || !listUnspentResponse.utxos) {
@@ -177,41 +218,27 @@ export const sendConvertWithPsbt =
       }
       const {utxos} = listUnspentResponse;
 
-      // filter mweb and non mweb utxos, sort by largest
-      // coin selection will use first largest available
-      const mwebUtxos = utxos
-        .filter(utxo => utxo.addressType === AddressType.MWEB)
-        .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
       const nonMwebUtxos = utxos
         .filter(utxo => utxo.addressType !== AddressType.MWEB)
         .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
 
-      const outpoints = destination === 'private' ? nonMwebUtxos : mwebUtxos;
-
-      // Perform coin selection to find minimum inputs needed to satisfy the amount
-      const selectedUtxos = [];
-      const selectedUtxoDetails = []; // Store full UTXO details for Redux
+      // Perform coin selection
+      const selectedUtxoOutpoints: OutPoint[] = [];
       let totalSelected = BigInt(-2000);
-      const targetAmount = BigInt(Math.floor(amount));
 
-      // Utxo[] -> OutPoint[]
-      for (const utxo of outpoints) {
-        if (utxo.outpoint === undefined) {
+      for (const utxo of nonMwebUtxos) {
+        if (!utxo.outpoint) {
           continue;
         }
 
-        if (utxo.outpoint) {
-          selectedUtxos.push(utxo.outpoint);
-          // Store the full UTXO details (convert BigInt to number for Redux serialization)
-          selectedUtxoDetails.push({
-            address: utxo.address,
-            amountSat: Number(utxo.amountSat),
-            addressType: utxo.addressType,
-          });
-        }
+        selectedUtxoOutpoints.push(utxo.outpoint);
+        selectedUtxoDetails.push({
+          address: utxo.address,
+          amountSat: Number(utxo.amountSat),
+          addressType: utxo.addressType,
+        });
         totalSelected += utxo.amountSat;
 
-        // Break when we have enough to cover the amount (fees will be calculated by FundPsbt)
         if (totalSelected >= targetAmount) {
           break;
         }
@@ -223,19 +250,15 @@ export const sendConvertWithPsbt =
         );
       }
 
-      if (selectedUtxos.length < 1) {
+      if (selectedUtxoOutpoints.length < 1) {
         throw new Error('No valid inputs found!');
-      }
-
-      if (!destinationAddress || destinationAddress === undefined) {
-        throw new Error('No destination address!');
       }
 
       const psbt = await walletKitFundPsbt({
         template: {
           case: 'raw',
           value: {
-            inputs: selectedUtxos,
+            inputs: selectedUtxoOutpoints as any,
             outputs: {
               [destinationAddress.address]: targetAmount,
             },
@@ -245,10 +268,7 @@ export const sendConvertWithPsbt =
           case: 'targetConf',
           value: 3,
         },
-        changeType:
-          destination === 'private'
-            ? ChangeAddressType.UNSPECIFIED
-            : ChangeAddressType.MWEB,
+        changeType: ChangeAddressType.UNSPECIFIED,
       });
 
       const signedPsbt = await walletKitFinalizePsbt({
@@ -259,20 +279,14 @@ export const sendConvertWithPsbt =
         throw new Error('Failed to finalize PSBT: rawFinalTx is undefined');
       }
 
-      const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
-
-      console.log(txHex);
-      console.log(Buffer.from(signedPsbt.signedPsbt).toString('hex'));
+      txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
 
       try {
         const {torEnabled} = getState().settings!;
-        // broadcast transaction
         await publishTransaction(txHex, torEnabled);
 
-        // Store conversion data for transaction matching
         if (destinationAddress.address) {
-          // Create outpoint strings for efficient lookup
-          const outpointStrings = selectedUtxos.map(
+          const outpointStrings = selectedUtxoOutpoints.map(
             outpoint =>
               `${Buffer.from(outpoint.txidBytes).toString('hex')}:${outpoint.outputIndex}`,
           );
@@ -577,8 +591,11 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       if (cachedTx) {
         // for cachedTxs with less than 8096 confirmations we still attempt to
         // match them with buy/sell history
-        let updatedCachedTx = {...cachedTx, numConfirmations: tx.numConfirmations};
-        
+        let updatedCachedTx = {
+          ...cachedTx,
+          numConfirmations: tx.numConfirmations,
+        };
+
         if (tx.numConfirmations < 8096) {
           // Check if it's a buy transaction
           if (buyHistory && buyHistory.length >= 1) {
@@ -590,7 +607,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
               updatedCachedTx.metaLabel = 'Buy';
             }
           }
-          
+
           // Check if it's a sell transaction
           if (sellHistory && sellHistory.length >= 1) {
             const sellTx = sellHistory.find(
@@ -602,7 +619,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
             }
           }
         }
-        
+
         txs.push(updatedCachedTx);
         continue;
       }
@@ -852,15 +869,12 @@ export const sendOnchainWithCoinSelectionPayment = (
       }
 
       // Utxo[] -> OutPoint[]
-      const selectedUtxos = [];
+      const selectedOutpoints = [];
       for (const utxo of coinSelectionUtxos) {
-        if (utxo.outpoint === undefined) {
+        if (!utxo.outpoint) {
           continue;
         }
-
-        if (utxo.outpoint) {
-          selectedUtxos.push(utxo.outpoint);
-        }
+        selectedOutpoints.push(utxo.outpoint);
       }
 
       // construct transaction as psbt
@@ -868,7 +882,7 @@ export const sendOnchainWithCoinSelectionPayment = (
         template: {
           case: 'raw',
           value: {
-            inputs: selectedUtxos,
+            inputs: selectedOutpoints as any,
             outputs: {
               [address]: BigInt(amount),
             },
