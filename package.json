@@ -60,6 +60,7 @@
     "expo": "55.0.0-preview.10",
     "expo-application": "~55.0.5",
     "expo-blur": "~55.0.5",
+    "expo-build-properties": "~55.0.7",
     "expo-haptics": "~55.0.5",
     "expo-local-authentication": "~55.0.5",
     "expo-notifications": "~55.0.6",
@@ -74,7 +75,7 @@
     "react-native": "0.83.1",
     "react-native-blob-util": "0.22.2",
     "react-native-bootsplash": "6.3.10",
-    "react-native-device-info": "11.1.0",
+    "react-native-device-info": "15.0.1",
     "react-native-gesture-handler": "~2.30.0",
     "react-native-get-random-values": "1.11.0",
     "react-native-keychain": "8.2.0",
@@ -144,10 +145,17 @@
     "node": ">=18"
   },
   "trustedDependencies": [
-    "protobufjs"
+    "@shopify/react-native-skia",
+    "esbuild",
+    "protobufjs",
+    "react-native-mmkv",
+    "react-native-nitro-modules",
+    "react-native-nitro-scrypt",
+    "sharp"
   ],
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "resolutions": {
+    "hermes-compiler": "250829098.0.4",
     "base-x": "4.0.1",
     "react-native-quick-base64": "2.2.0",
     "@flexa/flexa-react-native/react-native": "0.83.1"
