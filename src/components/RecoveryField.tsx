@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
 
+import WhiteButton from '../components/Buttons/WhiteButton';
 import {checkBIP39Word, checkLitewalletBIP39Word} from '../utils/bip39/';
 import {checkSeedChecksum} from '../utils/aezeed';
 
@@ -128,6 +129,80 @@ const RecoveryField: React.FC<Props> = props => {
     setSeed(arr);
   };
 
+  const handleContinue = async () => {
+    const lastIndex = isLitewalletRecovery ? 11 : 23;
+
+    // Validate all words first
+    for (let i = 0; i <= lastIndex; i++) {
+      const isValidWord = isLitewalletRecovery
+        ? checkLitewalletBIP39Word(seed[i])
+        : checkBIP39Word(seed[i]);
+
+      if (!isValidWord) {
+        await Alert.alert(
+          t('invalid_word'),
+          t('invalid_description'),
+          [
+            {
+              text: t('try_again'),
+              onPress: undefined,
+              style: undefined,
+            },
+          ],
+          {cancelable: false},
+        );
+        return;
+      }
+    }
+
+    // Check seed checksum for 24-word seed
+    if (!isLitewalletRecovery) {
+      try {
+        await checkSeedChecksum(seed);
+      } catch (error) {
+        await Alert.alert(
+          'Incorrect Paper-Key',
+          String(error),
+          [
+            {
+              text: 'Try Again',
+              onPress: undefined,
+              style: 'cancel',
+            },
+          ],
+          {cancelable: false},
+        );
+        return;
+      }
+    }
+
+    // Submit the seed
+    if (isLitewalletRecovery && handleLWRecovery !== undefined) {
+      await handleLWRecovery(seed);
+    } else {
+      await handleLogin(seed);
+    }
+
+    // reset seed list inputs in state and ui
+    setSeed([]);
+    const resetCount = isLitewalletRecovery ? 12 : 24;
+    for (let i = 0; i < resetCount; i++) {
+      phraseRef.current[i].current!.clear();
+    }
+  };
+
+  const isAllWordsFilled = () => {
+    const requiredLength = isLitewalletRecovery ? 12 : 24;
+    if (seed.length < requiredLength) return false;
+
+    for (let i = 0; i < requiredLength; i++) {
+      if (!seed[i] || seed[i].trim() === '') {
+        return false;
+      }
+    }
+    return true;
+  };
+
   return (
     // NOTE: KeyboardAvoidingView in combination with FlatList behave horribly so it's disabled for now
     <KeyboardAvoidingView
@@ -143,7 +218,20 @@ const RecoveryField: React.FC<Props> = props => {
           data={n}
           ref={listRef}
           keyExtractor={item => item.toString()}
-          ListFooterComponent={<View style={styles.emptyView} />}
+          ListFooterComponent={
+            <View style={styles.footerContainer}>
+              <View style={styles.buttonContainer}>
+                <WhiteButton
+                  value="Continue"
+                  disabled={!isAllWordsFilled()}
+                  onPress={handleContinue}
+                  small={false}
+                  active={true}
+                />
+              </View>
+              <View style={styles.emptyView} />
+            </View>
+          }
           renderItem={({index}) => (
             <View
               style={[
@@ -235,7 +323,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     emptyView: {
       // NOTE: this gap is used to offset the keyboard, since KeyboardAvoidingView isn't working properly
-      height: screenHeight * 0.5,
+      height: screenHeight * 0.4,
+    },
+    footerContainer: {
+      width: '100%',
+    },
+    buttonContainer: {
+      paddingHorizontal: 30,
+      paddingTop: screenHeight * 0.03,
+      paddingBottom: screenHeight * 0.02,
     },
   });
 
