@@ -18,7 +18,6 @@ import {
   AddressType,
   Utxo,
 } from 'react-native-turbo-lndltc/protos/lightning_pb';
-import {ChangeAddressType} from 'react-native-turbo-lndltc/protos/walletrpc/walletkit_pb';
 import {create} from '@bufbuild/protobuf';
 
 import {AppThunk, AppThunkTxHashesWithExtraData} from './types';
@@ -174,7 +173,6 @@ export const sendConvertWithPsbt =
       }
 
       const targetAmount = BigInt(Math.floor(amount));
-      let txHex: string;
       const selectedUtxoDetails: Array<{
         address: string;
         amountSat: number;
@@ -210,7 +208,7 @@ export const sendConvertWithPsbt =
         return result.txid;
       }
 
-      // Regular -> MWEB: use FundPsbt with regular outpoints
+      // Regular -> MWEB: use sendCoins with non-MWEB outpoints
       const listUnspentResponse = await walletKitListUnspent({});
 
       if (!listUnspentResponse || !listUnspentResponse.utxos) {
@@ -254,57 +252,32 @@ export const sendConvertWithPsbt =
         throw new Error('No valid inputs found!');
       }
 
-      const psbt = await walletKitFundPsbt({
-        template: {
-          case: 'raw',
-          value: {
-            inputs: selectedUtxoOutpoints as any,
-            outputs: {
-              [destinationAddress.address]: targetAmount,
-            },
-          },
-        },
-        fees: {
-          case: 'targetConf',
-          value: 3,
-        },
-        changeType: ChangeAddressType.UNSPECIFIED,
+      const result = await sendCoins({
+        addr: destinationAddress.address,
+        amount: targetAmount,
+        outpoints: selectedUtxoOutpoints,
+        targetConf: 3,
+        label: ' ',
+        spendUnconfirmed: false,
       });
 
-      const signedPsbt = await walletKitFinalizePsbt({
-        fundedPsbt: psbt.fundedPsbt,
-      });
-
-      if (!signedPsbt || !signedPsbt.rawFinalTx) {
-        throw new Error('Failed to finalize PSBT: rawFinalTx is undefined');
+      if (destinationAddress.address) {
+        dispatch(
+          addConvertedTransactionAction({
+            destinationAddress: destinationAddress.address,
+            targetAmount: parseInt(targetAmount.toString(), 10),
+            timestamp: Math.floor(Date.now() / 1000),
+            conversionType: destination,
+            selectedUtxos: selectedUtxoDetails,
+            selectedOutpoints: selectedUtxoOutpoints.map(
+              outpoint =>
+                `${Buffer.from(outpoint.txidBytes).toString('hex')}:${outpoint.outputIndex}`,
+            ),
+          }),
+        );
       }
 
-      txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
-
-      try {
-        const {torEnabled} = getState().settings!;
-        await publishTransaction(txHex, torEnabled);
-
-        if (destinationAddress.address) {
-          const outpointStrings = selectedUtxoOutpoints.map(
-            outpoint =>
-              `${Buffer.from(outpoint.txidBytes).toString('hex')}:${outpoint.outputIndex}`,
-          );
-
-          dispatch(
-            addConvertedTransactionAction({
-              destinationAddress: destinationAddress.address,
-              targetAmount: parseInt(targetAmount.toString(), 10),
-              timestamp: Math.floor(Date.now() / 1000),
-              conversionType: destination,
-              selectedUtxos: selectedUtxoDetails,
-              selectedOutpoints: outpointStrings,
-            }),
-          );
-        }
-      } catch (error) {
-        throw new Error(error ? String(error) : 'Unknown error occurred');
-      }
+      return result.txid;
     } catch (error) {
       console.error('Error in sendConvertWithPsbt:', error || 'Unknown error');
       throw error;
