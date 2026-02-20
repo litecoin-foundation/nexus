@@ -18,6 +18,7 @@ import {
   AddressType,
   Utxo,
 } from 'react-native-turbo-lndltc/protos/lightning_pb';
+import {ChangeAddressType} from 'react-native-turbo-lndltc/protos/walletrpc/walletkit_pb';
 import {create} from '@bufbuild/protobuf';
 
 import {AppThunk, AppThunkTxHashesWithExtraData} from './types';
@@ -179,36 +180,6 @@ export const sendConvertWithPsbt =
         addressType: number;
       }> = [];
 
-      if (destination === 'regular') {
-        // MWEB -> Regular: use sendCoins without specifying outpoints
-        // The native Go side doesn't support TxInput.mwebId in FundPsbt,
-        // so we let lnd handle MWEB coin selection internally via sendCoins
-        const result = await sendCoins({
-          addr: destinationAddress.address,
-          amount: targetAmount,
-          targetConf: 3,
-          label: ' ',
-          spendUnconfirmed: false,
-        });
-
-        // Store conversion data
-        if (destinationAddress.address) {
-          dispatch(
-            addConvertedTransactionAction({
-              destinationAddress: destinationAddress.address,
-              targetAmount: parseInt(targetAmount.toString(), 10),
-              timestamp: Math.floor(Date.now() / 1000),
-              conversionType: destination,
-              selectedUtxos: [],
-              selectedOutpoints: [],
-            }),
-          );
-        }
-
-        return result.txid;
-      }
-
-      // Regular -> MWEB: use sendCoins with non-MWEB outpoints
       const listUnspentResponse = await walletKitListUnspent({});
 
       if (!listUnspentResponse || !listUnspentResponse.utxos) {
@@ -216,50 +187,103 @@ export const sendConvertWithPsbt =
       }
       const {utxos} = listUnspentResponse;
 
-      const nonMwebUtxos = utxos
-        .filter(utxo => utxo.addressType !== AddressType.MWEB)
-        .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
+      if (destination === 'regular') {
+        // MWEB -> Regular: use sendCoins with specific MWEB outpoints
+        // FundPsbt doesn't support TxInput.mwebId, so we use sendCoins.
+        // We select specific MWEB UTXOs to avoid lnd picking from all pools.
+        const mwebUtxos = utxos
+          .filter(utxo => utxo.addressType === AddressType.MWEB)
+          .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
 
-      // Perform coin selection
-      const selectedUtxoOutpoints: OutPoint[] = [];
-      let totalSelected = BigInt(-2000);
+        const selectedMwebOutpoints: OutPoint[] = [];
+        let totalMwebSelected = BigInt(-2000);
 
-      for (const utxo of nonMwebUtxos) {
-        if (!utxo.outpoint) {
-          continue;
+        for (const utxo of mwebUtxos) {
+          if (!utxo.outpoint) {
+            continue;
+          }
+
+          selectedMwebOutpoints.push(utxo.outpoint);
+          selectedUtxoDetails.push({
+            address: utxo.address,
+            amountSat: Number(utxo.amountSat),
+            addressType: utxo.addressType,
+          });
+          totalMwebSelected += utxo.amountSat;
+
+          if (totalMwebSelected >= targetAmount) {
+            break;
+          }
         }
 
-        selectedUtxoOutpoints.push(utxo.outpoint);
-        selectedUtxoDetails.push({
-          address: utxo.address,
-          amountSat: Number(utxo.amountSat),
-          addressType: utxo.addressType,
+        if (totalMwebSelected < targetAmount) {
+          throw new Error(
+            `Insufficient private funds: need ${targetAmount}, have ${totalMwebSelected}`,
+          );
+        }
+
+        if (selectedMwebOutpoints.length < 1) {
+          throw new Error('No valid MWEB inputs found!');
+        }
+
+        const result = await sendCoins({
+          addr: destinationAddress.address,
+          amount: targetAmount,
+          outpoints: selectedMwebOutpoints,
+          targetConf: 3,
+          label: ' ',
+          spendUnconfirmed: false,
         });
-        totalSelected += utxo.amountSat;
 
-        if (totalSelected >= targetAmount) {
-          break;
+        if (destinationAddress.address) {
+          dispatch(
+            addConvertedTransactionAction({
+              destinationAddress: destinationAddress.address,
+              targetAmount: parseInt(targetAmount.toString(), 10),
+              timestamp: Math.floor(Date.now() / 1000),
+              conversionType: destination,
+              selectedUtxos: selectedUtxoDetails,
+              selectedOutpoints: selectedMwebOutpoints.map(
+                outpoint =>
+                  `${Buffer.from(outpoint.txidBytes).toString('hex')}:${outpoint.outputIndex}`,
+              ),
+            }),
+          );
         }
+
+        return result.txid;
       }
 
-      if (totalSelected < targetAmount) {
-        throw new Error(
-          `Insufficient funds: need ${targetAmount}, have ${totalSelected}`,
-        );
-      }
-
-      if (selectedUtxoOutpoints.length < 1) {
-        throw new Error('No valid inputs found!');
-      }
-
-      const result = await sendCoins({
-        addr: destinationAddress.address,
-        amount: targetAmount,
-        outpoints: selectedUtxoOutpoints,
-        targetConf: 3,
-        label: ' ',
-        spendUnconfirmed: false,
+      // Regular -> MWEB: use FundPsbt with changeType UNSPECIFIED (P2WPKH)
+      // to ensure change goes back to a regular address, not MWEB.
+      // Let FundPsbt handle coin selection (no inputs specified).
+      const psbt = await walletKitFundPsbt({
+        template: {
+          case: 'raw',
+          value: {
+            inputs: [],
+            outputs: {
+              [destinationAddress.address]: targetAmount,
+            },
+          },
+        },
+        fees: {
+          case: 'targetConf',
+          value: 3,
+        },
+        changeType: ChangeAddressType.UNSPECIFIED,
       });
+
+      const signedPsbt = await walletKitFinalizePsbt({
+        fundedPsbt: psbt.fundedPsbt,
+      });
+
+      if (!signedPsbt || !signedPsbt.rawFinalTx) {
+        throw new Error('Failed to finalize PSBT: rawFinalTx is undefined');
+      }
+
+      const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
+      const txid = await publishTransaction(txHex);
 
       if (destinationAddress.address) {
         dispatch(
@@ -268,16 +292,13 @@ export const sendConvertWithPsbt =
             targetAmount: parseInt(targetAmount.toString(), 10),
             timestamp: Math.floor(Date.now() / 1000),
             conversionType: destination,
-            selectedUtxos: selectedUtxoDetails,
-            selectedOutpoints: selectedUtxoOutpoints.map(
-              outpoint =>
-                `${Buffer.from(outpoint.txidBytes).toString('hex')}:${outpoint.outputIndex}`,
-            ),
+            selectedUtxos: [],
+            selectedOutpoints: [],
           }),
         );
       }
 
-      return result.txid;
+      return txid;
     } catch (error) {
       console.error('Error in sendConvertWithPsbt:', error || 'Unknown error');
       throw error;
@@ -298,6 +319,10 @@ export const sendConvertWithCoinControl = async (
     }
     const destinationAddress = await newLndAddress({type});
 
+    if (!destinationAddress || destinationAddress === undefined) {
+      throw new Error('No destination address!');
+    }
+
     // lookup utxos
     const listUnspentResponse = await walletKitListUnspent({});
 
@@ -315,29 +340,75 @@ export const sendConvertWithCoinControl = async (
       .filter(utxo => utxo.addressType !== AddressType.MWEB)
       .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
 
-    const outpoints = destination === 'private' ? nonMwebUtxos : mwebUtxos;
+    const sourceUtxos = destination === 'private' ? nonMwebUtxos : mwebUtxos;
+    const targetAmount = BigInt(amount);
 
-    const outpointsArray = outpoints
-      .map(utxo => utxo.outpoint)
-      .filter((outpoint): outpoint is OutPoint => outpoint !== undefined);
+    // Select only enough UTXOs to cover the amount (not all of them)
+    const selectedOutpoints: OutPoint[] = [];
+    let totalSelected = BigInt(-2000); // fee buffer
 
-    if (outpointsArray.length < 1 || outpointsArray === undefined) {
+    for (const utxo of sourceUtxos) {
+      if (!utxo.outpoint) {
+        continue;
+      }
+      selectedOutpoints.push(utxo.outpoint);
+      totalSelected += utxo.amountSat;
+
+      if (totalSelected >= targetAmount) {
+        break;
+      }
+    }
+
+    if (selectedOutpoints.length < 1) {
       throw new Error('Outpoints empty!');
     }
 
-    if (!destinationAddress || destinationAddress === undefined) {
-      throw new Error('No destination address!');
+    if (totalSelected < targetAmount) {
+      throw new Error(
+        `Insufficient funds: need ${targetAmount}, have ${totalSelected}`,
+      );
     }
 
-    const txid = await sendCoins({
-      addr: destinationAddress.address,
-      amount: BigInt(amount),
-      outpoints: outpointsArray,
-      // Set ghost label if it's undefined in order to prevent default labeling
-      label: ' ',
-    });
+    if (destination === 'private') {
+      // Regular -> MWEB: use FundPsbt with changeType to keep change regular
+      const psbt = await walletKitFundPsbt({
+        template: {
+          case: 'raw',
+          value: {
+            inputs: [],
+            outputs: {
+              [destinationAddress.address]: targetAmount,
+            },
+          },
+        },
+        fees: {
+          case: 'targetConf',
+          value: 3,
+        },
+        changeType: ChangeAddressType.UNSPECIFIED,
+      });
 
-    return txid;
+      const signedPsbt = await walletKitFinalizePsbt({
+        fundedPsbt: psbt.fundedPsbt,
+      });
+
+      if (!signedPsbt || !signedPsbt.rawFinalTx) {
+        throw new Error('Failed to finalize PSBT: rawFinalTx is undefined');
+      }
+
+      const txHex = Buffer.from(signedPsbt.rawFinalTx).toString('hex');
+      const txid = await publishTransaction(txHex);
+      return {txid};
+    } else {
+      // MWEB -> Regular: use sendCoins with selected MWEB outpoints
+      const txid = await sendCoins({
+        addr: destinationAddress.address,
+        amount: targetAmount,
+        outpoints: selectedOutpoints,
+        label: ' ',
+      });
+      return txid;
+    }
   } catch (error) {
     throw new Error(String(error));
   }
