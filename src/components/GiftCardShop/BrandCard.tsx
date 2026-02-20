@@ -50,6 +50,10 @@ export function BrandCard({
   const opacityAnim = useSharedValue(0);
   const chevronRotation = useSharedValue(isExpanded ? 90 : -90);
 
+  const isLoggedIn = useAppSelector(
+    state => state.nexusshopaccount?.account?.isLoggedIn,
+  );
+
   const wishlistBrands = useAppSelector(
     state => state.nexusshopaccount?.wishlistBrands,
   );
@@ -235,12 +239,14 @@ export function BrandCard({
         </Animated.View>
       )}
 
-      <TouchableOpacity
-        style={styles.wishlistButton}
-        onPress={handleWishlistToggle}
-        activeOpacity={0.7}>
-        <Text style={styles.wishlistIcon}>{isInWishlist ? '♥' : '♡'}</Text>
-      </TouchableOpacity>
+      {isLoggedIn && (
+        <TouchableOpacity
+          style={styles.wishlistButton}
+          onPress={handleWishlistToggle}
+          activeOpacity={0.7}>
+          <Text style={styles.wishlistIcon}>{isInWishlist ? '♥' : '♡'}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
