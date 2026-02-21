@@ -317,6 +317,37 @@ export function formatCurrency(currency: string): string {
   return symbol;
 }
 
+const COUNTRY_CURRENCY_MAP: Record<string, string> = {
+  US: 'USD',
+  CA: 'CAD',
+  GB: 'GBP',
+  DE: 'EUR',
+  ES: 'EUR',
+  FR: 'EUR',
+  IT: 'EUR',
+  LT: 'EUR',
+  AL: 'EUR',
+  RU: 'RUB',
+  PL: 'PLN',
+  ID: 'IDR',
+  IN: 'INR',
+  CN: 'CNY',
+  PH: 'PHP',
+  LK: 'LKR',
+  IR: 'IRR',
+};
+
+export function getCurrencyForCountry(countryCode: string): {
+  country: string;
+  currency: string;
+} {
+  const code = countryCode.toUpperCase();
+  return {
+    country: code,
+    currency: COUNTRY_CURRENCY_MAP[code] || 'USD',
+  };
+}
+
 export function createGiftCardClient(): GiftCardClient {
   return new GiftCardClient();
 }

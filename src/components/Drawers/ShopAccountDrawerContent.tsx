@@ -22,8 +22,10 @@ import {ErrorView} from '../GiftCardShop/ErrorView';
 import {
   logoutFromNexusShop,
   setUserCountry,
+  setUserCurrency,
   setCountryPickerOpen,
 } from '../../reducers/nexusshopaccount';
+import {getCurrencyForCountry} from '../../services/giftcards';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import OptionCell from '../../components/Cells/OptionCell';
 import countries from '../../assets/countries';
@@ -101,7 +103,9 @@ const ShopAccountDrawerContent: React.FC<
   }, [dispatch]);
 
   const handleCountrySelect = (code: string) => {
+    const {currency} = getCurrencyForCountry(code);
     dispatch(setUserCountry(code));
+    dispatch(setUserCurrency(currency));
     closeCountryPicker();
   };
 

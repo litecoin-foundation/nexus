@@ -7,7 +7,12 @@ import React, {
 } from 'react';
 import {View, StyleSheet} from 'react-native';
 
-import {GiftCardClient, Brand, GiftCard} from '../../services/giftcards';
+import {
+  GiftCardClient,
+  Brand,
+  GiftCard,
+  getCurrencyForCountry,
+} from '../../services/giftcards';
 import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
 import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
@@ -52,7 +57,8 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   const isLoggedIn = account && account.isLoggedIn;
 
   const [screen, setScreen] = useState<ScreenState>({type: 'browse'});
-  const shopCurrency = account?.userCurrency || 'USD';
+  const shopCountry = account?.userCountry || 'US';
+  const shopCurrency = getCurrencyForCountry(shopCountry).currency;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
