@@ -209,6 +209,12 @@ const cacheParts = [
 export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
   const {task, lastLoadedCachePart} = getState().onboarding!;
 
+  // Presync is only needed for neutrino backend
+  if (getState().settings.litecoinBackend === 'electrum') {
+    dispatch(getNeutrinoCacheSuccessAction());
+    return;
+  }
+
   if (task === 'complete') {
     console.log('neutrino cache ready!');
     return;
