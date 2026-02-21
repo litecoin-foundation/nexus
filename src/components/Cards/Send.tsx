@@ -19,6 +19,7 @@ import Switch from '../Buttons/Switch';
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
+import NewBlueButton from '../Buttons/NewBlueButton';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
 import {decodeBIP21} from '../../utils/bip21';
@@ -40,6 +41,7 @@ import {
   updateSendDomain,
 } from '../../reducers/input';
 import {fetchResolve} from '../../utils/tor';
+import Convert from './Convert';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -105,6 +107,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   const [sendAll, setSendAll] = useState(false);
   const [enableManualSelection, setEnableManualSelection] = useState(false);
   const [selectedUtxosArray, setSelectedUtxosArray] = useState<Utxo[]>([]);
+  const [showConvert, setShowConvert] = useState(false);
 
   // check if ready to send
   useEffect(() => {
@@ -465,19 +468,50 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalVisible]);
 
+  if (showConvert) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.switchContainerConvertPage}>
+          <NewBlueButton
+            textKey="send_litecoin"
+            textDomain="sendTab"
+            active={false}
+            onPress={() => setShowConvert(false)}
+          />
+          <NewBlueButton
+            textKey="convert_mweb"
+            textDomain="sendTab"
+            active={true}
+            onPress={() => {}}
+          />
+        </View>
+        <View style={styles.convertContainer}>
+          <Convert navigation={navigation as any} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView
         scrollEnabled={false}
         ref={scrollViewRef}
         contentContainerStyle={styles.scrollViewContent}>
-        <TranslateText
-          textKey="send_litecoin"
-          domain="sendTab"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-          textStyle={styles.titleText}
-          numberOfLines={1}
-        />
+        <View style={styles.switchContainer}>
+          <NewBlueButton
+            textKey="send_litecoin"
+            textDomain="sendTab"
+            active={true}
+            onPress={() => {}}
+          />
+          <NewBlueButton
+            textKey="convert_mweb"
+            textDomain="sendTab"
+            active={false}
+            onPress={() => setShowConvert(true)}
+          />
+        </View>
 
         <View style={styles.amountContainer}>
           <TranslateText
@@ -735,6 +769,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenWidth * 0.06,
       position: 'relative',
     },
+    convertContainer: {
+      flex: 1,
+      width: screenWidth,
+      marginLeft: screenWidth * 0.06 * -1,
+    },
     scrollViewContent: {
       minHeight: screenHeight,
     },
@@ -745,12 +784,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     subContainer: {
       flex: 1,
     },
-    titleText: {
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      color: '#2E2E2E',
-      fontSize: screenHeight * 0.025,
+    switchContainer: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingBottom: screenHeight * 0.03,
+    },
+    switchContainerConvertPage: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingBottom: screenHeight * 0.02,
     },
     cellContainer: {
       marginTop: screenHeight * 0.02,
@@ -849,7 +891,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingBottom: 5,
+      paddingBottom: screenHeight * 0.02,
     },
     manualSelectionBottom: {
       width: '100%',

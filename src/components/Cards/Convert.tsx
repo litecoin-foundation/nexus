@@ -311,7 +311,7 @@ const Convert: React.FC<Props> = () => {
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
-    container: {
+    containerStandaloneCard: {
       width: screenWidth,
       // BottomSheet is screenHeight * 0.76
       // DashboardButton is 110
@@ -319,11 +319,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.76 - 110 - 5,
       paddingHorizontal: screenWidth * 0.06,
     },
+    container: {
+      width: screenWidth,
+      height: '100%',
+      paddingHorizontal: screenWidth * 0.06,
+    },
     safeArea: {
       height: '100%',
     },
     inputsContainer: {
-      flexBasis: '20%',
       flexDirection: 'row',
       justifyContent: 'space-evenly',
     },
@@ -339,7 +343,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
     },
     col: {
-      gap: screenHeight * 0.03,
+      gap: screenHeight * 0.02,
       alignItems: 'center',
     },
     numpadContainer: {
