@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, TouchableOpacity} from 'react-native';
 import CodeInput from '../CodeInput';
 
 import BuyButton from './BuyButton';
@@ -18,6 +18,7 @@ interface Props {
   dotDisabled?: boolean;
   small?: boolean;
   secondaryButton?: React.ReactNode;
+  onPaste?: () => void;
 }
 
 const NumpadInput: React.FC<Props> = props => {
@@ -30,6 +31,7 @@ const NumpadInput: React.FC<Props> = props => {
     dotDisabled,
     small,
     secondaryButton,
+    onPaste,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -96,9 +98,13 @@ const NumpadInput: React.FC<Props> = props => {
         numberOfLines={1}
       />
 
-      <View style={styles.pinContainer}>
+      <TouchableOpacity
+        style={styles.pinContainer}
+        onPress={onPaste}
+        activeOpacity={onPaste ? 0.7 : 1}
+        disabled={!onPaste}>
         <CodeInput codeInactive={false} codeLength={6} value={currentCode} />
-      </View>
+      </TouchableOpacity>
 
       <PadGrid small={small} />
       <View style={styles.pinButtonContainer}>{buttons}</View>

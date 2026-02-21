@@ -18,6 +18,7 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import Svg, {Circle} from 'react-native-svg';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {verifyOtpCode, loginToNexusShop} from '../../reducers/nexusshopaccount';
@@ -221,6 +222,14 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     }
   };
 
+  const handlePaste = useCallback(async () => {
+    const clipboardContent = await Clipboard.getString();
+    const numericContent = clipboardContent.replace(/[^0-9]/g, '');
+    if (numericContent.length > 0 && numericContent.length <= 6) {
+      setOtpCode(numericContent);
+    }
+  }, []);
+
   const handleVerifyOTP = useCallback(
     async (codeToVerify?: string) => {
       const code = codeToVerify || otpCode;
@@ -410,6 +419,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         submitButton={submitButton}
         currentCode={otpCode}
         onChange={handleOtpChange}
+        onPaste={handlePaste}
         titleKey="enter_your_code"
         titleDomain="nexusShop"
         dotDisabled
