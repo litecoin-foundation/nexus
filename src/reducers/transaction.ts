@@ -491,6 +491,8 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       create(GetTransactionsRequestSchema),
     );
 
+    console.log(lndTransactions);
+
     // NOTE: for older versions with missing cachedTxHashes in the initial state
     if (!cachedTxHashes) {
       dispatch(setCachedTxHashes([]));
@@ -564,6 +566,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
     );
 
     for await (const tx of lndTransactions.transactions) {
+      // Skip 0-amount MWEB kernel/peg transactions (internal to MWEB, not user-facing)
+      if (Number(tx.amount) === 0 && Number(tx.totalFees) === 0) {
+        continue;
+      }
       // Skip if this transaction is already part of a convert operation
       if (tx.txHash && processedConvertTxHashes.has(tx.txHash)) {
         continue;
@@ -577,8 +583,11 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       if (cachedTx) {
         // for cachedTxs with less than 8096 confirmations we still attempt to
         // match them with buy/sell history
-        let updatedCachedTx = {...cachedTx, numConfirmations: tx.numConfirmations};
-        
+        let updatedCachedTx = {
+          ...cachedTx,
+          numConfirmations: tx.numConfirmations,
+        };
+
         if (tx.numConfirmations < 8096) {
           // Check if it's a buy transaction
           if (buyHistory && buyHistory.length >= 1) {
@@ -590,7 +599,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
               updatedCachedTx.metaLabel = 'Buy';
             }
           }
-          
+
           // Check if it's a sell transaction
           if (sellHistory && sellHistory.length >= 1) {
             const sellTx = sellHistory.find(
@@ -602,7 +611,7 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
             }
           }
         }
-        
+
         txs.push(updatedCachedTx);
         continue;
       }
