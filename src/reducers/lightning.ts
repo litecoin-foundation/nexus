@@ -156,7 +156,9 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
           } else if (state.state === WalletState.RPC_ACTIVE) {
             // RPC_ACTIVE so we are ready to dispatch pollers
             dispatch(pollInfo());
-            dispatch(pollPeers());
+            if (getState().settings.litecoinBackend !== 'electrum') {
+              dispatch(pollPeers());
+            }
             dispatch(pollRates());
             dispatch(pollTransactions());
             dispatch(subscribeTransactions());
@@ -226,7 +228,9 @@ export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
             if (state.state === WalletState.RPC_ACTIVE) {
               // dispatch pollers
               dispatch(pollInfo());
-              dispatch(pollPeers());
+              if (getState().settings.litecoinBackend !== 'electrum') {
+                dispatch(pollPeers());
+              }
               dispatch(subscribeTransactions());
               dispatch(pollRates());
               dispatch(pollTransactions());
