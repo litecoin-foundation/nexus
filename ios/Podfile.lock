@@ -143,9 +143,9 @@ PODS:
     - SwiftUIIntrospect (~> 26.0.0)
   - fmt (11.0.2)
   - glog (0.3.5)
-  - hermes-engine (0.14.0):
-    - hermes-engine/Pre-built (= 0.14.0)
-  - hermes-engine/Pre-built (0.14.0)
+  - hermes-engine (250829098.0.4):
+    - hermes-engine/Pre-built (= 250829098.0.4)
+  - hermes-engine/Pre-built (250829098.0.4)
   - KeychainAccess (4.2.2)
   - lottie-ios (4.6.0)
   - lottie-react-native (7.3.6):
@@ -3763,7 +3763,7 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
-    :tag: hermes-v0.14.0
+    :tag: hermes-v250829098.0.4
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
   NitroMmkv:
@@ -4005,7 +4005,7 @@ SPEC CHECKSUMS:
   FlexaUICore: 5541437f6ab08e89d213c7f1d8968758478b3b3e
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: 8686366a1a69140d7b42d5578283d0d1c38e1650
+  hermes-engine: 8b3fb8cec0bb3a9b1e910b82447b0dfb35da1f87
   KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
   lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
   lottie-react-native: 994a0f1696a7ea01f63443e53a860c735246082d
@@ -4108,7 +4108,7 @@ SPEC CHECKSUMS:
   RNScreens: 47e9d9885f14d188d96c00c3db90d56e481539ef
   RNShare: 708f00a6ff3206070486f1cb057620ae80317be9
   RNSVG: 55fc5dc0eaa36a875ffb7d05c0f2cd5b2cbfc342
-  RNWorklets: 6c4441bf4c01fd1598099789264481d199d18968
+  RNWorklets: 483956c938b149568c4f3b6d481c373ad9891280
   RNZipArchive: 7bb4c70d6aa2dd235212c0a4a3de0a4e237e2569
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SSZipArchive: c69881e8ac5521f0e622291387add5f60f30f3c4

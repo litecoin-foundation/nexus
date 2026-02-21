@@ -19,7 +19,7 @@
     "extract:android": "mkdir -p ./android/app/src/main/jniLibs && tar xzvf lndmobile-android-v0.17.3-cshared.tar.gz --strip-components=1 -C ./android/app/src/main/jniLibs",
     "postinstall": "bunx patch-package",
     "generate-protos": "@bufbuild/buf generate",
-    "pods": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install",
+    "pods": "cd ios && RCT_NEW_ARCH_ENABLED=1 RCT_HERMES_V1_ENABLED=1 pod install",
     "storybook-generate": "sb-rn-get-stories",
     "prepare": "husky",
     "test": "jest",
