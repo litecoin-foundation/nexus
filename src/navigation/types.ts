@@ -33,6 +33,7 @@ export type NewWalletStackParamList = {
   AlertsStack: undefined;
   Scan: {
     returnRoute: string;
+    returnScreen?: string;
   };
   WebPage: {
     uri: string;
@@ -106,6 +107,7 @@ export type SettingsStackParamList = {
   Products: undefined;
   Scan: {
     returnRoute: string;
+    returnScreen?: string;
   };
   Import: {
     scanData?: string;

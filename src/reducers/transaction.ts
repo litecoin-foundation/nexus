@@ -491,8 +491,6 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       create(GetTransactionsRequestSchema),
     );
 
-    console.log(lndTransactions);
-
     // NOTE: for older versions with missing cachedTxHashes in the initial state
     if (!cachedTxHashes) {
       dispatch(setCachedTxHashes([]));

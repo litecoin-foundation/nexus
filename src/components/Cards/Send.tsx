@@ -52,7 +52,7 @@ type RootStackParamList = {
   Main: {
     scanData?: string;
   };
-  Scan: {returnRoute: string};
+  Scan: {returnRoute: string; returnScreen?: string};
   ConfirmSend: {
     sendAll: boolean;
     selectedUtxos?: Utxo[];
@@ -207,7 +207,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   }, [route.params?.scanData]);
 
   const handleScan = () => {
-    navigation.navigate('Scan', {returnRoute: 'Main'});
+    navigation.navigate('Scan', {
+      returnRoute: 'Main',
+      returnScreen: 'MainScreen',
+    });
   };
 
   const handleScanCallback = async (data: any) => {
