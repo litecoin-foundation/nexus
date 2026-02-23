@@ -220,6 +220,18 @@ export class GiftCardClient {
   async cancel(id: string): Promise<GiftCard> {
     return this.request<GiftCard>('POST', `/api/gift-cards/${id}/cancel`);
   }
+
+  async getWishlist(): Promise<string[]> {
+    return this.request<string[]>('GET', '/api/shop/wishlist');
+  }
+
+  async addToWishlist(brandSlug: string): Promise<void> {
+    await this.request<void>('POST', `/api/shop/wishlist/${brandSlug}`);
+  }
+
+  async removeFromWishlist(brandSlug: string): Promise<void> {
+    await this.request<void>('DELETE', `/api/shop/wishlist/${brandSlug}`);
+  }
 }
 
 export class GiftCardError extends Error {

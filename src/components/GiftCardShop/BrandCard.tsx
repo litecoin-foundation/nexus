@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-import {toggleWishlistBrand} from '../../reducers/nexusshopaccount';
+import {syncWishlistToggle} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
 
 import {colors, getSpacing, getFontSize} from './theme';
@@ -63,7 +63,7 @@ export function BrandCard({
     : false;
 
   const handleWishlistToggle = () => {
-    dispatch(toggleWishlistBrand(brand));
+    dispatch(syncWishlistToggle(brand));
   };
 
   const minAmount = Number(

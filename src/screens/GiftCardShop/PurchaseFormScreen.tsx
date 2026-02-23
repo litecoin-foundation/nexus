@@ -153,6 +153,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
       if (!result.includes(maxAmount)) result.push(maxAmount);
       return result.slice(0, MAX_BUTTONS);
     }
+
     // Pick evenly-spaced candidates, always including first and last
     const result: number[] = [candidates[0]];
     const innerCount = MAX_BUTTONS - 2;
