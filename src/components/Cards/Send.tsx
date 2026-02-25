@@ -47,7 +47,6 @@ import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
-import Convert from './Convert';
 
 type RootStackParamList = {
   Main: {
