@@ -47,6 +47,7 @@ import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
+import Convert from './Convert';
 
 type RootStackParamList = {
   Main: {
@@ -796,6 +797,35 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       gap: 8,
       paddingBottom: screenHeight * 0.02,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    convertButton: {
+      backgroundColor: '#2C72FF',
+      borderRadius: screenHeight * 0.01,
+      paddingHorizontal: screenWidth * 0.04,
+      paddingVertical: screenHeight * 0.008,
+    },
+    convertButtonText: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.015,
+    },
+    backToSendButton: {
+      alignSelf: 'flex-start',
+      paddingVertical: screenHeight * 0.005,
+    },
+    backToSendText: {
+      color: '#2C72FF',
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.015,
     },
     cellContainer: {
       marginTop: screenHeight * 0.02,
