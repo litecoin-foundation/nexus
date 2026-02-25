@@ -235,8 +235,8 @@ export function useMainLayout(props: Props) {
           ]}>
           <HeaderButton
             onPress={toggleShopAccountDrawer}
-            imageSource={require('../assets/icons/account-settings-icon.png')}
-            imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
+            imageSource={require('../assets/icons/user.png')}
+            imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
             rightPadding
             backgroundColorSpecified={
               isShopAccountDrawerOpen ? '#0070F0' : undefined
