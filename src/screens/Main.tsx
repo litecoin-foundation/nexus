@@ -188,6 +188,7 @@ const Main: React.FC<Props> = props => {
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('view-seed-auth');
   const [loading, setLoading] = useState(false);
+  const [triggerLester, setTriggerLester] = useState(0);
 
   const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
   const foldUnfoldBottomSheet = useCallback((isFolded: boolean) => {
@@ -607,11 +608,12 @@ const Main: React.FC<Props> = props => {
     <Animated.View style={[styles.container, animatedTopContainerBackground]}>
       <NewAmountView
         animatedProps={animatedTopContainerHeight}
-        internetOpacityStyle={animatedChartOpacity}>
+        internetOpacityStyle={animatedChartOpacity}
+        onTriggerLester={() => setTriggerLester(prev => prev + 1)}>
         <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
           {isBottomSheetFolded ? (
             <>
-              <LineChart />
+              <LineChart triggerLester={triggerLester} />
               <DatePicker />
             </>
           ) : null}

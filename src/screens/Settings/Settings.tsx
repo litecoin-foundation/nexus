@@ -42,6 +42,7 @@ import {
   updateSubunit,
   setNotificationsEnabled,
   setManualCoinSelectionEnabled,
+  setChartMode,
 } from '../../reducers/settings';
 
 import TranslateText from '../../components/TranslateText';
@@ -67,6 +68,7 @@ type RootStackParamList = {
   Loading: undefined;
   Support: undefined;
   ResetWallet: undefined;
+  RescanWallet: undefined;
   TestPayment: undefined;
   Tor: undefined;
   ExportElectrum: undefined;
@@ -101,7 +103,7 @@ const Settings: React.FC<Props> = props => {
 
   const {biometricsAvailable, biometricsEnabled, faceIDSupported} =
     useAppSelector(state => state.authentication!);
-  const {subunit, notificationsEnabled, manualCoinSelectionEnabled} =
+  const {subunit, notificationsEnabled, manualCoinSelectionEnabled, chartMode} =
     useAppSelector(state => state.settings!);
 
   const openSystemSettings = async () => {
@@ -142,6 +144,10 @@ const Settings: React.FC<Props> = props => {
 
   const handleManualCoinSelectionSwitch = () => {
     dispatch(setManualCoinSelectionEnabled(!manualCoinSelectionEnabled));
+  };
+
+  const handleChartModeSwitch = () => {
+    dispatch(setChartMode(chartMode === 'price' ? 'balance' : 'price'));
   };
 
   const handleAuthenticationRequired = (action: string) => {
@@ -199,6 +205,10 @@ const Settings: React.FC<Props> = props => {
             },
           ]
         : []),
+      {
+        id: 'chart_mode',
+        type: 'chart_mode',
+      },
       {
         id: 'explorer',
         type: 'cell',
@@ -314,6 +324,13 @@ const Settings: React.FC<Props> = props => {
       {id: 'manual_coin_selection', type: 'manual_coin_selection'},
       {id: 'denomination', type: 'denomination'},
       {
+        id: 'rescan-wallet',
+        type: 'cell',
+        textKey: 'rescan_wallet',
+        forward: true,
+        onPress: () => navigation.navigate('RescanWallet'),
+      },
+      {
         id: 'reset-wallet',
         type: 'cell',
         textKey: 'reset_wallet',
@@ -337,6 +354,7 @@ const Settings: React.FC<Props> = props => {
       torDeviceCompatible,
       notificationsEnabled,
       manualCoinSelectionEnabled,
+      chartMode,
       biometricsEnabled,
       faceIDSupported,
       subunit,
@@ -407,6 +425,16 @@ const Settings: React.FC<Props> = props => {
               handleSwitch={handleManualCoinSelectionSwitch}
             />
           );
+        case 'chart_mode':
+          return (
+            <SettingCell
+              textKey="chart_mode"
+              textDomain="settingsTab"
+              switchEnabled
+              switchValue={chartMode === 'balance'}
+              handleSwitch={handleChartModeSwitch}
+            />
+          );
         case 'denomination':
           return (
             <View style={styles.switchContainer}>
@@ -443,6 +471,8 @@ const Settings: React.FC<Props> = props => {
       SCREEN_HEIGHT,
       styles,
       handleBiometricSwitch,
+      handleChartModeSwitch,
+      chartMode,
       dispatch,
       navigation,
       notificationsEnabled,

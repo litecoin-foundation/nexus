@@ -121,6 +121,7 @@ export type SettingsStackParamList = {
   RecoverLitewallet: undefined;
   Support: undefined;
   ResetWallet: undefined;
+  RescanWallet: undefined;
   TestPayment: undefined;
   Tor: undefined;
   LitecoinBackend: undefined;
