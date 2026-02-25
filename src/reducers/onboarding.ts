@@ -49,6 +49,7 @@ const initialState = {
 } as IOnboardingState;
 
 const apiAuthUrl = 'https://api.nexuswallet.com/auth';
+const apiSupportSignUrl = 'https://api.nexuswallet.com/api/support/sign';
 
 // actions
 export const startOnboarding = createAction('onboarding/startOnboarding');
@@ -63,6 +64,9 @@ export const setSeedVerified = createAction<boolean>(
 export const resetSeedAction = createAction('onboarding/resetSeedAction');
 const setSeedRecoveryAction = createAction<string[]>(
   'onboarding/setSeedRecoveryAction',
+);
+const unsetSeedRecoveryAction = createAction(
+  'onboarding/unsetSeedRecoveryAction',
 );
 export const setRecoveryMode = createAction<boolean>(
   'onboarding/setRecoveryMode',
@@ -123,7 +127,7 @@ export const loginToNexusApi =
       );
 
       const response = await fetchResolve(
-        'https://api.nexuswallet.com/api/support/sign',
+        apiSupportSignUrl,
         {
           method: 'POST',
           headers: {
@@ -185,6 +189,10 @@ export const setSeedRecovery =
     dispatch(setSeedVerified(true));
   };
 
+export const unsetSeedRecovery = (): AppThunk => dispatch => {
+  dispatch(unsetSeedRecoveryAction());
+};
+
 const cacheParts = [
   'cache.z00',
   'cache.z01',
@@ -200,6 +208,12 @@ const cacheParts = [
 
 export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
   const {task, lastLoadedCachePart} = getState().onboarding!;
+
+  // Presync is only needed for neutrino backend
+  if (getState().settings.litecoinBackend === 'electrum') {
+    dispatch(getNeutrinoCacheSuccessAction());
+    return;
+  }
 
   if (task === 'complete') {
     console.log('neutrino cache ready!');
@@ -408,6 +422,11 @@ export const onboardingSlice = createSlice({
       ...state,
       seed: action.payload,
       beingRecovered: true,
+    }),
+    unsetSeedRecoveryAction: state => ({
+      ...state,
+      beingRecovered: false,
+      seedVerified: false,
     }),
     setRecoveryMode: (state, action: PayloadAction<boolean>) => ({
       ...state,

@@ -32,6 +32,7 @@ import {ScreenSizeContext} from '../context/screenSize';
 type RootStackParamList = {
   Scan: {
     returnRoute: any;
+    returnScreen?: string;
   };
 };
 
@@ -53,10 +54,17 @@ const Scan = ({
         for (const code of codes) {
           if (code.value !== '') {
             Vibration.vibrate();
-            navigation.popTo(route.params.returnRoute, {
-              scanData: code.value,
-              updateHeader: true,
-            });
+            const scanData = code.value;
+            const {returnRoute, returnScreen} = route.params;
+
+            if (returnScreen) {
+              navigation.popTo(returnRoute, {
+                screen: returnScreen,
+                params: {scanData},
+              });
+            } else {
+              navigation.popTo(returnRoute, {scanData});
+            }
           }
         }
       }

@@ -135,6 +135,15 @@ export async function processConvertTransactions(
         relatedTx.blockHash === mainConvertTransaction.blockHash;
 
       if (sameBlockAsConvert) {
+        // Skip 0-amount MWEB kernel/peg transactions by including them
+        // in the convert set so they don't appear as ghost transactions
+        if (
+          Number(relatedTx.amount) === 0 &&
+          Number(relatedTx.totalFees) === 0
+        ) {
+          return true;
+        }
+
         // For same-block transactions, only include if:
         // 1) It's a receive to one of our addresses AND
         // 2) It clearly relates to the convert (see conditions below)

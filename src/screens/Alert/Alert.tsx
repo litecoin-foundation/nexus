@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {View, StyleSheet, FlatList} from 'react-native';
+import {View, StyleSheet, FlatList, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {StackNavigationOptions} from '@react-navigation/stack';
@@ -116,8 +116,9 @@ const getStyles = (
 export const AlertNavigationOptions = (
   navigation: any,
 ): StackNavigationOptions => {
-  const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height, 0);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 
   return {
     headerTransparent: true,
@@ -125,7 +126,7 @@ export const AlertNavigationOptions = (
       <TranslateText
         textKey="price_alerts"
         domain="alertsTab"
-        maxSizeInPixels={height * 0.02}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
         textStyle={styles.headerTitle}
         numberOfLines={1}
       />
@@ -138,6 +139,7 @@ export const AlertNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
     headerRight: () => (
@@ -145,9 +147,13 @@ export const AlertNavigationOptions = (
         textKey="create_alert"
         textDomain="alertsTab"
         onPress={() => navigation.navigate('Dial')}
-        rightPadding={true}
+        rightPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

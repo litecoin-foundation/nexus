@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -10,9 +10,8 @@ interface Props {
 const SupportCell: React.FC<Props> = props => {
   const {onPress} = props;
 
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const styles = getStyles();
 
   return (
     <TouchableOpacity style={styles.container} onPress={() => onPress()}>
@@ -33,7 +32,7 @@ const SupportCell: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,

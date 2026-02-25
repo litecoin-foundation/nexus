@@ -61,45 +61,15 @@ const CustomCarousel = forwardRef<CustomCarouselRef, CustomCarouselProps>(
       }
     };
 
-    const handleScrollEndDrag = (event: any) => {
-      const contentOffset = event.nativeEvent.contentOffset;
-      const currentPos = currentIndexRef.current * width;
-      const diff = contentOffset.x - currentPos;
-
-      let index = currentIndexRef.current;
-
-      // If scrolled more than 25% of page width, move to next/prev page
-      if (Math.abs(diff) > width * 0.25) {
-        if (diff > 0) {
-          index = Math.min(currentIndexRef.current + 1, data.length - 1);
-        } else {
-          index = Math.max(currentIndexRef.current - 1, 0);
-        }
-      }
-
-      // Snap to the determined page
-      scrollViewRef.current?.scrollTo({
-        x: index * width,
-        animated: true,
-      });
-
-      if (index !== currentIndexRef.current) {
-        currentIndexRef.current = index;
-        onSnapToItem?.(index);
-      }
-    };
-
     return (
       <ScrollView
         ref={scrollViewRef}
         horizontal
-        pagingEnabled={false}
+        pagingEnabled
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleMomentumScrollEnd}
-        onScrollEndDrag={handleScrollEndDrag}
         scrollEventThrottle={16}
         bounces={false}
-        decelerationRate="fast"
         style={{height}}>
         {data.map((item, index) => (
           <View key={index} style={{width}}>

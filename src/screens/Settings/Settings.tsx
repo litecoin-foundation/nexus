@@ -224,6 +224,13 @@ const Settings: React.FC<Props> = props => {
         onPress: () => navigation.navigate('Currency'),
       },
       {
+        id: 'litecoin-backend',
+        type: 'cell',
+        textKey: 'litecoin_backend',
+        forward: true,
+        onPress: () => navigation.navigate('LitecoinBackend'),
+      },
+      {
         id: 'language',
         type: 'cell',
         textKey: 'change_lang',
@@ -604,8 +611,13 @@ export const SettingsNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

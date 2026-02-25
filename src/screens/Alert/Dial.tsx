@@ -266,6 +266,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   });
 
 export const DialNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
+
   return {
     headerTitle: '',
     headerTransparent: true,
@@ -275,8 +277,13 @@ export const DialNavigationOptions = (navigation: any) => {
         textDomain="alertsTab"
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

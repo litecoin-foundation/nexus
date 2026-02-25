@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import {Platform} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
@@ -6,6 +7,8 @@ import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SendConfirmation from '../../components/SendConfirmation';
 import {useAppSelector} from '../../store/hooks';
+
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   ConfirmSend: {
@@ -53,6 +56,8 @@ const ConfirmSend: React.FC<Props> = props => {
 };
 
 export const ConfirmSendNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
+
   return {
     headerTitle: '',
     headerTransparent: true,
@@ -63,6 +68,7 @@ export const ConfirmSendNavigationOptions = (navigation: any) => {
         textDomain="buyTab"
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
     headerRight: () => (
@@ -70,9 +76,13 @@ export const ConfirmSendNavigationOptions = (navigation: any) => {
         textKey="cancel"
         textDomain="buyTab"
         onPress={() => navigation.navigate('Main', {isInitial: true})}
-        rightPadding={true}
+        rightPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

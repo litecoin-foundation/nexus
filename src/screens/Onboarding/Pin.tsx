@@ -1,12 +1,13 @@
 import React, {
   useState,
-  useLayoutEffect,
   useEffect,
+  useCallback,
   useContext,
   useMemo,
 } from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, Platform} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useFocusEffect} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 
 import OnboardingAuthPad from '../../components/Numpad/OnboardingAuthPad';
@@ -46,8 +47,16 @@ const Pin: React.FC<Props> = props => {
   const {beingRecovered} = useAppSelector(state => state.onboarding!);
   const {biometricsAvailable} = useAppSelector(state => state.authentication!);
 
+  useFocusEffect(
+    useCallback(() => {
+      setNewPasscode('');
+      setPasscodeInitialSet(false);
+      dispatch(clearValues());
+    }, [dispatch]),
+  );
+
   useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+    const unsubscribe = navigation.addListener('beforeRemove', e => {
       // Only reset if going back, not when navigating forward
       if (e.data.action.type === 'GO_BACK' || e.data.action.type === 'POP') {
         dispatch(resetPincode());
@@ -59,24 +68,6 @@ const Pin: React.FC<Props> = props => {
 
     return unsubscribe;
   }, [navigation, dispatch, beingRecovered]);
-
-  const headerLeftMemo = useMemo(
-    () => (
-      <HeaderButton
-        onPress={() => {
-          navigation.goBack();
-        }}
-        imageSource={require('../../assets/images/back-icon.png')}
-      />
-    ),
-    [navigation],
-  );
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => headerLeftMemo,
-    });
-  }, [navigation, headerLeftMemo]);
 
   const headerTitleMemo = useMemo(
     () => (
@@ -90,12 +81,33 @@ const Pin: React.FC<Props> = props => {
     [passcodeInitialSet, styles.headerTitle, SCREEN_HEIGHT],
   );
 
+  const headerLeftMemo = useMemo(
+    () => (
+      <HeaderButton
+        onPress={() => {
+          navigation.goBack();
+        }}
+        imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
+      />
+    ),
+    [navigation],
+  );
+
   useEffect(() => {
     navigation.setOptions({
-      headerTitleAlign: 'center',
+      headerTitleAlign: 'left',
+      headerTitleContainerStyle: {
+        left: 7,
+      },
       headerTitle: () => headerTitleMemo,
+      headerLeft: () => headerLeftMemo,
+      headerLeftContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+      headerRightContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
     });
-  }, [navigation, headerTitleMemo]);
+  }, [navigation, headerTitleMemo, headerLeftMemo, SCREEN_WIDTH]);
 
   const handleCompletion = () => {
     setNewPasscode(pin);
@@ -148,17 +160,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
-    // left absolute margin is screenWidth * 0.15
-    // used for subtitles alinging
     headerTitle: {
-      position: 'absolute',
-      top: screenHeight * 0.014 * -1,
-      left: screenWidth * 0.5 * -1 + screenWidth * 0.15,
-      color: '#fff',
       fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
       fontStyle: 'normal',
       fontWeight: 'bold',
+      color: 'white',
+      fontSize: screenHeight * 0.026,
     },
   });
 

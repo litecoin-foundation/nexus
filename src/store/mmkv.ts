@@ -1,4 +1,4 @@
-import {MMKV} from 'react-native-mmkv';
+import {createMMKV} from 'react-native-mmkv';
 import {Storage} from 'redux-persist';
 import Crypto from 'react-native-quick-crypto';
 import {getItem, setItem} from 'expo-secure-store';
@@ -15,7 +15,7 @@ if (encryptionKey === null) {
   setItem('plasmaKey', randomKey);
 }
 
-const storage = new MMKV({
+const storage = createMMKV({
   id: 'plasma-storage',
   encryptionKey: plasmaKey,
 });
@@ -30,7 +30,7 @@ const reduxStorage: Storage = {
     return Promise.resolve(value);
   },
   removeItem: key => {
-    storage.delete(key);
+    storage.remove(key);
     return Promise.resolve();
   },
 };

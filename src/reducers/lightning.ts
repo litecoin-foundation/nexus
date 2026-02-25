@@ -55,8 +55,8 @@ export const setRescanningWallet = createAction<boolean>(
 // functions
 export const startLnd = (): AppThunk => async (dispatch, getState) => {
   try {
-    const {torEnabled} = getState().settings;
-    await createConfig(torEnabled);
+    const {torEnabled, litecoinBackend} = getState().settings;
+    await createConfig(torEnabled, litecoinBackend);
 
     // lnd dir path
     const appFolderPath = `${RNFS.DocumentDirectoryPath}/lndltc/`;
@@ -200,7 +200,9 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
           } else if (state.state === WalletState.RPC_ACTIVE) {
             // RPC_ACTIVE so we are ready to dispatch pollers
             dispatch(pollInfo());
-            dispatch(pollPeers());
+            if (getState().settings.litecoinBackend !== 'electrum') {
+              dispatch(pollPeers());
+            }
             dispatch(pollRates());
             dispatch(pollTransactions());
             dispatch(subscribeTransactions());
@@ -270,7 +272,9 @@ export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
             if (state.state === WalletState.RPC_ACTIVE) {
               // dispatch pollers
               dispatch(pollInfo());
-              dispatch(pollPeers());
+              if (getState().settings.litecoinBackend !== 'electrum') {
+                dispatch(pollPeers());
+              }
               dispatch(subscribeTransactions());
               dispatch(pollRates());
               dispatch(pollTransactions());

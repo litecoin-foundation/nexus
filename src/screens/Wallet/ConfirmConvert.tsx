@@ -453,6 +453,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   });
 
 export const ConfirmConvertNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
+
   return {
     headerTitle: '',
     headerTransparent: true,
@@ -463,6 +465,7 @@ export const ConfirmConvertNavigationOptions = (navigation: any) => {
         textDomain="buyTab"
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
     headerRight: () => (
@@ -470,9 +473,13 @@ export const ConfirmConvertNavigationOptions = (navigation: any) => {
         textKey="cancel"
         textDomain="buyTab"
         onPress={() => navigation.navigate('Main', {isInitial: true})}
-        rightPadding={true}
+        rightPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

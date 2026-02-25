@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-turbo-lndltc/cpp/CMakeLists.txt b/node_modules/react-native-turbo-lndltc/cpp/CMakeLists.txt
+index a97f82b..f8a76b3 100644
+--- a/node_modules/react-native-turbo-lndltc/cpp/CMakeLists.txt
++++ b/node_modules/react-native-turbo-lndltc/cpp/CMakeLists.txt
+@@ -5,7 +5,7 @@ project(TurboLnd)
+ set(CMAKE_VERBOSE_MAKEFILE on)
+ set(CMAKE_CXX_STANDARD 20)
+ 
+-add_compile_options(-fexceptions -frtti -std=c++17)
++add_compile_options(-fexceptions -frtti -std=c++20)
+ 
+ # Define all the .cpp files as source_files
+ file(GLOB source_files CONFIGURE_DEPENDS *.cpp)

@@ -9,6 +9,7 @@ import React, {
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
 import Animated, {SharedValue} from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
+import {useDrawerStatus} from '@react-navigation/drawer';
 import {
   Canvas,
   Image,
@@ -43,7 +44,8 @@ import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
 import LoadingIndicator from '../components/LoadingIndicator';
-import Convert from '../components/Cards/Convert';
+// import Convert from '../components/Cards/Convert';
+import GiftCardShop from '../components/Cards/GiftCardShop';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {sendOnchainPayment, txDetailSelector} from '../reducers/transaction';
 import {unsetDeeplink, decodeAppDeeplink} from '../reducers/deeplinks';
@@ -64,6 +66,7 @@ type RootStackParamList = {
   Main: {
     scanData?: string;
     isInitial?: boolean;
+    activeCard?: number;
   };
   SearchTransaction: undefined;
 };
@@ -113,7 +116,7 @@ const TxListComponent: React.FC<TxListComponentProps> = props => {
         />
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={styles.txSearchBtnCanvas}>
+          <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
             <RoundedRect
               x={SCREEN_HEIGHT * 0.02}
               y={SCREEN_HEIGHT * 0.01}
@@ -166,6 +169,9 @@ const Main: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
 
+  const drawerStatus = useDrawerStatus();
+  const isShopAccountDrawerOpen = drawerStatus === 'open';
+
   const [activeTab, setActiveTab] = useState(0);
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
@@ -196,6 +202,9 @@ const Main: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params?.isInitial) {
       foldUnfoldBottomSheet(false);
+    } else if (route.params?.activeCard) {
+      setActiveTab(route.params?.activeCard);
+      setBottomSheetFolded(false);
     }
   }, [route, foldUnfoldBottomSheet]);
 
@@ -215,6 +224,24 @@ const Main: React.FC<Props> = props => {
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
+  // Drawer toggle function
+  const toggleShopAccountDrawer = useCallback(() => {
+    if (activeTab === 3) {
+      if (isShopAccountDrawerOpen) {
+        navigation.closeDrawer?.();
+      } else {
+        navigation.openDrawer?.();
+      }
+    }
+  }, [activeTab, isShopAccountDrawerOpen, navigation]);
+
+  // Auto-close drawer when leaving Shop tab
+  useEffect(() => {
+    if (activeTab !== 3 && isShopAccountDrawerOpen) {
+      navigation.closeDrawer?.();
+    }
+  }, [activeTab, isShopAccountDrawerOpen, navigation]);
+
   const {
     mainSheetsTranslationY,
     mainSheetsTranslationYStart,
@@ -226,7 +253,7 @@ const Main: React.FC<Props> = props => {
     animatedHeaderButtonOpacity,
     animatedWalletButtonOpacity,
     animatedWalletButtonArrowRotation,
-  } = useMainAnims({isWalletsModalOpened, isTxDetailModalOpened});
+  } = useMainAnims({isWalletsModalOpened, isTxDetailModalOpened, activeTab});
 
   // Flexa
   const flexaAssetAccounts = useMemo(
@@ -285,7 +312,7 @@ const Main: React.FC<Props> = props => {
       dismissAllModals();
       await sleep(200);
 
-      console.log(transaction);
+      // console.log(transaction);
       const addrArray = transaction.destinationAddress.split(':');
 
       // validation of destinationAddress
@@ -318,7 +345,7 @@ const Main: React.FC<Props> = props => {
             'Flexa Payment',
           ),
         );
-        console.log(txid);
+        // console.log(txid);
         transactionSent(txid);
         setIsPinModalOpened(false);
         setLoading(false);
@@ -380,6 +407,18 @@ const Main: React.FC<Props> = props => {
       if (uri.startsWith('litecoin:')) {
         setBottomSheetFolded(false);
         setActiveTab(4);
+      } else if (uri.startsWith('nexus://verifyotp')) {
+        const decodedDeeplink = decodeAppDeeplink(uri);
+        if (
+          decodedDeeplink &&
+          decodedDeeplink.stack?.length > 0 &&
+          decodedDeeplink.screen?.length > 0
+        ) {
+          navigation.navigate(decodedDeeplink.stack, {
+            screen: decodedDeeplink.screen,
+            params: {otpCode: decodedDeeplink.options?.otp},
+          });
+        }
       } else if (uri.startsWith('nexus://')) {
         const decodedDeeplink = decodeAppDeeplink(uri);
         if (
@@ -422,6 +461,8 @@ const Main: React.FC<Props> = props => {
     navigation,
     isWalletsModalOpened,
     setWalletsModalOpened,
+    isShopAccountDrawerOpen,
+    toggleShopAccountDrawer,
     isTxDetailModalOpened,
     setPlasmaModalGapInPixels,
     setBottomSheetFolded,
@@ -456,15 +497,16 @@ const Main: React.FC<Props> = props => {
           disabled={!isInternetReachable ? true : false}
         />
         <DashboardButton
-          textKey="convert"
+          textKey="shop"
           wider={true}
-          imageSource={require('../assets/icons/convert-icon.png')}
+          imageSource={require('../assets/icons/shop.png')}
           handlePress={() => {
             setBottomSheetFolded(false);
             setActiveTab(3);
           }}
           active={activeTab === 3}
           disabled={!isInternetReachable ? true : false}
+          sizePercentage={80}
         />
         <DashboardButton
           textKey="send"
@@ -528,7 +570,8 @@ const Main: React.FC<Props> = props => {
         activeTab={activeTab}
         buyViewComponent={<Buy navigation={navigation} />}
         sellViewComponent={<Sell navigation={navigation} />}
-        convertViewComponent={<Convert navigation={navigation} />}
+        // convertViewComponent={<Convert navigation={navigation} />}
+        shopViewComponent={<GiftCardShop navigation={navigation} />}
         sendViewComponent={
           <Send route={route} navigation={navigation} ref={sendCardRef} />
         }

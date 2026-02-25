@@ -1,5 +1,16 @@
 {
   "name": "nexus",
   "displayName": "Nexus",
-  "plugins": ["expo-secure-store"]
+  "plugins": ["expo-secure-store", "react-native-bootsplash"],
+  "expo": {
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "buildReactNativeFromSource": true,
+          "useHermesV1": true
+        }
+      ]
+    ]
+  }
 }

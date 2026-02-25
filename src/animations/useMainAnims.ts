@@ -17,10 +17,11 @@ import {ScreenSizeContext} from '../context/screenSize';
 interface Props {
   isWalletsModalOpened: boolean;
   isTxDetailModalOpened: boolean;
+  activeTab: number;
 }
 
 export function useMainAnims(props: Props) {
-  const {isWalletsModalOpened, isTxDetailModalOpened} = props;
+  const {isWalletsModalOpened, isTxDetailModalOpened, activeTab} = props;
   const insets = useSafeAreaInsets();
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
@@ -114,7 +115,7 @@ export function useMainAnims(props: Props) {
         buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
       }
 
-      if (isTxDetailModalOpened) {
+      if (isTxDetailModalOpened || activeTab === 3) {
         walletButtonOpacity.value = withTiming(0, {duration: 150});
       } else {
         walletButtonOpacity.value = withDelay(
@@ -132,6 +133,7 @@ export function useMainAnims(props: Props) {
     buttonOpacity,
     walletButtonOpacity,
     preRendered,
+    activeTab,
   ]);
 
   // NOTE: make header buttons invisible on unfocus so when you go back to

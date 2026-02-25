@@ -5,7 +5,7 @@ import React, {
   useContext,
   useMemo,
 } from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {createSelector} from '@reduxjs/toolkit';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -58,6 +58,7 @@ const Generate: React.FC<Props> = props => {
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
     [navigation],
@@ -85,8 +86,12 @@ const Generate: React.FC<Props> = props => {
       headerTintColor: 'white',
       headerLeft: () => headerLeftButton,
       headerTitle: () => headerTitle,
+      headerLeftContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+      headerRightContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
     });
-  }, [navigation, headerLeftButton, headerTitle]);
+  }, [navigation, headerLeftButton, headerTitle, SCREEN_WIDTH]);
 
   const list = (
     <CustomCarousel
@@ -147,7 +152,6 @@ const Generate: React.FC<Props> = props => {
               domain="onboarding"
               textStyle={styles.warningText}
               maxSizeInPixels={SCREEN_HEIGHT * 0.013}
-              // maxLengthInPixels={SCREEN_WIDTH * 0.7}
               numberOfLines={2}
             />
           </View>

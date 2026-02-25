@@ -19,9 +19,8 @@ interface Props {
 const OptionCell: React.FC<Props> = (props: Props) => {
   const {title, onPress, selected} = props;
 
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const styles = getStyles();
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -39,7 +38,7 @@ const OptionCell: React.FC<Props> = (props: Props) => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,

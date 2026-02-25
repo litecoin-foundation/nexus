@@ -26,6 +26,10 @@ interface Props {
   cellHeight: number;
   cellHeightExpandMultiplier: number;
   separatorGapHeightInPx?: number;
+  textDomain?: string;
+  tickDisabled?: boolean;
+  smallPadding?: boolean;
+  centerText?: boolean;
 }
 
 interface OptionProps {
@@ -37,6 +41,7 @@ interface OptionProps {
     [key: string]: any;
   };
   cellHeightAnimatedStyle: any;
+  textDomain?: string;
 }
 
 const FOLDING_ANIM_DURATION = 200;
@@ -50,6 +55,7 @@ const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
     onPress,
     styles,
     cellHeightAnimatedStyle,
+    textDomain,
   } = props;
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -69,7 +75,7 @@ const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
                   onPress={() => onPress(option)}>
                   <TranslateText
                     textKey={String(option).toLowerCase()}
-                    domain="searchTab"
+                    domain={textDomain || 'searchTab'}
                     maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                     textStyle={styles.optionBtnText}
                     numberOfLines={1}
@@ -122,6 +128,10 @@ const DropDownButton: React.FC<Props> = props => {
     cellHeight,
     cellHeightExpandMultiplier,
     separatorGapHeightInPx,
+    textDomain,
+    tickDisabled,
+    smallPadding,
+    centerText,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -145,6 +155,8 @@ const DropDownButton: React.FC<Props> = props => {
         arrowHeight,
         cellHeight,
         separatorGapHeight,
+        smallPadding || false,
+        centerText || false,
       ),
     [
       SCREEN_WIDTH,
@@ -153,6 +165,8 @@ const DropDownButton: React.FC<Props> = props => {
       arrowHeight,
       cellHeight,
       separatorGapHeight,
+      smallPadding,
+      centerText,
     ],
   );
 
@@ -209,17 +223,21 @@ const DropDownButton: React.FC<Props> = props => {
           style={[styles.boxTitleContainer, cellHeightAnimatedStyle]}>
           <TranslateText
             textKey={String(currentOption).toLowerCase()}
-            domain="searchTab"
+            domain={textDomain || 'searchTab'}
             maxSizeInPixels={SCREEN_HEIGHT * 0.02}
             textStyle={styles.boxText}
             numberOfLines={1}
           />
-          <Animated.View style={styles.boxArrow}>
-            <Image
-              style={styles.boxArrowIcon}
-              source={require('../../assets/icons/tick-icon.png')}
-            />
-          </Animated.View>
+          {tickDisabled ? (
+            <></>
+          ) : (
+            <Animated.View style={styles.boxArrow}>
+              <Image
+                style={styles.boxArrowIcon}
+                source={require('../../assets/icons/tick-icon.png')}
+              />
+            </Animated.View>
+          )}
         </Animated.View>
         <Animated.View style={styles.optionsContainer}>
           <RenderOptionsWithDelay
@@ -233,6 +251,7 @@ const DropDownButton: React.FC<Props> = props => {
             }}
             styles={styles}
             cellHeightAnimatedStyle={cellHeightAnimatedStyle}
+            textDomain={textDomain}
           />
         </Animated.View>
       </Animated.View>
@@ -247,6 +266,8 @@ const getStyles = (
   arrowHeight: number,
   cellHeight: number,
   separatorGapHeight: number,
+  smallPadding: boolean,
+  centerText: boolean,
 ) =>
   StyleSheet.create({
     container: {
@@ -267,9 +288,11 @@ const getStyles = (
       width: '100%',
       height: cellHeight,
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: centerText ? 'center' : 'space-between',
       alignItems: 'center',
-      paddingHorizontal: screenHeight * 0.02,
+      paddingHorizontal: smallPadding
+        ? screenHeight * 0.012
+        : screenHeight * 0.02,
     },
     boxText: {
       color: '#fff',
@@ -290,7 +313,7 @@ const getStyles = (
       flex: 1,
     },
     optionBtnContainer: {
-      width: screenWidth * 0.35,
+      width: '100%',
       height: cellHeight,
       borderColor: 'rgba(240,240,240,0.15)',
       borderTopWidth: 1,
@@ -299,7 +322,10 @@ const getStyles = (
       width: '100%',
       height: '100%',
       justifyContent: 'center',
-      paddingHorizontal: screenHeight * 0.02,
+      alignItems: centerText ? 'center' : 'flex-start',
+      paddingHorizontal: smallPadding
+        ? screenHeight * 0.012
+        : screenHeight * 0.02,
     },
     optionBtnText: {
       color: '#fff',

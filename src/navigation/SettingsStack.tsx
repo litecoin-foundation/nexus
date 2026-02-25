@@ -40,6 +40,9 @@ import TestPayment, {
 } from '../screens/Settings/TestPayment';
 import Products from '../screens/Settings/Products';
 import Tor, {TorNavigationOptions} from '../screens/Settings/Tor';
+import LitecoinBackend, {
+  LitecoinBackendNavigationOptions,
+} from '../screens/Settings/LitecoinBackend';
 import ExportElectrum, {
   ExportElectrumNavigationOptions,
 } from '../screens/Settings/ExportElectrum';
@@ -149,6 +152,13 @@ function SettingsStack() {
         name="Tor"
         component={Tor}
         options={({navigation}) => TorNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="LitecoinBackend"
+        component={LitecoinBackend}
+        options={({navigation}) =>
+          LitecoinBackendNavigationOptions(navigation)
+        }
       />
       <Stack.Screen
         name="ExportElectrum"

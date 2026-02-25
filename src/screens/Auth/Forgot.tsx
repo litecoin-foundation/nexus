@@ -1,5 +1,5 @@
-import React from 'react';
-import {StyleSheet, Alert, View} from 'react-native';
+import React, {useContext} from 'react';
+import {StyleSheet, Alert, View, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   StackNavigationOptions,
@@ -14,6 +14,7 @@ import TranslateText from '../../components/TranslateText';
 import {useAppSelector} from '../../store/hooks';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
+import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Forgot: undefined;
@@ -95,6 +96,8 @@ const styles = StyleSheet.create({
 export const ForgotNavigationOptions = (
   navigation: any,
 ): StackNavigationOptions => {
+  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
+
   return {
     headerTitle: () => (
       <TranslateText
@@ -113,8 +116,13 @@ export const ForgotNavigationOptions = (
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

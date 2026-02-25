@@ -17,6 +17,7 @@ import {
   genSeed,
   getNeutrinoCache,
   setSeedRecovery,
+  unsetSeedRecovery,
 } from '../../reducers/onboarding';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
@@ -61,6 +62,12 @@ const InitialWithSeed = (props: Props) => {
   useEffect(() => {
     dispatch(getNeutrinoCache());
   }, [dispatch]);
+
+  const createNewSeed = async () => {
+    dispatch(unsetSeedRecovery());
+    await dispatch(genSeed());
+    navigation.navigate('Pin');
+  };
 
   const loginWithExistingSeed = async (seedString: string) => {
     const seed = seedString.split(',');
@@ -107,8 +114,7 @@ const InitialWithSeed = (props: Props) => {
             textDomain="onboarding"
             small={false}
             onPress={() => {
-              dispatch(genSeed());
-              navigation.navigate('Pin');
+              createNewSeed();
             }}
             active={true}
           />

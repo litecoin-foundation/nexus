@@ -5,7 +5,7 @@ import React, {
   useContext,
   useMemo,
 } from 'react';
-import {View, Text, StyleSheet, Alert} from 'react-native';
+import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
@@ -63,6 +63,7 @@ const Verify: React.FC<Props> = props => {
       <HeaderButton
         onPress={() => navigation.goBack()}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
     [navigation],
@@ -78,8 +79,12 @@ const Verify: React.FC<Props> = props => {
       headerTintColor: 'white',
       headerTitle: () => headerTitleMemo,
       headerLeft: () => headerLeftMemo,
+      headerLeftContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+      headerRightContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
     });
-  }, [navigation, headerTitleMemo, headerLeftMemo]);
+  }, [navigation, headerTitleMemo, headerLeftMemo, SCREEN_WIDTH]);
 
   const handlePress = async () => {
     if (multiplier === 8) {
@@ -115,7 +120,7 @@ const Verify: React.FC<Props> = props => {
 
   return (
     <LinearGradient colors={['#1162E6', '#0F55C7']} style={styles.gradient}>
-      <CustomSafeAreaView styles={styles.safeArea} edges={['top', 'bottom']}>
+      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         <OnboardingHeader
           textKey="verify_seed_description"
           textDomain="onboarding"
@@ -195,7 +200,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       alignSelf: 'center',
       gap: screenWidth * 0.1,
-      paddingVertical: screenHeight * 0.1,
+      paddingVertical: screenHeight * 0.13,
     },
     optionSubContainer: {
       height: screenHeight * 0.08,

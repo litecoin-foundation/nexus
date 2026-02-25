@@ -7,7 +7,7 @@ module.exports = function (api) {
   api.cache(true);
 
   return {
-    presets: ['module:@react-native/babel-preset'],
+    presets: ['babel-preset-expo'],
     plugins: [
       ['babel-plugin-react-compiler', ReactCompilerConfig],
       ...(env === 'development' ? [] : ['transform-remove-console']),
@@ -21,7 +21,7 @@ module.exports = function (api) {
           },
         },
       ],
-      ['react-native-reanimated/plugin'],
+      ['react-native-worklets/plugin'],
     ],
   };
 };

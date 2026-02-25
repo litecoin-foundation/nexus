@@ -29,6 +29,7 @@ interface ISettings {
   notificationsEnabled: boolean;
   manualCoinSelectionEnabled: boolean;
   torEnabled: boolean;
+  litecoinBackend: 'neutrino' | 'electrum';
   openedNotification: OpenedNotificationType;
   testPaymentActive: boolean;
   testPaymentKey: boolean;
@@ -74,6 +75,7 @@ const initialState = {
   notificationsEnabled: false,
   manualCoinSelectionEnabled: false,
   torEnabled: false,
+  litecoinBackend: 'electrum',
   openedNotification: null,
   chartMode: 'price',
 } as ISettings;
@@ -108,6 +110,9 @@ const enableManualCoinSelectionAction = createAction<boolean>(
   'settings/enableManualCoinSelectionAction',
 );
 const enableTorAction = createAction<boolean>('settings/enableTorAction');
+const setLitecoinBackendAction = createAction<'neutrino' | 'electrum'>(
+  'settings/setLitecoinBackendAction',
+);
 const setTestPaymentAction = createAction<TestPaymentType>(
   'settings/setTestPaymentAction',
 );
@@ -205,6 +210,12 @@ export const setTorEnabled =
     return true;
   };
 
+export const setLitecoinBackend =
+  (backend: 'neutrino' | 'electrum'): AppThunk =>
+  dispatch => {
+    dispatch(setLitecoinBackendAction(backend));
+  };
+
 export const setTestPayment =
   (
     testPaymentActive: boolean,
@@ -283,6 +294,10 @@ export const settingsSlice = createSlice({
     enableTorAction: (state, action) => ({
       ...state,
       torEnabled: action.payload,
+    }),
+    setLitecoinBackendAction: (state, action) => ({
+      ...state,
+      litecoinBackend: action.payload,
     }),
     setTestPaymentAction: (state, action) => ({
       ...state,

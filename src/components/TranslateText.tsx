@@ -43,19 +43,17 @@ const TranslateText: React.FC<Props> = props => {
 
   const {width, height} = useContext(ScreenSizeContext);
 
+  const flatStyle = textStyle ? StyleSheet.flatten(textStyle) : undefined;
+
   let fontSize =
-    textStyle && textStyle.hasOwnProperty('fontSize')
-      ? textStyle.fontSize
-      : DEFAULT_FONT_SIZE;
+    flatStyle && flatStyle.fontSize ? flatStyle.fontSize : DEFAULT_FONT_SIZE;
 
   if (maxSizeInPixels && fontSize * FONT_SCALE > maxSizeInPixels) {
     fontSize = maxSizeInPixels / FONT_SCALE;
   }
 
   const textFlexBasis =
-    textStyle && textStyle.hasOwnProperty('flexBasis')
-      ? textStyle.flexBasis
-      : undefined;
+    flatStyle && flatStyle.flexBasis ? flatStyle.flexBasis : undefined;
 
   const styles = getStyles(
     width,
@@ -137,6 +135,7 @@ const getStyles = (
     textLimits: {
       fontSize: fontSize,
       flexBasis: null,
+      // width: '100%',
     },
   });
 

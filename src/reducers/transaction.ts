@@ -564,6 +564,10 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
     );
 
     for await (const tx of lndTransactions.transactions) {
+      // Skip 0-amount MWEB kernel/peg transactions (internal to MWEB, not user-facing)
+      if (Number(tx.amount) === 0 && Number(tx.totalFees) === 0) {
+        continue;
+      }
       // Skip if this transaction is already part of a convert operation
       if (tx.txHash && processedConvertTxHashes.has(tx.txHash)) {
         continue;

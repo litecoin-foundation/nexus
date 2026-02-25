@@ -1,3 +1,5 @@
+import {NavigatorScreenParams} from '@react-navigation/native';
+
 export type RootStackParamList = {
   Loading: undefined;
   AuthStack: undefined;
@@ -16,15 +18,22 @@ export type AlertsStackParamList = {
   Dial: {identifier: string};
 };
 
-export type NewWalletStackParamList = {
-  Main: {
+export type MainDrawerParamList = {
+  MainScreen: {
     scanData?: string;
     isInitial?: boolean;
+    activeCard?: number;
   };
+};
+
+export type NewWalletStackParamList = {
+  Main: NavigatorScreenParams<MainDrawerParamList>;
   SettingsStack: undefined;
+  NexusShopStack: undefined;
   AlertsStack: undefined;
   Scan: {
     returnRoute: string;
+    returnScreen?: string;
   };
   WebPage: {
     uri: string;
@@ -98,6 +107,7 @@ export type SettingsStackParamList = {
   Products: undefined;
   Scan: {
     returnRoute: string;
+    returnScreen?: string;
   };
   Import: {
     scanData?: string;
@@ -114,5 +124,6 @@ export type SettingsStackParamList = {
   RescanWallet: undefined;
   TestPayment: undefined;
   Tor: undefined;
+  LitecoinBackend: undefined;
   ExportElectrum: undefined;
 };

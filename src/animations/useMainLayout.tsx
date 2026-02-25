@@ -6,8 +6,12 @@ import React, {
   useContext,
 } from 'react';
 import {useFocusEffect} from '@react-navigation/native';
-import {View} from 'react-native';
-import Animated from 'react-native-reanimated';
+import {Platform, View} from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -15,6 +19,7 @@ import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
 import HeaderButton from '../components/Buttons/HeaderButton';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {useAppSelector} from '../store/hooks';
 
 interface Props {
   walletButtonAnimDuration: any;
@@ -27,6 +32,8 @@ interface Props {
   navigation: any;
   isWalletsModalOpened: boolean;
   setWalletsModalOpened: (isOpened: boolean) => void;
+  isShopAccountDrawerOpen: boolean;
+  toggleShopAccountDrawer: () => void;
   isTxDetailModalOpened: boolean;
   setPlasmaModalGapInPixels: (gapInPixels: number) => void;
   setBottomSheetFolded: (isFolded: boolean) => void;
@@ -50,6 +57,8 @@ export function useMainLayout(props: Props) {
     navigation,
     isWalletsModalOpened,
     setWalletsModalOpened,
+    isShopAccountDrawerOpen,
+    toggleShopAccountDrawer,
     isTxDetailModalOpened,
     setPlasmaModalGapInPixels,
     setBottomSheetFolded,
@@ -62,7 +71,34 @@ export function useMainLayout(props: Props) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
-  // header align
+  // Read country picker state from Redux
+  const isCountryPickerOpen = useAppSelector(
+    (state: any) => state.nexusshopaccount.isCountryPickerOpen,
+  );
+
+  // Animated opacity for drawer toggle button
+  const drawerToggleOpacity = useSharedValue(1);
+
+  // Animate drawer toggle button visibility based on country picker state
+  useEffect(() => {
+    if (isCountryPickerOpen) {
+      drawerToggleOpacity.value = withTiming(0, {
+        duration: 250,
+      });
+    } else {
+      drawerToggleOpacity.value = withTiming(1, {
+        duration: 250,
+      });
+    }
+  }, [isCountryPickerOpen]);
+
+  // Animated style for drawer toggle button
+  const animatedDrawerToggleStyle = useAnimatedStyle(() => {
+    return {
+      opacity: drawerToggleOpacity.value,
+    };
+  });
+
   const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
   const deviceHeaderHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
@@ -121,6 +157,7 @@ export function useMainLayout(props: Props) {
               setActiveTab(0);
             }}
             imageSource={require('../assets/images/back-icon.png')}
+            leftPadding
           />
         </Animated.View>
       </View>
@@ -141,12 +178,13 @@ export function useMainLayout(props: Props) {
             onPress={() => navigation.navigate('SettingsStack')}
             imageSource={require('../assets/icons/settings-cog.png')}
             imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
+            leftPadding
           />
           {isFlexaCustomer ? (
             <HeaderButton
               onPress={() => manualPayment()}
               imageSource={require('../assets/icons/shop.png')}
-              marginLeft={SCREEN_WIDTH * 0.02 * -1}
+              leftPadding
             />
           ) : null}
         </Animated.View>
@@ -171,8 +209,8 @@ export function useMainLayout(props: Props) {
           <HeaderButton
             onPress={() => navigation.navigate('AlertsStack')}
             imageSource={require('../assets/icons/alerts-icon.png')}
-            rightPadding={true}
             imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
+            rightPadding
           />
         </Animated.View>
       </View>
@@ -186,6 +224,39 @@ export function useMainLayout(props: Props) {
     ],
   );
 
+  const nexusShopAccountButton = useMemo(
+    () => (
+      <View style={alignHeaderElementsWithMarginTop}>
+        <Animated.View
+          style={[
+            styles.headerBtns,
+            animatedHeaderButtonOpacity,
+            animatedDrawerToggleStyle,
+          ]}>
+          <HeaderButton
+            onPress={toggleShopAccountDrawer}
+            imageSource={require('../assets/icons/account-settings-icon.png')}
+            imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
+            rightPadding
+            backgroundColorSpecified={
+              isShopAccountDrawerOpen ? '#0070F0' : undefined
+            }
+          />
+        </Animated.View>
+      </View>
+    ),
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    [
+      isShopAccountDrawerOpen,
+      toggleShopAccountDrawer,
+      animatedHeaderButtonOpacity,
+      animatedDrawerToggleStyle,
+      alignHeaderElementsWithMarginTop,
+      SCREEN_HEIGHT,
+      styles.headerBtns,
+    ],
+  );
+
   const emptyFragment = useMemo(() => <></>, []);
 
   const fadingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -193,30 +264,54 @@ export function useMainLayout(props: Props) {
     undefined,
   );
 
+  // NOTE: React Navigation applies marginHorizontal: 5 to the header content
+  // on iOS screens wider than 414px (IPAD_MINI_MEDIUM_WIDTH). Cancel it out.
+  const noHeaderContainerMargin = useMemo(
+    () =>
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414
+        ? {
+            headerLeftContainerStyle: {marginStart: -5},
+            headerRightContainerStyle: {marginEnd: -5},
+          }
+        : {},
+    [SCREEN_WIDTH],
+  );
+
   useEffect(() => {
+    const parentNavigation = navigation.getParent();
+    if (!parentNavigation) return;
+
     if (isWalletsModalOpened || isTxDetailModalOpened) {
       fadingTimeout.current = setTimeout(() => {
-        navigation.setOptions({
+        parentNavigation.setOptions({
           headerLeft: () => emptyFragment,
           headerRight: () => emptyFragment,
         });
       }, 150);
+    } else if (activeTab === 3) {
+      parentNavigation.setOptions({
+        ...noHeaderContainerMargin,
+        headerLeft: () =>
+          isShopAccountDrawerOpen ? emptyFragment : backHeaderButton,
+        headerRight: () => nexusShopAccountButton,
+      });
     } else {
-      navigation.setOptions({
+      parentNavigation.setOptions({
+        ...noHeaderContainerMargin,
         headerLeft: () =>
           activeTab !== 0 ? backHeaderButton : leftHeaderButton,
         headerRight: () => rightHeaderButton,
       });
     }
 
-    if (isTxDetailModalOpened) {
+    if (isTxDetailModalOpened || activeTab === 3) {
       walletButtonFadingTimeout.current = setTimeout(() => {
-        navigation.setOptions({
+        parentNavigation.setOptions({
           headerTitle: () => emptyFragment,
         });
       }, 150);
     } else {
-      navigation.setOptions({
+      parentNavigation.setOptions({
         headerTitle: () => walletButton,
       });
     }
@@ -230,25 +325,31 @@ export function useMainLayout(props: Props) {
     backHeaderButton,
     leftHeaderButton,
     rightHeaderButton,
+    nexusShopAccountButton,
     walletButton,
     emptyFragment,
     navigation,
     isWalletsModalOpened,
     isTxDetailModalOpened,
+    isShopAccountDrawerOpen,
+    noHeaderContainerMargin,
   ]);
 
-  // fixes header disappearing when navigating back from screens with headerTransparent: true
+  // NOTE: fixes header disappearing when navigating back from screens with headerTransparent: true
   // like ConfirmBuy, ConfirmSell, WebPage, etc.
   useFocusEffect(
     React.useCallback(() => {
+      const parentNavigation = navigation.getParent();
+      if (!parentNavigation) return;
+
       // Small delay to ensure the screen is fully focused before applying header fix
       const timeoutId = setTimeout(() => {
-        navigation.setOptions({
+        parentNavigation.setOptions({
           headerShown: false,
         });
 
         setTimeout(() => {
-          navigation.setOptions({
+          parentNavigation.setOptions({
             headerShown: true,
           });
         }, 10);

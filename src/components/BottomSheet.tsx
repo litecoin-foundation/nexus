@@ -27,7 +27,8 @@ interface Props {
   txViewComponent: React.ReactNode;
   buyViewComponent: React.ReactNode;
   sellViewComponent: React.ReactNode;
-  convertViewComponent: React.ReactNode;
+  // convertViewComponent: React.ReactNode;
+  shopViewComponent: React.ReactNode;
   sendViewComponent: React.ReactNode;
   receiveViewComponent: React.ReactNode;
   headerComponent: React.ReactNode;
@@ -41,7 +42,8 @@ interface Props {
 interface CardProps {
   txView: React.ReactNode;
   buyView: React.ReactNode;
-  convertView: React.ReactNode;
+  // convertView: React.ReactNode;
+  shopView: React.ReactNode;
   sellView: React.ReactNode;
   sendView: React.ReactNode;
   receiveView: React.ReactNode;
@@ -56,7 +58,8 @@ const BottomSheet: React.FC<Props> = props => {
     txViewComponent,
     buyViewComponent,
     sellViewComponent,
-    convertViewComponent,
+    // convertViewComponent,
+    shopViewComponent,
     sendViewComponent,
     receiveViewComponent,
     headerComponent,
@@ -209,7 +212,7 @@ const BottomSheet: React.FC<Props> = props => {
 
   const [dalayedActiveTab, setDalayedActiveTab] = useState(activeTab);
 
-  const animTimeout = useRef<NodeJS.Timeout>();
+  const animTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     animTimeout.current = setTimeout(() => {
@@ -227,13 +230,16 @@ const BottomSheet: React.FC<Props> = props => {
   return (
     <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
       <GestureDetector gesture={headerGesture}>
-        <View collapsable={false}>{headerComponent}</View>
+        <View collapsable={false} style={styles.headerComponent}>
+          {headerComponent}
+        </View>
       </GestureDetector>
       <Animated.View style={animatedCardOpacityStyle}>
         <RenderCard
           txView={txViewComponent}
           buyView={buyViewComponent}
-          convertView={convertViewComponent}
+          // convertView={convertViewComponent}
+          shopView={shopViewComponent}
           sellView={sellViewComponent}
           sendView={sendViewComponent}
           receiveView={receiveViewComponent}
@@ -250,7 +256,8 @@ const RenderCard: React.FC<CardProps> = props => {
     txView,
     buyView,
     sellView,
-    convertView,
+    // convertView,
+    shopView,
     sendView,
     receiveView,
     activeTab,
@@ -277,7 +284,7 @@ const RenderCard: React.FC<CardProps> = props => {
         ) : null}
         {activeTab === 3 ? (
           <GestureDetector gesture={panGesture}>
-            <View>{convertView}</View>
+            <View>{shopView}</View>
           </GestureDetector>
         ) : null}
         {activeTab === 4 ? (
@@ -298,11 +305,15 @@ const RenderCard: React.FC<CardProps> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     safeArea: {},
+    headerComponent: {
+      zIndex: 2,
+    },
     bottomSheet: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: '#f7f7f7',
       borderTopLeftRadius: screenHeight * 0.03,
       borderTopRightRadius: screenHeight * 0.03,
+      zIndex: 1,
     },
   });
 

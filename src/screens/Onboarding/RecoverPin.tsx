@@ -5,7 +5,7 @@ import React, {
   useContext,
   useMemo,
 } from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, Platform} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import Auth from '../../components/Auth';
@@ -46,6 +46,18 @@ const RecoverPin: React.FC<Props> = props => {
     state => state.authentication,
   );
 
+  const headerTitleMemo = useMemo(
+    () => (
+      <TranslateText
+        textKey={'recover_pin'}
+        domain="onboarding"
+        textStyle={styles.headerTitle}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+      />
+    ),
+    [styles.headerTitle, SCREEN_HEIGHT],
+  );
+
   const headerLeftMemo = useMemo(
     () => (
       <HeaderButton
@@ -53,6 +65,7 @@ const RecoverPin: React.FC<Props> = props => {
           navigation.goBack();
         }}
         imageSource={require('../../assets/images/back-icon.png')}
+        leftPadding
       />
     ),
     [navigation],
@@ -70,32 +83,19 @@ const RecoverPin: React.FC<Props> = props => {
     setKeychainPincode();
   }, []);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => headerLeftMemo,
-    });
-  }, [navigation, headerLeftMemo]);
-
   const pin = useAppSelector(state => state.authpad.pin);
 
-  const headerTitleMemo = useMemo(
-    () => (
-      <TranslateText
-        textKey={'recover_pin'}
-        domain="onboarding"
-        textStyle={styles.headerTitle}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-      />
-    ),
-    [styles.headerTitle, SCREEN_HEIGHT],
-  );
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     navigation.setOptions({
       headerTitleAlign: 'center',
       headerTitle: () => headerTitleMemo,
+      headerLeft: () => headerLeftMemo,
+      headerLeftContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+      headerRightContainerStyle:
+        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
     });
-  }, [navigation, headerTitleMemo]);
+  }, [navigation, headerTitleMemo, headerLeftMemo, SCREEN_WIDTH]);
 
   const handleValidationSuccess = () => {
     dispatch(addPincode(pin));

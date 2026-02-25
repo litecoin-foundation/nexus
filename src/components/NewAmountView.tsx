@@ -86,11 +86,19 @@ const NewAmountView: React.FC<Props> = props => {
 
   // check peers
   const peersLength = useAppSelector(state => state.info?.peers?.length || 0);
+  const litecoinBackend = useAppSelector(
+    state => state.settings?.litecoinBackend,
+  );
   const noConnectionWarningTimeoutRef = useRef<number>(
     Math.floor(Date.now() / 1000),
   );
   const [isConnectedToPeers, setIsConnectedToPeers] = useState(true);
   useEffect(() => {
+    // Skip peer check for electrum backend (no neutrino peers)
+    if (litecoinBackend === 'electrum') {
+      setIsConnectedToPeers(true);
+      return;
+    }
     // NOTE: 11sec delay cause peers are polled every 10sec
     if (
       noConnectionWarningTimeoutRef.current + 11 <
@@ -102,7 +110,7 @@ const NewAmountView: React.FC<Props> = props => {
         setIsConnectedToPeers(true);
       }
     }
-  }, [peersLength, momentTime]);
+  }, [peersLength, momentTime, litecoinBackend]);
 
   return (
     <LongPressGestureHandler
