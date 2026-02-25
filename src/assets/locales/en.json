@@ -144,6 +144,9 @@
   "sendTab": {
     "send_litecoin": "Send Litecoin",
     "convert_mweb": "Convert MWEB",
+    "convert_litecoin": "Convert Litecoin",
+    "convert": "Convert",
+    "send": "Send",
     "amount": "Amount",
     "send_to_address": "Send to address",
     "fee": "Fee",

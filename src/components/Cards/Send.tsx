@@ -10,7 +10,11 @@ import {Pressable, ScrollView, StyleSheet, View, Image} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
-import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import PlasmaModal from '../Modals/PlasmaModal';
@@ -19,7 +23,6 @@ import Switch from '../Buttons/Switch';
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
-import NewBlueButton from '../Buttons/NewBlueButton';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
 import {decodeBIP21} from '../../utils/bip21';
@@ -304,6 +307,28 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     }
   }, [amountPickerActive, detailsOpacity, padOpacity]);
 
+  // crossfade animation for Send/Convert transition
+  const sendOpacity = useSharedValue(1);
+  const convertOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (showConvert) {
+      sendOpacity.value = withTiming(0, {duration: 250});
+      convertOpacity.value = withTiming(1, {duration: 250});
+    } else {
+      convertOpacity.value = withTiming(0, {duration: 250});
+      sendOpacity.value = withTiming(1, {duration: 250});
+    }
+  }, [showConvert, sendOpacity, convertOpacity]);
+
+  const sendAnimStyle = useAnimatedStyle(() => ({
+    opacity: sendOpacity.value,
+  }));
+
+  const convertAnimStyle = useAnimatedStyle(() => ({
+    opacity: convertOpacity.value,
+  }));
+
   const handleCoinSelectionUtxos = (selectedUtxos: Utxo[]) => {
     console.log('Selected UTXOs:', selectedUtxos);
     setSelectedUtxosArray(selectedUtxos);
@@ -471,291 +496,306 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalVisible]);
 
-  if (showConvert) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.switchContainerConvertPage}>
-          <NewBlueButton
-            textKey="send_litecoin"
-            textDomain="sendTab"
-            active={false}
-            onPress={() => setShowConvert(false)}
-          />
-          <NewBlueButton
-            textKey="convert_mweb"
-            textDomain="sendTab"
-            active={true}
-            onPress={() => {}}
-          />
-        </View>
+  return (
+    <View style={styles.container}>
+      <View style={styles.titleRow}>
+        <TranslateText
+          textKey={showConvert ? 'convert_litecoin' : 'send_litecoin'}
+          domain="sendTab"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+          textStyle={styles.titleText}
+          numberOfLines={1}
+        />
+        <Pressable
+          style={styles.toggleButton}
+          onPress={() => setShowConvert(!showConvert)}>
+          <View style={styles.toggleButtonInner}>
+            <Image
+              source={
+                showConvert
+                  ? require('../../assets/icons/send-icon.png')
+                  : require('../../assets/icons/convert-icon.png')
+              }
+              style={styles.toggleIcon}
+              resizeMode="contain"
+            />
+            <TranslateText
+              textKey={showConvert ? 'send' : 'convert'}
+              domain="sendTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.toggleButtonText}
+              numberOfLines={1}
+            />
+          </View>
+        </Pressable>
+      </View>
+
+      {/* Convert view */}
+      <Animated.View
+        style={[styles.sheetOverlay, convertAnimStyle]}
+        pointerEvents={showConvert ? 'auto' : 'none'}>
         <View style={styles.convertContainer}>
           <Convert navigation={navigation as any} />
         </View>
-      </View>
-    );
-  }
+      </Animated.View>
 
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        scrollEnabled={false}
-        ref={scrollViewRef}
-        contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.switchContainer}>
-          <NewBlueButton
-            textKey="send_litecoin"
-            textDomain="sendTab"
-            active={true}
-            onPress={() => {}}
-          />
-          <NewBlueButton
-            textKey="convert_mweb"
-            textDomain="sendTab"
-            active={false}
-            onPress={() => setShowConvert(true)}
-          />
-        </View>
-
-        <View style={styles.amountContainer}>
-          <TranslateText
-            textKey="amount"
-            domain="sendTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.subtitleText}
-            numberOfLines={1}
-          />
-          <View style={styles.amountSubContainer}>
-            <AmountPicker
-              amount={amount}
-              fiatAmount={fiatAmount}
-              active={amountPickerActive}
-              handlePress={() => {
-                detailsOpacity.value = withTiming(0, {duration: 200});
-                setAmountPickerActive(true);
-              }}
-              handleToggle={() => setToggleLTC(!toggleLTC)}
-              setMax={() => setSendAll(true)}
+      {/* Send view */}
+      <Animated.View
+        style={[styles.sheetContent, sendAnimStyle]}
+        pointerEvents={showConvert ? 'none' : 'auto'}>
+        <ScrollView
+          scrollEnabled={false}
+          ref={scrollViewRef}
+          contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.amountContainer}>
+            <TranslateText
+              textKey="amount"
+              domain="sendTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.subtitleText}
+              numberOfLines={1}
             />
-          </View>
-        </View>
-
-        {amountPickerActive ? null : (
-          <Animated.View
-            style={{...styles.subContainer, opacity: detailsOpacity}}>
-            <View style={styles.cellContainer}>
-              <View style={styles.subtitlesContainer}>
-                <TranslateText
-                  textKey="send_to_address"
-                  domain="sendTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.subtitleText}
-                  numberOfLines={1}
-                />
-                {!addressValid && addressValid !== null ? (
-                  <TranslateText
-                    textKey="address_invalid"
-                    domain="sendTab"
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.subtitleText}
-                    numberOfLines={1}
-                  />
-                ) : null}
-              </View>
-              <View style={styles.inputFieldContainer}>
-                <AddressField
-                  address={showResolvedDomain ? addressDomain : address}
-                  onChangeText={e => {
-                    setShowResolvedDomain(false);
-                    setAddress(e);
-                  }}
-                  onScanPress={handleScan}
-                  onPastePress={handlePaste}
-                  validateAddress={endAddress => validateAddress(endAddress)}
-                  onBlur={() => scrollToInput(0)}
-                  onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.13)}
-                  clearInput={() => {
-                    setAddress('');
-                    setAddressDomain('');
-                  }}
-                />
-              </View>
+            <View style={styles.amountSubContainer}>
+              <AmountPicker
+                amount={amount}
+                fiatAmount={fiatAmount}
+                active={amountPickerActive}
+                handlePress={() => {
+                  detailsOpacity.value = withTiming(0, {duration: 200});
+                  setAmountPickerActive(true);
+                }}
+                handleToggle={() => setToggleLTC(!toggleLTC)}
+                setMax={() => setSendAll(true)}
+              />
             </View>
+          </View>
 
-            {/* Manual Coin Selection is only visible when enabled in Settings
-              & user is not sending all*/}
-            {manualCoinSelectionEnabled && !sendAll ? (
+          {amountPickerActive ? null : (
+            <Animated.View
+              style={{...styles.subContainer, opacity: detailsOpacity}}>
               <View style={styles.cellContainer}>
-                <View style={styles.manualSelectionTop}>
+                <View style={styles.subtitlesContainer}>
                   <TranslateText
-                    textKey="manual_coin_selection"
+                    textKey="send_to_address"
                     domain="sendTab"
                     maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                     textStyle={styles.subtitleText}
                     numberOfLines={1}
                   />
-                  <Switch
-                    initialValue={enableManualSelection}
-                    onPress={() => {
-                      setEnableManualSelection(!enableManualSelection);
-                      // reset selected utxos
-                      setSelectedUtxosArray([]);
+                  {!addressValid && addressValid !== null ? (
+                    <TranslateText
+                      textKey="address_invalid"
+                      domain="sendTab"
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                      textStyle={styles.subtitleText}
+                      numberOfLines={1}
+                    />
+                  ) : null}
+                </View>
+                <View style={styles.inputFieldContainer}>
+                  <AddressField
+                    address={showResolvedDomain ? addressDomain : address}
+                    onChangeText={e => {
+                      setShowResolvedDomain(false);
+                      setAddress(e);
+                    }}
+                    onScanPress={handleScan}
+                    onPastePress={handlePaste}
+                    validateAddress={endAddress => validateAddress(endAddress)}
+                    onBlur={() => scrollToInput(0)}
+                    onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.13)}
+                    clearInput={() => {
+                      setAddress('');
+                      setAddressDomain('');
                     }}
                   />
                 </View>
+              </View>
 
-                {enableManualSelection ? (
-                  !amount || Number(amount) <= 0 || !addressValid ? (
-                    <View style={styles.coinSelectionDisabledContainer}>
-                      <TranslateText
-                        textKey="enter_address_amount_before_coinselection"
-                        domain="sendTab"
-                        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                        textStyle={styles.coinSelectionDisabledText}
-                        numberOfLines={2}
-                      />
-                    </View>
-                  ) : (
-                    <Pressable
-                      style={styles.manualSelectionBottom}
-                      onPress={openManualSelectionModal}>
-                      <View style={styles.manualSelectionBottomTitleContainer}>
+              {/* Manual Coin Selection is only visible when enabled in Settings
+              & user is not sending all*/}
+              {manualCoinSelectionEnabled && !sendAll ? (
+                <View style={styles.cellContainer}>
+                  <View style={styles.manualSelectionTop}>
+                    <TranslateText
+                      textKey="manual_coin_selection"
+                      domain="sendTab"
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                      textStyle={styles.subtitleText}
+                      numberOfLines={1}
+                    />
+                    <Switch
+                      initialValue={enableManualSelection}
+                      onPress={() => {
+                        setEnableManualSelection(!enableManualSelection);
+                        // reset selected utxos
+                        setSelectedUtxosArray([]);
+                      }}
+                    />
+                  </View>
+
+                  {enableManualSelection ? (
+                    !amount || Number(amount) <= 0 || !addressValid ? (
+                      <View style={styles.coinSelectionDisabledContainer}>
                         <TranslateText
-                          textKey="amount_selected"
+                          textKey="enter_address_amount_before_coinselection"
                           domain="sendTab"
-                          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-                          textStyle={styles.manualSelectionBottomTitle}
-                          numberOfLines={1}
-                        />
-                        <TranslateText
-                          textKey="amount_selected_number"
-                          domain="sendTab"
-                          maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-                          textStyle={styles.manualSelectionBottomTitle}
-                          numberOfLines={1}
-                          interpolationObj={{
-                            amount: amount !== '' ? amount : '0',
-                          }}
-                        />
-                      </View>
-                      <View style={styles.manualSelectionBottomNoteContainer}>
-                        <Image
-                          style={styles.manualSelectionBottomNoteIcon}
-                          source={require('../../assets/icons/info-icon.png')}
-                        />
-                        <TranslateText
-                          textKey="manual_selection_note"
-                          domain="sendTab"
-                          maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                          maxLengthInPixels={SCREEN_WIDTH * 0.7}
-                          textStyle={styles.manualSelectionBottomNote}
+                          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                          textStyle={styles.coinSelectionDisabledText}
                           numberOfLines={2}
-                          interpolationObj={{amount}}
                         />
                       </View>
-                      <View style={styles.manualSelectionBottomArrowContainer}>
-                        <Image
-                          style={styles.manualSelectionBottomArrowIcon}
-                          source={require('../../assets/images/back-icon.png')}
-                        />
-                      </View>
-                    </Pressable>
-                  )
-                ) : null}
-              </View>
-            ) : (
-              <></>
-            )}
-
-            {!enableManualSelection ? (
-              <View style={styles.cellContainer}>
-                <TranslateText
-                  textKey="description"
-                  domain="sendTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.subtitleText}
-                  numberOfLines={1}
-                />
-                <View style={styles.inputFieldContainer}>
-                  <InputField
-                    value={description}
-                    onChangeText={text => setDescription(text)}
-                    onBlur={() => scrollToInput(0)}
-                    onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
-                    clearInput={() => setDescription('')}
-                  />
+                    ) : (
+                      <Pressable
+                        style={styles.manualSelectionBottom}
+                        onPress={openManualSelectionModal}>
+                        <View
+                          style={styles.manualSelectionBottomTitleContainer}>
+                          <TranslateText
+                            textKey="amount_selected"
+                            domain="sendTab"
+                            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                            textStyle={styles.manualSelectionBottomTitle}
+                            numberOfLines={1}
+                          />
+                          <TranslateText
+                            textKey="amount_selected_number"
+                            domain="sendTab"
+                            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                            textStyle={styles.manualSelectionBottomTitle}
+                            numberOfLines={1}
+                            interpolationObj={{
+                              amount: amount !== '' ? amount : '0',
+                            }}
+                          />
+                        </View>
+                        <View style={styles.manualSelectionBottomNoteContainer}>
+                          <Image
+                            style={styles.manualSelectionBottomNoteIcon}
+                            source={require('../../assets/icons/info-icon.png')}
+                          />
+                          <TranslateText
+                            textKey="manual_selection_note"
+                            domain="sendTab"
+                            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                            maxLengthInPixels={SCREEN_WIDTH * 0.7}
+                            textStyle={styles.manualSelectionBottomNote}
+                            numberOfLines={2}
+                            interpolationObj={{amount}}
+                          />
+                        </View>
+                        <View
+                          style={styles.manualSelectionBottomArrowContainer}>
+                          <Image
+                            style={styles.manualSelectionBottomArrowIcon}
+                            source={require('../../assets/images/back-icon.png')}
+                          />
+                        </View>
+                      </Pressable>
+                    )
+                  ) : null}
                 </View>
-              </View>
-            ) : (
-              <></>
-            )}
-          </Animated.View>
-        )}
-      </ScrollView>
+              ) : (
+                <></>
+              )}
 
-      {amountPickerActive ? null : (
-        <Animated.View
-          style={[styles.bottomContainer, {opacity: detailsOpacity}]}>
-          <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
-            <View style={styles.row}>
-              {/* <View style={styles.greenBtnContainer}>
+              {!enableManualSelection ? (
+                <View style={styles.cellContainer}>
+                  <TranslateText
+                    textKey="description"
+                    domain="sendTab"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.subtitleText}
+                    numberOfLines={1}
+                  />
+                  <View style={styles.inputFieldContainer}>
+                    <InputField
+                      value={description}
+                      onChangeText={text => setDescription(text)}
+                      onBlur={() => scrollToInput(0)}
+                      onFocus={() => scrollToInput(SCREEN_HEIGHT * 0.23)}
+                      clearInput={() => setDescription('')}
+                    />
+                  </View>
+                </View>
+              ) : (
+                <></>
+              )}
+            </Animated.View>
+          )}
+        </ScrollView>
+
+        {amountPickerActive ? null : (
+          <Animated.View
+            style={[styles.bottomContainer, {opacity: detailsOpacity}]}>
+            <CustomSafeAreaView
+              styles={{...styles.safeArea}}
+              edges={['bottom']}>
+              <View style={styles.row}>
+                {/* <View style={styles.greenBtnContainer}>
            <GreenButton
             value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
             onPress={() => console.log('pressed fee')}
           />
         </View>  */}
-              <View style={styles.blueBtnContainer}>
-                <BlueButton
-                  textKey="send_litecoin"
-                  textDomain="sendTab"
-                  onPress={() => {
-                    handleSend();
-                  }}
-                  disabled={isSendDisabled}
-                />
-
-                {noteKey ? (
-                  <TranslateText
-                    textKey={noteKey}
-                    domain="sendTab"
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-                    textStyle={styles.minText}
-                    numberOfLines={3}
+                <View style={styles.blueBtnContainer}>
+                  <BlueButton
+                    textKey="send_litecoin"
+                    textDomain="sendTab"
+                    onPress={() => {
+                      handleSend();
+                    }}
+                    disabled={isSendDisabled}
                   />
-                ) : null}
-              </View>
-            </View>
-          </CustomSafeAreaView>
-        </Animated.View>
-      )}
 
-      {amountPickerActive ? (
-        <Animated.View
-          style={[styles.amountPickerActiveBottom, {opacity: padOpacity}]}>
-          <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
-            <View style={styles.col}>
-              <View style={styles.numpadContainer}>
-                <BuyPad
-                  onChange={(value: string) => onChange(value)}
-                  currentValue={toggleLTC ? String(amount) : String(fiatAmount)}
-                  small
-                />
+                  {noteKey ? (
+                    <TranslateText
+                      textKey={noteKey}
+                      domain="sendTab"
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                      textStyle={styles.minText}
+                      numberOfLines={3}
+                    />
+                  ) : null}
+                </View>
               </View>
-              <View style={styles.blueBtnContainer}>
-                <BlueButton
-                  textKey="confirm"
-                  textDomain="sendTab"
-                  onPress={async () => {
-                    padOpacity.value = withTiming(0, {duration: 230});
-                    await sleep(230);
-                    setAmountPickerActive(false);
-                  }}
-                  disabled={false}
-                />
+            </CustomSafeAreaView>
+          </Animated.View>
+        )}
+
+        {amountPickerActive ? (
+          <Animated.View
+            style={[styles.amountPickerActiveBottom, {opacity: padOpacity}]}>
+            <CustomSafeAreaView
+              styles={{...styles.safeArea}}
+              edges={['bottom']}>
+              <View style={styles.col}>
+                <View style={styles.numpadContainer}>
+                  <BuyPad
+                    onChange={(value: string) => onChange(value)}
+                    currentValue={
+                      toggleLTC ? String(amount) : String(fiatAmount)
+                    }
+                    small
+                  />
+                </View>
+                <View style={styles.blueBtnContainer}>
+                  <BlueButton
+                    textKey="confirm"
+                    textDomain="sendTab"
+                    onPress={async () => {
+                      padOpacity.value = withTiming(0, {duration: 230});
+                      await sleep(230);
+                      setAmountPickerActive(false);
+                    }}
+                    disabled={false}
+                  />
+                </View>
               </View>
-            </View>
-          </CustomSafeAreaView>
-        </Animated.View>
-      ) : null}
+            </CustomSafeAreaView>
+          </Animated.View>
+        ) : null}
+      </Animated.View>
     </View>
   );
 });
@@ -774,8 +814,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     convertContainer: {
       flex: 1,
-      width: screenWidth,
-      marginLeft: screenWidth * 0.06 * -1,
     },
     scrollViewContent: {
       minHeight: screenHeight,
@@ -787,44 +825,52 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     subContainer: {
       flex: 1,
     },
-    switchContainer: {
-      flexDirection: 'row',
-      gap: 8,
-      paddingBottom: screenHeight * 0.03,
-    },
-    switchContainerConvertPage: {
-      flexDirection: 'row',
-      gap: 8,
-      paddingBottom: screenHeight * 0.02,
-    },
     titleRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      paddingBottom: screenHeight * 0.02,
     },
-    convertButton: {
+    titleText: {
+      fontFamily: 'Satoshi Variable',
+      fontStyle: 'normal',
+      fontWeight: '700',
+      color: '#2E2E2E',
+      fontSize: screenHeight * 0.025,
+    },
+    toggleButton: {
       backgroundColor: '#2C72FF',
-      borderRadius: screenHeight * 0.01,
-      paddingHorizontal: screenWidth * 0.04,
+      borderRadius: screenHeight * 0.012,
+      paddingHorizontal: screenWidth * 0.035,
       paddingVertical: screenHeight * 0.008,
     },
-    convertButtonText: {
+    toggleButtonInner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+    },
+    toggleIcon: {
+      width: screenHeight * 0.014,
+      height: screenHeight * 0.014,
+      tintColor: '#fff',
+    },
+    toggleButtonText: {
       color: '#fff',
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       fontSize: screenHeight * 0.015,
     },
-    backToSendButton: {
-      alignSelf: 'flex-start',
-      paddingVertical: screenHeight * 0.005,
+    sheetOverlay: {
+      position: 'absolute',
+      top: screenHeight * 0.05,
+      bottom: 0,
+      left: 0,
+      right: 0,
     },
-    backToSendText: {
-      color: '#2C72FF',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.015,
+    sheetContent: {
+      flex: 1,
+      position: 'relative',
     },
     cellContainer: {
       marginTop: screenHeight * 0.02,
@@ -876,9 +922,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     bottomContainer: {
       position: 'absolute',
-      left: screenWidth * 0.06,
+      left: 0,
+      right: 0,
       bottom: 0,
-      width: '100%',
     },
     row: {
       width: '100%',
@@ -896,9 +942,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     amountPickerActiveBottom: {
       position: 'absolute',
-      left: screenWidth * 0.06,
+      left: 0,
+      right: 0,
       bottom: 0,
-      width: '100%',
     },
     col: {
       gap: screenHeight * 0.03,
