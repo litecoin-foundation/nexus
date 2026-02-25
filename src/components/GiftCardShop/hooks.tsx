@@ -21,7 +21,10 @@ import {
   filterBrandsByCountry,
 } from '../../services/giftcards';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
-import {setGiftCards} from '../../reducers/nexusshopaccount';
+import {
+  setGiftCards,
+  fetchWishlistFromServer,
+} from '../../reducers/nexusshopaccount';
 
 // Context ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 const GiftCardClientContext = createContext<GiftCardClient | null>(null);
@@ -57,6 +60,7 @@ interface UseQueryResult<T> {
 
 export function useBrands(): UseQueryResult<Brand[]> {
   const client = useGiftCardClient();
+  const dispatch = useAppDispatch();
   const account = useAppSelector(state => state.nexusshopaccount.account);
   const [data, setData] = useState<Brand[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,6 +68,7 @@ export function useBrands(): UseQueryResult<Brand[]> {
 
   // Fallback to user location if user unlogged
   const userCountry = account?.userCountry || getCountry();
+  const isLoggedIn = account?.isLoggedIn;
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -79,6 +84,11 @@ export function useBrands(): UseQueryResult<Brand[]> {
 
       if (Array.isArray(brands)) {
         setData(brands);
+
+        // Sync wishlist from server when user is logged in
+        if (isLoggedIn) {
+          dispatch(fetchWishlistFromServer(brands));
+        }
       } else {
         setError('Invalid brands data format');
       }
@@ -87,7 +97,7 @@ export function useBrands(): UseQueryResult<Brand[]> {
     } finally {
       setLoading(false);
     }
-  }, [client, userCountry]);
+  }, [client, userCountry, isLoggedIn, dispatch]);
 
   useEffect(() => {
     fetch();

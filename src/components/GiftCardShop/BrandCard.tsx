@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
-import {toggleWishlistBrand} from '../../reducers/nexusshopaccount';
+import {syncWishlistToggle} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
 
 import {colors, getSpacing, getFontSize} from './theme';
@@ -50,6 +50,10 @@ export function BrandCard({
   const opacityAnim = useSharedValue(0);
   const chevronRotation = useSharedValue(isExpanded ? 90 : -90);
 
+  const isLoggedIn = useAppSelector(
+    state => state.nexusshopaccount?.account?.isLoggedIn,
+  );
+
   const wishlistBrands = useAppSelector(
     state => state.nexusshopaccount?.wishlistBrands,
   );
@@ -59,7 +63,7 @@ export function BrandCard({
     : false;
 
   const handleWishlistToggle = () => {
-    dispatch(toggleWishlistBrand(brand));
+    dispatch(syncWishlistToggle(brand));
   };
 
   const minAmount = Number(
@@ -70,13 +74,59 @@ export function BrandCard({
       brand.denominations?.[brand.denominations.length - 1],
   );
 
-  const defaultDenominations = [10, 15, 20, 50, 100].filter(
-    d => d >= minAmount && d <= maxAmount,
-  );
-  const denominations = (brand.denominations || defaultDenominations).slice(
-    0,
-    5,
-  );
+  const denominations = (() => {
+    const MAX_BUTTONS = 5;
+    const allDenoms = brand.denominations?.map(Number).sort((a, b) => a - b);
+
+    if (allDenoms && allDenoms.length > 0) {
+      if (allDenoms.length <= MAX_BUTTONS) {
+        return allDenoms;
+      }
+      // Always include first and last, pick evenly-spaced ones in between
+      const result: number[] = [allDenoms[0]];
+      const innerCount = MAX_BUTTONS - 2;
+      for (let i = 1; i <= innerCount; i++) {
+        const idx = Math.round((i * (allDenoms.length - 1)) / (innerCount + 1));
+        if (!result.includes(allDenoms[idx])) {
+          result.push(allDenoms[idx]);
+        }
+      }
+      if (!result.includes(allDenoms[allDenoms.length - 1])) {
+        result.push(allDenoms[allDenoms.length - 1]);
+      }
+      return result;
+    }
+
+    // Range-based brand: generate nice round values spread across the range
+    if (isNaN(minAmount) || isNaN(maxAmount) || minAmount >= maxAmount) {
+      return [minAmount].filter(v => !isNaN(v));
+    }
+    const candidates = [
+      5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 100, 125, 150, 175, 200, 250,
+      300, 400, 500, 750, 1000,
+    ].filter(d => d >= minAmount && d <= maxAmount);
+
+    if (candidates.length <= MAX_BUTTONS) {
+      const result = [...candidates];
+      if (!result.includes(minAmount)) result.unshift(minAmount);
+      if (!result.includes(maxAmount)) result.push(maxAmount);
+      return result.slice(0, MAX_BUTTONS);
+    }
+
+    // Pick evenly-spaced candidates, always including first and last
+    const result: number[] = [candidates[0]];
+    const innerCount = MAX_BUTTONS - 2;
+    for (let i = 1; i <= innerCount; i++) {
+      const idx = Math.round((i * (candidates.length - 1)) / (innerCount + 1));
+      if (!result.includes(candidates[idx])) {
+        result.push(candidates[idx]);
+      }
+    }
+    if (!result.includes(candidates[candidates.length - 1])) {
+      result.push(candidates[candidates.length - 1]);
+    }
+    return result;
+  })();
 
   useEffect(() => {
     if (contentHeight !== null) {
@@ -235,12 +285,14 @@ export function BrandCard({
         </Animated.View>
       )}
 
-      <TouchableOpacity
-        style={styles.wishlistButton}
-        onPress={handleWishlistToggle}
-        activeOpacity={0.7}>
-        <Text style={styles.wishlistIcon}>{isInWishlist ? '♥' : '♡'}</Text>
-      </TouchableOpacity>
+      {isLoggedIn && (
+        <TouchableOpacity
+          style={styles.wishlistButton}
+          onPress={handleWishlistToggle}
+          activeOpacity={0.7}>
+          <Text style={styles.wishlistIcon}>{isInWishlist ? '♥' : '♡'}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

@@ -1,6 +1,7 @@
 import React, {useContext, useRef, useState, useEffect} from 'react';
 import {View, StyleSheet, Image} from 'react-native';
 import Animated from 'react-native-reanimated';
+import {LongPressGestureHandler, State} from 'react-native-gesture-handler';
 
 import PriceIndicatorButton from './Buttons/PriceIndictorButton';
 import {chartPercentageChangeSelector} from '../reducers/chart';
@@ -8,6 +9,7 @@ import {satsToSubunitSelector} from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 import {useAppSelector} from '../store/hooks';
 import {formatDate, formatTime} from '../utils/date';
+import {triggerMediumFeedback} from '../utils/haptic';
 
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import TranslateText from '../components/TranslateText';
@@ -17,10 +19,12 @@ interface Props {
   children: React.ReactNode;
   animatedProps: any;
   internetOpacityStyle: any;
+  onTriggerLester?: () => void;
 }
 
 const NewAmountView: React.FC<Props> = props => {
-  const {children, animatedProps, internetOpacityStyle} = props;
+  const {children, animatedProps, internetOpacityStyle, onTriggerLester} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -31,6 +35,7 @@ const NewAmountView: React.FC<Props> = props => {
   );
   const chartCursorValue = useAppSelector(state => state.chart!.cursorValue);
   const chartCursorDate = useAppSelector(state => state.chart!.cursorDate);
+  const chartMode = useAppSelector(state => state.settings!.chartMode);
   const chartPercentageChange = useAppSelector(state =>
     chartPercentageChangeSelector(state),
   );
@@ -58,6 +63,18 @@ const NewAmountView: React.FC<Props> = props => {
 
   const {isInternetReachable} = useAppSelector(state => state.info!);
 
+  const longPressRef = useRef(null);
+
+  const onEasterEggHandlerStateChange = (e: any) => {
+    const {nativeEvent} = e;
+    if (nativeEvent.state === State.ACTIVE) {
+      triggerMediumFeedback();
+      if (onTriggerLester) {
+        onTriggerLester();
+      }
+    }
+  };
+
   // 3s timer
   const [momentTime, setMomentTime] = useState(Math.floor(Date.now() / 1000));
   useEffect(() => {
@@ -69,11 +86,19 @@ const NewAmountView: React.FC<Props> = props => {
 
   // check peers
   const peersLength = useAppSelector(state => state.info?.peers?.length || 0);
+  const litecoinBackend = useAppSelector(
+    state => state.settings?.litecoinBackend,
+  );
   const noConnectionWarningTimeoutRef = useRef<number>(
     Math.floor(Date.now() / 1000),
   );
   const [isConnectedToPeers, setIsConnectedToPeers] = useState(true);
   useEffect(() => {
+    // Skip peer check for electrum backend (no neutrino peers)
+    if (litecoinBackend === 'electrum') {
+      setIsConnectedToPeers(true);
+      return;
+    }
     // NOTE: 11sec delay cause peers are polled every 10sec
     if (
       noConnectionWarningTimeoutRef.current + 11 <
@@ -85,20 +110,25 @@ const NewAmountView: React.FC<Props> = props => {
         setIsConnectedToPeers(true);
       }
     }
-  }, [peersLength, momentTime]);
+  }, [peersLength, momentTime, litecoinBackend]);
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        animatedProps,
-        !isInternetReachable ? styles.internetBackground : null,
-      ]}>
-      <CustomSafeAreaView
-        styles={styles.safeArea}
-        edges={['top']}
-        platform="both">
-        <View style={styles.subview}>
+    <LongPressGestureHandler
+      ref={longPressRef}
+      onHandlerStateChange={onEasterEggHandlerStateChange}
+      minDurationMs={2000}
+      maxDist={10000}>
+      <Animated.View
+        style={[
+          styles.container,
+          animatedProps,
+          !isInternetReachable ? styles.internetBackground : null,
+        ]}>
+        <CustomSafeAreaView
+          styles={styles.safeArea}
+          edges={['top']}
+          platform="both">
+          <View style={styles.subview}>
           {!chartCursorSelected ? (
             <>
               <TranslateText
@@ -119,6 +149,25 @@ const NewAmountView: React.FC<Props> = props => {
                 <PriceIndicatorButton value={chartPercentage} />
                 <TranslateText
                   textValue={String(chartPercentageChange)}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.fiatText}
+                  numberOfLines={1}
+                />
+              </View>
+            </>
+          ) : chartMode === 'balance' ? (
+            <>
+              <TranslateText
+                textValue={`${chartCursorValue.toFixed(8)} LTC`}
+                domain={'main'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                textStyle={styles.amountText}
+                numberOfLines={1}
+              />
+              <View style={styles.fiat}>
+                <TranslateText
+                  textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
                   domain={'main'}
                   maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                   textStyle={styles.fiatText}
@@ -188,8 +237,9 @@ const NewAmountView: React.FC<Props> = props => {
             </View>
           </Animated.View>
         )}
-      </CustomSafeAreaView>
-    </Animated.View>
+        </CustomSafeAreaView>
+      </Animated.View>
+    </LongPressGestureHandler>
   );
 };
 

@@ -19,6 +19,7 @@ import Switch from '../Buttons/Switch';
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import BlueButton from '../Buttons/BlueButton';
+import NewBlueButton from '../Buttons/NewBlueButton';
 import AmountPicker from '../Buttons/AmountPicker';
 import BuyPad from '../Numpad/BuyPad';
 import {decodeBIP21} from '../../utils/bip21';
@@ -40,6 +41,7 @@ import {
   updateSendDomain,
 } from '../../reducers/input';
 import {fetchResolve} from '../../utils/tor';
+import Convert from './Convert';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -51,7 +53,7 @@ type RootStackParamList = {
   Main: {
     scanData?: string;
   };
-  Scan: {returnRoute: string};
+  Scan: {returnRoute: string; returnScreen?: string};
   ConfirmSend: {
     sendAll: boolean;
     selectedUtxos?: Utxo[];
@@ -206,7 +208,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   }, [route.params?.scanData]);
 
   const handleScan = () => {
-    navigation.navigate('Scan', {returnRoute: 'Main'});
+    navigation.navigate('Scan', {
+      returnRoute: 'Main',
+      returnScreen: 'MainScreen',
+    });
   };
 
   const handleScanCallback = async (data: any) => {
@@ -470,18 +475,23 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   if (showConvert) {
     return (
       <View style={styles.container}>
-        <Pressable
-          style={styles.backToSendButton}
-          onPress={() => setShowConvert(false)}>
-          <TranslateText
+        <View style={styles.switchContainerConvertPage}>
+          <NewBlueButton
             textKey="send_litecoin"
-            domain="sendTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-            textStyle={styles.backToSendText}
-            numberOfLines={1}
+            textDomain="sendTab"
+            active={false}
+            onPress={() => setShowConvert(false)}
           />
-        </Pressable>
-        <Convert navigation={navigation as any} />
+          <NewBlueButton
+            textKey="convert_mweb"
+            textDomain="sendTab"
+            active={true}
+            onPress={() => {}}
+          />
+        </View>
+        <View style={styles.convertContainer}>
+          <Convert navigation={navigation as any} />
+        </View>
       </View>
     );
   }
@@ -492,25 +502,19 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         scrollEnabled={false}
         ref={scrollViewRef}
         contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.titleRow}>
-          <TranslateText
+        <View style={styles.switchContainer}>
+          <NewBlueButton
             textKey="send_litecoin"
-            domain="sendTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-            textStyle={styles.titleText}
-            numberOfLines={1}
+            textDomain="sendTab"
+            active={true}
+            onPress={() => {}}
           />
-          <Pressable
-            style={styles.convertButton}
-            onPress={() => setShowConvert(true)}>
-            <TranslateText
-              textKey="convert_button"
-              domain="convertTab"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-              textStyle={styles.convertButtonText}
-              numberOfLines={1}
-            />
-          </Pressable>
+          <NewBlueButton
+            textKey="convert_mweb"
+            textDomain="sendTab"
+            active={false}
+            onPress={() => setShowConvert(true)}
+          />
         </View>
 
         <View style={styles.amountContainer}>
@@ -769,6 +773,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenWidth * 0.06,
       position: 'relative',
     },
+    convertContainer: {
+      flex: 1,
+      width: screenWidth,
+      marginLeft: screenWidth * 0.06 * -1,
+    },
     scrollViewContent: {
       minHeight: screenHeight,
     },
@@ -779,12 +788,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     subContainer: {
       flex: 1,
     },
-    titleText: {
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      color: '#2E2E2E',
-      fontSize: screenHeight * 0.025,
+    switchContainer: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingBottom: screenHeight * 0.03,
+    },
+    switchContainerConvertPage: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingBottom: screenHeight * 0.02,
     },
     titleRow: {
       flexDirection: 'row',
@@ -912,7 +924,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingBottom: 5,
+      paddingBottom: screenHeight * 0.02,
     },
     manualSelectionBottom: {
       width: '100%',

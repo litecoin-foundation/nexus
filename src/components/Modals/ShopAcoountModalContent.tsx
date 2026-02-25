@@ -15,9 +15,9 @@ import {
   setUserCurrency,
   setUserCountry,
 } from '../../reducers/nexusshopaccount';
+import {getCurrencyForCountry} from '../../services/giftcards';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import OptionCell from '../../components/Cells/OptionCell';
-import fiat from '../../assets/fiat';
 import countries from '../../assets/countries';
 
 import TranslateText from '../../components/TranslateText';
@@ -32,11 +32,6 @@ interface Props {
     y: number;
   };
 }
-
-// NOTE: we can filter currencies specifically for the shop by
-// specifying this array instead of showing all currencies from assets/fiat
-// const SHOP_CURRENCIES = ['USD', 'CAD', 'AUD', 'EUR', 'GBP'];
-const SHOP_CURRENCIES = fiat.map((item: any) => item.key);
 
 const ShopAcoountModalContent: React.FC<Props> = props => {
   const {navigation, headerButtonXY} = props;
@@ -55,23 +50,14 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
   );
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const shopCurrency = account?.userCurrency || 'USD';
   const shopCountry = account?.userCountry || 'US';
-  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const shopCurrency = getCurrencyForCountry(shopCountry).currency;
   const [showRegionPicker, setShowRegionPicker] = useState(false);
 
-  const shopFiat = useMemo(
-    () => fiat.filter((item: any) => SHOP_CURRENCIES.includes(item.key)),
-    [],
-  );
-
-  const handleCurrencySelect = (code: string) => {
-    dispatch(setUserCurrency(code));
-    setShowCurrencyPicker(false);
-  };
-
   const handleRegionSelect = (code: string) => {
+    const {currency} = getCurrencyForCountry(code);
     dispatch(setUserCountry(code));
+    dispatch(setUserCurrency(currency));
     setShowRegionPicker(false);
   };
 
@@ -102,32 +88,6 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
               key={item.code}
               onPress={() => handleRegionSelect(item.code)}
               selected={shopCountry === item.code}
-            />
-          )}
-        />
-      </View>
-    );
-  }
-
-  if (showCurrencyPicker) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.currencyPickerHeader}>
-          <HeaderButton
-            onPress={() => setShowCurrencyPicker(false)}
-            imageSource={require('../../assets/images/back-icon.png')}
-            backgroundColorSpecified="#0070F0"
-          />
-        </View>
-        <FlatList
-          data={shopFiat}
-          keyExtractor={(item: any) => item.key}
-          renderItem={({item}: {item: any}) => (
-            <OptionCell
-              title={`${item.name} (${item.symbol_native})`}
-              key={item.key}
-              onPress={() => handleCurrencySelect(item.key)}
-              selected={shopCurrency === item.key}
             />
           )}
         />
@@ -170,16 +130,7 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
               textStyle={styles.title}
               numberOfLines={1}
             />
-            <TouchableOpacity
-              style={styles.currencyButton}
-              onPress={() => setShowCurrencyPicker(true)}
-              activeOpacity={0.7}>
-              <Text style={styles.currencyTitle}>{shopCurrency}</Text>
-              <Image
-                source={backIcon}
-                style={[styles.chevronIcon, {transform: [{rotate: '-90deg'}]}]}
-              />
-            </TouchableOpacity>
+            <Text style={styles.currencyTitle}>{shopCurrency}</Text>
           </View>
           <View style={styles.optionContainer}>
             <TranslateText

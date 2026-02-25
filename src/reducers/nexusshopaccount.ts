@@ -1,6 +1,11 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import {GiftCard, GiftCardInApp, Brand} from '../services/giftcards';
+import {
+  GiftCard,
+  GiftCardInApp,
+  Brand,
+  createGiftCardClient,
+} from '../services/giftcards';
 import {Platform} from 'react-native';
 import {getCountry} from 'react-native-localize';
 import * as SecureStore from 'expo-secure-store';
@@ -146,6 +151,9 @@ export const nexusShopAccountSlice = createSlice({
       } else {
         state.wishlistBrands.push(action.payload);
       }
+    },
+    setWishlistBrands: (state, action: PayloadAction<Brand[]>) => {
+      state.wishlistBrands = action.payload;
     },
     setUserCurrency: (state, action: PayloadAction<string>) => {
       if (state.account) {
@@ -343,6 +351,46 @@ export const verifyOtpCode =
     }
   };
 
+export const fetchWishlistFromServer =
+  (availableBrands: Brand[]): AppThunk =>
+  async dispatch => {
+    try {
+      const client = createGiftCardClient();
+      const slugs = await client.getWishlist();
+      const brandMap = new Map(availableBrands.map(b => [b.slug, b]));
+      const brands = slugs
+        .map(slug => brandMap.get(slug))
+        .filter((b): b is Brand => b !== undefined);
+      dispatch(setWishlistBrands(brands));
+    } catch (error) {
+      console.warn('Failed to fetch wishlist from server:', error);
+    }
+  };
+
+export const syncWishlistToggle =
+  (brand: Brand): AppThunk =>
+  async (dispatch, getState) => {
+    const {wishlistBrands} = getState().nexusshopaccount!;
+    const isCurrentlyInWishlist = wishlistBrands.some(
+      b => b.slug === brand.slug,
+    );
+
+    dispatch(toggleWishlistBrand(brand));
+
+    try {
+      const client = createGiftCardClient();
+      if (isCurrentlyInWishlist) {
+        await client.removeFromWishlist(brand.slug);
+      } else {
+        await client.addToWishlist(brand.slug);
+      }
+    } catch (error) {
+      // Revert on failure
+      dispatch(toggleWishlistBrand(brand));
+      console.warn('Failed to sync wishlist:', error);
+    }
+  };
+
 export const fetchUserGiftCards =
   (uniqueId: string) => async (dispatch: any) => {
     try {
@@ -396,6 +444,7 @@ export const {
   addToWishlist,
   removeFromWishlist,
   toggleWishlistBrand,
+  setWishlistBrands,
   setUserCurrency,
   setUserCountry,
   setCountryPickerOpen,

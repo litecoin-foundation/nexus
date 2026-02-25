@@ -36,6 +36,7 @@ interface ISettings {
   testPaymentMethod: string;
   testPaymentCountry: string;
   testPaymentFiat: string;
+  chartMode: 'price' | 'balance';
 }
 type CurrencyCodeType = {
   currencyCode: string;
@@ -76,6 +77,7 @@ const initialState = {
   torEnabled: false,
   litecoinBackend: 'electrum',
   openedNotification: null,
+  chartMode: 'price',
 } as ISettings;
 
 // actions
@@ -113,6 +115,9 @@ const setLitecoinBackendAction = createAction<'neutrino' | 'electrum'>(
 );
 const setTestPaymentAction = createAction<TestPaymentType>(
   'settings/setTestPaymentAction',
+);
+const setChartModeAction = createAction<'price' | 'balance'>(
+  'settings/setChartModeAction',
 );
 
 // functions
@@ -233,6 +238,12 @@ export const setTestPayment =
     dispatch(checkBuySellProviderCountry());
   };
 
+export const setChartMode =
+  (mode: 'price' | 'balance'): AppThunk =>
+  dispatch => {
+    dispatch(setChartModeAction(mode));
+  };
+
 // slice
 export const settingsSlice = createSlice({
   name: 'settings',
@@ -295,6 +306,10 @@ export const settingsSlice = createSlice({
       testPaymentMethod: action.payload.testPaymentMethod,
       testPaymentCountry: action.payload.testPaymentCountry,
       testPaymentFiat: action.payload.testPaymentFiat,
+    }),
+    setChartModeAction: (state, action) => ({
+      ...state,
+      chartMode: action.payload,
     }),
   },
   extraReducers: builder => {
