@@ -13,6 +13,7 @@ import React, {
 import {
   StyleSheet,
   View,
+  Image,
   NativeSyntheticEvent,
   NativeScrollEvent,
   Platform,
@@ -24,12 +25,15 @@ import {
   GestureDetector,
   PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler';
-import {
+import Animated, {
   withSpring,
   withTiming,
+  withRepeat,
   useSharedValue,
+  useAnimatedStyle,
   SharedValue,
   runOnJS,
+  Easing,
 } from 'react-native-reanimated';
 
 import TransactionCell from './Cells/TransactionCell';
@@ -318,6 +322,26 @@ const TransactionList = forwardRef((props: Props, ref) => {
         : Math.floor(decProgress * 10 * 100) / 10
       : 0.1;
 
+  const isAlmostDone = percentageProgress >= 99.9 && percentageProgress < 100;
+
+  const rotation = useSharedValue(0);
+  useEffect(() => {
+    if (isAlmostDone) {
+      rotation.value = 0;
+      rotation.value = withRepeat(
+        withTiming(360, {duration: 1250, easing: Easing.linear}),
+        -1,
+        false,
+      );
+    } else {
+      rotation.value = 0;
+    }
+  }, [isAlmostDone, rotation]);
+
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{rotate: `${rotation.value}deg`}],
+  }));
+
   // When loading and not updating the state for more than 10 sec
   // consider there's a problem with connection and show the note
   const loadingTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -346,12 +370,26 @@ const TransactionList = forwardRef((props: Props, ref) => {
           textStyle={styles.sectionHeaderText}
           numberOfLines={1}
         />
-        <TranslateText
-          textValue={` (${percentageProgress}%) `}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.013}
-          textStyle={styles.sectionHeaderText}
-          numberOfLines={1}
-        />
+        {isAlmostDone ? (
+          <Animated.Image
+            source={require('../assets/icons/loading.png')}
+            style={[
+              {
+                width: SCREEN_HEIGHT * 0.016,
+                height: SCREEN_HEIGHT * 0.016,
+                marginLeft: 6,
+              },
+              spinStyle,
+            ]}
+          />
+        ) : (
+          <TranslateText
+            textValue={` (${percentageProgress}%) `}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.013}
+            textStyle={styles.sectionHeaderText}
+            numberOfLines={1}
+          />
+        )}
         {takingTooLong ? (
           <TranslateText
             textKey={'taking_too_long'}
@@ -402,7 +440,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
       }
     } else {
       if (folded && foldUnfold) {
-        'worklet';
+        ('worklet');
         const shouldFold = !startClosing.value;
         if (shouldFold) {
           runOnJS(foldUnfold)(true);
