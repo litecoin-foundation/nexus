@@ -67,6 +67,14 @@ type RootStackParamList = {
     scanData?: string;
     isInitial?: boolean;
     activeCard?: number;
+    shopScreen?: string;
+    gcPaymentDetails?: {
+      brand: string;
+      amount: number;
+      currency: string;
+      paymentAmountLtc: string;
+      paymentAddress: string;
+    };
   };
   SearchTransaction: undefined;
 };
@@ -571,7 +579,13 @@ const Main: React.FC<Props> = props => {
         buyViewComponent={<Buy navigation={navigation} />}
         sellViewComponent={<Sell navigation={navigation} />}
         // convertViewComponent={<Convert navigation={navigation} />}
-        shopViewComponent={<GiftCardShop navigation={navigation} />}
+        shopViewComponent={
+          <GiftCardShop
+            navigation={navigation}
+            initialScreen={route.params?.shopScreen}
+            gcPaymentDetails={route.params?.gcPaymentDetails}
+          />
+        }
         sendViewComponent={
           <Send route={route} navigation={navigation} ref={sendCardRef} />
         }

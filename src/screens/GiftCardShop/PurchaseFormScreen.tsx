@@ -206,8 +206,8 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
             <Text style={styles.brandName}>{brand.name}</Text>
             <Text style={styles.brandPrice}>
               {minAmount === maxAmount
-                ? `${minAmount}`
-                : `${minAmount} - ${maxAmount}`}
+                ? `${formatCurrency(currency)}${minAmount}`
+                : `${formatCurrency(currency)}${minAmount} - ${formatCurrency(currency)}${maxAmount}`}
             </Text>
           </View>
         </View>

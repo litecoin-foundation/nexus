@@ -112,8 +112,24 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
           'Giftcard Payment',
         ),
       );
-      navigation.goBack();
       onPaymentSuccess(txid);
+      navigation.navigate('NewWalletStack', {
+        screen: 'Main',
+        params: {
+          screen: 'MainScreen',
+          params: {
+            activeCard: 3,
+            shopScreen: 'my-cards',
+            gcPaymentDetails: {
+              brand: initiateResponse.brand,
+              amount: initiateResponse.amount,
+              currency: initiateResponse.currency,
+              paymentAmountLtc: initiateResponse.paymentAmountLtc,
+              paymentAddress: initiateResponse.paymentAddress,
+            },
+          },
+        },
+      });
       setLoading(false);
     } catch (err) {
       setError(String(err));
@@ -174,7 +190,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
 
               <View style={styles.detailRow}>
                 <TranslateText
-                  textKey="amount_ltc"
+                  textKey="price"
                   domain="nexusShop"
                   maxSizeInPixels={SCREEN_HEIGHT * 0.016}
                   textStyle={styles.detailLabel}
@@ -185,22 +201,6 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
                   maxSizeInPixels={SCREEN_HEIGHT * 0.018}
                   textStyle={styles.detailValue}
                   numberOfLines={1}
-                />
-              </View>
-
-              <View style={styles.detailRow}>
-                <TranslateText
-                  textKey="payment_to"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                  textStyle={styles.detailLabel}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={initiateResponse.paymentAddress}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={styles.detailValue}
-                  numberOfLines={3}
                 />
               </View>
             </View>
@@ -308,7 +308,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     topContainer: {
       width: '100%',
-      height: screenHeight * 0.65,
+      height: screenHeight * 0.5,
       backgroundColor: colors.primary,
       borderBottomLeftRadius: screenHeight * 0.04,
       borderBottomRightRadius: screenHeight * 0.04,
@@ -325,7 +325,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       backgroundColor: colors.white,
       borderRadius: screenHeight * 0.025,
-      paddingVertical: getSpacing(screenWidth, screenHeight).xl,
+      paddingTop: getSpacing(screenWidth, screenHeight).xl,
       paddingHorizontal: getSpacing(screenWidth, screenHeight).lg,
     },
     detailRow: {
