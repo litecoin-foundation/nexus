@@ -17,26 +17,26 @@ class MainApplication : Application(), ReactApplication {
 
     override val reactHost: ReactHost by lazy {
         ExpoReactHostFactory.getDefaultReactHost(
-                context = applicationContext,
-                packageList =
-                        PackageList(this).packages.apply {
-                            // Packages that cannot be autolinked yet can be added manually here,
-                            // for example:
-                            // add(MyReactNativePackage())
-                        }
+            context = applicationContext,
+            packageList =
+                PackageList(this).packages.apply {
+                    // Packages that cannot be autolinked yet can be added manually here, for example:
+                    // add(MyReactNativePackage())
+                },
+            jsMainModulePath = "index"
         )
     }
 
     override fun onCreate() {
         super.onCreate()
         ReactFontManager.getInstance()
-                .addCustomFont(this, "Satoshi Variable", R.font.satoshi_variable)
+            .addCustomFont(this, "Satoshi Variable", R.font.satoshi_variable)
         DefaultNewArchitectureEntryPoint.releaseLevel =
-                try {
-                    ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
-                } catch (e: IllegalArgumentException) {
-                    ReleaseLevel.STABLE
-                }
+            try {
+                ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
+            } catch (e: IllegalArgumentException) {
+                ReleaseLevel.STABLE
+            }
         loadReactNative(this)
         ApplicationLifecycleDispatcher.onApplicationCreate(this)
     }
