@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Image,
   Platform,
+  Keyboard,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
@@ -17,6 +18,11 @@ import type {
 } from '@react-navigation/stack';
 import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
 import LinearGradient from 'react-native-linear-gradient';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import {useSelector} from 'react-redux';
 import {useAppDispatch} from '../../store/hooks';
 import {
@@ -30,6 +36,7 @@ import {
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -180,18 +187,68 @@ const SignUp: React.FC<Props> = () => {
     dispatch(clearAccount());
   };
 
+  const insets = useSafeAreaInsets();
+  const topTranslateY = useSharedValue(0);
+  const bottomTranslateY = useSharedValue(0);
+  const imageOpacity = useSharedValue(1);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, e => {
+      const keyboardHeight = e.endCoordinates.height;
+      // Keyboard height includes the bottom safe area inset, so subtract it
+      const fullShift = keyboardHeight - insets.bottom;
+      bottomTranslateY.value = withTiming(-fullShift * 1.08, {duration: 250});
+      // Blue section moves up less — just enough to close the gap
+      topTranslateY.value = withTiming(-fullShift * 0.515, {duration: 250});
+      imageOpacity.value = withTiming(0, {duration: 250});
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      topTranslateY.value = withTiming(0, {duration: 250});
+      bottomTranslateY.value = withTiming(0, {duration: 250});
+      imageOpacity.value = withTiming(1, {duration: 250});
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [
+    SCREEN_HEIGHT,
+    insets.bottom,
+    topTranslateY,
+    bottomTranslateY,
+    imageOpacity,
+  ]);
+
+  const animatedTopStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: topTranslateY.value}],
+  }));
+
+  const animatedBottomStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: bottomTranslateY.value}],
+  }));
+
+  const animatedImageStyle = useAnimatedStyle(() => ({
+    opacity: imageOpacity.value,
+  }));
+
   return (
     <LinearGradient
       style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
       <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
-        <View style={styles.topContainer}>
-          <View style={styles.imageContainer}>
+        <Animated.View style={[styles.topContainer, animatedTopStyle]}>
+          <Animated.View style={[styles.imageContainer, animatedImageStyle]}>
             <Image
               style={styles.image}
               source={require('../../assets/images/shop-card.png')}
             />
-          </View>
+          </Animated.View>
 
           <View style={styles.formContainer}>
             <View style={styles.titleContainer}>
@@ -250,9 +307,9 @@ const SignUp: React.FC<Props> = () => {
               ) : null}
             </View>
           </View>
-        </View>
+        </Animated.View>
 
-        <View style={styles.buttonContainer}>
+        <Animated.View style={[styles.buttonContainer, animatedBottomStyle]}>
           <Turnstile
             onTokenReceived={handleTurnstileTokenReceived}
             onTokenExpired={handleTurnstileExpired}
@@ -309,7 +366,7 @@ const SignUp: React.FC<Props> = () => {
           ) : (
             <></>
           )}
-        </View>
+        </Animated.View>
       </CustomSafeAreaView>
       <WarningModal
         isVisible={showErrorModal}
@@ -327,6 +384,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     safeArea: {
       flex: 1,
+      overflow: 'hidden',
     },
     topContainer: {
       width: '100%',
