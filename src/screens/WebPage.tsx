@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useContext} from 'react';
 import {
   View,
   StyleSheet,
@@ -15,6 +15,7 @@ import Header from '../components/Header';
 import HeaderButton from '../components/Buttons/HeaderButton';
 
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
+import {ScreenSizeContext} from '../context/screenSize';
 
 type RootStackParamList = {
   WebPage: {
@@ -145,6 +146,8 @@ const styles = StyleSheet.create({
 });
 
 export const WebPageNavigationOptions = (navigation: any) => {
+  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
+
   const presentation =
     Platform.OS === 'ios' ? {...TransitionPresets.ModalPresentationIOS} : {};
   return {
@@ -158,11 +161,16 @@ export const WebPageNavigationOptions = (navigation: any) => {
         <HeaderButton
           onPress={() => navigation.goBack()}
           imageSource={require('../assets/images/back-icon.png')}
+          leftPadding
           textKey="back"
           textDomain="buyTab"
         />
       </View>
     ),
+    headerLeftContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
+    headerRightContainerStyle:
+      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
   };
 };
 

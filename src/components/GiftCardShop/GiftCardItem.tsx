@@ -1,13 +1,11 @@
-import React, {useState, useContext} from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Linking,
-  Alert,
-  Image,
-} from 'react-native';
+import React, {useState, useEffect, useContext} from 'react';
+import {View, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import {GiftCard, PendingGiftCardPurchase} from '../../services/giftcards';
@@ -28,10 +26,41 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [expanded, setExpanded] = useState(false);
+  const [contentHeight, setContentHeight] = useState<number | null>(null);
+
+  const heightAnim = useSharedValue(0);
+  const opacityAnim = useSharedValue(0);
+  const chevronRotation = useSharedValue(-90);
+
+  useEffect(() => {
+    if (contentHeight !== null) {
+      if (expanded) {
+        heightAnim.value = withTiming(contentHeight, {duration: 300});
+        opacityAnim.value = withTiming(1, {duration: 250});
+        chevronRotation.value = withTiming(90, {duration: 300});
+      } else {
+        heightAnim.value = withTiming(0, {duration: 300});
+        opacityAnim.value = withTiming(0, {duration: 200});
+        chevronRotation.value = withTiming(-90, {duration: 300});
+      }
+    }
+  }, [expanded, contentHeight, heightAnim, opacityAnim, chevronRotation]);
+
+  const animatedExpandedStyle = useAnimatedStyle(() => ({
+    height: contentHeight === null ? 'auto' : heightAnim.value,
+    opacity: contentHeight === null ? 0 : opacityAnim.value,
+    overflow: 'hidden' as const,
+  }));
+
+  const animatedChevronStyle = useAnimatedStyle(() => ({
+    transform: [{rotate: `${chevronRotation.value}deg`}],
+  }));
+
+  const navigation = useNavigation<any>();
 
   const openUrl = () => {
     if (giftCard.redeemUrl) {
-      Linking.openURL(giftCard.redeemUrl);
+      navigation.navigate('WebPage', {uri: giftCard.redeemUrl});
     }
   };
 
@@ -58,49 +87,116 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
         onPress={() => setExpanded(!expanded)}
         activeOpacity={0.7}>
         <View style={styles.logoContainer}>
-          <Text style={styles.brandLogoText}>{giftCard.brand}</Text>
+          <TranslateText
+            textValue={giftCard.brand}
+            textStyle={styles.brandLogoText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+          />
         </View>
         <View style={styles.cardInfo}>
-          <Text style={styles.cardDate}>
-            {formatDate(giftCard.purchasedAt)}
-          </Text>
-          <Text style={styles.cardAmount}>
-            {giftCard.faceValue.currency === 'USD' ? '$' : ''}
-            {giftCard.faceValue.amount}
-          </Text>
+          <TranslateText
+            textValue={formatDate(giftCard.purchasedAt)}
+            textStyle={styles.cardDate}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+          />
+          <TranslateText
+            textValue={`${giftCard.faceValue.currency === 'USD' ? '$' : ''}${giftCard.faceValue.amount}`}
+            textStyle={styles.cardAmount}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.0155}
+          />
         </View>
         <View style={styles.chevronContainer}>
-          <Image
+          <Animated.Image
             source={backIcon}
-            style={[
-              styles.chevronIcon,
-              {transform: [{rotate: expanded ? '90deg' : '-90deg'}]},
-            ]}
+            style={[styles.chevronIcon, animatedChevronStyle]}
           />
         </View>
       </TouchableOpacity>
 
-      {expanded && (
-        <View style={styles.expandedContent}>
-          {giftCard.redeemCode ? (
-            <View style={styles.codeRow}>
-              <View style={styles.codePill}>
-                <Text style={styles.codePillText}>{giftCard.redeemCode}</Text>
+      {/* Hidden measurement view */}
+      {contentHeight === null && (
+        <View
+          style={styles.measurementContainer}
+          onLayout={event => {
+            const {height} = event.nativeEvent.layout;
+            if (height > 0) {
+              setContentHeight(height);
+            }
+          }}>
+          <View style={styles.expandedContent}>
+            {giftCard.redeemCode ? (
+              <View style={styles.codeRow}>
+                <View style={styles.codePill}>
+                  <TranslateText
+                    textValue={giftCard.redeemCode}
+                    textStyle={styles.codePillText}
+                    maxSizeInPixels={getFontSize(SCREEN_HEIGHT).md}
+                  />
+                </View>
+                <TouchableOpacity style={styles.copyIconButton}>
+                  <TranslateText
+                    textValue="⧉"
+                    textStyle={styles.copyIcon}
+                    maxSizeInPixels={getFontSize(SCREEN_HEIGHT).lg}
+                  />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                onPress={copyCode}
-                style={styles.copyIconButton}>
-                <Text style={styles.copyIcon}>⧉</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            giftCard.redeemUrl && (
-              <TouchableOpacity style={styles.detailButton} onPress={openUrl}>
-                <Text style={styles.detailButtonText}>View Gift Card</Text>
-              </TouchableOpacity>
-            )
-          )}
+            ) : (
+              giftCard.redeemUrl && (
+                <TouchableOpacity
+                  style={styles.detailButton}
+                  activeOpacity={0.7}>
+                  <TranslateText
+                    textValue="View Gift Card"
+                    textStyle={styles.detailButtonText}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                  />
+                </TouchableOpacity>
+              )
+            )}
+          </View>
         </View>
+      )}
+
+      {/* Animated content */}
+      {contentHeight !== null && (
+        <Animated.View style={animatedExpandedStyle}>
+          <View style={styles.expandedContent}>
+            {giftCard.redeemCode ? (
+              <View style={styles.codeRow}>
+                <View style={styles.codePill}>
+                  <TranslateText
+                    textValue={giftCard.redeemCode}
+                    textStyle={styles.codePillText}
+                    maxSizeInPixels={getFontSize(SCREEN_HEIGHT).md}
+                  />
+                </View>
+                <TouchableOpacity
+                  onPress={copyCode}
+                  style={styles.copyIconButton}>
+                  <TranslateText
+                    textValue="⧉"
+                    textStyle={styles.copyIcon}
+                    maxSizeInPixels={getFontSize(SCREEN_HEIGHT).lg}
+                  />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              giftCard.redeemUrl && (
+                <TouchableOpacity
+                  style={styles.detailButton}
+                  onPress={openUrl}
+                  activeOpacity={0.7}>
+                  <TranslateText
+                    textValue="View Gift Card"
+                    textStyle={styles.detailButtonText}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                  />
+                </TouchableOpacity>
+              )
+            )}
+          </View>
+        </Animated.View>
       )}
     </View>
   );
@@ -141,16 +237,23 @@ export function PendingGiftCardItem({
     <View style={styles.pendingCardContainer}>
       <View style={styles.pendingCard}>
         <View style={styles.pendingLogoContainer}>
-          <Text style={styles.brandLogoText}>{pendingGiftCard.brand}</Text>
+          <TranslateText
+            textValue={pendingGiftCard.brand}
+            textStyle={styles.brandLogoText}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+          />
         </View>
         <View style={styles.pendingCardInfo}>
-          <Text style={styles.cardDate}>
-            {formatDate(pendingGiftCard.createdAt)}
-          </Text>
-          <Text style={styles.pendingCardAmount}>
-            {pendingGiftCard.currency === 'USD' ? '$' : ''}
-            {pendingGiftCard.amount}
-          </Text>
+          <TranslateText
+            textValue={formatDate(pendingGiftCard.createdAt)}
+            textStyle={styles.cardDate}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+          />
+          <TranslateText
+            textValue={`${pendingGiftCard.currency === 'USD' ? '$' : ''}${pendingGiftCard.amount}`}
+            textStyle={styles.pendingCardAmount}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+          />
         </View>
         <View style={styles.statusBadge}>
           <TranslateText
@@ -224,9 +327,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       tintColor: colors.lightBlack,
       resizeMode: 'contain',
     },
+    measurementContainer: {
+      position: 'absolute',
+      opacity: 0,
+      zIndex: -1,
+      pointerEvents: 'none',
+    },
     expandedContent: {
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
-      paddingBottom: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: screenHeight * 0.01,
+      paddingBottom: screenHeight * 0.01,
     },
     codeRow: {
       flexDirection: 'row',
@@ -258,18 +367,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     detailButton: {
       width: '100%',
-      height: screenHeight * 0.04,
+      minHeight: screenWidth * 0.12,
       backgroundColor: colors.primary,
-      paddingVertical: getSpacing(screenWidth, screenHeight).sm,
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
-      borderRadius: getBorderRadius(screenHeight).sm,
+      borderRadius: screenHeight * 0.012,
       alignItems: 'center',
       justifyContent: 'center',
     },
     detailButtonText: {
-      color: colors.white,
+      fontSize: screenHeight * 0.015,
       fontWeight: '700',
       fontFamily: 'Satoshi Variable',
+      color: colors.white,
+      textTransform: 'uppercase',
     },
     statusBadge: {
       backgroundColor: colors.warning,
