@@ -1,4 +1,5 @@
 import React, {
+  memo,
   useEffect,
   useState,
   useRef,
@@ -95,7 +96,7 @@ interface TxListComponentProps {
   mainSheetsTranslationYStart: SharedValue<number>;
 }
 
-const TxListComponent: React.FC<TxListComponentProps> = props => {
+const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
   const {
     selectTransaction,
     setTxDetailModalOpened,
@@ -158,7 +159,7 @@ const TxListComponent: React.FC<TxListComponentProps> = props => {
       />
     </View>
   );
-};
+});
 
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
@@ -543,27 +544,17 @@ const Main: React.FC<Props> = props => {
     [activeTab, isInternetReachable, styles.headerContainer],
   );
 
-  const TxListComponentMemo = useMemo(
-    () => (
-      <TxListComponent
-        selectTransaction={selectTransaction}
-        setTxDetailModalOpened={setTxDetailModalOpened}
-        foldUnfoldBottomSheet={foldUnfoldBottomSheet}
-        isBottomSheetFolded={isBottomSheetFolded}
-        navigation={navigation}
-        styles={styles}
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
-      />
-    ),
-    [
-      isBottomSheetFolded,
-      navigation,
-      styles,
-      foldUnfoldBottomSheet,
-      mainSheetsTranslationY,
-      mainSheetsTranslationYStart,
-    ],
+  const TxListComponentMemo = (
+    <TxListComponent
+      selectTransaction={selectTransaction}
+      setTxDetailModalOpened={setTxDetailModalOpened}
+      foldUnfoldBottomSheet={foldUnfoldBottomSheet}
+      isBottomSheetFolded={isBottomSheetFolded}
+      navigation={navigation}
+      styles={styles}
+      mainSheetsTranslationY={mainSheetsTranslationY}
+      mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+    />
   );
 
   const BottomSheetMemo = useMemo(

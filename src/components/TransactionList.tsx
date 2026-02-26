@@ -133,7 +133,9 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
   const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 
-  const {recoveryMode, syncedToChain} = useAppSelector(state => state.info!);
+  const {recoveryMode, recoveryFinished, syncedToChain} = useAppSelector(
+    state => state.info!,
+  );
   const progress = useAppSelector(state => decimalSyncedSelector(state));
   const recoveryProgress = useAppSelector(state =>
     recoveryProgressSelector(state),
@@ -177,11 +179,10 @@ const TransactionList = forwardRef((props: Props, ref) => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (recoveryMode) {
+    if (!syncedToChain) {
       dispatch(pollRecoveryInfo());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recoveryMode]);
+  }, [syncedToChain, dispatch]);
 
   const filterTransactions = () => {
     const txArray = [];
@@ -477,7 +478,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
         estimatedItemSize={70}
         ListEmptyComponent={<TransactionListEmpty />}
         ListHeaderComponent={
-          recoveryMode || !syncedToChain ? (
+          (recoveryMode && !recoveryFinished) || !syncedToChain ? (
             <TranslateText
               textKey={'txs_take_time_to_appear'}
               domain="onboarding"
