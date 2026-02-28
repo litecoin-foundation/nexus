@@ -10,7 +10,7 @@ PODS:
     - ExpoModulesCore
   - EXConstants (55.0.7):
     - ExpoModulesCore
-  - Expo (55.0.0-preview.10):
+  - Expo (55.0.3):
     - boost
     - DoubleConversion
     - ExpoModulesCore
@@ -41,13 +41,13 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - ExpoAsset (55.0.7):
+  - ExpoAsset (55.0.8):
     - ExpoModulesCore
   - ExpoBlur (55.0.8):
     - ExpoModulesCore
   - ExpoDomWebView (55.0.3):
     - ExpoModulesCore
-  - ExpoFileSystem (55.0.9):
+  - ExpoFileSystem (55.0.10):
     - ExpoModulesCore
   - ExpoFont (55.0.4):
     - ExpoModulesCore
@@ -57,9 +57,9 @@ PODS:
     - ExpoModulesCore
   - ExpoLocalAuthentication (55.0.8):
     - ExpoModulesCore
-  - ExpoLogBox (55.0.6):
+  - ExpoLogBox (55.0.7):
     - React-Core
-  - ExpoModulesCore (55.0.8):
+  - ExpoModulesCore (55.0.13):
     - boost
     - DoubleConversion
     - ExpoModulesJSI
@@ -90,7 +90,7 @@ PODS:
     - RNWorklets
     - SocketRocket
     - Yoga
-  - ExpoModulesJSI (55.0.8):
+  - ExpoModulesJSI (55.0.13):
     - hermes-engine
     - React-Core
     - React-runtimescheduler
@@ -104,7 +104,7 @@ PODS:
   - FBLazyVector (0.83.1)
   - Flexa (1.1.4):
     - Flexa/Complete (= 1.1.4)
-  - flexa-react-native (1.0.16):
+  - flexa-react-native (1.0.17):
     - Flexa (~> 1.1.4)
     - RCT-Folly
     - RCTRequired
@@ -221,35 +221,6 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-callinvoker
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
-  - NitroTor (0.2.8):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - NitroModules
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
     - React-Core
     - React-debug
     - React-Fabric
@@ -3034,6 +3005,34 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - ReactNativeNitroTor (0.5.2):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNBootSplash (6.3.10):
     - boost
     - DoubleConversion
@@ -3587,7 +3586,6 @@ DEPENDENCIES:
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - NitroMmkv (from `../node_modules/react-native-mmkv`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
-  - NitroTor (from `../node_modules/react-native-nitro-tor`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -3670,6 +3668,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "ReactNativeFs (from `../node_modules/@dr.pogodin/react-native-fs`)"
+  - ReactNativeNitroTor (from `../node_modules/react-native-nitro-tor`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
@@ -3770,8 +3769,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-mmkv"
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
-  NitroTor:
-    :path: "../node_modules/react-native-nitro-tor"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3934,6 +3931,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeFs:
     :path: "../node_modules/@dr.pogodin/react-native-fs"
+  ReactNativeNitroTor:
+    :path: "../node_modules/react-native-nitro-tor"
   RNBootSplash:
     :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
@@ -3978,25 +3977,25 @@ SPEC CHECKSUMS:
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 516af7c59786689fb652d45979494655fcf46534
   EXConstants: a16ad8db13865e97aaecf64bb92e8ad8e8ce1ae8
-  Expo: 43144ccbac05b40ae61a9382256bc60832b187c7
-  ExpoAsset: 7c5ca25ca94db0d34d8d3148b9cb18a1a66a2277
+  Expo: 6739d9c02624ea031ec656c1ca922eee3cd6af33
+  ExpoAsset: 4fc5f72f8a74135c522fa61df0bfb869e5b3c3e6
   ExpoBlur: 7a5722ca5c8d9e8a2fe2d3be7cb61071b585ca11
   ExpoDomWebView: d4f2ed3c3fa31d0ce89e79501a0c041c2f233189
-  ExpoFileSystem: 7bc4dd246598030591c391c735d5493741c41eee
+  ExpoFileSystem: 0d267067930a744555ff6ab842fd79d3eeb2c33b
   ExpoFont: 4d2a6dedce012c4793532cb38d561d3da95eaafd
   ExpoHaptics: 8bce973169ae09427d0a10886d222601ada8c128
   ExpoKeepAwake: 55711a70fe88a41e793bbe28543c93cb47ff265d
   ExpoLocalAuthentication: ccc92a75fd11b83b1e321074a803ba7dd90bead1
-  ExpoLogBox: 9b847a8b4ef7013d187c0ad7d1eb77b731b09364
-  ExpoModulesCore: 7b748487a57b8ed6f9a42b4e358726692b20c061
-  ExpoModulesJSI: 1416a6a3f0511a7a354f9e47cc45e353b50d5fda
+  ExpoLogBox: 35febda08748ff213ea133f51acf976ba8c44b2c
+  ExpoModulesCore: 5bfb1f65437111faee807649b5366778d2bd93bd
+  ExpoModulesJSI: fdb82be16565ad49cdff2b68af8442b40ba9c259
   ExpoNotifications: 0293112699b35aa26f6e9e1fcecee0323f3187dc
   ExpoSecureStore: 7837b892a89ad8d28b64d9302b657e8b6ebae250
   Factory: 62356427cda6acc74aed43ad377dc3884ee85679
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
   FBLazyVector: 309703e71d3f2f1ed7dc7889d58309c9d77a95a4
   Flexa: 2f7b8755b2f586690a505b42952f713d06126be0
-  flexa-react-native: 3b880f76ea7df817da83b3f123cfba578ecb74e4
+  flexa-react-native: 032ad26129253d2db49732a8c70a498d01f3e6f5
   FlexaCore: bb5d148074fac06fc2dc2fb6d92dee65a1ba9d53
   FlexaLoad: cae8ac51fc1789c2eec8016e4c36b16b081b6a95
   FlexaNetworking: bf8ab531bc1f784e128eee050cb7561004abc115
@@ -4012,7 +4011,6 @@ SPEC CHECKSUMS:
   MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
   NitroMmkv: 1b125f00aa79f5b73e5afe0340a6d058923e1269
   NitroModules: 192449b51c59478efc2ed5c2554ec907be42ce77
-  NitroTor: 65b35c91cd4968e677268754e193716c3ef4a3ab
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: a41bbdd9af30bf2e5715796b313e44ec43eefff1
@@ -4096,6 +4094,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 894c9c13d45d134966e464ad5453a6d81f197910
   ReactCommon: 05ad684db7d88e194272ae26baddf6300e30b8b7
   ReactNativeFs: fa80a2820620e926982e403c5772683789c8b42b
+  ReactNativeNitroTor: 0ff18bde0a0b2e1899d3175d9d81e7de75b5a87f
   RNBootSplash: fb818d0053315b81fccd5437da42ca460eda6017
   RNCAsyncStorage: 302f2fac014fd450046c120567ca364632da682b
   RNCClipboard: a9d5216cbfaf2f51cfe80bcb132856bb9158fe0d
