@@ -395,6 +395,7 @@
     "amount": "Amount",
     "amount_ltc": "Amount (LTC)",
     "price": "Price",
+    "price_ltc": "Price (LTC)",
     "payment_to": "Payment To",
     "expires_at": "Expires At",
     "active_cards": "Active Cards",
@@ -419,7 +420,17 @@
     "redeem_instructions_title": "REDEEM INSTRUCTIONS",
     "redeem_instructions_text": "You can redeem the card by providing the code at checkout.",
     "unauthorized_purchase_error": "To proceed with the purchase sign in to Nexus Shop account",
+    "payment_processing": "Payment processing...",
     "payment_sent": "Payment Sent",
-    "done": "Done"
+    "done": "Done",
+    "order_details": "Order Details",
+    "pending_gift_card": "Pending Gift Card",
+    "order_status": "Order Status",
+    "status_pending_payment": "Waiting for Payment Confirmation",
+    "status_payment_received": "Issuing Gift Card",
+    "status_completed": "Gift Card Issued",
+    "status_expired": "Order Expired",
+    "status_failed": "Order Failed",
+    "back_to_my_cards": "Back to My Cards"
   }
 }

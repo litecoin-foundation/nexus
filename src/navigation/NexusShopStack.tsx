@@ -11,6 +11,10 @@ import PurchaseFormScreen, {
 import PayForGiftCardScreen, {
   PayForGiftCardScreenOptions,
 } from '../screens/GiftCardShop/PayForGiftCardScreen';
+import PendingGCDetails, {
+  PendingGCDetailsNavigationOptions,
+  PendingGCDetailsParams,
+} from '../screens/GiftCardShop/PendingGCDetails';
 import {Brand, InitiatePurchaseResponseData} from '../services/giftcards';
 
 export type NexusShopStackParamList = {
@@ -32,6 +36,7 @@ export type NexusShopStackParamList = {
     initiateResponse: InitiatePurchaseResponseData;
     onPaymentSuccess: (txid: string) => void;
   };
+  PendingGCDetails: PendingGCDetailsParams;
 };
 
 const Stack = createStackNavigator<NexusShopStackParamList>();
@@ -67,6 +72,11 @@ function NexusShopStack(): React.JSX.Element {
         name="PayForGiftCard"
         component={PayForGiftCardScreen}
         options={({navigation}) => PayForGiftCardScreenOptions(navigation)}
+      />
+      <Stack.Screen
+        name="PendingGCDetails"
+        component={PendingGCDetails}
+        options={({navigation}) => PendingGCDetailsNavigationOptions(navigation)}
       />
     </Stack.Navigator>
   );

@@ -204,10 +204,12 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
 
 interface PendingGiftCardItemProps {
   pendingGiftCard: PendingGiftCardPurchase;
+  onPress?: () => void;
 }
 
 export function PendingGiftCardItem({
   pendingGiftCard,
+  onPress,
 }: PendingGiftCardItemProps) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -234,7 +236,11 @@ export function PendingGiftCardItem({
   };
 
   return (
-    <View style={styles.pendingCardContainer}>
+    <TouchableOpacity
+      style={styles.pendingCardContainer}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={!onPress}>
       <View style={styles.pendingCard}>
         <View style={styles.pendingLogoContainer}>
           <TranslateText
@@ -264,7 +270,7 @@ export function PendingGiftCardItem({
           />
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

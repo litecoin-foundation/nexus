@@ -24,13 +24,6 @@ export type MainDrawerParamList = {
     isInitial?: boolean;
     activeCard?: number;
     shopScreen?: string;
-    gcPaymentDetails?: {
-      brand: string;
-      amount: number;
-      currency: string;
-      paymentAmountLtc: string;
-      paymentAddress: string;
-    };
   };
 };
 

@@ -69,13 +69,6 @@ type RootStackParamList = {
     isInitial?: boolean;
     activeCard?: number;
     shopScreen?: string;
-    gcPaymentDetails?: {
-      brand: string;
-      amount: number;
-      currency: string;
-      paymentAmountLtc: string;
-      paymentAddress: string;
-    };
   };
   SearchTransaction: undefined;
 };
@@ -574,7 +567,6 @@ const Main: React.FC<Props> = props => {
           <GiftCardShop
             navigation={navigation}
             initialScreen={route.params?.shopScreen}
-            gcPaymentDetails={route.params?.gcPaymentDetails}
           />
         }
         sendViewComponent={

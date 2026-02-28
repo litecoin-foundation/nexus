@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
 
+import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
 const AnimatedLottieView = Animated.createAnimatedComponent(LottieView);
@@ -16,12 +17,24 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 interface Props {
   visible: boolean;
+  blueBlurredBg?: boolean;
   noBlur?: boolean;
   tinted?: boolean;
+  textValue?: string;
+  textKey?: string;
+  textDomain?: string;
 }
 
 const LoadingIndicator: React.FC<Props> = props => {
-  const {visible, noBlur, tinted} = props;
+  const {
+    visible,
+    blueBlurredBg,
+    noBlur,
+    tinted,
+    textValue,
+    textKey,
+    textDomain,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -65,6 +78,7 @@ const LoadingIndicator: React.FC<Props> = props => {
               tint="default"
             />
           )}
+          {!noBlur && blueBlurredBg ? <View style={styles.blurBg} /> : null}
           <View style={styles.loaderContainer}>
             <Animated.View style={styles.subContainer}>
               <AnimatedLottieView
@@ -76,6 +90,22 @@ const LoadingIndicator: React.FC<Props> = props => {
               />
             </Animated.View>
           </View>
+          {textKey ? (
+            <TranslateText
+              textKey={textKey}
+              domain={textDomain || 'main'}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+              textStyle={styles.text}
+              numberOfLines={1}
+            />
+          ) : textValue ? (
+            <TranslateText
+              textValue={textValue}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+              textStyle={styles.text}
+              numberOfLines={1}
+            />
+          ) : null}
         </View>
       )}
     </>
@@ -93,6 +123,17 @@ const getStyles = (
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1000,
+    },
+    blurBg: {
+      ...StyleSheet.absoluteFill,
+      backgroundColor: '#133A8A',
+      opacity: 0.6,
+    },
+    text: {
+      color: '#fff',
+      fontSize: screenHeight * 0.025,
+      fontWeight: 700,
+      marginTop: screenHeight * 0.02,
     },
     loaderContainer: {
       height: screenHeight * 0.1,

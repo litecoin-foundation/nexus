@@ -32,14 +32,10 @@ import {
 } from '../../reducers/nexusshopaccount';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import SuccessGCPaymentContent, {
-  GCPaymentDetails,
-} from '../../components/Modals/SuccessGCPaymentContent';
 
 interface GiftCardShopProps {
   initialBrand?: Brand;
   initialScreen?: string;
-  gcPaymentDetails?: GCPaymentDetails;
   navigation: any;
 }
 
@@ -53,7 +49,6 @@ type ScreenState =
 const GiftCardShop: React.FC<GiftCardShopProps> = ({
   initialBrand,
   initialScreen,
-  gcPaymentDetails,
   navigation,
 }) => {
   const uniqueId = useAppSelector((state: any) => state.onboarding.uniqueId);
@@ -66,8 +61,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   const [screen, setScreen] = useState<ScreenState>(
     initialScreen === 'my-cards' ? {type: 'my-cards'} : {type: 'browse'},
   );
-  const [showPaymentSuccess, setShowPaymentSuccess] =
-    useState(!!gcPaymentDetails);
   const shopCountry = account?.userCountry || 'US';
   const shopCurrency = getCurrencyForCountry(shopCountry).currency;
 
@@ -240,13 +233,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
           </View>
         </View>
       </GiftCardProvider>
-      {gcPaymentDetails && (
-        <SuccessGCPaymentContent
-          isVisible={showPaymentSuccess}
-          close={() => setShowPaymentSuccess(false)}
-          details={gcPaymentDetails}
-        />
-      )}
     </View>
   );
 };
