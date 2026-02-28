@@ -2,7 +2,6 @@ import React, {useContext, useState, useRef, useEffect} from 'react';
 import {
   View,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
   DeviceEventEmitter,
   Platform,
@@ -14,6 +13,7 @@ import {useAppDispatch} from '../../store/hooks';
 import {sendOnchainPayment} from '../../reducers/transaction';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import {
@@ -113,22 +113,13 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
         ),
       );
       onPaymentSuccess(txid);
-      navigation.navigate('NewWalletStack', {
-        screen: 'Main',
-        params: {
-          screen: 'MainScreen',
-          params: {
-            activeCard: 3,
-            shopScreen: 'my-cards',
-            gcPaymentDetails: {
-              brand: initiateResponse.brand,
-              amount: initiateResponse.amount,
-              currency: initiateResponse.currency,
-              paymentAmountLtc: initiateResponse.paymentAmountLtc,
-              paymentAddress: initiateResponse.paymentAddress,
-            },
-          },
-        },
+      navigation.replace('PendingGCDetails', {
+        brand: initiateResponse.brand,
+        amount: initiateResponse.amount,
+        currency: initiateResponse.currency,
+        paymentAmountLtc: initiateResponse.paymentAmountLtc,
+        paymentAddress: initiateResponse.paymentAddress,
+        pendingPurchaseId: initiateResponse.pendingPurchaseId,
       });
       setLoading(false);
     } catch (err) {
@@ -190,7 +181,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
 
               <View style={styles.detailRow}>
                 <TranslateText
-                  textKey="price"
+                  textKey="price_ltc"
                   domain="nexusShop"
                   maxSizeInPixels={SCREEN_HEIGHT * 0.016}
                   textStyle={styles.detailLabel}
@@ -239,17 +230,13 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
               handleAuthenticationRequired('send-giftcard-payment')
             }
             disabled={loading || isPaymentExpired}>
-            {loading ? (
-              <ActivityIndicator color={colors.white} />
-            ) : (
-              <TranslateText
-                textKey={isPaymentExpired ? 'payment_expired' : 'send_payment'}
-                domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                textStyle={commonStyles.buttonText}
-                numberOfLines={1}
-              />
-            )}
+            <TranslateText
+              textKey={isPaymentExpired ? 'payment_expired' : 'send_payment'}
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={commonStyles.buttonText}
+              numberOfLines={1}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -288,6 +275,13 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
           )}
         />
       </CustomSafeAreaView>
+
+      <LoadingIndicator
+        visible={loading}
+        blueBlurredBg
+        textKey="payment_processing"
+        textDomain="nexusShop"
+      />
     </LinearGradient>
   );
 };

@@ -114,7 +114,23 @@ const MyGiftCards: React.FC<Props> = props => {
             contentContainerStyle={styles.pendingScrollContainer}
             showsHorizontalScrollIndicator={false}>
             {activePendingCards.map(gc => (
-              <PendingGiftCardItem key={gc.id} pendingGiftCard={gc} />
+              <PendingGiftCardItem
+                key={gc.id}
+                pendingGiftCard={gc}
+                onPress={() =>
+                  navigation.navigate('NexusShopStack', {
+                    screen: 'PendingGCDetails',
+                    params: {
+                      brand: gc.brand,
+                      amount: gc.amount,
+                      currency: gc.currency,
+                      paymentAmountLtc: gc.btcpayPaymentAmountLtc,
+                      paymentAddress: gc.btcpayPaymentAddress,
+                      pendingPurchaseId: gc.id,
+                    },
+                  })
+                }
+              />
             ))}
           </ScrollView>
         </View>
