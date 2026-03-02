@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withSpring,
 } from 'react-native-reanimated';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
@@ -29,6 +30,31 @@ interface BrandCardProps {
   isExpanded?: boolean;
   onToggle?: () => void;
 }
+
+const AnimatedPressable: React.FC<{
+  onPress?: () => void;
+  disabled?: boolean;
+  style?: any;
+  children: React.ReactNode;
+}> = ({onPress, disabled, style, children}) => {
+  const scaler = useSharedValue(1);
+  const motionStyle = useAnimatedStyle(() => ({
+    transform: [{scale: scaler.value}],
+  }));
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      onPressIn={() => {
+        scaler.value = withSpring(0.96, {mass: 1});
+      }}
+      onPressOut={() => {
+        scaler.value = withSpring(1, {mass: 0.7});
+      }}>
+      <Animated.View style={[style, motionStyle]}>{children}</Animated.View>
+    </Pressable>
+  );
+};
 
 export function BrandCard({
   brand,
@@ -226,20 +252,19 @@ export function BrandCard({
                 denominations.length < 5 && styles.denominationsRowLeft,
               ]}>
               {denominations.map(amount => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={amount}
-                  style={styles.denominationButton}
-                  activeOpacity={0.7}>
+                  style={styles.denominationButton}>
                   <Text style={styles.denominationText}>
                     {formatCurrency(currency)}
                     {formatDenomination(amount)}
                   </Text>
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
-            <TouchableOpacity style={styles.purchaseButton} activeOpacity={0.7}>
+            <AnimatedPressable style={styles.purchaseButton}>
               <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         </View>
       )}
@@ -254,15 +279,14 @@ export function BrandCard({
                 denominations.length < 5 && styles.denominationsRowLeft,
               ]}>
               {denominations.map(amount => (
-                <TouchableOpacity
+                <AnimatedPressable
                   key={amount}
                   style={[
                     styles.denominationButton,
                     selectedAmount === Number(amount) &&
                       styles.denominationButtonSelected,
                   ]}
-                  onPress={() => handleAmountSelect(Number(amount))}
-                  activeOpacity={0.7}>
+                  onPress={() => handleAmountSelect(Number(amount))}>
                   <Text
                     style={[
                       styles.denominationText,
@@ -272,15 +296,14 @@ export function BrandCard({
                     {formatCurrency(currency)}
                     {formatDenomination(amount)}
                   </Text>
-                </TouchableOpacity>
+                </AnimatedPressable>
               ))}
             </View>
-            <TouchableOpacity
+            <AnimatedPressable
               style={styles.purchaseButton}
-              onPress={handlePurchase}
-              activeOpacity={0.7}>
+              onPress={handlePurchase}>
               <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         </Animated.View>
       )}
@@ -378,11 +401,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     denominationsRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: 'center',
+      gap: screenWidth * 0.025,
       marginBottom: screenHeight * 0.01,
     },
     denominationsRowLeft: {
-      justifyContent: 'center',
       gap: screenWidth * 0.03,
     },
     denominationButton: {
