@@ -1,8 +1,14 @@
-import React, {useEffect, useContext, useState, useMemo} from 'react';
+import React, {
+  useEffect,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   Image,
   TextInput,
   ActivityIndicator,
@@ -10,8 +16,13 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated';
 import type {StackNavigationOptions} from '@react-navigation/stack';
-import LinearGradient from 'react-native-linear-gradient';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {
   Brand,
@@ -55,6 +66,31 @@ interface PurchaseFormContentProps {
   navigation: any;
 }
 
+const AnimatedPressable: React.FC<{
+  onPress: () => void;
+  disabled?: boolean;
+  style?: any;
+  children: React.ReactNode;
+}> = ({onPress, disabled, style, children}) => {
+  const scaler = useSharedValue(1);
+  const motionStyle = useAnimatedStyle(() => ({
+    transform: [{scale: scaler.value}],
+  }));
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      onPressIn={() => {
+        scaler.value = withSpring(0.96, {mass: 1});
+      }}
+      onPressOut={() => {
+        scaler.value = withSpring(1, {mass: 0.7});
+      }}>
+      <Animated.View style={[style, motionStyle]}>{children}</Animated.View>
+    </Pressable>
+  );
+};
+
 const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   brand,
   initialAmount,
@@ -82,6 +118,39 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     amount > 0 ? amount.toString() : '',
   );
   const [showInputAmount, setShowInputAmount] = useState(false);
+  const [inputContentHeight, setInputContentHeight] = useState<number | null>(
+    null,
+  );
+  const inputHeightAnim = useSharedValue(0);
+  const inputOpacityAnim = useSharedValue(0);
+
+  const onInputContentLayout = useCallback(
+    (e: {nativeEvent: {layout: {height: number}}}) => {
+      const h = e.nativeEvent.layout.height;
+      if (h > 0 && inputContentHeight === null) {
+        setInputContentHeight(h);
+      }
+    },
+    [inputContentHeight],
+  );
+
+  useEffect(() => {
+    if (inputContentHeight !== null) {
+      if (showInputAmount) {
+        inputHeightAnim.value = withTiming(inputContentHeight, {duration: 300});
+        inputOpacityAnim.value = withTiming(1, {duration: 250});
+      } else {
+        inputHeightAnim.value = withTiming(0, {duration: 300});
+        inputOpacityAnim.value = withTiming(0, {duration: 200});
+      }
+    }
+  }, [showInputAmount, inputContentHeight, inputHeightAnim, inputOpacityAnim]);
+
+  const inputAnimatedStyle = useAnimatedStyle(() => ({
+    height: inputHeightAnim.value,
+    opacity: inputOpacityAnim.value,
+    overflow: 'hidden' as const,
+  }));
 
   // Sync text when amount changes externally (e.g., denomination buttons)
   useEffect(() => {
@@ -184,14 +253,8 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   };
 
   return (
-    <LinearGradient
-      style={styles.container}
-      colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <View style={styles.fakeHeader} />
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.formContainer}>
+    <View style={styles.container}>
+      <View style={styles.blueHeader}>
         <View style={styles.headerCard}>
           <View style={styles.logoContainer}>
             {brand.logo_url ? (
@@ -218,14 +281,13 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
             denominations.length < 5 && styles.denominationsRowLeft,
           ]}>
           {denominations.map(denom => (
-            <TouchableOpacity
+            <AnimatedPressable
               key={denom}
               style={[
                 styles.denominationButton,
                 amount === Number(denom) && styles.denominationButtonSelected,
               ]}
-              onPress={() => setAmount(Number(denom))}
-              activeOpacity={0.7}>
+              onPress={() => setAmount(Number(denom))}>
               <Text
                 style={[
                   styles.denominationText,
@@ -234,71 +296,87 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                 {formatCurrency(currency)}
                 {denom}
               </Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           ))}
         </View>
 
         {!brand.denominations ? (
-          showInputAmount ? (
-            <View style={styles.amountInputSection}>
+          <View style={styles.amountInputSection}>
+            <AnimatedPressable
+              style={styles.otherAmountToggle}
+              onPress={() => setShowInputAmount(!showInputAmount)}>
               <TranslateText
-                textKey="enter_amount"
+                textKey="other_amount"
                 domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                textStyle={styles.sectionTitle}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                textStyle={styles.otherAmountToggleText}
                 numberOfLines={1}
               />
-              <View style={styles.amountInputContainer}>
-                <Text style={styles.currencySymbol}>
-                  {formatCurrency(currency)}
-                </Text>
-                <TextInput
-                  style={styles.amountInput}
-                  value={amountText}
-                  onChangeText={text => {
-                    setAmountText(text);
-                    const normalized = text.replace(',', '.');
-                    const parsed = parseFloat(normalized);
-                    setAmount(isNaN(parsed) ? 0 : parsed);
-                  }}
-                  placeholder={`${minAmount} - ${maxAmount}`}
-                  keyboardType="decimal-pad"
-                  placeholderTextColor={colors.grayMedium}
-                />
-              </View>
-              <TranslateText
-                textKey="enter_amount_hint"
-                domain="nexusShop"
-                interpolationObj={{
-                  currencySymbol: formatCurrency(currency),
-                  min: minAmount,
-                  max: maxAmount,
-                }}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.amountHint}
-                numberOfLines={1}
-              />
-            </View>
-          ) : (
-            <View style={styles.amountInputSection}>
-              <TouchableOpacity
-                style={commonStyles.buttonRoundedSecondary}
-                onPress={() => setShowInputAmount(true)}
-                activeOpacity={0.7}>
+              <Text
+                style={[
+                  styles.otherAmountChevron,
+                  showInputAmount && styles.otherAmountChevronOpen,
+                ]}>
+                {'\u25BC'}
+              </Text>
+            </AnimatedPressable>
+            <Animated.View
+              style={
+                inputContentHeight === null
+                  ? {position: 'absolute', opacity: 0, zIndex: -1}
+                  : inputAnimatedStyle
+              }>
+              <View
+                onLayout={onInputContentLayout}
+                style={styles.amountInputContent}>
                 <TranslateText
-                  textKey="other_amount"
+                  textKey="enter_amount"
                   domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={commonStyles.buttonTextBlack}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={styles.enterAmountTitle}
                   numberOfLines={1}
                 />
-              </TouchableOpacity>
-            </View>
-          )
+                <View style={styles.amountInputContainer}>
+                  <Text style={styles.currencySymbol}>
+                    {formatCurrency(currency)}
+                  </Text>
+                  <TextInput
+                    style={styles.amountInput}
+                    value={amountText}
+                    onChangeText={text => {
+                      setAmountText(text);
+                      const normalized = text.replace(',', '.');
+                      const parsed = parseFloat(normalized);
+                      setAmount(isNaN(parsed) ? 0 : parsed);
+                    }}
+                    placeholder={`${minAmount} - ${maxAmount}`}
+                    keyboardType="decimal-pad"
+                    placeholderTextColor={colors.grayMedium}
+                  />
+                </View>
+                <TranslateText
+                  textKey="enter_amount_hint"
+                  domain="nexusShop"
+                  interpolationObj={{
+                    currencySymbol: formatCurrency(currency),
+                    min: minAmount,
+                    max: maxAmount,
+                  }}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.amountHint}
+                  numberOfLines={1}
+                />
+              </View>
+            </Animated.View>
+          </View>
         ) : (
           <></>
         )}
+      </View>
 
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.formContainer}>
         <View style={styles.section}>
           <TranslateText
             textKey="description_title"
@@ -331,35 +409,13 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
             textStyle={styles.sectionText}
           />
         </View>
+      </ScrollView>
 
-        {(errorTextKey || errorTextValue) && (
-          <View style={styles.errorContainer}>
-            <TranslateText
-              textKey={errorTextKey}
-              textValue={errorTextValue}
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.errorText}
-            />
-          </View>
-        )}
-
-        {!validation.valid && validation.error && amount > 0 && (
-          <View style={styles.errorContainer}>
-            <TranslateText
-              textValue={validation.error}
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.errorText}
-            />
-          </View>
-        )}
-
+      <View style={styles.buttonContainer}>
         {error === 'Unauthorized' ? (
-          <TouchableOpacity
+          <AnimatedPressable
             style={commonStyles.buttonRounded}
-            onPress={toSignUp}
-            activeOpacity={0.7}>
+            onPress={toSignUp}>
             <TranslateText
               textKey="sign_in"
               domain="nexusShop"
@@ -367,31 +423,49 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
               textStyle={commonStyles.buttonText}
               numberOfLines={1}
             />
-          </TouchableOpacity>
+          </AnimatedPressable>
         ) : (
-          <TouchableOpacity
+          <AnimatedPressable
             style={[
               commonStyles.buttonRounded,
               (!validation.valid || loading) && commonStyles.buttonDisabled,
             ]}
             onPress={handleSubmit}
-            disabled={!validation.valid || loading}
-            activeOpacity={0.7}>
+            disabled={!validation.valid || loading}>
             {loading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
               <TranslateText
-                textKey="proceed"
+                textKey="continue_purchase"
                 domain="nexusShop"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={commonStyles.buttonText}
                 numberOfLines={1}
               />
             )}
-          </TouchableOpacity>
+          </AnimatedPressable>
         )}
-      </ScrollView>
-    </LinearGradient>
+
+        {(errorTextKey || errorTextValue) && (
+          <TranslateText
+            textKey={errorTextKey}
+            textValue={errorTextValue}
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.underButtonText}
+          />
+        )}
+
+        {!validation.valid && validation.error && amount > 0 && (
+          <TranslateText
+            textValue={validation.error}
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.underButtonText}
+          />
+        )}
+      </View>
+    </View>
   );
 };
 
@@ -430,11 +504,16 @@ const getStyles = (
   StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: '#f7f7f7',
     },
-    fakeHeader: {
+    blueHeader: {
       width: screenWidth,
-      height: deviceHeaderHeight + screenHeight * 0.008,
       backgroundColor: '#0070F0',
+      paddingTop: deviceHeaderHeight + screenHeight * 0.02,
+      paddingHorizontal: screenWidth * 0.04,
+      paddingBottom: screenHeight * 0.02,
+      borderBottomLeftRadius: screenHeight * 0.04,
+      borderBottomRightRadius: screenHeight * 0.04,
     },
     scrollView: {
       flex: 1,
@@ -442,6 +521,7 @@ const getStyles = (
     },
     formContainer: {
       padding: screenWidth * 0.04,
+      paddingBottom: screenHeight * 0.15,
     },
     headerCard: {
       flexDirection: 'row',
@@ -449,7 +529,6 @@ const getStyles = (
       backgroundColor: colors.white,
       borderRadius: getBorderRadius(screenHeight).lg,
       padding: getSpacing(screenWidth, screenHeight).md,
-      marginBottom: screenHeight * 0.02,
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 2},
       shadowOpacity: 0.08,
@@ -499,37 +578,62 @@ const getStyles = (
     },
     denominationsRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginBottom: screenHeight * 0.02,
+      justifyContent: 'center',
+      gap: screenWidth * 0.025,
+      marginTop: screenHeight * 0.015,
+      marginBottom: screenHeight * 0.005,
     },
     denominationsRowLeft: {
-      justifyContent: 'center',
       gap: screenWidth * 0.03,
     },
     denominationButton: {
       minWidth: screenWidth * 0.15,
       minHeight: screenWidth * 0.12,
       borderWidth: 1,
-      borderColor: colors.grayLight,
-      backgroundColor: colors.white,
+      borderColor: 'rgba(255,255,255,0.3)',
+      backgroundColor: 'rgba(255,255,255,0.15)',
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: screenHeight * 0.012,
     },
     denominationButtonSelected: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
+      backgroundColor: colors.white,
+      borderColor: colors.white,
     },
     denominationText: {
       fontSize: screenHeight * 0.017,
       fontWeight: '500',
-      color: colors.text,
-    },
-    denominationTextSelected: {
       color: colors.white,
     },
+    denominationTextSelected: {
+      color: colors.primary,
+    },
     amountInputSection: {
-      marginBottom: screenHeight * 0.04,
+      marginBottom: screenHeight * 0.005,
+    },
+    otherAmountToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'center',
+      justifyContent: 'center',
+      paddingVertical: screenHeight * 0.012,
+      paddingHorizontal: screenWidth * 0.08,
+    },
+    otherAmountToggleText: {
+      fontSize: screenHeight * 0.016,
+      fontWeight: '600',
+      color: colors.white,
+    },
+    otherAmountChevron: {
+      fontSize: screenHeight * 0.01,
+      color: 'rgba(255,255,255,0.7)',
+      marginLeft: screenWidth * 0.02,
+    },
+    otherAmountChevronOpen: {
+      transform: [{rotate: '180deg'}],
+    },
+    amountInputContent: {
+      paddingTop: screenHeight * 0.015,
     },
     amountInputContainer: {
       flexDirection: 'row',
@@ -554,19 +658,25 @@ const getStyles = (
       fontSize: getFontSize(screenHeight).lg,
       color: colors.text,
     },
+    enterAmountTitle: {
+      fontSize: screenHeight * 0.016,
+      fontWeight: '700',
+      color: colors.white,
+      marginBottom: getSpacing(screenWidth, screenHeight).sm,
+      letterSpacing: 0.5,
+    },
     amountHint: {
       marginTop: getSpacing(screenWidth, screenHeight).sm,
       fontSize: screenHeight * 0.016,
-      color: colors.textSecondary,
+      color: 'rgba(255,255,255,0.7)',
     },
     section: {
-      borderBottomWidth: 1,
-      borderBottomColor: colors.grayLight,
-      marginBottom: screenHeight * 0.04,
+      marginBottom: screenHeight * 0.015,
+      paddingBottom: screenHeight * 0.01,
     },
     sectionTitle: {
       fontSize: screenHeight * 0.016,
-      fontWeight: '600',
+      fontWeight: '700',
       color: colors.primary,
       marginBottom: getSpacing(screenWidth, screenHeight).sm,
       letterSpacing: 0.5,
@@ -576,14 +686,20 @@ const getStyles = (
       color: colors.text,
       lineHeight: getFontSize(screenHeight).md * 1.5,
     },
-    errorContainer: {
-      paddingHorizontal: screenWidth * 0.02,
-      marginBottom: screenHeight * 0.02,
+    buttonContainer: {
+      position: 'absolute',
+      bottom: screenHeight * 0.03,
+      left: screenWidth * 0.04,
+      right: screenWidth * 0.04,
+      zIndex: 2,
     },
-    errorText: {
-      color: colors.danger,
-      fontSize: screenHeight * 0.018,
+    underButtonText: {
+      color: '#747E87',
+      fontFamily: 'Satoshi Variable',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.012,
       textAlign: 'center',
+      marginTop: screenHeight * 0.01,
     },
     headerTitle: {
       color: '#fff',
