@@ -270,10 +270,17 @@ export const sweepWIF = async (
   useTor: boolean = false,
 ) => {
   let compressed;
+  let privateKeyBuffer: Buffer;
 
   try {
     const key = wif.decode(wifString);
     compressed = key.compressed;
+    // Convert privateKey Uint8Array to Buffer to avoid "Expected Buffer, got Uint8Array" error
+    privateKeyBuffer = Buffer.from(key.privateKey);
+
+    if (key.version !== LITECOIN.wif) {
+      throw new Error('Invalid network version');
+    }
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);
@@ -282,7 +289,10 @@ export const sweepWIF = async (
     }
   }
 
-  const keyPair = ECPair.fromWIF(wifString, LITECOIN);
+  const keyPair = ECPair.fromPrivateKey(privateKeyBuffer, {
+    compressed,
+    network: LITECOIN,
+  });
 
   let p2shAddress;
   let bech32Address;
