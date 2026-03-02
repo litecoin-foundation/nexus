@@ -1,5 +1,11 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {View, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Pressable,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Animated, {
   useSharedValue,
@@ -82,10 +88,7 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
 
   return (
     <View style={styles.cardContainer}>
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => setExpanded(!expanded)}
-        activeOpacity={0.7}>
+      <Pressable style={styles.card} onPress={() => setExpanded(!expanded)}>
         <View style={styles.logoContainer}>
           <TranslateText
             textValue={giftCard.brand}
@@ -111,7 +114,7 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
             style={[styles.chevronIcon, animatedChevronStyle]}
           />
         </View>
-      </TouchableOpacity>
+      </Pressable>
 
       {/* Hidden measurement view */}
       {contentHeight === null && (
