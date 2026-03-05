@@ -159,5 +159,8 @@
     "base-x": "4.0.1",
     "react-native-quick-base64": "2.2.0",
     "@flexa/flexa-react-native/react-native": "0.83.1"
+  },
+  "resolutions": {
+    "hermes-compiler": "250829098.0.4"
   }
 }
