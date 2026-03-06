@@ -256,7 +256,12 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     <View style={styles.container}>
       <View style={styles.blueHeader}>
         <View style={styles.headerCard}>
-          <View style={styles.logoContainer}>
+          <View
+            style={
+              brand.logo_url
+                ? styles.logoContainer
+                : styles.logoContainerPlaceholder
+            }>
             {brand.logo_url ? (
               <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
             ) : (
@@ -385,13 +390,22 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
             textStyle={styles.sectionTitle}
             numberOfLines={1}
           />
-          <TranslateText
-            textKey="gift_card_description"
-            domain="nexusShop"
-            interpolationObj={{brandName: brand.name}}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-            textStyle={styles.sectionText}
-          />
+          {brand.description ? (
+            <TranslateText
+              textValue={brand.description}
+              interpolationObj={{brandName: brand.name}}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.sectionText}
+            />
+          ) : (
+            <TranslateText
+              textKey="gift_card_description"
+              domain="nexusShop"
+              interpolationObj={{brandName: brand.name}}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.sectionText}
+            />
+          )}
         </View>
 
         <View style={styles.section}>
@@ -402,12 +416,20 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
             textStyle={styles.sectionTitle}
             numberOfLines={1}
           />
-          <TranslateText
-            textKey="redeem_instructions_text"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-            textStyle={styles.sectionText}
-          />
+          {brand.terms ? (
+            <TranslateText
+              textValue={brand.terms}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.sectionText}
+            />
+          ) : (
+            <TranslateText
+              textKey="redeem_instructions_text"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.sectionText}
+            />
+          )}
         </View>
       </ScrollView>
 
@@ -538,16 +560,24 @@ const getStyles = (
     logoContainer: {
       width: screenWidth * 0.2,
       height: screenWidth * 0.15,
+      borderRadius: screenHeight * 0.012,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+    },
+    logoContainerPlaceholder: {
+      width: screenWidth * 0.2,
+      height: screenWidth * 0.15,
       backgroundColor: colors.grayLight,
-      borderRadius: getBorderRadius(screenHeight).md,
+      borderRadius: screenHeight * 0.012,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
     },
     brandLogo: {
-      width: '80%',
-      height: '80%',
-      resizeMode: 'contain',
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
     },
     brandLogoPlaceholder: {
       width: '100%',

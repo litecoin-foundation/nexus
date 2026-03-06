@@ -202,7 +202,12 @@ export function BrandCard({
   return (
     <View style={styles.brandCardContainer}>
       <Pressable style={styles.brandCard} onPress={handleToggle}>
-        <View style={styles.logoContainer}>
+        <View
+          style={
+            brand.logo_url
+              ? styles.logoContainer
+              : styles.logoContainerPlaceholder
+          }>
           {brand.logo_url ? (
             <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
           ) : (
@@ -337,6 +342,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     logoContainer: {
       width: screenWidth * 0.17,
       height: screenHeight * 0.06,
+      borderRadius: screenHeight * 0.01,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+    },
+    logoContainerPlaceholder: {
+      width: screenWidth * 0.17,
+      height: screenHeight * 0.06,
       backgroundColor: colors.grayLight,
       borderRadius: screenHeight * 0.01,
       justifyContent: 'center',
@@ -344,9 +357,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       overflow: 'hidden',
     },
     brandLogo: {
-      width: '80%',
-      height: '80%',
-      resizeMode: 'contain',
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
     },
     brandLogoPlaceholder: {
       width: '100%',
