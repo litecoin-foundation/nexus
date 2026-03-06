@@ -565,29 +565,80 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
     // Process convert transactions using the extracted utility function
     if (convertedTransactions && convertedTransactions.length > 0) {
-      const {processedTransactions, processedTxHashes} =
-        await processConvertTransactions(
-          convertedTransactions,
-          lndTransactions,
-          (timestamp: number) => getPriceOnDate(timestamp, torEnabled),
-        );
+      // Pre-filter to only process uncached converted transactions
+      const uncachedConvertedTransactions: IConvertedTx[] = [];
+      const cachedConvertTransactions: {
+        convertTx: IConvertedTx;
+        cachedTx: IDecodedTx;
+        mainTx: any;
+      }[] = [];
 
-      // Add processed convert transactions to the txs array
-      processedTransactions.forEach(processedTx => {
-        // NOTE: skip processing if tx was cached before
-        // TODO: move the skipping to the processConvertTransactions
-        // when it's finished and stable to avoid getPriceOnDate calls
+      for (const convertTx of convertedTransactions) {
+        // Find the main transaction for this convert operation
+        const mainTx = lndTransactions.transactions.find(tx => {
+          const hasDestinationAddress = tx.outputDetails?.some(
+            output => output.address === convertTx.destinationAddress,
+          );
+
+          if (!hasDestinationAddress) {
+            return false;
+          }
+
+          // Additional validation: check if transaction uses selected outpoints
+          const selectedOutpointSet = new Set(
+            convertTx.selectedOutpoints || [],
+          );
+          const usesSelectedOutpoints = tx.previousOutpoints?.some(
+            prevOutpoint =>
+              selectedOutpointSet.has(prevOutpoint.outpoint || ''),
+          );
+
+          // Additional validation: check amount proximity to target amount
+          const amountMatches =
+            Math.abs(Number(tx.amount) - Number(convertTx.targetAmount)) <
+            Math.max(1000, Number(convertTx.targetAmount) * 0.01);
+
+          // Additional validation: check timestamp proximity (within 1 hour)
+          const timestampMatches =
+            Math.abs(Number(tx.timeStamp) - convertTx.timestamp) < 3600;
+
+          return usesSelectedOutpoints || (amountMatches && timestampMatches);
+        });
+
+        if (!mainTx?.txHash) {
+          // Can't find main transaction, include for processing
+          uncachedConvertedTransactions.push(convertTx);
+          continue;
+        }
+
+        // Check if already cached
         const cachedTx = checkTxCache(
           cachedTxHashSet,
           transactionsByHash,
-          processedTx.txHash,
+          mainTx.txHash,
         );
+
         if (cachedTx) {
-          txs.push({
-            ...cachedTx,
-            numConfirmations: processedTx.numConfirmations,
-          });
+          // Transaction is cached, store for later processing
+          cachedConvertTransactions.push({convertTx, cachedTx, mainTx});
+          processedConvertTxHashes.add(mainTx.txHash);
         } else {
+          // Not cached, needs processing
+          uncachedConvertedTransactions.push(convertTx);
+        }
+      }
+
+      // Process only uncached converted transactions
+      if (uncachedConvertedTransactions.length > 0) {
+        const {processedTransactions, processedTxHashes} =
+          await processConvertTransactions(
+            uncachedConvertedTransactions,
+            lndTransactions,
+            (timestamp: number) => getPriceOnDate(timestamp, torEnabled),
+          );
+
+        // Add newly processed convert transactions to the txs array
+        processedTransactions.forEach(processedTx => {
           const decodedTx: IDecodedTx = {
             txHash: processedTx.txHash,
             blockHash: processedTx.blockHash,
@@ -605,10 +656,19 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
           };
           txs.push(decodedTx);
           cachedTxHashesBuf.push(decodedTx.txHash);
-        }
-      });
+        });
 
-      processedConvertTxHashes = processedTxHashes;
+        // Merge the processed transaction hashes
+        processedTxHashes.forEach(hash => processedConvertTxHashes.add(hash));
+      }
+
+      // Add cached convert transactions to the txs array
+      cachedConvertTransactions.forEach(({cachedTx, mainTx}) => {
+        txs.push({
+          ...cachedTx,
+          numConfirmations: mainTx.numConfirmations,
+        });
+      });
     }
 
     // Compare nexus-api txs with lnd txs to append missing ones in lnd
