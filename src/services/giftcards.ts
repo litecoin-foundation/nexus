@@ -1,5 +1,33 @@
 import * as SecureStore from 'expo-secure-store';
 
+export const TILLO_CATEGORIES = [
+  'baby',
+  'beauty',
+  'books',
+  'cars',
+  'charity',
+  'craft',
+  'cryptocurrency',
+  'cycling',
+  'department-store',
+  'electronics',
+  'fashion',
+  'food-and-drink',
+  'gaming',
+  'home',
+  'jewellery',
+  'music',
+  'other',
+  'school-vouchers',
+  'sports',
+  'supermarket',
+  'toys',
+  'travel-and-leisure',
+  'tv-and-movies',
+] as const;
+
+export type TilloCategory = (typeof TILLO_CATEGORIES)[number];
+
 export interface FaceValue {
   amount: number;
   currency: string;
@@ -11,6 +39,8 @@ export interface Brand {
   currency: string; // ISO currency code (e.g., 'USD', 'EUR', 'GBP')
   countries_served?: string[]; // ISO country codes (e.g., ['US', 'CA'])
   logo_url?: string;
+  description?: string;
+  terms?: string;
   categories?: string[];
   digital_face_value_limits?: {
     lower: number;
