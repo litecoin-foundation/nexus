@@ -60,9 +60,7 @@ export function MyWishlistBrands({
   }
 
   if (!wishlistBrands || wishlistBrands.length === 0) {
-    return (
-      <EmptyView message="You haven't added any brands to your wishlist yet." />
-    );
+    return <EmptyView textKey="empty_wishlist" textDomain="nexusShop" />;
   }
 
   return (

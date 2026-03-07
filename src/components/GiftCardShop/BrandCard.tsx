@@ -337,11 +337,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     brandCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: screenHeight * 0.0085,
+      paddingHorizontal: screenHeight * 0.0085,
     },
     logoContainer: {
-      width: screenWidth * 0.17,
-      height: screenHeight * 0.06,
+      width: screenWidth * 0.2,
+      height: screenHeight * 0.077,
       borderRadius: screenHeight * 0.01,
       justifyContent: 'center',
       alignItems: 'center',
@@ -355,6 +355,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      marginVertical: screenHeight * 0.0085,
     },
     brandLogo: {
       width: '100%',
@@ -419,7 +420,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginBottom: screenHeight * 0.01,
     },
     denominationsRowLeft: {
-      gap: screenWidth * 0.03,
+      gap: screenWidth * 0.025,
     },
     denominationButton: {
       minWidth: screenWidth * 0.15,

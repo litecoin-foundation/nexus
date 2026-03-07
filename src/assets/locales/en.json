@@ -380,6 +380,7 @@
     "active_gif_cards": "Active Gift Cards",
     "available_gif_cards": "Available Gift Cards",
     "your_wishlist": "Your Wishlist",
+    "empty_wishlist": "You haven't added any brands to your wishlist yet. Unavailable brands in your region won't show.",
     "past_gif_cards": "Past Gift Cards",
     "check_email": "Check your email",
     "we_sent_code_to": "We've sent a one-time verification code to {{email}}",

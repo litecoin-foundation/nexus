@@ -4,18 +4,35 @@ import {View, StyleSheet} from 'react-native';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-export function EmptyView({message}: {message: string}) {
+interface Props {
+  message?: string;
+  textKey?: string;
+  textDomain?: string;
+}
+
+export function EmptyView(props: Props) {
+  const {message, textKey, textDomain} = props;
+
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return (
     <View style={styles.emptyContainer}>
-      <TranslateText
-        textValue={message}
-        textStyle={styles.emptyText}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-      />
+      {textKey ? (
+        <TranslateText
+          textKey={textKey}
+          domain={textDomain || 'main'}
+          textStyle={styles.emptyText}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        />
+      ) : message ? (
+        <TranslateText
+          textValue={message}
+          textStyle={styles.emptyText}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+        />
+      ) : null}
     </View>
   );
 }
