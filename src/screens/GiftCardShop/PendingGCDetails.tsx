@@ -132,145 +132,147 @@ const PendingGCDetails: React.FC<Props> = ({route, navigation}) => {
     <LinearGradient
       style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
-        <View style={styles.topContainer}>
-          <CustomSafeAreaView styles={styles.safeArea2} edges={['top']}>
-            <View style={styles.titles}>
+      <View style={styles.topContainer}>
+        <CustomSafeAreaView styles={styles.safeAreaTop} edges={['top']}>
+          <View style={styles.titles}>
+            <TranslateText
+              textKey="order_details"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={[commonStyles.subtitle, styles.title]}
+              numberOfLines={2}
+            />
+          </View>
+
+          <View style={styles.paymentDetails}>
+            <View style={styles.detailRow}>
               <TranslateText
-                textKey="order_details"
+                textKey="brand"
                 domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={[commonStyles.subtitle, styles.title]}
-                numberOfLines={2}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                textStyle={styles.detailLabel}
+                numberOfLines={1}
               />
-            </View>
-
-            <View style={styles.paymentDetails}>
-              <View style={styles.detailRow}>
-                <TranslateText
-                  textKey="brand"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                  textStyle={styles.detailLabel}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={brand}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={styles.detailValue}
-                  numberOfLines={1}
-                />
-              </View>
-
-              <View style={styles.detailRow}>
-                <TranslateText
-                  textKey="amount"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                  textStyle={styles.detailLabel}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={`${amount} ${currency}`}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={styles.detailValue}
-                  numberOfLines={1}
-                />
-              </View>
-
-              {!!paymentAmountLtc && (
-                <View style={styles.detailRow}>
-                  <TranslateText
-                    textKey="price_ltc"
-                    domain="nexusShop"
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                    textStyle={styles.detailLabel}
-                    numberOfLines={1}
-                  />
-                  <TranslateText
-                    textValue={paymentAmountLtc}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                    textStyle={styles.detailValue}
-                    numberOfLines={1}
-                  />
-                </View>
-              )}
-            </View>
-          </CustomSafeAreaView>
-        </View>
-
-        {/* Order Status Tracker */}
-        <View style={styles.statusContainer}>
-          <TranslateText
-            textKey="order_status"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-            textStyle={styles.statusTitle}
-            numberOfLines={1}
-          />
-
-          {isTerminalError ? (
-            <View style={styles.errorStatusContainer}>
-              <View style={[styles.statusDot, styles.statusDotError]} />
               <TranslateText
-                textKey={
-                  status === 'expired' ? 'status_expired' : 'status_failed'
-                }
-                domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                textStyle={styles.errorStatusText}
+                textValue={brand}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={styles.detailValue}
                 numberOfLines={1}
               />
             </View>
-          ) : (
-            <View style={styles.stepsContainer}>
-              {STATUS_STEPS.map((step, index) => {
-                const isCompleted = index < currentStepIndex;
-                const isActive = index === currentStepIndex;
-                const isPending = index > currentStepIndex;
 
-                return (
-                  <View key={step.key} style={styles.stepRow}>
-                    <View style={styles.stepIndicator}>
+            <View style={styles.detailRow}>
+              <TranslateText
+                textKey="amount"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                textStyle={styles.detailLabel}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textValue={`${amount} ${currency}`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={styles.detailValue}
+                numberOfLines={1}
+              />
+            </View>
+
+            {!!paymentAmountLtc && (
+              <View style={styles.detailRow}>
+                <TranslateText
+                  textKey="price_ltc"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={styles.detailLabel}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={paymentAmountLtc}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={styles.detailValue}
+                  numberOfLines={1}
+                />
+              </View>
+            )}
+          </View>
+        </CustomSafeAreaView>
+      </View>
+
+      {/* Order Status Tracker */}
+      <View style={styles.statusContainer}>
+        <TranslateText
+          textKey="order_status"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+          textStyle={styles.statusTitle}
+          numberOfLines={1}
+        />
+
+        {isTerminalError ? (
+          <View style={styles.errorStatusContainer}>
+            <View style={[styles.statusDot, styles.statusDotError]} />
+            <TranslateText
+              textKey={
+                status === 'expired' ? 'status_expired' : 'status_failed'
+              }
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.errorStatusText}
+              numberOfLines={1}
+            />
+          </View>
+        ) : (
+          <View style={styles.stepsContainer}>
+            {STATUS_STEPS.map((step, index) => {
+              const isCompleted = index < currentStepIndex;
+              const isActive = index === currentStepIndex;
+              const isPending = index > currentStepIndex;
+
+              return (
+                <View key={step.key} style={styles.stepRow}>
+                  <View style={styles.stepIndicator}>
+                    <View
+                      style={[
+                        styles.statusDot,
+                        isCompleted && styles.statusDotCompleted,
+                        isActive && styles.statusDotActive,
+                        isPending && styles.statusDotPending,
+                      ]}
+                    />
+                    {index < STATUS_STEPS.length - 1 && (
                       <View
                         style={[
-                          styles.statusDot,
-                          isCompleted && styles.statusDotCompleted,
-                          isActive && styles.statusDotActive,
-                          isPending && styles.statusDotPending,
+                          styles.stepLine,
+                          isCompleted
+                            ? styles.stepLineCompleted
+                            : styles.stepLinePending,
                         ]}
                       />
-                      {index < STATUS_STEPS.length - 1 && (
-                        <View
-                          style={[
-                            styles.stepLine,
-                            isCompleted
-                              ? styles.stepLineCompleted
-                              : styles.stepLinePending,
-                          ]}
-                        />
-                      )}
-                    </View>
-                    <TranslateText
-                      textKey={step.textKey}
-                      domain="nexusShop"
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                      textStyle={[
-                        styles.stepText,
-                        isCompleted && styles.stepTextCompleted,
-                        isActive && styles.stepTextActive,
-                        isPending && styles.stepTextPending,
-                      ]}
-                      numberOfLines={1}
-                    />
+                    )}
                   </View>
-                );
-              })}
-            </View>
-          )}
-        </View>
+                  <TranslateText
+                    textKey={step.textKey}
+                    domain="nexusShop"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                    textStyle={[
+                      styles.stepText,
+                      isCompleted && styles.stepTextCompleted,
+                      isActive && styles.stepTextActive,
+                      isPending && styles.stepTextPending,
+                    ]}
+                    numberOfLines={1}
+                  />
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </View>
 
-        <View style={styles.buttonContainer}>
+      <View style={styles.buttonContainer}>
+        <CustomSafeAreaView
+          styles={styles.safeAreaBottom}
+          edges={Platform.OS === 'android' ? ['bottom'] : []}>
           <TouchableOpacity
             style={commonStyles.buttonRounded}
             onPress={navigateToMyCards}
@@ -283,8 +285,8 @@ const PendingGCDetails: React.FC<Props> = ({route, navigation}) => {
               numberOfLines={1}
             />
           </TouchableOpacity>
-        </View>
-      </CustomSafeAreaView>
+        </CustomSafeAreaView>
+      </View>
     </LinearGradient>
   );
 };
@@ -294,15 +296,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
-    safeArea: {
-      flex: 1,
-    },
-    safeArea2: {
+    safeAreaTop: {
       width: '100%',
       height: '100%',
       justifyContent: 'space-between',
       alignItems: 'center',
     },
+    safeAreaBottom: {},
     topContainer: {
       width: '100%',
       height: screenHeight * 0.45,
@@ -316,7 +316,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
     },
     title: {
-      paddingTop: getSpacing(screenWidth, screenHeight).header,
+      paddingTop:
+        Platform.OS === 'android'
+          ? getSpacing(screenWidth, screenHeight).header + 10
+          : getSpacing(screenWidth, screenHeight).header,
     },
     paymentDetails: {
       width: '100%',

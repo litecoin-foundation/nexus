@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {ScrollView, View, StyleSheet, RefreshControl} from 'react-native';
+import {View, StyleSheet, RefreshControl} from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
 
 import {isExpired, PendingGiftCardPurchase} from '../../services/giftcards';
 import {ErrorView} from './ErrorView';

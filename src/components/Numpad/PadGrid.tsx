@@ -7,21 +7,29 @@ import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {
   small?: boolean;
+  extraSmall?: boolean;
 }
 
 const PadGrid: React.FC<Props> = props => {
-  const {small} = props;
+  const {small, extraSmall} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, small || false);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    small || false,
+    extraSmall || false,
+  );
 
   const thirdOfWidth = Math.ceil(SCREEN_WIDTH / 3);
   const twoThirdOfWidth = thirdOfWidth * 2;
 
-  const h = small
-    ? [SCREEN_HEIGHT * 0.09, SCREEN_HEIGHT * 0.18, SCREEN_HEIGHT * 0.27]
-    : [SCREEN_HEIGHT * 0.1, SCREEN_HEIGHT * 0.2, SCREEN_HEIGHT * 0.3];
+  const h = extraSmall
+    ? [SCREEN_HEIGHT * 0.08, SCREEN_HEIGHT * 0.16, SCREEN_HEIGHT * 0.24]
+    : small
+      ? [SCREEN_HEIGHT * 0.09, SCREEN_HEIGHT * 0.18, SCREEN_HEIGHT * 0.27]
+      : [SCREEN_HEIGHT * 0.1, SCREEN_HEIGHT * 0.2, SCREEN_HEIGHT * 0.3];
   const v = [thirdOfWidth, twoThirdOfWidth];
 
   return (
@@ -66,12 +74,21 @@ const PadGrid: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  small: boolean,
+  extraSmall: boolean,
+) =>
   StyleSheet.create({
     container: {
       position: 'absolute',
       width: screenWidth,
-      height: small ? screenHeight * 0.36 : screenHeight * 0.4,
+      height: extraSmall
+        ? screenHeight * 0.32
+        : small
+          ? screenHeight * 0.36
+          : screenHeight * 0.4,
     },
   });
 

@@ -239,10 +239,12 @@ export function PendingGiftCardItem({
   };
 
   return (
-    <TouchableOpacity
-      style={styles.pendingCardContainer}
+    <Pressable
+      style={({pressed}) => [
+        styles.pendingCardContainer,
+        pressed && {opacity: 0.7},
+      ]}
       onPress={onPress}
-      activeOpacity={0.7}
       disabled={!onPress}>
       <View style={styles.pendingCard}>
         <View style={styles.pendingLogoContainer}>
@@ -273,7 +275,7 @@ export function PendingGiftCardItem({
           />
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

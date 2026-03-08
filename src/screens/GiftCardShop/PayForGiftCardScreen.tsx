@@ -133,72 +133,74 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
     <LinearGradient
       style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
-        <View style={styles.topContainer}>
-          <CustomSafeAreaView styles={styles.safeArea2} edges={['top']}>
-            <View style={styles.titles}>
+      <View style={styles.topContainer}>
+        <CustomSafeAreaView styles={styles.safeAreaTop} edges={['top']}>
+          <View style={styles.titles}>
+            <TranslateText
+              textKey="send_to_invoice"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={[commonStyles.subtitle, styles.title]}
+              numberOfLines={2}
+            />
+          </View>
+
+          <View style={styles.paymentDetails}>
+            <View style={styles.detailRow}>
               <TranslateText
-                textKey="send_to_invoice"
+                textKey="brand"
                 domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={[commonStyles.subtitle, styles.title]}
-                numberOfLines={2}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                textStyle={styles.detailLabel}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textValue={initiateResponse.brand}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={styles.detailValue}
+                numberOfLines={1}
               />
             </View>
 
-            <View style={styles.paymentDetails}>
-              <View style={styles.detailRow}>
-                <TranslateText
-                  textKey="brand"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                  textStyle={styles.detailLabel}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={initiateResponse.brand}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={styles.detailValue}
-                  numberOfLines={1}
-                />
-              </View>
-
-              <View style={styles.detailRow}>
-                <TranslateText
-                  textKey="amount"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                  textStyle={styles.detailLabel}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={`${initiateResponse.amount} ${initiateResponse.currency}`}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={styles.detailValue}
-                  numberOfLines={1}
-                />
-              </View>
-
-              <View style={styles.detailRow}>
-                <TranslateText
-                  textKey="price_ltc"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                  textStyle={styles.detailLabel}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={initiateResponse.paymentAmountLtc}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={styles.detailValue}
-                  numberOfLines={1}
-                />
-              </View>
+            <View style={styles.detailRow}>
+              <TranslateText
+                textKey="amount"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                textStyle={styles.detailLabel}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textValue={`${initiateResponse.amount} ${initiateResponse.currency}`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={styles.detailValue}
+                numberOfLines={1}
+              />
             </View>
-          </CustomSafeAreaView>
-        </View>
 
-        <View style={styles.buttonContainer}>
+            <View style={styles.detailRow}>
+              <TranslateText
+                textKey="price_ltc"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                textStyle={styles.detailLabel}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textValue={initiateResponse.paymentAmountLtc}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={styles.detailValue}
+                numberOfLines={1}
+              />
+            </View>
+          </View>
+        </CustomSafeAreaView>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <CustomSafeAreaView
+          styles={styles.safeAreaBottom}
+          edges={Platform.OS === 'android' ? ['bottom'] : []}>
           {error && (
             <View style={styles.errorContainer}>
               <TranslateText
@@ -251,30 +253,30 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
               numberOfLines={1}
             />
           </TouchableOpacity>
-        </View>
+        </CustomSafeAreaView>
+      </View>
 
-        <PlasmaModal
-          isOpened={isPinModalOpened}
-          close={() => {
-            setIsPinModalOpened(false);
-          }}
-          isFromBottomToTop={true}
-          animDuration={250}
-          gapInPixels={0}
-          backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
-          renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
-            <PinModalContent
-              cardTranslateAnim={cardTranslateAnim}
-              close={() => setIsPinModalOpened(false)}
-              handleValidationFailure={() =>
-                // TODO: handle pin failure
-                console.log('incorrect pin')
-              }
-              handleValidationSuccess={() => handleCompletePurchase()}
-            />
-          )}
-        />
-      </CustomSafeAreaView>
+      <PlasmaModal
+        isOpened={isPinModalOpened}
+        close={() => {
+          setIsPinModalOpened(false);
+        }}
+        isFromBottomToTop={true}
+        animDuration={250}
+        gapInPixels={0}
+        backSpecifiedStyle={{backgroundColor: 'rgba(19,58,138, 0.6)'}}
+        renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
+          <PinModalContent
+            cardTranslateAnim={cardTranslateAnim}
+            close={() => setIsPinModalOpened(false)}
+            handleValidationFailure={() =>
+              // TODO: handle pin failure
+              console.log('incorrect pin')
+            }
+            handleValidationSuccess={() => handleCompletePurchase()}
+          />
+        )}
+      />
 
       <LoadingIndicator
         visible={loading}
@@ -291,15 +293,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
     },
-    safeArea: {
-      flex: 1,
-    },
-    safeArea2: {
+    safeAreaTop: {
       width: '100%',
       height: '100%',
       justifyContent: 'space-between',
       alignItems: 'center',
     },
+    safeAreaBottom: {},
     topContainer: {
       width: '100%',
       height: screenHeight * 0.5,
@@ -313,7 +313,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
     },
     title: {
-      paddingTop: getSpacing(screenWidth, screenHeight).header,
+      paddingTop:
+        Platform.OS === 'android'
+          ? getSpacing(screenWidth, screenHeight).header + 10
+          : getSpacing(screenWidth, screenHeight).header,
     },
     paymentDetails: {
       width: '100%',

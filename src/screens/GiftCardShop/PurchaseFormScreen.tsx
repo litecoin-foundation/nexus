@@ -43,6 +43,7 @@ import {
 } from '../../components/GiftCardShop/theme';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -434,58 +435,62 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        {error === 'Unauthorized' ? (
-          <AnimatedPressable
-            style={commonStyles.buttonRounded}
-            onPress={toSignUp}>
-            <TranslateText
-              textKey="sign_in"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={commonStyles.buttonText}
-              numberOfLines={1}
-            />
-          </AnimatedPressable>
-        ) : (
-          <AnimatedPressable
-            style={[
-              commonStyles.buttonRounded,
-              (!validation.valid || loading) && commonStyles.buttonDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={!validation.valid || loading}>
-            {loading ? (
-              <ActivityIndicator color={colors.white} />
-            ) : (
+        <CustomSafeAreaView
+          styles={styles.safeArea}
+          edges={Platform.OS === 'android' ? ['bottom'] : []}>
+          {error === 'Unauthorized' ? (
+            <AnimatedPressable
+              style={commonStyles.buttonRounded}
+              onPress={toSignUp}>
               <TranslateText
-                textKey="continue_purchase"
+                textKey="sign_in"
                 domain="nexusShop"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={commonStyles.buttonText}
                 numberOfLines={1}
               />
-            )}
-          </AnimatedPressable>
-        )}
+            </AnimatedPressable>
+          ) : (
+            <AnimatedPressable
+              style={[
+                commonStyles.buttonRounded,
+                (!validation.valid || loading) && commonStyles.buttonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={!validation.valid || loading}>
+              {loading ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <TranslateText
+                  textKey="continue_purchase"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={commonStyles.buttonText}
+                  numberOfLines={1}
+                />
+              )}
+            </AnimatedPressable>
+          )}
 
-        {(errorTextKey || errorTextValue) && (
-          <TranslateText
-            textKey={errorTextKey}
-            textValue={errorTextValue}
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.underButtonText}
-          />
-        )}
+          {(errorTextKey || errorTextValue) && (
+            <TranslateText
+              textKey={errorTextKey}
+              textValue={errorTextValue}
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.underButtonText}
+            />
+          )}
 
-        {!validation.valid && validation.error && amount > 0 && (
-          <TranslateText
-            textValue={validation.error}
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.underButtonText}
-          />
-        )}
+          {!validation.valid && validation.error && amount > 0 && (
+            <TranslateText
+              textValue={validation.error}
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.underButtonText}
+            />
+          )}
+        </CustomSafeAreaView>
       </View>
     </View>
   );
@@ -724,6 +729,7 @@ const getStyles = (
       right: screenWidth * 0.04,
       zIndex: 2,
     },
+    safeArea: {},
     underButtonText: {
       color: '#747E87',
       fontFamily: 'Satoshi Variable',
