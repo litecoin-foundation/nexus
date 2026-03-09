@@ -70,7 +70,12 @@ export function BrandCard({
   const dispatch = useAppDispatch();
 
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [contentHeight, setContentHeight] = useState<number | null>(null);
+
+  const contentHeight =
+    SCREEN_WIDTH * 0.12 + // denomination buttons row
+    SCREEN_HEIGHT * 0.01 + // denominationsRow marginBottom
+    SCREEN_WIDTH * 0.12 + // purchase button
+    SCREEN_HEIGHT * 0.01; // expandedContent paddingBottom
 
   const heightAnim = useSharedValue(0);
   const opacityAnim = useSharedValue(0);
@@ -155,22 +160,20 @@ export function BrandCard({
   })();
 
   useEffect(() => {
-    if (contentHeight !== null) {
-      if (isExpanded) {
-        heightAnim.value = withTiming(contentHeight, {duration: 300});
-        opacityAnim.value = withTiming(1, {duration: 250});
-        chevronRotation.value = withTiming(90, {duration: 300});
-      } else {
-        heightAnim.value = withTiming(0, {duration: 300});
-        opacityAnim.value = withTiming(0, {duration: 200});
-        chevronRotation.value = withTiming(-90, {duration: 300});
-      }
+    if (isExpanded) {
+      heightAnim.value = withTiming(contentHeight, {duration: 300});
+      opacityAnim.value = withTiming(1, {duration: 250});
+      chevronRotation.value = withTiming(90, {duration: 300});
+    } else {
+      heightAnim.value = withTiming(0, {duration: 300});
+      opacityAnim.value = withTiming(0, {duration: 200});
+      chevronRotation.value = withTiming(-90, {duration: 300});
     }
   }, [isExpanded, contentHeight, heightAnim, opacityAnim, chevronRotation]);
 
   const animatedExpandedStyle = useAnimatedStyle(() => ({
-    height: contentHeight === null ? 'auto' : heightAnim.value,
-    opacity: contentHeight === null ? 0 : opacityAnim.value,
+    height: heightAnim.value,
+    opacity: opacityAnim.value,
     overflow: 'hidden',
   }));
 
@@ -240,78 +243,46 @@ export function BrandCard({
         </View>
       </Pressable>
 
-      {/* Hidden measurement view */}
-      {contentHeight === null && (
-        <View
-          style={styles.measurementContainer}
-          onLayout={event => {
-            const {height} = event.nativeEvent.layout;
-            if (height > 0) {
-              setContentHeight(height);
-            }
-          }}>
-          <View style={styles.expandedContent}>
-            <View
-              style={[
-                styles.denominationsRow,
-                denominations.length < 5 && styles.denominationsRowLeft,
-              ]}>
-              {denominations.map(amount => (
-                <AnimatedPressable
-                  key={amount}
-                  style={styles.denominationButton}>
-                  <Text style={styles.denominationText}>
-                    {formatCurrency(currency)}
-                    {formatDenomination(amount)}
-                  </Text>
-                </AnimatedPressable>
-              ))}
-            </View>
-            <AnimatedPressable style={styles.purchaseButton}>
-              <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
-            </AnimatedPressable>
-          </View>
-        </View>
-      )}
-
       {/* Animated content */}
-      {contentHeight !== null && (
-        <Animated.View style={animatedExpandedStyle}>
-          <View style={styles.expandedContent}>
-            <View
-              style={[
-                styles.denominationsRow,
-                denominations.length < 5 && styles.denominationsRowLeft,
-              ]}>
-              {denominations.map(amount => (
-                <AnimatedPressable
-                  key={amount}
+      <Animated.View
+        style={[
+          {height: 0, opacity: 0, overflow: 'hidden'},
+          animatedExpandedStyle,
+        ]}>
+        <View style={styles.expandedContent}>
+          <View
+            style={[
+              styles.denominationsRow,
+              denominations.length < 5 && styles.denominationsRowLeft,
+            ]}>
+            {denominations.map(amount => (
+              <AnimatedPressable
+                key={amount}
+                style={[
+                  styles.denominationButton,
+                  selectedAmount === Number(amount) &&
+                    styles.denominationButtonSelected,
+                ]}
+                onPress={() => handleAmountSelect(Number(amount))}>
+                <Text
                   style={[
-                    styles.denominationButton,
+                    styles.denominationText,
                     selectedAmount === Number(amount) &&
-                      styles.denominationButtonSelected,
-                  ]}
-                  onPress={() => handleAmountSelect(Number(amount))}>
-                  <Text
-                    style={[
-                      styles.denominationText,
-                      selectedAmount === Number(amount) &&
-                        styles.denominationTextSelected,
-                    ]}>
-                    {formatCurrency(currency)}
-                    {formatDenomination(amount)}
-                  </Text>
-                </AnimatedPressable>
-              ))}
-            </View>
-            <AnimatedPressable
-              style={styles.purchaseButton}
-              onPress={handlePurchase}>
-              <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
-            </AnimatedPressable>
+                      styles.denominationTextSelected,
+                  ]}>
+                  {formatCurrency(currency)}
+                  {formatDenomination(amount)}
+                </Text>
+              </AnimatedPressable>
+            ))}
           </View>
-        </Animated.View>
-      )}
+          <AnimatedPressable
+            style={styles.purchaseButton}
+            onPress={handlePurchase}>
+            <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
+          </AnimatedPressable>
+        </View>
+      </Animated.View>
 
       {isLoggedIn && (
         <TouchableOpacity
@@ -402,12 +373,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenWidth * 0.037,
       tintColor: colors.lightBlack,
       resizeMode: 'contain',
-    },
-    measurementContainer: {
-      position: 'absolute',
-      opacity: 0,
-      zIndex: -1,
-      pointerEvents: 'none',
     },
     expandedContent: {
       paddingHorizontal: screenHeight * 0.01,
