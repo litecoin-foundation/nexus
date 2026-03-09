@@ -82,8 +82,8 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   if (loading && !refreshing) {
     return (
       <View style={styles.container}>
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+        <View style={styles.titleContainer}>
+          <View style={styles.titleRow}>
             <TranslateText
               textKey="available_gif_cards"
               domain="nexusShop"
@@ -161,8 +161,8 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
+      <View style={styles.titleContainer}>
+        <View style={styles.titleRow}>
           <TranslateText
             textKey="available_gif_cards"
             domain="nexusShop"
@@ -248,10 +248,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     gridContainer: {
       padding: getSpacing(screenWidth, screenHeight).md,
     },
-    section: {
-      // marginBottom: getSpacing(screenHeight).lg,
+    titleContainer: {
+      height: screenHeight * 0.025,
     },
-    sectionHeader: {
+    titleRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -270,6 +270,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#1162E6',
     },
     title: {
+      height: '100%',
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',

@@ -63,6 +63,7 @@ export interface GiftCard {
   expirationDate: string;
   purchasedAt: string;
   status: 'active' | 'redeemed' | 'cancelled' | 'expired';
+  logo_url?: string;
 }
 
 export interface GiftCardInApp {
@@ -102,6 +103,7 @@ export interface PendingGiftCardPurchase {
     | 'failed';
   createdAt: string;
   expiresAt: string;
+  logo_url?: string;
 }
 
 export interface InitiatePurchaseResponseData {

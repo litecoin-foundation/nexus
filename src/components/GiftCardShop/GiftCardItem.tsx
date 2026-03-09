@@ -1,6 +1,8 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {
   View,
+  Text,
+  Image,
   TouchableOpacity,
   Pressable,
   StyleSheet,
@@ -94,12 +96,21 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
   return (
     <View style={styles.cardContainer}>
       <Pressable style={styles.card} onPress={() => setExpanded(!expanded)}>
-        <View style={styles.logoContainer}>
-          <TranslateText
-            textValue={giftCard.brand}
-            textStyle={styles.brandLogoText}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
-          />
+        <View
+          style={
+            giftCard.logo_url
+              ? styles.logoContainer
+              : styles.logoContainerPlaceholder
+          }>
+          {giftCard.logo_url ? (
+            <Image source={{uri: giftCard.logo_url}} style={styles.brandLogo} />
+          ) : (
+            <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
+              <Text style={styles.brandLogoText}>
+                {giftCard.brand.charAt(0)}
+              </Text>
+            </View>
+          )}
         </View>
         <View style={styles.cardInfo}>
           <TranslateText
@@ -209,12 +220,24 @@ export function PendingGiftCardItem({
       onPress={onPress}
       disabled={!onPress}>
       <View style={styles.pendingCard}>
-        <View style={styles.pendingLogoContainer}>
-          <TranslateText
-            textValue={pendingGiftCard.brand}
-            textStyle={styles.brandLogoText}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
-          />
+        <View
+          style={
+            pendingGiftCard.logo_url
+              ? styles.pendingLogoContainer
+              : styles.pendingLogoContainerPlaceholder
+          }>
+          {pendingGiftCard.logo_url ? (
+            <Image
+              source={{uri: pendingGiftCard.logo_url}}
+              style={styles.brandLogo}
+            />
+          ) : (
+            <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
+              <Text style={styles.brandLogoText}>
+                {pendingGiftCard.brand.charAt(0)}
+              </Text>
+            </View>
+          )}
         </View>
         <View style={styles.pendingCardInfo}>
           <TranslateText
@@ -254,9 +277,17 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     card: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: screenHeight * 0.0085,
+      paddingHorizontal: screenHeight * 0.0085,
     },
     logoContainer: {
+      width: screenWidth * 0.2,
+      height: screenHeight * 0.077,
+      borderRadius: screenHeight * 0.01,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+    },
+    logoContainerPlaceholder: {
       width: screenWidth * 0.17,
       height: screenHeight * 0.06,
       backgroundColor: colors.grayLight,
@@ -264,14 +295,24 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      marginVertical: screenHeight * 0.0085,
+    },
+    brandLogo: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
+    },
+    brandLogoPlaceholder: {
+      backgroundColor: colors.grayLight,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     brandLogoText: {
-      fontSize: screenHeight * 0.0135,
+      fontSize: screenHeight * 0.022,
       fontWeight: '700',
       fontFamily: 'Satoshi Variable',
-      color: colors.text,
-      textTransform: 'capitalize',
-      textAlign: 'center',
+      color: colors.gray,
+      textTransform: 'uppercase',
     },
     cardInfo: {
       flex: 1,
@@ -370,9 +411,17 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     pendingCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: screenHeight * 0.0085,
+      paddingHorizontal: screenHeight * 0.0085,
     },
     pendingLogoContainer: {
+      width: screenWidth * 0.17,
+      height: screenHeight * 0.07,
+      borderRadius: screenHeight * 0.01,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+    },
+    pendingLogoContainerPlaceholder: {
       width: screenWidth * 0.135,
       height: screenHeight * 0.055,
       backgroundColor: colors.grayLight,
@@ -380,6 +429,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      marginVertical: screenHeight * 0.0075,
     },
     pendingCardInfo: {
       flex: 1,

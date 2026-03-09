@@ -18,7 +18,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {syncWishlistToggle} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
 
-import {colors, getSpacing, getFontSize} from './theme';
+import {colors, getSpacing} from './theme';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const backIcon = require('../../assets/images/back-icon.png');
@@ -341,10 +341,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
     },
     brandLogoText: {
-      fontSize: getFontSize(screenHeight).xl,
+      fontSize: screenHeight * 0.022,
       fontWeight: '700',
       fontFamily: 'Satoshi Variable',
       color: colors.gray,
+      textTransform: 'uppercase',
     },
     brandInfo: {
       flex: 1,

@@ -103,12 +103,14 @@ const MyGiftCards: React.FC<Props> = props => {
     <View style={styles.container}>
       {activePendingCards.length > 0 && (
         <View style={styles.pendingSection}>
-          <TranslateText
-            textKey="pending_gif_cards"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-            textStyle={styles.title}
-          />
+          <View style={styles.titleContainer}>
+            <TranslateText
+              textKey="pending_gif_cards"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.title}
+            />
+          </View>
           <ScrollView
             horizontal
             style={styles.pendingScrollView}
@@ -138,12 +140,14 @@ const MyGiftCards: React.FC<Props> = props => {
       )}
 
       <View style={styles.mainSection}>
-        <TranslateText
-          textKey="my_cards"
-          domain="nexusShop"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-          textStyle={styles.title}
-        />
+        <View style={styles.titleContainer}>
+          <TranslateText
+            textKey="my_cards"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+            textStyle={styles.title}
+          />
+        </View>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContainer}
@@ -188,6 +192,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexGrow: 0,
     },
     pendingScrollContainer: {
+      paddingTop: screenHeight * 0.01,
       paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
       gap: getSpacing(screenWidth, screenHeight).sm,
     },
@@ -195,8 +200,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
     },
     scrollContainer: {
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).md,
-      paddingBottom: getSpacing(screenWidth, screenHeight).lg,
+      padding: getSpacing(screenWidth, screenHeight).md,
     },
     section: {
       marginBottom: getSpacing(screenWidth, screenHeight).md,
@@ -204,7 +208,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     pastSection: {
       opacity: 0.8,
     },
+    titleContainer: {
+      height: screenHeight * 0.025,
+    },
     title: {
+      height: '100%',
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
@@ -212,7 +220,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.015,
       textTransform: 'uppercase',
       paddingHorizontal: screenWidth * 0.06,
-      marginBottom: getSpacing(screenWidth, screenHeight).sm,
     },
   });
 

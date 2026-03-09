@@ -40,7 +40,7 @@ export function MyWishlistBrands({
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.section}>
+        <View style={styles.titleContainer}>
           <TranslateText
             textKey="your_wishlist"
             domain="nexusShop"
@@ -65,7 +65,7 @@ export function MyWishlistBrands({
 
   return (
     <View style={styles.container}>
-      <View style={styles.section}>
+      <View style={styles.titleContainer}>
         <TranslateText
           textKey="your_wishlist"
           domain="nexusShop"
@@ -102,8 +102,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     gridContainer: {
       padding: getSpacing(screenWidth, screenHeight).md,
     },
-    section: {},
+    titleContainer: {
+      height: screenHeight * 0.025,
+    },
     title: {
+      height: '100%',
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
