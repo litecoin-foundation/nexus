@@ -126,6 +126,15 @@ function DeviceTokenHandler(props: any) {
           String(Platform.Version),
         ),
       );
+    } else {
+      // Register nexus user regardless of deviceToken availability
+      dispatch(
+        loginToNexusApi(
+          'undefined',
+          Platform.OS === 'ios',
+          String(Platform.Version),
+        ),
+      );
     }
   }, [dispatch, props.deviceToken]);
 
