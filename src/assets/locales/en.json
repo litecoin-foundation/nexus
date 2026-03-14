@@ -433,6 +433,9 @@
     "status_completed": "Gift Card Issued",
     "status_expired": "Order Expired",
     "status_failed": "Order Failed",
-    "back_to_my_cards": "Back to My Cards"
+    "back_to_my_cards": "Back to My Cards",
+    "terms_and_conditions": "Terms and Conditions",
+    "agree_to_tos": "I agree to the",
+    "continue": "Continue"
   }
 }

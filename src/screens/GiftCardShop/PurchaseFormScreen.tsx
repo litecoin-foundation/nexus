@@ -45,6 +45,7 @@ import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
+import TOSCheckModal from '../../components/Modals/TOSCheckModal';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface PurchaseFormScreenProps {
@@ -503,11 +504,24 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
   const {brand, initialAmount, currency, onPaymentSuccess} = route.params;
   const client = useMemo(() => new GiftCardClient(), []);
 
+  const [showTOS, setShowTOS] = useState(false);
+  const [pendingResponse, setPendingResponse] =
+    useState<InitiatePurchaseResponseData | null>(null);
+
   const handleInitiate = (initiateResponse: InitiatePurchaseResponseData) => {
-    navigation.navigate('PayForGiftCard', {
-      initiateResponse,
-      onPaymentSuccess,
-    });
+    setPendingResponse(initiateResponse);
+    setShowTOS(true);
+  };
+
+  const handleTOSContinue = () => {
+    setShowTOS(false);
+    if (pendingResponse) {
+      navigation.navigate('PayForGiftCard', {
+        initiateResponse: pendingResponse,
+        onPaymentSuccess,
+      });
+      setPendingResponse(null);
+    }
   };
 
   return (
@@ -518,6 +532,11 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
         currency={currency}
         onInitiate={handleInitiate}
         navigation={navigation}
+      />
+      <TOSCheckModal
+        isVisible={showTOS}
+        close={() => setShowTOS(false)}
+        onContinue={handleTOSContinue}
       />
     </GiftCardProvider>
   );

@@ -281,6 +281,10 @@ export function validateAmount(
   amount: number,
   availableBalanceFiat?: number,
 ): {valid: boolean; error?: string} {
+  if (amount < 0.01) {
+    return {valid: false, error: 'Minimum amount is $5'};
+  }
+
   if (brand.denominations && brand.denominations.length > 0) {
     if (!brand.denominations.some(d => Number(d) === Number(amount))) {
       return {
