@@ -151,6 +151,7 @@ const BottomSheet: React.FC<Props> = props => {
 
   const headerGesture = Gesture.Pan()
     .onUpdate(e => {
+      'worklet';
       if (
         e.translationY + mainSheetsTranslationYStart.value >
           UNFOLD_SHEET_POINT &&
@@ -168,6 +169,7 @@ const BottomSheet: React.FC<Props> = props => {
   }
   const panGesture = basePanGesture
     .onUpdate(e => {
+      'worklet';
       if (
         e.translationY + mainSheetsTranslationYStart.value >
           UNFOLD_SHEET_POINT &&
