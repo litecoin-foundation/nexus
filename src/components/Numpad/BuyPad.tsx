@@ -11,14 +11,20 @@ interface Props {
   dotDisabled?: boolean;
   onChange: (value: string) => void;
   small?: boolean;
+  extraSmall?: boolean;
 }
 
 const BuyPad: React.FC<Props> = props => {
-  const {currentValue, onChange, dotDisabled, small} = props;
+  const {currentValue, onChange, dotDisabled, small, extraSmall} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, small || false);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    small || false,
+    extraSmall || false,
+  );
 
   const handlePress = (input: string) => {
     let response;
@@ -64,6 +70,7 @@ const BuyPad: React.FC<Props> = props => {
           disabled={dotDisabled}
           onPress={() => handlePress(value)}
           small={small}
+          extraSmall={extraSmall}
         />
       );
     }
@@ -75,6 +82,7 @@ const BuyPad: React.FC<Props> = props => {
           onPress={() => handlePress(value)}
           imageSource={require('../../assets/icons/back-arrow.png')}
           small={small}
+          extraSmall={extraSmall}
         />
       );
     }
@@ -84,22 +92,32 @@ const BuyPad: React.FC<Props> = props => {
         value={value}
         onPress={() => handlePress(value)}
         small={small}
+        extraSmall={extraSmall}
       />
     );
   });
 
   return (
     <>
-      <PadGrid small={small} />
+      <PadGrid small={small} extraSmall={extraSmall} />
       <View style={styles.container}>{buttons}</View>
     </>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  small: boolean,
+  extraSmall: boolean,
+) =>
   StyleSheet.create({
     container: {
-      height: small ? screenHeight * 0.36 : screenHeight * 0.4,
+      height: extraSmall
+        ? screenHeight * 0.32
+        : small
+          ? screenHeight * 0.36
+          : screenHeight * 0.4,
       flexDirection: 'row',
       justifyContent: 'space-evenly',
       flexWrap: 'wrap',

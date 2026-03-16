@@ -1,9 +1,8 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   View,
   StyleSheet,
   FlatList,
-  Text,
   TouchableOpacity,
   Image,
   Alert,
@@ -12,6 +11,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import BlueButton from '../../components/Buttons/BlueButton';
 import TranslateText from '../../components/TranslateText';
+import {ScreenSizeContext} from '../../context/screenSize';
 import {
   removeGiftCardFromCart,
   updateGiftCardQuantity,
@@ -34,6 +34,7 @@ interface GiftCardCartItem {
 const GiftCardCart: React.FC = () => {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
 
   const {items, checkoutLoading, error} = useSelector(
     (state: any) => state.giftcardcart,
@@ -77,10 +78,18 @@ const GiftCardCart: React.FC = () => {
           <Image source={{uri: item.brand.logoUrl}} style={styles.brandLogo} />
         )}
         <View style={styles.itemDetails}>
-          <Text style={styles.brandName}>{item.brand.name}</Text>
-          <Text style={styles.itemAmount}>
-            {item.currency} {item.amount}
-          </Text>
+          <TranslateText
+            textValue={item.brand.name}
+            maxSizeInPixels={16}
+            textStyle={styles.brandName}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textValue={`${item.currency} ${item.amount}`}
+            maxSizeInPixels={14}
+            textStyle={styles.itemAmount}
+            numberOfLines={1}
+          />
         </View>
       </View>
 
@@ -88,32 +97,62 @@ const GiftCardCart: React.FC = () => {
         <TouchableOpacity
           style={styles.quantityButton}
           onPress={() => handleUpdateQuantity(item.id, item.quantity - 1)}>
-          <Text style={styles.quantityButtonText}>-</Text>
+          <TranslateText
+            textValue="-"
+            maxSizeInPixels={18}
+            textStyle={styles.quantityButtonText}
+            numberOfLines={1}
+          />
         </TouchableOpacity>
 
-        <Text style={styles.quantity}>{item.quantity}</Text>
+        <TranslateText
+          textValue={String(item.quantity)}
+          maxSizeInPixels={16}
+          textStyle={styles.quantity}
+          numberOfLines={1}
+        />
 
         <TouchableOpacity
           style={styles.quantityButton}
           onPress={() => handleUpdateQuantity(item.id, item.quantity + 1)}>
-          <Text style={styles.quantityButtonText}>+</Text>
+          <TranslateText
+            textValue="+"
+            maxSizeInPixels={18}
+            textStyle={styles.quantityButtonText}
+            numberOfLines={1}
+          />
         </TouchableOpacity>
       </View>
 
       <TouchableOpacity
         style={styles.removeButton}
         onPress={() => handleRemoveItem(item.id)}>
-        <Text style={styles.removeButtonText}>X</Text>
+        <TranslateText
+          textValue="X"
+          maxSizeInPixels={20}
+          textStyle={styles.removeButtonText}
+          numberOfLines={1}
+        />
       </TouchableOpacity>
     </View>
   );
 
   const renderEmptyCart = () => (
     <View style={styles.emptyCart}>
-      <Text style={styles.emptyCartText}>Your cart is empty</Text>
-      <Text style={styles.emptyCartSubtext}>
-        Add some gift cards to get started!
-      </Text>
+      <TranslateText
+        textKey="empty_cart"
+        domain="nexusShop"
+        maxSizeInPixels={20}
+        textStyle={styles.emptyCartText}
+        numberOfLines={1}
+      />
+      <TranslateText
+        textKey="empty_cart_subtext"
+        domain="nexusShop"
+        maxSizeInPixels={16}
+        textStyle={styles.emptyCartSubtext}
+        numberOfLines={2}
+      />
     </View>
   );
 
@@ -140,13 +179,29 @@ const GiftCardCart: React.FC = () => {
 
           <View style={styles.footer}>
             <View style={styles.totalSection}>
-              <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalAmount}>
-                USD {totalAmount.toFixed(2)}
-              </Text>
+              <TranslateText
+                textKey="cart_total"
+                domain="nexusShop"
+                maxSizeInPixels={18}
+                textStyle={styles.totalLabel}
+                numberOfLines={1}
+              />
+              <TranslateText
+                textValue={`USD ${totalAmount.toFixed(2)}`}
+                maxSizeInPixels={24}
+                textStyle={styles.totalAmount}
+                numberOfLines={1}
+              />
             </View>
 
-            {error && <Text style={styles.errorText}>{error}</Text>}
+            {error && (
+              <TranslateText
+                textValue={error}
+                maxSizeInPixels={14}
+                textStyle={styles.errorText}
+                numberOfLines={2}
+              />
+            )}
 
             <BlueButton
               textKey="preview_purchase"

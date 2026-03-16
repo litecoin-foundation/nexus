@@ -6,7 +6,14 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from 'react';
-import {Pressable, ScrollView, StyleSheet, View, Image} from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  Image,
+  Platform,
+} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -771,13 +778,23 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               edges={['bottom']}>
               <View style={styles.col}>
                 <View style={styles.numpadContainer}>
-                  <BuyPad
-                    onChange={(value: string) => onChange(value)}
-                    currentValue={
-                      toggleLTC ? String(amount) : String(fiatAmount)
-                    }
-                    small
-                  />
+                  {Platform.OS === 'android' ? (
+                    <BuyPad
+                      onChange={(value: string) => onChange(value)}
+                      currentValue={
+                        toggleLTC ? String(amount) : String(fiatAmount)
+                      }
+                      extraSmall
+                    />
+                  ) : (
+                    <BuyPad
+                      onChange={(value: string) => onChange(value)}
+                      currentValue={
+                        toggleLTC ? String(amount) : String(fiatAmount)
+                      }
+                      small
+                    />
+                  )}
                 </View>
                 <View style={styles.blueBtnContainer}>
                   <BlueButton

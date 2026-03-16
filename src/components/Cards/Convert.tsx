@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Pressable} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Platform} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Animated, {
@@ -230,6 +230,8 @@ const Convert: React.FC<Props> = () => {
             textKey="regular_ltc"
             domain="convertTab"
             textStyle={styles.smallText}
+            numberOfLines={1}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.013}
           />
           <ConvertField
             active={activeField === 'regular'}
@@ -264,6 +266,8 @@ const Convert: React.FC<Props> = () => {
             textKey="private_ltc"
             domain="convertTab"
             textStyle={styles.smallText}
+            numberOfLines={1}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.013}
           />
           <ConvertField
             active={activeField === 'private'}
@@ -285,13 +289,23 @@ const Convert: React.FC<Props> = () => {
         <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
           <View style={styles.col}>
             <View style={styles.numpadContainer}>
-              <BuyPad
-                onChange={(value: string) => onChange(value)}
-                currentValue={
-                  activeField === 'regular' ? regularAmount : privateAmount
-                }
-                small
-              />
+              {Platform.OS === 'android' ? (
+                <BuyPad
+                  onChange={(value: string) => onChange(value)}
+                  currentValue={
+                    activeField === 'regular' ? regularAmount : privateAmount
+                  }
+                  extraSmall
+                />
+              ) : (
+                <BuyPad
+                  onChange={(value: string) => onChange(value)}
+                  currentValue={
+                    activeField === 'regular' ? regularAmount : privateAmount
+                  }
+                  small
+                />
+              )}
             </View>
 
             <View style={styles.buttonContainer}>

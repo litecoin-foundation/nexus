@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState, useContext} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   Gesture,
@@ -162,7 +162,11 @@ const BottomSheet: React.FC<Props> = props => {
     })
     .onEnd(onEndTrigger);
 
-  const panGesture = Gesture.Pan()
+  const basePanGesture = Gesture.Pan();
+  if (Platform.OS === 'android') {
+    basePanGesture.activeOffsetY([-15, 15]);
+  }
+  const panGesture = basePanGesture
     .onUpdate(e => {
       if (
         e.translationY + mainSheetsTranslationYStart.value >

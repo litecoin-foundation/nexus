@@ -1,7 +1,6 @@
 import React, {useContext, useState, useEffect} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -18,7 +17,8 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {syncWishlistToggle} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
 
-import {colors, getSpacing, getFontSize} from './theme';
+import {colors, getSpacing} from './theme';
+import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const backIcon = require('../../assets/images/back-icon.png');
@@ -70,7 +70,12 @@ export function BrandCard({
   const dispatch = useAppDispatch();
 
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [contentHeight, setContentHeight] = useState<number | null>(null);
+
+  const contentHeight =
+    SCREEN_WIDTH * 0.12 + // denomination buttons row
+    SCREEN_HEIGHT * 0.01 + // denominationsRow marginBottom
+    SCREEN_WIDTH * 0.12 + // purchase button
+    SCREEN_HEIGHT * 0.01; // expandedContent paddingBottom
 
   const heightAnim = useSharedValue(0);
   const opacityAnim = useSharedValue(0);
@@ -155,22 +160,20 @@ export function BrandCard({
   })();
 
   useEffect(() => {
-    if (contentHeight !== null) {
-      if (isExpanded) {
-        heightAnim.value = withTiming(contentHeight, {duration: 300});
-        opacityAnim.value = withTiming(1, {duration: 250});
-        chevronRotation.value = withTiming(90, {duration: 300});
-      } else {
-        heightAnim.value = withTiming(0, {duration: 300});
-        opacityAnim.value = withTiming(0, {duration: 200});
-        chevronRotation.value = withTiming(-90, {duration: 300});
-      }
+    if (isExpanded) {
+      heightAnim.value = withTiming(contentHeight, {duration: 300});
+      opacityAnim.value = withTiming(1, {duration: 250});
+      chevronRotation.value = withTiming(90, {duration: 300});
+    } else {
+      heightAnim.value = withTiming(0, {duration: 300});
+      opacityAnim.value = withTiming(0, {duration: 200});
+      chevronRotation.value = withTiming(-90, {duration: 300});
     }
   }, [isExpanded, contentHeight, heightAnim, opacityAnim, chevronRotation]);
 
   const animatedExpandedStyle = useAnimatedStyle(() => ({
-    height: contentHeight === null ? 'auto' : heightAnim.value,
-    opacity: contentHeight === null ? 0 : opacityAnim.value,
+    height: heightAnim.value,
+    opacity: opacityAnim.value,
     overflow: 'hidden',
   }));
 
@@ -202,29 +205,42 @@ export function BrandCard({
   return (
     <View style={styles.brandCardContainer}>
       <Pressable style={styles.brandCard} onPress={handleToggle}>
-        <View style={styles.logoContainer}>
+        <View
+          style={
+            brand.logo_url
+              ? styles.logoContainer
+              : styles.logoContainerPlaceholder
+          }>
           {brand.logo_url ? (
             <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
           ) : (
             <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-              <Text style={styles.brandLogoText}>{brand.name.charAt(0)}</Text>
+              <TranslateText
+                textValue={brand.name.charAt(0)}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                textStyle={styles.brandLogoText}
+                numberOfLines={1}
+              />
             </View>
           )}
         </View>
         <View style={styles.brandInfo}>
-          <Text style={styles.brandName} numberOfLines={1}>
-            {brand.name}
-          </Text>
+          <TranslateText
+            textValue={brand.name}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.0155}
+            textStyle={styles.brandName}
+            numberOfLines={1}
+          />
           {typeof minAmount === 'number' &&
           !isNaN(minAmount) &&
           typeof maxAmount === 'number' &&
           !isNaN(maxAmount) ? (
-            <Text style={styles.brandPrice}>
-              {formatCurrency(currency)}
-              {minAmount === maxAmount
-                ? `${minAmount}`
-                : `${minAmount} - ${maxAmount}`}
-            </Text>
+            <TranslateText
+              textValue={`${formatCurrency(currency)}${minAmount === maxAmount ? `${minAmount}` : `${minAmount} - ${maxAmount}`}`}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+              textStyle={styles.brandPrice}
+              numberOfLines={1}
+            />
           ) : null}
         </View>
         <View style={styles.chevronContainer}>
@@ -235,85 +251,65 @@ export function BrandCard({
         </View>
       </Pressable>
 
-      {/* Hidden measurement view */}
-      {contentHeight === null && (
-        <View
-          style={styles.measurementContainer}
-          onLayout={event => {
-            const {height} = event.nativeEvent.layout;
-            if (height > 0) {
-              setContentHeight(height);
-            }
-          }}>
-          <View style={styles.expandedContent}>
-            <View
-              style={[
-                styles.denominationsRow,
-                denominations.length < 5 && styles.denominationsRowLeft,
-              ]}>
-              {denominations.map(amount => (
-                <AnimatedPressable
-                  key={amount}
-                  style={styles.denominationButton}>
-                  <Text style={styles.denominationText}>
-                    {formatCurrency(currency)}
-                    {formatDenomination(amount)}
-                  </Text>
-                </AnimatedPressable>
-              ))}
-            </View>
-            <AnimatedPressable style={styles.purchaseButton}>
-              <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
-            </AnimatedPressable>
-          </View>
-        </View>
-      )}
-
       {/* Animated content */}
-      {contentHeight !== null && (
-        <Animated.View style={animatedExpandedStyle}>
-          <View style={styles.expandedContent}>
-            <View
-              style={[
-                styles.denominationsRow,
-                denominations.length < 5 && styles.denominationsRowLeft,
-              ]}>
-              {denominations.map(amount => (
-                <AnimatedPressable
-                  key={amount}
-                  style={[
-                    styles.denominationButton,
+      <Animated.View
+        style={[
+          {height: 0, opacity: 0, overflow: 'hidden'},
+          animatedExpandedStyle,
+        ]}>
+        <View style={styles.expandedContent}>
+          <View
+            style={[
+              styles.denominationsRow,
+              denominations.length < 5 && styles.denominationsRowLeft,
+            ]}>
+            {denominations.map(amount => (
+              <AnimatedPressable
+                key={amount}
+                style={[
+                  styles.denominationButton,
+                  selectedAmount === Number(amount) &&
+                    styles.denominationButtonSelected,
+                ]}
+                onPress={() => handleAmountSelect(Number(amount))}>
+                <TranslateText
+                  textValue={`${formatCurrency(currency)}${formatDenomination(amount)}`}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                  textStyle={[
+                    styles.denominationText,
                     selectedAmount === Number(amount) &&
-                      styles.denominationButtonSelected,
+                      styles.denominationTextSelected,
                   ]}
-                  onPress={() => handleAmountSelect(Number(amount))}>
-                  <Text
-                    style={[
-                      styles.denominationText,
-                      selectedAmount === Number(amount) &&
-                        styles.denominationTextSelected,
-                    ]}>
-                    {formatCurrency(currency)}
-                    {formatDenomination(amount)}
-                  </Text>
-                </AnimatedPressable>
-              ))}
-            </View>
-            <AnimatedPressable
-              style={styles.purchaseButton}
-              onPress={handlePurchase}>
-              <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
-            </AnimatedPressable>
+                  numberOfLines={1}
+                />
+              </AnimatedPressable>
+            ))}
           </View>
-        </Animated.View>
-      )}
+          <AnimatedPressable
+            style={styles.purchaseButton}
+            onPress={handlePurchase}>
+            <TranslateText
+              textKey="purchase_gift_card"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.purchaseButtonText}
+              numberOfLines={1}
+            />
+          </AnimatedPressable>
+        </View>
+      </Animated.View>
 
       {isLoggedIn && (
         <TouchableOpacity
           style={styles.wishlistButton}
           onPress={handleWishlistToggle}
           activeOpacity={0.7}>
-          <Text style={styles.wishlistIcon}>{isInWishlist ? '♥' : '♡'}</Text>
+          <TranslateText
+            textValue={isInWishlist ? '♥' : '♡'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.026}
+            textStyle={styles.wishlistIcon}
+            numberOfLines={1}
+          />
         </TouchableOpacity>
       )}
     </View>
@@ -332,9 +328,17 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     brandCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: screenHeight * 0.0085,
+      paddingHorizontal: screenHeight * 0.0085,
     },
     logoContainer: {
+      width: screenWidth * 0.2,
+      height: screenHeight * 0.077,
+      borderRadius: screenHeight * 0.01,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+    },
+    logoContainerPlaceholder: {
       width: screenWidth * 0.17,
       height: screenHeight * 0.06,
       backgroundColor: colors.grayLight,
@@ -342,11 +346,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      marginVertical: screenHeight * 0.0085,
     },
     brandLogo: {
-      width: '80%',
-      height: '80%',
-      resizeMode: 'contain',
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
     },
     brandLogoPlaceholder: {
       width: '100%',
@@ -356,10 +361,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
     },
     brandLogoText: {
-      fontSize: getFontSize(screenHeight).xl,
+      fontSize: screenHeight * 0.022,
       fontWeight: '700',
       fontFamily: 'Satoshi Variable',
       color: colors.gray,
+      textTransform: 'uppercase',
     },
     brandInfo: {
       flex: 1,
@@ -389,12 +395,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       tintColor: colors.lightBlack,
       resizeMode: 'contain',
     },
-    measurementContainer: {
-      position: 'absolute',
-      opacity: 0,
-      zIndex: -1,
-      pointerEvents: 'none',
-    },
     expandedContent: {
       paddingHorizontal: screenHeight * 0.01,
       paddingBottom: screenHeight * 0.01,
@@ -406,7 +406,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginBottom: screenHeight * 0.01,
     },
     denominationsRowLeft: {
-      gap: screenWidth * 0.03,
+      gap: screenWidth * 0.025,
     },
     denominationButton: {
       minWidth: screenWidth * 0.15,

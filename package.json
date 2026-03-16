@@ -157,7 +157,10 @@
   "overrides": {
     "hermes-compiler": "250829098.0.4",
     "base-x": "4.0.1",
-    "react-native-quick-base64": "2.2.0",
+    "react-native-quick-base64": "2.2.0"
+  },
+  "resolutions": {
+    "hermes-compiler": "250829098.0.4",
     "@flexa/flexa-react-native/react-native": "0.83.1"
   }
 }

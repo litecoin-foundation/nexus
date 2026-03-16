@@ -1,5 +1,33 @@
 import * as SecureStore from 'expo-secure-store';
 
+export const TILLO_CATEGORIES = [
+  'baby',
+  'beauty',
+  'books',
+  'cars',
+  'charity',
+  'craft',
+  'cryptocurrency',
+  'cycling',
+  'department-store',
+  'electronics',
+  'fashion',
+  'food-and-drink',
+  'gaming',
+  'home',
+  'jewellery',
+  'music',
+  'other',
+  'school-vouchers',
+  'sports',
+  'supermarket',
+  'toys',
+  'travel-and-leisure',
+  'tv-and-movies',
+] as const;
+
+export type TilloCategory = (typeof TILLO_CATEGORIES)[number];
+
 export interface FaceValue {
   amount: number;
   currency: string;
@@ -11,6 +39,8 @@ export interface Brand {
   currency: string; // ISO currency code (e.g., 'USD', 'EUR', 'GBP')
   countries_served?: string[]; // ISO country codes (e.g., ['US', 'CA'])
   logo_url?: string;
+  description?: string;
+  terms?: string;
   categories?: string[];
   digital_face_value_limits?: {
     lower: number;
@@ -33,6 +63,7 @@ export interface GiftCard {
   expirationDate: string;
   purchasedAt: string;
   status: 'active' | 'redeemed' | 'cancelled' | 'expired';
+  logo_url?: string;
 }
 
 export interface GiftCardInApp {
@@ -72,6 +103,7 @@ export interface PendingGiftCardPurchase {
     | 'failed';
   createdAt: string;
   expiresAt: string;
+  logo_url?: string;
 }
 
 export interface InitiatePurchaseResponseData {
@@ -249,6 +281,10 @@ export function validateAmount(
   amount: number,
   availableBalanceFiat?: number,
 ): {valid: boolean; error?: string} {
+  if (amount < 0.01) {
+    return {valid: false, error: 'Minimum amount is $5'};
+  }
+
   if (brand.denominations && brand.denominations.length > 0) {
     if (!brand.denominations.some(d => Number(d) === Number(amount))) {
       return {

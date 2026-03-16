@@ -97,7 +97,7 @@ const AddressField: React.FC<Props> = props => {
     return {
       transform: [
         {scale: pasteScaler.value},
-        {translateX: withSpring(pasteX.value, {stiffness: 50})},
+        {translateX: withSpring(pasteX.value, {stiffness: 200})},
       ],
       backgroundColor: interpolateColor(
         pasteBg.value,
@@ -112,7 +112,7 @@ const AddressField: React.FC<Props> = props => {
     return {
       transform: [
         {scale: scanScaler.value},
-        {translateX: withSpring(scanX.value, {stiffness: 50})},
+        {translateX: withSpring(scanX.value, {stiffness: 200})},
       ],
       backgroundColor: interpolateColor(
         scanBg.value,
@@ -125,7 +125,7 @@ const AddressField: React.FC<Props> = props => {
 
   const closeContainerMotionStyle = useAnimatedStyle(() => {
     return {
-      transform: [{translateX: withSpring(closeX.value, {stiffness: 50})}],
+      transform: [{translateX: withSpring(closeX.value, {stiffness: 200})}],
     };
   });
 

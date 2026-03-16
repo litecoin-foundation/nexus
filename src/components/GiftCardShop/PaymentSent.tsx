@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, TouchableOpacity, StyleSheet} from 'react-native';
 import {colors, getSpacing, getFontSize, getCommonStyles} from './theme';
+import TranslateText from '../TranslateText';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -21,12 +22,24 @@ export function PaymentSent({txid, onDone}: PaymentSentProps) {
 
   return (
     <View style={[commonStyles.container, commonStyles.centered]}>
-      <Text style={styles.verifiedText}>Payment was sent!</Text>
+      <TranslateText
+        textKey="payment_was_sent"
+        domain="nexusShop"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.032}
+        textStyle={styles.verifiedText}
+        numberOfLines={1}
+      />
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={commonStyles.buttonRoundedGreen}
           onPress={onDone}>
-          <Text style={commonStyles.buttonText}>To the Shop</Text>
+          <TranslateText
+            textKey="to_the_shop"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={commonStyles.buttonText}
+            numberOfLines={1}
+          />
         </TouchableOpacity>
       </View>
     </View>

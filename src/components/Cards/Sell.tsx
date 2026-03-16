@@ -496,11 +496,19 @@ const Sell: React.FC<Props> = () => {
         </View>
 
         <View style={styles.numpadContainer}>
-          <BuyPad
-            onChange={(value: string) => onChange(value)}
-            currentValue={toggleLTC ? amount : fiatAmount}
-            small
-          />
+          {Platform.OS === 'android' ? (
+            <BuyPad
+              onChange={(value: string) => onChange(value)}
+              currentValue={toggleLTC ? amount : fiatAmount}
+              extraSmall
+            />
+          ) : (
+            <BuyPad
+              onChange={(value: string) => onChange(value)}
+              currentValue={toggleLTC ? amount : fiatAmount}
+              small
+            />
+          )}
         </View>
       </View>
     </>
@@ -679,7 +687,7 @@ const getStyles = (
     },
     numpadContainer: {
       width: screenWidth,
-      marginTop: Platform.OS === 'android' ? 0 : screenHeight * 0.01,
+      marginTop: screenHeight * 0.01,
     },
     bottom: {
       position: 'absolute',

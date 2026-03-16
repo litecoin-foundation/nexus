@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import {
   View,
-  Text,
   Pressable,
   Image,
   TextInput,
@@ -43,7 +42,9 @@ import {
 } from '../../components/GiftCardShop/theme';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 
+import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
+import TOSCheckModal from '../../components/Modals/TOSCheckModal';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface PurchaseFormScreenProps {
@@ -256,22 +257,42 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     <View style={styles.container}>
       <View style={styles.blueHeader}>
         <View style={styles.headerCard}>
-          <View style={styles.logoContainer}>
+          <View
+            style={
+              brand.logo_url
+                ? styles.logoContainer
+                : styles.logoContainerPlaceholder
+            }>
             {brand.logo_url ? (
               <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
             ) : (
               <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-                <Text style={styles.brandLogoText}>{brand.name.charAt(0)}</Text>
+                <TranslateText
+                  textValue={brand.name.charAt(0)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.024}
+                  textStyle={styles.brandLogoText}
+                  numberOfLines={1}
+                />
               </View>
             )}
           </View>
           <View style={styles.brandInfo}>
-            <Text style={styles.brandName}>{brand.name}</Text>
-            <Text style={styles.brandPrice}>
-              {minAmount === maxAmount
-                ? `${formatCurrency(currency)}${minAmount}`
-                : `${formatCurrency(currency)}${minAmount} - ${formatCurrency(currency)}${maxAmount}`}
-            </Text>
+            <TranslateText
+              textValue={brand.name}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={styles.brandName}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={
+                minAmount === maxAmount
+                  ? `${formatCurrency(currency)}${minAmount}`
+                  : `${formatCurrency(currency)}${minAmount} - ${formatCurrency(currency)}${maxAmount}`
+              }
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.brandPrice}
+              numberOfLines={1}
+            />
           </View>
         </View>
 
@@ -288,14 +309,15 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                 amount === Number(denom) && styles.denominationButtonSelected,
               ]}
               onPress={() => setAmount(Number(denom))}>
-              <Text
-                style={[
+              <TranslateText
+                textValue={`${formatCurrency(currency)}${denom}`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                textStyle={[
                   styles.denominationText,
                   amount === Number(denom) && styles.denominationTextSelected,
-                ]}>
-                {formatCurrency(currency)}
-                {denom}
-              </Text>
+                ]}
+                numberOfLines={1}
+              />
             </AnimatedPressable>
           ))}
         </View>
@@ -312,13 +334,15 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                 textStyle={styles.otherAmountToggleText}
                 numberOfLines={1}
               />
-              <Text
-                style={[
+              <TranslateText
+                textValue={'\u25BC'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.01}
+                textStyle={[
                   styles.otherAmountChevron,
                   showInputAmount && styles.otherAmountChevronOpen,
-                ]}>
-                {'\u25BC'}
-              </Text>
+                ]}
+                numberOfLines={1}
+              />
             </AnimatedPressable>
             <Animated.View
               style={
@@ -337,9 +361,12 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                   numberOfLines={1}
                 />
                 <View style={styles.amountInputContainer}>
-                  <Text style={styles.currencySymbol}>
-                    {formatCurrency(currency)}
-                  </Text>
+                  <TranslateText
+                    textValue={formatCurrency(currency)}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                    textStyle={styles.currencySymbol}
+                    numberOfLines={1}
+                  />
                   <TextInput
                     style={styles.amountInput}
                     value={amountText}
@@ -385,13 +412,22 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
             textStyle={styles.sectionTitle}
             numberOfLines={1}
           />
-          <TranslateText
-            textKey="gift_card_description"
-            domain="nexusShop"
-            interpolationObj={{brandName: brand.name}}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-            textStyle={styles.sectionText}
-          />
+          {brand.description ? (
+            <TranslateText
+              textValue={brand.description}
+              interpolationObj={{brandName: brand.name}}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.sectionText}
+            />
+          ) : (
+            <TranslateText
+              textKey="gift_card_description"
+              domain="nexusShop"
+              interpolationObj={{brandName: brand.name}}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.sectionText}
+            />
+          )}
         </View>
 
         <View style={styles.section}>
@@ -402,68 +438,80 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
             textStyle={styles.sectionTitle}
             numberOfLines={1}
           />
-          <TranslateText
-            textKey="redeem_instructions_text"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-            textStyle={styles.sectionText}
-          />
+          {brand.terms ? (
+            <TranslateText
+              textValue={brand.terms}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.sectionText}
+            />
+          ) : (
+            <TranslateText
+              textKey="redeem_instructions_text"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.sectionText}
+            />
+          )}
         </View>
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        {error === 'Unauthorized' ? (
-          <AnimatedPressable
-            style={commonStyles.buttonRounded}
-            onPress={toSignUp}>
-            <TranslateText
-              textKey="sign_in"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={commonStyles.buttonText}
-              numberOfLines={1}
-            />
-          </AnimatedPressable>
-        ) : (
-          <AnimatedPressable
-            style={[
-              commonStyles.buttonRounded,
-              (!validation.valid || loading) && commonStyles.buttonDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={!validation.valid || loading}>
-            {loading ? (
-              <ActivityIndicator color={colors.white} />
-            ) : (
+        <CustomSafeAreaView
+          styles={styles.safeArea}
+          edges={Platform.OS === 'android' ? ['bottom'] : []}>
+          {error === 'Unauthorized' ? (
+            <AnimatedPressable
+              style={commonStyles.buttonRounded}
+              onPress={toSignUp}>
               <TranslateText
-                textKey="continue_purchase"
+                textKey="sign_in"
                 domain="nexusShop"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={commonStyles.buttonText}
                 numberOfLines={1}
               />
-            )}
-          </AnimatedPressable>
-        )}
+            </AnimatedPressable>
+          ) : (
+            <AnimatedPressable
+              style={[
+                commonStyles.buttonRounded,
+                (!validation.valid || loading) && commonStyles.buttonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={!validation.valid || loading}>
+              {loading ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <TranslateText
+                  textKey="continue_purchase"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={commonStyles.buttonText}
+                  numberOfLines={1}
+                />
+              )}
+            </AnimatedPressable>
+          )}
 
-        {(errorTextKey || errorTextValue) && (
-          <TranslateText
-            textKey={errorTextKey}
-            textValue={errorTextValue}
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.underButtonText}
-          />
-        )}
+          {(errorTextKey || errorTextValue) && (
+            <TranslateText
+              textKey={errorTextKey}
+              textValue={errorTextValue}
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.underButtonText}
+            />
+          )}
 
-        {!validation.valid && validation.error && amount > 0 && (
-          <TranslateText
-            textValue={validation.error}
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={styles.underButtonText}
-          />
-        )}
+          {!validation.valid && validation.error && amount > 0 && (
+            <TranslateText
+              textValue={validation.error}
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.underButtonText}
+            />
+          )}
+        </CustomSafeAreaView>
       </View>
     </View>
   );
@@ -476,11 +524,24 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
   const {brand, initialAmount, currency, onPaymentSuccess} = route.params;
   const client = useMemo(() => new GiftCardClient(), []);
 
+  const [showTOS, setShowTOS] = useState(false);
+  const [pendingResponse, setPendingResponse] =
+    useState<InitiatePurchaseResponseData | null>(null);
+
   const handleInitiate = (initiateResponse: InitiatePurchaseResponseData) => {
-    navigation.navigate('PayForGiftCard', {
-      initiateResponse,
-      onPaymentSuccess,
-    });
+    setPendingResponse(initiateResponse);
+    setShowTOS(true);
+  };
+
+  const handleTOSContinue = () => {
+    setShowTOS(false);
+    if (pendingResponse) {
+      navigation.navigate('PayForGiftCard', {
+        initiateResponse: pendingResponse,
+        onPaymentSuccess,
+      });
+      setPendingResponse(null);
+    }
   };
 
   return (
@@ -491,6 +552,11 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
         currency={currency}
         onInitiate={handleInitiate}
         navigation={navigation}
+      />
+      <TOSCheckModal
+        isVisible={showTOS}
+        close={() => setShowTOS(false)}
+        onContinue={handleTOSContinue}
       />
     </GiftCardProvider>
   );
@@ -528,7 +594,7 @@ const getStyles = (
       alignItems: 'center',
       backgroundColor: colors.white,
       borderRadius: getBorderRadius(screenHeight).lg,
-      padding: getSpacing(screenWidth, screenHeight).md,
+      paddingHorizontal: screenHeight * 0.01,
       shadowColor: colors.black,
       shadowOffset: {width: 0, height: 2},
       shadowOpacity: 0.08,
@@ -536,18 +602,27 @@ const getStyles = (
       elevation: 3,
     },
     logoContainer: {
-      width: screenWidth * 0.2,
-      height: screenWidth * 0.15,
-      backgroundColor: colors.grayLight,
-      borderRadius: getBorderRadius(screenHeight).md,
+      width: screenWidth * 0.3,
+      height: screenWidth * 0.2,
+      borderRadius: screenHeight * 0.012,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
     },
+    logoContainerPlaceholder: {
+      width: screenWidth * 0.24,
+      height: screenWidth * 0.16,
+      backgroundColor: colors.grayLight,
+      borderRadius: screenHeight * 0.012,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      marginVertical: screenWidth * 0.02,
+    },
     brandLogo: {
-      width: '80%',
-      height: '80%',
-      resizeMode: 'contain',
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
     },
     brandLogoPlaceholder: {
       width: '100%',
@@ -693,6 +768,7 @@ const getStyles = (
       right: screenWidth * 0.04,
       zIndex: 2,
     },
+    safeArea: {},
     underButtonText: {
       color: '#747E87',
       fontFamily: 'Satoshi Variable',

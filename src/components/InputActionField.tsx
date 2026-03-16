@@ -40,7 +40,7 @@ const InputActionField: React.FC<Props> = props => {
 
   const closeContainerMotionStyle = useAnimatedStyle(() => {
     return {
-      transform: [{translateX: withSpring(closeX.value, {stiffness: 50})}],
+      transform: [{translateX: withSpring(closeX.value, {stiffness: 200})}],
     };
   });
 

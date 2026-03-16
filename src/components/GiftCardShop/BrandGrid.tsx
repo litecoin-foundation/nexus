@@ -1,11 +1,28 @@
-import React, {useState, useContext} from 'react';
-import {FlatList, StyleSheet, RefreshControl, View} from 'react-native';
+import React, {useState, useContext, useMemo, useCallback} from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  RefreshControl,
+  View,
+  Pressable,
+} from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
+import Svg, {Path} from 'react-native-svg';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 import {ErrorView} from './ErrorView';
 import {EmptyView} from './EmptyView';
 import {BrandCard} from './BrandCard';
 import {SkeletonBrandCard} from './SkeletonBrandCard';
-import {Brand} from '../../services/giftcards';
+import {Brand, TilloCategory} from '../../services/giftcards';
+import CategoryPickerModal, {
+  formatCategoryLabel,
+} from '../Modals/CategoryPickerModal';
 
 import {getSpacing} from './theme';
 import {useBrands} from './hooks';
@@ -27,6 +44,29 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   const [expandedBrandSlug, setExpandedBrandSlug] = useState<string | null>(
     null,
   );
+  const [selectedCategory, setSelectedCategory] =
+    useState<TilloCategory | null>(null);
+  const [categoryPickerVisible, setCategoryPickerVisible] = useState(false);
+
+  const filterScale = useSharedValue(1);
+  const filterAnimStyle = useAnimatedStyle(() => ({
+    transform: [{scale: filterScale.value}],
+  }));
+  const onFilterPressIn = useCallback(() => {
+    filterScale.value = withTiming(0.85, {duration: 100});
+  }, [filterScale]);
+  const onFilterPressOut = useCallback(() => {
+    filterScale.value = withTiming(1, {duration: 100});
+  }, [filterScale]);
+
+  const filteredBrands = useMemo(() => {
+    if (!brands || !selectedCategory) return brands;
+    return brands.filter(b => b.categories?.includes(selectedCategory));
+  }, [brands, selectedCategory]);
+
+  const handleCategorySelect = (category: TilloCategory | null) => {
+    setSelectedCategory(category);
+  };
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -41,14 +81,64 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   if (loading && !refreshing) {
     return (
       <View style={styles.container}>
-        <View style={styles.section}>
-          <TranslateText
-            textKey="available_gif_cards"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-            textStyle={styles.title}
-          />
+        <View style={styles.titleContainer}>
+          <View style={styles.titleRow}>
+            <TranslateText
+              textKey="available_gif_cards"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.title}
+            />
+            <AnimatedPressable
+              style={[styles.filterButton, filterAnimStyle]}
+              onPress={() => setCategoryPickerVisible(true)}
+              onPressIn={onFilterPressIn}
+              onPressOut={onFilterPressOut}
+              hitSlop={12}>
+              {selectedCategory && (
+                <TranslateText
+                  textValue={formatCategoryLabel(selectedCategory)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                  textStyle={styles.filterLabel}
+                  numberOfLines={1}
+                />
+              )}
+              <Svg
+                width={SCREEN_HEIGHT * 0.032}
+                height={SCREEN_HEIGHT * 0.032}
+                viewBox="0 0 24 24"
+                fill="none">
+                <Path
+                  d="M2 5h20"
+                  stroke={selectedCategory ? '#1162E6' : '#2E2E2E'}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <Path
+                  d="M6 12h12"
+                  stroke={selectedCategory ? '#1162E6' : '#2E2E2E'}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <Path
+                  d="M9 19h6"
+                  stroke={selectedCategory ? '#1162E6' : '#2E2E2E'}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
+            </AnimatedPressable>
+          </View>
         </View>
+        <CategoryPickerModal
+          isVisible={categoryPickerVisible}
+          close={() => setCategoryPickerVisible(false)}
+          selectedCategory={selectedCategory}
+          onSelect={handleCategorySelect}
+        />
         <View style={styles.gridContainer}>
           <SkeletonBrandCard />
           <SkeletonBrandCard />
@@ -73,16 +163,66 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.section}>
-        <TranslateText
-          textKey="available_gif_cards"
-          domain="nexusShop"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-          textStyle={styles.title}
-        />
+      <View style={styles.titleContainer}>
+        <View style={styles.titleRow}>
+          <TranslateText
+            textKey="available_gif_cards"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+            textStyle={styles.title}
+          />
+          <AnimatedPressable
+            style={[styles.filterButton, filterAnimStyle]}
+            onPress={() => setCategoryPickerVisible(true)}
+            onPressIn={onFilterPressIn}
+            onPressOut={onFilterPressOut}
+            hitSlop={12}>
+            {selectedCategory && (
+              <TranslateText
+                  textValue={formatCategoryLabel(selectedCategory)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                  textStyle={styles.filterLabel}
+                  numberOfLines={1}
+                />
+            )}
+            <Svg
+              width={SCREEN_HEIGHT * 0.032}
+              height={SCREEN_HEIGHT * 0.032}
+              viewBox="0 0 24 24"
+              fill="none">
+              <Path
+                d="M2 5h20"
+                stroke={selectedCategory ? '#1162E6' : '#2E2E2E'}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <Path
+                d="M6 12h12"
+                stroke={selectedCategory ? '#1162E6' : '#2E2E2E'}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <Path
+                d="M9 19h6"
+                stroke={selectedCategory ? '#1162E6' : '#2E2E2E'}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </AnimatedPressable>
+        </View>
       </View>
+      <CategoryPickerModal
+        isVisible={categoryPickerVisible}
+        close={() => setCategoryPickerVisible(false)}
+        selectedCategory={selectedCategory}
+        onSelect={handleCategorySelect}
+      />
       <FlatList
-        data={brands}
+        data={filteredBrands}
         keyExtractor={item => item.slug}
         contentContainerStyle={styles.gridContainer}
         refreshControl={
@@ -113,16 +253,34 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     gridContainer: {
       padding: getSpacing(screenWidth, screenHeight).md,
     },
-    section: {
-      // marginBottom: getSpacing(screenHeight).lg,
+    titleContainer: {
+      height: screenHeight * 0.025,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: screenWidth * 0.06,
+    },
+    filterButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: screenWidth * 0.015,
+      marginTop: screenHeight * 0.005 * -1,
+    },
+    filterLabel: {
+      fontFamily: 'Satoshi Variable',
+      fontWeight: '700',
+      fontSize: screenHeight * 0.015,
+      color: '#1162E6',
     },
     title: {
+      height: '100%',
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
       color: '#2E2E2E',
       fontSize: screenHeight * 0.015,
       textTransform: 'uppercase',
-      paddingHorizontal: screenWidth * 0.06,
     },
   });
