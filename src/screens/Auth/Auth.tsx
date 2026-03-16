@@ -1,7 +1,6 @@
 import React, {useEffect, useLayoutEffect} from 'react';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {subscribeState} from 'react-native-turbo-lndltc';
-import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
+import {WalletState} from 'react-native-nitro-lndltc';
 
 import Auth from '../../components/Auth';
 import {
@@ -32,6 +31,7 @@ const AuthScreen: React.FC<Props> = props => {
   const walletUnlocked = useAppSelector(
     state => state.authentication.walletUnlocked,
   );
+  const walletState = useAppSelector(state => state.lightning.walletState);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -40,26 +40,12 @@ const AuthScreen: React.FC<Props> = props => {
   });
 
   // Presents Biometric authentication on launch
-  // If biometricEnabled & lnd is ready, present Biometric auth request
+  // If biometricEnabled & wallet is locked, present Biometric auth request
   useEffect(() => {
-    if (biometricsEnabled) {
-      subscribeState(
-        {},
-        async state => {
-          try {
-            if (state.state === WalletState.LOCKED) {
-              dispatch(unlockWalletWithBiometric());
-            }
-          } catch (error) {
-            throw new Error(String(error));
-          }
-        },
-        error => {
-          console.error(error);
-        },
-      );
+    if (biometricsEnabled && walletState === WalletState.LOCKED) {
+      dispatch(unlockWalletWithBiometric());
     }
-  }, [biometricsEnabled, dispatch]);
+  }, [biometricsEnabled, walletState, dispatch]);
 
   useEffect(() => {
     const clear = async () => {

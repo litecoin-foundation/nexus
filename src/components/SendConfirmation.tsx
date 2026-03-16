@@ -1,7 +1,8 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {View, StyleSheet, DeviceEventEmitter, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
+import {estimateFee} from 'react-native-nitro-lndltc';
+import type {Utxo} from 'react-native-nitro-lndltc';
 
 import PlasmaModal from './Modals/PlasmaModal';
 import PinModalContent from './Modals/PinModalContent';
@@ -14,7 +15,6 @@ import {
   sendAllOnchainPayment,
   sendOnchainWithCoinSelectionPayment,
 } from '../reducers/transaction';
-import {estimateFee} from 'react-native-turbo-lndltc';
 import {
   satsToSubunitSelector,
   subunitCodeSelector,

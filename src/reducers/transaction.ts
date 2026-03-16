@@ -9,17 +9,11 @@ import {
   walletKitListUnspent,
   walletKitFundPsbt,
   walletKitFinalizePsbt,
-} from 'react-native-turbo-lndltc';
-import {
-  GetTransactionsRequestSchema,
   OutputScriptType,
-  PreviousOutPoint,
-  OutPoint,
   AddressType,
-  Utxo,
-} from 'react-native-turbo-lndltc/protos/lightning_pb';
-import {ChangeAddressType} from 'react-native-turbo-lndltc/protos/walletrpc/walletkit_pb';
-import {create} from '@bufbuild/protobuf';
+  ChangeAddressType,
+} from 'react-native-nitro-lndltc';
+import type {PreviousOutPoint, OutPoint, Utxo} from 'react-native-nitro-lndltc';
 
 import {AppThunk, AppThunkTxHashesWithExtraData} from './types';
 import {poll} from '../utils/poll';
@@ -539,15 +533,17 @@ export const checkTxHashesWithExtraData =
   };
 
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
+  const {lndActive} = getState().lightning;
+  if (!lndActive) {
+    return;
+  }
   const {buyHistory, sellHistory} = getState().buy!;
   const {transactions, convertedTransactions, cachedTxHashes} =
     getState().transaction!;
   const {torEnabled} = getState().settings!;
 
   try {
-    const lndTransactions = await getLndTransactions(
-      create(GetTransactionsRequestSchema),
-    );
+    const lndTransactions = await getLndTransactions({});
 
     // NOTE: for older versions with missing cachedTxHashes in the initial state
     if (!cachedTxHashes) {

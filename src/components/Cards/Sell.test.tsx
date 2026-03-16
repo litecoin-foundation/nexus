@@ -24,7 +24,7 @@ const createMockStore = (initialState: any) => {
   });
 };
 
-jest.mock('react-native-turbo-lndltc', () => ({
+jest.mock('react-native-nitro-lndltc', () => ({
   estimateFee: jest.fn(),
 }));
 

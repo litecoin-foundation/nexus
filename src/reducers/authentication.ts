@@ -1,8 +1,6 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import {AppState} from 'react-native';
-import {subscribeState} from 'react-native-turbo-lndltc';
-import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 import {AppThunk} from './types';
 
 import {authenticate} from '../utils/biometric';
@@ -68,7 +66,9 @@ const dayLockWalletAction = createAction('authentication/dayLockWalletAction');
 const permaLockWalletAction = createAction(
   'authentication/permaLockWalletAction',
 );
-const unlockWalletAction = createAction('authentication/unlockWalletAction');
+export const unlockWalletAction = createAction(
+  'authentication/unlockWalletAction',
+);
 const clearUnlockAction = createAction('authentication/clearUnlockAction');
 const setBiometricAvailabilityAction = createAction<{
   available: boolean;
@@ -152,27 +152,6 @@ export const unlockWalletWithPin =
 
     // Case 4: PIN is correct, unlock wallet
     dispatch(unlockWallet());
-
-    // Subscribe to wallet state changes
-    subscribeState(
-      {},
-      async state => {
-        try {
-          if (state.state === WalletState.NON_EXISTING) {
-            console.error('Wallet does not exist. Reinstall the app.');
-            throw new Error('Wallet does not exist. Reinstall the app.');
-          }
-          if (state.state === WalletState.RPC_ACTIVE) {
-            dispatch(unlockWalletAction());
-          }
-        } catch (error) {
-          throw new Error(String(error));
-        }
-      },
-      error => {
-        console.error(error);
-      },
-    );
   };
 
 /**
@@ -214,22 +193,6 @@ export const unlockWalletWithBiometric = (): AppThunk => async dispatch => {
   try {
     await authenticate('Unlock Wallet');
     dispatch(unlockWallet());
-
-    subscribeState(
-      {},
-      async state => {
-        try {
-          if (state.state === WalletState.UNLOCKED) {
-            dispatch(unlockWalletAction());
-          }
-        } catch (error) {
-          throw new Error(String(error));
-        }
-      },
-      error => {
-        console.error(error);
-      },
-    );
   } catch (error) {
     console.error(error);
   }
@@ -257,24 +220,12 @@ export const subscribeAppState = (): AppThunk => (dispatch, getState) => {
 
     // when app goes into background for long periods of time
     // lnd may lock the user wallet
-    // present an authentication screen if wallet locked
+    // the central subscription in startLnd will update walletState in Redux
     if (nextAppState === 'active' && appState === 'background') {
-      subscribeState(
-        {},
-        async state => {
-          try {
-            if (state.state === WalletState.LOCKED) {
-              // TODO: handle lnd locking in background, by present Auth Screen!
-              console.warn('bg: user wallet locked!');
-            }
-          } catch (error) {
-            throw new Error(String(error));
-          }
-        },
-        error => {
-          console.error(error);
-        },
-      );
+      const {walletState} = getState().lightning;
+      if (walletState !== null) {
+        console.log('App resumed, wallet state:', walletState);
+      }
     }
 
     dispatch(updateAppStateAction(nextAppState));

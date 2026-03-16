@@ -8,7 +8,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import {walletKitListUnspent} from 'react-native-turbo-lndltc';
+import {walletKitListUnspent} from 'react-native-nitro-lndltc';
 
 import ConvertField from '../InputFields/ConvertField';
 import BuyPad from '../Numpad/BuyPad';
@@ -17,7 +17,6 @@ import {useAppSelector, useAppDispatch} from '../../store/hooks';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
-  subunitToSatsSelector,
 } from '../../reducers/settings';
 import {
   resetInputs,
