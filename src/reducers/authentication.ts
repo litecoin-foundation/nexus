@@ -12,11 +12,9 @@ import {getItem, setItem, resetItem} from '../utils/keychain';
 interface IAuthenticationState {
   passcode: string;
   passcodeSet: boolean;
-  walletUnlocked: any;
   biometricsAvailable: any;
   biometricsEnabled: boolean;
   faceIDSupported: boolean;
-  timeLastUnlocked: any;
   appState: any;
   failedLoginAttempts: number;
   timeLock: boolean;
@@ -31,11 +29,9 @@ interface IAuthenticationState {
 const initialState = {
   passcode: '',
   passcodeSet: false,
-  walletUnlocked: null,
   biometricsAvailable: null,
   biometricsEnabled: false,
   faceIDSupported: false,
-  timeLastUnlocked: null,
   appState: null,
   failedLoginAttempts: 0,
   timeLock: false,
@@ -69,7 +65,6 @@ const permaLockWalletAction = createAction(
 export const unlockWalletAction = createAction(
   'authentication/unlockWalletAction',
 );
-const clearUnlockAction = createAction('authentication/clearUnlockAction');
 const setBiometricAvailabilityAction = createAction<{
   available: boolean;
   faceIDSupported: boolean;
@@ -198,10 +193,6 @@ export const unlockWalletWithBiometric = (): AppThunk => async dispatch => {
   }
 };
 
-export const clearWalletUnlocked = (): AppThunk => dispatch => {
-  dispatch(clearUnlockAction());
-};
-
 export const setBiometricAvailability =
   (available: any, faceIDSupported: any): AppThunk =>
   async dispatch => {
@@ -242,7 +233,6 @@ export const authenticationSlice = createSlice({
     }),
     lockWalletAction: state => ({
       ...state,
-      walletUnlocked: false,
       failedLoginAttempts:
         state.failedLoginAttempts === undefined
           ? 1
@@ -252,7 +242,6 @@ export const authenticationSlice = createSlice({
       ...state,
       timeLock: true,
       permaLock: false,
-      walletUnlocked: false,
       failedLoginAttempts: 0,
       timeLockAt: Math.floor(Date.now() / 1000),
     }),
@@ -260,30 +249,22 @@ export const authenticationSlice = createSlice({
       ...state,
       dayLock: true,
       permaLock: false,
-      walletUnlocked: false,
       failedLoginAttempts: 0,
       dayLockAt: Math.floor(Date.now() / 1000),
     }),
     permaLockWalletAction: state => ({
       ...state,
       permaLock: true,
-      walletUnlocked: false,
       failedLoginAttempts: MAX_LOGIN_ATTEMPTS,
     }),
     unlockWalletAction: state => ({
       ...state,
-      walletUnlocked: true,
       failedLoginAttempts: 0,
       timeLock: false,
       timeLockAt: 0,
       dayLock: false,
       dayLockAt: 0,
       permaLock: false,
-    }),
-    clearUnlockAction: state => ({
-      ...state,
-      walletUnlocked: null,
-      timeLastUnlocked: Date.now(),
     }),
     addPasscodeAction: (state, action: PayloadAction<string>) => ({
       ...state,
