@@ -167,7 +167,8 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
                 onPress={openUrl}
                 activeOpacity={0.7}>
                 <TranslateText
-                  textValue="View Gift Card"
+                  textKey="view_gift_card"
+                  domain="nexusShop"
                   textStyle={styles.detailButtonText}
                   maxSizeInPixels={SCREEN_HEIGHT * 0.015}
                 />
