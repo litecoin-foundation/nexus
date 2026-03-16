@@ -89,7 +89,7 @@ const AmountPicker: React.FC<Props> = props => {
     return {
       transform: [
         {scale: toggleScaler.value},
-        {translateX: withSpring(toggleX.value, {stiffness: 50})},
+        {translateX: withSpring(toggleX.value, {stiffness: 200})},
       ],
       backgroundColor: interpolateColor(
         toggleBg.value,
@@ -104,7 +104,7 @@ const AmountPicker: React.FC<Props> = props => {
     return {
       transform: [
         {scale: maxButtonScaler.value},
-        {translateX: withSpring(maxButtonX.value, {stiffness: 50})},
+        {translateX: withSpring(maxButtonX.value, {stiffness: 200})},
       ],
       backgroundColor: interpolateColor(
         maxButtonBg.value,
