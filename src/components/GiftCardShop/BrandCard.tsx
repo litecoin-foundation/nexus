@@ -1,7 +1,6 @@
 import React, {useContext, useState, useEffect} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -19,6 +18,7 @@ import {syncWishlistToggle} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
 
 import {colors, getSpacing} from './theme';
+import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const backIcon = require('../../assets/images/back-icon.png');
@@ -215,24 +215,32 @@ export function BrandCard({
             <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
           ) : (
             <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-              <Text style={styles.brandLogoText}>{brand.name.charAt(0)}</Text>
+              <TranslateText
+                textValue={brand.name.charAt(0)}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                textStyle={styles.brandLogoText}
+                numberOfLines={1}
+              />
             </View>
           )}
         </View>
         <View style={styles.brandInfo}>
-          <Text style={styles.brandName} numberOfLines={1}>
-            {brand.name}
-          </Text>
+          <TranslateText
+            textValue={brand.name}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.0155}
+            textStyle={styles.brandName}
+            numberOfLines={1}
+          />
           {typeof minAmount === 'number' &&
           !isNaN(minAmount) &&
           typeof maxAmount === 'number' &&
           !isNaN(maxAmount) ? (
-            <Text style={styles.brandPrice}>
-              {formatCurrency(currency)}
-              {minAmount === maxAmount
-                ? `${minAmount}`
-                : `${minAmount} - ${maxAmount}`}
-            </Text>
+            <TranslateText
+              textValue={`${formatCurrency(currency)}${minAmount === maxAmount ? `${minAmount}` : `${minAmount} - ${maxAmount}`}`}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+              textStyle={styles.brandPrice}
+              numberOfLines={1}
+            />
           ) : null}
         </View>
         <View style={styles.chevronContainer}>
@@ -264,22 +272,29 @@ export function BrandCard({
                     styles.denominationButtonSelected,
                 ]}
                 onPress={() => handleAmountSelect(Number(amount))}>
-                <Text
-                  style={[
+                <TranslateText
+                  textValue={`${formatCurrency(currency)}${formatDenomination(amount)}`}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                  textStyle={[
                     styles.denominationText,
                     selectedAmount === Number(amount) &&
                       styles.denominationTextSelected,
-                  ]}>
-                  {formatCurrency(currency)}
-                  {formatDenomination(amount)}
-                </Text>
+                  ]}
+                  numberOfLines={1}
+                />
               </AnimatedPressable>
             ))}
           </View>
           <AnimatedPressable
             style={styles.purchaseButton}
             onPress={handlePurchase}>
-            <Text style={styles.purchaseButtonText}>Purchase gift card</Text>
+            <TranslateText
+              textKey="purchase_gift_card"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.purchaseButtonText}
+              numberOfLines={1}
+            />
           </AnimatedPressable>
         </View>
       </Animated.View>
@@ -289,7 +304,12 @@ export function BrandCard({
           style={styles.wishlistButton}
           onPress={handleWishlistToggle}
           activeOpacity={0.7}>
-          <Text style={styles.wishlistIcon}>{isInWishlist ? '♥' : '♡'}</Text>
+          <TranslateText
+            textValue={isInWishlist ? '♥' : '♡'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.026}
+            textStyle={styles.wishlistIcon}
+            numberOfLines={1}
+          />
         </TouchableOpacity>
       )}
     </View>

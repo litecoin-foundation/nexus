@@ -1,7 +1,6 @@
 import React, {useEffect, useContext, useState} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Image,
   TextInput,
@@ -18,7 +17,7 @@ import {
   getFontSize,
   getCommonStyles,
 } from './theme';
-
+import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface PurchaseFormProps {
@@ -110,17 +109,28 @@ export function PurchaseForm({
             <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
           ) : (
             <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-              <Text style={styles.brandLogoText}>{brand.name.charAt(0)}</Text>
+              <TranslateText
+                textValue={brand.name.charAt(0)}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.024}
+                textStyle={styles.brandLogoText}
+                numberOfLines={1}
+              />
             </View>
           )}
         </View>
         <View style={styles.brandInfo}>
-          <Text style={styles.brandName}>{brand.name}</Text>
-          <Text style={styles.brandPrice}>
-            {minAmount === maxAmount
-              ? `${minAmount}`
-              : `${minAmount} - ${maxAmount}`}
-          </Text>
+          <TranslateText
+            textValue={brand.name}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+            textStyle={styles.brandName}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textValue={minAmount === maxAmount ? `${minAmount}` : `${minAmount} - ${maxAmount}`}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={styles.brandPrice}
+            numberOfLines={1}
+          />
         </View>
       </View>
 
@@ -138,25 +148,35 @@ export function PurchaseForm({
             ]}
             onPress={() => setAmount(Number(denom))}
             activeOpacity={0.7}>
-            <Text
-              style={[
+            <TranslateText
+              textValue={`${currency === 'USD' ? '$' : ''}${denom}`}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={[
                 styles.denominationText,
                 amount === denom && styles.denominationTextSelected,
-              ]}>
-              {currency === 'USD' ? '$' : ''}
-              {denom}
-            </Text>
+              ]}
+              numberOfLines={1}
+            />
           </TouchableOpacity>
         ))}
       </View>
 
       {!brand.denominations ? (
         <View style={styles.amountInputSection}>
-          <Text style={styles.sectionTitle}>ENTER AMOUNT</Text>
+          <TranslateText
+            textKey="enter_amount"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+            textStyle={styles.sectionTitle}
+            numberOfLines={1}
+          />
           <View style={styles.amountInputContainer}>
-            <Text style={styles.currencySymbol}>
-              {currency === 'USD' ? '$' : currency}
-            </Text>
+            <TranslateText
+              textValue={currency === 'USD' ? '$' : currency}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.currencySymbol}
+              numberOfLines={1}
+            />
             <TextInput
               style={styles.amountInput}
               value={amountText}
@@ -171,39 +191,70 @@ export function PurchaseForm({
               placeholderTextColor={colors.grayMedium}
             />
           </View>
-          <Text style={styles.amountHint}>
-            Enter amount between {minAmount} and {maxAmount}
-          </Text>
+          <TranslateText
+            textKey="enter_amount_between"
+            domain="nexusShop"
+            interpolationObj={{min: minAmount, max: maxAmount}}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+            textStyle={styles.amountHint}
+            numberOfLines={1}
+          />
         </View>
       ) : (
         <></>
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>DESCRIPTION</Text>
-        <Text style={styles.sectionText}>
-          {brand.name} gift card can be redeemed for merchandise at any{' '}
-          {brand.name} location or online store.
-        </Text>
+        <TranslateText
+          textKey="description_title"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+          textStyle={styles.sectionTitle}
+          numberOfLines={1}
+        />
+        <TranslateText
+          textKey="gift_card_description"
+          domain="nexusShop"
+          interpolationObj={{brandName: brand.name}}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+          textStyle={styles.sectionText}
+        />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>REDEEM INSTRUCTIONS</Text>
-        <Text style={styles.sectionText}>
-          You can redeem the card by providing the code at checkout.
-        </Text>
+        <TranslateText
+          textKey="redeem_instructions_title"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+          textStyle={styles.sectionTitle}
+          numberOfLines={1}
+        />
+        <TranslateText
+          textKey="redeem_instructions_text"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+          textStyle={styles.sectionText}
+        />
       </View>
 
       {error && (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorMessage}>{error}</Text>
+          <TranslateText
+            textValue={error}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+            textStyle={styles.errorMessage}
+            numberOfLines={2}
+          />
         </View>
       )}
 
       {!validation.valid && validation.error && amount > 0 && (
-        <Text style={[commonStyles.errorText, styles.validationError]}>
-          {validation.error}
-        </Text>
+        <TranslateText
+          textValue={validation.error}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+          textStyle={[commonStyles.errorText, styles.validationError]}
+          numberOfLines={2}
+        />
       )}
 
       <TouchableOpacity
@@ -217,7 +268,13 @@ export function PurchaseForm({
         {loading ? (
           <ActivityIndicator color={colors.white} />
         ) : (
-          <Text style={styles.purchaseButtonText}>Proceed</Text>
+          <TranslateText
+            textKey="proceed"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+            textStyle={styles.purchaseButtonText}
+            numberOfLines={1}
+          />
         )}
       </TouchableOpacity>
     </ScrollView>

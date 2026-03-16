@@ -13,7 +13,6 @@ import {
   StyleSheet,
   Alert,
   Platform,
-  Text,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
@@ -374,7 +373,12 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
                 color="#0070F0"
                 backgroundColor="rgba(0, 112, 240, 0.15)"
               />
-              <Text style={styles.countdownText}>{resendCountdown}</Text>
+              <TranslateText
+                textValue={String(resendCountdown)}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+                textStyle={styles.countdownText}
+                numberOfLines={1}
+              />
             </View>
           )}
         </View>

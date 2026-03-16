@@ -5,7 +5,6 @@ import {
   RefreshControl,
   View,
   Pressable,
-  Text,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -97,9 +96,12 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
               onPressOut={onFilterPressOut}
               hitSlop={12}>
               {selectedCategory && (
-                <Text style={styles.filterLabel}>
-                  {formatCategoryLabel(selectedCategory)}
-                </Text>
+                <TranslateText
+                  textValue={formatCategoryLabel(selectedCategory)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                  textStyle={styles.filterLabel}
+                  numberOfLines={1}
+                />
               )}
               <Svg
                 width={SCREEN_HEIGHT * 0.032}
@@ -176,9 +178,12 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
             onPressOut={onFilterPressOut}
             hitSlop={12}>
             {selectedCategory && (
-              <Text style={styles.filterLabel}>
-                {formatCategoryLabel(selectedCategory)}
-              </Text>
+              <TranslateText
+                  textValue={formatCategoryLabel(selectedCategory)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                  textStyle={styles.filterLabel}
+                  numberOfLines={1}
+                />
             )}
             <Svg
               width={SCREEN_HEIGHT * 0.032}

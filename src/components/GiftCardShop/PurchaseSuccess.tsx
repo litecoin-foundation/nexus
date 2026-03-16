@@ -1,7 +1,6 @@
 import React, {useContext} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
@@ -17,7 +16,7 @@ import {
   getFontSize,
   getCommonStyles,
 } from './theme';
-
+import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface PurchaseSuccessProps {
@@ -54,53 +53,116 @@ export function PurchaseSuccess({
       style={commonStyles.container}
       contentContainerStyle={styles.successContainer}>
       <View style={commonStyles.successIcon}>
-        <Text style={styles.successIconText}>✓</Text>
+        <TranslateText
+          textValue="✓"
+          maxSizeInPixels={40}
+          textStyle={styles.successIconText}
+          numberOfLines={1}
+        />
       </View>
 
-      <Text style={commonStyles.title}>Purchase Complete!</Text>
+      <TranslateText
+        textKey="purchase_complete"
+        domain="nexusShop"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.032}
+        textStyle={commonStyles.title}
+        numberOfLines={1}
+      />
 
       <View style={styles.giftCardDisplay}>
-        <Text style={styles.giftCardBrand}>{brand.name}</Text>
-        <Text style={styles.giftCardAmount}>{giftCard.faceValue.amount}</Text>
+        <TranslateText
+          textValue={brand.name}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+          textStyle={styles.giftCardBrand}
+          numberOfLines={1}
+        />
+        <TranslateText
+          textValue={String(giftCard.faceValue.amount)}
+          maxSizeInPixels={36}
+          textStyle={styles.giftCardAmount}
+          numberOfLines={1}
+        />
 
         {giftCard.redeemUrl && (
           <TouchableOpacity style={styles.redeemButton} onPress={openUrl}>
-            <Text style={styles.redeemButtonText}>Open Gift Card →</Text>
+            <TranslateText
+              textKey="open_gift_card"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={styles.redeemButtonText}
+              numberOfLines={1}
+            />
           </TouchableOpacity>
         )}
 
         {giftCard.redeemCode && (
           <View style={styles.codeContainer}>
-            <Text style={commonStyles.label}>Gift Card Code</Text>
+            <TranslateText
+              textKey="gift_card_code"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={commonStyles.label}
+              numberOfLines={1}
+            />
             <View style={styles.codeRow}>
-              <Text style={styles.codeText}>{giftCard.redeemCode}</Text>
+              <TranslateText
+                textValue={giftCard.redeemCode}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                textStyle={styles.codeText}
+                numberOfLines={1}
+              />
               <TouchableOpacity style={styles.copyButton} onPress={copyCode}>
-                <Text style={styles.copyButtonText}>Copy</Text>
+                <TranslateText
+                  textKey="copy"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={styles.copyButtonText}
+                  numberOfLines={1}
+                />
               </TouchableOpacity>
             </View>
             {giftCard.pin && (
               <View
                 style={{marginTop: getSpacing(SCREEN_WIDTH, SCREEN_HEIGHT).md}}>
-                <Text style={commonStyles.label}>PIN</Text>
-                <Text style={styles.codeText}>{giftCard.pin}</Text>
+                <TranslateText
+                  textKey="pin_label"
+                  domain="nexusShop"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={commonStyles.label}
+                  numberOfLines={1}
+                />
+                <TranslateText
+                  textValue={giftCard.pin}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                  textStyle={styles.codeText}
+                  numberOfLines={1}
+                />
               </View>
             )}
           </View>
         )}
 
-        <Text
-          style={[
+        <TranslateText
+          textValue={`Expires: ${new Date(giftCard.expirationDate).toLocaleDateString()}`}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+          textStyle={[
             commonStyles.caption,
             {marginTop: getSpacing(SCREEN_WIDTH, SCREEN_HEIGHT).md},
-          ]}>
-          Expires: {new Date(giftCard.expirationDate).toLocaleDateString()}
-        </Text>
+          ]}
+          numberOfLines={1}
+        />
       </View>
 
       <TouchableOpacity
         style={[commonStyles.button, {backgroundColor: colors.success}]}
         onPress={onDone}>
-        <Text style={commonStyles.buttonText}>Done</Text>
+        <TranslateText
+          textKey="done"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+          textStyle={commonStyles.buttonText}
+          numberOfLines={1}
+        />
       </TouchableOpacity>
     </ScrollView>
   );

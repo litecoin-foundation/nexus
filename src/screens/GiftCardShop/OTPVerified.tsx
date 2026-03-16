@@ -1,5 +1,5 @@
 import React, {useContext, useEffect} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {NewWalletStackParamList} from '../../navigation/types';
@@ -11,6 +11,7 @@ import {
   getSpacing,
 } from '../../components/GiftCardShop/theme';
 
+import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const OTPVerified: React.FC = () => {
@@ -43,12 +44,24 @@ const OTPVerified: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, commonStyles.centered]}>
-      <Text style={styles.verifiedText}>Verified!</Text>
+      <TranslateText
+        textKey="verified"
+        domain="nexusShop"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.036}
+        textStyle={styles.verifiedText}
+        numberOfLines={1}
+      />
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={commonStyles.buttonRounded}
           onPress={handleGoBack}>
-          <Text style={commonStyles.buttonText}>To the Shop</Text>
+          <TranslateText
+            textKey="to_the_shop"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={commonStyles.buttonText}
+            numberOfLines={1}
+          />
         </TouchableOpacity>
       </View>
     </View>

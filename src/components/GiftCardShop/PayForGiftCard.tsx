@@ -1,7 +1,6 @@
 import React, {useContext, useState, useRef} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
@@ -21,6 +20,7 @@ import {
   getFontSize,
   getCommonStyles,
 } from './theme';
+import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const formatExpiryDate = (dateString: string): string => {
@@ -103,48 +103,104 @@ export function PayForGiftCard({
       <ScrollView
         style={commonStyles.container}
         contentContainerStyle={styles.container}>
-        <Text style={[commonStyles.titleBlack, styles.title]}>
-          Complete payment by sending coins to this invoice
-        </Text>
+        <TranslateText
+          textKey="complete_payment_invoice"
+          domain="nexusShop"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.024}
+          textStyle={[commonStyles.titleBlack, styles.title]}
+          numberOfLines={2}
+        />
 
         <View style={styles.paymentDetails}>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Brand</Text>
-            <Text style={styles.detailValue}>{initiateResponse.brand}</Text>
+            <TranslateText
+              textKey="brand"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={styles.detailLabel}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={initiateResponse.brand}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.detailValue}
+              numberOfLines={1}
+            />
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount</Text>
-            <Text style={styles.detailValue}>
-              {initiateResponse.amount} {initiateResponse.currency}
-            </Text>
+            <TranslateText
+              textKey="amount"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={styles.detailLabel}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={`${initiateResponse.amount} ${initiateResponse.currency}`}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.detailValue}
+              numberOfLines={1}
+            />
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount (LTC)</Text>
-            <Text style={styles.detailValue}>
-              {initiateResponse.paymentAmountLtc}
-            </Text>
+            <TranslateText
+              textKey="amount_ltc"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={styles.detailLabel}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={String(initiateResponse.paymentAmountLtc)}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.detailValue}
+              numberOfLines={1}
+            />
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Payment To</Text>
-            <Text style={[styles.detailValue, styles.addressText]}>
-              {initiateResponse.paymentAddress}
-            </Text>
+            <TranslateText
+              textKey="payment_to"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={styles.detailLabel}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={initiateResponse.paymentAddress}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+              textStyle={[styles.detailValue, styles.addressText]}
+              numberOfLines={2}
+            />
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Expires At</Text>
-            <Text style={styles.detailValue}>
-              {formatExpiryDate(initiateResponse.expiresAt)}
-            </Text>
+            <TranslateText
+              textKey="expires_at"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={styles.detailLabel}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={formatExpiryDate(initiateResponse.expiresAt)}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.detailValue}
+              numberOfLines={1}
+            />
           </View>
         </View>
 
         {error && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorMessage}>{error}</Text>
+            <TranslateText
+              textValue={error}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+              textStyle={styles.errorMessage}
+              numberOfLines={2}
+            />
           </View>
         )}
 
@@ -152,7 +208,13 @@ export function PayForGiftCard({
           style={[commonStyles.buttonRoundedSecondary, styles.backButton]}
           onPress={onBack}
           disabled={loading}>
-          <Text style={commonStyles.buttonTextBlack}>Back</Text>
+          <TranslateText
+            textKey="back"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={commonStyles.buttonTextBlack}
+            numberOfLines={1}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -165,7 +227,13 @@ export function PayForGiftCard({
           {loading ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={commonStyles.buttonText}>Send Payment</Text>
+            <TranslateText
+              textKey="send_payment"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={commonStyles.buttonText}
+              numberOfLines={1}
+            />
           )}
         </TouchableOpacity>
       </ScrollView>

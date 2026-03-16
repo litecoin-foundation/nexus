@@ -1,8 +1,9 @@
 import React, {useState, useContext} from 'react';
-import {ScrollView, View, Text, StyleSheet, RefreshControl} from 'react-native';
+import {ScrollView, View, StyleSheet, RefreshControl} from 'react-native';
 import {isExpired} from '../../services/giftcards';
 import {useAppSelector} from '../../store/hooks';
 import {getSpacing, getCommonStyles} from './theme';
+import TranslateText from '../TranslateText';
 import {LoadingView} from './LoadingView';
 import {EmptyView} from './EmptyView';
 import {GiftCardItem} from './GiftCardItem';
@@ -56,7 +57,13 @@ export function MyFavouriteCards() {
       }>
       {activeFavouriteCards.length > 0 && (
         <View style={styles.section}>
-          <Text style={commonStyles.subtitle}>Active Favourite Cards</Text>
+          <TranslateText
+            textKey="active_favourite_cards"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={commonStyles.subtitle}
+            numberOfLines={1}
+          />
           {activeFavouriteCards.map(gc => (
             <GiftCardItem key={gc.id} giftCard={gc} />
           ))}
@@ -65,7 +72,13 @@ export function MyFavouriteCards() {
 
       {otherFavouriteCards.length > 0 && (
         <View style={[styles.section, {opacity: 0.7}]}>
-          <Text style={commonStyles.subtitle}>Past Favourite Cards</Text>
+          <TranslateText
+            textKey="past_favourite_cards"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+            textStyle={commonStyles.subtitle}
+            numberOfLines={1}
+          />
           {otherFavouriteCards.map(gc => (
             <GiftCardItem key={gc.id} giftCard={gc} />
           ))}

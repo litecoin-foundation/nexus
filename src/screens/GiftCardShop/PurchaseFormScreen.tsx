@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import {
   View,
-  Text,
   Pressable,
   Image,
   TextInput,
@@ -268,17 +267,32 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
               <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
             ) : (
               <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-                <Text style={styles.brandLogoText}>{brand.name.charAt(0)}</Text>
+                <TranslateText
+                  textValue={brand.name.charAt(0)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.024}
+                  textStyle={styles.brandLogoText}
+                  numberOfLines={1}
+                />
               </View>
             )}
           </View>
           <View style={styles.brandInfo}>
-            <Text style={styles.brandName}>{brand.name}</Text>
-            <Text style={styles.brandPrice}>
-              {minAmount === maxAmount
-                ? `${formatCurrency(currency)}${minAmount}`
-                : `${formatCurrency(currency)}${minAmount} - ${formatCurrency(currency)}${maxAmount}`}
-            </Text>
+            <TranslateText
+              textValue={brand.name}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+              textStyle={styles.brandName}
+              numberOfLines={1}
+            />
+            <TranslateText
+              textValue={
+                minAmount === maxAmount
+                  ? `${formatCurrency(currency)}${minAmount}`
+                  : `${formatCurrency(currency)}${minAmount} - ${formatCurrency(currency)}${maxAmount}`
+              }
+              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+              textStyle={styles.brandPrice}
+              numberOfLines={1}
+            />
           </View>
         </View>
 
@@ -295,14 +309,15 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                 amount === Number(denom) && styles.denominationButtonSelected,
               ]}
               onPress={() => setAmount(Number(denom))}>
-              <Text
-                style={[
+              <TranslateText
+                textValue={`${formatCurrency(currency)}${denom}`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                textStyle={[
                   styles.denominationText,
                   amount === Number(denom) && styles.denominationTextSelected,
-                ]}>
-                {formatCurrency(currency)}
-                {denom}
-              </Text>
+                ]}
+                numberOfLines={1}
+              />
             </AnimatedPressable>
           ))}
         </View>
@@ -319,13 +334,15 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                 textStyle={styles.otherAmountToggleText}
                 numberOfLines={1}
               />
-              <Text
-                style={[
+              <TranslateText
+                textValue={'\u25BC'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.01}
+                textStyle={[
                   styles.otherAmountChevron,
                   showInputAmount && styles.otherAmountChevronOpen,
-                ]}>
-                {'\u25BC'}
-              </Text>
+                ]}
+                numberOfLines={1}
+              />
             </AnimatedPressable>
             <Animated.View
               style={
@@ -344,9 +361,12 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                   numberOfLines={1}
                 />
                 <View style={styles.amountInputContainer}>
-                  <Text style={styles.currencySymbol}>
-                    {formatCurrency(currency)}
-                  </Text>
+                  <TranslateText
+                    textValue={formatCurrency(currency)}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+                    textStyle={styles.currencySymbol}
+                    numberOfLines={1}
+                  />
                   <TextInput
                     style={styles.amountInput}
                     value={amountText}

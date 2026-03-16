@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {
   View,
-  Text,
   Image,
   TouchableOpacity,
   Pressable,
@@ -106,9 +105,12 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
             <Image source={{uri: giftCard.logo_url}} style={styles.brandLogo} />
           ) : (
             <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-              <Text style={styles.brandLogoText}>
-                {giftCard.brand.charAt(0)}
-              </Text>
+              <TranslateText
+                textValue={giftCard.brand.charAt(0)}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                textStyle={styles.brandLogoText}
+                numberOfLines={1}
+              />
             </View>
           )}
         </View>
@@ -233,9 +235,12 @@ export function PendingGiftCardItem({
             />
           ) : (
             <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-              <Text style={styles.brandLogoText}>
-                {pendingGiftCard.brand.charAt(0)}
-              </Text>
+              <TranslateText
+                textValue={pendingGiftCard.brand.charAt(0)}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                textStyle={styles.brandLogoText}
+                numberOfLines={1}
+              />
             </View>
           )}
         </View>
