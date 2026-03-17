@@ -83,7 +83,7 @@
     "react-native-localize": "3.4.1",
     "react-native-mmkv": "4.0.0",
     "react-native-modal": "14.0.0-rc.1",
-    "react-native-nitro-lndltc": "^0.0.1",
+    "react-native-nitro-lndltc": "0.0.4",
     "react-native-nitro-modules": "0.31.6",
     "react-native-nitro-scrypt": "0.1.0",
     "react-native-nitro-tor": "0.5.2",

@@ -178,7 +178,7 @@ PODS:
     - SocketRocket
     - Yoga
   - MMKVCore (2.2.4)
-  - NitroLndltc (0.0.1):
+  - NitroLndltc (0.0.4):
     - boost
     - DoubleConversion
     - fast_float
@@ -4011,7 +4011,7 @@ SPEC CHECKSUMS:
   lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
   lottie-react-native: 994a0f1696a7ea01f63443e53a860c735246082d
   MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
-  NitroLndltc: d2bd10b885e7c5ab5bf0bc4ee6ca19ca2c373996
+  NitroLndltc: 3737c0e4fe51a31ea35f1f31c64425afc88dc1ba
   NitroMmkv: 1b125f00aa79f5b73e5afe0340a6d058923e1269
   NitroModules: 192449b51c59478efc2ed5c2554ec907be42ce77
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
