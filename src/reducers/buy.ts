@@ -955,7 +955,7 @@ export const getSignedOnramperUrl =
         const response = await res.json();
 
         const signature = response;
-        const signedUrl = `${unsignedURL}&signature=${signature}`;
+        const signedUrl = `${unsignedURL}&signContent=${signContent}&signature=${signature}`;
 
         resolve(signedUrl);
       } catch (error) {
@@ -1079,7 +1079,7 @@ export const getSignedSellOnramperUrl =
         const response = await res.json();
 
         const signature = response;
-        const signedUrl = `${unsignedURL}&signature=${signature}`;
+        const signedUrl = `${unsignedURL}&signContent=${signContent}&signature=${signature}`;
 
         resolve(signedUrl);
       } catch (error) {
