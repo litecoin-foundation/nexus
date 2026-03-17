@@ -1,7 +1,6 @@
 import React, {useContext, useState, useEffect} from 'react';
 import {
   View,
-  TouchableOpacity,
   Image,
   StyleSheet,
   Pressable,
@@ -80,6 +79,10 @@ export function BrandCard({
   const heightAnim = useSharedValue(0);
   const opacityAnim = useSharedValue(0);
   const chevronRotation = useSharedValue(isExpanded ? 90 : -90);
+  const wishlistScale = useSharedValue(1);
+  const wishlistAnimStyle = useAnimatedStyle(() => ({
+    transform: [{scale: wishlistScale.value}],
+  }));
 
   const isLoggedIn = useAppSelector(
     state => state.nexusshopaccount?.account?.isLoggedIn,
@@ -300,17 +303,24 @@ export function BrandCard({
       </Animated.View>
 
       {isLoggedIn && (
-        <TouchableOpacity
+        <Pressable
           style={styles.wishlistButton}
           onPress={handleWishlistToggle}
-          activeOpacity={0.7}>
-          <TranslateText
-            textValue={isInWishlist ? '♥' : '♡'}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.026}
-            textStyle={styles.wishlistIcon}
-            numberOfLines={1}
+          onPressIn={() => {
+            wishlistScale.value = withSpring(0.85, {mass: 1});
+          }}
+          onPressOut={() => {
+            wishlistScale.value = withSpring(1, {mass: 0.7});
+          }}>
+          <Animated.Image
+            source={
+              isInWishlist
+                ? require('../../assets/images/heart-active.png')
+                : require('../../assets/images/heart-inactive.png')
+            }
+            style={[styles.wishlistIcon, wishlistAnimStyle]}
           />
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );
@@ -456,7 +466,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
     },
     wishlistIcon: {
-      fontSize: screenHeight * 0.026,
-      color: colors.primary,
+      width: screenHeight * 0.0195,
+      height: screenHeight * 0.0195,
+      resizeMode: 'contain',
     },
   });
