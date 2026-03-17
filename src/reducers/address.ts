@@ -1,6 +1,6 @@
 import {createAction, createSlice} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
-import {newAddress} from 'react-native-nitro-lndltc';
+import {newAddress, AddressType} from 'react-native-nitro-lndltc';
 import type {NewAddressResponse} from 'react-native-nitro-lndltc';
 import {AppThunk} from './types';
 
@@ -34,12 +34,9 @@ export const getAddress =
   (mwebAddress?: boolean): AppThunk =>
   async dispatch => {
     try {
-      let type: number;
-      if (mwebAddress) {
-        type = 7;
-      } else {
-        type = 2;
-      }
+      const type = mwebAddress
+        ? AddressType.MWEB
+        : AddressType.UNUSED_WITNESS_PUBKEY_HASH;
       const address = await newAddress({type});
 
       dispatch(getAddressAction(address.address));
