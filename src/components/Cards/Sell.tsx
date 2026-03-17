@@ -28,7 +28,7 @@ import {
   updateFiatAmount,
 } from '../../reducers/input';
 import {callRates} from '../../reducers/ticker';
-import {estimateFee} from 'react-native-turbo-lndltc';
+import {estimateFee} from 'react-native-nitro-lndltc';
 
 import TranslateText from '../../components/TranslateText';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';

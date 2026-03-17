@@ -8,8 +8,8 @@ import React, {
 import {View, StyleSheet, Platform} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {FlashList} from '@shopify/flash-list';
-import {walletKitListUnspent} from 'react-native-turbo-lndltc';
-import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
+import {walletKitListUnspent} from 'react-native-nitro-lndltc';
+import type {Utxo} from 'react-native-nitro-lndltc';
 
 import GreyRoundButton from '../Buttons/GreyRoundButton';
 import TableTitle from '../Cells/TableTitle';
@@ -389,7 +389,6 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
             renderItem={renderPrivateCoin}
             keyExtractor={keyExtractor}
             getItemType={getItemType}
-            estimatedItemSize={80}
             contentContainerStyle={styles.flashListContent}
             extraData={selectedCoins}
           />
@@ -411,7 +410,6 @@ const SelectCoinsLayout: React.FC<SelectCoinsLayoutProps> = props => {
             renderItem={renderPublicCoin}
             keyExtractor={keyExtractor}
             getItemType={getItemType}
-            estimatedItemSize={80}
             contentContainerStyle={styles.flashListContent}
             extraData={selectedCoins}
           />

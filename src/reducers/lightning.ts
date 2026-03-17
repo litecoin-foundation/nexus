@@ -6,9 +6,10 @@ import {
   unlockWallet as unlockLndWallet,
   subscribeState,
   stopDaemon,
-} from 'react-native-turbo-lndltc';
+  WalletState,
+} from 'react-native-nitro-lndltc';
+import type {Subscription} from 'react-native-nitro-lndltc';
 import * as RNFS from '@dr.pogodin/react-native-fs';
-import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 
 import {AppThunk} from './types';
 import {v4 as uuidv4} from 'uuid';
@@ -28,26 +29,35 @@ import {pollTransactions} from './transaction';
 import {createConfig} from '../utils/config';
 import {stringToUint8Array} from '../utils';
 import {purgeStore} from '../store';
-import {resetPincode} from './authentication';
+import {resetPincode, unlockWalletAction} from './authentication';
 import {resetToLoading} from '../navigation/NavigationService';
 
 const PASS = 'PASSWORD';
 const RESCAN_FLAG = 'RESCAN_WALLET_TRANSACTIONS';
 
+// Single state subscription — stored to prevent GC
+let _stateSub: Subscription | null = null;
+let _pollersStarted = false;
+
 // types
 interface ILightningState {
   lndActive: boolean;
+  walletState: WalletState | null;
   isRescanningWallet: boolean;
 }
 
 // initial state
 const initialState = {
   lndActive: false,
+  walletState: null,
   isRescanningWallet: false,
 } as ILightningState;
 
 // actions
 const lndState = createAction<boolean>('lightning/lndState');
+const setWalletState = createAction<WalletState | null>(
+  'lightning/setWalletState',
+);
 export const setRescanningWallet = createAction<boolean>(
   'lightning/setRescanningWallet',
 );
@@ -62,9 +72,6 @@ export const startLnd = (): AppThunk => async (dispatch, getState) => {
     const appFolderPath = `${RNFS.DocumentDirectoryPath}/lndltc/`;
 
     // check if wallet.db is missing - if so, clean up stale macaroons before starting LND
-    //
-    // when unlockWallet() is called, if wallet.db doesn't exist, initWallet() will be called
-    // but lnd connections will fail due to existing macaroon. so we clean up macaroons
     const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
     const walletExists = await fileExists(dbPath);
 
@@ -84,84 +91,75 @@ export const startLnd = (): AppThunk => async (dispatch, getState) => {
     // start LND
     await start(startFlags);
 
-    // set lndActive when RPC is ready!
-    subscribeState(
-      {},
-      async state => {
-        if (state.state === WalletState.NON_EXISTING) {
+    // Single state subscription for the entire app lifecycle
+    _stateSub = subscribeState(
+      async response => {
+        dispatch(setWalletState(response.state));
+
+        if (response.state === WalletState.NON_EXISTING) {
           dispatch(lndState(true));
-        } else if (state.state === WalletState.RPC_ACTIVE) {
+        } else if (response.state === WalletState.LOCKED) {
+          dispatch(lndState(true));
+        } else if (response.state === WalletState.UNLOCKED) {
           dispatch(lndState(true));
 
-          // wallet started with rescan, clear the flag but keep rescanning state
-          // (rescanning state will be cleared separately after rescan completes)
+          // During onboarding, UNLOCKED means wallet was just created
+          const {isOnboarded} = getState().onboarding!;
+          if (!isOnboarded) {
+            dispatch(finishOnboarding());
+          }
+        } else if (
+          response.state === WalletState.RPC_ACTIVE ||
+          response.state === WalletState.SERVER_ACTIVE
+        ) {
+          dispatch(lndState(true));
+
+          // Start pollers once
+          if (!_pollersStarted) {
+            _pollersStarted = true;
+
+            dispatch(pollInfo());
+            if (getState().settings.litecoinBackend !== 'electrum') {
+              dispatch(pollPeers());
+            }
+            dispatch(pollRates());
+            dispatch(pollTransactions());
+            dispatch(subscribeTransactions());
+            dispatch(pollBalance());
+
+            dispatch(unlockWalletAction);
+          }
+
+          // Clear rescan flag if needed
           if (needsRescan === 'true') {
             await setItem(RESCAN_FLAG, 'false');
             console.log('wallet rescan flag cleared, rescanning in progress');
           }
         }
-        try {
-        } catch (error) {
-          throw new Error(String(error));
-        }
       },
       error => {
-        console.error('LOSHY: ', error);
+        console.error('subscribeState error:', error);
       },
     );
   } catch (err) {
     console.error('CANT start LND');
     console.error(err);
-
-    // TODO: handle this
   }
 };
 
 export const stopLnd = (): AppThunk => async dispatch => {
-  return new Promise<void>(resolve => {
-    stopDaemon({})
-      .then(() => {
-        console.log('STOPLND: stopping LND');
+  try {
+    await stopDaemon();
+  } catch (err) {
+    console.error('STOPLND: Error calling stopDaemon:', err);
+  }
 
-        // Subscribe to state to confirm LND has stopped
-        subscribeState(
-          {},
-          async _ => {
-            // State callback - LND might still be running
-            try {
-            } catch (error) {
-              throw new Error(String(error));
-            }
-          },
-          error => {
-            // Error callback - this fires when LND stops
-            console.log('STOPLND: subscribeState error:', error);
-            if (error.includes('error reading from server')) {
-              console.log('STOPLND: LND Stopped confirmed');
+  _stateSub?.cancel();
+  _stateSub = null;
+  _pollersStarted = false;
 
-              // Stop all active pollers
-              // Reset transaction subscription flag
-              // Set LND state to false
-              // stopAllPollers();
-              // dispatch(resetTxSubscription());
-              dispatch(lndState(false));
-
-              resolve();
-              return;
-            }
-          },
-        );
-      })
-      .catch(err => {
-        console.error('STOPLND: Error calling stopDaemon:', err);
-        // Even if stopDaemon errors, LND might have stopped
-        // Clean up pollers and reset state
-        // stopAllPollers();
-        // dispatch(resetTxSubscription());
-        dispatch(lndState(false));
-        resolve();
-      });
-  });
+  dispatch(lndState(false));
+  dispatch(setWalletState(null));
 };
 
 export const resetLndState = (): AppThunk => async dispatch => {
@@ -176,134 +174,62 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
 
   try {
     await deleteWalletDB();
-
-    try {
-      await initLndWallet({
-        cipherSeedMnemonic: seed,
-        walletPassword: stringToUint8Array(password),
-        recoveryWindow: beingRecovered === true ? 3000 : 0,
-      });
-    } catch (error) {
-      console.error(error);
-    }
-
-    subscribeState(
-      {},
-      async state => {
-        try {
-          if (state.state === WalletState.UNLOCKED) {
-            // UNLOCKED is before RPC_ACTIVE
-            // we know that onboarding is finished by now!
-            // when isOnboarded, the Welcome screen will initWallet()
-            // and handle navigation
-            dispatch(finishOnboarding());
-          } else if (state.state === WalletState.RPC_ACTIVE) {
-            // RPC_ACTIVE so we are ready to dispatch pollers
-            dispatch(pollInfo());
-            if (getState().settings.litecoinBackend !== 'electrum') {
-              dispatch(pollPeers());
-            }
-            dispatch(pollRates());
-            dispatch(pollTransactions());
-            dispatch(subscribeTransactions());
-
-            return;
-          }
-        } catch (error) {
-          throw new Error(String(error));
-        }
-      },
-      error => {
-        console.error(error);
-      },
-    );
+    await initLndWallet({
+      cipherSeedMnemonic: seed,
+      walletPassword: stringToUint8Array(password),
+      recoveryWindow: beingRecovered === true ? 3000 : 0,
+    });
   } catch (error) {
     console.error(error);
   }
 };
 
 export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
-  return new Promise(async resolve => {
-    let password = await getItem(PASS);
+  let password = await getItem(PASS);
 
-    const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+  const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
 
-    // check if wallet exists, otherwise initWallet
-    if ((await fileExists(dbPath)) === false) {
-      const {seed} = getState().onboarding!;
+  // check if wallet exists, otherwise initWallet
+  if ((await fileExists(dbPath)) === false) {
+    const {seed} = getState().onboarding!;
 
-      if (seed && seed.length > 0) {
-        // wallet.db missing but seed phrase exists - attempting recovery
-        try {
-          dispatch(setRecoveryMode(true));
-          await dispatch(initWallet());
-          dispatch(setRecoveryMode(false));
-
-          // Get the new password generated during initWallet to avoid race condition
-          password = await getItem(PASS);
-
-          resolve();
-          return;
-        } catch (recoveryError) {
-          console.error('Failed to recover wallet from seed:', recoveryError);
-          dispatch(setRecoveryMode(false));
-          return;
-        }
-      } else {
-        // No seed phrase available - trigger complete wallet reset
-        await dispatch(handleWalletReset());
+    if (seed && seed.length > 0) {
+      // wallet.db missing but seed phrase exists - attempting recovery
+      try {
+        dispatch(setRecoveryMode(true));
+        await dispatch(initWallet());
+        dispatch(setRecoveryMode(false));
+        return;
+      } catch (recoveryError) {
+        console.error('Failed to recover wallet from seed:', recoveryError);
+        dispatch(setRecoveryMode(false));
         return;
       }
+    } else {
+      // No seed phrase available - trigger complete wallet reset
+      await dispatch(handleWalletReset());
+      return;
     }
+  }
 
-    try {
-      if (password !== null) {
-        await unlockLndWallet({
-          walletPassword: stringToUint8Array(password),
-        });
-      } else {
-        throw new Error('wallet password is null');
-      }
-
-      subscribeState(
-        {},
-        async state => {
-          try {
-            if (state.state === WalletState.RPC_ACTIVE) {
-              // dispatch pollers
-              dispatch(pollInfo());
-              if (getState().settings.litecoinBackend !== 'electrum') {
-                dispatch(pollPeers());
-              }
-              dispatch(subscribeTransactions());
-              dispatch(pollRates());
-              dispatch(pollTransactions());
-              dispatch(pollBalance());
-
-              resolve();
-            }
-          } catch (error) {
-            throw new Error(String(error));
-          }
-        },
-        error => {
-          console.error(String(error));
-        },
-      );
-    } catch (error: any) {
-      if (
-        error.message ===
-        'rpc error: code = Unknown desc = wallet already unlocked, WalletUnlocker service is no longer available'
-      ) {
-        console.log('wallet unlocked already!');
-        dispatch({
-          type: 'UNLOCK_WALLET',
-          payload: true,
-        });
-      }
+  try {
+    if (password !== null) {
+      await unlockLndWallet({
+        walletPassword: stringToUint8Array(password),
+      });
+    } else {
+      throw new Error('wallet password is null');
+    }
+  } catch (error: any) {
+    if (
+      error.message ===
+      'rpc error: code = Unknown desc = wallet already unlocked, WalletUnlocker service is no longer available'
+    ) {
+      console.log('wallet unlocked already!');
+    } else {
       throw new Error(String(error));
     }
-  });
+  }
 };
 
 export const rescanWallet = (): AppThunk => async dispatch => {
@@ -324,20 +250,8 @@ export const rescanWallet = (): AppThunk => async dispatch => {
     await dispatch(startLnd());
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // Unlock wallet automatically
     console.log('RESCAN: Auto-unlock wallet');
-    try {
-      const password = await getItem(PASS);
-      if (password !== null) {
-        await unlockLndWallet({
-          walletPassword: stringToUint8Array(password),
-        });
-      } else {
-        throw new Error('wallet password is null');
-      }
-    } catch (error) {
-      throw new Error(String(error));
-    }
+    await dispatch(unlockWallet());
   } catch (error) {
     console.error('RESCAN: Error during wallet rescan:', error);
     dispatch(setRescanningWallet(false));
@@ -367,6 +281,10 @@ export const lightningSlice = createSlice({
     lndState: (state, action: PayloadAction<boolean>) => ({
       ...state,
       lndActive: action.payload,
+    }),
+    setWalletState: (state, action: PayloadAction<WalletState | null>) => ({
+      ...state,
+      walletState: action.payload,
     }),
     setRescanningWallet: (state, action: PayloadAction<boolean>) => ({
       ...state,

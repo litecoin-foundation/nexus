@@ -1,21 +1,28 @@
 import {
+  BlurMask,
   Canvas,
+  Group,
   Image,
   Mask,
   Rect,
   RoundedRect,
   Shadow,
+  SweepGradient,
   interpolateColors,
   rect,
+  rrect,
   useImage,
+  vec,
 } from '@shopify/react-native-skia';
 import React, {useEffect, useContext, useMemo} from 'react';
 import {ImageSourcePropType, Pressable, StyleSheet} from 'react-native';
 import {
+  Easing,
   interpolateColor,
   useAnimatedProps,
   useDerivedValue,
   useSharedValue,
+  withRepeat,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
@@ -33,6 +40,7 @@ interface Props {
   disabled: boolean;
   wider?: boolean;
   sizePercentage?: number;
+  glowBorder?: boolean;
 }
 
 const DashboardButton: React.FC<Props> = props => {
@@ -45,6 +53,7 @@ const DashboardButton: React.FC<Props> = props => {
     disabled,
     wider,
     sizePercentage,
+    glowBorder,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -56,6 +65,8 @@ const DashboardButton: React.FC<Props> = props => {
 
   const image = useImage(imageSource);
 
+  const canvasXPadding = useMemo(() => SCREEN_WIDTH * 0.012, [SCREEN_WIDTH]);
+
   // animation
   const buttonHeight = useSharedValue(49);
   const borderOpacity = useSharedValue(1);
@@ -65,6 +76,43 @@ const DashboardButton: React.FC<Props> = props => {
     borderOpacity.value = withTiming(active ? 0 : 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
+
+  // Glow border animation
+  const glowRotation = useSharedValue(0);
+
+  useEffect(() => {
+    if (glowBorder) {
+      glowRotation.value = withRepeat(
+        withTiming(2 * Math.PI, {
+          duration: 8000,
+          easing: Easing.linear,
+        }),
+        -1,
+        false,
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [glowBorder]);
+
+  const glowCenter = useDerivedValue(() =>
+    vec(canvasXPadding + rectWidth / 2, 10 + buttonHeight.value / 2),
+  );
+
+  const glowTransform = useDerivedValue(() => {
+    const cx = canvasXPadding + rectWidth / 2;
+    const cy = 10 + buttonHeight.value / 2;
+    return [
+      {translateX: cx},
+      {translateY: cy},
+      {rotate: glowRotation.value},
+      {translateX: -cx},
+      {translateY: -cy},
+    ];
+  });
+
+  const buttonClip = useDerivedValue(() =>
+    rrect(rect(canvasXPadding, 10, rectWidth, buttonHeight.value), 12, 12),
+  );
 
   const interpolatedButtonColour = useDerivedValue(
     () =>
@@ -109,7 +157,6 @@ const DashboardButton: React.FC<Props> = props => {
 
   const titleText = title ? title : textKey ? t(textKey) : '';
 
-  const canvasXPadding = useMemo(() => SCREEN_WIDTH * 0.012, [SCREEN_WIDTH]);
   const imageWidth = useMemo(
     () =>
       wider
@@ -159,6 +206,96 @@ const DashboardButton: React.FC<Props> = props => {
             style="stroke"
             opacity={borderOpacity}
           />
+
+          {glowBorder && !active && (
+            <Group clip={buttonClip}>
+              {/* Full border gradient light */}
+              <Mask
+                mode="alpha"
+                mask={
+                  <RoundedRect
+                    x={canvasXPadding}
+                    y={10}
+                    width={rectWidth}
+                    height={buttonHeight}
+                    r={12}
+                    style="stroke"
+                    strokeWidth={4}
+                    color="white"
+                  />
+                }>
+                <Group transform={glowTransform}>
+                  <Rect x={-100} y={-100} width={400} height={400}>
+                    <SweepGradient
+                      c={glowCenter}
+                      colors={[
+                        '#93C5FD',
+                        '#7FB6FC',
+                        '#6AA7FA',
+                        '#5698F8',
+                        '#4189F7',
+                        '#2C72FF',
+                        '#1A5AD0',
+                        '#2C72FF',
+                        '#4189F7',
+                        '#5698F8',
+                        '#6AA7FA',
+                        '#7FB6FC',
+                        '#93C5FD',
+                      ]}
+                      positions={[
+                        0, 0.083, 0.167, 0.25, 0.333, 0.417, 0.5, 0.583,
+                        0.667, 0.75, 0.833, 0.917, 1,
+                      ]}
+                    />
+                  </Rect>
+                </Group>
+              </Mask>
+              {/* Soft inner glow aura */}
+              <Mask
+                mode="alpha"
+                mask={
+                  <RoundedRect
+                    x={canvasXPadding}
+                    y={10}
+                    width={rectWidth}
+                    height={buttonHeight}
+                    r={12}
+                    style="stroke"
+                    strokeWidth={10}
+                    color="white">
+                    <BlurMask blur={12} style="normal" />
+                  </RoundedRect>
+                }>
+                <Group transform={glowTransform}>
+                  <Rect x={-100} y={-100} width={400} height={400}>
+                    <SweepGradient
+                      c={glowCenter}
+                      colors={[
+                        'rgba(147, 197, 253, 0.4)',
+                        'rgba(127, 182, 252, 0.42)',
+                        'rgba(106, 167, 250, 0.45)',
+                        'rgba(86, 152, 248, 0.47)',
+                        'rgba(65, 137, 247, 0.5)',
+                        'rgba(44, 114, 255, 0.55)',
+                        'rgba(26, 90, 208, 0.58)',
+                        'rgba(44, 114, 255, 0.55)',
+                        'rgba(65, 137, 247, 0.5)',
+                        'rgba(86, 152, 248, 0.47)',
+                        'rgba(106, 167, 250, 0.45)',
+                        'rgba(127, 182, 252, 0.42)',
+                        'rgba(147, 197, 253, 0.4)',
+                      ]}
+                      positions={[
+                        0, 0.083, 0.167, 0.25, 0.333, 0.417, 0.5, 0.583,
+                        0.667, 0.75, 0.833, 0.917, 1,
+                      ]}
+                    />
+                  </Rect>
+                </Group>
+              </Mask>
+            </Group>
+          )}
 
           <Mask
             mode="alpha"

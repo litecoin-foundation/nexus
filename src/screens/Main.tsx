@@ -501,6 +501,7 @@ const Main: React.FC<Props> = props => {
         <DashboardButton
           textKey="shop"
           wider={true}
+          glowBorder={true}
           imageSource={require('../assets/icons/shop.png')}
           handlePress={() => {
             setBottomSheetFolded(false);

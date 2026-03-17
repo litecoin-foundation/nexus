@@ -1,8 +1,6 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 import {AppState} from 'react-native';
-import {subscribeState} from 'react-native-turbo-lndltc';
-import {WalletState} from 'react-native-turbo-lndltc/protos/lightning_pb';
 import {AppThunk} from './types';
 
 import {authenticate} from '../utils/biometric';
@@ -14,11 +12,9 @@ import {getItem, setItem, resetItem} from '../utils/keychain';
 interface IAuthenticationState {
   passcode: string;
   passcodeSet: boolean;
-  walletUnlocked: any;
   biometricsAvailable: any;
   biometricsEnabled: boolean;
   faceIDSupported: boolean;
-  timeLastUnlocked: any;
   appState: any;
   failedLoginAttempts: number;
   timeLock: boolean;
@@ -33,11 +29,9 @@ interface IAuthenticationState {
 const initialState = {
   passcode: '',
   passcodeSet: false,
-  walletUnlocked: null,
   biometricsAvailable: null,
   biometricsEnabled: false,
   faceIDSupported: false,
-  timeLastUnlocked: null,
   appState: null,
   failedLoginAttempts: 0,
   timeLock: false,
@@ -68,8 +62,9 @@ const dayLockWalletAction = createAction('authentication/dayLockWalletAction');
 const permaLockWalletAction = createAction(
   'authentication/permaLockWalletAction',
 );
-const unlockWalletAction = createAction('authentication/unlockWalletAction');
-const clearUnlockAction = createAction('authentication/clearUnlockAction');
+export const unlockWalletAction = createAction(
+  'authentication/unlockWalletAction',
+);
 const setBiometricAvailabilityAction = createAction<{
   available: boolean;
   faceIDSupported: boolean;
@@ -152,27 +147,6 @@ export const unlockWalletWithPin =
 
     // Case 4: PIN is correct, unlock wallet
     dispatch(unlockWallet());
-
-    // Subscribe to wallet state changes
-    subscribeState(
-      {},
-      async state => {
-        try {
-          if (state.state === WalletState.NON_EXISTING) {
-            console.error('Wallet does not exist. Reinstall the app.');
-            throw new Error('Wallet does not exist. Reinstall the app.');
-          }
-          if (state.state === WalletState.RPC_ACTIVE) {
-            dispatch(unlockWalletAction());
-          }
-        } catch (error) {
-          throw new Error(String(error));
-        }
-      },
-      error => {
-        console.error(error);
-      },
-    );
   };
 
 /**
@@ -214,29 +188,9 @@ export const unlockWalletWithBiometric = (): AppThunk => async dispatch => {
   try {
     await authenticate('Unlock Wallet');
     dispatch(unlockWallet());
-
-    subscribeState(
-      {},
-      async state => {
-        try {
-          if (state.state === WalletState.UNLOCKED) {
-            dispatch(unlockWalletAction());
-          }
-        } catch (error) {
-          throw new Error(String(error));
-        }
-      },
-      error => {
-        console.error(error);
-      },
-    );
   } catch (error) {
     console.error(error);
   }
-};
-
-export const clearWalletUnlocked = (): AppThunk => dispatch => {
-  dispatch(clearUnlockAction());
 };
 
 export const setBiometricAvailability =
@@ -257,24 +211,12 @@ export const subscribeAppState = (): AppThunk => (dispatch, getState) => {
 
     // when app goes into background for long periods of time
     // lnd may lock the user wallet
-    // present an authentication screen if wallet locked
+    // the central subscription in startLnd will update walletState in Redux
     if (nextAppState === 'active' && appState === 'background') {
-      subscribeState(
-        {},
-        async state => {
-          try {
-            if (state.state === WalletState.LOCKED) {
-              // TODO: handle lnd locking in background, by present Auth Screen!
-              console.warn('bg: user wallet locked!');
-            }
-          } catch (error) {
-            throw new Error(String(error));
-          }
-        },
-        error => {
-          console.error(error);
-        },
-      );
+      const {walletState} = getState().lightning;
+      if (walletState !== null) {
+        console.log('App resumed, wallet state:', walletState);
+      }
     }
 
     dispatch(updateAppStateAction(nextAppState));
@@ -291,7 +233,6 @@ export const authenticationSlice = createSlice({
     }),
     lockWalletAction: state => ({
       ...state,
-      walletUnlocked: false,
       failedLoginAttempts:
         state.failedLoginAttempts === undefined
           ? 1
@@ -301,7 +242,6 @@ export const authenticationSlice = createSlice({
       ...state,
       timeLock: true,
       permaLock: false,
-      walletUnlocked: false,
       failedLoginAttempts: 0,
       timeLockAt: Math.floor(Date.now() / 1000),
     }),
@@ -309,30 +249,22 @@ export const authenticationSlice = createSlice({
       ...state,
       dayLock: true,
       permaLock: false,
-      walletUnlocked: false,
       failedLoginAttempts: 0,
       dayLockAt: Math.floor(Date.now() / 1000),
     }),
     permaLockWalletAction: state => ({
       ...state,
       permaLock: true,
-      walletUnlocked: false,
       failedLoginAttempts: MAX_LOGIN_ATTEMPTS,
     }),
     unlockWalletAction: state => ({
       ...state,
-      walletUnlocked: true,
       failedLoginAttempts: 0,
       timeLock: false,
       timeLockAt: 0,
       dayLock: false,
       dayLockAt: 0,
       permaLock: false,
-    }),
-    clearUnlockAction: state => ({
-      ...state,
-      walletUnlocked: null,
-      timeLastUnlocked: Date.now(),
     }),
     addPasscodeAction: (state, action: PayloadAction<string>) => ({
       ...state,

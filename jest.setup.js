@@ -84,8 +84,8 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
-// Mock react-native-turbo-lndltc
-jest.mock('react-native-turbo-lndltc', () => ({
+// Mock react-native-nitro-lndltc
+jest.mock('react-native-nitro-lndltc', () => ({
   default: {
     start: jest.fn(),
     stop: jest.fn(),

@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {Platform} from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
+import type {Utxo} from 'react-native-nitro-lndltc';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SendConfirmation from '../../components/SendConfirmation';

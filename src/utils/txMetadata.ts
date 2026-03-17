@@ -1,7 +1,5 @@
-import {
-  OutputScriptType,
-  PreviousOutPoint,
-} from 'react-native-turbo-lndltc/protos/lightning_pb';
+import {OutputScriptType} from 'react-native-nitro-lndltc';
+import type {PreviousOutPoint} from 'react-native-nitro-lndltc';
 
 // nexus-api compatible interfaces
 type ProviderTypes = 'Moonpay' | 'Onramper';

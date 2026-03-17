@@ -9,17 +9,11 @@ import {
   walletKitListUnspent,
   walletKitFundPsbt,
   walletKitFinalizePsbt,
-} from 'react-native-turbo-lndltc';
-import {
-  GetTransactionsRequestSchema,
   OutputScriptType,
-  PreviousOutPoint,
-  OutPoint,
   AddressType,
-  Utxo,
-} from 'react-native-turbo-lndltc/protos/lightning_pb';
-import {ChangeAddressType} from 'react-native-turbo-lndltc/protos/walletrpc/walletkit_pb';
-import {create} from '@bufbuild/protobuf';
+  ChangeAddressType,
+} from 'react-native-nitro-lndltc';
+import type {PreviousOutPoint, OutPoint, Utxo} from 'react-native-nitro-lndltc';
 
 import {AppThunk, AppThunkTxHashesWithExtraData} from './types';
 import {poll} from '../utils/poll';
@@ -161,12 +155,10 @@ export const sendConvertWithPsbt =
   async (dispatch, getState) => {
     try {
       // new destination address
-      let type: number;
-      if (destination === 'private') {
-        type = 7;
-      } else {
-        type = 2;
-      }
+      const type =
+        destination === 'private'
+          ? AddressType.MWEB
+          : AddressType.UNUSED_WITNESS_PUBKEY_HASH;
       const destinationAddress = await newLndAddress({type});
 
       if (!destinationAddress || destinationAddress === undefined) {
@@ -254,14 +246,48 @@ export const sendConvertWithPsbt =
         return result.txid;
       }
 
-      // Regular -> MWEB: use FundPsbt with changeType UNSPECIFIED (P2WPKH)
-      // to ensure change goes back to a regular address, not MWEB.
-      // Let FundPsbt handle coin selection (no inputs specified).
+      // Regular -> MWEB: select non-MWEB UTXOs, then use FundPsbt with
+      // changeType UNSPECIFIED (P2WPKH) to keep change on a regular address.
+      const nonMwebUtxos = utxos
+        .filter(utxo => utxo.addressType !== AddressType.MWEB)
+        .sort((a, b) => Number(b.amountSat) - Number(a.amountSat));
+
+      const selectedNonMwebOutpoints: OutPoint[] = [];
+      let totalNonMwebSelected = BigInt(-2000); // fee buffer
+
+      for (const utxo of nonMwebUtxos) {
+        if (!utxo.outpoint) {
+          continue;
+        }
+
+        selectedNonMwebOutpoints.push(utxo.outpoint);
+        selectedUtxoDetails.push({
+          address: utxo.address,
+          amountSat: Number(utxo.amountSat),
+          addressType: utxo.addressType,
+        });
+        totalNonMwebSelected += utxo.amountSat;
+
+        if (totalNonMwebSelected >= targetAmount) {
+          break;
+        }
+      }
+
+      if (selectedNonMwebOutpoints.length < 1) {
+        throw new Error('No valid regular inputs found!');
+      }
+
+      if (totalNonMwebSelected < targetAmount) {
+        throw new Error(
+          `Insufficient regular funds: need ${targetAmount}, have ${totalNonMwebSelected}`,
+        );
+      }
+
       const psbt = await walletKitFundPsbt({
         template: {
           case: 'raw',
           value: {
-            inputs: [],
+            inputs: selectedNonMwebOutpoints as any,
             outputs: {
               [destinationAddress.address]: targetAmount,
             },
@@ -292,8 +318,11 @@ export const sendConvertWithPsbt =
             targetAmount: parseInt(targetAmount.toString(), 10),
             timestamp: Math.floor(Date.now() / 1000),
             conversionType: destination,
-            selectedUtxos: [],
-            selectedOutpoints: [],
+            selectedUtxos: selectedUtxoDetails,
+            selectedOutpoints: selectedNonMwebOutpoints.map(
+              outpoint =>
+                `${Buffer.from(outpoint.txidBytes).toString('hex')}:${outpoint.outputIndex}`,
+            ),
           }),
         );
       }
@@ -311,12 +340,10 @@ export const sendConvertWithCoinControl = async (
 ) => {
   try {
     // new destination address
-    let type: number;
-    if (destination === 'private') {
-      type = 7;
-    } else {
-      type = 2;
-    }
+    const type =
+      destination === 'private'
+        ? AddressType.MWEB
+        : AddressType.UNUSED_WITNESS_PUBKEY_HASH;
     const destinationAddress = await newLndAddress({type});
 
     if (!destinationAddress || destinationAddress === undefined) {
@@ -370,12 +397,12 @@ export const sendConvertWithCoinControl = async (
     }
 
     if (destination === 'private') {
-      // Regular -> MWEB: use FundPsbt with changeType to keep change regular
+      // Regular -> MWEB: use FundPsbt with selected outpoints
       const psbt = await walletKitFundPsbt({
         template: {
           case: 'raw',
           value: {
-            inputs: [],
+            inputs: selectedOutpoints as any,
             outputs: {
               [destinationAddress.address]: targetAmount,
             },
@@ -539,15 +566,17 @@ export const checkTxHashesWithExtraData =
   };
 
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
+  const {lndActive} = getState().lightning;
+  if (!lndActive) {
+    return;
+  }
   const {buyHistory, sellHistory} = getState().buy!;
   const {transactions, convertedTransactions, cachedTxHashes} =
     getState().transaction!;
   const {torEnabled} = getState().settings!;
 
   try {
-    const lndTransactions = await getLndTransactions(
-      create(GetTransactionsRequestSchema),
-    );
+    const lndTransactions = await getLndTransactions({});
 
     // NOTE: for older versions with missing cachedTxHashes in the initial state
     if (!cachedTxHashes) {

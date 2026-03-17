@@ -5,7 +5,7 @@ import {
   getInfo as getLndInfo,
   getRecoveryInfo as getLndRecoveryInfo,
   neutrinoKitStatus,
-} from 'react-native-turbo-lndltc';
+} from 'react-native-nitro-lndltc';
 
 import {AppThunk} from './types';
 import {poll} from '../utils/poll';
@@ -91,7 +91,7 @@ const getPeers = (): AppThunk => async (dispatch, getState) => {
     return;
   }
   try {
-    const statusRpc = await neutrinoKitStatus({});
+    const statusRpc = await neutrinoKitStatus();
 
     if (statusRpc.peers) {
       dispatch(getPeersAction(statusRpc.peers));
@@ -114,7 +114,7 @@ const getInfo = (): AppThunk => async (dispatch, getState) => {
     return;
   }
   try {
-    const infoRpc = await getLndInfo({});
+    const infoRpc = await getLndInfo();
 
     const {peers} = getState().info;
 
@@ -171,9 +171,13 @@ export const pollInfo = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getInfo()));
 };
 
-export const getRecoveryInfo = (): AppThunk => async dispatch => {
+export const getRecoveryInfo = (): AppThunk => async (dispatch, getState) => {
+  const {lndActive} = getState().lightning;
+  if (!lndActive) {
+    return;
+  }
   try {
-    const response = await getLndRecoveryInfo({});
+    const response = await getLndRecoveryInfo();
 
     dispatch(
       getRecoveryInfoAction({

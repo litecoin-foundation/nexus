@@ -1,4 +1,4 @@
-import {PreviousOutPoint} from 'react-native-turbo-lndltc/protos/lightning_pb';
+import type {PreviousOutPoint} from 'react-native-nitro-lndltc';
 import {IConvertedTx} from '../reducers/transaction';
 
 type IOutputDetails = {

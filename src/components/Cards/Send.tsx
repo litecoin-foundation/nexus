@@ -22,7 +22,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import {Utxo} from 'react-native-turbo-lndltc/protos/lightning_pb';
+import type {Utxo} from 'react-native-nitro-lndltc';
 
 import PlasmaModal from '../Modals/PlasmaModal';
 import SelectCoinsModalContent from '../Modals/SelectCoinsModalContent';
