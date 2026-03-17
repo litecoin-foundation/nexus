@@ -1,4 +1,4 @@
-import React, {useEffect, useLayoutEffect} from 'react';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {WalletState} from 'react-native-nitro-lndltc';
 
@@ -28,6 +28,7 @@ const AuthScreen: React.FC<Props> = props => {
     state => state.authentication!.biometricsEnabled,
   );
   const walletState = useAppSelector(state => state.lightning.walletState);
+  const [unlockInitiated, setUnlockInitiated] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -39,18 +40,20 @@ const AuthScreen: React.FC<Props> = props => {
   // If biometricEnabled & wallet is locked, present Biometric auth request
   useEffect(() => {
     if (biometricsEnabled && walletState === WalletState.LOCKED) {
+      setUnlockInitiated(true);
       dispatch(unlockWalletWithBiometric());
     }
   }, [biometricsEnabled, walletState, dispatch]);
 
-  // Navigate to main wallet when LND RPC is ready
+  // Navigate to main wallet when LND RPC is ready and user has authenticated
   useEffect(() => {
-    if (walletState === WalletState.RPC_ACTIVE) {
+    if (unlockInitiated && walletState === WalletState.RPC_ACTIVE) {
       navigation.replace('NewWalletStack');
     }
-  }, [walletState, navigation]);
+  }, [walletState, navigation, unlockInitiated]);
 
   const unlockWallet = async () => {
+    setUnlockInitiated(true);
     dispatch(unlockWalletWithPin(pin));
     dispatch(clearValues());
   };
