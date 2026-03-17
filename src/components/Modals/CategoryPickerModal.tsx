@@ -46,7 +46,7 @@ const CategoryPickerModal: React.FC<Props> = props => {
         close={close}
         originX={SCREEN_WIDTH * 0.85}
         originY={SCREEN_HEIGHT * 0.2}
-        gapHorizontal={SCREEN_WIDTH * 0.15}
+        gapHorizontal={SCREEN_WIDTH * 0.3}
         gapVertical={SCREEN_WIDTH * 0.15}
         growDirection="top-right"
         animDuration={250}
@@ -85,28 +85,36 @@ const CategoryPickerModal: React.FC<Props> = props => {
   return <></>;
 };
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
-  StyleSheet.create({
+const getStyles = (_screenWidth: number, screenHeight: number) => {
+  const radius = screenHeight * 0.024;
+  return StyleSheet.create({
     modal: {
       flex: 1,
-      backgroundColor: '#fff',
-      borderRadius: 20,
+      backgroundColor: '#FFFFFF',
+      borderRadius: radius,
       overflow: 'hidden',
     },
     rectContainer: {
-      borderRadius: 20,
-      backgroundColor: '#fff',
+      borderRadius: radius,
+      backgroundColor: '#FFFFFF',
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 4},
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      elevation: 8,
     },
     contentBody: {
-      backgroundColor: '#fff',
-      borderRadius: 20,
+      backgroundColor: '#FFFFFF',
+      borderRadius: radius,
     },
     listContainer: {
-      paddingBottom: screenHeight * 0.02,
+      paddingTop: screenHeight * 0.008,
+      paddingBottom: screenHeight * 0.012,
     },
     blueTintedBg: {
-      backgroundColor: '#0070f060',
+      backgroundColor: 'rgba(80, 80, 80, 0.45)',
     },
   });
+};
 
 export default CategoryPickerModal;

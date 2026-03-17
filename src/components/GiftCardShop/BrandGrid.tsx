@@ -104,8 +104,8 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
                 />
               )}
               <Svg
-                width={SCREEN_HEIGHT * 0.032}
-                height={SCREEN_HEIGHT * 0.032}
+                width={SCREEN_HEIGHT * 0.0256}
+                height={SCREEN_HEIGHT * 0.0256}
                 viewBox="0 0 24 24"
                 fill="none">
                 <Path
@@ -179,15 +179,15 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
             hitSlop={12}>
             {selectedCategory && (
               <TranslateText
-                  textValue={formatCategoryLabel(selectedCategory)}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                  textStyle={styles.filterLabel}
-                  numberOfLines={1}
-                />
+                textValue={formatCategoryLabel(selectedCategory)}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.filterLabel}
+                numberOfLines={1}
+              />
             )}
             <Svg
-              width={SCREEN_HEIGHT * 0.032}
-              height={SCREEN_HEIGHT * 0.032}
+              width={SCREEN_HEIGHT * 0.0256}
+              height={SCREEN_HEIGHT * 0.0256}
               viewBox="0 0 24 24"
               fill="none">
               <Path

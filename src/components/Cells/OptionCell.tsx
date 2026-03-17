@@ -19,15 +19,18 @@ interface Props {
 const OptionCell: React.FC<Props> = (props: Props) => {
   const {title, onPress, selected} = props;
 
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
-  const styles = getStyles();
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.container, selected && styles.containerSelected]}
+      onPress={onPress}>
       <TranslateText
         textValue={title}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-        textStyle={styles.title}
+        maxSizeInPixels={SCREEN_HEIGHT * 0.018}
+        textStyle={[styles.title, selected && styles.titleSelected]}
         numberOfLines={1}
       />
 
@@ -38,26 +41,31 @@ const OptionCell: React.FC<Props> = (props: Props) => {
   );
 };
 
-const getStyles = () =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingLeft: 25,
-      paddingRight: 25,
-      height: 50,
+      paddingHorizontal: screenWidth * 0.06,
+      height: screenHeight * 0.055,
       borderTopWidth: 1,
-      borderColor: '#9797974d',
-      backgroundColor: 'white',
+      borderColor: '#E5E5EA',
+      backgroundColor: '#FFFFFF',
+    },
+    containerSelected: {
+      backgroundColor: '#F0F4FF',
     },
     title: {
       fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
       fontWeight: '700',
-      color: '#484859',
-      fontSize: 16,
+      color: '#333',
+      fontSize: screenHeight * 0.017,
+    },
+    titleSelected: {
+      color: '#0070F0',
+      fontWeight: '700',
     },
   });
 
