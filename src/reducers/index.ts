@@ -18,6 +18,7 @@ import errors from './errors';
 import cart from './cart';
 import giftcardcart from './giftcardcart';
 import nexusshopaccount from './nexusshopaccount';
+import popupschedule from './popupschedule';
 
 export default combineReducers({
   onboarding,
@@ -39,4 +40,5 @@ export default combineReducers({
   cart,
   giftcardcart,
   nexusshopaccount,
+  popupschedule,
 });
