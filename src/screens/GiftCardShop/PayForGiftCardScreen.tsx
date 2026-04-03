@@ -11,6 +11,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {InitiatePurchaseResponseData} from '../../services/giftcards';
 import {useAppDispatch} from '../../store/hooks';
 import {sendOnchainPayment} from '../../reducers/transaction';
+import {addPopup, PopupActionType} from '../../reducers/popupschedule';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -113,6 +114,27 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
         ),
       );
       onPaymentSuccess(txid);
+      dispatch(
+        addPopup({
+          title: 'Spend & Replace',
+          text: `You spent ${initiateResponse.paymentAmountLtc} LTC on a gift card. Want to top up your wallet?`,
+          onAction: 'Buy LTC',
+          actionType: PopupActionType.GoToScreen,
+          actionMeta: {
+            stack: 'NewWalletStack',
+            screen: 'Main',
+            routeParams: {
+              activeCard: 1,
+              buyAmountLtc: initiateResponse.paymentAmountLtc,
+            },
+          },
+          startDate: Math.floor(Date.now() / 1000) + 60,
+          frequency: 'once',
+          priority: 1,
+          isFired: false,
+          firedAt: 0,
+        }),
+      );
       navigation.replace('PendingGCDetails', {
         brand: initiateResponse.brand,
         amount: initiateResponse.amount,

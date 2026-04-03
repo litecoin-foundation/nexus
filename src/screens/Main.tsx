@@ -44,6 +44,7 @@ import DatePicker from '../components/DatePicker';
 import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
+import ScheduledPopUpModal from '../components/Modals/ScheduledPopUpModal';
 import LoadingIndicator from '../components/LoadingIndicator';
 // import Convert from '../components/Cards/Convert';
 import GiftCardShop from '../components/Cards/GiftCardShop';
@@ -723,6 +724,23 @@ const Main: React.FC<Props> = props => {
           ''
         }
         close={() => closePopUpModalHandler()}
+      />
+
+      <ScheduledPopUpModal
+        blocked={
+          isTxDetailModalOpened ||
+          isWalletsModalOpened ||
+          isPinModalOpened ||
+          isPopUpModalOpened
+        }
+        onGoToScreen={(routeParams, meta) => {
+          if (meta.screen === 'Main' && routeParams.activeCard) {
+            setActiveTab(routeParams.activeCard);
+            setBottomSheetFolded(false);
+            return true;
+          }
+          return false;
+        }}
       />
 
       <LoadingIndicator visible={loading} />
