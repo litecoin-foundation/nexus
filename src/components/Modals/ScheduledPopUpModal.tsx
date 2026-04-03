@@ -26,6 +26,8 @@ interface Props {
   ) => boolean;
 }
 
+const POPUP_DELAY_MS = 3000;
+
 const ScheduledPopUpModal: React.FC<Props> = ({blocked, onGoToScreen}) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -47,7 +49,7 @@ const ScheduledPopUpModal: React.FC<Props> = ({blocked, onGoToScreen}) => {
     const popup = dispatch(firePopup());
     if (popup) {
       setActivePopup(popup);
-      const timeout = setTimeout(() => setIsVisible(true), 3000);
+      const timeout = setTimeout(() => setIsVisible(true), POPUP_DELAY_MS);
       return () => clearTimeout(timeout);
     }
   }, [dispatch, blocked]);
