@@ -153,7 +153,9 @@ const getStyles = (
       minHeight: 100,
       width: '100%',
       borderRadius: screenHeight * 0.02,
-      backgroundColor: isWhiteStyle ? '#fff' : '#193A72',
+      backgroundColor: isWhiteStyle
+        ? 'rgba(255, 255, 255, 0.6)'
+        : 'rgba(25, 58, 114, 0.6)',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -203,7 +205,7 @@ const getStyles = (
       minHeight: 84,
       minWidth: 74,
       borderRadius: screenHeight * 0.016,
-      backgroundColor: isWhiteStyle ? '#eee' : '#061A39',
+      backgroundColor: isWhiteStyle ? 'rgba(256, 256, 256, 0.8)' : '#061A39',
     },
     tabRightCopyIcon: {
       height: screenHeight * 0.035,

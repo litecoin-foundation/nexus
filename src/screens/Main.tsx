@@ -35,11 +35,11 @@ import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
 import PlasmaModal from './../components/Modals/PlasmaModal';
-import WalletsModalContent from './../components/Modals/WalletsModalContent';
 import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
 import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
-import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
+import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
+import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import DatePicker from '../components/DatePicker';
 import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
@@ -192,6 +192,8 @@ const Main: React.FC<Props> = props => {
   const pinModalAction = useRef<string>('view-seed-auth');
   const [loading, setLoading] = useState(false);
   const [triggerLester, setTriggerLester] = useState(0);
+
+  const mainContentRef = useRef<View>(null);
 
   const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
   const foldUnfoldBottomSheet = useCallback((isFolded: boolean) => {
@@ -596,15 +598,15 @@ const Main: React.FC<Props> = props => {
   const plasmaModal_TxDetailModalContent_gapSpecifiedStyle = {
     backgroundColor: 'transparent',
   };
-  const plasmaModal_WalletsModalContent_backSpecifiedStyle = {
-    backgroundColor: 'transparent',
-  };
   const plasmaModal_PinModalContent_backSpecifiedStyle = {
     backgroundColor: 'rgba(19,58,138, 0.6)',
   };
 
   return (
-    <Animated.View style={[styles.container, animatedTopContainerBackground]}>
+    <Animated.View
+      ref={mainContentRef}
+      collapsable={false}
+      style={[styles.container, animatedTopContainerBackground]}>
       <NewAmountView
         animatedProps={animatedTopContainerHeight}
         internetOpacityStyle={animatedChartOpacity}
@@ -661,31 +663,14 @@ const Main: React.FC<Props> = props => {
         )}
       />
 
-      <PlasmaModal
+      <LiquidGlassWalletModal
         isOpened={isWalletsModalOpened}
         close={() => {
           setWalletsModalOpened(false);
         }}
-        isFromBottomToTop={false}
-        animDuration={250}
         gapInPixels={plasmaModalGapInPixels}
-        backSpecifiedStyle={plasmaModal_WalletsModalContent_backSpecifiedStyle}
         rotateWalletButtonArrow={rotateArrow}
-        renderBody={(
-          isOpened: boolean,
-          showAnim: boolean,
-          animDelay: number,
-          animDuration: number,
-          cardTranslateAnim: any,
-        ) => (
-          <WalletsModalContent
-            isOpened={isOpened}
-            showAnim={showAnim}
-            animDelay={animDelay}
-            animDuration={animDuration}
-            cardTranslateAnim={cardTranslateAnim}
-          />
-        )}
+        contentViewRef={mainContentRef}
       />
 
       <PlasmaModal
@@ -797,13 +782,10 @@ export const navigationOptions = (navigation: any): StackNavigationOptions => {
   return {
     headerShown: true,
     headerTitle: () => (
-      <ChooseWalletButton
+      <LiquidGlassWalletButton
         title={'Wallet Title'}
         onPress={() => {}}
         disabled={false}
-        isModalOpened={false}
-        isFromBottomToTop={false}
-        animDuration={200}
         rotateArrow={() => {}}
         arrowSpinAnim={undefined}
       />

@@ -15,7 +15,7 @@ import Animated, {
 import {useHeaderHeight} from '@react-navigation/elements';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import ChooseWalletButton from '../components/Buttons/ChooseWalletButton';
+import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
 import HeaderButton from '../components/Buttons/HeaderButton';
 
 import {ScreenSizeContext} from '../context/screenSize';
@@ -122,15 +122,12 @@ export function useMainLayout(props: Props) {
         <Animated.View
           ref={walletButtonRef}
           style={[styles.walletButton, animatedWalletButtonOpacity]}>
-          <ChooseWalletButton
+          <LiquidGlassWalletButton
             title={currentWallet}
             onPress={() => {
               setWalletsModalOpened(!isWalletsModalOpened);
             }}
             disabled={false}
-            isModalOpened={isWalletsModalOpened}
-            isFromBottomToTop={false}
-            animDuration={walletButtonAnimDuration}
             rotateArrow={rotateArrow}
             arrowSpinAnim={animatedWalletButtonArrowRotation}
           />
