@@ -281,7 +281,8 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
               textValue={brand.name}
               maxSizeInPixels={SCREEN_HEIGHT * 0.016}
               textStyle={styles.brandName}
-              numberOfLines={1}
+              numberOfLines={2}
+              maxLengthInPixels={SCREEN_WIDTH * 0.5}
             />
             <TranslateText
               textValue={
