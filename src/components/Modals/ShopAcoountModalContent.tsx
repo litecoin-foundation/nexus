@@ -19,6 +19,7 @@ import {getCurrencyForCountry} from '../../services/giftcards';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import OptionCell from '../../components/Cells/OptionCell';
 import countries from '../../assets/countries';
+import {getCountry} from 'react-native-localize';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -50,7 +51,7 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
   );
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const shopCountry = account?.userCountry || 'US';
+  const shopCountry = account?.userCountry || getCountry();
   const shopCurrency = getCurrencyForCountry(shopCountry).currency;
   const [showRegionPicker, setShowRegionPicker] = useState(false);
 
