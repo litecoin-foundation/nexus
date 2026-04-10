@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useCallback} from 'react';
 import {FlatList, View, StyleSheet} from 'react-native';
 
 import {Brand} from '../../services/giftcards';
@@ -13,7 +13,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 
 interface MyWishlistBrandsProps {
   currency: string;
-  onSelectBrand?: (brand: Brand, initialAmount?: number) => void;
+  onSelectBrand: (brand: Brand, initialAmount?: number) => void;
 }
 
 export function MyWishlistBrands({
@@ -33,9 +33,22 @@ export function MyWishlistBrands({
     null,
   );
 
-  const handleToggleBrand = (brandSlug: string) => {
+  const handleToggleBrand = useCallback((brandSlug: string) => {
     setExpandedBrandSlug(prev => (prev === brandSlug ? null : brandSlug));
-  };
+  }, []);
+
+  const renderItem = useCallback(
+    ({item}: {item: Brand}) => (
+      <BrandCard
+        brand={item}
+        currency={currency}
+        onSelectBrand={onSelectBrand}
+        expandedBrandSlug={expandedBrandSlug}
+        onToggleBrand={handleToggleBrand}
+      />
+    ),
+    [currency, onSelectBrand, expandedBrandSlug, handleToggleBrand],
+  );
 
   if (loading) {
     return (
@@ -77,16 +90,11 @@ export function MyWishlistBrands({
         data={wishlistBrands}
         keyExtractor={item => item.slug}
         contentContainerStyle={styles.gridContainer}
-        renderItem={({item}) => (
-          <BrandCard
-            brand={item}
-            currency={currency}
-            onPress={(amount?: number) => onSelectBrand?.(item, amount)}
-            isExpanded={expandedBrandSlug === item.slug}
-            onToggle={() => handleToggleBrand(item.slug)}
-          />
-        )}
-        extraData={[wishlistBrands?.length, expandedBrandSlug]}
+        renderItem={renderItem}
+        extraData={expandedBrandSlug}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={10}
       />
     </View>
   );
