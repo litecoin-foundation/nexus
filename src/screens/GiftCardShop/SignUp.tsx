@@ -6,7 +6,6 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
-  Image,
   Platform,
   Keyboard,
 } from 'react-native';
@@ -18,6 +17,13 @@ import type {
 } from '@react-navigation/stack';
 import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
 import LinearGradient from 'react-native-linear-gradient';
+import {
+  Canvas,
+  Image as SkiaImage,
+  useImage,
+  Fill,
+  Group,
+} from '@shopify/react-native-skia';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -59,6 +65,10 @@ const SignUp: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
   const navigation =
     useNavigation<StackNavigationProp<NexusShopStackParamList>>();
+
+  const shopCardImage = useImage(require('../../assets/images/shop-card.png'));
+  const canvasWidth = SCREEN_WIDTH * 0.9;
+  const canvasHeight = SCREEN_HEIGHT * 0.32;
 
   const [email, setEmail] = useState(shopUserEmail || '');
   const [emailError, setEmailError] = useState('');
@@ -244,11 +254,28 @@ const SignUp: React.FC<Props> = () => {
       <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         <Animated.View style={[styles.topContainer, animatedTopStyle]}>
           <Animated.View style={[styles.imageContainer, animatedImageStyle]}>
-            <Image
-              style={styles.image}
-              source={require('../../assets/images/shop-card.png')}
-            />
+            <Canvas style={styles.image}>
+              <Fill color={colors.primary} />
+              {shopCardImage && (
+                <Group blendMode="screen">
+                  <SkiaImage
+                    image={shopCardImage}
+                    x={0}
+                    y={0}
+                    width={canvasWidth}
+                    height={canvasHeight}
+                    fit="contain"
+                  />
+                </Group>
+              )}
+            </Canvas>
           </Animated.View>
+
+          <LinearGradient
+            style={styles.imageGradientOverlay}
+            colors={['#1162E600', '#1263E6']}
+            pointerEvents="none"
+          />
 
           <View style={styles.formContainer}>
             <View style={styles.titleContainer}>
@@ -405,8 +432,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     image: {
       width: '90%',
       height: '100%',
-      objectFit: 'contain',
-      opacity: 0.5,
+    },
+    imageGradientOverlay: {
+      position: 'absolute',
+      top: screenHeight * 0.08,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 1,
+      borderBottomLeftRadius: screenHeight * 0.04,
+      borderBottomRightRadius: screenHeight * 0.04,
     },
     formContainer: {
       width: '100%',
