@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import {View, StyleSheet} from 'react-native';
+import {getCountry} from 'react-native-localize';
 
 import {
   GiftCardClient,
@@ -61,7 +62,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   const [screen, setScreen] = useState<ScreenState>(
     initialScreen === 'my-cards' ? {type: 'my-cards'} : {type: 'browse'},
   );
-  const shopCountry = account?.userCountry || 'US';
+  const shopCountry = account?.userCountry || getCountry();
   const shopCurrency = getCurrencyForCountry(shopCountry).currency;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
