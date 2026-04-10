@@ -1,5 +1,6 @@
 import React, {useContext, useState, useCallback} from 'react';
-import {FlatList, View, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 
 import {Brand} from '../../services/giftcards';
 import {EmptyView} from './EmptyView';
@@ -86,15 +87,12 @@ export function MyWishlistBrands({
           textStyle={styles.title}
         />
       </View>
-      <FlatList
+      <FlashList
         data={wishlistBrands}
         keyExtractor={item => item.slug}
         contentContainerStyle={styles.gridContainer}
         renderItem={renderItem}
         extraData={expandedBrandSlug}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={10}
       />
     </View>
   );

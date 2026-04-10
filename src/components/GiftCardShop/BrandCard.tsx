@@ -68,8 +68,8 @@ export const BrandCard = React.memo(
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
 
     const contentHeight =
+      SCREEN_HEIGHT * 0.02 + // denominationsRow marginVertical
       SCREEN_WIDTH * 0.12 + // denomination buttons row
-      SCREEN_HEIGHT * 0.01 + // denominationsRow marginBottom
       SCREEN_WIDTH * 0.12 + // purchase button
       SCREEN_HEIGHT * 0.01; // expandedContent paddingBottom
 
@@ -231,7 +231,8 @@ export const BrandCard = React.memo(
               textValue={brand.name}
               maxSizeInPixels={SCREEN_HEIGHT * 0.0155}
               textStyle={styles.brandName}
-              numberOfLines={1}
+              numberOfLines={2}
+              maxLengthInPixels={SCREEN_WIDTH * 0.45}
             />
             {typeof minAmount === 'number' &&
             !isNaN(minAmount) &&
@@ -425,7 +426,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       justifyContent: 'center',
       gap: screenWidth * 0.025,
-      marginBottom: screenHeight * 0.01,
+      marginVertical: screenHeight * 0.01,
     },
     denominationsRowLeft: {
       gap: screenWidth * 0.025,

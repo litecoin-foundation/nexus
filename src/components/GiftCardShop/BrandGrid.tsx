@@ -1,11 +1,6 @@
 import React, {useState, useContext, useMemo, useCallback} from 'react';
-import {
-  FlatList,
-  StyleSheet,
-  RefreshControl,
-  View,
-  Pressable,
-} from 'react-native';
+import {StyleSheet, RefreshControl, View, Pressable} from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -234,7 +229,7 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
         selectedCategory={selectedCategory}
         onSelect={handleCategorySelect}
       />
-      <FlatList
+      <FlashList
         data={filteredBrands}
         keyExtractor={item => item.slug}
         contentContainerStyle={styles.gridContainer}
@@ -243,9 +238,6 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
         }
         renderItem={renderItem}
         extraData={expandedBrandSlug}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={10}
       />
     </View>
   );
