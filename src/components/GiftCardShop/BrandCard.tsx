@@ -1,10 +1,5 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {
-  View,
-  Image,
-  StyleSheet,
-  Pressable,
-} from 'react-native';
+import {View, Image, StyleSheet, Pressable} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -25,9 +20,9 @@ const backIcon = require('../../assets/images/back-icon.png');
 interface BrandCardProps {
   brand: Brand;
   currency: string;
-  onPress: (amount?: number) => void;
-  isExpanded?: boolean;
-  onToggle?: () => void;
+  onSelectBrand: (brand: Brand, initialAmount?: number) => void;
+  expandedBrandSlug: string | null;
+  onToggleBrand: (brandSlug: string) => void;
 }
 
 const AnimatedPressable: React.FC<{
@@ -55,276 +50,293 @@ const AnimatedPressable: React.FC<{
   );
 };
 
-export function BrandCard({
-  brand,
-  currency,
-  onPress,
-  isExpanded = false,
-  onToggle,
-}: BrandCardProps) {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+export const BrandCard = React.memo(
+  function BrandCard({
+    brand,
+    currency,
+    onSelectBrand,
+    expandedBrandSlug,
+    onToggleBrand,
+  }: BrandCardProps) {
+    const isExpanded = expandedBrandSlug === brand.slug;
+    const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+      useContext(ScreenSizeContext);
+    const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const dispatch = useAppDispatch();
+    const dispatch = useAppDispatch();
 
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+    const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
 
-  const contentHeight =
-    SCREEN_WIDTH * 0.12 + // denomination buttons row
-    SCREEN_HEIGHT * 0.01 + // denominationsRow marginBottom
-    SCREEN_WIDTH * 0.12 + // purchase button
-    SCREEN_HEIGHT * 0.01; // expandedContent paddingBottom
+    const contentHeight =
+      SCREEN_WIDTH * 0.12 + // denomination buttons row
+      SCREEN_HEIGHT * 0.01 + // denominationsRow marginBottom
+      SCREEN_WIDTH * 0.12 + // purchase button
+      SCREEN_HEIGHT * 0.01; // expandedContent paddingBottom
 
-  const heightAnim = useSharedValue(0);
-  const opacityAnim = useSharedValue(0);
-  const chevronRotation = useSharedValue(isExpanded ? 90 : -90);
-  const wishlistScale = useSharedValue(1);
-  const wishlistAnimStyle = useAnimatedStyle(() => ({
-    transform: [{scale: wishlistScale.value}],
-  }));
+    const heightAnim = useSharedValue(0);
+    const opacityAnim = useSharedValue(0);
+    const chevronRotation = useSharedValue(isExpanded ? 90 : -90);
+    const wishlistScale = useSharedValue(1);
+    const wishlistAnimStyle = useAnimatedStyle(() => ({
+      transform: [{scale: wishlistScale.value}],
+    }));
 
-  const isLoggedIn = useAppSelector(
-    state => state.nexusshopaccount?.account?.isLoggedIn,
-  );
+    const isLoggedIn = useAppSelector(
+      state => state.nexusshopaccount?.account?.isLoggedIn,
+    );
 
-  const wishlistBrands = useAppSelector(
-    state => state.nexusshopaccount?.wishlistBrands,
-  );
+    const wishlistBrands = useAppSelector(
+      state => state.nexusshopaccount?.wishlistBrands,
+    );
 
-  const isInWishlist = wishlistBrands
-    ? wishlistBrands.some(wishlistBrand => wishlistBrand.slug === brand.slug)
-    : false;
+    const isInWishlist = wishlistBrands
+      ? wishlistBrands.some(wishlistBrand => wishlistBrand.slug === brand.slug)
+      : false;
 
-  const handleWishlistToggle = () => {
-    dispatch(syncWishlistToggle(brand));
-  };
+    const handleWishlistToggle = () => {
+      dispatch(syncWishlistToggle(brand));
+    };
 
-  const minAmount = Number(
-    brand.digital_face_value_limits?.lower || brand.denominations?.[0],
-  );
-  const maxAmount = Number(
-    brand.digital_face_value_limits?.upper ||
-      brand.denominations?.[brand.denominations.length - 1],
-  );
+    const minAmount = Number(
+      brand.digital_face_value_limits?.lower || brand.denominations?.[0],
+    );
+    const maxAmount = Number(
+      brand.digital_face_value_limits?.upper ||
+        brand.denominations?.[brand.denominations.length - 1],
+    );
 
-  const denominations = (() => {
-    const MAX_BUTTONS = 5;
-    const allDenoms = brand.denominations?.map(Number).sort((a, b) => a - b);
+    const denominations = (() => {
+      const MAX_BUTTONS = 5;
+      const allDenoms = brand.denominations?.map(Number).sort((a, b) => a - b);
 
-    if (allDenoms && allDenoms.length > 0) {
-      if (allDenoms.length <= MAX_BUTTONS) {
-        return allDenoms;
+      if (allDenoms && allDenoms.length > 0) {
+        if (allDenoms.length <= MAX_BUTTONS) {
+          return allDenoms;
+        }
+        // Always include first and last, pick evenly-spaced ones in between
+        const result: number[] = [allDenoms[0]];
+        const innerCount = MAX_BUTTONS - 2;
+        for (let i = 1; i <= innerCount; i++) {
+          const idx = Math.round(
+            (i * (allDenoms.length - 1)) / (innerCount + 1),
+          );
+          if (!result.includes(allDenoms[idx])) {
+            result.push(allDenoms[idx]);
+          }
+        }
+        if (!result.includes(allDenoms[allDenoms.length - 1])) {
+          result.push(allDenoms[allDenoms.length - 1]);
+        }
+        return result;
       }
-      // Always include first and last, pick evenly-spaced ones in between
-      const result: number[] = [allDenoms[0]];
+
+      // Range-based brand: generate nice round values spread across the range
+      if (isNaN(minAmount) || isNaN(maxAmount) || minAmount >= maxAmount) {
+        return [minAmount].filter(v => !isNaN(v));
+      }
+      const candidates = [
+        5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 100, 125, 150, 175, 200, 250,
+        300, 400, 500, 750, 1000,
+      ].filter(d => d >= minAmount && d <= maxAmount);
+
+      if (candidates.length <= MAX_BUTTONS) {
+        const result = [...candidates];
+        if (!result.includes(minAmount)) result.unshift(minAmount);
+        if (!result.includes(maxAmount)) result.push(maxAmount);
+        return result.slice(0, MAX_BUTTONS);
+      }
+
+      // Pick evenly-spaced candidates, always including first and last
+      const result: number[] = [candidates[0]];
       const innerCount = MAX_BUTTONS - 2;
       for (let i = 1; i <= innerCount; i++) {
-        const idx = Math.round((i * (allDenoms.length - 1)) / (innerCount + 1));
-        if (!result.includes(allDenoms[idx])) {
-          result.push(allDenoms[idx]);
+        const idx = Math.round(
+          (i * (candidates.length - 1)) / (innerCount + 1),
+        );
+        if (!result.includes(candidates[idx])) {
+          result.push(candidates[idx]);
         }
       }
-      if (!result.includes(allDenoms[allDenoms.length - 1])) {
-        result.push(allDenoms[allDenoms.length - 1]);
+      if (!result.includes(candidates[candidates.length - 1])) {
+        result.push(candidates[candidates.length - 1]);
       }
       return result;
-    }
+    })();
 
-    // Range-based brand: generate nice round values spread across the range
-    if (isNaN(minAmount) || isNaN(maxAmount) || minAmount >= maxAmount) {
-      return [minAmount].filter(v => !isNaN(v));
-    }
-    const candidates = [
-      5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 100, 125, 150, 175, 200, 250,
-      300, 400, 500, 750, 1000,
-    ].filter(d => d >= minAmount && d <= maxAmount);
-
-    if (candidates.length <= MAX_BUTTONS) {
-      const result = [...candidates];
-      if (!result.includes(minAmount)) result.unshift(minAmount);
-      if (!result.includes(maxAmount)) result.push(maxAmount);
-      return result.slice(0, MAX_BUTTONS);
-    }
-
-    // Pick evenly-spaced candidates, always including first and last
-    const result: number[] = [candidates[0]];
-    const innerCount = MAX_BUTTONS - 2;
-    for (let i = 1; i <= innerCount; i++) {
-      const idx = Math.round((i * (candidates.length - 1)) / (innerCount + 1));
-      if (!result.includes(candidates[idx])) {
-        result.push(candidates[idx]);
+    useEffect(() => {
+      if (isExpanded) {
+        heightAnim.value = withTiming(contentHeight, {duration: 300});
+        opacityAnim.value = withTiming(1, {duration: 250});
+        chevronRotation.value = withTiming(90, {duration: 300});
+      } else {
+        heightAnim.value = withTiming(0, {duration: 300});
+        opacityAnim.value = withTiming(0, {duration: 200});
+        chevronRotation.value = withTiming(-90, {duration: 300});
       }
-    }
-    if (!result.includes(candidates[candidates.length - 1])) {
-      result.push(candidates[candidates.length - 1]);
-    }
-    return result;
-  })();
+    }, [isExpanded, contentHeight, heightAnim, opacityAnim, chevronRotation]);
 
-  useEffect(() => {
-    if (isExpanded) {
-      heightAnim.value = withTiming(contentHeight, {duration: 300});
-      opacityAnim.value = withTiming(1, {duration: 250});
-      chevronRotation.value = withTiming(90, {duration: 300});
-    } else {
-      heightAnim.value = withTiming(0, {duration: 300});
-      opacityAnim.value = withTiming(0, {duration: 200});
-      chevronRotation.value = withTiming(-90, {duration: 300});
-    }
-  }, [isExpanded, contentHeight, heightAnim, opacityAnim, chevronRotation]);
+    const animatedExpandedStyle = useAnimatedStyle(() => ({
+      height: heightAnim.value,
+      opacity: opacityAnim.value,
+      overflow: 'hidden',
+    }));
 
-  const animatedExpandedStyle = useAnimatedStyle(() => ({
-    height: heightAnim.value,
-    opacity: opacityAnim.value,
-    overflow: 'hidden',
-  }));
+    const animatedChevronStyle = useAnimatedStyle(() => ({
+      transform: [{rotate: `${chevronRotation.value}deg`}],
+    }));
 
-  const animatedChevronStyle = useAnimatedStyle(() => ({
-    transform: [{rotate: `${chevronRotation.value}deg`}],
-  }));
+    const handleToggle = () => {
+      onToggleBrand(brand.slug);
+    };
 
-  const handleToggle = () => {
-    if (onToggle) {
-      onToggle();
-    }
-  };
+    const handleAmountSelect = (amount: number) => {
+      setSelectedAmount(amount);
+    };
 
-  const handleAmountSelect = (amount: number) => {
-    setSelectedAmount(amount);
-  };
+    const handlePurchase = () => {
+      onSelectBrand(brand, selectedAmount || undefined);
+    };
 
-  const handlePurchase = () => {
-    onPress(selectedAmount || undefined);
-  };
+    const formatDenomination = (value: number | string) => {
+      const num = Number(value);
+      return Number.isInteger(num)
+        ? num.toString()
+        : num.toFixed(2).replace(/\.00$/, '');
+    };
 
-  const formatDenomination = (value: number | string) => {
-    const num = Number(value);
-    return Number.isInteger(num)
-      ? num.toString()
-      : num.toFixed(2).replace(/\.00$/, '');
-  };
-
-  return (
-    <View style={styles.brandCardContainer}>
-      <Pressable style={styles.brandCard} onPress={handleToggle}>
-        <View
-          style={
-            brand.logo_url
-              ? styles.logoContainer
-              : styles.logoContainerPlaceholder
-          }>
-          {brand.logo_url ? (
-            <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
-          ) : (
-            <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
-              <TranslateText
-                textValue={brand.name.charAt(0)}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-                textStyle={styles.brandLogoText}
-                numberOfLines={1}
-              />
-            </View>
-          )}
-        </View>
-        <View style={styles.brandInfo}>
-          <TranslateText
-            textValue={brand.name}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.0155}
-            textStyle={styles.brandName}
-            numberOfLines={1}
-          />
-          {typeof minAmount === 'number' &&
-          !isNaN(minAmount) &&
-          typeof maxAmount === 'number' &&
-          !isNaN(maxAmount) ? (
-            <TranslateText
-              textValue={`${formatCurrency(currency)}${minAmount === maxAmount ? `${minAmount}` : `${minAmount} - ${maxAmount}`}`}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
-              textStyle={styles.brandPrice}
-              numberOfLines={1}
-            />
-          ) : null}
-        </View>
-        <View style={styles.chevronContainer}>
-          <Animated.Image
-            source={backIcon}
-            style={[styles.chevronIcon, animatedChevronStyle]}
-          />
-        </View>
-      </Pressable>
-
-      {/* Animated content */}
-      <Animated.View
-        style={[
-          {height: 0, opacity: 0, overflow: 'hidden'},
-          animatedExpandedStyle,
-        ]}>
-        <View style={styles.expandedContent}>
+    return (
+      <View style={styles.brandCardContainer}>
+        <Pressable style={styles.brandCard} onPress={handleToggle}>
           <View
-            style={[
-              styles.denominationsRow,
-              denominations.length < 5 && styles.denominationsRowLeft,
-            ]}>
-            {denominations.map(amount => (
-              <AnimatedPressable
-                key={amount}
-                style={[
-                  styles.denominationButton,
-                  selectedAmount === Number(amount) &&
-                    styles.denominationButtonSelected,
-                ]}
-                onPress={() => handleAmountSelect(Number(amount))}>
+            style={
+              brand.logo_url
+                ? styles.logoContainer
+                : styles.logoContainerPlaceholder
+            }>
+            {brand.logo_url ? (
+              <Image source={{uri: brand.logo_url}} style={styles.brandLogo} />
+            ) : (
+              <View style={[styles.brandLogo, styles.brandLogoPlaceholder]}>
                 <TranslateText
-                  textValue={`${formatCurrency(currency)}${formatDenomination(amount)}`}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-                  textStyle={[
-                    styles.denominationText,
-                    selectedAmount === Number(amount) &&
-                      styles.denominationTextSelected,
-                  ]}
+                  textValue={brand.name.charAt(0)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                  textStyle={styles.brandLogoText}
                   numberOfLines={1}
                 />
-              </AnimatedPressable>
-            ))}
+              </View>
+            )}
           </View>
-          <AnimatedPressable
-            style={styles.purchaseButton}
-            onPress={handlePurchase}>
+          <View style={styles.brandInfo}>
             <TranslateText
-              textKey="purchase_gift_card"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-              textStyle={styles.purchaseButtonText}
+              textValue={brand.name}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.0155}
+              textStyle={styles.brandName}
               numberOfLines={1}
             />
-          </AnimatedPressable>
-        </View>
-      </Animated.View>
-
-      {isLoggedIn && (
-        <Pressable
-          style={styles.wishlistButton}
-          onPress={handleWishlistToggle}
-          onPressIn={() => {
-            wishlistScale.value = withSpring(0.85, {mass: 1});
-          }}
-          onPressOut={() => {
-            wishlistScale.value = withSpring(1, {mass: 0.7});
-          }}>
-          <Animated.Image
-            source={
-              isInWishlist
-                ? require('../../assets/images/heart-active.png')
-                : require('../../assets/images/heart-inactive.png')
-            }
-            style={[styles.wishlistIcon, wishlistAnimStyle]}
-          />
+            {typeof minAmount === 'number' &&
+            !isNaN(minAmount) &&
+            typeof maxAmount === 'number' &&
+            !isNaN(maxAmount) ? (
+              <TranslateText
+                textValue={`${formatCurrency(currency)}${minAmount === maxAmount ? `${minAmount}` : `${minAmount} - ${maxAmount}`}`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+                textStyle={styles.brandPrice}
+                numberOfLines={1}
+              />
+            ) : null}
+          </View>
+          <View style={styles.chevronContainer}>
+            <Animated.Image
+              source={backIcon}
+              style={[styles.chevronIcon, animatedChevronStyle]}
+            />
+          </View>
         </Pressable>
-      )}
-    </View>
-  );
-}
+
+        {/* Animated content */}
+        <Animated.View
+          style={[
+            {height: 0, opacity: 0, overflow: 'hidden'},
+            animatedExpandedStyle,
+          ]}>
+          <View style={styles.expandedContent}>
+            <View
+              style={[
+                styles.denominationsRow,
+                denominations.length < 5 && styles.denominationsRowLeft,
+              ]}>
+              {denominations.map(amount => (
+                <AnimatedPressable
+                  key={amount}
+                  style={[
+                    styles.denominationButton,
+                    selectedAmount === Number(amount) &&
+                      styles.denominationButtonSelected,
+                  ]}
+                  onPress={() => handleAmountSelect(Number(amount))}>
+                  <TranslateText
+                    textValue={`${formatCurrency(currency)}${formatDenomination(amount)}`}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                    textStyle={[
+                      styles.denominationText,
+                      selectedAmount === Number(amount) &&
+                        styles.denominationTextSelected,
+                    ]}
+                    numberOfLines={1}
+                  />
+                </AnimatedPressable>
+              ))}
+            </View>
+            <AnimatedPressable
+              style={styles.purchaseButton}
+              onPress={handlePurchase}>
+              <TranslateText
+                textKey="purchase_gift_card"
+                domain="nexusShop"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.purchaseButtonText}
+                numberOfLines={1}
+              />
+            </AnimatedPressable>
+          </View>
+        </Animated.View>
+
+        {isLoggedIn && (
+          <Pressable
+            style={styles.wishlistButton}
+            onPress={handleWishlistToggle}
+            onPressIn={() => {
+              wishlistScale.value = withSpring(0.85, {mass: 1});
+            }}
+            onPressOut={() => {
+              wishlistScale.value = withSpring(1, {mass: 0.7});
+            }}>
+            <Animated.Image
+              source={
+                isInWishlist
+                  ? require('../../assets/images/heart-active.png')
+                  : require('../../assets/images/heart-inactive.png')
+              }
+              style={[styles.wishlistIcon, wishlistAnimStyle]}
+            />
+          </Pressable>
+        )}
+      </View>
+    );
+  },
+  (prev, next) => {
+    // Only re-render if this card's expanded state changed, or other props changed
+    const prevExpanded = prev.expandedBrandSlug === prev.brand.slug;
+    const nextExpanded = next.expandedBrandSlug === next.brand.slug;
+    return (
+      prev.brand === next.brand &&
+      prev.currency === next.currency &&
+      prev.onSelectBrand === next.onSelectBrand &&
+      prev.onToggleBrand === next.onToggleBrand &&
+      prevExpanded === nextExpanded
+    );
+  },
+);
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({

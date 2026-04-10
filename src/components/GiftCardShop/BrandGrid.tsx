@@ -1,6 +1,11 @@
 import React, {useState, useContext, useMemo, useCallback} from 'react';
-import {StyleSheet, RefreshControl, View, Pressable} from 'react-native';
-import {FlashList} from '@shopify/flash-list';
+import {
+  FlatList,
+  StyleSheet,
+  RefreshControl,
+  View,
+  Pressable,
+} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -69,9 +74,22 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
     setRefreshing(false);
   };
 
-  const handleToggleBrand = (brandSlug: string) => {
+  const handleToggleBrand = useCallback((brandSlug: string) => {
     setExpandedBrandSlug(prev => (prev === brandSlug ? null : brandSlug));
-  };
+  }, []);
+
+  const renderItem = useCallback(
+    ({item}: {item: Brand}) => (
+      <BrandCard
+        brand={item}
+        currency={currency}
+        onSelectBrand={onSelectBrand}
+        expandedBrandSlug={expandedBrandSlug}
+        onToggleBrand={handleToggleBrand}
+      />
+    ),
+    [currency, onSelectBrand, expandedBrandSlug, handleToggleBrand],
+  );
 
   if (loading && !refreshing) {
     return (
@@ -216,23 +234,18 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
         selectedCategory={selectedCategory}
         onSelect={handleCategorySelect}
       />
-      <FlashList
+      <FlatList
         data={filteredBrands}
         keyExtractor={item => item.slug}
         contentContainerStyle={styles.gridContainer}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        renderItem={({item}) => (
-          <BrandCard
-            brand={item}
-            currency={currency}
-            onPress={(amount?: number) => onSelectBrand(item, amount)}
-            isExpanded={expandedBrandSlug === item.slug}
-            onToggle={() => handleToggleBrand(item.slug)}
-          />
-        )}
-        extraData={[brands?.length, expandedBrandSlug]}
+        renderItem={renderItem}
+        extraData={expandedBrandSlug}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={10}
       />
     </View>
   );
