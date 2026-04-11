@@ -51,6 +51,7 @@ export interface Brand {
   digital_denominations?: number[];
   async_only?: boolean;
   type?: 'gift-card' | 'choice-link';
+  priority?: number;
 }
 
 export interface GiftCard {

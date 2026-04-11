@@ -1,4 +1,4 @@
-import React, {useContext, useState, useCallback} from 'react';
+import React, {useContext, useState, useCallback, useMemo} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {FlashList} from '@shopify/flash-list';
 
@@ -29,6 +29,13 @@ export function MyWishlistBrands({
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const sortedBrands = useMemo(() => {
+    if (!wishlistBrands) return wishlistBrands;
+    return [...wishlistBrands].sort(
+      (a, b) => (b.priority ?? -Infinity) - (a.priority ?? -Infinity),
+    );
+  }, [wishlistBrands]);
 
   const [expandedBrandSlug, setExpandedBrandSlug] = useState<string | null>(
     null,
@@ -73,7 +80,7 @@ export function MyWishlistBrands({
     );
   }
 
-  if (!wishlistBrands || wishlistBrands.length === 0) {
+  if (!sortedBrands || sortedBrands.length === 0) {
     return <EmptyView textKey="empty_wishlist" textDomain="nexusShop" />;
   }
 
@@ -88,7 +95,7 @@ export function MyWishlistBrands({
         />
       </View>
       <FlashList
-        data={wishlistBrands}
+        data={sortedBrands}
         keyExtractor={item => item.slug}
         contentContainerStyle={styles.gridContainer}
         renderItem={renderItem}

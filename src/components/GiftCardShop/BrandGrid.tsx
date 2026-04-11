@@ -55,8 +55,14 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
   }, [filterScale]);
 
   const filteredBrands = useMemo(() => {
-    if (!brands || !selectedCategory) return brands;
-    return brands.filter(b => b.categories?.includes(selectedCategory));
+    const base =
+      brands && selectedCategory
+        ? brands.filter(b => b.categories?.includes(selectedCategory))
+        : brands;
+    if (!base) return base;
+    return [...base].sort(
+      (a, b) => (b.priority ?? -Infinity) - (a.priority ?? -Infinity),
+    );
   }, [brands, selectedCategory]);
 
   const handleCategorySelect = (category: TilloCategory | null) => {
