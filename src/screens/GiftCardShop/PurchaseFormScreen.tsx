@@ -239,19 +239,22 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     return result;
   })();
 
-  const handleSubmit = async () => {
-    try {
-      await submit();
-    } catch {}
-  };
-
-  const errorTextKey =
-    error === 'Unauthorized' ? 'unauthorized_purchase_error' : undefined;
-  const errorTextValue = error && error !== 'Unauthorized' ? error : undefined;
-
   const toSignUp = () => {
     navigation.navigate('NexusShopStack', {screen: 'SignUp'});
   };
+
+  const handleSubmit = async () => {
+    try {
+      await submit();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      if (message === 'Unauthorized') {
+        toSignUp();
+      }
+    }
+  };
+
+  const errorTextValue = error && error !== 'Unauthorized' ? error : undefined;
 
   return (
     <View style={styles.container}>
@@ -460,43 +463,28 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
         <CustomSafeAreaView
           styles={styles.safeArea}
           edges={Platform.OS === 'android' ? ['bottom'] : []}>
-          {error === 'Unauthorized' ? (
-            <AnimatedPressable
-              style={commonStyles.buttonRounded}
-              onPress={toSignUp}>
+          <AnimatedPressable
+            style={[
+              commonStyles.buttonRounded,
+              (!validation.valid || loading) && commonStyles.buttonDisabled,
+            ]}
+            onPress={handleSubmit}
+            disabled={!validation.valid || loading}>
+            {loading ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
               <TranslateText
-                textKey="sign_in"
+                textKey="continue_purchase"
                 domain="nexusShop"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.02}
                 textStyle={commonStyles.buttonText}
                 numberOfLines={1}
               />
-            </AnimatedPressable>
-          ) : (
-            <AnimatedPressable
-              style={[
-                commonStyles.buttonRounded,
-                (!validation.valid || loading) && commonStyles.buttonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={!validation.valid || loading}>
-              {loading ? (
-                <ActivityIndicator color={colors.white} />
-              ) : (
-                <TranslateText
-                  textKey="continue_purchase"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={commonStyles.buttonText}
-                  numberOfLines={1}
-                />
-              )}
-            </AnimatedPressable>
-          )}
+            )}
+          </AnimatedPressable>
 
-          {(errorTextKey || errorTextValue) && (
+          {errorTextValue && (
             <TranslateText
-              textKey={errorTextKey}
               textValue={errorTextValue}
               domain="nexusShop"
               maxSizeInPixels={SCREEN_HEIGHT * 0.02}

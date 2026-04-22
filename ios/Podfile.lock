@@ -178,7 +178,38 @@ PODS:
     - SocketRocket
     - Yoga
   - MMKVCore (2.2.4)
-  - NitroLndltc (0.0.4):
+  - NitroJade (0.0.1):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - NitroModules
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - SwiftCBOR (~> 0.4)
+    - Yoga
+  - NitroLndltc (0.0.5):
     - boost
     - DoubleConversion
     - fast_float
@@ -3519,6 +3550,7 @@ PODS:
   - SocketRocket (0.7.1)
   - SSZipArchive (2.5.5)
   - SVGView (1.0.6)
+  - SwiftCBOR (0.6.0)
   - SwiftUIIntrospect (26.0.0)
   - TurboScryptiOS (0.1.0):
     - boost
@@ -3586,6 +3618,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
+  - NitroJade (from `../node_modules/react-native-nitro-jade`)
   - NitroLndltc (from `../node_modules/react-native-nitro-lndltc`)
   - NitroMmkv (from `../node_modules/react-native-mmkv`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
@@ -3711,6 +3744,7 @@ SPEC REPOS:
     - SocketRocket
     - SSZipArchive
     - SVGView
+    - SwiftCBOR
     - SwiftUIIntrospect
 
 EXTERNAL SOURCES:
@@ -3767,6 +3801,8 @@ EXTERNAL SOURCES:
     :tag: hermes-v250829098.0.4
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
+  NitroJade:
+    :path: "../node_modules/react-native-nitro-jade"
   NitroLndltc:
     :path: "../node_modules/react-native-nitro-lndltc"
   NitroMmkv:
@@ -4011,7 +4047,8 @@ SPEC CHECKSUMS:
   lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
   lottie-react-native: 994a0f1696a7ea01f63443e53a860c735246082d
   MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
-  NitroLndltc: 3737c0e4fe51a31ea35f1f31c64425afc88dc1ba
+  NitroJade: 810045e9eb05a03187465bda2c18f798f0d9e09d
+  NitroLndltc: 00f1b99163666585cda01467f74893b21097823d
   NitroMmkv: 1b125f00aa79f5b73e5afe0340a6d058923e1269
   NitroModules: 192449b51c59478efc2ed5c2554ec907be42ce77
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
@@ -4114,6 +4151,7 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SSZipArchive: c69881e8ac5521f0e622291387add5f60f30f3c4
   SVGView: 4a9fa6296a5fdb6232dec7450aa98f169d0e274f
+  SwiftCBOR: b873af28a9cc66003852fdc79a41852a7e54009a
   SwiftUIIntrospect: 74b21afe4589aa3979192844ac1cbba381712e61
   TurboScryptiOS: 6e6fc3c5a47593a168ad9d43d8a4b27877fb0d0b
   VisionCamera: 3ea10c46a5c612f5f89fb46a54bef4a0de8b58a7
