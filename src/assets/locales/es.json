@@ -344,6 +344,7 @@
     "verify": "Verificar",
     "sign_in": "Iniciar sesión",
     "sign_up": "Registrarse",
+    "sign_up_or_login": "Registrarse o Iniciar sesión",
     "sign_up_for": "Registrarse para",
     "email_address": "Dirección de correo",
     "email_is_required": "El correo es obligatorio",

@@ -363,6 +363,7 @@
     "verify": "Verify",
     "sign_in": "Sign In",
     "sign_up": "Sign Up",
+    "sign_up_or_login": "Sign Up or Login",
     "sign_up_for": "Sign Up for",
     "email_address": "Email Address",
     "email_is_required": "Email is required",

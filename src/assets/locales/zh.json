@@ -344,6 +344,7 @@
     "verify": "验证",
     "sign_in": "登录",
     "sign_up": "注册",
+    "sign_up_or_login": "注册或登录",
     "sign_up_for": "注册",
     "email_address": "电子邮件地址",
     "email_is_required": "电子邮件为必填项",

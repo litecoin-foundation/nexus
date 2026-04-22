@@ -28,6 +28,9 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withRepeat,
+  withSequence,
+  withDelay,
 } from 'react-native-reanimated';
 import {useSelector} from 'react-redux';
 import {useAppDispatch} from '../../store/hooks';
@@ -247,6 +250,30 @@ const SignUp: React.FC<Props> = () => {
     opacity: imageOpacity.value,
   }));
 
+  // "Sign up / in for" title animation
+  const signToggle = useSharedValue(0);
+  const signAnimHeight = SCREEN_HEIGHT * 0.036;
+
+  useEffect(() => {
+    signToggle.value = withRepeat(
+      withSequence(
+        withDelay(2500, withTiming(1, {duration: 500})),
+        withDelay(2500, withTiming(0, {duration: 500})),
+      ),
+      -1,
+    );
+  }, [signToggle]);
+
+  const upTextStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: -signToggle.value * signAnimHeight}],
+    opacity: 1 - signToggle.value,
+  }));
+
+  const inTextStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: (1 - signToggle.value) * signAnimHeight}],
+    opacity: signToggle.value,
+  }));
+
   return (
     <LinearGradient
       style={styles.container}
@@ -280,14 +307,32 @@ const SignUp: React.FC<Props> = () => {
           <View style={styles.formContainer}>
             <View style={styles.titleContainer}>
               <TranslateText
-                textKey="sign_up_for"
-                domain="nexusShop"
+                textValue="Sign "
                 maxSizeInPixels={SCREEN_HEIGHT * 0.028}
                 textStyle={styles.title}
                 numberOfLines={1}
               />
+              <View style={styles.signAnimContainer}>
+                <Animated.View style={upTextStyle}>
+                  <TranslateText
+                    textValue="up"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.028}
+                    textStyle={styles.title}
+                    numberOfLines={1}
+                  />
+                </Animated.View>
+                <Animated.View
+                  style={[styles.signAnimAbsolute, inTextStyle]}>
+                  <TranslateText
+                    textValue="in"
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.028}
+                    textStyle={styles.title}
+                    numberOfLines={1}
+                  />
+                </Animated.View>
+              </View>
               <TranslateText
-                textValue=" "
+                textValue=" for "
                 maxSizeInPixels={SCREEN_HEIGHT * 0.028}
                 textStyle={styles.title}
                 numberOfLines={1}
@@ -367,7 +412,7 @@ const SignUp: React.FC<Props> = () => {
               <ActivityIndicator color={colors.white} />
             ) : (
               <TranslateText
-                textKey="sign_up"
+                textKey="sign_up_or_login"
                 domain="nexusShop"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.018}
                 textStyle={commonStyles.buttonText}
@@ -452,7 +497,18 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     titleContainer: {
       flexDirection: 'row',
+      alignItems: 'center',
       marginBottom: getSpacing(screenWidth, screenHeight).md,
+    },
+    signAnimContainer: {
+      height: screenHeight * 0.036,
+      overflow: 'hidden',
+      justifyContent: 'center',
+    },
+    signAnimAbsolute: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
     },
     title: {
       fontFamily: 'Satoshi Variable',
@@ -510,7 +566,7 @@ export const SignUpNavigationOptions = (
     headerTransparent: true,
     headerTitle: () => (
       <TranslateText
-        textKey="sign_up"
+        textKey="sign_up_or_login"
         domain="nexusShop"
         maxSizeInPixels={height * 0.02}
         textStyle={styles.headerTitle}

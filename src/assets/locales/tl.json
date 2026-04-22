@@ -344,6 +344,7 @@
     "verify": "I-verify",
     "sign_in": "Mag-sign In",
     "sign_up": "Mag-sign Up",
+    "sign_up_or_login": "Mag-sign Up o Mag-sign In",
     "sign_up_for": "Mag-sign up para sa",
     "email_address": "Email Address",
     "email_is_required": "Kailangan ang email",

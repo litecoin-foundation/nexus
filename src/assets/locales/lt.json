@@ -344,6 +344,7 @@
     "verify": "Patvirtinti",
     "sign_in": "Prisijungti",
     "sign_up": "Registruotis",
+    "sign_up_or_login": "Registruotis arba Prisijungti",
     "sign_up_for": "Registruotis",
     "email_address": "El. pašto adresas",
     "email_is_required": "El. paštas privalomas",

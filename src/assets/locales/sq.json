@@ -344,6 +344,7 @@
     "verify": "Verifiko",
     "sign_in": "Hyr",
     "sign_up": "Regjistrohu",
+    "sign_up_or_login": "Regjistrohu ose Hyr",
     "sign_up_for": "Regjistrohu për",
     "email_address": "Adresa e emailit",
     "email_is_required": "Emaili është i detyrueshëm",
