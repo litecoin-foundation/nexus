@@ -85,7 +85,7 @@
     "react-native-modal": "14.0.0-rc.1",
     "react-native-nitro-jade": "0.0.1",
     "react-native-nitro-lndltc": "0.0.5",
-    "react-native-nitro-modules": "0.31.6",
+    "react-native-nitro-modules": "0.35.4",
     "react-native-nitro-scrypt": "0.1.0",
     "react-native-nitro-tor": "0.5.2",
     "react-native-qrcode-svg": "6.3.15",

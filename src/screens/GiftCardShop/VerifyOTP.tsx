@@ -13,6 +13,7 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  AppState,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
@@ -34,6 +35,8 @@ import WarningModal from '../../components/Modals/WarningModal';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 interface VerifyOTPProps {
   route?: {
@@ -102,7 +105,8 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [otpCode, setOtpCode] = useState('');
-  const [resendCountdown, setResendCountdown] = useState(0);
+  const resendUnlocksAtRef = useRef<number>(Date.now() + RESEND_COOLDOWN_SECONDS * 1000);
+  const [resendCountdown, setResendCountdown] = useState(RESEND_COOLDOWN_SECONDS);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [showMaxAttemptsModal, setShowMaxAttemptsModal] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -143,28 +147,47 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     };
   }, []);
 
-  // Countdown timer effect
-  useEffect(() => {
-    if (resendCountdown > 0) {
-      countdownTimerRef.current = setInterval(() => {
-        setResendCountdown(prev => {
-          if (prev <= 1) {
-            if (countdownTimerRef.current) {
-              clearInterval(countdownTimerRef.current);
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => {
-        if (countdownTimerRef.current) {
-          clearInterval(countdownTimerRef.current);
-        }
-      };
+  // Start/restart the cooldown timer using wall-clock time so
+  // backgrounding the app doesn't freeze the countdown.
+  const startCooldownTimer = useCallback(() => {
+    if (countdownTimerRef.current) {
+      clearInterval(countdownTimerRef.current);
     }
-  }, [resendCountdown]);
+    resendUnlocksAtRef.current =
+      Date.now() + RESEND_COOLDOWN_SECONDS * 1000;
+    setResendCountdown(RESEND_COOLDOWN_SECONDS);
+
+    countdownTimerRef.current = setInterval(() => {
+      const remaining = Math.max(
+        0,
+        Math.ceil((resendUnlocksAtRef.current - Date.now()) / 1000),
+      );
+      setResendCountdown(remaining);
+      if (remaining <= 0 && countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current);
+        countdownTimerRef.current = null;
+      }
+    }, 1000);
+  }, []);
+
+  // Start cooldown on mount (an OTP was just sent to reach this screen)
+  useEffect(() => {
+    startCooldownTimer();
+  }, [startCooldownTimer]);
+
+  // Recalculate countdown immediately when app returns to foreground
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active' && resendUnlocksAtRef.current > 0) {
+        const remaining = Math.max(
+          0,
+          Math.ceil((resendUnlocksAtRef.current - Date.now()) / 1000),
+        );
+        setResendCountdown(remaining);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   // Handle OTP code from navigation params (from deeplink)
   useEffect(() => {
@@ -294,13 +317,13 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     try {
       await dispatch(loginToNexusShop(account.email));
       // Start 60 second countdown
-      setResendCountdown(60);
+      startCooldownTimer();
       // Reset failed attempts when successfully resending OTP
       setFailedAttempts(0);
     } catch (errorCatch) {
       // Error is handled by warning modal
     }
-  }, [account?.email, uniqueId, dispatch]);
+  }, [account?.email, uniqueId, dispatch, startCooldownTimer]);
 
   const handleCloseMaxAttemptsModal = useCallback(() => {
     setShowMaxAttemptsModal(false);
@@ -341,7 +364,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   const secondaryButton = useMemo(() => {
     // Progress should go from 100% (at 60s) to 0% (at 0s) - counting DOWN
     const progressPercentage =
-      resendCountdown > 0 ? (resendCountdown / 60) * 100 : 0;
+      resendCountdown > 0 ? (resendCountdown / RESEND_COOLDOWN_SECONDS) * 100 : 0;
 
     return (
       <TouchableOpacity
@@ -373,12 +396,14 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
                 color="#0070F0"
                 backgroundColor="rgba(0, 112, 240, 0.15)"
               />
-              <TranslateText
-                textValue={String(resendCountdown)}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
-                textStyle={styles.countdownText}
-                numberOfLines={1}
-              />
+              <View style={styles.countdownTextWrapper}>
+                <TranslateText
+                  textValue={String(resendCountdown)}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
+                  textStyle={styles.countdownText}
+                  numberOfLines={1}
+                />
+              </View>
             </View>
           )}
         </View>
@@ -487,8 +512,16 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenHeight * 0.045,
       overflow: 'visible',
     },
-    countdownText: {
+    countdownTextWrapper: {
       position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    countdownText: {
       fontSize: screenHeight * 0.0135,
       fontWeight: '700',
       color: colors.primary,
