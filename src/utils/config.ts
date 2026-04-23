@@ -3,7 +3,7 @@ import {fileExists} from './file';
 
 const getMainnetConfig = (
   torEnabled: boolean = false,
-  litecoinBackend: 'neutrino' | 'electrum' = 'neutrino',
+  litecoinBackend: 'neutrino' | 'electrum' = 'electrum',
 ) => {
   const baseConfig = `
   [Application Options]
@@ -59,7 +59,7 @@ const getMainnetConfig = (
 
 export const createConfig = (
   torEnabled: boolean = false,
-  litecoinBackend: 'neutrino' | 'electrum' = 'neutrino',
+  litecoinBackend: 'neutrino' | 'electrum' = 'electrum',
 ) => {
   return new Promise(async (resolve, reject) => {
     const lndConfPath = `${RNFS.DocumentDirectoryPath}/lndltc/lnd.conf`;
