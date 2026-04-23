@@ -180,7 +180,8 @@ export function useMainLayout(props: Props) {
           {isFlexaCustomer ? (
             <HeaderButton
               onPress={() => manualPayment()}
-              imageSource={require('../assets/icons/flexa.png')}
+              imageSource={require('../assets/images/flexa-logo.png')}
+              imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
               leftPadding
               marginLeft={SCREEN_WIDTH * 0.02 * -1}
             />
