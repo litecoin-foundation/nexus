@@ -950,12 +950,13 @@ export const getSignedOnramperUrl =
         if (!res.ok) {
           const {message} = await res.json();
           reject(String(message));
+          return;
         }
 
         const response = await res.json();
 
         const signature = response;
-        const signedUrl = `${unsignedURL}&signContent=${signContent}&signature=${signature}`;
+        const signedUrl = `${unsignedURL}&signContent=${encodeURIComponent(signContent)}&signature=${signature}`;
 
         resolve(signedUrl);
       } catch (error) {
@@ -1045,6 +1046,7 @@ export const getSignedSellOnramperUrl =
       const unsignedURL =
         baseUrl +
         '&sell_onlyCryptos=ltc_litecoin' +
+        `&wallets=ltc_litecoin:${address}` +
         // `&sell_defaultFiat=${currencyCode}` +
         `&country=${countryCode}` +
         '&sell_defaultCrypto=ltc_litecoin' +
@@ -1074,12 +1076,13 @@ export const getSignedSellOnramperUrl =
         if (!res.ok) {
           const {message} = await res.json();
           reject(String(message));
+          return;
         }
 
         const response = await res.json();
 
         const signature = response;
-        const signedUrl = `${unsignedURL}&signContent=${signContent}&signature=${signature}`;
+        const signedUrl = `${unsignedURL}&signContent=${encodeURIComponent(signContent)}&signature=${signature}`;
 
         resolve(signedUrl);
       } catch (error) {
