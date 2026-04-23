@@ -8,6 +8,8 @@ import {
   StyleSheet,
   Platform,
   Keyboard,
+  Pressable,
+  Image,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
@@ -354,20 +356,36 @@ const SignUp: React.FC<Props> = () => {
                 textStyle={styles.emailLabel}
                 numberOfLines={1}
               />
-              <TextInput
-                style={[
-                  commonStyles.input,
-                  emailError ? styles.inputError : null,
-                ]}
-                value={email}
-                onChangeText={handleEmailChange}
-                placeholder={t('enter_your_email')}
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!loginLoading}
-              />
+              <View style={styles.emailInputWrapper}>
+                <TextInput
+                  style={[
+                    commonStyles.input,
+                    styles.emailInput,
+                    emailError ? styles.inputError : null,
+                  ]}
+                  value={email}
+                  onChangeText={handleEmailChange}
+                  placeholder={t('enter_your_email')}
+                  placeholderTextColor={colors.textSecondary}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!loginLoading}
+                />
+                {email.length > 0 && (
+                  <Pressable
+                    style={styles.clearButton}
+                    onPress={() => {
+                      setEmail('');
+                      if (emailError) setEmailError('');
+                    }}>
+                    <Image
+                      style={styles.clearIcon}
+                      source={require('../../assets/images/close.png')}
+                    />
+                  </Pressable>
+                )}
+              </View>
               {emailError ? (
                 <TranslateText
                   textKey={emailError}
@@ -523,6 +541,28 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#fff',
     },
     inputContainer: {},
+    emailInputWrapper: {
+      position: 'relative',
+      justifyContent: 'center',
+    },
+    emailInput: {
+      paddingRight: screenHeight * 0.05,
+    },
+    clearButton: {
+      position: 'absolute',
+      right: screenHeight * 0.012,
+      width: screenHeight * 0.025,
+      height: screenHeight * 0.025,
+      borderRadius: screenHeight * 0.0125,
+      backgroundColor: 'rgba(0, 0, 0, 0.15)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    clearIcon: {
+      width: screenHeight * 0.01,
+      height: screenHeight * 0.01,
+      tintColor: '#fff',
+    },
     inputError: {
       borderWidth: 2,
       borderColor: colors.danger,
