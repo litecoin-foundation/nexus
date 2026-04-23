@@ -17,7 +17,7 @@ import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
 
-const TOS_URL = 'https://nexus.app/terms';
+const TOS_URL = 'https://nexuswallet.com/gc/tos';
 
 interface Props {
   isVisible: boolean;
