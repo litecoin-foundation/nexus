@@ -10,7 +10,6 @@ import {
   Pressable,
   Image,
   TextInput,
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Platform,
@@ -23,6 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import {useHeaderHeight} from '@react-navigation/elements';
+
 import {
   Brand,
   GiftCardClient,
@@ -41,10 +41,11 @@ import {
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import TOSCheckModal from '../../components/Modals/TOSCheckModal';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
-import TOSCheckModal from '../../components/Modals/TOSCheckModal';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface PurchaseFormScreenProps {
@@ -463,25 +464,13 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
         <CustomSafeAreaView
           styles={styles.safeArea}
           edges={Platform.OS === 'android' ? ['bottom'] : []}>
-          <AnimatedPressable
-            style={[
-              commonStyles.buttonRounded,
-              (!validation.valid || loading) && commonStyles.buttonDisabled,
-            ]}
+          <BlueRoundButton
+            textKey="continue_purchase"
+            textDomain="nexusShop"
             onPress={handleSubmit}
-            disabled={!validation.valid || loading}>
-            {loading ? (
-              <ActivityIndicator color={colors.white} />
-            ) : (
-              <TranslateText
-                textKey="continue_purchase"
-                domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={commonStyles.buttonText}
-                numberOfLines={1}
-              />
-            )}
-          </AnimatedPressable>
+            disabled={!validation.valid || loading}
+            loading={loading}
+          />
 
           {errorTextValue && (
             <TranslateText

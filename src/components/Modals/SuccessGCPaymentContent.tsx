@@ -1,8 +1,9 @@
 import React, {useEffect, useContext, useMemo} from 'react';
-import {View, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import PlasmaModal from './PlasmaModal';
+import BlueRoundButton from '../Buttons/BlueRoundButton';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
@@ -10,7 +11,6 @@ import {
   colors,
   getSpacing,
   getFontSize,
-  getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 
 export interface GCPaymentDetails {
@@ -36,10 +36,6 @@ const SuccessGCPaymentContent: React.FC<Props> = ({
     useContext(ScreenSizeContext);
   const styles = useMemo(
     () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
-    [SCREEN_WIDTH, SCREEN_HEIGHT],
-  );
-  const commonStyles = useMemo(
-    () => getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
     [SCREEN_WIDTH, SCREEN_HEIGHT],
   );
 
@@ -132,23 +128,17 @@ const SuccessGCPaymentContent: React.FC<Props> = ({
               </View>
             </View>
 
-            <TouchableOpacity
-              style={[commonStyles.buttonRounded, styles.doneButton]}
+            <BlueRoundButton
+              textKey="done"
+              textDomain="nexusShop"
               onPress={close}
-              activeOpacity={0.7}>
-              <TranslateText
-                textKey="done"
-                domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                textStyle={commonStyles.buttonText}
-                numberOfLines={1}
-              />
-            </TouchableOpacity>
+              style={styles.doneButton}
+            />
           </Animated.View>
         )}
       />
     ),
-    [isVisible, close, details, styles, commonStyles, SCREEN_HEIGHT],
+    [isVisible, close, details, styles, SCREEN_HEIGHT],
   );
 
   useEffect(() => {

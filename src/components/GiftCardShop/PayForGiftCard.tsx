@@ -2,7 +2,6 @@ import React, {useContext, useState, useRef} from 'react';
 import {
   View,
   TouchableOpacity,
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   DeviceEventEmitter,
@@ -12,6 +11,7 @@ import {useAppDispatch} from '../../store/hooks';
 import {sendOnchainPayment} from '../../reducers/transaction';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
+import BlueRoundButton from '../Buttons/BlueRoundButton';
 
 import {
   colors,
@@ -217,25 +217,13 @@ export function PayForGiftCard({
           />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            commonStyles.buttonRounded,
-            loading && commonStyles.buttonDisabled,
-          ]}
+        <BlueRoundButton
+          textKey="send_payment"
+          textDomain="nexusShop"
           onPress={() => handleAuthenticationRequired('send-giftcard-payment')}
-          disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color={colors.white} />
-          ) : (
-            <TranslateText
-              textKey="send_payment"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-              textStyle={commonStyles.buttonText}
-              numberOfLines={1}
-            />
-          )}
-        </TouchableOpacity>
+          disabled={loading}
+          loading={loading}
+        />
       </ScrollView>
 
       <PlasmaModal

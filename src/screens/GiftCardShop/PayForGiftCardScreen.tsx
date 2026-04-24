@@ -8,15 +8,16 @@ import {
 } from 'react-native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
-import {InitiatePurchaseResponseData} from '../../services/giftcards';
-import {useAppDispatch} from '../../store/hooks';
-import {sendOnchainPayment} from '../../reducers/transaction';
-import {addPopup, PopupActionType} from '../../reducers/popupschedule';
+
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import HeaderButton from '../../components/Buttons/HeaderButton';
-
+import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import {InitiatePurchaseResponseData} from '../../services/giftcards';
+import {sendOnchainPayment} from '../../reducers/transaction';
+import {addPopup, PopupActionType} from '../../reducers/popupschedule';
+import {useAppDispatch} from '../../store/hooks';
 import {
   colors,
   getSpacing,
@@ -245,23 +246,14 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
             />
           )}
 
-          <TouchableOpacity
-            style={[
-              commonStyles.buttonRounded,
-              (loading || isPaymentExpired) && commonStyles.buttonDisabled,
-            ]}
+          <BlueRoundButton
+            textKey={isPaymentExpired ? 'payment_expired' : 'send_payment'}
+            textDomain="nexusShop"
             onPress={() =>
               handleAuthenticationRequired('send-giftcard-payment')
             }
-            disabled={loading || isPaymentExpired}>
-            <TranslateText
-              textKey={isPaymentExpired ? 'payment_expired' : 'send_payment'}
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-              textStyle={commonStyles.buttonText}
-              numberOfLines={1}
-            />
-          </TouchableOpacity>
+            disabled={loading || isPaymentExpired}
+          />
 
           <TouchableOpacity
             style={[commonStyles.buttonRoundedSecondary, styles.backButton]}

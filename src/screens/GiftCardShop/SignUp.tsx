@@ -2,9 +2,7 @@ import React, {useState, useContext, useEffect} from 'react';
 import {
   View,
   TextInput,
-  TouchableOpacity,
   Alert,
-  ActivityIndicator,
   StyleSheet,
   Platform,
   Keyboard,
@@ -35,25 +33,26 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 import {useSelector} from 'react-redux';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
 import {useAppDispatch} from '../../store/hooks';
 import {
   registerOnNexusShop,
   clearAccount,
   setAccountError,
 } from '../../reducers/nexusshopaccount';
-import {
-  colors,
-  getSpacing,
-  getCommonStyles,
-} from '../../components/GiftCardShop/theme';
-
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import Turnstile from '../../components/Turnstile';
 import WarningModal from '../../components/Modals/WarningModal';
+import {
+  colors,
+  getSpacing,
+  getCommonStyles,
+} from '../../components/GiftCardShop/theme';
 
 interface Props {}
 
@@ -323,8 +322,7 @@ const SignUp: React.FC<Props> = () => {
                     numberOfLines={1}
                   />
                 </Animated.View>
-                <Animated.View
-                  style={[styles.signAnimAbsolute, inTextStyle]}>
+                <Animated.View style={[styles.signAnimAbsolute, inTextStyle]}>
                   <TranslateText
                     textValue="in"
                     maxSizeInPixels={SCREEN_HEIGHT * 0.028}
@@ -408,50 +406,27 @@ const SignUp: React.FC<Props> = () => {
             resetKey={turnstileResetKey}
           />
 
-          <TouchableOpacity
-            style={[
-              commonStyles.buttonRounded,
-              loginLoading ||
-              !turnstileToken ||
-              !email.trim() ||
-              !validateEmail(email)
-                ? commonStyles.buttonDisabled
-                : null,
-              styles.signUpButton,
-            ]}
+          <BlueRoundButton
+            textKey="sign_up_or_login"
+            textDomain="nexusShop"
             onPress={handleSignUp}
             disabled={
               loginLoading ||
               !turnstileToken ||
               !email.trim() ||
               !validateEmail(email)
-            }>
-            {loginLoading ? (
-              <ActivityIndicator color={colors.white} />
-            ) : (
-              <TranslateText
-                textKey="sign_up_or_login"
-                domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                textStyle={commonStyles.buttonText}
-                numberOfLines={1}
-              />
-            )}
-          </TouchableOpacity>
+            }
+            loading={loginLoading}
+            style={styles.signUpButton}
+          />
 
           {__DEV__ ? (
             <View style={styles.resetButtonContainer}>
-              <TouchableOpacity
-                style={commonStyles.buttonRounded}
-                onPress={handleResetShopUser}>
-                <TranslateText
-                  textKey="reset_shop_user"
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={commonStyles.buttonText}
-                  numberOfLines={1}
-                />
-              </TouchableOpacity>
+              <BlueRoundButton
+                textKey="reset_shop_user"
+                textDomain="nexusShop"
+                onPress={handleResetShopUser}
+              />
             </View>
           ) : (
             <></>

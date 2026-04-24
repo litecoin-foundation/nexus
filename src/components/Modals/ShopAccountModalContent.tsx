@@ -7,21 +7,22 @@ import {
   FlatList,
   Image,
 } from 'react-native';
+import {getCountry} from 'react-native-localize';
+
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {ErrorView} from '../GiftCardShop/ErrorView';
-import {getCommonStyles} from '../GiftCardShop/theme';
 import {
   logoutFromNexusShop,
   setUserCurrency,
   setUserCountry,
 } from '../../reducers/nexusshopaccount';
 import {getCurrencyForCountry} from '../../services/giftcards';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import OptionCell from '../../components/Cells/OptionCell';
+import HeaderButton from '../Buttons/HeaderButton';
+import BlueRoundButton from '../Buttons/BlueRoundButton';
+import OptionCell from '../Cells/OptionCell';
 import countries from '../../assets/countries';
-import {getCountry} from 'react-native-localize';
 
-import TranslateText from '../../components/TranslateText';
+import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const backIcon = require('../../assets/images/back-icon.png');
@@ -34,7 +35,7 @@ interface Props {
   };
 }
 
-const ShopAcoountModalContent: React.FC<Props> = props => {
+const ShopAccountModalContent: React.FC<Props> = props => {
   const {navigation, headerButtonXY} = props;
   const dispatch = useAppDispatch();
   const account = useAppSelector(
@@ -49,7 +50,6 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
     () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, headerButtonXY.y),
     [SCREEN_WIDTH, SCREEN_HEIGHT, headerButtonXY],
   );
-  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const shopCountry = account?.userCountry || getCountry();
   const shopCurrency = getCurrencyForCountry(shopCountry).currency;
@@ -163,17 +163,12 @@ const ShopAcoountModalContent: React.FC<Props> = props => {
           </View>
 
           <View style={styles.logoutButtonContainer}>
-            <TouchableOpacity
-              style={[commonStyles.buttonRounded, styles.logoutButton]}
-              onPress={logout}>
-              <TranslateText
-                textKey="logout"
-                domain="nexusShop"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                textStyle={commonStyles.buttonText}
-                numberOfLines={1}
-              />
-            </TouchableOpacity>
+            <BlueRoundButton
+              textKey="logout"
+              textDomain="nexusShop"
+              onPress={logout}
+              style={styles.logoutButton}
+            />
           </View>
         </View>
       ) : (
@@ -283,4 +278,4 @@ const getStyles = (
     },
   });
 
-export default ShopAcoountModalContent;
+export default ShopAccountModalContent;

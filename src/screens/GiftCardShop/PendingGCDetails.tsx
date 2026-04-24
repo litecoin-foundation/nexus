@@ -1,10 +1,11 @@
 import React, {useContext, useMemo, useState, useEffect, useRef} from 'react';
-import {View, TouchableOpacity, StyleSheet, Platform} from 'react-native';
+import {View, StyleSheet, Platform} from 'react-native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {GiftCardClient, formatCurrency} from '../../services/giftcards';
 import HeaderButton from '../../components/Buttons/HeaderButton';
+import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -273,18 +274,11 @@ const PendingGCDetails: React.FC<Props> = ({route, navigation}) => {
         <CustomSafeAreaView
           styles={styles.safeAreaBottom}
           edges={Platform.OS === 'android' ? ['bottom'] : []}>
-          <TouchableOpacity
-            style={commonStyles.buttonRounded}
+          <BlueRoundButton
+            textKey="back_to_my_cards"
+            textDomain="nexusShop"
             onPress={navigateToMyCards}
-            activeOpacity={0.7}>
-            <TranslateText
-              textKey="back_to_my_cards"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-              textStyle={commonStyles.buttonText}
-              numberOfLines={1}
-            />
-          </TouchableOpacity>
+          />
         </CustomSafeAreaView>
       </View>
     </LinearGradient>

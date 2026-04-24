@@ -9,7 +9,6 @@ import React, {
 import {
   View,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
   Alert,
   Platform,
@@ -23,14 +22,15 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {verifyOtpCode, loginToNexusShop} from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
+import NumpadInput from '../../components/Numpad/NumpadInput';
+import HeaderButton from '../../components/Buttons/HeaderButton';
+import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import WarningModal from '../../components/Modals/WarningModal';
 import {
   colors,
   getSpacing,
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
-import NumpadInput from '../../components/Numpad/NumpadInput';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import WarningModal from '../../components/Modals/WarningModal';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -105,8 +105,12 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [otpCode, setOtpCode] = useState('');
-  const resendUnlocksAtRef = useRef<number>(Date.now() + RESEND_COOLDOWN_SECONDS * 1000);
-  const [resendCountdown, setResendCountdown] = useState(RESEND_COOLDOWN_SECONDS);
+  const resendUnlocksAtRef = useRef<number>(
+    Date.now() + RESEND_COOLDOWN_SECONDS * 1000,
+  );
+  const [resendCountdown, setResendCountdown] = useState(
+    RESEND_COOLDOWN_SECONDS,
+  );
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [showMaxAttemptsModal, setShowMaxAttemptsModal] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -153,8 +157,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
     }
-    resendUnlocksAtRef.current =
-      Date.now() + RESEND_COOLDOWN_SECONDS * 1000;
+    resendUnlocksAtRef.current = Date.now() + RESEND_COOLDOWN_SECONDS * 1000;
     setResendCountdown(RESEND_COOLDOWN_SECONDS);
 
     countdownTimerRef.current = setInterval(() => {
@@ -334,29 +337,17 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
 
   const submitButton = useMemo(
     () => (
-      <TouchableOpacity
-        style={[
-          commonStyles.buttonRounded,
-          isButtonDisabled ? commonStyles.buttonDisabled : null,
-        ]}
+      <BlueRoundButton
+        textKey="verify_code"
+        textDomain="nexusShop"
         onPress={async () => {
           await handleVerifyOTP();
         }}
-        disabled={isButtonDisabled}>
-        {loading ? (
-          <ActivityIndicator color={colors.white} />
-        ) : (
-          <TranslateText
-            textKey="verify_code"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={commonStyles.buttonText}
-            numberOfLines={1}
-          />
-        )}
-      </TouchableOpacity>
+        disabled={isButtonDisabled}
+        loading={loading}
+      />
     ),
-    [SCREEN_HEIGHT, commonStyles, isButtonDisabled, loading, handleVerifyOTP],
+    [isButtonDisabled, loading, handleVerifyOTP],
   );
 
   const isResendDisabled = loading || resendCountdown > 0;
@@ -364,7 +355,9 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   const secondaryButton = useMemo(() => {
     // Progress should go from 100% (at 60s) to 0% (at 0s) - counting DOWN
     const progressPercentage =
-      resendCountdown > 0 ? (resendCountdown / RESEND_COOLDOWN_SECONDS) * 100 : 0;
+      resendCountdown > 0
+        ? (resendCountdown / RESEND_COOLDOWN_SECONDS) * 100
+        : 0;
 
     return (
       <TouchableOpacity

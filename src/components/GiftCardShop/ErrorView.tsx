@@ -1,7 +1,8 @@
 import React, {useContext} from 'react';
-import {View, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import {colors, getSpacing, getCommonStyles} from './theme';
 
+import BlueRoundButton from '../Buttons/BlueRoundButton';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -55,36 +56,17 @@ export function ErrorView({
 
       {onRetry && (
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).buttonRounded}
-            onPress={onRetry}>
-            {onRetryText ? (
-              <TranslateText
-                textValue={onRetryText}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={
-                  getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).buttonText
-                }
-              />
-            ) : onRetryTextKey && onRetryTextDomain ? (
-              <TranslateText
-                textKey={onRetryTextKey}
-                domain={onRetryTextDomain}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={
-                  getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).buttonText
-                }
-              />
-            ) : (
-              <TranslateText
-                textValue="Try Again"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={
-                  getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT).buttonText
-                }
-              />
-            )}
-          </TouchableOpacity>
+          {onRetryText ? (
+            <BlueRoundButton value={onRetryText} onPress={onRetry} />
+          ) : onRetryTextKey && onRetryTextDomain ? (
+            <BlueRoundButton
+              textKey={onRetryTextKey}
+              textDomain={onRetryTextDomain}
+              onPress={onRetry}
+            />
+          ) : (
+            <BlueRoundButton value="Try Again" onPress={onRetry} />
+          )}
         </View>
       )}
     </View>

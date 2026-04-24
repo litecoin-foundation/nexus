@@ -1,9 +1,10 @@
 import React, {useContext, useEffect} from 'react';
-import {View, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {NewWalletStackParamList} from '../../navigation/types';
 
+import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import {NewWalletStackParamList} from '../../navigation/types';
 import {
   colors,
   getFontSize,
@@ -52,17 +53,11 @@ const OTPVerified: React.FC = () => {
         numberOfLines={1}
       />
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={commonStyles.buttonRounded}
-          onPress={handleGoBack}>
-          <TranslateText
-            textKey="to_the_shop"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-            textStyle={commonStyles.buttonText}
-            numberOfLines={1}
-          />
-        </TouchableOpacity>
+        <BlueRoundButton
+          textKey="to_the_shop"
+          textDomain="nexusShop"
+          onPress={handleGoBack}
+        />
       </View>
     </View>
   );
