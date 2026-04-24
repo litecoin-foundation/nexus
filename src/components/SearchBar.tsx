@@ -7,14 +7,16 @@ interface Props {
   value: string;
   placeholder?: string;
   onChangeText: (text: string) => void;
+  noShadow?: boolean;
+  borderRadius?: number;
 }
 
 const SearchBar: React.FC<Props> = props => {
-  const {value, onChangeText, placeholder} = props;
+  const {value, onChangeText, placeholder, noShadow, borderRadius} = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, {noShadow, borderRadius});
 
   return (
     <View style={styles.container}>
@@ -38,12 +40,17 @@ const SearchBar: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
-  StyleSheet.create({
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  options?: {noShadow?: boolean; borderRadius?: number},
+) => {
+  const br = options?.borderRadius;
+  return StyleSheet.create({
     container: {
       width: '100%',
       height: screenHeight * 0.05,
-      borderRadius: screenHeight * 0.01,
+      borderRadius: br ?? screenHeight * 0.01,
       borderColor: '#e8e8e8',
       borderWidth: 1,
       backgroundColor: '#fff',
@@ -52,7 +59,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.07,
+      shadowOpacity: options?.noShadow ? 0 : 0.07,
       shadowRadius: 4,
       flexDirection: 'row',
       alignItems: 'center',
@@ -61,7 +68,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     imageContainer: {
       width: screenHeight * 0.038,
       height: screenHeight * 0.038,
-      borderRadius: screenHeight * 0.008,
+      borderRadius: br != null ? br * 0.8 : screenHeight * 0.008,
       backgroundColor: '#d8d8d833',
       justifyContent: 'center',
       alignItems: 'center',
@@ -82,5 +89,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginLeft: screenHeight * 0.01,
     },
   });
+};
 
 export default SearchBar;
