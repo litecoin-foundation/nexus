@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   Image,
   GestureResponderEvent,
+  PixelRatio,
 } from 'react-native';
 
 import TranslateText from '../../components/TranslateText';
@@ -49,7 +50,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: screenWidth * 0.06,
-      height: screenHeight * 0.055,
+      height: PixelRatio.roundToNearestPixel(screenHeight * 0.055),
       borderTopWidth: 1,
       borderColor: '#E5E5EA',
       backgroundColor: '#FFFFFF',
