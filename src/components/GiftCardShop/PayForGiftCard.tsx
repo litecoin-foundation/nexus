@@ -36,12 +36,14 @@ const formatExpiryDate = (dateString: string): string => {
 
 interface PayForGiftCardProps {
   initiateResponse: InitiatePurchaseResponseData;
+  brandName: string;
   onBack: () => void;
   onSuccess: (txid: string) => void;
 }
 
 export function PayForGiftCard({
   initiateResponse,
+  brandName,
   onBack,
   onSuccess,
 }: PayForGiftCardProps) {
@@ -121,7 +123,7 @@ export function PayForGiftCard({
               numberOfLines={1}
             />
             <TranslateText
-              textValue={initiateResponse.brand}
+              textValue={brandName}
               maxSizeInPixels={SCREEN_HEIGHT * 0.018}
               textStyle={styles.detailValue}
               numberOfLines={1}

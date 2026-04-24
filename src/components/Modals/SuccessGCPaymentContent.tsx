@@ -14,7 +14,7 @@ import {
 } from '../../components/GiftCardShop/theme';
 
 export interface GCPaymentDetails {
-  brand: string;
+  brandName: string;
   amount: number;
   currency: string;
   paymentAmountLtc: string;
@@ -72,7 +72,7 @@ const SuccessGCPaymentContent: React.FC<Props> = ({
                   numberOfLines={1}
                 />
                 <TranslateText
-                  textValue={details.brand}
+                  textValue={details.brandName}
                   maxSizeInPixels={SCREEN_HEIGHT * 0.018}
                   textStyle={styles.detailValue}
                   numberOfLines={1}

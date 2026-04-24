@@ -516,6 +516,7 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
     if (pendingResponse) {
       navigation.navigate('PayForGiftCard', {
         initiateResponse: pendingResponse,
+        brandName: brand.name,
         onPaymentSuccess,
       });
       setPendingResponse(null);

@@ -34,6 +34,7 @@ interface PayForGiftCardScreenProps {
   route: {
     params: {
       initiateResponse: InitiatePurchaseResponseData;
+      brandName: string;
       onPaymentSuccess: (txid: string) => void;
     };
   };
@@ -44,7 +45,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
   route,
   navigation,
 }) => {
-  const {initiateResponse, onPaymentSuccess} = route.params;
+  const {initiateResponse, brandName, onPaymentSuccess} = route.params;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -137,7 +138,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
         }),
       );
       navigation.replace('PendingGCDetails', {
-        brand: initiateResponse.brand,
+        brand: brandName,
         amount: initiateResponse.amount,
         currency: initiateResponse.currency,
         paymentAmountLtc: initiateResponse.paymentAmountLtc,
@@ -178,7 +179,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
                 numberOfLines={1}
               />
               <TranslateText
-                textValue={initiateResponse.brand}
+                textValue={brandName}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.018}
                 textStyle={styles.detailValue}
                 numberOfLines={1}

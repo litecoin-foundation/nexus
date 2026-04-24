@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {useEffect, useMemo, useState, useContext} from 'react';
 import {View, StyleSheet, RefreshControl} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 
@@ -9,7 +9,7 @@ import {GiftCardItem, PendingGiftCardItem} from './GiftCardItem';
 import {SkeletonGiftCardItem} from './SkeletonGiftCardItem';
 
 import {getSpacing} from './theme';
-import {useMyGiftCards} from './hooks';
+import {useBrands, useMyGiftCards} from './hooks';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -21,8 +21,15 @@ const MyGiftCards: React.FC<Props> = props => {
   const {navigation} = props;
 
   const {data, loading, error, refetch} = useMyGiftCards();
+  const {data: brands} = useBrands();
   const giftCards = data?.giftCards ?? [];
   const pendingGiftCards = data?.pendingGiftCards ?? [];
+
+  const brandNameBySlug = useMemo(() => {
+    const map = new Map<string, string>();
+    brands?.forEach(b => map.set(b.slug, b.name));
+    return map;
+  }, [brands]);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -124,7 +131,7 @@ const MyGiftCards: React.FC<Props> = props => {
                   navigation.navigate('NexusShopStack', {
                     screen: 'PendingGCDetails',
                     params: {
-                      brand: gc.brand,
+                      brand: brandNameBySlug.get(gc.brand) ?? gc.brand,
                       amount: gc.amount,
                       currency: gc.currency,
                       paymentAmountLtc: gc.btcpayPaymentAmountLtc,

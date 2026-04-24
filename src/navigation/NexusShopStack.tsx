@@ -34,6 +34,7 @@ export type NexusShopStackParamList = {
   };
   PayForGiftCard: {
     initiateResponse: InitiatePurchaseResponseData;
+    brandName: string;
     onPaymentSuccess: (txid: string) => void;
   };
   PendingGCDetails: PendingGCDetailsParams;
