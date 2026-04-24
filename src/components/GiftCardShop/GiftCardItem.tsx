@@ -15,7 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Clipboard from '@react-native-clipboard/clipboard';
 
-import {GiftCard, PendingGiftCardPurchase} from '../../services/giftcards';
+import {GiftCard, PendingGiftCardPurchase, formatCurrency} from '../../services/giftcards';
 
 import {colors, getSpacing, getBorderRadius, getFontSize} from './theme';
 import TranslateText from '../TranslateText';
@@ -121,7 +121,7 @@ export function GiftCardItem({giftCard}: GiftCardItemProps) {
             maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
           />
           <TranslateText
-            textValue={`${giftCard.faceValue.currency === 'USD' ? '$' : ''}${giftCard.faceValue.amount}`}
+            textValue={`${formatCurrency(giftCard.faceValue.currency)}${giftCard.faceValue.amount}`}
             textStyle={styles.cardAmount}
             maxSizeInPixels={SCREEN_HEIGHT * 0.0155}
           />
@@ -252,7 +252,7 @@ export function PendingGiftCardItem({
             maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
           />
           <TranslateText
-            textValue={`${pendingGiftCard.currency === 'USD' ? '$' : ''}${pendingGiftCard.amount}`}
+            textValue={`${formatCurrency(pendingGiftCard.currency)}${pendingGiftCard.amount}`}
             textStyle={styles.pendingCardAmount}
             maxSizeInPixels={SCREEN_HEIGHT * 0.014}
           />

@@ -8,7 +8,7 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import {Brand, InitiatePurchaseResponseData} from '../../services/giftcards';
+import {Brand, InitiatePurchaseResponseData, formatCurrency} from '../../services/giftcards';
 import {usePurchaseFlow} from './hooks';
 import {
   colors,
@@ -149,7 +149,7 @@ export function PurchaseForm({
             onPress={() => setAmount(Number(denom))}
             activeOpacity={0.7}>
             <TranslateText
-              textValue={`${currency === 'USD' ? '$' : ''}${denom}`}
+              textValue={`${formatCurrency(currency)}${denom}`}
               maxSizeInPixels={SCREEN_HEIGHT * 0.016}
               textStyle={[
                 styles.denominationText,
@@ -172,7 +172,7 @@ export function PurchaseForm({
           />
           <View style={styles.amountInputContainer}>
             <TranslateText
-              textValue={currency === 'USD' ? '$' : currency}
+              textValue={formatCurrency(currency)}
               maxSizeInPixels={SCREEN_HEIGHT * 0.018}
               textStyle={styles.currencySymbol}
               numberOfLines={1}

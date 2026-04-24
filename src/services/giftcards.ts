@@ -1,4 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
+import fiat from '../assets/fiat';
+
+const fiatByCode: Record<string, {symbol_native: string}> = Object.fromEntries(
+  fiat.map((f: {code: string; symbol_native: string}) => [f.code, f]),
+);
 
 export const TILLO_CATEGORIES = [
   'baby',
@@ -343,27 +348,12 @@ export function daysUntilExpiration(giftCard: GiftCard): number {
 }
 
 export function formatAmount(amount: number, currency: string): string {
-  const symbols: Record<string, string> = {
-    USD: '$',
-    CAD: 'C$',
-    AUD: 'A$',
-    EUR: '€',
-    GBP: '£',
-  };
-  const symbol = symbols[currency] || currency + ' ';
+  const symbol = fiatByCode[currency]?.symbol_native ?? currency + ' ';
   return `${symbol}${amount.toFixed(2)}`;
 }
 
 export function formatCurrency(currency: string): string {
-  const symbols: Record<string, string> = {
-    USD: '$',
-    CAD: 'C$',
-    AUD: 'A$',
-    EUR: '€',
-    GBP: '£',
-  };
-  const symbol = symbols[currency] || currency + ' ';
-  return symbol;
+  return fiatByCode[currency]?.symbol_native ?? currency + ' ';
 }
 
 const COUNTRY_CURRENCY_MAP: Record<string, string> = {

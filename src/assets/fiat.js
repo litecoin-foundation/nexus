@@ -11,7 +11,7 @@ const fiat = [
   },
   {
     key: 'CAD',
-    symbol: 'CA$',
+    symbol: '$',
     name: 'Canadian Dollar',
     symbol_native: '$',
     decimal_digits: 2,
