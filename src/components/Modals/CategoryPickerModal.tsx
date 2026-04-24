@@ -78,12 +78,18 @@ function LiquidGlassCategoryPicker({
     useContext(ScreenSizeContext);
   const {captureRef} = useContext(ScreenCaptureContext);
 
-  const modalWidth = SCREEN_WIDTH * 0.58;
-  const modalHeight = SCREEN_HEIGHT * 0.48;
-  const modalRight = SCREEN_WIDTH * 0.04;
-  const modalTop = SCREEN_HEIGHT * 0.225;
+  const modalWidth = SCREEN_WIDTH * 0.52;
+  const modalHeight = SCREEN_HEIGHT * 0.6;
+  const modalRight = (SCREEN_WIDTH - modalWidth) / 2;
+  const modalTop = SCREEN_HEIGHT - (modalHeight + modalRight);
   const modalLeft = SCREEN_WIDTH - modalWidth - modalRight;
   const cornerRadius = SCREEN_HEIGHT * 0.025;
+
+  const borderWidth = modalWidth + SCREEN_WIDTH * 0.08;
+  const borderHeight = modalHeight + (borderWidth - modalWidth);
+  const borderLeft = modalLeft - (borderWidth - modalWidth) / 2;
+  const borderTop = modalTop - (borderHeight - modalHeight) / 2;
+  const borderCornerRadius = cornerRadius * 1.2;
 
   const [capturedImage, setCapturedImage] = useState<SkImage | null>(null);
 
@@ -98,14 +104,14 @@ function LiquidGlassCategoryPicker({
     }
   }, [captureRef]);
 
-  const glassFilter = useDerivedValue(() => {
+  const borderGlassFilter = useDerivedValue(() => {
     const builder = Skia.RuntimeShaderBuilder(liquidGlassShader);
     processUniforms(
       liquidGlassShader,
       {
-        size: [modalWidth, modalHeight],
-        cornerR: cornerRadius,
-        resolution: [modalWidth, modalHeight],
+        size: [borderWidth, borderHeight],
+        cornerR: borderCornerRadius,
+        resolution: [borderWidth, borderHeight],
       },
       builder,
     );
@@ -191,7 +197,7 @@ function LiquidGlassCategoryPicker({
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedCategory, SCREEN_HEIGHT],
+    [selectedCategory, SCREEN_HEIGHT, onSelect, close],
   );
 
   const renderSeparator = useCallback(
@@ -205,10 +211,7 @@ function LiquidGlassCategoryPicker({
 
   return (
     <View
-      style={[
-        styles.overlay,
-        {width: SCREEN_WIDTH, height: SCREEN_HEIGHT},
-      ]}
+      style={[styles.overlay, {width: SCREEN_WIDTH, height: SCREEN_HEIGHT}]}
       pointerEvents="box-none">
       <Animated.View
         style={[
@@ -227,6 +230,60 @@ function LiquidGlassCategoryPicker({
       </Animated.View>
 
       <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.modalContainer,
+          {
+            top: borderTop,
+            left: borderLeft,
+            width: borderWidth,
+            height: borderHeight,
+            borderRadius: borderCornerRadius,
+          },
+          animatedModalStyle,
+        ]}>
+        <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
+          {capturedImage ? (
+            <SkiaImage
+              image={capturedImage}
+              x={-borderLeft}
+              y={-borderTop}
+              width={SCREEN_WIDTH}
+              height={SCREEN_HEIGHT}
+              fit="cover"
+            />
+          ) : (
+            <Rect x={0} y={0} width={borderWidth} height={borderHeight}>
+              <LinearGradient
+                start={vec(0, 0)}
+                end={vec(borderWidth, borderHeight)}
+                colors={FALLBACK_GRADIENT}
+              />
+            </Rect>
+          )}
+          <BackdropFilter filter={<ImageFilter filter={borderGlassFilter} />} />
+          <RoundedRect
+            x={0.5}
+            y={0.5}
+            width={borderWidth - 1}
+            height={borderHeight - 1}
+            r={borderCornerRadius - 0.5}
+            style="stroke"
+            strokeWidth={0.5}
+            color="rgba(255, 255, 255, 0.35)"
+          />
+        </Canvas>
+        <View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            styles.borderTintLayer,
+            {borderRadius: borderCornerRadius},
+          ]}
+        />
+      </Animated.View>
+
+      <Animated.View
         style={[
           styles.modalContainer,
           {
@@ -238,38 +295,6 @@ function LiquidGlassCategoryPicker({
           },
           animatedModalStyle,
         ]}>
-        <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-          {capturedImage ? (
-            <SkiaImage
-              image={capturedImage}
-              x={-modalLeft}
-              y={-modalTop}
-              width={SCREEN_WIDTH}
-              height={SCREEN_HEIGHT}
-              fit="cover"
-            />
-          ) : (
-            <Rect x={0} y={0} width={modalWidth} height={modalHeight}>
-              <LinearGradient
-                start={vec(0, 0)}
-                end={vec(modalWidth, modalHeight)}
-                colors={FALLBACK_GRADIENT}
-              />
-            </Rect>
-          )}
-          <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
-          <RoundedRect
-            x={0.5}
-            y={0.5}
-            width={modalWidth - 1}
-            height={modalHeight - 1}
-            r={cornerRadius - 0.5}
-            style="stroke"
-            strokeWidth={0.5}
-            color="rgba(255, 255, 255, 0.35)"
-          />
-        </Canvas>
-
         <View
           pointerEvents="none"
           style={[
@@ -312,8 +337,7 @@ const CategoryPickerModal: React.FC<Props> = props => {
 
   useEffect(() => {
     showPopUp(modal, 'category-picker-modal');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible, selectedCategory]);
+  }, [modal, showPopUp]);
 
   return <></>;
 };
@@ -333,13 +357,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   tintLayer: {
-    backgroundColor: 'rgba(238, 238, 240, 0.58)',
+    backgroundColor: 'transparent',
+  },
+  borderTintLayer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   content: {
     flex: 1,
   },
   listContent: {
-    paddingVertical: 6,
+    paddingVertical: 10,
   },
   row: {
     flexDirection: 'row',
@@ -349,7 +376,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   rowSelected: {
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    backgroundColor: 'transparent',
   },
   rowTitle: {
     fontFamily: 'Satoshi Variable',
