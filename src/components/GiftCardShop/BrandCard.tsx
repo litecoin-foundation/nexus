@@ -11,7 +11,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {syncWishlistToggle} from '../../reducers/nexusshopaccount';
 import {Brand, formatCurrency} from '../../services/giftcards';
 
-import {colors, getSpacing} from './theme';
+import {colors} from './theme';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -346,7 +346,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.016,
       borderWidth: screenHeight * 0.002,
       borderColor: '#F0F0F0',
-      marginBottom: getSpacing(screenWidth, screenHeight).sm,
+      marginBottom: screenHeight * 0.008,
     },
     brandCard: {
       flexDirection: 'row',

@@ -301,6 +301,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       // TODO: there's weird gap at the bottom out of nowhere
       maxHeight: screenHeight * 0.76 - (115 + screenHeight * 0.13),
       flex: 1,
+      overflow: 'visible',
+      zIndex: 2,
     },
     imageContainer: {
       position: 'absolute',
