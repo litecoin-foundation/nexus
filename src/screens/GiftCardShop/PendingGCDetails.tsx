@@ -3,7 +3,7 @@ import {View, TouchableOpacity, StyleSheet, Platform} from 'react-native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 
-import {GiftCardClient} from '../../services/giftcards';
+import {GiftCardClient, formatCurrency} from '../../services/giftcards';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -170,7 +170,7 @@ const PendingGCDetails: React.FC<Props> = ({route, navigation}) => {
                 numberOfLines={1}
               />
               <TranslateText
-                textValue={`${amount} ${currency}`}
+                textValue={`${formatCurrency(currency)}${amount}`}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.018}
                 textStyle={styles.detailValue}
                 numberOfLines={1}
