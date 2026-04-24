@@ -576,7 +576,7 @@ const getStyles = (
     },
     formContainer: {
       padding: screenWidth * 0.04,
-      paddingBottom: screenHeight * 0.15,
+      paddingBottom: screenHeight * 0.02,
     },
     headerCard: {
       flexDirection: 'row',
@@ -751,11 +751,9 @@ const getStyles = (
       lineHeight: getFontSize(screenHeight).md * 1.5,
     },
     buttonContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.03,
-      left: screenWidth * 0.04,
-      right: screenWidth * 0.04,
-      zIndex: 2,
+      paddingHorizontal: screenWidth * 0.04,
+      paddingTop: screenHeight * 0.01,
+      paddingBottom: screenHeight * 0.03,
     },
     safeArea: {},
     underButtonText: {
