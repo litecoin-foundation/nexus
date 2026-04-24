@@ -30,6 +30,10 @@ import {
   deviceList,
 } from './src/context/screenSize';
 import {PopUpProvider, PopUpContext} from './src/context/popUpContext';
+import {
+  ScreenCaptureProvider,
+  ScreenCaptureTarget,
+} from './src/context/screenCapture';
 
 import {useAppDispatch, useAppSelector} from './src/store/hooks';
 import {loginToNexusApi} from './src/reducers/onboarding';
@@ -337,11 +341,15 @@ const App: React.FC = () => {
                     notification={openedNotificationData}
                   />
                   <PopUpProvider>
-                    <GestureHandlerRootView style={styles.gestureView}>
-                      <RenderPopUps />
-                      <RootNavigator />
-                      <Error />
-                    </GestureHandlerRootView>
+                    <ScreenCaptureProvider>
+                      <GestureHandlerRootView style={styles.gestureView}>
+                        <RenderPopUps />
+                        <ScreenCaptureTarget>
+                          <RootNavigator />
+                        </ScreenCaptureTarget>
+                        <Error />
+                      </GestureHandlerRootView>
+                    </ScreenCaptureProvider>
                   </PopUpProvider>
                 </FlexaContext.FlexaContextProvider>
               </PersistGate>
