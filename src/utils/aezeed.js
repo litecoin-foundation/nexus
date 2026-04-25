@@ -4,7 +4,7 @@
 import {Buffer} from 'buffer';
 import Crypto from 'react-native-quick-crypto';
 import aez from 'aez';
-import {Scrypt} from 'react-native-nitro-scrypt';
+import {scryptSync} from 'react-native-quick-crypto';
 
 import ecc from '@bitcoinerlab/secp256k1';
 import {BIP32Factory} from 'bip32';
@@ -55,14 +55,12 @@ export const generateMnemonic = () => {
 
       const entropy = Crypto.randomBytes(16).toString('hex');
 
-      const key = Scrypt.scrypt(
-        passwordBuffer,
-        salt,
-        SCRYPT_N,
-        SCRYPT_R,
-        SCRYPT_P,
-        SCRYPT_KEY_LENGTH,
-      );
+      const key = scryptSync(passwordBuffer, salt, SCRYPT_KEY_LENGTH, {
+        N: SCRYPT_N,
+        r: SCRYPT_R,
+        p: SCRYPT_P,
+        maxmem: 64 * 1024 * 1024,
+      });
 
       const keyUInt8Array = new Uint8Array(key);
       const saltBuffer = Buffer.from(salt);
@@ -217,13 +215,16 @@ export const decodeSeed = async (mnemonic, passphrase = 'aezeed') => {
         salt.byteOffset + salt.byteLength,
       );
 
-      const key = Scrypt.scrypt(
+      const key = scryptSync(
         passwordBuffer,
         saltArrayBuffer,
-        SCRYPT_N,
-        SCRYPT_R,
-        SCRYPT_P,
         SCRYPT_KEY_LENGTH,
+        {
+          N: SCRYPT_N,
+          r: SCRYPT_R,
+          p: SCRYPT_P,
+          maxmem: 64 * 1024 * 1024,
+        },
       );
 
       const keyUInt8Array = new Uint8Array(key);

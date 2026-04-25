@@ -60,6 +60,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Connect to Nexus Hardware Wallet over Bluetooth.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>App will use your camera to scan QR codes for Litecoin Payments</string>
 	<key>NSFaceIDUsageDescription</key>
