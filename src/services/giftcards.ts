@@ -57,6 +57,7 @@ export interface Brand {
   async_only?: boolean;
   type?: 'gift-card' | 'choice-link';
   priority?: number;
+  currencyMinValue?: number;
 }
 
 export interface GiftCard {
@@ -287,8 +288,8 @@ export function validateAmount(
   amount: number,
   availableBalanceFiat?: number,
 ): {valid: boolean; error?: string} {
-  if (amount < 0.01) {
-    return {valid: false, error: 'Minimum amount is $5'};
+  if (brand.currencyMinValue && amount < brand.currencyMinValue) {
+    return {valid: false, error: `Minimum amount is ${brand.currencyMinValue}`};
   }
 
   if (brand.denominations && brand.denominations.length > 0) {
