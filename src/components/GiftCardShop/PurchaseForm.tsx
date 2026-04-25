@@ -77,8 +77,9 @@ export function PurchaseForm({
     }
   }, [initialAmount, setAmount]);
 
-  const minAmount = Number(
-    brand.digital_face_value_limits?.lower || brand.denominations?.[0],
+  const minAmount = Math.max(
+    brand.currencyMinValue ?? 0,
+    Number(brand.digital_face_value_limits?.lower || brand.denominations?.[0]),
   );
   const maxAmount = Number(
     brand.digital_face_value_limits?.upper ||
