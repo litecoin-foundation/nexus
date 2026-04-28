@@ -445,7 +445,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         titleKey="enter_your_code"
         titleDomain="nexusShop"
         dotDisabled
-        small
+        extraSmall
         secondaryButton={secondaryButton}
       />
       <WarningModal
@@ -469,7 +469,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     title: {
       fontWeight: '700',
-      paddingTop: getSpacing(screenWidth, screenHeight).header,
+      paddingTop:
+        Platform.OS === 'ios'
+          ? getSpacing(screenWidth, screenHeight).header
+          : getSpacing(screenWidth, screenHeight).headerAndroid,
     },
     subtitle: {
       paddingTop: getSpacing(screenWidth, screenHeight).xs,
