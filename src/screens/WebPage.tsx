@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Image,
   Platform,
+  Linking,
 } from 'react-native';
 import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
@@ -81,11 +82,37 @@ const WebPage: React.FC<Props> = props => {
           'about:blank',
           'about:srcdoc',
         ]}
+        onShouldStartLoadWithRequest={request => {
+          const {url} = request;
+          // Handle Apple Wallet .pkpass files
+          if (
+            url.endsWith('.pkpass') ||
+            url.includes('mime=application/vnd.apple.pkpass') ||
+            url.includes('content-type=application/vnd.apple.pkpass')
+          ) {
+            Linking.openURL(url);
+            return false;
+          }
+          // Handle Google Wallet
+          if (
+            url.startsWith('https://pay.google.com/gp/v/save/') ||
+            url.startsWith('intent://') ||
+            url.startsWith('https://wallet.google.com') ||
+            url.startsWith('https://wallet.google')
+          ) {
+            Linking.openURL(url);
+            return false;
+          }
+          return true;
+        }}
         onNavigationStateChange={syntheticEvent =>
           setCurrentUrl(syntheticEvent.url)
         }
         applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${DeviceInfo.getSystemVersion()}`}
         allowsInlineMediaPlayback={true}
+        onFileDownload={({nativeEvent: {downloadUrl}}) => {
+          Linking.openURL(downloadUrl);
+        }}
       />
       <View style={styles.optionsContainer}>
         <TouchableOpacity
