@@ -3,7 +3,6 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - CryptoSwift (1.8.4)
   - DeviceKit (5.0.0)
   - DoubleConversion (1.1.6)
   - EXApplication (55.0.8):
@@ -177,8 +176,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - MMKVCore (2.2.4)
-  - NitroJade (0.0.1):
+  - MMKVCore (2.4.0)
+  - NitroJade (0.0.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -239,14 +238,14 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NitroMmkv (4.0.0):
+  - NitroMmkv (4.3.1):
     - boost
     - DoubleConversion
     - fast_float
     - fmt
     - glog
     - hermes-engine
-    - MMKVCore (= 2.2.4)
+    - MMKVCore (= 2.4.0)
     - NitroModules
     - RCT-Folly
     - RCT-Folly/Fabric
@@ -299,7 +298,36 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - OpenSSL-Universal (3.3.3001)
+  - QuickCrypto (1.0.19):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - NitroModules
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -2217,38 +2245,8 @@ PODS:
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-quick-base64 (2.2.0):
+  - react-native-quick-base64 (2.2.2):
     - React-Core
-  - react-native-quick-crypto (0.7.14):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - OpenSSL-Universal
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
   - react-native-safe-area-context (5.6.2):
     - boost
     - DoubleConversion
@@ -3180,8 +3178,34 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNKeychain (8.2.0):
+  - RNKeychain (10.0.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNLocalize (3.4.1):
     - boost
     - DoubleConversion
@@ -3552,36 +3576,6 @@ PODS:
   - SVGView (1.0.6)
   - SwiftCBOR (0.6.0)
   - SwiftUIIntrospect (26.0.0)
-  - TurboScryptiOS (0.1.0):
-    - boost
-    - CryptoSwift
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - NitroModules
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
   - VisionCamera (4.7.3):
     - VisionCamera/Core (= 4.7.3)
     - VisionCamera/React (= 4.7.3)
@@ -3622,6 +3616,7 @@ DEPENDENCIES:
   - NitroLndltc (from `../node_modules/react-native-nitro-lndltc`)
   - NitroMmkv (from `../node_modules/react-native-mmkv`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
+  - QuickCrypto (from `../node_modules/react-native-quick-crypto`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -3663,7 +3658,6 @@ DEPENDENCIES:
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
-  - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-segmented-control (from `../node_modules/@react-native-segmented-control/segmented-control`)"
   - "react-native-skia (from `../node_modules/@shopify/react-native-skia`)"
@@ -3719,14 +3713,12 @@ DEPENDENCIES:
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - RNZipArchive (from `../node_modules/react-native-zip-archive`)
   - SocketRocket (~> 0.7.1)
-  - TurboScryptiOS (from `../node_modules/react-native-nitro-scrypt`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
     - Base32
-    - CryptoSwift
     - DeviceKit
     - Factory
     - Flexa
@@ -3739,7 +3731,6 @@ SPEC REPOS:
     - KeychainAccess
     - lottie-ios
     - MMKVCore
-    - OpenSSL-Universal
     - React-Codegen
     - SocketRocket
     - SSZipArchive
@@ -3809,6 +3800,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-mmkv"
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
+  QuickCrypto:
+    :path: "../node_modules/react-native-quick-crypto"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3889,8 +3882,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-quick-base64:
     :path: "../node_modules/react-native-quick-base64"
-  react-native-quick-crypto:
-    :path: "../node_modules/react-native-quick-crypto"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-segmented-control:
@@ -3999,8 +3990,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-worklets"
   RNZipArchive:
     :path: "../node_modules/react-native-zip-archive"
-  TurboScryptiOS:
-    :path: "../node_modules/react-native-nitro-scrypt"
   VisionCamera:
     :path: "../node_modules/react-native-vision-camera"
   Yoga:
@@ -4010,7 +3999,6 @@ SPEC CHECKSUMS:
   Base32: 163c298644d184e89ca4e00a996bad6bf5166390
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
-  CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90
   DeviceKit: 0fd016a2cb67aca17c33dc23171cac270131eb88
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 516af7c59786689fb652d45979494655fcf46534
@@ -4046,12 +4034,12 @@ SPEC CHECKSUMS:
   KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
   lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
   lottie-react-native: 994a0f1696a7ea01f63443e53a860c735246082d
-  MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
-  NitroJade: 810045e9eb05a03187465bda2c18f798f0d9e09d
+  MMKVCore: 3d16ce9f7d411e135020915fde98a056859a1efa
+  NitroJade: ed70b402a1b7e8d57589b061dac0932e23681123
   NitroLndltc: 00f1b99163666585cda01467f74893b21097823d
-  NitroMmkv: 1b125f00aa79f5b73e5afe0340a6d058923e1269
+  NitroMmkv: ef2074caf812c4e421ff5cfd61ddec2d9d520fea
   NitroModules: b632f83915f059473b72b5d6fb90ff2c2ca674c1
-  OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
+  QuickCrypto: 8c47ccd25b3c3e0e8899367bac0215b19f77107b
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: a41bbdd9af30bf2e5715796b313e44ec43eefff1
   RCTRequired: 7be34aabb0b77c3cefe644528df0fa0afad4e4d0
@@ -4092,8 +4080,7 @@ SPEC CHECKSUMS:
   react-native-blob-util: f9fce545a5f63e686d5e7d9999db4a0233849e01
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
-  react-native-quick-base64: 5c67f3f20cf7878e9deb449188b432de897d212c
-  react-native-quick-crypto: ac1ebc1bc6382c06085a7772badab182f337be00
+  react-native-quick-base64: d87272898345e0fc3c3afb8e5dff335d51214f3e
   react-native-safe-area-context: 54d812805f3c4e08a4580ad086cbde1d8780c2e4
   react-native-segmented-control: 44d14c6899ee12de3384517f4fa1cf4a66ae105c
   react-native-skia: b3cd83e2bbc7fb7e4e38a23f4ba12fdf0e7e3fbe
@@ -4139,7 +4126,7 @@ SPEC CHECKSUMS:
   RNCClipboard: a9d5216cbfaf2f51cfe80bcb132856bb9158fe0d
   RNDeviceInfo: 53f9c84e28e854a308d3e548e25ef120b4615531
   RNGestureHandler: 77eecab5fd636666ca73a55bb61e2f1a685b7e84
-  RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
+  RNKeychain: 182d986f809280edd9444a557adc21845f7d1e6f
   RNLocalize: 4f0eb11e792ff2fb8d0c198b2b33cbf775421b13
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
   RNReanimated: dd34198e313b0156edce87a545f5ceeea7f2686f
@@ -4153,7 +4140,6 @@ SPEC CHECKSUMS:
   SVGView: 4a9fa6296a5fdb6232dec7450aa98f169d0e274f
   SwiftCBOR: b873af28a9cc66003852fdc79a41852a7e54009a
   SwiftUIIntrospect: 74b21afe4589aa3979192844ac1cbba381712e61
-  TurboScryptiOS: 6e6fc3c5a47593a168ad9d43d8a4b27877fb0d0b
   VisionCamera: 3ea10c46a5c612f5f89fb46a54bef4a0de8b58a7
   Yoga: 5456bb010373068fc92221140921b09d126b116e
 
