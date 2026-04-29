@@ -242,7 +242,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   })();
 
   const toSignUp = () => {
-    navigation.navigate('NexusShopStack', {screen: 'SignUp'});
+    navigation.push('SignUp', {returnTo: true});
   };
 
   const handleSubmit = async () => {

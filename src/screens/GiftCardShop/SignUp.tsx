@@ -54,9 +54,15 @@ import {
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 
-interface Props {}
+interface Props {
+  route?: {
+    params?: {
+      returnTo?: boolean;
+    };
+  };
+}
 
-const SignUp: React.FC<Props> = () => {
+const SignUp: React.FC<Props> = ({route}) => {
   const {t} = useTranslation('nexusShop');
   const {account} = useSelector((state: any) => state.nexusshopaccount);
   const shopUserEmail = account && account.email;
@@ -180,7 +186,7 @@ const SignUp: React.FC<Props> = () => {
       await dispatch(
         registerOnNexusShop(email.trim(), uniqueId, turnstileToken),
       );
-      navigation.navigate('VerifyOTP');
+      navigation.navigate('VerifyOTP', {returnTo: route?.params?.returnTo});
     } catch (error) {
       const errMsg =
         error instanceof Error ? error.message : 'Please try again later.';
