@@ -120,6 +120,15 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     amount > 0 ? amount.toString() : '',
   );
   const [showInputAmount, setShowInputAmount] = useState(false);
+  const [accessoryKey, setAccessoryKey] = useState(0);
+  const accessoryId = `amountInputDone_${accessoryKey}`;
+
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      setAccessoryKey(k => k + 1);
+    });
+    return () => sub.remove();
+  }, []);
   const [inputContentHeight, setInputContentHeight] = useState<number | null>(
     null,
   );
@@ -385,7 +394,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                     placeholder={`${minAmount} - ${maxAmount}`}
                     keyboardType="decimal-pad"
                     placeholderTextColor={colors.grayMedium}
-                    inputAccessoryViewID="amountInputDone"
+                    inputAccessoryViewID={accessoryId}
                   />
                 </View>
                 <TranslateText
@@ -406,18 +415,19 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
         ) : (
           <></>
         )}
-        {Platform.OS === 'ios' && (
-          <InputAccessoryView nativeID="amountInputDone">
-            <View style={styles.inputAccessory}>
-              <BlueRoundButton
-                textKey="ok"
-                textDomain="nexusShop"
-                onPress={() => Keyboard.dismiss()}
-              />
-            </View>
-          </InputAccessoryView>
-        )}
       </View>
+
+      {Platform.OS === 'ios' && (
+        <InputAccessoryView nativeID={accessoryId}>
+          <View style={styles.inputAccessory}>
+            <BlueRoundButton
+              textKey="ok"
+              textDomain="nexusShop"
+              onPress={() => Keyboard.dismiss()}
+            />
+          </View>
+        </InputAccessoryView>
+      )}
 
       <ScrollView
         style={styles.scrollView}
@@ -776,8 +786,9 @@ const getStyles = (
     },
     inputAccessory: {
       width: screenWidth,
+      height: screenHeight * 0.06 + 20,
       paddingHorizontal: screenWidth * 0.1,
-      marginBottom: 10,
+      paddingVertical: 10,
     },
   });
 
