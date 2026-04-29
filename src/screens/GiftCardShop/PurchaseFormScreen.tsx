@@ -13,6 +13,8 @@ import {
   ScrollView,
   StyleSheet,
   Platform,
+  InputAccessoryView,
+  Keyboard,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -38,7 +40,6 @@ import {
   getSpacing,
   getBorderRadius,
   getFontSize,
-  getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
@@ -114,7 +115,6 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     useContext(ScreenSizeContext);
   const deviceHeaderHeight = useHeaderHeight();
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, deviceHeaderHeight);
-  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [amountText, setAmountText] = useState(
     amount > 0 ? amount.toString() : '',
@@ -385,6 +385,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                     placeholder={`${minAmount} - ${maxAmount}`}
                     keyboardType="decimal-pad"
                     placeholderTextColor={colors.grayMedium}
+                    inputAccessoryViewID="amountInputDone"
                   />
                 </View>
                 <TranslateText
@@ -404,6 +405,17 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
           </View>
         ) : (
           <></>
+        )}
+        {Platform.OS === 'ios' && (
+          <InputAccessoryView nativeID="amountInputDone">
+            <View style={styles.inputAccessory}>
+              <BlueRoundButton
+                textKey="ok"
+                textDomain="nexusShop"
+                onPress={() => Keyboard.dismiss()}
+              />
+            </View>
+          </InputAccessoryView>
         )}
       </View>
 
@@ -761,6 +773,11 @@ const getStyles = (
       fontSize: screenHeight * 0.02,
       fontStyle: 'normal',
       fontWeight: '700',
+    },
+    inputAccessory: {
+      width: screenWidth,
+      paddingHorizontal: screenWidth * 0.1,
+      marginBottom: 10,
     },
   });
 

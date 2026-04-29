@@ -421,6 +421,7 @@
     "payment_processing": "Payment processing...",
     "payment_sent": "Payment Sent",
     "done": "Done",
+    "ok": "OK",
     "order_details": "Order Details",
     "pending_gift_card": "Pending Gift Card",
     "order_status": "Order Status",
