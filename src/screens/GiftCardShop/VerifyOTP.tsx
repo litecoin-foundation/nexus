@@ -451,7 +451,8 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         titleKey="enter_your_code"
         titleDomain="nexusShop"
         dotDisabled
-        extraSmall
+        small={Platform.OS === 'ios' ? true : false}
+        extraSmall={Platform.OS === 'ios' ? false : true}
         secondaryButton={secondaryButton}
       />
       <WarningModal
