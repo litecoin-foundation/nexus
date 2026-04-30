@@ -13,7 +13,6 @@ import React, {
 import {
   StyleSheet,
   View,
-  Image,
   NativeSyntheticEvent,
   NativeScrollEvent,
   Platform,
@@ -324,10 +323,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
       : 0.1;
 
   const isAlmostDone = percentageProgress >= 99.9 && percentageProgress < 100;
+  const showSpinner =
+    isAlmostDone ||
+    (recoveryMode && (percentageProgress <= 1.5 || percentageProgress >= 100));
 
   const rotation = useSharedValue(0);
   useEffect(() => {
-    if (isAlmostDone) {
+    if (showSpinner) {
       rotation.value = 0;
       rotation.value = withRepeat(
         withTiming(360, {duration: 1250, easing: Easing.linear}),
@@ -337,7 +339,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     } else {
       rotation.value = 0;
     }
-  }, [isAlmostDone, rotation]);
+  }, [showSpinner, rotation]);
 
   const spinStyle = useAnimatedStyle(() => ({
     transform: [{rotate: `${rotation.value}deg`}],
@@ -371,7 +373,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
           textStyle={styles.sectionHeaderText}
           numberOfLines={1}
         />
-        {isAlmostDone ? (
+        {showSpinner ? (
           <Animated.Image
             source={require('../assets/icons/loading.png')}
             style={[
