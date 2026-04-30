@@ -71,6 +71,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       color: '#2E2E2E',
       fontSize: screenHeight * 0.012,
+      textTransform: 'uppercase',
     },
     disabled: {
       opacity: 0.5,
