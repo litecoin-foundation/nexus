@@ -1,10 +1,21 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import {fileExists} from './file';
 
+const ELECTRUM_SERVERS = [
+  'electrum.ltc.xurious.com:50002',
+  'ltc-electrum.cakewallet.com:50002',
+  'litecoin.stackwallet.com:20063',
+  'electrum-ltc.bysh.me:50002',
+  'backup.electrum-ltc.org:443',
+  'fallacy.fiatfaucet.com:50002',
+];
+
 const getMainnetConfig = (
   torEnabled: boolean = false,
   litecoinBackend: 'neutrino' | 'electrum' = 'electrum',
 ) => {
+  const electrumServer =
+    ELECTRUM_SERVERS[Math.floor(Math.random() * ELECTRUM_SERVERS.length)];
   const baseConfig = `
   [Application Options]
   debuglevel=info
@@ -37,7 +48,7 @@ const getMainnetConfig = (
   neutrino.feeurl=https://litecoinspace.org/api/v1/fees/recommended-lnd
 
   [electrum]
-  electrum.server=fallacy.fiatfaucet.com:50002
+  electrum.server=${electrumServer}
   electrum.resturl=https://litecoinspace.org/api
   electrum.ssl=true
   `;
