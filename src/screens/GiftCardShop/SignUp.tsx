@@ -54,9 +54,15 @@ import {
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 
-interface Props {}
+interface Props {
+  route?: {
+    params?: {
+      returnTo?: boolean;
+    };
+  };
+}
 
-const SignUp: React.FC<Props> = () => {
+const SignUp: React.FC<Props> = ({route}) => {
   const {t} = useTranslation('nexusShop');
   const {account} = useSelector((state: any) => state.nexusshopaccount);
   const shopUserEmail = account && account.email;
@@ -180,7 +186,7 @@ const SignUp: React.FC<Props> = () => {
       await dispatch(
         registerOnNexusShop(email.trim(), uniqueId, turnstileToken),
       );
-      navigation.navigate('VerifyOTP');
+      navigation.navigate('VerifyOTP', {returnTo: route?.params?.returnTo});
     } catch (error) {
       const errMsg =
         error instanceof Error ? error.message : 'Please try again later.';
@@ -279,7 +285,9 @@ const SignUp: React.FC<Props> = () => {
     <LinearGradient
       style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
+      <CustomSafeAreaView
+        styles={styles.safeArea}
+        edges={Platform.OS === 'android' ? ['bottom'] : []}>
         <Animated.View style={[styles.topContainer, animatedTopStyle]}>
           <Animated.View style={[styles.imageContainer, animatedImageStyle]}>
             <Canvas style={styles.image}>
@@ -410,12 +418,7 @@ const SignUp: React.FC<Props> = () => {
             textKey="sign_up_or_login"
             textDomain="nexusShop"
             onPress={handleSignUp}
-            disabled={
-              loginLoading ||
-              !turnstileToken ||
-              !email.trim() ||
-              !validateEmail(email)
-            }
+            disabled={loginLoading || !turnstileToken || !email.trim()}
             loading={loginLoading}
             style={styles.signUpButton}
           />
@@ -459,6 +462,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderBottomRightRadius: screenHeight * 0.04,
       justifyContent: 'space-between',
       alignItems: 'center',
+      zIndex: 1,
     },
     imageContainer: {
       width: '100%',
@@ -550,11 +554,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       marginBottom: getSpacing(screenWidth, screenHeight).sm,
     },
     buttonContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.03,
-      left: 0,
-      width: '100%',
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).xl,
+      flex: 1,
+      justifyContent: 'flex-end',
+      paddingHorizontal: screenHeight * 0.03,
+      paddingBottom: screenHeight * 0.03,
     },
     resetButtonContainer: {
       paddingTop: 10,

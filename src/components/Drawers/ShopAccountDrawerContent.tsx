@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -457,6 +458,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       bottom: 0,
       width: '100%',
       paddingHorizontal: screenWidth * 0.05,
+      paddingBottom: Platform.OS === 'ios' ? 0 : screenWidth * 0.05,
     },
     buttonContainer: {
       width: '100%',

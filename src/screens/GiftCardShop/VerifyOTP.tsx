@@ -42,6 +42,7 @@ interface VerifyOTPProps {
   route?: {
     params?: {
       otpCode?: string;
+      returnTo?: boolean;
     };
   };
 }
@@ -131,15 +132,20 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   // Navigate if user is already logged in
   useEffect(() => {
     if (account?.isLoggedIn) {
-      navigation.navigate('NewWalletStack', {
-        screen: 'Main',
-        params: {
-          screen: 'MainScreen',
-          params: {activeCard: 3},
-        },
-      });
+      if (route?.params?.returnTo) {
+        // Pop back through VerifyOTP → SignUp to the screen that initiated sign-up
+        navigation.pop(2);
+      } else {
+        navigation.navigate('NewWalletStack', {
+          screen: 'Main',
+          params: {
+            screen: 'MainScreen',
+            params: {activeCard: 3},
+          },
+        });
+      }
     }
-  }, [account?.isLoggedIn, navigation]);
+  }, [account?.isLoggedIn, navigation, route?.params?.returnTo]);
 
   // Abort any pending request on unmount and clear countdown timer
   useEffect(() => {
@@ -283,7 +289,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         // Reset failed attempts on success
         setFailedAttempts(0);
         // Navigation is handled by the useEffect that watches account?.isLoggedIn
-      } catch (errorCatch) {
+      } catch {
         // Increment failed attempts
         const newFailedAttempts = failedAttempts + 1;
         setFailedAttempts(newFailedAttempts);
@@ -323,7 +329,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       startCooldownTimer();
       // Reset failed attempts when successfully resending OTP
       setFailedAttempts(0);
-    } catch (errorCatch) {
+    } catch {
       // Error is handled by warning modal
     }
   }, [account?.email, uniqueId, dispatch, startCooldownTimer]);
@@ -445,7 +451,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         titleKey="enter_your_code"
         titleDomain="nexusShop"
         dotDisabled
-        small
+        extraSmall
         secondaryButton={secondaryButton}
       />
       <WarningModal
@@ -469,7 +475,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     title: {
       fontWeight: '700',
-      paddingTop: getSpacing(screenWidth, screenHeight).header,
+      paddingTop:
+        Platform.OS === 'ios'
+          ? getSpacing(screenWidth, screenHeight).header
+          : getSpacing(screenWidth, screenHeight).headerAndroid,
     },
     subtitle: {
       paddingTop: getSpacing(screenWidth, screenHeight).xs,

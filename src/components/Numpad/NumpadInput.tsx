@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, TouchableOpacity, Platform} from 'react-native';
 import CodeInput from '../CodeInput';
 
 import BuyButton from './BuyButton';
@@ -17,6 +17,7 @@ interface Props {
   titleDomain: string;
   dotDisabled?: boolean;
   small?: boolean;
+  extraSmall?: boolean;
   secondaryButton?: React.ReactNode;
   onPaste?: () => void;
 }
@@ -30,13 +31,19 @@ const NumpadInput: React.FC<Props> = props => {
     titleDomain,
     dotDisabled,
     small,
+    extraSmall,
     secondaryButton,
     onPaste,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, small || false);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    small || false,
+    extraSmall || false,
+  );
 
   const handlePress = (input: string) => {
     switch (input) {
@@ -61,6 +68,7 @@ const NumpadInput: React.FC<Props> = props => {
           disabled={dotDisabled}
           onPress={() => handlePress(value)}
           small={small}
+          extraSmall={extraSmall}
         />
       );
     }
@@ -72,6 +80,7 @@ const NumpadInput: React.FC<Props> = props => {
           onPress={() => handlePress(value)}
           imageSource={require('../../assets/icons/back-arrow.png')}
           small={small}
+          extraSmall={extraSmall}
         />
       );
     }
@@ -81,6 +90,7 @@ const NumpadInput: React.FC<Props> = props => {
         value={value}
         onPress={() => handlePress(value)}
         small={small}
+        extraSmall={extraSmall}
       />
     );
   });
@@ -88,7 +98,7 @@ const NumpadInput: React.FC<Props> = props => {
   return (
     <CustomSafeAreaView
       styles={[styles.bottomSheet, styles.safeArea]}
-      edges={['bottom']}>
+      edges={Platform.OS === 'android' ? ['bottom'] : []}>
       <TranslateText
         textKey={titleKey}
         domain={titleDomain}
@@ -106,16 +116,23 @@ const NumpadInput: React.FC<Props> = props => {
         <CodeInput codeInactive={false} codeLength={6} value={currentCode} />
       </TouchableOpacity>
 
-      <PadGrid small={small} />
+      <PadGrid small={small} extraSmall={extraSmall} />
       <View style={styles.pinButtonContainer}>{buttons}</View>
 
-      <View style={styles.secondaryButtonContainer}>{secondaryButton}</View>
-      <View style={styles.confirmButtonContainer}>{submitButton}</View>
+      <View style={styles.buttonContainer}>
+        <View style={styles.secondaryButtonContainer}>{secondaryButton}</View>
+        <View style={styles.confirmButtonContainer}>{submitButton}</View>
+      </View>
     </CustomSafeAreaView>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  small: boolean,
+  extraSmall: boolean,
+) =>
   StyleSheet.create({
     bottomSheet: {
       position: 'absolute',
@@ -128,7 +145,6 @@ const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
     },
     safeArea: {
       flex: 1,
-      paddingBottom: screenHeight * 0.01,
     },
     bottomSheetTitle: {
       fontFamily: 'Satoshi Variable',
@@ -143,20 +159,28 @@ const getStyles = (screenWidth: number, screenHeight: number, small: boolean) =>
       marginBottom: screenHeight * 0.01 * -1,
     },
     pinButtonContainer: {
-      height: small ? screenHeight * 0.36 : screenHeight * 0.4,
+      height: extraSmall
+        ? screenHeight * 0.32
+        : small
+          ? screenHeight * 0.36
+          : screenHeight * 0.4,
       flexDirection: 'row',
       justifyContent: 'space-evenly',
       flexWrap: 'wrap',
     },
+    buttonContainer: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      paddingHorizontal: screenHeight * 0.03,
+      paddingBottom:
+        Platform.OS === 'ios' ? screenHeight * 0.03 : screenHeight * 0.02,
+    },
     secondaryButtonContainer: {
       width: '100%',
-      paddingTop: screenHeight * 0.02,
-      paddingHorizontal: screenWidth * 0.06,
     },
     confirmButtonContainer: {
       width: '100%',
       paddingTop: screenHeight * 0.01,
-      paddingHorizontal: screenWidth * 0.06,
     },
   });
 

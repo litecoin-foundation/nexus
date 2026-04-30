@@ -19,10 +19,11 @@ import {Brand, InitiatePurchaseResponseData} from '../services/giftcards';
 
 export type NexusShopStackParamList = {
   GiftCardShop: undefined;
-  SignUp: undefined;
+  SignUp: {returnTo?: boolean} | undefined;
   VerifyOTP:
     | {
         otpCode?: string;
+        returnTo?: boolean;
       }
     | undefined;
   OTPVerified: undefined;
@@ -77,7 +78,9 @@ function NexusShopStack(): React.JSX.Element {
       <Stack.Screen
         name="PendingGCDetails"
         component={PendingGCDetails}
-        options={({navigation}) => PendingGCDetailsNavigationOptions(navigation)}
+        options={({navigation}) =>
+          PendingGCDetailsNavigationOptions(navigation)
+        }
       />
     </Stack.Navigator>
   );

@@ -67,8 +67,8 @@ export function BrandGrid({currency, onSelectBrand}: BrandGridProps) {
     const hideEvent =
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
-    // TripleSwitch height is 0.05 + some padding to cover things up
-    const shiftUp = SCREEN_HEIGHT * 0.07;
+    // Offset to cover TripleSwitch and Nexus Shop title
+    const shiftUp = SCREEN_HEIGHT * 0.13;
 
     const showSub = Keyboard.addListener(showEvent, () => {
       slideY.value = withTiming(-shiftUp, {duration: 250});

@@ -13,6 +13,8 @@ import {
   ScrollView,
   StyleSheet,
   Platform,
+  InputAccessoryView,
+  Keyboard,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -38,7 +40,6 @@ import {
   getSpacing,
   getBorderRadius,
   getFontSize,
-  getCommonStyles,
 } from '../../components/GiftCardShop/theme';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
@@ -114,12 +115,20 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
     useContext(ScreenSizeContext);
   const deviceHeaderHeight = useHeaderHeight();
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, deviceHeaderHeight);
-  const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const [amountText, setAmountText] = useState(
     amount > 0 ? amount.toString() : '',
   );
   const [showInputAmount, setShowInputAmount] = useState(false);
+  const [accessoryKey, setAccessoryKey] = useState(0);
+  const accessoryId = `amountInputDone_${accessoryKey}`;
+
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      setAccessoryKey(k => k + 1);
+    });
+    return () => sub.remove();
+  }, []);
   const [inputContentHeight, setInputContentHeight] = useState<number | null>(
     null,
   );
@@ -242,7 +251,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   })();
 
   const toSignUp = () => {
-    navigation.navigate('NexusShopStack', {screen: 'SignUp'});
+    navigation.push('SignUp', {returnTo: true});
   };
 
   const handleSubmit = async () => {
@@ -385,6 +394,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                     placeholder={`${minAmount} - ${maxAmount}`}
                     keyboardType="decimal-pad"
                     placeholderTextColor={colors.grayMedium}
+                    inputAccessoryViewID={accessoryId}
                   />
                 </View>
                 <TranslateText
@@ -406,6 +416,18 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
           <></>
         )}
       </View>
+
+      {Platform.OS === 'ios' && (
+        <InputAccessoryView nativeID={accessoryId}>
+          <View style={styles.inputAccessory}>
+            <BlueRoundButton
+              textKey="ok"
+              textDomain="nexusShop"
+              onPress={() => Keyboard.dismiss()}
+            />
+          </View>
+        </InputAccessoryView>
+      )}
 
       <ScrollView
         style={styles.scrollView}
@@ -761,6 +783,12 @@ const getStyles = (
       fontSize: screenHeight * 0.02,
       fontStyle: 'normal',
       fontWeight: '700',
+    },
+    inputAccessory: {
+      width: screenWidth,
+      height: screenHeight * 0.06 + 20,
+      paddingHorizontal: screenWidth * 0.1,
+      paddingVertical: 10,
     },
   });
 
