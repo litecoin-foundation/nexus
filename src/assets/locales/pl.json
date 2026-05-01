@@ -143,7 +143,7 @@
     "enable_camera": "Włącz uprawnienia aparatu by zeskanować kod QR",
     "awesome": "Świetnie!",
     "just_sent": "Litecoin został wysłany",
-    "balance_unconfirmed": "Niepotwierdzony saldo w portfelu",
+    "balance_unconfirmed": "Niepotwierdzone saldo w portfelu",
     "wallet_unsynced": "Trwa synchronizacja...",
     "try_less_amount": "Wyślij trochę mniej. Opłaty sieciowe zmniejszają Twoje saldo, zmniejsz kwotę na opłaty.",
     "insufficient_funds": "Niewystarczające środki.",
@@ -195,7 +195,7 @@
     "wallet_settings": "Ustawienia portfela",
     "need_support": "Potrzebujesz pomocy? Zadaj pytanie!",
     "about": "O aplikacji",
-    "foundation_preamble": "Stworzony z miłością przez zespół Litecoin",
+    "foundation_preamble": "Wymarzone i ożywione z miłością i troską przez",
     "change_wallet_pin": "Zmień PIN do portfela",
     "change_login_pin": "Zmień PIN do logowania",
     "enter_old_pin": "Wpisz swój poprzedni PIN",
@@ -270,7 +270,8 @@
     "tor_running": "Działa",
     "tor_stopped": "Zatrzymano",
     "tor_status_enabled": "Włączono:",
-    "restart_required_message": "Ustawienia Tor zostały zmienione. Proszę zrestartować aplikację aby zmiany weszły w życie."
+    "restart_required_message": "Ustawienia Tor zostały zmienione. Proszę zrestartować aplikację aby zmiany weszły w życie.",
+    "Setup Test Payment": "Konfiguruj płatność testową"
   },
   "convertTab": {
     "convert_button": "Wymień swoje LTC",
@@ -292,7 +293,9 @@
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "Sklep",
     "my_cards": "Moje karty",
+    "wishlist": "Lista życzeń",
     "back": "Wstecz",
     "reset_shop_user": "Resetuj",
     "logout": "Wyloguj",

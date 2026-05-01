@@ -1,7 +1,7 @@
 {
   "onboarding": {
     "forgot_pin": "पिनकोड भूल गए?",
-    "forgot_pin_description": "क्या आपने अपना पिनकोड भूल गए हैं?\nअपना सीड वाक्यांश दर्ज करें ताकि आप अपना पिनकोड रीसेट कर सकें।",
+    "forgot_pin_description": "क्या आप अपना पिनकोड भूल गए हैं?\nअपना सीड वाक्यांश दर्ज करें ताकि आप पिनकोड रीसेट कर सकें।",
     "enter_pin": "अपना पिन दर्ज करें",
     "reenter_pin": "अपना पिन पुनः दर्ज करें",
     "attempts_left_one": "{{count}} प्रयास बचा है।",
@@ -164,7 +164,7 @@
     "enter_address_amount_before_coinselection": "खर्च करने वाले सिक्कों का चयन करने से पहले पता और राशि दर्ज करें।"
   },
   "receiveTab": {
-    "receive_ltc": "Litecoin प्राप्त करें",
+    "receive_ltc": "लाइटकॉइन प्राप्त करें",
     "receive_privately": "गुप्त रूप से प्राप्त करें",
     "my_ltc_address": "मेरा LTC पता",
     "receive_mweb_description": "गुप्त रूप से प्राप्त करने पर प्रेषक और प्राप्तकर्ता के पते तथा भेजी गई राशि छिप जाती है।"
@@ -194,8 +194,8 @@
     "general_settings": "सामान्य सेटिंग्स",
     "wallet_settings": "वॉलेट सेटिंग्स",
     "need_support": "सहायता चाहिए? प्रश्न पूछें!",
-    "about": "के बारे में",
-    "foundation_preamble": "प्यार और देखभाल के साथ (LTC FOUNDATION) द्वारा कल्पित और साकार",
+    "about": "ऐप के बारे में",
+    "foundation_preamble": "प्यार और देखभाल के साथ कल्पित और साकार किया गया,",
     "change_wallet_pin": "वॉलेट पिन बदलें",
     "change_login_pin": "लॉगिन पिन बदलें",
     "enter_old_pin": "अपना पुराना पिन दर्ज करें",
@@ -256,7 +256,7 @@
     "resetting_wallet_warning": "चेतावनी! आपके वॉलेट को रीसेट करने से आपका वर्तमान सीड वाक्यांश मिट जाएगा। पहले इसका बैकअप लें!",
     "mweb_missing_note": "यदि भविष्य में वॉलेट को पुनर्प्राप्त किया जाता है तो निजी लाइटकॉइन लेनदेन इतिहास गायब हो जाएगा।",
     "cancel": "रद्द करें",
-    "processing": "प्रसंस्करण...",
+    "processing": "प्रक्रिया जारी है...",
     "manual_coin_selection": "मैन्युअल कॉइन चयन",
     "chart_mode": "चार्ट पर वॉलेट बैलेंस दिखाएं",
     "enable_tor": "Tor सक्षम करें",
@@ -270,7 +270,8 @@
     "tor_running": "चल रहा है",
     "tor_stopped": "रुक गया",
     "tor_status_enabled": "सक्षम:",
-    "restart_required_message": "Tor सेटिंग्स बदल गई हैं। परिवर्तनों को प्रभावी बनाने के लिए कृपया ऐप को पुनः आरंभ करें।"
+    "restart_required_message": "Tor सेटिंग्स बदल गई हैं। परिवर्तनों को प्रभावी बनाने के लिए कृपया ऐप को पुनः आरंभ करें।",
+    "Setup Test Payment": "परीक्षण भुगतान सेटअप करें"
   },
   "convertTab": {
     "convert_button": "अपने LTC को परिवर्तित करें",
@@ -292,7 +293,9 @@
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "शॉप",
     "my_cards": "मेरे कार्ड",
+    "wishlist": "इच्छा सूची",
     "back": "वापस",
     "reset_shop_user": "रीसेट",
     "logout": "लॉगआउट",

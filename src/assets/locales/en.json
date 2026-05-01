@@ -270,7 +270,8 @@
     "tor_running": "Running",
     "tor_stopped": "Stopped",
     "tor_status_enabled": "Enabled:",
-    "restart_required_message": "Tor settings have been changed. Please restart the app for changes to take effect."
+    "restart_required_message": "Tor settings have been changed. Please restart the app for changes to take effect.",
+    "Setup Test Payment": "Setup Test Payment"
   },
   "convertTab": {
     "convert_button": "Convert your LTC",
@@ -292,7 +293,9 @@
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "Shop",
     "my_cards": "My Cards",
+    "wishlist": "Wishlist",
     "back": "Back",
     "reset_shop_user": "Reset",
     "logout": "Logout",

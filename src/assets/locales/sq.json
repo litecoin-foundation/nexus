@@ -19,7 +19,7 @@
     "create_pin_repeat": "Vendos kodin PIN përsëri.",
     "confirm_pin": "Konfirmo kodin PIN",
     "verify_pin": "Verifiko kodin tënd PIN",
-    "seed_phrase": "Seed Phrase-it yt",
+    "seed_phrase": "Seed Phrase-ja jote",
     "seed_phrase_description": "24 fjalët më poshtë janë seed phrase yt.",
     "seed_phrase_description_2": "Seed phrase është fjalëkalimi yt i Litecoin-it dhe Portofolit. Shkruaje diku dhe mbaje në një vend të sigurt!",
     "seed_warning": "PA KËTO FJALË TI NUK DO MUND TA AKSESOSH DOT PORTOFOLIN TËND!",
@@ -33,7 +33,7 @@
     "biometric_description": "Dëshiron të përdorësh {{biometricType}} për të hapur portofolin tënd?",
     "enable_biometric": "Aktivizo {{biometricType}}",
     "maybe": "Ndoshta më vonë",
-    "back": "Kalo",
+    "back": "Kthehu",
     "presync": "Po Ngarkohet",
     "presync_description": "Portofoli yt po ngarkohet. Kjo ndodh vetëm një herë dhe shpejton konfigurimin e portofolit tënd në Nexus.",
     "invalid_word": "Fjalë e Pasaktë",
@@ -73,7 +73,7 @@
     "from": "Nga",
     "to": "Në",
     "time_date": "KOHA & DATA",
-    "network_fee": "TARIFË Netuorku",
+    "network_fee": "TARIFË E RRJETIT",
     "view_on_blockchain": "Shiko në Blockchain",
     "bought": "Blerë",
     "sold": "Shitur",
@@ -110,7 +110,7 @@
     "will_spend": "TI DO TË SHPENZOSH",
     "continue_purchase": "Vazhdo me Blerjen",
     "back": "KALO",
-    "buy_blocked": "Blerja e Litecoin-it is aktualisht nuk disponohet në shtetin tuaj.",
+    "buy_blocked": "Blerja e Litecoin-it aktualisht nuk disponohet në vendin/shtetin tuaj.",
     "min_sale": "Minimumi i shitjes {{minAmount}} LTC dhe maksimumi i shitjes së {{maxAmount}} LTC",
     "buy_success": "Blerja u krye me sukses",
     "try_another_currency": "Valuta e zgjedhur nuk është e disponueshme - provo përsëri me një valutë të ndryshme."
@@ -160,7 +160,7 @@
     "amount_selected": "SHUMA E ZGJEDHUR",
     "amount_selected_number": "{{amount}} LTC",
     "manual_selection_note": "Ju lutem zgjidhni monedhat për të përshtatur me shumën e kërkuar {{amount}} LTC",
-    "manual_selection_required": "Zgjedhja e monedhave është aktivizuar, por nuk janë zgjedhur hyqrëst",
+    "manual_selection_required": "Zgjedhja e monedhave është aktivizuar, por nuk janë zgjedhur hyrjet.",
     "enter_address_amount_before_coinselection": "Shkruaj një adresë dhe shumë para se të zgjedhurat monedhat për t'u shpenzuar."
   },
   "receiveTab": {
@@ -215,7 +215,7 @@
     "select_block_explorer": "Zgjidh Block Explorer",
     "select_block_explorer_note": "Mund të zgjedhësh block explorer tënd të preferuar për të parë transaksionet.",
     "change_currency": "Ndrysho Valutën",
-    "select_fiat": "Zgjidh Paranë",
+    "select_fiat": "Zgjidh Valutën Fiat",
     "change_lang": "Ndrysho Gjuhën",
     "select_lang": "Zgjidh Gjuhën",
     "Products": "Produktet",
@@ -270,7 +270,8 @@
     "tor_running": "Duke funksionuar",
     "tor_stopped": "Ndalur",
     "tor_status_enabled": "Aktivizuar:",
-    "restart_required_message": "Cilësimet e Tor janë ndryshuar. Ju lutem rianiseni aplikacionin që ndryshimet të hyjnë në fuqi."
+    "restart_required_message": "Cilësimet e Tor janë ndryshuar. Ju lutem rianiseni aplikacionin që ndryshimet të hyjnë në fuqi.",
+    "Setup Test Payment": "Konfiguro pagesën provë"
   },
   "convertTab": {
     "convert_button": "Konverto LTC-në tënde",
@@ -292,7 +293,9 @@
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "Dyqan",
     "my_cards": "Kartat e Mia",
+    "wishlist": "Lista Dëshirave",
     "back": "Kthehu",
     "reset_shop_user": "Rivendos",
     "logout": "Dil",

@@ -6,8 +6,8 @@
     "reenter_pin": "Masukkan PIN kembali",
     "attempts_left_one": "{{count}} kesempatan lagi.",
     "attempts_left_other": "{{count}} kesempatan lagi.",
-    "for_litecoin": "FOR LITECOIN",
-    "create_wallet": "Buka Dompet Baru",
+    "for_litecoin": "UNTUK LITECOIN",
+    "create_wallet": "Buat Dompet",
     "create_new_wallet": "Buat Dompet Baru",
     "proceed_with_existing": "Lanjutkan dengan Dompet yang Ada",
     "existing_seed_note": "Sepertinya Anda sudah memiliki dompet yang disiapkan sebelumnya. Apakah Anda ingin menggunakan seed yang tersimpan atau membuat dompet baru?",
@@ -195,7 +195,7 @@
     "wallet_settings": "Pengaturan Dompet",
     "need_support": "Butuh bantuan? Tanya kami!",
     "about": "Tentang",
-    "foundation_preamble": "Dicita-citakan & dibangkitkan dengan kasih sayang dan perhatian oleh (LTC FOUNDATION)",
+    "foundation_preamble": "Dicita-citakan & dibangkitkan dengan kasih sayang dan perhatian oleh",
     "change_wallet_pin": "Ganti PIN Dompet",
     "change_login_pin": "Ganti PIN Login",
     "enter_old_pin": "Masukkan PIN lama Anda",
@@ -244,7 +244,7 @@
     "import_litewallet": "Impor Litewallet",
     "litewallet_description": "Pengguna Litewallet dapat mengimpor Litecoin mereka ke dalam Nexus Wallet. Memasukan paper key Anda di bawah akan memindahkan Litecoin Anda dari Litewallet ke dalam Nexus secara permanen.",
     "litewallet_success": "LITEWALLET TERIMPOR!",
-    "invalid": "Invalid",
+    "invalid": "Tidak Valid",
     "pincode_invalid": "Kode PIN tidak sama. Coba lagi.",
     "ok": "OK",
     "dismiss": "Hilangkan",
@@ -270,7 +270,8 @@
     "tor_running": "Berjalan",
     "tor_stopped": "Berhenti",
     "tor_status_enabled": "Diaktifkan:",
-    "restart_required_message": "Pengaturan Tor telah diubah. Silakan restart aplikasi agar perubahan berlaku."
+    "restart_required_message": "Pengaturan Tor telah diubah. Silakan restart aplikasi agar perubahan berlaku.",
+    "Setup Test Payment": "Atur Pembayaran Uji"
   },
   "convertTab": {
     "convert_button": "Konversi LTC Anda",
@@ -292,7 +293,9 @@
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "Toko",
     "my_cards": "Kartu Saya",
+    "wishlist": "Wishlist",
     "back": "Kembali",
     "reset_shop_user": "Atur Ulang",
     "logout": "Keluar",

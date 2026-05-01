@@ -4,7 +4,7 @@
     "forgot_pin_description": "PIN vergessen?\nGeben Sie Ihre Seedphrase ein, um die PIN zurückzusetzen.",
     "enter_pin": "PIN eingeben",
     "reenter_pin": "PIN erneut eingeben",
-    "attempts_left_one": "Noch {{count}} Versuche.",
+    "attempts_left_one": "Noch {{count}} Versuch übrig.",
     "attempts_left_other": "Noch {{count}} Versuche.",
     "for_litecoin": "FÜR LITECOIN",
     "create_wallet": "Wallet erstellen",
@@ -45,7 +45,7 @@
     "skip_presync_description": "Wenn Sie die Vorsynchronisierung überspringen, müssen Sie warten, bis Ihr Nexus Wallet vollständig synchronisiert ist, bevor Sie Transaktionen senden oder empfangen können. Dieser Vorgang kann bis zu 30+ Minuten dauern.",
     "cancel": "Abbrechen",
     "ok": "OK",
-    "txs_take_time_to_appear": "Obwohl deine Transaktionen geladen wurden, kann es etwas dauern, bis sie angezeigt werden und dein Kontostand neu berechnet wird. Lass einfach die App geöffnet.",
+    "txs_take_time_to_appear": "Obwohl Ihre Transaktionen geladen wurden, kann es etwas dauern, bis sie angezeigt werden und Ihr Kontostand neu berechnet wird. Lassen Sie die App einfach geöffnet.",
     "recover_pin": "PIN bestätigen"
   },
   "main": {
@@ -103,7 +103,7 @@
     "schedule_buy": "Planen",
     "preview_buy": "Kaufdaten ansehen",
     "min_purchase": "Mindestkauf {{currencySymbol}}{{minAmountInFiat}}",
-    "change": "WECHSELGELD",
+    "change": "ÄNDERN",
     "cancel": "ABBRECHEN",
     "purchasing": "Sie kaufen",
     "rate": "KURS",
@@ -195,7 +195,7 @@
     "wallet_settings": "Wallet-Einstellungen",
     "need_support": "Unterstützung benötigt? Stellen Sie eine Frage",
     "about": "Über Nexus Wallet",
-    "foundation_preamble": "Erträumt und mit viel Liebe und Zuwendung von der ins Leben gerufen.",
+    "foundation_preamble": "Erträumt und mit Liebe und Sorgfalt ins Leben gerufen von",
     "change_wallet_pin": "Wallet-PIN ändern",
     "change_login_pin": "Login PIN ändern",
     "enter_old_pin": "Alte PIN eingeben",
@@ -206,7 +206,7 @@
     "enable_face_id": "{{faceIDSupported}} einschalten",
     "enable_notifications": "Benachrichtigungen aktivieren",
     "face_id": "Gesichts-ID",
-    "touch_id": "Fingerabruck",
+    "touch_id": "Fingerabdruck",
     "import_private_key": "Privatschlüssel importieren",
     "import_private_key_note": "Beim Importieren eines Privatschlüssels wird der enthaltene Litecoin-Betrag in Nexus verschoben.",
     "import_private_key_warning": "Der Litecoin-Betrag wird unter dem bisherigen Privatschlüssel nicht mehr verfügbar sein.",
@@ -239,7 +239,7 @@
     "rescanning_wallet_warning": "Sie sind dabei, Ihr Wallet manuell neu zu scannen. Dies löscht Ihren Transaktionsverlauf und Ihr Guthaben und scannt dann das Litecoin-Netzwerk erneut nach fehlenden Transaktionen.",
     "rescanning_in_progress": "Die Wallet wird neu gescannt. Dies kann einige Minuten dauern. Ihr Transaktionsverlauf und Ihr Guthaben werden aus der Blockchain neu erstellt.",
     "do_not_exit_app": "Bitte verlassen Sie die Nexus Wallet App nicht, während das Neuscannen läuft.",
-    "continue_rescan": "Neusuche fortsetzen",
+    "continue_rescan": "Rescan fortsetzen",
     "rescanning": "Wird neu gescannt...",
     "import_litewallet": "Litewallet importieren",
     "litewallet_description": "Litewallet-Nutzer können ihr Guthaben in Nexus Wallet importieren. Durch Eingabe Ihrer Seedphrase wird Ihr Guthaben dauerhaft in Nexus Wallet umgezogen.",
@@ -270,7 +270,8 @@
     "tor_running": "Läuft",
     "tor_stopped": "Gestoppt",
     "tor_status_enabled": "Aktiviert:",
-    "restart_required_message": "Tor-Einstellungen wurden geändert. Bitte starten Sie die App neu, damit die Änderungen wirksam werden."
+    "restart_required_message": "Tor-Einstellungen wurden geändert. Bitte starten Sie die App neu, damit die Änderungen wirksam werden.",
+    "Setup Test Payment": "Testzahlung einrichten"
   },
   "convertTab": {
     "convert_button": "Tauschen Sie Ihr LTC",
@@ -288,11 +289,13 @@
   "modals": {
     "delete": "Löschen",
     "delete_alert": "Alarmierung löschen",
-    "view_change": "Wechselgeldadresse anzeigen"
+    "view_change": "Wechseladresse anzeigen"
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "Shop",
     "my_cards": "Meine Karten",
+    "wishlist": "Wunschliste",
     "back": "Zurück",
     "reset_shop_user": "Zurücksetzen",
     "logout": "Abmelden",

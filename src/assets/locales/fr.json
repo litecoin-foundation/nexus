@@ -1,6 +1,6 @@
 {
   "onboarding": {
-    "forgot_pin": "Mot de passe oublié ?",
+    "forgot_pin": "Code PIN oublié ?",
     "forgot_pin_description": "Vous avez oublié votre code PIN ?\nEntrez votre phrase de récupération pour réinitialiser votre code PIN.",
     "enter_pin": "Entrez votre code PIN",
     "reenter_pin": "Entrez à nouveau votre code PIN",
@@ -270,7 +270,8 @@
     "tor_running": "En cours d'exécution",
     "tor_stopped": "Arrêté",
     "tor_status_enabled": "Activé :",
-    "restart_required_message": "Les paramètres Tor ont été modifiés. Veuillez redémarrer l'application pour que les modifications prennent effet."
+    "restart_required_message": "Les paramètres Tor ont été modifiés. Veuillez redémarrer l'application pour que les modifications prennent effet.",
+    "Setup Test Payment": "Configurer le paiement test"
   },
   "convertTab": {
     "convert_button": "Convertir vos LTC",
@@ -292,7 +293,9 @@
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "Boutique",
     "my_cards": "Mes cartes",
+    "wishlist": "Liste de souhaits",
     "back": "Retour",
     "reset_shop_user": "Réinitialiser",
     "logout": "Déconnexion",

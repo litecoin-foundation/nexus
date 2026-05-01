@@ -6,7 +6,7 @@
     "reenter_pin": "Pakartotinai įveskite PIN kodą",
     "attempts_left_one": "{{count}} bandymas likęs.",
     "attempts_left_other": "{{count}} bandymai likę.",
-    "for_litecoin": "DĖL LITECOIN",
+    "for_litecoin": "SKIRTA LITECOIN",
     "create_wallet": "Sukurti Piniginę",
     "create_new_wallet": "Sukurti naują piniginę",
     "proceed_with_existing": "Tęsti su esama pinigine",
@@ -149,9 +149,9 @@
     "insufficient_funds": "Nepakankamas likutis.",
     "this_address_invalid": "Šis adresas negaliojantis.",
     "select_coins": "Pasirinkti monetas",
-    "private_coins": "PRIVATŪS MONETAI",
-    "public_coins": "VIEŠIEJI MONETAI",
-    "low_privacy_risk": "MAŽAS PRIVATUMO RIZIKA",
+    "private_coins": "PRIVAČIOS MONETOS",
+    "public_coins": "VIEŠOSIOS MONETOS",
+    "low_privacy_risk": "MAŽA PRIVATUMO RIZIKA",
     "high_privacy_risk": "DIDELĖ PRIVATUMO RIZIKA",
     "required": "Reikalinga: LTC {{amount}}",
     "selected": "Pasirinkta: LTC {{amount}}",
@@ -222,7 +222,7 @@
     "view_seed": "Peržiūrėti Seed Frazę",
     "view_root_key": "Peržiūrėti Šaknį Raktą",
     "root_key": "Šakninis Raktas",
-    "root_key_description": "Jūsų BIP32 šakninis raktas gali būti naudojamas išvesti visus adresus ir privatė raktus jūsų pinigtinėje.",
+    "root_key_description": "Jūsų BIP32 šakninis raktas gali būti naudojamas išvesti visus adresus ir privačius raktus jūsų piniginėje.",
     "export_electrum": "Eksportuoti piniginę į Electrum",
     "export_electrum_description": "Žemiau esantis privatusis raktas (zprv) leidžia pasiekti jūsų įprastus Litecoin naudojant Electrum-LTC. Apsilankykite mūsų pagalbos centre, kad sužinotumėte daugiau.",
     "export_electrum_warning": "ĮSPĖJIMAS: Išplėstasis privatusis raktas suteikia pilną prieigą prie jūsų paskyros. Niekada nedalinkitės su niekuo.",
@@ -241,7 +241,7 @@
     "do_not_exit_app": "Prašome neišeiti iš Nexus Wallet programėlės, kol vyksta nuskaitymas.",
     "continue_rescan": "Tęsti nuskaitymą",
     "rescanning": "Nuskaitoma iš naujo...",
-    "import_litewallet": "Importavimas Litewallet",
+    "import_litewallet": "Importuoti Litewallet",
     "litewallet_description": "Litewallet naudotojai gali importuoti savo monetas į Nexus Wallet. Toliau įvesdami savo popierinį raktą visam laikui perkelsite savo monetas iš Litewallet į Nexus.",
     "litewallet_success": "IMPORTUOTAS LITEWALLET!",
     "invalid": "Neteisingas",
@@ -270,7 +270,8 @@
     "tor_running": "Veikia",
     "tor_stopped": "Sustabdyta",
     "tor_status_enabled": "Įjungta:",
-    "restart_required_message": "Tor nustatymai buvo pakeisti. Prašome paleisti programą iš naujo, kad pakeitimai įsigaliotų."
+    "restart_required_message": "Tor nustatymai buvo pakeisti. Prašome paleisti programą iš naujo, kad pakeitimai įsigaliotų.",
+    "Setup Test Payment": "Nustatyti bandomąjį mokėjimą"
   },
   "convertTab": {
     "convert_button": "Konvertuoti jūsų LTC",
@@ -288,11 +289,13 @@
   "modals": {
     "delete": "Ištrinti",
     "delete_alert": "Ištrinti Įspėjimą",
-    "view_change": "Peržiūrėti Adreso Keitimą"
+    "view_change": "Peržiūrėti Grąžos Adresą"
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "Parduotuvė",
     "my_cards": "Mano kortelės",
+    "wishlist": "Norų sąrašas",
     "back": "Atgal",
     "reset_shop_user": "Atstatyti",
     "logout": "Atsijungti",
@@ -326,7 +329,7 @@
     "amount": "Suma",
     "amount_ltc": "Suma (LTC)",
     "price_ltc": "Kaina (LTC)",
-    "payment_to": "Mokėjimas",
+    "payment_to": "Mokėjimas į",
     "expires_at": "Galioja iki",
     "other_amount": "Kita suma",
     "currency": "Valiuta",

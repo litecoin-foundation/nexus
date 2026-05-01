@@ -111,7 +111,7 @@
     "continue_purchase": "Ipagpatuloy ang pagbili",
     "back": "BUMALIK",
     "buy_blocked": "Bumili ng Litecoin ay kasalukuyang hindi magagamit sa iyong bansa/estado.",
-    "min_sale": "Pinakamababang pagbebenta ng {{minAmount}} LTC & max sale ng {{maxAmount}} LTC",
+    "min_sale": "Pinakamababang pagbebenta ng {{minAmount}} LTC & pinakamataas na pagbebenta ng {{maxAmount}} LTC",
     "buy_success": "Matagumpay na nabili",
     "try_another_currency": "Ang napiling currency ay hindi available - subukan ulit gamit ang ibang currency."
   },
@@ -119,7 +119,7 @@
     "sell": "Ibenta ",
     "sell_litecoin": "Ibenta ang Litecoin",
     "preview_sell": "Ibenta ang LTC",
-    "sell_blocked": "Ibenta ang Litecoin.ay kasalukuyang hindi magagamit sa iyong bansa/estado",
+    "sell_blocked": "Ang pagbebenta ng Litecoin ay kasalukuyang hindi magagamit sa iyong bansa/estado.",
     "sell_success": "Nagbenta ka lang ng {{amount}} LTC!",
     "insufficient_funds": "Hindi Sapat na Pondo.",
     "try_another_currency": "Ang napiling currency ay hindi available - subukan ulit gamit ang ibang currency."
@@ -195,9 +195,9 @@
     "wallet_settings": "Mga Setting ng Wallet",
     "need_support": "Kailangan ng Suporta? Magtanong ka!",
     "about": "Tungkol sa",
-    "foundation_preamble": "Pinangarap at binuhay nang may pagmamahal at pangangalaga ni (LTC FOUNDATION)",
+    "foundation_preamble": "Pinangarap at binuhay nang may pagmamahal at pangangalaga ni",
     "change_wallet_pin": "Palitan ang Wallet Pin",
-    "change_login_pin": "Palitan and Login Pincode",
+    "change_login_pin": "Palitan ang Login Pincode",
     "enter_old_pin": "Ilagay ang lumang PIN",
     "enter_new_pin": "Ilagay ang bagong PIN",
     "repeat_new_pin": "Ulitin ang bagong PIN",
@@ -232,7 +232,7 @@
     "key_type": "Uri ng Key",
     "key_format": "Format ng Key",
     "last_time_accessed": "Huling beses na in-access: {{time}}",
-    "litecoin_denomination": "Litecoin Denomination",
+    "litecoin_denomination": "Denominasyon ng Litecoin",
     "reset_wallet": "I-reset ang iyong wallet?",
     "rescan_wallet": "I-rescan ang Wallet",
     "rescanning_wallet": "I-rescan ang mga Transaksyon ng Wallet",
@@ -270,7 +270,8 @@
     "tor_running": "Tumatakbo",
     "tor_stopped": "Tumigil",
     "tor_status_enabled": "Pinagana:",
-    "restart_required_message": "Nabago ang mga Tor settings. Pakirestart ang app para magkaroon ng epekto ang mga pagbabago."
+    "restart_required_message": "Nabago ang mga Tor settings. Pakirestart ang app para magkaroon ng epekto ang mga pagbabago.",
+    "Setup Test Payment": "I-setup ang Test Payment"
   },
   "convertTab": {
     "convert_button": "Palitan ang iyong LTC",
@@ -292,7 +293,9 @@
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
+    "shop": "Tindahan",
     "my_cards": "Aking mga Card",
+    "wishlist": "Wishlist",
     "back": "Bumalik",
     "reset_shop_user": "I-reset",
     "logout": "Mag-logout",
