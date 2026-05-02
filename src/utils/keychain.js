@@ -23,5 +23,5 @@ export const getItem = async (key) => {
 
 export const resetItem = async (key) => {
   const vKey = `${VERSION}_${key}`;
-  await Keychain.resetInternetCredentials(vKey);
+  await Keychain.resetInternetCredentials({server: vKey});
 };
