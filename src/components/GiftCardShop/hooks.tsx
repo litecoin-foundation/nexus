@@ -307,12 +307,9 @@ export function useRedeemGiftCard(): UseMutationResult<GiftCard, string> {
 
 // Flows ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Purchase flow
-export function usePurchaseFlow(
-  brand: Brand | null,
-  initialCurrency: string = 'USD',
-) {
+export function usePurchaseFlow(brand: Brand) {
   const [amount, setAmount] = useState<number>(0);
-  const [currency, setCurrency] = useState<string>(initialCurrency);
+  const currency = brand.currency;
   const [validation, setValidation] = useState<{
     valid: boolean;
     error?: string;
@@ -334,6 +331,8 @@ export function usePurchaseFlow(
     state => (state.ticker as any).rates as {[key: string]: number} | undefined,
   );
 
+  // NOTE: if the rate is missing, the balance check will be skipped, and
+  // the insufficient balance error would only surface later at payment time
   const availableBalanceFiat = useMemo(() => {
     const rate = rates?.[currency.toUpperCase()];
     if (!rate || !confirmedBalance) return undefined;
@@ -341,10 +340,6 @@ export function usePurchaseFlow(
   }, [confirmedBalance, rates, currency]);
 
   useEffect(() => {
-    if (!brand) {
-      setValidation({valid: false, error: 'Select a brand'});
-      return;
-    }
     if (amount <= 0) {
       setValidation({valid: false, error: 'Enter an amount'});
       return;
@@ -353,7 +348,7 @@ export function usePurchaseFlow(
   }, [brand, amount, availableBalanceFiat]);
 
   const submit = useCallback(async () => {
-    if (!brand || !validation.valid) return null;
+    if (!validation.valid) return null;
 
     return initiatePurchase({
       brand: brand.slug,
@@ -371,7 +366,7 @@ export function usePurchaseFlow(
     amount,
     setAmount,
     currency,
-    setCurrency,
+
     validation,
     submit,
     loading,

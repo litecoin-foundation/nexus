@@ -13,14 +13,10 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 interface MyWishlistBrandsProps {
-  currency: string;
   onSelectBrand: (brand: Brand, initialAmount?: number) => void;
 }
 
-export function MyWishlistBrands({
-  currency,
-  onSelectBrand,
-}: MyWishlistBrandsProps) {
+export function MyWishlistBrands({onSelectBrand}: MyWishlistBrandsProps) {
   const wishlistBrands = useAppSelector(
     state => state.nexusshopaccount.wishlistBrands,
   );
@@ -49,13 +45,12 @@ export function MyWishlistBrands({
     ({item}: {item: Brand}) => (
       <BrandCard
         brand={item}
-        currency={currency}
         onSelectBrand={onSelectBrand}
         expandedBrandSlug={expandedBrandSlug}
         onToggleBrand={handleToggleBrand}
       />
     ),
-    [currency, onSelectBrand, expandedBrandSlug, handleToggleBrand],
+    [onSelectBrand, expandedBrandSlug, handleToggleBrand],
   );
 
   if (loading) {

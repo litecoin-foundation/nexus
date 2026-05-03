@@ -6,14 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import {View, StyleSheet} from 'react-native';
-import {getCountry} from 'react-native-localize';
-
-import {
-  GiftCardClient,
-  Brand,
-  GiftCard,
-  getCurrencyForCountry,
-} from '../../services/giftcards';
+import {GiftCardClient, Brand, GiftCard} from '../../services/giftcards';
 import {BrandGrid} from '../../components/GiftCardShop/BrandGrid';
 import {PaymentSent} from '../../components/GiftCardShop/PaymentSent';
 import {MyWishlistBrands} from '../../components/GiftCardShop/MyWishlistBrands';
@@ -62,8 +55,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   const [screen, setScreen] = useState<ScreenState>(
     initialScreen === 'my-cards' ? {type: 'my-cards'} : {type: 'browse'},
   );
-  const shopCountry = account?.userCountry || getCountry();
-  const shopCurrency = getCurrencyForCountry(shopCountry).currency;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -121,7 +112,6 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
       params: {
         brand,
         initialAmount,
-        currency: shopCurrency,
         onPaymentSuccess: (_txid: string) => {},
       },
     });
@@ -211,10 +201,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
 
           <View style={styles.body}>
             {screen.type === 'browse' && (
-              <BrandGrid
-                currency={shopCurrency}
-                onSelectBrand={handleSelectBrand}
-              />
+              <BrandGrid onSelectBrand={handleSelectBrand} />
             )}
 
             {screen.type === 'payment-sent' && (
@@ -226,10 +213,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
             )}
 
             {screen.type === 'wishlist' && (
-              <MyWishlistBrands
-                currency={shopCurrency}
-                onSelectBrand={handleSelectBrand}
-              />
+              <MyWishlistBrands onSelectBrand={handleSelectBrand} />
             )}
           </View>
         </View>
