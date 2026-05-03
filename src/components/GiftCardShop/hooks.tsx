@@ -366,7 +366,6 @@ export function usePurchaseFlow(brand: Brand) {
     amount,
     setAmount,
     currency,
-
     validation,
     submit,
     loading,
