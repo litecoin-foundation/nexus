@@ -213,10 +213,6 @@ export class GiftCardClient {
     return this.request<Brand>('GET', `/api/gift-cards/brands/${slug}`);
   }
 
-  async purchase(request: PurchaseRequest): Promise<GiftCard> {
-    return this.request<GiftCard>('POST', '/api/gift-cards/purchase', request);
-  }
-
   async initiatePurchase(
     request: PurchaseRequest,
   ): Promise<InitiatePurchaseResponseData> {
