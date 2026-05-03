@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Kumpletuhin ang bayad sa pamamagitan ng pagpapadala ng coins sa invoice na ito",
     "enter_amount_between": "Maglagay ng halaga sa pagitan ng {{min}} at {{max}}",
     "view_gift_card": "Tingnan ang Gift Card"
+  },
+  "migration": {
+    "title": "Ina-update ang Iyong Pitaka",
+    "description": "Mangyaring huwag isara ang app.",
+    "step_preparing": "Inihahanda ang migration…",
+    "step_cleaning_neutrino": "Inaalis ang lumang sync data…",
+    "step_cleaning_wallet": "Nire-reset ang database ng pitaka…",
+    "step_switching_backend": "Pinapalitan ang backend…",
+    "done_title": "Tapos na",
+    "done_body": "Mas mabilis nang nag-sy-sync ang iyong pitaka at gumagamit ng mas kaunting memory! Huwag mag-alala kung may mga nawawalang transaksyon — magsasagawa ng recovery sync ang iyong pitaka.",
+    "done_button": "Magpatuloy",
+    "heads_up_title": "Isang huling bagay",
+    "heads_up_body": "Pagkatapos mong i-unlock, aabutin ng 1–2 minuto bago ma-recover ang iyong pitaka.",
+    "heads_up_warning": "Mangyaring huwag isara ang app sa oras na ito.",
+    "heads_up_button": "Naintindihan"
   }
 }

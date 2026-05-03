@@ -116,6 +116,9 @@ const setTestPaymentAction = createAction<TestPaymentType>(
 const setChartModeAction = createAction<'price' | 'balance'>(
   'settings/setChartModeAction',
 );
+const setLitecoinBackendAction = createAction<'neutrino' | 'electrum'>(
+  'settings/setLitecoinBackendAction',
+);
 
 // functions
 export const getCurrencySymbol = (code: string): string => {
@@ -235,6 +238,12 @@ export const setChartMode =
     dispatch(setChartModeAction(mode));
   };
 
+export const setLitecoinBackend =
+  (backend: 'neutrino' | 'electrum'): AppThunk =>
+  dispatch => {
+    dispatch(setLitecoinBackendAction(backend));
+  };
+
 // slice
 export const settingsSlice = createSlice({
   name: 'settings',
@@ -297,6 +306,10 @@ export const settingsSlice = createSlice({
     setChartModeAction: (state, action) => ({
       ...state,
       chartMode: action.payload,
+    }),
+    setLitecoinBackendAction: (state, action) => ({
+      ...state,
+      litecoinBackend: action.payload,
     }),
   },
   extraReducers: builder => {

@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Zakończ płatność, wysyłając monety na tę fakturę",
     "enter_amount_between": "Wprowadź kwotę między {{min}} a {{max}}",
     "view_gift_card": "Zobacz kartę podarunkową"
+  },
+  "migration": {
+    "title": "Aktualizowanie portfela",
+    "description": "Prosimy nie zamykać aplikacji.",
+    "step_preparing": "Przygotowywanie migracji…",
+    "step_cleaning_neutrino": "Usuwanie starych danych synchronizacji…",
+    "step_cleaning_wallet": "Resetowanie bazy danych portfela…",
+    "step_switching_backend": "Zmiana backendu…",
+    "done_title": "Gotowe",
+    "done_body": "Twój portfel synchronizuje się teraz szybciej i zużywa mniej pamięci! Jeśli brakuje niektórych transakcji, nie martw się — Twój portfel wykona synchronizację odzyskiwania.",
+    "done_button": "Kontynuuj",
+    "heads_up_title": "Jeszcze jedno",
+    "heads_up_body": "Po odblokowaniu Twój portfel potrzebuje 1–2 minut na odzyskanie.",
+    "heads_up_warning": "Prosimy nie zamykać aplikacji w tym czasie.",
+    "heads_up_button": "Rozumiem"
   }
 }

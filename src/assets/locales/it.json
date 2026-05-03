@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Completa il pagamento inviando monete a questa fattura",
     "enter_amount_between": "Inserisci un importo tra {{min}} e {{max}}",
     "view_gift_card": "Visualizza carta regalo"
+  },
+  "migration": {
+    "title": "Aggiornamento del tuo portafoglio",
+    "description": "Per favore, non chiudere l'app.",
+    "step_preparing": "Preparazione della migrazione…",
+    "step_cleaning_neutrino": "Rimozione dei dati di sincronizzazione obsoleti…",
+    "step_cleaning_wallet": "Ripristino del database del portafoglio…",
+    "step_switching_backend": "Cambio backend…",
+    "done_title": "Tutto pronto",
+    "done_body": "Il tuo portafoglio ora si sincronizza più velocemente e usa meno memoria! Se mancano alcune transazioni, non preoccuparti — il tuo portafoglio eseguirà una sincronizzazione di ripristino.",
+    "done_button": "Continua",
+    "heads_up_title": "Un'ultima cosa",
+    "heads_up_body": "Dopo aver sbloccato, il tuo portafoglio impiegherà 1–2 minuti per il ripristino.",
+    "heads_up_warning": "Per favore, non chiudere l'app durante questo tempo.",
+    "heads_up_button": "Capito"
   }
 }

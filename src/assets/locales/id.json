@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Selesaikan pembayaran dengan mengirim koin ke faktur ini",
     "enter_amount_between": "Masukkan jumlah antara {{min}} dan {{max}}",
     "view_gift_card": "Lihat Kartu Hadiah"
+  },
+  "migration": {
+    "title": "Memperbarui Dompet Anda",
+    "description": "Mohon jangan tutup aplikasi.",
+    "step_preparing": "Menyiapkan migrasi…",
+    "step_cleaning_neutrino": "Menghapus data sinkronisasi lama…",
+    "step_cleaning_wallet": "Mereset basis data dompet…",
+    "step_switching_backend": "Mengganti backend…",
+    "done_title": "Selesai",
+    "done_body": "Dompet Anda kini bersinkronisasi lebih cepat dan menggunakan lebih sedikit memori! Jangan khawatir jika ada transaksi yang hilang — dompet Anda akan melakukan sinkronisasi pemulihan.",
+    "done_button": "Lanjut",
+    "heads_up_title": "Satu hal terakhir",
+    "heads_up_body": "Setelah Anda membuka kunci, dompet Anda butuh 1–2 menit untuk pulih.",
+    "heads_up_warning": "Mohon jangan tutup aplikasi selama waktu ini.",
+    "heads_up_button": "Mengerti"
   }
 }

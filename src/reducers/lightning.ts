@@ -18,9 +18,11 @@ import {
   deleteWalletDB,
   deleteLNDDir,
   deleteMacaroonFiles,
+  deleteNeutrinoFiles,
   fileExists,
 } from '../utils/file';
-import {finishOnboarding, setRecoveryMode} from './onboarding';
+import {finishOnboarding, setRecoveryMode, setSeedRecovery} from './onboarding';
+import {setLitecoinBackend} from './settings';
 import {subscribeTransactions} from './transaction';
 import {pollInfo, pollPeers} from './info';
 import {pollRates} from './ticker';
@@ -28,12 +30,22 @@ import {pollBalance} from './balance';
 import {pollTransactions} from './transaction';
 import {createConfig} from '../utils/config';
 import {stringToUint8Array} from '../utils';
+import {sleep} from '../utils/poll';
 import {purgeStore} from '../store';
 import {resetPincode, unlockWalletAction} from './authentication';
 import {resetToLoading} from '../navigation/NavigationService';
 
 const PASS = 'PASSWORD';
+const SEED_KEY = 'SEEDPHRASE';
 const RESCAN_FLAG = 'RESCAN_WALLET_TRANSACTIONS';
+const ELECTRUM_MIGRATION_FLAG = 'ELECTRUM_MIGRATION';
+
+type MigrationStatusKey =
+  | 'preparing'
+  | 'cleaning_neutrino'
+  | 'cleaning_wallet'
+  | 'switching_backend'
+  | 'complete';
 
 // Single state subscription — stored to prevent GC
 let _stateSub: Subscription | null = null;
@@ -44,6 +56,9 @@ interface ILightningState {
   lndActive: boolean;
   walletState: WalletState | null;
   isRescanningWallet: boolean;
+  isMigrating: boolean;
+  migrationProgress: number;
+  migrationStatusKey: MigrationStatusKey | null;
 }
 
 // initial state
@@ -51,6 +66,9 @@ const initialState = {
   lndActive: false,
   walletState: null,
   isRescanningWallet: false,
+  isMigrating: false,
+  migrationProgress: 0,
+  migrationStatusKey: null,
 } as ILightningState;
 
 // actions
@@ -61,6 +79,11 @@ const setWalletState = createAction<WalletState | null>(
 export const setRescanningWallet = createAction<boolean>(
   'lightning/setRescanningWallet',
 );
+const setMigratingAction = createAction<boolean>('lightning/setMigrating');
+const setMigrationProgressAction = createAction<{
+  progress: number;
+  statusKey: MigrationStatusKey | null;
+}>('lightning/setMigrationProgress');
 
 // functions
 export const startLnd = (): AppThunk => async (dispatch, getState) => {
@@ -260,6 +283,107 @@ export const rescanWallet = (): AppThunk => async dispatch => {
   }
 };
 
+// Run the neutrino → electrum migration BEFORE LND starts for this session.
+// Doing it pre-start avoids restarting lndmobile mid-session, which is
+// unreliable. After this thunk completes, Loading dispatches startLnd
+// and the existing missing-wallet.db branch in unlockWallet runs initWallet
+// in recovery mode against the new electrum backend.
+export const runElectrumMigrationIfNeeded =
+  (): AppThunk => async (dispatch, getState) => {
+    if (getState().lightning.isMigrating) {
+      return;
+    }
+
+    const flag = await getItem(ELECTRUM_MIGRATION_FLAG);
+    if (flag === 'true') {
+      return;
+    }
+
+    // Refuse to delete anything if the seed isn't reachable — without it,
+    // the unlock-time initWallet would have nothing to recover from.
+    const seedFromKeychain = await getItem(SEED_KEY);
+    if (!seedFromKeychain) {
+      console.warn('electrum migration: aborting, no seed in keychain');
+      return;
+    }
+    const seedArr = seedFromKeychain.split(',');
+    if (seedArr.length < 12) {
+      console.warn('electrum migration: aborting, malformed seed');
+      return;
+    }
+
+    const mainnetDir = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet`;
+    const hasNeutrinoState =
+      (await fileExists(`${mainnetDir}/neutrino.db`)) ||
+      (await fileExists(`${mainnetDir}/block_headers.bin`)) ||
+      (await fileExists(`${mainnetDir}/reg_filter_headers.bin`));
+
+    const currentBackend = getState().settings.litecoinBackend;
+
+    if (currentBackend === 'electrum' && !hasNeutrinoState) {
+      await setItem(ELECTRUM_MIGRATION_FLAG, 'true');
+      return;
+    }
+
+    dispatch(setMigratingAction(true));
+
+    try {
+      const reduxSeed = getState().onboarding!.seed;
+      if (!reduxSeed || reduxSeed.length === 0) {
+        await dispatch(setSeedRecovery(seedArr));
+      }
+
+      dispatch(
+        setMigrationProgressAction({progress: 8, statusKey: 'preparing'}),
+      );
+      await sleep(600);
+
+      dispatch(
+        setMigrationProgressAction({
+          progress: 30,
+          statusKey: 'cleaning_neutrino',
+        }),
+      );
+      await deleteNeutrinoFiles();
+      await sleep(600);
+
+      dispatch(
+        setMigrationProgressAction({
+          progress: 60,
+          statusKey: 'cleaning_wallet',
+        }),
+      );
+      await Promise.all([deleteWalletDB(), deleteMacaroonFiles()]);
+      await sleep(600);
+
+      dispatch(
+        setMigrationProgressAction({
+          progress: 85,
+          statusKey: 'switching_backend',
+        }),
+      );
+      dispatch(setLitecoinBackend('electrum'));
+      await sleep(600);
+
+      // Persist the flag before flipping to 'complete' so a crash mid-render
+      // can't leave the modal in the awaiting-ack state with the migration
+      // not actually marked done.
+      await setItem(ELECTRUM_MIGRATION_FLAG, 'true');
+      dispatch(
+        setMigrationProgressAction({progress: 100, statusKey: 'complete'}),
+      );
+    } catch (error) {
+      console.error('electrum migration failed:', error);
+      dispatch(setMigratingAction(false));
+      dispatch(setMigrationProgressAction({progress: 0, statusKey: null}));
+    }
+  };
+
+export const acknowledgeMigration = (): AppThunk => dispatch => {
+  dispatch(setMigratingAction(false));
+  dispatch(setMigrationProgressAction({progress: 0, statusKey: null}));
+};
+
 export const handleWalletReset = (): AppThunk => async dispatch => {
   try {
     await dispatch(resetPincode());
@@ -289,6 +413,21 @@ export const lightningSlice = createSlice({
     setRescanningWallet: (state, action: PayloadAction<boolean>) => ({
       ...state,
       isRescanningWallet: action.payload,
+    }),
+    setMigrating: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      isMigrating: action.payload,
+    }),
+    setMigrationProgress: (
+      state,
+      action: PayloadAction<{
+        progress: number;
+        statusKey: MigrationStatusKey | null;
+      }>,
+    ) => ({
+      ...state,
+      migrationProgress: action.payload.progress,
+      migrationStatusKey: action.payload.statusKey,
     }),
   },
   extraReducers: builder => {

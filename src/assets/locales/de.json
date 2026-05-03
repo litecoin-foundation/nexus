@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Zahlung abschließen, indem Sie Coins an diese Rechnung senden",
     "enter_amount_between": "Betrag zwischen {{min}} und {{max}} eingeben",
     "view_gift_card": "Geschenkkarte ansehen"
+  },
+  "migration": {
+    "title": "Wallet wird aktualisiert",
+    "description": "Bitte schließen Sie die App nicht.",
+    "step_preparing": "Migration wird vorbereitet…",
+    "step_cleaning_neutrino": "Alte Synchronisationsdaten werden entfernt…",
+    "step_cleaning_wallet": "Wallet-Datenbank wird zurückgesetzt…",
+    "step_switching_backend": "Backend wird gewechselt…",
+    "done_title": "Fertig",
+    "done_body": "Ihr Wallet synchronisiert jetzt schneller und benötigt weniger Speicher! Falls Transaktionen fehlen, kein Grund zur Sorge — Ihr Wallet führt eine Wiederherstellungssynchronisation durch.",
+    "done_button": "Fortsetzen",
+    "heads_up_title": "Noch eine Sache",
+    "heads_up_body": "Nach dem Entsperren benötigt Ihr Wallet 1–2 Minuten für die Wiederherstellung.",
+    "heads_up_warning": "Bitte schließen Sie die App während dieser Zeit nicht.",
+    "heads_up_button": "Verstanden"
   }
 }

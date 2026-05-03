@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Complete el pago enviando monedas a esta factura",
     "enter_amount_between": "Ingrese un monto entre {{min}} y {{max}}",
     "view_gift_card": "Ver tarjeta de regalo"
+  },
+  "migration": {
+    "title": "Actualizando tu billetera",
+    "description": "Por favor, no cierres la aplicación.",
+    "step_preparing": "Preparando migración…",
+    "step_cleaning_neutrino": "Eliminando datos de sincronización antiguos…",
+    "step_cleaning_wallet": "Restableciendo base de datos de la billetera…",
+    "step_switching_backend": "Cambiando backend…",
+    "done_title": "Listo",
+    "done_body": "¡Tu billetera ahora sincroniza más rápido y usa menos memoria! Si te faltan transacciones, no te preocupes: tu billetera realizará una sincronización de recuperación.",
+    "done_button": "Continuar",
+    "heads_up_title": "Una última cosa",
+    "heads_up_body": "Después de desbloquear, tu billetera tardará 1–2 minutos en recuperarse.",
+    "heads_up_warning": "Por favor, no cierres la aplicación durante este tiempo.",
+    "heads_up_button": "Entendido"
   }
 }

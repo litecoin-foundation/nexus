@@ -3,7 +3,11 @@ import {StyleSheet, Linking, View} from 'react-native';
 import type {StackNavigationProp} from '@react-navigation/stack';
 
 import {startOnboarding} from '../reducers/onboarding';
-import {resetLndState, startLnd} from '../reducers/lightning';
+import {
+  resetLndState,
+  runElectrumMigrationIfNeeded,
+  startLnd,
+} from '../reducers/lightning';
 import {checkBiometricSupport} from '../utils/biometric';
 import {checkInternetReachable} from '../reducers/info';
 import {subscribeAppState} from '../reducers/authentication';
@@ -42,9 +46,14 @@ const Loading: React.FC<Props> = props => {
   useEffect(() => {
     dispatch(resetLndState());
     if (isOnboarded) {
-      dispatch(startLnd());
-      // sync alerts
-      dispatch(updateFiredAlertsFromApiServer());
+      // Run the one-shot neutrino → electrum migration BEFORE LND starts
+      // so the daemon comes up directly with the new electrum config and we
+      // never have to restart it mid-session.
+      (async () => {
+        await dispatch(runElectrumMigrationIfNeeded());
+        dispatch(startLnd());
+        dispatch(updateFiredAlertsFromApiServer());
+      })();
     }
   }, [dispatch, isOnboarded]);
 

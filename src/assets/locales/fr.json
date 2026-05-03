@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Complétez le paiement en envoyant des coins à cette facture",
     "enter_amount_between": "Entrez un montant entre {{min}} et {{max}}",
     "view_gift_card": "Voir la carte cadeau"
+  },
+  "migration": {
+    "title": "Mise à niveau de votre portefeuille",
+    "description": "Veuillez ne pas fermer l'application.",
+    "step_preparing": "Préparation de la migration…",
+    "step_cleaning_neutrino": "Suppression des données de synchronisation obsolètes…",
+    "step_cleaning_wallet": "Réinitialisation de la base de données du portefeuille…",
+    "step_switching_backend": "Changement de backend…",
+    "done_title": "Terminé",
+    "done_body": "Votre portefeuille se synchronise désormais plus rapidement et utilise moins de mémoire ! Si certaines transactions manquent, pas d'inquiétude — votre portefeuille effectuera une synchronisation de récupération.",
+    "done_button": "Continuer",
+    "heads_up_title": "Une dernière chose",
+    "heads_up_body": "Après le déverrouillage, votre portefeuille mettra 1 à 2 minutes pour se restaurer.",
+    "heads_up_warning": "Veuillez ne pas fermer l'application pendant ce temps.",
+    "heads_up_button": "Compris"
   }
 }

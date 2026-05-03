@@ -52,6 +52,8 @@ import {
 } from './src/reducers/buy';
 import RootNavigator from './src/navigation/RootNavigator';
 import Error from './src/components/Error';
+import MigrationModal from './src/components/Modals/MigrationModal';
+import {acknowledgeMigration} from './src/reducers/lightning';
 import {store, pStore} from './src/store';
 
 import {startTor} from './src/utils/tor';
@@ -163,6 +165,23 @@ function OpenNotificationHandler(props: any) {
   }, [dispatch, props.notification]);
 
   return null;
+}
+
+function GlobalMigrationModal() {
+  const dispatch = useAppDispatch();
+  const isMigrating = useAppSelector(state => state.lightning!.isMigrating);
+  const progress = useAppSelector(state => state.lightning!.migrationProgress);
+  const statusKey = useAppSelector(
+    state => state.lightning!.migrationStatusKey,
+  );
+  return (
+    <MigrationModal
+      isVisible={isMigrating}
+      progress={progress}
+      statusKey={statusKey}
+      onAcknowledge={() => dispatch(acknowledgeMigration())}
+    />
+  );
 }
 
 const App: React.FC = () => {
@@ -348,6 +367,7 @@ const App: React.FC = () => {
                           <RootNavigator />
                         </ScreenCaptureTarget>
                         <Error />
+                        <GlobalMigrationModal />
                       </GestureHandlerRootView>
                     </ScreenCaptureProvider>
                   </PopUpProvider>

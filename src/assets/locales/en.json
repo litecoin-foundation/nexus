@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Complete payment by sending coins to this invoice",
     "enter_amount_between": "Enter amount between {{min}} and {{max}}",
     "view_gift_card": "View Gift Card"
+  },
+  "migration": {
+    "title": "Upgrading Your Wallet",
+    "description": "Please don't close the app.",
+    "step_preparing": "Preparing migration…",
+    "step_cleaning_neutrino": "Removing legacy sync data…",
+    "step_cleaning_wallet": "Resetting wallet database…",
+    "step_switching_backend": "Switching backends…",
+    "done_title": "All done",
+    "done_body": "Your wallet now syncs faster and uses less memory! Don't worry if you're missing transactions, your wallet will perform a recovery sync.",
+    "done_button": "Continue",
+    "heads_up_title": "One last thing",
+    "heads_up_body": "After you unlock, your wallet will take 1–2 minutes to recover.",
+    "heads_up_warning": "Please don't close the app during this time.",
+    "heads_up_button": "Got it"
   }
 }

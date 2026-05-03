@@ -61,3 +61,23 @@ export const deleteLNDDir = async () => {
     console.error(error);
   }
 };
+
+// delete neutrino-specific state (filter headers, block headers, neutrino db)
+// plus any leftover presync cache parts and mainnet.zip from a prior bootstrap
+export const deleteNeutrinoFiles = async () => {
+  const chainDir = `${lndDir}/lndltc/data/chain/litecoin/mainnet`;
+  const paths = [
+    `${chainDir}/neutrino.db`,
+    `${chainDir}/block_headers.bin`,
+    `${chainDir}/reg_filter_headers.bin`,
+    `${lndDir}/mainnet.zip`,
+    ...Array.from({length: 10}, (_, i) => `${lndDir}/cache.z0${i}`),
+  ];
+  await Promise.all(
+    paths.map(p =>
+      RNFS.unlink(p).catch(() => {
+        // ignore: file may simply not exist
+      }),
+    ),
+  );
+};

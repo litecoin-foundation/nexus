@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Užbaikite mokėjimą siųsdami monetas į šią sąskaitą",
     "enter_amount_between": "Įveskite sumą nuo {{min}} iki {{max}}",
     "view_gift_card": "Peržiūrėti dovanų kortelę"
+  },
+  "migration": {
+    "title": "Atnaujinama jūsų piniginė",
+    "description": "Prašome neuždaryti programos.",
+    "step_preparing": "Ruošiamasi migracijai…",
+    "step_cleaning_neutrino": "Šalinami seni sinchronizacijos duomenys…",
+    "step_cleaning_wallet": "Atstatoma piniginės duomenų bazė…",
+    "step_switching_backend": "Keičiamas backend…",
+    "done_title": "Baigta",
+    "done_body": "Jūsų piniginė dabar sinchronizuojama greičiau ir naudoja mažiau atminties! Jei trūksta kai kurių sandorių, nesijaudinkite — jūsų piniginė atliks atkūrimo sinchronizaciją.",
+    "done_button": "Toliau",
+    "heads_up_title": "Dar vienas dalykas",
+    "heads_up_body": "Atrakinus, jūsų piniginei prireiks 1–2 minučių atsistatyti.",
+    "heads_up_warning": "Prašome šiuo metu neuždaryti programos.",
+    "heads_up_button": "Supratau"
   }
 }

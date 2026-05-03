@@ -374,5 +374,20 @@
     "complete_payment_invoice": "Përfundo pagesën duke dërguar monedha në këtë faturë",
     "enter_amount_between": "Fut një shumë midis {{min}} dhe {{max}}",
     "view_gift_card": "Shiko Kartën Dhuratë"
+  },
+  "migration": {
+    "title": "Po përditësohet portofoli juaj",
+    "description": "Ju lutemi, mos e mbyllni aplikacionin.",
+    "step_preparing": "Po përgatitet migrimi…",
+    "step_cleaning_neutrino": "Po hiqen të dhënat e vjetra të sinkronizimit…",
+    "step_cleaning_wallet": "Po rivendoset baza e të dhënave të portofolit…",
+    "step_switching_backend": "Po ndryshohet backend-i…",
+    "done_title": "Gati",
+    "done_body": "Portofoli yt tani sinkronizohet më shpejt dhe përdor më pak memorie! Nëse mungojnë disa transaksione, mos u shqetëso — portofoli yt do të kryejë një sinkronizim rikuperimi.",
+    "done_button": "Vazhdo",
+    "heads_up_title": "Edhe një gjë",
+    "heads_up_body": "Pas shkyçjes, portofolit tënd do t'i duhen 1–2 minuta për t'u rikuperuar.",
+    "heads_up_warning": "Ju lutemi, mos e mbyllni aplikacionin gjatë kësaj kohe.",
+    "heads_up_button": "E kuptova"
   }
 }
