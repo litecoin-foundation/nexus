@@ -19,7 +19,6 @@ const backIcon = require('../../assets/images/back-icon.png');
 
 interface BrandCardProps {
   brand: Brand;
-  currency: string;
   onSelectBrand: (brand: Brand, initialAmount?: number) => void;
   expandedBrandSlug: string | null;
   onToggleBrand: (brandSlug: string) => void;
@@ -53,11 +52,11 @@ const AnimatedPressable: React.FC<{
 export const BrandCard = React.memo(
   function BrandCard({
     brand,
-    currency,
     onSelectBrand,
     expandedBrandSlug,
     onToggleBrand,
   }: BrandCardProps) {
+    const currency = brand.currency;
     const isExpanded = expandedBrandSlug === brand.slug;
     const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
       useContext(ScreenSizeContext);
@@ -99,7 +98,9 @@ export const BrandCard = React.memo(
 
     const minAmount = Math.max(
       brand.currencyMinValue ?? 0,
-      Number(brand.digital_face_value_limits?.lower || brand.denominations?.[0]),
+      Number(
+        brand.digital_face_value_limits?.lower || brand.denominations?.[0],
+      ),
     );
     const maxAmount = Number(
       brand.digital_face_value_limits?.upper ||
@@ -332,7 +333,6 @@ export const BrandCard = React.memo(
     const nextExpanded = next.expandedBrandSlug === next.brand.slug;
     return (
       prev.brand === next.brand &&
-      prev.currency === next.currency &&
       prev.onSelectBrand === next.onSelectBrand &&
       prev.onToggleBrand === next.onToggleBrand &&
       prevExpanded === nextExpanded

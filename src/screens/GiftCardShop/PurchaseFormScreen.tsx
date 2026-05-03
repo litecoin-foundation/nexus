@@ -54,7 +54,6 @@ interface PurchaseFormScreenProps {
     params: {
       brand: Brand;
       initialAmount?: number;
-      currency: string;
       onPaymentSuccess: (txid: string) => void;
     };
   };
@@ -64,7 +63,6 @@ interface PurchaseFormScreenProps {
 interface PurchaseFormContentProps {
   brand: Brand;
   initialAmount?: number;
-  currency: string;
   onInitiate: (initiateResponse: InitiatePurchaseResponseData) => void;
   navigation: any;
 }
@@ -97,19 +95,19 @@ const AnimatedPressable: React.FC<{
 const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
   brand,
   initialAmount,
-  currency,
   onInitiate,
   navigation,
 }) => {
   const {
     amount,
     setAmount,
+    currency,
     validation,
     submit,
     loading,
     error,
     initiateResponse,
-  } = usePurchaseFlow(brand, currency);
+  } = usePurchaseFlow(brand);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -522,7 +520,7 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
   route,
   navigation,
 }) => {
-  const {brand, initialAmount, currency, onPaymentSuccess} = route.params;
+  const {brand, initialAmount, onPaymentSuccess} = route.params;
   const client = useMemo(() => new GiftCardClient(), []);
 
   const [showTOS, setShowTOS] = useState(false);
@@ -551,7 +549,6 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
       <PurchaseFormContent
         brand={brand}
         initialAmount={initialAmount}
-        currency={currency}
         onInitiate={handleInitiate}
         navigation={navigation}
       />
