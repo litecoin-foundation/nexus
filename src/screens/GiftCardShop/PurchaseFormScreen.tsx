@@ -520,21 +520,24 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
   route,
   navigation,
 }) => {
-  const {brand, initialAmount, onPaymentSuccess} = route.params;
+  const {brand, initialAmount, onPaymentSuccess} = route.params ?? {};
   const client = useMemo(() => new GiftCardClient(), []);
 
   const [showTOS, setShowTOS] = useState(false);
   const [pendingResponse, setPendingResponse] =
     useState<InitiatePurchaseResponseData | null>(null);
 
-  const handleInitiate = (initiateResponse: InitiatePurchaseResponseData) => {
-    setPendingResponse(initiateResponse);
-    setShowTOS(true);
-  };
+  const handleInitiate = useCallback(
+    (initiateResponse: InitiatePurchaseResponseData) => {
+      setPendingResponse(initiateResponse);
+      setShowTOS(true);
+    },
+    [],
+  );
 
-  const handleTOSContinue = () => {
+  const handleTOSContinue = useCallback(() => {
     setShowTOS(false);
-    if (pendingResponse) {
+    if (pendingResponse && brand) {
       navigation.navigate('PayForGiftCard', {
         initiateResponse: pendingResponse,
         brandName: brand.name,
@@ -542,7 +545,11 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
       });
       setPendingResponse(null);
     }
-  };
+  }, [pendingResponse, brand, navigation, onPaymentSuccess]);
+
+  if (!brand) {
+    return null;
+  }
 
   return (
     <GiftCardProvider client={client}>
