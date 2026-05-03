@@ -2,10 +2,10 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 import {fileExists} from './file';
 
 const ELECTRUM_SERVERS = [
-  'ltc.rentonisk.com:50002',
-  'electrum.petrkr.net:60002',
-  'litecoin.stackwallet.com:20063',
-  'fallacy.fiatfaucet.com:50002',
+  'electrum-us.nexuswallet.com:50002',
+  'electrum-de.nexuswallet.com:50002',
+  // 'litecoin.stackwallet.com:20063',
+  // 'fallacy.fiatfaucet.com:50002',
 ];
 
 const getMainnetConfig = (
