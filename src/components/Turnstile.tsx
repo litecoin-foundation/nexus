@@ -2,9 +2,8 @@ import React, {useState} from 'react';
 import {View, StyleSheet} from 'react-native';
 import WebView, {WebViewMessageEvent} from 'react-native-webview';
 
-const TURNSTILE_BASE_URL = __DEV__
-  ? 'https://stage-api.nexuswallet.com'
-  : 'https://api.nexuswallet.com';
+import {TURNSTILE_BASE_URL} from './turnstileConfig';
+
 const TURNSTILE_SITE_KEY = '0x4AAAAAACNSgnC0ANAjDu9H';
 const TURNSTILE_SIZE = 'normal';
 

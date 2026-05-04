@@ -1,14 +1,16 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
+import {Platform} from 'react-native';
+import {getCountry} from 'react-native-localize';
+import * as SecureStore from 'expo-secure-store';
+
 import {
   GiftCard,
   GiftCardInApp,
   Brand,
   createGiftCardClient,
 } from '../services/giftcards';
-import {Platform} from 'react-native';
-import {getCountry} from 'react-native-localize';
-import * as SecureStore from 'expo-secure-store';
+import {TURNSTILE_RESPONSE_FIELD} from '../components/turnstileConfig';
 import {AppThunk} from './types';
 
 interface IUserAccount {
@@ -209,7 +211,7 @@ export const registerOnNexusShop =
       const body = JSON.stringify({
         email,
         uniqueId,
-        'cf-turnstile-response': turnstileToken,
+        [TURNSTILE_RESPONSE_FIELD]: turnstileToken,
         deviceToken: deviceNotificationToken,
         isIOS: Platform.OS === 'ios',
         countryCode: getCountry(),
@@ -261,7 +263,7 @@ export const registerOnNexusShop =
   };
 
 export const loginToNexusShop =
-  (email: string): AppThunk =>
+  (email: string, turnstileToken: string): AppThunk =>
   async dispatch => {
     try {
       dispatch(setLoginLoading(true));
@@ -273,6 +275,7 @@ export const loginToNexusShop =
         },
         body: JSON.stringify({
           email,
+          [TURNSTILE_RESPONSE_FIELD]: turnstileToken,
         }),
       });
 

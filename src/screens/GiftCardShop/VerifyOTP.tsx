@@ -26,6 +26,9 @@ import NumpadInput from '../../components/Numpad/NumpadInput';
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
 import WarningModal from '../../components/Modals/WarningModal';
+import InvisibleTurnstile, {
+  InvisibleTurnstileRef,
+} from '../../components/InvisibleTurnstile';
 import {
   colors,
   getSpacing,
@@ -114,8 +117,11 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   );
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [showMaxAttemptsModal, setShowMaxAttemptsModal] = useState(false);
+  const [resendError, setResendError] = useState('');
+  const [isResending, setIsResending] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const turnstileRef = useRef<InvisibleTurnstileRef>(null);
 
   const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
@@ -323,16 +329,30 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       return;
     }
 
+    if (isResending) return;
+    setIsResending(true);
+
     try {
-      await dispatch(loginToNexusShop(account.email));
-      // Start 60 second countdown
+      const turnstileToken = await turnstileRef.current?.execute();
+      if (!turnstileToken) {
+        setResendError('Verification failed. Please try again.');
+        return;
+      }
+      await dispatch(loginToNexusShop(account.email, turnstileToken));
       startCooldownTimer();
-      // Reset failed attempts when successfully resending OTP
       setFailedAttempts(0);
-    } catch {
-      // Error is handled by warning modal
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to resend code.';
+      setResendError(message);
+    } finally {
+      setIsResending(false);
     }
-  }, [account?.email, uniqueId, dispatch, startCooldownTimer]);
+  }, [account?.email, uniqueId, dispatch, startCooldownTimer, isResending]);
+
+  const handleCloseResendError = useCallback(() => {
+    setResendError('');
+  }, []);
 
   const handleCloseMaxAttemptsModal = useCallback(() => {
     setShowMaxAttemptsModal(false);
@@ -356,7 +376,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     [isButtonDisabled, loading, handleVerifyOTP],
   );
 
-  const isResendDisabled = loading || resendCountdown > 0;
+  const isResendDisabled = loading || isResending || resendCountdown > 0;
 
   const secondaryButton = useMemo(() => {
     // Progress should go from 100% (at 60s) to 0% (at 0s) - counting DOWN
@@ -460,6 +480,12 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         close={handleCloseMaxAttemptsModal}
         text="Too many incorrect attempts. To get a new code, press Resend Code."
       />
+      <WarningModal
+        isVisible={!!resendError}
+        close={handleCloseResendError}
+        text={resendError}
+      />
+      <InvisibleTurnstile ref={turnstileRef} action="send-otp" />
     </View>
   );
 };
