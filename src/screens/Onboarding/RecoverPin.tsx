@@ -108,16 +108,18 @@ const RecoverPin: React.FC<Props> = props => {
 
   useEffect(() => {
     // erase seed and pin from keychain on third fail
-    const resetWallet = async () => {
-      try {
-        await Promise.all([dispatch(resetPincode()), dispatch(resetSeed())]);
-      } catch (error) {
-        console.error('Failed to reset wallet:', error);
-      } finally {
-        resetToLoading();
-      }
-    };
-    resetWallet();
+    if (failedRecoverPinAttempts > 2) {
+      const resetWallet = async () => {
+        try {
+          await Promise.all([dispatch(resetPincode()), dispatch(resetSeed())]);
+        } catch (error) {
+          console.error('Failed to reset wallet:', error);
+        } finally {
+          resetToLoading();
+        }
+      };
+      resetWallet();
+    }
   }, [failedRecoverPinAttempts, dispatch]);
 
   const handleNavigation = () => {
