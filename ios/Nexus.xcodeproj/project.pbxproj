@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1B1549392CFFB7F200CC5912 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B1549382CFFB7F200CC5912 /* Images.xcassets */; };
 		1B15493B2CFFB7FC00CC5912 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B15493A2CFFB7FC00CC5912 /* LaunchScreen.storyboard */; };
+		1B41065C2FAC04A100DD231D /* nexus-liquid-icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 1B41065B2FAC04A100DD231D /* nexus-liquid-icon.icon */; };
 		1B50CFF22DF9D4FB00494F5C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B50CFF12DF9D4FB00494F5C /* AppDelegate.swift */; };
 		1B772B682CF8102B009C0FB4 /* liblnd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B672CF8102B009C0FB4 /* liblnd.a */; };
 		1B772B6A2CF81E57009C0FB4 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B692CF81E4E009C0FB4 /* libresolv.tbd */; };
@@ -54,6 +55,7 @@
 		1B1549382CFFB7F200CC5912 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1B15493A2CFFB7FC00CC5912 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1B1549572CFFB8A100CC5912 /* nexus-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "nexus-Bridging-Header.h"; sourceTree = "<group>"; };
+		1B41065B2FAC04A100DD231D /* nexus-liquid-icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "nexus-liquid-icon.icon"; sourceTree = "<group>"; };
 		1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:67RAULRX93:Marcin Krzyzanowski"; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		1B50CFF12DF9D4FB00494F5C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1B772B672CF8102B009C0FB4 /* liblnd.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblnd.a; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 			isa = PBXGroup;
 			children = (
 				1E3A0D6E6B80464D951D3C16 /* Satoshi-Variable.ttf */,
+				1B41065B2FAC04A100DD231D /* nexus-liquid-icon.icon */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -295,6 +298,7 @@
 				1B1549392CFFB7F200CC5912 /* Images.xcassets in Resources */,
 				1B15493B2CFFB7FC00CC5912 /* LaunchScreen.storyboard in Resources */,
 				D8A583682E0A1FA900FF887F /* BootSplash.storyboard in Resources */,
+				1B41065C2FAC04A100DD231D /* nexus-liquid-icon.icon in Resources */,
 				DA03E15CFC29C24FF4284566 /* PrivacyInfo.xcprivacy in Resources */,
 				5DC3C87AFE8D411CA6859504 /* Satoshi-Variable.ttf in Resources */,
 			);
@@ -521,7 +525,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F008605EFD010461D55E690B /* Pods-nexus.debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "nexus-liquid-icon";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = nexus/nexus.entitlements;
 				CURRENT_PROJECT_VERSION = 9;
@@ -565,7 +570,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C4DB80AE9ECA9356DEA3B0E8 /* Pods-nexus.release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "nexus-liquid-icon";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = nexus/nexus.entitlements;
 				CURRENT_PROJECT_VERSION = 9;
