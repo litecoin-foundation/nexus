@@ -48,6 +48,8 @@ import TOSCheckModal from '../../components/Modals/TOSCheckModal';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {setTosAgreed} from '../../reducers/nexusshopaccount';
 
 interface PurchaseFormScreenProps {
   route: {
@@ -522,30 +524,44 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
 }) => {
   const {brand, initialAmount, onPaymentSuccess} = route.params ?? {};
   const client = useMemo(() => new GiftCardClient(), []);
+  const dispatch = useAppDispatch();
+  const tosAgreed = useAppSelector(state => state.nexusshopaccount!.tosAgreed);
 
   const [showTOS, setShowTOS] = useState(false);
   const [pendingResponse, setPendingResponse] =
     useState<InitiatePurchaseResponseData | null>(null);
 
+  const navigateToPayment = useCallback(
+    (initiateResponse: InitiatePurchaseResponseData) => {
+      navigation.navigate('PayForGiftCard', {
+        initiateResponse,
+        brandName: brand?.name,
+        onPaymentSuccess,
+      });
+    },
+    [brand, navigation, onPaymentSuccess],
+  );
+
   const handleInitiate = useCallback(
     (initiateResponse: InitiatePurchaseResponseData) => {
-      setPendingResponse(initiateResponse);
-      setShowTOS(true);
+      if (tosAgreed) {
+        navigateToPayment(initiateResponse);
+      } else {
+        setPendingResponse(initiateResponse);
+        setShowTOS(true);
+      }
     },
-    [],
+    [tosAgreed, navigateToPayment],
   );
 
   const handleTOSContinue = useCallback(() => {
     setShowTOS(false);
-    if (pendingResponse && brand) {
-      navigation.navigate('PayForGiftCard', {
-        initiateResponse: pendingResponse,
-        brandName: brand.name,
-        onPaymentSuccess,
-      });
+    dispatch(setTosAgreed(true));
+    if (pendingResponse) {
+      navigateToPayment(pendingResponse);
       setPendingResponse(null);
     }
-  }, [pendingResponse, brand, navigation, onPaymentSuccess]);
+  }, [pendingResponse, navigateToPayment, dispatch]);
 
   if (!brand) {
     return null;

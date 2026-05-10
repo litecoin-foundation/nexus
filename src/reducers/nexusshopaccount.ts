@@ -30,6 +30,7 @@ interface INexusShopAccount {
   error: string | null;
   loginLoading: boolean;
   isCountryPickerOpen: boolean;
+  tosAgreed: boolean;
 }
 
 const initialState: INexusShopAccount = {
@@ -40,6 +41,7 @@ const initialState: INexusShopAccount = {
   error: null,
   loginLoading: false,
   isCountryPickerOpen: false,
+  tosAgreed: false,
 };
 
 const BASE_API_URL = __DEV__
@@ -80,6 +82,7 @@ export const nexusShopAccountSlice = createSlice({
       state.loading = false;
       state.loginLoading = false;
       state.error = null;
+      state.tosAgreed = false;
     },
     resetAccount: state => {
       state.account = null;
@@ -88,6 +91,7 @@ export const nexusShopAccountSlice = createSlice({
       state.loading = false;
       state.loginLoading = false;
       state.error = null;
+      state.tosAgreed = false;
     },
     resetWishlist: state => {
       state.wishlistBrands = [];
@@ -169,6 +173,9 @@ export const nexusShopAccountSlice = createSlice({
     },
     setCountryPickerOpen: (state, action: PayloadAction<boolean>) => {
       state.isCountryPickerOpen = action.payload;
+    },
+    setTosAgreed: (state, action: PayloadAction<boolean>) => {
+      state.tosAgreed = action.payload;
     },
     verifyOtpSuccess: state => {
       if (state.account) {
@@ -451,6 +458,7 @@ export const {
   setUserCurrency,
   setUserCountry,
   setCountryPickerOpen,
+  setTosAgreed,
   verifyOtpSuccess,
 } = nexusShopAccountSlice.actions;
 
