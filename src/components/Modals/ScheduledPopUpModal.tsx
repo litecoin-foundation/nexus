@@ -9,6 +9,7 @@ import {View, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import PlasmaModal from './PlasmaModal';
+import GreyRoundButton from '../Buttons/GreyRoundButton';
 import BlueButton from '../Buttons/BlueButton';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -115,6 +116,9 @@ const ScheduledPopUpModal: React.FC<Props> = ({blocked, onGoToScreen}) => {
         backSpecifiedStyle={styles.semiBlackBackground}
         renderBody={(_, __, ___, ____, cardTranslateAnim) => (
           <Animated.View style={[styles.modal, cardTranslateAnim]}>
+            <View style={styles.closeButtonContainer}>
+              <GreyRoundButton onPress={() => close()} />
+            </View>
             <View style={styles.titleContainer}>
               {activePopup?.title ? (
                 <TranslateText
@@ -183,12 +187,17 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       shadowRadius: 3,
       padding: 20,
     },
+    closeButtonContainer: {
+      position: 'absolute',
+      top: 20,
+      right: 20,
+    },
     titleContainer: {
-      flex: 1,
+      flex: 2,
       paddingLeft: 5,
     },
     textContainer: {
-      flex: 2,
+      flex: 3,
       paddingLeft: 5,
     },
     title: {
