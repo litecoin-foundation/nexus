@@ -8,6 +8,7 @@ import React, {
   useCallback,
 } from 'react';
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
+import {getCountry} from 'react-native-localize';
 import Animated, {SharedValue} from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {useDrawerStatus} from '@react-navigation/drawer';
@@ -485,8 +486,12 @@ const Main: React.FC<Props> = props => {
           textKey="buy"
           imageSource={require('../assets/icons/buy-icon.png')}
           handlePress={() => {
-            setBottomSheetFolded(false);
-            setActiveTab(1);
+            if (getCountry() === 'GB') {
+              navigation.navigate('ConfirmBuy', {prefilledMethod: ''});
+            } else {
+              setBottomSheetFolded(false);
+              setActiveTab(1);
+            }
           }}
           active={activeTab === 1}
           disabled={!isInternetReachable ? true : false}
@@ -495,8 +500,12 @@ const Main: React.FC<Props> = props => {
           textKey="sell"
           imageSource={require('../assets/icons/sell-icon.png')}
           handlePress={() => {
-            setBottomSheetFolded(false);
-            setActiveTab(2);
+            if (getCountry() === 'GB') {
+              navigation.navigate('ConfirmSell', {prefilledMethod: ''});
+            } else {
+              setBottomSheetFolded(false);
+              setActiveTab(2);
+            }
           }}
           active={activeTab === 2}
           disabled={!isInternetReachable ? true : false}
@@ -538,7 +547,7 @@ const Main: React.FC<Props> = props => {
         />
       </View>
     ),
-    [activeTab, isInternetReachable, styles.headerContainer],
+    [activeTab, isInternetReachable, navigation, styles.headerContainer],
   );
 
   const TxListComponentMemo = (
