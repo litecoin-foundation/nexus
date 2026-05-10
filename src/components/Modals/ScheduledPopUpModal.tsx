@@ -207,6 +207,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       position: 'absolute',
       top: 20,
       right: 20,
+      zIndex: 999,
     },
     titleContainer: {
       flex: 2,
