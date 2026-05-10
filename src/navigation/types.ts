@@ -49,6 +49,8 @@ export type NewWalletStackParamList = {
   };
   SuccessSend: {
     txid: string;
+    amount: number;
+    toAddress: string;
   };
   ConfirmBuy: {
     [key: string]: any;

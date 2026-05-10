@@ -17,6 +17,8 @@ type RootStackParamList = {
   };
   SuccessSend: {
     txid: string;
+    amount: number;
+    toAddress: string;
   };
 };
 
@@ -48,7 +50,9 @@ const ConfirmSend: React.FC<Props> = props => {
       amount={amount}
       fiatAmount={fiatAmount}
       label={label}
-      sendSuccessHandler={txid => navigation.navigate('SuccessSend', {txid})}
+      sendSuccessHandler={txid =>
+        navigation.navigate('SuccessSend', {txid, amount, toAddress})
+      }
       sendAll={sendAll}
       coinSelectionUtxos={coinSelectionUtxos}
     />
