@@ -373,7 +373,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "Complete payment by sending coins to this invoice",
     "enter_amount_between": "Enter amount between {{min}} and {{max}}",
-    "view_gift_card": "View Gift Card"
+    "view_gift_card": "View Gift Card",
+    "popup_topup_title": "Top-up your Litecoins",
+    "popup_topup_text": "You spent {{amount}} LTC on a gift card. Want to top up your wallet?",
+    "popup_topup_action": "Buy LTC"
   },
   "migration": {
     "title": "Upgrading Your Wallet",

@@ -373,7 +373,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "Завершите оплату, отправив монеты на этот счёт",
     "enter_amount_between": "Введите сумму от {{min}} до {{max}}",
-    "view_gift_card": "Просмотреть подарочную карту"
+    "view_gift_card": "Просмотреть подарочную карту",
+    "popup_topup_title": "Пополните свои Лайткоины",
+    "popup_topup_text": "Вы потратили {{amount}} LTC на подарочную карту. Хотите пополнить кошелёк?",
+    "popup_topup_action": "Перейти к Покупке"
   },
   "migration": {
     "title": "Обновление вашего кошелька",

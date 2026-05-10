@@ -122,7 +122,12 @@ const ScheduledPopUpModal: React.FC<Props> = ({blocked, onGoToScreen}) => {
             <View style={styles.titleContainer}>
               {activePopup?.title ? (
                 <TranslateText
-                  textValue={activePopup.title}
+                  {...(activePopup.titleKey
+                    ? {
+                        textKey: activePopup.titleKey,
+                        domain: activePopup.textDomain,
+                      }
+                    : {textValue: activePopup.title})}
                   maxSizeInPixels={SCREEN_HEIGHT * 0.022}
                   textStyle={styles.title}
                   numberOfLines={1}
@@ -134,7 +139,13 @@ const ScheduledPopUpModal: React.FC<Props> = ({blocked, onGoToScreen}) => {
             <View style={styles.textContainer}>
               {activePopup?.text ? (
                 <TranslateText
-                  textValue={activePopup.text}
+                  {...(activePopup.textKey
+                    ? {
+                        textKey: activePopup.textKey,
+                        domain: activePopup.textDomain,
+                        interpolationObj: activePopup.textInterpolationObj,
+                      }
+                    : {textValue: activePopup.text})}
                   maxSizeInPixels={SCREEN_HEIGHT * 0.022}
                   textStyle={styles.text}
                   numberOfLines={3}
@@ -145,7 +156,12 @@ const ScheduledPopUpModal: React.FC<Props> = ({blocked, onGoToScreen}) => {
             </View>
             <View style={styles.button}>
               <BlueButton
-                value={activePopup?.onAction || 'OK'}
+                {...(activePopup?.onActionKey
+                  ? {
+                      textKey: activePopup.onActionKey,
+                      textDomain: activePopup.textDomain,
+                    }
+                  : {value: activePopup?.onAction || 'OK'})}
                 onPress={handleAction}
                 rounded
               />
