@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo} from 'react';
-import {View, Platform} from 'react-native';
+import {StyleSheet, View, Platform, StyleProp, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type Edge = 'top' | 'bottom' | 'left' | 'right';
@@ -7,15 +7,19 @@ type IPlatform = 'ios' | 'android' | 'both';
 
 interface Props {
   children?: React.ReactNode;
-  styles?: {
-    [key: string]: any;
-  };
+  styles?: StyleProp<ViewStyle>;
   edges?: Edge[];
   platform?: IPlatform;
 }
 
 const CustomSafeAreaView: React.FC<Props> = props => {
   const {children, styles, edges, platform} = props;
+
+  const flatStyles = useMemo(
+    () =>
+      styles ? (StyleSheet.flatten(styles) as {[key: string]: any}) : undefined,
+    [styles],
+  );
 
   const EDGES = useMemo(
     () => (edges ? edges : ['top', 'bottom', 'left', 'right']),
@@ -31,37 +35,37 @@ const CustomSafeAreaView: React.FC<Props> = props => {
       ? {
           paddingTop: EDGES.includes('top')
             ? insets.top +
-              (styles?.paddingTop ||
-                styles?.paddingVertical ||
-                styles?.padding ||
+              (flatStyles?.paddingTop ||
+                flatStyles?.paddingVertical ||
+                flatStyles?.padding ||
                 0)
             : 0,
           paddingBottom: EDGES.includes('bottom')
             ? insets.bottom +
-              (styles?.paddingBottom ||
-                styles?.paddingVertical ||
-                styles?.padding ||
+              (flatStyles?.paddingBottom ||
+                flatStyles?.paddingVertical ||
+                flatStyles?.padding ||
                 0)
             : 0,
           paddingLeft: EDGES.includes('left')
             ? insets.left +
-              (styles?.paddingLeft ||
-                styles?.paddingHorizontal ||
-                styles?.padding ||
+              (flatStyles?.paddingLeft ||
+                flatStyles?.paddingHorizontal ||
+                flatStyles?.padding ||
                 0)
             : 0,
           paddingRight: EDGES.includes('right')
             ? insets.right +
-              (styles?.paddingRight ||
-                styles?.paddingHorizontal ||
-                styles?.padding ||
+              (flatStyles?.paddingRight ||
+                flatStyles?.paddingHorizontal ||
+                flatStyles?.padding ||
                 0)
             : 0,
         }
       : null;
-  }, [styles, insets, EDGES, platform]);
+  }, [flatStyles, insets, EDGES, platform]);
 
-  return <View style={[styles, generatePaddings()]}>{children}</View>;
+  return <View style={[flatStyles, generatePaddings()]}>{children}</View>;
 };
 
 export default CustomSafeAreaView;
