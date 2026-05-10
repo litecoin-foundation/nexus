@@ -133,12 +133,11 @@ const ConfirmBuy: React.FC<Props> = props => {
 
   // UK: auto-open widget on mount
   useEffect(() => {
-    if (isUK && !route.params?.queryString) {
+    if (isUK && !route.params?.queryString && address && !hasBeenMounted) {
       openBuyWidget();
       setHasBeenMounted(true);
     }
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, []);
+  }, [isUK, address, route.params, openBuyWidget, hasBeenMounted]);
 
   // UK: if exited WebPage before successful buy, go back
   useFocusEffect(
