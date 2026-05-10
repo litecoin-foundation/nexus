@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getCountry} from 'react-native-localize';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
@@ -77,6 +78,9 @@ const Buy: React.FC<Props> = () => {
     insets.bottom,
     OFFSET_HEADER_DIFF,
   );
+
+  const isUK = getCountry() === 'GB';
+
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
@@ -373,7 +377,9 @@ const Buy: React.FC<Props> = () => {
     <View style={styles.container}>
       <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         {regionValid ? (
-          BuyContainer
+          isUK ? null : (
+            BuyContainer
+          )
         ) : (
           <TranslateText
             textKey={errorTextKey}
@@ -395,7 +401,7 @@ const Buy: React.FC<Props> = () => {
           </View> */}
             <View style={styles.btn2}>
               <BlueButton
-                disabled={!(regionValid && amountValid)}
+                disabled={!(regionValid && (isUK || amountValid))}
                 textKey="preview_buy"
                 textDomain="buyTab"
                 onPress={() => {

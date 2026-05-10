@@ -16,6 +16,7 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getCountry} from 'react-native-localize';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, setSellQuote} from '../../reducers/buy';
@@ -84,6 +85,8 @@ const Sell: React.FC<Props> = () => {
     insets.bottom,
     OFFSET_HEADER_DIFF,
   );
+
+  const isUK = getCountry() === 'GB';
 
   const [toggleLTC, setToggleLTC] = useState(true);
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
@@ -438,21 +441,6 @@ const Sell: React.FC<Props> = () => {
               style={styles.switchButton}>
               <Image source={require('../../assets/icons/switch-arrow.png')} />
             </TouchableOpacity>
-
-            {/* <TouchableOpacity
-              style={styles.historyButton}
-              onPress={() =>
-                navigation.navigate('SearchTransaction', {openFilter: 'Sell'})
-              }>
-              <Image source={require('../../assets/icons/history-icon.png')} />
-              <TranslateText
-                textKey={'history'}
-                domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                textStyle={styles.buttonText}
-                numberOfLines={1}
-              />
-            </TouchableOpacity> */}
           </View>
         </View>
 
@@ -518,7 +506,9 @@ const Sell: React.FC<Props> = () => {
     <View style={styles.container}>
       <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         {regionValid ? (
-          SellContainer
+          isUK ? null : (
+            SellContainer
+          )
         ) : (
           <TranslateText
             textKey={errorTextKey}
@@ -540,11 +530,15 @@ const Sell: React.FC<Props> = () => {
           </View> */}
             <View style={styles.btn2}>
               <BlueButton
-                disabled={!(regionValid && amountValid)}
+                disabled={!(regionValid && (isUK || amountValid))}
                 textKey="preview_sell"
                 textDomain="sellTab"
                 onPress={() => {
-                  if (isMoonpayCustomer) {
+                  if (isUK) {
+                    navigation.navigate('ConfirmSell', {
+                      prefilledMethod: prefilledMethodRef.current,
+                    });
+                  } else if (isMoonpayCustomer) {
                     navigation.navigate('ConfirmSell', {
                       prefilledMethod: prefilledMethodRef.current,
                     });

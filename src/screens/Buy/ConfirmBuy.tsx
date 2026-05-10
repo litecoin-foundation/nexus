@@ -6,8 +6,9 @@ import React, {
   useState,
 } from 'react';
 import {View, StyleSheet, Platform} from 'react-native';
-import {RouteProp} from '@react-navigation/native';
+import {RouteProp, useFocusEffect} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {getCountry} from 'react-native-localize';
 
 import TableCell from '../../components/Cells/TableCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
@@ -69,6 +70,10 @@ const ConfirmBuy: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+  const isUK = getCountry() === 'GB';
+
+  const [hasBeenMounted, setHasBeenMounted] = useState(false);
+  const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
   const [buyTxid, setBuyTxid] = useState<string>('');
   const [buyTxStatus, setBuyTxStatus] = useState<string>('');
   const [wasSuccessful, setWasSuccessful] = useState<boolean>(false);
@@ -97,7 +102,7 @@ const ConfirmBuy: React.FC<Props> = props => {
         throw new Error('Address not found. Go back and Try again!');
       }
 
-      if (!baseCurrencyAmount) {
+      if (!isUK && !baseCurrencyAmount) {
         throw new Error('Purchase amount not found.');
       }
 
@@ -105,7 +110,7 @@ const ConfirmBuy: React.FC<Props> = props => {
       const url = await dispatch(
         getSignedUrl(
           address,
-          baseCurrencyAmount,
+          baseCurrencyAmount || 1,
           route.params.prefilledMethod || '',
         ),
       );
@@ -124,7 +129,39 @@ const ConfirmBuy: React.FC<Props> = props => {
       dispatch(showError(String(error)));
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [address, baseCurrencyAmount, route.params.prefilledMethod]);
+  }, [isUK, address, baseCurrencyAmount, route.params.prefilledMethod]);
+
+  // UK: auto-open widget on mount
+  useEffect(() => {
+    if (isUK && !route.params?.queryString) {
+      openBuyWidget();
+      setHasBeenMounted(true);
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
+
+  // UK: if exited WebPage before successful buy, go back
+  useFocusEffect(
+    React.useCallback(() => {
+      if (
+        isUK &&
+        hasBeenMounted &&
+        hasNavigatedBack &&
+        !route.params?.queryString
+      ) {
+        navigation.goBack();
+      }
+    }, [isUK, hasBeenMounted, hasNavigatedBack, route.params, navigation]),
+  );
+
+  useEffect(() => {
+    if (isUK) {
+      const unsubscribe = navigation.addListener('blur', () => {
+        setHasNavigatedBack(true);
+      });
+      return unsubscribe;
+    }
+  }, [isUK, navigation]);
 
   // handle successful purchase
   useEffect(() => {
