@@ -36,6 +36,11 @@ export type IPopup = {
   title: string;
   text: string;
   onAction: string;
+  titleKey?: string;
+  textKey?: string;
+  onActionKey?: string;
+  textDomain?: string;
+  textInterpolationObj?: {[key: string]: string};
   startDate: number;
   endDate?: number;
   frequency: string;

@@ -118,9 +118,14 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
       onPaymentSuccess(txid);
       dispatch(
         addPopup({
-          title: 'Spend & Replace',
+          title: 'Top-up your Litecoins',
           text: `You spent ${initiateResponse.paymentAmountLtc} LTC on a gift card. Want to top up your wallet?`,
           onAction: 'Buy LTC',
+          titleKey: 'popup_topup_title',
+          textKey: 'popup_topup_text',
+          onActionKey: 'popup_topup_action',
+          textDomain: 'nexusShop',
+          textInterpolationObj: {amount: initiateResponse.paymentAmountLtc},
           actionType: PopupActionType.GoToScreen,
           actionMeta: {
             stack: 'NewWalletStack',
