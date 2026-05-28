@@ -235,6 +235,10 @@ const ConfirmBuy: React.FC<Props> = props => {
     </>
   );
 
+  if (isUK && !wasSuccessful) {
+    return <View style={styles.container} />;
+  }
+
   return (
     <View style={styles.container}>
       {wasSuccessful ? (

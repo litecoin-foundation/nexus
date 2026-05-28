@@ -114,12 +114,14 @@ const ConfirmSell: React.FC<Props> = props => {
 
   useEffect(() => {
     dispatch(getAddress(false));
-    if (!route.params?.queryString) {
-      openSellWidget();
-    }
-    setHasBeenMounted(true);
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [dispatch]);
+
+  useEffect(() => {
+    if (refundAddress && !route.params?.queryString && !hasBeenMounted) {
+      openSellWidget();
+      setHasBeenMounted(true);
+    }
+  }, [refundAddress, route.params, openSellWidget, hasBeenMounted]);
 
   // if exited WebPage before successful sell, go back!
   useFocusEffect(
