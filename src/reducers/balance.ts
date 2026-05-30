@@ -4,6 +4,7 @@ import {walletBalance, walletKitListUnspent} from 'react-native-nitro-lndltc';
 
 import {AppThunk} from './types';
 import {poll} from '../utils/poll';
+import {selectedAccountNamesSelector} from './wallets';
 
 // types
 type UtxoBalance = {
@@ -38,29 +39,47 @@ const getBalanceAction = createAction<IBalanceState>(
 );
 
 // functions
-export const getBalance = (): AppThunk => async dispatch => {
-  try {
-    const walletBalanceResponse = await walletBalance({});
-    const {regularConfirmedBalance, privateConfirmedBalance} =
-      await calculateBalancesByType();
+const sumBigInts = (values: bigint[]): bigint =>
+  values.reduce((total, value) => total + value, 0n);
 
-    const {
-      confirmedBalance,
-      unconfirmedBalance,
-      lockedBalance,
-      reservedBalanceAnchorChan,
-      totalBalance,
-    } = walletBalanceResponse;
+export const getBalance = (): AppThunk => async (dispatch, getState) => {
+  try {
+    const {ltcAccount, mwebAccount} = selectedAccountNamesSelector(getState());
+    // Main maps both names to 'default', while a hardware wallet keeps regular
+    // and MWEB outputs in two separate lnd accounts. Deduping keeps Main a
+    // single call identical to the historical walletBalance({}).
+    const accounts = Array.from(new Set([ltcAccount, mwebAccount]));
+
+    // walletBalance and the listUnspent-derived split are independent, so run
+    // both batches concurrently rather than one after the other.
+    const [walletBalances, utxoBalances] = await Promise.all([
+      Promise.all(accounts.map(account => walletBalance({account}))),
+      Promise.all(accounts.map(account => calculateBalancesByType(account))),
+    ]);
 
     dispatch(
       getBalanceAction({
-        confirmedBalance: confirmedBalance.toString(),
-        unconfirmedBalance: unconfirmedBalance.toString(),
-        lockedBalance: lockedBalance.toString(),
-        reservedBalanceAnchorChan: reservedBalanceAnchorChan.toString(),
-        totalBalance: totalBalance.toString(),
-        regularConfirmedBalance: regularConfirmedBalance.toString(),
-        privateConfirmedBalance: privateConfirmedBalance.toString(),
+        confirmedBalance: sumBigInts(
+          walletBalances.map(b => b.confirmedBalance),
+        ).toString(),
+        unconfirmedBalance: sumBigInts(
+          walletBalances.map(b => b.unconfirmedBalance),
+        ).toString(),
+        lockedBalance: sumBigInts(
+          walletBalances.map(b => b.lockedBalance),
+        ).toString(),
+        reservedBalanceAnchorChan: sumBigInts(
+          walletBalances.map(b => b.reservedBalanceAnchorChan),
+        ).toString(),
+        totalBalance: sumBigInts(
+          walletBalances.map(b => b.totalBalance),
+        ).toString(),
+        regularConfirmedBalance: sumBigInts(
+          utxoBalances.map(u => u.regularConfirmedBalance),
+        ).toString(),
+        privateConfirmedBalance: sumBigInts(
+          utxoBalances.map(u => u.privateConfirmedBalance),
+        ).toString(),
       }),
     );
   } catch (error) {
@@ -72,10 +91,10 @@ export const pollBalance = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getBalance()));
 };
 
-const calculateBalancesByType = (): Promise<UtxoBalance> => {
+const calculateBalancesByType = (account: string): Promise<UtxoBalance> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const listUnspentResponse = await walletKitListUnspent({});
+      const listUnspentResponse = await walletKitListUnspent({account});
 
       if (!listUnspentResponse || !listUnspentResponse.utxos) {
         return reject(new Error('Invalid response from ListUnspent'));
