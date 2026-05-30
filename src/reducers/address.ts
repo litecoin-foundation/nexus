@@ -3,6 +3,10 @@ import {PURGE} from 'redux-persist';
 import {newAddress, AddressType} from 'react-native-nitro-lndltc';
 import type {NewAddressResponse} from 'react-native-nitro-lndltc';
 import {AppThunk} from './types';
+import {
+  isHwWalletSelectedSelector,
+  selectedAccountNamesSelector,
+} from './wallets';
 
 // types
 interface IAddress {
@@ -32,12 +36,25 @@ const setMWEBAddressAddressAction = createAction<string>(
 // functions
 export const getAddress =
   (mwebAddress?: boolean): AppThunk =>
-  async dispatch => {
+  async (dispatch, getState) => {
     try {
+      const {ltcAccount, mwebAccount} =
+        selectedAccountNamesSelector(getState());
+
+      // A hardware wallet's MWEB spend key stays on the device, so lnd cannot
+      // derive its MWEB addresses — those come from the Jade in the Receive
+      // flow. Refuse them here rather than minting a wrong address.
+      if (mwebAddress && isHwWalletSelectedSelector(getState())) {
+        throw new Error(
+          'MWEB addresses for hardware wallets must come from the device',
+        );
+      }
+
       const type = mwebAddress
         ? AddressType.MWEB
         : AddressType.UNUSED_WITNESS_PUBKEY_HASH;
-      const address = await newAddress({type});
+      const account = mwebAddress ? mwebAccount : ltcAccount;
+      const address = await newAddress({type, account});
 
       dispatch(getAddressAction(address.address));
 

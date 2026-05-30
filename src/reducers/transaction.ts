@@ -28,6 +28,10 @@ import {
 } from '../utils/txMetadata';
 import {processConvertTransactions} from '../utils/convertTransactionProcessor';
 import {getBalance} from './balance';
+import {
+  isHwWalletSelectedSelector,
+  selectedAccountNamesSelector,
+} from './wallets';
 import {fetchResolve} from '../utils/tor';
 
 // types
@@ -115,6 +119,9 @@ const txSubscriptionStartedAction = createAction<boolean>(
 const addConvertedTransactionAction = createAction<IConvertedTx>(
   'transaction/addConvertedTransactionAction',
 );
+const clearTransactionCacheAction = createAction(
+  'transaction/clearTransactionCacheAction',
+);
 
 // functions
 const getPriceOnDate = (
@@ -150,10 +157,19 @@ const getPriceOnDate = (
   });
 };
 
+// Hardware wallets cannot sign with lnd's local keys; their sends go through the
+// dedicated PSBT flow (Commit 8). These thunks guard against being invoked while
+// a hardware wallet is selected (defence-in-depth — call sites are guarded too).
+const HW_WALLET_SEND_ERROR =
+  'A hardware wallet is selected; use the hardware-wallet send flow.';
+
 export const sendConvertWithPsbt =
   (amount: number, destination: 'regular' | 'private'): AppThunk =>
   async (dispatch, getState) => {
     try {
+      if (isHwWalletSelectedSelector(getState())) {
+        throw new Error(HW_WALLET_SEND_ERROR);
+      }
       // new destination address
       const type =
         destination === 'private'
@@ -565,18 +581,57 @@ export const checkTxHashesWithExtraData =
     }
   };
 
+// Hardware wallets keep regular and MWEB outputs in two separate lnd
+// accounts; fetch both and merge, deduping by txHash.
+const fetchMergedHwTransactions = async (
+  ltcAccount: string,
+  mwebAccount: string,
+) => {
+  const [ltcTxs, mwebTxs] = await Promise.all([
+    getLndTransactions({account: ltcAccount}),
+    getLndTransactions({account: mwebAccount}),
+  ]);
+  const seen = new Set<string>();
+  const transactions = [...ltcTxs.transactions, ...mwebTxs.transactions].filter(
+    tx => {
+      if (seen.has(tx.txHash)) {
+        return false;
+      }
+      seen.add(tx.txHash);
+      return true;
+    },
+  );
+  return {...ltcTxs, transactions};
+};
+
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   const {lndActive} = getState().lightning;
   if (!lndActive) {
     return;
   }
-  const {buyHistory, sellHistory} = getState().buy!;
-  const {transactions, convertedTransactions, cachedTxHashes} =
-    getState().transaction!;
+  const isHwWallet = isHwWalletSelectedSelector(getState());
+  const {ltcAccount, mwebAccount} = selectedAccountNamesSelector(getState());
+  const {buyHistory: mainBuyHistory, sellHistory: mainSellHistory} =
+    getState().buy!;
+  const {
+    transactions,
+    convertedTransactions: mainConvertedTransactions,
+    cachedTxHashes,
+  } = getState().transaction!;
   const {torEnabled} = getState().settings!;
 
+  // Buy/sell history and converts are Main-only overlays; a hardware wallet has
+  // none of them, so use empty lists to skip those code paths entirely for HW.
+  const buyHistory: typeof mainBuyHistory = isHwWallet ? [] : mainBuyHistory;
+  const sellHistory: typeof mainSellHistory = isHwWallet ? [] : mainSellHistory;
+  const convertedTransactions: typeof mainConvertedTransactions = isHwWallet
+    ? []
+    : mainConvertedTransactions;
+
   try {
-    const lndTransactions = await getLndTransactions({});
+    const lndTransactions = isHwWallet
+      ? await fetchMergedHwTransactions(ltcAccount, mwebAccount)
+      : await getLndTransactions({account: ltcAccount});
 
     // NOTE: for older versions with missing cachedTxHashes in the initial state
     if (!cachedTxHashes) {
@@ -847,6 +902,12 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   }
 };
 
+// Clear the cached transaction data (used when switching wallets, since the
+// store holds a single active view shared across wallets).
+export const clearTransactionCache = (): AppThunk => dispatch => {
+  dispatch(clearTransactionCacheAction());
+};
+
 export const pollTransactions = (): AppThunk => async dispatch => {
   await poll(async () => {
     try {
@@ -867,6 +928,10 @@ export const sendOnchainPayment =
   (dispatch, getState) => {
     return new Promise(async (resolve, reject) => {
       try {
+        if (isHwWalletSelectedSelector(getState())) {
+          reject(new Error(HW_WALLET_SEND_ERROR));
+          return;
+        }
         const {confirmedBalance} = getState().balance!;
         const sendAll = Number(confirmedBalance) === amount ? true : false;
 
@@ -906,9 +971,13 @@ export const sendAllOnchainPayment =
     address: string,
     label: string | undefined = undefined,
   ): AppThunk<Promise<string>> =>
-  (_, __) => {
+  (_, getState) => {
     return new Promise(async (resolve, reject) => {
       try {
+        if (isHwWalletSelectedSelector(getState())) {
+          reject(new Error(HW_WALLET_SEND_ERROR));
+          return;
+        }
         try {
           const response = await sendCoins({
             sendAll: true,
@@ -1366,6 +1435,16 @@ export const transactionSlice = createSlice({
         ...(state.convertedTransactions || []),
         action.payload,
       ],
+    }),
+    // Clears only the DERIVED transaction cache. convertedTransactions is
+    // persisted source metadata for Main's convert overlays (re-processed each
+    // getTransactions, and ignored for HW via a local rebind), so it must NOT be
+    // cleared here or Main's convert history would be lost on a wallet switch.
+    clearTransactionCacheAction: state => ({
+      ...state,
+      transactions: [],
+      cachedTxHashes: [],
+      txHashesWithExtraData: [],
     }),
   },
   extraReducers: builder => {

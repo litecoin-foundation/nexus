@@ -14,6 +14,8 @@ import {
 
 import reducer from '../reducers';
 import {storage} from './mmkv';
+import {getBalance} from '../reducers/balance';
+import {clearTransactionCache, getTransactions} from '../reducers/transaction';
 
 const persistConfig = {
   key: 'root',
@@ -28,6 +30,28 @@ const actionLogger =
     return next(action);
   };
 
+// When the active wallet changes, the single shared balance/transaction view is
+// stale for the newly-selected wallet. Drive off an actual selectedWalletId
+// change so this covers both selectWallet AND removing the currently-selected HW
+// wallet (which resets the selection to Main). Persist rehydrate/purge are
+// excluded so we never wipe just-restored data or refetch during logout.
+const walletSwitchMiddleware =
+  (storeApi: any) => (next: (arg0: any) => any) => (action: any) => {
+    const previousWalletId = storeApi.getState().wallets?.selectedWalletId;
+    const result = next(action);
+    const nextWalletId = storeApi.getState().wallets?.selectedWalletId;
+    if (
+      nextWalletId !== previousWalletId &&
+      action?.type !== PURGE &&
+      action?.type !== REHYDRATE
+    ) {
+      storeApi.dispatch(clearTransactionCache());
+      storeApi.dispatch(getBalance());
+      storeApi.dispatch(getTransactions());
+    }
+    return result;
+  };
+
 const pReducer = persistReducer(persistConfig, reducer);
 
 export const store = configureStore({
@@ -40,7 +64,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(actionLogger),
+    }).concat(actionLogger, walletSwitchMiddleware),
 });
 export const pStore = persistStore(store);
 
