@@ -34,6 +34,7 @@ import {
   ScreenCaptureProvider,
   ScreenCaptureTarget,
 } from './src/context/screenCapture';
+import {JadeProvider} from './src/context/JadeContext';
 
 import {useAppDispatch, useAppSelector} from './src/store/hooks';
 import {loginToNexusApi} from './src/reducers/onboarding';
@@ -347,18 +348,20 @@ const App: React.FC = () => {
                   <OpenNotificationHandler
                     notification={openedNotificationData}
                   />
-                  <PopUpProvider>
-                    <ScreenCaptureProvider>
-                      <GestureHandlerRootView style={styles.gestureView}>
-                        <RenderPopUps />
-                        <ScreenCaptureTarget>
-                          <RootNavigator />
-                        </ScreenCaptureTarget>
-                        <Error />
-                        <GlobalMigrationModal />
-                      </GestureHandlerRootView>
-                    </ScreenCaptureProvider>
-                  </PopUpProvider>
+                  <JadeProvider>
+                    <PopUpProvider>
+                      <ScreenCaptureProvider>
+                        <GestureHandlerRootView style={styles.gestureView}>
+                          <RenderPopUps />
+                          <ScreenCaptureTarget>
+                            <RootNavigator />
+                          </ScreenCaptureTarget>
+                          <Error />
+                          <GlobalMigrationModal />
+                        </GestureHandlerRootView>
+                      </ScreenCaptureProvider>
+                    </PopUpProvider>
+                  </JadeProvider>
                 </FlexaContext.FlexaContextProvider>
               </PersistGate>
             </Provider>
