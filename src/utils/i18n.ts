@@ -18,29 +18,41 @@ import zh_T from '../assets/locales/zh.json';
 import tl_T from '../assets/locales/tl.json';
 import ta_T from '../assets/locales/ta.json';
 
+const resources = {
+  de: de_T,
+  en: en_T,
+  es: es_T,
+  fa: fa_T,
+  it: it_T,
+  lt: lt_T,
+  pl: pl_T,
+  ru: ru_T,
+  fr: fr_T,
+  hi: hi_T,
+  id: id_T,
+  sq: sq_T,
+  zh: zh_T,
+  tl: tl_T,
+  ta: ta_T,
+};
+
+// Initialize eagerly at module load so translations are available before any
+// component renders. Some UI (e.g. MigrationModal) can mount on the very first
+// commit from rehydrated redux state, before app-level effects run initI18N.
+// useSuspense is disabled so a not-yet-ready render falls back to keys and
+// re-renders once ready, instead of suspending without a boundary.
+i18n.use(initReactI18next).init({
+  lng: 'en',
+  //   lng: getLocales()[0].languageCode,
+  fallbackLng: 'en',
+  resources,
+  react: {useSuspense: false},
+});
+
 function initI18N(languageCode: string) {
-  i18n.use(initReactI18next).init({
-    lng: languageCode,
-    //   lng: getLocales()[0].languageCode,
-    fallbackLng: 'en',
-    resources: {
-      de: de_T,
-      en: en_T,
-      es: es_T,
-      fa: fa_T,
-      it: it_T,
-      lt: lt_T,
-      pl: pl_T,
-      ru: ru_T,
-      fr: fr_T,
-      hi: hi_T,
-      id: id_T,
-      sq: sq_T,
-      zh: zh_T,
-      tl: tl_T,
-      ta: ta_T,
-    },
-  });
+  if (languageCode && i18n.language !== languageCode) {
+    i18n.changeLanguage(languageCode);
+  }
 }
 
 export default initI18N;
