@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "Historial",
     "schedule_buy": "Programar",
+    "buy_litecoin": "Comprar Litecoin",
     "preview_buy": "Previsualizar compra",
     "min_purchase": "Cantidad mínima de compra de {{currencySymbol}}{{minAmountInFiat}}",
     "change": "CAMBIAR",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "Complete el pago enviando monedas a esta factura",
     "enter_amount_between": "Ingrese un monto entre {{min}} y {{max}}",
-    "view_gift_card": "Ver tarjeta de regalo"
+    "view_gift_card": "Ver tarjeta de regalo",
+    "popup_topup_title": "Recarga tus Litecoins",
+    "popup_topup_text": "Gastaste {{amount}} LTC en una tarjeta de regalo. ¿Quieres recargar tu billetera?",
+    "popup_topup_action": "Comprar LTC"
   },
   "migration": {
     "title": "Actualizando tu billetera",

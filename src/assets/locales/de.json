@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "Historie",
     "schedule_buy": "Planen",
+    "buy_litecoin": "Litecoin kaufen",
     "preview_buy": "Kaufdaten ansehen",
     "min_purchase": "Mindestkauf {{currencySymbol}}{{minAmountInFiat}}",
     "change": "ÄNDERN",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "Zahlung abschließen, indem Sie Coins an diese Rechnung senden",
     "enter_amount_between": "Betrag zwischen {{min}} und {{max}} eingeben",
-    "view_gift_card": "Geschenkkarte ansehen"
+    "view_gift_card": "Geschenkkarte ansehen",
+    "popup_topup_title": "Litecoins aufladen",
+    "popup_topup_text": "Sie haben {{amount}} LTC für eine Geschenkkarte ausgegeben. Möchten Sie Ihr Wallet aufladen?",
+    "popup_topup_action": "LTC kaufen"
   },
   "migration": {
     "title": "Wallet wird aktualisiert",

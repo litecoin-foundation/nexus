@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "История",
     "schedule_buy": "Запланировать",
+    "buy_litecoin": "Купить Litecoin",
     "preview_buy": "К Покупке",
     "min_purchase": "Минимальная сумма покупки {{currencySymbol}}{{minAmountInFiat}}",
     "change": "ИЗМЕНИТЬ",

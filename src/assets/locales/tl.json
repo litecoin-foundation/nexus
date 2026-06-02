@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "Kasaysayan",
     "schedule_buy": "Planunin",
+    "buy_litecoin": "Bumili ng Litecoin",
     "preview_buy": "I-preview ang pagbili",
     "min_purchase": "Minimum na laki ng pagbili ng {{currencySymbol}}{{minAmountInFiat}}",
     "change": "Palitan",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "Kumpletuhin ang bayad sa pamamagitan ng pagpapadala ng coins sa invoice na ito",
     "enter_amount_between": "Maglagay ng halaga sa pagitan ng {{min}} at {{max}}",
-    "view_gift_card": "Tingnan ang Gift Card"
+    "view_gift_card": "Tingnan ang Gift Card",
+    "popup_topup_title": "I-top-up ang iyong mga Litecoin",
+    "popup_topup_text": "Gumastos ka ng {{amount}} LTC sa isang gift card. Gusto mo bang i-top-up ang iyong wallet?",
+    "popup_topup_action": "Bumili ng LTC"
   },
   "migration": {
     "title": "Ina-update ang Iyong Pitaka",

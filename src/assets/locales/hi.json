@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "इतिहास",
     "schedule_buy": "अनुसूची",
+    "buy_litecoin": "लाइटकॉइन खरीदें",
     "preview_buy": "खरीद पूर्वावलोकन",
     "min_purchase": "{{currencySymbol}}{{minAmountInFiat}} की न्यूनतम खरीद मात्रा",
     "change": "बदलें",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "इस चालान पर सिक्के भेजकर भुगतान पूरा करें",
     "enter_amount_between": "{{min}} और {{max}} के बीच राशि दर्ज करें",
-    "view_gift_card": "उपहार कार्ड देखें"
+    "view_gift_card": "उपहार कार्ड देखें",
+    "popup_topup_title": "अपने लाइटकॉइन टॉप-अप करें",
+    "popup_topup_text": "आपने एक गिफ्ट कार्ड पर {{amount}} LTC खर्च किए। क्या आप अपना वॉलेट टॉप-अप करना चाहते हैं?",
+    "popup_topup_action": "LTC खरीदें"
   },
   "migration": {
     "title": "आपका वॉलेट अपग्रेड हो रहा है",
