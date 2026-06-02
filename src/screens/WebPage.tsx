@@ -23,6 +23,7 @@ type RootStackParamList = {
     uri: string;
     observeURL?: string;
     returnRoute?: string;
+    title?: string;
   };
 };
 
@@ -35,12 +36,30 @@ const WebPage: React.FC<Props> = props => {
   const WebPageRef = useRef<WebView>(null);
   const navigation = useNavigation();
 
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+
   const [ableToGoBack, setCanGoBack] = useState(false);
   const [ableToGoForward, setCanGoForward] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
 
-  const {observeURL, returnRoute} = route.params || {};
+  const {observeURL, returnRoute, title} = route.params || {};
+
+  useEffect(() => {
+    if (title) {
+      navigation.setOptions({
+        headerTitle: title,
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          color: 'white',
+          fontWeight: '600',
+          fontSize: SCREEN_HEIGHT * 0.025,
+          letterSpacing: 0.35,
+        },
+        headerTitleContainerStyle: styles.headerTitleContainer,
+      });
+    }
+  }, [title, navigation]);
 
   const handleEvent = (syntheticEvent: any) => {
     const {nativeEvent} = syntheticEvent;
@@ -168,6 +187,9 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   headerButtonContainer: {
+    paddingTop: 30,
+  },
+  headerTitleContainer: {
     paddingTop: 30,
   },
 });

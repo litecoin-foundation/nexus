@@ -99,6 +99,7 @@
     "n_ltc": "{{amount}}",
     "for": "for ",
     "for_total": "{{currencySymbol}}{{total}}",
+    "buy_litecoin": "Buy Litecoin",
     "history": "History",
     "schedule_buy": "Schedule",
     "preview_buy": "Preview Buy",
