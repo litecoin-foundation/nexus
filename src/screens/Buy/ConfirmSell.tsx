@@ -39,6 +39,7 @@ type RootStackParamList = {
     uri: string;
     observeURL: string;
     returnRoute: string;
+    title?: string;
   };
   Main: {
     isInitial?: boolean;
@@ -97,6 +98,7 @@ const ConfirmSell: React.FC<Props> = props => {
           observeURL:
             'https://api.nexuswallet.com/api/sell/moonpay/success_sell/',
           returnRoute: 'ConfirmSell',
+          title: 'MoonPay',
         });
       } else {
         throw new Error('Failed to Sell Litecoin URL (Moonpay)!');

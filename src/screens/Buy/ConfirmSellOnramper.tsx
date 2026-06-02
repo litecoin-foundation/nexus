@@ -35,6 +35,7 @@ type RootStackParamList = {
     uri: string;
     observeURL: string;
     returnRoute: string;
+    title?: string;
   };
   Main: {
     isInitial?: boolean;
@@ -82,6 +83,7 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
           observeURL:
             'https://api.nexuswallet.com/api/sell/onramper/success_sell/',
           returnRoute: 'ConfirmSellOnramper',
+          title: 'Onramper',
         });
       } else {
         throw new Error('Failed to Sell Litecoin URL (Onramper)!');
