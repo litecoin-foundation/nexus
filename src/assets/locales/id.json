@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "Sejarah",
     "schedule_buy": "Jadwal",
+    "buy_litecoin": "Beli Litecoin",
     "preview_buy": "Preview Pembelian",
     "min_purchase": "Pembelian minimum {{currencySymbol}}{{minAmountInFiat}}",
     "change": "GANTI",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "Selesaikan pembayaran dengan mengirim koin ke faktur ini",
     "enter_amount_between": "Masukkan jumlah antara {{min}} dan {{max}}",
-    "view_gift_card": "Lihat Kartu Hadiah"
+    "view_gift_card": "Lihat Kartu Hadiah",
+    "popup_topup_title": "Isi ulang Litecoin Anda",
+    "popup_topup_text": "Anda menghabiskan {{amount}} LTC untuk kartu hadiah. Ingin mengisi ulang dompet Anda?",
+    "popup_topup_action": "Beli LTC"
   },
   "migration": {
     "title": "Memperbarui Dompet Anda",

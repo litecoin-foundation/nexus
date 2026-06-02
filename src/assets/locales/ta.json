@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "வரலாறு",
     "schedule_buy": "திட்டமிடல்",
+    "buy_litecoin": "லைட்காயின் வாங்கு",
     "preview_buy": "வாங்குதல் முன்னோட்டம்",
     "min_purchase": "குறைந்தபட்ச கொள்முதல் அளவு {{currencySymbol}}{{minAmountInFiat}}",
     "change": "மாற்றவும்",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "இந்த விலைப்பட்டியலுக்கு நாணயங்கள் அனுப்பி பணம் செலுத்துதலை நிறைவு செய்யவும்",
     "enter_amount_between": "{{min}} முதல் {{max}} வரை தொகையை உள்ளிடவும்",
-    "view_gift_card": "பரிசு அட்டையைப் பார்"
+    "view_gift_card": "பரிசு அட்டையைப் பார்",
+    "popup_topup_title": "உங்கள் லைட்காயின்களை நிரப்பவும்",
+    "popup_topup_text": "நீங்கள் ஒரு பரிசு அட்டையில் {{amount}} LTC செலவழித்தீர்கள். உங்கள் வாலெட்டை நிரப்ப விரும்புகிறீர்களா?",
+    "popup_topup_action": "LTC வாங்கு"
   },
   "migration": {
     "title": "உங்கள் பணப்பை மேம்படுத்தப்படுகிறது",

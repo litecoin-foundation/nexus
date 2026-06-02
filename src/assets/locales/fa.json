@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "تاریخچه",
     "schedule_buy": "زمان‌بندی",
+    "buy_litecoin": "خرید لایت‌کوین",
     "preview_buy": "پیش‌نمایش خرید",
     "min_purchase": "حداقل مقدار خرید {{currencySymbol}}{{minAmountInFiat}}",
     "change": "تغییر",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "پرداخت را با ارسال سکه‌ها به این فاکتور تکمیل کنید",
     "enter_amount_between": "مبلغی بین {{min}} و {{max}} وارد کنید",
-    "view_gift_card": "مشاهده کارت هدیه"
+    "view_gift_card": "مشاهده کارت هدیه",
+    "popup_topup_title": "شارژ لایت‌کوین‌های شما",
+    "popup_topup_text": "شما {{amount}} LTC برای یک کارت هدیه خرج کردید. آیا می‌خواهید کیف پول خود را شارژ کنید؟",
+    "popup_topup_action": "خرید LTC"
   },
   "migration": {
     "title": "در حال ارتقای کیف پول شما",

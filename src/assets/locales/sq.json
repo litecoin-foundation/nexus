@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "Historiku",
     "schedule_buy": "Programo",
+    "buy_litecoin": "Bli Litecoin",
     "preview_buy": "Pamje paraprake e Blerjes",
     "min_purchase": "Minimumi i blerjes për {{currencySymbol}}{{minAmountInFiat}}",
     "change": "NDRYSHO",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "Përfundo pagesën duke dërguar monedha në këtë faturë",
     "enter_amount_between": "Fut një shumë midis {{min}} dhe {{max}}",
-    "view_gift_card": "Shiko Kartën Dhuratë"
+    "view_gift_card": "Shiko Kartën Dhuratë",
+    "popup_topup_title": "Rimbushni Litecoin-et tuaja",
+    "popup_topup_text": "Ju shpenzuat {{amount}} LTC për një kartë dhuratë. Doni të rimbushni portofolin tuaj?",
+    "popup_topup_action": "Bli LTC"
   },
   "migration": {
     "title": "Po përditësohet portofoli juaj",

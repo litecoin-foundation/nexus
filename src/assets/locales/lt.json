@@ -101,6 +101,7 @@
     "for_total": "{{currencySymbol}}{{total}}",
     "history": "Istorija",
     "schedule_buy": "Planuoti",
+    "buy_litecoin": "Pirkti Litecoin",
     "preview_buy": "Peržiūrėti Pirkimą",
     "min_purchase": "Mažiausias pirkimo dydis už {{currencySymbol}}{{minAmountInFiat}}",
     "change": "KEISTI",
@@ -373,7 +374,10 @@
     "pin_label": "PIN",
     "complete_payment_invoice": "Užbaikite mokėjimą siųsdami monetas į šią sąskaitą",
     "enter_amount_between": "Įveskite sumą nuo {{min}} iki {{max}}",
-    "view_gift_card": "Peržiūrėti dovanų kortelę"
+    "view_gift_card": "Peržiūrėti dovanų kortelę",
+    "popup_topup_title": "Papildykite savo Litecoin",
+    "popup_topup_text": "Dovanų kortelei išleidote {{amount}} LTC. Norite papildyti savo piniginę?",
+    "popup_topup_action": "Pirkti LTC"
   },
   "migration": {
     "title": "Atnaujinama jūsų piniginė",
