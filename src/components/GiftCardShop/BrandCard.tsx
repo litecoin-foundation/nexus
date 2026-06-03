@@ -207,6 +207,12 @@ export const BrandCard = React.memo(
         : num.toFixed(2).replace(/\.00$/, '');
     };
 
+    const formatDiscount = (value: number | string) => {
+      const num = Number(value);
+      // Round to at most 2 decimals, then drop trailing zeros (0.50 -> 0.5).
+      return parseFloat(num.toFixed(2)).toString();
+    };
+
     return (
       <View style={styles.brandCardContainer}>
         <Pressable style={styles.brandCard} onPress={handleToggle}>
@@ -320,7 +326,7 @@ export const BrandCard = React.memo(
                 />
               </Svg>
               <TranslateText
-                textValue={`-${formatDenomination(brand.saleDiscount ?? 0)}%`}
+                textValue={`-${formatDiscount(brand.saleDiscount ?? 0)}%`}
                 maxSizeInPixels={SCREEN_HEIGHT * 0.017}
                 textStyle={styles.discountTitle}
                 numberOfLines={1}
