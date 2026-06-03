@@ -6,6 +6,7 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
+import Svg, {Path} from 'react-native-svg';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import {syncWishlistToggle} from '../../reducers/nexusshopaccount';
@@ -256,7 +257,6 @@ export const BrandCard = React.memo(
           </View>
         </Pressable>
 
-        {/* Animated content */}
         <Animated.View
           style={[
             {height: 0, opacity: 0, overflow: 'hidden'},
@@ -303,6 +303,31 @@ export const BrandCard = React.memo(
             </AnimatedPressable>
           </View>
         </Animated.View>
+
+        {brand.saleDiscount ? (
+          <View style={styles.discountContainer}>
+            <View style={styles.discount}>
+              <Svg
+                style={[
+                  StyleSheet.absoluteFill,
+                  {transform: [{rotate: '-8deg'}]},
+                ]}
+                viewBox="0 0 120 56"
+                preserveAspectRatio="none">
+                <Path
+                  d="M5,30 C0,15 13,11 28,9 C48,6 70,3 94,8 C111,11 122,15 118,27 C116,41 110,47 95,48 C72,52 47,53 25,49 C10,46 3,42 5,30 Z"
+                  fill="green"
+                />
+              </Svg>
+              <TranslateText
+                textValue={`-${formatDenomination(brand.saleDiscount ?? 0)}%`}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+                textStyle={styles.discountTitle}
+                numberOfLines={1}
+              />
+            </View>
+          </View>
+        ) : null}
 
         {isLoggedIn && (
           <Pressable
@@ -483,5 +508,35 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenHeight * 0.0195,
       height: screenHeight * 0.0195,
       resizeMode: 'contain',
+    },
+    discountContainer: {
+      position: 'absolute',
+      top: -8,
+      left: 8,
+      width: 'auto',
+      height: screenWidth * 0.08,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    discount: {
+      minWidth: screenWidth * 0.08,
+      height: screenWidth * 0.08,
+      paddingHorizontal: screenWidth * 0.025,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    discountTitle: {
+      fontSize: screenHeight * 0.017,
+      fontWeight: '500',
+      fontFamily: 'Satoshi Variable',
+      color: '#fff',
+      letterSpacing: 0.2,
+    },
+    discountPercent: {
+      fontSize: screenHeight * 0.017,
+      fontWeight: '500',
+      fontFamily: 'Satoshi Variable',
+      color: '#fff',
+      letterSpacing: 0.2,
     },
   });

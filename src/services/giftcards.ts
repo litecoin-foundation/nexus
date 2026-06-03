@@ -58,6 +58,7 @@ export interface Brand {
   type?: 'gift-card' | 'choice-link';
   priority?: number;
   currencyMinValue?: number;
+  saleDiscount?: number;
 }
 
 export interface GiftCard {
