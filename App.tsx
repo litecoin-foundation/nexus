@@ -51,6 +51,7 @@ import {
   getSellTransactionHistory,
   checkFlexaCustomer,
 } from './src/reducers/buy';
+import {isAppFirstTimeOpened} from './src/reducers/info';
 import RootNavigator from './src/navigation/RootNavigator';
 import Error from './src/components/Error';
 import MigrationModal from './src/components/Modals/MigrationModal';
@@ -96,6 +97,7 @@ function ContextExecutable(props: any) {
   const {uniqueId} = useAppSelector(state => state.onboarding!);
   useLayoutEffect(() => {
     initI18N(languageCode);
+    dispatch(isAppFirstTimeOpened());
     // Wallet only dispatches pollers when WalletState.RPC_ACTIVE = true,
     // resulting in missing rates even if the app is being used already.
     // Do not call anything until user is initialized

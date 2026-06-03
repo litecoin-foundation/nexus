@@ -33,6 +33,7 @@ interface IInfo {
   recoveryFinished: boolean;
   recoveryMode: boolean;
   peers: string[];
+  appWasOpenedBefore: boolean;
 }
 
 type GetInfoType = Omit<
@@ -41,6 +42,7 @@ type GetInfoType = Omit<
   | 'recoveryProgress'
   | 'recoveryFinished'
   | 'recoveryMode'
+  | 'appWasOpenedBefore'
 >;
 
 interface IGetRecoveryType {
@@ -71,6 +73,7 @@ const initialState = {
   recoveryMode: false,
   recoveryFinished: false,
   peers: [],
+  appWasOpenedBefore: false,
 } as IInfo;
 
 // actions
@@ -82,6 +85,7 @@ const getRecoveryInfoAction = createAction<IGetRecoveryType>(
 const checkInternetReachableAction = createAction<boolean | null>(
   'info/checkInternetReachableAction',
 );
+export const appWasOpened = createAction('info/appWasOpened');
 
 // functions
 const getPeers = (): AppThunk => async (dispatch, getState) => {
@@ -195,6 +199,14 @@ export const pollRecoveryInfo = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getRecoveryInfo()));
 };
 
+export const isAppFirstTimeOpened = (): AppThunk => (dispatch, getState) => {
+  const {blockHeight} = getState().info;
+  // Suppose that if at least the 100000th block was loaded then user tried to sync before
+  if (blockHeight > 100000) {
+    dispatch(appWasOpened());
+  }
+};
+
 export const checkInternetReachable = (): AppThunk => async dispatch => {
   NetInfo.addEventListener(state => {
     dispatch(checkInternetReachableAction(state.isInternetReachable));
@@ -233,6 +245,7 @@ export const infoSlice = createSlice({
       isInternetReachable: action.payload,
     }),
     getRecoveryInfoAction: (state, action) => ({...state, ...action.payload}),
+    appWasOpened: state => ({...state, appWasOpenedBefore: true}),
   },
   extraReducers: builder => {
     builder.addCase(PURGE, () => {
