@@ -46,6 +46,7 @@ import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
 import ScheduledPopUpModal from '../components/Modals/ScheduledPopUpModal';
+import InitialSyncWarningModal from '../components/Modals/InitialSyncWarningModal';
 import LoadingIndicator from '../components/LoadingIndicator';
 // import Convert from '../components/Cards/Convert';
 import GiftCardShop from '../components/Cards/GiftCardShop';
@@ -166,6 +167,9 @@ const Main: React.FC<Props> = props => {
   const isInternetReachable = useAppSelector(
     state => state.info!.isInternetReachable,
   );
+  const appWasOpenedBefore = useAppSelector(
+    state => state.info!.appWasOpenedBefore,
+  );
 
   const transactions = useAppSelector(state => txDetailSelector(state));
   const {deeplinkSet, uri} = useAppSelector(state => state.deeplinks!);
@@ -181,6 +185,8 @@ const Main: React.FC<Props> = props => {
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [isPopUpModalOpened, setIsPopUpModalOpened] = useState(false);
+  const [isInitialSyncWarningModalOpened, setIsInitialSyncWarningModalOpened] =
+    useState(false);
   // const [currentWallet, setCurrentWallet] = useState('main_wallet');
   const currentWallet = 'main_wallet';
   const uniqueId = useAppSelector(state => state.onboarding!.uniqueId);
@@ -227,6 +233,13 @@ const Main: React.FC<Props> = props => {
       setIsPopUpModalOpened(true);
     }
   }, [openedNotification]);
+
+  // Show the initial sync warning only the first time the app is opened
+  useEffect(() => {
+    if (!appWasOpenedBefore) {
+      setIsInitialSyncWarningModalOpened(true);
+    }
+  }, [appWasOpenedBefore]);
 
   const [plasmaModalGapInPixels, setPlasmaModalGapInPixels] = useState(0);
 
@@ -735,6 +748,11 @@ const Main: React.FC<Props> = props => {
           }
           return false;
         }}
+      />
+
+      <InitialSyncWarningModal
+        isVisible={isInitialSyncWarningModalOpened}
+        close={() => setIsInitialSyncWarningModalOpened(false)}
       />
 
       <LoadingIndicator visible={loading} />
