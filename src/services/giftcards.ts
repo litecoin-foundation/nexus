@@ -287,7 +287,7 @@ export function validateAmount(
 ): {valid: boolean; error?: string} {
   // The amount column is decimal(10, 2), so it can hold at most 2 decimal
   // places. Reject anything finer to avoid silent rounding on persistence.
-  if (Math.round(amount * 100) !== amount * 100) {
+  if (Number(amount.toFixed(2)) !== amount) {
     return {valid: false, error: 'Amount cannot be smaller than one cent'};
   }
 
