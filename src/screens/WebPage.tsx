@@ -59,7 +59,7 @@ const WebPage: React.FC<Props> = props => {
         headerTitleContainerStyle: styles.headerTitleContainer,
       });
     }
-  }, [title, navigation]);
+  }, [title, navigation, SCREEN_HEIGHT]);
 
   const handleEvent = (syntheticEvent: any) => {
     const {nativeEvent} = syntheticEvent;
