@@ -290,7 +290,10 @@
   "modals": {
     "delete": "Ištrinti",
     "delete_alert": "Ištrinti Įspėjimą",
-    "view_change": "Peržiūrėti Grąžos Adresą"
+    "view_change": "Peržiūrėti Grąžos Adresą",
+    "got_it": "Supratau",
+    "initial_sync_warning_title": "Dėmesio!",
+    "initial_sync_warning": "Tai pirmas kartas, kai paleidžiate piniginę. Turėtumėte palaukti, kol bus baigta sinchronizacija. Neuždarykite programėlės. Paprastai tai trunka 1–2 minutes. Esant prastam ryšiui ar VPN gali užtrukti ilgiau."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

@@ -296,7 +296,7 @@ const InitialSyncWarningModal: React.FC<Props> = props => {
                   domain={'modals'}
                   maxSizeInPixels={SCREEN_HEIGHT * 0.022}
                   textStyle={styles.text}
-                  numberOfLines={6}
+                  numberOfLines={7}
                 />
               </View>
               <View style={styles.button}>
