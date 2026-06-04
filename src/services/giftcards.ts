@@ -312,12 +312,21 @@ export function validateAmount(
       return {valid: false, error: `Maximum amount is ${upper}`};
     }
 
-    const multiplier = 1 / minor_unit;
-    if ((amount * multiplier) % 1 !== 0) {
-      return {
-        valid: false,
-        error: `Amount must be divisible by ${minor_unit}`,
-      };
+    // Amount must be a whole multiple of the brand's minor_unit increment.
+    // Round to integer cents before taking the remainder to avoid
+    // floating-point errors (e.g. 0.07 % 0.01 !== 0). Amounts are 2-decimal
+    // currency values and minor_unit is never finer than 0.01, so 2-decimal
+    // scaling is exact.
+    if (minor_unit > 0) {
+      const CENTS = 100;
+      const remainder =
+        Math.round(amount * CENTS) % Math.round(minor_unit * CENTS);
+      if (remainder !== 0) {
+        return {
+          valid: false,
+          error: `Amount must be divisible by ${minor_unit}`,
+        };
+      }
     }
 
     if (availableBalanceFiat !== undefined && amount > availableBalanceFiat) {
