@@ -136,6 +136,10 @@ const InitialSyncWarningModal: React.FC<Props> = props => {
   const glowRotation = useSharedValue(0);
 
   useEffect(() => {
+    if (!isVisible) {
+      glowRotation.value = 0;
+      return;
+    }
     glowRotation.value = withRepeat(
       withTiming(2 * Math.PI, {
         duration: 8000,
@@ -145,7 +149,7 @@ const InitialSyncWarningModal: React.FC<Props> = props => {
       false,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isVisible]);
 
   const glowTransform = useDerivedValue(() => [
     {translateX: centerX},
