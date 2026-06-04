@@ -290,7 +290,10 @@
   "modals": {
     "delete": "Usuń",
     "delete_alert": "Usuń alert",
-    "view_change": "Zobacz adres reszty"
+    "view_change": "Zobacz adres reszty",
+    "got_it": "Rozumiem",
+    "initial_sync_warning_title": "Uwaga!",
+    "initial_sync_warning": "To pierwszy raz, gdy uruchamiasz portfel. Poczekaj na zakończenie synchronizacji. Nie zamykaj aplikacji. Zwykle trwa to 1–2 minuty. Przy słabym połączeniu lub VPN może to potrwać dłużej."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

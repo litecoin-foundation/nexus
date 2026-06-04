@@ -290,7 +290,10 @@
   "modals": {
     "delete": "删除",
     "delete_alert": "删除警告",
-    "view_change": "查看更改地址"
+    "view_change": "查看更改地址",
+    "got_it": "知道了",
+    "initial_sync_warning_title": "注意！",
+    "initial_sync_warning": "这是您首次启动钱包。请等待同步完成。请勿关闭应用。通常需要 1–2 分钟。如果连接不佳或使用 VPN，可能需要更长时间。"
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

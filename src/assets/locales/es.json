@@ -290,7 +290,10 @@
   "modals": {
     "delete": "Eliminar",
     "delete_alert": "Eliminar alerta",
-    "view_change": "Ver dirección de cambio"
+    "view_change": "Ver dirección de cambio",
+    "got_it": "Entendido",
+    "initial_sync_warning_title": "¡Atención!",
+    "initial_sync_warning": "Esta es la primera vez que abres la billetera. Debes esperar a que se complete la sincronización. No cierres la aplicación. Normalmente tarda 1–2 minutos. Puede tardar más con una conexión deficiente o VPN."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

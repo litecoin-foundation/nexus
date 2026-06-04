@@ -290,7 +290,10 @@
   "modals": {
     "delete": "Tanggalin",
     "delete_alert": "Tanggalin ang Alert",
-    "view_change": "Tingnan ang pagpalit ng address"
+    "view_change": "Tingnan ang pagpalit ng address",
+    "got_it": "Naintindihan",
+    "initial_sync_warning_title": "Pansin!",
+    "initial_sync_warning": "Ito ang unang beses mong binubuksan ang wallet. Dapat kang maghintay hanggang matapos ang sync. Huwag isara ang app. Karaniwang tumatagal ito ng 1–2 minuto. Maaaring mas matagal kung mahina ang koneksyon o may VPN."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

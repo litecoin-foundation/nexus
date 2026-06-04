@@ -290,7 +290,10 @@
   "modals": {
     "delete": "Fshi",
     "delete_alert": "Fshi Sinjalin",
-    "view_change": "Shiko Adresën e Ndryshuar"
+    "view_change": "Shiko Adresën e Ndryshuar",
+    "got_it": "E kuptova",
+    "initial_sync_warning_title": "Kujdes!",
+    "initial_sync_warning": "Kjo është hera e parë që hapni portofolin. Duhet të prisni derisa të përfundojë sinkronizimi. Mos e mbyllni aplikacionin. Zakonisht zgjat 1–2 minuta. Me lidhje të dobët ose VPN mund të zgjasë më shumë."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
