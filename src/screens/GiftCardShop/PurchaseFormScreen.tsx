@@ -386,8 +386,23 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
                     style={styles.amountInput}
                     value={amountText}
                     onChangeText={text => {
-                      setAmountText(text);
-                      const normalized = text.replace(',', '.');
+                      // Normalize as the user types: unify the decimal
+                      // separator to '.', strip any other characters, collapse
+                      // repeated separators to a single one, and cap the
+                      // fraction at 2 digits to match the decimal(10, 2) column.
+                      let normalized = text
+                        .replace(/,/g, '.')
+                        .replace(/[^0-9.]/g, '');
+                      const firstDot = normalized.indexOf('.');
+                      if (firstDot !== -1) {
+                        const intPart = normalized.slice(0, firstDot);
+                        const decPart = normalized
+                          .slice(firstDot + 1)
+                          .replace(/\./g, '')
+                          .slice(0, 2);
+                        normalized = `${intPart}.${decPart}`;
+                      }
+                      setAmountText(normalized);
                       const parsed = parseFloat(normalized);
                       setAmount(isNaN(parsed) ? 0 : parsed);
                     }}
