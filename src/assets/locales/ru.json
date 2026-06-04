@@ -61,11 +61,11 @@
     "send": "Отправить",
     "receive": "Получить",
     "latest_txs": "Последние транзакции",
-    "received_ltc": "Полученные Litecoin",
+    "received_ltc": "Получено",
     "bought_ltc": "Купленные Litecoin",
-    "sent_ltc": "Отправленные Litecoin",
+    "sent_ltc": "Отправлено",
     "sold_ltc": "Проданные Litecoin",
-    "converted_ltc": "Конвертированные Litecoin",
+    "converted_ltc": "Конвертация",
     "buying_ltc": "Покупка Litecoin",
     "selling_ltc": "Продажа Litecoin",
     "received": "Получено",
@@ -126,8 +126,8 @@
     "try_another_currency": "Выбранная валюта недоступна - попробуйте снова с другой валютой."
   },
   "sendTab": {
-    "send_litecoin": "Отправить Litecoin",
-    "convert_litecoin": "Конвертировать Litecoin",
+    "send_litecoin": "Отправить LTC",
+    "convert_litecoin": "Конвертировать LTC",
     "convert": "Конвертировать",
     "send": "Отправить",
     "amount": "Количество",
@@ -166,7 +166,7 @@
   },
   "receiveTab": {
     "receive_ltc": "Получить Litecoin",
-    "receive_privately": "Получить Скрытно",
+    "receive_privately": "Приватный Litecoin",
     "my_ltc_address": "МОЙ LTC АДРЕС",
     "receive_mweb_description": "Скрытные транзакции прячут адреса отправителя и получателя, а также отправляемую сумму."
   },
@@ -179,11 +179,11 @@
     "paste": "Вставить"
   },
   "alertsTab": {
-    "price_alerts": "Ценовые оповещения",
+    "price_alerts": "Уведомления",
     "create_alerts_note": "Создавайте сигналы, чтобы получать уведомления, когда цена Litecoin дойдет до поставленной цены.",
     "alerts_appear_here": "Ваши сигналы появятся тут.",
-    "set_alerts": "УСТАНОВИТЬ ОПОВЕЩЕНИЯ",
-    "alert_me": "Скажи мне, когда цена",
+    "set_alerts": "Назад",
+    "alert_me": "Когда цена",
     "when_ltc": "Litecoin (LTC) будет",
     "below": "НИЖЕ",
     "above": "ВЫШЕ",
@@ -275,9 +275,9 @@
     "Setup Test Payment": "Настройка тестового платежа"
   },
   "convertTab": {
-    "convert_button": "Обменять ваш LTC",
-    "regular_ltc": "ВАШ ОБЫЧНЫЙ LITECOIN",
-    "private_ltc": "ВАШ ПРИВАТНЫЙ LITECOIN",
+    "convert_button": "Конвертировать Litecoin",
+    "regular_ltc": "ОБЫЧНЫЙ LITECOIN",
+    "private_ltc": "ПРИВАТНЫЙ LITECOIN",
     "regular": "Обычный",
     "private": "Приватный",
     "regular_to_private": "Из обычного в приватный",
