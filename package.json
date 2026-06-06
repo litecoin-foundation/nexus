@@ -1,6 +1,6 @@
 {
   "name": "nexus",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "Mobile Litecoin wallet built with React-Native + Redux",
   "license": "MIT",
   "repository": {
@@ -47,7 +47,7 @@
     "@reduxjs/toolkit": "2.8.2",
     "@shopify/flash-list": "2.0.2",
     "@shopify/react-native-skia": "2.4.14",
-    "@shopify/storefront-api-client": "^1.0.8",
+    "@shopify/storefront-api-client": "1.0.8",
     "aez": "1.0.1",
     "base58-js": "1.0.5",
     "bech32": "2.0.0",
@@ -84,7 +84,7 @@
     "react-native-mmkv": "4.3.1",
     "react-native-modal": "14.0.0-rc.1",
     "react-native-nitro-jade": "0.0.2",
-    "react-native-nitro-lndltc": "0.0.5",
+    "react-native-nitro-lndltc": "0.0.6",
     "react-native-nitro-modules": "0.35.4",
     "react-native-nitro-tor": "0.5.2",
     "react-native-qrcode-svg": "6.3.15",
