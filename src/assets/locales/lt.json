@@ -92,7 +92,8 @@
     "recover_txs": "Sandorių atkūrimas...",
     "taking_too_long": "Reikalingas programos paleidimas iš naujo.",
     "lnd_no_connection": "Nepavyko prisijungti prie Litecoin tinklo. Pabandykite naudoti VPN arba įjungti Tor.",
-    "got_it": "Supratau"
+    "got_it": "Supratau",
+    "open": "Atidaryti"
   },
   "buyTab": {
     "buy": "PIRKTI ",

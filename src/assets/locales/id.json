@@ -92,7 +92,8 @@
     "recover_txs": "Memulihkan Transaksi...",
     "taking_too_long": "Aplikasi perlu direstart.",
     "lnd_no_connection": "Gagal terhubung ke jaringan Litecoin. Coba gunakan VPN atau aktifkan Tor.",
-    "got_it": "Paham"
+    "got_it": "Paham",
+    "open": "Buka"
   },
   "buyTab": {
     "buy": "Beli ",

@@ -92,7 +92,8 @@
     "recover_txs": "Po rikuperohen transaksionet...",
     "taking_too_long": "Kërkohet rianisjimi i aplikacionit.",
     "lnd_no_connection": "Dështoi lidhja me rrjetin e Litecoin. Provo të përdorësh një VPN ose aktivizoje Tor.",
-    "got_it": "E kuptova"
+    "got_it": "E kuptova",
+    "open": "Hap"
   },
   "buyTab": {
     "buy": "Bli ",
