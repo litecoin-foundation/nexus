@@ -92,7 +92,8 @@
     "recover_txs": "Recupero Transazioni...",
     "taking_too_long": "Riavvio dell'app richiesto.",
     "lnd_no_connection": "Connessione alla rete Litecoin fallita. Prova a usare una VPN o attiva Tor.",
-    "got_it": "Capito"
+    "got_it": "Capito",
+    "open": "Apri"
   },
   "buyTab": {
     "buy": "Compra ",

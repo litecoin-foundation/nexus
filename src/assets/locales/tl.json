@@ -92,7 +92,8 @@
     "recover_txs": "Nagre-recover ng mga transaksyon...",
     "taking_too_long": "Kailangan ng pag-restart ng app.",
     "lnd_no_connection": "Nabigong kumonekta sa Litecoin network. Subukang gumamit ng VPN o paganahin ang Tor.",
-    "got_it": "Naintindihan"
+    "got_it": "Naintindihan",
+    "open": "Buksan"
   },
   "buyTab": {
     "buy": "Bumili ",

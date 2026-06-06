@@ -92,7 +92,8 @@
     "recover_txs": "Recovering Transactions",
     "taking_too_long": "App Restart required.",
     "lnd_no_connection": "Failed connecting to the Litecoin network. Try using a VPN or enabling Tor.",
-    "got_it": "Got It"
+    "got_it": "Got It",
+    "open": "Open"
   },
   "buyTab": {
     "buy": "Buy ",

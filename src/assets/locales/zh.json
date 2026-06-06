@@ -92,7 +92,8 @@
     "recover_txs": "交易记录正在恢复中…",
     "taking_too_long": "需要重启应用程序。",
     "lnd_no_connection": "连接莱特币网络失败。请尝试使用VPN或启用Tor。",
-    "got_it": "明白了"
+    "got_it": "明白了",
+    "open": "打开"
   },
   "buyTab": {
     "buy": "买",

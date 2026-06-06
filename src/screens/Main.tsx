@@ -226,13 +226,18 @@ const Main: React.FC<Props> = props => {
     dispatch(setOpenedNotification(null));
   }, [dispatch]);
   useEffect(() => {
-    if (
-      openedNotification &&
-      openedNotification?.data?.showInAppPopUp === 'true'
-    ) {
+    if (!openedNotification) {
+      return;
+    }
+    if (openedNotification?.data?.openUrl) {
+      // openUrl takes precedence over the in-app popup: redirect to the
+      // WebPage screen instead of showing the modal.
+      navigation.navigate('WebPage', {uri: openedNotification.data.openUrl});
+      dispatch(setOpenedNotification(null));
+    } else if (openedNotification?.data?.showInAppPopUp === 'true') {
       setIsPopUpModalOpened(true);
     }
-  }, [openedNotification]);
+  }, [openedNotification, navigation, dispatch]);
 
   // Show the initial sync warning only the first time the app is opened
   useEffect(() => {
@@ -730,6 +735,7 @@ const Main: React.FC<Props> = props => {
           // 'Dreamt up & brought to life with love and care by Litecoin Foundation x SquareBlack. Finish syncing to see your transactions.'
           ''
         }
+        buttonUrl={openedNotification?.data?.buttonUrl}
         close={() => closePopUpModalHandler()}
       />
 
