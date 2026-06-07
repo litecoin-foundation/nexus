@@ -1,4 +1,10 @@
-import React, {useEffect, useRef, useState, useContext} from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useContext,
+  useCallback,
+} from 'react';
 import {
   View,
   StyleSheet,
@@ -8,6 +14,13 @@ import {
   Linking,
 } from 'react-native';
 import WebView from 'react-native-webview';
+import type {
+  WebViewNavigation,
+  WebViewNavigationEvent,
+  WebViewErrorEvent,
+  ShouldStartLoadRequest,
+  FileDownloadEvent,
+} from 'react-native-webview/lib/WebViewTypes';
 import DeviceInfo from 'react-native-device-info';
 import {TransitionPresets} from '@react-navigation/stack';
 import {RouteProp, useNavigation} from '@react-navigation/native';
@@ -15,6 +28,7 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import Header from '../components/Header';
 import HeaderButton from '../components/Buttons/HeaderButton';
 
+import TranslateText from '../components/TranslateText';
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -30,6 +44,15 @@ type RootStackParamList = {
 interface Props {
   route: RouteProp<RootStackParamList, 'WebPage'>;
 }
+
+const HeaderTitle = ({title, fontSize}: {title: string; fontSize: number}) => (
+  <TranslateText
+    textValue={title}
+    maxSizeInPixels={fontSize}
+    textStyle={[styles.headerTitleText, {fontSize}]}
+    numberOfLines={1}
+  />
+);
 
 const WebPage: React.FC<Props> = props => {
   const {route} = props;
@@ -48,27 +71,67 @@ const WebPage: React.FC<Props> = props => {
   useEffect(() => {
     if (title) {
       navigation.setOptions({
-        headerTitle: title,
+        // eslint-disable-next-line react/no-unstable-nested-components
+        headerTitle: () => (
+          <HeaderTitle title={title} fontSize={SCREEN_HEIGHT * 0.022} />
+        ),
         headerTitleAlign: 'center',
-        headerTitleStyle: {
-          color: 'white',
-          fontWeight: '600',
-          fontSize: SCREEN_HEIGHT * 0.025,
-          letterSpacing: 0.35,
-        },
         headerTitleContainerStyle: styles.headerTitleContainer,
       });
     }
   }, [title, navigation, SCREEN_HEIGHT]);
 
-  const handleEvent = (syntheticEvent: any) => {
-    const {nativeEvent} = syntheticEvent;
-    const {canGoBack, canGoForward, loading} = nativeEvent;
+  const handleEvent = useCallback(
+    (syntheticEvent: WebViewNavigationEvent | WebViewErrorEvent) => {
+      const {canGoBack, canGoForward, loading} = syntheticEvent.nativeEvent;
 
-    setCanGoBack(canGoBack);
-    setCanGoForward(canGoForward);
-    setIsLoading(loading);
-  };
+      setCanGoBack(canGoBack);
+      setCanGoForward(canGoForward);
+      setIsLoading(loading);
+    },
+    [],
+  );
+
+  const handleShouldStartLoad = useCallback(
+    (request: ShouldStartLoadRequest) => {
+      const {url} = request;
+      // Handle Apple Wallet .pkpass files
+      if (
+        url.endsWith('.pkpass') ||
+        url.includes('mime=application/vnd.apple.pkpass') ||
+        url.includes('content-type=application/vnd.apple.pkpass')
+      ) {
+        Linking.openURL(url);
+        return false;
+      }
+      // Handle Google Wallet
+      if (
+        url.startsWith('https://pay.google.com/gp/v/save/') ||
+        url.startsWith('intent://') ||
+        url.startsWith('https://wallet.google.com') ||
+        url.startsWith('https://wallet.google')
+      ) {
+        Linking.openURL(url);
+        return false;
+      }
+      return true;
+    },
+    [],
+  );
+
+  const handleFileDownload = useCallback(
+    ({nativeEvent: {downloadUrl}}: FileDownloadEvent) => {
+      Linking.openURL(downloadUrl);
+    },
+    [],
+  );
+
+  const handleNavigationStateChange = useCallback(
+    (navState: WebViewNavigation) => {
+      setCurrentUrl(navState.url);
+    },
+    [],
+  );
 
   // handle observing current url
   useEffect(() => {
@@ -77,7 +140,7 @@ const WebPage: React.FC<Props> = props => {
       if (urlWithoutQuery === observeURL) {
         const queryString = currentUrl.split('?')[1];
         if (returnRoute) {
-          navigation.navigate(returnRoute, {
+          navigation.navigate(returnRoute as any, {
             queryString: queryString || 'empty',
           });
         }
@@ -87,51 +150,25 @@ const WebPage: React.FC<Props> = props => {
 
   return (
     <CustomSafeAreaView styles={styles.container} edges={['bottom']}>
-      <Header modal={Platform.OS === 'android' ? false : true} />
+      <Header modal={Platform.OS !== 'android'} />
       <WebView
         style={styles.webview}
         source={{uri: route.params.uri}}
         ref={WebPageRef}
-        enableApplePay={true}
-        onLoadStart={syntheticEvent => handleEvent(syntheticEvent)}
-        onLoadEnd={syntheticEvent => handleEvent(syntheticEvent)}
+        enableApplePay
+        onLoadStart={handleEvent}
+        onLoadEnd={handleEvent}
         originWhitelist={[
           'https://*',
           'http://*',
           'about:blank',
           'about:srcdoc',
         ]}
-        onShouldStartLoadWithRequest={request => {
-          const {url} = request;
-          // Handle Apple Wallet .pkpass files
-          if (
-            url.endsWith('.pkpass') ||
-            url.includes('mime=application/vnd.apple.pkpass') ||
-            url.includes('content-type=application/vnd.apple.pkpass')
-          ) {
-            Linking.openURL(url);
-            return false;
-          }
-          // Handle Google Wallet
-          if (
-            url.startsWith('https://pay.google.com/gp/v/save/') ||
-            url.startsWith('intent://') ||
-            url.startsWith('https://wallet.google.com') ||
-            url.startsWith('https://wallet.google')
-          ) {
-            Linking.openURL(url);
-            return false;
-          }
-          return true;
-        }}
-        onNavigationStateChange={syntheticEvent =>
-          setCurrentUrl(syntheticEvent.url)
-        }
+        onShouldStartLoadWithRequest={handleShouldStartLoad}
+        onNavigationStateChange={handleNavigationStateChange}
         applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${DeviceInfo.getSystemVersion()}`}
-        allowsInlineMediaPlayback={true}
-        onFileDownload={({nativeEvent: {downloadUrl}}) => {
-          Linking.openURL(downloadUrl);
-        }}
+        allowsInlineMediaPlayback
+        onFileDownload={handleFileDownload}
       />
       <View style={styles.optionsContainer}>
         <TouchableOpacity
@@ -191,6 +228,12 @@ const styles = StyleSheet.create({
   },
   headerTitleContainer: {
     paddingTop: 30,
+  },
+  headerTitleText: {
+    color: '#fff',
+    fontFamily: 'Satoshi Variable',
+    fontStyle: 'normal',
+    fontWeight: '700',
   },
 });
 
