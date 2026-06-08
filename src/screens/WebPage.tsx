@@ -122,20 +122,21 @@ const WebPage: React.FC<Props> = props => {
       }
 
       // Handle Google Wallet
-      let parsedUrl: URL | null = null;
+      let parsedUrl: URL;
       try {
         parsedUrl = new URL(url);
       } catch {
-        parsedUrl = null;
+        // Not a parseable URL — let the WebView load it as-is.
+        return true;
       }
       const isGooglePaySaveUrl =
-        parsedUrl?.protocol === 'https:' &&
-        parsedUrl?.hostname === 'pay.google.com' &&
+        parsedUrl.protocol === 'https:' &&
+        parsedUrl.hostname === 'pay.google.com' &&
         parsedUrl.pathname.startsWith('/gp/v/save/');
       const isGoogleWalletHost =
-        parsedUrl?.protocol === 'https:' &&
-        (parsedUrl?.hostname === 'wallet.google.com' ||
-          parsedUrl?.hostname.endsWith('.wallet.google.com'));
+        parsedUrl.protocol === 'https:' &&
+        (parsedUrl.hostname === 'wallet.google.com' ||
+          parsedUrl.hostname.endsWith('.wallet.google.com'));
 
       if (isGooglePaySaveUrl || isGoogleWalletHost) {
         Linking.openURL(url).catch(() => {});
