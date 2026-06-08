@@ -101,17 +101,28 @@ const WebPage: React.FC<Props> = props => {
         url.includes('mime=application/vnd.apple.pkpass') ||
         url.includes('content-type=application/vnd.apple.pkpass')
       ) {
-        Linking.openURL(url);
+        Linking.openURL(url).catch(() => {});
         return false;
       }
+
       // Handle Google Wallet
-      if (
-        url.startsWith('https://pay.google.com/gp/v/save/') ||
-        url.startsWith('intent://') ||
-        url.startsWith('https://wallet.google.com') ||
-        url.startsWith('https://wallet.google')
-      ) {
-        Linking.openURL(url);
+      let parsedUrl: URL | null = null;
+      try {
+        parsedUrl = new URL(url);
+      } catch {
+        parsedUrl = null;
+      }
+      const isGooglePaySaveUrl =
+        parsedUrl?.protocol === 'https:' &&
+        parsedUrl?.hostname === 'pay.google.com' &&
+        parsedUrl.pathname.startsWith('/gp/v/save/');
+      const isGoogleWalletHost =
+        parsedUrl?.protocol === 'https:' &&
+        (parsedUrl?.hostname === 'wallet.google.com' ||
+          parsedUrl?.hostname.endsWith('.wallet.google.com'));
+
+      if (isGooglePaySaveUrl || isGoogleWalletHost) {
+        Linking.openURL(url).catch(() => {});
         return false;
       }
       return true;
@@ -121,7 +132,7 @@ const WebPage: React.FC<Props> = props => {
 
   const handleFileDownload = useCallback(
     ({nativeEvent: {downloadUrl}}: FileDownloadEvent) => {
-      Linking.openURL(downloadUrl);
+      Linking.openURL(downloadUrl).catch(() => {});
     },
     [],
   );
