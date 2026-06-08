@@ -105,6 +105,22 @@ const WebPage: React.FC<Props> = props => {
         return false;
       }
 
+      // Handle Google Wallet deep links (Android intent:// scheme), scoped to
+      // Google Wallet packages so page content can't launch arbitrary apps.
+      // Always return false so the WebView never tries to load intent:// itself
+      // (which would fail with ERR_UNKNOWN_URL_SCHEME).
+      if (Platform.OS === 'android' && url.startsWith('intent://')) {
+        const intentPackage = url.match(/;package=([^;]+);/)?.[1];
+        const allowedPackages = [
+          'com.google.android.apps.walletnfcrel',
+          'com.google.android.gms',
+        ];
+        if (intentPackage && allowedPackages.includes(intentPackage)) {
+          Linking.openURL(url).catch(() => {});
+        }
+        return false;
+      }
+
       // Handle Google Wallet
       let parsedUrl: URL | null = null;
       try {
