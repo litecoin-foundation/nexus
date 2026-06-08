@@ -256,6 +256,17 @@ const styles = StyleSheet.create({
   },
   headerTitleContainer: {
     paddingTop: 30,
+    ...Platform.select({
+      android: {
+        position: 'absolute' as const,
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        maxWidth: '100%' as const,
+        alignItems: 'center' as const,
+      },
+    }),
   },
   headerTitleText: {
     color: '#fff',
