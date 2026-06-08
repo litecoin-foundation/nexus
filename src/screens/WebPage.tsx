@@ -110,7 +110,7 @@ const WebPage: React.FC<Props> = props => {
       // Always return false so the WebView never tries to load intent:// itself
       // (which would fail with ERR_UNKNOWN_URL_SCHEME).
       if (Platform.OS === 'android' && url.startsWith('intent://')) {
-        const intentPackage = url.match(/;package=([^;]+);/)?.[1];
+        const intentPackage = url.match(/;package=([^;]+)/)?.[1];
         const allowedPackages = [
           'com.google.android.apps.walletnfcrel',
           'com.google.android.gms',
