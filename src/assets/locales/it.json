@@ -292,9 +292,7 @@
     "delete": "Elimina",
     "delete_alert": "Elimina Avviso",
     "view_change": "Visualizza Indirizzo di Resto",
-    "got_it": "Ho capito",
-    "initial_sync_warning_title": "Attenzione!",
-    "initial_sync_warning": "Questa è la prima volta che avvii il portafoglio. Devi attendere il completamento della sincronizzazione. Non chiudere l'app. Di solito richiede 1–2 minuti. Potrebbe richiedere più tempo con una connessione scadente o VPN."
+    "got_it": "Ho capito"
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

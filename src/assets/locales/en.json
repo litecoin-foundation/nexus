@@ -292,9 +292,7 @@
     "delete": "Delete",
     "delete_alert": "Delete Alert",
     "view_change": "View Change Address",
-    "got_it": "Got It",
-    "initial_sync_warning_title": "Attention!",
-    "initial_sync_warning": "This is your first time launching the wallet. You should wait for synchronization to complete. Do not close the app. It usually takes 1–2 minutes. Might take longer with bad connection or VPN."
+    "got_it": "Got It"
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

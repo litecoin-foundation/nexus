@@ -292,9 +292,7 @@
     "delete": "Hapus",
     "delete_alert": "Hapus Peringatan",
     "view_change": "Lihat Alamat Change",
-    "got_it": "Mengerti",
-    "initial_sync_warning_title": "Perhatian!",
-    "initial_sync_warning": "Ini pertama kalinya Anda meluncurkan dompet. Anda harus menunggu hingga sinkronisasi selesai. Jangan tutup aplikasi. Biasanya memakan waktu 1–2 menit. Mungkin lebih lama dengan koneksi yang buruk atau VPN."
+    "got_it": "Mengerti"
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

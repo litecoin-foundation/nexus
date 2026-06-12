@@ -112,6 +112,7 @@ function LiquidGlassCategoryPicker({
         size: [borderWidth, borderHeight],
         cornerR: borderCornerRadius,
         resolution: [borderWidth, borderHeight],
+        darken: 1.0,
       },
       builder,
     );

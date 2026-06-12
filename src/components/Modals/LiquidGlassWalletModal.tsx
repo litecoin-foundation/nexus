@@ -105,6 +105,7 @@ export default function LiquidGlassWalletModal({
         size: [modalWidth, modalHeight],
         cornerR: cornerRadius,
         resolution: [modalWidth, modalHeight],
+        darken: 1.0,
       },
       builder,
     );

@@ -292,9 +292,7 @@
     "delete": "Supprimer",
     "delete_alert": "Supprimer l'alerte",
     "view_change": "Voir l'adresse de change",
-    "got_it": "Compris",
-    "initial_sync_warning_title": "Attention !",
-    "initial_sync_warning": "C'est la première fois que vous lancez le portefeuille. Vous devez attendre la fin de la synchronisation. Ne fermez pas l'application. Cela prend généralement 1 à 2 minutes. Cela peut prendre plus de temps avec une mauvaise connexion ou un VPN."
+    "got_it": "Compris"
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

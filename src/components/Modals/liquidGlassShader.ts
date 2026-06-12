@@ -4,6 +4,7 @@ export const liquidGlassShader = Skia.RuntimeEffect.Make(`
 uniform vec2 size;
 uniform float cornerR;
 uniform vec2 resolution;
+uniform float darken;
 uniform shader image;
 uniform shader blurredImage;
 
@@ -79,6 +80,9 @@ vec4 calculateLiquidGlass(float sd, vec2 g, vec2 fragCoord) {
   float shadowWidth = 30.0;
   float edgeDist = clamp(-sd / shadowWidth, 0.0, 1.0);
   glass_color.rgb *= mix(0.88, 1.0, smoothstep(0.0, 1.0, edgeDist));
+
+  // Overall surface brightness: 1.0 = clear glass, <1.0 = darker/smoked glass.
+  glass_color.rgb *= darken;
 
   return glass_color;
 }
