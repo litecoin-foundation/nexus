@@ -292,7 +292,11 @@
     "delete": "Eliminar",
     "delete_alert": "Eliminar alerta",
     "view_change": "Ver dirección de cambio",
-    "got_it": "Entendido"
+    "got_it": "Entendido",
+    "recovery_sync_title": "Recuperando tu billetera",
+    "recovery_sync": "Estamos escaneando la red de Litecoin para restaurar el historial de tu billetera. Mantén la aplicación abierta hasta que termine. Normalmente tarda unos minutos y puede ser más lento con una conexión deficiente o VPN.",
+    "recovery_restarted_title": "Recuperación reiniciada",
+    "recovery_restarted": "La recuperación se interrumpió porque la aplicación se cerró antes de terminar. La hemos reiniciado. Mantén la aplicación abierta hasta que la recuperación se complete esta vez."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

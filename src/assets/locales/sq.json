@@ -292,7 +292,11 @@
     "delete": "Fshi",
     "delete_alert": "Fshi Sinjalin",
     "view_change": "Shiko Adresën e Ndryshuar",
-    "got_it": "E kuptova"
+    "got_it": "E kuptova",
+    "recovery_sync_title": "Po rikuperohet portofoli juaj",
+    "recovery_sync": "Po skanojmë rrjetin Litecoin për të rikthyer historikun e portofolit tuaj. Mbajeni aplikacionin të hapur derisa të përfundojë. Zakonisht zgjat disa minuta dhe mund të jetë më i ngadaltë me lidhje të dobët ose VPN.",
+    "recovery_restarted_title": "Rikuperimi u rinis",
+    "recovery_restarted": "Rikuperimi u ndërpre sepse aplikacioni u mbyll para se të përfundonte. E rinisëm. Ju lutemi mbajeni aplikacionin të hapur derisa rikuperimi të përfundojë këtë herë."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

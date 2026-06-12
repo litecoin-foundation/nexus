@@ -292,7 +292,11 @@
     "delete": "Ištrinti",
     "delete_alert": "Ištrinti Įspėjimą",
     "view_change": "Peržiūrėti Grąžos Adresą",
-    "got_it": "Supratau"
+    "got_it": "Supratau",
+    "recovery_sync_title": "Atkuriama jūsų piniginė",
+    "recovery_sync": "Skenuojame Litecoin tinklą, kad atkurtume jūsų piniginės istoriją. Palikite programėlę atidarytą, kol bus baigta. Paprastai tai trunka kelias minutes, o esant prastam ryšiui ar VPN gali užtrukti ilgiau.",
+    "recovery_restarted_title": "Atkūrimas paleistas iš naujo",
+    "recovery_restarted": "Atkūrimas buvo nutrauktas, nes programėlė buvo uždaryta nepasibaigus procesui. Paleidome jį iš naujo. Šįkart palikite programėlę atidarytą, kol atkūrimas bus baigtas."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

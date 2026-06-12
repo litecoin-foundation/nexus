@@ -22,9 +22,15 @@ import {
   fileExists,
 } from '../utils/file';
 import {finishOnboarding, setRecoveryMode, setSeedRecovery} from './onboarding';
+import {setRecoveryRestarted} from './info';
+import {
+  markRecoveryInProgress,
+  clearRecoveryInProgress,
+  isRecoveryInProgress,
+} from '../utils/recovery';
 import {setLitecoinBackend} from './settings';
 import {subscribeTransactions} from './transaction';
-import {pollInfo, pollPeers} from './info';
+import {pollInfo, pollPeers, pollRecoveryInfo} from './info';
 import {pollRates} from './ticker';
 import {pollBalance} from './balance';
 import {pollTransactions} from './transaction';
@@ -142,6 +148,7 @@ export const startLnd = (): AppThunk => async (dispatch, getState) => {
             _pollersStarted = true;
 
             dispatch(pollInfo());
+            dispatch(pollRecoveryInfo());
             if (getState().settings.litecoinBackend !== 'electrum') {
               dispatch(pollPeers());
             }
@@ -202,6 +209,11 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
       walletPassword: stringToUint8Array(password),
       recoveryWindow: beingRecovered === true ? 3000 : 0,
     });
+    if (beingRecovered === true) {
+      await markRecoveryInProgress();
+    } else {
+      await clearRecoveryInProgress();
+    }
   } catch (error) {
     console.error(error);
   }
@@ -237,9 +249,14 @@ export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
 
   try {
     if (password !== null) {
+      const recoveryInterrupted = await isRecoveryInProgress();
       await unlockLndWallet({
         walletPassword: stringToUint8Array(password),
+        recoveryWindow: recoveryInterrupted ? 3000 : 0,
       });
+      // Set explicitly (not only on true) so a stale persisted value from a
+      // previous session is reset on a normal unlock.
+      dispatch(setRecoveryRestarted(recoveryInterrupted));
     } else {
       throw new Error('wallet password is null');
     }

@@ -292,7 +292,11 @@
     "delete": "Hapus",
     "delete_alert": "Hapus Peringatan",
     "view_change": "Lihat Alamat Change",
-    "got_it": "Mengerti"
+    "got_it": "Mengerti",
+    "recovery_sync_title": "Memulihkan dompet Anda",
+    "recovery_sync": "Kami memindai jaringan Litecoin untuk memulihkan riwayat dompet Anda. Biarkan aplikasi tetap terbuka hingga selesai. Biasanya memakan waktu beberapa menit, dan mungkin lebih lambat dengan koneksi yang buruk atau VPN.",
+    "recovery_restarted_title": "Pemulihan dimulai ulang",
+    "recovery_restarted": "Pemulihan terhenti karena aplikasi ditutup sebelum selesai. Kami telah memulainya ulang. Harap biarkan aplikasi tetap terbuka hingga pemulihan selesai kali ini."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

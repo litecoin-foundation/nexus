@@ -41,6 +41,7 @@ import BottomSheet from '../components/BottomSheet';
 import TransactionList from '../components/TransactionList';
 import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
+import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
 import DatePicker from '../components/DatePicker';
 import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
@@ -193,6 +194,20 @@ const Main: React.FC<Props> = props => {
   const pinModalAction = useRef<string>('view-seed-auth');
   const [loading, setLoading] = useState(false);
   const [triggerLester, setTriggerLester] = useState(0);
+
+  // Recovery-sync alert: shown while lnd is rescanning the chain to restore a
+  // wallet. recoveryRestarted distinguishes a fresh recovery from one that was
+  // auto-resumed after the app was closed mid-recovery.
+  const recoveryMode = useAppSelector(state => state.info!.recoveryMode);
+  const recoveryFinished = useAppSelector(
+    state => state.info!.recoveryFinished,
+  );
+  const recoveryRestarted = useAppSelector(
+    state => state.info!.recoveryRestarted,
+  );
+  const [recoveryAlertDismissed, setRecoveryAlertDismissed] = useState(false);
+  const showRecoveryAlert =
+    recoveryMode && !recoveryFinished && !recoveryAlertDismissed;
 
   const mainContentRef = useRef<View>(null);
 
@@ -741,6 +756,17 @@ const Main: React.FC<Props> = props => {
           }
           return false;
         }}
+      />
+
+      <LiquidGlassAlertModal
+        isVisible={showRecoveryAlert}
+        close={() => setRecoveryAlertDismissed(true)}
+        titleTextKey={
+          recoveryRestarted ? 'recovery_restarted_title' : 'recovery_sync_title'
+        }
+        textKey={recoveryRestarted ? 'recovery_restarted' : 'recovery_sync'}
+        domain="modals"
+        contentViewRef={mainContentRef}
       />
 
       <LoadingIndicator visible={loading} />

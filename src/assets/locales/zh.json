@@ -292,7 +292,11 @@
     "delete": "删除",
     "delete_alert": "删除警告",
     "view_change": "查看更改地址",
-    "got_it": "知道了"
+    "got_it": "知道了",
+    "recovery_sync_title": "正在恢复您的钱包",
+    "recovery_sync": "我们正在扫描莱特币网络以恢复您的钱包历史记录。请保持应用开启直到完成。这通常需要几分钟，如果连接不佳或使用 VPN，可能会更慢。",
+    "recovery_restarted_title": "恢复已重新开始",
+    "recovery_restarted": "恢复被中断，因为应用在完成前已关闭。我们已重新开始恢复。请保持应用开启，直到这次恢复完成。"
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

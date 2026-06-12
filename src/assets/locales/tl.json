@@ -292,7 +292,11 @@
     "delete": "Tanggalin",
     "delete_alert": "Tanggalin ang Alert",
     "view_change": "Tingnan ang pagpalit ng address",
-    "got_it": "Naintindihan"
+    "got_it": "Naintindihan",
+    "recovery_sync_title": "Nire-recover ang iyong wallet",
+    "recovery_sync": "Sini-scan namin ang Litecoin network para ibalik ang history ng iyong wallet. Panatilihing bukas ang app hanggang matapos. Karaniwang tumatagal ito ng ilang minuto, at maaaring mas mabagal kung mahina ang koneksyon o may VPN.",
+    "recovery_restarted_title": "Na-restart ang recovery",
+    "recovery_restarted": "Naabala ang recovery dahil isinara ang app bago ito natapos. Ni-restart namin ito. Mangyaring panatilihing bukas ang app hanggang makumpleto ang recovery sa pagkakataong ito."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

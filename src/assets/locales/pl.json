@@ -292,7 +292,11 @@
     "delete": "Usuń",
     "delete_alert": "Usuń alert",
     "view_change": "Zobacz adres reszty",
-    "got_it": "Rozumiem"
+    "got_it": "Rozumiem",
+    "recovery_sync_title": "Odzyskiwanie portfela",
+    "recovery_sync": "Skanujemy sieć Litecoin, aby przywrócić historię Twojego portfela. Pozostaw aplikację otwartą do zakończenia. Zwykle trwa to kilka minut, a przy słabym połączeniu lub VPN może potrwać dłużej.",
+    "recovery_restarted_title": "Odzyskiwanie uruchomione ponownie",
+    "recovery_restarted": "Odzyskiwanie zostało przerwane, ponieważ aplikacja została zamknięta przed jego zakończeniem. Uruchomiliśmy je ponownie. Tym razem pozostaw aplikację otwartą do zakończenia odzyskiwania."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

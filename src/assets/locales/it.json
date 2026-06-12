@@ -292,7 +292,11 @@
     "delete": "Elimina",
     "delete_alert": "Elimina Avviso",
     "view_change": "Visualizza Indirizzo di Resto",
-    "got_it": "Ho capito"
+    "got_it": "Ho capito",
+    "recovery_sync_title": "Recupero del tuo portafoglio",
+    "recovery_sync": "Stiamo analizzando la rete Litecoin per ripristinare la cronologia del tuo portafoglio. Tieni l'app aperta fino al termine. Di solito richiede qualche minuto e potrebbe essere più lento con una connessione scadente o VPN.",
+    "recovery_restarted_title": "Recupero riavviato",
+    "recovery_restarted": "Il recupero è stato interrotto perché l'app è stata chiusa prima del termine. Lo abbiamo riavviato. Tieni l'app aperta finché il recupero non sarà completato questa volta."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

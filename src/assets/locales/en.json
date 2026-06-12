@@ -292,7 +292,11 @@
     "delete": "Delete",
     "delete_alert": "Delete Alert",
     "view_change": "View Change Address",
-    "got_it": "Got It"
+    "got_it": "Got It",
+    "recovery_sync_title": "Recovering your wallet",
+    "recovery_sync": "We're scanning the Litecoin network to restore your wallet history. Keep the app open until it finishes - this usually takes a few minutes, and may be slower on a poor connection or VPN.",
+    "recovery_restarted_title": "Recovery restarted",
+    "recovery_restarted": "Recovery was interrupted because the app closed before it finished. We've restarted it - please keep the app open until recovery completes this time."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

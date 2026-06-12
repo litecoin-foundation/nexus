@@ -51,7 +51,6 @@ import {
   decimalSyncedSelector,
   recoveryProgressSelector,
   getRecoveryInfo,
-  pollRecoveryInfo,
 } from '../reducers/info';
 
 import {v4 as uuidv4} from 'uuid';
@@ -176,12 +175,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
     dispatch(getTransactions());
     dispatch(getRecoveryInfo());
   }, [dispatch]);
-
-  useEffect(() => {
-    if (!syncedToChain) {
-      dispatch(pollRecoveryInfo());
-    }
-  }, [syncedToChain, dispatch]);
 
   const filterTransactions = () => {
     const txArray = [];
@@ -363,6 +356,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
     };
   }, [percentageProgress, recoveryMode, recoveryProgress]);
 
+  // Show the sync/recovery progress bar whenever chain sync OR an
+  // address-recovery rescan is in flight. A resumed recovery has the chain
+  // already synced (syncedToChain=true) but is still rescanning, so this must
+  // gate on recoveryMode too — not syncedToChain alone.
+  const showSyncProgress =
+    (recoveryMode && !recoveryFinished) || !syncedToChain;
+
   const SyncProgressIndicator = (
     <>
       <View style={styles.headerContainer}>
@@ -480,7 +480,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
         estimatedItemSize={70}
         ListEmptyComponent={<TransactionListEmpty />}
         ListHeaderComponent={
-          (recoveryMode && !recoveryFinished) || !syncedToChain ? (
+          showSyncProgress ? (
             <TranslateText
               textKey={'txs_take_time_to_appear'}
               domain="onboarding"
@@ -502,8 +502,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
       handleContentSizeChange,
       handleStartClosing,
       handleFold,
-      recoveryMode,
-      syncedToChain,
+      showSyncProgress,
       styles,
     ],
   );
@@ -638,7 +637,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
 
   return renderTxs ? (
     <View style={{height: scrollContainerHeight}}>
-      {!syncedToChain ? SyncProgressIndicator : <></>}
+      {showSyncProgress ? SyncProgressIndicator : <></>}
       {mainSheetsTranslationY ? (
         <GestureDetector gesture={panGesture}>{FlashListMemo}</GestureDetector>
       ) : (

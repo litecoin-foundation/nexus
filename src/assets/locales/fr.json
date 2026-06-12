@@ -292,7 +292,11 @@
     "delete": "Supprimer",
     "delete_alert": "Supprimer l'alerte",
     "view_change": "Voir l'adresse de change",
-    "got_it": "Compris"
+    "got_it": "Compris",
+    "recovery_sync_title": "Récupération de votre portefeuille",
+    "recovery_sync": "Nous analysons le réseau Litecoin pour restaurer l'historique de votre portefeuille. Gardez l'application ouverte jusqu'à la fin. Cela prend généralement quelques minutes et peut être plus lent avec une mauvaise connexion ou un VPN.",
+    "recovery_restarted_title": "Récupération redémarrée",
+    "recovery_restarted": "La récupération a été interrompue car l'application a été fermée avant la fin. Nous l'avons redémarrée. Veuillez garder l'application ouverte jusqu'à ce que la récupération se termine cette fois-ci."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",

@@ -8,8 +8,9 @@ import {
 } from 'react-native-nitro-lndltc';
 
 import {AppThunk} from './types';
-import {poll} from '../utils/poll';
 import {RootState} from '../store';
+import {poll} from '../utils/poll';
+import {clearRecoveryInProgress, isRecoveryInProgress} from '../utils/recovery';
 
 // types
 interface IInfo {
@@ -32,6 +33,7 @@ interface IInfo {
   recoveryProgress: number;
   recoveryFinished: boolean;
   recoveryMode: boolean;
+  recoveryRestarted: boolean;
   peers: string[];
   appWasOpenedBefore: boolean;
 }
@@ -42,6 +44,7 @@ type GetInfoType = Omit<
   | 'recoveryProgress'
   | 'recoveryFinished'
   | 'recoveryMode'
+  | 'recoveryRestarted'
   | 'appWasOpenedBefore'
 >;
 
@@ -72,6 +75,7 @@ const initialState = {
   recoveryProgress: 0,
   recoveryMode: false,
   recoveryFinished: false,
+  recoveryRestarted: false,
   peers: [],
   appWasOpenedBefore: false,
 } as IInfo;
@@ -81,6 +85,9 @@ const getPeersAction = createAction<any[]>('info/getPeersAction');
 const getInfoAction = createAction<GetInfoType>('info/getInfoAction');
 const getRecoveryInfoAction = createAction<IGetRecoveryType>(
   'info/getRecoveryInfoAction',
+);
+export const setRecoveryRestarted = createAction<boolean>(
+  'info/setRecoveryRestarted',
 );
 const checkInternetReachableAction = createAction<boolean | null>(
   'info/checkInternetReachableAction',
@@ -175,25 +182,51 @@ export const pollInfo = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getInfo()));
 };
 
-export const getRecoveryInfo = (): AppThunk => async (dispatch, getState) => {
-  const {lndActive} = getState().lightning;
-  if (!lndActive) {
-    return;
-  }
-  try {
-    const response = await getLndRecoveryInfo();
+// Returns true once recovery polling can stop (see poll() — a truthy result
+// ends the loop). Recovery info only changes while a recovery rescan is
+// running, so there's nothing to watch once it has finished or when the wallet
+// isn't recovering at all.
+export const getRecoveryInfo =
+  (): AppThunk<Promise<boolean>> => async (dispatch, getState) => {
+    const {lndActive} = getState().lightning;
+    if (!lndActive) {
+      // lnd isn't up yet — keep polling until it is.
+      return false;
+    }
+    try {
+      const wasFinished = getState().info.recoveryFinished;
+      const response = await getLndRecoveryInfo();
 
-    dispatch(
-      getRecoveryInfoAction({
-        recoveryProgress: response.progress,
-        recoveryFinished: response.recoveryFinished,
-        recoveryMode: response.recoveryMode,
-      }),
-    );
-  } catch (error) {
-    console.error(`getRecoveryInfo error: ${error}`);
-  }
-};
+      dispatch(
+        getRecoveryInfoAction({
+          recoveryProgress: response.progress,
+          recoveryFinished: response.recoveryFinished,
+          recoveryMode: response.recoveryMode,
+        }),
+      );
+
+      // On the poll where recovery first completes, clear the persisted flag so
+      // the next launch unlocks normally, and drop the restarted alert state.
+      if (response.recoveryMode && response.recoveryFinished && !wasFinished) {
+        await clearRecoveryInProgress();
+        dispatch(setRecoveryRestarted(false));
+      }
+
+      if (response.recoveryFinished) {
+        return true; // recovery done — stop polling
+      }
+      if (response.recoveryMode) {
+        return false; // actively recovering — keep polling
+      }
+      // Not (yet) reporting recovery mode. A normal wallet stops after this
+      // single poll; but if the persisted flag is set we may have just raced
+      // lnd entering recovery on resume, so keep polling until it reports.
+      return !(await isRecoveryInProgress());
+    } catch (error) {
+      console.error(`getRecoveryInfo error: ${error}`);
+      return false; // transient RPC error — keep polling
+    }
+  };
 
 export const pollRecoveryInfo = (): AppThunk => async dispatch => {
   await poll(() => dispatch(getRecoveryInfo()));
@@ -245,6 +278,10 @@ export const infoSlice = createSlice({
       isInternetReachable: action.payload,
     }),
     getRecoveryInfoAction: (state, action) => ({...state, ...action.payload}),
+    setRecoveryRestarted: (state, action) => ({
+      ...state,
+      recoveryRestarted: action.payload,
+    }),
     appWasOpened: state => ({...state, appWasOpenedBefore: true}),
   },
   extraReducers: builder => {

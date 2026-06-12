@@ -292,7 +292,11 @@
     "delete": "Löschen",
     "delete_alert": "Alarmierung löschen",
     "view_change": "Wechseladresse anzeigen",
-    "got_it": "Verstanden"
+    "got_it": "Verstanden",
+    "recovery_sync_title": "Wallet wird wiederhergestellt",
+    "recovery_sync": "Wir durchsuchen das Litecoin-Netzwerk, um Ihren Wallet-Verlauf wiederherzustellen. Lassen Sie die App geöffnet, bis der Vorgang abgeschlossen ist. Das dauert normalerweise einige Minuten und kann bei schlechter Verbindung oder VPN länger dauern.",
+    "recovery_restarted_title": "Wiederherstellung neu gestartet",
+    "recovery_restarted": "Die Wiederherstellung wurde unterbrochen, weil die App geschlossen wurde, bevor sie abgeschlossen war. Wir haben sie neu gestartet. Bitte lassen Sie die App geöffnet, bis die Wiederherstellung diesmal abgeschlossen ist."
   },
   "nexusShop": {
     "nexus_shop": "Nexus Shop",
