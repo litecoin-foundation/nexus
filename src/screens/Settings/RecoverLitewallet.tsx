@@ -105,6 +105,7 @@ const RecoverLitewallet = ({
               headerText={t('litewallet_description')}
               isLitewalletRecovery={true}
               handleLWRecovery={seed => handleLWRecovery(seed)}
+              isScreenFocused={() => navigation.isFocused()}
             />
           </SafeAreaView>
         </KeyboardAvoidingView>

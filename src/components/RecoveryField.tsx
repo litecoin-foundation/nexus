@@ -3,16 +3,24 @@ import {
   View,
   Text,
   TextInput,
+  TouchableOpacity,
   FlatList,
   KeyboardAvoidingView,
+  Keyboard,
+  InteractionManager,
   StyleSheet,
   Alert,
   Platform,
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import WhiteButton from '../components/Buttons/WhiteButton';
-import {checkBIP39Word, checkLitewalletBIP39Word} from '../utils/bip39/';
+import {
+  checkBIP39Word,
+  checkLitewalletBIP39Word,
+  getBIP39Suggestions,
+} from '../utils/bip39/';
 import {checkSeedChecksum} from '../utils/aezeed';
 
 import TranslateText from '../components/TranslateText';
@@ -23,14 +31,23 @@ interface Props {
   headerText: string;
   isLitewalletRecovery: boolean;
   handleLWRecovery?: (seed: string[]) => void;
+  // returns whether the screen is currently focused; used to avoid validating
+  // (and alerting) when the user is navigating away from the recovery screen
+  isScreenFocused?: () => boolean;
 }
 
 const RecoveryField: React.FC<Props> = props => {
-  const {handleLogin, headerText, isLitewalletRecovery, handleLWRecovery} =
-    props;
+  const {
+    handleLogin,
+    headerText,
+    isLitewalletRecovery,
+    handleLWRecovery,
+    isScreenFocused,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+  const insets = useSafeAreaInsets();
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const {t} = useTranslation('onboarding');
@@ -41,17 +58,53 @@ const RecoveryField: React.FC<Props> = props => {
 
   const [phrase, setPhrasePosition] = useState(0);
   const [seed, setSeed] = useState<string[]>([]);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const phraseRef = useRef(n.map(() => createRef<TextInput>()));
   const listRef = useRef<FlatList>(null);
 
-  useEffect(() => {
-    phraseRef.current[phrase].current!.focus();
-  });
+  const didInitialFocus = useRef(false);
 
-  const handleSubmit = async (index: number) => {
+  useEffect(() => {
+    // defer the very first focus until the screen-push animation finishes,
+    // otherwise opening the keyboard mid-transition makes it flicker.
+    // subsequent focus changes happen with the keyboard already up, so focus
+    // immediately to avoid any lag between fields.
+    if (!didInitialFocus.current) {
+      didInitialFocus.current = true;
+      const task = InteractionManager.runAfterInteractions(() => {
+        phraseRef.current[phrase]?.current?.focus();
+      });
+      return () => task.cancel();
+    }
+
+    phraseRef.current[phrase]?.current?.focus();
+  }, [phrase]);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      e => setKeyboardHeight(e.endCoordinates.height),
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardHeight(0),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const suggestions = getBIP39Suggestions(
+    seed[phrase] ?? '',
+    isLitewalletRecovery,
+    3,
+  );
+
+  const handleSubmit = async (index: number, seedArr: string[] = seed) => {
     const isValidWord = isLitewalletRecovery
-      ? checkLitewalletBIP39Word(seed[index])
-      : checkBIP39Word(seed[index]);
+      ? checkLitewalletBIP39Word(seedArr[index])
+      : checkBIP39Word(seedArr[index]);
 
     if (!isValidWord) {
       await Alert.alert(
@@ -71,19 +124,19 @@ const RecoveryField: React.FC<Props> = props => {
 
     if (isLitewalletRecovery && handleLWRecovery !== undefined) {
       if (index === 11) {
-        await handleLWRecovery(seed);
+        await handleLWRecovery(seedArr);
 
         // reset seed list inputs in state and ui
         setSeed([]);
         for (let i = 0; i < 12; i++) {
-          phraseRef.current[i].current!.clear();
+          phraseRef.current[i]?.current?.clear();
         }
         return;
       }
     } else {
       if (index === 23) {
         try {
-          await checkSeedChecksum(seed);
+          await checkSeedChecksum(seedArr);
         } catch (error) {
           await Alert.alert(
             'Incorrect Paper-Key',
@@ -99,22 +152,57 @@ const RecoveryField: React.FC<Props> = props => {
           );
           return;
         }
-        await handleLogin(seed);
+        await handleLogin(seedArr);
 
         // reset seed list inputs in state and ui
         setSeed([]);
         for (let i = 0; i < 24; i++) {
-          phraseRef.current[i].current!.clear();
+          phraseRef.current[i]?.current?.clear();
         }
         return;
       }
     }
 
     if (index >= 1) {
-      listRef.current!.scrollToIndex({index: index});
+      listRef.current?.scrollToIndex({index: index});
     }
 
     setPhrasePosition(phrase + 1);
+  };
+
+  const handleBlur = (index: number) => {
+    // don't validate/alert when leaving the recovery screen
+    if (isScreenFocused && !isScreenFocused()) {
+      return;
+    }
+
+    const word = seed[index];
+    if (!word || word.trim() === '') {
+      return;
+    }
+
+    const isValidWord = isLitewalletRecovery
+      ? checkLitewalletBIP39Word(word)
+      : checkBIP39Word(word);
+
+    if (!isValidWord) {
+      Alert.alert(
+        t('invalid_word'),
+        t('invalid_description'),
+        [
+          {
+            // force focus back to the invalid word once the alert is dismissed
+            text: t('try_again'),
+            onPress: () => {
+              setPhrasePosition(index);
+              phraseRef.current[index]?.current?.focus();
+            },
+            style: undefined,
+          },
+        ],
+        {cancelable: false},
+      );
+    }
   };
 
   const handleChange = (input: string, index: number) => {
@@ -127,6 +215,15 @@ const RecoveryField: React.FC<Props> = props => {
     // arr[index] = input.normalize('NFD');
     arr[index] = input.trim();
     setSeed(arr);
+  };
+
+  const handleSuggestionPress = (word: string) => {
+    const index = phrase;
+    const arr = [...seed];
+    arr[index] = word;
+    setSeed(arr);
+    // pass the updated array directly since setSeed hasn't flushed yet
+    handleSubmit(index, arr);
   };
 
   const handleContinue = async () => {
@@ -187,7 +284,7 @@ const RecoveryField: React.FC<Props> = props => {
     setSeed([]);
     const resetCount = isLitewalletRecovery ? 12 : 24;
     for (let i = 0; i < resetCount; i++) {
-      phraseRef.current[i].current!.clear();
+      phraseRef.current[i]?.current?.clear();
     }
   };
 
@@ -246,12 +343,14 @@ const RecoveryField: React.FC<Props> = props => {
                 autoCorrect={false}
                 autoCapitalize="none"
                 autoComplete="off"
-                clearTextOnFocus
+                submitBehavior="submit"
                 keyboardAppearance="dark"
+                value={seed[index] ?? ''}
                 ref={phraseRef.current[index]}
                 onSubmitEditing={() => handleSubmit(index)}
                 onChangeText={text => handleChange(text, index)}
                 onFocus={() => setPhrasePosition(index)}
+                onBlur={() => handleBlur(index)}
                 style={[
                   styles.wordText,
                   index === phrase ? styles.wordTextActive : null,
@@ -260,6 +359,25 @@ const RecoveryField: React.FC<Props> = props => {
             </View>
           )}
         />
+
+        {keyboardHeight > 0 && suggestions.length > 0 ? (
+          <View
+            style={[
+              styles.suggestionBar,
+              {bottom: keyboardHeight - insets.bottom},
+            ]}>
+            {suggestions.map(word => (
+              <TouchableOpacity
+                key={word}
+                style={styles.suggestionButton}
+                onPress={() => handleSuggestionPress(word)}>
+                <Text style={styles.suggestionText} numberOfLines={1}>
+                  {word}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
       </View>
     </KeyboardAvoidingView>
   );
@@ -332,6 +450,33 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: 30,
       paddingTop: screenHeight * 0.03,
       paddingBottom: screenHeight * 0.02,
+    },
+    suggestionBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      gap: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+    },
+    suggestionButton: {
+      flex: 1,
+      maxWidth: '33%',
+      height: screenHeight * 0.04,
+      backgroundColor: 'white',
+      borderRadius: screenHeight * 0.02,
+      paddingVertical: 10,
+      paddingHorizontal: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    suggestionText: {
+      color: '#2C72FF',
+      fontSize: 16,
+      fontWeight: '600',
     },
   });
 
