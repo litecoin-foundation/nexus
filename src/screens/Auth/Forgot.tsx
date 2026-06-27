@@ -67,6 +67,7 @@ const Forgot: React.FC<Props> = ({navigation}) => {
           handleLogin={seedAttempt => attemptLogin(seedAttempt)}
           headerText={t('forgot_pin_description')}
           isLitewalletRecovery={false}
+          isScreenFocused={() => navigation.isFocused()}
         />
       </CustomSafeAreaView>
     </LinearGradient>

@@ -109,6 +109,7 @@ const Recover: React.FC<Props> = props => {
           handleLogin={seed => attemptLogin(seed)}
           headerText={t('enter_seed')}
           isLitewalletRecovery={false}
+          isScreenFocused={() => navigation.isFocused()}
         />
       </CustomSafeAreaView>
     </LinearGradient>

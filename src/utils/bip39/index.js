@@ -39,3 +39,30 @@ export const checkLitewalletBIP39Word = word => {
 export const getBIP39Index = word => {
   return wordlist.indexOf(word);
 };
+
+export const getBIP39Suggestions = (
+  prefix,
+  isLitewallet = false,
+  limit = 3,
+) => {
+  const p = (prefix || '').trim().toLowerCase();
+  if (!p) {
+    return [];
+  }
+
+  const lists = isLitewallet ? wordlists : [wordlist];
+  const matches = [];
+
+  for (const list of lists) {
+    for (const w of list) {
+      if (w.startsWith(p) && !matches.includes(w)) {
+        matches.push(w);
+        if (matches.length >= limit) {
+          return matches;
+        }
+      }
+    }
+  }
+
+  return matches;
+};
