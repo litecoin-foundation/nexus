@@ -4,6 +4,7 @@ export type RootStackParamList = {
   Loading: undefined;
   AuthStack: undefined;
   Onboarding: undefined;
+  Unlocking: undefined;
   NewWalletStack: undefined;
 };
 

@@ -12,7 +12,7 @@ import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 type RootStackParamList = {
   Auth: undefined;
-  NewWalletStack: undefined;
+  Unlocking: undefined;
 };
 
 interface Props {
@@ -45,10 +45,19 @@ const AuthScreen: React.FC<Props> = props => {
     }
   }, [biometricsEnabled, walletState, dispatch]);
 
-  // Navigate to main wallet when LND RPC is ready and user has authenticated
+  // Once authentication succeeds and the wallet actually starts unlocking
+  // (LND leaves the LOCKED state), hand off to the Unlocking transition
+  // screen so the remaining RPC startup wait is covered by an animation
+  // rather than a frozen pad. A wrong PIN keeps the wallet LOCKED, so we
+  // stay on this screen for the retry.
   useEffect(() => {
-    if (unlockInitiated && walletState === WalletState.RPC_ACTIVE) {
-      navigation.replace('NewWalletStack');
+    const unlockStarted =
+      walletState === WalletState.UNLOCKED ||
+      walletState === WalletState.RPC_ACTIVE ||
+      walletState === WalletState.SERVER_ACTIVE;
+
+    if (unlockInitiated && unlockStarted) {
+      navigation.replace('Unlocking');
     }
   }, [walletState, navigation, unlockInitiated]);
 

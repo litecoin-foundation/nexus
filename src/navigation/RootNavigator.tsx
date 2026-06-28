@@ -6,6 +6,7 @@ import {navigationRef} from './NavigationService';
 import OnboardingStack from './OnboardingStack';
 import Loading from '../screens/Loading';
 import AuthStack from './AuthStack';
+import Unlocking from '../screens/Unlocking';
 import NewWalletStack from './NewWalletStack';
 import {RootStackParamList} from './types';
 
@@ -65,9 +66,24 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="Unlocking"
+          component={Unlocking}
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
           name="NewWalletStack"
           component={NewWalletStack}
-          options={{headerTransparent: true, headerShown: false}}
+          options={{
+            headerTransparent: true,
+            headerShown: false,
+            animation: 'fade',
+            detachPreviousScreen: false,
+            cardStyle: {backgroundColor: '#0F55C7'},
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>
