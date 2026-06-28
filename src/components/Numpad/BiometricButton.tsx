@@ -6,6 +6,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
+import {WalletState} from 'react-native-nitro-lndltc';
+
 import {useAppSelector} from '../../store/hooks';
 
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -30,6 +32,13 @@ const Button: React.FC<Props> = props => {
   const biometricType = useAppSelector(
     state => state.authentication!.faceIDSupported,
   );
+  const walletState = useAppSelector(state => state.lightning.walletState);
+
+  // Biometric unlock can't run while the wallet is being recovered (e.g. right
+  // after the electrum migration deletes wallet.db, LND reports NON_EXISTING and
+  // the wallet must be re-initialised from seed via PIN). Hide the button there
+  // so we don't offer a FaceID prompt that won't actually unlock anything.
+  const hidden = !biometricsEnabled || walletState === WalletState.NON_EXISTING;
 
   const motionStyle = useAnimatedStyle(() => {
     return {
@@ -46,12 +55,12 @@ const Button: React.FC<Props> = props => {
   };
 
   return (
-    <View style={!biometricsEnabled ? styles.disabled : null}>
+    <View style={hidden ? styles.disabled : null}>
       <TouchableWithoutFeedback
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         onPress={onPress}
-        disabled={!biometricsEnabled || disabled}>
+        disabled={hidden || disabled}>
         <Animated.View style={[styles.button, motionStyle]}>
           <Image
             source={

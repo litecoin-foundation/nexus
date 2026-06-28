@@ -70,6 +70,7 @@ type RootStackParamList = {
   ResetWallet: undefined;
   RescanWallet: undefined;
   TestPayment: undefined;
+  TestMigration: undefined;
   Tor: undefined;
   ExportElectrum: undefined;
 };
@@ -338,6 +339,13 @@ const Settings: React.FC<Props> = props => {
               textKey: 'DEBUG: Buy/Sell Settings',
               forward: true,
               onPress: () => navigation.navigate('TestPayment'),
+            },
+            {
+              id: 'debug-migration',
+              type: 'cell',
+              textKey: 'DEBUG: Migration',
+              forward: true,
+              onPress: () => navigation.navigate('TestMigration'),
             },
           ]
         : []),

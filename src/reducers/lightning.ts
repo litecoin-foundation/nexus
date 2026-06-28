@@ -56,6 +56,10 @@ type MigrationStatusKey =
 // Single state subscription — stored to prevent GC
 let _stateSub: Subscription | null = null;
 let _pollersStarted = false;
+// Session-only re-entrancy guard for the electrum migration. Intentionally a
+// module variable (not persisted redux state) so it always starts false on a
+// cold launch — see runElectrumMigrationIfNeeded.
+let _migrationInFlight = false;
 
 // types
 interface ILightningState {
@@ -307,12 +311,30 @@ export const rescanWallet = (): AppThunk => async dispatch => {
 // in recovery mode against the new electrum backend.
 export const runElectrumMigrationIfNeeded =
   (): AppThunk => async (dispatch, getState) => {
-    if (getState().lightning.isMigrating) {
+    // Re-entrancy guard for the current session only. We deliberately do NOT
+    // gate on the persisted `isMigrating` flag: it survives restarts, so a kill
+    // mid-migration (or at the unacknowledged "complete" modal) would otherwise
+    // permanently block both the reconcile below and a migration retry.
+    if (_migrationInFlight) {
       return;
     }
 
     const flag = await getItem(ELECTRUM_MIGRATION_FLAG);
     if (flag === 'true') {
+      // Migration already ran. The durable keychain flag is the source of
+      // truth: the backend setting persists via redux-persist independently,
+      // so a crash/kill between flipping the backend and that flush can leave
+      // the rehydrated backend on 'neutrino'. Reconcile it to electrum before
+      // startLnd builds the config, otherwise LND reconnects to neutrino.
+      if (getState().settings.litecoinBackend !== 'electrum') {
+        dispatch(setLitecoinBackend('electrum'));
+      }
+      // Clear any stale migration UI persisted from a session that finished the
+      // migration but was killed before the user acknowledged the modal.
+      if (getState().lightning.isMigrating) {
+        dispatch(setMigratingAction(false));
+        dispatch(setMigrationProgressAction({progress: 0, statusKey: null}));
+      }
       return;
     }
 
@@ -342,6 +364,7 @@ export const runElectrumMigrationIfNeeded =
       return;
     }
 
+    _migrationInFlight = true;
     dispatch(setMigratingAction(true));
 
     try {
@@ -393,6 +416,8 @@ export const runElectrumMigrationIfNeeded =
       console.error('electrum migration failed:', error);
       dispatch(setMigratingAction(false));
       dispatch(setMigrationProgressAction({progress: 0, statusKey: null}));
+    } finally {
+      _migrationInFlight = false;
     }
   };
 

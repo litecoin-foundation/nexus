@@ -38,6 +38,9 @@ import RescanWallet, {
 import TestPayment, {
   TestPaymentNavigationOptions,
 } from '../screens/Settings/TestPayment';
+import TestMigration, {
+  TestMigrationNavigationOptions,
+} from '../screens/Settings/TestMigration';
 import Products from '../screens/Settings/Products';
 import Tor, {TorNavigationOptions} from '../screens/Settings/Tor';
 import ExportElectrum, {
@@ -144,6 +147,11 @@ function SettingsStack() {
         name="TestPayment"
         component={TestPayment}
         options={({navigation}) => TestPaymentNavigationOptions(navigation)}
+      />
+      <Stack.Screen
+        name="TestMigration"
+        component={TestMigration}
+        options={({navigation}) => TestMigrationNavigationOptions(navigation)}
       />
       <Stack.Screen
         name="Tor"
