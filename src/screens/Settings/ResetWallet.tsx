@@ -116,7 +116,7 @@ const ResetWallet: React.FC<Props> = () => {
             Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
           ]}>
           <WhiteButton
-            textKey="Continue Reset"
+            textKey="continue_reset"
             textDomain="settingsTab"
             disabled={false}
             small={false}

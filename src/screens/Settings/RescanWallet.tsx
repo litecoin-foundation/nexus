@@ -65,11 +65,22 @@ const RescanWallet: React.FC<Props> = ({navigation}) => {
     }
 
     // Only mark as complete if we've seen it go to false first, then back to true
-    if (isRescanning && syncedToChain && hasSeenSyncedFalse && !rescanComplete) {
+    if (
+      isRescanning &&
+      syncedToChain &&
+      hasSeenSyncedFalse &&
+      !rescanComplete
+    ) {
       setRescanComplete(true);
       dispatch(setRescanningWallet(false));
     }
-  }, [isRescanning, syncedToChain, hasSeenSyncedFalse, rescanComplete, dispatch]);
+  }, [
+    isRescanning,
+    syncedToChain,
+    hasSeenSyncedFalse,
+    rescanComplete,
+    dispatch,
+  ]);
 
   function openPinModal(action: string) {
     pinModalAction.current = action;
@@ -223,6 +234,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     title: {
       width: '100%',
+      maxWidth: '100%',
       color: '#fff',
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',

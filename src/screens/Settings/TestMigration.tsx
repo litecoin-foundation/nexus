@@ -21,10 +21,9 @@ import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {StackNavigationOptions} from '@react-navigation/stack';
 
-// Throwaway debug screen used to reproduce/verify the neutrino -> electrum
-// migration reconcile in runElectrumMigrationIfNeeded. Remove before release.
 const MIGRATION_FLAG_KEY = 'ELECTRUM_MIGRATION';
 
+// NOTE: Dev-only screen
 const TestMigration: React.FC = () => {
   const dispatch = useAppDispatch();
 
@@ -57,7 +56,7 @@ const TestMigration: React.FC = () => {
     refreshState();
   }, [refreshState]);
 
-  // Simulate the reported bug's precondition: keep the migration flag = 'true'
+  // NOTE: Simulate the reported bug's precondition: keep the migration flag = 'true'
   // but flip the persisted backend back to neutrino. Force-quit + relaunch and
   // the reconcile should restore electrum.
   const handleDriftToNeutrino = () => {
@@ -71,7 +70,7 @@ const TestMigration: React.FC = () => {
     }, 800);
   };
 
-  // Clear the migration flag AND drift to neutrino so the FULL migration
+  // NOTE: Clear the migration flag AND drift to neutrino so the FULL migration
   // re-runs on next launch (deletes wallet.db -> recovers from seed).
   const handleResetMigration = () => {
     Alert.alert(
