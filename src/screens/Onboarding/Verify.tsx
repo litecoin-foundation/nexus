@@ -8,6 +8,7 @@ import React, {
 import {View, Text, StyleSheet, Alert, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useTranslation} from 'react-i18next';
 
 import OnboardingHeader from '../../components/OnboardingHeader';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -36,6 +37,7 @@ interface Props {
 const Verify: React.FC<Props> = props => {
   const {navigation} = props;
   const dispatch = useAppDispatch();
+  const {t} = useTranslation('onboarding');
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -44,6 +46,8 @@ const Verify: React.FC<Props> = props => {
   const seed = useAppSelector(state => state.onboarding.generatedSeed);
   const [multiplier, setMultiplier] = useState(1);
   const [selected, setSelectedIndex] = useState<number | null>(null);
+  const [wrongGuesses, setWrongGuesses] = useState(0);
+  const MAX_WRONG_GUESSES = 2;
 
   const [scrambled, setScrambledArray] = useState([]);
 
@@ -94,15 +98,27 @@ const Verify: React.FC<Props> = props => {
     }
     setMultiplier(multiplier + 1);
     setSelectedIndex(null);
+    setWrongGuesses(0);
   };
 
   const handleSelection = async (word: string, index: number) => {
     if (word === seed[3 * multiplier - 2]) {
       setSelectedIndex(index);
-    } else {
-      setSelectedIndex(null);
-      Alert.alert('Incorrect!');
+      return;
     }
+
+    setSelectedIndex(null);
+
+    const nextWrongGuesses = wrongGuesses + 1;
+    if (nextWrongGuesses > MAX_WRONG_GUESSES) {
+      Alert.alert(t('verify_failed_title'), t('verify_failed_description'), [
+        {text: t('ok'), onPress: () => navigation.goBack()},
+      ]);
+      return;
+    }
+
+    setWrongGuesses(nextWrongGuesses);
+    Alert.alert(t('incorrect'));
   };
 
   useEffect(() => {

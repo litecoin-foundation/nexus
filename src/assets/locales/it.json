@@ -46,7 +46,10 @@
     "cancel": "Annulla",
     "ok": "OK",
     "txs_take_time_to_appear": "Le tue transazioni appariranno qui dopo che la sincronizzazione sarà completata. Aspetta un momento.",
-    "recover_pin": "Conferma PIN"
+    "recover_pin": "Conferma PIN",
+    "incorrect": "Sbagliato!",
+    "verify_failed_title": "Verifica fallita",
+    "verify_failed_description": "Troppi tentativi errati. Controlla di nuovo la tua Seed Phrase."
   },
   "main": {
     "main_wallet": "Portafoglio principale",

@@ -46,7 +46,10 @@
     "cancel": "Anulo",
     "ok": "OK",
     "txs_take_time_to_appear": "Edhe pse transaksionet tuaja janë ngarkuar, mund të duhet pak kohë që ato të shfaqen dhe të ri-llogaritet balanca juaj. Thjesht lërni aplikacionin të hapur.",
-    "recover_pin": "Konfirmo PIN"
+    "recover_pin": "Konfirmo PIN",
+    "incorrect": "Gabim!",
+    "verify_failed_title": "Verifikimi dështoi",
+    "verify_failed_description": "Shumë përpjekje të gabuara. Ju lutemi rishikoni Seed Phrase tuaj përsëri."
   },
   "main": {
     "main_wallet": "Portofoli Kryesor",
