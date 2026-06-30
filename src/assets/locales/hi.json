@@ -46,7 +46,10 @@
     "cancel": "रद्द करें",
     "ok": "ठीक है",
     "txs_take_time_to_appear": "सिंक पूरा होने के बाद आपके लेनदेन यहाँ दिखाई देंगे। कृपया थोड़ा इंतजार करें।",
-    "recover_pin": "PIN पुष्टि करें"
+    "recover_pin": "PIN पुष्टि करें",
+    "incorrect": "गलत!",
+    "verify_failed_title": "सत्यापन विफल",
+    "verify_failed_description": "बहुत अधिक गलत प्रयास। कृपया अपना सीड वाक्यांश दोबारा जांचें।"
   },
   "main": {
     "main_wallet": "मुख्य वॉलेट",

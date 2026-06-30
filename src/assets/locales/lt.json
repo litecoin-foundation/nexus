@@ -46,7 +46,10 @@
     "cancel": "Atšaukti",
     "ok": "OK",
     "txs_take_time_to_appear": "Nors jūsų operacijos jau įkeltos, gali prireikti šiek tiek laiko, kol jos bus rodomos ir jūsų likutis bus perskaičiuotas. Tiesiog palikite programėlę atidarytą.",
-    "recover_pin": "Patvirtinti PIN"
+    "recover_pin": "Patvirtinti PIN",
+    "incorrect": "Neteisingai!",
+    "verify_failed_title": "Patikrinimas nepavyko",
+    "verify_failed_description": "Per daug neteisingų bandymų. Peržiūrėkite savo pradinę frazę dar kartą."
   },
   "main": {
     "main_wallet": "Pagrindinė piniginė",

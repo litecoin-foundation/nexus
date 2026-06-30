@@ -46,7 +46,10 @@
     "cancel": "Abbrechen",
     "ok": "OK",
     "txs_take_time_to_appear": "Obwohl Ihre Transaktionen geladen wurden, kann es etwas dauern, bis sie angezeigt werden und Ihr Kontostand neu berechnet wird. Lassen Sie die App einfach geöffnet.",
-    "recover_pin": "PIN bestätigen"
+    "recover_pin": "PIN bestätigen",
+    "incorrect": "Falsch!",
+    "verify_failed_title": "Überprüfung fehlgeschlagen",
+    "verify_failed_description": "Zu viele falsche Versuche. Bitte überprüfe deine Seedphrase erneut."
   },
   "main": {
     "main_wallet": "Hauptwallet",

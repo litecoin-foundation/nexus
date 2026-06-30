@@ -46,7 +46,10 @@
     "cancel": "Cancel",
     "ok": "OK",
     "txs_take_time_to_appear": "Your transactions will appear here after syncing is completed. Please wait a while.",
-    "recover_pin": "Confirm Pin"
+    "recover_pin": "Confirm Pin",
+    "incorrect": "Incorrect!",
+    "verify_failed_title": "Verification Failed",
+    "verify_failed_description": "Too many incorrect attempts. Please review your seed phrase again."
   },
   "main": {
     "main_wallet": "Main Wallet",
