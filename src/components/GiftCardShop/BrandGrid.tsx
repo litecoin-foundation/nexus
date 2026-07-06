@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useCallback,
   useEffect,
+  useRef,
 } from 'react';
 import {
   StyleSheet,
@@ -12,6 +13,7 @@ import {
   Pressable,
   Keyboard,
   Platform,
+  TextInput,
 } from 'react-native';
 import {FlashList} from '@shopify/flash-list';
 import Animated, {
@@ -57,6 +59,11 @@ export function BrandGrid({onSelectBrand}: BrandGridProps) {
   const [selectedCategory, setSelectedCategory] =
     useState<TilloCategory | null>(null);
   const [categoryPickerVisible, setCategoryPickerVisible] = useState(false);
+
+  const searchInputRef = useRef<TextInput>(null);
+  const focusSearch = useCallback(() => {
+    searchInputRef.current?.focus();
+  }, []);
 
   const slideY = useSharedValue(0);
 
@@ -225,12 +232,14 @@ export function BrandGrid({onSelectBrand}: BrandGridProps) {
     <Animated.View style={[styles.container, animatedSlideStyle]}>
       <View style={styles.titleContainer}>
         <View style={styles.titleRow}>
-          <TranslateText
-            textKey="available_gif_cards"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-            textStyle={styles.title}
-          />
+          <Pressable onPress={focusSearch} hitSlop={8}>
+            <TranslateText
+              textKey="available_gif_cards"
+              domain="nexusShop"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.title}
+            />
+          </Pressable>
           <AnimatedPressable
             style={[styles.filterButton, filterAnimStyle]}
             onPress={() => setCategoryPickerVisible(true)}
@@ -283,6 +292,7 @@ export function BrandGrid({onSelectBrand}: BrandGridProps) {
       />
       <View style={styles.searchContainer}>
         <SearchBar
+          inputRef={searchInputRef}
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholder={t('find_brand')}
