@@ -14,10 +14,12 @@ interface Props {
   onChangeText: (text: string) => void;
   noShadow?: boolean;
   borderRadius?: number;
+  inputRef?: React.Ref<TextInput>;
 }
 
 const SearchBar: React.FC<Props> = props => {
-  const {value, onChangeText, placeholder, noShadow, borderRadius} = props;
+  const {value, onChangeText, placeholder, noShadow, borderRadius, inputRef} =
+    props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -56,6 +58,7 @@ const SearchBar: React.FC<Props> = props => {
           />
         </View>
         <TextInput
+          ref={inputRef}
           placeholder={placeholder ? placeholder : undefined}
           placeholderTextColor="#2e2e2e65"
           style={styles.text}
