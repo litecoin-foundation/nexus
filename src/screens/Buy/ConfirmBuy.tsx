@@ -1,14 +1,9 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useCallback,
-  useContext,
-  useState,
-} from 'react';
+import React, {useEffect, useCallback, useContext, useState} from 'react';
 import {View, StyleSheet, Platform} from 'react-native';
 import {RouteProp, useFocusEffect} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {getCountry} from 'react-native-localize';
+import {WalletState} from 'react-native-nitro-lndltc';
 
 import TableCell from '../../components/Cells/TableCell';
 import HeaderButton from '../../components/Buttons/HeaderButton';
@@ -91,11 +86,17 @@ const ConfirmBuy: React.FC<Props> = props => {
     discount,
   } = quote;
 
-  const address = useAppSelector(state => state.address.address);
+  const walletState = useAppSelector(state => state.lightning!.walletState);
+  const rpcReady =
+    walletState === WalletState.RPC_ACTIVE ||
+    walletState === WalletState.SERVER_ACTIVE;
+  const address = useAppSelector(state => state.address.regularAddress);
 
-  useLayoutEffect(() => {
-    dispatch(getAddress());
-  });
+  useEffect(() => {
+    if (rpcReady) {
+      dispatch(getAddress(false));
+    }
+  }, [rpcReady, dispatch]);
 
   const openBuyWidget = useCallback(async () => {
     try {
@@ -133,7 +134,9 @@ const ConfirmBuy: React.FC<Props> = props => {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isUK, address, baseCurrencyAmount, route.params.prefilledMethod]);
 
-  // UK: auto-open widget on mount
+  // NOTE: For UK auto-open widget on mount
+  // NOTE: Open the widget only after a regular deposit address is available — never
+  // synchronously with a stale (possibly MWEB) value from the shared slot.
   useEffect(() => {
     if (isUK && !route.params?.queryString && address && !hasBeenMounted) {
       openBuyWidget();
@@ -141,7 +144,7 @@ const ConfirmBuy: React.FC<Props> = props => {
     }
   }, [isUK, address, route.params, openBuyWidget, hasBeenMounted]);
 
-  // UK: if exited WebPage before successful buy, go back
+  // NOTE: For UK if exited WebPage before successful buy, go back
   useFocusEffect(
     React.useCallback(() => {
       if (

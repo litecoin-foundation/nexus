@@ -16,6 +16,7 @@ import {
   StackNavigationProp,
 } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
+import {WalletState} from 'react-native-nitro-lndltc';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SendConfirmation from '../../components/SendConfirmation';
@@ -70,8 +71,13 @@ const ConfirmSell: React.FC<Props> = props => {
   const [toAmount, setToAmount] = useState(0);
   const [toAddress, setToAddress] = useState('');
 
+  const walletState = useAppSelector(state => state.lightning!.walletState);
+  const rpcReady =
+    walletState === WalletState.RPC_ACTIVE ||
+    walletState === WalletState.SERVER_ACTIVE;
+
   const {amount} = useAppSelector(state => state.input);
-  const refundAddress = useAppSelector(state => state.address.address);
+  const refundAddress = useAppSelector(state => state.address.regularAddress);
   const calculateFiatAmount = useAppSelector(state =>
     confirmSellFiatValueSelector(state),
   );
@@ -115,9 +121,13 @@ const ConfirmSell: React.FC<Props> = props => {
   ]);
 
   useEffect(() => {
-    dispatch(getAddress(false));
-  }, [dispatch]);
+    if (rpcReady) {
+      dispatch(getAddress(false));
+    }
+  }, [rpcReady, dispatch]);
 
+  // NOTE: Open the widget only after a regular deposit address is available — never
+  // synchronously with a stale (possibly MWEB) value from the shared slot.
   useEffect(() => {
     if (refundAddress && !route.params?.queryString && !hasBeenMounted) {
       openSellWidget();

@@ -10,6 +10,7 @@ import {
   StackNavigationProp,
 } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
+import {WalletState} from 'react-native-nitro-lndltc';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import WhiteButton from '../../components/Buttons/WhiteButton';
@@ -60,8 +61,13 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
   const [hasBeenMounted, setHasBeenMounted] = useState(false);
   const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
 
+  const walletState = useAppSelector(state => state.lightning!.walletState);
+  const rpcReady =
+    walletState === WalletState.RPC_ACTIVE ||
+    walletState === WalletState.SERVER_ACTIVE;
+
   const {fiatAmount} = useAppSelector(state => state.input);
-  const refundAddress = useAppSelector(state => state.address.address);
+  const refundAddress = useAppSelector(state => state.address.regularAddress);
 
   const openBuyWidget = async () => {
     try {
@@ -89,12 +95,21 @@ const ConfirmBuyOnramper: React.FC<Props> = props => {
     }
   };
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
-    dispatch(getAddress(false));
-    openBuyWidget();
-    setHasBeenMounted(true);
-    /* eslint-disable react-hooks/exhaustive-deps */
-  }, [dispatch]);
+    if (rpcReady) {
+      dispatch(getAddress(false));
+    }
+  }, [rpcReady, dispatch]);
+
+  // NOTE: Open the widget only after a regular deposit address is available — never
+  // synchronously with a stale (possibly MWEB) value from the shared slot.
+  useEffect(() => {
+    if (refundAddress && !route.params?.queryString && !hasBeenMounted) {
+      openBuyWidget();
+      setHasBeenMounted(true);
+    }
+  }, [refundAddress, route.params, hasBeenMounted]);
 
   // if exited WebPage before successful buy, go back!
   useFocusEffect(

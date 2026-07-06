@@ -4,6 +4,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import Share from 'react-native-share';
+import {WalletState} from 'react-native-nitro-lndltc';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {
@@ -28,7 +29,14 @@ const Receive: React.FC<Props> = () => {
   const {address, regularAddress, mwebAddress} = useAppSelector(
     state => state.address!,
   );
-  const lndActive = useAppSelector(state => state.lightning!.lndActive);
+  const walletState = useAppSelector(state => state.lightning!.walletState);
+  // NOTE: lndActive flips true the moment LND is up in any state (NON_EXISTING /
+  // LOCKED / UNLOCKED), long before the RPC that serves newAddress exists, and
+  // it never toggles again — so gating on it fires getAddress once, too early,
+  // and never retries. Wait for the wallet RPC to actually be servable instead.
+  const rpcReady =
+    walletState === WalletState.RPC_ACTIVE ||
+    walletState === WalletState.SERVER_ACTIVE;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -47,13 +55,13 @@ const Receive: React.FC<Props> = () => {
   // generate fresh new address on launch
   useEffect(() => {
     // check if RPC is ready for new address
-    if (lndActive) {
+    if (rpcReady) {
       dispatch(getAddress());
     } else {
       setLoading(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lndActive]);
+  }, [rpcReady]);
 
   // update qr code when address changes
   useEffect(() => {
