@@ -10,6 +10,7 @@ import {
   StackNavigationProp,
 } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
+import {WalletState} from 'react-native-nitro-lndltc';
 
 import HeaderButton from '../../components/Buttons/HeaderButton';
 import SendConfirmation from '../../components/SendConfirmation';
@@ -64,8 +65,12 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
   const [fiatAmount, setFiatAmount] = useState('');
   const [toAddress, setToAddress] = useState('');
 
+  const walletState = useAppSelector(state => state.lightning!.walletState);
+  const rpcReady =
+    walletState === WalletState.RPC_ACTIVE ||
+    walletState === WalletState.SERVER_ACTIVE;
   const {amount} = useAppSelector(state => state.input);
-  const refundAddress = useAppSelector(state => state.address.address);
+  const refundAddress = useAppSelector(state => state.address.regularAddress);
 
   const openSellWidget = async () => {
     try {
@@ -93,12 +98,21 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
     }
   };
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
-    dispatch(getAddress(false));
-    openSellWidget();
-    setHasBeenMounted(true);
-    /* eslint-disable react-hooks/exhaustive-deps */
-  }, [dispatch]);
+    if (rpcReady) {
+      dispatch(getAddress(false));
+    }
+  }, [rpcReady, dispatch]);
+
+  // NOTE: Open the widget only after a regular refund address is available — never
+  // synchronously with a stale (possibly MWEB) value from the shared slot.
+  useEffect(() => {
+    if (refundAddress && !route.params?.queryString && !hasBeenMounted) {
+      openSellWidget();
+      setHasBeenMounted(true);
+    }
+  }, [refundAddress, route.params, hasBeenMounted]);
 
   // if exited WebPage before successful sell, go back!
   useFocusEffect(
