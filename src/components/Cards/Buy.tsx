@@ -81,7 +81,7 @@ const Buy: React.FC<Props> = () => {
 
   const isUK = getCountry() === 'GB';
 
-  const [toggleLTC, setToggleLTC] = useState(true);
+  const [toggleLTC, setToggleLTC] = useState(false);
   const ltcFontSize = useSharedValue(SCREEN_HEIGHT * 0.024);
   const fiatFontSize = useSharedValue(SCREEN_HEIGHT * 0.018);
 
@@ -160,15 +160,16 @@ const Buy: React.FC<Props> = () => {
     };
   }, [dispatch]);
 
-  const handleFontSizeChange = () => {
-    if (toggleLTC) {
+  useEffect(() => {
+    if (!toggleLTC) {
       ltcFontSize.value = withTiming(SCREEN_HEIGHT * 0.018);
       fiatFontSize.value = withTiming(SCREEN_HEIGHT * 0.024);
     } else {
       ltcFontSize.value = withTiming(SCREEN_HEIGHT * 0.024);
       fiatFontSize.value = withTiming(SCREEN_HEIGHT * 0.018);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toggleLTC]);
 
   const [errorTextKey, setErrorTextKey] = useState('');
   const [amountValid, setAmountValid] = useState(true);
@@ -295,7 +296,6 @@ const Buy: React.FC<Props> = () => {
                   dispatch(resetInputs());
                 }
                 setToggleLTC(!toggleLTC);
-                handleFontSizeChange();
               }}
               style={styles.switchButton}>
               <Image source={require('../../assets/icons/switch-arrow.png')} />
