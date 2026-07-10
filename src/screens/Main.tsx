@@ -10,7 +10,7 @@ import React, {
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
 import {getCountry} from 'react-native-localize';
 import Animated, {SharedValue} from 'react-native-reanimated';
-import {RouteProp} from '@react-navigation/native';
+import {RouteProp, useIsFocused} from '@react-navigation/native';
 import {useDrawerStatus} from '@react-navigation/drawer';
 import {
   Canvas,
@@ -59,6 +59,7 @@ import {validate as validateLtcAddress} from '../utils/validate';
 import {showError} from '../reducers/errors';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {NavBarContext} from '../context/navBarContext';
 import {useMainAnims} from '../animations/useMainAnims';
 import {useMainLayout} from '../animations/useMainLayout';
 
@@ -497,6 +498,54 @@ const Main: React.FC<Props> = props => {
     isFlexaCustomer,
     styles,
   });
+
+  const handleNavBarPress = useCallback((tab: number) => {
+    if (tab === 0) {
+      setActiveTab(0);
+      setBottomSheetFolded(true);
+    } else {
+      setActiveTab(tab);
+      setBottomSheetFolded(false);
+    }
+  }, []);
+
+  // NOTE: The glass nav bar is hosted at the App root (see navBarContext.tsx);
+  // push Main's tab state up to it and hide it whenever Main is not the
+  // screen the user is actually looking at.
+  const isFocused = useIsFocused();
+  const {setNavBarState} = useContext(NavBarContext);
+  useEffect(() => {
+    setNavBarState({
+      visible:
+        isFocused &&
+        !isShopAccountDrawerOpen &&
+        !isTxDetailModalOpened &&
+        !isWalletsModalOpened &&
+        !isPinModalOpened &&
+        !isPopUpModalOpened &&
+        !showRecoveryAlert,
+      activeTab,
+      sendDisabled: !isInternetReachable,
+      onTabPress: handleNavBarPress,
+    });
+  }, [
+    isFocused,
+    isShopAccountDrawerOpen,
+    isTxDetailModalOpened,
+    isWalletsModalOpened,
+    isPinModalOpened,
+    isPopUpModalOpened,
+    showRecoveryAlert,
+    activeTab,
+    isInternetReachable,
+    handleNavBarPress,
+    setNavBarState,
+  ]);
+  useEffect(() => {
+    return () => {
+      setNavBarState(prev => ({...prev, visible: false}));
+    };
+  }, [setNavBarState]);
 
   // Components
   const HeaderComponent = useMemo(

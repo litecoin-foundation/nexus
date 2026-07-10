@@ -35,6 +35,7 @@ import {
   ScreenCaptureTarget,
 } from './src/context/screenCapture';
 import {JadeProvider} from './src/context/JadeContext';
+import {NavBarProvider, MainNavBarHost} from './src/context/navBarContext';
 
 import {useAppDispatch, useAppSelector} from './src/store/hooks';
 import {loginToNexusApi} from './src/reducers/onboarding';
@@ -354,12 +355,17 @@ const App: React.FC = () => {
                     <PopUpProvider>
                       <ScreenCaptureProvider>
                         <GestureHandlerRootView style={styles.gestureView}>
-                          <RenderPopUps />
-                          <ScreenCaptureTarget>
-                            <RootNavigator />
-                          </ScreenCaptureTarget>
-                          <Error />
-                          <GlobalMigrationModal />
+                          <NavBarProvider>
+                            <RenderPopUps />
+                            <ScreenCaptureTarget>
+                              <RootNavigator />
+                            </ScreenCaptureTarget>
+                            {/* glass nav bar must live outside the navigators,
+                                see navBarContext.tsx */}
+                            <MainNavBarHost />
+                            <Error />
+                            <GlobalMigrationModal />
+                          </NavBarProvider>
                         </GestureHandlerRootView>
                       </ScreenCaptureProvider>
                     </PopUpProvider>
