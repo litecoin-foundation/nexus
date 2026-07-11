@@ -26,7 +26,8 @@ import {
 } from '@flexa/flexa-react-native';
 import {StackNavigationOptions} from '@react-navigation/stack';
 
-import NewAmountView from '../components/NewAmountView';
+import TopSection, {TopSectionState} from '../components/TopSection';
+import TopSectionMenu from '../components/TopSectionMenu';
 import LineChart from '../components/Chart/Chart';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import Receive from '../components/Cards/Receive';
@@ -122,20 +123,20 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
           <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
             <RoundedRect
-              x={SCREEN_HEIGHT * 0.02}
+              x={SCREEN_HEIGHT * 0.01}
               y={SCREEN_HEIGHT * 0.01}
-              width={SCREEN_HEIGHT * 0.1}
-              height={SCREEN_HEIGHT * 0.05}
+              width={SCREEN_HEIGHT * 0.054}
+              height={SCREEN_HEIGHT * 0.054}
               color="white"
-              r={SCREEN_HEIGHT * 0.01}>
-              <Shadow dx={0} dy={2} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
+              r={SCREEN_HEIGHT * 0.022}>
+              <Shadow dx={0} dy={3} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
             </RoundedRect>
             <Image
               image={image}
-              x={SCREEN_HEIGHT * 0.035}
-              y={SCREEN_HEIGHT * 0.025}
-              width={SCREEN_HEIGHT * 0.02}
-              height={SCREEN_HEIGHT * 0.02}
+              x={SCREEN_HEIGHT * 0.026}
+              y={SCREEN_HEIGHT * 0.026}
+              width={SCREEN_HEIGHT * 0.022}
+              height={SCREEN_HEIGHT * 0.022}
               fit="scaleDown"
             />
           </Canvas>
@@ -177,6 +178,8 @@ const Main: React.FC<Props> = props => {
   const isShopAccountDrawerOpen = drawerStatus === 'open';
 
   const [activeTab, setActiveTab] = useState(0);
+  const [topSectionState, setTopSectionState] =
+    useState<TopSectionState>('menu');
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
@@ -546,6 +549,33 @@ const Main: React.FC<Props> = props => {
   }, [setNavBarState]);
 
   // Components
+  const topSectionPage = useMemo(() => {
+    switch (topSectionState) {
+      case 'chart':
+        return (
+          <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
+            {isBottomSheetFolded ? (
+              <>
+                <LineChart triggerLester={triggerLester} />
+                <DatePicker />
+              </>
+            ) : null}
+          </Animated.View>
+        );
+      case 'menu':
+        return <TopSectionMenu onTabPress={handleNavBarPress} />;
+      default:
+        return null;
+    }
+  }, [
+    topSectionState,
+    animatedChartOpacity,
+    styles.chartContainer,
+    isBottomSheetFolded,
+    triggerLester,
+    handleNavBarPress,
+  ]);
+
   const TxListComponentMemo = (
     <TxListComponent
       selectTransaction={selectTransaction}
@@ -610,19 +640,13 @@ const Main: React.FC<Props> = props => {
       ref={mainContentRef}
       collapsable={false}
       style={[styles.container, animatedTopContainerBackground]}>
-      <NewAmountView
+      <TopSection
         animatedProps={animatedTopContainerHeight}
         internetOpacityStyle={animatedChartOpacity}
+        topSectionState={topSectionState}
         onTriggerLester={() => setTriggerLester(prev => prev + 1)}>
-        <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
-          {isBottomSheetFolded ? (
-            <>
-              <LineChart triggerLester={triggerLester} />
-              <DatePicker />
-            </>
-          ) : null}
-        </Animated.View>
-      </NewAmountView>
+        {topSectionPage}
+      </TopSection>
 
       {BottomSheetMemo}
 
@@ -769,7 +793,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     txTitleContainer: {
       width: '100%',
-      height: screenHeight * 0.07,
+      height: screenHeight * 0.074,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -783,8 +807,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingLeft: screenWidth * 0.04,
     },
     txSearchBtnCanvas: {
-      width: screenHeight * 0.07,
-      height: screenHeight * 0.07,
+      width: screenHeight * 0.074,
+      height: screenHeight * 0.074,
     },
   });
 
