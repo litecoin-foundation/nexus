@@ -234,13 +234,21 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
   const handlePaste = async () => {
     const paste = await Clipboard.getString();
-    await validate(paste);
+    try {
+      await validate(paste);
+    } catch {
+      dispatch(showError('Invalid Litecoin Address'));
+    }
   };
 
   // uri handler
   useImperativeHandle(ref, () => ({
     async handleURI(data) {
-      await validate(data);
+      try {
+        await validate(data);
+      } catch {
+        dispatch(showError('Invalid Litecoin Address'));
+      }
     },
   }));
 
