@@ -63,6 +63,7 @@
     "shop": "Shop",
     "send": "Send",
     "receive": "Receive",
+    "history": "History",
     "latest_txs": "Latest Transactions",
     "received_ltc": "Received Litecoin",
     "bought_ltc": "Purchased Litecoin",

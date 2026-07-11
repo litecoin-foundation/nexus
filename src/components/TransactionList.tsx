@@ -277,7 +277,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
     );
   };
 
-  // DashboardButton is 110, txTitleContainer is screenHeight * 0.07 in Main component
+  // txTitleContainer is screenHeight * 0.07 in Main component
   // Gap in SearchTransaction component is 200 + 30 padding
   const [scrollContainerHeight, setScrollContainerHeight] = useState(
     SCREEN_HEIGHT - 230,
@@ -288,7 +288,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
   useLayoutEffect(() => {
     if (folded !== undefined) {
       setScrollContainerHeight(
-        SCREEN_HEIGHT - UNFOLD_SHEET_POINT - 110 - SCREEN_HEIGHT * 0.07,
+        SCREEN_HEIGHT - UNFOLD_SHEET_POINT - SCREEN_HEIGHT * 0.07,
       );
     }
     setRenderTxs(true);

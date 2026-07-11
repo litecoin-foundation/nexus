@@ -230,8 +230,8 @@ const getStyles = (
 ) =>
   StyleSheet.create({
     container: {
-      // DashboardButton is 110
-      height: screenHeight * 0.76 - 110,
+      // BottomSheet is screenHeight * 0.76
+      height: screenHeight * 0.76,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
     },

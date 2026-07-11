@@ -8,7 +8,6 @@ import React, {
   useCallback,
 } from 'react';
 import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
-import {getCountry} from 'react-native-localize';
 import Animated, {SharedValue} from 'react-native-reanimated';
 import {RouteProp, useIsFocused} from '@react-navigation/native';
 import {useDrawerStatus} from '@react-navigation/drawer';
@@ -30,7 +29,6 @@ import {StackNavigationOptions} from '@react-navigation/stack';
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
 import HeaderButton from '../components/Buttons/HeaderButton';
-import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';
 import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
@@ -548,77 +546,6 @@ const Main: React.FC<Props> = props => {
   }, [setNavBarState]);
 
   // Components
-  const HeaderComponent = useMemo(
-    () => (
-      <View style={styles.headerContainer}>
-        <DashboardButton
-          textKey="buy"
-          imageSource={require('../assets/icons/buy-icon.png')}
-          handlePress={() => {
-            if (getCountry() === 'GB') {
-              navigation.navigate('ConfirmBuy', {prefilledMethod: ''});
-            } else {
-              setBottomSheetFolded(false);
-              setActiveTab(1);
-            }
-          }}
-          active={activeTab === 1}
-          disabled={!isInternetReachable ? true : false}
-        />
-        <DashboardButton
-          textKey="sell"
-          imageSource={require('../assets/icons/sell-icon.png')}
-          handlePress={() => {
-            if (getCountry() === 'GB') {
-              navigation.navigate('ConfirmSell', {prefilledMethod: ''});
-            } else {
-              setBottomSheetFolded(false);
-              setActiveTab(2);
-            }
-          }}
-          active={activeTab === 2}
-          disabled={!isInternetReachable ? true : false}
-        />
-        <DashboardButton
-          textKey="shop"
-          wider={true}
-          glowBorder={true}
-          imageSource={require('../assets/icons/shop.png')}
-          handlePress={() => {
-            setBottomSheetFolded(false);
-            setActiveTab(3);
-          }}
-          active={activeTab === 3}
-          disabled={!isInternetReachable ? true : false}
-          sizePercentage={80}
-        />
-        <DashboardButton
-          textKey="send"
-          imageSource={require('../assets/icons/send-icon.png')}
-          handlePress={() => {
-            setBottomSheetFolded(false);
-            setActiveTab(4);
-          }}
-          active={activeTab === 4}
-          disabled={!isInternetReachable ? true : false}
-          sizePercentage={90}
-        />
-        <DashboardButton
-          textKey="receive"
-          imageSource={require('../assets/icons/receive-icon.png')}
-          handlePress={() => {
-            setBottomSheetFolded(false);
-            setActiveTab(5);
-          }}
-          active={activeTab === 5}
-          disabled={false}
-          sizePercentage={90}
-        />
-      </View>
-    ),
-    [activeTab, isInternetReachable, navigation, styles.headerContainer],
-  );
-
   const TxListComponentMemo = (
     <TxListComponent
       selectTransaction={selectTransaction}
@@ -635,7 +562,6 @@ const Main: React.FC<Props> = props => {
   const BottomSheetMemo = useMemo(
     () => (
       <BottomSheet
-        headerComponent={HeaderComponent}
         txViewComponent={TxListComponentMemo}
         mainSheetsTranslationY={mainSheetsTranslationY}
         mainSheetsTranslationYStart={mainSheetsTranslationYStart}
@@ -658,7 +584,6 @@ const Main: React.FC<Props> = props => {
       />
     ),
     [
-      HeaderComponent,
       TxListComponentMemo,
       mainSheetsTranslationY,
       mainSheetsTranslationYStart,
@@ -832,11 +757,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingTop:
         screenHeight < 701 ? screenHeight * 0.03 : screenHeight * 0.04,
       gap: screenHeight < 701 ? screenHeight * 0.035 : screenHeight * 0.05,
-    },
-    headerContainer: {
-      marginTop: 5,
-      flexDirection: 'row',
-      justifyContent: 'center',
     },
     headerBtns: {
       width: 'auto',

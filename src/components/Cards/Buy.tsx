@@ -480,10 +480,8 @@ const getStyles = (
   StyleSheet.create({
     container: {
       // BottomSheet is screenHeight * 0.76
-      // DashboardButton is 110
-      // Header margin is 5
       width: screenWidth,
-      height: screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
+      height: screenHeight * 0.76 - offsetHeaderDiff,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
     },

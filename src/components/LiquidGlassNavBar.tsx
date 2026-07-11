@@ -21,9 +21,9 @@ import {BlurView} from 'expo-blur';
 import TranslateText from './TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
-const ACTIVE_COLOR = '#2C72FF';
-const INACTIVE_COLOR = '#47516B';
-const GLASS_TINT = 'rgba(44, 114, 255, 0.2)';
+const ACTIVE_COLOR = '#000000';
+const INACTIVE_COLOR = '#000';
+const GLASS_TINT = 'rgba(105, 165, 255, 0.3)';
 const PILL_PADDING = 5;
 
 // activeTab values on Main duplicated by this bar
@@ -140,7 +140,7 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
   const items: NavItem[] = [
     {
       tab: 0,
-      textKey: 'transactions',
+      textKey: 'history',
       imageSource: require('../assets/icons/history-icon.png'),
     },
     {
@@ -254,7 +254,7 @@ const getStyles = (
       width: pillWidth,
       height: barHeight - PILL_PADDING * 2,
       borderRadius: (barHeight - PILL_PADDING * 2) / 2,
-      backgroundColor: 'rgba(255, 255, 255, 0.6)',
+      backgroundColor: 'rgba(164, 200, 255, 0.7)',
     },
     button: {
       flex: 1,

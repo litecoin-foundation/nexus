@@ -31,7 +31,6 @@ interface Props {
   shopViewComponent: React.ReactNode;
   sendViewComponent: React.ReactNode;
   receiveViewComponent: React.ReactNode;
-  headerComponent: React.ReactNode;
   mainSheetsTranslationY: SharedValue<number>;
   mainSheetsTranslationYStart: SharedValue<number>;
   folded: boolean;
@@ -62,7 +61,6 @@ const BottomSheet: React.FC<Props> = props => {
     shopViewComponent,
     sendViewComponent,
     receiveViewComponent,
-    headerComponent,
     mainSheetsTranslationY,
     mainSheetsTranslationYStart,
     folded,
@@ -149,20 +147,6 @@ const BottomSheet: React.FC<Props> = props => {
     }
   }
 
-  const headerGesture = Gesture.Pan()
-    .onUpdate(e => {
-      'worklet';
-      if (
-        e.translationY + mainSheetsTranslationYStart.value >
-          UNFOLD_SHEET_POINT &&
-        e.translationY + mainSheetsTranslationYStart.value < FOLD_SHEET_POINT
-      ) {
-        mainSheetsTranslationY.value =
-          e.translationY + mainSheetsTranslationYStart.value;
-      }
-    })
-    .onEnd(onEndTrigger);
-
   const basePanGesture = Gesture.Pan();
   if (Platform.OS === 'android') {
     basePanGesture.activeOffsetY([-15, 15]);
@@ -235,11 +219,6 @@ const BottomSheet: React.FC<Props> = props => {
 
   return (
     <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
-      <GestureDetector gesture={headerGesture}>
-        <View collapsable={false} style={styles.headerComponent}>
-          {headerComponent}
-        </View>
-      </GestureDetector>
       <Animated.View style={animatedCardOpacityStyle}>
         <RenderCard
           txView={txViewComponent}
@@ -311,9 +290,6 @@ const RenderCard: React.FC<CardProps> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     safeArea: {},
-    headerComponent: {
-      zIndex: 2,
-    },
     bottomSheet: {
       ...StyleSheet.absoluteFill,
       backgroundColor: '#f7f7f7',

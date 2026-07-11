@@ -830,9 +830,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       width: '100%',
       // BottomSheet is screenHeight * 0.76
-      // DashboardButton is 110
-      // Header margin is 5
-      height: screenHeight * 0.76 - 110 - 5,
+      height: screenHeight * 0.76,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
       position: 'relative',
@@ -845,7 +843,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     subScrollContainer: {
       width: '100%',
-      height: screenHeight * 0.76 - 110 - 5,
+      height: screenHeight * 0.76,
     },
     subContainer: {
       flex: 1,

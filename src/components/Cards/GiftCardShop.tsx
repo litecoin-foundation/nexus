@@ -227,8 +227,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       width: screenWidth,
       // BottomSheet is screenHeight * 0.76
-      // DashboardButton is 110
-      // Header margin is 5
       height: screenHeight * 0.76,
     },
     subContainer: {
@@ -238,21 +236,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
       borderTopLeftRadius: screenHeight * 0.03,
       borderTopRightRadius: screenHeight * 0.03,
-      // DashboardButton is 110
-      // Header margin is 5
-      marginTop: -115,
       overflow: 'hidden',
     },
     headerContainer: {
-      height: 115 + screenHeight * 0.13,
-      minHeight: 115 + screenHeight * 0.13,
-      maxHeight: 115 + screenHeight * 0.13,
+      height: screenHeight * 0.13,
+      minHeight: screenHeight * 0.13,
+      maxHeight: screenHeight * 0.13,
       borderTopLeftRadius: screenHeight * 0.03,
       borderTopRightRadius: screenHeight * 0.03,
       justifyContent: 'flex-end',
-      // DashboardButton is 110
-      // Header margin is 5
-      marginTop: -115,
     },
     topBarContainer: {
       flexDirection: 'row',
@@ -282,8 +274,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       zIndex: 3,
     },
     body: {
-      // TODO: there's weird gap at the bottom out of nowhere
-      maxHeight: screenHeight * 0.76 - (115 + screenHeight * 0.13),
+      maxHeight: screenHeight * 0.76 - screenHeight * 0.13,
       flex: 1,
       overflow: 'visible',
       zIndex: 2,
