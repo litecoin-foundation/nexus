@@ -1,5 +1,5 @@
 import React, {useContext, useRef, useState, useEffect} from 'react';
-import {View, StyleSheet, Image} from 'react-native';
+import {View, StyleSheet, Image, Pressable} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {LongPressGestureHandler, State} from 'react-native-gesture-handler';
 
@@ -22,6 +22,8 @@ interface Props {
   animatedProps: any;
   internetOpacityStyle: any;
   topSectionState: TopSectionState;
+  isBottomSheetFolded: boolean;
+  onOpenChart: () => void;
   onTriggerLester?: () => void;
 }
 
@@ -31,8 +33,14 @@ const TopSection: React.FC<Props> = props => {
     animatedProps,
     internetOpacityStyle,
     topSectionState,
+    isBottomSheetFolded,
+    onOpenChart,
     onTriggerLester,
   } = props;
+
+  // The pill only opens the chart, so it's shown while the menu is up and the
+  // top section is expanded, and hidden once the chart is open.
+  const showOpenChartPill = topSectionState === 'menu' && isBottomSheetFolded;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -136,74 +144,88 @@ const TopSection: React.FC<Props> = props => {
           styles={styles.safeArea}
           edges={['top']}
           platform="both">
-          <View style={styles.subview}>
-            {!chartCursorSelected ? (
-              <>
+          {isBottomSheetFolded ? (
+            <View style={styles.amountView}>
+              {!chartCursorSelected ? (
+                <>
+                  <TranslateText
+                    textValue={subunitAmountFormatted}
+                    domain={'main'}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                    textStyle={styles.amountText}
+                    numberOfLines={1}
+                  />
+                  <View style={styles.fiat}>
+                    <TranslateText
+                      textValue={fiatAmount}
+                      domain={'main'}
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                      textStyle={styles.fiatText}
+                      numberOfLines={1}
+                    />
+                    <PriceIndicatorButton value={chartPercentage} />
+                    <TranslateText
+                      textValue={String(chartPercentageChange)}
+                      domain={'main'}
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                      textStyle={styles.fiatText}
+                      numberOfLines={1}
+                    />
+                  </View>
+                </>
+              ) : chartMode === 'balance' ? (
+                <>
+                  <TranslateText
+                    textValue={`${chartCursorValue.toFixed(8)} LTC`}
+                    domain={'main'}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                    textStyle={styles.amountText}
+                    numberOfLines={1}
+                  />
+                  <View style={styles.fiat}>
+                    <TranslateText
+                      textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
+                      domain={'main'}
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                      textStyle={styles.fiatText}
+                      numberOfLines={1}
+                    />
+                  </View>
+                </>
+              ) : (
+                <>
+                  <TranslateText
+                    textValue={`$${chartCursorValue}`}
+                    domain={'main'}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                    textStyle={styles.amountText}
+                    numberOfLines={1}
+                  />
+                  <View style={styles.fiat}>
+                    <TranslateText
+                      textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
+                      domain={'main'}
+                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                      textStyle={styles.fiatText}
+                      numberOfLines={1}
+                    />
+                  </View>
+                </>
+              )}
+            </View>
+          ) : null}
+          {showOpenChartPill ? (
+            <View style={styles.pillContainer}>
+              <Pressable style={styles.pill} onPress={onOpenChart}>
                 <TranslateText
-                  textValue={subunitAmountFormatted}
-                  domain={'main'}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-                  textStyle={styles.amountText}
+                  textValue={'open chart'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                  textStyle={styles.pillText}
                   numberOfLines={1}
                 />
-                <View style={styles.fiat}>
-                  <TranslateText
-                    textValue={fiatAmount}
-                    domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.fiatText}
-                    numberOfLines={1}
-                  />
-                  <PriceIndicatorButton value={chartPercentage} />
-                  <TranslateText
-                    textValue={String(chartPercentageChange)}
-                    domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.fiatText}
-                    numberOfLines={1}
-                  />
-                </View>
-              </>
-            ) : chartMode === 'balance' ? (
-              <>
-                <TranslateText
-                  textValue={`${chartCursorValue.toFixed(8)} LTC`}
-                  domain={'main'}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-                  textStyle={styles.amountText}
-                  numberOfLines={1}
-                />
-                <View style={styles.fiat}>
-                  <TranslateText
-                    textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
-                    domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.fiatText}
-                    numberOfLines={1}
-                  />
-                </View>
-              </>
-            ) : (
-              <>
-                <TranslateText
-                  textValue={`$${chartCursorValue}`}
-                  domain={'main'}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-                  textStyle={styles.amountText}
-                  numberOfLines={1}
-                />
-                <View style={styles.fiat}>
-                  <TranslateText
-                    textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
-                    domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                    textStyle={styles.fiatText}
-                    numberOfLines={1}
-                  />
-                </View>
-              </>
-            )}
-          </View>
+              </Pressable>
+            </View>
+          ) : null}
           {isInternetReachable ? (
             isConnectedToPeers ? (
               <View key={topSectionState} style={styles.childrenContainer}>
@@ -264,10 +286,30 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     safeArea: {
       flex: 1,
+      paddingTop: screenHeight * 0.05,
     },
-    subview: {
+    amountView: {
+      maxHeight: screenHeight * 0.07,
       alignItems: 'center',
-      marginTop: screenHeight * 0.05,
+    },
+    pillContainer: {
+      maxHeight: screenHeight * 0.05,
+    },
+    pill: {
+      height: screenHeight * 0.035,
+      alignSelf: 'center',
+      marginTop: screenHeight * 0.015,
+      paddingVertical: screenHeight * 0.008,
+      paddingHorizontal: screenWidth * 0.05,
+      borderRadius: screenHeight * 0.03,
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    },
+    pillText: {
+      color: 'white',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.016,
+      fontStyle: 'normal',
+      fontWeight: '700',
     },
     amount: {
       height: screenHeight * 0.07,
@@ -293,9 +335,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: 'white',
       fontSize: screenHeight * 0.015,
     },
-    childrenContainer: {
-      marginTop: screenHeight * 0.03 * -1,
-    },
+    childrenContainer: {},
     internetContainer: {
       marginTop: screenHeight * 0.03,
     },

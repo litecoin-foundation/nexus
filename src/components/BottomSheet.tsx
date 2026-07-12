@@ -19,6 +19,7 @@ import Animated, {
 
 import {ScreenSizeContext} from '../context/screenSize';
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
+import {TopSectionState} from './TopSection';
 
 const ANIM_DURATION = 200;
 const SPRING_BACK_ANIM_DURATION = 100;
@@ -36,6 +37,7 @@ interface Props {
   folded: boolean;
   foldUnfold: (isFolded: boolean) => void;
   activeTab: number;
+  topSectionState: TopSectionState;
 }
 
 interface CardProps {
@@ -66,6 +68,7 @@ const BottomSheet: React.FC<Props> = props => {
     folded,
     foldUnfold,
     activeTab,
+    topSectionState,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -75,8 +78,27 @@ const BottomSheet: React.FC<Props> = props => {
   // TODO: put this config in a style reducer
   const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
   const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
+  // When the chart is open it sits above the menu, making the top section
+  // taller, so the folded sheet has to rest lower to keep it fully visible.
+  // This is the rendered height of TopSectionChart, summed from its parts
+  // (breakpoint mirrors TopSectionChart's screenHeight < 701 branch):
+  //   paddingTop     : 0.03 / 0.04  * H
+  //   LineChart      : 0.15         * H  (Cursor container fixed height)
+  //   gap            : 0.035 / 0.05 * H
+  //   DatePicker     : 0.03         * H  (DateButton height)
+  const isShortScreen = SCREEN_HEIGHT < 701;
+  const CHART_HEIGHT =
+    SCREEN_HEIGHT *
+    ((isShortScreen ? 0.03 : 0.04) +
+      0.15 +
+      (isShortScreen ? 0.035 : 0.05) +
+      0.03);
+  const pillContainerHeight = SCREEN_HEIGHT * 0.05;
+  const CHART_EXTRA_HEIGHT =
+    topSectionState === 'chart' ? CHART_HEIGHT - pillContainerHeight : 0;
   const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF;
+  const FOLD_SHEET_POINT =
+    SCREEN_HEIGHT * 0.36 + OFFSET_HEADER_DIFF + CHART_EXTRA_HEIGHT;
   const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
   const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 
@@ -190,7 +212,12 @@ const BottomSheet: React.FC<Props> = props => {
       }, ANIM_DURATION);
     }
     /* eslint-disable react-hooks/exhaustive-deps */
-  }, [folded, mainSheetsTranslationY, mainSheetsTranslationYStart]);
+  }, [
+    folded,
+    topSectionState,
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
+  ]);
 
   const cardOpacity = useSharedValue(0);
 

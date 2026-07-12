@@ -3,6 +3,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {
   interpolate,
   interpolateColor,
+  Extrapolation,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
@@ -31,7 +32,7 @@ export function useMainAnims(props: Props) {
 
   const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
   const OPEN_SNAP_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const CLOSED_SNAP_POINT = SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF;
+  const CLOSED_SNAP_POINT = SCREEN_HEIGHT * 0.36 + OFFSET_HEADER_DIFF;
 
   const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
   const mainSheetsTranslationYStart = useSharedValue(CLOSED_SNAP_POINT);
@@ -66,18 +67,25 @@ export function useMainAnims(props: Props) {
     };
   });
 
+  // Cap the folded corner radius so the bottom border doesn't over-stretch
+  // when the fold point extends past CLOSED_SNAP_POINT (e.g. while the chart
+  // is open) — the CLAMP below holds it at this max.
+  const MAX_BOTTOM_RADIUS = SCREEN_HEIGHT * 0.05;
+
   const animatedTopContainerHeight = useAnimatedProps(() => {
     return {
       height: mainSheetsTranslationY.value,
       borderBottomLeftRadius: interpolate(
         mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [0, SCREEN_HEIGHT * 0.05],
+        [0, MAX_BOTTOM_RADIUS],
+        Extrapolation.CLAMP,
       ),
       borderBottomRightRadius: interpolate(
         mainSheetsTranslationY.value,
         [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [1, SCREEN_HEIGHT * 0.05],
+        [1, MAX_BOTTOM_RADIUS],
+        Extrapolation.CLAMP,
       ),
     };
   });

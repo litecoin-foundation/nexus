@@ -135,6 +135,12 @@ const Main: React.FC<Props> = props => {
       setActiveTab(0);
     }
   }, []);
+  // Unfolding hides the top section, so reset it back to the menu.
+  useEffect(() => {
+    if (!isBottomSheetFolded) {
+      setTopSectionState('menu');
+    }
+  }, [isBottomSheetFolded]);
   useEffect(() => {
     if (route.params?.isInitial) {
       foldUnfoldBottomSheet(false);
@@ -463,20 +469,18 @@ const Main: React.FC<Props> = props => {
 
   // Components
   const topSectionPage = useMemo(() => {
-    switch (topSectionState) {
-      case 'chart':
-        return (
+    return (
+      <>
+        {topSectionState === 'chart' ? (
           <TopSectionChart
             animatedOpacityStyle={animatedChartOpacity}
             isBottomSheetFolded={isBottomSheetFolded}
             triggerLester={triggerLester}
           />
-        );
-      case 'menu':
-        return <TopSectionMenu onTabPress={handleNavBarPress} />;
-      default:
-        return null;
-    }
+        ) : null}
+        <TopSectionMenu onTabPress={handleNavBarPress} />
+      </>
+    );
   }, [
     topSectionState,
     animatedChartOpacity,
@@ -506,6 +510,7 @@ const Main: React.FC<Props> = props => {
         folded={isBottomSheetFolded}
         foldUnfold={foldUnfoldBottomSheet}
         activeTab={activeTab}
+        topSectionState={topSectionState}
         buyViewComponent={<Buy navigation={navigation} />}
         sellViewComponent={<Sell navigation={navigation} />}
         // convertViewComponent={<Convert navigation={navigation} />}
@@ -528,6 +533,7 @@ const Main: React.FC<Props> = props => {
       isBottomSheetFolded,
       foldUnfoldBottomSheet,
       activeTab,
+      topSectionState,
       route,
       navigation,
     ],
@@ -552,6 +558,8 @@ const Main: React.FC<Props> = props => {
         animatedProps={animatedTopContainerHeight}
         internetOpacityStyle={animatedChartOpacity}
         topSectionState={topSectionState}
+        isBottomSheetFolded={isBottomSheetFolded}
+        onOpenChart={() => setTopSectionState('chart')}
         onTriggerLester={() => setTriggerLester(prev => prev + 1)}>
         {topSectionPage}
       </TopSection>

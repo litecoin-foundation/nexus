@@ -90,18 +90,18 @@ const TopSectionMenu: React.FC<Props> = props => {
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
+      maxHeight: screenHeight * 0.12,
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
       gap: screenWidth * 0.03,
-      paddingTop: screenHeight * 0.04,
-      paddingBottom: screenHeight * 0.05,
+      paddingVertical: screenHeight * 0.02,
       paddingHorizontal: screenWidth * 0.04,
     },
     button: {
-      width: screenWidth * 0.2,
-      height: screenWidth * 0.15,
-      borderRadius: screenHeight * 0.016,
+      width: screenWidth * 0.22,
+      height: screenHeight * 0.08,
+      borderRadius: screenHeight * 0.022,
       overflow: 'hidden',
     },
     buttonGradient: {
