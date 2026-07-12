@@ -28,7 +28,7 @@ import {StackNavigationOptions} from '@react-navigation/stack';
 
 import TopSection, {TopSectionState} from '../components/TopSection';
 import TopSectionMenu from '../components/TopSectionMenu';
-import LineChart from '../components/Chart/Chart';
+import TopSectionChart from '../components/TopSectionChart';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import Receive from '../components/Cards/Receive';
 import Send from '../components/Cards/Send';
@@ -41,7 +41,6 @@ import TransactionList from '../components/TransactionList';
 import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
-import DatePicker from '../components/DatePicker';
 import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
@@ -179,7 +178,7 @@ const Main: React.FC<Props> = props => {
 
   const [activeTab, setActiveTab] = useState(0);
   const [topSectionState, setTopSectionState] =
-    useState<TopSectionState>('menu');
+    useState<TopSectionState>('chart');
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
@@ -553,14 +552,11 @@ const Main: React.FC<Props> = props => {
     switch (topSectionState) {
       case 'chart':
         return (
-          <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
-            {isBottomSheetFolded ? (
-              <>
-                <LineChart triggerLester={triggerLester} />
-                <DatePicker />
-              </>
-            ) : null}
-          </Animated.View>
+          <TopSectionChart
+            animatedOpacityStyle={animatedChartOpacity}
+            isBottomSheetFolded={isBottomSheetFolded}
+            triggerLester={triggerLester}
+          />
         );
       case 'menu':
         return <TopSectionMenu onTabPress={handleNavBarPress} />;
@@ -570,7 +566,6 @@ const Main: React.FC<Props> = props => {
   }, [
     topSectionState,
     animatedChartOpacity,
-    styles.chartContainer,
     isBottomSheetFolded,
     triggerLester,
     handleNavBarPress,
@@ -776,11 +771,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
-    },
-    chartContainer: {
-      paddingTop:
-        screenHeight < 701 ? screenHeight * 0.03 : screenHeight * 0.04,
-      gap: screenHeight < 701 ? screenHeight * 0.035 : screenHeight * 0.05,
     },
     headerBtns: {
       width: 'auto',
