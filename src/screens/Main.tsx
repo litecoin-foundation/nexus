@@ -1,5 +1,4 @@
 import React, {
-  memo,
   useEffect,
   useState,
   useRef,
@@ -7,17 +6,10 @@ import React, {
   useContext,
   useCallback,
 } from 'react';
-import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
-import Animated, {SharedValue} from 'react-native-reanimated';
+import {View, StyleSheet, DeviceEventEmitter} from 'react-native';
+import Animated from 'react-native-reanimated';
 import {RouteProp, useIsFocused} from '@react-navigation/native';
 import {useDrawerStatus} from '@react-navigation/drawer';
-import {
-  Canvas,
-  Image,
-  RoundedRect,
-  useImage,
-  Shadow,
-} from '@shopify/react-native-skia';
 import {
   CUSTODY_MODEL,
   dismissAllModals,
@@ -37,11 +29,10 @@ import Sell from '../components/Cards/Sell';
 import PlasmaModal from './../components/Modals/PlasmaModal';
 import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
 import BottomSheet from '../components/BottomSheet';
-import TransactionList from '../components/TransactionList';
+import TxListComponent from '../components/TxListComponent';
 import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
-import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
 import ScheduledPopUpModal from '../components/Modals/ScheduledPopUpModal';
@@ -80,88 +71,11 @@ interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
 }
 
-interface TxListComponentProps {
-  selectTransaction: (option: any) => void;
-  setTxDetailModalOpened: (option: boolean) => void;
-  foldUnfoldBottomSheet: (option: boolean) => void;
-  isBottomSheetFolded: boolean;
-  navigation: any;
-  styles: Record<string, any>;
-  mainSheetsTranslationY: SharedValue<number>;
-  mainSheetsTranslationYStart: SharedValue<number>;
-}
-
-const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
-  const {
-    selectTransaction,
-    setTxDetailModalOpened,
-    foldUnfoldBottomSheet,
-    isBottomSheetFolded,
-    navigation,
-    styles,
-    mainSheetsTranslationY,
-    mainSheetsTranslationYStart,
-  } = props;
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-
-  const image = useImage(require('../assets/icons/search-icon.png'));
-
-  return (
-    <View>
-      <View style={styles.txTitleContainer}>
-        <TranslateText
-          textKey={'latest_txs'}
-          domain={'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-          maxLengthInPixels={SCREEN_WIDTH * 0.8}
-          textStyle={styles.txTitleText}
-          numberOfLines={1}
-        />
-
-        <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
-            <RoundedRect
-              x={SCREEN_HEIGHT * 0.01}
-              y={SCREEN_HEIGHT * 0.01}
-              width={SCREEN_HEIGHT * 0.054}
-              height={SCREEN_HEIGHT * 0.054}
-              color="white"
-              r={SCREEN_HEIGHT * 0.022}>
-              <Shadow dx={0} dy={3} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
-            </RoundedRect>
-            <Image
-              image={image}
-              x={SCREEN_HEIGHT * 0.026}
-              y={SCREEN_HEIGHT * 0.026}
-              width={SCREEN_HEIGHT * 0.022}
-              height={SCREEN_HEIGHT * 0.022}
-              fit="scaleDown"
-            />
-          </Canvas>
-        </Pressable>
-      </View>
-      <TransactionList
-        onPress={data => {
-          selectTransaction(data);
-          setTxDetailModalOpened(true);
-        }}
-        headerBackgroundColor="#F7F7F7"
-        folded={isBottomSheetFolded}
-        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
-      />
-    </View>
-  );
-});
-
 const Main: React.FC<Props> = props => {
   const {navigation, route} = props;
 
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const styles = getStyles();
 
   const isInternetReachable = useAppSelector(
     state => state.info!.isInternetReachable,
@@ -178,7 +92,7 @@ const Main: React.FC<Props> = props => {
 
   const [activeTab, setActiveTab] = useState(0);
   const [topSectionState, setTopSectionState] =
-    useState<TopSectionState>('chart');
+    useState<TopSectionState>('menu');
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
@@ -578,7 +492,6 @@ const Main: React.FC<Props> = props => {
       foldUnfoldBottomSheet={foldUnfoldBottomSheet}
       isBottomSheetFolded={isBottomSheetFolded}
       navigation={navigation}
-      styles={styles}
       mainSheetsTranslationY={mainSheetsTranslationY}
       mainSheetsTranslationYStart={mainSheetsTranslationYStart}
     />
@@ -767,7 +680,7 @@ const Main: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -780,25 +693,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     walletButton: {
       width: 'auto',
       height: 'auto',
-    },
-    txTitleContainer: {
-      width: '100%',
-      height: screenHeight * 0.074,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    txTitleText: {
-      color: '#2E2E2E',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.025,
-      fontWeight: '500',
-      letterSpacing: -0.59,
-      paddingLeft: screenWidth * 0.04,
-    },
-    txSearchBtnCanvas: {
-      width: screenHeight * 0.074,
-      height: screenHeight * 0.074,
     },
   });
 

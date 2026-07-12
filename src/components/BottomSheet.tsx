@@ -256,7 +256,11 @@ const RenderCard: React.FC<CardProps> = props => {
   return (
     <Animated.View>
       <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
-        {activeTab === 0 ? <View>{txView}</View> : null}
+        {activeTab === 0 ? (
+          <GestureDetector gesture={panGesture}>
+            <View>{txView}</View>
+          </GestureDetector>
+        ) : null}
         {activeTab === 1 ? (
           <GestureDetector gesture={panGesture}>
             <View>{buyView}</View>
@@ -295,6 +299,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: '#f7f7f7',
       borderTopLeftRadius: screenHeight * 0.03,
       borderTopRightRadius: screenHeight * 0.03,
+      overflow: 'hidden',
       zIndex: 1,
     },
   });
