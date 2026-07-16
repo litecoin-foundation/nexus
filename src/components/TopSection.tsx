@@ -1,5 +1,5 @@
 import React, {useContext, useRef, useState, useEffect} from 'react';
-import {View, StyleSheet, Image, Pressable} from 'react-native';
+import {View, StyleSheet, Image} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {LongPressGestureHandler, State} from 'react-native-gesture-handler';
 
@@ -23,7 +23,6 @@ interface Props {
   internetOpacityStyle: any;
   topSectionState: TopSectionState;
   isBottomSheetFolded: boolean;
-  onOpenChart: () => void;
   onTriggerLester?: () => void;
 }
 
@@ -34,13 +33,8 @@ const TopSection: React.FC<Props> = props => {
     internetOpacityStyle,
     topSectionState,
     isBottomSheetFolded,
-    onOpenChart,
     onTriggerLester,
   } = props;
-
-  // The pill only opens the chart, so it's shown while the menu is up and the
-  // top section is expanded, and hidden once the chart is open.
-  const showOpenChartPill = topSectionState === 'menu' && isBottomSheetFolded;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -214,18 +208,6 @@ const TopSection: React.FC<Props> = props => {
               )}
             </View>
           ) : null}
-          {showOpenChartPill ? (
-            <View style={styles.pillContainer}>
-              <Pressable style={styles.pill} onPress={onOpenChart}>
-                <TranslateText
-                  textValue={'open chart'}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.pillText}
-                  numberOfLines={1}
-                />
-              </Pressable>
-            </View>
-          ) : null}
           {isInternetReachable ? (
             isConnectedToPeers ? (
               <View key={topSectionState} style={styles.childrenContainer}>
@@ -291,25 +273,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     amountView: {
       maxHeight: screenHeight * 0.07,
       alignItems: 'center',
-    },
-    pillContainer: {
-      maxHeight: screenHeight * 0.05,
-    },
-    pill: {
-      height: screenHeight * 0.035,
-      alignSelf: 'center',
-      marginTop: screenHeight * 0.015,
-      paddingVertical: screenHeight * 0.008,
-      paddingHorizontal: screenWidth * 0.05,
-      borderRadius: screenHeight * 0.03,
-      backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    },
-    pillText: {
-      color: 'white',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.016,
-      fontStyle: 'normal',
-      fontWeight: '700',
     },
     amount: {
       height: screenHeight * 0.07,

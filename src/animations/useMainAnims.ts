@@ -32,7 +32,7 @@ export function useMainAnims(props: Props) {
 
   const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
   const OPEN_SNAP_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const CLOSED_SNAP_POINT = SCREEN_HEIGHT * 0.36 + OFFSET_HEADER_DIFF;
+  const CLOSED_SNAP_POINT = SCREEN_HEIGHT * 0.31 + OFFSET_HEADER_DIFF;
 
   const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
   const mainSheetsTranslationYStart = useSharedValue(CLOSED_SNAP_POINT);

@@ -93,12 +93,10 @@ const BottomSheet: React.FC<Props> = props => {
       0.15 +
       (isShortScreen ? 0.035 : 0.05) +
       0.03);
-  const pillContainerHeight = SCREEN_HEIGHT * 0.05;
-  const CHART_EXTRA_HEIGHT =
-    topSectionState === 'chart' ? CHART_HEIGHT - pillContainerHeight : 0;
+  const CHART_EXTRA_HEIGHT = topSectionState === 'chart' ? CHART_HEIGHT : 0;
   const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
   const FOLD_SHEET_POINT =
-    SCREEN_HEIGHT * 0.36 + OFFSET_HEADER_DIFF + CHART_EXTRA_HEIGHT;
+    SCREEN_HEIGHT * 0.31 + OFFSET_HEADER_DIFF + CHART_EXTRA_HEIGHT;
   const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
   const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 

@@ -64,6 +64,7 @@
     "send": "Envoyer",
     "receive": "Recevoir",
     "history": "Historique",
+    "home": "Accueil",
     "latest_txs": "Dernières transactions",
     "received_ltc": "Litecoin reçu",
     "bought_ltc": "Litecoin acheté",

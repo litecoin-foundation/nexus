@@ -23,11 +23,11 @@ import {ScreenSizeContext} from '../context/screenSize';
 
 const ACTIVE_COLOR = '#000000';
 const INACTIVE_COLOR = '#000';
-const GLASS_TINT = 'rgba(105, 165, 255, 0.3)';
-const PILL_PADDING = 5;
+const GLASS_TINT = 'rgba(105, 165, 255, 0.35)';
+const PILL_PADDING = 4;
 
 // activeTab values on Main duplicated by this bar
-const TABS = [0, 4, 5];
+const TABS = [2, 1, 0, 4, 5];
 
 interface NavItem {
   tab: number;
@@ -49,11 +49,12 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const insets = useSafeAreaInsets();
 
-  const barWidth = SCREEN_WIDTH * 0.7;
+  const barWidth = SCREEN_WIDTH * 0.88;
   const barHeight = SCREEN_HEIGHT * 0.075;
   const itemWidth = barWidth / TABS.length;
-  const pillWidth = itemWidth - PILL_PADDING * 2;
+  const pillWidth = itemWidth;
   const styles = getStyles(
+    SCREEN_WIDTH,
     SCREEN_HEIGHT,
     insets.bottom,
     barWidth,
@@ -64,13 +65,13 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
   const activeIndex = TABS.indexOf(activeTab);
 
   const pillX = useSharedValue(
-    PILL_PADDING + (activeIndex >= 0 ? activeIndex : 0) * itemWidth,
+    (activeIndex >= 0 ? activeIndex : 0) * itemWidth,
   );
   const pillOpacity = useSharedValue(activeIndex >= 0 ? 1 : 0);
 
   useEffect(() => {
     if (activeIndex >= 0) {
-      pillX.value = withSpring(PILL_PADDING + activeIndex * itemWidth, {
+      pillX.value = withSpring(activeIndex * itemWidth, {
         mass: 0.5,
       });
       pillOpacity.value = withTiming(1, {duration: 150});
@@ -86,7 +87,7 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
       if (tab === 4 && sendDisabled) {
         // spring back to the current selection
         if (activeIndex >= 0) {
-          pillX.value = withSpring(PILL_PADDING + activeIndex * itemWidth, {
+          pillX.value = withSpring(activeIndex * itemWidth, {
             mass: 0.5,
           });
         } else {
@@ -95,7 +96,7 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
         return;
       }
       if (tab === activeTab) {
-        pillX.value = withSpring(PILL_PADDING + activeIndex * itemWidth, {
+        pillX.value = withSpring(activeIndex * itemWidth, {
           mass: 0.5,
         });
         return;
@@ -118,8 +119,8 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
       'worklet';
       pillOpacity.value = withTiming(1, {duration: 100});
       pillX.value = Math.min(
-        Math.max(e.x - pillWidth / 2, PILL_PADDING),
-        barWidth - pillWidth - PILL_PADDING,
+        Math.max(e.x - pillWidth / 2, 0),
+        barWidth - pillWidth,
       );
     })
     .onEnd(e => {
@@ -128,7 +129,7 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
         Math.max(Math.floor(e.x / itemWidth), 0),
         TABS.length - 1,
       );
-      pillX.value = withSpring(PILL_PADDING + index * itemWidth, {mass: 0.5});
+      pillX.value = withSpring(index * itemWidth, {mass: 0.5});
       scheduleOnRN(selectIndex, index);
     });
 
@@ -139,9 +140,19 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
 
   const items: NavItem[] = [
     {
+      tab: 2,
+      textKey: 'sell',
+      imageSource: require('../assets/icons/sell-icon.png'),
+    },
+    {
+      tab: 1,
+      textKey: 'buy',
+      imageSource: require('../assets/icons/buy-icon.png'),
+    },
+    {
       tab: 0,
-      textKey: 'history',
-      imageSource: require('../assets/icons/history-icon.png'),
+      textKey: 'home',
+      imageSource: require('../assets/images/big-nexus-logo.png'),
     },
     {
       tab: 4,
@@ -174,16 +185,22 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
               }}>
               <Image
                 source={item.imageSource}
-                style={[styles.icon, {tintColor: color}]}
+                style={[
+                  styles.icon,
+                  item.tab === 0 ? styles.homeIcon : null,
+                  {tintColor: color},
+                ]}
                 resizeMode="contain"
               />
-              <TranslateText
-                textKey={item.textKey}
-                domain="main"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                textStyle={{...styles.label, color}}
-                numberOfLines={1}
-              />
+              {item.tab !== 0 && (
+                <TranslateText
+                  textKey={item.textKey}
+                  domain="main"
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
+                  textStyle={{...styles.label, color}}
+                  numberOfLines={1}
+                />
+              )}
             </Pressable>
           );
         })}
@@ -217,6 +234,7 @@ const LiquidGlassNavBar: React.FC<Props> = props => {
 };
 
 const getStyles = (
+  screenWidth: number,
   screenHeight: number,
   bottomInset: number,
   barWidth: number,
@@ -226,16 +244,18 @@ const getStyles = (
   StyleSheet.create({
     wrapper: {
       position: 'absolute',
-      bottom: bottomInset > 0 ? bottomInset : screenHeight * 0.02,
+      // bottom: bottomInset > 0 ? bottomInset : screenHeight * 0.02,
+      bottom: screenWidth * 0.06 - PILL_PADDING,
       left: 0,
       right: 0,
       alignItems: 'center',
       zIndex: 3,
     },
     bar: {
-      width: barWidth,
+      width: barWidth + PILL_PADDING * 2,
       height: barHeight,
       borderRadius: barHeight / 2,
+      paddingHorizontal: PILL_PADDING,
     },
     fallbackBar: {
       overflow: 'hidden',
@@ -254,7 +274,7 @@ const getStyles = (
       width: pillWidth,
       height: barHeight - PILL_PADDING * 2,
       borderRadius: (barHeight - PILL_PADDING * 2) / 2,
-      backgroundColor: 'rgba(164, 200, 255, 0.7)',
+      backgroundColor: 'rgba(164, 200, 255, 0.8)',
     },
     button: {
       flex: 1,
@@ -263,8 +283,12 @@ const getStyles = (
       gap: 4,
     },
     icon: {
-      width: screenHeight * 0.025,
-      height: screenHeight * 0.025,
+      width: screenHeight * 0.024,
+      height: screenHeight * 0.024,
+    },
+    homeIcon: {
+      width: screenHeight * 0.036,
+      height: screenHeight * 0.036,
     },
     label: {
       fontFamily: 'Satoshi Variable',

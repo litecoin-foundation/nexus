@@ -429,6 +429,11 @@ const Main: React.FC<Props> = props => {
     }
   }, []);
 
+  const handleToggleChart = useCallback(() => {
+    foldUnfoldBottomSheet(false);
+    setTopSectionState(prev => (prev === 'chart' ? 'menu' : 'chart'));
+  }, [foldUnfoldBottomSheet]);
+
   // NOTE: The glass nav bar is hosted at the App root (see navBarContext.tsx);
   // push Main's tab state up to it and hide it whenever Main is not the
   // screen the user is actually looking at.
@@ -478,7 +483,12 @@ const Main: React.FC<Props> = props => {
             triggerLester={triggerLester}
           />
         ) : null}
-        <TopSectionMenu onTabPress={handleNavBarPress} />
+        <TopSectionMenu
+          onTabPress={handleNavBarPress}
+          onOpenChart={handleToggleChart}
+          activeTab={activeTab}
+          topSectionState={topSectionState}
+        />
       </>
     );
   }, [
@@ -487,6 +497,8 @@ const Main: React.FC<Props> = props => {
     isBottomSheetFolded,
     triggerLester,
     handleNavBarPress,
+    handleToggleChart,
+    activeTab,
   ]);
 
   const TxListComponentMemo = (
@@ -559,7 +571,6 @@ const Main: React.FC<Props> = props => {
         internetOpacityStyle={animatedChartOpacity}
         topSectionState={topSectionState}
         isBottomSheetFolded={isBottomSheetFolded}
-        onOpenChart={() => setTopSectionState('chart')}
         onTriggerLester={() => setTriggerLester(prev => prev + 1)}>
         {topSectionPage}
       </TopSection>
