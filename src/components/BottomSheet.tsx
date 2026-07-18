@@ -1,6 +1,5 @@
 import React, {useEffect, useRef, useState, useContext} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   Gesture,
   GestureDetector,
@@ -18,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {useSnapPoints} from '../hooks/useSnapPoints';
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import {TopSectionState} from './TopSection';
 
@@ -53,8 +53,6 @@ interface CardProps {
 }
 
 const BottomSheet: React.FC<Props> = props => {
-  const insets = useSafeAreaInsets();
-
   const {
     txViewComponent,
     buyViewComponent,
@@ -75,9 +73,6 @@ const BottomSheet: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  // TODO: put this config in a style reducer
-  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
-  const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
   // When the chart is open it sits above the menu, making the top section
   // taller, so the folded sheet has to rest lower to keep it fully visible.
   // This is the rendered height of TopSectionChart, summed from its parts
@@ -94,11 +89,12 @@ const BottomSheet: React.FC<Props> = props => {
       (isShortScreen ? 0.035 : 0.05) +
       0.03);
   const CHART_EXTRA_HEIGHT = topSectionState === 'chart' ? CHART_HEIGHT : 0;
-  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const FOLD_SHEET_POINT =
-    SCREEN_HEIGHT * 0.31 + OFFSET_HEADER_DIFF + CHART_EXTRA_HEIGHT;
-  const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
-  const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
+  const {
+    UNFOLD_SHEET_POINT,
+    FOLD_SHEET_POINT,
+    UNFOLD_SNAP_POINT,
+    FOLD_SNAP_POINT,
+  } = useSnapPoints(CHART_EXTRA_HEIGHT);
 
   const openMenuBarTabOnJS = () => {
     foldUnfold(true);

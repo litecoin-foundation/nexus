@@ -10,10 +10,10 @@ import {
   withTiming,
   withDelay,
 } from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useAppSelector} from '../store/hooks';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {useSnapPoints} from '../hooks/useSnapPoints';
 
 interface Props {
   isWalletsModalOpened: boolean;
@@ -23,16 +23,16 @@ interface Props {
 
 export function useMainAnims(props: Props) {
   const {isWalletsModalOpened, isTxDetailModalOpened, activeTab} = props;
-  const insets = useSafeAreaInsets();
   const isInternetReachable = useAppSelector(
     state => state.info.isInternetReachable,
   );
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
 
-  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
-  const OPEN_SNAP_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const CLOSED_SNAP_POINT = SCREEN_HEIGHT * 0.31 + OFFSET_HEADER_DIFF;
+  const {
+    UNFOLD_SHEET_POINT: OPEN_SNAP_POINT,
+    FOLD_SHEET_POINT: CLOSED_SNAP_POINT,
+  } = useSnapPoints();
 
   const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
   const mainSheetsTranslationYStart = useSharedValue(CLOSED_SNAP_POINT);

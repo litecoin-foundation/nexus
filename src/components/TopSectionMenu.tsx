@@ -100,6 +100,14 @@ const TopSectionMenu: React.FC<Props> = props => {
   return (
     <View style={styles.container}>
       {renderButton(
+        'some',
+        ['#0e7fff', '#0744c0'],
+        require('../assets/icons/share-icon.png'),
+        onOpenChart,
+        {textValue: 'Some'},
+        topSectionState === 'some',
+      )}
+      {renderButton(
         'chart',
         ['#0e7fff', '#0744c0'],
         require('../assets/icons/charts-icon.png'),

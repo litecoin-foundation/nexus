@@ -473,33 +473,31 @@ const Main: React.FC<Props> = props => {
   }, [setNavBarState]);
 
   // Components
-  const topSectionPage = useMemo(() => {
-    return (
-      <>
-        {topSectionState === 'chart' ? (
-          <TopSectionChart
-            animatedOpacityStyle={animatedChartOpacity}
-            isBottomSheetFolded={isBottomSheetFolded}
-            triggerLester={triggerLester}
-          />
-        ) : null}
-        <TopSectionMenu
-          onTabPress={handleNavBarPress}
-          onOpenChart={handleToggleChart}
-          activeTab={activeTab}
-          topSectionState={topSectionState}
-        />
-      </>
-    );
+  const topSectionChart = useMemo(() => {
+    return topSectionState === 'chart' ? (
+      <TopSectionChart
+        animatedOpacityStyle={animatedChartOpacity}
+        isBottomSheetFolded={isBottomSheetFolded}
+        triggerLester={triggerLester}
+      />
+    ) : null;
   }, [
     topSectionState,
     animatedChartOpacity,
     isBottomSheetFolded,
     triggerLester,
-    handleNavBarPress,
-    handleToggleChart,
-    activeTab,
   ]);
+
+  const topSectionMenu = useMemo(() => {
+    return (
+      <TopSectionMenu
+        onTabPress={handleNavBarPress}
+        onOpenChart={handleToggleChart}
+        activeTab={activeTab}
+        topSectionState={topSectionState}
+      />
+    );
+  }, [handleNavBarPress, handleToggleChart, activeTab, topSectionState]);
 
   const TxListComponentMemo = (
     <TxListComponent
@@ -570,9 +568,9 @@ const Main: React.FC<Props> = props => {
         animatedProps={animatedTopContainerHeight}
         internetOpacityStyle={animatedChartOpacity}
         topSectionState={topSectionState}
-        isBottomSheetFolded={isBottomSheetFolded}
+        menu={topSectionMenu}
         onTriggerLester={() => setTriggerLester(prev => prev + 1)}>
-        {topSectionPage}
+        {topSectionChart}
       </TopSection>
 
       {BottomSheetMemo}

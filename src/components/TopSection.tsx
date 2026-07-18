@@ -15,14 +15,14 @@ import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
-export type TopSectionState = 'chart' | 'menu';
+export type TopSectionState = 'chart' | 'menu' | 'some';
 
 interface Props {
   children: React.ReactNode;
   animatedProps: any;
   internetOpacityStyle: any;
   topSectionState: TopSectionState;
-  isBottomSheetFolded: boolean;
+  menu?: React.ReactNode;
   onTriggerLester?: () => void;
 }
 
@@ -32,7 +32,7 @@ const TopSection: React.FC<Props> = props => {
     animatedProps,
     internetOpacityStyle,
     topSectionState,
-    isBottomSheetFolded,
+    menu,
     onTriggerLester,
   } = props;
 
@@ -138,76 +138,74 @@ const TopSection: React.FC<Props> = props => {
           styles={styles.safeArea}
           edges={['top']}
           platform="both">
-          {isBottomSheetFolded ? (
-            <View style={styles.amountView}>
-              {!chartCursorSelected ? (
-                <>
+          <Animated.View style={[styles.amountView, internetOpacityStyle]}>
+            {!chartCursorSelected ? (
+              <>
+                <TranslateText
+                  textValue={subunitAmountFormatted}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                  textStyle={styles.amountText}
+                  numberOfLines={1}
+                />
+                <View style={styles.fiat}>
                   <TranslateText
-                    textValue={subunitAmountFormatted}
+                    textValue={fiatAmount}
                     domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-                    textStyle={styles.amountText}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.fiatText}
                     numberOfLines={1}
                   />
-                  <View style={styles.fiat}>
-                    <TranslateText
-                      textValue={fiatAmount}
-                      domain={'main'}
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                      textStyle={styles.fiatText}
-                      numberOfLines={1}
-                    />
-                    <PriceIndicatorButton value={chartPercentage} />
-                    <TranslateText
-                      textValue={String(chartPercentageChange)}
-                      domain={'main'}
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                      textStyle={styles.fiatText}
-                      numberOfLines={1}
-                    />
-                  </View>
-                </>
-              ) : chartMode === 'balance' ? (
-                <>
+                  <PriceIndicatorButton value={chartPercentage} />
                   <TranslateText
-                    textValue={`${chartCursorValue.toFixed(8)} LTC`}
+                    textValue={String(chartPercentageChange)}
                     domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-                    textStyle={styles.amountText}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.fiatText}
                     numberOfLines={1}
                   />
-                  <View style={styles.fiat}>
-                    <TranslateText
-                      textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
-                      domain={'main'}
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                      textStyle={styles.fiatText}
-                      numberOfLines={1}
-                    />
-                  </View>
-                </>
-              ) : (
-                <>
+                </View>
+              </>
+            ) : chartMode === 'balance' ? (
+              <>
+                <TranslateText
+                  textValue={`${chartCursorValue.toFixed(8)} LTC`}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                  textStyle={styles.amountText}
+                  numberOfLines={1}
+                />
+                <View style={styles.fiat}>
                   <TranslateText
-                    textValue={`$${chartCursorValue}`}
+                    textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
                     domain={'main'}
-                    maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-                    textStyle={styles.amountText}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.fiatText}
                     numberOfLines={1}
                   />
-                  <View style={styles.fiat}>
-                    <TranslateText
-                      textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
-                      domain={'main'}
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                      textStyle={styles.fiatText}
-                      numberOfLines={1}
-                    />
-                  </View>
-                </>
-              )}
-            </View>
-          ) : null}
+                </View>
+              </>
+            ) : (
+              <>
+                <TranslateText
+                  textValue={`$${chartCursorValue}`}
+                  domain={'main'}
+                  maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+                  textStyle={styles.amountText}
+                  numberOfLines={1}
+                />
+                <View style={styles.fiat}>
+                  <TranslateText
+                    textValue={`${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`}
+                    domain={'main'}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                    textStyle={styles.fiatText}
+                    numberOfLines={1}
+                  />
+                </View>
+              </>
+            )}
+          </Animated.View>
           {isInternetReachable ? (
             isConnectedToPeers ? (
               <View key={topSectionState} style={styles.childrenContainer}>
@@ -251,6 +249,7 @@ const TopSection: React.FC<Props> = props => {
               </View>
             </Animated.View>
           )}
+          {menu ? <View style={styles.menuContainer}>{menu}</View> : null}
         </CustomSafeAreaView>
       </Animated.View>
     </LongPressGestureHandler>
@@ -299,6 +298,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.015,
     },
     childrenContainer: {},
+    menuContainer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+    },
     internetContainer: {
       marginTop: screenHeight * 0.03,
     },

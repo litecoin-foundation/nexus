@@ -17,7 +17,6 @@ import {
   NativeScrollEvent,
   Platform,
 } from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {FlashList, ListRenderItem} from '@shopify/flash-list';
 import {
   Gesture,
@@ -46,6 +45,7 @@ import {DisplayedMetadataType} from '../utils/txMetadata';
 
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
+import {useSnapPoints} from '../hooks/useSnapPoints';
 import ProgressBar from './ProgressBar';
 import {
   decimalSyncedSelector,
@@ -99,8 +99,6 @@ const TransactionCellMemo = memo(function TransactionCellItem(
 });
 
 const TransactionList = forwardRef((props: Props, ref) => {
-  const insets = useSafeAreaInsets();
-
   const transactionListRef = useRef<any>(null);
   const [flattenedTxs, setFlattenedTxs] = useState<FlashListItemType[]>([]);
 
@@ -124,12 +122,12 @@ const TransactionList = forwardRef((props: Props, ref) => {
   // leads to TransactionCell flickering, use useMemo or React.memo and never put styles in the deps to avoid this
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
-  const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
-  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.31 + OFFSET_HEADER_DIFF;
-  const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
-  const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
+  const {
+    UNFOLD_SHEET_POINT,
+    FOLD_SHEET_POINT,
+    UNFOLD_SNAP_POINT,
+    FOLD_SNAP_POINT,
+  } = useSnapPoints();
 
   const {recoveryMode, recoveryFinished, syncedToChain} = useAppSelector(
     state => state.info!,
