@@ -7,7 +7,14 @@ import React, {
   useContext,
   useCallback,
 } from 'react';
-import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  DeviceEventEmitter,
+  Platform,
+} from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {getCountry} from 'react-native-localize';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {
@@ -76,6 +83,7 @@ import {ScreenSizeContext} from '../context/screenSize';
 import {
   useNewMainAnims,
   getNewMainSheetPoints,
+  makeSheetSnapHandlers,
 } from '../animations/useNewMainAnims';
 import {useMainLayout} from '../animations/useMainLayout';
 
@@ -130,43 +138,69 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
   } = props;
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+  const insets = useSafeAreaInsets();
 
   const image = useImage(require('../assets/icons/search-icon.png'));
 
+  // The transaction list owns its scroll gesture, but the title row is not
+  // scrollable. Give that visible part of the card the same sheet drag
+  // behavior as the glass tab selector.
+  const {onDragUpdate, onEndTrigger} = makeSheetSnapHandlers({
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
+    folded: isBottomSheetFolded,
+    foldUnfold: foldUnfoldBottomSheet,
+    screenHeight: SCREEN_HEIGHT,
+    topInset: insets.top,
+  });
+
+  const titlePanGesture = Gesture.Pan();
+  if (Platform.OS === 'android') {
+    titlePanGesture.activeOffsetY([-15, 15]);
+  }
+  titlePanGesture
+    .onUpdate(e => {
+      'worklet';
+      onDragUpdate(e.translationY);
+    })
+    .onEnd(onEndTrigger);
+
   return (
     <View>
-      <View style={styles.txTitleContainer}>
-        <TranslateText
-          textKey={'latest_txs'}
-          domain={'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-          maxLengthInPixels={SCREEN_WIDTH * 0.8}
-          textStyle={styles.txTitleText}
-          numberOfLines={1}
-        />
+      <GestureDetector gesture={titlePanGesture}>
+        <View style={styles.txTitleContainer}>
+          <TranslateText
+            textKey={'latest_txs'}
+            domain={'main'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            maxLengthInPixels={SCREEN_WIDTH * 0.8}
+            textStyle={styles.txTitleText}
+            numberOfLines={1}
+          />
 
-        <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
-            <RoundedRect
-              x={SCREEN_HEIGHT * 0.02}
-              y={SCREEN_HEIGHT * 0.01}
-              width={SCREEN_HEIGHT * 0.1}
-              height={SCREEN_HEIGHT * 0.05}
-              color="white"
-              r={SCREEN_HEIGHT * 0.01}>
-              <Shadow dx={0} dy={2} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
-            </RoundedRect>
-            <Image
-              image={image}
-              x={SCREEN_HEIGHT * 0.035}
-              y={SCREEN_HEIGHT * 0.025}
-              width={SCREEN_HEIGHT * 0.02}
-              height={SCREEN_HEIGHT * 0.02}
-              fit="scaleDown"
-            />
-          </Canvas>
-        </Pressable>
-      </View>
+          <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
+            <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
+              <RoundedRect
+                x={SCREEN_HEIGHT * 0.02}
+                y={SCREEN_HEIGHT * 0.01}
+                width={SCREEN_HEIGHT * 0.1}
+                height={SCREEN_HEIGHT * 0.05}
+                color="white"
+                r={SCREEN_HEIGHT * 0.01}>
+                <Shadow dx={0} dy={2} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
+              </RoundedRect>
+              <Image
+                image={image}
+                x={SCREEN_HEIGHT * 0.035}
+                y={SCREEN_HEIGHT * 0.025}
+                width={SCREEN_HEIGHT * 0.02}
+                height={SCREEN_HEIGHT * 0.02}
+                fit="scaleDown"
+              />
+            </Canvas>
+          </Pressable>
+        </View>
+      </GestureDetector>
       <GlassTransactionList
         onPress={data => {
           selectTransaction(data);
