@@ -1,0 +1,582 @@
+import React, {useContext, useEffect, useMemo, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  SharedValue,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {
+  BackdropFilter,
+  BlurMask,
+  Canvas,
+  FillType,
+  Group,
+  ImageFilter,
+  Path,
+  Rect,
+  RoundedRect,
+  Skia,
+  TileMode,
+} from '@shopify/react-native-skia';
+import type {SkParagraph, SkPath} from '@shopify/react-native-skia';
+
+import {
+  glassTabShader,
+  makeGlassTabFilter,
+  makeProgressiveBlurFilter,
+} from './glassTabShader';
+import {
+  buildGlassTxRowElements,
+  firstRowAt,
+  GlassTxRowModels,
+  GLASS_TX_LIST_TOP_RATIO,
+  SHEET_BACKGROUND,
+  useGlassTxIcons,
+} from './GlassSheetBackdrop';
+import {useSatoshiFontMgr} from './GlassBalanceGraphics';
+import {ScreenSizeContext} from '../context/screenSize';
+
+// Screen-fixed tab bar. Its canvas redraws the row band under the capsule
+// so the glass can refract current content instead of a stale snapshot.
+
+const BAR_WIDTH_RATIO = 0.6693;
+const BAR_HEIGHT_RATIO = 0.0652;
+const THUMB_WIDTH_RATIO = 0.2027;
+const THUMB_HEIGHT_RATIO = 0.0547;
+
+const PRESSED_SCALE = 1.06;
+const SCROLLING_SCALE = 0.9;
+const THUMB_SPRING = {mass: 0.3, damping: 14, stiffness: 180};
+
+const GLASS_DARKEN = 0.63;
+const GLASS_BLUR_SIGMA = 1;
+
+const BAND_HEIGHT_RATIO = 0.108;
+const BAND_BLUR_SIGMA = 12;
+
+const getBottomOffset = (screenHeight: number, bottomInset: number) =>
+  Math.max(bottomInset, screenHeight * 0.026);
+
+export const getTabBarClearance = (screenHeight: number, bottomInset: number) =>
+  getBottomOffset(screenHeight, bottomInset) + screenHeight * BAR_HEIGHT_RATIO;
+
+type IconKind = 'wallet' | 'buysell' | 'card';
+
+const SECTIONS: {kind: IconKind; disabled: boolean}[] = [
+  {kind: 'wallet', disabled: false},
+  {kind: 'buysell', disabled: false},
+  {kind: 'card', disabled: true},
+];
+
+const buildWalletPaths = (cx: number, cy: number, s: number) => {
+  const bodyW = s;
+  const bodyH = s * 0.72;
+  const r = s * 0.14;
+  const rrect = Skia.RRectXY(
+    Skia.XYWHRect(cx - bodyW / 2, cy - bodyH / 2, bodyW, bodyH),
+    r,
+    r,
+  );
+  const claspCx = cx + bodyW * 0.26;
+  const claspR = s * 0.09;
+  const filled = Skia.Path.Make();
+  filled.addRRect(rrect);
+  filled.addCircle(claspCx, cy, claspR);
+  filled.setFillType(FillType.EvenOdd);
+  const outline = Skia.Path.Make();
+  outline.addRRect(rrect);
+  outline.addCircle(claspCx, cy, claspR);
+  return {filled, outline};
+};
+
+const buildBuySellPath = (cx: number, cy: number, s: number) => {
+  const path = Skia.Path.Make();
+  const halfShaft = s * 0.34;
+  const head = s * 0.17;
+  const off = s * 0.24;
+  const ux = cx - off;
+  path.moveTo(ux, cy + halfShaft);
+  path.lineTo(ux, cy - halfShaft);
+  path.moveTo(ux - head, cy - halfShaft + head);
+  path.lineTo(ux, cy - halfShaft);
+  path.lineTo(ux + head, cy - halfShaft + head);
+  const dx = cx + off;
+  path.moveTo(dx, cy - halfShaft);
+  path.lineTo(dx, cy + halfShaft);
+  path.moveTo(dx - head, cy + halfShaft - head);
+  path.lineTo(dx, cy + halfShaft);
+  path.lineTo(dx + head, cy + halfShaft - head);
+  return path;
+};
+
+const buildCardPaths = (cx: number, cy: number, s: number) => {
+  const w = s;
+  const h = s * 0.68;
+  const r = s * 0.12;
+  const rrect = Skia.RRectXY(Skia.XYWHRect(cx - w / 2, cy - h / 2, w, h), r, r);
+  const stripeY = cy - h / 2 + h * 0.24;
+  const stripeH = s * 0.1;
+  const filled = Skia.Path.Make();
+  filled.addRRect(rrect);
+  filled.addRect(Skia.XYWHRect(cx - w / 2, stripeY, w, stripeH));
+  filled.setFillType(FillType.EvenOdd);
+  const outline = Skia.Path.Make();
+  outline.addRRect(rrect);
+  outline.moveTo(cx - w / 2, stripeY + stripeH / 2);
+  outline.lineTo(cx + w / 2, stripeY + stripeH / 2);
+  return {filled, outline};
+};
+
+interface TabIconProps {
+  kind: IconKind;
+  cx: number;
+  cy: number;
+  size: number;
+  disabled: boolean;
+  thumbCenter: SharedValue<number>;
+  slotSpacing: number;
+}
+
+const TabIcon: React.FC<TabIconProps> = props => {
+  const {kind, cx, cy, size, disabled, thumbCenter, slotSpacing} = props;
+
+  const paths = useMemo((): {filled: SkPath | null; outline: SkPath} => {
+    if (kind === 'wallet') {
+      return buildWalletPaths(cx, cy, size);
+    }
+    if (kind === 'card') {
+      return buildCardPaths(cx, cy, size);
+    }
+    return {filled: null, outline: buildBuySellPath(cx, cy, size)};
+  }, [kind, cx, cy, size]);
+
+  // The icon under the thumb shows filled; everywhere else the outline.
+  const filledOpacity = useDerivedValue(() =>
+    disabled
+      ? 0
+      : interpolate(
+          Math.abs(thumbCenter.value - cx),
+          [0, slotSpacing * 0.5],
+          [1, 0],
+          Extrapolation.CLAMP,
+        ),
+  );
+  const outlineOpacity = useDerivedValue(() =>
+    disabled ? 0.35 : 1 - filledOpacity.value,
+  );
+
+  return (
+    <>
+      <Group opacity={outlineOpacity}>
+        <Path
+          path={paths.outline}
+          style="stroke"
+          strokeWidth={size * 0.085}
+          strokeCap="round"
+          strokeJoin="round"
+          color="#ffffff"
+        />
+      </Group>
+      <Group opacity={filledOpacity}>
+        {paths.filled ? (
+          <Path path={paths.filled} style="fill" color="#ffffff" />
+        ) : (
+          <Path
+            path={paths.outline}
+            style="stroke"
+            strokeWidth={size * 0.16}
+            strokeCap="round"
+            strokeJoin="round"
+            color="#ffffff"
+          />
+        )}
+      </Group>
+    </>
+  );
+};
+
+interface Props {
+  activeIndex: number;
+  onSelectSection: (index: number) => void;
+  contentActivity: SharedValue<number>;
+  rowModels: GlassTxRowModels;
+  mainSheetsTranslationY: SharedValue<number>;
+  txListScrollY: SharedValue<number>;
+  listHeaderOffset: SharedValue<number>;
+  showTxList: boolean;
+}
+
+const LiquidGlassTabBar: React.FC<Props> = props => {
+  const {
+    activeIndex,
+    onSelectSection,
+    contentActivity,
+    rowModels,
+    mainSheetsTranslationY,
+    txListScrollY,
+    listHeaderOffset,
+    showTxList,
+  } = props;
+  const {models, rowTops, rowBottoms} = rowModels;
+
+  const insets = useSafeAreaInsets();
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const fontMgr = useSatoshiFontMgr();
+  const icons = useGlassTxIcons();
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, insets.bottom);
+
+  const barWidth = SCREEN_WIDTH * BAR_WIDTH_RATIO;
+  const barHeight = SCREEN_HEIGHT * BAR_HEIGHT_RATIO;
+  const thumbWidth = SCREEN_WIDTH * THUMB_WIDTH_RATIO;
+  const thumbHeight = SCREEN_HEIGHT * THUMB_HEIGHT_RATIO;
+  const thumbInsetY = (barHeight - thumbHeight) / 2;
+  const iconSize = SCREEN_HEIGHT * 0.028;
+  const slotSpacing = barWidth / SECTIONS.length;
+  const slotCenters = SECTIONS.map((_, i) => slotSpacing * (i + 0.5));
+  // Clamp must contain the resting slot centers.
+  const minCenter = Math.min(slotCenters[0], thumbWidth / 2 + thumbInsetY);
+  const maxCenter = Math.max(
+    slotCenters[SECTIONS.length - 1],
+    barWidth - thumbWidth / 2 - thumbInsetY,
+  );
+
+  const bottomOffset = getBottomOffset(SCREEN_HEIGHT, insets.bottom);
+  const bandHeight = Math.max(
+    SCREEN_HEIGHT * BAND_HEIGHT_RATIO,
+    getTabBarClearance(SCREEN_HEIGHT, insets.bottom),
+  );
+  const bandTop = SCREEN_HEIGHT - bandHeight;
+
+  // Rows crossing the band, windowed on the UI thread.
+  const [window, setWindow] = useState({start: 0, end: 0});
+  useAnimatedReaction(
+    () => {
+      if (!showTxList || rowBottoms.length === 0) {
+        return {start: 0, end: 0};
+      }
+      const listTopOnScreen =
+        mainSheetsTranslationY.value + SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
+      const contentTop =
+        txListScrollY.value -
+        listHeaderOffset.value +
+        (bandTop - listTopOnScreen);
+      const start = firstRowAt(rowBottoms, contentTop);
+      let end = start;
+      const contentBottom = contentTop + bandHeight;
+      while (end + 1 < rowTops.length && rowTops[end + 1] < contentBottom) {
+        end += 1;
+      }
+      return {start, end};
+    },
+    (cur, prev) => {
+      if (!prev || cur.start !== prev.start || cur.end !== prev.end) {
+        runOnJS(setWindow)(cur);
+      }
+    },
+    [showTxList, rowTops, rowBottoms, bandTop, bandHeight, SCREEN_HEIGHT],
+  );
+
+  // List-content coordinates -> band-canvas coordinates, live per frame.
+  const bandContentTransform = useDerivedValue(() => [
+    {
+      translateY:
+        mainSheetsTranslationY.value +
+        SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO +
+        listHeaderOffset.value -
+        txListScrollY.value -
+        bandTop,
+    },
+  ]);
+
+  const paragraphCache = useMemo(() => {
+    return new Map<number, Record<string, SkParagraph>>();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [models, fontMgr, SCREEN_WIDTH, SCREEN_HEIGHT]);
+
+  const bandRowElements = useMemo(() => {
+    if (!showTxList || !fontMgr || models.length === 0) {
+      return null;
+    }
+    return buildGlassTxRowElements({
+      models,
+      start: window.start,
+      end: window.end,
+      fontMgr,
+      icons,
+      paragraphCache,
+      screenWidth: SCREEN_WIDTH,
+      screenHeight: SCREEN_HEIGHT,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    showTxList,
+    fontMgr,
+    models,
+    window,
+    paragraphCache,
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    icons.Send,
+    icons.Receive,
+    icons.Convert,
+    icons.Buy,
+    icons.Sell,
+  ]);
+
+  const thumbCenter = useSharedValue(
+    slotCenters[activeIndex] ?? slotCenters[0],
+  );
+  const dragStart = useSharedValue(0);
+  const pressScale = useSharedValue(1);
+  const [selectionAttempt, setSelectionAttempt] = useState(0);
+
+  // Builder and blur child are hoisted; only uniforms change per frame.
+  const shaderBuilder = useMemo(
+    () => Skia.RuntimeShaderBuilder(glassTabShader),
+    [],
+  );
+  const glassBlurChild = useMemo(
+    () =>
+      Skia.ImageFilter.MakeBlur(
+        GLASS_BLUR_SIGMA,
+        GLASS_BLUR_SIGMA,
+        TileMode.Clamp,
+      ),
+    [],
+  );
+  const glassFilter = useDerivedValue(() => {
+    const scale =
+      pressScale.value *
+      interpolate(
+        contentActivity.value,
+        [0, 1],
+        [1, SCROLLING_SCALE],
+        Extrapolation.CLAMP,
+      );
+    const width = barWidth * scale;
+    const height = barHeight * scale;
+    const x = (SCREEN_WIDTH - width) / 2;
+    const y = bandHeight - bottomOffset - barHeight + (barHeight - height) / 2;
+    const capsule = [x, y, width, height];
+    return makeGlassTabFilter(
+      shaderBuilder,
+      glassBlurChild,
+      [capsule, capsule, capsule],
+      height / 2,
+      GLASS_DARKEN,
+    );
+  });
+
+  // Re-sync after rejected selections and window resizes.
+  useEffect(() => {
+    thumbCenter.value = withSpring(
+      slotCenters[activeIndex] ?? slotCenters[0],
+      THUMB_SPRING,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex, selectionAttempt, slotSpacing]);
+
+  const selectSection = (index: number) => {
+    // Re-selecting wallet can fold an open card home.
+    onSelectSection(index);
+    setSelectionAttempt(n => n + 1);
+  };
+
+  const nearestEnabledSlot = (x: number): number => {
+    'worklet';
+    let best = 0;
+    let bestDist = Number.MAX_VALUE;
+    for (let i = 0; i < slotCenters.length; i++) {
+      if (SECTIONS[i].disabled) {
+        continue;
+      }
+      const dist = Math.abs(x - slotCenters[i]);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    }
+    return best;
+  };
+
+  const panGesture = Gesture.Pan()
+    .onBegin(() => {
+      'worklet';
+      pressScale.value = withSpring(PRESSED_SCALE, THUMB_SPRING);
+    })
+    .onStart(() => {
+      'worklet';
+      dragStart.value = thumbCenter.value;
+    })
+    .onUpdate(e => {
+      'worklet';
+      thumbCenter.value = Math.min(
+        Math.max(dragStart.value + e.translationX, minCenter),
+        maxCenter,
+      );
+    })
+    .onEnd(() => {
+      'worklet';
+      const target = nearestEnabledSlot(thumbCenter.value);
+      thumbCenter.value = withSpring(slotCenters[target], THUMB_SPRING);
+      runOnJS(selectSection)(target);
+    })
+    .onFinalize(() => {
+      'worklet';
+      pressScale.value = withSpring(1, THUMB_SPRING);
+    });
+
+  const tapGesture = Gesture.Tap().onEnd(e => {
+    'worklet';
+    // Taps on the disabled placeholder are ignored.
+    const tapped = Math.min(
+      Math.max(Math.floor(e.x / slotSpacing), 0),
+      SECTIONS.length - 1,
+    );
+    if (SECTIONS[tapped].disabled) {
+      return;
+    }
+    thumbCenter.value = withSpring(slotCenters[tapped], THUMB_SPRING);
+    runOnJS(selectSection)(tapped);
+  });
+
+  const barGesture = Gesture.Exclusive(panGesture, tapGesture);
+
+  const animatedBarStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale:
+          pressScale.value *
+          interpolate(
+            contentActivity.value,
+            [0, 1],
+            [1, SCROLLING_SCALE],
+            Extrapolation.CLAMP,
+          ),
+      },
+    ],
+  }));
+
+  const thumbX = useDerivedValue(() => thumbCenter.value - thumbWidth / 2);
+
+  const progressiveBlurFilter = useMemo(
+    () => makeProgressiveBlurFilter(bandHeight, BAND_BLUR_SIGMA),
+    [bandHeight],
+  );
+
+  const capsuleX = (SCREEN_WIDTH - barWidth) / 2;
+  const capsuleY = bandHeight - bottomOffset - barHeight;
+
+  return (
+    <>
+      <Canvas style={styles.bandCanvas} pointerEvents="none">
+        {/* Keep opaque; transparent samples render black through glass. */}
+        <Rect
+          x={0}
+          y={0}
+          width={SCREEN_WIDTH}
+          height={bandHeight}
+          color={SHEET_BACKGROUND}
+        />
+        {bandRowElements ? (
+          <Group transform={bandContentTransform}>{bandRowElements}</Group>
+        ) : null}
+        <BackdropFilter
+          filter={<ImageFilter filter={progressiveBlurFilter} />}
+        />
+        <RoundedRect
+          x={capsuleX}
+          y={capsuleY + 2}
+          width={barWidth}
+          height={barHeight}
+          r={barHeight / 2}
+          color="rgba(0, 0, 0, 0.1)">
+          <BlurMask blur={6} style="normal" />
+        </RoundedRect>
+        <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
+      </Canvas>
+
+      <View style={styles.wrapper} pointerEvents="box-none">
+        <GestureDetector gesture={barGesture}>
+          <Animated.View style={[styles.bar, animatedBarStyle]}>
+            <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
+              <RoundedRect
+                x={0.5}
+                y={0.5}
+                width={barWidth - 1}
+                height={barHeight - 1}
+                r={(barHeight - 1) / 2}
+                style="stroke"
+                strokeWidth={0.5}
+                color="rgba(238, 235, 235, 0.67)"
+              />
+              <RoundedRect
+                x={thumbX}
+                y={thumbInsetY}
+                width={thumbWidth}
+                height={thumbHeight}
+                r={thumbHeight / 2}
+                color="rgba(74, 75, 76, 0.39)"
+              />
+              {SECTIONS.map((section, i) => (
+                <TabIcon
+                  key={section.kind}
+                  kind={section.kind}
+                  cx={slotCenters[i]}
+                  cy={barHeight / 2}
+                  size={iconSize}
+                  disabled={section.disabled}
+                  thumbCenter={thumbCenter}
+                  slotSpacing={slotSpacing}
+                />
+              ))}
+            </Canvas>
+          </Animated.View>
+        </GestureDetector>
+      </View>
+    </>
+  );
+};
+
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  bottomInset: number,
+) =>
+  StyleSheet.create({
+    bandCanvas: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: Math.max(
+        screenHeight * BAND_HEIGHT_RATIO,
+        getTabBarClearance(screenHeight, bottomInset),
+      ),
+      zIndex: 3,
+    },
+    wrapper: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: getBottomOffset(screenHeight, bottomInset),
+      alignItems: 'center',
+      zIndex: 3,
+    },
+    bar: {
+      width: screenWidth * BAR_WIDTH_RATIO,
+      height: screenHeight * BAR_HEIGHT_RATIO,
+      borderRadius: (screenHeight * BAR_HEIGHT_RATIO) / 2,
+    },
+  });
+
+export default LiquidGlassTabBar;

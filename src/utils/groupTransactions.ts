@@ -11,3 +11,16 @@ export const groupTransactions = (txs: any) => {
 
   return Object.values(groupedByDay);
 };
+
+// Shared row order for the list spacers and Skia renderer.
+export const flattenGroupedTransactions = (txs: any): any[] => {
+  const flattened: any[] = [];
+  for (const section of groupTransactions(txs) as Array<{
+    title: string;
+    data: any[];
+  }>) {
+    flattened.push({type: 'sectionHeader', title: section.title});
+    flattened.push(...section.data);
+  }
+  return flattened;
+};

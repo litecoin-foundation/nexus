@@ -1,7 +1,7 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import {navigationOptions} from '../screens/Main';
+import {navigationOptions} from '../screens/NewMain';
 import MainDrawer from './MainDrawer';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import SettingsStack from './SettingsStack';

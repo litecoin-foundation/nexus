@@ -72,6 +72,7 @@ type RootStackParamList = {
 interface Props {
   route: RouteProp<RootStackParamList, 'Main'>;
   navigation: StackNavigationProp<RootStackParamList, 'Main'>;
+  containerHeight?: number;
 }
 
 interface URIHandlerRef {
@@ -79,7 +80,7 @@ interface URIHandlerRef {
 }
 
 const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
-  const {route} = props;
+  const {route, containerHeight} = props;
 
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
@@ -103,7 +104,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, containerHeight);
 
   const [address, setAddress] = useState('');
   const [addressDomain, setAddressDomain] = useState('');
@@ -739,12 +740,6 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               styles={{...styles.safeArea}}
               edges={['bottom']}>
               <View style={styles.row}>
-                {/* <View style={styles.greenBtnContainer}>
-           <GreenButton
-            value={`FEE ${recommendedFeeInSatsVByte} sat/b`}
-            onPress={() => console.log('pressed fee')}
-          />
-        </View>  */}
                 <View style={styles.blueBtnContainer}>
                   <BlueButton
                     textKey="send_litecoin"
@@ -817,14 +812,18 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
   );
 });
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  containerHeight?: number,
+) =>
   StyleSheet.create({
     container: {
       width: '100%',
       // BottomSheet is screenHeight * 0.76
       // DashboardButton is 110
       // Header margin is 5
-      height: screenHeight * 0.76 - 110 - 5,
+      height: containerHeight ?? screenHeight * 0.76 - 110 - 5,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
       position: 'relative',
@@ -837,7 +836,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     subScrollContainer: {
       width: '100%',
-      height: screenHeight * 0.76 - 110 - 5,
+      height: containerHeight ?? screenHeight * 0.76 - 110 - 5,
     },
     subContainer: {
       flex: 1,

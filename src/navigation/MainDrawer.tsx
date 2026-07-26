@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {ScreenSizeContext} from '../context/screenSize';
-import Main from '../screens/Main';
+import NewMain from '../screens/NewMain';
 import ShopAccountDrawerContent from '../components/Drawers/ShopAccountDrawerContent';
 import {MainDrawerParamList} from './types';
 
@@ -31,7 +31,7 @@ function MainDrawer(): React.JSX.Element {
       drawerContent={props => <ShopAccountDrawerContent {...props} />}>
       <Drawer.Screen
         name="MainScreen"
-        component={Main}
+        component={NewMain}
         options={{headerShown: false}}
       />
     </Drawer.Navigator>

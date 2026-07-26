@@ -50,9 +50,10 @@ type RootStackParamList = {
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'Sell'>;
+  containerHeight?: number;
 }
 
-const Sell: React.FC<Props> = () => {
+const Sell: React.FC<Props> = ({containerHeight}) => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
@@ -84,6 +85,7 @@ const Sell: React.FC<Props> = () => {
     SCREEN_HEIGHT,
     insets.bottom,
     OFFSET_HEADER_DIFF,
+    containerHeight,
   );
 
   const isUK = getCountry() === 'GB';
@@ -519,15 +521,6 @@ const Sell: React.FC<Props> = () => {
         )}
         <View style={styles.bottom}>
           <View style={styles.buttons}>
-            {/* <View style={styles.btn1}>
-            <NewWhiteButton
-              textKey="schedule_buy"
-              textDomain="buyTab"
-              disabled={!(regionValid && amountValid)}
-              onPress={() => {}}
-              imageSource={require('../../assets/icons/schedule-icon.png')}
-            />
-          </View> */}
             <View style={styles.btn2}>
               <BlueButton
                 disabled={!(regionValid && (isUK || amountValid))}
@@ -611,6 +604,7 @@ const getStyles = (
   screenHeight: number,
   bottomInset: number,
   offsetHeaderDiff: number,
+  containerHeight?: number,
 ) =>
   StyleSheet.create({
     container: {
@@ -618,7 +612,8 @@ const getStyles = (
       // DashboardButton is 110
       // Header margin is 5
       width: screenWidth,
-      height: screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
+      height:
+        containerHeight ?? screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
     },

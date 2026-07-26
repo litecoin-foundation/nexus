@@ -49,9 +49,10 @@ type RootStackParamList = {
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'Buy'>;
+  containerHeight?: number;
 }
 
-const Buy: React.FC<Props> = () => {
+const Buy: React.FC<Props> = ({containerHeight}) => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
@@ -77,6 +78,7 @@ const Buy: React.FC<Props> = () => {
     SCREEN_HEIGHT,
     insets.bottom,
     OFFSET_HEADER_DIFF,
+    containerHeight,
   );
 
   const isUK = getCountry() === 'GB';
@@ -476,6 +478,7 @@ const getStyles = (
   screenHeight: number,
   bottomInset: number,
   offsetHeaderDiff: number,
+  containerHeight?: number,
 ) =>
   StyleSheet.create({
     container: {
@@ -483,7 +486,8 @@ const getStyles = (
       // DashboardButton is 110
       // Header margin is 5
       width: screenWidth,
-      height: screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
+      height:
+        containerHeight ?? screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
     },

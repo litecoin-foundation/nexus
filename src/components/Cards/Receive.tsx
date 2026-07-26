@@ -21,9 +21,11 @@ import SkeletonLines from '../../components/SkeletonLines';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+interface Props {
+  containerHeight?: number;
+}
 
-const Receive: React.FC<Props> = () => {
+const Receive: React.FC<Props> = ({containerHeight}) => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const {address, regularAddress, mwebAddress} = useAppSelector(
@@ -40,7 +42,12 @@ const Receive: React.FC<Props> = () => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, address.length);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    address.length,
+    containerHeight,
+  );
 
   const [regularAddressState, setRegularAddressState] =
     useState(regularAddress);
@@ -227,11 +234,12 @@ const getStyles = (
   screenWidth: number,
   screenHeight: number,
   addressLength: number,
+  containerHeight?: number,
 ) =>
   StyleSheet.create({
     container: {
       // DashboardButton is 110
-      height: screenHeight * 0.76 - 110,
+      height: containerHeight ?? screenHeight * 0.76 - 110,
       backgroundColor: '#f7f7f7',
       paddingHorizontal: screenWidth * 0.06,
     },

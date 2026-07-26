@@ -31,6 +31,7 @@ interface GiftCardShopProps {
   initialBrand?: Brand;
   initialScreen?: string;
   navigation: any;
+  containerHeight?: number;
 }
 
 type ScreenState =
@@ -44,6 +45,7 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   initialBrand,
   initialScreen,
   navigation,
+  containerHeight,
 }) => {
   const uniqueId = useAppSelector((state: any) => state.onboarding.uniqueId);
   const account = useAppSelector(
@@ -59,8 +61,8 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = useMemo(
-    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
-    [SCREEN_WIDTH, SCREEN_HEIGHT],
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, containerHeight),
+    [SCREEN_WIDTH, SCREEN_HEIGHT, containerHeight],
   );
 
   const dispatch = useAppDispatch();
@@ -222,14 +224,18 @@ const GiftCardShop: React.FC<GiftCardShopProps> = ({
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  containerHeight?: number,
+) =>
   StyleSheet.create({
     container: {
       width: screenWidth,
       // BottomSheet is screenHeight * 0.76
       // DashboardButton is 110
       // Header margin is 5
-      height: screenHeight * 0.76,
+      height: containerHeight ?? screenHeight * 0.76,
     },
     subContainer: {
       flex: 1,

@@ -1,0 +1,98 @@
+import React, {useContext} from 'react';
+import {Platform, StyleSheet, View} from 'react-native';
+import {Gesture} from 'react-native-gesture-handler';
+import {SharedValue} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import GlassTabButton from './Buttons/GlassTabButton';
+import {ScreenSizeContext} from '../context/screenSize';
+import {makeSheetSnapHandlers} from '../animations/useNewMainAnims';
+import {getGlassTabLayouts, GLASS_TAB_IDS} from './glassTabLayout';
+
+// Per-slot configs keyed by GLASS_TAB_IDS.
+const TAB_CONFIGS = [
+  {textKey: 'shop', imageSource: require('../assets/icons/shop.png')},
+  {textKey: 'send', imageSource: require('../assets/icons/send-icon.png')},
+  {
+    textKey: 'receive',
+    imageSource: require('../assets/icons/receive-icon.png'),
+  },
+].map((config, i) => ({...config, tab: GLASS_TAB_IDS[i]}));
+
+interface Props {
+  mainSheetsTranslationY: SharedValue<number>;
+  mainSheetsTranslationYStart: SharedValue<number>;
+  folded: boolean;
+  foldUnfold: (isFolded: boolean) => void;
+  activeTab: number;
+  onPressTab: (tab: number) => void;
+  isInternetReachable: boolean;
+}
+
+const GlassTabSelector: React.FC<Props> = props => {
+  const {
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
+    folded,
+    foldUnfold,
+    activeTab,
+    onPressTab,
+    isInternetReachable,
+  } = props;
+
+  const insets = useSafeAreaInsets();
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+
+  const layouts = getGlassTabLayouts(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  // Dragging on a button moves the sheet.
+  const {onDragUpdate, onEndTrigger} = makeSheetSnapHandlers({
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
+    folded,
+    foldUnfold,
+    screenHeight: SCREEN_HEIGHT,
+    topInset: insets.top,
+  });
+
+  const makeDragGesture = () => {
+    const baseGesture = Gesture.Pan();
+    if (Platform.OS === 'android') {
+      baseGesture.activeOffsetY([-15, 15]);
+    }
+    return baseGesture
+      .onUpdate(e => {
+        'worklet';
+        onDragUpdate(e.translationY);
+      })
+      .onEnd(onEndTrigger);
+  };
+
+  return (
+    <View style={styles.overlay} pointerEvents="box-none">
+      {TAB_CONFIGS.map((config, i) => (
+        <GlassTabButton
+          key={config.tab}
+          textKey={config.textKey}
+          imageSource={config.imageSource}
+          handlePress={() => onPressTab(config.tab)}
+          active={activeTab === config.tab}
+          // Receive works offline, everything else needs a connection.
+          disabled={config.tab === 5 ? false : !isInternetReachable}
+          mainSheetsTranslationY={mainSheetsTranslationY}
+          layout={layouts[i]}
+          dragGesture={makeDragGesture()}
+        />
+      ))}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+});
+
+export default GlassTabSelector;
