@@ -33,7 +33,7 @@ import {
 import {StackNavigationOptions} from '@react-navigation/stack';
 
 import GlassAmountView from '../components/GlassAmountView';
-import GlassChartTouch, {getGlassChartGap} from '../components/GlassChart';
+import GlassTopSectionChart from '../components/GlassTopSectionChart';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import GlassTabSelector from '../components/GlassTabSelector';
 import Receive from '../components/Cards/Receive';
@@ -53,7 +53,6 @@ import GlassTransactionList from '../components/GlassTransactionList';
 import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
-import GlassDatePicker from '../components/GlassDatePicker';
 import LiquidGlassTabBar, {
   getTabBarClearance,
 } from '../components/LiquidGlassTabBar';
@@ -703,14 +702,11 @@ const NewMain: React.FC<Props> = props => {
         onTriggerLester={() => setTriggerLester(prev => prev + 1)}
         mainSheetsTranslationY={mainSheetsTranslationY}
         activeTab={activeTab}>
-        <Animated.View style={[animatedChartOpacity, styles.chartContainer]}>
-          {isBottomSheetFolded ? (
-            <>
-              <GlassChartTouch triggerLester={triggerLester} />
-              <GlassDatePicker />
-            </>
-          ) : null}
-        </Animated.View>
+        <GlassTopSectionChart
+          animatedOpacityStyle={animatedChartOpacity}
+          isBottomSheetFolded={isBottomSheetFolded}
+          triggerLester={triggerLester}
+        />
       </GlassAmountView>
 
       <GlassTabSelector
@@ -868,9 +864,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     container: {
       flex: 1,
       backgroundColor: SHEET_BACKGROUND,
-    },
-    chartContainer: {
-      gap: getGlassChartGap(screenHeight),
     },
     dragStrip: {
       width: '100%',
