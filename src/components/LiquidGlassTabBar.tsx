@@ -1,4 +1,11 @@
-import React, {useContext, useEffect, useMemo, useState} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
@@ -19,13 +26,15 @@ import {
   Canvas,
   FillType,
   Group,
+  Image,
   ImageFilter,
+  makeImageFromView,
   Path,
   RoundedRect,
   Skia,
   TileMode,
 } from '@shopify/react-native-skia';
-import type {SkParagraph, SkPath} from '@shopify/react-native-skia';
+import type {SkImage, SkParagraph, SkPath} from '@shopify/react-native-skia';
 
 import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
@@ -208,6 +217,8 @@ interface Props {
   txListScrollY: SharedValue<number>;
   listHeaderOffset: SharedValue<number>;
   showTxList: boolean;
+  activeSheet: number;
+  sheetCaptureRef: React.RefObject<View | null>;
 }
 
 const LiquidGlassTabBar: React.FC<Props> = props => {
@@ -220,6 +231,8 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     txListScrollY,
     listHeaderOffset,
     showTxList,
+    activeSheet,
+    sheetCaptureRef,
   } = props;
   const {models, rowTops, rowBottoms} = rowModels;
 
@@ -303,6 +316,75 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         bandTop,
     },
   ]);
+
+  // A Skia BackdropFilter can only sample pixels already drawn in its own
+  // canvas. Native card views therefore need to be captured and redrawn into
+  // the band before the progressive blur and liquid-glass filter run.
+  const [sheetSnapshot, setSheetSnapshot] = useState<SkImage | null>(null);
+  const [sheetCaptureRevision, setSheetCaptureRevision] = useState(0);
+  const captureGeneration = useRef(0);
+  const refreshSheetSnapshot = useCallback(() => {
+    setSheetCaptureRevision(revision => revision + 1);
+  }, []);
+  useAnimatedReaction(
+    () => contentActivity.value,
+    (current, previous) => {
+      if (previous !== null && previous > 0.05 && current <= 0.05) {
+        runOnJS(refreshSheetSnapshot)();
+      }
+    },
+    [contentActivity],
+  );
+  useEffect(() => {
+    if (showTxList) {
+      return;
+    }
+
+    const generation = ++captureGeneration.current;
+    let cancelled = false;
+    let latestRequest = 0;
+
+    const captureSheet = async () => {
+      const request = ++latestRequest;
+      try {
+        const image = await makeImageFromView(sheetCaptureRef);
+        if (!image) {
+          return;
+        }
+        if (
+          cancelled ||
+          generation !== captureGeneration.current ||
+          request !== latestRequest
+        ) {
+          image.dispose();
+          return;
+        }
+        setSheetSnapshot(image);
+      } catch {
+        // The view may be between native mounts during a card transition. The
+        // settled capture below retries after the new card has mounted.
+      }
+    };
+
+    const immediateCapture = setTimeout(captureSheet, 0);
+    const settledCapture = setTimeout(captureSheet, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(immediateCapture);
+      clearTimeout(settledCapture);
+    };
+  }, [activeSheet, sheetCaptureRef, sheetCaptureRevision, showTxList]);
+
+  useEffect(
+    () => () => {
+      sheetSnapshot?.dispose();
+    },
+    [sheetSnapshot],
+  );
+
+  const sheetSnapshotY = useDerivedValue(
+    () => mainSheetsTranslationY.value - bandTop,
+  );
 
   const paragraphCache = useMemo(() => {
     return new Map<number, Record<string, SkParagraph>>();
@@ -489,6 +571,15 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
           backgroundColor={SHEET_BACKGROUND}>
           {bandRowElements ? (
             <Group transform={bandContentTransform}>{bandRowElements}</Group>
+          ) : sheetSnapshot ? (
+            <Image
+              image={sheetSnapshot}
+              x={0}
+              y={sheetSnapshotY}
+              width={SCREEN_WIDTH}
+              height={SCREEN_HEIGHT}
+              fit="fill"
+            />
           ) : null}
         </ProgressiveEdgeBlur>
         <RoundedRect

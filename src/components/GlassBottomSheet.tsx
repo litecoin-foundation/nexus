@@ -27,6 +27,8 @@ const ANIM_DURATION = 200;
 interface Props {
   // Optional Skia layer behind the sheet.
   backdropComponent?: React.ReactNode;
+  // Captured by the floating glass tab bar when a native card is active.
+  captureRef?: React.RefObject<View | null>;
   txViewComponent: React.ReactNode;
   buyViewComponent: React.ReactNode;
   sellViewComponent: React.ReactNode;
@@ -57,6 +59,7 @@ const GlassBottomSheet: React.FC<Props> = props => {
 
   const {
     backdropComponent,
+    captureRef,
     txViewComponent,
     buyViewComponent,
     sellViewComponent,
@@ -159,24 +162,26 @@ const GlassBottomSheet: React.FC<Props> = props => {
 
   return (
     <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
-      {backdropComponent}
-      <GestureDetector gesture={headerGesture}>
-        <View collapsable={false} style={styles.headerComponent}>
-          {headerComponent}
-        </View>
-      </GestureDetector>
-      <Animated.View style={animatedCardOpacityStyle}>
-        <RenderCard
-          txView={txViewComponent}
-          buyView={buyViewComponent}
-          shopView={shopViewComponent}
-          sellView={sellViewComponent}
-          sendView={sendViewComponent}
-          receiveView={receiveViewComponent}
-          activeTab={dalayedActiveTab}
-          panGesture={panGesture}
-        />
-      </Animated.View>
+      <View ref={captureRef} collapsable={false} style={styles.captureContent}>
+        {backdropComponent}
+        <GestureDetector gesture={headerGesture}>
+          <View collapsable={false} style={styles.headerComponent}>
+            {headerComponent}
+          </View>
+        </GestureDetector>
+        <Animated.View style={animatedCardOpacityStyle}>
+          <RenderCard
+            txView={txViewComponent}
+            buyView={buyViewComponent}
+            shopView={shopViewComponent}
+            sellView={sellViewComponent}
+            sendView={sendViewComponent}
+            receiveView={receiveViewComponent}
+            activeTab={dalayedActiveTab}
+            panGesture={panGesture}
+          />
+        </Animated.View>
+      </View>
     </Animated.View>
   );
 };
@@ -243,6 +248,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderTopLeftRadius: screenHeight * 0.03,
       borderTopRightRadius: screenHeight * 0.03,
       zIndex: 1,
+    },
+    captureContent: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: SHEET_BACKGROUND,
+      borderTopLeftRadius: screenHeight * 0.03,
+      borderTopRightRadius: screenHeight * 0.03,
     },
   });
 

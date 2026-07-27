@@ -224,7 +224,10 @@ const NewMain: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_HEIGHT, SCREEN_WIDTH],
+  );
   const insets = useSafeAreaInsets();
 
   // Keep card CTAs above the floating tab bar.
@@ -287,6 +290,7 @@ const NewMain: React.FC<Props> = props => {
     recoveryMode && !recoveryFinished && !recoveryAlertDismissed;
 
   const mainContentRef = useRef<View>(null);
+  const bottomSheetCaptureRef = useRef<View>(null);
 
   // 0 = idle, 1 = content interaction shrinks the tab bar.
   const tabBarActivity = useSharedValue(0);
@@ -601,26 +605,41 @@ const NewMain: React.FC<Props> = props => {
     [navigation],
   );
 
-  const TxListComponentMemo = (
-    <TxListComponent
-      selectTransaction={selectTransaction}
-      setTxDetailModalOpened={setTxDetailModalOpened}
-      foldUnfoldBottomSheet={foldUnfoldBottomSheet}
-      isBottomSheetFolded={isBottomSheetFolded}
-      navigation={navigation}
-      styles={styles}
-      txRows={txRows}
-      mainSheetsTranslationY={mainSheetsTranslationY}
-      mainSheetsTranslationYStart={mainSheetsTranslationYStart}
-      onScrollActivity={markTabBarActivity}
-      txListScrollY={txListScrollY}
-      txListHeaderOffset={txListHeaderOffset}
-    />
+  const TxListComponentMemo = useMemo(
+    () => (
+      <TxListComponent
+        selectTransaction={selectTransaction}
+        setTxDetailModalOpened={setTxDetailModalOpened}
+        foldUnfoldBottomSheet={foldUnfoldBottomSheet}
+        isBottomSheetFolded={isBottomSheetFolded}
+        navigation={navigation}
+        styles={styles}
+        txRows={txRows}
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+        onScrollActivity={markTabBarActivity}
+        txListScrollY={txListScrollY}
+        txListHeaderOffset={txListHeaderOffset}
+      />
+    ),
+    [
+      foldUnfoldBottomSheet,
+      isBottomSheetFolded,
+      mainSheetsTranslationY,
+      mainSheetsTranslationYStart,
+      markTabBarActivity,
+      navigation,
+      styles,
+      txListHeaderOffset,
+      txListScrollY,
+      txRows,
+    ],
   );
 
   const BottomSheetMemo = useMemo(
     () => (
       <GlassBottomSheet
+        captureRef={bottomSheetCaptureRef}
         backdropComponent={
           <GlassSheetBackdrop
             rowModels={txRowModels}
@@ -675,6 +694,7 @@ const NewMain: React.FC<Props> = props => {
       styles.dragStrip,
       cardHeight,
       shopCardHeight,
+      bottomSheetCaptureRef,
     ],
   );
 
@@ -754,6 +774,8 @@ const NewMain: React.FC<Props> = props => {
         txListScrollY={txListScrollY}
         listHeaderOffset={txListHeaderOffset}
         showTxList={activeTab === 0}
+        activeSheet={activeTab}
+        sheetCaptureRef={bottomSheetCaptureRef}
       />
 
       <PlasmaModal
