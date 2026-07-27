@@ -4,6 +4,7 @@ import {
   BackdropFilter,
   BlurMask,
   Canvas,
+  Group,
   ImageFilter,
   LinearGradient,
   RadialGradient,
@@ -30,6 +31,7 @@ import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import {
   getGlassTabLayouts,
   glassTabRectAt,
+  glassTabSplitProgressAt,
   GlassTabLayout,
   GLASS_TAB_BUTTON_HEIGHT_RATIO,
   GLASS_TAB_CORNER_RADIUS,
@@ -103,7 +105,31 @@ interface ButtonDrawProps {
   foldPoint: number;
   buttonHeight: number;
   cornerRadius: number;
+  splitSecondary?: boolean;
 }
+
+const useSplitOpacity = (
+  splitSecondary: boolean | undefined,
+  mainSheetsTranslationY: SharedValue<number>,
+  unfoldPoint: number,
+  foldPoint: number,
+) =>
+  useDerivedValue(() => {
+    if (!splitSecondary) {
+      return 1;
+    }
+    const splitProgress = glassTabSplitProgressAt(
+      mainSheetsTranslationY.value,
+      unfoldPoint,
+      foldPoint,
+    );
+    return interpolate(
+      splitProgress,
+      [0.25, 0.85],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
+  });
 
 // Shadow under the refracted glass.
 const GlassButtonShadow: React.FC<ButtonDrawProps> = props => {
@@ -114,6 +140,7 @@ const GlassButtonShadow: React.FC<ButtonDrawProps> = props => {
     foldPoint,
     buttonHeight,
     cornerRadius,
+    splitSecondary,
   } = props;
   const {x, y, width} = useGlassTabRect(
     layout,
@@ -122,13 +149,23 @@ const GlassButtonShadow: React.FC<ButtonDrawProps> = props => {
     foldPoint,
   );
   const shadowY = useDerivedValue(() => y.value + 2);
+  const radius = useDerivedValue(() =>
+    Math.min(cornerRadius, width.value / 2, buttonHeight / 2),
+  );
+  const opacity = useSplitOpacity(
+    splitSecondary,
+    mainSheetsTranslationY,
+    unfoldPoint,
+    foldPoint,
+  );
   return (
     <RoundedRect
       x={x}
       y={shadowY}
       width={width}
       height={buttonHeight}
-      r={cornerRadius}
+      r={radius}
+      opacity={opacity}
       color="rgba(0, 0, 0, 0.07)">
       <BlurMask blur={4} style="normal" />
     </RoundedRect>
@@ -148,6 +185,7 @@ const GlassButtonAccent: React.FC<
     buttonHeight,
     cornerRadius,
     active,
+    splitSecondary,
   } = props;
   const {x, y, width} = useGlassTabRect(
     layout,
@@ -157,18 +195,30 @@ const GlassButtonAccent: React.FC<
   );
   const strokeX = useDerivedValue(() => x.value + 0.25);
   const strokeY = useDerivedValue(() => y.value + 0.25);
-  const strokeWidth = useDerivedValue(() => width.value - 0.5);
+  const strokeWidth = useDerivedValue(() => Math.max(width.value - 0.5, 0));
+  const fillRadius = useDerivedValue(() =>
+    Math.min(cornerRadius, width.value / 2, buttonHeight / 2),
+  );
+  const strokeRadius = useDerivedValue(() =>
+    Math.min(cornerRadius - 0.25, strokeWidth.value / 2),
+  );
   const gradientStart = useDerivedValue(() => vec(0, y.value));
   const gradientEnd = useDerivedValue(() => vec(0, y.value + buttonHeight));
+  const opacity = useSplitOpacity(
+    splitSecondary,
+    mainSheetsTranslationY,
+    unfoldPoint,
+    foldPoint,
+  );
   return (
-    <>
+    <Group opacity={opacity}>
       {active ? (
         <RoundedRect
           x={x}
           y={y}
           width={width}
           height={buttonHeight}
-          r={cornerRadius}
+          r={fillRadius}
           color="rgba(255, 255, 255, 0.12)"
         />
       ) : null}
@@ -177,7 +227,7 @@ const GlassButtonAccent: React.FC<
         y={strokeY}
         width={strokeWidth}
         height={buttonHeight - 0.5}
-        r={cornerRadius - 0.25}
+        r={strokeRadius}
         style="stroke"
         strokeWidth={0.5}>
         <LinearGradient
@@ -187,7 +237,7 @@ const GlassButtonAccent: React.FC<
           positions={BORDER_GRADIENT_POSITIONS}
         />
       </RoundedRect>
-    </>
+    </Group>
   );
 };
 
@@ -288,6 +338,11 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
     [],
   );
   const glassFilter = useDerivedValue(() => {
+    const splitProgress = glassTabSplitProgressAt(
+      mainSheetsTranslationY.value,
+      UNFOLD_SHEET_POINT,
+      FOLD_SHEET_POINT,
+    );
     const boxes = layouts.map(layout => {
       const rect = glassTabRectAt(
         layout,
@@ -303,6 +358,7 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
       boxes,
       cornerRadius,
       GLASS_DARKEN,
+      splitProgress,
     );
   });
 
@@ -339,6 +395,7 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
           foldPoint={FOLD_SHEET_POINT}
           buttonHeight={buttonHeight}
           cornerRadius={cornerRadius}
+          splitSecondary={i === 1}
         />
       ))}
       <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
@@ -352,6 +409,7 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
           buttonHeight={buttonHeight}
           cornerRadius={cornerRadius}
           active={activeTab === GLASS_TAB_IDS[i]}
+          splitSecondary={i === 1}
         />
       ))}
     </Canvas>

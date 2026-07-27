@@ -6,12 +6,34 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import GlassTabButton from './Buttons/GlassTabButton';
 import {ScreenSizeContext} from '../context/screenSize';
-import {makeSheetSnapHandlers} from '../animations/useNewMainAnims';
-import {getGlassTabLayouts, GLASS_TAB_IDS} from './glassTabLayout';
+import {
+  getNewMainSheetPoints,
+  makeSheetSnapHandlers,
+} from '../animations/useNewMainAnims';
+import {
+  getGlassTabLayouts,
+  glassTabSplitProgressAt,
+  GLASS_TAB_IDS,
+} from './glassTabLayout';
+
+const SPLIT_TOUCH_THRESHOLD = 0.82;
 
 // Per-slot configs keyed by GLASS_TAB_IDS.
 const TAB_CONFIGS = [
-  {textKey: 'shop', imageSource: require('../assets/icons/shop.png')},
+  {
+    textKey: 'buy',
+    imageSource: require('../assets/icons/buy-icon.png'),
+    foldedTextKey: 'trade',
+    foldedImageSource: require('../assets/icons/convert-icon.png'),
+    tradeAnchor: true,
+    lateSplitContent: true,
+  },
+  {
+    textKey: 'sell',
+    imageSource: require('../assets/icons/sell-icon.png'),
+    hideFoldedContent: true,
+    lateSplitContent: true,
+  },
   {textKey: 'send', imageSource: require('../assets/icons/send-icon.png')},
   {
     textKey: 'receive',
@@ -45,6 +67,10 @@ const GlassTabSelector: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
 
   const layouts = getGlassTabLayouts(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
+    SCREEN_HEIGHT,
+    insets.top,
+  );
 
   // Dragging on a button moves the sheet.
   const {onDragUpdate, onEndTrigger} = makeSheetSnapHandlers({
@@ -76,7 +102,28 @@ const GlassTabSelector: React.FC<Props> = props => {
           key={config.tab}
           textKey={config.textKey}
           imageSource={config.imageSource}
-          handlePress={() => onPressTab(config.tab)}
+          foldedTextKey={config.foldedTextKey}
+          foldedImageSource={config.foldedImageSource}
+          hideFoldedContent={config.hideFoldedContent}
+          lateSplitContent={config.lateSplitContent}
+          pointerEvents={config.hideFoldedContent && folded ? 'none' : 'auto'}
+          handlePress={() => {
+            const splitProgress = glassTabSplitProgressAt(
+              mainSheetsTranslationY.value,
+              UNFOLD_SHEET_POINT,
+              FOLD_SHEET_POINT,
+            );
+            if (
+              (config.tradeAnchor || config.hideFoldedContent) &&
+              splitProgress < SPLIT_TOUCH_THRESHOLD
+            ) {
+              if (config.tradeAnchor && folded) {
+                foldUnfold(folded);
+              }
+              return;
+            }
+            onPressTab(config.tab);
+          }}
           active={activeTab === config.tab}
           // Receive works offline, everything else needs a connection.
           disabled={config.tab === 5 ? false : !isInternetReachable}

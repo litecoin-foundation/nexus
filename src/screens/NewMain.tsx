@@ -760,12 +760,12 @@ const NewMain: React.FC<Props> = props => {
       {BottomSheetMemo}
 
       <LiquidGlassTabBar
-        activeIndex={activeTab === 1 || activeTab === 2 ? 1 : 0}
+        activeIndex={activeTab === 3 ? 1 : 0}
         onSelectSection={(index: number) => {
           if (index === 0 && activeTab !== 0) {
             foldUnfoldBottomSheet(false);
-          } else if (index === 1 && activeTab !== 1 && activeTab !== 2) {
-            handleTabPress(1);
+          } else if (index === 1 && activeTab !== 3) {
+            handleTabPress(3);
           }
         }}
         contentActivity={tabBarActivity}
@@ -776,6 +776,7 @@ const NewMain: React.FC<Props> = props => {
         showTxList={activeTab === 0}
         activeSheet={activeTab}
         sheetCaptureRef={bottomSheetCaptureRef}
+        shopDisabled={!isInternetReachable}
       />
 
       <PlasmaModal

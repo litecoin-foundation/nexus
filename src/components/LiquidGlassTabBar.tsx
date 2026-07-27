@@ -24,6 +24,7 @@ import {
   BackdropFilter,
   BlurMask,
   Canvas,
+  ColorMatrix,
   FillType,
   Group,
   Image,
@@ -33,6 +34,7 @@ import {
   RoundedRect,
   Skia,
   TileMode,
+  useImage,
 } from '@shopify/react-native-skia';
 import type {SkImage, SkParagraph, SkPath} from '@shopify/react-native-skia';
 
@@ -73,12 +75,16 @@ const getBottomOffset = (screenHeight: number, bottomInset: number) =>
 export const getTabBarClearance = (screenHeight: number, bottomInset: number) =>
   getBottomOffset(screenHeight, bottomInset) + screenHeight * BAR_HEIGHT_RATIO;
 
-type IconKind = 'wallet' | 'buysell' | 'card';
+type IconKind = 'wallet' | 'shop' | 'card';
 
 const SECTIONS: {kind: IconKind; disabled: boolean}[] = [
   {kind: 'wallet', disabled: false},
-  {kind: 'buysell', disabled: false},
+  {kind: 'shop', disabled: false},
   {kind: 'card', disabled: true},
+];
+
+const WHITE_ICON_MATRIX = [
+  0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0,
 ];
 
 const buildWalletPaths = (cx: number, cy: number, s: number) => {
@@ -100,26 +106,6 @@ const buildWalletPaths = (cx: number, cy: number, s: number) => {
   outline.addRRect(rrect);
   outline.addCircle(claspCx, cy, claspR);
   return {filled, outline};
-};
-
-const buildBuySellPath = (cx: number, cy: number, s: number) => {
-  const path = Skia.Path.Make();
-  const halfShaft = s * 0.34;
-  const head = s * 0.17;
-  const off = s * 0.24;
-  const ux = cx - off;
-  path.moveTo(ux, cy + halfShaft);
-  path.lineTo(ux, cy - halfShaft);
-  path.moveTo(ux - head, cy - halfShaft + head);
-  path.lineTo(ux, cy - halfShaft);
-  path.lineTo(ux + head, cy - halfShaft + head);
-  const dx = cx + off;
-  path.moveTo(dx, cy - halfShaft);
-  path.lineTo(dx, cy + halfShaft);
-  path.moveTo(dx - head, cy + halfShaft - head);
-  path.lineTo(dx, cy + halfShaft);
-  path.lineTo(dx + head, cy + halfShaft - head);
-  return path;
 };
 
 const buildCardPaths = (cx: number, cy: number, s: number) => {
@@ -146,12 +132,13 @@ interface TabIconProps {
   cy: number;
   size: number;
   disabled: boolean;
+  image?: SkImage | null;
   thumbCenter: SharedValue<number>;
   slotSpacing: number;
 }
 
 const TabIcon: React.FC<TabIconProps> = props => {
-  const {kind, cx, cy, size, disabled, thumbCenter, slotSpacing} = props;
+  const {kind, cx, cy, size, disabled, image, thumbCenter, slotSpacing} = props;
 
   const paths = useMemo((): {filled: SkPath | null; outline: SkPath} => {
     if (kind === 'wallet') {
@@ -160,7 +147,7 @@ const TabIcon: React.FC<TabIconProps> = props => {
     if (kind === 'card') {
       return buildCardPaths(cx, cy, size);
     }
-    return {filled: null, outline: buildBuySellPath(cx, cy, size)};
+    return {filled: null, outline: Skia.Path.Make()};
   }, [kind, cx, cy, size]);
 
   // The icon under the thumb shows filled; everywhere else the outline.
@@ -177,6 +164,23 @@ const TabIcon: React.FC<TabIconProps> = props => {
   const outlineOpacity = useDerivedValue(() =>
     disabled ? 0.35 : 1 - filledOpacity.value,
   );
+  const iconOpacity = useDerivedValue(() => (disabled ? 0.35 : 1));
+
+  if (kind === 'shop') {
+    return (
+      <Group opacity={iconOpacity}>
+        <Image
+          image={image ?? null}
+          x={cx - size / 2}
+          y={cy - size / 2}
+          width={size}
+          height={size}
+          fit="contain">
+          <ColorMatrix matrix={WHITE_ICON_MATRIX} />
+        </Image>
+      </Group>
+    );
+  }
 
   return (
     <>
@@ -219,6 +223,7 @@ interface Props {
   showTxList: boolean;
   activeSheet: number;
   sheetCaptureRef: React.RefObject<View | null>;
+  shopDisabled: boolean;
 }
 
 const LiquidGlassTabBar: React.FC<Props> = props => {
@@ -233,6 +238,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     showTxList,
     activeSheet,
     sheetCaptureRef,
+    shopDisabled,
   } = props;
   const {models, rowTops, rowBottoms} = rowModels;
 
@@ -241,6 +247,16 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const fontMgr = useSatoshiFontMgr();
   const icons = useGlassTxIcons();
+  const shopIcon = useImage(require('../assets/icons/shop.png'));
+  const sections = useMemo(
+    () =>
+      SECTIONS.map(section =>
+        section.kind === 'shop'
+          ? {...section, disabled: shopDisabled}
+          : section,
+      ),
+    [shopDisabled],
+  );
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, insets.bottom);
 
   const barWidth = SCREEN_WIDTH * BAR_WIDTH_RATIO;
@@ -249,12 +265,12 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
   const thumbHeight = SCREEN_HEIGHT * THUMB_HEIGHT_RATIO;
   const thumbInsetY = (barHeight - thumbHeight) / 2;
   const iconSize = SCREEN_HEIGHT * 0.028;
-  const slotSpacing = barWidth / SECTIONS.length;
-  const slotCenters = SECTIONS.map((_, i) => slotSpacing * (i + 0.5));
+  const slotSpacing = barWidth / sections.length;
+  const slotCenters = sections.map((_, i) => slotSpacing * (i + 0.5));
   // Clamp must contain the resting slot centers.
   const minCenter = Math.min(slotCenters[0], thumbWidth / 2 + thumbInsetY);
   const maxCenter = Math.max(
-    slotCenters[SECTIONS.length - 1],
+    slotCenters[sections.length - 1],
     barWidth - thumbWidth / 2 - thumbInsetY,
   );
 
@@ -485,7 +501,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     let best = 0;
     let bestDist = Number.MAX_VALUE;
     for (let i = 0; i < slotCenters.length; i++) {
-      if (SECTIONS[i].disabled) {
+      if (sections[i].disabled) {
         continue;
       }
       const dist = Math.abs(x - slotCenters[i]);
@@ -529,9 +545,9 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     // Taps on the disabled placeholder are ignored.
     const tapped = Math.min(
       Math.max(Math.floor(e.x / slotSpacing), 0),
-      SECTIONS.length - 1,
+      sections.length - 1,
     );
-    if (SECTIONS[tapped].disabled) {
+    if (sections[tapped].disabled) {
       return;
     }
     thumbCenter.value = withSpring(slotCenters[tapped], THUMB_SPRING);
@@ -616,7 +632,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
                 r={thumbHeight / 2}
                 color="rgba(74, 75, 76, 0.39)"
               />
-              {SECTIONS.map((section, i) => (
+              {sections.map((section, i) => (
                 <TabIcon
                   key={section.kind}
                   kind={section.kind}
@@ -624,6 +640,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
                   cy={barHeight / 2}
                   size={iconSize}
                   disabled={section.disabled}
+                  image={section.kind === 'shop' ? shopIcon : null}
                   thumbCenter={thumbCenter}
                   slotSpacing={slotSpacing}
                 />

@@ -13,7 +13,9 @@ import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {getNewMainSheetPoints} from '../../animations/useNewMainAnims';
 import {
+  glassTabExpansionProgressAt,
   glassTabRectAt,
+  glassTabSplitProgressAt,
   GlassTabLayout,
   GLASS_TAB_BUTTON_HEIGHT_RATIO,
 } from '../glassTabLayout';
@@ -25,6 +27,11 @@ const BELOW_LABEL_TOP_RATIO = GLASS_TAB_BUTTON_HEIGHT_RATIO + 0.014;
 interface Props {
   textKey: string;
   imageSource: ImageSourcePropType;
+  foldedTextKey?: string;
+  foldedImageSource?: ImageSourcePropType;
+  hideFoldedContent?: boolean;
+  lateSplitContent?: boolean;
+  pointerEvents?: 'auto' | 'none';
   handlePress: () => void;
   active: boolean;
   disabled: boolean;
@@ -38,6 +45,11 @@ const GlassTabButton: React.FC<Props> = props => {
   const {
     textKey,
     imageSource,
+    foldedTextKey,
+    foldedImageSource,
+    hideFoldedContent,
+    lateSplitContent,
+    pointerEvents,
     handlePress,
     active,
     disabled,
@@ -50,6 +62,7 @@ const GlassTabButton: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const unfoldedLabelWidth = layout.unfolded.width;
 
   const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
     SCREEN_HEIGHT,
@@ -68,11 +81,12 @@ const GlassTabButton: React.FC<Props> = props => {
 
   // Folded and unfolded content cross-fade while the rect morphs.
   const animatedFoldedContent = useAnimatedStyle(() => {
-    const progress = interpolate(
+    // All three compact controls must enter and leave together. The late SDF
+    // split only governs the expanded Buy/Sell content and geometry.
+    const progress = glassTabExpansionProgressAt(
       mainSheetsTranslationY.value,
-      [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
-      [1, 0],
-      Extrapolation.CLAMP,
+      UNFOLD_SHEET_POINT,
+      FOLD_SHEET_POINT,
     );
     return {
       opacity: interpolate(progress, [0, 0.45], [1, 0], Extrapolation.CLAMP),
@@ -80,25 +94,50 @@ const GlassTabButton: React.FC<Props> = props => {
   });
 
   const animatedUnfoldedContent = useAnimatedStyle(() => {
-    const progress = interpolate(
-      mainSheetsTranslationY.value,
-      [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
-      [1, 0],
-      Extrapolation.CLAMP,
-    );
+    const progress = lateSplitContent
+      ? glassTabSplitProgressAt(
+          mainSheetsTranslationY.value,
+          UNFOLD_SHEET_POINT,
+          FOLD_SHEET_POINT,
+        )
+      : glassTabExpansionProgressAt(
+          mainSheetsTranslationY.value,
+          UNFOLD_SHEET_POINT,
+          FOLD_SHEET_POINT,
+        );
     return {
-      opacity: interpolate(progress, [0.55, 1], [0, 1], Extrapolation.CLAMP),
+      opacity: interpolate(
+        progress,
+        hideFoldedContent
+          ? [0.62, 1]
+          : lateSplitContent
+            ? [0.28, 1]
+            : [0.55, 1],
+        [0, 1],
+        Extrapolation.CLAMP,
+      ),
+      transform: [
+        {
+          scale: lateSplitContent
+            ? interpolate(
+                progress,
+                hideFoldedContent ? [0.62, 1] : [0.28, 1],
+                [0.72, 1],
+                Extrapolation.CLAMP,
+              )
+            : 1,
+        },
+      ],
     };
   });
 
   // Unfolded, the tap target grows down to cover the label; folded it hugs
   // the pill.
   const animatedPressableArea = useAnimatedStyle(() => {
-    const progress = interpolate(
+    const progress = glassTabExpansionProgressAt(
       mainSheetsTranslationY.value,
-      [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
-      [1, 0],
-      Extrapolation.CLAMP,
+      UNFOLD_SHEET_POINT,
+      FOLD_SHEET_POINT,
     );
     return {
       height: interpolate(
@@ -115,6 +154,7 @@ const GlassTabButton: React.FC<Props> = props => {
   return (
     <GestureDetector gesture={dragGesture}>
       <Animated.View
+        pointerEvents={pointerEvents}
         style={[
           styles.buttonRoot,
           disabled ? styles.disabled : null,
@@ -129,10 +169,17 @@ const GlassTabButton: React.FC<Props> = props => {
               pressed ? styles.pressed : null,
             ]}>
             <Animated.View
-              style={[styles.foldedContent, animatedFoldedContent]}>
-              <Image source={imageSource} style={styles.icon} />
+              style={[
+                styles.foldedContent,
+                animatedFoldedContent,
+                hideFoldedContent ? styles.hidden : null,
+              ]}>
+              <Image
+                source={foldedImageSource ?? imageSource}
+                style={styles.icon}
+              />
               <TranslateText
-                textKey={textKey}
+                textKey={foldedTextKey ?? textKey}
                 domain="main"
                 maxSizeInPixels={SCREEN_HEIGHT * 0.015}
                 maxLengthInPixels={layout.folded.width * 0.65}
@@ -153,8 +200,14 @@ const GlassTabButton: React.FC<Props> = props => {
             textKey={textKey}
             domain="main"
             maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-            maxLengthInPixels={layout.unfolded.width * 1.4}
-            textStyle={active ? styles.labelTextActive : styles.labelText}
+            maxLengthInPixels={unfoldedLabelWidth}
+            textStyle={[
+              active ? styles.labelTextActive : styles.labelText,
+              styles.centeredLabel,
+              {width: unfoldedLabelWidth},
+            ]}
+            adjustsFontSizeToFit
+            minimumFontScale={0.65}
             numberOfLines={1}
           />
         </Animated.View>
@@ -171,6 +224,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     pressableWrap: {
       width: '100%',
+      // A newly born zero-width Sell control must not leak its fixed-size
+      // icon into the neighbouring Trade control.
+      overflow: 'hidden',
     },
     pressable: {
       width: '100%',
@@ -213,6 +269,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: '#ffffff',
       fontSize: screenHeight * 0.015,
     },
+    centeredLabel: {
+      textAlign: 'center',
+    },
     labelTextActive: {
       fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
@@ -229,6 +288,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     disabled: {
       opacity: 0.2,
+    },
+    hidden: {
+      opacity: 0,
     },
   });
 

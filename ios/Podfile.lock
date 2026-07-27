@@ -2336,7 +2336,7 @@ PODS:
     - Yoga
   - react-native-segmented-control (2.5.7):
     - React-Core
-  - react-native-skia (2.4.14):
+  - react-native-skia (2.10.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -4083,7 +4083,7 @@ SPEC CHECKSUMS:
   react-native-quick-base64: d87272898345e0fc3c3afb8e5dff335d51214f3e
   react-native-safe-area-context: 54d812805f3c4e08a4580ad086cbde1d8780c2e4
   react-native-segmented-control: 44d14c6899ee12de3384517f4fa1cf4a66ae105c
-  react-native-skia: b3cd83e2bbc7fb7e4e38a23f4ba12fdf0e7e3fbe
+  react-native-skia: 4823efdd9d2d9073bac37056f45f53ff44759f35
   react-native-slider: e35799fb9983a19307195d77f10caf5f6a716842
   react-native-webview: 8b9097e270a99ee8798449f191a7ea27c790fa1c
   React-NativeModulesApple: 7f2f2fed3f6c858889eb61d09941be965d52df58
@@ -4143,6 +4143,6 @@ SPEC CHECKSUMS:
   VisionCamera: 3ea10c46a5c612f5f89fb46a54bef4a0de8b58a7
   Yoga: 5456bb010373068fc92221140921b09d126b116e
 
-PODFILE CHECKSUM: 6ec480b591944480d6428747e850ec72b7765732
+PODFILE CHECKSUM: c79eaa5314a88f3b7df19b8b6951369ada6bc034
 
 COCOAPODS: 1.16.2

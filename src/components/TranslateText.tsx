@@ -12,6 +12,8 @@ interface Props {
   maxSizeInPixels?: number;
   maxLengthInPixels?: number;
   textStyle?: any;
+  adjustsFontSizeToFit?: boolean;
+  minimumFontScale?: number;
   animatedProps?: any;
   animatedFontSizeValue?: any;
   numberOfLines?: number;
@@ -33,6 +35,8 @@ const TranslateText: React.FC<Props> = props => {
     maxSizeInPixels,
     maxLengthInPixels,
     textStyle,
+    adjustsFontSizeToFit,
+    minimumFontScale,
     animatedProps,
     animatedFontSizeValue,
     numberOfLines,
@@ -82,14 +86,10 @@ const TranslateText: React.FC<Props> = props => {
   return onPress ? (
     <Pressable onPress={onPress} style={styles.container}>
       <Animated.Text
-        style={[
-          styles.text,
-          textStyle,
-          styles.textLimits,
-          animatedStyle,
-          {includeFontPadding: false},
-        ]}
+        style={[styles.text, textStyle, styles.textLimits, animatedStyle]}
         ellipsizeMode="tail"
+        adjustsFontSizeToFit={adjustsFontSizeToFit}
+        minimumFontScale={minimumFontScale}
         numberOfLines={numberOfLines || 0}>
         {textValue ? textValue : textKey ? t(textKey, interpolationObj) : ''}
         {children}
@@ -98,14 +98,10 @@ const TranslateText: React.FC<Props> = props => {
   ) : (
     <Animated.View style={styles.container}>
       <Animated.Text
-        style={[
-          styles.text,
-          textStyle,
-          styles.textLimits,
-          animatedStyle,
-          {includeFontPadding: false},
-        ]}
+        style={[styles.text, textStyle, styles.textLimits, animatedStyle]}
         ellipsizeMode="tail"
+        adjustsFontSizeToFit={adjustsFontSizeToFit}
+        minimumFontScale={minimumFontScale}
         numberOfLines={numberOfLines || 0}>
         {textValue ? textValue : textKey ? t(textKey, interpolationObj) : ''}
         {children}
@@ -135,6 +131,7 @@ const getStyles = (
     textLimits: {
       fontSize: fontSize,
       flexBasis: null,
+      includeFontPadding: false,
       // width: '100%',
     },
   });

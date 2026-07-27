@@ -9,8 +9,10 @@ export const glassTabShader = Skia.RuntimeEffect.Make(`
 uniform vec4 b0;
 uniform vec4 b1;
 uniform vec4 b2;
+uniform vec4 b3;
 uniform float cornerR;
 uniform float darken;
+uniform float splitProgress;
 uniform shader image;
 uniform shader blurredImage;
 
@@ -23,13 +25,44 @@ float sdRoundedBox(in vec2 p, in vec2 b, in vec4 r) {
 
 float sdButton(vec2 xy, vec4 box) {
   vec2 center = box.xy + box.zw * 0.5;
-  return sdRoundedBox(xy - center, box.zw * 0.5, vec4(cornerR));
+  vec2 halfSize = max(box.zw * 0.5, vec2(0.001));
+  float radius = min(cornerR, min(halfSize.x, halfSize.y));
+  return sdRoundedBox(xy - center, halfSize, vec4(radius));
+}
+
+// Polynomial smooth union from the reference implementation. It gives the
+// emerging control a soft liquid neck while it is still touching Trade.
+float smin(float a, float b, float k) {
+  float h = clamp(0.5 + 0.5 * (a - b) / k, 0.0, 1.0);
+  return mix(a, b, h) - k * h * (1.0 - h);
 }
 
 float sdf(vec2 xy) {
-  float d = sdButton(xy, b0);
-  d = min(d, sdButton(xy, b1));
+  float trade = sdButton(xy, b0);
+  float d = trade;
+
+  // A negative value selects the ordinary multi-box mode used by the bottom
+  // tab bar. Values from zero to one are the Trade split lifecycle.
+  if (splitProgress < 0.0) {
+    d = min(d, sdButton(xy, b1));
+  }
+
+  // Like the example's collapsing circle, Sell has no geometry at progress
+  // zero. It blooms from Trade's edge, smooth-unions with it, then separates
+  // as the union radius tightens and the final gap opens.
+  if (splitProgress > 0.001) {
+    float birth = smoothstep(0.0, 0.30, splitProgress);
+    vec4 emerging = b1;
+    float emergingHeight = max(0.001, b1.w * birth);
+    emerging.y += (b1.w - emergingHeight) * 0.5;
+    emerging.w = emergingHeight;
+    float sell = sdButton(xy, emerging);
+    float unionRadius = mix(18.0, 3.0, smoothstep(0.30, 1.0, splitProgress));
+    d = smin(trade, sell, unionRadius);
+  }
+
   d = min(d, sdButton(xy, b2));
+  d = min(d, sdButton(xy, b3));
   return d;
 }
 
@@ -144,11 +177,20 @@ export const makeGlassTabFilter = (
   boxes: number[][],
   cornerR: number,
   darken: number,
+  splitProgress = -1,
 ): SkImageFilter => {
   'worklet';
   processUniforms(
     glassTabShader,
-    {b0: boxes[0], b1: boxes[1], b2: boxes[2], cornerR, darken},
+    {
+      b0: boxes[0],
+      b1: boxes[1],
+      b2: boxes[2],
+      b3: boxes[3] ?? boxes[0],
+      cornerR,
+      darken,
+      splitProgress,
+    },
     builder,
   );
   return Skia.ImageFilter.MakeRuntimeShaderWithChildren(
