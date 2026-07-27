@@ -205,7 +205,11 @@ const RenderCard: React.FC<CardProps> = props => {
   return (
     <Animated.View>
       <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
-        {activeTab === 0 ? <View>{txView}</View> : null}
+        {activeTab === 0 ? (
+          <GestureDetector gesture={panGesture}>
+            <View>{txView}</View>
+          </GestureDetector>
+        ) : null}
         {activeTab === 1 ? (
           <GestureDetector gesture={panGesture}>
             <View>{buyView}</View>
