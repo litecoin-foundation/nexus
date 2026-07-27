@@ -21,18 +21,14 @@ import {
   Group,
   ImageFilter,
   Path,
-  Rect,
   RoundedRect,
   Skia,
   TileMode,
 } from '@shopify/react-native-skia';
 import type {SkParagraph, SkPath} from '@shopify/react-native-skia';
 
-import {
-  glassTabShader,
-  makeGlassTabFilter,
-  makeProgressiveBlurFilter,
-} from './glassTabShader';
+import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
+import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
 import {
   buildGlassTxRowElements,
   firstRowAt,
@@ -60,7 +56,7 @@ const GLASS_DARKEN = 0.63;
 const GLASS_BLUR_SIGMA = 1;
 
 const BAND_HEIGHT_RATIO = 0.108;
-const BAND_BLUR_SIGMA = 12;
+const BAND_BLUR_SIGMA = 8;
 
 const getBottomOffset = (screenHeight: number, bottomInset: number) =>
   Math.max(bottomInset, screenHeight * 0.026);
@@ -255,6 +251,9 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     getTabBarClearance(SCREEN_HEIGHT, insets.bottom),
   );
   const bandTop = SCREEN_HEIGHT - bandHeight;
+  // Blur kernels need neighboring rows, and the JS-rendered row window must
+  // stay ahead of the UI-thread scroll transform during fast flings.
+  const bandSourceOverscan = bandHeight + BAND_BLUR_SIGMA * 3;
 
   // Rows crossing the band, windowed on the UI thread.
   const [window, setWindow] = useState({start: 0, end: 0});
@@ -269,9 +268,9 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         txListScrollY.value -
         listHeaderOffset.value +
         (bandTop - listTopOnScreen);
-      const start = firstRowAt(rowBottoms, contentTop);
+      const start = firstRowAt(rowBottoms, contentTop - bandSourceOverscan);
       let end = start;
-      const contentBottom = contentTop + bandHeight;
+      const contentBottom = contentTop + bandHeight + bandSourceOverscan;
       while (end + 1 < rowTops.length && rowTops[end + 1] < contentBottom) {
         end += 1;
       }
@@ -282,7 +281,15 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         runOnJS(setWindow)(cur);
       }
     },
-    [showTxList, rowTops, rowBottoms, bandTop, bandHeight, SCREEN_HEIGHT],
+    [
+      showTxList,
+      rowTops,
+      rowBottoms,
+      bandTop,
+      bandHeight,
+      bandSourceOverscan,
+      SCREEN_HEIGHT,
+    ],
   );
 
   // List-content coordinates -> band-canvas coordinates, live per frame.
@@ -468,31 +475,22 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
 
   const thumbX = useDerivedValue(() => thumbCenter.value - thumbWidth / 2);
 
-  const progressiveBlurFilter = useMemo(
-    () => makeProgressiveBlurFilter(bandHeight, BAND_BLUR_SIGMA),
-    [bandHeight],
-  );
-
   const capsuleX = (SCREEN_WIDTH - barWidth) / 2;
   const capsuleY = bandHeight - bottomOffset - barHeight;
 
   return (
     <>
       <Canvas style={styles.bandCanvas} pointerEvents="none">
-        {/* Keep opaque; transparent samples render black through glass. */}
-        <Rect
-          x={0}
-          y={0}
+        <ProgressiveEdgeBlur
           width={SCREEN_WIDTH}
-          height={bandHeight}
-          color={SHEET_BACKGROUND}
-        />
-        {bandRowElements ? (
-          <Group transform={bandContentTransform}>{bandRowElements}</Group>
-        ) : null}
-        <BackdropFilter
-          filter={<ImageFilter filter={progressiveBlurFilter} />}
-        />
+          canvasHeight={bandHeight}
+          blurHeight={bandHeight * 0.65}
+          maxBlur={BAND_BLUR_SIGMA}
+          backgroundColor={SHEET_BACKGROUND}>
+          {bandRowElements ? (
+            <Group transform={bandContentTransform}>{bandRowElements}</Group>
+          ) : null}
+        </ProgressiveEdgeBlur>
         <RoundedRect
           x={capsuleX}
           y={capsuleY + 2}

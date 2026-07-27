@@ -1,4 +1,4 @@
-import {processUniforms, Skia, TileMode} from '@shopify/react-native-skia';
+import {processUniforms, Skia} from '@shopify/react-native-skia';
 import type {
   SkImageFilter,
   SkRuntimeShaderBuilder,
@@ -136,32 +136,6 @@ vec4 main(vec2 fragCoord) {
   return finalColor;
 }
 `)!;
-
-// Progressive bottom blur for the tab bar band.
-const progressiveBlurShader = Skia.RuntimeEffect.Make(`
-uniform float bandHeight;
-uniform shader image;
-uniform shader blurredImage;
-
-vec4 main(vec2 xy) {
-  float t = clamp(xy.y / bandHeight, 0.0, 1.0);
-  return mix(image.eval(xy), blurredImage.eval(xy), smoothstep(0.0, 0.85, t));
-}
-`)!;
-
-export const makeProgressiveBlurFilter = (
-  bandHeight: number,
-  sigma: number,
-): SkImageFilter => {
-  const builder = Skia.RuntimeShaderBuilder(progressiveBlurShader);
-  processUniforms(progressiveBlurShader, {bandHeight}, builder);
-  return Skia.ImageFilter.MakeRuntimeShaderWithChildren(
-    builder,
-    0,
-    ['blurredImage'],
-    [Skia.ImageFilter.MakeBlur(sigma, sigma, TileMode.Clamp)],
-  )!;
-};
 
 // Caller hoists the builder and blur child.
 export const makeGlassTabFilter = (
