@@ -526,11 +526,11 @@ const NewMain: React.FC<Props> = props => {
       sendCardRef.current?.handleURI(uri);
     };
 
-    if (activeTab === 4) {
+    if (activeTab === 4 && deeplinkSet && uri.startsWith('litecoin:')) {
       callHandleURI();
       dispatch(unsetDeeplink());
     }
-  }, [activeTab, uri, dispatch]);
+  }, [activeTab, uri, deeplinkSet, dispatch]);
 
   useMainLayout({
     walletButtonAnimDuration,
