@@ -371,9 +371,12 @@ const RecoveryField: React.FC<Props> = props => {
                 key={word}
                 style={styles.suggestionButton}
                 onPress={() => handleSuggestionPress(word)}>
-                <Text style={styles.suggestionText} numberOfLines={1}>
-                  {word}
-                </Text>
+                <TranslateText
+                  textValue={word}
+                  textStyle={styles.suggestionText}
+                  maxSizeInPixels={17}
+                  numberOfLines={1}
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -465,9 +468,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     suggestionButton: {
       flex: 1,
       maxWidth: '33%',
-      height: screenHeight * 0.04,
+      height: 40,
       backgroundColor: 'white',
-      borderRadius: screenHeight * 0.02,
+      borderRadius: 20,
       paddingVertical: 10,
       paddingHorizontal: 5,
       alignItems: 'center',
@@ -475,8 +478,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     suggestionText: {
       color: '#2C72FF',
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: 17,
+      fontWeight: '700',
     },
   });
 
