@@ -4,25 +4,17 @@ import React, {
   useEffect,
   useState,
   useContext,
-  useMemo,
   useCallback,
 } from 'react';
-import {
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {FlashList, ListRenderItem} from '@shopify/flash-list';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
   withTiming,
   withRepeat,
   useSharedValue,
   useAnimatedStyle,
+  useAnimatedScrollHandler,
   SharedValue,
   runOnJS,
   Easing,
@@ -40,7 +32,8 @@ import {
   makeSheetSnapHandlers,
 } from '../animations/useNewMainAnims';
 import {
-  getGlassTxCellHeight,
+  firstRowAt,
+  GlassTxRowModels,
   GLASS_TX_LIST_TOP_RATIO,
   GLASS_TX_SECTION_HEADER_HEIGHT_RATIO,
   ROW_BORDER,
@@ -52,8 +45,14 @@ import {
   getRecoveryInfo,
 } from '../reducers/info';
 
-// Invisible spacer list; GlassSheetBackdrop draws the visible rows so the
-// tab bar glass can refract them.
+// Invisible native scroller; GlassSheetBackdrop draws the visible rows so the
+// tab bar glass can refract them. The Skia rows are positioned from scrollY,
+// so scrollY must be written on the UI thread — a JS-side scroll handler
+// makes every drawn frame wait on the JS thread and stutters the whole list.
+// That is why this is a plain Animated.ScrollView over one fixed-height
+// spacer (row geometry is deterministic in rowModels) instead of a list
+// component: FlashList v2 only supports plain-JS onScroll. Row taps are
+// resolved by hit-testing the shared row geometry.
 
 type ItemType = {
   hash: string;
@@ -66,11 +65,12 @@ type ItemType = {
   providerMeta: DisplayedMetadataType;
 };
 
-type FlashListItemType = ItemType | {type: 'sectionHeader'; title: string};
+type RowType = ItemType | {type: 'sectionHeader'; title: string};
 
 interface Props {
   onPress(item: ItemType): void;
-  rows: FlashListItemType[];
+  rows: RowType[];
+  rowModels: GlassTxRowModels;
   folded: boolean;
   foldUnfold: (unfold: boolean) => void;
   mainSheetsTranslationY: SharedValue<number>;
@@ -83,11 +83,12 @@ interface Props {
 const GlassTransactionList: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
 
-  const transactionListRef = useRef<any>(null);
+  const scrollViewRef = useRef<any>(null);
 
   const {
     onPress,
     rows,
+    rowModels,
     folded,
     foldUnfold,
     mainSheetsTranslationY,
@@ -96,6 +97,8 @@ const GlassTransactionList: React.FC<Props> = props => {
     scrollY,
     listHeaderOffset,
   } = props;
+
+  const {rowTops, rowBottoms} = rowModels;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -112,6 +115,10 @@ const GlassTransactionList: React.FC<Props> = props => {
     UNFOLD_SHEET_POINT -
     SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
 
+  const listContentHeight =
+    rowBottoms.length > 0 ? rowBottoms[rowBottoms.length - 1] : 0;
+  const headerRowHeight = SCREEN_HEIGHT * GLASS_TX_SECTION_HEADER_HEIGHT_RATIO;
+
   const {recoveryMode, recoveryFinished, syncedToChain} = useAppSelector(
     state => state.info!,
   );
@@ -126,21 +133,6 @@ const GlassTransactionList: React.FC<Props> = props => {
     dispatch(getTransactions());
     dispatch(getRecoveryInfo());
   }, [dispatch]);
-
-  const renderItem: ListRenderItem<FlashListItemType> = useCallback(
-    ({item}) => {
-      if ('type' in item && item.type === 'sectionHeader') {
-        return <View style={styles.headerSpacer} />;
-      }
-      return (
-        <Pressable
-          style={styles.cellSpacer}
-          onPress={() => onPress(item as ItemType)}
-        />
-      );
-    },
-    [onPress, styles],
-  );
 
   const decProgress = recoveryMode
     ? recoveryProgress > 0
@@ -250,7 +242,9 @@ const GlassTransactionList: React.FC<Props> = props => {
   const [isListScrollable, setIsListScrollable] = useState(false);
   const startClosing = useSharedValue(false);
   const yStartPos = useSharedValue(-1);
-  const lastActivityMark = useRef(0);
+  const momentumActive = useSharedValue(false);
+  const lastMomentumEnd = useSharedValue(0);
+  const lastActivityMark = useSharedValue(0);
 
   const handleContentSizeChange = (
     contentWidth: number,
@@ -260,93 +254,48 @@ const GlassTransactionList: React.FC<Props> = props => {
     setIsListScrollable(scrollable);
   };
 
-  const handleFold = useCallback(() => {
-    if (Platform.OS === 'android') {
-      if (folded) {
-        foldUnfold(true);
-      }
-    } else {
-      if (folded && !startClosing.value) {
-        foldUnfold(true);
-      }
-    }
-  }, [folded, foldUnfold, startClosing]);
+  const isAndroid = Platform.OS === 'android';
 
-  // FlashList v2 calls onScroll as plain JS here; a Reanimated scroll
-  // handler crashes, so scrollY is written JS-side.
-  const handleScroll = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const offsetY = e.nativeEvent.contentOffset.y;
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: e => {
+      const offsetY = e.contentOffset.y;
       scrollY.value = offsetY;
       startClosing.value = !folded && offsetY === 0;
-      const now = Date.now();
-      if (onScrollActivity && now - lastActivityMark.current > 200) {
-        lastActivityMark.current = now;
-        onScrollActivity();
+      if (onScrollActivity) {
+        const now = Date.now();
+        if (now - lastActivityMark.value > 200) {
+          lastActivityMark.value = now;
+          runOnJS(onScrollActivity)();
+        }
       }
     },
-    [folded, scrollY, startClosing, onScrollActivity],
-  );
-
-  const handleDragStateChange = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      startClosing.value = !folded && e.nativeEvent.contentOffset.y === 0;
+    onBeginDrag: e => {
+      // A scroll attempt while folded unfolds the sheet.
+      if (folded && (isAndroid || !startClosing.value)) {
+        runOnJS(foldUnfold)(true);
+      }
+      startClosing.value = !folded && e.contentOffset.y === 0;
     },
-    [folded, startClosing],
-  );
+    onEndDrag: e => {
+      startClosing.value = !folded && e.contentOffset.y === 0;
+    },
+    onMomentumBegin: () => {
+      momentumActive.value = true;
+    },
+    onMomentumEnd: () => {
+      momentumActive.value = false;
+      lastMomentumEnd.value = Date.now();
+    },
+  });
 
-  const FlashListMemo = useMemo(
-    () => (
-      <FlashList
-        bounces={false}
-        scrollEventThrottle={1}
-        onContentSizeChange={handleContentSizeChange}
-        onScroll={handleScroll}
-        onScrollBeginDrag={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          handleFold();
-          handleDragStateChange(e);
-        }}
-        onScrollEndDrag={handleDragStateChange}
-        ref={transactionListRef}
-        data={rows}
-        renderItem={renderItem}
-        keyExtractor={(item: FlashListItemType, index: number) => {
-          if ('type' in item && item.type === 'sectionHeader') {
-            return `header-${item.title}-${index}`;
-          }
-          return `tx-${index}`;
-        }}
-        ListEmptyComponent={<TransactionListEmpty />}
-        ListHeaderComponent={
-          showSyncProgress ? (
-            <View
-              onLayout={e => {
-                listHeaderOffset.value = e.nativeEvent.layout.height;
-              }}>
-              <TranslateText
-                textKey={'txs_take_time_to_appear'}
-                domain="onboarding"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                textStyle={styles.noteText}
-                numberOfLines={3}
-              />
-            </View>
-          ) : null
-        }
-        ListFooterComponent={<View style={styles.emptyView} />}
-      />
-    ),
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [
-      rows,
-      renderItem,
-      handleScroll,
-      handleDragStateChange,
-      handleFold,
-      handleContentSizeChange,
-      showSyncProgress,
-      styles,
-    ],
+  const handleRowPress = useCallback(
+    (index: number) => {
+      const item = rows[index];
+      if (item && !('type' in item && item.type === 'sectionHeader')) {
+        onPress(item as ItemType);
+      }
+    },
+    [rows, onPress],
   );
 
   const {onDragUpdate, onEndTrigger} = makeSheetSnapHandlers({
@@ -365,7 +314,7 @@ const GlassTransactionList: React.FC<Props> = props => {
 
   const panGesture = Gesture.Pan()
     .shouldCancelWhenOutside(false)
-    .simultaneousWithExternalGesture(transactionListRef)
+    .simultaneousWithExternalGesture(scrollViewRef)
     .onTouchesDown(e => {
       if (isListScrollable) {
         yStartPos.value = e.changedTouches[0].y;
@@ -392,22 +341,76 @@ const GlassTransactionList: React.FC<Props> = props => {
       }
     });
 
+  // Rows have no native views; taps are resolved against the row geometry.
+  // Pressable-like timing: any hold without movement counts on release.
+  const tapGesture = Gesture.Tap()
+    .maxDuration(10000)
+    .maxDistance(20)
+    .onEnd(e => {
+      'worklet';
+      // A tap that stops (or closely follows) a fling shouldn't open a row —
+      // the native list swallowed those touches too.
+      if (momentumActive.value || Date.now() - lastMomentumEnd.value < 120) {
+        return;
+      }
+      if (rowBottoms.length === 0) {
+        return;
+      }
+      const y = e.y + scrollY.value - listHeaderOffset.value;
+      if (y < 0) {
+        return;
+      }
+      const index = firstRowAt(rowBottoms, y);
+      if (y < rowTops[index] || y >= rowBottoms[index]) {
+        return;
+      }
+      // Section headers are not tappable.
+      if (rowBottoms[index] - rowTops[index] <= headerRowHeight + 0.5) {
+        return;
+      }
+      runOnJS(handleRowPress)(index);
+    });
+
+  const listGestures = Gesture.Simultaneous(panGesture, tapGesture);
+
   return (
     <View style={{height: scrollContainerHeight}}>
       {showSyncProgress ? SyncProgressIndicator : <></>}
-      <GestureDetector gesture={panGesture}>{FlashListMemo}</GestureDetector>
+      <GestureDetector gesture={listGestures}>
+        <Animated.ScrollView
+          ref={scrollViewRef}
+          bounces={false}
+          scrollEventThrottle={1}
+          onContentSizeChange={handleContentSizeChange}
+          onScroll={scrollHandler}>
+          {showSyncProgress ? (
+            <View
+              onLayout={e => {
+                listHeaderOffset.value = e.nativeEvent.layout.height;
+              }}>
+              <TranslateText
+                textKey={'txs_take_time_to_appear'}
+                domain="onboarding"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+                textStyle={styles.noteText}
+                numberOfLines={3}
+              />
+            </View>
+          ) : null}
+          {rows.length === 0 ? (
+            <TransactionListEmpty />
+          ) : (
+            <View style={{height: listContentHeight}} />
+          )}
+          <View style={styles.emptyView} />
+        </Animated.ScrollView>
+      </GestureDetector>
     </View>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
-    headerSpacer: {
-      height: screenHeight * GLASS_TX_SECTION_HEADER_HEIGHT_RATIO,
-    },
-    cellSpacer: {
-      height: getGlassTxCellHeight(screenHeight),
-    },
     sectionHeaderText: {
       color: MUTED_TEXT,
       fontFamily: 'Satoshi Variable',

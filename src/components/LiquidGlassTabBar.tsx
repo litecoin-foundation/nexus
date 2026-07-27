@@ -42,7 +42,8 @@ import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
 import {
   buildGlassTxRowElements,
-  firstRowAt,
+  windowedRowRange,
+  WINDOW_OVERSCAN_ROWS,
   GlassTxRowModels,
   GLASS_TX_LIST_TOP_RATIO,
   SHEET_BACKGROUND,
@@ -297,13 +298,13 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         txListScrollY.value -
         listHeaderOffset.value +
         (bandTop - listTopOnScreen);
-      const start = firstRowAt(rowBottoms, contentTop - bandSourceOverscan);
-      let end = start;
-      const contentBottom = contentTop + bandHeight + bandSourceOverscan;
-      while (end + 1 < rowTops.length && rowTops[end + 1] < contentBottom) {
-        end += 1;
-      }
-      return {start, end};
+      return windowedRowRange(
+        rowTops,
+        rowBottoms,
+        contentTop - bandSourceOverscan,
+        contentTop + bandHeight + bandSourceOverscan,
+        WINDOW_OVERSCAN_ROWS,
+      );
     },
     (cur, prev) => {
       if (!prev || cur.start !== prev.start || cur.end !== prev.end) {

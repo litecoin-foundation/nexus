@@ -45,6 +45,7 @@ import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
 import GlassBottomSheet from '../components/GlassBottomSheet';
 import GlassSheetBackdrop, {
   DRAG_STRIP_HEIGHT_RATIO,
+  GlassTxRowModels,
   SHEET_BACKGROUND,
   TX_TITLE_ROW_HEIGHT_RATIO,
   useGlassTxRowModels,
@@ -105,6 +106,7 @@ interface TxListComponentProps {
   navigation: any;
   styles: Record<string, any>;
   txRows: any[];
+  txRowModels: GlassTxRowModels;
   mainSheetsTranslationY: SharedValue<number>;
   mainSheetsTranslationYStart: SharedValue<number>;
   onScrollActivity: () => void;
@@ -121,6 +123,7 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
     navigation,
     styles,
     txRows,
+    txRowModels,
     mainSheetsTranslationY,
     mainSheetsTranslationYStart,
     onScrollActivity,
@@ -172,6 +175,7 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
           setTxDetailModalOpened(true);
         }}
         rows={txRows}
+        rowModels={txRowModels}
         folded={isBottomSheetFolded}
         foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
         mainSheetsTranslationY={mainSheetsTranslationY}
@@ -580,6 +584,7 @@ const NewMain: React.FC<Props> = props => {
         navigation={navigation}
         styles={styles}
         txRows={txRows}
+        txRowModels={txRowModels}
         mainSheetsTranslationY={mainSheetsTranslationY}
         mainSheetsTranslationYStart={mainSheetsTranslationYStart}
         onScrollActivity={markTabBarActivity}
@@ -598,6 +603,7 @@ const NewMain: React.FC<Props> = props => {
       txListHeaderOffset,
       txListScrollY,
       txRows,
+      txRowModels,
     ],
   );
 

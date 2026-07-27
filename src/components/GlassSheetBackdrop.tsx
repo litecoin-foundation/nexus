@@ -32,8 +32,9 @@ import {convertLocalFiatToUSD} from '../reducers/ticker';
 import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
 import {ScreenSizeContext} from '../context/screenSize';
 
-// Skia renderer for the sheet's visible rows. The native list renders
-// matching invisible spacers so scrolling and row taps stay native.
+// Skia renderer for the sheet's visible rows. GlassTransactionList scrolls
+// an invisible spacer of the same total height so scroll physics stay native,
+// and resolves row taps against this file's row geometry.
 
 // Drag strip + tx title row sit above the list viewport.
 export const DRAG_STRIP_HEIGHT_RATIO = 0.02;
@@ -206,6 +207,38 @@ export const firstRowAt = (rowBottoms: number[], contentTop: number) => {
   return first;
 };
 
+export const WINDOW_OVERSCAN_ROWS = 8;
+
+// Rows [start, end] cover [contentTop, contentBottom] plus at least
+// `overscanRows` on each side, quantized to overscan boundaries. The result
+// only changes when the visible range crosses a boundary, so the JS-side
+// window re-render fires once per ~8 rows of travel instead of per row, and
+// the overscan keeps drawn rows ahead of the UI-thread transform during
+// flings while a re-render is still pending.
+export const windowedRowRange = (
+  rowTops: number[],
+  rowBottoms: number[],
+  contentTop: number,
+  contentBottom: number,
+  overscanRows: number,
+) => {
+  'worklet';
+  const first = firstRowAt(rowBottoms, contentTop);
+  let last = first;
+  while (last + 1 < rowTops.length && rowTops[last + 1] < contentBottom) {
+    last += 1;
+  }
+  const start = Math.max(
+    0,
+    Math.floor((first - overscanRows) / overscanRows) * overscanRows,
+  );
+  const end = Math.min(
+    rowBottoms.length - 1,
+    (Math.floor((last + overscanRows) / overscanRows) + 1) * overscanRows - 1,
+  );
+  return {start, end};
+};
+
 interface RowElementParams {
   models: GlassTxRowModel[];
   start: number;
@@ -217,6 +250,10 @@ interface RowElementParams {
   screenWidth: number;
   screenHeight: number;
 }
+
+// Long scroll sessions on large wallets would otherwise grow the cache
+// without bound; rebuilding an evicted row's paragraphs is cheap.
+const PARAGRAPH_CACHE_CAP = 400;
 
 // Skia elements for rows [start, end], in list-content coordinates.
 export const buildGlassTxRowElements = (params: RowElementParams) => {
@@ -294,6 +331,16 @@ export const buildGlassTxRowElements = (params: RowElementParams) => {
 
   const clampedStart = Math.min(start, models.length - 1);
   const clampedEnd = Math.min(end, models.length - 1);
+  if (paragraphCache.size > PARAGRAPH_CACHE_CAP) {
+    for (const key of paragraphCache.keys()) {
+      if (key < clampedStart || key > clampedEnd) {
+        paragraphCache.delete(key);
+        if (paragraphCache.size <= PARAGRAPH_CACHE_CAP) {
+          break;
+        }
+      }
+    }
+  }
   const elements = [];
   for (let i = clampedStart; i <= clampedEnd; i++) {
     const model = models[i];
@@ -442,7 +489,7 @@ const GlassSheetBackdrop: React.FC<Props> = props => {
   const listTop = SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
   const canvasHeight = SCREEN_HEIGHT - UNFOLD_SHEET_POINT - listTop;
 
-  // Re-render only when the visible row window shifts.
+  // Re-render only when the overscanned row window shifts (~once per 8 rows).
   const [window, setWindow] = useState({start: 0, end: 0});
   useAnimatedReaction(
     () => {
@@ -450,13 +497,13 @@ const GlassSheetBackdrop: React.FC<Props> = props => {
         return {start: 0, end: 0};
       }
       const contentTop = scrollY.value - listHeaderOffset.value;
-      const start = firstRowAt(rowBottoms, contentTop);
-      let end = start;
-      const contentBottom = contentTop + canvasHeight;
-      while (end + 1 < rowTops.length && rowTops[end + 1] < contentBottom) {
-        end += 1;
-      }
-      return {start, end};
+      return windowedRowRange(
+        rowTops,
+        rowBottoms,
+        contentTop,
+        contentTop + canvasHeight,
+        WINDOW_OVERSCAN_ROWS,
+      );
     },
     (cur, prev) => {
       if (!prev || cur.start !== prev.start || cur.end !== prev.end) {

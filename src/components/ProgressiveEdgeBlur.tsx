@@ -7,6 +7,7 @@ import {
   LinearGradient,
   Paint,
   Rect,
+  Skia,
   vec,
 } from '@shopify/react-native-skia';
 
@@ -117,34 +118,47 @@ const ProgressiveEdgeBlur: React.FC<Props> = props => {
   return (
     <>
       {source}
-      {LEVEL_FRACTIONS.map((fraction, level) => (
-        <Group key={fraction} layer>
+      {LEVEL_FRACTIONS.map((fraction, level) => {
+        // The mask weight is zero above the gradient start, so clipping the
+        // level there (plus 3σ of blur sampling margin) renders identically
+        // while the layers and blurs process ~35% less area per frame.
+        const clipTop = Math.max(
+          0,
+          canvasHeight - blurHeight - maxBlur * fraction * 3,
+        );
+        return (
           <Group
-            layer={
-              <Paint>
-                <Blur blur={maxBlur * fraction} mode="mirror" />
-                <ColorMatrix matrix={FROST_COLOR_MATRIX} />
-              </Paint>
-            }>
-            {source}
+            key={fraction}
+            clip={Skia.XYWHRect(0, clipTop, width, canvasHeight - clipTop)}>
+            <Group layer>
+              <Group
+                layer={
+                  <Paint>
+                    <Blur blur={maxBlur * fraction} mode="mirror" />
+                    <ColorMatrix matrix={FROST_COLOR_MATRIX} />
+                  </Paint>
+                }>
+                {source}
+              </Group>
+              <Rect
+                x={0}
+                y={0}
+                width={width}
+                height={canvasHeight}
+                blendMode="dstIn"
+                dither>
+                <LinearGradient
+                  start={maskStart}
+                  end={maskEnd}
+                  colors={LEVEL_MASKS[level]}
+                  positions={MASK_POSITIONS}
+                  mode="clamp"
+                />
+              </Rect>
+            </Group>
           </Group>
-          <Rect
-            x={0}
-            y={0}
-            width={width}
-            height={canvasHeight}
-            blendMode="dstIn"
-            dither>
-            <LinearGradient
-              start={maskStart}
-              end={maskEnd}
-              colors={LEVEL_MASKS[level]}
-              positions={MASK_POSITIONS}
-              mode="clamp"
-            />
-          </Rect>
-        </Group>
-      ))}
+        );
+      })}
     </>
   );
 };
