@@ -1,7 +1,5 @@
 import React, {useContext, useMemo, useState} from 'react';
-import {StyleSheet} from 'react-native';
 import {
-  Canvas,
   Circle,
   Group,
   Image,
@@ -16,9 +14,7 @@ import {
   runOnJS,
   SharedValue,
   useAnimatedReaction,
-  useDerivedValue,
 } from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 
 import {buildParagraph, useSatoshiFontMgr} from './GlassBalanceGraphics';
@@ -29,12 +25,12 @@ import {
   currencySymbolSelector,
 } from '../reducers/settings';
 import {convertLocalFiatToUSD} from '../reducers/ticker';
-import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
 import {ScreenSizeContext} from '../context/screenSize';
 
-// Skia renderer for the sheet's visible rows. GlassTransactionList scrolls
-// an invisible spacer of the same total height so scroll physics stay native,
-// and resolves row taps against this file's row geometry.
+// Geometry and Skia elements for the transaction rows. Nothing here renders a
+// canvas: GlassTxCanvas draws these elements once for the whole screen, and
+// GlassTransactionList scrolls an invisible spacer of the same total height so
+// scroll physics stay native and taps can be hit-tested against `rowTops`.
 
 // Drag strip + tx title row sit above the list viewport.
 export const DRAG_STRIP_HEIGHT_RATIO = 0.02;
@@ -466,34 +462,35 @@ export const buildGlassTxRowElements = (params: RowElementParams) => {
   return elements;
 };
 
-interface Props {
+interface RowElementsParams {
   rowModels: GlassTxRowModels;
   scrollY: SharedValue<number>;
-  // Measured height of the list's sync-progress header (0 when absent).
+  // Height of the pinned sync header above the first row (0 when absent).
   listHeaderOffset: SharedValue<number>;
-  // False while a card is open — only the sheet background shows then.
-  showTxList: boolean;
+  // Tallest the list viewport ever gets; a constant keeps the window from
+  // shifting while the sheet folds.
+  viewportHeight: number;
+  // False while a card is open — no rows are drawn then.
+  enabled: boolean;
 }
 
-const GlassSheetBackdrop: React.FC<Props> = props => {
-  const {rowModels, scrollY, listHeaderOffset, showTxList} = props;
+// The visible rows as Skia elements, in list-content coordinates. The window
+// is tracked on the UI thread and only crosses into React when it shifts by a
+// whole overscan block, so scrolling costs no per-frame JS work.
+export const useGlassTxRowElements = (params: RowElementsParams) => {
+  const {rowModels, scrollY, listHeaderOffset, viewportHeight, enabled} =
+    params;
   const {models, rowTops, rowBottoms} = rowModels;
 
-  const insets = useSafeAreaInsets();
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const fontMgr = useSatoshiFontMgr();
   const icons = useGlassTxIcons();
 
-  const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
-  const listTop = SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
-  const canvasHeight = SCREEN_HEIGHT - UNFOLD_SHEET_POINT - listTop;
-
-  // Re-render only when the overscanned row window shifts (~once per 8 rows).
   const [window, setWindow] = useState({start: 0, end: 0});
   useAnimatedReaction(
     () => {
-      if (!showTxList || rowBottoms.length === 0) {
+      if (!enabled || rowBottoms.length === 0) {
         return {start: 0, end: 0};
       }
       const contentTop = scrollY.value - listHeaderOffset.value;
@@ -501,7 +498,7 @@ const GlassSheetBackdrop: React.FC<Props> = props => {
         rowTops,
         rowBottoms,
         contentTop,
-        contentTop + canvasHeight,
+        contentTop + viewportHeight,
         WINDOW_OVERSCAN_ROWS,
       );
     },
@@ -510,21 +507,16 @@ const GlassSheetBackdrop: React.FC<Props> = props => {
         runOnJS(setWindow)(cur);
       }
     },
-    [showTxList, rowTops, rowBottoms, canvasHeight],
+    [enabled, rowTops, rowBottoms, viewportHeight],
   );
-
-  // List-content coordinates -> canvas coordinates.
-  const contentTransform = useDerivedValue(() => [
-    {translateY: listHeaderOffset.value - scrollY.value},
-  ]);
 
   const paragraphCache = useMemo(() => {
     return new Map<number, Record<string, SkParagraph>>();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [models, fontMgr, SCREEN_WIDTH, SCREEN_HEIGHT]);
 
-  const rowElements = useMemo(() => {
-    if (!showTxList || !fontMgr || models.length === 0) {
+  return useMemo(() => {
+    if (!enabled || !fontMgr || models.length === 0) {
       return null;
     }
     return buildGlassTxRowElements({
@@ -539,7 +531,7 @@ const GlassSheetBackdrop: React.FC<Props> = props => {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    showTxList,
+    enabled,
     fontMgr,
     models,
     window,
@@ -552,38 +544,4 @@ const GlassSheetBackdrop: React.FC<Props> = props => {
     icons.Buy,
     icons.Sell,
   ]);
-
-  const styles = getStyles(SCREEN_WIDTH, listTop, canvasHeight);
-
-  return (
-    <Canvas style={styles.canvas} pointerEvents="none">
-      <Rect
-        x={0}
-        y={0}
-        width={SCREEN_WIDTH}
-        height={canvasHeight}
-        color={SHEET_BACKGROUND}
-      />
-      {rowElements ? (
-        <Group transform={contentTransform}>{rowElements}</Group>
-      ) : null}
-    </Canvas>
-  );
 };
-
-const getStyles = (
-  screenWidth: number,
-  listTop: number,
-  canvasHeight: number,
-) =>
-  StyleSheet.create({
-    canvas: {
-      position: 'absolute',
-      top: listTop,
-      left: 0,
-      width: screenWidth,
-      height: canvasHeight,
-    },
-  });
-
-export default GlassSheetBackdrop;

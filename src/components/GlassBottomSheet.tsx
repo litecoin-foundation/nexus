@@ -20,13 +20,13 @@ import {
   getNewMainSheetPoints,
   makeSheetSnapHandlers,
 } from '../animations/useNewMainAnims';
-import {SHEET_BACKGROUND} from './GlassSheetBackdrop';
+import {SHEET_BACKGROUND} from './GlassTxRows';
 
 const ANIM_DURATION = 200;
+// How long the outgoing card stays mounted, fading, after the tab changes.
+export const CARD_SWAP_DELAY = 155;
 
 interface Props {
-  // Optional Skia layer behind the sheet.
-  backdropComponent?: React.ReactNode;
   // Captured by the floating glass tab bar when a native card is active.
   captureRef?: React.RefObject<View | null>;
   txViewComponent: React.ReactNode;
@@ -58,7 +58,6 @@ const GlassBottomSheet: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
 
   const {
-    backdropComponent,
     captureRef,
     txViewComponent,
     buyViewComponent,
@@ -150,7 +149,7 @@ const GlassBottomSheet: React.FC<Props> = props => {
   useEffect(() => {
     animTimeout.current = setTimeout(() => {
       setDalayedActiveTab(activeTab);
-    }, 155);
+    }, CARD_SWAP_DELAY);
     cardOpacity.value = withSequence(
       withTiming(0, {duration: 150}),
       withTiming(1, {duration: 300}),
@@ -163,7 +162,6 @@ const GlassBottomSheet: React.FC<Props> = props => {
   return (
     <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
       <View ref={captureRef} collapsable={false} style={styles.captureContent}>
-        {backdropComponent}
         <GestureDetector gesture={headerGesture}>
           <View collapsable={false} style={styles.headerComponent}>
             {headerComponent}

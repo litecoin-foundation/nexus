@@ -42,14 +42,16 @@ import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
 import PlasmaModal from './../components/Modals/PlasmaModal';
 import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
-import GlassBottomSheet from '../components/GlassBottomSheet';
-import GlassSheetBackdrop, {
+import GlassBottomSheet, {
+  CARD_SWAP_DELAY,
+} from '../components/GlassBottomSheet';
+import {
   DRAG_STRIP_HEIGHT_RATIO,
   GlassTxRowModels,
   SHEET_BACKGROUND,
   TX_TITLE_ROW_HEIGHT_RATIO,
   useGlassTxRowModels,
-} from '../components/GlassSheetBackdrop';
+} from '../components/GlassTxRows';
 import GlassTransactionList from '../components/GlassTransactionList';
 import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
@@ -177,7 +179,7 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
         rows={txRows}
         rowModels={txRowModels}
         folded={isBottomSheetFolded}
-        foldUnfold={(isFolded: boolean) => foldUnfoldBottomSheet(isFolded)}
+        foldUnfold={foldUnfoldBottomSheet}
         mainSheetsTranslationY={mainSheetsTranslationY}
         mainSheetsTranslationYStart={mainSheetsTranslationYStart}
         onScrollActivity={onScrollActivity}
@@ -288,6 +290,22 @@ const NewMain: React.FC<Props> = props => {
     },
     [],
   );
+
+  // The Skia rows sit in a canvas above the sheet, so they have to wait for
+  // the outgoing card to finish fading or they pop in on top of it.
+  const [showTxRows, setShowTxRows] = useState(activeTab === 0);
+  useEffect(() => {
+    if (activeTab !== 0) {
+      setShowTxRows(false);
+      // The list unmounts behind the card and comes back at the top, so the
+      // offset is cleared now rather than on remount, where a passive effect
+      // would land after the first frame had already been drawn from it.
+      txListScrollY.value = 0;
+      return;
+    }
+    const timeout = setTimeout(() => setShowTxRows(true), CARD_SWAP_DELAY);
+    return () => clearTimeout(timeout);
+  }, [activeTab, txListScrollY]);
 
   const [isBottomSheetFolded, setBottomSheetFolded] = useState(true);
   const foldUnfoldBottomSheet = useCallback((isFolded: boolean) => {
@@ -611,14 +629,6 @@ const NewMain: React.FC<Props> = props => {
     () => (
       <GlassBottomSheet
         captureRef={bottomSheetCaptureRef}
-        backdropComponent={
-          <GlassSheetBackdrop
-            rowModels={txRowModels}
-            scrollY={txListScrollY}
-            listHeaderOffset={txListHeaderOffset}
-            showTxList={activeTab === 0}
-          />
-        }
         headerComponent={<View style={styles.dragStrip} />}
         txViewComponent={TxListComponentMemo}
         mainSheetsTranslationY={mainSheetsTranslationY}
@@ -652,9 +662,6 @@ const NewMain: React.FC<Props> = props => {
     ),
     [
       TxListComponentMemo,
-      txRowModels,
-      txListScrollY,
-      txListHeaderOffset,
       mainSheetsTranslationY,
       mainSheetsTranslationYStart,
       isBottomSheetFolded,
@@ -741,7 +748,7 @@ const NewMain: React.FC<Props> = props => {
         mainSheetsTranslationY={mainSheetsTranslationY}
         txListScrollY={txListScrollY}
         listHeaderOffset={txListHeaderOffset}
-        showTxList={activeTab === 0}
+        showTxList={showTxRows}
         activeSheet={activeTab}
         sheetCaptureRef={bottomSheetCaptureRef}
         shopDisabled={!isInternetReachable}

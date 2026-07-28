@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
@@ -13,7 +6,6 @@ import Animated, {
   interpolate,
   runOnJS,
   SharedValue,
-  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -21,60 +13,37 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
-  BackdropFilter,
-  BlurMask,
   Canvas,
   ColorMatrix,
   FillType,
   Group,
   Image,
-  ImageFilter,
-  makeImageFromView,
   Path,
   RoundedRect,
   Skia,
-  TileMode,
   useImage,
 } from '@shopify/react-native-skia';
-import type {SkImage, SkParagraph, SkPath} from '@shopify/react-native-skia';
+import type {SkImage, SkPath} from '@shopify/react-native-skia';
 
-import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
-import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
+import GlassTxCanvas from './GlassTxCanvas';
+import {GlassTxRowModels} from './GlassTxRows';
 import {
-  buildGlassTxRowElements,
-  windowedRowRange,
-  WINDOW_OVERSCAN_ROWS,
-  GlassTxRowModels,
-  GLASS_TX_LIST_TOP_RATIO,
-  SHEET_BACKGROUND,
-  useGlassTxIcons,
-} from './GlassSheetBackdrop';
-import {useSatoshiFontMgr} from './GlassBalanceGraphics';
+  BAR_HEIGHT_RATIO,
+  BAR_WIDTH_RATIO,
+  getBottomOffset,
+  PRESSED_SCALE,
+  SCROLLING_SCALE,
+  THUMB_HEIGHT_RATIO,
+  THUMB_SPRING,
+  THUMB_WIDTH_RATIO,
+} from './glassTabBarLayout';
 import {ScreenSizeContext} from '../context/screenSize';
 
-// Screen-fixed tab bar. Its canvas redraws the row band under the capsule
-// so the glass can refract current content instead of a stale snapshot.
+// Screen-fixed tab bar. The glass itself is drawn by GlassTxCanvas, which sits
+// just below this overlay and owns every pixel the glass refracts; this
+// component is only the hairline, thumb, icons and gestures on top of it.
 
-const BAR_WIDTH_RATIO = 0.6693;
-const BAR_HEIGHT_RATIO = 0.0652;
-const THUMB_WIDTH_RATIO = 0.2027;
-const THUMB_HEIGHT_RATIO = 0.0547;
-
-const PRESSED_SCALE = 1.06;
-const SCROLLING_SCALE = 0.9;
-const THUMB_SPRING = {mass: 0.3, damping: 14, stiffness: 180};
-
-const GLASS_DARKEN = 0.63;
-const GLASS_BLUR_SIGMA = 1;
-
-const BAND_HEIGHT_RATIO = 0.108;
-const BAND_BLUR_SIGMA = 8;
-
-const getBottomOffset = (screenHeight: number, bottomInset: number) =>
-  Math.max(bottomInset, screenHeight * 0.026);
-
-export const getTabBarClearance = (screenHeight: number, bottomInset: number) =>
-  getBottomOffset(screenHeight, bottomInset) + screenHeight * BAR_HEIGHT_RATIO;
+export {getTabBarClearance} from './glassTabBarLayout';
 
 type IconKind = 'wallet' | 'shop' | 'card';
 
@@ -241,13 +210,10 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     sheetCaptureRef,
     shopDisabled,
   } = props;
-  const {models, rowTops, rowBottoms} = rowModels;
 
   const insets = useSafeAreaInsets();
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const fontMgr = useSatoshiFontMgr();
-  const icons = useGlassTxIcons();
   const shopIcon = useImage(require('../assets/icons/shop.png'));
   const sections = useMemo(
     () =>
@@ -275,212 +241,12 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     barWidth - thumbWidth / 2 - thumbInsetY,
   );
 
-  const bottomOffset = getBottomOffset(SCREEN_HEIGHT, insets.bottom);
-  const bandHeight = Math.max(
-    SCREEN_HEIGHT * BAND_HEIGHT_RATIO,
-    getTabBarClearance(SCREEN_HEIGHT, insets.bottom),
-  );
-  const bandTop = SCREEN_HEIGHT - bandHeight;
-  // Blur kernels need neighboring rows, and the JS-rendered row window must
-  // stay ahead of the UI-thread scroll transform during fast flings.
-  const bandSourceOverscan = bandHeight + BAND_BLUR_SIGMA * 3;
-
-  // Rows crossing the band, windowed on the UI thread.
-  const [window, setWindow] = useState({start: 0, end: 0});
-  useAnimatedReaction(
-    () => {
-      if (!showTxList || rowBottoms.length === 0) {
-        return {start: 0, end: 0};
-      }
-      const listTopOnScreen =
-        mainSheetsTranslationY.value + SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
-      const contentTop =
-        txListScrollY.value -
-        listHeaderOffset.value +
-        (bandTop - listTopOnScreen);
-      return windowedRowRange(
-        rowTops,
-        rowBottoms,
-        contentTop - bandSourceOverscan,
-        contentTop + bandHeight + bandSourceOverscan,
-        WINDOW_OVERSCAN_ROWS,
-      );
-    },
-    (cur, prev) => {
-      if (!prev || cur.start !== prev.start || cur.end !== prev.end) {
-        runOnJS(setWindow)(cur);
-      }
-    },
-    [
-      showTxList,
-      rowTops,
-      rowBottoms,
-      bandTop,
-      bandHeight,
-      bandSourceOverscan,
-      SCREEN_HEIGHT,
-    ],
-  );
-
-  // List-content coordinates -> band-canvas coordinates, live per frame.
-  const bandContentTransform = useDerivedValue(() => [
-    {
-      translateY:
-        mainSheetsTranslationY.value +
-        SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO +
-        listHeaderOffset.value -
-        txListScrollY.value -
-        bandTop,
-    },
-  ]);
-
-  // A Skia BackdropFilter can only sample pixels already drawn in its own
-  // canvas. Native card views therefore need to be captured and redrawn into
-  // the band before the progressive blur and liquid-glass filter run.
-  const [sheetSnapshot, setSheetSnapshot] = useState<SkImage | null>(null);
-  const [sheetCaptureRevision, setSheetCaptureRevision] = useState(0);
-  const captureGeneration = useRef(0);
-  const refreshSheetSnapshot = useCallback(() => {
-    setSheetCaptureRevision(revision => revision + 1);
-  }, []);
-  useAnimatedReaction(
-    () => contentActivity.value,
-    (current, previous) => {
-      if (previous !== null && previous > 0.05 && current <= 0.05) {
-        runOnJS(refreshSheetSnapshot)();
-      }
-    },
-    [contentActivity],
-  );
-  useEffect(() => {
-    if (showTxList) {
-      return;
-    }
-
-    const generation = ++captureGeneration.current;
-    let cancelled = false;
-    let latestRequest = 0;
-
-    const captureSheet = async () => {
-      const request = ++latestRequest;
-      try {
-        const image = await makeImageFromView(sheetCaptureRef);
-        if (!image) {
-          return;
-        }
-        if (
-          cancelled ||
-          generation !== captureGeneration.current ||
-          request !== latestRequest
-        ) {
-          image.dispose();
-          return;
-        }
-        setSheetSnapshot(image);
-      } catch {
-        // The view may be between native mounts during a card transition. The
-        // settled capture below retries after the new card has mounted.
-      }
-    };
-
-    const immediateCapture = setTimeout(captureSheet, 0);
-    const settledCapture = setTimeout(captureSheet, 500);
-    return () => {
-      cancelled = true;
-      clearTimeout(immediateCapture);
-      clearTimeout(settledCapture);
-    };
-  }, [activeSheet, sheetCaptureRef, sheetCaptureRevision, showTxList]);
-
-  useEffect(
-    () => () => {
-      sheetSnapshot?.dispose();
-    },
-    [sheetSnapshot],
-  );
-
-  const sheetSnapshotY = useDerivedValue(
-    () => mainSheetsTranslationY.value - bandTop,
-  );
-
-  const paragraphCache = useMemo(() => {
-    return new Map<number, Record<string, SkParagraph>>();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [models, fontMgr, SCREEN_WIDTH, SCREEN_HEIGHT]);
-
-  const bandRowElements = useMemo(() => {
-    if (!showTxList || !fontMgr || models.length === 0) {
-      return null;
-    }
-    return buildGlassTxRowElements({
-      models,
-      start: window.start,
-      end: window.end,
-      fontMgr,
-      icons,
-      paragraphCache,
-      screenWidth: SCREEN_WIDTH,
-      screenHeight: SCREEN_HEIGHT,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    showTxList,
-    fontMgr,
-    models,
-    window,
-    paragraphCache,
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    icons.Send,
-    icons.Receive,
-    icons.Convert,
-    icons.Buy,
-    icons.Sell,
-  ]);
-
   const thumbCenter = useSharedValue(
     slotCenters[activeIndex] ?? slotCenters[0],
   );
   const dragStart = useSharedValue(0);
   const pressScale = useSharedValue(1);
   const [selectionAttempt, setSelectionAttempt] = useState(0);
-
-  // Builder and blur child are hoisted; only uniforms change per frame.
-  const shaderBuilder = useMemo(
-    () => Skia.RuntimeShaderBuilder(glassTabShader),
-    [],
-  );
-  const glassBlurChild = useMemo(
-    () =>
-      Skia.ImageFilter.MakeBlur(
-        GLASS_BLUR_SIGMA,
-        GLASS_BLUR_SIGMA,
-        TileMode.Clamp,
-      ),
-    [],
-  );
-  const glassFilter = useDerivedValue(() => {
-    const scale =
-      pressScale.value *
-      interpolate(
-        contentActivity.value,
-        [0, 1],
-        [1, SCROLLING_SCALE],
-        Extrapolation.CLAMP,
-      );
-    const width = barWidth * scale;
-    const height = barHeight * scale;
-    const x = (SCREEN_WIDTH - width) / 2;
-    const y = bandHeight - bottomOffset - barHeight + (barHeight - height) / 2;
-    const capsule = [x, y, width, height];
-    return makeGlassTabFilter(
-      shaderBuilder,
-      glassBlurChild,
-      [capsule, capsule, capsule],
-      height / 2,
-      GLASS_DARKEN,
-    );
-  });
 
   // Re-sync after rejected selections and window resizes.
   useEffect(() => {
@@ -574,42 +340,19 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
 
   const thumbX = useDerivedValue(() => thumbCenter.value - thumbWidth / 2);
 
-  const capsuleX = (SCREEN_WIDTH - barWidth) / 2;
-  const capsuleY = bandHeight - bottomOffset - barHeight;
-
   return (
     <>
-      <Canvas style={styles.bandCanvas} pointerEvents="none">
-        <ProgressiveEdgeBlur
-          width={SCREEN_WIDTH}
-          canvasHeight={bandHeight}
-          blurHeight={bandHeight * 0.65}
-          maxBlur={BAND_BLUR_SIGMA}
-          backgroundColor={SHEET_BACKGROUND}>
-          {bandRowElements ? (
-            <Group transform={bandContentTransform}>{bandRowElements}</Group>
-          ) : sheetSnapshot ? (
-            <Image
-              image={sheetSnapshot}
-              x={0}
-              y={sheetSnapshotY}
-              width={SCREEN_WIDTH}
-              height={SCREEN_HEIGHT}
-              fit="fill"
-            />
-          ) : null}
-        </ProgressiveEdgeBlur>
-        <RoundedRect
-          x={capsuleX}
-          y={capsuleY + 2}
-          width={barWidth}
-          height={barHeight}
-          r={barHeight / 2}
-          color="rgba(0, 0, 0, 0.1)">
-          <BlurMask blur={6} style="normal" />
-        </RoundedRect>
-        <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
-      </Canvas>
+      <GlassTxCanvas
+        rowModels={rowModels}
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        txListScrollY={txListScrollY}
+        listHeaderOffset={listHeaderOffset}
+        showTxList={showTxList}
+        activeSheet={activeSheet}
+        sheetCaptureRef={sheetCaptureRef}
+        contentActivity={contentActivity}
+        pressScale={pressScale}
+      />
 
       <View style={styles.wrapper} pointerEvents="box-none">
         <GestureDetector gesture={barGesture}>
@@ -660,17 +403,6 @@ const getStyles = (
   bottomInset: number,
 ) =>
   StyleSheet.create({
-    bandCanvas: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
-      height: Math.max(
-        screenHeight * BAND_HEIGHT_RATIO,
-        getTabBarClearance(screenHeight, bottomInset),
-      ),
-      zIndex: 3,
-    },
     wrapper: {
       position: 'absolute',
       left: 0,

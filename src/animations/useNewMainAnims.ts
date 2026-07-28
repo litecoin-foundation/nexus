@@ -82,7 +82,13 @@ export const makeSheetSnapHandlers = (config: SheetSnapConfig) => {
     const y = e.translationY + mainSheetsTranslationYStart.value;
     let destSnapPoint = 0;
     if (y > UNFOLD_SHEET_POINT && y < FOLD_SHEET_POINT) {
-      destSnapPoint = y + e.velocityY * dragToss;
+      // A hard flick's toss can aim well past a snap point. Clamping keeps the
+      // sheet inside its travel, which the Skia row canvas relies on to know
+      // how far up rows can ever be drawn.
+      destSnapPoint = Math.min(
+        Math.max(y + e.velocityY * dragToss, UNFOLD_SHEET_POINT),
+        FOLD_SHEET_POINT,
+      );
     } else {
       destSnapPoint = folded ? UNFOLD_SHEET_POINT : FOLD_SHEET_POINT;
     }

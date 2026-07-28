@@ -84,52 +84,41 @@ const buildLevelMask = (level: number) => {
 const LEVEL_MASKS = LEVEL_FRACTIONS.map((_, level) => buildLevelMask(level));
 
 interface Props {
+  // The content to frost, in canvas coordinates. The caller draws it plainly
+  // first; this only adds the blurred, gradient-masked copies on top, so the
+  // source must already be opaque across the band (a transparent source
+  // blurs to dark premultiplied-alpha fringes).
   children?: ReactNode;
   width: number;
-  canvasHeight: number;
+  // Band to frost, in canvas coordinates.
+  top: number;
+  bottom: number;
   blurHeight: number;
   maxBlur: number;
-  backgroundColor: string;
 }
 
 const ProgressiveEdgeBlur: React.FC<Props> = props => {
-  const {children, width, canvasHeight, blurHeight, maxBlur, backgroundColor} =
-    props;
+  const {children, width, top, bottom, blurHeight, maxBlur} = props;
   const maskStart = useMemo(
-    () => vec(0, canvasHeight - blurHeight),
-    [blurHeight, canvasHeight],
+    () => vec(0, bottom - blurHeight),
+    [blurHeight, bottom],
   );
-  const maskEnd = useMemo(() => vec(0, canvasHeight), [canvasHeight]);
-
-  const source = (
-    <>
-      {/* An opaque source prevents dark premultiplied-alpha blur fringes. */}
-      <Rect
-        x={0}
-        y={0}
-        width={width}
-        height={canvasHeight}
-        color={backgroundColor}
-      />
-      {children}
-    </>
-  );
+  const maskEnd = useMemo(() => vec(0, bottom), [bottom]);
 
   return (
     <>
-      {source}
       {LEVEL_FRACTIONS.map((fraction, level) => {
         // The mask weight is zero above the gradient start, so clipping the
         // level there (plus 3σ of blur sampling margin) renders identically
-        // while the layers and blurs process ~35% less area per frame.
+        // while the layers and blurs process a fraction of the area.
         const clipTop = Math.max(
-          0,
-          canvasHeight - blurHeight - maxBlur * fraction * 3,
+          top,
+          bottom - blurHeight - maxBlur * fraction * 3,
         );
         return (
           <Group
             key={fraction}
-            clip={Skia.XYWHRect(0, clipTop, width, canvasHeight - clipTop)}>
+            clip={Skia.XYWHRect(0, clipTop, width, bottom - clipTop)}>
             <Group layer>
               <Group
                 layer={
@@ -138,13 +127,13 @@ const ProgressiveEdgeBlur: React.FC<Props> = props => {
                     <ColorMatrix matrix={FROST_COLOR_MATRIX} />
                   </Paint>
                 }>
-                {source}
+                {children}
               </Group>
               <Rect
                 x={0}
-                y={0}
+                y={top}
                 width={width}
-                height={canvasHeight}
+                height={bottom - top}
                 blendMode="dstIn"
                 dither>
                 <LinearGradient

@@ -35,24 +35,29 @@ import {
   firstRowAt,
   GlassTxRowModels,
   GLASS_TX_LIST_TOP_RATIO,
-  GLASS_TX_SECTION_HEADER_HEIGHT_RATIO,
   ROW_BORDER,
   MUTED_TEXT,
-} from './GlassSheetBackdrop';
+} from './GlassTxRows';
 import {
   decimalSyncedSelector,
   recoveryProgressSelector,
   getRecoveryInfo,
 } from '../reducers/info';
 
-// Invisible native scroller; GlassSheetBackdrop draws the visible rows so the
-// tab bar glass can refract them. The Skia rows are positioned from scrollY,
-// so scrollY must be written on the UI thread — a JS-side scroll handler
-// makes every drawn frame wait on the JS thread and stutters the whole list.
-// That is why this is a plain Animated.ScrollView over one fixed-height
-// spacer (row geometry is deterministic in rowModels) instead of a list
-// component: FlashList v2 only supports plain-JS onScroll. Row taps are
-// resolved by hit-testing the shared row geometry.
+// Invisible native scroller; GlassTxCanvas draws the visible rows so the tab
+// bar glass can refract them. The Skia rows are positioned from scrollY, so
+// scrollY must be written on the UI thread — a JS-side scroll handler makes
+// every drawn frame wait on the JS thread and stutters the whole list. That is
+// why this is a plain Animated.ScrollView over one fixed-height spacer (row
+// geometry is deterministic in rowModels) instead of a list component:
+// FlashList v2 only supports plain-JS onScroll. Row taps are resolved by
+// hit-testing the shared row geometry.
+//
+// The sync header is pinned above the scroller, so the scroller's origin is
+// the first row's origin: a tap at e.y is at content offset e.y + scrollY, and
+// listHeaderOffset (the header's height) is what shifts the Skia rows down.
+
+const IS_ANDROID = Platform.OS === 'android';
 
 type ItemType = {
   hash: string;
@@ -117,7 +122,6 @@ const GlassTransactionList: React.FC<Props> = props => {
 
   const listContentHeight =
     rowBottoms.length > 0 ? rowBottoms[rowBottoms.length - 1] : 0;
-  const headerRowHeight = SCREEN_HEIGHT * GLASS_TX_SECTION_HEADER_HEIGHT_RATIO;
 
   const {recoveryMode, recoveryFinished, syncedToChain} = useAppSelector(
     state => state.info!,
@@ -202,8 +206,13 @@ const GlassTransactionList: React.FC<Props> = props => {
     }
   }, [showSyncProgress, listHeaderOffset]);
 
+  // Pinned above the scroller. Its height is the offset the Skia rows are
+  // drawn at, so it is measured into listHeaderOffset.
   const SyncProgressIndicator = (
-    <>
+    <View
+      onLayout={e => {
+        listHeaderOffset.value = e.nativeEvent.layout.height;
+      }}>
       <View style={styles.headerContainer}>
         <TranslateText
           textKey={recoveryMode ? 'recover_txs' : 'load_txs'}
@@ -236,57 +245,74 @@ const GlassTransactionList: React.FC<Props> = props => {
         ) : null}
       </View>
       <ProgressBar percentageProgress={percentageProgress} />
-    </>
+      <TranslateText
+        textKey={'txs_take_time_to_appear'}
+        domain="onboarding"
+        maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+        textStyle={styles.noteText}
+        numberOfLines={3}
+      />
+    </View>
   );
 
-  const [isListScrollable, setIsListScrollable] = useState(false);
+  // Both measured, so neither goes stale when the pinned header appears and
+  // resizes the scroller without changing its content. Until the first layout
+  // lands the viewport is assumed to be the whole container, which is what it
+  // is whenever the sync header is absent.
+  const [viewportHeight, setViewportHeight] = useState(scrollContainerHeight);
+  const [contentHeight, setContentHeight] = useState(0);
+  const isListScrollable = contentHeight > viewportHeight;
+
   const startClosing = useSharedValue(false);
   const yStartPos = useSharedValue(-1);
   const momentumActive = useSharedValue(false);
   const lastMomentumEnd = useSharedValue(0);
+  const caughtFling = useSharedValue(false);
   const lastActivityMark = useSharedValue(0);
 
-  const handleContentSizeChange = (
-    contentWidth: number,
-    contentHeight: number,
-  ) => {
-    const scrollable = contentHeight > scrollContainerHeight;
-    setIsListScrollable(scrollable);
-  };
+  // Reanimated keys a scroll handler on its worklets' code hash, never on the
+  // values they capture, so the handler below is built once and any plain JS
+  // value it reads would stay frozen at its first-render value. `folded`
+  // changes, so it has to reach the UI thread as a shared value.
+  const foldedValue = useSharedValue(folded);
+  useEffect(() => {
+    foldedValue.value = folded;
+  }, [folded, foldedValue]);
 
-  const isAndroid = Platform.OS === 'android';
-
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: e => {
-      const offsetY = e.contentOffset.y;
-      scrollY.value = offsetY;
-      startClosing.value = !folded && offsetY === 0;
-      if (onScrollActivity) {
-        const now = Date.now();
-        if (now - lastActivityMark.value > 200) {
-          lastActivityMark.value = now;
-          runOnJS(onScrollActivity)();
+  const scrollHandler = useAnimatedScrollHandler(
+    {
+      onScroll: e => {
+        const offsetY = e.contentOffset.y;
+        scrollY.value = offsetY;
+        startClosing.value = !foldedValue.value && offsetY === 0;
+        if (onScrollActivity) {
+          const now = Date.now();
+          if (now - lastActivityMark.value > 200) {
+            lastActivityMark.value = now;
+            runOnJS(onScrollActivity)();
+          }
         }
-      }
+      },
+      onBeginDrag: e => {
+        // A scroll attempt while folded unfolds the sheet.
+        if (foldedValue.value && (IS_ANDROID || !startClosing.value)) {
+          runOnJS(foldUnfold)(true);
+        }
+        startClosing.value = !foldedValue.value && e.contentOffset.y === 0;
+      },
+      onEndDrag: e => {
+        startClosing.value = !foldedValue.value && e.contentOffset.y === 0;
+      },
+      onMomentumBegin: () => {
+        momentumActive.value = true;
+      },
+      onMomentumEnd: () => {
+        momentumActive.value = false;
+        lastMomentumEnd.value = Date.now();
+      },
     },
-    onBeginDrag: e => {
-      // A scroll attempt while folded unfolds the sheet.
-      if (folded && (isAndroid || !startClosing.value)) {
-        runOnJS(foldUnfold)(true);
-      }
-      startClosing.value = !folded && e.contentOffset.y === 0;
-    },
-    onEndDrag: e => {
-      startClosing.value = !folded && e.contentOffset.y === 0;
-    },
-    onMomentumBegin: () => {
-      momentumActive.value = true;
-    },
-    onMomentumEnd: () => {
-      momentumActive.value = false;
-      lastMomentumEnd.value = Date.now();
-    },
-  });
+    [foldUnfold, onScrollActivity],
+  );
 
   const handleRowPress = useCallback(
     (index: number) => {
@@ -344,28 +370,26 @@ const GlassTransactionList: React.FC<Props> = props => {
   // Rows have no native views; taps are resolved against the row geometry.
   // Pressable-like timing: any hold without movement counts on release.
   const tapGesture = Gesture.Tap()
+    .simultaneousWithExternalGesture(scrollViewRef)
+    // A press has no time limit, like the Pressable rows this replaced; it is
+    // movement past the touch slop that hands the touch to the scroller.
     .maxDuration(10000)
     .maxDistance(20)
+    .onTouchesDown(() => {
+      // A touch that catches a fling only stops it, exactly as it did when the
+      // rows were native pressables inside the scroller.
+      caughtFling.value =
+        momentumActive.value || Date.now() - lastMomentumEnd.value < 120;
+    })
     .onEnd(e => {
       'worklet';
-      // A tap that stops (or closely follows) a fling shouldn't open a row —
-      // the native list swallowed those touches too.
-      if (momentumActive.value || Date.now() - lastMomentumEnd.value < 120) {
+      if (caughtFling.value || rowBottoms.length === 0) {
         return;
       }
-      if (rowBottoms.length === 0) {
-        return;
-      }
-      const y = e.y + scrollY.value - listHeaderOffset.value;
-      if (y < 0) {
-        return;
-      }
+      const y = e.y + scrollY.value;
       const index = firstRowAt(rowBottoms, y);
+      // Past the last row (the footer) the tap falls outside every row.
       if (y < rowTops[index] || y >= rowBottoms[index]) {
-        return;
-      }
-      // Section headers are not tappable.
-      if (rowBottoms[index] - rowTops[index] <= headerRowHeight + 0.5) {
         return;
       }
       runOnJS(handleRowPress)(index);
@@ -379,24 +403,12 @@ const GlassTransactionList: React.FC<Props> = props => {
       <GestureDetector gesture={listGestures}>
         <Animated.ScrollView
           ref={scrollViewRef}
+          style={styles.scroller}
           bounces={false}
           scrollEventThrottle={1}
-          onContentSizeChange={handleContentSizeChange}
+          onLayout={e => setViewportHeight(e.nativeEvent.layout.height)}
+          onContentSizeChange={(_, height) => setContentHeight(height)}
           onScroll={scrollHandler}>
-          {showSyncProgress ? (
-            <View
-              onLayout={e => {
-                listHeaderOffset.value = e.nativeEvent.layout.height;
-              }}>
-              <TranslateText
-                textKey={'txs_take_time_to_appear'}
-                domain="onboarding"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                textStyle={styles.noteText}
-                numberOfLines={3}
-              />
-            </View>
-          ) : null}
           {rows.length === 0 ? (
             <TransactionListEmpty />
           ) : (
@@ -411,6 +423,9 @@ const GlassTransactionList: React.FC<Props> = props => {
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    scroller: {
+      flex: 1,
+    },
     sectionHeaderText: {
       color: MUTED_TEXT,
       fontFamily: 'Satoshi Variable',
