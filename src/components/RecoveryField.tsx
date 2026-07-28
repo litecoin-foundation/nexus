@@ -364,7 +364,12 @@ const RecoveryField: React.FC<Props> = props => {
           <View
             style={[
               styles.suggestionBar,
-              {bottom: keyboardHeight - insets.bottom},
+              {
+                bottom:
+                  Platform.OS === 'android'
+                    ? keyboardHeight
+                    : keyboardHeight - insets.bottom,
+              },
             ]}>
             {suggestions.map(word => (
               <TouchableOpacity
@@ -471,7 +476,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: 40,
       backgroundColor: 'white',
       borderRadius: 20,
-      paddingVertical: 10,
       paddingHorizontal: 5,
       alignItems: 'center',
       justifyContent: 'center',
