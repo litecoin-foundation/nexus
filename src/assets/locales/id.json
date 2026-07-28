@@ -97,7 +97,12 @@
     "taking_too_long": "Aplikasi perlu direstart.",
     "lnd_no_connection": "Gagal terhubung ke jaringan Litecoin. Coba gunakan VPN atau aktifkan Tor.",
     "got_it": "Paham",
-    "open": "Buka"
+    "open": "Buka",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "Beli ",

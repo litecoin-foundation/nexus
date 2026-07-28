@@ -51,19 +51,29 @@ import {
 // Draw the top-half backdrop and tab glass in the same canvas so the
 // BackdropFilter refracts live content during the fold/unfold morph.
 
-const GRADIENT_COLORS = ['#000001', '#08208A', '#1249EA', '#60A2F9', '#8FBCFB'];
-const GRADIENT_POSITIONS = [0, 0.285, 0.503, 0.756, 1];
-const GRADIENT_RY_RATIO = 1.0365;
+// Also consumed by FoldedSkinView, which derives an RN-view fallback of
+// this gradient for the lock screen and the unlock reveal overlay (plain
+// views paint on the mount commit, Skia canvases a few frames later).
+export const GRADIENT_COLORS = [
+  '#000001',
+  '#08208A',
+  '#1249EA',
+  '#60A2F9',
+  '#8FBCFB',
+];
+export const GRADIENT_POSITIONS = [0, 0.285, 0.503, 0.756, 1];
+export const GRADIENT_RY_RATIO = 1.0365;
 const GRADIENT_RX_RATIO = 3.6453;
 
 const GLASS_DARKEN = 1.0;
 
-const BORDER_GRADIENT_COLORS = [
+// Shared by the tx-detail glass sheet so every glass edge matches.
+export const BORDER_GRADIENT_COLORS = [
   'rgba(238, 235, 235, 0.67)',
   'rgba(227, 223, 223, 0.06)',
   'rgba(216, 210, 210, 0.25)',
 ];
-const BORDER_GRADIENT_POSITIONS = [0, 0.49, 1];
+export const BORDER_GRADIENT_POSITIONS = [0, 0.49, 1];
 
 interface Props {
   mainSheetsTranslationY: SharedValue<number>;

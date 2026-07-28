@@ -97,7 +97,12 @@
     "taking_too_long": "Kailangan ng pag-restart ng app.",
     "lnd_no_connection": "Nabigong kumonekta sa Litecoin network. Subukang gumamit ng VPN o paganahin ang Tor.",
     "got_it": "Naintindihan",
-    "open": "Buksan"
+    "open": "Buksan",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "Bumili ",

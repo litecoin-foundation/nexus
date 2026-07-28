@@ -97,7 +97,12 @@
     "taking_too_long": "راه‌اندازی مجدد برنامه مورد نیاز است.",
     "lnd_no_connection": "اتصال به شبکه لایت‌کوین شکست خورد. سعی کنید از VPN استفاده کنید یا Tor را فعال کنید.",
     "got_it": "متوجه شدم",
-    "open": "باز کردن"
+    "open": "باز کردن",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "خرید ",

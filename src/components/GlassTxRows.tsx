@@ -251,6 +251,36 @@ interface RowElementParams {
 // without bound; rebuilding an evicted row's paragraphs is cheap.
 const PARAGRAPH_CACHE_CAP = 400;
 
+// The page canvas and the tx-detail modal's composite canvas render the same
+// rows; one cache per models array lets the second mount reuse paragraphs the
+// first already shaped. Keyed weakly so a replaced tx list frees its
+// paragraphs. The font manager is deliberately NOT part of the identity:
+// useFonts builds a provider per hook instance over the same typefaces, and a
+// shaped SkParagraph is self-contained, so identity-checking it would make
+// the two consumers silently stop sharing.
+const paragraphCacheRegistry = new WeakMap<
+  GlassTxRowModel[],
+  {
+    sizeKey: string;
+    cache: Map<number, Record<string, SkParagraph>>;
+  }
+>();
+
+const getSharedParagraphCache = (
+  models: GlassTxRowModel[],
+  screenWidth: number,
+  screenHeight: number,
+) => {
+  const sizeKey = `${screenWidth}x${screenHeight}`;
+  const entry = paragraphCacheRegistry.get(models);
+  if (entry && entry.sizeKey === sizeKey) {
+    return entry.cache;
+  }
+  const cache = new Map<number, Record<string, SkParagraph>>();
+  paragraphCacheRegistry.set(models, {sizeKey, cache});
+  return cache;
+};
+
 // Skia elements for rows [start, end], in list-content coordinates.
 export const buildGlassTxRowElements = (params: RowElementParams) => {
   const {
@@ -510,10 +540,10 @@ export const useGlassTxRowElements = (params: RowElementsParams) => {
     [enabled, rowTops, rowBottoms, viewportHeight],
   );
 
-  const paragraphCache = useMemo(() => {
-    return new Map<number, Record<string, SkParagraph>>();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [models, fontMgr, SCREEN_WIDTH, SCREEN_HEIGHT]);
+  const paragraphCache = useMemo(
+    () => getSharedParagraphCache(models, SCREEN_WIDTH, SCREEN_HEIGHT),
+    [models, SCREEN_WIDTH, SCREEN_HEIGHT],
+  );
 
   return useMemo(() => {
     if (!enabled || !fontMgr || models.length === 0) {

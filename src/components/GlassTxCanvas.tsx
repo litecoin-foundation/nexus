@@ -65,7 +65,7 @@ const GLASS_BLUR_SIGMA = 1;
 // it above UNFOLD_SHEET_POINT for a frame or two. The canvas starts that much
 // higher than the resting list top; nothing can be drawn above its own edge,
 // and without the margin the first row would be sliced during the overshoot.
-const SHEET_OVERSHOOT_RATIO = 0.1;
+export const SHEET_OVERSHOOT_RATIO = 0.1;
 
 // Canvas y of the first row: the sheet's position, plus the chrome above the
 // list, plus the pinned sync header. The row transform and the clip must agree
@@ -73,7 +73,7 @@ const SHEET_OVERSHOOT_RATIO = 0.1;
 // read them here. Reanimated derives a mapper's inputs from the updater's OWN
 // closure and does not look inside a function it captures, so a shared value
 // read in here would never mark the mapper dirty.
-const rowsTopInCanvas = (
+export const rowsTopInCanvas = (
   sheetY: number,
   listTopInSheet: number,
   canvasTop: number,

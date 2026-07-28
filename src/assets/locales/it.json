@@ -97,7 +97,12 @@
     "taking_too_long": "Riavvio dell'app richiesto.",
     "lnd_no_connection": "Connessione alla rete Litecoin fallita. Prova a usare una VPN o attiva Tor.",
     "got_it": "Capito",
-    "open": "Apri"
+    "open": "Apri",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "Compra ",

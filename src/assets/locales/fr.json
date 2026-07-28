@@ -97,7 +97,12 @@
     "taking_too_long": "Redémarrage de l'application requis.",
     "lnd_no_connection": "Échec de la connexion au réseau Litecoin. Essayez d'utiliser un VPN ou d'activer Tor.",
     "got_it": "Compris",
-    "open": "Ouvrir"
+    "open": "Ouvrir",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "Acheter",

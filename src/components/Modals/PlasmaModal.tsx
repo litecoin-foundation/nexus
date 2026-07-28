@@ -51,7 +51,8 @@ interface Props {
 // NOTE: We have to detect old phones since they cannot handle fast animations
 const SPRING_BACK_ANIM_DURATION =
   Platform.OS === 'android' && Platform.Version <= 31 ? 200 : 100;
-const SWIPE_CARDS_ANIM_DURATION =
+// Shared with GlassTxDetailModal so the old-phone tuning cannot diverge.
+export const SWIPE_CARDS_ANIM_DURATION =
   Platform.OS === 'android' && Platform.Version <= 31
     ? 350
     : Platform.OS === 'android'

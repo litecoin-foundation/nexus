@@ -97,7 +97,12 @@
     "taking_too_long": "Требуется перезапуск приложения.",
     "lnd_no_connection": "Не удалось подключиться к сети Litecoin. Попробуйте использовать VPN или включить Tor.",
     "got_it": "Понятно",
-    "open": "Открыть"
+    "open": "Открыть",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "Купить ",

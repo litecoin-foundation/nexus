@@ -97,7 +97,12 @@
     "taking_too_long": "Reikalingas programos paleidimas iš naujo.",
     "lnd_no_connection": "Nepavyko prisijungti prie Litecoin tinklo. Pabandykite naudoti VPN arba įjungti Tor.",
     "got_it": "Supratau",
-    "open": "Atidaryti"
+    "open": "Atidaryti",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "PIRKTI ",

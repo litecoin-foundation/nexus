@@ -41,7 +41,7 @@ import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
 import PlasmaModal from './../components/Modals/PlasmaModal';
-import TxDetailModalContent from './../components/Modals/TxDetailModalContent';
+import GlassTxDetailModal from './../components/Modals/GlassTxDetailModal';
 import GlassBottomSheet, {
   CARD_SWAP_DELAY,
 } from '../components/GlassBottomSheet';
@@ -676,12 +676,6 @@ const NewMain: React.FC<Props> = props => {
     ],
   );
 
-  const plasmaModal_TxDetailModalContent_backSpecifiedStyle = {
-    backgroundColor: 'rgba(17, 74, 175, 0.8)',
-  };
-  const plasmaModal_TxDetailModalContent_gapSpecifiedStyle = {
-    backgroundColor: 'transparent',
-  };
   const plasmaModal_PinModalContent_backSpecifiedStyle = {
     backgroundColor: 'rgba(19,58,138, 0.6)',
   };
@@ -754,44 +748,23 @@ const NewMain: React.FC<Props> = props => {
         shopDisabled={!isInternetReachable}
       />
 
-      <PlasmaModal
+      <GlassTxDetailModal
         isOpened={isTxDetailModalOpened}
         close={() => {
           setTxDetailModalOpened(false);
         }}
-        isFromBottomToTop={true}
-        isSwiperActive={transactions.length > 1 ? true : false}
-        animDuration={250}
-        gapInPixels={SCREEN_HEIGHT * 0.22}
-        backSpecifiedStyle={plasmaModal_TxDetailModalContent_backSpecifiedStyle}
-        gapSpecifiedStyle={plasmaModal_TxDetailModalContent_gapSpecifiedStyle}
+        transaction={selectedTransaction}
+        txsNum={transactions.length}
+        setTransactionIndex={(txIndex: number) => {
+          setTransactionIndex(txIndex);
+        }}
         swipeToPrevTx={swipeToPrevTx}
         swipeToNextTx={swipeToNextTx}
-        renderBody={(
-          _,
-          __,
-          ___,
-          ____,
-          cardTranslateAnim: any,
-          cardOpacityAnim: any,
-          prevNextCardOpacityAnim: any,
-          paginationOpacityAnim: any,
-        ) => (
-          <TxDetailModalContent
-            close={() => {
-              setTxDetailModalOpened(false);
-            }}
-            transaction={selectedTransaction}
-            txsNum={transactions.length}
-            setTransactionIndex={(txIndex: number) => {
-              setTransactionIndex(txIndex);
-            }}
-            cardTranslateAnim={cardTranslateAnim}
-            cardOpacityAnim={cardOpacityAnim}
-            prevNextCardOpacityAnim={prevNextCardOpacityAnim}
-            paginationOpacityAnim={paginationOpacityAnim}
-          />
-        )}
+        contentViewRef={mainContentRef}
+        rowModels={txRowModels}
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        txListScrollY={txListScrollY}
+        listHeaderOffset={txListHeaderOffset}
       />
 
       <LiquidGlassWalletModal

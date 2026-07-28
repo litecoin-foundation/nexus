@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useCallback,
-  useContext,
-  Fragment,
-} from 'react';
+import React, {useEffect, useCallback, useContext, Fragment} from 'react';
 import {View, StyleSheet, Platform, TouchableOpacity} from 'react-native';
 import Animated, {
   useSharedValue,
@@ -18,22 +12,19 @@ import {formatTxDate} from '../../utils/date';
 import {isConvertMetadata, isBuySellMetadata} from '../../utils/txMetadata';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {IDisplayedTx, labelTransaction} from '../../reducers/transaction';
 import {
-  IDisplayedTx,
-  labelTransaction,
-  addToTxHashesWithExtraData,
-  checkTxHashesWithExtraData,
-} from '../../reducers/transaction';
+  getTxTitleMeta,
+  useTxExplorerUrl,
+  useTxSenderAndFee,
+} from './useTxDetailData';
 import {
   satsToSubunitSelector,
   subunitSymbolSelector,
-  defaultExplorerSelector,
-  mwebDefaultExplorerSelector,
   getCurrencySymbol,
   currencySymbolSelector,
 } from '../../reducers/settings';
 import {convertLocalFiatToUSD} from '../../reducers/ticker';
-import {fetchResolve} from '../../utils/tor';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -70,64 +61,10 @@ export default function TxDetailModalContent(props: Props) {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const dispatch = useAppDispatch();
-  const torEnabled = useAppSelector(state => state.settings.torEnabled);
 
-  const {textKey} = {
-    current: function () {
-      switch (transaction.metaLabel) {
-        case 'Send':
-          return {
-            textKey: 'sent',
-            txIcon: require('../../assets/icons/sendtx.png'),
-            amountColor: '#212124',
-          };
-        case 'Receive':
-          return {
-            textKey: 'received',
-            txIcon: require('../../assets/icons/receivetx.png'),
-            amountColor: '#1162E6',
-          };
-        case 'Buy':
-          return {
-            textKey:
-              isBuySellMetadata(transaction.providerMeta) &&
-              transaction.providerMeta.status
-                ? transaction.providerMeta.status === 'pending'
-                  ? 'buying'
-                  : 'bought'
-                : 'bought',
-            txIcon: require('../../assets/icons/buytx.png'),
-            amountColor: '#1162E6',
-          };
-        case 'Sell':
-          return {
-            textKey:
-              isBuySellMetadata(transaction.providerMeta) &&
-              transaction.providerMeta.status
-                ? transaction.providerMeta.status === 'pending'
-                  ? 'selling'
-                  : 'sold'
-                : 'sold',
-            txIcon: require('../../assets/icons/selltx.png'),
-            amountColor: '#212124',
-          };
-        case 'Convert':
-          return {
-            textKey: 'Converted',
-            txIcon: require('../../assets/icons/converttx.png'),
-            amountColor: '#1162E6',
-          };
-        default:
-          return {
-            textKey: 'Unknown',
-            txIcon: null,
-            amountColor: '#212124',
-          };
-      }
-    },
-  }.current();
+  const {textKey} = getTxTitleMeta(transaction);
+  const currentExplorer = useTxExplorerUrl(transaction);
 
-  /* eslint-disable react-hooks/rules-of-hooks */
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
@@ -148,65 +85,10 @@ export default function TxDetailModalContent(props: Props) {
     2,
   );
 
-  const [allInputAddrs, setAllInputAddrs] = useState<string[]>([]);
-  const [fetchedTxFee, setFetchedTxFee] = useState<number | null>(null);
+  const {allInputAddrs, fetchedTxFee} = useTxSenderAndFee(transaction);
 
   const myOutputs = transaction.myOutputs || [];
   const otherOutputs = transaction.otherOutputs || [];
-
-  async function getSenderAndFee(abortController: any) {
-    try {
-      const cached = dispatch(checkTxHashesWithExtraData(transaction.hash));
-      if (!cached) {
-        const data: any = await fetchResolve(
-          `https://litecoinspace.org/api/tx/${transaction.hash}`,
-          {
-            signal: abortController.signal,
-          },
-          torEnabled,
-        );
-
-        let inputAddrs: string[] = [];
-        let fee: number | null = 0;
-
-        if (data.hasOwnProperty('vin') && Array.isArray(data.vin)) {
-          inputAddrs = data.vin.map(
-            (input: any) => input.prevout.scriptpubkey_address,
-          );
-        }
-        setAllInputAddrs(inputAddrs);
-
-        if (data.hasOwnProperty('fee')) {
-          fee = data.fee / 100000000;
-          setFetchedTxFee(fee);
-        } else {
-          fee = null;
-          setFetchedTxFee(fee);
-        }
-
-        dispatch(
-          addToTxHashesWithExtraData({
-            hash: transaction.hash,
-            inputAddrs,
-            fee,
-          }),
-        );
-      } else {
-        setAllInputAddrs(cached.inputAddrs);
-        setFetchedTxFee(cached.fee);
-      }
-    } catch (err) {
-      setAllInputAddrs([]);
-      setFetchedTxFee(null);
-    }
-  }
-
-  useEffect(() => {
-    const abortController = new AbortController();
-    getSenderAndFee(abortController);
-    return () => abortController.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transaction]);
 
   const fadeNewDetailsOpacity = useSharedValue(1);
   const fadeNewDetailsIn = useAnimatedStyle(() => {
@@ -285,7 +167,6 @@ export default function TxDetailModalContent(props: Props) {
     txDetailsUrl,
     status,
     // paymentMethod,
-    currentExplorer,
   } = {
     current: function () {
       let fiatSymbolProp = '';
@@ -301,7 +182,6 @@ export default function TxDetailModalContent(props: Props) {
       let txDetailsUrlProp = '';
       let statusProp = '';
       // let paymentMethodProp = '';
-      let currentExplorerProp = '';
 
       if (isBuySellMetadata(transaction.providerMeta)) {
         fiatSymbolProp = transaction.providerMeta.fiatCurrency
@@ -333,16 +213,6 @@ export default function TxDetailModalContent(props: Props) {
         blockchainFeeProp = fetchedTxFee || 'unknown';
       }
 
-      if (transaction.isMweb) {
-        currentExplorerProp = useAppSelector(state =>
-          mwebDefaultExplorerSelector(state, transaction.blockHeight),
-        );
-      } else {
-        currentExplorerProp = useAppSelector(state =>
-          defaultExplorerSelector(state, transaction.hash),
-        );
-      }
-
       return {
         fiatSymbol: fiatSymbolProp,
         providerTxId: providerTxIdProp,
@@ -357,7 +227,6 @@ export default function TxDetailModalContent(props: Props) {
         txDetailsUrl: txDetailsUrlProp,
         status: statusProp,
         // paymentMethod: paymentMethodProp,
-        currentExplorer: currentExplorerProp,
       };
     },
   }.current();

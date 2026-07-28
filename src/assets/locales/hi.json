@@ -97,7 +97,12 @@
     "taking_too_long": "ऐप पुनः आरंभ आवश्यक।",
     "lnd_no_connection": "लाइटकॉइन नेटवर्क से कनेक्शन में विफलता. VPN या Tor सक्षम करके प्रयास करें।",
     "got_it": "समझ गया",
-    "open": "खोलें"
+    "open": "खोलें",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "खरीदें ",

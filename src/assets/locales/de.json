@@ -97,7 +97,12 @@
     "taking_too_long": "App-Neustart erforderlich.",
     "lnd_no_connection": "Verbindung zum Litecoin-Netzwerk fehlgeschlagen. Versuchen Sie ein VPN zu verwenden oder Tor zu aktivieren.",
     "got_it": "Verstanden",
-    "open": "Öffnen"
+    "open": "Öffnen",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "Kaufen ",

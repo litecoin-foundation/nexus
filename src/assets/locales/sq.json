@@ -97,7 +97,12 @@
     "taking_too_long": "Kërkohet rianisjimi i aplikacionit.",
     "lnd_no_connection": "Dështoi lidhja me rrjetin e Litecoin. Provo të përdorësh një VPN ose aktivizoje Tor.",
     "got_it": "E kuptova",
-    "open": "Hap"
+    "open": "Hap",
+    "status": "STATUS",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "show_less": "show less",
+    "show_less_change": "show less change"
   },
   "buyTab": {
     "buy": "Bli ",
