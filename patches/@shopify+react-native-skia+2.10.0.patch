@@ -28,3 +28,18 @@ index c8a938b..a62b545 100644
  
    explicit JsiSkParagraphBuilder(std::shared_ptr<RNSkPlatformContext> context,
                                   para::ParagraphStyle paragraphStyle,
+diff --git a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkImageFilter.h b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkImageFilter.h
+index 68763c2..21f624e 100644
+--- a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkImageFilter.h
++++ b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkImageFilter.h
+@@ -28,7 +28,9 @@ public:
+       : JsiSkWrappingSkPtrNativeObject<JsiSkImageFilter, SkImageFilter>(
+             std::move(context), std::move(imageFilter)) {}
+ 
+-  size_t getMemoryPressure() override { return 1024 * 1024; }
++  // Patched (nexus): filters are rebuilt per animated frame; the stock
++  // flat 1MB advisory churns the UI-runtime GC ~16x harder than real.
++  size_t getMemoryPressure() override { return 64 * 1024; }
+ 
+   static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {
+     installCommon(runtime, prototype);

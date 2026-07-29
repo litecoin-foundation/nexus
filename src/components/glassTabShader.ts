@@ -1,4 +1,4 @@
-import {processUniforms, Skia} from '@shopify/react-native-skia';
+import {processUniforms, Skia, TileMode} from '@shopify/react-native-skia';
 import type {
   SkImageFilter,
   SkRuntimeShaderBuilder,
@@ -170,6 +170,8 @@ vec4 main(vec2 fragCoord) {
 }
 `)!;
 
+const CROP_PAD = 120;
+
 // Caller hoists the builder and blur child.
 export const makeGlassTabFilter = (
   builder: SkRuntimeShaderBuilder,
@@ -193,10 +195,32 @@ export const makeGlassTabFilter = (
     },
     builder,
   );
-  return Skia.ImageFilter.MakeRuntimeShaderWithChildren(
-    builder,
-    0,
-    ['blurredImage'],
-    [blurChild],
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const box of boxes) {
+    minX = Math.min(minX, box[0]);
+    minY = Math.min(minY, box[1]);
+    maxX = Math.max(maxX, box[0] + box[2]);
+    maxY = Math.max(maxY, box[1] + box[3]);
+  }
+  const crop = Skia.XYWHRect(
+    minX - CROP_PAD,
+    minY - CROP_PAD,
+    maxX - minX + 2 * CROP_PAD,
+    maxY - minY + 2 * CROP_PAD,
+  );
+  return Skia.ImageFilter.MakeCrop(
+    crop,
+    null,
+    Skia.ImageFilter.MakeRuntimeShaderWithChildren(
+      builder,
+      0,
+      ['blurredImage'],
+      // clamp so a sample just past the pad replicates edge pixels instead
+      // of fading to transparent
+      [Skia.ImageFilter.MakeCrop(crop, TileMode.Clamp, blurChild)],
+    )!,
   )!;
 };

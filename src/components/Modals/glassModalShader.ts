@@ -1,4 +1,4 @@
-import {processUniforms, Skia} from '@shopify/react-native-skia';
+import {processUniforms, Skia, TileMode} from '@shopify/react-native-skia';
 import type {
   SkImageFilter,
   SkRuntimeShaderBuilder,
@@ -122,6 +122,9 @@ vec4 main(vec2 fragCoord) {
 }
 `)!;
 
+// bound the shader + blur passes to the card instead of the whole layer.
+const CROP_PAD = 160;
+
 // Caller hoists the builder and blur child.
 export const makeGlassModalFilter = (
   builder: SkRuntimeShaderBuilder,
@@ -140,10 +143,22 @@ export const makeGlassModalFilter = (
     },
     builder,
   );
-  return Skia.ImageFilter.MakeRuntimeShaderWithChildren(
-    builder,
-    0,
-    ['blurredImage'],
-    [blurChild],
+  const crop = Skia.XYWHRect(
+    box[0] - CROP_PAD,
+    box[1] - CROP_PAD,
+    box[2] + 2 * CROP_PAD,
+    box[3] + 2 * CROP_PAD,
+  );
+  return Skia.ImageFilter.MakeCrop(
+    crop,
+    null,
+    Skia.ImageFilter.MakeRuntimeShaderWithChildren(
+      builder,
+      0,
+      ['blurredImage'],
+      // clamp so a sample just past the pad replicates edge pixels instead
+      // of fading to transparent
+      [Skia.ImageFilter.MakeCrop(crop, TileMode.Clamp, blurChild)],
+    )!,
   )!;
 };
