@@ -472,6 +472,11 @@ const GlassReceive: React.FC<Props> = ({containerHeight}) => {
       -1,
       false,
     );
+    return () => {
+      cancelAnimation(shimmerFull);
+      cancelAnimation(shimmerShort);
+      cancelAnimation(spin);
+    };
   }, [loading, shimmerFull, shimmerShort, spin]);
   const shimmerFullTransform = useDerivedValue(() => [
     {translateX: shimmerFull.value * SCREEN_WIDTH},
