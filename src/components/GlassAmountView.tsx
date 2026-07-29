@@ -8,6 +8,7 @@ import LiquidGlassBackdrop from './LiquidGlassBackdrop';
 import {GLASS_CHART_HEIGHT_RATIO, getGlassChartGap} from './GlassChart';
 import {
   CARD_FOLD_RADIUS_RATIO,
+  getFoldedTopHalfHeight,
   getNewMainSheetPoints,
 } from '../animations/useNewMainAnims';
 import {GLASS_TAB_CLUSTER_TOP_OFFSET_RATIO} from './glassTabLayout';
@@ -29,7 +30,6 @@ import {ScreenSizeContext} from '../context/screenSize';
 
 interface Props {
   children: React.ReactNode;
-  animatedProps: any;
   internetOpacityStyle: any;
   onTriggerLester?: () => void;
   // Drives the backdrop's gradient and glass geometry.
@@ -40,7 +40,6 @@ interface Props {
 const GlassAmountView: React.FC<Props> = props => {
   const {
     children,
-    animatedProps,
     internetOpacityStyle,
     onTriggerLester,
     mainSheetsTranslationY,
@@ -168,7 +167,13 @@ const GlassAmountView: React.FC<Props> = props => {
       onHandlerStateChange={onEasterEggHandlerStateChange}
       minDurationMs={2000}
       maxDist={10000}>
-      <Animated.View style={[styles.container, animatedProps]}>
+      {/* fixed at the folded (max) height: the fold morph's edge is drawn
+          as a clip inside the backdrop canvas, so no per-frame Yoga layout */}
+      <Animated.View
+        style={[
+          styles.container,
+          {height: getFoldedTopHalfHeight(SCREEN_HEIGHT, insets.top)},
+        ]}>
         <LiquidGlassBackdrop
           mainSheetsTranslationY={mainSheetsTranslationY}
           activeTab={activeTab}

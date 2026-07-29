@@ -390,7 +390,6 @@ const NewMain: React.FC<Props> = props => {
     walletButtonAnimDuration,
     rotateArrow,
     animatedChartOpacity,
-    animatedTopContainerHeight,
     animatedHeaderButtonOpacity,
     animatedWalletButtonOpacity,
     animatedWalletButtonArrowRotation,
@@ -739,7 +738,6 @@ const NewMain: React.FC<Props> = props => {
           }
         }}>
         <GlassAmountView
-          animatedProps={animatedTopContainerHeight}
           internetOpacityStyle={animatedChartOpacity}
           onTriggerLester={() => setTriggerLester(prev => prev + 1)}
           mainSheetsTranslationY={mainSheetsTranslationY}

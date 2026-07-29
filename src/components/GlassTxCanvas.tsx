@@ -132,16 +132,12 @@ const GlassTxCanvas: React.FC<Props> = props => {
   const barWidth = SCREEN_WIDTH * BAR_WIDTH_RATIO;
   const barHeight = SCREEN_HEIGHT * BAR_HEIGHT_RATIO;
   const barTop = canvasHeight - bottomOffset - barHeight;
-  const barShadow = useMemo(
-    () =>
-      getCapsuleShadowImage(
-        barWidth,
-        barHeight,
-        barHeight / 2,
-        6,
-        'rgba(0, 0, 0, 0.1)',
-      ),
-    [barWidth, barHeight],
+  const barShadow = getCapsuleShadowImage(
+    barWidth,
+    barHeight,
+    barHeight / 2,
+    6,
+    'rgba(0, 0, 0, 0.1)',
   );
 
   // rows fade + drift in when returning home, fade out before the incoming

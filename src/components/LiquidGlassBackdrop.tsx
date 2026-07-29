@@ -24,6 +24,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../context/screenSize';
 import {
+  CARD_FOLD_RADIUS_RATIO,
   getNewMainSheetPoints,
   getNewMainTopHalfHeight,
 } from '../animations/useNewMainAnims';
@@ -175,13 +176,12 @@ const GlassButtonShadow: React.FC<ButtonDrawProps> = props => {
     4,
     'rgba(0, 0, 0, 0.07)',
   );
-  const pad = shadow?.pad ?? 12;
-  const imgX = useDerivedValue(
-    () => x.value - pad * (width.value / refWidth),
-  );
+  const pad = shadow?.pad ?? 0;
+  const padScale = pad / refWidth;
+  const imgX = useDerivedValue(() => x.value - width.value * padScale);
   const imgY = useDerivedValue(() => y.value + 2 - pad);
   const imgWidth = useDerivedValue(
-    () => width.value + pad * 2 * (width.value / refWidth),
+    () => width.value * (1 + 2 * padScale),
   );
   if (!shadow) {
     return null;
@@ -354,6 +354,26 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
     ];
   });
 
+  // The card's rounded bottom edge. The container no longer animates its
+  // height (that was a per-frame Yoga layout + shadow-tree commit); the fold
+  // morph is erased in-canvas instead. The rect extends above the canvas so
+  // only the bottom corners round.
+  const foldClip = useDerivedValue(() => {
+    const edge = getNewMainTopHalfHeight(
+      mainSheetsTranslationY.value,
+      SCREEN_HEIGHT,
+      UNFOLD_SHEET_POINT,
+      FOLD_SHEET_POINT,
+    );
+    const r = interpolate(
+      mainSheetsTranslationY.value,
+      [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
+      [0, SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO],
+      Extrapolation.CLAMP,
+    );
+    return Skia.RRectXY(Skia.XYWHRect(0, -r, SCREEN_WIDTH, edge + r), r, r);
+  });
+
   // Builder and blur child are hoisted; per frame only the box uniforms
   // change with the fold/unfold morph.
   const shaderBuilder = useMemo(
@@ -439,6 +459,18 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
           splitSecondary={i === 1}
         />
       ))}
+      {/* erase everything outside the card's rounded edge LAST, so the
+          glass above still sampled gradient below the edge — the same
+          pixels the old animated view clip produced */}
+      <Group clip={foldClip} invertClip>
+        <Rect
+          x={0}
+          y={0}
+          width={SCREEN_WIDTH}
+          height={SCREEN_HEIGHT}
+          blendMode="clear"
+        />
+      </Group>
     </Canvas>
   );
 };

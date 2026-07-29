@@ -203,28 +203,6 @@ export function useNewMainAnims(props: Props) {
     };
   });
 
-  // Bottom corners round when folded, flatten as the sheet unfolds.
-  const animatedTopContainerHeight = useAnimatedProps(() => {
-    return {
-      height: getNewMainTopHalfHeight(
-        mainSheetsTranslationY.value,
-        SCREEN_HEIGHT,
-        UNFOLD_SHEET_POINT,
-        FOLD_SHEET_POINT,
-      ),
-      borderBottomLeftRadius: interpolate(
-        mainSheetsTranslationY.value,
-        [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
-        [0, SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO],
-      ),
-      borderBottomRightRadius: interpolate(
-        mainSheetsTranslationY.value,
-        [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
-        [0, SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO],
-      ),
-    };
-  });
-
   const animatedHeaderButtonOpacity = useAnimatedStyle(() => {
     return {
       opacity: buttonOpacity.value,
@@ -301,7 +279,6 @@ export function useNewMainAnims(props: Props) {
     walletButtonAnimDuration,
     rotateArrow,
     animatedChartOpacity,
-    animatedTopContainerHeight,
     animatedHeaderButtonOpacity,
     animatedWalletButtonOpacity,
     animatedWalletButtonArrowRotation,
