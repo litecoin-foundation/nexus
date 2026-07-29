@@ -11,7 +11,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Share from 'react-native-share';
 import {create as createQrMatrix} from 'qrcode';
 import {
-  Canvas,
   Group,
   Image,
   Paragraph,
@@ -48,10 +47,12 @@ import {isWalletRpcReady} from '../../reducers/lightning';
 import InfoModal from '../Modals/InfoModalContent';
 import {CARD_SWAP_SETTLE_MS} from '../GlassBottomSheet';
 import {buildParagraph, useSatoshiFontMgr} from '../GlassBalanceGraphics';
+import {useCardUnderlay} from '../cardUnderlay';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-// skia version of the receive card: everything draws in one canvas, so
-// opening it mid-animation mounts a single native view
+// skia version of the receive card: the graphics publish into the shared
+// glass canvas, so the tab bar refracts the live card and opening the card
+// mounts no canvas of its own
 
 const SHIMMER_BASE = 'rgba(244, 244, 244, 0.6)';
 const SHIMMER_PEAK = 'rgba(200, 200, 200, 0.9)';
@@ -151,7 +152,10 @@ const GlassReceive: React.FC<Props> = ({containerHeight}) => {
   // into the root pop-up context
   const [toastMounted, setToastMounted] = useState(false);
   useEffect(() => {
-    const timeout = setTimeout(() => setToastMounted(true), CARD_SWAP_SETTLE_MS);
+    const timeout = setTimeout(
+      () => setToastMounted(true),
+      CARD_SWAP_SETTLE_MS,
+    );
     return () => clearTimeout(timeout);
   }, []);
 
@@ -236,7 +240,12 @@ const GlassReceive: React.FC<Props> = ({containerHeight}) => {
 
     const pillH = H * 0.044;
     const pillTop = title.getHeight() + H * 0.019;
-    const makePill = (id: string, label: string, active: boolean, x: number) => {
+    const makePill = (
+      id: string,
+      label: string,
+      active: boolean,
+      x: number,
+    ) => {
       const text = buildParagraph(
         fontMgr,
         label,
@@ -289,7 +298,13 @@ const GlassReceive: React.FC<Props> = ({containerHeight}) => {
       paraY: number;
       paraW: number;
       copyRect: HitRect;
-      share: {rect: HitRect; cx: number; cy: number; iconX: number; iconY: number};
+      share: {
+        rect: HitRect;
+        cx: number;
+        cy: number;
+        iconX: number;
+        iconY: number;
+      };
     } | null = null;
     let skeletonLines: (HitRect & {short: boolean})[] | null = null;
     if (loading) {
@@ -480,177 +495,162 @@ const GlassReceive: React.FC<Props> = ({containerHeight}) => {
 
   const closeInfoModal = useCallback(() => setInfoModalVisible(false), []);
 
-  // canvas grows with the content, mweb can outgrow the card
-  const canvasHeight = Math.max(
-    containerHeight,
-    Math.ceil(layout?.contentBottom ?? 0),
-  );
-  const styles = useMemo(
-    () => getStyles(containerHeight, canvasHeight),
-    [containerHeight, canvasHeight],
-  );
+  const styles = useMemo(() => getStyles(containerHeight), [containerHeight]);
+
+  const graphics = layout ? (
+    <>
+      <Paragraph
+        paragraph={layout.title}
+        x={layout.titleX}
+        y={0}
+        width={layout.innerW}
+      />
+      {[
+        {pill: layout.pill1, transform: pill1Transform},
+        {pill: layout.pill2, transform: pill2Transform},
+      ].map(({pill, transform}) => (
+        <Group
+          key={pill.id}
+          origin={vec(pill.cx, pill.cy)}
+          transform={transform}>
+          <FillWithBorder
+            rect={pill.rect}
+            radius={layout.radius}
+            fill={pill.active ? '#2C72FF' : '#FEFEFE'}
+            border={pill.active ? undefined : 'rgb(216, 210, 210)'}
+          />
+          <Paragraph
+            paragraph={pill.text}
+            x={pill.textX}
+            y={pill.textY}
+            width={layout.innerW}
+          />
+        </Group>
+      ))}
+      <Paragraph
+        paragraph={layout.subtitle}
+        x={layout.titleX}
+        y={layout.subtitleY}
+        width={layout.innerW}
+      />
+      {layout.skeletonLines?.map((line, index) => (
+        <Group
+          key={index}
+          clip={Skia.RRectXY(
+            Skia.XYWHRect(line.x, line.y, line.width, line.height),
+            3,
+            3,
+          )}>
+          <Rect
+            x={line.x}
+            y={line.y}
+            width={line.width}
+            height={line.height}
+            color="#F4F4F4"
+          />
+          <Rect
+            x={line.x}
+            y={line.y}
+            width={line.width}
+            height={line.height}
+            color={line.short ? shimmerShortColor : shimmerFullColor}
+            transform={
+              line.short ? shimmerShortTransform : shimmerFullTransform
+            }
+          />
+        </Group>
+      ))}
+      {layout.addressRow ? (
+        <>
+          <Paragraph
+            paragraph={layout.addressRow.paragraph}
+            x={layout.addressRow.paraX}
+            y={layout.addressRow.paraY}
+            width={layout.addressRow.paraW}
+          />
+          <Group
+            origin={vec(layout.addressRow.share.cx, layout.addressRow.share.cy)}
+            transform={shareTransform}>
+            <FillWithBorder
+              rect={layout.addressRow.share.rect}
+              radius={layout.radius}
+              fill="#FEFEFE"
+              border="rgba(216, 210, 210, 0.75)"
+            />
+            <Image
+              image={shareIcon}
+              fit="contain"
+              x={layout.addressRow.share.iconX}
+              y={layout.addressRow.share.iconY}
+              width={26}
+              height={24}
+            />
+          </Group>
+        </>
+      ) : null}
+      <FillWithBorder
+        rect={layout.qrCard}
+        radius={layout.radius}
+        fill="#FEFEFE"
+        border="rgba(217, 217, 217, 0.45)"
+      />
+      {!loading && qrPath ? (
+        <>
+          <Rect
+            x={layout.qr.x}
+            y={layout.qr.y}
+            width={qrSize}
+            height={qrSize}
+            color="#FFFFFF"
+          />
+          <Group
+            transform={[{translateX: layout.qr.x}, {translateY: layout.qr.y}]}>
+            <Path path={qrPath} color="#000000" />
+          </Group>
+        </>
+      ) : null}
+      {loading ? (
+        <>
+          <RoundedRect
+            x={layout.spinner.x}
+            y={layout.spinner.y}
+            width={layout.spinner.size}
+            height={layout.spinner.size}
+            r={SCREEN_HEIGHT * 0.015}
+            color="rgba(19, 58, 138, 0.8)"
+          />
+          <Group
+            transform={[
+              {translateX: layout.spinner.cx},
+              {translateY: layout.spinner.cy},
+            ]}>
+            <Group transform={spinTransform}>
+              <Path
+                path={spinnerArc}
+                style="stroke"
+                strokeWidth={SCREEN_HEIGHT * 0.008}
+                strokeCap="round"
+                color="#FFFFFF"
+              />
+            </Group>
+          </Group>
+        </>
+      ) : null}
+      {layout.note ? (
+        <Paragraph
+          paragraph={layout.note.paragraph}
+          x={layout.note.x}
+          y={layout.note.y}
+          width={layout.note.width}
+        />
+      ) : null}
+    </>
+  ) : null;
+  useCardUnderlay(graphics, true);
 
   return (
     <>
       <View style={styles.container}>
-        <Canvas style={styles.canvas} pointerEvents="none">
-          {layout ? (
-            <>
-              <Paragraph
-                paragraph={layout.title}
-                x={layout.titleX}
-                y={0}
-                width={layout.innerW}
-              />
-              {[
-                {pill: layout.pill1, transform: pill1Transform},
-                {pill: layout.pill2, transform: pill2Transform},
-              ].map(({pill, transform}) => (
-                <Group
-                  key={pill.id}
-                  origin={vec(pill.cx, pill.cy)}
-                  transform={transform}>
-                  <FillWithBorder
-                    rect={pill.rect}
-                    radius={layout.radius}
-                    fill={pill.active ? '#2C72FF' : '#FEFEFE'}
-                    border={pill.active ? undefined : 'rgb(216, 210, 210)'}
-                  />
-                  <Paragraph
-                    paragraph={pill.text}
-                    x={pill.textX}
-                    y={pill.textY}
-                    width={layout.innerW}
-                  />
-                </Group>
-              ))}
-              <Paragraph
-                paragraph={layout.subtitle}
-                x={layout.titleX}
-                y={layout.subtitleY}
-                width={layout.innerW}
-              />
-              {layout.skeletonLines?.map((line, index) => (
-                <Group
-                  key={index}
-                  clip={Skia.RRectXY(
-                    Skia.XYWHRect(line.x, line.y, line.width, line.height),
-                    3,
-                    3,
-                  )}>
-                  <Rect
-                    x={line.x}
-                    y={line.y}
-                    width={line.width}
-                    height={line.height}
-                    color="#F4F4F4"
-                  />
-                  <Rect
-                    x={line.x}
-                    y={line.y}
-                    width={line.width}
-                    height={line.height}
-                    color={line.short ? shimmerShortColor : shimmerFullColor}
-                    transform={
-                      line.short ? shimmerShortTransform : shimmerFullTransform
-                    }
-                  />
-                </Group>
-              ))}
-              {layout.addressRow ? (
-                <>
-                  <Paragraph
-                    paragraph={layout.addressRow.paragraph}
-                    x={layout.addressRow.paraX}
-                    y={layout.addressRow.paraY}
-                    width={layout.addressRow.paraW}
-                  />
-                  <Group
-                    origin={vec(
-                      layout.addressRow.share.cx,
-                      layout.addressRow.share.cy,
-                    )}
-                    transform={shareTransform}>
-                    <FillWithBorder
-                      rect={layout.addressRow.share.rect}
-                      radius={layout.radius}
-                      fill="#FEFEFE"
-                      border="rgba(216, 210, 210, 0.75)"
-                    />
-                    <Image
-                      image={shareIcon}
-                      fit="contain"
-                      x={layout.addressRow.share.iconX}
-                      y={layout.addressRow.share.iconY}
-                      width={26}
-                      height={24}
-                    />
-                  </Group>
-                </>
-              ) : null}
-              <FillWithBorder
-                rect={layout.qrCard}
-                radius={layout.radius}
-                fill="#FEFEFE"
-                border="rgba(217, 217, 217, 0.45)"
-              />
-              {!loading && qrPath ? (
-                <>
-                  <Rect
-                    x={layout.qr.x}
-                    y={layout.qr.y}
-                    width={qrSize}
-                    height={qrSize}
-                    color="#FFFFFF"
-                  />
-                  <Group
-                    transform={[
-                      {translateX: layout.qr.x},
-                      {translateY: layout.qr.y},
-                    ]}>
-                    <Path path={qrPath} color="#000000" />
-                  </Group>
-                </>
-              ) : null}
-              {loading ? (
-                <>
-                  <RoundedRect
-                    x={layout.spinner.x}
-                    y={layout.spinner.y}
-                    width={layout.spinner.size}
-                    height={layout.spinner.size}
-                    r={SCREEN_HEIGHT * 0.015}
-                    color="rgba(19, 58, 138, 0.8)"
-                  />
-                  <Group
-                    transform={[
-                      {translateX: layout.spinner.cx},
-                      {translateY: layout.spinner.cy},
-                    ]}>
-                    <Group transform={spinTransform}>
-                      <Path
-                        path={spinnerArc}
-                        style="stroke"
-                        strokeWidth={SCREEN_HEIGHT * 0.008}
-                        strokeCap="round"
-                        color="#FFFFFF"
-                      />
-                    </Group>
-                  </Group>
-                </>
-              ) : null}
-              {layout.note ? (
-                <Paragraph
-                  paragraph={layout.note.paragraph}
-                  x={layout.note.x}
-                  y={layout.note.y}
-                  width={layout.note.width}
-                />
-              ) : null}
-            </>
-          ) : null}
-        </Canvas>
-
         {layout ? (
           <>
             <Pressable
@@ -694,18 +694,11 @@ const GlassReceive: React.FC<Props> = ({containerHeight}) => {
   );
 };
 
-const getStyles = (height: number, canvasHeight: number) =>
+const getStyles = (height: number) =>
   StyleSheet.create({
     container: {
       height,
       backgroundColor: '#f7f7f7',
-    },
-    canvas: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: canvasHeight,
     },
   });
 

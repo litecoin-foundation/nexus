@@ -64,6 +64,7 @@ import {
   getBottomOffset,
   getTabBarClearance,
 } from '../components/glassTabBarLayout';
+import {CardUnderlayProvider} from '../components/cardUnderlay';
 import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
@@ -208,9 +209,11 @@ const NewMain: React.FC<Props> = props => {
 
   const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
   const cardSpan =
-    SCREEN_HEIGHT - UNFOLD_SHEET_POINT - SCREEN_HEIGHT * DRAG_STRIP_HEIGHT_RATIO;
-  // cards run to the bottom edge since the bar hides; the shop keeps the
-  // bar, so its card keeps the clearance
+    SCREEN_HEIGHT -
+    UNFOLD_SHEET_POINT -
+    SCREEN_HEIGHT * DRAG_STRIP_HEIGHT_RATIO;
+  // cards run to the bottom edge since the bar hides; their under-glass
+  // content keeps refracting through the departing/returning bar
   const cardHeight = cardSpan - getBottomOffset(SCREEN_HEIGHT, insets.bottom);
   const SHOP_CARD_EXTRA_HEIGHT = 115;
   const shopCardHeight =
@@ -272,12 +275,13 @@ const NewMain: React.FC<Props> = props => {
     recoveryMode && !recoveryFinished && !recoveryAlertDismissed;
 
   const mainContentRef = useRef<View>(null);
-  const bottomSheetCaptureRef = useRef<View>(null);
 
   // 0 = idle, 1 = content interaction shrinks the tab bar.
   const tabBarActivity = useSharedValue(0);
   const txListScrollY = useSharedValue(0);
   const txListHeaderOffset = useSharedValue(0);
+  // card swap fade, shared by the native cards and the canvas underlay
+  const cardSwapOpacity = useSharedValue(0);
   const tabBarIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contentTouchStart = useRef({x: 0, y: 0});
 
@@ -649,11 +653,11 @@ const NewMain: React.FC<Props> = props => {
   const BottomSheetMemo = useMemo(
     () => (
       <GlassBottomSheet
-        captureRef={bottomSheetCaptureRef}
         headerComponent={<View style={styles.dragStrip} />}
         txViewComponent={TxListComponentMemo}
         mainSheetsTranslationY={mainSheetsTranslationY}
         mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+        cardOpacity={cardSwapOpacity}
         folded={isBottomSheetFolded}
         foldUnfold={foldUnfoldBottomSheet}
         activeTab={activeTab}
@@ -693,7 +697,7 @@ const NewMain: React.FC<Props> = props => {
       styles.dragStrip,
       cardHeight,
       shopCardHeight,
-      bottomSheetCaptureRef,
+      cardSwapOpacity,
     ],
   );
 
@@ -702,172 +706,176 @@ const NewMain: React.FC<Props> = props => {
   };
 
   return (
-    <Animated.View
-      ref={mainContentRef}
-      collapsable={false}
-      style={styles.container}
-      // Track drags outside the tab bar band.
-      onTouchStart={e => {
-        contentTouchStart.current = {
-          x: e.nativeEvent.pageX,
-          y: e.nativeEvent.pageY,
-        };
-      }}
-      onTouchMove={e => {
-        const {pageX, pageY} = e.nativeEvent;
-        if (pageY > tabBarBandTop) {
-          return;
-        }
-        const dx = pageX - contentTouchStart.current.x;
-        const dy = pageY - contentTouchStart.current.y;
-        if (dx * dx + dy * dy > 64) {
-          markTabBarActivity();
-        }
-      }}>
-      <GlassAmountView
-        animatedProps={animatedTopContainerHeight}
-        internetOpacityStyle={animatedChartOpacity}
-        onTriggerLester={() => setTriggerLester(prev => prev + 1)}
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        activeTab={activeTab}>
-        <GlassTopSectionChart
-          animatedOpacityStyle={animatedChartOpacity}
-          isBottomSheetFolded={isBottomSheetFolded}
-          triggerLester={triggerLester}
-        />
-      </GlassAmountView>
-
-      <GlassTabSelector
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
-        folded={isBottomSheetFolded}
-        foldUnfold={foldUnfoldBottomSheet}
-        activeTab={activeTab}
-        onPressTab={handleTabPress}
-        isInternetReachable={!!isInternetReachable}
-      />
-
-      {BottomSheetMemo}
-
-      <LiquidGlassTabBar
-        activeIndex={activeTab === 3 ? 1 : 0}
-        onSelectSection={(index: number) => {
-          if (index === 0 && activeTab !== 0) {
-            foldUnfoldBottomSheet(false);
-          } else if (index === 1 && activeTab !== 3) {
-            handleTabPress(3);
+    <CardUnderlayProvider>
+      <Animated.View
+        ref={mainContentRef}
+        collapsable={false}
+        style={styles.container}
+        // Track drags outside the tab bar band.
+        onTouchStart={e => {
+          contentTouchStart.current = {
+            x: e.nativeEvent.pageX,
+            y: e.nativeEvent.pageY,
+          };
+        }}
+        onTouchMove={e => {
+          const {pageX, pageY} = e.nativeEvent;
+          if (pageY > tabBarBandTop) {
+            return;
           }
-        }}
-        contentActivity={tabBarActivity}
-        rowModels={txRowModels}
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        txListScrollY={txListScrollY}
-        listHeaderOffset={txListHeaderOffset}
-        showTxList={showTxRows}
-        activeSheet={activeTab}
-        sheetCaptureRef={bottomSheetCaptureRef}
-        shopDisabled={!isInternetReachable}
-      />
+          const dx = pageX - contentTouchStart.current.x;
+          const dy = pageY - contentTouchStart.current.y;
+          if (dx * dx + dy * dy > 64) {
+            markTabBarActivity();
+          }
+        }}>
+        <GlassAmountView
+          animatedProps={animatedTopContainerHeight}
+          internetOpacityStyle={animatedChartOpacity}
+          onTriggerLester={() => setTriggerLester(prev => prev + 1)}
+          mainSheetsTranslationY={mainSheetsTranslationY}
+          activeTab={activeTab}>
+          <GlassTopSectionChart
+            animatedOpacityStyle={animatedChartOpacity}
+            isBottomSheetFolded={isBottomSheetFolded}
+            triggerLester={triggerLester}
+          />
+        </GlassAmountView>
 
-      {!introDone && (
-        <MainIntroOverlay
-          online={!!isInternetReachable}
-          onDone={finishIntro}
+        <GlassTabSelector
+          mainSheetsTranslationY={mainSheetsTranslationY}
+          mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+          folded={isBottomSheetFolded}
+          foldUnfold={foldUnfoldBottomSheet}
+          activeTab={activeTab}
+          onPressTab={handleTabPress}
+          isInternetReachable={!!isInternetReachable}
         />
-      )}
 
-      {/* These glass modals snapshot mainContentRef on open; gate on
-          introDone so the intro skin isn't baked into the captures. */}
-      <GlassTxDetailModal
-        isOpened={isTxDetailModalOpened && introDone}
-        close={closeTxDetailModal}
-        transaction={selectedTransaction}
-        txsNum={transactions.length}
-        setTransactionIndex={setTransactionIndex}
-        swipeToPrevTx={swipeToPrevTx}
-        swipeToNextTx={swipeToNextTx}
-        contentViewRef={mainContentRef}
-        rowModels={txRowModels}
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        txListScrollY={txListScrollY}
-        listHeaderOffset={txListHeaderOffset}
-      />
+        {BottomSheetMemo}
 
-      <LiquidGlassWalletModal
-        isOpened={isWalletsModalOpened && introDone}
-        close={() => {
-          setWalletsModalOpened(false);
-        }}
-        gapInPixels={plasmaModalGapInPixels}
-        rotateWalletButtonArrow={rotateArrow}
-        contentViewRef={mainContentRef}
-      />
+        <LiquidGlassTabBar
+          activeIndex={activeTab === 3 ? 1 : 0}
+          onSelectSection={(index: number) => {
+            if (index === 0 && activeTab !== 0) {
+              foldUnfoldBottomSheet(false);
+            } else if (index === 1 && activeTab !== 3) {
+              handleTabPress(3);
+            }
+          }}
+          contentActivity={tabBarActivity}
+          rowModels={txRowModels}
+          mainSheetsTranslationY={mainSheetsTranslationY}
+          txListScrollY={txListScrollY}
+          listHeaderOffset={txListHeaderOffset}
+          showTxList={showTxRows}
+          activeSheet={activeTab}
+          cardSwapOpacity={cardSwapOpacity}
+          shopDisabled={!isInternetReachable}
+        />
 
-      <PlasmaModal
-        isOpened={isPinModalOpened}
-        close={() => setIsPinModalOpened(false)}
-        isFromBottomToTop={true}
-        animDuration={250}
-        gapInPixels={0}
-        backSpecifiedStyle={plasmaModal_PinModalContent_backSpecifiedStyle}
-        renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
-          <PinModalContent
-            cardTranslateAnim={cardTranslateAnim}
-            close={() => setIsPinModalOpened(false)}
-            handleValidationFailure={() => {
-              setLoading(false);
-              DeviceEventEmitter.emit(pinModalAction.current, false);
-            }}
-            handleValidationSuccess={() => {
-              setLoading(false);
-              DeviceEventEmitter.emit(pinModalAction.current, true);
-            }}
+        {!introDone && (
+          <MainIntroOverlay
+            online={!!isInternetReachable}
+            onDone={finishIntro}
           />
         )}
-      />
 
-      <PopUpModal
-        isVisible={isPopUpModalOpened}
-        title={openedNotification?.title || 'Nexus Wallet'}
-        text={
-          openedNotification?.body ||
-          'Welcome to Nexus - a non-custodial Litecoin wallet'
-        }
-        subText={openedNotification?.data?.subText || ''}
-        buttonUrl={openedNotification?.data?.buttonUrl}
-        close={() => closePopUpModalHandler()}
-      />
+        {/* These glass modals snapshot mainContentRef on open; gate on
+          introDone so the intro skin isn't baked into the captures. */}
+        <GlassTxDetailModal
+          isOpened={isTxDetailModalOpened && introDone}
+          close={closeTxDetailModal}
+          transaction={selectedTransaction}
+          txsNum={transactions.length}
+          setTransactionIndex={setTransactionIndex}
+          swipeToPrevTx={swipeToPrevTx}
+          swipeToNextTx={swipeToNextTx}
+          contentViewRef={mainContentRef}
+          rowModels={txRowModels}
+          mainSheetsTranslationY={mainSheetsTranslationY}
+          txListScrollY={txListScrollY}
+          listHeaderOffset={txListHeaderOffset}
+        />
 
-      <ScheduledPopUpModal
-        blocked={
-          isTxDetailModalOpened ||
-          isWalletsModalOpened ||
-          isPinModalOpened ||
-          isPopUpModalOpened
-        }
-        onGoToScreen={(routeParams, meta) => {
-          if (meta.screen === 'Main' && routeParams.activeCard) {
-            setActiveTab(routeParams.activeCard);
-            setBottomSheetFolded(false);
-            return true;
+        <LiquidGlassWalletModal
+          isOpened={isWalletsModalOpened && introDone}
+          close={() => {
+            setWalletsModalOpened(false);
+          }}
+          gapInPixels={plasmaModalGapInPixels}
+          rotateWalletButtonArrow={rotateArrow}
+          contentViewRef={mainContentRef}
+        />
+
+        <PlasmaModal
+          isOpened={isPinModalOpened}
+          close={() => setIsPinModalOpened(false)}
+          isFromBottomToTop={true}
+          animDuration={250}
+          gapInPixels={0}
+          backSpecifiedStyle={plasmaModal_PinModalContent_backSpecifiedStyle}
+          renderBody={(_, __, ___, ____, cardTranslateAnim: any) => (
+            <PinModalContent
+              cardTranslateAnim={cardTranslateAnim}
+              close={() => setIsPinModalOpened(false)}
+              handleValidationFailure={() => {
+                setLoading(false);
+                DeviceEventEmitter.emit(pinModalAction.current, false);
+              }}
+              handleValidationSuccess={() => {
+                setLoading(false);
+                DeviceEventEmitter.emit(pinModalAction.current, true);
+              }}
+            />
+          )}
+        />
+
+        <PopUpModal
+          isVisible={isPopUpModalOpened}
+          title={openedNotification?.title || 'Nexus Wallet'}
+          text={
+            openedNotification?.body ||
+            'Welcome to Nexus - a non-custodial Litecoin wallet'
           }
-          return false;
-        }}
-      />
+          subText={openedNotification?.data?.subText || ''}
+          buttonUrl={openedNotification?.data?.buttonUrl}
+          close={() => closePopUpModalHandler()}
+        />
 
-      <LiquidGlassAlertModal
-        isVisible={showRecoveryAlert && introDone}
-        close={() => setRecoveryAlertDismissed(true)}
-        titleTextKey={
-          recoveryRestarted ? 'recovery_restarted_title' : 'recovery_sync_title'
-        }
-        textKey={recoveryRestarted ? 'recovery_restarted' : 'recovery_sync'}
-        domain="modals"
-        contentViewRef={mainContentRef}
-      />
+        <ScheduledPopUpModal
+          blocked={
+            isTxDetailModalOpened ||
+            isWalletsModalOpened ||
+            isPinModalOpened ||
+            isPopUpModalOpened
+          }
+          onGoToScreen={(routeParams, meta) => {
+            if (meta.screen === 'Main' && routeParams.activeCard) {
+              setActiveTab(routeParams.activeCard);
+              setBottomSheetFolded(false);
+              return true;
+            }
+            return false;
+          }}
+        />
 
-      <LoadingIndicator visible={loading} />
-    </Animated.View>
+        <LiquidGlassAlertModal
+          isVisible={showRecoveryAlert && introDone}
+          close={() => setRecoveryAlertDismissed(true)}
+          titleTextKey={
+            recoveryRestarted
+              ? 'recovery_restarted_title'
+              : 'recovery_sync_title'
+          }
+          textKey={recoveryRestarted ? 'recovery_restarted' : 'recovery_sync'}
+          domain="modals"
+          contentViewRef={mainContentRef}
+        />
+
+        <LoadingIndicator visible={loading} />
+      </Animated.View>
+    </CardUnderlayProvider>
   );
 };
 

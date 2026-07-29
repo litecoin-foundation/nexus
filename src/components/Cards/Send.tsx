@@ -18,10 +18,12 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {
+  useDerivedValue,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import {useTranslation} from 'react-i18next';
 import type {Utxo} from 'react-native-nitro-lndltc';
 
 import PlasmaModal from '../Modals/PlasmaModal';
@@ -29,8 +31,9 @@ import SelectCoinsModalContent from '../Modals/SelectCoinsModalContent';
 import Switch from '../Buttons/Switch';
 import InputField from '../InputField';
 import AddressField from '../AddressField';
-import BlueButton from '../Buttons/BlueButton';
 import AmountPicker from '../Buttons/AmountPicker';
+import {useCardUnderlay} from '../cardUnderlay';
+import {useUnderGlassBlueButton} from '../Buttons/underGlassBlueButton';
 import BuyPad from '../Numpad/BuyPad';
 import {decodeBIP21} from '../../utils/bip21';
 import {validate as validateLtcAddress} from '../../utils/validate';
@@ -512,8 +515,38 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalVisible]);
 
+  const {t} = useTranslation('sendTab');
+  const cardRootRef = useRef<View>(null);
+  const handleConfirmAmount = async () => {
+    padOpacity.value = withTiming(0, {duration: 230});
+    await sleep(230);
+    setAmountPickerActive(false);
+  };
+  // bottom ctas draw under the glass band in the shared canvas
+  const sendBtnOpacity = useDerivedValue(
+    () => detailsOpacity.value * sendOpacity.value,
+  );
+  const confirmBtnOpacity = useDerivedValue(
+    () => padOpacity.value * sendOpacity.value,
+  );
+  const sendBtn = useUnderGlassBlueButton(
+    cardRootRef,
+    t('send_litecoin'),
+    handleSend,
+    isSendDisabled,
+    sendBtnOpacity,
+  );
+  const confirmBtn = useUnderGlassBlueButton(
+    cardRootRef,
+    t('confirm'),
+    handleConfirmAmount,
+    false,
+    confirmBtnOpacity,
+  );
+  useCardUnderlay(amountPickerActive ? confirmBtn.graphics : sendBtn.graphics);
+
   return (
-    <View style={styles.container}>
+    <View ref={cardRootRef} collapsable={false} style={styles.container}>
       <View style={styles.titleRow}>
         <TranslateText
           textKey={showConvert ? 'convert_litecoin' : 'send_litecoin'}
@@ -749,14 +782,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
               edges={['bottom']}>
               <View style={styles.row}>
                 <View style={styles.blueBtnContainer}>
-                  <BlueButton
-                    textKey="send_litecoin"
-                    textDomain="sendTab"
-                    onPress={() => {
-                      handleSend();
-                    }}
-                    disabled={isSendDisabled}
-                  />
+                  {sendBtn.ghost}
 
                   {noteKey ? (
                     <TranslateText
@@ -799,18 +825,7 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
                     />
                   )}
                 </View>
-                <View style={styles.blueBtnContainer}>
-                  <BlueButton
-                    textKey="confirm"
-                    textDomain="sendTab"
-                    onPress={async () => {
-                      padOpacity.value = withTiming(0, {duration: 230});
-                      await sleep(230);
-                      setAmountPickerActive(false);
-                    }}
-                    disabled={false}
-                  />
-                </View>
+                <View style={styles.blueBtnContainer}>{confirmBtn.ghost}</View>
               </View>
             </CustomSafeAreaView>
           </Animated.View>

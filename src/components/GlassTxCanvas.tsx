@@ -1,33 +1,22 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
+import {StyleSheet} from 'react-native';
 import {
   BackdropFilter,
   BlurMask,
   Canvas,
   Group,
-  Image,
   ImageFilter,
-  makeImageFromView,
   Rect,
   RoundedRect,
   Skia,
   TileMode,
 } from '@shopify/react-native-skia';
-import type {SkImage} from '@shopify/react-native-skia';
 import {
   Easing,
   Extrapolation,
   interpolate,
   runOnJS,
   SharedValue,
-  useAnimatedReaction,
   useDerivedValue,
   useSharedValue,
   withTiming,
@@ -35,9 +24,10 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
-import {CARD_SWAP_SETTLE_MS} from './GlassBottomSheet';
+import {useCardUnderlayValue} from './cardUnderlay';
 import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import {
+  DRAG_STRIP_HEIGHT_RATIO,
   GlassTxRowModels,
   GLASS_TX_LIST_TOP_RATIO,
   SHEET_BACKGROUND,
@@ -97,10 +87,10 @@ interface Props {
   mainSheetsTranslationY: SharedValue<number>;
   txListScrollY: SharedValue<number>;
   listHeaderOffset: SharedValue<number>;
-  // False while a card is open — the band shows a snapshot of it instead.
+  // False while a card is open — the band shows the card's underlay instead.
   showTxList: boolean;
-  activeSheet: number;
-  sheetCaptureRef: React.RefObject<View | null>;
+  // The card swap fade, shared with the native card views.
+  cardSwapOpacity: SharedValue<number>;
   // Tab bar shrink (content activity) and press feedback.
   contentActivity: SharedValue<number>;
   pressScale: SharedValue<number>;
@@ -115,8 +105,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
     txListScrollY,
     listHeaderOffset,
     showTxList,
-    activeSheet,
-    sheetCaptureRef,
+    cardSwapOpacity,
     contentActivity,
     pressScale,
     hideProgress,
@@ -170,16 +159,6 @@ const GlassTxCanvas: React.FC<Props> = props => {
       });
     }
   }, [showTxList, rowsMounted, rowsOpacity, rowsDrift]);
-
-  // band mirror dissolves in step with the card fade-out
-  const mirrorOpacity = useSharedValue(1);
-  useEffect(() => {
-    if (activeSheet === 0) {
-      mirrorOpacity.value = withTiming(0, {duration: 150});
-    } else {
-      mirrorOpacity.value = 1;
-    }
-  }, [activeSheet, mirrorOpacity]);
 
   const rowElements = useGlassTxRowElements({
     rowModels,
@@ -241,87 +220,29 @@ const GlassTxCanvas: React.FC<Props> = props => {
     interpolate(hideProgress.value, [0, 1], [1, 0], Extrapolation.CLAMP),
   );
 
-  // Native card views cannot be sampled by Skia, so they are captured and
-  // redrawn into the band while a card is open.
-  const [sheetSnapshot, setSheetSnapshot] = useState<SkImage | null>(null);
-  const [sheetCaptureRevision, setSheetCaptureRevision] = useState(0);
-  const captureGeneration = useRef(0);
-  const refreshSheetSnapshot = useCallback(() => {
-    setSheetCaptureRevision(revision => revision + 1);
-  }, []);
-  useAnimatedReaction(
-    () => contentActivity.value,
-    (current, previous) => {
-      if (previous !== null && previous > 0.05 && current <= 0.05) {
-        runOnJS(refreshSheetSnapshot)();
-      }
-    },
-    [contentActivity],
-  );
-  // whether the band was drawing live rows just before this run
-  const hadLiveRows = useRef(showTxList);
-  useEffect(() => {
-    const wasShowingRows = hadLiveRows.current;
-    hadLiveRows.current = showTxList;
-    // no capture on the way home, the card is mid-fade and would freeze
-    // half-transparent into the band
-    if (showTxList || activeSheet === 0) {
-      return;
-    }
-    // drop the previous card's snapshot when opening from the wallet
-    if (wasShowingRows) {
-      setSheetSnapshot(null);
-    }
-
-    const generation = ++captureGeneration.current;
-    let cancelled = false;
-    let latestRequest = 0;
-
-    const captureSheet = async () => {
-      const request = ++latestRequest;
-      try {
-        const image = await makeImageFromView(sheetCaptureRef);
-        if (!image) {
-          return;
-        }
-        if (
-          cancelled ||
-          generation !== captureGeneration.current ||
-          request !== latestRequest
-        ) {
-          image.dispose();
-          return;
-        }
-        setSheetSnapshot(image);
-      } catch {
-        // The view may be between native mounts during a card transition. The
-        // settled capture below retries after the new card has mounted.
-      }
-    };
-
-    // no card to capture yet when opening from the wallet, and a capture
-    // would stall the open animation
-    const immediateCapture = wasShowingRows ? null : setTimeout(captureSheet, 0);
-    const settledCapture = setTimeout(captureSheet, CARD_SWAP_SETTLE_MS);
-    return () => {
-      cancelled = true;
-      if (immediateCapture) {
-        clearTimeout(immediateCapture);
-      }
-      clearTimeout(settledCapture);
-    };
-  }, [activeSheet, sheetCaptureRef, sheetCaptureRevision, showTxList]);
-
-  useEffect(
-    () => () => {
-      sheetSnapshot?.dispose();
-    },
-    [sheetSnapshot],
-  );
-
-  const sheetSnapshotY = useDerivedValue(
-    () => mainSheetsTranslationY.value - canvasTop,
-  );
+  // open card's skia content, drawn here so the glass refracts it live
+  const underlayEntry = useCardUnderlayValue();
+  const underlay = underlayEntry?.node ?? null;
+  const underlayCoversCard = underlayEntry?.coversCard === true;
+  const cardTopInSheet = SCREEN_HEIGHT * DRAG_STRIP_HEIGHT_RATIO;
+  // card coordinates -> canvas coordinates
+  const underlayTransform = useDerivedValue(() => [
+    {translateY: mainSheetsTranslationY.value + cardTopInSheet - canvasTop},
+  ]);
+  // stops at the band, which draws its own copy below; overlapping the two
+  // would double-draw semi-transparent content (disabled buttons, fades)
+  const underlayClip = useDerivedValue(() => {
+    const top = Math.max(
+      0,
+      mainSheetsTranslationY.value + cardTopInSheet - canvasTop,
+    );
+    return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandTop - top));
+  });
+  const underlayContent = underlay ? (
+    <Group opacity={cardSwapOpacity}>
+      <Group transform={underlayTransform}>{underlay}</Group>
+    </Group>
+  ) : null;
 
   // Builder and blur child are hoisted; only uniforms change per frame.
   const shaderBuilder = useMemo(
@@ -361,38 +282,39 @@ const GlassTxCanvas: React.FC<Props> = props => {
     );
   });
 
-  // the glass needs opaque pixels beneath it: rows on the wallet, the open
-  // card's snapshot mirror, or the flat stand-in before the first capture
-  const hasBandBacking = rowsMounted || sheetSnapshot !== null;
-  const bandSource = hasBandBacking ? (
+  // the glass needs opaque pixels beneath it: rows on the wallet, the card's
+  // underlay while a card is open. a full-card underlay gets a solid backing;
+  // rows bring theirs inside the fade so it never pops; partial underlays
+  // leave the band clear or they'd cover the native card sliding through it
+  const fullCardUnderlay = underlay !== null && underlayCoversCard;
+  const bandSource = (
     <>
-      <Rect
-        x={0}
-        y={bandTop}
-        width={SCREEN_WIDTH}
-        height={bandBottom - bandTop}
-        color={SHEET_BACKGROUND}
-      />
-      {rowsMounted ? (
-        rowElements ? (
-          <Group opacity={rowsOpacity}>
-            <Group transform={contentTransform}>{rowElements}</Group>
-          </Group>
-        ) : null
-      ) : (
-        <Group opacity={mirrorOpacity}>
-          <Image
-            image={sheetSnapshot}
-            x={0}
-            y={sheetSnapshotY}
-            width={SCREEN_WIDTH}
-            height={SCREEN_HEIGHT}
-            fit="fill"
-          />
+      {fullCardUnderlay ? (
+        <Rect
+          x={0}
+          y={bandTop}
+          width={SCREEN_WIDTH}
+          height={bandBottom - bandTop}
+          color={SHEET_BACKGROUND}
+        />
+      ) : null}
+      {rowsMounted && rowElements ? (
+        <Group opacity={rowsOpacity}>
+          {!fullCardUnderlay ? (
+            <Rect
+              x={0}
+              y={bandTop}
+              width={SCREEN_WIDTH}
+              height={bandBottom - bandTop}
+              color={SHEET_BACKGROUND}
+            />
+          ) : null}
+          <Group transform={contentTransform}>{rowElements}</Group>
         </Group>
-      )}
+      ) : null}
+      {underlayContent}
     </>
-  ) : null;
+  );
 
   const styles = getStyles(SCREEN_WIDTH, canvasTop, bandBottom);
 
@@ -405,9 +327,29 @@ const GlassTxCanvas: React.FC<Props> = props => {
           </Group>
         </Group>
       ) : null}
+      {underlayContent ? (
+        <Group clip={underlayClip}>{underlayContent}</Group>
+      ) : null}
+      {!fullCardUnderlay ? (
+        // flat stand-in behind the moving capsule, under the band content,
+        // so the rim never samples transparency; rides offscreen with the
+        // hidden bar instead of unmounting — a fresh node can draw one
+        // frame before its animated transform binds
+        <Group transform={hideTransform}>
+          <RoundedRect
+            x={(SCREEN_WIDTH - barWidth) / 2 - 3}
+            y={barTop - 3}
+            width={barWidth + 6}
+            height={barHeight + 6}
+            r={(barHeight + 6) / 2}
+            color={SHEET_BACKGROUND}
+          />
+        </Group>
+      ) : null}
       <Group clip={bandClip}>
         {bandSource}
-        {bandSource ? (
+        {rowsMounted || underlayContent ? (
+          // frost is skipped over the flat band, blurred flat is flat
           <Group opacity={frostOpacity}>
             <ProgressiveEdgeBlur
               width={SCREEN_WIDTH}
@@ -431,20 +373,6 @@ const GlassTxCanvas: React.FC<Props> = props => {
           </RoundedRect>
         </Group>
       </Group>
-      {!hasBandBacking ? (
-        // flat stand-in behind the moving capsule, inflated so the rim
-        // never samples transparency
-        <Group transform={hideTransform}>
-          <RoundedRect
-            x={(SCREEN_WIDTH - barWidth) / 2 - 3}
-            y={barTop - 3}
-            width={barWidth + 6}
-            height={barHeight + 6}
-            r={(barHeight + 6) / 2}
-            color={SHEET_BACKGROUND}
-          />
-        </Group>
-      ) : null}
       {/* Unclipped on purpose: the backdrop layer takes the current clip, and
           Skia measures a filter's coordinates from the layer's origin, so a
           clip here would shift the capsule. Outside the capsule the shader

@@ -7,7 +7,6 @@ import {
   PanGesture,
 } from 'react-native-gesture-handler';
 import Animated, {
-  useSharedValue,
   SharedValue,
   useAnimatedStyle,
   withTiming,
@@ -28,8 +27,6 @@ export const CARD_SWAP_DELAY = 155;
 export const CARD_SWAP_SETTLE_MS = 600;
 
 interface Props {
-  // Captured by the floating glass tab bar when a native card is active.
-  captureRef?: React.RefObject<View | null>;
   txViewComponent: React.ReactNode;
   buyViewComponent: React.ReactNode;
   sellViewComponent: React.ReactNode;
@@ -39,6 +36,8 @@ interface Props {
   headerComponent: React.ReactNode;
   mainSheetsTranslationY: SharedValue<number>;
   mainSheetsTranslationYStart: SharedValue<number>;
+  // card swap fade, shared with the glass canvas's underlay copy
+  cardOpacity: SharedValue<number>;
   folded: boolean;
   foldUnfold: (isFolded: boolean) => void;
   activeTab: number;
@@ -59,7 +58,6 @@ const GlassBottomSheet: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
 
   const {
-    captureRef,
     txViewComponent,
     buyViewComponent,
     sellViewComponent,
@@ -69,6 +67,7 @@ const GlassBottomSheet: React.FC<Props> = props => {
     headerComponent,
     mainSheetsTranslationY,
     mainSheetsTranslationYStart,
+    cardOpacity,
     folded,
     foldUnfold,
     activeTab,
@@ -135,8 +134,6 @@ const GlassBottomSheet: React.FC<Props> = props => {
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [folded, mainSheetsTranslationY, mainSheetsTranslationYStart]);
 
-  const cardOpacity = useSharedValue(0);
-
   const animatedCardOpacityStyle = useAnimatedStyle(() => {
     return {
       opacity: cardOpacity.value,
@@ -162,7 +159,7 @@ const GlassBottomSheet: React.FC<Props> = props => {
 
   return (
     <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
-      <View ref={captureRef} collapsable={false} style={styles.captureContent}>
+      <View style={styles.sheetContent}>
         <GestureDetector gesture={headerGesture}>
           <View collapsable={false} style={styles.headerComponent}>
             {headerComponent}
@@ -252,7 +249,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
       zIndex: 1,
     },
-    captureContent: {
+    sheetContent: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: SHEET_BACKGROUND,
       borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,

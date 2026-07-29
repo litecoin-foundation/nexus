@@ -19,7 +19,9 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import BuyPad from '../Numpad/BuyPad';
-import BlueButton from '../Buttons/BlueButton';
+import {useTranslation} from 'react-i18next';
+import {useCardUnderlay} from '../cardUnderlay';
+import {useUnderGlassBlueButton} from '../Buttons/underGlassBlueButton';
 import WhiteButton from '../Buttons/WhiteButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, setLimits, setBuyQuote} from '../../reducers/buy';
@@ -375,8 +377,35 @@ const Buy: React.FC<Props> = ({containerHeight}) => {
     </>
   );
 
+  const {t} = useTranslation('buyTab');
+  const cardRootRef = useRef<View>(null);
+  const handlePreview = () => {
+    // NOTE: quote's polled every 15 sec but we have to
+    // instant update it for preview
+    dispatch(callRates());
+    if (isMoonpayCustomer) {
+      navigation.navigate('ConfirmBuy', {
+        prefilledMethod: prefilledMethodRef.current,
+      });
+    } else if (isOnramperCustomer) {
+      navigation.navigate('ConfirmBuyOnramper', {
+        prefilledMethod: prefilledMethodRef.current,
+      });
+    } else {
+      return;
+    }
+  };
+  // bottom cta draws under the glass band in the shared canvas
+  const previewBtn = useUnderGlassBlueButton(
+    cardRootRef,
+    t('preview_buy'),
+    handlePreview,
+    !(regionValid && (isUK || amountValid)),
+  );
+  useCardUnderlay(previewBtn.graphics);
+
   return (
-    <View style={styles.container}>
+    <View ref={cardRootRef} collapsable={false} style={styles.container}>
       <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         {regionValid ? (
           isUK ? null : (
@@ -402,27 +431,7 @@ const Buy: React.FC<Props> = ({containerHeight}) => {
             />
           </View> */}
             <View style={styles.btn2}>
-              <BlueButton
-                disabled={!(regionValid && (isUK || amountValid))}
-                textKey="preview_buy"
-                textDomain="buyTab"
-                onPress={() => {
-                  // NOTE: quote's polled every 15 sec but we have to
-                  // instant update it for preview
-                  dispatch(callRates());
-                  if (isMoonpayCustomer) {
-                    navigation.navigate('ConfirmBuy', {
-                      prefilledMethod: prefilledMethodRef.current,
-                    });
-                  } else if (isOnramperCustomer) {
-                    navigation.navigate('ConfirmBuyOnramper', {
-                      prefilledMethod: prefilledMethodRef.current,
-                    });
-                  } else {
-                    return;
-                  }
-                }}
-              />
+              {previewBtn.ghost}
             </View>
           </View>
           {errorTextKey ? (

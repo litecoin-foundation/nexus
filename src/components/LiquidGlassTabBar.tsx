@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useMemo, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -199,7 +199,7 @@ interface Props {
   listHeaderOffset: SharedValue<number>;
   showTxList: boolean;
   activeSheet: number;
-  sheetCaptureRef: React.RefObject<View | null>;
+  cardSwapOpacity: SharedValue<number>;
   shopDisabled: boolean;
 }
 
@@ -214,7 +214,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     listHeaderOffset,
     showTxList,
     activeSheet,
-    sheetCaptureRef,
+    cardSwapOpacity,
     shopDisabled,
   } = props;
 
@@ -256,7 +256,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
   const [selectionAttempt, setSelectionAttempt] = useState(0);
 
   // dives away when a card opens; the canvas moves its glass by the same
-  // value so all bar layers move as one
+  // value so all bar layers move as one, refracting the live card beneath
   const hideDistance = getTabBarHideDistance(SCREEN_HEIGHT, insets.bottom);
   const barHidden = sheetHidesTabBar(activeSheet);
   const hiddenForCard = useSharedValue(barHidden ? 1 : 0);
@@ -390,14 +390,15 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         txListScrollY={txListScrollY}
         listHeaderOffset={listHeaderOffset}
         showTxList={showTxList}
-        activeSheet={activeSheet}
-        sheetCaptureRef={sheetCaptureRef}
+        cardSwapOpacity={cardSwapOpacity}
         contentActivity={contentActivity}
         pressScale={pressScale}
         hideProgress={hideProgress}
       />
 
-      <Animated.View style={[styles.wrapper, hideStyle]} pointerEvents="box-none">
+      <Animated.View
+        style={[styles.wrapper, hideStyle]}
+        pointerEvents="box-none">
         <GestureDetector gesture={barGesture}>
           <Animated.View style={[styles.bar, animatedBarStyle]}>
             <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">

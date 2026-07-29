@@ -21,7 +21,9 @@ import {getCountry} from 'react-native-localize';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, setSellQuote} from '../../reducers/buy';
 import BuyPad from '../Numpad/BuyPad';
-import BlueButton from '../Buttons/BlueButton';
+import {useTranslation} from 'react-i18next';
+import {useCardUnderlay} from '../cardUnderlay';
+import {useUnderGlassBlueButton} from '../Buttons/underGlassBlueButton';
 import WhiteButton from '../Buttons/WhiteButton';
 import {
   resetInputs,
@@ -504,8 +506,36 @@ const Sell: React.FC<Props> = ({containerHeight}) => {
     </>
   );
 
+  const {t} = useTranslation('sellTab');
+  const cardRootRef = useRef<View>(null);
+  const handlePreview = () => {
+    if (isUK) {
+      navigation.navigate('ConfirmSell', {
+        prefilledMethod: prefilledMethodRef.current,
+      });
+    } else if (isMoonpayCustomer) {
+      navigation.navigate('ConfirmSell', {
+        prefilledMethod: prefilledMethodRef.current,
+      });
+    } else if (isOnramperCustomer) {
+      navigation.navigate('ConfirmSellOnramper', {
+        prefilledMethod: prefilledMethodRef.current,
+      });
+    } else {
+      return;
+    }
+  };
+  // bottom cta draws under the glass band in the shared canvas
+  const previewBtn = useUnderGlassBlueButton(
+    cardRootRef,
+    t('preview_sell'),
+    handlePreview,
+    !(regionValid && (isUK || amountValid)),
+  );
+  useCardUnderlay(previewBtn.graphics);
+
   return (
-    <View style={styles.container}>
+    <View ref={cardRootRef} collapsable={false} style={styles.container}>
       <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         {regionValid ? (
           isUK ? null : (
@@ -522,28 +552,7 @@ const Sell: React.FC<Props> = ({containerHeight}) => {
         <View style={styles.bottom}>
           <View style={styles.buttons}>
             <View style={styles.btn2}>
-              <BlueButton
-                disabled={!(regionValid && (isUK || amountValid))}
-                textKey="preview_sell"
-                textDomain="sellTab"
-                onPress={() => {
-                  if (isUK) {
-                    navigation.navigate('ConfirmSell', {
-                      prefilledMethod: prefilledMethodRef.current,
-                    });
-                  } else if (isMoonpayCustomer) {
-                    navigation.navigate('ConfirmSell', {
-                      prefilledMethod: prefilledMethodRef.current,
-                    });
-                  } else if (isOnramperCustomer) {
-                    navigation.navigate('ConfirmSellOnramper', {
-                      prefilledMethod: prefilledMethodRef.current,
-                    });
-                  } else {
-                    return;
-                  }
-                }}
-              />
+              {previewBtn.ghost}
             </View>
           </View>
           {errorTextKey ? (
