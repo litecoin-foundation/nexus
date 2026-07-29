@@ -103,19 +103,40 @@ export const useGlassTxRowModels = (rows: GlassTxRow[]): GlassTxRowModels => {
   );
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const currencySymbol = useAppSelector(state => currencySymbolSelector(state));
-  const localFiatToUSD = useAppSelector(state => convertLocalFiatToUSD(state));
+  const localFiatToUSDRaw = useAppSelector(state =>
+    convertLocalFiatToUSD(state),
+  );
+  // sub-display-precision rate jitter would rebuild every model (and re-shape
+  // every paragraph downstream) on each 15s ticker tick
+  const localFiatToUSD = Number(localFiatToUSDRaw.toPrecision(5));
 
   const cellHeight = getGlassTxCellHeight(SCREEN_HEIGHT);
   const headerHeight = SCREEN_HEIGHT * GLASS_TX_SECTION_HEADER_HEIGHT_RATIO;
 
-  return useMemo(() => {
-    const models: GlassTxRowModel[] = [];
-    const rowTops: number[] = [];
-    const rowBottoms: number[] = [];
+  // geometry depends only on the row sequence; rate/currency changes must
+  // not re-clone these arrays into the UI runtime
+  const {rowTops, rowBottoms} = useMemo(() => {
+    const tops: number[] = [];
+    const bottoms: number[] = [];
+    let y = 0;
+    for (const row of rows) {
+      const height =
+        'type' in row && row.type === 'sectionHeader'
+          ? headerHeight
+          : cellHeight;
+      tops.push(y);
+      y += height;
+      bottoms.push(y);
+    }
+    return {rowTops: tops, rowBottoms: bottoms};
+  }, [rows, cellHeight, headerHeight]);
+
+  const models = useMemo(() => {
+    const built: GlassTxRowModel[] = [];
     let y = 0;
     for (const row of rows) {
       if ('type' in row && row.type === 'sectionHeader') {
-        models.push({
+        built.push({
           header: true,
           top: y,
           height: headerHeight,
@@ -128,9 +149,7 @@ export const useGlassTxRowModels = (rows: GlassTxRow[]): GlassTxRowModels => {
           iconKey: '',
           confs: 0,
         });
-        rowTops.push(y);
         y += headerHeight;
-        rowBottoms.push(y);
         continue;
       }
       const pending = row.providerMeta?.status === 'pending';
@@ -147,7 +166,7 @@ export const useGlassTxRowModels = (rows: GlassTxRow[]): GlassTxRowModels => {
         ),
       );
       const sign = Math.sign(parseFloat(String(row.amount))) === -1 ? '-' : '';
-      models.push({
+      built.push({
         header: false,
         top: y,
         height: cellHeight,
@@ -160,11 +179,9 @@ export const useGlassTxRowModels = (rows: GlassTxRow[]): GlassTxRowModels => {
         iconKey: row.metaLabel,
         confs: row.confs,
       });
-      rowTops.push(y);
       y += cellHeight;
-      rowBottoms.push(y);
     }
-    return {models, rowTops, rowBottoms};
+    return built;
   }, [
     rows,
     t,
@@ -175,6 +192,11 @@ export const useGlassTxRowModels = (rows: GlassTxRow[]): GlassTxRowModels => {
     cellHeight,
     headerHeight,
   ]);
+
+  return useMemo(
+    () => ({models, rowTops, rowBottoms}),
+    [models, rowTops, rowBottoms],
+  );
 };
 
 export const useGlassTxIcons = (): Record<string, SkImage | null> => ({

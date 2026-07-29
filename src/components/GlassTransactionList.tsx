@@ -24,7 +24,6 @@ import TransactionListEmpty from './TransactionListEmpty';
 import TranslateText from '../components/TranslateText';
 import ProgressBar from './ProgressBar';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
-import {getTransactions} from '../reducers/transaction';
 import {DisplayedMetadataType} from '../utils/txMetadata';
 import {ScreenSizeContext} from '../context/screenSize';
 import {
@@ -134,7 +133,8 @@ const GlassTransactionList: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
 
   useLayoutEffect(() => {
-    dispatch(getTransactions());
+    // the 15s poll owns tx fetching; a mount-time fetch re-fired the whole
+    // row/paragraph cascade right as the return-to-wallet fade plays
     dispatch(getRecoveryInfo());
   }, [dispatch]);
 
