@@ -2,9 +2,9 @@ import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {
   BackdropFilter,
-  BlurMask,
   Canvas,
   Group,
+  Image,
   ImageFilter,
   Rect,
   RoundedRect,
@@ -25,6 +25,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
 import {useCardUnderlayValue} from './cardUnderlay';
+import {getCapsuleShadowImage} from './capsuleShadowImage';
 import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import {
   DRAG_STRIP_HEIGHT_RATIO,
@@ -131,6 +132,17 @@ const GlassTxCanvas: React.FC<Props> = props => {
   const barWidth = SCREEN_WIDTH * BAR_WIDTH_RATIO;
   const barHeight = SCREEN_HEIGHT * BAR_HEIGHT_RATIO;
   const barTop = canvasHeight - bottomOffset - barHeight;
+  const barShadow = useMemo(
+    () =>
+      getCapsuleShadowImage(
+        barWidth,
+        barHeight,
+        barHeight / 2,
+        6,
+        'rgba(0, 0, 0, 0.1)',
+      ),
+    [barWidth, barHeight],
+  );
 
   // rows fade + drift in when returning home, fade out before the incoming
   // card becomes visible
@@ -362,15 +374,16 @@ const GlassTxCanvas: React.FC<Props> = props => {
           </Group>
         ) : null}
         <Group transform={hideTransform}>
-          <RoundedRect
-            x={(SCREEN_WIDTH - barWidth) / 2}
-            y={barTop + 2}
-            width={barWidth}
-            height={barHeight}
-            r={barHeight / 2}
-            color="rgba(0, 0, 0, 0.1)">
-            <BlurMask blur={6} style="normal" />
-          </RoundedRect>
+          {barShadow ? (
+            <Image
+              image={barShadow.image}
+              x={(SCREEN_WIDTH - barWidth) / 2 - barShadow.pad}
+              y={barTop + 2 - barShadow.pad}
+              width={barWidth + barShadow.pad * 2}
+              height={barHeight + barShadow.pad * 2}
+              fit="fill"
+            />
+          ) : null}
         </Group>
       </Group>
       {/* Unclipped on purpose: the backdrop layer takes the current clip, and

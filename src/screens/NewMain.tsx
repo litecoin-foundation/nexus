@@ -11,9 +11,10 @@ import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
 import {getCountry} from 'react-native-localize';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {
+  Easing,
   SharedValue,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {useDrawerStatus} from '@react-navigation/drawer';
@@ -287,13 +288,21 @@ const NewMain: React.FC<Props> = props => {
 
   const markTabBarActivity = useCallback(() => {
     if (tabBarIdleTimer.current === null) {
-      tabBarActivity.value = withSpring(1, {mass: 0.4});
+      // short timings, not springs: a spring's sub-dp settling tail keeps
+      // the glass canvas re-rendering for ~half a second after every scroll
+      tabBarActivity.value = withTiming(1, {
+        duration: 180,
+        easing: Easing.out(Easing.quad),
+      });
     } else {
       clearTimeout(tabBarIdleTimer.current);
     }
     tabBarIdleTimer.current = setTimeout(() => {
       tabBarIdleTimer.current = null;
-      tabBarActivity.value = withSpring(0, {mass: 0.4});
+      tabBarActivity.value = withTiming(0, {
+        duration: 200,
+        easing: Easing.out(Easing.quad),
+      });
     }, 700);
   }, [tabBarActivity]);
 

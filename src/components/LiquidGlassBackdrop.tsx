@@ -2,9 +2,9 @@ import React, {useContext, useMemo} from 'react';
 import {StyleSheet} from 'react-native';
 import {
   BackdropFilter,
-  BlurMask,
   Canvas,
   Group,
+  Image,
   ImageFilter,
   LinearGradient,
   RadialGradient,
@@ -27,6 +27,7 @@ import {
   getNewMainSheetPoints,
   getNewMainTopHalfHeight,
 } from '../animations/useNewMainAnims';
+import {getCapsuleShadowImage} from './capsuleShadowImage';
 import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import {
   getGlassTabLayouts,
@@ -157,27 +158,44 @@ const GlassButtonShadow: React.FC<ButtonDrawProps> = props => {
     unfoldPoint,
     foldPoint,
   );
-  const shadowY = useDerivedValue(() => y.value + 2);
-  const radius = useDerivedValue(() =>
-    Math.min(cornerRadius, width.value / 2, buttonHeight / 2),
-  );
   const opacity = useSplitOpacity(
     splitSecondary,
     mainSheetsTranslationY,
     unfoldPoint,
     foldPoint,
   );
+  // pre-blurred capsule stretched to the animated rect; the horizontal
+  // stretch of a 7%-opacity soft shadow is imperceptible and the vertical
+  // blur stays exact (height is static)
+  const refWidth = buttonHeight * 3;
+  const shadow = getCapsuleShadowImage(
+    refWidth,
+    buttonHeight,
+    Math.min(cornerRadius, buttonHeight / 2),
+    4,
+    'rgba(0, 0, 0, 0.07)',
+  );
+  const pad = shadow?.pad ?? 12;
+  const imgX = useDerivedValue(
+    () => x.value - pad * (width.value / refWidth),
+  );
+  const imgY = useDerivedValue(() => y.value + 2 - pad);
+  const imgWidth = useDerivedValue(
+    () => width.value + pad * 2 * (width.value / refWidth),
+  );
+  if (!shadow) {
+    return null;
+  }
   return (
-    <RoundedRect
-      x={x}
-      y={shadowY}
-      width={width}
-      height={buttonHeight}
-      r={radius}
+    <Image
+      image={shadow.image}
+      x={imgX}
+      y={imgY}
+      width={imgWidth}
+      height={buttonHeight + pad * 2}
+      fit="fill"
       opacity={opacity}
-      color="rgba(0, 0, 0, 0.07)">
-      <BlurMask blur={4} style="normal" />
-    </RoundedRect>
+    />
   );
 };
 
