@@ -22,16 +22,20 @@ import {
 } from '@shopify/react-native-skia';
 import type {SkImage} from '@shopify/react-native-skia';
 import {
+  Easing,
   Extrapolation,
   interpolate,
   runOnJS,
   SharedValue,
   useAnimatedReaction,
   useDerivedValue,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
+import {CARD_SWAP_SETTLE_MS} from './GlassBottomSheet';
 import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import {
   GlassTxRowModels,
@@ -45,6 +49,7 @@ import {
   BAR_WIDTH_RATIO,
   getBottomOffset,
   getTabBarBandHeight,
+  getTabBarHideDistance,
   SCROLLING_SCALE,
 } from './glassTabBarLayout';
 import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
@@ -60,6 +65,9 @@ import {ScreenSizeContext} from '../context/screenSize';
 
 const GLASS_DARKEN = 0.63;
 const GLASS_BLUR_SIGMA = 1;
+
+// drawn past the screen bottom so layout rounding can't leave a hairline gap
+const BOTTOM_OVERSCAN = 4;
 
 // The spring that snaps the sheet open has no clamp, so a hard flick can carry
 // it above UNFOLD_SHEET_POINT for a frame or two. The canvas starts that much
@@ -96,6 +104,8 @@ interface Props {
   // Tab bar shrink (content activity) and press feedback.
   contentActivity: SharedValue<number>;
   pressScale: SharedValue<number>;
+  // 0 resting, 1 hidden; drives the capsule, shadow and frost
+  hideProgress: SharedValue<number>;
 }
 
 const GlassTxCanvas: React.FC<Props> = props => {
@@ -109,6 +119,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
     sheetCaptureRef,
     contentActivity,
     pressScale,
+    hideProgress,
   } = props;
 
   const insets = useSafeAreaInsets();
@@ -126,16 +137,56 @@ const GlassTxCanvas: React.FC<Props> = props => {
 
   const bandHeight = getTabBarBandHeight(SCREEN_HEIGHT, insets.bottom);
   const bandTop = canvasHeight - bandHeight;
+  const bandBottom = canvasHeight + BOTTOM_OVERSCAN;
   const bottomOffset = getBottomOffset(SCREEN_HEIGHT, insets.bottom);
   const barWidth = SCREEN_WIDTH * BAR_WIDTH_RATIO;
   const barHeight = SCREEN_HEIGHT * BAR_HEIGHT_RATIO;
+  const barTop = canvasHeight - bottomOffset - barHeight;
+
+  // rows fade + drift in when returning home, fade out before the incoming
+  // card becomes visible
+  const [rowsMounted, setRowsMounted] = useState(showTxList);
+  const rowsOpacity = useSharedValue(showTxList ? 1 : 0);
+  const rowsDrift = useSharedValue(0);
+  useEffect(() => {
+    if (showTxList) {
+      setRowsMounted(true);
+      if (!rowsMounted) {
+        rowsOpacity.value = 0;
+        rowsDrift.value = 12;
+        rowsDrift.value = withTiming(0, {
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+        });
+      }
+      rowsOpacity.value = withTiming(1, {duration: 250});
+      return;
+    }
+    if (rowsMounted) {
+      rowsOpacity.value = withTiming(0, {duration: 120}, finished => {
+        if (finished) {
+          runOnJS(setRowsMounted)(false);
+        }
+      });
+    }
+  }, [showTxList, rowsMounted, rowsOpacity, rowsDrift]);
+
+  // band mirror dissolves in step with the card fade-out
+  const mirrorOpacity = useSharedValue(1);
+  useEffect(() => {
+    if (activeSheet === 0) {
+      mirrorOpacity.value = withTiming(0, {duration: 150});
+    } else {
+      mirrorOpacity.value = 1;
+    }
+  }, [activeSheet, mirrorOpacity]);
 
   const rowElements = useGlassTxRowElements({
     rowModels,
     scrollY: txListScrollY,
     listHeaderOffset,
     viewportHeight: canvasHeight,
-    enabled: showTxList,
+    enabled: rowsMounted,
   });
 
   // List-content coordinates -> canvas coordinates.
@@ -147,7 +198,9 @@ const GlassTxCanvas: React.FC<Props> = props => {
           listTopInSheet,
           canvasTop,
           listHeaderOffset.value,
-        ) - txListScrollY.value,
+        ) -
+        txListScrollY.value +
+        rowsDrift.value,
     },
   ]);
 
@@ -173,8 +226,19 @@ const GlassTxCanvas: React.FC<Props> = props => {
   });
 
   const bandClip = useMemo(
-    () => Skia.XYWHRect(0, bandTop, SCREEN_WIDTH, bandHeight),
-    [bandTop, SCREEN_WIDTH, bandHeight],
+    () => Skia.XYWHRect(0, bandTop, SCREEN_WIDTH, bandBottom - bandTop),
+    [bandTop, SCREEN_WIDTH, bandBottom],
+  );
+
+  // only the capsule and its shadow slide, the band stays put
+  const hideDistance = getTabBarHideDistance(SCREEN_HEIGHT, insets.bottom);
+  const hideTransform = useDerivedValue(() => [
+    {translateY: hideProgress.value * hideDistance},
+  ]);
+
+  // frost arrives and leaves with the bar
+  const frostOpacity = useDerivedValue(() =>
+    interpolate(hideProgress.value, [0, 1], [1, 0], Extrapolation.CLAMP),
   );
 
   // Native card views cannot be sampled by Skia, so they are captured and
@@ -194,12 +258,19 @@ const GlassTxCanvas: React.FC<Props> = props => {
     },
     [contentActivity],
   );
+  // whether the band was drawing live rows just before this run
+  const hadLiveRows = useRef(showTxList);
   useEffect(() => {
-    // Only a card is ever snapshotted. On the way back to the wallet the rows
-    // are still gated off while the card fades, and re-capturing there would
-    // freeze a half-transparent copy of it into the band.
+    const wasShowingRows = hadLiveRows.current;
+    hadLiveRows.current = showTxList;
+    // no capture on the way home, the card is mid-fade and would freeze
+    // half-transparent into the band
     if (showTxList || activeSheet === 0) {
       return;
+    }
+    // drop the previous card's snapshot when opening from the wallet
+    if (wasShowingRows) {
+      setSheetSnapshot(null);
     }
 
     const generation = ++captureGeneration.current;
@@ -228,11 +299,15 @@ const GlassTxCanvas: React.FC<Props> = props => {
       }
     };
 
-    const immediateCapture = setTimeout(captureSheet, 0);
-    const settledCapture = setTimeout(captureSheet, 500);
+    // no card to capture yet when opening from the wallet, and a capture
+    // would stall the open animation
+    const immediateCapture = wasShowingRows ? null : setTimeout(captureSheet, 0);
+    const settledCapture = setTimeout(captureSheet, CARD_SWAP_SETTLE_MS);
     return () => {
       cancelled = true;
-      clearTimeout(immediateCapture);
+      if (immediateCapture) {
+        clearTimeout(immediateCapture);
+      }
       clearTimeout(settledCapture);
     };
   }, [activeSheet, sheetCaptureRef, sheetCaptureRevision, showTxList]);
@@ -275,7 +350,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
     const height = barHeight * scale;
     const x = (SCREEN_WIDTH - width) / 2;
     const y =
-      canvasHeight - bottomOffset - barHeight + (barHeight - height) / 2;
+      barTop + (barHeight - height) / 2 + hideProgress.value * hideDistance;
     const capsule = [x, y, width, height];
     return makeGlassTabFilter(
       shaderBuilder,
@@ -286,63 +361,90 @@ const GlassTxCanvas: React.FC<Props> = props => {
     );
   });
 
-  // The band must be opaque everywhere: the glass shader reads displaced
-  // samples, and transparent pixels come back as black.
-  const bandSource = (
+  // the glass needs opaque pixels beneath it: rows on the wallet, the open
+  // card's snapshot mirror, or the flat stand-in before the first capture
+  const hasBandBacking = rowsMounted || sheetSnapshot !== null;
+  const bandSource = hasBandBacking ? (
     <>
       <Rect
         x={0}
         y={bandTop}
         width={SCREEN_WIDTH}
-        height={bandHeight}
+        height={bandBottom - bandTop}
         color={SHEET_BACKGROUND}
       />
-      {showTxList ? (
+      {rowsMounted ? (
         rowElements ? (
-          <Group transform={contentTransform}>{rowElements}</Group>
+          <Group opacity={rowsOpacity}>
+            <Group transform={contentTransform}>{rowElements}</Group>
+          </Group>
         ) : null
-      ) : sheetSnapshot ? (
-        <Image
-          image={sheetSnapshot}
-          x={0}
-          y={sheetSnapshotY}
-          width={SCREEN_WIDTH}
-          height={SCREEN_HEIGHT}
-          fit="fill"
-        />
-      ) : null}
+      ) : (
+        <Group opacity={mirrorOpacity}>
+          <Image
+            image={sheetSnapshot}
+            x={0}
+            y={sheetSnapshotY}
+            width={SCREEN_WIDTH}
+            height={SCREEN_HEIGHT}
+            fit="fill"
+          />
+        </Group>
+      )}
     </>
-  );
+  ) : null;
 
-  const styles = getStyles(SCREEN_WIDTH, canvasTop, canvasHeight);
+  const styles = getStyles(SCREEN_WIDTH, canvasTop, bandBottom);
 
   return (
     <Canvas style={styles.canvas} pointerEvents="none">
       {rowElements ? (
         <Group clip={listClip}>
-          <Group transform={contentTransform}>{rowElements}</Group>
+          <Group opacity={rowsOpacity}>
+            <Group transform={contentTransform}>{rowElements}</Group>
+          </Group>
         </Group>
       ) : null}
       <Group clip={bandClip}>
         {bandSource}
-        <ProgressiveEdgeBlur
-          width={SCREEN_WIDTH}
-          top={bandTop}
-          bottom={canvasHeight}
-          blurHeight={bandHeight * 0.65}
-          maxBlur={BAND_BLUR_SIGMA}>
-          {bandSource}
-        </ProgressiveEdgeBlur>
-        <RoundedRect
-          x={(SCREEN_WIDTH - barWidth) / 2}
-          y={canvasHeight - bottomOffset - barHeight + 2}
-          width={barWidth}
-          height={barHeight}
-          r={barHeight / 2}
-          color="rgba(0, 0, 0, 0.1)">
-          <BlurMask blur={6} style="normal" />
-        </RoundedRect>
+        {bandSource ? (
+          <Group opacity={frostOpacity}>
+            <ProgressiveEdgeBlur
+              width={SCREEN_WIDTH}
+              top={bandTop}
+              bottom={bandBottom}
+              blurHeight={bandHeight * 0.65}
+              maxBlur={BAND_BLUR_SIGMA}>
+              {bandSource}
+            </ProgressiveEdgeBlur>
+          </Group>
+        ) : null}
+        <Group transform={hideTransform}>
+          <RoundedRect
+            x={(SCREEN_WIDTH - barWidth) / 2}
+            y={barTop + 2}
+            width={barWidth}
+            height={barHeight}
+            r={barHeight / 2}
+            color="rgba(0, 0, 0, 0.1)">
+            <BlurMask blur={6} style="normal" />
+          </RoundedRect>
+        </Group>
       </Group>
+      {!hasBandBacking ? (
+        // flat stand-in behind the moving capsule, inflated so the rim
+        // never samples transparency
+        <Group transform={hideTransform}>
+          <RoundedRect
+            x={(SCREEN_WIDTH - barWidth) / 2 - 3}
+            y={barTop - 3}
+            width={barWidth + 6}
+            height={barHeight + 6}
+            r={(barHeight + 6) / 2}
+            color={SHEET_BACKGROUND}
+          />
+        </Group>
+      ) : null}
       {/* Unclipped on purpose: the backdrop layer takes the current clip, and
           Skia measures a filter's coordinates from the layer's origin, so a
           clip here would shift the capsule. Outside the capsule the shader
@@ -353,18 +455,14 @@ const GlassTxCanvas: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (
-  screenWidth: number,
-  canvasTop: number,
-  canvasHeight: number,
-) =>
+const getStyles = (screenWidth: number, top: number, height: number) =>
   StyleSheet.create({
     canvas: {
       position: 'absolute',
-      top: canvasTop,
+      top,
       left: 0,
       width: screenWidth,
-      height: canvasHeight,
+      height,
       zIndex: 3,
     },
   });

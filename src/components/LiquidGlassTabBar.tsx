@@ -2,6 +2,7 @@ import React, {useContext, useEffect, useMemo, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
+  Easing,
   Extrapolation,
   interpolate,
   runOnJS,
@@ -10,6 +11,7 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
@@ -31,19 +33,20 @@ import {
   BAR_HEIGHT_RATIO,
   BAR_WIDTH_RATIO,
   getBottomOffset,
+  getTabBarHideDistance,
   PRESSED_SCALE,
   SCROLLING_SCALE,
+  sheetHidesTabBar,
   THUMB_HEIGHT_RATIO,
   THUMB_SPRING,
   THUMB_WIDTH_RATIO,
 } from './glassTabBarLayout';
+import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
 import {ScreenSizeContext} from '../context/screenSize';
 
 // Screen-fixed tab bar. The glass itself is drawn by GlassTxCanvas, which sits
 // just below this overlay and owns every pixel the glass refracts; this
 // component is only the hairline, thumb, icons and gestures on top of it.
-
-export {getTabBarClearance} from './glassTabBarLayout';
 
 type IconKind = 'wallet' | 'shop' | 'card';
 
@@ -56,6 +59,10 @@ const SECTIONS: {kind: IconKind; disabled: boolean}[] = [
 const WHITE_ICON_MATRIX = [
   0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0,
 ];
+
+// bar exit / return timings
+const BAR_HIDE_MS = 250;
+const BAR_RETURN_SPRING = {mass: 0.6, damping: 16, stiffness: 180};
 
 const buildWalletPaths = (cx: number, cy: number, s: number) => {
   const bodyW = s;
@@ -248,6 +255,41 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
   const pressScale = useSharedValue(1);
   const [selectionAttempt, setSelectionAttempt] = useState(0);
 
+  // dives away when a card opens; the canvas moves its glass by the same
+  // value so all bar layers move as one
+  const hideDistance = getTabBarHideDistance(SCREEN_HEIGHT, insets.bottom);
+  const barHidden = sheetHidesTabBar(activeSheet);
+  const hiddenForCard = useSharedValue(barHidden ? 1 : 0);
+  useEffect(() => {
+    if (barHidden) {
+      hiddenForCard.value = withTiming(1, {
+        duration: BAR_HIDE_MS,
+        easing: Easing.in(Easing.quad),
+      });
+    } else {
+      hiddenForCard.value = withSpring(0, BAR_RETURN_SPRING);
+    }
+  }, [barHidden, hiddenForCard]);
+
+  const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
+    SCREEN_HEIGHT,
+    insets.top,
+  );
+  // dragging the sheet home brings the bar back in step with the fold
+  const hideProgress = useDerivedValue(
+    () =>
+      hiddenForCard.value *
+      interpolate(
+        mainSheetsTranslationY.value,
+        [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
+        [1, 0],
+        Extrapolation.CLAMP,
+      ),
+  );
+  const hideStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: hideProgress.value * hideDistance}],
+  }));
+
   // Re-sync after rejected selections and window resizes.
   useEffect(() => {
     thumbCenter.value = withSpring(
@@ -352,9 +394,10 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         sheetCaptureRef={sheetCaptureRef}
         contentActivity={contentActivity}
         pressScale={pressScale}
+        hideProgress={hideProgress}
       />
 
-      <View style={styles.wrapper} pointerEvents="box-none">
+      <Animated.View style={[styles.wrapper, hideStyle]} pointerEvents="box-none">
         <GestureDetector gesture={barGesture}>
           <Animated.View style={[styles.bar, animatedBarStyle]}>
             <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -392,7 +435,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
             </Canvas>
           </Animated.View>
         </GestureDetector>
-      </View>
+      </Animated.View>
     </>
   );
 };

@@ -39,7 +39,7 @@ import MainIntroOverlay, {
 } from '../components/MainIntroOverlay';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import GlassTabSelector from '../components/GlassTabSelector';
-import Receive from '../components/Cards/Receive';
+import GlassReceive from '../components/Cards/GlassReceive';
 import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
@@ -59,9 +59,11 @@ import GlassTransactionList from '../components/GlassTransactionList';
 import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
-import LiquidGlassTabBar, {
+import LiquidGlassTabBar from '../components/LiquidGlassTabBar';
+import {
+  getBottomOffset,
   getTabBarClearance,
-} from '../components/LiquidGlassTabBar';
+} from '../components/glassTabBarLayout';
 import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
@@ -204,15 +206,17 @@ const NewMain: React.FC<Props> = props => {
   );
   const insets = useSafeAreaInsets();
 
-  // Keep card CTAs above the floating tab bar.
   const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
-  const cardHeight =
-    SCREEN_HEIGHT -
-    UNFOLD_SHEET_POINT -
-    SCREEN_HEIGHT * DRAG_STRIP_HEIGHT_RATIO -
-    getTabBarClearance(SCREEN_HEIGHT, insets.bottom);
+  const cardSpan =
+    SCREEN_HEIGHT - UNFOLD_SHEET_POINT - SCREEN_HEIGHT * DRAG_STRIP_HEIGHT_RATIO;
+  // cards run to the bottom edge since the bar hides; the shop keeps the
+  // bar, so its card keeps the clearance
+  const cardHeight = cardSpan - getBottomOffset(SCREEN_HEIGHT, insets.bottom);
   const SHOP_CARD_EXTRA_HEIGHT = 115;
-  const shopCardHeight = cardHeight + SHOP_CARD_EXTRA_HEIGHT;
+  const shopCardHeight =
+    cardSpan -
+    getTabBarClearance(SCREEN_HEIGHT, insets.bottom) +
+    SHOP_CARD_EXTRA_HEIGHT;
   const tabBarBandTop =
     SCREEN_HEIGHT - getTabBarClearance(SCREEN_HEIGHT, insets.bottom);
 
@@ -298,19 +302,20 @@ const NewMain: React.FC<Props> = props => {
     [],
   );
 
-  // The Skia rows sit in a canvas above the sheet, so they have to wait for
-  // the outgoing card to finish fading or they pop in on top of it.
-  const [showTxRows, setShowTxRows] = useState(activeTab === 0);
+  // skia rows sit above the sheet, so returning rows wait out the card fade;
+  // hiding is derived so the tap's own render does it
+  const [walletRowsReady, setWalletRowsReady] = useState(activeTab === 0);
+  const showTxRows = walletRowsReady && activeTab === 0;
   useEffect(() => {
     if (activeTab !== 0) {
-      setShowTxRows(false);
-      // The list unmounts behind the card and comes back at the top, so the
-      // offset is cleared now rather than on remount, where a passive effect
-      // would land after the first frame had already been drawn from it.
+      // clear the scroll now, a remount effect would land after the first
+      // frame had already drawn from it
       txListScrollY.value = 0;
-      return;
     }
-    const timeout = setTimeout(() => setShowTxRows(true), CARD_SWAP_DELAY);
+    const timeout = setTimeout(
+      () => setWalletRowsReady(activeTab === 0),
+      CARD_SWAP_DELAY,
+    );
     return () => clearTimeout(timeout);
   }, [activeTab, txListScrollY]);
 
@@ -673,7 +678,7 @@ const NewMain: React.FC<Props> = props => {
             containerHeight={cardHeight}
           />
         }
-        receiveViewComponent={<Receive containerHeight={cardHeight} />}
+        receiveViewComponent={<GlassReceive containerHeight={cardHeight} />}
       />
     ),
     [

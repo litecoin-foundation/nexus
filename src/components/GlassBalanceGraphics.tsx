@@ -1,4 +1,5 @@
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Image} from 'react-native';
 import {
   Circle,
   Group,
@@ -6,28 +7,87 @@ import {
   Path,
   RoundedRect,
   Skia,
-  useFonts,
 } from '@shopify/react-native-skia';
 import type {
   SkParagraph,
+  SkTypeface,
   SkTypefaceFontProvider,
+  TextAlign,
 } from '@shopify/react-native-skia';
 import {SharedValue} from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 import {useSelector} from 'react-redux';
 
-// Paragraph text renders reliably on Android with bundled fonts.
-const FONT_FAMILY = 'Satoshi Variable';
+export const FONT_FAMILY = 'Satoshi Variable';
 
-// Skia does not synthesize weights for this variable font.
-export const useSatoshiFontMgr = () =>
-  useFonts({
-    [FONT_FAMILY]: [
-      require('../fonts/Satoshi-Regular.ttf'),
-      require('../fonts/Satoshi-Bold.ttf'),
-    ],
-  });
+const SATOSHI_FONT_MODULES = [
+  require('../fonts/Satoshi-Regular.ttf'),
+  require('../fonts/Satoshi-Medium.ttf'),
+  require('../fonts/Satoshi-Bold.ttf'),
+];
 
+// decode the typefaces once and share one provider, skia's useFonts
+// re-decodes on every mount
+let cachedFontMgr: SkTypefaceFontProvider | null = null;
+let cachedFontMgrLoad: Promise<SkTypefaceFontProvider | null> | null = null;
+
+const loadCachedFontMgr = () => {
+  cachedFontMgrLoad ??= Promise.all(
+    SATOSHI_FONT_MODULES.map(fontModule =>
+      Skia.Data.fromURI(Image.resolveAssetSource(fontModule).uri).then(data =>
+        Skia.Typeface.MakeFreeTypeFaceFromData(data),
+      ),
+    ),
+  )
+    .then(typefaces => {
+      const loaded = typefaces.filter(
+        (typeface): typeface is SkTypeface => typeface !== null,
+      );
+      if (loaded.length !== SATOSHI_FONT_MODULES.length) {
+        // failed decode, retry on the next mount
+        cachedFontMgrLoad = null;
+        return null;
+      }
+      const fontMgr = Skia.TypefaceFontProvider.Make();
+      loaded.forEach(typeface => {
+        fontMgr.registerFont(typeface, FONT_FAMILY);
+      });
+      cachedFontMgr = fontMgr;
+      return fontMgr;
+    })
+    .catch(() => {
+      cachedFontMgrLoad = null;
+      return null;
+    });
+  return cachedFontMgrLoad;
+};
+
+export const useSatoshiFontMgr = (): SkTypefaceFontProvider | null => {
+  const [fontMgr, setFontMgr] = useState(cachedFontMgr);
+  useEffect(() => {
+    if (fontMgr) {
+      return;
+    }
+    let alive = true;
+    loadCachedFontMgr().then(loaded => {
+      if (alive && loaded) {
+        setFontMgr(loaded);
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, [fontMgr]);
+  return fontMgr;
+};
+
+interface ParagraphOpts {
+  align?: TextAlign;
+  maxLines?: number;
+  ellipsis?: string;
+}
+
+// single line by default, pass opts to override ({} = unlimited wrap)
 export const buildParagraph = (
   fontMgr: SkTypefaceFontProvider,
   text: string,
@@ -35,8 +95,12 @@ export const buildParagraph = (
   weight: number,
   color: string,
   measureWidth: number,
+  opts: ParagraphOpts = {maxLines: 1},
 ): SkParagraph => {
-  const paragraph = Skia.ParagraphBuilder.Make({maxLines: 1}, fontMgr)
+  const paragraph = Skia.ParagraphBuilder.Make(
+    {textAlign: opts.align, maxLines: opts.maxLines, ellipsis: opts.ellipsis},
+    fontMgr,
+  )
     .pushStyle({
       fontFamilies: [FONT_FAMILY],
       fontSize,

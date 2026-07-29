@@ -22,6 +22,9 @@ export const getBottomOffset = (screenHeight: number, bottomInset: number) =>
 export const getTabBarClearance = (screenHeight: number, bottomInset: number) =>
   getBottomOffset(screenHeight, bottomInset) + screenHeight * BAR_HEIGHT_RATIO;
 
+// sheets that hide the tab bar; the wallet and the shop keep it
+export const sheetHidesTabBar = (sheet: number) => sheet !== 0 && sheet !== 3;
+
 export const getTabBarBandHeight = (
   screenHeight: number,
   bottomInset: number,
@@ -30,3 +33,9 @@ export const getTabBarBandHeight = (
     screenHeight * BAND_HEIGHT_RATIO,
     getTabBarClearance(screenHeight, bottomInset),
   );
+
+// slide distance that fully clears the bar and its shadow off-screen
+export const getTabBarHideDistance = (
+  screenHeight: number,
+  bottomInset: number,
+) => getTabBarBandHeight(screenHeight, bottomInset) + 8;

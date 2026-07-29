@@ -25,6 +25,7 @@ import {SHEET_BACKGROUND} from './GlassTxRows';
 export const SHEET_FOLD_ANIM_MS = 200;
 export const SHEET_TOP_RADIUS_RATIO = 0.03;
 export const CARD_SWAP_DELAY = 155;
+export const CARD_SWAP_SETTLE_MS = 600;
 
 interface Props {
   // Captured by the floating glass tab bar when a native card is active.

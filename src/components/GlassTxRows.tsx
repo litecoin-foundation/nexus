@@ -254,8 +254,7 @@ const PARAGRAPH_CACHE_CAP = 400;
 // The page canvas and the tx-detail modal's composite canvas render the same
 // rows; one cache per models array lets the second mount reuse paragraphs the
 // first already shaped. Keyed weakly so a replaced tx list frees its
-// paragraphs. The font manager is deliberately NOT part of the identity:
-// useFonts builds a provider per hook instance over the same typefaces, and a
+// paragraphs. The font manager is deliberately NOT part of the identity: a
 // shaped SkParagraph is self-contained, so identity-checking it would make
 // the two consumers silently stop sharing.
 const paragraphCacheRegistry = new WeakMap<
