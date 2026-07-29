@@ -359,6 +359,16 @@ export const buildGlassTxRowElements = (params: RowElementParams) => {
   if (paragraphCache.size > PARAGRAPH_CACHE_CAP) {
     for (const key of paragraphCache.keys()) {
       if (key < clampedStart || key > clampedEnd) {
+        // dispose() promptly frees the native paragraph and its GC
+        // external-memory advisory instead of waiting for finalization;
+        // both consumers share this cache and the same window, so an
+        // evicted row is not being drawn by either
+        const evicted = paragraphCache.get(key);
+        if (evicted) {
+          for (const paragraph of Object.values(evicted)) {
+            paragraph.dispose?.();
+          }
+        }
         paragraphCache.delete(key);
         if (paragraphCache.size <= PARAGRAPH_CACHE_CAP) {
           break;

@@ -483,6 +483,9 @@ export const labelTransaction = (txid: string, label: string) => async () => {
   }
 };
 
+// trailing-edge coalescing for subscription-triggered refreshes
+let txRefreshDebounce: ReturnType<typeof setTimeout> | undefined;
+
 export const subscribeTransactions =
   (): AppThunk => async (dispatch, getState) => {
     const {txSubscriptionStarted} = getState().transaction!;
@@ -495,8 +498,12 @@ export const subscribeTransactions =
           async transaction => {
             try {
               console.log(`new tx detected!: ${transaction}`);
-              dispatch(getTransactions());
-              dispatch(getBalance());
+              // rescans stream many txs in bursts; coalesce the refreshes
+              clearTimeout(txRefreshDebounce);
+              txRefreshDebounce = setTimeout(() => {
+                dispatch(getTransactions());
+                dispatch(getBalance());
+              }, 2000);
             } catch (error) {
               dispatch(txSubscriptionStartedAction(false));
               throw new Error(String(error));
@@ -604,11 +611,21 @@ const fetchMergedHwTransactions = async (
   return {...ltcTxs, transactions};
 };
 
+// One full-list fetch at a time: the 15s poll, per-tx subscription events and
+// mount-time dispatches otherwise stack concurrent runs during sync/rescan,
+// each pinning a multi-MB response buffer (Hermes external memory) for the
+// whole run — a driver of the external-memory OOM (glass-perf-plan.md).
+let getTransactionsInFlight = false;
+
 export const getTransactions = (): AppThunk => async (dispatch, getState) => {
   const {lndActive} = getState().lightning;
   if (!lndActive) {
     return;
   }
+  if (getTransactionsInFlight) {
+    return;
+  }
+  getTransactionsInFlight = true;
   const isHwWallet = isHwWalletSelectedSelector(getState());
   const {ltcAccount, mwebAccount} = selectedAccountNamesSelector(getState());
   const {buyHistory: mainBuyHistory, sellHistory: mainSellHistory} =
@@ -771,7 +788,12 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
 
       const previousOutpoints: PreviousOutPoint[] = [];
       tx.previousOutpoints?.forEach(prevOutpoint => {
-        previousOutpoints.push(prevOutpoint);
+        // plain copy: retaining the proto message would pin the entire
+        // response buffer via its subarray views
+        previousOutpoints.push({
+          outpoint: prevOutpoint.outpoint,
+          isOurOutput: prevOutpoint.isOurOutput,
+        } as PreviousOutPoint);
       });
 
       // Type of transaction, All denotes unlabeled txs
@@ -895,10 +917,22 @@ export const getTransactions = (): AppThunk => async (dispatch, getState) => {
       cachedTxHashesBuf.push(decodedTx.txHash);
     }
 
-    dispatch(getTransactionsAction(txs));
-    dispatch(setCachedTxHashes(cachedTxHashesBuf));
+    // Skip the dispatch when nothing changed: every dispatch replaces the
+    // array identity and re-shapes all visible Skia paragraphs downstream.
+    // Confirmation counts advance once per block, so those still flow at
+    // block cadence.
+    const fingerprintOf = (list: IDecodedTx[]) =>
+      list.map(t => `${t.txHash}:${t.numConfirmations}:${t.amount}`).join('|');
+    if (fingerprintOf(txs) !== fingerprintOf(transactions)) {
+      dispatch(getTransactionsAction(txs));
+    }
+    if (cachedTxHashesBuf.length !== cachedTxHashes.length) {
+      dispatch(setCachedTxHashes(cachedTxHashesBuf));
+    }
   } catch (error) {
     console.error(error);
+  } finally {
+    getTransactionsInFlight = false;
   }
 };
 

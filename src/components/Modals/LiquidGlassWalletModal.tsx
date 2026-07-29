@@ -85,17 +85,31 @@ export default function LiquidGlassWalletModal({
   const cornerRadius = SCREEN_HEIGHT * 0.025;
 
   const [capturedImage, setCapturedImage] = useState<SkImage | null>(null);
+  const capturedRef = useRef<SkImage | null>(null);
 
   const captureScreen = useCallback(async () => {
     if (contentViewRef?.current) {
       try {
         const img = await makeImageFromView(contentViewRef);
-        setCapturedImage(img);
+        capturedRef.current = img;
+        setCapturedImage(prev => {
+          if (prev && prev !== img) {
+            prev.dispose?.();
+          }
+          return img;
+        });
       } catch {
         setCapturedImage(null);
       }
     }
   }, [contentViewRef]);
+
+  useEffect(() => {
+    return () => {
+      capturedRef.current?.dispose?.();
+      capturedRef.current = null;
+    };
+  }, []);
 
   const glassFilter = useDerivedValue(() => {
     const builder = Skia.RuntimeShaderBuilder(liquidGlassShader);
@@ -147,7 +161,11 @@ export default function LiquidGlassWalletModal({
       animTimeout.current = setTimeout(() => {
         setVisible(false);
         translateY.value = 0;
-        setCapturedImage(null);
+        capturedRef.current = null;
+        setCapturedImage(prev => {
+          prev?.dispose?.();
+          return null;
+        });
       }, 250);
     }
     return () => clearTimeout(animTimeout.current);

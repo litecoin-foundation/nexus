@@ -1,0 +1,30 @@
+diff --git a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraph.h b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraph.h
+index fbc6d31..94c0f1f 100644
+--- a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraph.h
++++ b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraph.h
+@@ -294,7 +294,9 @@ public:
+                       &JsiSkParagraph::extendedVisit);
+   }
+ 
+-  size_t getMemoryPressure() override { return 1024 * 1024; }
++  // Patched (nexus): the stock flat 1MB advisory over-reports shaped
++  // paragraphs ~20-100x and starves the Hermes heap on long tx lists.
++  size_t getMemoryPressure() override { return 64 * 1024; }
+ 
+   explicit JsiSkParagraph(std::shared_ptr<RNSkPlatformContext> context,
+                           para::ParagraphBuilder *paragraphBuilder)
+diff --git a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraphBuilder.h b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraphBuilder.h
+index c8a938b..a62b545 100644
+--- a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraphBuilder.h
++++ b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraphBuilder.h
+@@ -121,7 +121,9 @@ public:
+     installHostMethod(runtime, prototype, "pop", &JsiSkParagraphBuilder::pop);
+   }
+ 
+-  size_t getMemoryPressure() override { return 1024 * 1024; }
++  // Patched (nexus): the stock flat 1MB advisory over-reports shaped
++  // paragraphs ~20-100x and starves the Hermes heap on long tx lists.
++  size_t getMemoryPressure() override { return 64 * 1024; }
+ 
+   explicit JsiSkParagraphBuilder(std::shared_ptr<RNSkPlatformContext> context,
+                                  para::ParagraphStyle paragraphStyle,

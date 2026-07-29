@@ -87,17 +87,31 @@ export default function LiquidGlassAlertModal({
   const modalTop = (SCREEN_HEIGHT - modalHeight) / 2;
 
   const [capturedImage, setCapturedImage] = useState<SkImage | null>(null);
+  const capturedRef = useRef<SkImage | null>(null);
 
   const captureScreen = useCallback(async () => {
     if (contentViewRef?.current) {
       try {
         const img = await makeImageFromView(contentViewRef);
-        setCapturedImage(img);
+        capturedRef.current = img;
+        setCapturedImage(prev => {
+          if (prev && prev !== img) {
+            prev.dispose?.();
+          }
+          return img;
+        });
       } catch {
         setCapturedImage(null);
       }
     }
   }, [contentViewRef]);
+
+  useEffect(() => {
+    return () => {
+      capturedRef.current?.dispose?.();
+      capturedRef.current = null;
+    };
+  }, []);
 
   const glassFilter = useDerivedValue(() => {
     const builder = Skia.RuntimeShaderBuilder(liquidGlassShader);
@@ -159,7 +173,11 @@ export default function LiquidGlassAlertModal({
       backdropOpacity.value = withTiming(0, {duration: 200});
       animTimeout.current = setTimeout(() => {
         setMounted(false);
-        setCapturedImage(null);
+        capturedRef.current = null;
+        setCapturedImage(prev => {
+          prev?.dispose?.();
+          return null;
+        });
         setModalHeight(0);
         revealed.current = false;
       }, 250);

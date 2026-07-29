@@ -92,17 +92,31 @@ function LiquidGlassCategoryPicker({
   const borderCornerRadius = cornerRadius * 1.2;
 
   const [capturedImage, setCapturedImage] = useState<SkImage | null>(null);
+  const capturedRef = useRef<SkImage | null>(null);
 
   const captureScreen = useCallback(async () => {
     if (captureRef?.current) {
       try {
         const img = await makeImageFromView(captureRef);
-        setCapturedImage(img);
+        capturedRef.current = img;
+        setCapturedImage(prev => {
+          if (prev && prev !== img) {
+            prev.dispose?.();
+          }
+          return img;
+        });
       } catch {
         setCapturedImage(null);
       }
     }
   }, [captureRef]);
+
+  useEffect(() => {
+    return () => {
+      capturedRef.current?.dispose?.();
+      capturedRef.current = null;
+    };
+  }, []);
 
   const borderGlassFilter = useDerivedValue(() => {
     const builder = Skia.RuntimeShaderBuilder(liquidGlassShader);
@@ -151,7 +165,11 @@ function LiquidGlassCategoryPicker({
       backdropOpacity.value = withTiming(0, {duration: 200});
       animTimeout.current = setTimeout(() => {
         setVisible(false);
-        setCapturedImage(null);
+        capturedRef.current = null;
+        setCapturedImage(prev => {
+          prev?.dispose?.();
+          return null;
+        });
       }, 250);
     }
     return () => clearTimeout(animTimeout.current);

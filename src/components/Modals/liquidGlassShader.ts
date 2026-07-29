@@ -98,6 +98,16 @@ vec4 render(vec2 xy) {
 }
 
 vec4 main(vec2 fragCoord) {
+  // Bail out cheaply away from the glass box and only supersample the
+  // anti-aliased rim.
+  float dc = sdf(fragCoord);
+  if (dc > 1.5) {
+    return image.eval(fragCoord);
+  }
+  if (dc < -1.5) {
+    vec2 g = calculateGradient(fragCoord);
+    return calculateLiquidGlass(dc, g, fragCoord);
+  }
   const int samples = 4;
   float sampleStrength = 1.0 / float(samples * samples);
   vec4 finalColor = vec4(0.0);
