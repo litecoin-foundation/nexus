@@ -4,19 +4,10 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Auth from '../screens/Auth/Auth';
 import Forgot, {ForgotNavigationOptions} from '../screens/Auth/Forgot';
 import ChangePincode from '../screens/Settings/ChangePincode';
-import HeaderButton from '../components/Buttons/HeaderButton';
 
 const Stack = createStackNavigator();
 
 function AuthStack(): React.JSX.Element {
-  const headerRightComponent = (navigation: any) => (
-    <HeaderButton
-      textKey="forgot_pin"
-      textDomain="onboarding"
-      onPress={() => navigation.navigate('Forgot')}
-      rightPadding={true}
-    />
-  );
   return (
     <Stack.Navigator
       initialRouteName="Auth"
@@ -26,14 +17,8 @@ function AuthStack(): React.JSX.Element {
         headerBackButtonDisplayMode: 'minimal',
         headerTintColor: 'white',
       }}>
-      <Stack.Screen
-        name="Auth"
-        component={Auth}
-        options={({navigation}) => ({
-          headerTitle: 'Unlock Wallet',
-          headerRight: () => headerRightComponent(navigation),
-        })}
-      />
+      {/* The Auth screen owns its header via navigation.setOptions. */}
+      <Stack.Screen name="Auth" component={Auth} />
       <Stack.Screen
         name="Forgot"
         component={Forgot}

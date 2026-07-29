@@ -18,6 +18,10 @@ import {ScreenSizeContext} from '../context/screenSize';
 
 const SPRING_BACK_ANIM_DURATION = 100;
 
+// Bottom-corner radius of the folded top-half card, as a ratio of
+// screen height.
+export const CARD_FOLD_RADIUS_RATIO = 0.037;
+
 // Sheet snap points: folded top half fills ~65% of the screen, unfolded
 // sheet stops at ~37%.
 export const getNewMainSheetPoints = (
@@ -142,6 +146,23 @@ export const getNewMainTopHalfHeight = (
   );
 };
 
+// Top-half card height when the sheet rests folded.
+export const getFoldedTopHalfHeight = (
+  screenHeight: number,
+  topInset: number,
+) => {
+  const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
+    screenHeight,
+    topInset,
+  );
+  return getNewMainTopHalfHeight(
+    FOLD_SHEET_POINT,
+    screenHeight,
+    UNFOLD_SHEET_POINT,
+    FOLD_SHEET_POINT,
+  );
+};
+
 interface Props {
   isWalletsModalOpened: boolean;
   isTxDetailModalOpened: boolean;
@@ -194,12 +215,12 @@ export function useNewMainAnims(props: Props) {
       borderBottomLeftRadius: interpolate(
         mainSheetsTranslationY.value,
         [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
-        [0, SCREEN_HEIGHT * 0.037],
+        [0, SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO],
       ),
       borderBottomRightRadius: interpolate(
         mainSheetsTranslationY.value,
         [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
-        [0, SCREEN_HEIGHT * 0.037],
+        [0, SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO],
       ),
     };
   });

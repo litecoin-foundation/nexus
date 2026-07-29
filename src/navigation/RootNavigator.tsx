@@ -1,4 +1,5 @@
 import React from 'react';
+import {Easing} from 'react-native';
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {navigationRef} from './NavigationService';
@@ -6,9 +7,13 @@ import {navigationRef} from './NavigationService';
 import OnboardingStack from './OnboardingStack';
 import Loading from '../screens/Loading';
 import AuthStack from './AuthStack';
-import Unlocking from '../screens/Unlocking';
 import NewWalletStack from './NewWalletStack';
 import {RootStackParamList} from './types';
+
+const FadeSpec = {
+  animation: 'timing' as const,
+  config: {duration: 320, easing: Easing.out(Easing.quad)},
+};
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -66,23 +71,16 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
-          name="Unlocking"
-          component={Unlocking}
-          options={{
-            headerShown: false,
-            gestureEnabled: false,
-            animation: 'fade',
-          }}
-        />
-        <Stack.Screen
           name="NewWalletStack"
           component={NewWalletStack}
+          // Fades over the still-mounted Auth screen on unlock.
           options={{
             headerTransparent: true,
             headerShown: false,
             animation: 'fade',
             detachPreviousScreen: false,
             cardStyle: {backgroundColor: '#0F55C7'},
+            transitionSpec: {open: FadeSpec, close: FadeSpec},
           }}
         />
       </Stack.Navigator>

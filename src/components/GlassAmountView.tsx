@@ -6,7 +6,10 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import LiquidGlassBackdrop from './LiquidGlassBackdrop';
 import {GLASS_CHART_HEIGHT_RATIO, getGlassChartGap} from './GlassChart';
-import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
+import {
+  CARD_FOLD_RADIUS_RATIO,
+  getNewMainSheetPoints,
+} from '../animations/useNewMainAnims';
 import {GLASS_TAB_CLUSTER_TOP_OFFSET_RATIO} from './glassTabLayout';
 import {
   BALANCE_BLOCK_HEIGHT_RATIO,
@@ -238,8 +241,8 @@ const getStyles = (
       top: 0,
       width: '100%',
       backgroundColor: 'transparent',
-      borderBottomLeftRadius: screenHeight * 0.037,
-      borderBottomRightRadius: screenHeight * 0.037,
+      borderBottomLeftRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
+      borderBottomRightRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
       overflow: 'hidden',
     },
     safeArea: {

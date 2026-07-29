@@ -6,17 +6,35 @@ import React, {
   useLayoutEffect,
   useCallback,
 } from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, Platform} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated';
 
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
 import {authenticate} from '../../utils/biometric';
-import PasscodeInput from '../PasscodeInput';
+import PasscodeInput, {
+  PasscodeInputRef,
+  UnlockPhase,
+} from '../PasscodeInput';
 import PadGrid from './PadGrid';
 import BuyButton from './BuyButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {getNewMainSheetPoints} from '../../animations/useNewMainAnims';
+import {SHEET_BACKGROUND} from '../GlassTxRows';
+import {
+  SHEET_FOLD_ANIM_MS,
+  SHEET_TOP_RADIUS_RATIO,
+} from '../GlassBottomSheet';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
@@ -25,15 +43,20 @@ const MAX_LOGIN_ATTEMPTS = 10;
 const TIME_LOCK_IN_SEC = 3600;
 const DAY_LOCK_IN_SEC = 86400;
 
+const SHEET_HEIGHT_RATIO = 0.65;
+
+// Outro: the pad content dissolves, then the sheet drops to the Main
+// screen's folded-sheet position, replaying GlassBottomSheet's fold.
+const OUTRO_CONTENT_MS = 250;
+const OUTRO_SLIDE_DELAY_MS = 150;
+
 interface Props {
   handleValidationFailure: () => void;
   handleValidationSuccess: () => void;
   handleBiometricPress?: () => void;
   keychainPincodeState?: string | null;
-}
-
-interface PasscodeInputRef {
-  playIncorrectAnimation: () => void;
+  unlockPhase?: UnlockPhase;
+  onOutroComplete?: () => void;
 }
 
 const AuthPad: React.FC<Props> = props => {
@@ -42,9 +65,12 @@ const AuthPad: React.FC<Props> = props => {
     handleValidationSuccess,
     handleBiometricPress,
     keychainPincodeState,
+    unlockPhase = 'idle',
+    onOutroComplete,
   } = props;
 
   const {t} = useTranslation('onboarding');
+  const unlocking = unlockPhase !== 'idle';
 
   const dispatch = useAppDispatch();
   const pin = useAppSelector(state => state.authpad.pin);
@@ -61,14 +87,55 @@ const AuthPad: React.FC<Props> = props => {
 
   const passcodeInputRef = useRef<PasscodeInputRef>(null);
 
+  const insets = useSafeAreaInsets();
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  // clear all inputs in AuthPad on initial render
+  // Slide target: the Main screen's folded sheet top. On Android the
+  // safe-area view raises the sheet by insets.bottom (components/Auth).
+  const {FOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
+  const padSheetTop = SCREEN_HEIGHT * (1 - SHEET_HEIGHT_RATIO);
+  const sheetSlideDistance =
+    FOLD_SHEET_POINT -
+    padSheetTop +
+    (Platform.OS === 'android' ? insets.bottom : 0);
+
+  const contentOut = useSharedValue(0);
+  const sheetSlide = useSharedValue(0);
+
+  // Outro is one-way; the screen unmounts after onOutroComplete.
   useEffect(() => {
-    dispatch(clearValues());
-  }, [dispatch]);
+    if (unlockPhase !== 'outro') {
+      return;
+    }
+    contentOut.value = withTiming(1, {
+      duration: OUTRO_CONTENT_MS,
+      easing: Easing.in(Easing.quad),
+    });
+    sheetSlide.value = withDelay(
+      OUTRO_SLIDE_DELAY_MS,
+      // Default easing matches GlassBottomSheet's fold.
+      withTiming(1, {duration: SHEET_FOLD_ANIM_MS}, finished => {
+        if (finished && onOutroComplete) {
+          runOnJS(onOutroComplete)();
+        }
+      }),
+    );
+  }, [unlockPhase, contentOut, sheetSlide, onOutroComplete]);
+
+  const dissolveStyle = useAnimatedStyle(() => ({
+    opacity: 1 - contentOut.value,
+  }));
+
+  const padSinkStyle = useAnimatedStyle(() => ({
+    opacity: 1 - contentOut.value,
+    transform: [{translateY: contentOut.value * SCREEN_HEIGHT * 0.03}],
+  }));
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: sheetSlide.value * sheetSlideDistance}],
+  }));
 
   useEffect(() => {
     return function cleanup() {
@@ -77,6 +144,16 @@ const AuthPad: React.FC<Props> = props => {
   }, [dispatch]);
 
   const [pinInactive, setPinInactive] = useState(false);
+
+  // Clear the pad on mount and when the unlock watchdog hands it back
+  // (resets the latched pinInactive).
+  useEffect(() => {
+    if (unlockPhase === 'idle') {
+      dispatch(clearValues());
+      setPinInactive(false);
+    }
+  }, [unlockPhase, dispatch]);
+
   // handles when AuthPad inputs are filled
   useEffect(() => {
     if (pin.length === 6) {
@@ -175,13 +252,14 @@ const AuthPad: React.FC<Props> = props => {
     setStatus(getStatus());
   }, [getStatus]);
 
+  const padDisabled = pinInactive || unlocking;
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 
   const buttons = values.map(value => {
     if (value === '.') {
       return (
         <BiometricButton
-          disabled={pinInactive}
+          disabled={padDisabled}
           key="biometric-button-key"
           onPress={async () => {
             if (handleBiometricPress) {
@@ -197,7 +275,7 @@ const AuthPad: React.FC<Props> = props => {
     if (value === '⌫') {
       return (
         <BuyButton
-          disabled={pinInactive}
+          disabled={padDisabled}
           key="back-arrow-button-key"
           value={value}
           onPress={() => handlePress(value)}
@@ -207,7 +285,7 @@ const AuthPad: React.FC<Props> = props => {
     }
     return (
       <BuyButton
-        disabled={pinInactive}
+        disabled={padDisabled}
         key={value}
         value={value}
         onPress={() => handlePress(value)}
@@ -220,27 +298,32 @@ const AuthPad: React.FC<Props> = props => {
   );
 
   return (
-    <View style={styles.bottomSheet}>
-      <TranslateText
-        textKey={'enter_pin'}
-        domain={'onboarding'}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-        maxLengthInPixels={SCREEN_WIDTH}
-        textStyle={styles.bottomSheetTitle}
-        numberOfLines={1}
-      />
-      {RenderStatusText}
+    <Animated.View style={[styles.bottomSheet, sheetStyle]}>
+      <Animated.View style={dissolveStyle}>
+        <TranslateText
+          textKey={'enter_pin'}
+          domain={'onboarding'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          maxLengthInPixels={SCREEN_WIDTH}
+          textStyle={styles.bottomSheetTitle}
+          numberOfLines={1}
+        />
+        {RenderStatusText}
+      </Animated.View>
       <View style={styles.bottomSheetSubContainer}>
         <PasscodeInput
           pinInactive={pinInactive}
           dotsLength={6}
           activeDotIndex={pin.length}
+          unlockPhase={unlockPhase}
           ref={passcodeInputRef}
         />
-        <PadGrid />
-        <View style={styles.buttonContainer}>{buttons}</View>
+        <Animated.View style={padSinkStyle}>
+          <PadGrid />
+          <View style={styles.buttonContainer}>{buttons}</View>
+        </Animated.View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -249,11 +332,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     bottomSheet: {
       position: 'absolute',
       bottom: 0,
-      backgroundColor: '#ffffff',
-      borderTopLeftRadius: screenHeight * 0.03,
-      borderTopRightRadius: screenHeight * 0.03,
+      // Same surface as the Main screen's bottom sheet.
+      backgroundColor: SHEET_BACKGROUND,
+      borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
       width: screenWidth,
-      height: screenHeight * 0.65,
+      height: screenHeight * SHEET_HEIGHT_RATIO,
     },
     bottomSheetTitle: {
       fontFamily: 'Satoshi Variable',

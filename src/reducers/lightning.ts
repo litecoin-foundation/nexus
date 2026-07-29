@@ -81,6 +81,11 @@ const initialState = {
   migrationStatusKey: null,
 } as ILightningState;
 
+// LND has finished unlocking and its RPC layer is usable.
+export const isWalletRpcReady = (walletState: WalletState | null) =>
+  walletState === WalletState.RPC_ACTIVE ||
+  walletState === WalletState.SERVER_ACTIVE;
+
 // actions
 const lndState = createAction<boolean>('lightning/lndState');
 const setWalletState = createAction<WalletState | null>(

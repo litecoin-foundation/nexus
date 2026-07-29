@@ -51,9 +51,8 @@ import {
 // Draw the top-half backdrop and tab glass in the same canvas so the
 // BackdropFilter refracts live content during the fold/unfold morph.
 
-// Also consumed by FoldedSkinView, which derives an RN-view fallback of
-// this gradient for the lock screen and the unlock reveal overlay (plain
-// views paint on the mount commit, Skia canvases a few frames later).
+// Also consumed by FoldedSkinView, which derives an RN-view version of
+// this gradient for the lock screen and unlock overlay.
 export const GRADIENT_COLORS = [
   '#000001',
   '#08208A',

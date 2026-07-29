@@ -34,6 +34,9 @@ import {StackNavigationOptions} from '@react-navigation/stack';
 
 import GlassAmountView from '../components/GlassAmountView';
 import GlassTopSectionChart from '../components/GlassTopSectionChart';
+import MainIntroOverlay, {
+  consumeMainIntro,
+} from '../components/MainIntroOverlay';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import GlassTabSelector from '../components/GlassTabSelector';
 import Receive from '../components/Cards/Receive';
@@ -248,6 +251,10 @@ const NewMain: React.FC<Props> = props => {
   const pinModalAction = useRef<string>('view-seed-auth');
   const [loading, setLoading] = useState(false);
   const [triggerLester, setTriggerLester] = useState(0);
+  // Unlock hand-off: the intro skin covers the screen on mount and
+  // fades out; only the Auth screen requests it.
+  const [introDone, setIntroDone] = useState(() => !consumeMainIntro());
+  const finishIntro = useCallback(() => setIntroDone(true), []);
 
   const recoveryMode = useAppSelector(state => state.info!.recoveryMode);
   const recoveryFinished = useAppSelector(
@@ -484,6 +491,12 @@ const NewMain: React.FC<Props> = props => {
     [transactions],
   );
 
+  // Stable identity so the always-mounted (memoized) tx-detail modal doesn't
+  // rebuild its gestures on every NewMain render.
+  const closeTxDetailModal = useCallback(() => {
+    setTxDetailModalOpened(false);
+  }, []);
+
   const swipeToPrevTx = useCallback(() => {
     if (selectedTransaction) {
       if (selectedTransaction.hasOwnProperty('renderIndex')) {
@@ -510,6 +523,9 @@ const NewMain: React.FC<Props> = props => {
 
   useEffect(() => {
     if (deeplinkSet) {
+      // A pending deeplink unfolds the sheet or navigates away
+      // immediately — skip the intro skin.
+      setIntroDone(true);
       if (uri.startsWith('litecoin:')) {
         setBottomSheetFolded(false);
         setActiveTab(4);
@@ -748,16 +764,21 @@ const NewMain: React.FC<Props> = props => {
         shopDisabled={!isInternetReachable}
       />
 
+      {!introDone && (
+        <MainIntroOverlay
+          online={!!isInternetReachable}
+          onDone={finishIntro}
+        />
+      )}
+
+      {/* These glass modals snapshot mainContentRef on open; gate on
+          introDone so the intro skin isn't baked into the captures. */}
       <GlassTxDetailModal
-        isOpened={isTxDetailModalOpened}
-        close={() => {
-          setTxDetailModalOpened(false);
-        }}
+        isOpened={isTxDetailModalOpened && introDone}
+        close={closeTxDetailModal}
         transaction={selectedTransaction}
         txsNum={transactions.length}
-        setTransactionIndex={(txIndex: number) => {
-          setTransactionIndex(txIndex);
-        }}
+        setTransactionIndex={setTransactionIndex}
         swipeToPrevTx={swipeToPrevTx}
         swipeToNextTx={swipeToNextTx}
         contentViewRef={mainContentRef}
@@ -768,7 +789,7 @@ const NewMain: React.FC<Props> = props => {
       />
 
       <LiquidGlassWalletModal
-        isOpened={isWalletsModalOpened}
+        isOpened={isWalletsModalOpened && introDone}
         close={() => {
           setWalletsModalOpened(false);
         }}
@@ -830,7 +851,7 @@ const NewMain: React.FC<Props> = props => {
       />
 
       <LiquidGlassAlertModal
-        isVisible={showRecoveryAlert}
+        isVisible={showRecoveryAlert && introDone}
         close={() => setRecoveryAlertDismissed(true)}
         titleTextKey={
           recoveryRestarted ? 'recovery_restarted_title' : 'recovery_sync_title'

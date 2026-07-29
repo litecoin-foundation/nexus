@@ -22,8 +22,8 @@ import {
 } from '../animations/useNewMainAnims';
 import {SHEET_BACKGROUND} from './GlassTxRows';
 
-const ANIM_DURATION = 200;
-// How long the outgoing card stays mounted, fading, after the tab changes.
+export const SHEET_FOLD_ANIM_MS = 200;
+export const SHEET_TOP_RADIUS_RATIO = 0.03;
 export const CARD_SWAP_DELAY = 155;
 
 interface Props {
@@ -118,18 +118,18 @@ const GlassBottomSheet: React.FC<Props> = props => {
   useEffect(() => {
     if (folded) {
       mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {
-        duration: ANIM_DURATION,
+        duration: SHEET_FOLD_ANIM_MS,
       });
       setTimeout(() => {
         mainSheetsTranslationYStart.value = FOLD_SHEET_POINT;
-      }, ANIM_DURATION);
+      }, SHEET_FOLD_ANIM_MS);
     } else {
       mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {
-        duration: ANIM_DURATION,
+        duration: SHEET_FOLD_ANIM_MS,
       });
       setTimeout(() => {
         mainSheetsTranslationYStart.value = UNFOLD_SHEET_POINT;
-      }, ANIM_DURATION);
+      }, SHEET_FOLD_ANIM_MS);
     }
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [folded, mainSheetsTranslationY, mainSheetsTranslationYStart]);
@@ -247,15 +247,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     bottomSheet: {
       ...StyleSheet.absoluteFill,
       backgroundColor: SHEET_BACKGROUND,
-      borderTopLeftRadius: screenHeight * 0.03,
-      borderTopRightRadius: screenHeight * 0.03,
+      borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
       zIndex: 1,
     },
     captureContent: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: SHEET_BACKGROUND,
-      borderTopLeftRadius: screenHeight * 0.03,
-      borderTopRightRadius: screenHeight * 0.03,
+      borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
     },
   });
 
