@@ -120,6 +120,7 @@ export type SettingsStackParamList = {
   Explorer: undefined;
   Language: undefined;
   Products: undefined;
+  Mbsx: undefined;
   Scan: {
     returnRoute: string;
     returnScreen?: string;

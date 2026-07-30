@@ -27,6 +27,7 @@ import Products from '../screens/Settings/Products';
 import Tor from '../screens/Settings/Tor';
 import ExportElectrum from '../screens/Settings/ExportElectrum';
 import {ScreenHeaderNavigationOptions} from '../components/ScreenHeader';
+import MbsxNavigator from '../features/mbsx/MbsxNavigator';
 import {SettingsStackParamList} from './types';
 
 const Stack = createStackNavigator<SettingsStackParamList>();
@@ -89,6 +90,11 @@ function SettingsStack() {
         name="Products"
         component={Products}
         options={ScreenHeaderNavigationOptions}
+      />
+      <Stack.Screen
+        name="Mbsx"
+        component={MbsxNavigator}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Scan"

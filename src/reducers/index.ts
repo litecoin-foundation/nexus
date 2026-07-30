@@ -20,6 +20,7 @@ import giftcardcart from './giftcardcart';
 import nexusshopaccount from './nexusshopaccount';
 import popupschedule from './popupschedule';
 import wallets from './wallets';
+import mbsx from '../features/mbsx/mbsxSlice';
 
 export default combineReducers({
   onboarding,
@@ -43,4 +44,5 @@ export default combineReducers({
   nexusshopaccount,
   popupschedule,
   wallets,
+  mbsx,
 });

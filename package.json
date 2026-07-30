@@ -84,6 +84,7 @@
     "react-native-localize": "3.4.1",
     "react-native-mmkv": "4.3.1",
     "react-native-modal": "14.0.0-rc.1",
+    "react-native-nitro-bsx": "link:react-native-nitro-bsx",
     "react-native-nitro-jade": "0.0.2",
     "react-native-nitro-lndltc": "0.0.6",
     "react-native-nitro-modules": "0.35.4",

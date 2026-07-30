@@ -60,6 +60,7 @@
         "react-native-localize": "3.4.1",
         "react-native-mmkv": "4.3.1",
         "react-native-modal": "14.0.0-rc.1",
+        "react-native-nitro-bsx": "link:react-native-nitro-bsx",
         "react-native-nitro-jade": "0.0.2",
         "react-native-nitro-lndltc": "0.0.6",
         "react-native-nitro-modules": "0.35.4",
@@ -2169,6 +2170,8 @@
     "react-native-modal": ["react-native-modal@14.0.0-rc.1", "", { "dependencies": { "react-native-animatable": "1.4.0" }, "peerDependencies": { "react": "*", "react-native": ">=0.70.0" } }, "sha512-v5pvGyx1FlmBzdHyPqBsYQyS2mIJhVmuXyNo5EarIzxicKhuoul6XasXMviGcXboEUT0dTYWs88/VendojPiVw=="],
 
     "react-native-modal-datetime-picker": ["react-native-modal-datetime-picker@18.0.0", "", { "dependencies": { "prop-types": "^15.7.2" }, "peerDependencies": { "@react-native-community/datetimepicker": ">=6.7.0", "react-native": ">=0.65.0" } }, "sha512-0jdvhhraZQlRACwr7pM6vmZ2kxgzJ4CpnmV6J3TVA6MrXMXK6Zo/upRBKkRp0+fTOiKuNblzesA2U59rYo6SGA=="],
+
+    "react-native-nitro-bsx": ["react-native-nitro-bsx@link:react-native-nitro-bsx", {}],
 
     "react-native-nitro-jade": ["react-native-nitro-jade@0.0.2", "", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-nitro-modules": "*" } }, "sha512-9DBDRub3/884il66DoTgRokF3w26y4oG2Hg8RRSd+TQNYn2UrCSpobrRObDYE7R9AXDCA8a831MudDAMrgL5YQ=="],
 
