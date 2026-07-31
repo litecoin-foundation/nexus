@@ -28,6 +28,7 @@ export type MainDrawerParamList = {
 };
 
 export type NewWalletStackParamList = {
+  PerfHarness: undefined;
   Main: NavigatorScreenParams<MainDrawerParamList>;
   SettingsStack: undefined;
   NexusShopStack: undefined;

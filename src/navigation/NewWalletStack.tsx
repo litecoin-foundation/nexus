@@ -30,6 +30,8 @@ import SearchTransaction, {
   SearchTransactionNavigationOptions,
 } from '../screens/Wallet/SearchTransaction';
 import {NewWalletStackParamList} from './types';
+import PerfHarness from '../screens/PerfHarness';
+import {PERF_HARNESS} from '../config/perfHarness';
 import ConfirmConvert, {
   ConfirmConvertNavigationOptions,
 } from '../screens/Wallet/ConfirmConvert';
@@ -41,7 +43,14 @@ const Stack = createStackNavigator<NewWalletStackParamList>();
 
 function NewWalletStack(): React.JSX.Element {
   return (
-    <Stack.Navigator initialRouteName="Main">
+    <Stack.Navigator initialRouteName={PERF_HARNESS ? 'PerfHarness' : 'Main'}>
+      {PERF_HARNESS ? (
+        <Stack.Screen
+          name="PerfHarness"
+          component={PerfHarness}
+          options={{headerShown: false, animation: 'none'}}
+        />
+      ) : null}
       <Stack.Screen
         name="Main"
         component={MainDrawer}
