@@ -88,6 +88,7 @@ interface ParagraphOpts {
 }
 
 // single line by default, pass opts to override ({} = unlimited wrap)
+// worklet so the Skia list can build rows on the UI thread
 export const buildParagraph = (
   fontMgr: SkTypefaceFontProvider,
   text: string,
@@ -97,6 +98,7 @@ export const buildParagraph = (
   measureWidth: number,
   opts: ParagraphOpts = {maxLines: 1},
 ): SkParagraph => {
+  'worklet';
   const paragraph = Skia.ParagraphBuilder.Make(
     {textAlign: opts.align, maxLines: opts.maxLines, ellipsis: opts.ellipsis},
     fontMgr,
