@@ -6,6 +6,7 @@ import {
   Group,
   Image,
   ImageFilter,
+  Picture,
   Rect,
   RoundedRect,
   Skia,
@@ -32,7 +33,6 @@ import {
   GlassTxRowModels,
   GLASS_TX_LIST_TOP_RATIO,
   SHEET_BACKGROUND,
-  useGlassTxRowElements,
 } from './GlassTxRows';
 import {
   BAND_BLUR_SIGMA,
@@ -43,8 +43,10 @@ import {
   getTabBarHideDistance,
   SCROLLING_SCALE,
 } from './glassTabBarLayout';
+import {glassTxRowCallbacks, useGlassTxRowContext} from './GlassTxSkiaRows';
 import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
 import {ScreenSizeContext} from '../context/screenSize';
+import {useSkiaList} from './SkiaList';
 
 // A Skia BackdropFilter can only sample pixels drawn in its own canvas, so
 // everything the tab bar's glass refracts has to live here: this one
@@ -59,6 +61,9 @@ const GLASS_BLUR_SIGMA = 1;
 
 // drawn past the screen bottom so layout rounding can't leave a hairline gap
 const BOTTOM_OVERSCAN = 4;
+
+// stable identity keeps the Skia list row cache intact
+const EMPTY_ROWS: GlassTxRowModels['models'] = [];
 
 // The spring that snaps the sheet open has no clamp, so a hard flick can carry
 // it above UNFOLD_SHEET_POINT for a frame or two. The canvas starts that much
@@ -173,13 +178,24 @@ const GlassTxCanvas: React.FC<Props> = props => {
     }
   }, [showTxList, rowsMounted, rowsOpacity, rowsDrift]);
 
-  const rowElements = useGlassTxRowElements({
-    rowModels,
+  // records visible rows into a UI-thread picture while scrolling
+  // tx details retain declarative static rows
+  const rowContext = useGlassTxRowContext();
+  const rowsReady = rowsMounted && rowContext !== null;
+  const skiaList = useSkiaList({
+    ...glassTxRowCallbacks,
+    data: rowsReady ? rowModels.models : EMPTY_ROWS,
+    context: rowContext,
     scrollY: txListScrollY,
-    listHeaderOffset,
+    headerOffset: listHeaderOffset,
     viewportHeight: canvasHeight,
-    enabled: rowsMounted,
+    enabled: rowsReady,
   });
+
+  // both draw passes reuse the recorded picture
+  const rowsNode: React.ReactNode = rowsReady ? (
+    <Picture picture={skiaList.picture} />
+  ) : null;
 
   // List-content coordinates -> canvas coordinates.
   const contentTransform = useDerivedValue(() => [
@@ -333,7 +349,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
           color={SHEET_BACKGROUND}
         />
       ) : null}
-      {rowsMounted && rowElements ? (
+      {rowsMounted && rowsNode ? (
         <Group opacity={rowsOpacity}>
           {!fullCardUnderlay ? (
             <Rect
@@ -344,7 +360,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
               color={SHEET_BACKGROUND}
             />
           ) : null}
-          <Group transform={contentTransform}>{rowElements}</Group>
+          <Group transform={contentTransform}>{rowsNode}</Group>
         </Group>
       ) : null}
       {underlayContent}
@@ -355,10 +371,10 @@ const GlassTxCanvas: React.FC<Props> = props => {
 
   return (
     <Canvas style={styles.canvas} pointerEvents="none">
-      {rowElements ? (
+      {rowsNode ? (
         <Group clip={listClip}>
           <Group opacity={rowsOpacity}>
-            <Group transform={contentTransform}>{rowElements}</Group>
+            <Group transform={contentTransform}>{rowsNode}</Group>
           </Group>
         </Group>
       ) : null}
@@ -415,9 +431,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
           returns the sampled pixel untouched, so covering the whole canvas
           changes nothing visually. */}
       <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
-      {barChrome ? (
-        <Group transform={barTransform}>{barChrome}</Group>
-      ) : null}
+      {barChrome ? <Group transform={barTransform}>{barChrome}</Group> : null}
     </Canvas>
   );
 };

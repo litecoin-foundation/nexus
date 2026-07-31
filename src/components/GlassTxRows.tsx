@@ -1,4 +1,5 @@
-import React, {useContext, useMemo, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
+import {Image as RNImage} from 'react-native';
 import {
   Circle,
   Group,
@@ -7,7 +8,6 @@ import {
   Path,
   Rect,
   Skia,
-  useImage,
 } from '@shopify/react-native-skia';
 import type {SkImage, SkParagraph} from '@shopify/react-native-skia';
 import {
@@ -199,13 +199,64 @@ export const useGlassTxRowModels = (rows: GlassTxRow[]): GlassTxRowModels => {
   );
 };
 
-export const useGlassTxIcons = (): Record<string, SkImage | null> => ({
-  Send: useImage(require('../assets/icons/sendtx.png')),
-  Receive: useImage(require('../assets/icons/receivetx.png')),
-  Convert: useImage(require('../assets/icons/converttx.png')),
-  Buy: useImage(require('../assets/icons/buytx.png')),
-  Sell: useImage(require('../assets/icons/selltx.png')),
-});
+export type GlassTxIcons = Record<string, SkImage | null>;
+
+const ICON_MODULES: Record<string, number> = {
+  Send: require('../assets/icons/sendtx.png'),
+  Receive: require('../assets/icons/receivetx.png'),
+  Convert: require('../assets/icons/converttx.png'),
+  Buy: require('../assets/icons/buytx.png'),
+  Sell: require('../assets/icons/selltx.png'),
+};
+
+// cache decoded icons for the page, modal, and Skia list renderers
+const EMPTY_ICONS: GlassTxIcons = {};
+let cachedIcons: GlassTxIcons | null = null;
+let cachedIconsLoad: Promise<GlassTxIcons | null> | null = null;
+
+const loadCachedIcons = () => {
+  const keys = Object.keys(ICON_MODULES);
+  cachedIconsLoad ??= Promise.all(
+    keys.map(key =>
+      Skia.Data.fromURI(RNImage.resolveAssetSource(ICON_MODULES[key]).uri).then(
+        data => Skia.Image.MakeImageFromEncoded(data),
+      ),
+    ),
+  )
+    .then(images => {
+      const loaded: GlassTxIcons = {};
+      keys.forEach((key, i) => {
+        loaded[key] = images[i];
+      });
+      cachedIcons = loaded;
+      return loaded;
+    })
+    .catch(() => {
+      // retry on the next mount
+      cachedIconsLoad = null;
+      return null;
+    });
+  return cachedIconsLoad;
+};
+
+export const useGlassTxIcons = (): GlassTxIcons => {
+  const [icons, setIcons] = useState(cachedIcons);
+  useEffect(() => {
+    if (icons) {
+      return;
+    }
+    let alive = true;
+    loadCachedIcons().then(loaded => {
+      if (alive && loaded) {
+        setIcons(loaded);
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, [icons]);
+  return icons ?? EMPTY_ICONS;
+};
 
 // First row whose bottom edge is below contentTop.
 export const firstRowAt = (rowBottoms: number[], contentTop: number) => {
