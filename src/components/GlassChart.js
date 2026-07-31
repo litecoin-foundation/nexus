@@ -11,7 +11,6 @@ import * as shape from 'd3-shape';
 import * as array from 'd3-array';
 import * as scale from 'd3-scale';
 import {
-  Canvas,
   Circle,
   Path,
   Line,
@@ -239,6 +238,64 @@ const getPillFont = () =>
 
 // Transparent gesture layer for cursor scrubbing; the graph itself is
 // drawn by the backdrop canvas.
+// The cursor is drawn by LiquidGlassBackdrop's canvas rather than one of its
+// own: every extra <Canvas> costs a per-frame setJsiProperty hand-off on the UI
+// thread whatever it draws, and mounting one per fold also builds a fresh
+// TextureView. chartTop puts it in backdrop coords, matching
+// useGlassChartGraphics.
+export const useGlassChartCursorGraphics = ({chartTop}) => {
+  const chartMode = useSelector(state => state.settings.chartMode);
+  const font = getPillFont();
+
+  const transform = useDerivedValue(() => [
+    {translateX: cursorX.value},
+    {translateY: chartTop + cursorY.value},
+  ]);
+  // Cursor props are shared values, so a scrub never re-records the tree.
+  const cursorOpacity = useDerivedValue(() => cursorActive.value);
+  const pillText = useDerivedValue(() => {
+    const lut = cursorLut.value;
+    const c = cursorCol.value;
+    return c < 0 || c >= lut.cols ? '' : lut.pill[c];
+  });
+  const pillWidth = useDerivedValue(() => {
+    const lut = cursorLut.value;
+    const c = cursorCol.value;
+    return (c < 0 || c >= lut.cols ? 40 : lut.pillW[c]) + 16;
+  });
+  const pillX = useDerivedValue(() => -pillWidth.value / 2);
+  const pillTextX = useDerivedValue(() => pillX.value + 8);
+  // Put the label below the cursor when the point is near the top edge.
+  const pillY = useDerivedValue(() => (cursorY.value < 40 ? 15 : -35));
+  const pillTextY = useDerivedValue(() => pillY.value + 15);
+
+  return (
+    <Group transform={transform} opacity={cursorOpacity}>
+      {chartMode === 'balance' && (
+        <>
+          <RoundedRect
+            x={pillX}
+            y={pillY}
+            width={pillWidth}
+            height={20}
+            r={10}
+            color="rgba(255, 255, 255, 0.85)"
+          />
+          <Text
+            x={pillTextX}
+            y={pillTextY}
+            text={pillText}
+            font={font}
+            color="rgb(29, 103, 232)"
+          />
+        </>
+      )}
+      <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
+      <Circle cx={0} cy={0} r={6} style="stroke" strokeWidth={4} color="white" />
+    </Group>
+  );
+};
+
 const GlassChartTouch = props => {
   const dispatch = useDispatch();
   const {triggerLester} = props;
@@ -248,7 +305,6 @@ const GlassChartTouch = props => {
 
   const {data, xScale: x, yScale: y} = useGlassChartScales(width, height);
 
-  const chartMode = useSelector(state => state.settings.chartMode);
   const currencySymbol = useSelector(state => state.settings.currencySymbol);
   const currencyRate = useSelector(state => {
     const rates = state.ticker.rates;
@@ -259,7 +315,6 @@ const GlassChartTouch = props => {
   const [lesterActive, setLesterActive] = useState(false);
   const [lesterImage, setLesterImage] = useState(lesterFlat);
 
-  const font = getPillFont();
   const lesterProgress = useSharedValue(0);
   const lesterX = useSharedValue(0);
   const lesterY = useSharedValue(0);
@@ -287,28 +342,6 @@ const GlassChartTouch = props => {
       }
     };
   }, []);
-
-  const transform = useDerivedValue(() => {
-    return [{translateX: cursorX.value}, {translateY: cursorY.value}];
-  });
-
-  // Cursor props are shared values, so a scrub never re-records the tree.
-  const cursorOpacity = useDerivedValue(() => cursorActive.value);
-  const pillText = useDerivedValue(() => {
-    const lut = cursorLut.value;
-    const c = cursorCol.value;
-    return c < 0 || c >= lut.cols ? '' : lut.pill[c];
-  });
-  const pillWidth = useDerivedValue(() => {
-    const lut = cursorLut.value;
-    const c = cursorCol.value;
-    return (c < 0 || c >= lut.cols ? 40 : lut.pillW[c]) + 16;
-  });
-  const pillX = useDerivedValue(() => -pillWidth.value / 2);
-  const pillTextX = useDerivedValue(() => pillX.value + 8);
-  // Put the label below the cursor when the point is near the top edge.
-  const pillY = useDerivedValue(() => (cursorY.value < 40 ? 15 : -35));
-  const pillTextY = useDerivedValue(() => pillY.value + 15);
 
   const lesterAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -671,46 +704,8 @@ const GlassChartTouch = props => {
 
   return (
     <GestureDetector gesture={gesture}>
+      {/* Hit area only — the crosshair pixels come from LiquidGlassBackdrop. */}
       <View style={[styles.container, {height}, {width}]} collapsable={false}>
-        <Canvas
-          style={{
-            height,
-            width,
-            position: 'absolute',
-            top: 0,
-            left: 0,
-          }}>
-          <Group transform={transform} opacity={cursorOpacity}>
-            {chartMode === 'balance' && (
-              <>
-                <RoundedRect
-                  x={pillX}
-                  y={pillY}
-                  width={pillWidth}
-                  height={20}
-                  r={10}
-                  color="rgba(255, 255, 255, 0.85)"
-                />
-                <Text
-                  x={pillTextX}
-                  y={pillTextY}
-                  text={pillText}
-                  font={font}
-                  color="rgb(29, 103, 232)"
-                />
-              </>
-            )}
-            <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
-            <Circle
-              cx={0}
-              cy={0}
-              r={6}
-              style="stroke"
-              strokeWidth={4}
-              color="white"
-            />
-          </Group>
-        </Canvas>
         <Animated.Image
           source={lesterImage}
           style={lesterAnimatedStyle}

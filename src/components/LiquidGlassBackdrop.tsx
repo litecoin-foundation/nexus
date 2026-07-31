@@ -42,6 +42,7 @@ import {
 } from './glassTabLayout';
 import {
   useGlassChartGraphics,
+  useGlassChartCursorGraphics,
   getGlassChartGap,
   GLASS_CHART_HEIGHT_RATIO,
 } from './GlassChart';
@@ -326,6 +327,9 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
     opacity: chartOpacity,
   });
 
+  // Scrub crosshair. Lives here so it does not need a canvas of its own.
+  const chartCursorGraphics = useGlassChartCursorGraphics({chartTop});
+
   const balanceGraphics = useGlassBalanceGraphics({
     model: balance,
     screenWidth: SCREEN_WIDTH,
@@ -450,6 +454,7 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
       )}
       {online && showChart ? chartGraphics : null}
       {online && showChart ? datePickerGraphics : null}
+      {online && showChart ? chartCursorGraphics : null}
       {balanceGraphics}
       {layouts.map((layout, i) => (
         <GlassButtonShadow
