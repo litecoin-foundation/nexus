@@ -1,5 +1,5 @@
 import React, {
-  createRef,
+  useCallback,
   useEffect,
   useState,
   useRef,
@@ -34,13 +34,19 @@ import Animated, {
   Easing,
   cancelAnimation,
 } from 'react-native-reanimated';
-import {
-  PanGestureHandler,
-  State,
-  LongPressGestureHandler,
-} from 'react-native-gesture-handler';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {useDispatch, useSelector} from 'react-redux';
 
+import {
+  cursorLut,
+  cursorActive,
+  cursorCol,
+  cursorIdx,
+  cursorX,
+  cursorY,
+  resetCursor,
+  EMPTY_LUT,
+} from './glassChartCursor';
 import {monthSelector} from '../reducers/ticker';
 import {walletBalanceHistorySelector} from '../reducers/transaction';
 import {updateCursorValue, setCursorSelected} from '../reducers/chart';
@@ -222,6 +228,15 @@ export const useGlassChartGraphics = ({width, height, chartTop, opacity}) => {
   );
 };
 
+// matchFont re-invokes Skia.FontMgr.System() on every call, so resolve once.
+let PILL_FONT = null;
+const getPillFont = () =>
+  (PILL_FONT ??= matchFont({
+    fontFamily: Platform.select({ios: 'Satoshi Variable', default: 'Satoshi'}),
+    fontSize: 12,
+    fontWeight: '700',
+  }));
+
 // Transparent gesture layer for cursor scrubbing; the graph itself is
 // drawn by the backdrop canvas.
 const GlassChartTouch = props => {
@@ -234,34 +249,17 @@ const GlassChartTouch = props => {
   const {data, xScale: x, yScale: y} = useGlassChartScales(width, height);
 
   const chartMode = useSelector(state => state.settings.chartMode);
-  const cursorValueFiat = useSelector(state => state.chart.cursorValueFiat);
   const currencySymbol = useSelector(state => state.settings.currencySymbol);
   const currencyRate = useSelector(state => {
     const rates = state.ticker.rates;
     const currencyCode = state.settings.currencyCode;
     return rates[currencyCode] || 0;
   });
-  const panRef = createRef();
-  const longPressRef = createRef();
 
-  const [barVisible, setBarVisible] = useState(false);
   const [lesterActive, setLesterActive] = useState(false);
   const [lesterImage, setLesterImage] = useState(lesterFlat);
 
-  const barOffsetX = useSharedValue(0);
-  const barOffsetY = useSharedValue(0);
-  const [fiatLabelY, setFiatLabelY] = useState(-35);
-
-  const fontFamily = Platform.select({
-    ios: 'Satoshi Variable',
-    default: 'Satoshi',
-  });
-  const fontStyle = {
-    fontFamily,
-    fontSize: 12,
-    fontWeight: '700',
-  };
-  const font = matchFont(fontStyle);
+  const font = getPillFont();
   const lesterProgress = useSharedValue(0);
   const lesterX = useSharedValue(0);
   const lesterY = useSharedValue(0);
@@ -291,8 +289,26 @@ const GlassChartTouch = props => {
   }, []);
 
   const transform = useDerivedValue(() => {
-    return [{translateX: barOffsetX.value}, {translateY: barOffsetY.value}];
+    return [{translateX: cursorX.value}, {translateY: cursorY.value}];
   });
+
+  // Cursor props are shared values, so a scrub never re-records the tree.
+  const cursorOpacity = useDerivedValue(() => cursorActive.value);
+  const pillText = useDerivedValue(() => {
+    const lut = cursorLut.value;
+    const c = cursorCol.value;
+    return c < 0 || c >= lut.cols ? '' : lut.pill[c];
+  });
+  const pillWidth = useDerivedValue(() => {
+    const lut = cursorLut.value;
+    const c = cursorCol.value;
+    return (c < 0 || c >= lut.cols ? 40 : lut.pillW[c]) + 16;
+  });
+  const pillX = useDerivedValue(() => -pillWidth.value / 2);
+  const pillTextX = useDerivedValue(() => pillX.value + 8);
+  // Put the label below the cursor when the point is near the top edge.
+  const pillY = useDerivedValue(() => (cursorY.value < 40 ? 15 : -35));
+  const pillTextY = useDerivedValue(() => pillY.value + 15);
 
   const lesterAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -306,46 +322,190 @@ const GlassChartTouch = props => {
     };
   });
 
-  const bisectDate = array.bisector(d => d.x).left;
-
-  const collectHovered = xPos => {
-    if (!data || data.length === 0 || !x || !y) {
-      return {barOffsetX: 0, barOffsetY: 0};
+  // Everything the scrub needs, resolved once per data change so the gesture
+  // worklet is a single array lookup.
+  useEffect(() => {
+    const pillFont = getPillFont();
+    if (!data || data.length === 0 || !x || !y || !pillFont) {
+      cursorLut.value = EMPTY_LUT;
+      return;
     }
+    const bisectDate = array.bisector(d => d.x).left;
+    const cols = Math.max(1, Math.round(width) + 1);
+    const cx = new Float32Array(cols);
+    const cy = new Float32Array(cols);
+    const idx = new Int32Array(cols);
+    const pill = new Array(cols);
+    const pillW = new Float32Array(cols);
 
-    const x0 = Math.round(xPos);
-    const hoveredDate = x.invert(x0);
-    const i = bisectDate(data, hoveredDate, 1);
-    const d0 = data[i - 1];
-    const d1 = data[i] || d0;
-
-    if (!d0 || !d1) {
-      return {barOffsetX: 0, barOffsetY: 0};
+    for (let c = 0; c < cols; c++) {
+      const i = bisectDate(data, x.invert(c), 1);
+      const lo = i - 1;
+      const hi = data[i] ? i : i - 1;
+      const d0 = data[lo];
+      const d1 = data[hi];
+      if (!d0 || !d1) {
+        cx[c] = 0;
+        cy[c] = 0;
+        idx[c] = -1;
+        pill[c] = '';
+        pillW[c] = 40;
+        continue;
+      }
+      // Same nearest-point tie-break the old collectHovered used.
+      const di = Math.abs(c - x(d0.x)) < Math.abs(c - x(d1.x)) ? lo : hi;
+      const d = data[di];
+      const yFiat = d.yFiat !== undefined ? d.yFiat : d.y * currencyRate;
+      cx[c] = x(d.x);
+      cy[c] = y(d.y);
+      idx[c] = di;
+      const label = `${currencySymbol}${yFiat.toFixed(2)}`;
+      pill[c] = label;
+      pillW[c] = pillFont.measureText(label).width;
     }
+    cursorLut.value = {cols, cx, cy, idx, pill, pillW};
+  }, [data, x, y, width, currencySymbol, currencyRate]);
 
-    const xLeft = x(d0.x);
-    const xRight = x(d1.x);
-    const d = Math.abs(x0 - xLeft) < Math.abs(x0 - xRight) ? d0 : d1;
+  useEffect(() => () => resetCursor(), []);
 
-    // Calculate fiat here so exchange-rate updates do not rebuild the graph.
-    const yFiat = d.yFiat !== undefined ? d.yFiat : d.y * currencyRate;
+  // The readout is Paragraph text in the backdrop canvas, so it only changes
+  // on a React render; push it at ~12Hz instead of per touch move.
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const rateRef = useRef(currencyRate);
+  rateRef.current = currencyRate;
+  const lastPushRef = useRef(0);
 
-    dispatch(updateCursorValue(d.x, d.y, yFiat));
+  const pushCursor = useCallback(
+    (di, force) => {
+      const d = dataRef.current?.[di];
+      if (!d) {
+        return;
+      }
+      const now = Date.now();
+      if (!force && now - lastPushRef.current < 80) {
+        return;
+      }
+      lastPushRef.current = now;
+      const yFiat = d.yFiat !== undefined ? d.yFiat : d.y * rateRef.current;
+      dispatch(updateCursorValue(d.x, d.y, yFiat));
+    },
+    [dispatch],
+  );
 
-    const yPosition = y(d.y);
+  const setSelected = useCallback(
+    v => dispatch(setCursorSelected(v)),
+    [dispatch],
+  );
 
-    // Put the label below the cursor when the point is near the top edge.
-    if (yPosition < 40) {
-      runOnJS(setFiatLabelY)(15);
-    } else {
-      runOnJS(setFiatLabelY)(-35);
-    }
+  const panOn = useSharedValue(false);
+  const holdOn = useSharedValue(false);
 
-    return {
-      barOffsetX: x(d.x),
-      barOffsetY: y(d.y),
-    };
-  };
+  const resolve = useCallback(
+    px => {
+      'worklet';
+      const lut = cursorLut.value;
+      if (lut.cols === 0) {
+        return;
+      }
+      const c = Math.min(lut.cols - 1, Math.max(0, Math.round(px)));
+      if (c === cursorCol.value) {
+        return;
+      }
+      cursorCol.value = c;
+      cursorX.value = lut.cx[c];
+      cursorY.value = lut.cy[c];
+      if (lut.idx[c] !== cursorIdx.value) {
+        cursorIdx.value = lut.idx[c];
+        runOnJS(triggerSelectionFeedback)();
+        runOnJS(pushCursor)(lut.idx[c], false);
+      }
+    },
+    [pushCursor],
+  );
+
+  const begin = useCallback(
+    (which, px) => {
+      'worklet';
+      const wasActive = panOn.value || holdOn.value;
+      if (which === 0) {
+        panOn.value = true;
+      } else {
+        holdOn.value = true;
+      }
+      if (wasActive) {
+        resolve(px);
+        return;
+      }
+      cursorCol.value = -1;
+      cursorIdx.value = -1;
+      resolve(px);
+      cursorActive.value = 1;
+      runOnJS(triggerMediumFeedback)();
+      runOnJS(setSelected)(true);
+    },
+    [panOn, holdOn, resolve, setSelected],
+  );
+
+  const end = useCallback(
+    which => {
+      'worklet';
+      if (which === 0) {
+        panOn.value = false;
+      } else {
+        holdOn.value = false;
+      }
+      if (panOn.value || holdOn.value) {
+        return;
+      }
+      if (cursorActive.value === 0) {
+        return;
+      }
+      cursorActive.value = 0;
+      runOnJS(setSelected)(false);
+    },
+    [panOn, holdOn, setSelected],
+  );
+
+  const gesture = useMemo(
+    () =>
+      Gesture.Simultaneous(
+        Gesture.Pan()
+          .maxPointers(1)
+          .onStart(e => {
+            'worklet';
+            begin(0, e.x);
+          })
+          .onUpdate(e => {
+            'worklet';
+            resolve(e.x);
+          })
+          .onFinalize(() => {
+            'worklet';
+            end(0);
+          }),
+        Gesture.LongPress()
+          .minDuration(500)
+          // Don't self-cancel on movement; the pan keeps tracking.
+          .maxDistance(10000)
+          .shouldCancelWhenOutside(false)
+          .onStart(e => {
+            'worklet';
+            begin(1, e.x);
+          })
+          .onTouchesMove(e => {
+            'worklet';
+            if (cursorActive.value === 1 && e.allTouches.length > 0) {
+              resolve(e.allTouches[0].x);
+            }
+          })
+          .onFinalize(() => {
+            'worklet';
+            end(1);
+          }),
+      ),
+    [begin, end, resolve],
+  );
 
   const updateLesterPosition = progress => {
     if (!isLesterAnimating.value) {
@@ -509,118 +669,56 @@ const GlassChartTouch = props => {
     isLesterAnimating,
   ]);
 
-  const onHandlerStateChange = e => {
-    const {nativeEvent} = e;
-    if (nativeEvent.state === State.ACTIVE) {
-      const r = collectHovered(nativeEvent.x);
-      runOnJS(triggerMediumFeedback)();
-      runOnJS(setBarVisible)(true);
-      runOnJS(() => dispatch(setCursorSelected(true)))();
-      barOffsetX.value = r.barOffsetX;
-      barOffsetY.value = r.barOffsetY;
-    } else if (
-      nativeEvent.state === State.END ||
-      nativeEvent.state === State.CANCELLED
-    ) {
-      runOnJS(setBarVisible)(false);
-      runOnJS(() => dispatch(setCursorSelected(false)))();
-    }
-  };
-
-  const onPanGestureEvent = e => {
-    const r = collectHovered(e.nativeEvent.x);
-    if (
-      barOffsetX.value === r.barOffsetX &&
-      barOffsetY.value === r.barOffsetY
-    ) {
-      return;
-    } else {
-      runOnJS(triggerSelectionFeedback)();
-      barOffsetX.value = r.barOffsetX;
-      barOffsetY.value = r.barOffsetY;
-    }
-  };
-
   return (
-    <PanGestureHandler
-      ref={panRef}
-      onHandlerStateChange={onHandlerStateChange}
-      onGestureEvent={onPanGestureEvent}
-      maxPointers={1}
-      minDeltaX={10}
-      maxDeltaY={20}
-      simultaneousHandlers={[longPressRef]}>
-      <LongPressGestureHandler
-        ref={longPressRef}
-        onHandlerStateChange={onHandlerStateChange}
-        onGestureEvent={onPanGestureEvent}
-        simultaneousHandlers={[panRef]}>
-        <View style={[styles.container, {height}, {width}]} collapsable={false}>
-          <Canvas
-            style={[
-              {
-                height,
-                width,
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                opacity: barVisible ? 1 : 0,
-              },
-            ]}>
-            <Group transform={transform}>
-              {chartMode === 'balance' &&
-                cursorValueFiat !== undefined &&
-                (() => {
-                  const fiatText = `${currencySymbol}${cursorValueFiat.toFixed(2)}`;
-                  const textWidth = font
-                    ? font.measureText(fiatText).width
-                    : 40;
-                  const rectWidth = textWidth + 16;
-                  const rectX = -rectWidth / 2;
-                  const textX = rectX + 8;
-
-                  const textY = fiatLabelY + 15;
-
-                  return (
-                    <>
-                      <RoundedRect
-                        x={rectX}
-                        y={fiatLabelY}
-                        width={rectWidth}
-                        height={20}
-                        r={10}
-                        color="rgba(255, 255, 255, 0.85)"
-                      />
-                      <Text
-                        x={textX}
-                        y={textY}
-                        text={fiatText}
-                        font={font}
-                        color="rgb(29, 103, 232)"
-                      />
-                    </>
-                  );
-                })()}
-              <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
-              <Circle
-                cx={0}
-                cy={0}
-                r={6}
-                style="stroke"
-                strokeWidth={4}
-                color="white"
-              />
-            </Group>
-          </Canvas>
-          <Animated.Image
-            source={lesterImage}
-            style={lesterAnimatedStyle}
-            resizeMode="contain"
-            pointerEvents="none"
-          />
-        </View>
-      </LongPressGestureHandler>
-    </PanGestureHandler>
+    <GestureDetector gesture={gesture}>
+      <View style={[styles.container, {height}, {width}]} collapsable={false}>
+        <Canvas
+          style={{
+            height,
+            width,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}>
+          <Group transform={transform} opacity={cursorOpacity}>
+            {chartMode === 'balance' && (
+              <>
+                <RoundedRect
+                  x={pillX}
+                  y={pillY}
+                  width={pillWidth}
+                  height={20}
+                  r={10}
+                  color="rgba(255, 255, 255, 0.85)"
+                />
+                <Text
+                  x={pillTextX}
+                  y={pillTextY}
+                  text={pillText}
+                  font={font}
+                  color="rgb(29, 103, 232)"
+                />
+              </>
+            )}
+            <Circle cx={0} cy={0} r={6} style="fill" color="#1D67E8" />
+            <Circle
+              cx={0}
+              cy={0}
+              r={6}
+              style="stroke"
+              strokeWidth={4}
+              color="white"
+            />
+          </Group>
+        </Canvas>
+        <Animated.Image
+          source={lesterImage}
+          style={lesterAnimatedStyle}
+          resizeMode="contain"
+          pointerEvents="none"
+        />
+      </View>
+    </GestureDetector>
   );
 };
 

@@ -43,3 +43,55 @@ index 68763c2..21f624e 100644
  
    static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {
      installCommon(runtime, prototype);
+diff --git a/node_modules/@shopify/react-native-skia/cpp/api/recorder/JsiRecorder.h b/node_modules/@shopify/react-native-skia/cpp/api/recorder/JsiRecorder.h
+index 04139e4..d58473d 100644
+--- a/node_modules/@shopify/react-native-skia/cpp/api/recorder/JsiRecorder.h
++++ b/node_modules/@shopify/react-native-skia/cpp/api/recorder/JsiRecorder.h
+@@ -381,7 +381,7 @@ public:
+ 
+   // This has no basis in reality but since since these are private long-lived
+   // objects, we think it is more than fine.
+-  size_t getMemoryPressure() override { return 5 * 1024 * 1024; }
++  size_t getMemoryPressure() override { return 64 * 1024; }
+ 
+   static const jsi::HostFunctionType
+   createCtor(std::shared_ptr<RNSkPlatformContext> context) {
+diff --git a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraphBuilderFactory.h b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraphBuilderFactory.h
+index 8ccbbc2..8d94d3b 100644
+--- a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraphBuilderFactory.h
++++ b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkParagraphBuilderFactory.h
+@@ -52,7 +52,7 @@ public:
+                       &JsiSkParagraphBuilderFactory::Make);
+   }
+ 
+-  size_t getMemoryPressure() override { return 1024 * 1024; }
++  size_t getMemoryPressure() override { return 64 * 1024; }
+ 
+   explicit JsiSkParagraphBuilderFactory(
+       std::shared_ptr<RNSkPlatformContext> context)
+diff --git a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkShader.h b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkShader.h
+index f0b081f..bc76b89 100644
+--- a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkShader.h
++++ b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkShader.h
+@@ -29,7 +29,7 @@ public:
+       : JsiSkWrappingSkPtrNativeObject<JsiSkShader, SkShader>(
+             std::move(context), std::move(shader)) {}
+ 
+-  size_t getMemoryPressure() override { return 1024 * 1024; }
++  size_t getMemoryPressure() override { return 64 * 1024; }
+ 
+   static sk_sp<SkShader> fromValue(jsi::Runtime &runtime,
+                                    const jsi::Value &obj) {
+diff --git a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkPictureRecorder.h b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkPictureRecorder.h
+index 7e1a5ef..c0a2ff7 100644
+--- a/node_modules/@shopify/react-native-skia/cpp/api/JsiSkPictureRecorder.h
++++ b/node_modules/@shopify/react-native-skia/cpp/api/JsiSkPictureRecorder.h
+@@ -59,7 +59,7 @@ public:
+                       &JsiSkPictureRecorder::finishRecordingAsPicture);
+   }
+ 
+-  size_t getMemoryPressure() override { return 1024 * 1024; }
++  size_t getMemoryPressure() override { return 64 * 1024; }
+ 
+   static const jsi::HostFunctionType
+   createCtor(std::shared_ptr<RNSkPlatformContext> context) {
