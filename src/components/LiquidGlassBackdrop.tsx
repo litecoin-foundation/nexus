@@ -25,6 +25,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ScreenSizeContext} from '../context/screenSize';
 import {
   CARD_FOLD_RADIUS_RATIO,
+  getFoldedTopHalfHeight,
   getNewMainSheetPoints,
   getNewMainTopHalfHeight,
 } from '../animations/useNewMainAnims';
@@ -281,11 +282,28 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_HEIGHT);
+  // The parent is fixed at the folded card height and clips, so a full-screen
+  // canvas drew 40% of every full-canvas pass (gradient, backdrop layer, erase)
+  // straight into the clip. Match the parent instead.
+  const CANVAS_HEIGHT = getFoldedTopHalfHeight(SCREEN_HEIGHT, insets.top);
+  const styles = getStyles(CANVAS_HEIGHT);
 
   const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
     SCREEN_HEIGHT,
     insets.top,
+  );
+
+  // The erase only ever has work to do below the card's highest edge, which is
+  // where it sits unfolded. Rasterising from y=0 costs the whole canvas to
+  // clear a strip.
+  const ERASE_TOP = Math.max(
+    0,
+    getNewMainTopHalfHeight(
+      UNFOLD_SHEET_POINT,
+      SCREEN_HEIGHT,
+      UNFOLD_SHEET_POINT,
+      FOLD_SHEET_POINT,
+    ) - SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO,
   );
   const layouts = getGlassTabLayouts(SCREEN_WIDTH, SCREEN_HEIGHT);
   const buttonHeight = SCREEN_HEIGHT * GLASS_TAB_BUTTON_HEIGHT_RATIO;
@@ -412,7 +430,7 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
   return (
     <Canvas style={styles.canvas} pointerEvents="none">
       {online ? (
-        <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
+        <Rect x={0} y={0} width={SCREEN_WIDTH} height={CANVAS_HEIGHT}>
           <RadialGradient
             c={gradientCenter}
             r={gradientRadiusY}
@@ -426,7 +444,7 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
           x={0}
           y={0}
           width={SCREEN_WIDTH}
-          height={SCREEN_HEIGHT}
+          height={CANVAS_HEIGHT}
           color="#F36F56"
         />
       )}
@@ -465,9 +483,9 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
       <Group clip={foldClip} invertClip>
         <Rect
           x={0}
-          y={0}
+          y={ERASE_TOP}
           width={SCREEN_WIDTH}
-          height={SCREEN_HEIGHT}
+          height={CANVAS_HEIGHT - ERASE_TOP}
           blendMode="clear"
         />
       </Group>
@@ -475,15 +493,15 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenHeight: number) =>
+const getStyles = (canvasHeight: number) =>
   StyleSheet.create({
     canvas: {
       position: 'absolute',
       top: 0,
       left: 0,
       width: '100%',
-      // Full screen height so the canvas never re-layouts during drags.
-      height: screenHeight,
+      // Fixed height so the canvas never re-layouts during drags.
+      height: canvasHeight,
     },
   });
 

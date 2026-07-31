@@ -97,6 +97,10 @@ interface Props {
   pressScale: SharedValue<number>;
   // 0 resting, 1 hidden; drives the capsule, shadow and frost
   hideProgress: SharedValue<number>;
+  // The bar's border, thumb and icons, in bar-local coords. Drawn here rather
+  // than in their own <Canvas>: every extra canvas costs a per-frame
+  // setJsiProperty hand-off on the UI thread (~4ms), regardless of content.
+  barChrome?: React.ReactNode;
 }
 
 const GlassTxCanvas: React.FC<Props> = props => {
@@ -110,6 +114,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
     contentActivity,
     pressScale,
     hideProgress,
+    barChrome,
   } = props;
 
   const insets = useSafeAreaInsets();
@@ -290,6 +295,28 @@ const GlassTxCanvas: React.FC<Props> = props => {
     );
   });
 
+  // Same rect the glass filter uses, as a transform from bar-local coords.
+  const barTransform = useDerivedValue(() => {
+    const scale =
+      pressScale.value *
+      interpolate(
+        contentActivity.value,
+        [0, 1],
+        [1, SCROLLING_SCALE],
+        Extrapolation.CLAMP,
+      );
+    return [
+      {translateX: (SCREEN_WIDTH - barWidth * scale) / 2},
+      {
+        translateY:
+          barTop +
+          (barHeight - barHeight * scale) / 2 +
+          hideProgress.value * hideDistance,
+      },
+      {scale},
+    ];
+  });
+
   // the glass needs opaque pixels beneath it: rows on the wallet, the card's
   // underlay while a card is open. a full-card underlay gets a solid backing;
   // rows bring theirs inside the fade so it never pops; partial underlays
@@ -388,6 +415,9 @@ const GlassTxCanvas: React.FC<Props> = props => {
           returns the sampled pixel untouched, so covering the whole canvas
           changes nothing visually. */}
       <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
+      {barChrome ? (
+        <Group transform={barTransform}>{barChrome}</Group>
+      ) : null}
     </Canvas>
   );
 };

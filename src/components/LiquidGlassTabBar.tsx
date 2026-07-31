@@ -15,7 +15,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
-  Canvas,
   ColorMatrix,
   FillType,
   Group,
@@ -382,6 +381,46 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
 
   const thumbX = useDerivedValue(() => thumbCenter.value - thumbWidth / 2);
 
+  // Published into GlassTxCanvas rather than drawn in a <Canvas> of its own:
+  // a second canvas costs a per-frame setJsiProperty hand-off on the UI thread
+  // whatever it draws, and this one is a hairline, a pill and three icons.
+  // Bar-local coords; GlassTxCanvas applies the capsule transform.
+  const barChrome = (
+    <>
+      <RoundedRect
+        x={0.5}
+        y={0.5}
+        width={barWidth - 1}
+        height={barHeight - 1}
+        r={(barHeight - 1) / 2}
+        style="stroke"
+        strokeWidth={0.5}
+        color="rgba(238, 235, 235, 0.67)"
+      />
+      <RoundedRect
+        x={thumbX}
+        y={thumbInsetY}
+        width={thumbWidth}
+        height={thumbHeight}
+        r={thumbHeight / 2}
+        color="rgba(74, 75, 76, 0.39)"
+      />
+      {sections.map((section, i) => (
+        <TabIcon
+          key={section.kind}
+          kind={section.kind}
+          cx={slotCenters[i]}
+          cy={barHeight / 2}
+          size={iconSize}
+          disabled={section.disabled}
+          image={section.kind === 'shop' ? shopIcon : null}
+          thumbCenter={thumbCenter}
+          slotSpacing={slotSpacing}
+        />
+      ))}
+    </>
+  );
+
   return (
     <>
       <GlassTxCanvas
@@ -394,47 +433,16 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         contentActivity={contentActivity}
         pressScale={pressScale}
         hideProgress={hideProgress}
+        barChrome={barChrome}
       />
 
+      {/* Hit area only — the pixels come from GlassTxCanvas. Keeps the same
+          transforms so the touch target tracks what is drawn. */}
       <Animated.View
         style={[styles.wrapper, hideStyle]}
         pointerEvents="box-none">
         <GestureDetector gesture={barGesture}>
-          <Animated.View style={[styles.bar, animatedBarStyle]}>
-            <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-              <RoundedRect
-                x={0.5}
-                y={0.5}
-                width={barWidth - 1}
-                height={barHeight - 1}
-                r={(barHeight - 1) / 2}
-                style="stroke"
-                strokeWidth={0.5}
-                color="rgba(238, 235, 235, 0.67)"
-              />
-              <RoundedRect
-                x={thumbX}
-                y={thumbInsetY}
-                width={thumbWidth}
-                height={thumbHeight}
-                r={thumbHeight / 2}
-                color="rgba(74, 75, 76, 0.39)"
-              />
-              {sections.map((section, i) => (
-                <TabIcon
-                  key={section.kind}
-                  kind={section.kind}
-                  cx={slotCenters[i]}
-                  cy={barHeight / 2}
-                  size={iconSize}
-                  disabled={section.disabled}
-                  image={section.kind === 'shop' ? shopIcon : null}
-                  thumbCenter={thumbCenter}
-                  slotSpacing={slotSpacing}
-                />
-              ))}
-            </Canvas>
-          </Animated.View>
+          <Animated.View style={[styles.bar, animatedBarStyle]} />
         </GestureDetector>
       </Animated.View>
     </>
