@@ -1,4 +1,4 @@
-import React, {useContext, useRef, useState, useEffect} from 'react';
+import React, {useContext, useMemo, useRef, useState, useEffect} from 'react';
 import {View, StyleSheet, Image} from 'react-native';
 import Animated, {SharedValue} from 'react-native-reanimated';
 import {LongPressGestureHandler, State} from 'react-native-gesture-handler';
@@ -27,6 +27,9 @@ import {triggerMediumFeedback} from '../utils/haptic';
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
+
+// Peers are polled every 10 seconds; wait out one cycle before believing zero.
+const PEER_GRACE_MS = 11000;
 
 interface Props {
   children: React.ReactNode;
@@ -97,23 +100,37 @@ const GlassAmountView: React.FC<Props> = props => {
 
   const {isInternetReachable} = useAppSelector(state => state.info!);
 
-  // Display strings for the Skia-drawn balance block.
-  const balanceModel: GlassBalanceModel = !chartCursorSelected
-    ? {
-        amountText: subunitAmountFormatted,
-        fiatText: fiatAmount,
-        percentText: String(chartPercentageChange),
-        percentValue: chartPercentage,
-      }
-    : {
-        amountText:
-          chartMode === 'balance'
-            ? `${chartCursorValue.toFixed(8)} LTC`
-            : `$${chartCursorValue}`,
-        fiatText: `${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`,
-        percentText: null,
-        percentValue: 0,
-      };
+  // LiquidGlassBackdrop is memoized, so keep the balance model stable when a
+  // parent update does not change text it draws.
+  const balanceModel: GlassBalanceModel = useMemo(
+    () =>
+      !chartCursorSelected
+        ? {
+            amountText: subunitAmountFormatted,
+            fiatText: fiatAmount,
+            percentText: String(chartPercentageChange),
+            percentValue: chartPercentage,
+          }
+        : {
+            amountText:
+              chartMode === 'balance'
+                ? `${chartCursorValue.toFixed(8)} LTC`
+                : `$${chartCursorValue}`,
+            fiatText: `${formatDate(chartCursorDate)} ${formatTime(chartCursorDate)}`,
+            percentText: null,
+            percentValue: 0,
+          },
+    [
+      chartCursorSelected,
+      subunitAmountFormatted,
+      fiatAmount,
+      chartPercentageChange,
+      chartPercentage,
+      chartMode,
+      chartCursorValue,
+      chartCursorDate,
+    ],
+  );
 
   const longPressRef = useRef(null);
 
@@ -127,39 +144,43 @@ const GlassAmountView: React.FC<Props> = props => {
     }
   };
 
-  const [momentTime, setMomentTime] = useState(Math.floor(Date.now() / 1000));
-  useEffect(() => {
-    setTimeout(() => {
-      const currentTimeInSec = Math.floor(Date.now() / 1000);
-      setMomentTime(currentTimeInSec);
-    }, 3000);
-  }, [momentTime]);
-
   const peersLength = useAppSelector(state => state.info?.peers?.length || 0);
   const litecoinBackend = useAppSelector(
     state => state.settings?.litecoinBackend,
   );
-  const noConnectionWarningTimeoutRef = useRef<number>(
-    Math.floor(Date.now() / 1000),
-  );
+  const mountedAtRef = useRef(Date.now());
   const [isConnectedToPeers, setIsConnectedToPeers] = useState(true);
+  const connectedRef = useRef(true);
+  // State changes only when the peer status changes. A clock in state would
+  // re-record the backdrop for the life of the screen.
   useEffect(() => {
+    const apply = (next: boolean) => {
+      if (connectedRef.current !== next) {
+        connectedRef.current = next;
+        setIsConnectedToPeers(next);
+      }
+    };
     if (litecoinBackend === 'electrum') {
-      setIsConnectedToPeers(true);
+      apply(true);
       return;
     }
-    // Peers are polled every 10 seconds.
-    if (
-      noConnectionWarningTimeoutRef.current + 11 <
-      Math.floor(Date.now() / 1000)
-    ) {
-      if (peersLength <= 0) {
-        setIsConnectedToPeers(false);
-      } else {
-        setIsConnectedToPeers(true);
+    const evaluate = () => {
+      if (Date.now() - mountedAtRef.current < PEER_GRACE_MS) {
+        return false;
       }
+      apply(peersLength > 0);
+      return true;
+    };
+    if (evaluate()) {
+      return;
     }
-  }, [peersLength, momentTime, litecoinBackend]);
+    const tick = setInterval(() => {
+      if (evaluate()) {
+        clearInterval(tick);
+      }
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [peersLength, litecoinBackend]);
 
   return (
     <LongPressGestureHandler

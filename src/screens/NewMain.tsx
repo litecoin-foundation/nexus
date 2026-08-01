@@ -625,6 +625,17 @@ const NewMain: React.FC<Props> = props => {
     [navigation],
   );
 
+  const handleSelectSection = useCallback(
+    (index: number) => {
+      if (index === 0 && activeTab !== 0) {
+        foldUnfoldBottomSheet(false);
+      } else if (index === 1 && activeTab !== 3) {
+        handleTabPress(3);
+      }
+    },
+    [activeTab, foldUnfoldBottomSheet, handleTabPress],
+  );
+
   const TxListComponentMemo = useMemo(
     () => (
       <TxListComponent
@@ -763,13 +774,7 @@ const NewMain: React.FC<Props> = props => {
 
         <LiquidGlassTabBar
           activeIndex={activeTab === 3 ? 1 : 0}
-          onSelectSection={(index: number) => {
-            if (index === 0 && activeTab !== 0) {
-              foldUnfoldBottomSheet(false);
-            } else if (index === 1 && activeTab !== 3) {
-              handleTabPress(3);
-            }
-          }}
+          onSelectSection={handleSelectSection}
           contentActivity={tabBarActivity}
           rowModels={txRowModels}
           mainSheetsTranslationY={mainSheetsTranslationY}

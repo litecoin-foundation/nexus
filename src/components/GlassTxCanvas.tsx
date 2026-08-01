@@ -448,4 +448,6 @@ const getStyles = (screenWidth: number, top: number, height: number) =>
     },
   });
 
-export default GlassTxCanvas;
+// A parent render makes Skia rebuild this whole tree, so unrelated screen
+// state must not reach the canvas when its own inputs are unchanged.
+export default React.memo(GlassTxCanvas);
