@@ -31,7 +31,11 @@ import {
 } from '../animations/useNewMainAnims';
 import {getCapsuleShadowImage} from './capsuleShadowImage';
 import type {CapsuleShadow} from './capsuleShadowImage';
-import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
+import {
+  GLASS_FILTER_CROP_PAD,
+  glassTabShader,
+  makeGlassTabFilter,
+} from './glassTabShader';
 import {
   getGlassTabLayouts,
   glassTabRectAt,
@@ -366,6 +370,29 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
     () => Skia.ImageFilter.MakeBlur(4, 4, TileMode.Clamp),
     [],
   );
+  // BackdropFilter otherwise saves the entire canvas into an offscreen layer
+  // every animation frame. Keep the pad identical to makeGlassTabFilter's
+  // crop so every blur and refraction sample remains inside this layer. The
+  // BackdropFilter's clip changes its layer bounds, not its shader coordinate
+  // system, so the boxes below deliberately stay in screen coordinates.
+  const glassFilterClip = useDerivedValue(() => {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const rect of rects.value) {
+      minX = Math.min(minX, rect.x);
+      minY = Math.min(minY, rect.y);
+      maxX = Math.max(maxX, rect.x + rect.width);
+      maxY = Math.max(maxY, rect.y + buttonHeight);
+    }
+    return Skia.XYWHRect(
+      minX - GLASS_FILTER_CROP_PAD,
+      minY - GLASS_FILTER_CROP_PAD,
+      maxX - minX + GLASS_FILTER_CROP_PAD * 2,
+      maxY - minY + GLASS_FILTER_CROP_PAD * 2,
+    );
+  });
   const glassFilter = useDerivedValue(() => {
     const splitProgress = glassTabSplitProgressAt(
       mainSheetsTranslationY.value,
@@ -427,7 +454,10 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
             />
           ))
         : null}
-      <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
+      <BackdropFilter
+        clip={glassFilterClip}
+        filter={<ImageFilter filter={glassFilter} />}
+      />
       {layouts.map((_, i) => (
         <GlassButtonAccent
           key={`accent-${i}`}

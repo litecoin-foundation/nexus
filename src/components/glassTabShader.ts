@@ -170,7 +170,11 @@ vec4 main(vec2 fragCoord) {
 }
 `)!;
 
-const CROP_PAD = 120;
+// BackdropFilter creates an offscreen layer before applying this filter. Callers
+// can use the same bounds as a clip to keep that layer to the glass lenses
+// instead of allocating their entire canvas; the pad covers every blur and
+// refraction sample this shader can make.
+export const GLASS_FILTER_CROP_PAD = 120;
 
 // Caller hoists the builder and blur child.
 export const makeGlassTabFilter = (
@@ -206,10 +210,10 @@ export const makeGlassTabFilter = (
     maxY = Math.max(maxY, box[1] + box[3]);
   }
   const crop = Skia.XYWHRect(
-    minX - CROP_PAD,
-    minY - CROP_PAD,
-    maxX - minX + 2 * CROP_PAD,
-    maxY - minY + 2 * CROP_PAD,
+    minX - GLASS_FILTER_CROP_PAD,
+    minY - GLASS_FILTER_CROP_PAD,
+    maxX - minX + 2 * GLASS_FILTER_CROP_PAD,
+    maxY - minY + 2 * GLASS_FILTER_CROP_PAD,
   );
   return Skia.ImageFilter.MakeCrop(
     crop,

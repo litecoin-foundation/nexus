@@ -27,7 +27,11 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
 import {useCardUnderlayValue} from './cardUnderlay';
 import {getCapsuleShadowImage} from './capsuleShadowImage';
-import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
+import {
+  GLASS_FILTER_CROP_PAD,
+  glassTabShader,
+  makeGlassTabFilter,
+} from './glassTabShader';
 import {
   DRAG_STRIP_HEIGHT_RATIO,
   GlassTxRowModels,
@@ -287,6 +291,30 @@ const GlassTxCanvas: React.FC<Props> = props => {
       ),
     [],
   );
+  // As with the top lenses, keep the BackdropFilter layer to the capsule plus
+  // the shader's sampling margin. The clip bounds its layer without changing
+  // the shader's screen-local coordinates.
+  const glassFilterClip = useDerivedValue(() => {
+    const scale =
+      pressScale.value *
+      interpolate(
+        contentActivity.value,
+        [0, 1],
+        [1, SCROLLING_SCALE],
+        Extrapolation.CLAMP,
+      );
+    const width = barWidth * scale;
+    const height = barHeight * scale;
+    const x = (SCREEN_WIDTH - width) / 2;
+    const y =
+      barTop + (barHeight - height) / 2 + hideProgress.value * hideDistance;
+    return Skia.XYWHRect(
+      x - GLASS_FILTER_CROP_PAD,
+      y - GLASS_FILTER_CROP_PAD,
+      width + GLASS_FILTER_CROP_PAD * 2,
+      height + GLASS_FILTER_CROP_PAD * 2,
+    );
+  });
   const glassFilter = useDerivedValue(() => {
     const scale =
       pressScale.value *
@@ -431,7 +459,10 @@ const GlassTxCanvas: React.FC<Props> = props => {
           returns the sampled pixel untouched, so covering the whole canvas
           changes nothing visually. */}
       {tbOn('glass') ? (
-        <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
+        <BackdropFilter
+          clip={glassFilterClip}
+          filter={<ImageFilter filter={glassFilter} />}
+        />
       ) : null}
       {barChrome && tbOn('chrome') ? (
         <Group transform={barTransform}>{barChrome}</Group>
