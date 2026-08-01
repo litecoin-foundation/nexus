@@ -7,7 +7,7 @@ import React, {
   useContext,
   useCallback,
 } from 'react';
-import {View, StyleSheet, Pressable, DeviceEventEmitter} from 'react-native';
+import {View, StyleSheet, DeviceEventEmitter} from 'react-native';
 import {getCountry} from 'react-native-localize';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {
@@ -18,13 +18,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {useDrawerStatus} from '@react-navigation/drawer';
-import {
-  Canvas,
-  Image,
-  RoundedRect,
-  useImage,
-  Shadow,
-} from '@shopify/react-native-skia';
 import {
   CUSTODY_MODEL,
   dismissAllModals,
@@ -53,10 +46,10 @@ import {
   DRAG_STRIP_HEIGHT_RATIO,
   GlassTxRowModels,
   SHEET_BACKGROUND,
-  TX_TITLE_ROW_HEIGHT_RATIO,
   useGlassTxRowModels,
 } from '../components/GlassTxRows';
 import GlassTransactionList from '../components/GlassTransactionList';
+import GlassTxListHeader from '../components/GlassTxListHeader';
 import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
@@ -66,7 +59,6 @@ import {
   getTabBarClearance,
 } from '../components/glassTabBarLayout';
 import {CardUnderlayProvider} from '../components/cardUnderlay';
-import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
 import ScheduledPopUpModal from '../components/Modals/ScheduledPopUpModal';
@@ -113,7 +105,6 @@ interface TxListComponentProps {
   foldUnfoldBottomSheet: (option: boolean) => void;
   isBottomSheetFolded: boolean;
   navigation: any;
-  styles: Record<string, any>;
   txRows: any[];
   txRowModels: GlassTxRowModels;
   mainSheetsTranslationY: SharedValue<number>;
@@ -130,7 +121,6 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
     foldUnfoldBottomSheet,
     isBottomSheetFolded,
     navigation,
-    styles,
     txRows,
     txRowModels,
     mainSheetsTranslationY,
@@ -139,45 +129,14 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
     txListScrollY,
     txListHeaderOffset,
   } = props;
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-
-  const image = useImage(require('../assets/icons/search-icon.png'));
+  const openSearch = useCallback(
+    () => navigation.navigate('SearchTransaction'),
+    [navigation],
+  );
 
   return (
     <View>
-      <View style={styles.txTitleContainer}>
-        <TranslateText
-          textKey={'latest_txs'}
-          domain={'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-          maxLengthInPixels={SCREEN_WIDTH * 0.8}
-          textStyle={styles.txTitleText}
-          numberOfLines={1}
-        />
-
-        <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
-            <RoundedRect
-              x={SCREEN_HEIGHT * 0.02}
-              y={SCREEN_HEIGHT * 0.01}
-              width={SCREEN_HEIGHT * 0.1}
-              height={SCREEN_HEIGHT * 0.05}
-              color="white"
-              r={SCREEN_HEIGHT * 0.01}>
-              <Shadow dx={0} dy={2} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
-            </RoundedRect>
-            <Image
-              image={image}
-              x={SCREEN_HEIGHT * 0.035}
-              y={SCREEN_HEIGHT * 0.025}
-              width={SCREEN_HEIGHT * 0.02}
-              height={SCREEN_HEIGHT * 0.02}
-              fit="scaleDown"
-            />
-          </Canvas>
-        </Pressable>
-      </View>
+      <GlassTxListHeader onSearch={openSearch} />
       <GlassTransactionList
         onPress={data => {
           selectTransaction(data);
@@ -625,6 +584,19 @@ const NewMain: React.FC<Props> = props => {
     [navigation],
   );
 
+  // Stable identity, or React.memo on the tab bar never hits and every render
+  // of this screen re-records the glass canvas.
+  const handleSelectSection = useCallback(
+    (index: number) => {
+      if (index === 0 && activeTab !== 0) {
+        foldUnfoldBottomSheet(false);
+      } else if (index === 1 && activeTab !== 3) {
+        handleTabPress(3);
+      }
+    },
+    [activeTab, foldUnfoldBottomSheet, handleTabPress],
+  );
+
   const TxListComponentMemo = useMemo(
     () => (
       <TxListComponent
@@ -633,7 +605,6 @@ const NewMain: React.FC<Props> = props => {
         foldUnfoldBottomSheet={foldUnfoldBottomSheet}
         isBottomSheetFolded={isBottomSheetFolded}
         navigation={navigation}
-        styles={styles}
         txRows={txRows}
         txRowModels={txRowModels}
         mainSheetsTranslationY={mainSheetsTranslationY}
@@ -650,7 +621,6 @@ const NewMain: React.FC<Props> = props => {
       mainSheetsTranslationYStart,
       markTabBarActivity,
       navigation,
-      styles,
       txListHeaderOffset,
       txListScrollY,
       txRows,
@@ -763,13 +733,7 @@ const NewMain: React.FC<Props> = props => {
 
         <LiquidGlassTabBar
           activeIndex={activeTab === 3 ? 1 : 0}
-          onSelectSection={(index: number) => {
-            if (index === 0 && activeTab !== 0) {
-              foldUnfoldBottomSheet(false);
-            } else if (index === 1 && activeTab !== 3) {
-              handleTabPress(3);
-            }
-          }}
+          onSelectSection={handleSelectSection}
           contentActivity={tabBarActivity}
           rowModels={txRowModels}
           mainSheetsTranslationY={mainSheetsTranslationY}
@@ -904,25 +868,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     walletButton: {
       width: 'auto',
       height: 'auto',
-    },
-    txTitleContainer: {
-      width: '100%',
-      height: screenHeight * TX_TITLE_ROW_HEIGHT_RATIO,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    txTitleText: {
-      color: '#2E2E2E',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.025,
-      fontWeight: '500',
-      letterSpacing: -0.59,
-      paddingLeft: screenWidth * 0.04,
-    },
-    txSearchBtnCanvas: {
-      width: screenHeight * 0.07,
-      height: screenHeight * 0.07,
     },
   });
 

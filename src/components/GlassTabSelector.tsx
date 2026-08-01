@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {Gesture} from 'react-native-gesture-handler';
 import {SharedValue} from 'react-native-reanimated';
@@ -72,28 +72,48 @@ const GlassTabSelector: React.FC<Props> = props => {
     insets.top,
   );
 
-  // Dragging on a button moves the sheet.
-  const {onDragUpdate, onEndTrigger} = makeSheetSnapHandlers({
-    mainSheetsTranslationY,
-    mainSheetsTranslationYStart,
-    folded,
-    foldUnfold,
-    screenHeight: SCREEN_HEIGHT,
-    topInset: insets.top,
-  });
+  // Dragging on a button moves the sheet. The handlers capture `folded`, so
+  // that is the only reason they ever need rebuilding.
+  const {onDragUpdate, onEndTrigger} = useMemo(
+    () =>
+      makeSheetSnapHandlers({
+        mainSheetsTranslationY,
+        mainSheetsTranslationYStart,
+        folded,
+        foldUnfold,
+        screenHeight: SCREEN_HEIGHT,
+        topInset: insets.top,
+      }),
+    [
+      mainSheetsTranslationY,
+      mainSheetsTranslationYStart,
+      folded,
+      foldUnfold,
+      SCREEN_HEIGHT,
+      insets.top,
+    ],
+  );
 
-  const makeDragGesture = () => {
-    const baseGesture = Gesture.Pan();
-    if (Platform.OS === 'android') {
-      baseGesture.activeOffsetY([-15, 15]);
-    }
-    return baseGesture
-      .onUpdate(e => {
-        'worklet';
-        onDragUpdate(e.translationY);
-      })
-      .onEnd(onEndTrigger);
-  };
+  // One gesture per button, rebuilt only when the handlers change. The
+  // handlers close over `folded`, so that is what actually gates it; building
+  // them inline meant four fresh Gesture objects and four config pushes on
+  // every render of this screen.
+  const dragGestures = useMemo(
+    () =>
+      TAB_CONFIGS.map(() => {
+        const baseGesture = Gesture.Pan();
+        if (Platform.OS === 'android') {
+          baseGesture.activeOffsetY([-15, 15]);
+        }
+        return baseGesture
+          .onUpdate(e => {
+            'worklet';
+            onDragUpdate(e.translationY);
+          })
+          .onEnd(onEndTrigger);
+      }),
+    [onDragUpdate, onEndTrigger],
+  );
 
   return (
     <View style={styles.overlay} pointerEvents="box-none">
@@ -127,9 +147,10 @@ const GlassTabSelector: React.FC<Props> = props => {
           active={activeTab === config.tab}
           // Receive works offline, everything else needs a connection.
           disabled={config.tab === 5 ? false : !isInternetReachable}
+          folded={folded}
           mainSheetsTranslationY={mainSheetsTranslationY}
           layout={layouts[i]}
-          dragGesture={makeDragGesture()}
+          dragGesture={dragGestures[i]}
         />
       ))}
     </View>

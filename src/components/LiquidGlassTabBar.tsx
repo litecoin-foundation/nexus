@@ -239,7 +239,10 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
   const thumbInsetY = (barHeight - thumbHeight) / 2;
   const iconSize = SCREEN_HEIGHT * 0.028;
   const slotSpacing = barWidth / sections.length;
-  const slotCenters = sections.map((_, i) => slotSpacing * (i + 0.5));
+  const slotCenters = useMemo(
+    () => sections.map((_, i) => slotSpacing * (i + 0.5)),
+    [sections, slotSpacing],
+  );
   // Clamp must contain the resting slot centers.
   const minCenter = Math.min(slotCenters[0], thumbWidth / 2 + thumbInsetY);
   const maxCenter = Math.max(
@@ -385,40 +388,59 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
   // a second canvas costs a per-frame setJsiProperty hand-off on the UI thread
   // whatever it draws, and this one is a hairline, a pill and three icons.
   // Bar-local coords; GlassTxCanvas applies the capsule transform.
-  const barChrome = (
-    <>
-      <RoundedRect
-        x={0.5}
-        y={0.5}
-        width={barWidth - 1}
-        height={barHeight - 1}
-        r={(barHeight - 1) / 2}
-        style="stroke"
-        strokeWidth={0.5}
-        color="rgba(238, 235, 235, 0.67)"
-      />
-      <RoundedRect
-        x={thumbX}
-        y={thumbInsetY}
-        width={thumbWidth}
-        height={thumbHeight}
-        r={thumbHeight / 2}
-        color="rgba(74, 75, 76, 0.39)"
-      />
-      {sections.map((section, i) => (
-        <TabIcon
-          key={section.kind}
-          kind={section.kind}
-          cx={slotCenters[i]}
-          cy={barHeight / 2}
-          size={iconSize}
-          disabled={section.disabled}
-          image={section.kind === 'shop' ? shopIcon : null}
-          thumbCenter={thumbCenter}
-          slotSpacing={slotSpacing}
+  //
+  // Memoized so the thumb re-spring after a tab press (selectionAttempt) does
+  // not hand the canvas a new subtree and make it re-record everything.
+  const barChrome = useMemo(
+    () => (
+      <>
+        <RoundedRect
+          x={0.5}
+          y={0.5}
+          width={barWidth - 1}
+          height={barHeight - 1}
+          r={(barHeight - 1) / 2}
+          style="stroke"
+          strokeWidth={0.5}
+          color="rgba(238, 235, 235, 0.67)"
         />
-      ))}
-    </>
+        <RoundedRect
+          x={thumbX}
+          y={thumbInsetY}
+          width={thumbWidth}
+          height={thumbHeight}
+          r={thumbHeight / 2}
+          color="rgba(74, 75, 76, 0.39)"
+        />
+        {sections.map((section, i) => (
+          <TabIcon
+            key={section.kind}
+            kind={section.kind}
+            cx={slotCenters[i]}
+            cy={barHeight / 2}
+            size={iconSize}
+            disabled={section.disabled}
+            image={section.kind === 'shop' ? shopIcon : null}
+            thumbCenter={thumbCenter}
+            slotSpacing={slotSpacing}
+          />
+        ))}
+      </>
+    ),
+    [
+      barWidth,
+      barHeight,
+      thumbX,
+      thumbInsetY,
+      thumbWidth,
+      thumbHeight,
+      sections,
+      slotCenters,
+      iconSize,
+      shopIcon,
+      thumbCenter,
+      slotSpacing,
+    ],
   );
 
   return (
@@ -470,4 +492,7 @@ const getStyles = (
     },
   });
 
-export default LiquidGlassTabBar;
+// Memoized with GlassTxCanvas: it owns the most expensive canvas on the
+// screen, and NewMain re-renders on a lot of redux traffic that cannot change
+// anything drawn here.
+export default React.memo(LiquidGlassTabBar);

@@ -112,6 +112,18 @@ exactly the wrong moment.
   re-records (`SkiaSGRoot.render` + `HostConfig.resetAfterCommit`). Memoise a canvas's children
   into a single element if the parent re-renders often.
 
+**But a small canvas with no animated props is cheaper than this rule suggests — measured.**
+It never runs a per-frame mapper, and although the re-record above still fires on every render
+of its subtree and ends in a synchronous `setJsiProperty`, one ~4 ms submit per transition is
+one frame in ~380 — under the noise floor. The transaction-list search button is a 60 × 60 dp
+canvas inside a subtree memoised on `isBottomSheetFolded`, so it re-records on **every fold**,
+and mounting it moved janky% by +0.01/−0.73 points. Replacing it with native views measured
+**+1.2/+1.0, i.e. no better**, and it never appeared in `Layer Info` at all.
+
+So the "never mount a canvas for a decoration" rule is about canvases with **animated props**,
+which redraw every frame. A static one costs its mount and one submit per render of its parent.
+Worth avoiding in new code; not worth ripping out existing ones without measuring.
+
 ---
 
 ## 2. Animation rules (Reanimated 4)
@@ -138,6 +150,14 @@ made that step expensive — it also mounts ~48 views, four `TranslateText` labe
 mappers, and none of that was isolated. **Lesson: a ladder rung prices *mounting a component*,
 not *a mechanism inside it*.** To attribute further, sub-ladder inside the component the way
 §5 describes for the backdrop.
+
+> **2026-08-01.** The conversion described above was **not in the tree** — HEAD still had
+> `{left, top, width}` plus the interpolated `height`. It was lost between sessions and this
+> paragraph outlived it. It has been re-applied, and re-measured: the R2→R3 step went 9.71 →
+> 9.91 points, null again, exactly as recorded here. If you find yourself about to make this
+> change a third time: it is correct, it is already done, and it buys nothing.
+> The `'tabsel'` sub-ladder (`SUB_LADDER = 'tabsel'`) now exists to answer what that ~8 points
+> actually is — see backlog item 1.
 
 ### 2.2 Don't round-trip through React to run an animation
 
@@ -272,8 +292,10 @@ already been measured to zero, so treat anything unmeasured with suspicion.
 
 1. **Sub-ladder inside `GlassTabSelector`.** Mounting it costs ~8 points of jank and ~2–3 ms
    and *nobody knows why* — converting its Yoga-dirtying props changed nothing (§2.1). It adds
-   ~48 views, four `TranslateText` labels and a pile of mappers. Bisect it the way §5 describes
-   before "fixing" anything. **Confidence: the cost is measured; the cause is not.**
+   ~48 views, four `TranslateText` labels and a pile of mappers. **The harness for this is
+   built**: set `SUB_LADDER = 'tabsel'` in `PerfHarness.tsx` and run it — U0 empty overlay →
+   +hit targets → +icons → +labels → +geometry. **Confidence: the cost is measured; the cause
+   is not.**
 2. **Modals each mount their own canvas** (`GlassTxDetailModal`, `LiquidGlassWalletModal`,
    `LiquidGlassAlertModal`, `CategoryPickerModal`). Each creates a TextureView *during* the
    open animation. Consider publishing into the backdrop canvas instead.
@@ -287,12 +309,10 @@ already been measured to zero, so treat anything unmeasured with suspicion.
    screen module evaluates at boot.
 9. **`ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS`** in Reanimated's static flags. Only pays off
    *after* item 1, since layout props aren't in the synchronous allowlist. Needs an NDK rebuild.
-10. **Memoise the sheet drag handlers.** `makeSheetSnapHandlers` runs on every render of
-    `GlassBottomSheet` (`:85`) and `GlassTabSelector` (`:76`), and `makeDragGesture()` runs 4×
-    per `GlassTabSelector` render. Each produces fresh `onDragUpdate`/`onEndTrigger` worklets
-    that must be serialised to the UI runtime on first use, and each closure retains
-    `foldUnfold` → the whole `NewMain` render scope. ~5 gestures and ~10 worklets re-serialised
-    on every fold. Wrap in `useMemo` keyed on `[folded, screenHeight, insets.top]`.
+10. ~~**Memoise the sheet drag handlers.**~~ **Done for `GlassTabSelector`** (2026-08-01):
+    both `makeSheetSnapHandlers` and the four `makeDragGesture()` calls are `useMemo`'d on
+    `[folded, …]`, which is what they actually close over. `GlassBottomSheet` (`:85`) still
+    rebuilds its two on every render — same fix, not yet applied.
 11. **Delete the dead pre-Skia sheet.** `src/screens/Main.tsx` has zero importers and is the
     only importer of `src/components/BottomSheet.tsx`; `src/components/TransactionList.tsx`
     hangs off it too. All three still carry the old drag/snap logic with different ratios, so

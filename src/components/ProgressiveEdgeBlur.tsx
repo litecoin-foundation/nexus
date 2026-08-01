@@ -11,11 +11,17 @@ import {
   vec,
 } from '@shopify/react-native-skia';
 
+import {getFrostLevels} from '../config/perfHarness';
+
 // Adapted from react-native-edge-fade's native blur pipeline (MIT): render
 // independent Gaussian levels, then mask each result after it has been blurred.
 // https://github.com/AmatoGiulio/react-native-edge-fade
-const LEVEL_FRACTIONS = [0.35, 0.65, 1] as const;
-const LEVEL_BOUNDS = [0.35, 0.65, 1] as const;
+//
+// Each level costs two saveLayers, one Gaussian, one full re-render of
+// `children` and one gradient mask, every frame — so the level count is the
+// dominant term in this component's cost. Levels are spread evenly, which
+// reproduces the shipped [0.35, 0.65, 1] at three.
+const DEFAULT_LEVELS = 3;
 const MASK_STOP_COUNT = 32;
 
 const FROST_SATURATION = 0.9;
@@ -64,9 +70,9 @@ const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
 const smootherstep = (value: number) =>
   value * value * value * (value * (value * 6 - 15) + 10);
 
-const buildLevelMask = (level: number) => {
-  const lowerBound = level === 0 ? 0 : LEVEL_BOUNDS[level - 1];
-  const upperBound = LEVEL_BOUNDS[level];
+const buildLevelMask = (level: number, bounds: number[]) => {
+  const lowerBound = level === 0 ? 0 : bounds[level - 1];
+  const upperBound = bounds[level];
   const range = upperBound - lowerBound;
 
   return MASK_POSITIONS.map(position => {
@@ -81,7 +87,20 @@ const buildLevelMask = (level: number) => {
   });
 };
 
-const LEVEL_MASKS = LEVEL_FRACTIONS.map((_, level) => buildLevelMask(level));
+// Hand-tuned per count rather than generated: the three-level ramp is the
+// shipped look and 0.35/0.65 is not what an even split gives.
+const LEVEL_FRACTIONS_BY_COUNT: Record<number, number[]> = {
+  1: [1],
+  2: [0.5, 1],
+  3: [0.35, 0.65, 1],
+};
+
+const LEVEL_MASKS_BY_COUNT: Record<number, string[][]> = Object.fromEntries(
+  Object.entries(LEVEL_FRACTIONS_BY_COUNT).map(([count, fractions]) => [
+    count,
+    fractions.map((_, level) => buildLevelMask(level, fractions)),
+  ]),
+);
 
 interface Props {
   // The content to frost, in canvas coordinates. The caller draws it plainly
@@ -105,9 +124,13 @@ const ProgressiveEdgeBlur: React.FC<Props> = props => {
   );
   const maskEnd = useMemo(() => vec(0, bottom), [bottom]);
 
+  const levels = getFrostLevels() ?? DEFAULT_LEVELS;
+  const fractions = LEVEL_FRACTIONS_BY_COUNT[levels] ?? LEVEL_FRACTIONS_BY_COUNT[DEFAULT_LEVELS];
+  const masks = LEVEL_MASKS_BY_COUNT[levels] ?? LEVEL_MASKS_BY_COUNT[DEFAULT_LEVELS];
+
   return (
     <>
-      {LEVEL_FRACTIONS.map((fraction, level) => {
+      {fractions.map((fraction, level) => {
         // The mask weight is zero above the gradient start, so clipping the
         // level there (plus 3σ of blur sampling margin) renders identically
         // while the layers and blurs process a fraction of the area.
@@ -139,7 +162,7 @@ const ProgressiveEdgeBlur: React.FC<Props> = props => {
                 <LinearGradient
                   start={maskStart}
                   end={maskEnd}
-                  colors={LEVEL_MASKS[level]}
+                  colors={masks[level]}
                   positions={MASK_POSITIONS}
                   mode="clamp"
                 />

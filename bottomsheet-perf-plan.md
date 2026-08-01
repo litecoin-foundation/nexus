@@ -357,6 +357,251 @@ timer will say whether the 17 ms is the runtime shader, the picture re-record, o
 
 ---
 
+## 2g. COMPONENT REVIEW — every component on the Main screen, 2026-08-01
+
+Read for per-frame cost during a fold, not for correctness. Device geometry used throughout:
+384 × 853.33 dp, `insets.top` 24 → `UNFOLD_SHEET_POINT` 280.0, `FOLD_SHEET_POINT` 518.93.
+
+The mechanism most of this turns on: **Reanimated re-runs a mapper per animated value per
+frame**, and every `useDerivedValue`/`useAnimatedStyle` on the fold path reads
+`mainSheetsTranslationY`, so all of them run on all ~18 frames. `recorder.play` measured
+0.21 ms on the backdrop, so this cost is *not* inside react-native-skia — it lands in
+Reanimated's own pass, ahead of it, on the same UI thread, inside the same Choreographer
+callback. §2d's numbers account for ~17 ms of a 27 ms frame; this is part of the rest.
+
+### Applied
+
+**1. `GlassAmountView` re-rendered the backdrop every 3 seconds, forever.**
+`momentTime` was state, and its effect was keyed on itself — so it set a 3 s timeout, set
+state, re-ran, forever. It existed only so a peers-are-missing check could re-evaluate after
+a grace window. Every tick re-rendered `GlassAmountView` and with it `LiquidGlassBackdrop`,
+and **a React render inside a `<Canvas>` makes react-native-skia stop the canvas's mapper,
+re-visit the entire node tree on the JS thread, build a fresh recorder and restart the
+mapper**. The backdrop tree is the biggest on the screen. Landing on a fold frame, that is a
+dropped frame; landing anywhere, it is pure waste. The timeout was also never cleared.
+Now a 1 s interval that stops as soon as the grace window closes, writing state only on a
+real transition (guarded by a ref, not by React's bail-out, which is documented as "may still
+render once").
+
+**2. `LiquidGlassBackdrop` ran 86 mappers per frame. Now 32.**
+Counted, per frame, all reading `mainSheetsTranslationY`:
+
+| | before | after |
+|---|---|---|
+| top-level (gradient, foldclip, chart opacity, glass filter) | 6 | 6 |
+| shared rect + split opacity | 0 | 2 |
+| per button × 4 | 20 | 6 |
+| **total** | **86** | **32** |
+
+Three things were paying for nothing:
+- `useGlassTabRect` built four mappers (`rect`, then `x`/`y`/`width` off it) and was called
+  **twice per button** — once by the shadow, once by the accent. Eight mappers per button to
+  compute one rect, and `glassTabRectAt` allocating eight objects a frame. Now one mapper
+  returns all four rects as an array; `glassFilter` reads it too instead of recomputing them
+  a third time.
+- `useSplitOpacity` ran for all four buttons, but only Sell splits — the other three ran a
+  worklet every frame to return the constant `1`. Now `undefined` for those three, so no prop
+  and no mapper exists.
+- Position was animated per drawing primitive. `x`/`y` now ride a `<Group transform>` and
+  everything inside is drawn at a static local origin, which makes the border gradient's two
+  endpoints (`vec(0, y)`, `vec(0, y+h)`) plain constants and deletes `strokeX`/`strokeY`. The
+  shadow went from six coordinate mappers to one transform, using `scaleX` for the stretch
+  that `fit="fill"` was doing anyway — `scaleX = width / refWidth` is exactly the old
+  `imgWidth`. All four capsules also share one pre-blurred image, so it is now fetched once
+  instead of four times per render.
+
+**3. `GlassTabButton` animated 16 Yoga properties per frame. Now 4. This is worth nothing —
+and that was already known.**
+`left`, `top` and `width` from `animatedRect`, plus `height` from `animatedPressableArea`,
+four buttons. `left`/`top` became a `transform`, which is not a Yoga prop and is
+pixel-identical. The tap-target `height` snapped to the fold state.
+
+**`PERFORMANCE.md` §2.1 already records this exact change, already measured, at zero effect** —
+and §7 lists it as refuted. The conversion was made in an earlier session, measured, and then
+lost: the file at HEAD still had `{left, top, width}`. It was re-derived here from scratch
+without checking, and the measurement below reproduces the same null result: the R2→R3 step
+went **9.71 → 9.91** points (worklet), i.e. unchanged.
+
+Keep the change — it is the correct way to animate position and §0 rule 3 says so — but it is
+not a win, and the "+3 ms attributable to the tab buttons" reading of the R6→R7 step is wrong.
+That step is ~8 points of *mount* cost and it is **not layout passes**. The `'tabsel'`
+sub-ladder now exists to find out what it actually is; it is item #1 on `PERFORMANCE.md`'s
+backlog.
+
+**4. `GlassTabSelector` rebuilt four `PanGesture`s on every render** (`dragGesture={makeDragGesture()}`),
+and `makeSheetSnapHandlers` allocated a fresh set of worklet closures alongside them. Both are
+memoized on `folded`, which is what they actually close over. JS-thread only, so invisible to
+`gfxinfo` — the refuted list prices it at 1.5–3 ms per transition.
+
+**5. `GlassTxCanvas` and `LiquidGlassTabBar` are now `React.memo`.**
+Neither was, and `NewMain` subscribes to `info`, `deeplinks`, `settings`, `balance`, `buy` and
+`chart`. Any of those moving re-rendered the tab bar and with it the most expensive canvas on
+the screen — the full stop-mapper/re-visit/restart cycle from #1. `onSelectSection` was an
+inline arrow (memoized now) and `barChrome` a fresh element tree per render (memoized now, as
+is `slotCenters`, which it depends on).
+
+This does **not** contradict §2b's "the React commit costs nothing". That was measured on a
+steady-state fold ladder where `NewMain` renders once. This is about the other renders.
+
+### Candidates — real, but they need the sub-ladder before anyone touches them
+
+**6. `ProgressiveEdgeBlur` costs two `saveLayer`s, one Gaussian, one full re-render of the
+band source and one gradient mask — *per level*, and there are three.** Six saveLayers of
+1080 × ~192–236 px every frame, plus σ = 2.8/5.2/8 blurs, plus the band source drawn four
+times in total (once plain, three times blurred). On a tiled GPU each `saveLayer` is a render
+pass with a tile flush and reload. Dropping to two levels removes a third of it. The component
+now takes the level count from the harness so `T1`/`T2` can bracket it exactly — do not change
+the shipped default on a guess.
+
+**9. `TxListComponent` mounted a whole `<Canvas>` for the search button** (`NewMain.tsx:160`):
+a rounded rect with a `<Shadow>` and a 20 dp icon. **Done** — it is `GlassTxListHeader` now,
+a `View` with `elevation` and an `<Image>`, extracted so the harness mounts the real thing.
+
+It has no animated props, so it never cost per-frame time. What it cost is this: rn-skia
+re-runs a canvas's `useLayoutEffect(..., [children])` on every render, and multi-child JSX
+makes a fresh array each time — so **any** render of the subtree triggers a re-record plus a
+synchronous `setJsiProperty` submit. `TxListComponentMemo` has `isBottomSheetFolded` in its
+deps, so that fired on **every fold**, at the start of the animation. Canvas 1008 — a
+comparably trivial canvas — measured 4.1 ms of which 3.97 ms was the submit.
+
+The harness never covered this: it mounted `GlassTransactionList` directly, so the production
+header was outside every rung. **R4/R5 now mount it, memoized on `folded` exactly as
+production is**, and differ only in the impl. R3→R4 prices the Skia version, R4→R5 the swap.
+
+### Retired candidates — the arithmetic does not support them
+
+Written up above as promising, then worked through. Recording the negatives so they are not
+re-derived a third time.
+
+**7. `CROP_PAD = 120` — retired. The earlier "72 dp" figure was wrong; it is ~86 dp.**
+Worst case is the rim, where `sd → 0⁻` so `n_cos → 1` and the normal goes horizontal,
+`N ≈ (dx, dy, 0)` with `|(dx,dy)| = 1`:
+
+```
+eta = 1/1.5 = 0.6667        dot(N, I) = 0        (I = (0,0,-1))
+k   = 1 - eta²(1 - 0²) = 0.5556,  sqrt(k) = 0.7454
+R   = eta*I - (eta*dot(N,I) + sqrt(k))*N = (-0.7454dx, -0.7454dy, -0.6667)
+|R.xy| = 0.7454             dot((0,0,-1), R) = 0.6667
+h = height(0, 9) = 0        base_height = thickness*8 = 72
+refract_length = 72 / 0.6667 = 108
+reach = 0.7454 * 108 = 80.5,  + caPixels 0.7454*7.5 = 5.6   ->  86.1
+```
+
+The first pass divided by the wrong term of that pair. So 120 is **~40% margin, not ~66%**,
+and the proposed 88 would leave ~2 dp. Leave it alone.
+
+**8. Six per-frame `SkImageFilter` allocations — retired, worth ~0.05 ms.**
+Counted properly it is `processUniforms` (7 uniform writes) + 2 `XYWHRect` + 2 `MakeCrop` +
+1 `MakeRuntimeShaderWithChildren` — 5–10 JSI calls per canvas per frame, order 25–50 µs total.
+The earlier "0.3–0.8 ms" was a guess with nothing behind it.
+
+The secondary argument — that a fresh filter object every frame defeats Skia's
+`SkImageFilterCache` — does not hold either: the pixels the filter samples move every frame
+(the gradient in the backdrop, the rows under the capsule), so the cached *result* would be
+invalid regardless of the key.
+
+Worth noting for its own sake: during a fold `GlassTxCanvas`'s capsule is completely static
+(`pressScale` 1, `contentActivity` 0, `hideProgress` 0 on the wallet tab), so its filter is
+rebuilt identically ~18 times. It is just that the rebuild is cheap.
+
+**10. Clipping the gradient rect to the fold edge — retired.**
+`PERFORMANCE.md` §7 already refutes the premise: shrinking the backdrop canvas *and* the erase
+rect by 40% bought ~3 ms, and §2c measured the R4→R5 step at **+0.6 ms GPU against +13.4 ms
+non-GPU**. Area is not the cost on this device. This is the same reasoning that already
+refuted overdraw, `opaque`, blur radius and fill rate — it should not have been written up as
+a candidate at all.
+
+### MEASURED — 20 cycles/rung, both modes, back-to-back on one device session
+
+Same build except for the five changes above; the harness itself is identical in both, so the
+trimmed ladder is not a variable. Chain sync completed before both captures.
+
+Final run, all changes applied (an intermediate run without the header work agreed to within a
+point at every rung):
+
+| rung | mode | janky% before → after | p50 | Slow UI before → after |
+|---|---|---|---|---|
+| R0 sheet + list | worklet | 5.95 → **5.71** | 9 → 9 ms | 15 → 13 |
+| R0 sheet + list | runOnJS | 5.78 → **5.53** | 9 → 9 ms | 18 → 12 |
+| R1 tab bar canvas | worklet | 11.11 → **6.22** | 12 → 12 ms | 40 → 23 |
+| R1 tab bar canvas | runOnJS | 8.84 → **7.64** | 11 → 12 ms | 37 → 31 |
+| R2 backdrop | worklet | 28.28 → **18.79** | 26 → **24 ms** | 110 → 80 |
+| R2 backdrop | runOnJS | 21.32 → **21.18** | 24 → 24 ms | 104 → 92 |
+| R3 whole screen | worklet | 37.99 → **28.20** | 28 → **27 ms** | 136 → 106 |
+| R3 whole screen | runOnJS | 31.73 → **29.33** | 26 → **25 ms** | 146 → 125 |
+
+**R0 is the control and it stayed flat** (±0.5 points, inside the noise floor). Nothing changed
+in this rung — no Skia canvas, no tab buttons — so a move here would have invalidated the run.
+
+**`Number Slow UI thread` fell at every single rung and in both modes**: −35%, −30%, −20%,
+−6%, −15%, −9%. That is the most consistent signal in the table and it is the one that matches
+the mechanism — fewer mappers, fewer Yoga writes and fewer canvas re-visits all land on the UI
+thread, which is exactly where §2b showed the screen is bound.
+
+**p50 barely moved**: 26 → 24 ms at R2 and 28 → 27 / 26 → 25 at R3, one to two milliseconds
+against an 11.1 ms budget. The changes removed per-frame *overhead*; the median frame is
+dominated by something else — the rasterisation of two large canvases, which none of them
+touched. What improved is the tail.
+
+### The search canvas: predicted 3–6 ms per fold, measured zero
+
+R4/R5 mount the production tx-list header, memoized on `folded` exactly as `NewMain` does, and
+differ only in how the search button is drawn:
+
+| step | worklet | runOnJS | reading |
+|---|---|---|---|
+| R3 → R4 (add the header, **Skia** button) | 28.20 → 28.21 | 29.33 → 28.60 | **+0.01 / −0.73 — nothing** |
+| R4 → R5 (**Skia → native** views) | 28.21 → 29.43 | 28.60 → 29.56 | +1.22 / +0.96 — noise, if anything worse |
+
+The mechanism is real — a canvas re-records and submits synchronously on every render of its
+subtree, and that subtree re-renders on every fold — but the **magnitude is below what this
+ladder can resolve**. One ~4 ms submit per 1200 ms cycle is ~1 frame in ~380, i.e. 0.26%,
+against a 2–3 point noise floor. §2d already warned that the steady-state ladder does not
+capture per-fold costs; this is a clean demonstration.
+
+`Layer Info` adds a second point: composited layers stayed at **2** (`1080x1441` +
+`1080x1635`) with the Skia button mounted. It never became an HWUI layer at all, so the
+"third canvas on the wallet sheet" was cheaper than its description suggested.
+
+**The native version was kept anyway** — it is simpler, and it removes a `SkiaTextureView`
+creation on every card swap, which is a mount cost this ladder also cannot see. But it is a
+tidy-up, not a win, and it is not pixel-identical: the pill and icon match exactly, while the
+shadow differs by up to 37/255 on ~28% of subpixels in that region, because Android
+`elevation: 2` is not Skia's `<Shadow dy={2} blur={4} rgba(0,0,0,0.07)>`. Revert it if that
+matters more than the mount cost.
+
+Two things that are not wins and should not be read as such:
+- **`runOnJS` improved far less than `worklet`** — −1.2, −0.1 and −2.4 points at R1/R2/R3
+  against −4.9, −9.5 and −9.8. R2 `runOnJS` is flat. Quoting only the worklet column would be
+  dishonest; the truthful summary is "clear in the pure-UI-thread path, marginal in the
+  production-shaped one".
+- **The worklet/runOnJS spread collapsed.** Before, worklet was 7 points *worse* than runOnJS
+  at R2 and 6 worse at R3 — an inversion in the data since the merge builds (§2f), never
+  explained. After, the two modes agree everywhere (5.7/5.5, 6.2/7.6, 18.8/21.2, 28.2/29.3).
+  Something in these changes was penalising the pure-UI-thread path specifically. Worth
+  knowing; no theory yet.
+
+Composited layers stayed at 2 (`GlLayer 1080x1441` + `1080x1635`, 12.98 MB) — expected, no
+canvas was merged.
+
+**Net: the jank tail is down 1–10 points and slow UI-thread frames down 10–43%, with the
+median frame down 1–2 ms. R3 is still 27 ms against an 11.1 ms budget.** The remaining cost is
+rasterisation, and the sub-ladders above are what will split it.
+
+### Checked and rejected — do not re-derive
+
+| Idea | Why it is wrong |
+|---|---|
+| `<Group opacity>` forces a `saveLayer` | It does not. `sksg/Recorder/Visitor.ts:231` routes `opacity` through `processPaint` → `savePaint`/`materializePaint`; only `NodeType.Layer` emits `SaveLayer`. The row group's alpha-1.0 wrapper is a paint write, not a 1.4 Mpx offscreen |
+| Dedup `contentTransform`/`listClip` (both call `rowsTopInCanvas`) and `glassFilter`/`barTransform` (both compute `scale`) | Extracting the shared value into its own `useDerivedValue` makes **three** mappers where there were two. The duplicated arithmetic is a couple of adds; the mapper is the expensive part. `GlassTxCanvas` is already lean at 8 |
+| Chart cursor's 8 derived values | Mappers only run when their **inputs** change. `cursorX`/`cursorY`/`cursorActive`/`cursorLut` only move during a scrub, so they cost zero during a fold |
+| `getStyles()`/`StyleSheet.create` per render | Already refuted in §4 (payload is null, no native update). Still true |
+| Per-frame `getCapsuleShadowImage` | Cached in a module `Map` keyed on the args (`capsuleShadowImage.ts:11`) |
+| Re-decoding the row icons and fonts | Both already have module-level caches (`GlassTxRows.tsx`, `GlassBalanceGraphics.tsx`) |
+| The 5× row replay from pre-registered #1 | The rows are one recorded `SkPicture` now, so a "replay" is a `drawPicture` that bounds-culls. `T3 -rows` will say what is left of it |
+
+---
+
 ## 3. Ranked causes (pre-registered, now partly superseded by §2b)
 
 ### #1 — `GlassTxCanvas` records the row window **five times** per replay, every frame

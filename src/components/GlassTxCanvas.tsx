@@ -47,6 +47,7 @@ import {glassTxRowCallbacks, useGlassTxRowContext} from './GlassTxSkiaRows';
 import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
 import {ScreenSizeContext} from '../context/screenSize';
 import {useSkiaList} from './SkiaList';
+import {tbOn} from '../config/perfHarness';
 
 // A Skia BackdropFilter can only sample pixels drawn in its own canvas, so
 // everything the tab bar's glass refracts has to live here: this one
@@ -193,9 +194,8 @@ const GlassTxCanvas: React.FC<Props> = props => {
   });
 
   // both draw passes reuse the recorded picture
-  const rowsNode: React.ReactNode = rowsReady ? (
-    <Picture picture={skiaList.picture} />
-  ) : null;
+  const rowsNode: React.ReactNode =
+    rowsReady && tbOn('rows') ? <Picture picture={skiaList.picture} /> : null;
 
   // List-content coordinates -> canvas coordinates.
   const contentTransform = useDerivedValue(() => [
@@ -399,7 +399,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
       ) : null}
       <Group clip={bandClip}>
         {bandSource}
-        {rowsMounted || underlayContent ? (
+        {(rowsMounted || underlayContent) && tbOn('frost') ? (
           // frost is skipped over the flat band, blurred flat is flat
           <Group opacity={frostOpacity}>
             <ProgressiveEdgeBlur
@@ -413,7 +413,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
           </Group>
         ) : null}
         <Group transform={hideTransform}>
-          {barShadow ? (
+          {barShadow && tbOn('barshadow') ? (
             <Image
               image={barShadow.image}
               x={(SCREEN_WIDTH - barWidth) / 2 - barShadow.pad}
@@ -430,8 +430,12 @@ const GlassTxCanvas: React.FC<Props> = props => {
           clip here would shift the capsule. Outside the capsule the shader
           returns the sampled pixel untouched, so covering the whole canvas
           changes nothing visually. */}
-      <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
-      {barChrome ? <Group transform={barTransform}>{barChrome}</Group> : null}
+      {tbOn('glass') ? (
+        <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
+      ) : null}
+      {barChrome && tbOn('chrome') ? (
+        <Group transform={barTransform}>{barChrome}</Group>
+      ) : null}
     </Canvas>
   );
 };
@@ -448,4 +452,8 @@ const getStyles = (screenWidth: number, top: number, height: number) =>
     },
   });
 
-export default GlassTxCanvas;
+// Memoized because a render here is not cheap: react-native-skia stops the
+// canvas's mapper, re-visits the whole node tree on the JS thread, builds a
+// fresh recorder and restarts the mapper. Nothing on this screen should pay
+// that because an unrelated redux slice moved.
+export default React.memo(GlassTxCanvas);
