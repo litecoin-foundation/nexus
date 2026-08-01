@@ -54,3 +54,6 @@ liblnd.a
 jniLibs/
 *.tgz
 .expo
+
+# perf harness capture output
+out/

@@ -33,11 +33,20 @@ import {
   useGlassTxRowModels,
 } from '../components/GlassTxRows';
 import {useSatoshiFontMgr} from '../components/GlassBalanceGraphics';
+import GlassTxListHeader from '../components/GlassTxListHeader';
 import {
   BD_ALL,
   BackdropPart,
+  TB_ALL,
+  TabBarPart,
+  TS_ALL,
+  TabSelPart,
   perfLog,
   setBackdropParts,
+  setFrostLevels,
+  setSearchButtonImpl,
+  setTabBarParts,
+  setTabSelParts,
 } from '../config/perfHarness';
 import {useAppSelector} from '../store/hooks';
 import {txDetailSelector} from '../reducers/transaction';
@@ -49,42 +58,128 @@ import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
 // cost on top of the last, so the janky% delta between two rungs attributes the
 // frame time to that one thing. Rungs are selected at runtime, so the whole
 // ladder runs off a single release build.
+//
+// Trimmed from the original eight after three measured builds. The cut rungs
+// are not lost coverage, they are settled questions:
+//   bare screen      rendered exactly one frame per cycle. The controller is free.
+//   tx list, no skia delta to "sheet only" was -1.3 then +1.4 points, i.e. noise
+//                    both times. A ScrollView over one spacer costs nothing.
+//   chart            was +0 ms once GlassChartTouch's canvas merged into the
+//                    backdrop (26.7 -> 27.0 janky%, p50 25 -> 25 ms).
+// Their content is still mounted, folded into the rung above, so R3 is still
+// the whole screen.
+//
+// R4/R5 are appended rather than inserted so R0-R3 stay comparable with runs
+// taken before they existed. They mount the production title/search header,
+// which no rung covered: the harness mounted GlassTransactionList directly,
+// so the search button's <Canvas> was never priced. Their delta is the whole
+// point — same content, one drawn in Skia and one in native views.
 const RUNGS = [
-  'R0 bare',
-  'R1 sheet only',
-  'R2 tx list, no skia',
-  'R3 tab bar canvas',
-  'R4 rows',
-  'R5 backdrop',
-  'R6 chart',
-  'R7 tab selector',
+  'R0 sheet + list',
+  'R1 tab bar canvas',
+  'R2 backdrop',
+  'R3 chart + tab selector',
+  'R4 + tx header (skia)',
+  'R5 + tx header (native)',
 ];
+// Content level each rung mounts, on the original 0-7 scale that the level>=N
+// checks below are written against. Keeping the old scale means the rung set
+// can be re-cut without touching the tree. 8 = R3 plus the tx-list header.
+const RUNG_LEVELS = [2, 4, 5, 7, 8, 8];
+const RUNG_SEARCH_IMPL = [
+  'native',
+  'native',
+  'native',
+  'native',
+  'skia',
+  'native',
+] as const;
 
-// The R4->R5 step costs +13ms of non-GPU time per frame, so price each element
-// of the backdrop canvas on its own. Leave-one-out against S0, held at the R5
-// content level, so every sub-rung draws the same tree minus one thing.
-const SUB_LADDER = false;
-const SUB_CONTENT_LEVEL = 5;
-const without = (...drop: BackdropPart[]): BackdropPart[] =>
+// A rung can only say "mounting this costs X". Sub-ladders say which pass
+// inside it the X is in: hold the content level fixed and leave one part out at
+// a time, so every sub-rung draws the same tree minus one thing.
+type SubLadder = 'none' | 'backdrop' | 'tabbar' | 'tabsel';
+// Asserted rather than annotated so editing this one line does not make every
+// other branch below unreachable-by-narrowing.
+const SUB_LADDER = 'none' as SubLadder;
+
+const withoutBd = (...drop: BackdropPart[]): BackdropPart[] =>
   BD_ALL.filter(p => !drop.includes(p));
+const withoutTb = (...drop: TabBarPart[]): TabBarPart[] =>
+  TB_ALL.filter(p => !drop.includes(p));
+const withoutTs = (...drop: TabSelPart[]): TabSelPart[] =>
+  TS_ALL.filter(p => !drop.includes(p));
 
-const SUB_RUNGS: {name: string; parts: BackdropPart[]}[] = [
+// The R1->R2 step costs +13 ms of non-GPU time per frame. Held at the backdrop
+// content level.
+const BD_RUNGS: {name: string; parts: BackdropPart[]}[] = [
   // Discarded: the first window after unlock catches a sync-spinner burst that
   // renders ~2500 frames and dilutes janky%.
   {name: 'W warmup', parts: BD_ALL},
   {name: 'S0 all', parts: BD_ALL},
-  {name: 'S1 -filter', parts: without('filter')},
-  {name: 'S2 -gradient', parts: without('gradient')},
-  {name: 'S3 -foldclip', parts: without('foldclip')},
-  {name: 'S4 -balance', parts: without('balance')},
-  {name: 'S5 -capsules', parts: without('shadows', 'accents')},
+  {name: 'S1 -filter', parts: withoutBd('filter')},
+  {name: 'S2 -gradient', parts: withoutBd('gradient')},
+  {name: 'S3 -foldclip', parts: withoutBd('foldclip')},
+  {name: 'S4 -balance', parts: withoutBd('balance')},
+  {name: 'S5 -capsules', parts: withoutBd('shadows', 'accents')},
   {name: 'S6 empty canvas', parts: []},
 ];
 
-const LADDER: string[] = SUB_LADDER ? SUB_RUNGS.map(s => s.name) : RUNGS;
-// The sub-ladder only needs the pure-draw floor; React ordering is already
-// known to cost nothing.
-const MODES: DriveMode[] = SUB_LADDER ? ['worklet'] : ['worklet', 'runOnJS'];
+// GlassTxCanvas measured 8.9 ms/frame, of which ~6.2 ms is rasterisation
+// (setJsiProperty) and ~2.7 ms is the picture rebuild. It is the most expensive
+// canvas on the screen and no rung splits it. Held at the tab-bar content
+// level, with the backdrop deliberately absent so the two canvases don't
+// contend (mounting the backdrop pushed this one 8.0 -> 9.0 ms).
+//
+// T1/T2 bracket the frost: T1 removes all three blur levels, T2 removes one.
+// The gap between them says whether the level count is worth tuning or the
+// whole pass needs replacing.
+const TB_RUNGS: {name: string; parts: TabBarPart[]; frostLevels?: number}[] = [
+  {name: 'W warmup', parts: TB_ALL},
+  {name: 'T0 all', parts: TB_ALL},
+  {name: 'T1 -frost', parts: withoutTb('frost')},
+  {name: 'T2 frost x2', parts: TB_ALL, frostLevels: 2},
+  {name: 'T3 -rows', parts: withoutTb('rows')},
+  {name: 'T4 -glass', parts: withoutTb('glass')},
+  {name: 'T5 -chrome', parts: withoutTb('chrome')},
+  {name: 'T6 -barshadow', parts: withoutTb('barshadow')},
+  {name: 'T7 empty canvas', parts: []},
+];
+
+// PERFORMANCE.md's #1 backlog item: mounting GlassTabSelector costs ~8 points
+// of jank and nobody knows why. Converting its Yoga-dirtying props to transform
+// changed nothing, so the cost is in its ~48 views, its labels or its mappers.
+// Built additively rather than leave-one-out, because the question is "which
+// part is it", not "does removing one help".
+const TS_RUNGS: {name: string; parts: TabSelPart[]}[] = [
+  {name: 'W warmup', parts: TS_ALL},
+  {name: 'U0 empty overlay', parts: []},
+  {name: 'U1 +hit targets', parts: ['hittargets']},
+  {name: 'U2 +icons', parts: ['hittargets', 'icons']},
+  {name: 'U3 +labels', parts: ['hittargets', 'icons', 'labels']},
+  {name: 'U4 +geometry (all)', parts: TS_ALL},
+  {name: 'U5 all -labels', parts: withoutTs('labels')},
+];
+
+const SUB_RUNG_NAMES =
+  SUB_LADDER === 'backdrop'
+    ? BD_RUNGS.map(s => s.name)
+    : SUB_LADDER === 'tabbar'
+      ? TB_RUNGS.map(s => s.name)
+      : SUB_LADDER === 'tabsel'
+        ? TS_RUNGS.map(s => s.name)
+        : [];
+// Content level each sub-ladder holds. The backdrop needs its own canvas
+// mounted (5); the tab bar canvas arrives with rows at 4.
+const SUB_CONTENT_LEVEL =
+  SUB_LADDER === 'backdrop' ? 5 : SUB_LADDER === 'tabsel' ? 7 : 4;
+
+const LADDER: string[] = SUB_LADDER === 'none' ? RUNGS : SUB_RUNG_NAMES;
+// Both modes on the main ladder: worklet and runOnJS have agreed at every rung
+// across three builds, and that agreement is the control that keeps proving the
+// React commit costs nothing. A sub-ladder only needs the pure-draw floor.
+const MODES: DriveMode[] =
+  SUB_LADDER === 'none' ? ['worklet', 'runOnJS'] : ['worklet'];
 
 // Production commits a fold from the UI thread first (useNewMainAnims springs,
 // then runOnJS settles), so a plain JS timer would invert the hop order.
@@ -125,11 +220,19 @@ const PerfHarness: React.FC = () => {
 
   const [folded, setFolded] = useState(true);
   const [rung, setRung] = useState(0);
-  // Set before children render, so bdOn() in the backdrop picks it up.
-  const level = SUB_LADDER ? SUB_CONTENT_LEVEL : rung;
-  if (SUB_LADDER) {
-    setBackdropParts(SUB_RUNGS[rung].parts);
+  // Set before children render, so bdOn()/tbOn() pick it up on this pass.
+  const level = SUB_LADDER === 'none' ? RUNG_LEVELS[rung] : SUB_CONTENT_LEVEL;
+  if (SUB_LADDER === 'backdrop') {
+    setBackdropParts(BD_RUNGS[rung].parts);
+  } else if (SUB_LADDER === 'tabbar') {
+    setTabBarParts(TB_RUNGS[rung].parts);
+    setFrostLevels(TB_RUNGS[rung].frostLevels ?? null);
+  } else if (SUB_LADDER === 'tabsel') {
+    setTabSelParts(TS_RUNGS[rung].parts);
+  } else {
+    setSearchButtonImpl(RUNG_SEARCH_IMPL[rung]);
   }
+  const searchImpl = SUB_LADDER === 'none' ? RUNG_SEARCH_IMPL[rung] : 'native';
   const [cycle, setCycle] = useState(0);
   const [mode, setMode] = useState<DriveMode>('worklet');
 
@@ -173,7 +276,9 @@ const PerfHarness: React.FC = () => {
         mainSheetsTranslationY.value > mid
           ? UNFOLD_SHEET_POINT
           : FOLD_SHEET_POINT;
-      mainSheetsTranslationY.value = withTiming(target, {duration: SHEET_FOLD_ANIM_MS});
+      mainSheetsTranslationY.value = withTiming(target, {
+        duration: SHEET_FOLD_ANIM_MS,
+      });
       mainSheetsTranslationYStart.value = target;
     })();
   }, [
@@ -266,22 +371,47 @@ const PerfHarness: React.FC = () => {
     };
   }, [ready, rung, mode, drive, txRowModels.models.length]);
 
-  const sheetContent =
-    level >= 2 ? (
-      <GlassTransactionList
-        onPress={noop}
-        rows={txRows}
-        rowModels={txRowModels}
-        folded={folded}
-        foldUnfold={foldUnfold}
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
-        scrollY={txListScrollY}
-        listHeaderOffset={txListHeaderOffset}
-      />
-    ) : (
-      <View style={styles.stubContent} />
-    );
+  // Memoized on `folded` exactly as NewMain's TxListComponentMemo is, so the
+  // header re-renders once per fold here too — which is what makes the R3->R4
+  // step measure the search canvas's per-fold re-record rather than 20 of them.
+  const sheetContent = useMemo(
+    () =>
+      level >= 2 ? (
+        <View>
+          {level >= 8 ? (
+            // keyed on the impl: the header is memoized and reads its impl
+            // from module state, so R4 -> R5 has to remount it
+            <GlassTxListHeader key={searchImpl} onSearch={noop} />
+          ) : null}
+          <GlassTransactionList
+            onPress={noop}
+            rows={txRows}
+            rowModels={txRowModels}
+            folded={folded}
+            foldUnfold={foldUnfold}
+            mainSheetsTranslationY={mainSheetsTranslationY}
+            mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+            scrollY={txListScrollY}
+            listHeaderOffset={txListHeaderOffset}
+          />
+        </View>
+      ) : (
+        <View style={styles.stubContent} />
+      ),
+    [
+      level,
+      searchImpl,
+      txRows,
+      txRowModels,
+      folded,
+      foldUnfold,
+      mainSheetsTranslationY,
+      mainSheetsTranslationYStart,
+      txListScrollY,
+      txListHeaderOffset,
+      styles.stubContent,
+    ],
+  );
 
   return (
     <CardUnderlayProvider>
@@ -333,7 +463,10 @@ const PerfHarness: React.FC = () => {
         ) : null}
 
         {level >= 3 ? (
+          // Remounted per rung so a leave-one-out set is picked up even
+          // though the parts are module state, not props.
           <LiquidGlassTabBar
+            key={`tb${rung}`}
             activeIndex={0}
             onSelectSection={noop}
             contentActivity={tabBarActivity}
@@ -354,6 +487,9 @@ const PerfHarness: React.FC = () => {
           <Text style={styles.hudText}>
             {`${LADDER[rung]} | ${mode} | ${cycle}/${CYCLES}`}
           </Text>
+          {SUB_LADDER !== 'none' ? (
+            <Text style={styles.hudText}>{`sub: ${SUB_LADDER}`}</Text>
+          ) : null}
           <Text style={styles.hudText}>
             {ready ? `rows ${txRowModels.models.length}` : 'waiting for fonts'}
           </Text>
