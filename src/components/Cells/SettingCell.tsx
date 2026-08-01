@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {TouchableOpacity, StyleSheet, Image} from 'react-native';
 
-import Switch from '../Buttons/Switch';
+import GlassSwitch from '../Buttons/GlassSwitch';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -52,10 +52,11 @@ const SettingCell: React.FC<Props> = props => {
         <Image source={require('../../assets/images/forward.png')} />
       ) : null}
       {switchEnabled ? (
-        <Switch
+        <GlassSwitch
           initialValue={switchValue}
           onPress={fakeSwitch ? onPress : handleSwitch}
           fakeSwitch={fakeSwitch}
+          scheme="light"
         />
       ) : null}
     </TouchableOpacity>
