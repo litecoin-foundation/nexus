@@ -233,17 +233,6 @@ const Settings: React.FC<Props> = props => {
         forward: true,
         onPress: () => navigation.navigate('ChangePincode', {type: null}),
       },
-      ...(__DEV__
-        ? [
-            {
-              id: 'mbsx',
-              type: 'cell',
-              textKey: 'Swaps',
-              forward: true,
-              onPress: () => navigation.navigate('Mbsx'),
-            },
-          ]
-        : []),
       {
         id: 'import-key',
         type: 'cell',

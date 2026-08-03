@@ -135,7 +135,7 @@ const getAddressInfo = (address: string): AddressInfo => {
 
   // check and handle bech32 address
   const prefix = address.substring(0, 4).toLowerCase();
-  if (prefix === 'ltc1' || prefix === 'tltc') {
+  if (prefix === 'ltc1' || prefix === 'tltc' || prefix === 'rltc') {
     if (address.length >= 15 && address.length <= 92) {
       return parseBech32(address);
     } else {
@@ -145,7 +145,11 @@ const getAddressInfo = (address: string): AddressInfo => {
 
   // check and handle mweb address
   const mwebPrefix = address.substring(0, 6).toLowerCase();
-  if (mwebPrefix === 'ltcmwe' || mwebPrefix === 'tmweb1') {
+  if (
+    mwebPrefix === 'ltcmwe' ||
+    mwebPrefix === 'tmweb1' ||
+    mwebPrefix === 'rmweb1'
+  ) {
     return parseMweb(address);
   }
 

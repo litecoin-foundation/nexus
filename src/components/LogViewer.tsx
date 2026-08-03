@@ -15,6 +15,7 @@ import TranslateText from './TranslateText';
 import NewButton from './Buttons/NewButton';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {logDir} from '../utils/network';
 
 interface LogViewerProps {
   maxLines?: number;
@@ -40,7 +41,7 @@ const LogViewer: React.FC<LogViewerProps> = ({
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   const logFilePath = RNFS?.DocumentDirectoryPath
-    ? `${RNFS.DocumentDirectoryPath}/lndltc/logs/litecoin/mainnet/lnd.log`
+    ? `${logDir(RNFS.DocumentDirectoryPath)}/lnd.log`
     : '';
 
   const readLogFile = async () => {

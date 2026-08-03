@@ -16,6 +16,11 @@ const defaultConfig = getDefaultConfig(__dirname);
 const config = {
   resolver: {
     unstable_enablePackageExports: true,
+    // The blockList below hides the linked module's own node_modules, and metro
+    // resolves relative to the importing file, so anything its code reaches for
+    // must be mapped back here. @babel/runtime is needed because this app's
+    // babel transform rewrites the module's `export *` through a runtime
+    // helper — the import does not appear in the file on disk.
     extraNodeModules: {
       react: path.resolve(__dirname, 'node_modules/react'),
       'react-native': path.resolve(__dirname, 'node_modules/react-native'),
@@ -23,12 +28,15 @@ const config = {
         __dirname,
         'node_modules/react-native-nitro-modules',
       ),
+      '@babel/runtime': path.resolve(__dirname, 'node_modules/@babel/runtime'),
     },
-    // The symlinked module ships its own react/react-native; a second copy
-    // resolves fine and then fails at runtime.
+    // The symlinked module tree carries its own copies of react, react-native
+    // and (under example/) react-navigation. A second copy resolves fine and
+    // then fails at runtime with duplicate contexts and hook-order errors.
     blockList: [
       defaultConfig.resolver.blockList,
-      new RegExp(`${MBSX}/node_modules/(react|react-native)/.*`),
+      new RegExp(`${MBSX}/example/.*`),
+      new RegExp(`${MBSX}/node_modules/.*`),
     ],
   },
   watchFolders: [MBSX],

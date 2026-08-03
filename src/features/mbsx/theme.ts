@@ -133,5 +133,39 @@ export const getMbsxStyles = (screenHeight: number) => {
       textAlign: 'center',
       paddingVertical: spacing.sm,
     },
+    messageRow: {
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.md,
+      borderBottomWidth: 1,
+      borderColor: colors.border,
+    },
+    messages: {
+      flex: 1,
+      alignSelf: 'stretch',
+    },
+    chipRow: {
+      flexDirection: 'row',
+      marginBottom: spacing.md,
+    },
+    chip: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginRight: spacing.sm,
+    },
+    chipSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    chipText: {
+      fontSize: font.md,
+      color: colors.text,
+    },
+    chipTextSelected: {
+      color: colors.white,
+      fontWeight: '700',
+    },
   });
 };

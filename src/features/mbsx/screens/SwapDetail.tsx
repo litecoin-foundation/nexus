@@ -1,14 +1,14 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-import {StackScreenProps} from '@react-navigation/stack';
+import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {getMbsxStyles} from '../theme';
 import {BUSY, acceptSwap, getSwapInfo, onMessage} from '../adapter';
-import type {MbsxStackParamList, SwapDetails, SwapEvent} from '../types';
+import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
 
-type Props = StackScreenProps<MbsxStackParamList, 'SwapDetail'>;
+type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapDetail'>;
 
 const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   const {swapId} = route.params;

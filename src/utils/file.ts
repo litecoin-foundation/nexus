@@ -1,5 +1,7 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
+import {chainDir} from './network';
+
 const lndDir = RNFS.DocumentDirectoryPath;
 
 // tools
@@ -10,7 +12,7 @@ export const fileExists = async (path: string) => {
 
 // wallet database
 export const deleteWalletDB = async () => {
-  const dbPath = `${lndDir}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
+  const dbPath = `${chainDir(lndDir)}/wallet.db`;
   try {
     // do not error out when file does not exist
     if ((await fileExists(dbPath)) === false) {
@@ -25,7 +27,7 @@ export const deleteWalletDB = async () => {
 
 // delete macaroon files
 export const deleteMacaroonFiles = async () => {
-  const macaroonDir = `${lndDir}/lndltc/data/chain/litecoin/mainnet`;
+  const macaroonDir = chainDir(lndDir);
   const macaroonFiles = [
     'admin.macaroon',
     'chainnotifier.macaroon',
@@ -65,11 +67,11 @@ export const deleteLNDDir = async () => {
 // delete neutrino-specific state (filter headers, block headers, neutrino db)
 // plus any leftover presync cache parts and mainnet.zip from a prior bootstrap
 export const deleteNeutrinoFiles = async () => {
-  const chainDir = `${lndDir}/lndltc/data/chain/litecoin/mainnet`;
+  const dir = chainDir(lndDir);
   const paths = [
-    `${chainDir}/neutrino.db`,
-    `${chainDir}/block_headers.bin`,
-    `${chainDir}/reg_filter_headers.bin`,
+    `${dir}/neutrino.db`,
+    `${dir}/block_headers.bin`,
+    `${dir}/reg_filter_headers.bin`,
     `${lndDir}/mainnet.zip`,
     ...Array.from({length: 10}, (_, i) => `${lndDir}/cache.z0${i}`),
   ];

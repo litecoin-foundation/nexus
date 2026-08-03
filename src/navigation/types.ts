@@ -45,6 +45,7 @@ export type MainStackParamList = {
 export type NewWalletStackParamList = {
   Main: NavigatorScreenParams<MainStackParamList>;
   SettingsStack: undefined;
+  MbsxStack: undefined;
   NexusShopStack: undefined;
   AlertsStack: undefined;
   Scan: {
@@ -120,7 +121,6 @@ export type SettingsStackParamList = {
   Explorer: undefined;
   Language: undefined;
   Products: undefined;
-  Mbsx: undefined;
   Scan: {
     returnRoute: string;
     returnScreen?: string;

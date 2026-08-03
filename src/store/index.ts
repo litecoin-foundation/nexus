@@ -21,6 +21,9 @@ const persistConfig = {
   key: 'root',
   storage,
   timeout: 0,
+  // mbsx holds a live message log and a running flag that describes the native
+  // core right now. Rehydrating either would report a core that is not running.
+  blacklist: ['mbsx'],
 };
 
 // uses Redux Action Logger (until devtools gets redux support)

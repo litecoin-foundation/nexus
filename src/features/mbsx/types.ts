@@ -39,7 +39,13 @@ export type MbsxSettings = {
   bridge_port: number;
 };
 
-export type MbsxStackParamList = {
+// getInfo is declared as AnyMap in the spec, which cannot describe a record.
+export type MbsxInfo = {
+  connected: boolean;
+  coins: Record<string, {chain_height: number}>;
+};
+
+export type MbsxDrawerParamList = {
   CreateSwap: undefined;
   SwapList: undefined;
   SwapDetail: {swapId: string};

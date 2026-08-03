@@ -14,6 +14,7 @@ import {setDeviceNotificationToken} from './settings';
 import {generateMnemonic} from '../utils/aezeed';
 import {setItem} from '../utils/keychain';
 import {sleep} from '../utils/poll';
+import {chainDir, isRegtest} from '../utils/network';
 import {fetchResolve} from '../utils/tor';
 
 // types
@@ -209,8 +210,9 @@ const cacheParts = [
 export const getNeutrinoCache = (): AppThunk => async (dispatch, getState) => {
   const {task, lastLoadedCachePart} = getState().onboarding!;
 
-  // Presync is only needed for neutrino backend
-  if (getState().settings.litecoinBackend === 'electrum') {
+  // Presync is only needed for neutrino backend. The cache is mainnet-only, so
+  // it must never be fetched on regtest even if neutrino is selected.
+  if (getState().settings.litecoinBackend === 'electrum' || isRegtest()) {
     dispatch(getNeutrinoCacheSuccessAction());
     return;
   }
@@ -342,9 +344,9 @@ const extractNeutrinoCache = (): AppThunk => async dispatch => {
   try {
     console.log('starting extraction!');
     // delete any preexisting filter files if any exists
-    const blkHeaderPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/block_headers.bin`;
-    const neutrinodbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/neutrino.db`;
-    const filterHeaderPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/reg_filter_headers.bin`;
+    const blkHeaderPath = `${chainDir(RNFS.DocumentDirectoryPath)}/block_headers.bin`;
+    const neutrinodbPath = `${chainDir(RNFS.DocumentDirectoryPath)}/neutrino.db`;
+    const filterHeaderPath = `${chainDir(RNFS.DocumentDirectoryPath)}/reg_filter_headers.bin`;
     if (await fileExists(blkHeaderPath)) {
       await RNFS.unlink(blkHeaderPath);
     }
