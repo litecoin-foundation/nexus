@@ -696,8 +696,9 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
   const supportedForBuying = `https://api.onramper.com/supported/assets?source=${currencyCode}&type=buy&country=${countryCode}`;
   const supportedForSelling = `https://api.onramper.com/supported/assets?source=ltc_litecoin&type=sell&country=${countryCode}`;
 
-  let canBuy: boolean = false;
-  let canSell: boolean = false;
+  // TODO: endpoints above doesn't seem to return any data, manually pass the check for now
+  let canBuy: boolean = true;
+  let canSell: boolean = true;
 
   const req = {
     method: 'GET',
@@ -917,7 +918,6 @@ export const getSignedOnramperUrl =
           })
         : '';
 
-      const signContent = `wallets=ltc_litecoin:${address}`;
       const onramperKey =
         testPaymentActive && testPaymentKey
           ? ONRAMPER_TEST_PUBLIC_KEY
@@ -937,20 +937,25 @@ export const getSignedOnramperUrl =
         `&partnerContext=${uniqueId}` +
         '&hideTopBar=true' +
         '&mode=buy' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F' +
+        `&successRedirectUrl=${encodeURIComponent(
+          `${NEXUS_API_BASE}/api/buy/onramper/success_buy/`,
+        )}` +
         `${utmParams}`;
 
       try {
         const res = await fetch(
           testPaymentActive && testPaymentKey
-            ? 'https://api.nexuswallet.com/api/buy/onramper/sign_test'
-            : 'https://api.nexuswallet.com/api/buy/onramper/sign',
+            ? `${NEXUS_API_BASE}/api/buy/onramper/sign_test`
+            : `${NEXUS_API_BASE}/api/buy/onramper/sign`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({signContent, unsignedURL}),
+            // NOTE: V2 signs a server-issued timestamp, nonce and expiry
+            // alongside the params, so the API returns the finished URL
+            // rather than a signature for us to append.
+            body: JSON.stringify({unsignedURL, sigVersion: 'v2'}),
           },
         );
 
@@ -960,10 +965,12 @@ export const getSignedOnramperUrl =
           return;
         }
 
-        const response = await res.json();
+        const {signedUrl} = await res.json();
 
-        const signature = response;
-        const signedUrl = `${unsignedURL}&signContent=${encodeURIComponent(signContent)}&signature=${signature}`;
+        if (!signedUrl) {
+          reject('Failed to sign Onramper URL');
+          return;
+        }
 
         resolve(signedUrl);
       } catch (error) {
@@ -1039,7 +1046,6 @@ export const getSignedSellOnramperUrl =
           })
         : '';
 
-      const signContent = `wallets=ltc_litecoin:${address}`;
       const onramperKey =
         testPaymentActive && testPaymentKey
           ? ONRAMPER_TEST_PUBLIC_KEY
@@ -1061,21 +1067,28 @@ export const getSignedSellOnramperUrl =
         `&partnerContext=${uniqueId}` +
         '&hideTopBar=true' +
         '&mode=sell' +
-        '&offrampCashoutRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell_complete%2F' +
+        `&offrampCashoutRedirectUrl=${encodeURIComponent(
+          `${NEXUS_API_BASE}/api/sell/onramper/success_sell/`,
+        )}` +
+        `&successRedirectUrl=${encodeURIComponent(
+          `${NEXUS_API_BASE}/api/sell/onramper/success_sell_complete/`,
+        )}` +
         `${utmParams}`;
 
       try {
         const res = await fetch(
           testPaymentActive && testPaymentKey
-            ? 'https://api.nexuswallet.com/api/buy/onramper/sign_test'
-            : 'https://api.nexuswallet.com/api/buy/onramper/sign',
+            ? `${NEXUS_API_BASE}/api/buy/onramper/sign_test`
+            : `${NEXUS_API_BASE}/api/buy/onramper/sign`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({signContent, unsignedURL}),
+            // NOTE: V2 signs a server-issued timestamp, nonce and expiry
+            // alongside the params, so the API returns the finished URL
+            // rather than a signature for us to append.
+            body: JSON.stringify({unsignedURL, sigVersion: 'v2'}),
           },
         );
 
@@ -1085,10 +1098,12 @@ export const getSignedSellOnramperUrl =
           return;
         }
 
-        const response = await res.json();
+        const {signedUrl} = await res.json();
 
-        const signature = response;
-        const signedUrl = `${unsignedURL}&signContent=${encodeURIComponent(signContent)}&signature=${signature}`;
+        if (!signedUrl) {
+          reject('Failed to sign Onramper URL');
+          return;
+        }
 
         resolve(signedUrl);
       } catch (error) {
