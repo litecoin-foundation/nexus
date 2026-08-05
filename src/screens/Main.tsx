@@ -29,6 +29,9 @@ import {StackNavigationOptions} from '@react-navigation/stack';
 
 import NewAmountView from '../components/NewAmountView';
 import LineChart from '../components/Chart/Chart';
+import MainIntroOverlay, {
+  consumeMainIntro,
+} from '../components/MainIntroOverlay';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import DashboardButton from '../components/Buttons/DashboardButton';
 import Receive from '../components/Cards/Receive';
@@ -162,7 +165,10 @@ const Main: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_HEIGHT, SCREEN_WIDTH],
+  );
 
   const isInternetReachable = useAppSelector(
     state => state.info!.isInternetReachable,
@@ -194,6 +200,10 @@ const Main: React.FC<Props> = props => {
   const pinModalAction = useRef<string>('view-seed-auth');
   const [loading, setLoading] = useState(false);
   const [triggerLester, setTriggerLester] = useState(0);
+  const [introDone, setIntroDone] = useState(
+    () => !consumeMainIntro() || deeplinkSet,
+  );
+  const finishIntro = useCallback(() => setIntroDone(true), []);
 
   // Recovery-sync alert: shown while lnd is rescanning the chain to restore a
   // wallet. recoveryRestarted distinguishes a fresh recovery from one that was
@@ -430,6 +440,8 @@ const Main: React.FC<Props> = props => {
   // Deeplink handler
   useEffect(() => {
     if (deeplinkSet) {
+      // Pending deep links can unfold Main or navigate away immediately.
+      setIntroDone(true);
       if (uri.startsWith('litecoin:')) {
         setBottomSheetFolded(false);
         setActiveTab(4);
@@ -570,24 +582,22 @@ const Main: React.FC<Props> = props => {
     [activeTab, isInternetReachable, navigation, styles.headerContainer],
   );
 
-  const TxListComponentMemo = (
-    <TxListComponent
-      selectTransaction={selectTransaction}
-      setTxDetailModalOpened={setTxDetailModalOpened}
-      foldUnfoldBottomSheet={foldUnfoldBottomSheet}
-      isBottomSheetFolded={isBottomSheetFolded}
-      navigation={navigation}
-      styles={styles}
-      mainSheetsTranslationY={mainSheetsTranslationY}
-      mainSheetsTranslationYStart={mainSheetsTranslationYStart}
-    />
-  );
-
   const BottomSheetMemo = useMemo(
     () => (
       <BottomSheet
         headerComponent={HeaderComponent}
-        txViewComponent={TxListComponentMemo}
+        txViewComponent={
+          <TxListComponent
+            selectTransaction={selectTransaction}
+            setTxDetailModalOpened={setTxDetailModalOpened}
+            foldUnfoldBottomSheet={foldUnfoldBottomSheet}
+            isBottomSheetFolded={isBottomSheetFolded}
+            navigation={navigation}
+            styles={styles}
+            mainSheetsTranslationY={mainSheetsTranslationY}
+            mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+          />
+        }
         mainSheetsTranslationY={mainSheetsTranslationY}
         mainSheetsTranslationYStart={mainSheetsTranslationYStart}
         folded={isBottomSheetFolded}
@@ -610,7 +620,6 @@ const Main: React.FC<Props> = props => {
     ),
     [
       HeaderComponent,
-      TxListComponentMemo,
       mainSheetsTranslationY,
       mainSheetsTranslationYStart,
       isBottomSheetFolded,
@@ -618,6 +627,7 @@ const Main: React.FC<Props> = props => {
       activeTab,
       route,
       navigation,
+      styles,
     ],
   );
 
@@ -652,8 +662,12 @@ const Main: React.FC<Props> = props => {
 
       {BottomSheetMemo}
 
+      {!introDone && (
+        <MainIntroOverlay online={!!isInternetReachable} onDone={finishIntro} />
+      )}
+
       <PlasmaModal
-        isOpened={isTxDetailModalOpened}
+        isOpened={isTxDetailModalOpened && introDone}
         close={() => {
           setTxDetailModalOpened(false);
         }}
@@ -693,7 +707,7 @@ const Main: React.FC<Props> = props => {
       />
 
       <LiquidGlassWalletModal
-        isOpened={isWalletsModalOpened}
+        isOpened={isWalletsModalOpened && introDone}
         close={() => {
           setWalletsModalOpened(false);
         }}
@@ -726,7 +740,7 @@ const Main: React.FC<Props> = props => {
       />
 
       <PopUpModal
-        isVisible={isPopUpModalOpened}
+        isVisible={isPopUpModalOpened && introDone}
         title={openedNotification?.title || 'Nexus Wallet'}
         text={
           openedNotification?.body ||
@@ -743,6 +757,7 @@ const Main: React.FC<Props> = props => {
 
       <ScheduledPopUpModal
         blocked={
+          !introDone ||
           isTxDetailModalOpened ||
           isWalletsModalOpened ||
           isPinModalOpened ||
@@ -759,7 +774,7 @@ const Main: React.FC<Props> = props => {
       />
 
       <LiquidGlassAlertModal
-        isVisible={showRecoveryAlert}
+        isVisible={showRecoveryAlert && introDone}
         close={() => setRecoveryAlertDismissed(true)}
         titleTextKey={
           recoveryRestarted ? 'recovery_restarted_title' : 'recovery_sync_title'

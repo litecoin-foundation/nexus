@@ -13,6 +13,13 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useAppSelector} from '../store/hooks';
 
 import {ScreenSizeContext} from '../context/screenSize';
+import {
+  getMainSheetPoints,
+  MAIN_BACKGROUND_COLOR,
+  MAIN_OFFLINE_BACKGROUND_COLOR,
+  MAIN_SHEET_BACKGROUND_COLOR,
+  MAIN_TOP_FOLD_RADIUS_RATIO,
+} from './mainTransition';
 
 interface Props {
   isWalletsModalOpened: boolean;
@@ -29,12 +36,13 @@ export function useMainAnims(props: Props) {
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
 
-  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
-  const OPEN_SNAP_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const CLOSED_SNAP_POINT = SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF;
+  const {OPEN_SHEET_POINT, FOLD_SHEET_POINT} = getMainSheetPoints(
+    SCREEN_HEIGHT,
+    insets.top,
+  );
 
-  const mainSheetsTranslationY = useSharedValue(CLOSED_SNAP_POINT);
-  const mainSheetsTranslationYStart = useSharedValue(CLOSED_SNAP_POINT);
+  const mainSheetsTranslationY = useSharedValue(FOLD_SHEET_POINT);
+  const mainSheetsTranslationYStart = useSharedValue(FOLD_SHEET_POINT);
   const buttonOpacity = useSharedValue(0);
   const walletButtonOpacity = useSharedValue(0);
   const walletButtonAnimDuration = 200;
@@ -50,7 +58,7 @@ export function useMainAnims(props: Props) {
     return {
       opacity: interpolate(
         mainSheetsTranslationY.value,
-        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
+        [OPEN_SHEET_POINT, FOLD_SHEET_POINT],
         [0, 1],
       ),
     };
@@ -60,8 +68,13 @@ export function useMainAnims(props: Props) {
     return {
       backgroundColor: interpolateColor(
         mainSheetsTranslationY.value,
-        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [isInternetReachable ? '#1162E6' : '#F36F56', '#f7f7f7'],
+        [OPEN_SHEET_POINT, FOLD_SHEET_POINT],
+        [
+          isInternetReachable
+            ? MAIN_BACKGROUND_COLOR
+            : MAIN_OFFLINE_BACKGROUND_COLOR,
+          MAIN_SHEET_BACKGROUND_COLOR,
+        ],
       ),
     };
   });
@@ -71,13 +84,13 @@ export function useMainAnims(props: Props) {
       height: mainSheetsTranslationY.value,
       borderBottomLeftRadius: interpolate(
         mainSheetsTranslationY.value,
-        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [0, SCREEN_HEIGHT * 0.05],
+        [OPEN_SHEET_POINT, FOLD_SHEET_POINT],
+        [0, SCREEN_HEIGHT * MAIN_TOP_FOLD_RADIUS_RATIO],
       ),
       borderBottomRightRadius: interpolate(
         mainSheetsTranslationY.value,
-        [OPEN_SNAP_POINT, CLOSED_SNAP_POINT],
-        [1, SCREEN_HEIGHT * 0.05],
+        [OPEN_SHEET_POINT, FOLD_SHEET_POINT],
+        [1, SCREEN_HEIGHT * MAIN_TOP_FOLD_RADIUS_RATIO],
       ),
     };
   });
@@ -150,7 +163,7 @@ export function useMainAnims(props: Props) {
         buttonOpacity.value = 0;
         walletButtonOpacity.value = 0;
       };
-    }, []),
+    }, [buttonOpacity, walletButtonOpacity]),
   );
 
   return {

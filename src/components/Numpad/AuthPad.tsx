@@ -6,34 +6,50 @@ import React, {
   useLayoutEffect,
   useCallback,
 } from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, Platform} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated';
 
 import BiometricButton from './BiometricButton';
 import {inputValue, backspaceValue, clearValues} from '../../reducers/authpad';
 import {unlockWalletWithBiometric} from '../../reducers/authentication';
 import {authenticate} from '../../utils/biometric';
-import PasscodeInput from '../PasscodeInput';
+import PasscodeInput, {PasscodeInputRef, UnlockPhase} from '../PasscodeInput';
 import PadGrid from './PadGrid';
 import BuyButton from './BuyButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {
+  getMainSheetPoints,
+  MAIN_SHEET_ANIM_MS,
+  MAIN_SHEET_BACKGROUND_COLOR,
+} from '../../animations/mainTransition';
 
 const MAX_LOGIN_ATTEMPTS = 10;
 const TIME_LOCK_IN_SEC = 3600;
 const DAY_LOCK_IN_SEC = 86400;
+const SHEET_HEIGHT_RATIO = 0.65;
+
+const OUTRO_CONTENT_MS = 250;
+const OUTRO_SLIDE_DELAY_MS = 150;
 
 interface Props {
   handleValidationFailure: () => void;
   handleValidationSuccess: () => void;
   handleBiometricPress?: () => void;
   keychainPincodeState?: string | null;
-}
-
-interface PasscodeInputRef {
-  playIncorrectAnimation: () => void;
+  unlockPhase?: UnlockPhase;
+  onOutroComplete?: () => void;
 }
 
 const AuthPad: React.FC<Props> = props => {
@@ -42,9 +58,12 @@ const AuthPad: React.FC<Props> = props => {
     handleValidationSuccess,
     handleBiometricPress,
     keychainPincodeState,
+    unlockPhase = 'idle',
+    onOutroComplete,
   } = props;
 
   const {t} = useTranslation('onboarding');
+  const unlocking = unlockPhase !== 'idle';
 
   const dispatch = useAppDispatch();
   const pin = useAppSelector(state => state.authpad.pin);
@@ -61,14 +80,55 @@ const AuthPad: React.FC<Props> = props => {
 
   const passcodeInputRef = useRef<PasscodeInputRef>(null);
 
+  const insets = useSafeAreaInsets();
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    props.unlockPhase !== undefined,
+  );
 
-  // clear all inputs in AuthPad on initial render
+  const {FOLD_SHEET_POINT} = getMainSheetPoints(SCREEN_HEIGHT, insets.top);
+  const padSheetTop = SCREEN_HEIGHT * (1 - SHEET_HEIGHT_RATIO);
+  // CustomSafeAreaView raises the auth sheet by the bottom inset on Android.
+  const sheetSlideDistance =
+    FOLD_SHEET_POINT -
+    padSheetTop +
+    (Platform.OS === 'android' ? insets.bottom : 0);
+
+  const contentOut = useSharedValue(0);
+  const sheetSlide = useSharedValue(0);
+
   useEffect(() => {
-    dispatch(clearValues());
-  }, [dispatch]);
+    if (unlockPhase !== 'outro') {
+      return;
+    }
+
+    contentOut.value = withTiming(1, {
+      duration: OUTRO_CONTENT_MS,
+      easing: Easing.in(Easing.quad),
+    });
+    sheetSlide.value = withDelay(
+      OUTRO_SLIDE_DELAY_MS,
+      withTiming(1, {duration: MAIN_SHEET_ANIM_MS}, finished => {
+        if (finished && onOutroComplete) {
+          runOnJS(onOutroComplete)();
+        }
+      }),
+    );
+  }, [unlockPhase, contentOut, sheetSlide, onOutroComplete]);
+
+  const dissolveStyle = useAnimatedStyle(() => ({
+    opacity: 1 - contentOut.value,
+  }));
+  const padSinkStyle = useAnimatedStyle(() => ({
+    opacity: 1 - contentOut.value,
+    transform: [{translateY: contentOut.value * SCREEN_HEIGHT * 0.03}],
+  }));
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: sheetSlide.value * sheetSlideDistance}],
+  }));
 
   useEffect(() => {
     return function cleanup() {
@@ -77,6 +137,16 @@ const AuthPad: React.FC<Props> = props => {
   }, [dispatch]);
 
   const [pinInactive, setPinInactive] = useState(false);
+
+  // Reset both input and its disabled latch on mount, and if the unlock
+  // watchdog returns control to the user.
+  useEffect(() => {
+    if (unlockPhase === 'idle') {
+      dispatch(clearValues());
+      setPinInactive(false);
+    }
+  }, [unlockPhase, dispatch]);
+
   // handles when AuthPad inputs are filled
   useEffect(() => {
     if (pin.length === 6) {
@@ -175,13 +245,14 @@ const AuthPad: React.FC<Props> = props => {
     setStatus(getStatus());
   }, [getStatus]);
 
+  const padDisabled = pinInactive || unlocking;
   const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'];
 
   const buttons = values.map(value => {
     if (value === '.') {
       return (
         <BiometricButton
-          disabled={pinInactive}
+          disabled={padDisabled}
           key="biometric-button-key"
           onPress={async () => {
             if (handleBiometricPress) {
@@ -197,7 +268,7 @@ const AuthPad: React.FC<Props> = props => {
     if (value === '⌫') {
       return (
         <BuyButton
-          disabled={pinInactive}
+          disabled={padDisabled}
           key="back-arrow-button-key"
           value={value}
           onPress={() => handlePress(value)}
@@ -207,7 +278,7 @@ const AuthPad: React.FC<Props> = props => {
     }
     return (
       <BuyButton
-        disabled={pinInactive}
+        disabled={padDisabled}
         key={value}
         value={value}
         onPress={() => handlePress(value)}
@@ -220,40 +291,51 @@ const AuthPad: React.FC<Props> = props => {
   );
 
   return (
-    <View style={styles.bottomSheet}>
-      <TranslateText
-        textKey={'enter_pin'}
-        domain={'onboarding'}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-        maxLengthInPixels={SCREEN_WIDTH}
-        textStyle={styles.bottomSheetTitle}
-        numberOfLines={1}
-      />
-      {RenderStatusText}
+    <Animated.View style={[styles.bottomSheet, sheetStyle]}>
+      <Animated.View style={dissolveStyle}>
+        <TranslateText
+          textKey={'enter_pin'}
+          domain={'onboarding'}
+          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          maxLengthInPixels={SCREEN_WIDTH}
+          textStyle={styles.bottomSheetTitle}
+          numberOfLines={1}
+        />
+        {RenderStatusText}
+      </Animated.View>
       <View style={styles.bottomSheetSubContainer}>
         <PasscodeInput
           pinInactive={pinInactive}
           dotsLength={6}
           activeDotIndex={pin.length}
+          unlockPhase={unlockPhase}
           ref={passcodeInputRef}
         />
-        <PadGrid />
-        <View style={styles.buttonContainer}>{buttons}</View>
+        <Animated.View style={padSinkStyle}>
+          <PadGrid />
+          <View style={styles.buttonContainer}>{buttons}</View>
+        </Animated.View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  usesMainTransition: boolean,
+) =>
   StyleSheet.create({
     bottomSheet: {
       position: 'absolute',
       bottom: 0,
-      backgroundColor: '#ffffff',
+      backgroundColor: usesMainTransition
+        ? MAIN_SHEET_BACKGROUND_COLOR
+        : '#ffffff',
       borderTopLeftRadius: screenHeight * 0.03,
       borderTopRightRadius: screenHeight * 0.03,
       width: screenWidth,
-      height: screenHeight * 0.65,
+      height: screenHeight * SHEET_HEIGHT_RATIO,
     },
     bottomSheetTitle: {
       fontFamily: 'Satoshi Variable',

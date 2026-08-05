@@ -19,8 +19,13 @@ import Animated, {
 
 import {ScreenSizeContext} from '../context/screenSize';
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
+import {
+  getMainSheetPoints,
+  MAIN_SHEET_ANIM_MS,
+  MAIN_SHEET_BACKGROUND_COLOR,
+  MAIN_SHEET_TOP_RADIUS_RATIO,
+} from '../animations/mainTransition';
 
-const ANIM_DURATION = 200;
 const SPRING_BACK_ANIM_DURATION = 100;
 
 interface Props {
@@ -75,10 +80,11 @@ const BottomSheet: React.FC<Props> = props => {
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // TODO: put this config in a style reducer
-  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
-  const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
-  const UNFOLD_SHEET_POINT = SCREEN_HEIGHT * 0.24 + OFFSET_HEADER_DIFF;
-  const FOLD_SHEET_POINT = SCREEN_HEIGHT * 0.47 + OFFSET_HEADER_DIFF;
+  const {
+    SWIPE_TRIGGER_Y_RANGE,
+    OPEN_SHEET_POINT: UNFOLD_SHEET_POINT,
+    FOLD_SHEET_POINT,
+  } = getMainSheetPoints(SCREEN_HEIGHT, insets.top);
   const UNFOLD_SNAP_POINT = UNFOLD_SHEET_POINT + SWIPE_TRIGGER_Y_RANGE;
   const FOLD_SNAP_POINT = FOLD_SHEET_POINT - SWIPE_TRIGGER_Y_RANGE;
 
@@ -190,20 +196,20 @@ const BottomSheet: React.FC<Props> = props => {
   useEffect(() => {
     if (folded) {
       mainSheetsTranslationY.value = withTiming(FOLD_SHEET_POINT, {
-        duration: ANIM_DURATION,
+        duration: MAIN_SHEET_ANIM_MS,
       });
       // set Y offset
       setTimeout(() => {
         mainSheetsTranslationYStart.value = FOLD_SHEET_POINT;
-      }, ANIM_DURATION);
+      }, MAIN_SHEET_ANIM_MS);
     } else {
       mainSheetsTranslationY.value = withTiming(UNFOLD_SHEET_POINT, {
-        duration: ANIM_DURATION,
+        duration: MAIN_SHEET_ANIM_MS,
       });
       // set Y offset
       setTimeout(() => {
         mainSheetsTranslationYStart.value = UNFOLD_SHEET_POINT;
-      }, ANIM_DURATION);
+      }, MAIN_SHEET_ANIM_MS);
     }
     /* eslint-disable react-hooks/exhaustive-deps */
   }, [folded, mainSheetsTranslationY, mainSheetsTranslationYStart]);
@@ -316,9 +322,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     bottomSheet: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: '#f7f7f7',
-      borderTopLeftRadius: screenHeight * 0.03,
-      borderTopRightRadius: screenHeight * 0.03,
+      backgroundColor: MAIN_SHEET_BACKGROUND_COLOR,
+      borderTopLeftRadius: screenHeight * MAIN_SHEET_TOP_RADIUS_RATIO,
+      borderTopRightRadius: screenHeight * MAIN_SHEET_TOP_RADIUS_RATIO,
       zIndex: 1,
     },
   });
