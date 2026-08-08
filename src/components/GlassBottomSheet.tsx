@@ -30,7 +30,6 @@ interface Props {
   txViewComponent: React.ReactNode;
   buyViewComponent: React.ReactNode;
   sellViewComponent: React.ReactNode;
-  shopViewComponent: React.ReactNode;
   sendViewComponent: React.ReactNode;
   receiveViewComponent: React.ReactNode;
   headerComponent: React.ReactNode;
@@ -46,7 +45,6 @@ interface Props {
 interface CardProps {
   txView: React.ReactNode;
   buyView: React.ReactNode;
-  shopView: React.ReactNode;
   sellView: React.ReactNode;
   sendView: React.ReactNode;
   receiveView: React.ReactNode;
@@ -61,7 +59,6 @@ const GlassBottomSheet: React.FC<Props> = props => {
     txViewComponent,
     buyViewComponent,
     sellViewComponent,
-    shopViewComponent,
     sendViewComponent,
     receiveViewComponent,
     headerComponent,
@@ -169,7 +166,6 @@ const GlassBottomSheet: React.FC<Props> = props => {
           <RenderCard
             txView={txViewComponent}
             buyView={buyViewComponent}
-            shopView={shopViewComponent}
             sellView={sellViewComponent}
             sendView={sendViewComponent}
             receiveView={receiveViewComponent}
@@ -187,7 +183,6 @@ const RenderCard: React.FC<CardProps> = props => {
     txView,
     buyView,
     sellView,
-    shopView,
     sendView,
     receiveView,
     activeTab,
@@ -214,11 +209,6 @@ const RenderCard: React.FC<CardProps> = props => {
         {activeTab === 2 ? (
           <GestureDetector gesture={panGesture}>
             <View>{sellView}</View>
-          </GestureDetector>
-        ) : null}
-        {activeTab === 3 ? (
-          <GestureDetector gesture={panGesture}>
-            <View>{shopView}</View>
           </GestureDetector>
         ) : null}
         {activeTab === 4 ? (

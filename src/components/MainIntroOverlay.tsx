@@ -24,7 +24,7 @@ const REVEAL_TOP_DELAY_MS = 200;
 const REVEAL_SHEET_DELAY_MS = 320;
 const REVEAL_FADE_MS = 380;
 
-// Module flag rather than a route param: MainDrawer doesn't forward
+// Module flag rather than a route param: the Main stack doesn't forward
 // route params to MainScreen, and the overlay must be known at the Main
 // screen's very first render. The Auth screen requests the intro right
 // before navigating; NewMain consumes it in its state initializer.

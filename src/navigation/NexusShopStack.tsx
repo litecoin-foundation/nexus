@@ -30,12 +30,12 @@ export type NexusShopStackParamList = {
   PurchaseForm: {
     brand: Brand;
     initialAmount?: number;
-    onPaymentSuccess: (txid: string) => void;
+    onPaymentSuccess?: (txid: string) => void;
   };
   PayForGiftCard: {
     initiateResponse: InitiatePurchaseResponseData;
     brandName: string;
-    onPaymentSuccess: (txid: string) => void;
+    onPaymentSuccess?: (txid: string) => void;
   };
   PendingGCDetails: PendingGCDetailsParams;
 };

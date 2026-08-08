@@ -56,7 +56,7 @@ interface PurchaseFormScreenProps {
     params: {
       brand: Brand;
       initialAmount?: number;
-      onPaymentSuccess: (txid: string) => void;
+      onPaymentSuccess?: (txid: string) => void;
     };
   };
   navigation: any;

@@ -1,5 +1,4 @@
-import React, {useEffect, useContext, useState} from 'react';
-import {useFocusEffect} from '@react-navigation/native';
+import {useEffect, useContext, useState} from 'react';
 import {
   Extrapolation,
   interpolate,
@@ -166,11 +165,11 @@ export const getFoldedTopHalfHeight = (
 interface Props {
   isWalletsModalOpened: boolean;
   isTxDetailModalOpened: boolean;
-  activeTab: number;
+  navigation: any;
 }
 
 export function useNewMainAnims(props: Props) {
-  const {isWalletsModalOpened, isTxDetailModalOpened, activeTab} = props;
+  const {isWalletsModalOpened, isTxDetailModalOpened, navigation} = props;
   const insets = useSafeAreaInsets();
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -236,7 +235,7 @@ export function useNewMainAnims(props: Props) {
         buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
       }
 
-      if (isTxDetailModalOpened || activeTab === 3) {
+      if (isTxDetailModalOpened) {
         walletButtonOpacity.value = withTiming(0, {duration: 150});
       } else {
         walletButtonOpacity.value = withDelay(
@@ -254,24 +253,38 @@ export function useNewMainAnims(props: Props) {
     buttonOpacity,
     walletButtonOpacity,
     preRendered,
-    activeTab,
   ]);
 
-  // Hide header buttons on unfocus so they can fade in on return.
-  // Keep synced with useMainLayout's header button delay.
-  useFocusEffect(
-    React.useCallback(() => {
-      const timeoutId = setTimeout(() => {
-        setPreRendered(true);
-      }, 60);
-      return () => {
-        clearTimeout(timeoutId);
-        setPreRendered(false);
-        buttonOpacity.value = 0;
-        walletButtonOpacity.value = 0;
-      };
-    }, []),
-  );
+  // Hide the header buttons when the OUTER Main route blurs (Settings, the
+  // confirm flows...) so they can fade in on return. The shop presents
+  // inside the Main stack and must NOT trigger this — the transition-driven
+  // crossfade owns the header there. Keep synced with useMainLayout's delay.
+  useEffect(() => {
+    const parentNavigation = navigation.getParent();
+    if (!parentNavigation) {
+      return;
+    }
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const show = () => {
+      timeoutId = setTimeout(() => setPreRendered(true), 60);
+    };
+    const hide = () => {
+      clearTimeout(timeoutId);
+      setPreRendered(false);
+      buttonOpacity.value = 0;
+      walletButtonOpacity.value = 0;
+    };
+    if (parentNavigation.isFocused()) {
+      show();
+    }
+    const unsubscribeFocus = parentNavigation.addListener('focus', show);
+    const unsubscribeBlur = parentNavigation.addListener('blur', hide);
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+      clearTimeout(timeoutId);
+    };
+  }, [navigation, buttonOpacity, walletButtonOpacity]);
 
   return {
     mainSheetsTranslationY,

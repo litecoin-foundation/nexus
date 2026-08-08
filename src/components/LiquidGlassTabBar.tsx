@@ -28,6 +28,8 @@ import type {SkImage, SkPath} from '@shopify/react-native-skia';
 
 import GlassTxCanvas from './GlassTxCanvas';
 import {GlassTxRowModels} from './GlassTxRows';
+import type {ShopRowModels} from './GiftCardShop/GlassShopRows';
+import type {ShopLogoImages} from './GiftCardShop/shopLogoImages';
 import {
   BAR_HEIGHT_RATIO,
   BAR_WIDTH_RATIO,
@@ -197,6 +199,18 @@ interface Props {
   txListScrollY: SharedValue<number>;
   listHeaderOffset: SharedValue<number>;
   showTxList: boolean;
+  showShop: boolean;
+  shopRowModels: ShopRowModels;
+  shopScrollY: SharedValue<number>;
+  shopLogos: ShopLogoImages;
+  shopTransition: SharedValue<number>;
+  shopMorphFrom: SharedValue<number>;
+  shopExpandSplit: SharedValue<number>;
+  shopExpandExtras: SharedValue<number>;
+  shopExpandProgress: SharedValue<number>;
+  shopExpandChevronLift: SharedValue<number>;
+  shopPanel?: React.ReactNode;
+  shopChevron?: React.ReactNode;
   activeSheet: number;
   cardSwapOpacity: SharedValue<number>;
   shopDisabled: boolean;
@@ -212,6 +226,18 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     txListScrollY,
     listHeaderOffset,
     showTxList,
+    showShop,
+    shopRowModels,
+    shopScrollY,
+    shopLogos,
+    shopTransition,
+    shopMorphFrom,
+    shopExpandSplit,
+    shopExpandExtras,
+    shopExpandProgress,
+    shopExpandChevronLift,
+    shopPanel,
+    shopChevron,
     activeSheet,
     cardSwapOpacity,
     shopDisabled,
@@ -448,6 +474,18 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         txListScrollY={txListScrollY}
         listHeaderOffset={listHeaderOffset}
         showTxList={showTxList}
+        showShop={showShop}
+        shopRowModels={shopRowModels}
+        shopScrollY={shopScrollY}
+        shopLogos={shopLogos}
+        shopTransition={shopTransition}
+        shopMorphFrom={shopMorphFrom}
+        shopExpandSplit={shopExpandSplit}
+        shopExpandExtras={shopExpandExtras}
+        shopExpandProgress={shopExpandProgress}
+        shopExpandChevronLift={shopExpandChevronLift}
+        shopPanel={shopPanel}
+        shopChevron={shopChevron}
         cardSwapOpacity={cardSwapOpacity}
         contentActivity={contentActivity}
         pressScale={pressScale}

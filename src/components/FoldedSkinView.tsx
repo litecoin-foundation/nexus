@@ -33,11 +33,14 @@ const stopsBelowTopEdge = GRADIENT_POSITIONS.map((pos, i) => ({
 }))
   .filter(s => s.location > 0)
   .reverse();
-const SKIN_GRADIENT_COLORS = [
+export const SKIN_GRADIENT_COLORS = [
   interpolateColor(T_TOP, GRADIENT_POSITIONS, GRADIENT_COLORS),
   ...stopsBelowTopEdge.map(s => s.color),
 ];
-const SKIN_GRADIENT_LOCATIONS = [0, ...stopsBelowTopEdge.map(s => s.location)];
+export const SKIN_GRADIENT_LOCATIONS = [
+  0,
+  ...stopsBelowTopEdge.map(s => s.location),
+];
 
 interface Props {
   online: boolean;

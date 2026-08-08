@@ -33,6 +33,13 @@ export const TILLO_CATEGORIES = [
 
 export type TilloCategory = (typeof TILLO_CATEGORIES)[number];
 
+// 'food-and-drink' -> 'Food And Drink', for filter chips and menus
+export const formatCategoryLabel = (category: string): string =>
+  category
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
 export interface FaceValue {
   amount: number;
   currency: string;

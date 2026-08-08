@@ -201,62 +201,67 @@ export const useGlassTxRowModels = (rows: GlassTxRow[]): GlassTxRowModels => {
 
 export type GlassTxIcons = Record<string, SkImage | null>;
 
-const ICON_MODULES: Record<string, number> = {
+// decode a set of bundled assets once for the app's life; returns a hook the
+// Skia renderers share, retrying on the next mount after a failed load
+export const makeCachedSkiaIcons = (
+  modules: Record<string, number>,
+): (() => GlassTxIcons) => {
+  const keys = Object.keys(modules);
+  const empty: GlassTxIcons = {};
+  let cached: GlassTxIcons | null = null;
+  let load: Promise<GlassTxIcons | null> | null = null;
+
+  const loadIcons = () => {
+    load ??= Promise.all(
+      keys.map(key =>
+        Skia.Data.fromURI(RNImage.resolveAssetSource(modules[key]).uri).then(
+          data => Skia.Image.MakeImageFromEncoded(data),
+        ),
+      ),
+    )
+      .then(images => {
+        const loaded: GlassTxIcons = {};
+        keys.forEach((key, i) => {
+          loaded[key] = images[i];
+        });
+        cached = loaded;
+        return loaded;
+      })
+      .catch(() => {
+        load = null;
+        return null;
+      });
+    return load;
+  };
+
+  return function useCachedIcons(): GlassTxIcons {
+    const [icons, setIcons] = useState(cached);
+    useEffect(() => {
+      if (icons) {
+        return;
+      }
+      let alive = true;
+      loadIcons().then(loaded => {
+        if (alive && loaded) {
+          setIcons(loaded);
+        }
+      });
+      return () => {
+        alive = false;
+      };
+    }, [icons]);
+    return icons ?? empty;
+  };
+};
+
+// the page, modal, and Skia list renderers share one decode
+export const useGlassTxIcons = makeCachedSkiaIcons({
   Send: require('../assets/icons/sendtx.png'),
   Receive: require('../assets/icons/receivetx.png'),
   Convert: require('../assets/icons/converttx.png'),
   Buy: require('../assets/icons/buytx.png'),
   Sell: require('../assets/icons/selltx.png'),
-};
-
-// cache decoded icons for the page, modal, and Skia list renderers
-const EMPTY_ICONS: GlassTxIcons = {};
-let cachedIcons: GlassTxIcons | null = null;
-let cachedIconsLoad: Promise<GlassTxIcons | null> | null = null;
-
-const loadCachedIcons = () => {
-  const keys = Object.keys(ICON_MODULES);
-  cachedIconsLoad ??= Promise.all(
-    keys.map(key =>
-      Skia.Data.fromURI(RNImage.resolveAssetSource(ICON_MODULES[key]).uri).then(
-        data => Skia.Image.MakeImageFromEncoded(data),
-      ),
-    ),
-  )
-    .then(images => {
-      const loaded: GlassTxIcons = {};
-      keys.forEach((key, i) => {
-        loaded[key] = images[i];
-      });
-      cachedIcons = loaded;
-      return loaded;
-    })
-    .catch(() => {
-      // retry on the next mount
-      cachedIconsLoad = null;
-      return null;
-    });
-  return cachedIconsLoad;
-};
-
-export const useGlassTxIcons = (): GlassTxIcons => {
-  const [icons, setIcons] = useState(cachedIcons);
-  useEffect(() => {
-    if (icons) {
-      return;
-    }
-    let alive = true;
-    loadCachedIcons().then(loaded => {
-      if (alive && loaded) {
-        setIcons(loaded);
-      }
-    });
-    return () => {
-      alive = false;
-    };
-  }, [icons]);
-  return icons ?? EMPTY_ICONS;
-};
+});
 
 // First row whose bottom edge is below contentTop.
 export const firstRowAt = (rowBottoms: number[], contentTop: number) => {

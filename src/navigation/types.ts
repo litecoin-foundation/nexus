@@ -18,17 +18,25 @@ export type AlertsStackParamList = {
   Dial: {identifier: string};
 };
 
-export type MainDrawerParamList = {
+// the shop's account drawer wraps only the shop screen
+export type ShopDrawerParamList = {
+  NexusShopScreen: {section?: string} | undefined;
+};
+
+// transparent stack inside the Main route: the shop presents over the live
+// wallet so the glass morph can fade between them
+export type MainStackParamList = {
   MainScreen: {
     scanData?: string;
     isInitial?: boolean;
     activeCard?: number;
     shopScreen?: string;
   };
+  NexusShop: NavigatorScreenParams<ShopDrawerParamList> | undefined;
 };
 
 export type NewWalletStackParamList = {
-  Main: NavigatorScreenParams<MainDrawerParamList>;
+  Main: NavigatorScreenParams<MainStackParamList>;
   SettingsStack: undefined;
   NexusShopStack: undefined;
   AlertsStack: undefined;
