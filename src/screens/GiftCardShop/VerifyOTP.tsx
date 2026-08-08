@@ -144,10 +144,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
       } else {
         navigation.navigate('NewWalletStack', {
           screen: 'Main',
-          params: {
-            screen: 'MainScreen',
-            params: {activeCard: 3},
-          },
+          params: {screen: 'NexusShop'},
         });
       }
     }

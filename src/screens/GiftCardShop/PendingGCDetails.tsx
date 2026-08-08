@@ -120,10 +120,10 @@ const PendingGCDetails: React.FC<Props> = ({route, navigation}) => {
     navigation.navigate('NewWalletStack', {
       screen: 'Main',
       params: {
-        screen: 'MainScreen',
+        screen: 'NexusShop',
         params: {
-          activeCard: 3,
-          shopScreen: 'my-cards',
+          screen: 'NexusShopScreen',
+          params: {section: 'my-cards'},
         },
       },
     });
@@ -462,10 +462,10 @@ export const PendingGCDetailsNavigationOptions = (
           navigation.navigate('NewWalletStack', {
             screen: 'Main',
             params: {
-              screen: 'MainScreen',
+              screen: 'NexusShop',
               params: {
-                activeCard: 3,
-                shopScreen: 'my-cards',
+                screen: 'NexusShopScreen',
+                params: {section: 'my-cards'},
               },
             },
           })

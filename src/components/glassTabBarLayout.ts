@@ -22,8 +22,12 @@ export const getBottomOffset = (screenHeight: number, bottomInset: number) =>
 export const getTabBarClearance = (screenHeight: number, bottomInset: number) =>
   getBottomOffset(screenHeight, bottomInset) + screenHeight * BAR_HEIGHT_RATIO;
 
+// the shop's slot in the Main screen's activeTab numbering
+export const SHOP_TAB = 3;
+
 // sheets that hide the tab bar; the wallet and the shop keep it
-export const sheetHidesTabBar = (sheet: number) => sheet !== 0 && sheet !== 3;
+export const sheetHidesTabBar = (sheet: number) =>
+  sheet !== 0 && sheet !== SHOP_TAB;
 
 export const getTabBarBandHeight = (
   screenHeight: number,

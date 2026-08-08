@@ -57,13 +57,12 @@ import {
   useGlassTxRowElements,
 } from '../GlassTxRows';
 import type {GlassTxRowModels} from '../GlassTxRows';
-import {rowsTopInCanvas, SHEET_OVERSHOOT_RATIO} from '../GlassTxCanvas';
+import {getGlassCanvasTop, rowsTopInCanvas} from '../GlassTxCanvas';
 import {
   BORDER_GRADIENT_COLORS,
   BORDER_GRADIENT_POSITIONS,
 } from '../LiquidGlassBackdrop';
 import {getTabBarBandHeight} from '../glassTabBarLayout';
-import {getNewMainSheetPoints} from '../../animations/useNewMainAnims';
 import {IDisplayedTx} from '../../reducers/transaction';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -88,7 +87,16 @@ const FADE_LAYER_COUNT = 9;
 const FADE_LAYER_INTENSITY = 3;
 const FADE_LAYER_STYLES = Array.from(
   {length: FADE_LAYER_COUNT},
-  (_, i): {position: 'absolute'; bottom: 0; left: 0; width: '100%'; height: `${number}%`} => ({
+  (
+    _,
+    i,
+  ): {
+    position: 'absolute';
+    bottom: 0;
+    left: 0;
+    width: '100%';
+    height: `${number}%`;
+  } => ({
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -162,13 +170,9 @@ function GlassTxDetailModal(props: Props) {
 
   // Same list viewport the page canvas uses, so both windows (and the shared
   // paragraph cache) stay identical.
-  const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
   const listTopInSheet = SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
   const elementsViewportHeight =
-    SCREEN_HEIGHT -
-    (UNFOLD_SHEET_POINT +
-      listTopInSheet -
-      SCREEN_HEIGHT * SHEET_OVERSHOOT_RATIO);
+    SCREEN_HEIGHT - getGlassCanvasTop(SCREEN_HEIGHT, insets.top);
   const bandTopScreen =
     SCREEN_HEIGHT - getTabBarBandHeight(SCREEN_HEIGHT, insets.bottom);
 
@@ -434,7 +438,12 @@ function GlassTxDetailModal(props: Props) {
       return emptyRect;
     }
     const top = Math.max(0, rowsTop.value);
-    return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandTopScreen - top));
+    return Skia.XYWHRect(
+      0,
+      top,
+      SCREEN_WIDTH,
+      Math.max(0, bandTopScreen - top),
+    );
   });
 
   const identityTransform = useMemo(() => [{translateY: 0}], []);
@@ -646,7 +655,10 @@ function GlassTxDetailModal(props: Props) {
           style={styles.dotTouch}
           key={`bullet-${i}`}>
           <View
-            style={[styles.dot, i === activeBulletNum ? styles.dotActive : null]}
+            style={[
+              styles.dot,
+              i === activeBulletNum ? styles.dotActive : null,
+            ]}
           />
         </TouchableOpacity>,
       );

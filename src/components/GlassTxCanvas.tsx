@@ -27,6 +27,13 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
 import {useCardUnderlayValue} from './cardUnderlay';
 import {getCapsuleShadowImage} from './capsuleShadowImage';
+import {
+  getShopListTop,
+  getShopRowLayout,
+  ShopRowModels,
+} from './GiftCardShop/GlassShopRows';
+import {shopRowCallbacks, useShopRowContext} from './GiftCardShop/ShopSkiaRows';
+import type {ShopLogoImages} from './GiftCardShop/shopLogoImages';
 import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import {
   DRAG_STRIP_HEIGHT_RATIO,
@@ -64,12 +71,28 @@ const BOTTOM_OVERSCAN = 4;
 
 // stable identity keeps the Skia list row cache intact
 const EMPTY_ROWS: GlassTxRowModels['models'] = [];
+const EMPTY_SHOP_ROWS: ShopRowModels['models'] = [];
+
+// open-ended clip height; the outer canvas-space clips bound it
+const BOTTOMLESS = 1e9;
 
 // The spring that snaps the sheet open has no clamp, so a hard flick can carry
 // it above UNFOLD_SHEET_POINT for a frame or two. The canvas starts that much
 // higher than the resting list top; nothing can be drawn above its own edge,
 // and without the margin the first row would be sliced during the overshoot.
 export const SHEET_OVERSHOOT_RATIO = 0.1;
+
+// canvas top: above the higher of the tx list (with overshoot) and the shop
+// list; shared so the tx detail modal can mirror the same viewport
+export const getGlassCanvasTop = (screenHeight: number, topInset: number) => {
+  const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(screenHeight, topInset);
+  return Math.min(
+    UNFOLD_SHEET_POINT +
+      screenHeight * GLASS_TX_LIST_TOP_RATIO -
+      screenHeight * SHEET_OVERSHOOT_RATIO,
+    getShopListTop(screenHeight, topInset) - screenHeight * 0.01,
+  );
+};
 
 // Canvas y of the first row: the sheet's position, plus the chrome above the
 // list, plus the pinned sync header. The row transform and the clip must agree
@@ -95,6 +118,24 @@ interface Props {
   listHeaderOffset: SharedValue<number>;
   // False while a card is open — the band shows the card's underlay instead.
   showTxList: boolean;
+  // Shop screen rows, drawn in place of the tx list while the shop is open.
+  // The whole shop layer slides with shopTransition (0 offscreen, 1 open).
+  showShop: boolean;
+  shopRowModels: ShopRowModels;
+  shopScrollY: SharedValue<number>;
+  shopMorphFrom: SharedValue<number>;
+  shopLogos: ShopLogoImages;
+  shopTransition: SharedValue<number>;
+  // Row expansion: the models stay collapsed; rows below `split` slide down
+  // by progress*extras while the panel overlay is revealed. Idle: split
+  // huge, extras 0, progress 1.
+  shopExpandSplit: SharedValue<number>;
+  shopExpandExtras: SharedValue<number>;
+  shopExpandProgress: SharedValue<number>;
+  shopExpandChevronLift: SharedValue<number>;
+  // panel-local overlay content and the spinning chevron cover
+  shopPanel?: React.ReactNode;
+  shopChevron?: React.ReactNode;
   // The card swap fade, shared with the native card views.
   cardSwapOpacity: SharedValue<number>;
   // Tab bar shrink (content activity) and press feedback.
@@ -115,6 +156,18 @@ const GlassTxCanvas: React.FC<Props> = props => {
     txListScrollY,
     listHeaderOffset,
     showTxList,
+    showShop,
+    shopRowModels,
+    shopScrollY,
+    shopMorphFrom,
+    shopLogos,
+    shopTransition,
+    shopExpandSplit,
+    shopExpandExtras,
+    shopExpandProgress,
+    shopExpandChevronLift,
+    shopPanel,
+    shopChevron,
     cardSwapOpacity,
     contentActivity,
     pressScale,
@@ -126,13 +179,12 @@ const GlassTxCanvas: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
-  const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
-  // The canvas is pinned just above where the list viewport starts when the
-  // sheet is fully unfolded, and runs to the screen bottom, so it spans both
-  // the list and the tab bar band.
+  // The canvas is pinned just above the higher of its two list viewports —
+  // the tx list at the unfolded sheet, or the shop list under its shorter
+  // gradient header — and runs to the screen bottom, so it spans the rows
+  // and the tab bar band in every mode.
   const listTopInSheet = SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
-  const canvasTop =
-    UNFOLD_SHEET_POINT + listTopInSheet - SCREEN_HEIGHT * SHEET_OVERSHOOT_RATIO;
+  const canvasTop = getGlassCanvasTop(SCREEN_HEIGHT, insets.top);
   const canvasHeight = SCREEN_HEIGHT - canvasTop;
 
   const bandHeight = getTabBarBandHeight(SCREEN_HEIGHT, insets.bottom);
@@ -178,6 +230,16 @@ const GlassTxCanvas: React.FC<Props> = props => {
     }
   }, [showTxList, rowsMounted, rowsOpacity, rowsDrift]);
 
+  // the wallet rows crossfade with the shop hand-off: they sink and fade as
+  // the shop arrives and return with it, composed into the existing opacity
+  // and scroll transform so the hot path gains no layers
+  const walletShopFade = useDerivedValue(() =>
+    interpolate(shopTransition.value, [0.1, 0.5], [1, 0], Extrapolation.CLAMP),
+  );
+  const walletRowsOpacity = useDerivedValue(
+    () => rowsOpacity.value * walletShopFade.value,
+  );
+
   // records visible rows into a UI-thread picture while scrolling
   // tx details retain declarative static rows
   const rowContext = useGlassTxRowContext();
@@ -197,6 +259,106 @@ const GlassTxCanvas: React.FC<Props> = props => {
     <Picture picture={skiaList.picture} />
   ) : null;
 
+  // shop rows in the same canvas; the surface's slide carries this layer, so
+  // there is no fade of its own — just the delayed unmount from showShop
+  const shopHeaderOffset = useSharedValue(0);
+  const shopContext = useShopRowContext(shopLogos);
+  const shopReady = showShop && shopContext !== null;
+  const shopList = useSkiaList({
+    ...shopRowCallbacks,
+    data: shopReady ? shopRowModels.models : EMPTY_SHOP_ROWS,
+    context: shopContext,
+    scrollY: shopScrollY,
+    headerOffset: shopHeaderOffset,
+    viewportHeight: canvasHeight,
+    enabled: shopReady,
+  });
+  const shopNode: React.ReactNode = shopReady ? (
+    <Picture picture={shopList.picture} />
+  ) : null;
+
+  // rows crossfade with the wallet's inside the sheet region while the
+  // cover fades ([0.2, 0.6]); their travel comes from riding the container
+  // boundary below, not a fade-drift of their own
+  const shopLayerOpacity = useDerivedValue(() =>
+    interpolate(
+      shopTransition.value,
+      [0.15, 0.45],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+  );
+
+  // The shop list top never moves; only its scroll offset does. Scrolling
+  // drives ONE mapper — the scroll group's translate; everything inside is
+  // in content coordinates and only recomputes during the expand animation.
+  // Rows below the split slide DOWN by progress*extras while the panel is
+  // revealed in the widening gap — the models stay collapsed, so the unfold
+  // never re-records the list.
+  const shopRowsTop = getShopListTop(SCREEN_HEIGHT, insets.top) - canvasTop;
+  // how far the container boundary (the gradient card's bottom edge) still
+  // is from its resting place: pinned at the wallet sheet's top through the
+  // cover fade ([0, 0.35]), travelling home over [0.35, 1]. The rows ride
+  // it, so the sheet and its content move as one container.
+  const shopTravel = useDerivedValue(() => {
+    const travelled = interpolate(
+      shopTransition.value,
+      [0.35, 1],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
+    return (shopMorphFrom.value - canvasTop - shopRowsTop) * (1 - travelled);
+  });
+  const shopScrollTransform = useDerivedValue(() => [
+    {translateY: shopRowsTop - shopScrollY.value + shopTravel.value},
+  ]);
+  const shopTransformBelow = useDerivedValue(() => [
+    {translateY: shopExpandProgress.value * shopExpandExtras.value},
+  ]);
+  const shopClipAbove = useDerivedValue(() =>
+    Skia.XYWHRect(0, 0, SCREEN_WIDTH, Math.max(0, shopExpandSplit.value)),
+  );
+  const shopClipBelow = useDerivedValue(() => {
+    const top =
+      shopExpandSplit.value + shopExpandProgress.value * shopExpandExtras.value;
+    return Skia.XYWHRect(0, top, SCREEN_WIDTH, BOTTOMLESS);
+  });
+  const shopPanelClip = useDerivedValue(() =>
+    Skia.XYWHRect(
+      0,
+      shopExpandSplit.value,
+      SCREEN_WIDTH,
+      Math.max(0, shopExpandProgress.value * shopExpandExtras.value),
+    ),
+  );
+  // the panel slides down into place under the tapped row
+  const shopPanelTransform = useDerivedValue(() => [
+    {
+      translateY:
+        shopExpandSplit.value -
+        (1 - shopExpandProgress.value) * shopExpandExtras.value,
+    },
+  ]);
+  // spinning cover over the tapped row's static chevron
+  const shopLayout = getShopRowLayout(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const shopChevronX = shopLayout.chevronCx;
+  const shopChevronTransform = useDerivedValue(() => [
+    {translateX: shopChevronX},
+    {translateY: shopExpandSplit.value - shopExpandChevronLift.value},
+    {rotate: shopExpandProgress.value * Math.PI},
+  ]);
+  // canvas-space bounds for the content-space groups above
+  // the clips follow the boundary: rows above it belong to the card's
+  // territory and must never draw over it
+  const shopMainClip = useDerivedValue(() => {
+    const top = Math.max(0, shopRowsTop + shopTravel.value);
+    return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandTop - top));
+  });
+  const shopBandClip = useDerivedValue(() => {
+    const top = Math.max(0, shopRowsTop + shopTravel.value);
+    return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandBottom - top));
+  });
+
   // List-content coordinates -> canvas coordinates.
   const contentTransform = useDerivedValue(() => [
     {
@@ -208,7 +370,8 @@ const GlassTxCanvas: React.FC<Props> = props => {
           listHeaderOffset.value,
         ) -
         txListScrollY.value +
-        rowsDrift.value,
+        rowsDrift.value +
+        (1 - walletShopFade.value) * 10,
     },
   ]);
 
@@ -216,6 +379,10 @@ const GlassTxCanvas: React.FC<Props> = props => {
   // and the title row, and the band below draws its own copy, so the plain
   // pass covers neither.
   const listClip = useDerivedValue(() => {
+    // fully faded behind the settled shop: collapse instead of alpha-0 draws
+    if (walletShopFade.value <= 0) {
+      return Skia.XYWHRect(0, 0, 0, 0);
+    }
     const rowsTop = Math.max(
       0,
       rowsTopInCanvas(
@@ -236,6 +403,11 @@ const GlassTxCanvas: React.FC<Props> = props => {
   const bandClip = useMemo(
     () => Skia.XYWHRect(0, bandTop, SCREEN_WIDTH, bandBottom - bandTop),
     [bandTop, SCREEN_WIDTH, bandBottom],
+  );
+  const walletBandClip = useDerivedValue(() =>
+    walletShopFade.value <= 0
+      ? Skia.XYWHRect(0, 0, 0, 0)
+      : Skia.XYWHRect(0, bandTop, SCREEN_WIDTH, bandBottom - bandTop),
   );
 
   // only the capsule and its shadow slide, the band stays put
@@ -333,6 +505,22 @@ const GlassTxCanvas: React.FC<Props> = props => {
     ];
   });
 
+  // the split passes and panel, in content coordinates; drawn in both the
+  // main pass and the band copy inside their own scroll groups
+  const shopSplitLayers = shopNode ? (
+    <>
+      <Group clip={shopClipAbove}>{shopNode}</Group>
+      <Group clip={shopClipBelow}>
+        <Group transform={shopTransformBelow}>{shopNode}</Group>
+      </Group>
+      {shopPanel ? (
+        <Group clip={shopPanelClip}>
+          <Group transform={shopPanelTransform}>{shopPanel}</Group>
+        </Group>
+      ) : null}
+    </>
+  ) : null;
+
   // the glass needs opaque pixels beneath it: rows on the wallet, the card's
   // underlay while a card is open. a full-card underlay gets a solid backing;
   // rows bring theirs inside the fade so it never pops; partial underlays
@@ -350,7 +538,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
         />
       ) : null}
       {rowsMounted && rowsNode ? (
-        <Group opacity={rowsOpacity}>
+        <Group clip={walletBandClip} opacity={walletRowsOpacity}>
           {!fullCardUnderlay ? (
             <Rect
               x={0}
@@ -363,6 +551,20 @@ const GlassTxCanvas: React.FC<Props> = props => {
           <Group transform={contentTransform}>{rowsNode}</Group>
         </Group>
       ) : null}
+      {shopNode ? (
+        <Group opacity={shopLayerOpacity}>
+          <Rect
+            x={0}
+            y={bandTop}
+            width={SCREEN_WIDTH}
+            height={bandBottom - bandTop}
+            color={SHEET_BACKGROUND}
+          />
+          <Group clip={shopBandClip}>
+            <Group transform={shopScrollTransform}>{shopSplitLayers}</Group>
+          </Group>
+        </Group>
+      ) : null}
       {underlayContent}
     </>
   );
@@ -373,8 +575,20 @@ const GlassTxCanvas: React.FC<Props> = props => {
     <Canvas style={styles.canvas} pointerEvents="none">
       {rowsNode ? (
         <Group clip={listClip}>
-          <Group opacity={rowsOpacity}>
+          <Group opacity={walletRowsOpacity}>
             <Group transform={contentTransform}>{rowsNode}</Group>
+          </Group>
+        </Group>
+      ) : null}
+      {shopNode ? (
+        <Group opacity={shopLayerOpacity}>
+          <Group clip={shopMainClip}>
+            <Group transform={shopScrollTransform}>
+              {shopSplitLayers}
+              {shopChevron ? (
+                <Group transform={shopChevronTransform}>{shopChevron}</Group>
+              ) : null}
+            </Group>
           </Group>
         </Group>
       ) : null}
@@ -399,7 +613,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
       ) : null}
       <Group clip={bandClip}>
         {bandSource}
-        {rowsMounted || underlayContent ? (
+        {rowsMounted || showShop || underlayContent ? (
           // frost is skipped over the flat band, blurred flat is flat
           <Group opacity={frostOpacity}>
             <ProgressiveEdgeBlur

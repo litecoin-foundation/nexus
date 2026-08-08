@@ -5,13 +5,8 @@ import React, {
   useMemo,
   useContext,
 } from 'react';
-import {useFocusEffect} from '@react-navigation/native';
 import {Platform, View} from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -19,7 +14,6 @@ import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButt
 import HeaderButton from '../components/Buttons/HeaderButton';
 
 import {ScreenSizeContext} from '../context/screenSize';
-import {useAppSelector} from '../store/hooks';
 
 interface Props {
   walletButtonAnimDuration: any;
@@ -32,8 +26,10 @@ interface Props {
   navigation: any;
   isWalletsModalOpened: boolean;
   setWalletsModalOpened: (isOpened: boolean) => void;
-  isShopAccountDrawerOpen: boolean;
-  toggleShopAccountDrawer: () => void;
+  // the shop screen owns the shared nav bar past its hand-off point; the
+  // fade style rides the shop transition so the two headers crossfade
+  shopOwnsHeader: boolean;
+  shopHeaderFadeStyle: any;
   isTxDetailModalOpened: boolean;
   setPlasmaModalGapInPixels: (gapInPixels: number) => void;
   setBottomSheetFolded: (isFolded: boolean) => void;
@@ -57,8 +53,8 @@ export function useMainLayout(props: Props) {
     navigation,
     isWalletsModalOpened,
     setWalletsModalOpened,
-    isShopAccountDrawerOpen,
-    toggleShopAccountDrawer,
+    shopOwnsHeader,
+    shopHeaderFadeStyle,
     isTxDetailModalOpened,
     setPlasmaModalGapInPixels,
     setBottomSheetFolded,
@@ -70,34 +66,6 @@ export function useMainLayout(props: Props) {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-
-  // Read country picker state from Redux
-  const isCountryPickerOpen = useAppSelector(
-    (state: any) => state.nexusshopaccount.isCountryPickerOpen,
-  );
-
-  // Animated opacity for drawer toggle button
-  const drawerToggleOpacity = useSharedValue(1);
-
-  // Animate drawer toggle button visibility based on country picker state
-  useEffect(() => {
-    if (isCountryPickerOpen) {
-      drawerToggleOpacity.value = withTiming(0, {
-        duration: 250,
-      });
-    } else {
-      drawerToggleOpacity.value = withTiming(1, {
-        duration: 250,
-      });
-    }
-  }, [isCountryPickerOpen]);
-
-  // Animated style for drawer toggle button
-  const animatedDrawerToggleStyle = useAnimatedStyle(() => {
-    return {
-      opacity: drawerToggleOpacity.value,
-    };
-  });
 
   const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
   const deviceHeaderHeight = useHeaderHeight();
@@ -118,25 +86,31 @@ export function useMainLayout(props: Props) {
 
   const walletButton = useMemo(
     () => (
-      <View style={alignHeaderElementsWithMarginTop}>
+      // key: never reconcile in place with the shop's header elements — a
+      // swapped-in animated style can hold the old set's opacity for a frame
+      <View key="wallet-title" style={alignHeaderElementsWithMarginTop}>
         <Animated.View
           ref={walletButtonRef}
           style={[styles.walletButton, animatedWalletButtonOpacity]}>
-          <LiquidGlassWalletButton
-            title={currentWallet}
-            onPress={() => {
-              setWalletsModalOpened(!isWalletsModalOpened);
-            }}
-            disabled={false}
-            rotateArrow={rotateArrow}
-            arrowSpinAnim={animatedWalletButtonArrowRotation}
-          />
+          {/* nested, not stacked: two styles writing one opacity fight */}
+          <Animated.View style={shopHeaderFadeStyle}>
+            <LiquidGlassWalletButton
+              title={currentWallet}
+              onPress={() => {
+                setWalletsModalOpened(!isWalletsModalOpened);
+              }}
+              disabled={false}
+              rotateArrow={rotateArrow}
+              arrowSpinAnim={animatedWalletButtonArrowRotation}
+            />
+          </Animated.View>
         </Animated.View>
       </View>
     ),
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [
       animatedWalletButtonOpacity,
+      shopHeaderFadeStyle,
       currentWallet,
       isWalletsModalOpened,
       animatedWalletButtonArrowRotation,
@@ -146,22 +120,25 @@ export function useMainLayout(props: Props) {
 
   const backHeaderButton = useMemo(
     () => (
-      <View style={alignHeaderElementsWithMarginTop}>
+      <View key="wallet-back" style={alignHeaderElementsWithMarginTop}>
         <Animated.View style={[styles.headerBtns, animatedHeaderButtonOpacity]}>
-          <HeaderButton
-            onPress={() => {
-              setBottomSheetFolded(true);
-              setActiveTab(0);
-            }}
-            imageSource={require('../assets/images/back-icon.png')}
-            leftPadding
-          />
+          <Animated.View style={[styles.headerBtns, shopHeaderFadeStyle]}>
+            <HeaderButton
+              onPress={() => {
+                setBottomSheetFolded(true);
+                setActiveTab(0);
+              }}
+              imageSource={require('../assets/images/back-icon.png')}
+              leftPadding
+            />
+          </Animated.View>
         </Animated.View>
       </View>
     ),
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [
       animatedHeaderButtonOpacity,
+      shopHeaderFadeStyle,
       alignHeaderElementsWithMarginTop,
       styles.headerBtns,
     ],
@@ -169,29 +146,32 @@ export function useMainLayout(props: Props) {
 
   const leftHeaderButton = useMemo(
     () => (
-      <View style={alignHeaderElementsWithMarginTop}>
+      <View key="wallet-left" style={alignHeaderElementsWithMarginTop}>
         <Animated.View style={[styles.headerBtns, animatedHeaderButtonOpacity]}>
-          <HeaderButton
-            onPress={() => navigation.navigate('SettingsStack')}
-            imageSource={require('../assets/icons/settings-cog.png')}
-            imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
-            leftPadding
-          />
-          {isFlexaCustomer ? (
+          <Animated.View style={[styles.headerBtns, shopHeaderFadeStyle]}>
             <HeaderButton
-              onPress={() => manualPayment()}
-              imageSource={require('../assets/images/flexa-logo.png')}
+              onPress={() => navigation.navigate('SettingsStack')}
+              imageSource={require('../assets/icons/settings-cog.png')}
               imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
               leftPadding
-              marginLeft={SCREEN_WIDTH * 0.02 * -1}
             />
-          ) : null}
+            {isFlexaCustomer ? (
+              <HeaderButton
+                onPress={() => manualPayment()}
+                imageSource={require('../assets/images/flexa-logo.png')}
+                imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
+                leftPadding
+                marginLeft={SCREEN_WIDTH * 0.02 * -1}
+              />
+            ) : null}
+          </Animated.View>
         </Animated.View>
       </View>
     ),
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [
       animatedHeaderButtonOpacity,
+      shopHeaderFadeStyle,
       navigation,
       isFlexaCustomer,
       SCREEN_HEIGHT,
@@ -203,53 +183,23 @@ export function useMainLayout(props: Props) {
 
   const rightHeaderButton = useMemo(
     () => (
-      <View style={alignHeaderElementsWithMarginTop}>
+      <View key="wallet-right" style={alignHeaderElementsWithMarginTop}>
         <Animated.View style={[styles.headerBtns, animatedHeaderButtonOpacity]}>
-          <HeaderButton
-            onPress={() => navigation.navigate('AlertsStack')}
-            imageSource={require('../assets/icons/alerts-icon.png')}
-            imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
-            rightPadding
-          />
+          <Animated.View style={[styles.headerBtns, shopHeaderFadeStyle]}>
+            <HeaderButton
+              onPress={() => navigation.navigate('AlertsStack')}
+              imageSource={require('../assets/icons/alerts-icon.png')}
+              imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
+              rightPadding
+            />
+          </Animated.View>
         </Animated.View>
       </View>
     ),
     [
       animatedHeaderButtonOpacity,
+      shopHeaderFadeStyle,
       navigation,
-      alignHeaderElementsWithMarginTop,
-      SCREEN_HEIGHT,
-      styles.headerBtns,
-    ],
-  );
-
-  const nexusShopAccountButton = useMemo(
-    () => (
-      <View style={alignHeaderElementsWithMarginTop}>
-        <Animated.View
-          style={[
-            styles.headerBtns,
-            animatedHeaderButtonOpacity,
-            animatedDrawerToggleStyle,
-          ]}>
-          <HeaderButton
-            onPress={toggleShopAccountDrawer}
-            imageSource={require('../assets/icons/user.png')}
-            imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
-            rightPadding
-            backgroundColorSpecified={
-              isShopAccountDrawerOpen ? '#0070F0' : undefined
-            }
-          />
-        </Animated.View>
-      </View>
-    ),
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [
-      isShopAccountDrawerOpen,
-      toggleShopAccountDrawer,
-      animatedHeaderButtonOpacity,
-      animatedDrawerToggleStyle,
       alignHeaderElementsWithMarginTop,
       SCREEN_HEIGHT,
       styles.headerBtns,
@@ -279,6 +229,9 @@ export function useMainLayout(props: Props) {
   useEffect(() => {
     const parentNavigation = navigation.getParent();
     if (!parentNavigation) return;
+    // while the shop is presented it applies its own header to this route;
+    // the moment its close starts this re-runs and reclaims the bar
+    if (shopOwnsHeader) return;
 
     if (isWalletsModalOpened || isTxDetailModalOpened) {
       fadingTimeout.current = setTimeout(() => {
@@ -287,13 +240,6 @@ export function useMainLayout(props: Props) {
           headerRight: () => emptyFragment,
         });
       }, 150);
-    } else if (activeTab === 3) {
-      parentNavigation.setOptions({
-        ...noHeaderContainerMargin,
-        headerLeft: () =>
-          isShopAccountDrawerOpen ? emptyFragment : backHeaderButton,
-        headerRight: () => nexusShopAccountButton,
-      });
     } else {
       parentNavigation.setOptions({
         ...noHeaderContainerMargin,
@@ -303,7 +249,7 @@ export function useMainLayout(props: Props) {
       });
     }
 
-    if (isTxDetailModalOpened || activeTab === 3) {
+    if (isTxDetailModalOpened) {
       walletButtonFadingTimeout.current = setTimeout(() => {
         parentNavigation.setOptions({
           headerTitle: () => emptyFragment,
@@ -312,6 +258,8 @@ export function useMainLayout(props: Props) {
     } else {
       parentNavigation.setOptions({
         headerTitle: () => walletButton,
+        headerTitleAlign: 'center',
+        headerTitleContainerStyle: {left: 0},
       });
     }
 
@@ -324,25 +272,27 @@ export function useMainLayout(props: Props) {
     backHeaderButton,
     leftHeaderButton,
     rightHeaderButton,
-    nexusShopAccountButton,
     walletButton,
     emptyFragment,
     navigation,
     isWalletsModalOpened,
     isTxDetailModalOpened,
-    isShopAccountDrawerOpen,
+    shopOwnsHeader,
     noHeaderContainerMargin,
   ]);
 
   // NOTE: fixes header disappearing when navigating back from screens with headerTransparent: true
-  // like ConfirmBuy, ConfirmSell, WebPage, etc.
-  useFocusEffect(
-    React.useCallback(() => {
-      const parentNavigation = navigation.getParent();
-      if (!parentNavigation) return;
+  // like ConfirmBuy, ConfirmSell, WebPage, etc. Listens on the Main ROUTE's
+  // focus, not this screen's: the shop presenting/closing inside the Main
+  // stack must not blink the header.
+  useEffect(() => {
+    const parentNavigation = navigation.getParent();
+    if (!parentNavigation) return;
 
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const unsubscribe = parentNavigation.addListener('focus', () => {
       // Small delay to ensure the screen is fully focused before applying header fix
-      const timeoutId = setTimeout(() => {
+      timeoutId = setTimeout(() => {
         parentNavigation.setOptions({
           headerShown: false,
         });
@@ -353,8 +303,11 @@ export function useMainLayout(props: Props) {
           });
         }, 10);
       }, 50);
+    });
 
-      return () => clearTimeout(timeoutId);
-    }, [navigation]),
-  );
+    return () => {
+      unsubscribe();
+      clearTimeout(timeoutId);
+    };
+  }, [navigation]);
 }

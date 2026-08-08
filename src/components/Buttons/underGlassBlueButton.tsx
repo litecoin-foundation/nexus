@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import {Pressable, View} from 'react-native';
-import {Group, Paragraph, RoundedRect, vec} from '@shopify/react-native-skia';
+import {Group, Paragraph, vec} from '@shopify/react-native-skia';
 import type {SharedValue} from 'react-native-reanimated';
 import {
   useDerivedValue,
@@ -15,7 +15,12 @@ import {
   withSpring,
 } from 'react-native-reanimated';
 
-import {buildFittedParagraph, useSatoshiFontMgr} from '../GlassBalanceGraphics';
+import GlassButtonSurface from './GlassButtonSurface';
+import {
+  buildFittedParagraph,
+  buildParagraph,
+  useSatoshiFontMgr,
+} from '../GlassBalanceGraphics';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 // blue button that lives under the glass band: an invisible native ghost
@@ -29,6 +34,11 @@ interface Frame {
   height: number;
 }
 
+// capsule hugging its label, per the SendBtn artboard
+const HEIGHT_RATIO = 0.06;
+const FONT_RATIO = 0.02;
+const PADDING_RATIO = 0.4;
+
 export const useUnderGlassBlueButton = (
   cardRootRef: React.RefObject<View | null>,
   label: string,
@@ -36,10 +46,15 @@ export const useUnderGlassBlueButton = (
   disabled: boolean,
   opacity?: SharedValue<number>,
 ) => {
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
   const fontMgr = useSatoshiFontMgr();
   const ref = useRef<View>(null);
   const [frame, setFrame] = useState<Frame | null>(null);
+
+  const height = SCREEN_HEIGHT * HEIGHT_RATIO;
+  const fontSize = SCREEN_HEIGHT * FONT_RATIO;
+  const padding = height * PADDING_RATIO;
 
   const scale = useSharedValue(1);
   const pressTransform = useDerivedValue(() => [{scale: scale.value}]);
@@ -53,15 +68,15 @@ export const useUnderGlassBlueButton = (
     }
     node.measureLayout(
       root,
-      (x, y, width, height) =>
+      (x, y, w, h) =>
         setFrame(prev =>
           prev &&
           prev.x === x &&
           prev.y === y &&
-          prev.width === width &&
-          prev.height === height
+          prev.width === w &&
+          prev.height === h
             ? prev
-            : {x, y, width, height},
+            : {x, y, width: w, height: h},
         ),
       () => {},
     );
@@ -72,10 +87,36 @@ export const useUnderGlassBlueButton = (
     measure();
   });
 
+  // the ghost hugs the label; maxWidth lets the container clamp a long one
+  // and the drawn paragraph then shrinks to whatever width it measured at
+  const labelWidth = useMemo(
+    () =>
+      fontMgr
+        ? buildParagraph(
+            fontMgr,
+            label,
+            fontSize,
+            700,
+            '#FFFFFF',
+            SCREEN_WIDTH,
+          ).getLongestLine()
+        : 0,
+    [fontMgr, label, fontSize, SCREEN_WIDTH],
+  );
+  const ghostStyle = useMemo(
+    () => ({
+      alignSelf: 'center' as const,
+      maxWidth: '100%' as const,
+      height,
+      width: labelWidth ? Math.ceil(labelWidth + padding * 2) : undefined,
+    }),
+    [height, labelWidth, padding],
+  );
+
   const ghost = (
     <Pressable
       ref={ref}
-      style={ghostStyle(SCREEN_HEIGHT)}
+      style={ghostStyle}
       onLayout={measure}
       disabled={disabled}
       onPressIn={() => {
@@ -89,31 +130,29 @@ export const useUnderGlassBlueButton = (
   );
 
   const graphics = useMemo(() => {
-    if (!frame || !fontMgr) {
+    if (!frame || !fontMgr || frame.width <= 0 || frame.height <= 0) {
       return null;
     }
     // shrinks to fit like TranslateText did, then centered manually
     const paragraph = buildFittedParagraph(
       fontMgr,
       label,
-      SCREEN_HEIGHT * 0.02,
+      fontSize,
       700,
       '#FFFFFF',
       frame.width,
-      frame.width - SCREEN_HEIGHT * 0.05,
+      Math.max(1, frame.width - padding * 2),
     );
     const inner = (
       <Group
         origin={vec(frame.x + frame.width / 2, frame.y + frame.height / 2)}
         transform={pressTransform}>
         <Group opacity={disabled ? 0.5 : 1}>
-          <RoundedRect
+          <GlassButtonSurface
             x={frame.x}
             y={frame.y}
             width={frame.width}
             height={frame.height}
-            r={SCREEN_HEIGHT * 0.012}
-            color="#2C72FF"
           />
           <Paragraph
             paragraph={paragraph}
@@ -125,13 +164,16 @@ export const useUnderGlassBlueButton = (
       </Group>
     );
     return opacity ? <Group opacity={opacity}>{inner}</Group> : inner;
-  }, [frame, fontMgr, label, disabled, SCREEN_HEIGHT, pressTransform, opacity]);
+  }, [
+    frame,
+    fontMgr,
+    label,
+    disabled,
+    fontSize,
+    padding,
+    pressTransform,
+    opacity,
+  ]);
 
   return {ghost, graphics};
 };
-
-// same box as BlueButton's big variant
-const ghostStyle = (screenHeight: number) => ({
-  width: '100%' as const,
-  height: screenHeight * 0.06,
-});

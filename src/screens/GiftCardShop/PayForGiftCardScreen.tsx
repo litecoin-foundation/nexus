@@ -35,7 +35,7 @@ interface PayForGiftCardScreenProps {
     params: {
       initiateResponse: InitiatePurchaseResponseData;
       brandName: string;
-      onPaymentSuccess: (txid: string) => void;
+      onPaymentSuccess?: (txid: string) => void;
     };
   };
   navigation: any;
@@ -115,7 +115,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
           'Giftcard Payment',
         ),
       );
-      onPaymentSuccess(txid);
+      onPaymentSuccess?.(txid);
       dispatch(
         addPopup({
           title: 'Top-up your Litecoins',

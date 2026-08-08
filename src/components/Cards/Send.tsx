@@ -62,7 +62,7 @@ import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
 
 type RootStackParamList = {
-  Main: {
+  MainScreen: {
     scanData?: string;
   };
   Scan: {returnRoute: string; returnScreen?: string};
@@ -73,8 +73,8 @@ type RootStackParamList = {
 };
 
 interface Props {
-  route: RouteProp<RootStackParamList, 'Main'>;
-  navigation: StackNavigationProp<RootStackParamList, 'Main'>;
+  route: RouteProp<RootStackParamList, 'MainScreen'>;
+  navigation: StackNavigationProp<RootStackParamList, 'MainScreen'>;
   containerHeight?: number;
 }
 

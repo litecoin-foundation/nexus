@@ -16,34 +16,48 @@ import {
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  useDerivedValue,
   withTiming,
   withSpring,
   ReduceMotion,
-  useDerivedValue,
 } from 'react-native-reanimated';
 import {
   Canvas,
-  Rect,
-  RoundedRect,
-  LinearGradient,
   BackdropFilter,
   ImageFilter,
   Image as SkiaImage,
+  Rect,
+  RoundedRect,
+  LinearGradient,
   Skia,
   TileMode,
-  processUniforms,
   makeImageFromView,
   vec,
 } from '@shopify/react-native-skia';
 import type {SkImage} from '@shopify/react-native-skia';
 
-import {liquidGlassShader} from './liquidGlassShader';
+import {glassModalShader, makeGlassModalFilter} from './glassModalShader';
 import TranslateText from '../TranslateText';
+import {
+  getShopListTop,
+  SHOP_LABEL_HEIGHT_RATIO,
+} from '../GiftCardShop/GlassShopRows';
+import {ROW_BORDER} from '../GlassTxRows';
+
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
 import {ScreenCaptureContext} from '../../context/screenCapture';
-import {TILLO_CATEGORIES, TilloCategory} from '../../services/giftcards';
+import {
+  formatCategoryLabel,
+  TILLO_CATEGORIES,
+  TilloCategory,
+} from '../../services/giftcards';
+
+// Frosted category menu, dropped from the shop's filter control: the same
+// milky glass sheet as the tx detail modal, anchored under the filter glyph
+// so the picker reads as part of it.
 
 interface Props {
   isVisible: boolean;
@@ -52,14 +66,8 @@ interface Props {
   onSelect: (category: TilloCategory | null) => void;
 }
 
-export const formatCategoryLabel = (category: string): string => {
-  return category
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
-
 const FALLBACK_GRADIENT = ['#0A1628', '#122B5C', '#0E1F3C'];
+const GLASS_BLUR_SIGMA = 12;
 
 interface GlassModalProps {
   isOpened: boolean;
@@ -77,19 +85,20 @@ function LiquidGlassCategoryPicker({
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const {captureRef} = useContext(ScreenCaptureContext);
+  const insets = useSafeAreaInsets();
 
-  const modalWidth = SCREEN_WIDTH * 0.52;
-  const modalHeight = SCREEN_HEIGHT * 0.6;
-  const modalRight = (SCREEN_WIDTH - modalWidth) / 2;
-  const modalTop = SCREEN_HEIGHT - (modalHeight + modalRight);
-  const modalLeft = SCREEN_WIDTH - modalWidth - modalRight;
-  const cornerRadius = SCREEN_HEIGHT * 0.025;
-
-  const borderWidth = modalWidth + SCREEN_WIDTH * 0.08;
-  const borderHeight = modalHeight + (borderWidth - modalWidth);
-  const borderLeft = modalLeft - (borderWidth - modalWidth) / 2;
-  const borderTop = modalTop - (borderHeight - modalHeight) / 2;
-  const borderCornerRadius = cornerRadius * 1.2;
+  // dropped from the filter control at the end of the list's label row
+  const panelWidth = SCREEN_WIDTH * 0.58;
+  const panelRight = SCREEN_WIDTH * 0.05;
+  const panelLeft = SCREEN_WIDTH - panelRight - panelWidth;
+  const panelTop =
+    getShopListTop(SCREEN_HEIGHT, insets.top) +
+    SCREEN_HEIGHT * (SHOP_LABEL_HEIGHT_RATIO + 0.006);
+  const panelHeight = Math.min(
+    SCREEN_HEIGHT * 0.5,
+    SCREEN_HEIGHT - panelTop - SCREEN_HEIGHT * 0.2,
+  );
+  const cornerRadius = SCREEN_HEIGHT * 0.022;
 
   const [capturedImage, setCapturedImage] = useState<SkImage | null>(null);
   const capturedRef = useRef<SkImage | null>(null);
@@ -118,27 +127,7 @@ function LiquidGlassCategoryPicker({
     };
   }, []);
 
-  const borderGlassFilter = useDerivedValue(() => {
-    const builder = Skia.RuntimeShaderBuilder(liquidGlassShader);
-    processUniforms(
-      liquidGlassShader,
-      {
-        size: [borderWidth, borderHeight],
-        cornerR: borderCornerRadius,
-        resolution: [borderWidth, borderHeight],
-        darken: 1.0,
-      },
-      builder,
-    );
-    return Skia.ImageFilter.MakeRuntimeShaderWithChildren(
-      builder,
-      0,
-      ['blurredImage'],
-      [Skia.ImageFilter.MakeBlur(8, 8, TileMode.Clamp)],
-    )!;
-  });
-
-  const scale = useSharedValue(0.95);
+  const scale = useSharedValue(0.9);
   const modalOpacity = useSharedValue(0);
   const contentOpacity = useSharedValue(0);
   const backdropOpacity = useSharedValue(0);
@@ -151,18 +140,18 @@ function LiquidGlassCategoryPicker({
       captureScreen();
       setVisible(true);
       scale.value = withSpring(1, {
-        duration: 500,
-        dampingRatio: 0.75,
+        duration: 450,
+        dampingRatio: 0.8,
         reduceMotion: ReduceMotion.Never,
       });
-      modalOpacity.value = withTiming(1, {duration: 200});
-      contentOpacity.value = withTiming(1, {duration: 300});
-      backdropOpacity.value = withTiming(1, {duration: 250});
+      modalOpacity.value = withTiming(1, {duration: 180});
+      contentOpacity.value = withTiming(1, {duration: 280});
+      backdropOpacity.value = withTiming(1, {duration: 220});
     } else {
-      scale.value = withTiming(0.95, {duration: 200});
-      modalOpacity.value = withTiming(0, {duration: 200});
-      contentOpacity.value = withTiming(0, {duration: 150});
-      backdropOpacity.value = withTiming(0, {duration: 200});
+      scale.value = withTiming(0.92, {duration: 180});
+      modalOpacity.value = withTiming(0, {duration: 180});
+      contentOpacity.value = withTiming(0, {duration: 140});
+      backdropOpacity.value = withTiming(0, {duration: 180});
       animTimeout.current = setTimeout(() => {
         setVisible(false);
         capturedRef.current = null;
@@ -170,21 +159,52 @@ function LiquidGlassCategoryPicker({
           prev?.dispose?.();
           return null;
         });
-      }, 250);
+      }, 230);
     }
     return () => clearTimeout(animTimeout.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpened]);
 
-  const animatedModalStyle = useAnimatedStyle(() => ({
-    transform: [{scale: scale.value}],
+  // milky frosted sheet, scaling out of its top-right anchor
+  const shaderBuilder = useMemo(
+    () => Skia.RuntimeShaderBuilder(glassModalShader),
+    [],
+  );
+  const glassBlurChild = useMemo(
+    () =>
+      Skia.ImageFilter.MakeBlur(
+        GLASS_BLUR_SIGMA,
+        GLASS_BLUR_SIGMA,
+        TileMode.Clamp,
+      ),
+    [],
+  );
+  const glassFilter = useDerivedValue(() => {
+    const s = scale.value;
+    const width = panelWidth * s;
+    const height = panelHeight * s;
+    return makeGlassModalFilter(
+      shaderBuilder,
+      glassBlurChild,
+      [panelLeft + panelWidth - width, panelTop, width, height],
+      cornerRadius,
+      1.0,
+    );
+  });
+
+  const animatedBackdropStyle = useAnimatedStyle(() => ({
+    opacity: backdropOpacity.value,
+  }));
+  const animatedCanvasStyle = useAnimatedStyle(() => ({
     opacity: modalOpacity.value,
   }));
   const animatedContentStyle = useAnimatedStyle(() => ({
     opacity: contentOpacity.value,
-  }));
-  const animatedBackdropStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
+    transform: [
+      {translateX: (panelWidth / 2) * (1 - scale.value)},
+      {translateY: (-panelHeight / 2) * (1 - scale.value)},
+      {scale: scale.value},
+    ],
   }));
 
   const handleSelect = (category: TilloCategory | null) => {
@@ -198,11 +218,11 @@ function LiquidGlassCategoryPicker({
       return (
         <TouchableOpacity
           activeOpacity={0.55}
-          style={[styles.row, selected && styles.rowSelected]}
+          style={styles.row}
           onPress={() => handleSelect(item)}>
           <TranslateText
             textValue={item ? formatCategoryLabel(item) : 'All'}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.019}
             textStyle={[styles.rowTitle, selected && styles.rowTitleSelected]}
             numberOfLines={1}
           />
@@ -248,91 +268,63 @@ function LiquidGlassCategoryPicker({
         />
       </Animated.View>
 
+      {/* the frosted sheet refracts a one-shot capture of the screen */}
       <Animated.View
         pointerEvents="none"
-        style={[
-          styles.modalContainer,
-          {
-            top: borderTop,
-            left: borderLeft,
-            width: borderWidth,
-            height: borderHeight,
-            borderRadius: borderCornerRadius,
-          },
-          animatedModalStyle,
-        ]}>
+        style={[StyleSheet.absoluteFill, animatedCanvasStyle]}>
         <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
           {capturedImage ? (
             <SkiaImage
               image={capturedImage}
-              x={-borderLeft}
-              y={-borderTop}
+              x={0}
+              y={0}
               width={SCREEN_WIDTH}
               height={SCREEN_HEIGHT}
               fit="cover"
             />
           ) : (
-            <Rect x={0} y={0} width={borderWidth} height={borderHeight}>
+            <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
               <LinearGradient
                 start={vec(0, 0)}
-                end={vec(borderWidth, borderHeight)}
+                end={vec(SCREEN_WIDTH, SCREEN_HEIGHT)}
                 colors={FALLBACK_GRADIENT}
               />
             </Rect>
           )}
-          <BackdropFilter filter={<ImageFilter filter={borderGlassFilter} />} />
+          <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
           <RoundedRect
-            x={0.5}
-            y={0.5}
-            width={borderWidth - 1}
-            height={borderHeight - 1}
-            r={borderCornerRadius - 0.5}
+            x={panelLeft + 0.5}
+            y={panelTop + 0.5}
+            width={panelWidth - 1}
+            height={panelHeight - 1}
+            r={cornerRadius - 0.5}
             style="stroke"
             strokeWidth={0.5}
-            color="rgba(255, 255, 255, 0.35)"
+            color="rgba(255, 255, 255, 0.45)"
           />
         </Canvas>
-        <View
-          pointerEvents="none"
-          style={[
-            StyleSheet.absoluteFill,
-            styles.borderTintLayer,
-            {borderRadius: borderCornerRadius},
-          ]}
-        />
       </Animated.View>
 
       <Animated.View
         style={[
-          styles.modalContainer,
+          styles.panel,
           {
-            top: modalTop,
-            left: modalLeft,
-            width: modalWidth,
-            height: modalHeight,
+            top: panelTop,
+            left: panelLeft,
+            width: panelWidth,
+            height: panelHeight,
             borderRadius: cornerRadius,
           },
-          animatedModalStyle,
+          animatedContentStyle,
         ]}>
-        <View
-          pointerEvents="none"
-          style={[
-            StyleSheet.absoluteFill,
-            styles.tintLayer,
-            {borderRadius: cornerRadius},
-          ]}
+        <FlatList
+          data={[null, ...TILLO_CATEGORIES] as (TilloCategory | null)[]}
+          keyExtractor={item => item ?? 'all'}
+          renderItem={renderRow}
+          ItemSeparatorComponent={renderSeparator}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
-
-        <Animated.View style={[styles.content, animatedContentStyle]}>
-          <FlatList
-            data={[null, ...TILLO_CATEGORIES] as (TilloCategory | null)[]}
-            keyExtractor={item => item ?? 'all'}
-            renderItem={renderRow}
-            ItemSeparatorComponent={renderSeparator}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
-        </Animated.View>
       </Animated.View>
     </View>
   );
@@ -358,6 +350,15 @@ const CategoryPickerModal: React.FC<Props> = props => {
     showPopUp(modal, 'category-picker-modal');
   }, [modal, showPopUp]);
 
+  // the shop screen can unmount with the picker portal entry live (deep-link
+  // pop); clear the slot or the portal strands the last-rendered picker
+  useEffect(
+    () => () => {
+      showPopUp(<React.Fragment />, 'category-picker-modal');
+    },
+    [showPopUp],
+  );
+
   return <></>;
 };
 
@@ -371,50 +372,38 @@ const styles = StyleSheet.create({
   backdrop: {
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
-  modalContainer: {
+  panel: {
     position: 'absolute',
     overflow: 'hidden',
   },
-  tintLayer: {
-    backgroundColor: 'transparent',
-  },
-  borderTintLayer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-  },
-  content: {
-    flex: 1,
-  },
   listContent: {
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-  },
-  rowSelected: {
-    backgroundColor: 'transparent',
+    paddingHorizontal: 18,
+    paddingVertical: 13,
   },
   rowTitle: {
     fontFamily: 'Satoshi Variable',
     fontWeight: '700',
-    color: '#000000',
-    fontSize: 16,
+    color: '#2E2E2E',
+    fontSize: 15,
     letterSpacing: -0.1,
     flexShrink: 1,
   },
   rowTitleSelected: {
-    color: '#000000',
+    color: '#1162E6',
   },
   check: {
     marginLeft: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(60, 60, 67, 0.22)',
-    marginHorizontal: 20,
+    backgroundColor: ROW_BORDER,
+    marginHorizontal: 18,
   },
 });
 
