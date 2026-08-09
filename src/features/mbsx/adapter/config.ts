@@ -16,9 +16,16 @@ export type SwapFee = {
   bps: number;
 };
 
+export type WalletConfig = {
+  // 'host' leaves the funding prevouts and their keys on this side; 'debug' has
+  // the module own everything. Absent means debug.
+  type: 'host' | 'debug';
+};
+
 export type CoinConfig = {
   electrumx: ElectrumServer[];
   fees?: SwapFee[];
+  wallet?: WalletConfig;
 };
 
 export type MbsxConfig = {
@@ -49,6 +56,7 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
     coins: {
       ltc: {
         electrumx: [{url: 'tcp://10.0.2.2:50004', haveverbosetx: false}],
+        wallet: {type: 'host'},
         fees: [
           {
             address: 'rltc1q6jymkhc5qy080x8mmdcwysna2uh4jwdyutx5pa',

@@ -42,9 +42,11 @@ const MbsxNavigator: React.FC = () => {
     let left = false;
 
     const leave = () => {
-      if (stopIfIdle()) {
-        dispatch(setRunning(false));
-      }
+      stopIfIdle().then(stopped => {
+        if (stopped) {
+          dispatch(setRunning(false));
+        }
+      });
     };
 
     dispatch(setError(null));

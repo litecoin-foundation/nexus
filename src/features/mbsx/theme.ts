@@ -133,6 +133,14 @@ export const getMbsxStyles = (screenHeight: number) => {
       textAlign: 'center',
       paddingVertical: spacing.sm,
     },
+    link: {
+      color: colors.success,
+      fontSize: font.sm,
+      fontWeight: '600',
+      textAlign: 'center',
+      paddingVertical: spacing.sm,
+      textDecorationLine: 'underline',
+    },
     messageRow: {
       paddingVertical: spacing.xs,
       paddingHorizontal: spacing.md,

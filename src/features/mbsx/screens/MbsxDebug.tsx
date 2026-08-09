@@ -84,8 +84,8 @@ const MbsxDebug: React.FC = () => {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => {
-            const rv = resetState();
+          onPress={async () => {
+            const rv = await resetState();
             if (rv.error) {
               console.error('mbsx resetState failed:', rv.error);
             }

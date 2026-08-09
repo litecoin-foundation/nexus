@@ -12,6 +12,9 @@ import type {
   SwapSummary,
 } from '../types';
 import {loadOrCreateConfig, MBSX_DATA_DIR} from './config';
+import {leasedRequestIds, releaseAllLeases, releaseLeases} from './leases';
+import {signSwapTx} from './signTx';
+import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
 
 export {
   defaultConfig,
@@ -19,6 +22,9 @@ export {
   readConfig,
   writeConfig,
 } from './config';
+export {recordLeases, releaseLeases, releasePrevouts} from './leases';
+export {selectAndLeasePrevouts, serialisePrevout} from './prevouts';
+export type {SelectedPrevout} from './prevouts';
 export type {CoinConfig, ElectrumServer, MbsxConfig} from './config';
 
 // The module reports "busy" when it could not take its locks. It is not a
@@ -52,10 +58,15 @@ export const start = async () => {
   // Must precede initialise(): the core can ask for a key during startup while
   // it reactivates in-flight swaps.
   installKeyProvider();
+  installSigner();
 
   if (NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
     throw new Error(`mbsx could not use its data directory ${MBSX_DATA_DIR}`);
   }
+  // Also before initialise(): a module given its key never generates or stores
+  // one, so this is what keeps the seed phrase the only thing to back up.
+  NitroBSX.setAppType(APP_TYPE_NEXUS);
+  NitroBSX.setMainExtkey(await deriveMainExtkey());
   if (NitroBSX.initialise() !== 0) {
     throw new Error('mbsx failed to initialise');
   }
@@ -79,6 +90,36 @@ const TERMINAL_STATES = new Set([
   'ERROR',
 ]);
 
+/**
+ * Frees the coins behind any request whose swaps have all finished, and behind a
+ * request that errored before producing one. Called on the same tick that
+ * decides whether the core can stop, so it does not need a timer of its own.
+ */
+export const reconcileLeases = async () => {
+  for (const requestId of leasedRequestIds()) {
+    const request = getRequestInfo(requestId);
+    if (request === null) {
+      continue; // Core is down, so nothing is known: leave the lease alone.
+    }
+    const swapIds = request.swapids ?? [];
+    if (swapIds.length === 0) {
+      if (request.error) {
+        await releaseLeases(requestId);
+      }
+      continue;
+    }
+    // Every swap, not any: one request can produce several, and coins are only
+    // free once none of them can still spend them.
+    const allFinished = swapIds.every(swapId => {
+      const swap = getSwapInfo(swapId);
+      return swap !== null && TERMINAL_STATES.has(swap.state);
+    });
+    if (allFinished) {
+      await releaseLeases(requestId);
+    }
+  }
+};
+
 export const hasActiveSwaps = () => {
   const swaps = listSwaps();
   if (swaps === null) {
@@ -98,7 +139,8 @@ export const stop = () => {
 
 // Leaving the section must not abandon a swap that has coins locked on chain,
 // so the core outlives the ui that started it.
-export const stopIfIdle = () => {
+export const stopIfIdle = async () => {
+  await reconcileLeases();
   if (!isRunning() || hasActiveSwaps()) {
     return false;
   }
@@ -167,32 +209,55 @@ export const setSettings = (settings: Partial<MbsxSettings>) =>
 
 // Regtest only: clears swap and chain data but keeps settings, so a new test
 // can run against a new chain without restarting the app.
-export const resetState = () => {
+export const resetState = async () => {
+  // Before the wipe: afterwards nothing links the leases to a swap, and the
+  // coins would stay locked until lnd expires them.
+  await releaseAllLeases();
   const rv = NitroBSX.resetState() as MbsxResult<{}>;
   clearKeys();
-  clearPrevouts();
   return rv;
 };
 
 export type SwapRequest = {
   coin_from: string;
   coin_to: string;
-  amount_from: number;
-  amount_to: number;
+  // Decimal strings in whole coins. The module parses them against the coin's
+  // own scale, so a value it displayed round-trips exactly and a fractional
+  // amount cannot be lost to a double.
+  amount_from: string;
+  amount_to: string;
   address_to: string;
+  // Where lock tx a's change goes, and the whole amount if the swap fails. This
+  // side owns the funding, so it owns the change: p2wpkh only, which is all the
+  // 20 byte wire field can carry. Omitted, the module uses its own wallet.
+  change_address?: string;
   outputs: string[];
 };
 
 export const requestSwap = (request: SwapRequest) =>
   NitroBSX.requestSwap(request) as Promise<MbsxResult<{request_id: string}>>;
 
+/**
+ * A decimal amount in whole coins to the coin's smallest unit, by the module's
+ * own conversion — so what lnd is asked to fund is the same number the module
+ * derives from the string it is sent, rather than a second implementation that
+ * could disagree.
+ */
+export const parseAmount = (coin: string, amount: string): bigint => {
+  if (!isRunning()) {
+    throw new Error('Swaps are not running');
+  }
+  return NitroBSX.parseAmount(coin, amount);
+};
+
 export const acceptSwap = (swapId: string) =>
   NitroBSX.acceptSwap(swapId) as Promise<MbsxResult<{}>>;
 
-// WS4 seam. The module asks for a key by id whenever it needs to sign; off
-// regtest it has no other source, since getRandomKey is debug-only. Registering
-// must happen once before initialise() and outlive every screen, so the store
-// lives here rather than in a component.
+// Nothing fills this on Nexus: the ltc wallet is a host wallet, which derives
+// its own keys and signs through installSigner rather than handing keys over.
+// It stays for a coin configured with a debug wallet, which would ask.
+// Registering must happen once before initialise() and outlive every screen, so
+// the store lives here rather than in a component.
 const keys = new Map<string, string>();
 
 export const registerKey = (key: string) => {
@@ -201,18 +266,24 @@ export const registerKey = (key: string) => {
 
 export const clearKeys = () => keys.clear();
 
+// Only reached for key ids the module cannot derive itself: the funding prevouts
+// this side owns. Everything under the mbsx extkey is resolved in the module.
 export const installKeyProvider = () => {
-  NitroBSX.setGetKey((keyId: string) => keys.get(keyId) ?? '');
+  NitroBSX.setGetKey((keyId: string, _coin: string) => keys.get(keyId) ?? '');
 };
 
-// WS4 seam. Funding outpoints as hex, keyed by coin ticker. Until Nexus's
-// wallet fills these, CreateSwap has nothing to spend and says so.
-const prevouts = new Map<string, string[]>();
-
-export const setPrevouts = (coin: string, outputs: string[]) => {
-  prevouts.set(coin.toUpperCase(), outputs);
+// The module hands over whole transactions rather than asking for keys, because
+// lnd will sign but never export. Returning '' is a refusal the module reports
+// rather than broadcasting anything.
+export const installSigner = () => {
+  NitroBSX.setSignTx(async (psbtHex: string, _coin: string) => {
+    try {
+      return await signSwapTx(psbtHex);
+    } catch (e) {
+      console.warn('mbsx could not sign a swap transaction', e);
+      return '';
+    }
+  });
 };
 
-export const getPrevouts = (coin: string) => prevouts.get(coin.toUpperCase());
 
-export const clearPrevouts = () => prevouts.clear();
