@@ -1,5 +1,5 @@
 import {createAction, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {PURGE} from 'redux-persist';
+import {PURGE, REHYDRATE} from 'redux-persist';
 import {Platform} from 'react-native';
 import {getCountry} from 'react-native-localize';
 import * as SecureStore from 'expo-secure-store';
@@ -44,9 +44,53 @@ const initialState: INexusShopAccount = {
   tosAgreed: false,
 };
 
+// Root-level REHYDRATE: the payload is the whole persisted tree, keyed by slice.
+const rehydrate = createAction<
+  {nexusshopaccount?: INexusShopAccount} | undefined
+>(REHYDRATE);
+
 const BASE_API_URL = __DEV__
   ? 'https://stage-api.nexuswallet.com'
   : 'https://api.nexuswallet.com';
+
+const REQUEST_TIMEOUT_MS = 15000;
+
+/**
+ * fetch() has no default timeout. Against an unreachable host the promise stays
+ * pending until the platform gives up (60s on iOS, longer if the connection
+ * hangs rather than refuses), so the `finally` that clears loginLoading never
+ * runs and the button sits spinning. Bound every request instead.
+ *
+ * An abort from the caller's own signal is rethrown untouched, so unmount
+ * cancellation stays distinguishable from a timeout.
+ */
+const fetchWithTimeout = async (
+  url: string,
+  init: RequestInit = {},
+  timeoutMs = REQUEST_TIMEOUT_MS,
+): Promise<Response> => {
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+  const external = init.signal;
+  const forwardAbort = () => controller.abort();
+  external?.addEventListener('abort', forwardAbort);
+
+  try {
+    return await fetch(url, {...init, signal: controller.signal});
+  } catch (error) {
+    if (timedOut) {
+      throw new Error('Request timed out. Please check your connection.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    external?.removeEventListener('abort', forwardAbort);
+  }
+};
 
 export const nexusShopAccountSlice = createSlice({
   name: 'nexusshopaccount',
@@ -188,6 +232,26 @@ export const nexusShopAccountSlice = createSlice({
   },
   extraReducers: builder => {
     builder.addCase(createAction(PURGE), () => initialState);
+    // The whole store is persisted, transient flags included. Killing the app
+    // mid-request writes loginLoading: true to disk with nothing left to unset
+    // it, permanently disabling the sign-up button; a stale error would pop a
+    // warning modal on launch. Reset them as the slice comes back.
+    //
+    // The merge has to be done here rather than left to the reconciler:
+    // autoMergeLevel1 skips any key the reducer already touched, so returning a
+    // new object means this is the only chance to apply the persisted values.
+    builder.addCase(rehydrate, (state, action) => {
+      const inbound = action.payload?.nexusshopaccount;
+      if (!inbound) return state;
+      return {
+        ...state,
+        ...inbound,
+        loading: false,
+        loginLoading: false,
+        error: null,
+        isCountryPickerOpen: false,
+      };
+    });
   },
 });
 
@@ -227,13 +291,16 @@ export const registerOnNexusShop =
         osVersion: String(Platform.Version),
       });
 
-      const response = await fetch(`${BASE_API_URL}/api/shop/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchWithTimeout(
+        `${BASE_API_URL}/api/shop/register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body,
         },
-        body,
-      });
+      );
 
       const data = await response.json();
 
@@ -275,16 +342,19 @@ export const loginToNexusShop =
     try {
       dispatch(setLoginLoading(true));
 
-      const response = await fetch(`${BASE_API_URL}/api/shop/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchWithTimeout(
+        `${BASE_API_URL}/api/shop/send-otp`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            [TURNSTILE_RESPONSE_FIELD]: turnstileToken,
+          }),
         },
-        body: JSON.stringify({
-          email,
-          [TURNSTILE_RESPONSE_FIELD]: turnstileToken,
-        }),
-      });
+      );
 
       const data = await response.json();
 
@@ -321,18 +391,21 @@ export const verifyOtpCode =
   ): AppThunk =>
   async dispatch => {
     try {
-      const response = await fetch(`${BASE_API_URL}/api/shop/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchWithTimeout(
+        `${BASE_API_URL}/api/shop/verify-otp`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            uniqueId,
+            otpCode,
+          }),
+          signal,
         },
-        body: JSON.stringify({
-          email,
-          uniqueId,
-          otpCode,
-        }),
-        signal,
-      });
+      );
 
       const data = await response.json();
 
@@ -406,7 +479,7 @@ export const fetchUserGiftCards =
     try {
       dispatch(setAccountLoading(true));
 
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${BASE_API_URL}/shop/giftcards/${uniqueId}`,
         {
           method: 'GET',
