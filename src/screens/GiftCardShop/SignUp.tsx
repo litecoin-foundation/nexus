@@ -86,6 +86,7 @@ const SignUp: React.FC<Props> = ({route}) => {
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [retryTurnstileOnClose, setRetryTurnstileOnClose] = useState(false);
 
   const {loginLoading, error: reduxError} = useSelector(
     (state: any) => state.nexusshopaccount,
@@ -116,11 +117,13 @@ const SignUp: React.FC<Props> = ({route}) => {
     setShowErrorModal(true);
   };
 
-  const handleTurnstileError = () => {
-    // Clear token and force new validation
+  const handleTurnstileError = (reason?: string) => {
+    // Clear the token, but don't remount the widget here: a permanent failure
+    // (disallowed domain, bad sitekey) would immediately error again and loop.
+    // The retry happens when the user dismisses the modal instead.
     setTurnstileToken('');
-    setTurnstileResetKey(prev => prev + 1);
-    setErrorMessage('Verification failed. Please try again.');
+    setRetryTurnstileOnClose(true);
+    setErrorMessage(reason || 'Verification failed. Please try again.');
     setShowErrorModal(true);
   };
 
@@ -135,6 +138,12 @@ const SignUp: React.FC<Props> = ({route}) => {
   const handleCloseErrorModal = () => {
     setShowErrorModal(false);
     setErrorMessage('');
+    // Remount the widget for a fresh challenge, now that the retry is
+    // user-driven rather than automatic.
+    if (retryTurnstileOnClose) {
+      setRetryTurnstileOnClose(false);
+      setTurnstileResetKey(prev => prev + 1);
+    }
     // Clear Redux error when modal is closed
     if (reduxError) {
       dispatch(setAccountError(''));
