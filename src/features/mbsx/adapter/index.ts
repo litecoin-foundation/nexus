@@ -158,7 +158,9 @@ export const stop = () => {
 // Leaving the section must not abandon a swap that has coins locked on chain,
 // so the core outlives the ui that started it.
 export const stopIfIdle = async () => {
-  await reconcileLeases();
+  // Still here as the backstop: a request that errored before producing a swap
+  // never emits a state change for the watcher to see.
+  await reconcileNow();
   if (!isRunning() || hasActiveSwaps()) {
     return false;
   }
@@ -167,6 +169,52 @@ export const stopIfIdle = async () => {
 };
 
 export const getVersion = () => NitroBSX.getVersionString();
+
+let reconciling = false;
+let reconcileAgain = false;
+
+const reconcileNow = async () => {
+  if (reconciling) {
+    reconcileAgain = true;
+    return;
+  }
+  reconciling = true;
+  try {
+    do {
+      reconcileAgain = false;
+      await reconcileLeases();
+    } while (reconcileAgain);
+  } catch (e) {
+    console.warn('mbsx could not reconcile leases', e);
+  } finally {
+    reconciling = false;
+  }
+};
+
+/**
+ * Frees a swap's coins as soon as it ends, rather than when the section closes.
+ *
+ * Subscribe once, above the screens: a lease outlives any of them, and leaving
+ * the coins locked until lnd's own timer lapses is indistinguishable to the user
+ * from the wallet losing them.
+ */
+export const watchForFinishedSwaps = () =>
+  NitroBSX.onMessage((payload: {type: string; data: string}) => {
+    if (payload.type !== 'event') {
+      return;
+    }
+    try {
+      const event = JSON.parse(payload.data);
+      if (
+        event.event_type === 'STATE_CHANGED' &&
+        TERMINAL_STATES.has(event.event_sub_type)
+      ) {
+        void reconcileNow();
+      }
+    } catch {
+      // Not an event we can read, so not one that ends a swap.
+    }
+  });
 
 export const onMessage = NitroBSX.onMessage;
 export const onSettingsChanged = NitroBSX.onSettingsChanged;

@@ -47,6 +47,11 @@ export const getMbsxStyles = (screenHeight: number) => {
       flex: 1,
       backgroundColor: colors.white,
     },
+    // For an action that sits outside the ScrollView, which carries the padding
+    // the container does not.
+    headerAction: {
+      paddingHorizontal: spacing.md,
+    },
     scroll: {
       flexGrow: 1,
       padding: spacing.md,
@@ -66,6 +71,31 @@ export const getMbsxStyles = (screenHeight: number) => {
       borderBottomWidth: 1,
       borderColor: colors.border,
     },
+    // For entries that are more than a label and a value. `row` puts everything
+    // on one line, which for a swap id or an error message means it runs off the
+    // screen - and those are the two things most worth reading in full.
+    stackedRow: {
+      alignItems: 'flex-start',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      borderBottomWidth: 1,
+      borderColor: colors.border,
+    },
+    rowPrimary: {
+      fontSize: font.md,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    rowSecondary: {
+      fontSize: font.sm,
+      color: colors.textSecondary,
+      marginTop: spacing.xs,
+    },
+    rowMessage: {
+      fontSize: font.sm,
+      color: colors.text,
+      marginTop: spacing.xs,
+    },
     label: {
       fontSize: font.md,
       fontWeight: '700',
@@ -74,11 +104,6 @@ export const getMbsxStyles = (screenHeight: number) => {
     value: {
       fontSize: font.md,
       color: colors.textSecondary,
-    },
-    coins: {
-      fontSize: font.md,
-      fontWeight: '700',
-      color: colors.text,
     },
     section: {
       fontSize: font.lg,

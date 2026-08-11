@@ -87,15 +87,17 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
 
         <Text style={styles.section}>Events</Text>
         {(swap.events ?? []).map((event: SwapEvent) => (
-          <View key={event.id} style={styles.row}>
-            <Text style={styles.value}>{event.time}</Text>
-            <Text style={styles.value}>
+          <View key={event.id} style={styles.stackedRow}>
+            <Text style={styles.rowPrimary}>
               {event.event_type}
               {event.event_sub_type ? `: ${event.event_sub_type}` : ''}
             </Text>
-            <Text style={styles.value}>
-              {event.event_msg ?? event.event_data ?? ''}
-            </Text>
+            <Text style={styles.rowSecondary}>{event.time}</Text>
+            {(event.event_msg ?? event.event_data) ? (
+              <Text style={styles.rowMessage}>
+                {String(event.event_msg ?? event.event_data)}
+              </Text>
+            ) : null}
           </View>
         ))}
       </ScrollView>

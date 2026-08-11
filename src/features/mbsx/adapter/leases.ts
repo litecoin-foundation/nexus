@@ -52,6 +52,11 @@ export const releaseLeases = async (requestId: string) => {
     return;
   }
   leased.delete(requestId);
+  // A lease vanishing is otherwise indistinguishable from lnd's own timer
+  // lapsing, and the two mean very different things about this code.
+  console.log(
+    `mbsx releasing ${prevouts.length} coin(s) for request ${requestId}`,
+  );
   await releasePrevouts(prevouts);
 };
 

@@ -38,6 +38,17 @@ const SwapList: React.FC<Props> = ({navigation}) => {
 
   return (
     <View style={styles.container}>
+      {/* Outside the ScrollView, so the section's main action stays put however
+          long the list gets. */}
+      <View style={styles.headerAction}>
+        <TouchableOpacity
+          testID="mbsx-new-swap"
+          style={[styles.button, !running ? styles.buttonDisabled : null]}
+          disabled={!running}
+          onPress={() => navigation.navigate('CreateSwap')}>
+          <Text style={styles.buttonText}>New swap</Text>
+        </TouchableOpacity>
+      </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {!running && !error ? <Text style={styles.empty}>Starting…</Text> : null}
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -49,15 +60,14 @@ const SwapList: React.FC<Props> = ({navigation}) => {
           swaps.map(swap => (
             <TouchableOpacity
               key={swap.id}
-              style={styles.row}
+              style={styles.stackedRow}
               onPress={() =>
                 navigation.navigate('SwapDetail', {swapId: swap.id})
               }>
-              <Text style={styles.coins}>
-                {swap.coin_from} → {swap.coin_to}
+              <Text style={styles.rowPrimary}>
+                {swap.coin_from} → {swap.coin_to} · {swap.state}
               </Text>
-              <Text style={styles.value}>{swap.state}</Text>
-              <Text style={styles.value}>{swap.id.slice(0, 8)}…</Text>
+              <Text style={styles.rowSecondary}>{swap.id}</Text>
             </TouchableOpacity>
           ))
         )}

@@ -82,9 +82,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           swapIds.map(swapId => (
             <TouchableOpacity
               key={swapId}
-              style={styles.row}
+              style={styles.stackedRow}
               onPress={() => navigation.navigate('SwapDetail', {swapId})}>
-              <Text style={styles.value}>{swapId.slice(0, 16)}…</Text>
+              <Text style={styles.rowMessage}>{swapId}</Text>
             </TouchableOpacity>
           ))
         )}

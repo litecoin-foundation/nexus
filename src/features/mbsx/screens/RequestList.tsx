@@ -44,15 +44,14 @@ const RequestList: React.FC<Props> = ({navigation}) => {
           requests.map(request => (
             <TouchableOpacity
               key={request.id}
-              style={styles.row}
+              style={styles.stackedRow}
               onPress={() =>
                 navigation.navigate('RequestDetail', {requestId: request.id})
               }>
-              <Text style={styles.coins}>
-                {request.coin_from} → {request.coin_to}
+              <Text style={styles.rowPrimary}>
+                {request.coin_from} → {request.coin_to} · {request.state}
               </Text>
-              <Text style={styles.value}>{request.state}</Text>
-              <Text style={styles.value}>{request.id.slice(0, 8)}…</Text>
+              <Text style={styles.rowSecondary}>{request.id}</Text>
             </TouchableOpacity>
           ))
         )}
