@@ -25,6 +25,11 @@ const CoinSelector: React.FC<Props> = ({label, value, onChange}) => {
         {COINS.map(coin => (
           <TouchableOpacity
             key={coin}
+            testID={`mbsx-coin-${coin}`}
+            accessibilityRole="button"
+            // Which chip is selected is otherwise carried by its styling alone,
+            // so nothing outside the render can tell whether a tap took.
+            accessibilityState={{selected: value === coin}}
             style={[styles.chip, value === coin ? styles.chipSelected : null]}
             onPress={() => onChange(coin)}>
             <Text

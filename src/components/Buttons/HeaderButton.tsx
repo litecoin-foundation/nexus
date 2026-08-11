@@ -25,6 +25,7 @@ interface Props {
     y: number;
   };
   backgroundColorSpecified?: string;
+  testID?: string;
 }
 
 const HeaderButton: React.FC<Props> = props => {
@@ -40,6 +41,7 @@ const HeaderButton: React.FC<Props> = props => {
     marginRight,
     imageXY,
     backgroundColorSpecified,
+    testID,
   } = props;
 
   const MARGIN_LEFT = marginLeft || 0;
@@ -67,7 +69,8 @@ const HeaderButton: React.FC<Props> = props => {
         leftPadding ? styles.padLeft : null,
         rightPadding ? styles.padRight : null,
       ]}
-      onPress={onPress}>
+      onPress={onPress}
+      testID={testID}>
       <View style={styles.subcontainer}>
         {imageSource ? (
           <Image source={imageSource} style={imageXY ? styles.image : null} />

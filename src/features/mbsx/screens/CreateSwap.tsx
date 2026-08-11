@@ -49,6 +49,7 @@ const CreateSwap: React.FC<Props> = ({navigation}) => {
 
   const submit = async () => {
     setRequestId('');
+    setError('');
     setBusy(true);
     try {
       if (!isRunning()) {
@@ -116,7 +117,6 @@ const CreateSwap: React.FC<Props> = ({navigation}) => {
       }
 
       recordLeases(rv.request_id, prevouts);
-      setError('');
       setRequestId(rv.request_id);
     } catch (e) {
       setError((e as Error).message);
@@ -131,6 +131,7 @@ const CreateSwap: React.FC<Props> = ({navigation}) => {
         <CoinSelector label="Receive" value={coinTo} onChange={setCoinTo} />
         <Text style={styles.inputLabel}>Receive address</Text>
         <TextInput
+          testID="mbsx-address-to"
           style={styles.input}
           placeholder="Address"
           value={addressTo}
@@ -141,6 +142,7 @@ const CreateSwap: React.FC<Props> = ({navigation}) => {
           {coinTo ? `Amount to receive (${coinTo})` : 'Amount to receive'}
         </Text>
         <TextInput
+          testID="mbsx-amount-to"
           style={styles.input}
           placeholder="Amount"
           value={amountTo}
@@ -149,6 +151,7 @@ const CreateSwap: React.FC<Props> = ({navigation}) => {
         />
         <Text style={styles.inputLabel}>{`Amount to send (${COIN_FROM})`}</Text>
         <TextInput
+          testID="mbsx-amount-from"
           style={styles.input}
           placeholder="Amount"
           value={amountFrom}
@@ -158,6 +161,7 @@ const CreateSwap: React.FC<Props> = ({navigation}) => {
         {/* Coins are leased before the request is sent, so a second submit
             would lock a second set of them. */}
         <TouchableOpacity
+          testID="mbsx-submit"
           style={styles.button}
           onPress={submit}
           disabled={busy}>
@@ -165,9 +169,14 @@ const CreateSwap: React.FC<Props> = ({navigation}) => {
             {busy ? 'Requesting…' : 'Request swap'}
           </Text>
         </TouchableOpacity>
-        {error !== '' ? <Text style={styles.error}>{error}</Text> : null}
+        {error !== '' ? (
+          <Text testID="mbsx-error" style={styles.error}>
+            {error}
+          </Text>
+        ) : null}
         {requestId !== '' ? (
           <TouchableOpacity
+            testID="mbsx-request"
             onPress={() => navigation.navigate('RequestDetail', {requestId})}>
             <Text style={styles.link}>{`Request sent: ${requestId}`}</Text>
           </TouchableOpacity>

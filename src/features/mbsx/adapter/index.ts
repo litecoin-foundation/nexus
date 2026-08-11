@@ -13,6 +13,7 @@ import type {
 } from '../types';
 import {loadOrCreateConfig, MBSX_DATA_DIR} from './config';
 import {leasedRequestIds, releaseAllLeases, releaseLeases} from './leases';
+import {spendableBalance} from './prevouts';
 import {signSwapTx} from './signTx';
 import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
 
@@ -23,13 +24,20 @@ export {
   writeConfig,
 } from './config';
 export {recordLeases, releaseLeases, releasePrevouts} from './leases';
-export {selectAndLeasePrevouts, serialisePrevout} from './prevouts';
+export {
+  selectAndLeasePrevouts,
+  serialisePrevout,
+  spendableBalance,
+} from './prevouts';
 export type {SelectedPrevout} from './prevouts';
 export type {CoinConfig, ElectrumServer, MbsxConfig} from './config';
 
 // The module reports "busy" when it could not take its locks. It is not a
 // failure: the next onMessage tick retries, so callers keep their last data.
 export const BUSY = 'busy';
+
+// The port test_glueserver.py expects, matching the example app's harness.
+const DEBUG_RPC_PORT = 31311;
 
 type MbsxResult<T> = T & {error?: string};
 
@@ -59,6 +67,7 @@ export const start = async () => {
   // it reactivates in-flight swaps.
   installKeyProvider();
   installSigner();
+  installBalanceProvider();
 
   if (NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
     throw new Error(`mbsx could not use its data directory ${MBSX_DATA_DIR}`);
@@ -73,6 +82,14 @@ export const start = async () => {
 
   started = true;
   startBackgroundService();
+
+  // Tests only. __DEV__ so metro strips it from a release bundle, and the native
+  // listener is compiled out of a release build regardless (BSX_DEBUG_RPC), so
+  // this is belt and braces rather than the only guard. Loopback, reached with
+  // `adb forward tcp:31311 tcp:31311`.
+  if (__DEV__ && NitroBSX.startDebugRpc(DEBUG_RPC_PORT) !== 0) {
+    console.warn('mbsx debug rpc did not start');
+  }
 };
 
 // Terminal states, from SwapStates::to_str in the module. Anything else — an
@@ -83,6 +100,7 @@ const TERMINAL_STATES = new Set([
   'FAILED',
   'FAILED_REFUNDED',
   'FAILED_SWIPED',
+  'FAILED_SWIPED_USED_MERCY',
   'TIMEDOUT',
   'ABANDONED',
   'REJECTED',
@@ -283,6 +301,18 @@ export const installSigner = () => {
       console.warn('mbsx could not sign a swap transaction', e);
       return '';
     }
+  });
+};
+
+// The module holds no coins for a host wallet, so what it can fund is a question
+// only this side can answer. A throw is what tells it the balance is unknown;
+// returning 0n would read as an empty wallet, which is a different thing.
+export const installBalanceProvider = () => {
+  NitroBSX.setGetBalance(async (coin: string) => {
+    if (coin.toUpperCase() !== 'LTC') {
+      throw new Error(`mbsx asked for a ${coin} balance, which Nexus has not`);
+    }
+    return await spendableBalance();
   });
 };
 

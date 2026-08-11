@@ -60,6 +60,29 @@ export const serialisePrevout = (prevout: SelectedPrevout): string => {
 };
 
 /**
+ * What lnd could fund a swap with right now, in satoshis.
+ *
+ * The same filter selection uses, and it has to be: a balance counted under
+ * looser rules would say a swap is fundable that then fails to select. Leased
+ * coins are excluded for free — lnd leaves them out of ListUnspent — so this
+ * falls as coins are committed to swaps in flight.
+ */
+export const spendableBalance = async (account?: string): Promise<bigint> => {
+  const {utxos} = await walletKitListUnspent({
+    minConfs: 1,
+    maxConfs: MAX_CONFS,
+    ...(account ? {account} : {}),
+  });
+  return (utxos ?? []).reduce(
+    (total, u) =>
+      u.pkScript && isP2wpkh(Buffer.from(u.pkScript, 'hex'))
+        ? total + BigInt(u.amountSat)
+        : total,
+    0n,
+  );
+};
+
+/**
  * Asks lnd to fund a transaction of `amountSat`, which selects coins **and
  * leases them**, then hands back what it picked. The transaction itself is
  * discarded: the module builds the real one. Leasing is the point, and
