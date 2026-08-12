@@ -30,6 +30,7 @@ import {getCapsuleShadowImage} from './capsuleShadowImage';
 import {
   getShopListTop,
   getShopRowLayout,
+  getShopSearchBlock,
   ShopRowModels,
 } from './GiftCardShop/GlassShopRows';
 import {shopRowCallbacks, useShopRowContext} from './GiftCardShop/ShopSkiaRows';
@@ -90,7 +91,11 @@ export const getGlassCanvasTop = (screenHeight: number, topInset: number) => {
     UNFOLD_SHEET_POINT +
       screenHeight * GLASS_TX_LIST_TOP_RATIO -
       screenHeight * SHEET_OVERSHOOT_RATIO,
-    getShopListTop(screenHeight, topInset) - screenHeight * 0.01,
+    // the search block comes off the list top on the sections without a
+    // search pill; the rows rise by it, and nothing draws above the canvas
+    getShopListTop(screenHeight, topInset) -
+      getShopSearchBlock(screenHeight) -
+      screenHeight * 0.01,
   );
 };
 
@@ -126,6 +131,10 @@ interface Props {
   shopMorphFrom: SharedValue<number>;
   shopLogos: ShopLogoImages;
   shopTransition: SharedValue<number>;
+  // how much the gradient card has shed above the rows: 0 on browse, the
+  // search block on the sections without a search pill. The rows ride the
+  // card's bottom edge, so they rise with it.
+  shopHeaderShrink: SharedValue<number>;
   // Row expansion: the models stay collapsed; rows below `split` slide down
   // by progress*extras while the panel overlay is revealed. Idle: split
   // huge, extras 0, progress 1.
@@ -162,6 +171,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
     shopMorphFrom,
     shopLogos,
     shopTransition,
+    shopHeaderShrink,
     shopExpandSplit,
     shopExpandExtras,
     shopExpandProgress,
@@ -289,13 +299,16 @@ const GlassTxCanvas: React.FC<Props> = props => {
     ),
   );
 
-  // The shop list top never moves; only its scroll offset does. Scrolling
-  // drives ONE mapper — the scroll group's translate; everything inside is
-  // in content coordinates and only recomputes during the expand animation.
-  // Rows below the split slide DOWN by progress*extras while the panel is
-  // revealed in the widening gap — the models stay collapsed, so the unfold
-  // never re-records the list.
-  const shopRowsTop = getShopListTop(SCREEN_HEIGHT, insets.top) - canvasTop;
+  // The shop list top moves only when the card sheds its search block;
+  // otherwise just the scroll offset does. Scrolling drives ONE mapper — the
+  // scroll group's translate; everything inside is in content coordinates and
+  // only recomputes during the expand animation. Rows below the split slide
+  // DOWN by progress*extras while the panel is revealed in the widening gap —
+  // the models stay collapsed, so the unfold never re-records the list.
+  const shopRowsBase = getShopListTop(SCREEN_HEIGHT, insets.top) - canvasTop;
+  const shopRowsTop = useDerivedValue(
+    () => shopRowsBase - shopHeaderShrink.value,
+  );
   // how far the container boundary (the gradient card's bottom edge) still
   // is from its resting place: pinned at the wallet sheet's top through the
   // cover fade ([0, 0.35]), travelling home over [0.35, 1]. The rows ride
@@ -307,10 +320,12 @@ const GlassTxCanvas: React.FC<Props> = props => {
       [0, 1],
       Extrapolation.CLAMP,
     );
-    return (shopMorphFrom.value - canvasTop - shopRowsTop) * (1 - travelled);
+    return (
+      (shopMorphFrom.value - canvasTop - shopRowsTop.value) * (1 - travelled)
+    );
   });
   const shopScrollTransform = useDerivedValue(() => [
-    {translateY: shopRowsTop - shopScrollY.value + shopTravel.value},
+    {translateY: shopRowsTop.value - shopScrollY.value + shopTravel.value},
   ]);
   const shopTransformBelow = useDerivedValue(() => [
     {translateY: shopExpandProgress.value * shopExpandExtras.value},
@@ -351,11 +366,11 @@ const GlassTxCanvas: React.FC<Props> = props => {
   // the clips follow the boundary: rows above it belong to the card's
   // territory and must never draw over it
   const shopMainClip = useDerivedValue(() => {
-    const top = Math.max(0, shopRowsTop + shopTravel.value);
+    const top = Math.max(0, shopRowsTop.value + shopTravel.value);
     return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandTop - top));
   });
   const shopBandClip = useDerivedValue(() => {
-    const top = Math.max(0, shopRowsTop + shopTravel.value);
+    const top = Math.max(0, shopRowsTop.value + shopTravel.value);
     return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandBottom - top));
   });
 

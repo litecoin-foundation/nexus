@@ -46,6 +46,9 @@ export interface GlassShopFeed {
   // the wallet top-half height the gradient card morphs from; the canvas
   // rides the same boundary so the sheet and its rows travel together
   morphFrom: SharedValue<number>;
+  // px the card has shed above the rows: 0 on browse, the search block on
+  // the sections that have no search pill. The rows ride the card's edge.
+  headerShrink: SharedValue<number>;
   expandSplit: SharedValue<number>;
   expandExtras: SharedValue<number>;
   expandProgress: SharedValue<number>;
