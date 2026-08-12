@@ -142,10 +142,11 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         // Pop back through VerifyOTP → SignUp to the screen that initiated sign-up
         navigation.pop(2);
       } else {
-        navigation.navigate('NewWalletStack', {
-          screen: 'Main',
-          params: {screen: 'NexusShop'},
-        });
+        // popTo, not navigate: in React Navigation 7 navigate() pushes a new
+        // Main on top of NexusShopStack instead of unwinding to it, which
+        // leaves SignUp/VerifyOTP behind the shop in the back stack.
+        // The action bubbles up to NewWalletStack, which owns 'Main'.
+        navigation.popTo('Main', {screen: 'NexusShop'});
       }
     }
   }, [account?.isLoggedIn, navigation, route?.params?.returnTo]);
