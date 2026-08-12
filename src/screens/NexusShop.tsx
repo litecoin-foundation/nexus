@@ -54,6 +54,7 @@ import {SHEET_BACKGROUND} from '../components/GlassTxRows';
 import {
   getShopHeaderHeight,
   getShopListTop,
+  getShopSearchBlock,
   ShopSection,
   SHOP_HEADER_GAP_RATIO,
   SHOP_HEADER_SEARCH_HEIGHT_RATIO,
@@ -245,6 +246,22 @@ const NexusShop: React.FC<Props> = props => {
 
   const headerHeight = getShopHeaderHeight(SCREEN_HEIGHT, insets.top);
   const listTop = getShopListTop(SCREEN_HEIGHT, insets.top);
+
+  // only browse has a search pill: the other sections shed it, so the card
+  // gives back its height and everything under the card's bottom edge — the
+  // touch host here, the drawn rows in the canvas — rides up with it
+  const searchBlock = getShopSearchBlock(SCREEN_HEIGHT);
+  const searchVisible = state.section === 'browse';
+  const headerShrink = useSharedValue(searchVisible ? 0 : searchBlock);
+  useEffect(() => {
+    headerShrink.value = withTiming(searchVisible ? 0 : searchBlock, {
+      duration: 240,
+      easing: Easing.bezier(0.22, 1, 0.36, 1),
+    });
+  }, [searchVisible, searchBlock, headerShrink]);
+  const listShiftStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: -headerShrink.value}],
+  }));
   const styles = useMemo(
     () =>
       getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top, headerHeight, listTop),
@@ -282,7 +299,9 @@ const NexusShop: React.FC<Props> = props => {
       Extrapolation.CLAMP,
     );
     return {
-      height: morphFrom.value + (headerHeight - morphFrom.value) * travelled,
+      height:
+        morphFrom.value +
+        (headerHeight - headerShrink.value - morphFrom.value) * travelled,
     };
   });
   const segmentsSettleStyle = useAnimatedStyle(() => {
@@ -417,13 +436,19 @@ const NexusShop: React.FC<Props> = props => {
       Extrapolation.CLAMP,
     ),
   }));
+  const drawerHideOpacity = useSharedValue(1);
+  useEffect(() => {
+    drawerHideOpacity.value = withTiming(drawerOpen ? 0 : 1, {duration: 250});
+  }, [drawerOpen, drawerHideOpacity]);
+  const backFadeStyle = useAnimatedStyle(() => ({
+    opacity:
+      interpolate(transition.value, [0.45, 0.8], [0, 1], Extrapolation.CLAMP) *
+      drawerHideOpacity.value,
+  }));
   const headerTitleFadeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      transition.value,
-      [0.45, 0.8],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
+    opacity:
+      interpolate(transition.value, [0.45, 0.8], [0, 1], Extrapolation.CLAMP) *
+      drawerHideOpacity.value,
     transform: [
       {
         translateY: interpolate(
@@ -451,7 +476,9 @@ const NexusShop: React.FC<Props> = props => {
     () => (
       // key: pair with the wallet set's keys — the hand-off must mount
       // fresh views, not swap animated styles on reconciled ones
-      <Animated.View key="shop-title" style={headerTitleFadeStyle}>
+      <Animated.View
+        key="shop-title"
+        style={[alignHeaderElements, headerTitleFadeStyle]}>
         <TranslateText
           textKey="nexus_shop"
           domain="nexusShop"
@@ -461,12 +488,15 @@ const NexusShop: React.FC<Props> = props => {
         />
       </Animated.View>
     ),
-    [SCREEN_HEIGHT, headerTitleFadeStyle],
+    [SCREEN_HEIGHT, alignHeaderElements, headerTitleFadeStyle],
   );
   const backButton = useMemo(
     () => (
-      <View key="shop-back" style={alignHeaderElements}>
-        <Animated.View style={[headerStyles.headerBtns, headerFadeStyle]}>
+      <View
+        key="shop-back"
+        style={alignHeaderElements}
+        pointerEvents={drawerOpen ? 'none' : 'auto'}>
+        <Animated.View style={[headerStyles.headerBtns, backFadeStyle]}>
           <HeaderButton
             onPress={closeShop}
             imageSource={require('../assets/images/back-icon.png')}
@@ -475,7 +505,7 @@ const NexusShop: React.FC<Props> = props => {
         </Animated.View>
       </View>
     ),
-    [alignHeaderElements, closeShop, headerFadeStyle],
+    [alignHeaderElements, closeShop, backFadeStyle, drawerOpen],
   );
   const accountButton = useMemo(
     () => (
@@ -501,7 +531,6 @@ const NexusShop: React.FC<Props> = props => {
       SCREEN_HEIGHT,
     ],
   );
-  const emptyFragment = useMemo(() => <></>, []);
   // NOTE: React Navigation applies marginHorizontal: 5 to the header content
   // on iOS screens wider than 414px. Cancel it out.
   const noHeaderContainerMargin = useMemo(
@@ -530,18 +559,16 @@ const NexusShop: React.FC<Props> = props => {
       headerTitle: () => headerTitle,
       headerTitleAlign: 'left',
       headerTitleContainerStyle: {left: 7},
-      headerLeft: () => (drawerOpen ? emptyFragment : backButton),
+      headerLeft: () => backButton,
       headerRight: () => accountButton,
     });
   }, [
     ownsHeader,
-    drawerOpen,
     navigation,
     wallet,
     headerTitle,
     backButton,
     accountButton,
-    emptyFragment,
     noHeaderContainerMargin,
   ]);
 
@@ -572,6 +599,7 @@ const NexusShop: React.FC<Props> = props => {
       logos: state.logos,
       transition,
       morphFrom,
+      headerShrink,
       expandSplit: state.expandSplit,
       expandExtras: state.expandExtras,
       expandProgress: state.expandProgress,
@@ -590,6 +618,7 @@ const NexusShop: React.FC<Props> = props => {
       state.logos,
       transition,
       morphFrom,
+      headerShrink,
       state.expandSplit,
       state.expandExtras,
       state.expandProgress,
@@ -667,7 +696,7 @@ const NexusShop: React.FC<Props> = props => {
           ) : null}
         </View>
 
-        <View style={styles.listContainer}>
+        <Animated.View style={[styles.listContainer, listShiftStyle]}>
           <GlassShopList
             rowModels={state.rowModels}
             section={state.section}
@@ -677,11 +706,11 @@ const NexusShop: React.FC<Props> = props => {
             onRowAction={state.handleRowAction}
             onScrollActivity={onScrollActivity}
             scrollY={scrollY}
-            height={SCREEN_HEIGHT - listTop}
+            height={SCREEN_HEIGHT - listTop + (searchVisible ? 0 : searchBlock)}
             refreshing={state.refreshing}
             onRefresh={state.refresh}
           />
-        </View>
+        </Animated.View>
 
         <CategoryPickerModal
           isVisible={state.categoryPickerVisible}

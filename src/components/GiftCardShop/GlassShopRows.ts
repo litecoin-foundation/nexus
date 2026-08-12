@@ -35,6 +35,11 @@ export const getShopHeaderHeight = (screenHeight: number, topInset: number) =>
 // rows start at the gradient card's bottom edge
 export const getShopListTop = getShopHeaderHeight;
 
+// only browse carries the search pill; the other sections shed it and the
+// gap above it, and the card (and the rows under it) rise by exactly this
+export const getShopSearchBlock = (screenHeight: number) =>
+  screenHeight * (SHOP_HEADER_GAP_RATIO + SHOP_HEADER_SEARCH_HEIGHT_RATIO);
+
 export const SHOP_LABEL_HEIGHT_RATIO = 0.042;
 export const SHOP_CELL_HEIGHT_RATIO = 0.09;
 export const SHOP_CHIP_ROW_HEIGHT_RATIO = 0.052;

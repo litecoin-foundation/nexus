@@ -39,6 +39,7 @@ const GlassChrome: React.FC = () => {
   const fallbackScrollY = useSharedValue(0);
   const fallbackTransition = useSharedValue(0);
   const fallbackMorphFrom = useSharedValue(0);
+  const fallbackHeaderShrink = useSharedValue(0);
   const fallbackSplit = useSharedValue(1e9);
   const fallbackExtras = useSharedValue(0);
   const fallbackProgress = useSharedValue(1);
@@ -47,6 +48,7 @@ const GlassChrome: React.FC = () => {
     scrollY: fallbackScrollY,
     transition: fallbackTransition,
     morphFrom: fallbackMorphFrom,
+    headerShrink: fallbackHeaderShrink,
     expandSplit: fallbackSplit,
     expandExtras: fallbackExtras,
     expandProgress: fallbackProgress,
@@ -57,6 +59,7 @@ const GlassChrome: React.FC = () => {
       scrollY: shop.scrollY,
       transition: shop.transition,
       morphFrom: shop.morphFrom,
+      headerShrink: shop.headerShrink,
       expandSplit: shop.expandSplit,
       expandExtras: shop.expandExtras,
       expandProgress: shop.expandProgress,
@@ -112,6 +115,7 @@ const GlassChrome: React.FC = () => {
         shopLogos={shop?.logos ?? EMPTY_LOGOS}
         shopTransition={shopValues.transition}
         shopMorphFrom={shopValues.morphFrom}
+        shopHeaderShrink={shopValues.headerShrink}
         shopExpandSplit={shopValues.expandSplit}
         shopExpandExtras={shopValues.expandExtras}
         shopExpandProgress={shopValues.expandProgress}

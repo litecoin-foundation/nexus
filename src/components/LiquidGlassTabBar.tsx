@@ -205,6 +205,7 @@ interface Props {
   shopLogos: ShopLogoImages;
   shopTransition: SharedValue<number>;
   shopMorphFrom: SharedValue<number>;
+  shopHeaderShrink: SharedValue<number>;
   shopExpandSplit: SharedValue<number>;
   shopExpandExtras: SharedValue<number>;
   shopExpandProgress: SharedValue<number>;
@@ -232,6 +233,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     shopLogos,
     shopTransition,
     shopMorphFrom,
+    shopHeaderShrink,
     shopExpandSplit,
     shopExpandExtras,
     shopExpandProgress,
@@ -480,6 +482,7 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         shopLogos={shopLogos}
         shopTransition={shopTransition}
         shopMorphFrom={shopMorphFrom}
+        shopHeaderShrink={shopHeaderShrink}
         shopExpandSplit={shopExpandSplit}
         shopExpandExtras={shopExpandExtras}
         shopExpandProgress={shopExpandProgress}
