@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import {Alert} from 'react-native';
+import {useIsFocused} from '@react-navigation/native';
 import {getCountry} from 'react-native-localize';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
@@ -296,6 +297,28 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
     // refetch on re-entry only, not on section/fetcher identity changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
+
+  // A screen pushed over the shop (sign-up, purchase form, pending details)
+  // leaves it mounted with `presented` still true, so the effect above never
+  // runs on the way back and the list keeps whatever it held when the user
+  // left — after a sign-up that is the logged-out (or failed) fetch. A push
+  // blurs this screen and popping back focuses it again, so refresh on the
+  // way back in.
+  const isFocused = useIsFocused();
+  const wasFocused = useRef(isFocused);
+  useEffect(() => {
+    const regainedFocus = isFocused && !wasFocused.current;
+    wasFocused.current = isFocused;
+    if (!regainedFocus || !activated) {
+      return;
+    }
+    fetchBrands();
+    if (section === 'my-cards') {
+      fetchCards();
+    }
+    // same contract as above: refetch on the transition alone
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFocused, activated]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refresh = useCallback(async () => {
