@@ -14,6 +14,7 @@ import type {
   SkImage,
   SkPaint,
   SkParagraph,
+  SkPath,
   SkTypefaceFontProvider,
 } from '@shopify/react-native-skia';
 
@@ -48,6 +49,14 @@ const STATUS_ORANGE = '#FF9500';
 const TILE_FILL = '#ffffff';
 const SKELETON_FILL = '#EFF1F3';
 
+// the sale sticker lifted from the old BrandCard: a hand-drawn blob, stretched
+// to the badge box (the svg used preserveAspectRatio="none") and tilted -8deg
+const DISCOUNT_BADGE_PATH =
+  'M5,30 C0,15 13,11 28,9 C48,6 70,3 94,8 C111,11 122,15 118,27 C116,41 110,47 95,48 C72,52 47,53 25,49 C10,46 3,42 5,30 Z';
+const DISCOUNT_BADGE_VIEW_WIDTH = 120;
+const DISCOUNT_BADGE_VIEW_HEIGHT = 56;
+const DISCOUNT_BADGE_TILT = -8;
+
 type ShopRowLayout = ReturnType<typeof getShopRowLayout>;
 
 export interface ShopRowContext {
@@ -58,6 +67,7 @@ export interface ShopRowContext {
   screenHeight: number;
   layout: ShopRowLayout;
   paints: ShopRowPaints;
+  discountBadge: SkPath;
 }
 
 interface ShopRowPaints {
@@ -606,27 +616,30 @@ const drawItem = (
       );
     }
     if (built.discount) {
-      // green pill left of the heart
-      const pillH = screenHeight * 0.022;
-      const pillW = built.discount.getLongestLine() + screenWidth * 0.03;
-      const pillX =
-        screenWidth -
-        layout.pad -
-        layout.chevronZoneWidth -
-        layout.heartZoneWidth -
-        pillW;
-      canvas.drawRRect(
-        Skia.RRectXY(
-          Skia.XYWHRect(pillX, cellCy - pillH / 2, pillW, pillH),
-          pillH / 2,
-          pillH / 2,
-        ),
-        paints.discount,
+      // green sticker straddling the logo's top-left corner, where the old card
+      // pinned it; only the blob tilts, the label stays upright, exactly as the
+      // old svg badge sat in its container
+      const badgeH = screenHeight * 0.032;
+      const badgeW = built.discount.getLongestLine() + screenWidth * 0.055;
+      const badgeCx = layout.pad + badgeW / 2;
+      const badgeCy = cellCy - layout.tileHeight / 2 + screenHeight * 0.006;
+      canvas.save();
+      canvas.translate(badgeCx, badgeCy);
+      canvas.rotate(DISCOUNT_BADGE_TILT, 0, 0);
+      canvas.scale(
+        badgeW / DISCOUNT_BADGE_VIEW_WIDTH,
+        badgeH / DISCOUNT_BADGE_VIEW_HEIGHT,
       );
+      canvas.translate(
+        -DISCOUNT_BADGE_VIEW_WIDTH / 2,
+        -DISCOUNT_BADGE_VIEW_HEIGHT / 2,
+      );
+      canvas.drawPath(context!.discountBadge, paints.discount);
+      canvas.restore();
       built.discount.paint(
         canvas,
-        pillX + (pillW - built.discount.getLongestLine()) / 2,
-        cellCy - built.discount.getHeight() / 2,
+        badgeCx - built.discount.getLongestLine() / 2,
+        badgeCy - built.discount.getHeight() / 2,
       );
     }
     if (model.heart !== 0) {
@@ -731,6 +744,11 @@ export const useShopRowContext = (
   const fontMgr = useSatoshiFontMgr();
   const icons = useShopRowIcons();
   const paints = useMemo(() => makePaints(screenHeight), [screenHeight]);
+  // parsed once; the draw worklet only transforms it into the badge box
+  const discountBadge = useMemo(
+    () => Skia.Path.MakeFromSVGString(DISCOUNT_BADGE_PATH) ?? Skia.Path.Make(),
+    [],
+  );
   // computed once; the draw worklets read it off the context per row
   const layout = useMemo(
     () => getShopRowLayout(screenWidth, screenHeight),
@@ -741,6 +759,24 @@ export const useShopRowContext = (
     if (!fontMgr) {
       return null;
     }
-    return {fontMgr, logos, icons, screenWidth, screenHeight, layout, paints};
-  }, [fontMgr, logos, icons, screenWidth, screenHeight, layout, paints]);
+    return {
+      fontMgr,
+      logos,
+      icons,
+      screenWidth,
+      screenHeight,
+      layout,
+      paints,
+      discountBadge,
+    };
+  }, [
+    fontMgr,
+    logos,
+    icons,
+    screenWidth,
+    screenHeight,
+    layout,
+    paints,
+    discountBadge,
+  ]);
 };
