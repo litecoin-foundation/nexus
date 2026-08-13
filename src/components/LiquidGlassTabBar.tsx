@@ -65,6 +65,15 @@ const WHITE_ICON_MATRIX = [
 const BAR_HIDE_MS = 250;
 const BAR_RETURN_SPRING = {mass: 0.6, damping: 16, stiffness: 180};
 
+// A thumb on a floating bar always drifts a little, so the pan waits for
+// deliberate horizontal travel before it claims the touch as a drag.
+const PAN_ACTIVATE_X = 14;
+// How far off the bar a finger may land on release and still count as a
+// press; past this it reads as sliding away to cancel.
+const PRESS_SLOP = 24;
+// Invisible padding on the touch view; the bar draws nothing here.
+const HIT_PAD_Y = 10;
+
 const buildWalletPaths = (cx: number, cy: number, s: number) => {
   const bodyW = s;
   const bodyH = s * 0.72;
@@ -283,6 +292,12 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
   );
   const dragStart = useSharedValue(0);
   const pressScale = useSharedValue(1);
+  // the touch view is the bar plus invisible padding
+  const hitHeight = barHeight + HIT_PAD_Y * 2;
+  // true once the touch became a drag; a drag settles in onEnd, not on release
+  const dragging = useSharedValue(false);
+  // guards against a second finger selecting again within one press
+  const pressHandled = useSharedValue(false);
   const [selectionAttempt, setSelectionAttempt] = useState(0);
 
   // dives away when a card opens; the canvas moves its glass by the same
@@ -352,13 +367,60 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     return best;
   };
 
-  const panGesture = Gesture.Pan()
+  // A press anywhere in a slot selects it; taps on the disabled placeholder
+  // settle the thumb back where it rested without reporting a selection.
+  const selectSlotAtX = (x: number, restingCenter: number) => {
+    'worklet';
+    const tapped = Math.min(
+      Math.max(Math.floor(x / slotSpacing), 0),
+      sections.length - 1,
+    );
+    if (sections[tapped].disabled) {
+      thumbCenter.value = withSpring(restingCenter, THUMB_SPRING);
+      return;
+    }
+    thumbCenter.value = withSpring(slotCenters[tapped], THUMB_SPRING);
+    runOnJS(selectSection)(tapped);
+  };
+
+  // One gesture, no arbitration. A Tap paired with the Pan loses the press
+  // every time the pan claims the touch, and Tap drops slow or sloppy presses
+  // on its own duration and travel limits. Here the release itself selects:
+  // touch events arrive whether or not the pan ever activates, so any press
+  // that lifts over the bar counts, however brief, long or wobbly.
+  const barGesture = Gesture.Pan()
+    // Drift smaller than this stays a press instead of becoming a drag.
+    .activeOffsetX([-PAN_ACTIVATE_X, PAN_ACTIVATE_X])
     .onBegin(() => {
       'worklet';
+      dragging.value = false;
+      pressHandled.value = false;
       pressScale.value = withSpring(PRESSED_SCALE, THUMB_SPRING);
+    })
+    .onTouchesUp((e, manager) => {
+      'worklet';
+      if (dragging.value || pressHandled.value) {
+        return;
+      }
+      const touch = e.changedTouches[0];
+      if (!touch) {
+        return;
+      }
+      pressHandled.value = true;
+      const offBar =
+        touch.x < -PRESS_SLOP ||
+        touch.x > barWidth + PRESS_SLOP ||
+        touch.y < -PRESS_SLOP ||
+        touch.y > hitHeight + PRESS_SLOP;
+      if (!offBar) {
+        selectSlotAtX(touch.x, thumbCenter.value);
+      }
+      // nothing left to drag; let the pan give the touch up
+      manager.fail();
     })
     .onStart(() => {
       'worklet';
+      dragging.value = true;
       dragStart.value = thumbCenter.value;
     })
     .onUpdate(e => {
@@ -368,8 +430,14 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         maxCenter,
       );
     })
-    .onEnd(() => {
+    .onEnd(e => {
       'worklet';
+      // A drag that never left its slot is a press that drifted: honour the
+      // slot under the finger rather than snapping back to the start.
+      if (Math.abs(thumbCenter.value - dragStart.value) < slotSpacing * 0.5) {
+        selectSlotAtX(e.x, dragStart.value);
+        return;
+      }
       const target = nearestEnabledSlot(thumbCenter.value);
       thumbCenter.value = withSpring(slotCenters[target], THUMB_SPRING);
       runOnJS(selectSection)(target);
@@ -378,22 +446,6 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
       'worklet';
       pressScale.value = withSpring(1, THUMB_SPRING);
     });
-
-  const tapGesture = Gesture.Tap().onEnd(e => {
-    'worklet';
-    // Taps on the disabled placeholder are ignored.
-    const tapped = Math.min(
-      Math.max(Math.floor(e.x / slotSpacing), 0),
-      sections.length - 1,
-    );
-    if (sections[tapped].disabled) {
-      return;
-    }
-    thumbCenter.value = withSpring(slotCenters[tapped], THUMB_SPRING);
-    runOnJS(selectSection)(tapped);
-  });
-
-  const barGesture = Gesture.Exclusive(panGesture, tapGesture);
 
   const animatedBarStyle = useAnimatedStyle(() => ({
     transform: [
@@ -519,14 +571,14 @@ const getStyles = (
       position: 'absolute',
       left: 0,
       right: 0,
-      bottom: getBottomOffset(screenHeight, bottomInset),
+      // pulled down by the pad so the touch view stays centred on the capsule
+      bottom: getBottomOffset(screenHeight, bottomInset) - HIT_PAD_Y,
       alignItems: 'center',
       zIndex: 3,
     },
     bar: {
       width: screenWidth * BAR_WIDTH_RATIO,
-      height: screenHeight * BAR_HEIGHT_RATIO,
-      borderRadius: (screenHeight * BAR_HEIGHT_RATIO) / 2,
+      height: screenHeight * BAR_HEIGHT_RATIO + HIT_PAD_Y * 2,
     },
   });
 
