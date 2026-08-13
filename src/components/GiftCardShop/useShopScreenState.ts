@@ -431,7 +431,16 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
   const expandProgress = useSharedValue(1);
   const expandChevronLift = useSharedValue(0);
   const ctaPressScale = useSharedValue(1);
+  // The unfold runs on the UI thread, but the panel it reveals is built on
+  // the JS one: mounting it lays out a paragraph per chip plus the cta, and
+  // rasterizes the capsule shadow the first time. Kicking the timing off in
+  // the same tick therefore opens the gap a frame or two before there is
+  // anything inside it — the pop that reads as a jump. openPanel only arms
+  // the row here; the effect below starts the motion once the panel has
+  // committed, so the very first frame of travel already draws it.
+  const armedOpenId = useRef<string | null>(null);
   const clearExpanded = useCallback(() => {
+    armedOpenId.current = null;
     setExpandedPanel(null);
     expandSplit.value = EXPAND_IDLE_SPLIT;
     expandExtras.value = 0;
@@ -523,14 +532,32 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
       expandSplit.value = panel.splitY;
       expandExtras.value = panel.extras;
       expandChevronLift.value = panel.chevronLift;
+      // still collapsed: nothing moves until the frame after the commit
       expandProgress.value = 0;
+      armedOpenId.current = id;
+    },
+    [buildPanel, expandSplit, expandExtras, expandChevronLift, expandProgress],
+  );
+
+  // one frame of slack for the canvas to pick the mounted panel up, then go
+  useEffect(() => {
+    const id = expandedPanel?.id;
+    if (!id || armedOpenId.current !== id) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      // a second tap can fold the row back before this fires
+      if (armedOpenId.current !== id) {
+        return;
+      }
+      armedOpenId.current = null;
       expandProgress.value = withTiming(1, {
         duration: EXPAND_OPEN_MS,
         easing: EXPAND_OPEN_EASING,
       });
-    },
-    [buildPanel, expandSplit, expandExtras, expandChevronLift, expandProgress],
-  );
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [expandedPanel, expandProgress]);
 
   // opening another row folds the open one first, so both animate
   const swapPanels = useCallback(
@@ -544,6 +571,8 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
   // fold shut, then hand over to whatever comes next
   const foldPanel = useCallback(
     (nextId: string | null) => {
+      // a tap landing inside the arming frame folds instead of opening
+      armedOpenId.current = null;
       expandProgress.value = withTiming(
         0,
         {duration: EXPAND_CLOSE_MS, easing: EXPAND_CLOSE_EASING},
