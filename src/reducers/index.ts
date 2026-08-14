@@ -21,6 +21,7 @@ import nexusshopaccount from './nexusshopaccount';
 import popupschedule from './popupschedule';
 import wallets from './wallets';
 import mbsx from '../features/mbsx/mbsxSlice';
+import mbsxAddresses from '../features/mbsx/addressesSlice';
 
 export default combineReducers({
   onboarding,
@@ -45,4 +46,5 @@ export default combineReducers({
   popupschedule,
   wallets,
   mbsx,
+  mbsxAddresses,
 });

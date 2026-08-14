@@ -4,8 +4,11 @@ export type SwapSummary = {
   state: string;
   coin_from: string;
   coin_to: string;
+  // Decimal strings in whole coins, matching getSwapInfo.
   amount_from: string;
   amount_to: string;
+  initiating: boolean;
+  participating: boolean;
 };
 
 export type SwapRequestSummary = {
@@ -28,7 +31,13 @@ export type SwapEvent = {
 };
 
 export type SwapDetails = SwapSummary & {
-  initiating?: boolean;
+  // Sats per kvB, not an amount in the coin's scale.
+  fee_rate_from: number;
+  fee_rate_to: number;
+  lock_type: string;
+  // Seconds or blocks, per lock_type.
+  lock_time_1: number;
+  lock_time_2: number;
   events?: SwapEvent[];
   error?: string;
 };
@@ -45,8 +54,16 @@ export type MbsxInfo = {
   coins: Record<string, {chain_height: number}>;
 };
 
+export type MbsxCoinPrices = {
+  currency: string;
+  updated_at: string;
+  prices: Record<string, string>;
+};
+
 export type MbsxDrawerParamList = {
-  CreateSwap: undefined;
+  CreateSwap: {scanData?: string} | undefined;
+  AddressList: undefined;
+  CoinAddresses: {coin: string; scanData?: string};
   SwapList: undefined;
   SwapDetail: {swapId: string};
   RequestList: undefined;

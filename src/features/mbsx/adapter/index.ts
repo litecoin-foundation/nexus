@@ -4,6 +4,7 @@ import NitroBSX, {
 } from 'react-native-nitro-bsx';
 
 import type {
+  MbsxCoinPrices,
   MbsxInfo,
   MbsxSettings,
   SwapDetails,
@@ -17,12 +18,7 @@ import {spendableBalance} from './prevouts';
 import {signSwapTx} from './signTx';
 import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
 
-export {
-  defaultConfig,
-  MBSX_DATA_DIR,
-  readConfig,
-  writeConfig,
-} from './config';
+export {defaultConfig, MBSX_DATA_DIR, readConfig, writeConfig} from './config';
 export {recordLeases, releaseLeases, releasePrevouts} from './leases';
 export {
   selectAndLeasePrevouts,
@@ -255,15 +251,27 @@ export const listRequests = (): SwapRequestSummary[] | null => {
 export const getSwapInfo = (swapId: string): SwapDetails | null =>
   isRunning() ? (NitroBSX.getSwapInfo(swapId) as SwapDetails) : null;
 
-export const getRequestInfo = (
-  requestId: string,
-): SwapRequestDetails | null =>
+export const getRequestInfo = (requestId: string): SwapRequestDetails | null =>
   isRunning()
     ? (NitroBSX.getRequestInfo(requestId) as SwapRequestDetails)
     : null;
 
 export const getSettings = (): MbsxSettings | null =>
   isRunning() ? (NitroBSX.getSettings() as MbsxSettings) : null;
+
+export const getCoinPrices = (): MbsxCoinPrices | null => {
+  if (!isRunning()) {
+    return null;
+  }
+  const rv = NitroBSX.getCoinPrices() as MbsxResult<MbsxCoinPrices>;
+  if (rv.error) {
+    if (!isBusy(rv)) {
+      console.error('mbsx getCoinPrices failed:', rv.error);
+    }
+    return null;
+  }
+  return rv;
+};
 
 export const getInfo = (): MbsxInfo | null =>
   isRunning() ? (NitroBSX.getInfo() as MbsxInfo) : null;
@@ -363,5 +371,3 @@ export const installBalanceProvider = () => {
     return await spendableBalance();
   });
 };
-
-

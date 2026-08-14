@@ -6,6 +6,8 @@ import {getMbsxStyles} from '../theme';
 
 // Replaces the example's react-native-element-dropdown, which nexus does not
 // depend on. Two coins do not need a searchable dropdown.
+//
+// The receivable coins, so anything listing them per coin reads them from here.
 const COINS = ['BTC', 'PART'];
 
 type Props = {
@@ -46,4 +48,5 @@ const CoinSelector: React.FC<Props> = ({label, value, onChange}) => {
   );
 };
 
+export {COINS};
 export default CoinSelector;

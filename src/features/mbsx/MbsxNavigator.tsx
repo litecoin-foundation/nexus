@@ -15,6 +15,8 @@ import SwapList from './screens/SwapList';
 import SwapDetail from './screens/SwapDetail';
 import RequestList from './screens/RequestList';
 import RequestDetail from './screens/RequestDetail';
+import AddressList from './screens/AddressList';
+import CoinAddresses from './screens/CoinAddresses';
 import MbsxSettings from './screens/MbsxSettings';
 import MbsxDebug from './screens/MbsxDebug';
 import type {MbsxDrawerParamList} from './types';
@@ -81,6 +83,7 @@ const MbsxNavigator: React.FC = () => {
   return (
     <Drawer.Navigator
       initialRouteName="SwapList"
+      backBehavior="history"
       drawerContent={DrawerContent}>
       <Drawer.Screen
         name="CreateSwap"
@@ -106,6 +109,16 @@ const MbsxNavigator: React.FC = () => {
         name="RequestDetail"
         component={RequestDetail}
         options={{title: 'Request', ...hidden}}
+      />
+      <Drawer.Screen
+        name="AddressList"
+        component={AddressList}
+        options={{title: 'Addresses'}}
+      />
+      <Drawer.Screen
+        name="CoinAddresses"
+        component={CoinAddresses}
+        options={{title: 'Addresses', ...hidden}}
       />
       <Drawer.Screen
         name="MbsxSettings"

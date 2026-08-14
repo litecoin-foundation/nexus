@@ -77,10 +77,13 @@ const Scan = ({
             const {returnRoute, returnScreen} = route.params;
 
             if (returnScreen) {
-              navigation.popTo(returnRoute, {
-                screen: returnScreen,
-                params: {scanData},
-              });
+              // Merged, or the screen loses the params it was opened with -
+              // scanning into it would then be the same as opening it blank.
+              navigation.popTo(
+                returnRoute,
+                {screen: returnScreen, params: {scanData}},
+                {merge: true},
+              );
             } else {
               navigation.popTo(returnRoute, {scanData});
             }

@@ -81,6 +81,43 @@ export const getMbsxStyles = (screenHeight: number) => {
       borderBottomWidth: 1,
       borderColor: colors.border,
     },
+    amountBox: {
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      marginBottom: spacing.md,
+    },
+    amountLine: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+    },
+    amountLineLower: {
+      borderTopWidth: 1,
+      borderColor: colors.border,
+    },
+    amountInput: {
+      flex: 1,
+      fontSize: font.lg,
+      paddingVertical: spacing.md,
+    },
+    amountUnit: {
+      fontSize: font.md,
+      color: colors.textSecondary,
+      paddingLeft: spacing.sm,
+    },
+    amountDisabled: {
+      color: colors.grayMedium,
+    },
+    dropdown: {
+      backgroundColor: colors.white,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      marginTop: -spacing.md,
+      marginBottom: spacing.md,
+    },
     rowPrimary: {
       fontSize: font.md,
       fontWeight: '700',
