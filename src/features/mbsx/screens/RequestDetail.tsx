@@ -16,8 +16,11 @@ import {
   acceptSwap,
   getRequestInfo,
   getSwapInfo,
+  isTerminalState,
   onMessage,
+  removeRequest,
 } from '../adapter';
+import RemoveButton from '../components/RemoveButton';
 import type {
   MbsxDrawerParamList,
   SwapDetails,
@@ -44,7 +47,6 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {requestId} = route.params;
   const [request, setRequest] = useState<SwapRequestDetails | null>(null);
   const [swaps, setSwaps] = useState<SwapDetails[]>([]);
-  const [selected, setSelected] = useState('');
   const [showAll, setShowAll] = useState(false);
   const [acceptError, setAcceptError] = useState('');
   const [accepting, setAccepting] = useState(false);
@@ -89,14 +91,25 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     return () => clearInterval(timer);
   }, [swapIdKey]);
 
-  const underway = swaps.find(swap => !PRE_ACCEPT.has(swap.state));
-  const navigatedFor = useRef('');
+  const underway = swaps.find(
+    swap => !PRE_ACCEPT.has(swap.state) && !isTerminalState(swap.state),
+  );
+  const navigatedFor = useRef<string | null>(null);
   useEffect(() => {
+    if (swaps.length === 0) {
+      return;
+    }
+    // Whatever was already under way when the screen opened is history: an old
+    // request would otherwise bounce straight to its swap and never be readable.
+    if (navigatedFor.current === null) {
+      navigatedFor.current = underway?.id ?? '';
+      return;
+    }
     if (underway && navigatedFor.current !== underway.id) {
       navigatedFor.current = underway.id;
       navigation.navigate('SwapDetail', {swapId: underway.id});
     }
-  }, [underway, navigation]);
+  }, [swaps, underway, navigation]);
 
   // fast path offer
   const acceptable = (swap: SwapDetails) =>
@@ -111,8 +124,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   // Only the fast path offer is worth collapsing to
   const collapsed = !showAll && best !== null && best.initiating;
   const shown = collapsed ? [best] : offers;
-  const selectedSwap =
-    offers.find(swap => swap.id === selected) ?? (collapsed ? best : null);
+  // Only the collapsed fast path accepts from here; with several offers on
+  // screen the row opens the swap and it is accepted there.
+  const selectedSwap = collapsed ? best : null;
 
   const onAccept = async () => {
     if (!selectedSwap) {
@@ -196,7 +210,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             <Text style={styles.empty}>
               {swaps.length === 0
                 ? `On the ${request.fees_coin} chain if the offer is pushed. A bridged offer moves them to the chain it makes us follow.`
-                : 'Chain per offer below.'}
+                : 'Chain fees per offer below.'}
             </Text>
           </>
         )}
@@ -217,16 +231,14 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               const recvAmount = swap.initiating
                 ? swap.amount_to
                 : swap.amount_from;
-              const isSelected = selectedSwap?.id === swap.id;
               return (
                 <TouchableOpacity
                   key={swap.id}
                   testID={`mbsx-offer-${swap.id}`}
-                  style={[
-                    styles.stackedRow,
-                    isSelected ? styles.rowSelected : null,
-                  ]}
-                  onPress={() => setSelected(swap.id)}>
+                  style={styles.stackedRow}
+                  onPress={() =>
+                    navigation.navigate('SwapDetail', {swapId: swap.id})
+                  }>
                   <Text style={styles.rowPrimary}>
                     {`${swap.initiating ? 'Pushed' : 'Bridged'} — send ${sendAmount} ${sendCoin}, receive ${recvAmount} ${recvCoin}`}
                   </Text>
@@ -235,18 +247,19 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                       ? `Expires ${swap.expire_at}`
                       : `${swap.state}, expired ${swap.expire_at}`}
                   </Text>
+                  {/* Named per chain: two bare rates read as one number over
+                      another, with nothing saying which coin either is on. */}
                   <Text style={styles.rowMessage}>
-                    {`Chain fees ${swap.fee_rate_from} / ${swap.fee_rate_to} sat/kvB`}
-                    {swap.fees_coin
-                      ? ` · swap fees ${swap.fees_total} ${swap.fees_coin}`
-                      : ''}
+                    {`Chain fee ${swap.coin_from} ~${swap.chain_fee_from ?? '?'} (${swap.fee_rate_from} sat/kvB)`}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate('SwapDetail', {swapId: swap.id})
-                    }>
-                    <Text style={styles.link}>Details</Text>
-                  </TouchableOpacity>
+                  <Text style={styles.rowMessage}>
+                    {`Chain fee ${swap.coin_to} ~${swap.chain_fee_to ?? '?'} (${swap.fee_rate_to} sat/kvB)`}
+                  </Text>
+                  {swap.fees_coin ? (
+                    <Text style={styles.rowMessage}>
+                      {`Swap fees ${swap.fees_total} ${swap.fees_coin}`}
+                    </Text>
+                  ) : null}
                 </TouchableOpacity>
               );
             })}
@@ -282,6 +295,17 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             ) : null}
           </>
         )}
+
+        <RemoveButton
+          testID="mbsx-remove-request"
+          label="Delete request"
+          confirm="Permanently delete this request and every offer under it?"
+          onConfirm={async () => {
+            await removeRequest(requestId);
+            navigation.navigate('RequestList');
+            return 'Removed';
+          }}
+        />
       </ScrollView>
     </View>
   );

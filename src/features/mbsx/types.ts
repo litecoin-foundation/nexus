@@ -53,6 +53,10 @@ export type SwapDetails = SwapSummary &
     // Sats per kvB, not an amount in the coin's scale.
     fee_rate_from: bigint;
     fee_rate_to: bigint;
+    // What that rate costs on each chain, estimated from the vsizes the module
+    // knows before the transactions exist. Decimal strings, like the amounts.
+    chain_fee_from?: string;
+    chain_fee_to?: string;
     lock_type: string;
     // Seconds or blocks, per lock_type.
     lock_time_1: bigint;

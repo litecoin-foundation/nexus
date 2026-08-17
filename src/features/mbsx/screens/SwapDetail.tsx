@@ -5,7 +5,8 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {getMbsxStyles} from '../theme';
-import {BUSY, acceptSwap, getSwapInfo, onMessage} from '../adapter';
+import {BUSY, acceptSwap, getSwapInfo, onMessage, removeSwap} from '../adapter';
+import RemoveButton from '../components/RemoveButton';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapDetail'>;
@@ -100,6 +101,19 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
             ) : null}
           </View>
         ))}
+
+        {/* Removes this offer alone. The request that funded it, and any other
+            offer under it, stay. */}
+        <RemoveButton
+          testID="mbsx-remove-swap"
+          label="Delete swap"
+          confirm="Permanently delete this swap and its events?"
+          onConfirm={async () => {
+            removeSwap(swapId);
+            navigation.navigate('SwapList');
+            return 'Removed';
+          }}
+        />
       </ScrollView>
     </View>
   );

@@ -6,7 +6,14 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
-import {listSwaps, onMessage} from '../adapter';
+import {
+  describeRemoval,
+  listSwaps,
+  onMessage,
+  removeRequests,
+  requestFinished,
+} from '../adapter';
+import RemoveButton from '../components/RemoveButton';
 import type {MbsxDrawerParamList, SwapSummary} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapList'>;
@@ -48,6 +55,19 @@ const SwapList: React.FC<Props> = ({navigation}) => {
           onPress={() => navigation.navigate('CreateSwap')}>
           <Text style={styles.buttonText}>New swap</Text>
         </TouchableOpacity>
+        {/* Removes the request each finished swap belongs to, since a swap on
+            its own leaves the request that funded it behind. */}
+        <RemoveButton
+          testID="mbsx-remove-finished"
+          label="Remove finished"
+          confirm="Permanently delete every finished swap and the requests they belong to?"
+          disabled={!running}
+          onConfirm={async () => {
+            const rv = await removeRequests(requestFinished);
+            fetchSwaps();
+            return describeRemoval(rv, 'Nothing finished to remove');
+          }}
+        />
       </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {!running && !error ? <Text style={styles.empty}>Starting…</Text> : null}

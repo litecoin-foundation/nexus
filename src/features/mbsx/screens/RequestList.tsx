@@ -6,7 +6,14 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
-import {listRequests, onMessage} from '../adapter';
+import {
+  describeRemoval,
+  listRequests,
+  onMessage,
+  removeRequests,
+  requestExpired,
+} from '../adapter';
+import RemoveButton from '../components/RemoveButton';
 import type {MbsxDrawerParamList, SwapRequestSummary} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'RequestList'>;
@@ -35,6 +42,19 @@ const RequestList: React.FC<Props> = ({navigation}) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.headerAction}>
+        <RemoveButton
+          testID="mbsx-remove-expired"
+          label="Remove expired"
+          confirm="Permanently delete every request that drew no offer it can still accept?"
+          disabled={!running}
+          onConfirm={async () => {
+            const rv = await removeRequests(requestExpired);
+            fetchRequests();
+            return describeRemoval(rv, 'Nothing expired to remove');
+          }}
+        />
+      </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         {requests.length === 0 ? (
           running ? (

@@ -103,6 +103,8 @@ const TERMINAL_STATES = new Set([
   'FAILED_REFUNDED',
   'FAILED_SWIPED',
   'FAILED_SWIPED_USED_MERCY',
+  // Not FAILED_SWIPED_USING_MERCY: chain b is still being recovered.
+  'FAILED_SWIPED_MERCY_UNUSED',
   'TIMEDOUT',
   'ABANDONED',
   'REJECTED',
@@ -139,6 +141,8 @@ export const reconcileLeases = async () => {
     }
   }
 };
+
+export const isTerminalState = (state: string) => TERMINAL_STATES.has(state);
 
 export const hasActiveSwaps = () => {
   const swaps = listSwaps();
@@ -315,6 +319,118 @@ export const getRequestInfo = (requestId: string): SwapRequestDetails | null =>
   isRunning()
     ? (NitroBSX.getRequestInfo(requestId) as SwapRequestDetails)
     : null;
+
+// Matches the glue server's pushed_offer_valid_seconds: a request that has
+// drawn no offer by then never will.
+const REQUEST_EXPIRY_MS = 10 * 60 * 1000;
+
+// Null when any of them could not be read. getSwapInfo reports BUSY when the
+// module cannot take its locks, and dropping that swap would let the request
+// read as finished on the strength of the ones that did answer.
+const swapsOf = (request: SwapRequestDetails): SwapDetails[] | null => {
+  const swaps: SwapDetails[] = [];
+  for (const swapId of request.swapids ?? []) {
+    const swap = getSwapInfo(swapId);
+    if (swap === null || swap.error) {
+      return null;
+    }
+    swaps.push(swap);
+  }
+  return swaps;
+};
+
+// Every offer it drew has ended, so nothing under it can still act.
+export const requestFinished = (request: SwapRequestDetails): boolean => {
+  const swaps = swapsOf(request);
+  return (
+    swaps !== null &&
+    swaps.length > 0 &&
+    swaps.every(swap => TERMINAL_STATES.has(swap.state))
+  );
+};
+
+// It never came to anything: no offer is live, none is still acceptable, and a
+// request with no offers at all has waited long enough to stop expecting one.
+export const requestExpired = (request: SwapRequestDetails): boolean => {
+  const swaps = swapsOf(request);
+  if (swaps === null) {
+    return false;
+  }
+  if (swaps.length === 0) {
+    return (
+      Date.parse(`${request.created_at}Z`) + REQUEST_EXPIRY_MS < Date.now()
+    );
+  }
+  return swaps.every(swap => {
+    if (!TERMINAL_STATES.has(swap.state) && swap.state !== 'RECEIVED') {
+      return false;
+    }
+    return (
+      swap.state !== 'RECEIVED' ||
+      Date.parse(`${swap.expire_at}Z`) <= Date.now()
+    );
+  });
+};
+
+/**
+ * Purges a request and every swap under it.
+ *
+ * The leases go first: they are held against the request id, so once the row is
+ * gone nothing links the locked coins to anything that could free them.
+ */
+export const removeRequest = async (requestId: string) => {
+  await releaseLeases(requestId);
+  const rv = NitroBSX.removeRequest(requestId) as MbsxResult<{}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
+export const removeSwap = (swapId: string) => {
+  const rv = NitroBSX.removeSwap(swapId) as MbsxResult<{}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
+/**
+ * Removes every request the predicate selects, and reports both counts.
+ *
+ * One request that will not go must not stop the rest: the module refuses a
+ * swap that has not ended, and a bulk removal that abandons the whole batch
+ * over one of those clears nothing at all.
+ */
+export const removeRequests = async (
+  matches: (request: SwapRequestDetails) => boolean,
+) => {
+  let removed = 0;
+  let refused = 0;
+  for (const summary of listRequests() ?? []) {
+    const request = getRequestInfo(summary.id);
+    if (request === null || request.error || !matches(request)) {
+      continue;
+    }
+    try {
+      await removeRequest(summary.id);
+      removed += 1;
+    } catch (e) {
+      console.warn(`mbsx could not remove request ${summary.id}`, e);
+      refused += 1;
+    }
+  }
+  return {removed, refused};
+};
+
+export const describeRemoval = (
+  {removed, refused}: {removed: number; refused: number},
+  nothing: string,
+) => {
+  if (removed === 0 && refused === 0) {
+    return nothing;
+  }
+  const count = `Removed ${removed} request${removed === 1 ? '' : 's'}`;
+  return refused === 0 ? count : `${count}, ${refused} still active`;
+};
 
 export const getSettings = (): MbsxSettings | null =>
   isRunning() ? (NitroBSX.getSettings() as MbsxSettings) : null;
