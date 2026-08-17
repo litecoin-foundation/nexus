@@ -12,7 +12,13 @@ import type {
   SwapRequestSummary,
   SwapSummary,
 } from '../types';
-import {loadOrCreateConfig, MBSX_DATA_DIR} from './config';
+import {
+  loadOrCreateConfig,
+  MBSX_DATA_DIR,
+  readConfig,
+  writeConfig,
+} from './config';
+import type {MbsxConfig} from './config';
 import {leasedRequestIds, releaseAllLeases, releaseLeases} from './leases';
 import {spendableBalance} from './prevouts';
 import {signSwapTx} from './signTx';
@@ -142,6 +148,25 @@ export const hasActiveSwaps = () => {
   return swaps.some(swap => !TERMINAL_STATES.has(swap.state));
 };
 
+// Uppercase tickers, as the module reports them. A swap names its coins in its
+// own chain a / chain b frame, so either field naming a coin means it is needed.
+// Null when the swaps cannot be read: no coins and no answer must not look alike
+// to a caller deciding whether a coin is safe to turn off.
+export const coinsWithActiveSwaps = (): Set<string> | null => {
+  const swaps = listSwaps();
+  if (swaps === null) {
+    return null;
+  }
+  const coins = new Set<string>();
+  for (const swap of swaps) {
+    if (!TERMINAL_STATES.has(swap.state)) {
+      coins.add(swap.coin_from);
+      coins.add(swap.coin_to);
+    }
+  }
+  return coins;
+};
+
 export const stop = () => {
   if (!isRunning()) {
     return;
@@ -162,6 +187,41 @@ export const stopIfIdle = async () => {
   }
   stop();
   return true;
+};
+
+/**
+ * Writes a config and reinitialises the core so it takes effect.
+ *
+ * An active swap is not a reason to defer this: initialise() reactivates
+ * everything non-terminal from sqlite, so a restart resumes rather than
+ * abandons. What it must not do is leave the core down — a swap that is not
+ * reactivated has nothing watching its timelocks — so a start that fails puts
+ * the previous config back and starts on that instead.
+ */
+export const applyConfig = async (config: MbsxConfig) => {
+  const previous = await readConfig();
+  await writeConfig(config);
+  try {
+    await restart();
+  } catch (e) {
+    if (previous) {
+      await writeConfig(previous);
+      try {
+        await restart();
+      } catch (rollbackError) {
+        console.warn(
+          'mbsx could not restart on the previous config',
+          rollbackError,
+        );
+      }
+    }
+    throw e;
+  }
+};
+
+const restart = async () => {
+  stop();
+  await start();
 };
 
 export const getVersion = () => NitroBSX.getVersionString();

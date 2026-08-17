@@ -110,6 +110,11 @@ export const getMbsxStyles = (screenHeight: number) => {
     amountDisabled: {
       color: colors.grayMedium,
     },
+    rowSelected: {
+      backgroundColor: colors.grayLight,
+      borderLeftWidth: 3,
+      borderLeftColor: colors.primary,
+    },
     dropdown: {
       backgroundColor: colors.white,
       borderWidth: 1,

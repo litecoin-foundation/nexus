@@ -21,26 +21,46 @@ export type SwapRequestSummary = {
   min_amount_to: string;
 };
 
-export type SwapRequestDetails = SwapRequestSummary & {
-  swapids?: string[];
-  error?: string;
+// Integers cross from the module as int64 and arrive as bigint, so these are
+// not numbers and cannot be mixed with one.
+export type MbsxFee = {
+  desc: string;
+  bps: bigint;
+  amount: string;
 };
+
+// Absent when the coin has no fee schedule configured. fees_coin names the
+// chain they sit on, which follows the role: the initiating chain for a pushed
+// swap, the participating one for a bridged swap.
+export type MbsxSwapFees = {
+  fees?: MbsxFee[];
+  fees_coin?: string;
+  fees_total?: string;
+};
+
+export type SwapRequestDetails = SwapRequestSummary &
+  MbsxSwapFees & {
+    swapids?: string[];
+    error?: string;
+  };
 
 export type SwapEvent = {
   [key: string]: any;
 };
 
-export type SwapDetails = SwapSummary & {
-  // Sats per kvB, not an amount in the coin's scale.
-  fee_rate_from: number;
-  fee_rate_to: number;
-  lock_type: string;
-  // Seconds or blocks, per lock_type.
-  lock_time_1: number;
-  lock_time_2: number;
-  events?: SwapEvent[];
-  error?: string;
-};
+export type SwapDetails = SwapSummary &
+  MbsxSwapFees & {
+    // Sats per kvB, not an amount in the coin's scale.
+    fee_rate_from: bigint;
+    fee_rate_to: bigint;
+    lock_type: string;
+    // Seconds or blocks, per lock_type.
+    lock_time_1: bigint;
+    lock_time_2: bigint;
+    expire_at: string;
+    events?: SwapEvent[];
+    error?: string;
+  };
 
 export type MbsxSettings = {
   bridge_pubkey: string;

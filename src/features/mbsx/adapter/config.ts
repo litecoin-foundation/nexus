@@ -23,6 +23,8 @@ export type WalletConfig = {
 };
 
 export type CoinConfig = {
+  // Absent means enabled.
+  enabled?: boolean;
   electrumx: ElectrumServer[];
   fees?: SwapFee[];
   wallet?: WalletConfig;

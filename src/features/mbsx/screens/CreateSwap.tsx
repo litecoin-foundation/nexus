@@ -17,9 +17,10 @@ import {
   selectedAccountNamesSelector,
 } from '../../../reducers/wallets';
 import {rememberAddress, setLastCoin} from '../addressesSlice';
-import CoinSelector from '../components/CoinSelector';
+import CoinSelector, {COINS} from '../components/CoinSelector';
 import {
   getCoinPrices,
+  getInfo,
   isRunning,
   parseAmount,
   recordLeases,
@@ -30,7 +31,12 @@ import {
 } from '../adapter';
 import {getMbsxStyles} from '../theme';
 import type {MbsxCoinPrices, MbsxDrawerParamList} from '../types';
-import {AmountSide, SLIPPAGE, useSwapAmounts} from '../useSwapAmounts';
+import {
+  AmountSide,
+  RATE_TOLERANCE,
+  SLIPPAGE,
+  useSwapAmounts,
+} from '../useSwapAmounts';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
@@ -50,20 +56,41 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [prices, setPrices] = useState<MbsxCoinPrices | null>(null);
+  const [loadedCoins, setLoadedCoins] = useState<string[] | null>(null);
   const [addressFocused, setAddressFocused] = useState(false);
 
   // `running` goes true when initialise() returns, before the handshake that
   // carries the prices.
   useFocusEffect(
     useCallback(() => {
-      setPrices(getCoinPrices());
-      const timer = setInterval(() => setPrices(getCoinPrices()), 2000);
+      const read = () => {
+        setPrices(getCoinPrices());
+        const info = getInfo();
+        setLoadedCoins(info ? Object.keys(info.coins) : null);
+      };
+      read();
+      const timer = setInterval(read, 2000);
       return () => clearInterval(timer);
     }, []),
   );
 
-  const {amounts, setAmount, canConvert, fixedRate, setFixedRate} =
-    useSwapAmounts(prices?.prices?.[COIN_FROM], prices?.prices?.[coinTo]);
+  // getInfo reports the coins the module loaded, so one disabled in settings is
+  // absent here.
+  const offeredCoins = loadedCoins
+    ? COINS.filter(coin => loadedCoins.includes(coin))
+    : COINS;
+
+  const {
+    amounts,
+    setAmount,
+    canConvert,
+    fixedRate,
+    setFixedRate,
+    valueDeviation,
+  } = useSwapAmounts(prices?.prices?.[COIN_FROM], prices?.prices?.[coinTo]);
+  const [rateAcknowledged, setRateAcknowledged] = useState(false);
+  const offReference =
+    valueDeviation !== null && Math.abs(valueDeviation) > RATE_TOLERANCE;
   const amountFrom = amounts.fromCoin;
   const amountTo = amounts.toCoin;
 
@@ -87,6 +114,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       setCoinTo(lastCoin);
     }
   }, [coinTo, lastCoin]);
+
+  useEffect(() => {
+    setRateAcknowledged(false);
+  }, [amounts.fromCoin, amounts.toCoin]);
 
   const selectCoin = (coin: string) => {
     setCoinTo(coin);
@@ -151,6 +182,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       if (!coinTo) {
         throw new Error('Select a coin to receive');
       }
+      if (!offeredCoins.includes(coinTo)) {
+        throw new Error(`${coinTo} is disabled`);
+      }
       if (!addressTo) {
         throw new Error('Missing receive address');
       }
@@ -212,6 +246,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       recordLeases(rv.request_id, prevouts);
       dispatch(rememberAddress({coin: coinTo, address: addressTo}));
       setRequestId(rv.request_id);
+      navigation.navigate('RequestDetail', {requestId: rv.request_id});
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -226,7 +261,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled">
-        <CoinSelector label="Receive" value={coinTo} onChange={selectCoin} />
+        <CoinSelector
+          label="Receive"
+          value={coinTo}
+          coins={offeredCoins}
+          onChange={selectCoin}
+        />
         <Text style={styles.inputLabel}>Receive address</Text>
         <TextInput
           testID="mbsx-address-to"
@@ -313,13 +353,31 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             </Text>
           </>
         ) : null}
-        {/* Coins are leased before the request is sent, so a second submit
-            would lock a second set of them. */}
+        {offReference ? (
+          <TouchableOpacity
+            testID="mbsx-rate-warning"
+            onPress={() => setRateAcknowledged(true)}>
+            <Text style={styles.error}>
+              {`You would receive ${Math.abs(
+                Math.round((valueDeviation as number) * 100),
+              )}% ${
+                (valueDeviation as number) < 0 ? 'less' : 'more'
+              } than the reference rate.${
+                rateAcknowledged ? '' : ' Tap to continue anyway.'
+              }`}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity
           testID="mbsx-submit"
-          style={styles.button}
+          style={[
+            styles.button,
+            busy || (offReference && !rateAcknowledged)
+              ? styles.buttonDisabled
+              : null,
+          ]}
           onPress={submit}
-          disabled={busy}>
+          disabled={busy || (offReference && !rateAcknowledged)}>
           <Text style={styles.buttonText}>
             {busy ? 'Requesting…' : 'Request swap'}
           </Text>

@@ -9,6 +9,8 @@ export type AmountSide = 'from' | 'to';
 // reference would reject every honest offer.
 export const SLIPPAGE = 0.01;
 
+export const RATE_TOLERANCE = 0.05;
+
 export type SwapAmounts = {
   fromCoin: string;
   fromUsd: string;
@@ -114,6 +116,15 @@ export const useSwapAmounts = (
 
   const reset = useCallback(() => setAmounts(EMPTY), []);
 
+  // How far the receive side sits from the send side in value. Negative means
+  // receiving less than sending, which is the direction that costs the user.
+  const fromUsd = num(amounts.fromUsd);
+  const toUsd = num(amounts.toUsd);
+  const valueDeviation =
+    canConvert && fromUsd !== null && toUsd !== null
+      ? (toUsd - fromUsd) / fromUsd
+      : null;
+
   return {
     fixedRate,
     setFixedRate,
@@ -121,5 +132,6 @@ export const useSwapAmounts = (
     setAmount,
     reset,
     canConvert,
+    valueDeviation,
   };
 };

@@ -13,10 +13,16 @@ const COINS = ['BTC', 'PART'];
 type Props = {
   label: string;
   value: string;
+  coins?: string[];
   onChange: (coin: string) => void;
 };
 
-const CoinSelector: React.FC<Props> = ({label, value, onChange}) => {
+const CoinSelector: React.FC<Props> = ({
+  label,
+  value,
+  coins = COINS,
+  onChange,
+}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
 
@@ -24,7 +30,7 @@ const CoinSelector: React.FC<Props> = ({label, value, onChange}) => {
     <View>
       <Text style={styles.inputLabel}>{label}</Text>
       <View style={styles.chipRow}>
-        {COINS.map(coin => (
+        {coins.map(coin => (
           <TouchableOpacity
             key={coin}
             testID={`mbsx-coin-${coin}`}

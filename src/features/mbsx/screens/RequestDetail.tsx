@@ -1,14 +1,41 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {getMbsxStyles} from '../theme';
-import {BUSY, getRequestInfo, onMessage} from '../adapter';
-import type {MbsxDrawerParamList, SwapRequestDetails} from '../types';
+import {
+  BUSY,
+  acceptSwap,
+  getRequestInfo,
+  getSwapInfo,
+  onMessage,
+} from '../adapter';
+import type {
+  MbsxDrawerParamList,
+  SwapDetails,
+  SwapRequestDetails,
+} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'RequestDetail'>;
+
+// Everything an offer can be while it is still only an offer. Anything else and
+// the swap is under way, so the request page is no longer the thing to look at.
+const PRE_ACCEPT = new Set([
+  'SENT',
+  'RECEIVING',
+  'RECEIVED',
+  'RECEIVING_ACC',
+  'EXPIRED',
+  'REJECTED',
+]);
 
 const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -16,6 +43,11 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 
   const {requestId} = route.params;
   const [request, setRequest] = useState<SwapRequestDetails | null>(null);
+  const [swaps, setSwaps] = useState<SwapDetails[]>([]);
+  const [selected, setSelected] = useState('');
+  const [showAll, setShowAll] = useState(false);
+  const [acceptError, setAcceptError] = useState('');
+  const [accepting, setAccepting] = useState(false);
 
   const fetchRequest = useCallback(() => {
     const rv = getRequestInfo(requestId);
@@ -36,6 +68,72 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     return () => subscription.remove();
   }, [fetchRequest]);
 
+  // Keyed on the ids rather than refetched per notification: one getSwapInfo
+  // per swap on every main loop pass would be a lot of db locks for a screen.
+  const swapIdKey = Array.isArray(request?.swapids)
+    ? request.swapids.join(',')
+    : '';
+  useEffect(() => {
+    const ids = swapIdKey ? swapIdKey.split(',') : [];
+    const load = () =>
+      setSwaps(
+        ids
+          .map(id => getSwapInfo(id))
+          .filter((swap): swap is SwapDetails => swap !== null && !swap.error),
+      );
+    load();
+    if (ids.length === 0) {
+      return;
+    }
+    const timer = setInterval(load, 2000);
+    return () => clearInterval(timer);
+  }, [swapIdKey]);
+
+  const underway = swaps.find(swap => !PRE_ACCEPT.has(swap.state));
+  const navigatedFor = useRef('');
+  useEffect(() => {
+    if (underway && navigatedFor.current !== underway.id) {
+      navigatedFor.current = underway.id;
+      navigation.navigate('SwapDetail', {swapId: underway.id});
+    }
+  }, [underway, navigation]);
+
+  // fast path offer
+  const acceptable = (swap: SwapDetails) =>
+    swap.state === 'RECEIVED' && Date.parse(`${swap.expire_at}Z`) > Date.now();
+  const offers = [...swaps].sort((a, b) => {
+    if (acceptable(a) !== acceptable(b)) {
+      return acceptable(a) ? -1 : 1;
+    }
+    return Number(b.initiating) - Number(a.initiating);
+  });
+  const best = offers.length > 0 && acceptable(offers[0]) ? offers[0] : null;
+  // Only the fast path offer is worth collapsing to
+  const collapsed = !showAll && best !== null && best.initiating;
+  const shown = collapsed ? [best] : offers;
+  const selectedSwap =
+    offers.find(swap => swap.id === selected) ?? (collapsed ? best : null);
+
+  const onAccept = async () => {
+    if (!selectedSwap) {
+      return;
+    }
+    setAccepting(true);
+    setAcceptError('');
+    try {
+      const rv = await acceptSwap(selectedSwap.id);
+      if (rv.error) {
+        setAcceptError(rv.error);
+        return;
+      }
+      navigation.navigate('SwapDetail', {swapId: selectedSwap.id});
+    } catch (e) {
+      setAcceptError((e as Error).message);
+    } finally {
+      setAccepting(false);
+    }
+  };
+
   if (!request) {
     return (
       <View style={styles.container}>
@@ -44,15 +142,14 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     );
   }
 
-  // getRequestInfo sets swapids to "error" when the lookup fails
-  const swapIds = Array.isArray(request.swapids) ? request.swapids : [];
-
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.row}>
+        <View style={styles.stackedRow}>
           <Text style={styles.label}>ID</Text>
-          <Text style={styles.value}>{request.id.slice(0, 16)}…</Text>
+          <Text testID="mbsx-request-id" style={styles.rowMessage} selectable>
+            {request.id}
+          </Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>State</Text>
@@ -75,18 +172,115 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           </Text>
         </View>
 
-        <Text style={styles.section}>Swaps</Text>
-        {swapIds.length === 0 ? (
-          <Text style={styles.empty}>No swaps</Text>
+        <Text style={styles.section}>Swap fees</Text>
+        {(request.fees ?? []).length === 0 ? (
+          <Text style={styles.empty}>No fees configured</Text>
         ) : (
-          swapIds.map(swapId => (
+          <>
+            {request.fees?.map(fee => (
+              <View key={fee.desc} style={styles.row}>
+                <Text style={styles.label}>
+                  {`${fee.desc} (${Number(fee.bps) / 100}%)`}
+                </Text>
+                <Text style={styles.value}>
+                  {fee.amount} {request.fees_coin}
+                </Text>
+              </View>
+            ))}
+            <View style={styles.row}>
+              <Text style={styles.label}>Total</Text>
+              <Text style={styles.value}>
+                {request.fees_total} {request.fees_coin}
+              </Text>
+            </View>
+            <Text style={styles.empty}>
+              {swaps.length === 0
+                ? `On the ${request.fees_coin} chain if the offer is pushed. A bridged offer moves them to the chain it makes us follow.`
+                : 'Chain per offer below.'}
+            </Text>
+          </>
+        )}
+
+        <Text style={styles.section}>Offers</Text>
+        {offers.length === 0 ? (
+          <Text style={styles.empty}>Waiting for an offer</Text>
+        ) : (
+          <>
+            {shown.map(swap => {
+              // A bridged swap reports chain a / chain b, which is the reverse
+              // of the request's own from/to.
+              const sendCoin = swap.initiating ? swap.coin_from : swap.coin_to;
+              const sendAmount = swap.initiating
+                ? swap.amount_from
+                : swap.amount_to;
+              const recvCoin = swap.initiating ? swap.coin_to : swap.coin_from;
+              const recvAmount = swap.initiating
+                ? swap.amount_to
+                : swap.amount_from;
+              const isSelected = selectedSwap?.id === swap.id;
+              return (
+                <TouchableOpacity
+                  key={swap.id}
+                  testID={`mbsx-offer-${swap.id}`}
+                  style={[
+                    styles.stackedRow,
+                    isSelected ? styles.rowSelected : null,
+                  ]}
+                  onPress={() => setSelected(swap.id)}>
+                  <Text style={styles.rowPrimary}>
+                    {`${swap.initiating ? 'Pushed' : 'Bridged'} — send ${sendAmount} ${sendCoin}, receive ${recvAmount} ${recvCoin}`}
+                  </Text>
+                  <Text style={styles.rowMessage}>
+                    {acceptable(swap)
+                      ? `Expires ${swap.expire_at}`
+                      : `${swap.state}, expired ${swap.expire_at}`}
+                  </Text>
+                  <Text style={styles.rowMessage}>
+                    {`Chain fees ${swap.fee_rate_from} / ${swap.fee_rate_to} sat/kvB`}
+                    {swap.fees_coin
+                      ? ` · swap fees ${swap.fees_total} ${swap.fees_coin}`
+                      : ''}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('SwapDetail', {swapId: swap.id})
+                    }>
+                    <Text style={styles.link}>Details</Text>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              );
+            })}
+            {collapsed && offers.length > 1 ? (
+              <TouchableOpacity
+                testID="mbsx-more-offers"
+                onPress={() => setShowAll(true)}>
+                <Text style={styles.link}>
+                  {`Show ${offers.length - 1} more offer${
+                    offers.length === 2 ? '' : 's'
+                  }`}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
             <TouchableOpacity
-              key={swapId}
-              style={styles.stackedRow}
-              onPress={() => navigation.navigate('SwapDetail', {swapId})}>
-              <Text style={styles.rowMessage}>{swapId}</Text>
+              testID="mbsx-accept"
+              style={[
+                styles.button,
+                !selectedSwap || !acceptable(selectedSwap) || accepting
+                  ? styles.buttonDisabled
+                  : null,
+              ]}
+              disabled={!selectedSwap || !acceptable(selectedSwap) || accepting}
+              onPress={onAccept}>
+              <Text style={styles.buttonText}>
+                {accepting ? 'Accepting…' : 'Accept offer'}
+              </Text>
             </TouchableOpacity>
-          ))
+            {acceptError !== '' ? (
+              <Text testID="mbsx-accept-error" style={styles.error}>
+                {acceptError}
+              </Text>
+            ) : null}
+          </>
         )}
       </ScrollView>
     </View>
