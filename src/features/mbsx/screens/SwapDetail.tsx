@@ -39,13 +39,19 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   }, [fetchSwap]);
 
   const onAccept = async () => {
-    const rv = await acceptSwap(swapId);
-    if (rv.error) {
-      setAcceptError(rv.error);
-      return;
+    // acceptSwap rejects rather than returning an error for most failures, and
+    // refusing a second offer under one request is now one of them.
+    try {
+      const rv = await acceptSwap(swapId);
+      if (rv.error) {
+        setAcceptError(rv.error);
+        return;
+      }
+      setAcceptError('');
+      fetchSwap();
+    } catch (e) {
+      setAcceptError((e as Error).message);
     }
-    setAcceptError('');
-    fetchSwap();
   };
 
   if (!swap) {

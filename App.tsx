@@ -53,6 +53,7 @@ import {
 } from './src/reducers/buy';
 import {isAppFirstTimeOpened} from './src/reducers/info';
 import RootNavigator from './src/navigation/RootNavigator';
+import MbsxResume from './src/features/mbsx/components/MbsxResume';
 import Error from './src/components/Error';
 import MigrationModal from './src/components/Modals/MigrationModal';
 import {acknowledgeMigration} from './src/reducers/lightning';
@@ -351,6 +352,7 @@ const App: React.FC = () => {
                   publishableKey={flexaPublishableKey}>
                   <ContextExecutable deviceToken={deviceToken} />
                   <DeviceTokenHandler deviceToken={deviceToken} />
+                  <MbsxResume />
                   <OpenNotificationHandler
                     notification={openedNotificationData}
                   />

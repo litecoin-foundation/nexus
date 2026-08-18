@@ -180,6 +180,15 @@ export const stop = () => {
   started = false;
 };
 
+// Set while MbsxNavigator is mounted. A core resumed at launch has no ui above
+// it and nothing to unmount, so the terminal-state watcher stops it instead -
+// but it must not stop one the user is looking at.
+let sectionMounted = false;
+
+export const setSectionMounted = (mounted: boolean) => {
+  sectionMounted = mounted;
+};
+
 // Leaving the section must not abandon a swap that has coins locked on chain,
 // so the core outlives the ui that started it.
 export const stopIfIdle = async () => {
@@ -190,6 +199,33 @@ export const stopIfIdle = async () => {
     return false;
   }
   stop();
+  return true;
+};
+
+/**
+ * Starts the core at launch when the db holds an unfinished swap, since a swap
+ * with timelocks running needs no ui to be watched.
+ *
+ * hasSwapsToResume needs only setDataDir, so nothing in flight costs one file
+ * read rather than a core start.
+ */
+export const resumeIfNeeded = async () => {
+  if (isRunning()) {
+    return false;
+  }
+  if (NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
+    console.warn(`mbsx could not use its data directory ${MBSX_DATA_DIR}`);
+    return false;
+  }
+  const rv = NitroBSX.hasSwapsToResume() as MbsxResult<{has_swaps?: boolean}>;
+  if (rv.error) {
+    console.warn('mbsx could not check for swaps to resume:', rv.error);
+    return false;
+  }
+  if (!rv.has_swaps) {
+    return false;
+  }
+  await start();
   return true;
 };
 
@@ -269,7 +305,8 @@ export const watchForFinishedSwaps = () =>
         event.event_type === 'STATE_CHANGED' &&
         TERMINAL_STATES.has(event.event_sub_type)
       ) {
-        void reconcileNow();
+        // stopIfIdle reconciles first, and declines while anything is active.
+        void (sectionMounted ? reconcileNow() : stopIfIdle());
       }
     } catch {
       // Not an event we can read, so not one that ends a swap.

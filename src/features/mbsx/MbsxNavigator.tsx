@@ -8,7 +8,13 @@ import {
 import type {DrawerContentComponentProps} from '@react-navigation/drawer';
 
 import {useAppDispatch} from '../../store/hooks';
-import {onMessage, start, stopIfIdle, watchForFinishedSwaps} from './adapter';
+import {
+  onMessage,
+  setSectionMounted,
+  start,
+  stopIfIdle,
+  watchForFinishedSwaps,
+} from './adapter';
 import {pushMessage, setError, setRunning} from './mbsxSlice';
 import CreateSwap from './screens/CreateSwap';
 import SwapList from './screens/SwapList';
@@ -42,8 +48,10 @@ const MbsxNavigator: React.FC = () => {
 
   useEffect(() => {
     let left = false;
+    setSectionMounted(true);
 
     const leave = () => {
+      setSectionMounted(false);
       stopIfIdle().then(stopped => {
         if (stopped) {
           dispatch(setRunning(false));
