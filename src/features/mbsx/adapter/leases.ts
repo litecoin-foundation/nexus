@@ -1,4 +1,7 @@
-import {walletKitReleaseOutput} from 'react-native-nitro-lndltc';
+import {
+  walletKitListLeases,
+  walletKitReleaseOutput,
+} from 'react-native-nitro-lndltc';
 
 import {displayTxid, type SelectedPrevout} from './prevouts';
 
@@ -17,12 +20,47 @@ export const recordLeases = (
 export const leasedRequestIds = () => Array.from(leased.keys());
 
 /**
+ * The outpoints lnd still has leased, or null when it could not be asked.
+ *
+ * Null rather than an empty set: not knowing must not be read as "nothing is
+ * leased", which would skip every release and leave the coins locked until
+ * lnd's own timer lapsed.
+ */
+const heldOutpoints = async (): Promise<Set<string> | null> => {
+  try {
+    const leases = await walletKitListLeases({});
+    return new Set(
+      (leases.lockedUtxos ?? [])
+        .filter(u => u.outpoint)
+        .map(
+          u =>
+            `${Buffer.from(u.outpoint!.txidBytes).toString('hex')}:${
+              u.outpoint!.outputIndex
+            }`,
+        ),
+    );
+  } catch (e) {
+    console.warn('mbsx could not list leases:', (e as Error).message);
+    return null;
+  }
+};
+
+/**
  * Hands the coins back to Nexus's own send flow. Also the path for coins leased
  * for a request that was never made, which would otherwise stay locked with
  * nothing tracking them.
  */
 export const releasePrevouts = async (prevouts: SelectedPrevout[]) => {
+  // Ask what lnd still holds first. It drops a lease when the coin is spent, and
+  // every swap that published lock tx a has spent them - so releasing blind means
+  // a guaranteed `unknown output` rejection per coin on every swap that got that
+  // far, which is all of them bar a request that failed before funding.
+  const held = await heldOutpoints();
+
   for (const prevout of prevouts) {
+    if (held !== null && !held.has(`${prevout.txid}:${prevout.vout}`)) {
+      continue;
+    }
     try {
       await walletKitReleaseOutput({
         id: Buffer.from(prevout.leaseId, 'hex'),

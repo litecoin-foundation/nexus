@@ -29,9 +29,7 @@ const persistConfig = {
 // uses Redux Action Logger (until devtools gets redux support)
 const actionLogger =
   (_store: any) => (next: (arg0: any) => any) => (action: any) => {
-    // The type, not the action: serialising a large payload here has repeatedly
-    // preceded a SIGSEGV inside Hermes by a few milliseconds.
-    console.log('Dispatched action:', action.type);
+    console.log('Dispatched action:', action);
     return next(action);
   };
 

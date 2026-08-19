@@ -1,11 +1,12 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Alert, Text, TouchableOpacity, View} from 'react-native';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import MessageList from '../components/MessageList';
 import {getInfo, getMemStats, getVersion, resetState} from '../adapter';
 import {clearMessages} from '../mbsxSlice';
+import {EXPORT_CONTENTS, exportLogs} from '../exportLogs';
 import {stringifyRpc} from '../json';
 import {getMbsxStyles} from '../theme';
 
@@ -17,7 +18,9 @@ const MbsxDebug: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const running = useAppSelector(state => state.mbsx.running);
+  const messages = useAppSelector(state => state.mbsx.messages);
   const [connected, setConnected] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [chains, setChains] = useState<ChainRow[]>([]);
 
   // Polled rather than driven by onMessage so heights keep updating while the
@@ -102,6 +105,41 @@ const MbsxDebug: React.FC = () => {
             console.log('MEMSTATS ' + stringifyRpc(getMemStats()));
           }}>
           <Text style={styles.buttonText}>Log mem stats</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          disabled={exporting}
+          onPress={() => {
+            // Asked before the file is written, not after: the point of the
+            // share sheet is that the user chooses the recipient, and that is
+            // only a choice if they know what is in it first.
+            Alert.alert(
+              'Export debug report',
+              `The report includes:\n\n${EXPORT_CONTENTS.map(
+                s => `• ${s}`,
+              ).join('\n')}\n\nIt contains no keys and no seed phrase, and is ` +
+                'not sent anywhere - you choose who receives it.',
+              [
+                {text: 'Cancel', style: 'cancel'},
+                {
+                  text: 'Export',
+                  onPress: async () => {
+                    setExporting(true);
+                    try {
+                      await exportLogs(messages);
+                    } catch (e) {
+                      Alert.alert('Export failed', (e as Error).message);
+                    } finally {
+                      setExporting(false);
+                    }
+                  },
+                },
+              ],
+            );
+          }}>
+          <Text style={styles.buttonText}>
+            {exporting ? 'Exporting…' : 'Export logs'}
+          </Text>
         </TouchableOpacity>
       </View>
 
