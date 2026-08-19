@@ -23,6 +23,7 @@ import {leasedRequestIds, releaseAllLeases, releaseLeases} from './leases';
 import {spendableBalance} from './prevouts';
 import {signSwapTx} from './signTx';
 import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
+import {scheduleWakes} from './wake';
 
 export {defaultConfig, MBSX_DATA_DIR, readConfig, writeConfig} from './config';
 export {recordLeases, releaseLeases, releasePrevouts} from './leases';
@@ -83,7 +84,9 @@ export const start = async () => {
   }
 
   started = true;
+  stateWatch = watchSwapStates();
   startBackgroundService();
+  scheduleWakes();
 
   // Tests only. __DEV__ so metro strips it from a release bundle, and the native
   // listener is compiled out of a release build regardless (BSX_DEBUG_RPC), so
@@ -144,12 +147,27 @@ export const reconcileLeases = async () => {
 
 export const isTerminalState = (state: string) => TERMINAL_STATES.has(state);
 
-export const hasActiveSwaps = () => {
-  const swaps = listSwaps();
-  if (swaps === null) {
-    return false;
+/**
+ * Whether anything is still in flight, answered by the module rather than by
+ * reading states here.
+ *
+ * The swapstates table is the only definition of "finished"; TERMINAL_STATES
+ * below is a copy of it, and a copy drifts - a state added to the module and not
+ * here reads as active for ever, and one removed abandons a live swap.
+ *
+ * Needs only setDataDir, so it is equally valid before the core is started.
+ */
+export const hasActiveSwaps = (): boolean => {
+  const rv = NitroBSX.hasActiveSwaps() as MbsxResult<{has_swaps?: boolean}>;
+  if (rv.error) {
+    if (!isBusy(rv)) {
+      console.error('mbsx hasActiveSwaps failed:', rv.error);
+    }
+    // Unknown is not the same as none: a swap that cannot be read still has
+    // coins locked, so this must not be what stops the core or cancels a wake.
+    return true;
   }
-  return swaps.some(swap => !TERMINAL_STATES.has(swap.state));
+  return rv.has_swaps === true;
 };
 
 // Uppercase tickers, as the module reports them. A swap names its coins in its
@@ -175,6 +193,8 @@ export const stop = () => {
   if (!isRunning()) {
     return;
   }
+  stateWatch?.remove();
+  stateWatch = null;
   NitroBSX.stop();
   stopBackgroundService();
   started = false;
@@ -206,8 +226,8 @@ export const stopIfIdle = async () => {
  * Starts the core at launch when the db holds an unfinished swap, since a swap
  * with timelocks running needs no ui to be watched.
  *
- * hasSwapsToResume needs only setDataDir, so nothing in flight costs one file
- * read rather than a core start.
+ * hasActiveSwaps needs only setDataDir, so nothing in flight costs one file read
+ * rather than a core start.
  */
 export const resumeIfNeeded = async () => {
   if (isRunning()) {
@@ -217,7 +237,7 @@ export const resumeIfNeeded = async () => {
     console.warn(`mbsx could not use its data directory ${MBSX_DATA_DIR}`);
     return false;
   }
-  const rv = NitroBSX.hasSwapsToResume() as MbsxResult<{has_swaps?: boolean}>;
+  const rv = NitroBSX.hasActiveSwaps() as MbsxResult<{has_swaps?: boolean}>;
   if (rv.error) {
     console.warn('mbsx could not check for swaps to resume:', rv.error);
     return false;
@@ -287,6 +307,8 @@ const reconcileNow = async () => {
   }
 };
 
+let stateWatch: {remove: () => void} | null = null;
+
 /**
  * Frees a swap's coins as soon as it ends, rather than when the section closes.
  *
@@ -294,22 +316,27 @@ const reconcileNow = async () => {
  * the coins locked until lnd's own timer lapses is indistinguishable to the user
  * from the wallet losing them.
  */
-export const watchForFinishedSwaps = () =>
+const watchSwapStates = () =>
   NitroBSX.onMessage((payload: {type: string; data: string}) => {
     if (payload.type !== 'event') {
       return;
     }
     try {
       const event = JSON.parse(payload.data);
-      if (
-        event.event_type === 'STATE_CHANGED' &&
-        TERMINAL_STATES.has(event.event_sub_type)
-      ) {
+      if (event.event_type !== 'STATE_CHANGED') {
+        return;
+      }
+      if (TERMINAL_STATES.has(event.event_sub_type)) {
         // stopIfIdle reconciles first, and declines while anything is active.
         void (sectionMounted ? reconcileNow() : stopIfIdle());
       }
+      // Every state change, not only the last one: a swap starting changes what
+      // there is to wake for as much as a swap ending. Armed on the terminal
+      // state alone, a swap made while the app is open never gets an alarm - the
+      // only one that did was one already in flight when start() ran.
+      scheduleWakes();
     } catch {
-      // Not an event we can read, so not one that ends a swap.
+      // Not an event we can read, so not one that changes a swap's state.
     }
   });
 

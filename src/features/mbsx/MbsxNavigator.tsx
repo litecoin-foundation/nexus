@@ -8,13 +8,7 @@ import {
 import type {DrawerContentComponentProps} from '@react-navigation/drawer';
 
 import {useAppDispatch} from '../../store/hooks';
-import {
-  onMessage,
-  setSectionMounted,
-  start,
-  stopIfIdle,
-  watchForFinishedSwaps,
-} from './adapter';
+import {onMessage, setSectionMounted, start, stopIfIdle} from './adapter';
 import {pushMessage, setError, setRunning} from './mbsxSlice';
 import CreateSwap from './screens/CreateSwap';
 import SwapList from './screens/SwapList';
@@ -82,11 +76,6 @@ const MbsxNavigator: React.FC = () => {
     );
     return () => subscription.remove();
   }, [dispatch]);
-
-  useEffect(() => {
-    const subscription = watchForFinishedSwaps();
-    return () => subscription.remove();
-  }, []);
 
   return (
     <Drawer.Navigator
