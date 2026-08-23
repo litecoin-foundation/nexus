@@ -5,16 +5,13 @@ import {LongPressGestureHandler, State} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import LiquidGlassBackdrop from './LiquidGlassBackdrop';
-import {GLASS_CHART_HEIGHT_RATIO, getGlassChartGap} from './GlassChart';
 import {
   CARD_FOLD_RADIUS_RATIO,
   getFoldedTopHalfHeight,
-  getNewMainSheetPoints,
 } from '../animations/useNewMainAnims';
-import {GLASS_TAB_CLUSTER_TOP_OFFSET_RATIO} from './glassTabLayout';
+import {getGlassTopHalfRhythm} from './glassTopHalfLayout';
 import {
   BALANCE_BLOCK_HEIGHT_RATIO,
-  getBalanceBlockBottom,
   GlassBalanceModel,
 } from './GlassBalanceGraphics';
 import {chartPercentageChangeSelector} from '../reducers/chart';
@@ -54,16 +51,7 @@ const GlassAmountView: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
 
   // Shared chart slot for the touch overlay and Skia graph.
-  const {FOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
-  const chartBlockHeight =
-    SCREEN_HEIGHT * GLASS_CHART_HEIGHT_RATIO +
-    getGlassChartGap(SCREEN_HEIGHT) +
-    SCREEN_HEIGHT * 0.03;
-  const balanceBottom = getBalanceBlockBottom(SCREEN_HEIGHT, insets.top);
-  const clusterTop =
-    FOLD_SHEET_POINT + SCREEN_HEIGHT * GLASS_TAB_CLUSTER_TOP_OFFSET_RATIO;
-  const chartTop =
-    balanceBottom + (clusterTop - balanceBottom - chartBlockHeight) / 2;
+  const {chartTop} = getGlassTopHalfRhythm(SCREEN_HEIGHT, insets.top);
 
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, chartTop);
 

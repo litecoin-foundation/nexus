@@ -222,7 +222,11 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
       FOLD_SHEET_POINT,
     ) - SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO,
   );
-  const layouts = getGlassTabLayouts(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const layouts = getGlassTabLayouts(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    insets.top,
+  );
   const buttonHeight = SCREEN_HEIGHT * GLASS_TAB_BUTTON_HEIGHT_RATIO;
   // The SDF radius can't exceed the box half-extents.
   const cornerRadius = Math.min(GLASS_TAB_CORNER_RADIUS, buttonHeight / 2);

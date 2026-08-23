@@ -1,11 +1,17 @@
 import {Extrapolation, interpolate} from 'react-native-reanimated';
 
+import {
+  getGlassTopHalfRhythm,
+  GLASS_TAB_BUTTON_HEIGHT_RATIO,
+} from './glassTopHalfLayout';
+
 // Shared tab geometry for the touch overlay and glass shader.
 
 export const GLASS_TAB_CORNER_RADIUS = 26;
-export const GLASS_TAB_BUTTON_HEIGHT_RATIO = 0.057;
-// Top of the folded button cluster — content above must clear the buttons.
-export const GLASS_TAB_CLUSTER_TOP_OFFSET_RATIO = -0.096;
+export {
+  GLASS_TAB_BUTTON_HEIGHT_RATIO,
+  GLASS_TAB_CLUSTER_HEIGHT_RATIO,
+} from './glassTopHalfLayout';
 
 export const GLASS_TAB_IDS = [1, 2, 4, 5];
 
@@ -14,15 +20,15 @@ export const GLASS_TAB_IDS = [1, 2, 4, 5];
 const TRADE_SPLIT_START = 0.76;
 const TRADE_SPLIT_END = 0.98;
 
+// Horizontal slots only; both rows take their topOffset from the shared
+// top-half rhythm so the cluster keeps equal gaps above and below it.
 const FOLDED_ROW = {
   width: 0.2773,
   lefts: [0.0587, 0.3627, 0.6667],
-  topOffset: GLASS_TAB_CLUSTER_TOP_OFFSET_RATIO,
 };
 const UNFOLDED_ROW = {
   width: 0.145,
   lefts: [0.185, 0.3467, 0.5083, 0.67],
-  topOffset: -0.1236,
 };
 
 interface GlassTabRect {
@@ -39,7 +45,10 @@ export interface GlassTabLayout {
 export const getGlassTabLayouts = (
   screenWidth: number,
   screenHeight: number,
+  topInset: number,
 ): GlassTabLayout[] => {
+  const {foldedClusterTopOffset, unfoldedClusterTopOffset} =
+    getGlassTopHalfRhythm(screenHeight, topInset);
   const compactWidth = FOLDED_ROW.width * screenWidth;
   const compactTradeLeft = FOLDED_ROW.lefts[0] * screenWidth;
   const buttonHeight = GLASS_TAB_BUTTON_HEIGHT_RATIO * screenHeight;
@@ -55,12 +64,12 @@ export const getGlassTabLayouts = (
   return foldedRects.map((foldedRect, i) => ({
     folded: {
       ...foldedRect,
-      topOffset: FOLDED_ROW.topOffset * screenHeight,
+      topOffset: foldedClusterTopOffset,
     },
     unfolded: {
       left: UNFOLDED_ROW.lefts[i] * screenWidth,
       width: UNFOLDED_ROW.width * screenWidth,
-      topOffset: UNFOLDED_ROW.topOffset * screenHeight,
+      topOffset: unfoldedClusterTopOffset,
     },
   }));
 };
