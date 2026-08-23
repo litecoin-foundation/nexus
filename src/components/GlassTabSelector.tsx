@@ -66,7 +66,11 @@ const GlassTabSelector: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
-  const layouts = getGlassTabLayouts(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const layouts = getGlassTabLayouts(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    insets.top,
+  );
   const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
     SCREEN_HEIGHT,
     insets.top,

@@ -28,8 +28,8 @@ export const getNewMainSheetPoints = (
   topInset: number,
 ) => {
   const OFFSET_HEADER_DIFF = topInset - screenHeight * 0.07;
-  const UNFOLD_SHEET_POINT = screenHeight * 0.37 + OFFSET_HEADER_DIFF;
-  const FOLD_SHEET_POINT = screenHeight * 0.65 + OFFSET_HEADER_DIFF;
+  const UNFOLD_SHEET_POINT = screenHeight * 0.35 + OFFSET_HEADER_DIFF;
+  const FOLD_SHEET_POINT = screenHeight * 0.57 + OFFSET_HEADER_DIFF;
   return {
     OFFSET_HEADER_DIFF,
     // Fold/unfold commits at ~35% of the travel.

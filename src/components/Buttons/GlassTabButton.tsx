@@ -18,10 +18,13 @@ import {
   glassTabSplitProgressAt,
   GlassTabLayout,
   GLASS_TAB_BUTTON_HEIGHT_RATIO,
+  GLASS_TAB_CLUSTER_HEIGHT_RATIO,
 } from '../glassTabLayout';
 
-// Overlay for touch targets and labels; the canvas draws the glass.
-const UNFOLDED_TOUCH_HEIGHT_RATIO = GLASS_TAB_BUTTON_HEIGHT_RATIO + 0.033;
+// Overlay for touch targets and labels; the canvas draws the glass. The
+// unfolded target covers the pill and the label under it, which is also the
+// height the top-half rhythm spaces the unfolded cluster by.
+const UNFOLDED_TOUCH_HEIGHT_RATIO = GLASS_TAB_CLUSTER_HEIGHT_RATIO;
 const BELOW_LABEL_TOP_RATIO = GLASS_TAB_BUTTON_HEIGHT_RATIO + 0.014;
 
 interface Props {
