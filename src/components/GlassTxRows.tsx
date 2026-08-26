@@ -33,7 +33,7 @@ import {ScreenSizeContext} from '../context/screenSize';
 // scroll physics stay native and taps can be hit-tested against `rowTops`.
 
 // Drag strip + tx title row sit above the list viewport.
-export const DRAG_STRIP_HEIGHT_RATIO = 0.02;
+export const DRAG_STRIP_HEIGHT_RATIO = 0;
 export const TX_TITLE_ROW_HEIGHT_RATIO = 0.07;
 export const GLASS_TX_LIST_TOP_RATIO =
   DRAG_STRIP_HEIGHT_RATIO + TX_TITLE_ROW_HEIGHT_RATIO;

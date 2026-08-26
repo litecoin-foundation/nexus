@@ -237,13 +237,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       backgroundColor: SHEET_BACKGROUND,
       borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
       borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      overflow: 'hidden',
       zIndex: 1,
     },
     sheetContent: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: SHEET_BACKGROUND,
       borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
       borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      overflow: 'hidden',
     },
   });
 
