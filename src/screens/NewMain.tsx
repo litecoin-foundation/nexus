@@ -20,13 +20,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
-import {
-  Canvas,
-  Image,
-  RoundedRect,
-  useImage,
-  Shadow,
-} from '@shopify/react-native-skia';
+import {Canvas, Image, useImage} from '@shopify/react-native-skia';
 import {
   CUSTODY_MODEL,
   dismissAllModals,
@@ -154,15 +148,6 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
 
         <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
           <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
-            <RoundedRect
-              x={SCREEN_HEIGHT * 0.02}
-              y={SCREEN_HEIGHT * 0.01}
-              width={SCREEN_HEIGHT * 0.1}
-              height={SCREEN_HEIGHT * 0.05}
-              color="white"
-              r={SCREEN_HEIGHT * 0.01}>
-              <Shadow dx={0} dy={2} blur={4} color={'rgba(0, 0, 0, 0.07)'} />
-            </RoundedRect>
             <Image
               image={image}
               x={SCREEN_HEIGHT * 0.035}
@@ -258,6 +243,9 @@ const NewMain: React.FC<Props> = props => {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedTransaction, selectTransaction] = useState<any>({});
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
+  // The overlay reports when it is actually on screen; it mounts a good while
+  // after it is opened, and the chrome must keep drawing the rows until then.
+  const [isTxDetailPresented, setTxDetailPresented] = useState(false);
   const [isWalletsModalOpened, setWalletsModalOpened] = useState(false);
   const [isPopUpModalOpened, setIsPopUpModalOpened] = useState(false);
   const currentWallet = 'main_wallet';
@@ -652,10 +640,15 @@ const NewMain: React.FC<Props> = props => {
     [activeTab, foldUnfoldBottomSheet, navigation],
   );
 
-  // publish what the glass chrome draws for the wallet; the chrome fades
-  // out for the overlays that used to cover the in-screen bar
+  // Publish what the glass chrome draws for the wallet; the chrome fades
+  // out for the overlays that used to cover the in-screen bar.
+  //
+  // The tx detail overlay is gated on being PRESENTED, not merely opened: it
+  // snapshots the screen before mounting, and until it is up the chrome is
+  // the only thing drawing the rows. The && also covers the close — opened
+  // drops first, so the chrome fades back in while the overlay still draws.
   const barSuppressed =
-    isTxDetailModalOpened ||
+    (isTxDetailModalOpened && isTxDetailPresented) ||
     isWalletsModalOpened ||
     isPinModalOpened ||
     (showRecoveryAlert && introDone) ||
@@ -837,6 +830,7 @@ const NewMain: React.FC<Props> = props => {
         mainSheetsTranslationY={mainSheetsTranslationY}
         txListScrollY={txListScrollY}
         listHeaderOffset={txListHeaderOffset}
+        onPresented={setTxDetailPresented}
       />
 
       <LiquidGlassWalletModal
@@ -847,6 +841,10 @@ const NewMain: React.FC<Props> = props => {
         gapInPixels={plasmaModalGapInPixels}
         rotateWalletButtonArrow={rotateArrow}
         contentViewRef={mainContentRef}
+        rowModels={txRowModels}
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        txListScrollY={txListScrollY}
+        listHeaderOffset={txListHeaderOffset}
       />
 
       <PlasmaModal

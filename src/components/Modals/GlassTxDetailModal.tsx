@@ -51,18 +51,13 @@ import type {SkImage} from '@shopify/react-native-skia';
 import {glassModalShader, makeGlassModalFilter} from './glassModalShader';
 import {SWIPE_CARDS_ANIM_DURATION} from './PlasmaModal';
 import GlassTxDetailContent from './GlassTxDetailContent';
-import {
-  GLASS_TX_LIST_TOP_RATIO,
-  SHEET_BACKGROUND,
-  useGlassTxRowElements,
-} from '../GlassTxRows';
+import {SHEET_BACKGROUND} from '../GlassTxRows';
 import type {GlassTxRowModels} from '../GlassTxRows';
-import {getGlassCanvasTop, rowsTopInCanvas} from '../GlassTxCanvas';
+import {useGlassTxRowOverlay} from '../glassTxRowOverlay';
 import {
   BORDER_GRADIENT_COLORS,
   BORDER_GRADIENT_POSITIONS,
 } from '../LiquidGlassBackdrop';
-import {getTabBarBandHeight} from '../glassTabBarLayout';
 import {IDisplayedTx} from '../../reducers/transaction';
 import {ScreenSizeContext} from '../../context/screenSize';
 
@@ -131,6 +126,10 @@ interface Props {
   mainSheetsTranslationY: SharedValue<number>;
   txListScrollY: SharedValue<number>;
   listHeaderOffset: SharedValue<number>;
+  // True once the overlay is actually on screen and drawing its own rows —
+  // which is a good while after isOpened, since the snapshot is taken first.
+  // The chrome must not fade its rows out before then, or nothing draws them.
+  onPresented?: (presented: boolean) => void;
 }
 
 function GlassTxDetailModal(props: Props) {
@@ -147,6 +146,7 @@ function GlassTxDetailModal(props: Props) {
     mainSheetsTranslationY,
     txListScrollY,
     listHeaderOffset,
+    onPresented,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
@@ -158,34 +158,25 @@ function GlassTxDetailModal(props: Props) {
   );
 
   // Card geometry (Apple Pay sheet proportions): one equal gap on the left,
-  // right and bottom edges, like the iOS sheet.
+  // right and bottom edges, like the iOS sheet. On Android the gap clears the
+  // nav/gesture bar as well — iOS keeps the plain margin, since the home
+  // indicator floats over the sheet there by design.
   const edgeMargin = Math.max(10, SCREEN_WIDTH * 0.03);
   const sideMargin = edgeMargin;
   const cardTop = SCREEN_HEIGHT * 0.43;
-  const bottomMargin = edgeMargin;
+  const bottomMargin =
+    edgeMargin + (Platform.OS === 'android' ? insets.bottom : 0);
   const cardWidth = SCREEN_WIDTH - 2 * sideMargin;
   const cardHeight = SCREEN_HEIGHT - cardTop - bottomMargin;
   const cornerRadius = Math.min(SCREEN_HEIGHT * 0.055, 48);
   const offscreenTy = SCREEN_HEIGHT - cardTop;
 
-  // Same list viewport the page canvas uses, so both windows (and the shared
-  // paragraph cache) stay identical.
-  const listTopInSheet = SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
-  const elementsViewportHeight =
-    SCREEN_HEIGHT - getGlassCanvasTop(SCREEN_HEIGHT, insets.top);
-  const bandTopScreen =
-    SCREEN_HEIGHT - getTabBarBandHeight(SCREEN_HEIGHT, insets.bottom);
-
   const [snapshot, setSnapshot] = useState<SkImage | null>(null);
   const snapshotRef = useRef<SkImage | null>(null);
   const [isMounted, setMounted] = useState(false);
-  // Mirror for worklets: the component stays mounted while the modal is
-  // closed, and the scroll-dependent derived values below must cost nothing
-  // on the list's hot path then.
-  const mountedSV = useSharedValue(false);
   useEffect(() => {
-    mountedSV.value = isMounted;
-  }, [isMounted, mountedSV]);
+    onPresented?.(isMounted);
+  }, [isMounted, onPresented]);
   const revealed = useRef(false);
   const animTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
@@ -212,6 +203,9 @@ function GlassTxDetailModal(props: Props) {
   // translationY at the moment the dismiss drag armed, so a scroll that runs
   // past its top hands over without a jump. -1 = not armed.
   const dragBase = useSharedValue(-1);
+  // Touch origin for Android's manual activation below.
+  const touchStartY = useSharedValue(0);
+  const touchStartX = useSharedValue(0);
   // Where the content sat when a horizontal pan began (interrupted swipes).
   const contentXStart = useSharedValue(0);
   // True while a finger is in a horizontal pan — the swipe finalizer must not
@@ -359,11 +353,11 @@ function GlassTxDetailModal(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted, bottomMargin, cardTop, insets.top]);
 
-  const rowElements = useGlassTxRowElements({
+  const rows = useGlassTxRowOverlay({
     rowModels,
-    scrollY: txListScrollY,
+    mainSheetsTranslationY,
+    txListScrollY,
     listHeaderOffset,
-    viewportHeight: elementsViewportHeight,
     enabled: isMounted,
   });
 
@@ -417,42 +411,6 @@ function GlassTxDetailModal(props: Props) {
       cornerRadius,
     ),
   );
-
-  // Live rows in screen coordinates (this canvas starts at y = 0). rowsTop is
-  // derived once so the clip and the row transform can never desync; while
-  // the modal is closed it pins to 0 so scrolling the list costs nothing here.
-  const rowsTop = useDerivedValue(() =>
-    mountedSV.value
-      ? rowsTopInCanvas(
-          mainSheetsTranslationY.value,
-          listTopInSheet,
-          0,
-          listHeaderOffset.value,
-        )
-      : 0,
-  );
-
-  const emptyRect = useMemo(() => Skia.XYWHRect(0, 0, 0, 0), []);
-  const liveListClip = useDerivedValue(() => {
-    if (!mountedSV.value) {
-      return emptyRect;
-    }
-    const top = Math.max(0, rowsTop.value);
-    return Skia.XYWHRect(
-      0,
-      top,
-      SCREEN_WIDTH,
-      Math.max(0, bandTopScreen - top),
-    );
-  });
-
-  const identityTransform = useMemo(() => [{translateY: 0}], []);
-  const liveContentTransform = useDerivedValue(() => {
-    if (!mountedSV.value) {
-      return identityTransform;
-    }
-    return [{translateY: rowsTop.value - txListScrollY.value}];
-  });
 
   const dimOpacity = useDerivedValue(() =>
     interpolate(ty.value, [0, offscreenTy], [1, 0], Extrapolation.CLAMP),
@@ -508,9 +466,38 @@ function GlassTxDetailModal(props: Props) {
   }, []);
 
   const panYGesture = useMemo(() => {
-    const pan = Gesture.Pan()
-      .activeOffsetY(10)
-      .simultaneousWithExternalGesture(nativeScrollGesture)
+    const pan =
+      Gesture.Pan().simultaneousWithExternalGesture(nativeScrollGesture);
+
+    if (Platform.OS === 'android') {
+      pan
+        .manualActivation(true)
+        .onTouchesDown(e => {
+          'worklet';
+          touchStartY.value = e.allTouches[0].absoluteY;
+          touchStartX.value = e.allTouches[0].absoluteX;
+        })
+        .onTouchesMove((e, manager) => {
+          'worklet';
+          const dy = e.allTouches[0].absoluteY - touchStartY.value;
+          // manualActivation bypasses failOffsetX, so the swiper's horizontal
+          // hand-off is enforced here instead.
+          const dx = e.allTouches[0].absoluteX - touchStartX.value;
+          if (
+            contentScrollY.value > 0 ||
+            dy < -10 ||
+            (isSwiperActive && Math.abs(dx) > 15)
+          ) {
+            manager.fail();
+          } else if (dy > 10 && contentX.value === 0) {
+            manager.activate();
+          }
+        });
+    } else {
+      pan.activeOffsetY(10);
+    }
+
+    pan
       .onBegin(() => {
         'worklet';
         dragBase.value = -1;
@@ -677,11 +664,11 @@ function GlassTxDetailModal(props: Props) {
 
   return (
     <View style={styles.overlay}>
-      {/* Composite backdrop + glass. Layers: snapshot base and live rows
-          (clipped to the card + sampling ring), the glass filter (unclipped —
-          a clip would not rebase fragCoord and the shader's cheap-exit already
-          skips off-card pixels), then the dim over the real page outside the
-          card's rounded rect. */}
+      {/* Composite backdrop + glass. Layers: snapshot base (clipped to the
+          card + sampling ring), the live rows over the whole list band, the
+          glass filter (unclipped — a clip would not rebase fragCoord and the
+          shader's cheap-exit already skips off-card pixels), then the dim
+          over the real page outside the card's rounded rect. */}
       <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
         <Group clip={ringClip}>
           {snapshot ? (
@@ -702,7 +689,7 @@ function GlassTxDetailModal(props: Props) {
               color={SHEET_BACKGROUND}
             />
           )}
-          <Group clip={liveListClip}>
+          <Group clip={rows.clip}>
             <Rect
               x={0}
               y={0}
@@ -710,10 +697,17 @@ function GlassTxDetailModal(props: Props) {
               height={SCREEN_HEIGHT}
               color={SHEET_BACKGROUND}
             />
-            {rowElements ? (
-              <Group transform={liveContentTransform}>{rowElements}</Group>
-            ) : null}
           </Group>
+        </Group>
+        {/* Rows are NOT ring-clipped: the chrome canvas that draws them on the
+            page fades out with the tab bar while this is open, so off-card
+            pixels would have no rows at all. Drawn once here they are
+            refracted inside the card and dimmed outside it. Each row paints
+            its own background, so no backdrop rect is needed out here. */}
+        <Group clip={rows.clip}>
+          {rows.rowElements ? (
+            <Group transform={rows.transform}>{rows.rowElements}</Group>
+          ) : null}
         </Group>
         <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
         <Group clip={cardRRect} invertClip>

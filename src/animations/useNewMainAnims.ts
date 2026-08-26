@@ -12,6 +12,7 @@ import {
   withDelay,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SHEET_TOP_RADIUS_RATIO} from '../components/GlassBottomSheet.tsx';
 
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -20,18 +21,16 @@ const SPRING_BACK_ANIM_DURATION = 100;
 // Bottom-corner radius of the folded top-half card, as a ratio of
 // screen height.
 export const CARD_FOLD_RADIUS_RATIO = 0.037;
+const UNFOLD_SHEET_RATIO = 0.28;
+const FOLD_SHEET_RATIO = 0.5;
 
-// Sheet snap points: folded top half fills ~65% of the screen, unfolded
-// sheet stops at ~37%.
 export const getNewMainSheetPoints = (
   screenHeight: number,
   topInset: number,
 ) => {
-  const OFFSET_HEADER_DIFF = topInset - screenHeight * 0.07;
-  const UNFOLD_SHEET_POINT = screenHeight * 0.35 + OFFSET_HEADER_DIFF;
-  const FOLD_SHEET_POINT = screenHeight * 0.57 + OFFSET_HEADER_DIFF;
+  const UNFOLD_SHEET_POINT = topInset + screenHeight * UNFOLD_SHEET_RATIO;
+  const FOLD_SHEET_POINT = topInset + screenHeight * FOLD_SHEET_RATIO;
   return {
-    OFFSET_HEADER_DIFF,
     // Fold/unfold commits at ~35% of the travel.
     SWIPE_TRIGGER_Y_RANGE:
       (FOLD_SHEET_POINT - UNFOLD_SHEET_POINT) * (0.15 / 0.23),
@@ -127,6 +126,8 @@ export const makeSheetSnapHandlers = (config: SheetSnapConfig) => {
 
 // Height of the top half: folded it floats above the sheet; unfolded it
 // extends underneath so the sheet corners reveal the gradient.
+// NOTE: outputRange param of the interpolate creates gaps between top and
+// bottom sections of the main screen
 export const getNewMainTopHalfHeight = (
   sheetY: number,
   screenHeight: number,
@@ -139,7 +140,7 @@ export const getNewMainTopHalfHeight = (
     interpolate(
       sheetY,
       [unfoldPoint, foldPoint],
-      [-screenHeight * 0.045, screenHeight * 0.013],
+      [-screenHeight * SHEET_TOP_RADIUS_RATIO, 0],
       Extrapolation.CLAMP,
     )
   );

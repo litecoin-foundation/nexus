@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import {View, StyleSheet, TouchableOpacity} from 'react-native';
 import Animated, {
+  SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -19,6 +20,7 @@ import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {useTranslation} from 'react-i18next';
 import {
   Canvas,
+  Group,
   Rect,
   RoundedRect,
   LinearGradient,
@@ -35,6 +37,8 @@ import type {SkImage} from '@shopify/react-native-skia';
 
 import {liquidGlassShader} from './liquidGlassShader';
 import WalletTab from '../Tabs/WalletTab';
+import type {GlassTxRowModels} from '../GlassTxRows';
+import {useGlassTxRowOverlay} from '../glassTxRowOverlay';
 import {useAppSelector} from '../../store/hooks';
 import {satsToSubunitSelector} from '../../reducers/settings';
 import {fiatValueSelector} from '../../reducers/ticker';
@@ -47,6 +51,13 @@ interface Props {
   gapInPixels: number;
   rotateWalletButtonArrow?: () => void;
   contentViewRef?: React.RefObject<View | null>;
+  // Live row pipeline shared with GlassTxCanvas: the chrome that draws the
+  // rows on the page fades out with the tab bar while this is open, so the
+  // rows behind our transparent backdrop are redrawn here.
+  rowModels: GlassTxRowModels;
+  mainSheetsTranslationY: SharedValue<number>;
+  txListScrollY: SharedValue<number>;
+  listHeaderOffset: SharedValue<number>;
 }
 
 const HORIZONTAL_MARGIN = 16;
@@ -58,6 +69,10 @@ export default function LiquidGlassWalletModal({
   gapInPixels,
   rotateWalletButtonArrow,
   contentViewRef,
+  rowModels,
+  mainSheetsTranslationY,
+  txListScrollY,
+  listHeaderOffset,
 }: Props) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -211,12 +226,33 @@ export default function LiquidGlassWalletModal({
     close();
   };
 
+  // Live tx rows for the transparent area behind this modal.
+  const rows = useGlassTxRowOverlay({
+    rowModels,
+    mainSheetsTranslationY,
+    txListScrollY,
+    listHeaderOffset,
+    enabled: isVisible,
+  });
+
   if (!isVisible) {
     return null;
   }
 
   return (
     <View style={styles.overlay} pointerEvents="box-none">
+      {/* Live tx rows, under the dim. The chrome canvas that draws them on
+          the page fades out with the tab bar while this is open, so without
+          this the transparent area behind the modal shows the bare sheet.
+          Each row paints its own background, so no backdrop rect is needed. */}
+      <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Group clip={rows.clip}>
+          {rows.rowElements ? (
+            <Group transform={rows.transform}>{rows.rowElements}</Group>
+          ) : null}
+        </Group>
+      </Canvas>
+
       {/* Backdrop */}
       <Animated.View
         style={[StyleSheet.absoluteFill, animatedBackdropStyle]}
