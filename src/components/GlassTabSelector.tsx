@@ -25,7 +25,6 @@ const TAB_CONFIGS = [
     imageSource: require('../assets/icons/buy-icon.png'),
     foldedTextKey: 'trade',
     foldedImageSource: require('../assets/icons/convert-icon.png'),
-    tradeAnchor: true,
     lateSplitContent: true,
   },
   {
@@ -66,11 +65,7 @@ const GlassTabSelector: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
-  const layouts = getGlassTabLayouts(
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    insets.top,
-  );
+  const layouts = getGlassTabLayouts(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top);
   const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
     SCREEN_HEIGHT,
     insets.top,
@@ -128,19 +123,15 @@ const GlassTabSelector: React.FC<Props> = props => {
           lateSplitContent={config.lateSplitContent}
           pointerEvents={config.hideFoldedContent && folded ? 'none' : 'auto'}
           handlePress={() => {
-            const splitProgress = glassTabSplitProgressAt(
-              mainSheetsTranslationY.value,
-              UNFOLD_SHEET_POINT,
-              FOLD_SHEET_POINT,
-            );
-            if (
-              (config.tradeAnchor || config.hideFoldedContent) &&
-              splitProgress < SPLIT_TOUCH_THRESHOLD
-            ) {
-              if (config.tradeAnchor && folded) {
-                foldUnfold(folded);
+            if (config.hideFoldedContent) {
+              const splitProgress = glassTabSplitProgressAt(
+                mainSheetsTranslationY.value,
+                UNFOLD_SHEET_POINT,
+                FOLD_SHEET_POINT,
+              );
+              if (splitProgress < SPLIT_TOUCH_THRESHOLD) {
+                return;
               }
-              return;
             }
             onPressTab(config.tab);
           }}

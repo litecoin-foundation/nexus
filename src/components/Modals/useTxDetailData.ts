@@ -15,22 +15,30 @@ import {isBuySellMetadata} from '../../utils/txMetadata';
 
 // Input addresses and the network fee come from the explorer because lnd
 // reports the fee incorrectly; results are memoised in redux by tx hash.
+interface TxExtraData {
+  hash: string;
+  allInputAddrs: string[];
+  fetchedTxFee: number | null;
+}
+
+const EMPTY_EXTRA_DATA: string[] = [];
+
 export const useTxSenderAndFee = (transaction: IDisplayedTx) => {
   const dispatch = useAppDispatch();
   const torEnabled = useAppSelector(state => state.settings.torEnabled);
 
-  const [allInputAddrs, setAllInputAddrs] = useState<string[]>([]);
-  const [fetchedTxFee, setFetchedTxFee] = useState<number | null>(null);
+  const [extraData, setExtraData] = useState<TxExtraData | null>(null);
 
   useEffect(() => {
     const abortController = new AbortController();
+    const {hash} = transaction;
 
     async function getSenderAndFee() {
       try {
-        const cached = dispatch(checkTxHashesWithExtraData(transaction.hash));
+        const cached = dispatch(checkTxHashesWithExtraData(hash));
         if (!cached) {
           const data: any = await fetchResolve(
-            `https://litecoinspace.org/api/tx/${transaction.hash}`,
+            `https://litecoinspace.org/api/tx/${hash}`,
             {
               signal: abortController.signal,
             },
@@ -45,30 +53,30 @@ export const useTxSenderAndFee = (transaction: IDisplayedTx) => {
               (input: any) => input.prevout.scriptpubkey_address,
             );
           }
-          setAllInputAddrs(inputAddrs);
-
           if (data.hasOwnProperty('fee')) {
             fee = data.fee / 100000000;
-            setFetchedTxFee(fee);
           } else {
             fee = null;
-            setFetchedTxFee(fee);
           }
+
+          setExtraData({hash, allInputAddrs: inputAddrs, fetchedTxFee: fee});
 
           dispatch(
             addToTxHashesWithExtraData({
-              hash: transaction.hash,
+              hash,
               inputAddrs,
               fee,
             }),
           );
         } else {
-          setAllInputAddrs(cached.inputAddrs);
-          setFetchedTxFee(cached.fee);
+          setExtraData({
+            hash,
+            allInputAddrs: cached.inputAddrs,
+            fetchedTxFee: cached.fee,
+          });
         }
       } catch {
-        setAllInputAddrs([]);
-        setFetchedTxFee(null);
+        setExtraData({hash, allInputAddrs: [], fetchedTxFee: null});
       }
     }
 
@@ -77,7 +85,11 @@ export const useTxSenderAndFee = (transaction: IDisplayedTx) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transaction]);
 
-  return {allInputAddrs, fetchedTxFee};
+  const matches = extraData?.hash === transaction.hash;
+  return {
+    allInputAddrs: matches ? extraData!.allInputAddrs : EMPTY_EXTRA_DATA,
+    fetchedTxFee: matches ? extraData!.fetchedTxFee : null,
+  };
 };
 
 // Both selectors run unconditionally so the hook order never depends on the

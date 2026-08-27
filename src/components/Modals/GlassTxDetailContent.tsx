@@ -11,9 +11,6 @@ import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 import Animated, {
   SharedValue,
   useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
 } from 'react-native-reanimated';
 import {GestureDetector} from 'react-native-gesture-handler';
 import type {NativeGesture} from 'react-native-gesture-handler';
@@ -93,18 +90,14 @@ function GlassTxDetailContent(props: Props) {
     },
   });
 
-  // Content crossfade whenever the shown transaction changes; the scroll
-  // starts from the top for the new transaction.
-  const fadeNewDetailsOpacity = useSharedValue(1);
-  const fadeNewDetailsIn = useAnimatedStyle(() => ({
-    opacity: fadeNewDetailsOpacity.value,
-  }));
+  // The scroll starts from the top for the new transaction. No crossfade
+  // here: the overlay parks this content offscreen for the whole handover
+  // and slides it in once painted, so a second opacity animation on top of
+  // that only reads as a flicker.
   useEffect(() => {
-    fadeNewDetailsOpacity.value = 0;
-    fadeNewDetailsOpacity.value = withTiming(1, {duration: 500});
     scrollViewRef.current?.scrollTo?.({y: 0, animated: false});
-     
-  }, [transaction, fadeNewDetailsOpacity]);
+    contentScrollY.value = 0;
+  }, [transaction, contentScrollY]);
 
   const label = transaction.label || '';
   const [newLabel, setNewLabel] = useState(label === ' ' ? '' : label);
@@ -379,7 +372,9 @@ function GlassTxDetailContent(props: Props) {
 
   const renderSendReceiveOutputs = () => {
     // change address
-    const changeLimit = showAllChange ? myOutputs.length : CHANGE_ADDR_ROW_LIMIT;
+    const changeLimit = showAllChange
+      ? myOutputs.length
+      : CHANGE_ADDR_ROW_LIMIT;
     const receiveLimit = showAllOutputs ? myOutputs.length : ADDR_ROW_LIMIT;
     const myOutputElements = myOutputs
       .slice(0, isSend ? changeLimit : receiveLimit)
@@ -745,7 +740,9 @@ function GlassTxDetailContent(props: Props) {
     const meta = transaction.providerMeta;
     const outputDetails = meta.mergedOutputDetails || [];
     const formatSubunit = (sats: number) =>
-      convertToSubunit(sats).toFixed(4).replace(/\.?0+$/, '');
+      convertToSubunit(sats)
+        .toFixed(4)
+        .replace(/\.?0+$/, '');
     const targetAmountFormatted = formatSubunit(meta.targetAmount);
 
     // Our non-destination addresses are change (in MWEB an address can be
@@ -827,7 +824,7 @@ function GlassTxDetailContent(props: Props) {
     isConvertMetadata(transaction.providerMeta);
 
   return (
-    <Animated.View style={[styles.container, fadeNewDetailsIn]}>
+    <View style={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.headerTitles}>
           <TranslateText
@@ -860,6 +857,10 @@ function GlassTxDetailContent(props: Props) {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={false}
+          // Android's counterpart to bounces={false}. Without it the stretch
+          // overscroll answers a pull-to-dismiss by dragging the content down
+          // and springing it back, which reads as the sheet refusing to close.
+          overScrollMode="never"
           onScroll={scrollHandler}
           scrollEventThrottle={16}>
           {isSendReceive
@@ -869,7 +870,7 @@ function GlassTxDetailContent(props: Props) {
               : renderBuySell()}
         </Animated.ScrollView>
       </GestureDetector>
-    </Animated.View>
+    </View>
   );
 }
 

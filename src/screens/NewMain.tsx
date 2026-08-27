@@ -138,7 +138,7 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
     <View>
       <View style={styles.txTitleContainer}>
         <TranslateText
-          textKey={'latest_txs'}
+          textKey={'txs'}
           domain={'main'}
           maxSizeInPixels={SCREEN_HEIGHT * 0.025}
           maxLengthInPixels={SCREEN_WIDTH * 0.8}
@@ -150,10 +150,10 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
           <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
             <Image
               image={image}
-              x={SCREEN_HEIGHT * 0.035}
-              y={SCREEN_HEIGHT * 0.025}
-              width={SCREEN_HEIGHT * 0.02}
-              height={SCREEN_HEIGHT * 0.02}
+              x={SCREEN_HEIGHT * 0.024}
+              y={SCREEN_HEIGHT * 0.024}
+              width={SCREEN_HEIGHT * 0.022}
+              height={SCREEN_HEIGHT * 0.022}
               fit="scaleDown"
             />
           </Canvas>

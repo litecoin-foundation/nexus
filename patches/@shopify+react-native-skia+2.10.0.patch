@@ -95,3 +95,25 @@ index 7e1a5ef..c0a2ff7 100644
  
    static const jsi::HostFunctionType
    createCtor(std::shared_ptr<RNSkPlatformContext> context) {
+diff --git a/node_modules/@shopify/react-native-skia/android/src/main/java/com/shopify/reactnative/skia/ViewScreenshotService.java b/node_modules/@shopify/react-native-skia/android/src/main/java/com/shopify/reactnative/skia/ViewScreenshotService.java
+index f63a696..8ce153e 100644
+--- a/node_modules/@shopify/react-native-skia/android/src/main/java/com/shopify/reactnative/skia/ViewScreenshotService.java
++++ b/node_modules/@shopify/react-native-skia/android/src/main/java/com/shopify/reactnative/skia/ViewScreenshotService.java
+@@ -199,8 +199,15 @@
+         final Matrix matrix = view.getMatrix();
+         final Matrix translateMatrix = new Matrix();
+ 
+-        translateMatrix.setTranslate(view.getLeft() + view.getPaddingLeft() - view.getScrollX(),
+-                view.getTop() + view.getPaddingTop() - view.getScrollY());
++        // Patched (nexus): padding is NOT part of a view's offset inside its
++        // parent. Android lays children out at coordinates that already
++        // include the parent's padding, and a leaf draws its own content
++        // inset by it -- ReactTextView is the one RN view that gets a real
++        // android padding, so adding it here shifted every padded <Text>
++        // right/down by its own padding (and every view background with it)
++        // in the screenshot.
++        translateMatrix.setTranslate(view.getLeft() - view.getScrollX(),
++                view.getTop() - view.getScrollY());
+ 
+         c.concat(translateMatrix);
+         c.concat(matrix);

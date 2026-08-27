@@ -65,6 +65,7 @@
     "send": "Enviar",
     "receive": "Recibir",
     "latest_txs": "Últimas Transacciones",
+    "txs": "Transacciones",
     "received_ltc": "Litecoin recibidos",
     "bought_ltc": "Litecoin comprados",
     "sent_ltc": "Litecoin enviados",
