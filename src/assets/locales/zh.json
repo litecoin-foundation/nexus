@@ -65,6 +65,7 @@
     "send": "发送",
     "receive": "接收",
     "latest_txs": "最新交易",
+    "txs": "交易",
     "received_ltc": "已收到的莱特币",
     "bought_ltc": "已购买的莱特币",
     "sent_ltc": "已发送的莱特币",

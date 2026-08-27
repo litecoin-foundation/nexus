@@ -109,6 +109,9 @@ const FADE_GRADIENT_COLORS = [
   'rgba(234, 235, 237, 0.85)',
 ];
 const FADE_GRADIENT_LOCATIONS = [0, 0.35, 0.6, 0.8, 1];
+// Android reports scroll offsets as rounded dp floats, so a hair above zero
+// still counts as resting at the top for the dismiss hand-off.
+const SCROLL_TOP_EPSILON = 0.5;
 
 interface Props {
   isOpened: boolean;
@@ -184,6 +187,13 @@ function GlassTxDetailModal(props: Props) {
   const swipeTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  // Pagination handover: true between stepping the transaction and revealing
+  // the content React rendered for it.
+  const swapPending = useRef(false);
+  const swapRaf = useRef<number | undefined>(undefined);
+  const swapFallback = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const captureTask = useRef<{cancel: () => void} | undefined>(undefined);
   const captureRaf = useRef<number | undefined>(undefined);
 
@@ -198,11 +208,20 @@ function GlassTxDetailModal(props: Props) {
   const contentIntro = useSharedValue(0);
   // Horizontal content slide between transactions; the glass never moves.
   const contentX = useSharedValue(0);
+  // Gate held at 0 across a pagination handover: the content is parked
+  // offscreen from the moment the transaction is stepped until the new tree
+  // has actually been painted, so no half-rendered frame can slide in.
+  const contentSwap = useSharedValue(1);
   // Scroll offset of the content ScrollView — the dismiss drag only arms at 0.
   const contentScrollY = useSharedValue(0);
   // translationY at the moment the dismiss drag armed, so a scroll that runs
   // past its top hands over without a jump. -1 = not armed.
   const dragBase = useSharedValue(-1);
+  // True once the dismiss pan has taken the touch stream (Android's manual
+  // activation). The touch gates below only decide whether to hand a drag
+  // over, so they must stop second-guessing a drag already in flight —
+  // failing an ACTIVE pan skips onEnd and strands the card mid-pull.
+  const dismissArmed = useSharedValue(false);
   // Touch origin for Android's manual activation below.
   const touchStartY = useSharedValue(0);
   const touchStartX = useSharedValue(0);
@@ -229,6 +248,7 @@ function GlassTxDetailModal(props: Props) {
         // ScrollView kept its offset, so contentScrollY stays untouched.
         revealed.current = false;
         contentX.value = 0;
+        contentSwap.value = 1;
       } else {
         // Defer until the native view tree is attached — calling
         // makeImageFromView during a mount burst throws an uncatchable native
@@ -264,6 +284,14 @@ function GlassTxDetailModal(props: Props) {
         });
       }
     } else if (isMounted) {
+      // A close mid-handover must not leave the gate down for the next open.
+      clearTimeout(swipeTimeout.current);
+      clearTimeout(swapFallback.current);
+      if (swapRaf.current !== undefined) {
+        cancelAnimationFrame(swapRaf.current);
+        swapRaf.current = undefined;
+      }
+      swapPending.current = false;
       ty.value = withTiming(offscreenTy, {duration: 250});
       animTimeout.current = setTimeout(() => {
         setMounted(false);
@@ -274,6 +302,7 @@ function GlassTxDetailModal(props: Props) {
         });
         revealed.current = false;
         contentX.value = 0;
+        contentSwap.value = 1;
         contentScrollY.value = 0;
         kbShift.value = 0;
       }, 300);
@@ -313,6 +342,10 @@ function GlassTxDetailModal(props: Props) {
     return () => {
       clearTimeout(animTimeout.current);
       clearTimeout(swipeTimeout.current);
+      clearTimeout(swapFallback.current);
+      if (swapRaf.current !== undefined) {
+        cancelAnimationFrame(swapRaf.current);
+      }
       snapshotRef.current?.dispose?.();
       snapshotRef.current = null;
     };
@@ -428,9 +461,68 @@ function GlassTxDetailModal(props: Props) {
     close();
   }, [close]);
 
-  // Once the old content has slid out: step the transaction and slide the new
-  // content in from the other side. Stepping only now keeps the outgoing
-  // transaction on screen for the whole slide-out instead of hard-cutting it.
+  // Slide the newly committed content in from the entry side. Called only
+  // once React has rendered the stepped transaction, and then deferred two
+  // more frames so the native views for that tree are mounted and painted —
+  // otherwise the spring would carry a half-built tree on screen and the
+  // remaining rows would pop in mid-flight.
+  const revealSwappedContent = useCallback(() => {
+    if (!swapPending.current) {
+      return;
+    }
+    swapPending.current = false;
+    clearTimeout(swapFallback.current);
+    if (swapRaf.current !== undefined) {
+      cancelAnimationFrame(swapRaf.current);
+    }
+    swapRaf.current = requestAnimationFrame(() => {
+      swapRaf.current = requestAnimationFrame(() => {
+        swapRaf.current = undefined;
+        contentSwap.value = 1;
+        if (horizontalActive.value) {
+          // The user re-grabbed during the handover; their gesture owns
+          // contentX from here, so only lift the gate.
+          return;
+        }
+        contentX.value = withSpring(0, {
+          duration: 460,
+          dampingRatio: 0.85,
+          reduceMotion: ReduceMotion.Never,
+        });
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Park the content offscreen on the entry side and gate it hidden BEFORE
+  // stepping the transaction, so the swap itself — and every re-render that
+  // trails it (scroll reset, per-tx explorer fetch) — happens while the
+  // content is clipped by the card, never on screen. `revealSwappedContent`
+  // brings it back once React has committed the new tree.
+  const handOverTo = useCallback(
+    (isPrev: boolean, step: () => void) => {
+      // A reveal queued by a previous handover must not lift this one's gate.
+      if (swapRaf.current !== undefined) {
+        cancelAnimationFrame(swapRaf.current);
+        swapRaf.current = undefined;
+      }
+      contentSwap.value = 0;
+      contentX.value = isPrev ? -cardWidth : cardWidth;
+      swapPending.current = true;
+      // If the step turns out to be a no-op (the same object handed back) no
+      // commit follows and the effect below never fires — reveal anyway
+      // rather than leaving the content parked offscreen forever.
+      clearTimeout(swapFallback.current);
+      swapFallback.current = setTimeout(revealSwappedContent, 120);
+      step();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cardWidth, revealSwappedContent],
+  );
+
+  // Once the old content has slid out, hand over to the stepped transaction.
+  // Stepping only now keeps the outgoing transaction on screen for the whole
+  // slide-out instead of hard-cutting it.
   const finishSwipe = useCallback(
     (isPrev: boolean) => {
       clearTimeout(swipeTimeout.current);
@@ -440,22 +532,40 @@ function GlassTxDetailModal(props: Props) {
           // own onEnd owns what happens next.
           return;
         }
-        if (isPrev) {
-          swipeToPrevTx();
-        } else {
-          swipeToNextTx();
-        }
-        contentX.value = isPrev ? -cardWidth : cardWidth;
-        contentX.value = withSpring(0, {
-          duration: 460,
-          dampingRatio: 0.85,
-          reduceMotion: ReduceMotion.Never,
-        });
+        handOverTo(isPrev, isPrev ? swipeToPrevTx : swipeToNextTx);
       }, SWIPE_CARDS_ANIM_DURATION);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [swipeToPrevTx, swipeToNextTx, cardWidth],
+    [swipeToPrevTx, swipeToNextTx, handOverTo],
   );
+
+  // Pagination dots run the same slide-out/hand-over/slide-in as a swipe,
+  // in the direction of the jump, so tapping one never hard-cuts.
+  const goToTransaction = useCallback(
+    (index: number) => {
+      const current = transaction?.renderIndex ?? 0;
+      if (index === current) {
+        return;
+      }
+      const isPrev = index < current;
+      clearTimeout(swipeTimeout.current);
+      contentX.value = withTiming(isPrev ? cardWidth : -cardWidth, {
+        duration: SWIPE_CARDS_ANIM_DURATION,
+      });
+      swipeTimeout.current = setTimeout(() => {
+        handOverTo(isPrev, () => setTransactionIndex(index));
+      }, SWIPE_CARDS_ANIM_DURATION);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [transaction, setTransactionIndex, handOverTo, cardWidth],
+  );
+
+  // The commit that carries the stepped transaction is the signal that the
+  // new content exists; effects run after it, child-first, so the content's
+  // own scroll reset has already landed by the time this runs.
+  useEffect(() => {
+    revealSwappedContent();
+  }, [transaction, revealSwappedContent]);
 
   const swipeTriggerHeightRange = SCREEN_HEIGHT * 0.15;
   const swipeTriggerWidthRange = SCREEN_WIDTH * 0.15;
@@ -479,17 +589,25 @@ function GlassTxDetailModal(props: Props) {
         })
         .onTouchesMove((e, manager) => {
           'worklet';
-          const dy = e.allTouches[0].absoluteY - touchStartY.value;
-          // manualActivation bypasses failOffsetX, so the swiper's horizontal
-          // hand-off is enforced here instead.
-          const dx = e.allTouches[0].absoluteX - touchStartX.value;
-          if (
-            contentScrollY.value > 0 ||
-            dy < -10 ||
-            (isSwiperActive && Math.abs(dx) > 15)
-          ) {
+          if (dismissArmed.value) {
+            return;
+          }
+          const y = e.allTouches[0].absoluteY;
+          const x = e.allTouches[0].absoluteX;
+          if (contentScrollY.value > SCROLL_TOP_EPSILON) {
+            touchStartY.value = y;
+            touchStartX.value = x;
+            return;
+          }
+          const dy = y - touchStartY.value;
+          const dx = x - touchStartX.value;
+          if (isSwiperActive && Math.abs(dx) > 15) {
             manager.fail();
+          } else if (dy < -10) {
+            touchStartY.value = y;
+            touchStartX.value = x;
           } else if (dy > 10 && contentX.value === 0) {
+            dismissArmed.value = true;
             manager.activate();
           }
         });
@@ -501,16 +619,18 @@ function GlassTxDetailModal(props: Props) {
       .onBegin(() => {
         'worklet';
         dragBase.value = -1;
+        dismissArmed.value = false;
       })
       .onUpdate(e => {
         'worklet';
         if (
           contentX.value === 0 &&
-          contentScrollY.value <= 0 &&
+          contentScrollY.value <= SCROLL_TOP_EPSILON &&
           e.translationY > 0
         ) {
           if (dragBase.value < 0) {
             dragBase.value = e.translationY;
+            dismissArmed.value = true;
             runOnJS(dismissKeyboard)();
           }
           ty.value = Math.max(0, e.translationY - dragBase.value);
@@ -532,6 +652,17 @@ function GlassTxDetailModal(props: Props) {
             });
           }
         }
+      })
+      .onFinalize((_, success) => {
+        'worklet';
+        dismissArmed.value = false;
+        if (!success && ty.value > 0) {
+          ty.value = withSpring(0, {
+            duration: 420,
+            dampingRatio: 0.75,
+            reduceMotion: ReduceMotion.Never,
+          });
+        }
       });
     if (isSwiperActive) {
       pan.failOffsetX([-15, 15]);
@@ -549,7 +680,8 @@ function GlassTxDetailModal(props: Props) {
         .onBegin(() => {
           'worklet';
           horizontalActive.value = true;
-          contentXStart.value = contentX.value;
+          contentXStart.value = contentSwap.value === 0 ? 0 : contentX.value;
+          contentX.value = contentXStart.value;
         })
         .onUpdate(e => {
           'worklet';
@@ -604,6 +736,7 @@ function GlassTxDetailModal(props: Props) {
     ],
     opacity:
       contentIntro.value *
+      contentSwap.value *
       interpolate(
         Math.abs(contentX.value),
         [0, cardWidth],
@@ -638,7 +771,7 @@ function GlassTxDetailModal(props: Props) {
       dots.push(
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => setTransactionIndex(i - 1)}
+          onPress={() => goToTransaction(i - 1)}
           style={styles.dotTouch}
           key={`bullet-${i}`}>
           <View

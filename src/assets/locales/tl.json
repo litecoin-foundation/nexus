@@ -65,6 +65,7 @@
     "send": "Ipadala",
     "receive": "Tanggapin",
     "latest_txs": "Pinakabagong mga Transaksyon",
+    "txs": "Mga Transaksyon",
     "received_ltc": "Tumanggap ng Litecoin",
     "bought_ltc": "Bumili ng Litecoin",
     "sent_ltc": "Nagpadala ng Litecoin",

@@ -65,6 +65,7 @@
     "send": "Отправить",
     "receive": "Получить",
     "latest_txs": "Последние транзакции",
+    "txs": "Транзакции",
     "received_ltc": "Получено",
     "bought_ltc": "Купленные Litecoin",
     "sent_ltc": "Отправлено",
