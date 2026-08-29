@@ -56,6 +56,10 @@ import {
 // the first row's origin: a tap at e.y is at content offset e.y + scrollY, and
 // listHeaderOffset (the header's height) is what shifts the Skia rows down.
 
+// How far the finger has to travel before the sheet takes a drag away from the
+// list; anything shorter reads as jitter inside a scroll.
+const SHEET_PULL_SLOP = 8;
+
 const IS_ANDROID = Platform.OS === 'android';
 
 type ItemType = {
@@ -86,8 +90,6 @@ interface Props {
 
 const GlassTransactionList: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
-
-  const scrollViewRef = useRef<any>(null);
 
   const {
     onPress,
@@ -263,8 +265,10 @@ const GlassTransactionList: React.FC<Props> = props => {
   const [contentHeight, setContentHeight] = useState(0);
   const isListScrollable = contentHeight > viewportHeight;
 
-  const startClosing = useSharedValue(false);
-  const yStartPos = useSharedValue(-1);
+  const pullAnchorY = useSharedValue(0);
+  const sheetTookTouch = useSharedValue(false);
+  const sheetDragging = useSharedValue(false);
+  const pullSlopTaken = useSharedValue(0);
   const momentumActive = useSharedValue(false);
   const lastMomentumEnd = useSharedValue(0);
   const caughtFling = useSharedValue(false);
@@ -282,9 +286,7 @@ const GlassTransactionList: React.FC<Props> = props => {
   const scrollHandler = useAnimatedScrollHandler(
     {
       onScroll: e => {
-        const offsetY = e.contentOffset.y;
-        scrollY.value = offsetY;
-        startClosing.value = !foldedValue.value && offsetY === 0;
+        scrollY.value = e.contentOffset.y;
         if (onScrollActivity) {
           const now = Date.now();
           if (now - lastActivityMark.value > 200) {
@@ -293,15 +295,12 @@ const GlassTransactionList: React.FC<Props> = props => {
           }
         }
       },
-      onBeginDrag: e => {
-        // A scroll attempt while folded unfolds the sheet.
-        if (foldedValue.value && (IS_ANDROID || !startClosing.value)) {
+      onBeginDrag: () => {
+        // A scroll attempt while folded unfolds the sheet, unless this very
+        // touch is the one that folded it.
+        if (foldedValue.value && !sheetTookTouch.value) {
           runOnJS(foldUnfold)(true);
         }
-        startClosing.value = !foldedValue.value && e.contentOffset.y === 0;
-      },
-      onEndDrag: e => {
-        startClosing.value = !foldedValue.value && e.contentOffset.y === 0;
       },
       onMomentumBegin: () => {
         momentumActive.value = true;
@@ -338,39 +337,67 @@ const GlassTransactionList: React.FC<Props> = props => {
     runOnJS(foldUnfold)(false);
   }
 
+  // The list keeps every vertical drag for as long as it has rows left to
+  // scroll back through; the sheet only takes over once the first row is on
+  // screen, so a scroll can never be cut short by a fold mid-list.
   const panGesture = Gesture.Pan()
     .shouldCancelWhenOutside(false)
-    .simultaneousWithExternalGesture(scrollViewRef)
+    .manualActivation(true)
     .onTouchesDown(e => {
-      if (isListScrollable) {
-        yStartPos.value = e.changedTouches[0].y;
-      }
+      pullAnchorY.value = e.changedTouches[0].absoluteY;
+      pullSlopTaken.value = 0;
+      sheetTookTouch.value = false;
+      sheetDragging.value = false;
     })
     .onTouchesMove((e, state) => {
-      if (isListScrollable) {
-        if (startClosing.value && e.changedTouches[0].y > yStartPos.value) {
-          yStartPos.value = -1;
-          onFoldTrigger();
+      if (sheetTookTouch.value) {
+        return;
+      }
+      const y = e.changedTouches[0].absoluteY;
+      if (isListScrollable && scrollY.value > 0) {
+        pullAnchorY.value = y;
+        return;
+      }
+      const pull = y - pullAnchorY.value;
+      if (!isListScrollable) {
+        // Nothing to scroll, so the whole drag belongs to the sheet.
+        if (Math.abs(pull) > SHEET_PULL_SLOP) {
+          sheetTookTouch.value = true;
+          sheetDragging.value = true;
+          pullSlopTaken.value = pull;
+          state.activate();
+        }
+        return;
+      }
+      if (!foldedValue.value && pull > SHEET_PULL_SLOP) {
+        sheetTookTouch.value = true;
+        onFoldTrigger();
+        if (IS_ANDROID) {
+          state.activate();
         } else {
           state.fail();
         }
       }
     })
     .onUpdate(e => {
-      if (!isListScrollable) {
-        onDragUpdate(e.translationY);
+      if (!sheetDragging.value) {
+        return;
       }
+      onDragUpdate(e.translationY - pullSlopTaken.value);
     })
     .onEnd(e => {
-      if (!isListScrollable) {
-        onEndTrigger(e);
+      if (!sheetDragging.value) {
+        return;
       }
+      onEndTrigger({
+        translationY: e.translationY - pullSlopTaken.value,
+        velocityY: e.velocityY,
+      });
     });
 
   // Rows have no native views; taps are resolved against the row geometry.
   // Pressable-like timing: any hold without movement counts on release.
   const tapGesture = Gesture.Tap()
-    .simultaneousWithExternalGesture(scrollViewRef)
     // A press has no time limit, like the Pressable rows this replaced; it is
     // movement past the touch slop that hands the touch to the scroller.
     .maxDuration(10000)
@@ -402,7 +429,6 @@ const GlassTransactionList: React.FC<Props> = props => {
       {showSyncProgress ? SyncProgressIndicator : <></>}
       <GestureDetector gesture={listGestures}>
         <Animated.ScrollView
-          ref={scrollViewRef}
           style={styles.scroller}
           bounces={false}
           scrollEventThrottle={1}

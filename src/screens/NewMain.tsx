@@ -20,6 +20,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {Canvas, Image, useImage} from '@shopify/react-native-skia';
 import {
   CUSTODY_MODEL,
@@ -84,6 +85,7 @@ import {ScreenSizeContext} from '../context/screenSize';
 import {
   useNewMainAnims,
   getNewMainSheetPoints,
+  makeSheetSnapHandlers,
 } from '../animations/useNewMainAnims';
 import {useMainLayout} from '../animations/useMainLayout';
 import {MainStackParamList} from '../navigation/types';
@@ -131,34 +133,52 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
   } = props;
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+  const insets = useSafeAreaInsets();
 
   const image = useImage(require('../assets/icons/search-icon.png'));
 
+  const {onDragUpdate, onEndTrigger} = makeSheetSnapHandlers({
+    mainSheetsTranslationY,
+    mainSheetsTranslationYStart,
+    folded: isBottomSheetFolded,
+    foldUnfold: foldUnfoldBottomSheet,
+    screenHeight: SCREEN_HEIGHT,
+    topInset: insets.top,
+  });
+  const titleDragGesture = Gesture.Pan()
+    .onUpdate(e => {
+      'worklet';
+      onDragUpdate(e.translationY);
+    })
+    .onEnd(onEndTrigger);
+
   return (
     <View>
-      <View style={styles.txTitleContainer}>
-        <TranslateText
-          textKey={'txs'}
-          domain={'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-          maxLengthInPixels={SCREEN_WIDTH * 0.8}
-          textStyle={styles.txTitleText}
-          numberOfLines={1}
-        />
+      <GestureDetector gesture={titleDragGesture}>
+        <View style={styles.txTitleContainer}>
+          <TranslateText
+            textKey={'txs'}
+            domain={'main'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            maxLengthInPixels={SCREEN_WIDTH * 0.8}
+            textStyle={styles.txTitleText}
+            numberOfLines={1}
+          />
 
-        <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-          <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
-            <Image
-              image={image}
-              x={SCREEN_HEIGHT * 0.024}
-              y={SCREEN_HEIGHT * 0.024}
-              width={SCREEN_HEIGHT * 0.022}
-              height={SCREEN_HEIGHT * 0.022}
-              fit="scaleDown"
-            />
-          </Canvas>
-        </Pressable>
-      </View>
+          <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
+            <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
+              <Image
+                image={image}
+                x={SCREEN_HEIGHT * 0.024}
+                y={SCREEN_HEIGHT * 0.024}
+                width={SCREEN_HEIGHT * 0.022}
+                height={SCREEN_HEIGHT * 0.022}
+                fit="scaleDown"
+              />
+            </Canvas>
+          </Pressable>
+        </View>
+      </GestureDetector>
       <GlassTransactionList
         onPress={data => {
           selectTransaction(data);

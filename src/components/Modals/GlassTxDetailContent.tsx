@@ -88,6 +88,12 @@ function GlassTxDetailContent(props: Props) {
     onScroll: e => {
       contentScrollY.value = e.contentOffset.y;
     },
+    onEndDrag: e => {
+      contentScrollY.value = e.contentOffset.y;
+    },
+    onMomentumEnd: e => {
+      contentScrollY.value = e.contentOffset.y;
+    },
   });
 
   // The scroll starts from the top for the new transaction. No crossfade
