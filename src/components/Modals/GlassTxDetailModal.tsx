@@ -109,9 +109,40 @@ const FADE_GRADIENT_COLORS = [
   'rgba(234, 235, 237, 0.85)',
 ];
 const FADE_GRADIENT_LOCATIONS = [0, 0.35, 0.6, 0.8, 1];
+// Time a close takes from the card's resting position — a tap outside, say.
+// A close that starts partway down is scaled from this so it travels at the
+// same speed rather than for the same time.
+const CLOSE_ANIM_MS = 250;
 // Android reports scroll offsets as rounded dp floats, so a hair above zero
 // still counts as resting at the top for the dismiss hand-off.
 const SCROLL_TOP_EPSILON = 0.5;
+// Finger travel that hands a drag over to the dismiss. Deliberately short: at
+// the content's top there is nothing to scroll down into (bounces are off), so
+// the pull belongs to the sheet, and claiming it early is what gets in ahead of
+// the scroller's own pan recognizer.
+const DISMISS_PULL_SLOP = 6;
+// A flick this fast closes the sheet however short it was — a quick short
+// throw is a dismiss, and asking for the full travel every time is what makes
+// a flick read as "it ignored me". dp per second.
+const DISMISS_FLICK_VELOCITY = 900;
+// Whether the dismiss can take the touch away from the content scroller, which
+// decides whether the card can follow the finger at all.
+//
+// Android can: RNGH's orchestrator hands the touch over on demand, so the pull
+// is tracked and the card is dragged. It also *must* — Android measures scroll
+// deltas against the scroller's own moving frame, so a scroller left in the
+// touch scrolls itself as the card slides away.
+//
+// UIKit offers nothing equivalent. Once UIScrollView's pan recognizes, it
+// prevents our recognizer and the touch callbacks stop mid-drag; forcing the
+// recognizer active is refused and fails it outright. Neither
+// simultaneousWithExternalGesture nor Gesture.Native() reaches it — the latter
+// only bridges RNGH's stand-in recognizer, never the scroller's real one. So
+// iOS gets no stream to follow, and the dismiss commits on the trigger instead
+// and lets the close animation carry it, exactly as the wallet's bottom sheet
+// folds. That one fires once and needs nothing further, which is why the same
+// pairing works there and cannot work here.
+const CAN_CLAIM_TOUCH = Platform.OS === 'android';
 
 interface Props {
   isOpened: boolean;
@@ -214,9 +245,13 @@ function GlassTxDetailModal(props: Props) {
   const contentSwap = useSharedValue(1);
   // Scroll offset of the content ScrollView — the dismiss drag only arms at 0.
   const contentScrollY = useSharedValue(0);
-  // translationY at the moment the dismiss drag armed, so a scroll that runs
-  // past its top hands over without a jump. -1 = not armed.
-  const dragBase = useSharedValue(-1);
+  // Absolute finger position at the moment the dismiss drag armed, so a scroll
+  // that runs past its top hands over without a jump. Deliberately NOT the
+  // gesture's own translationY: that is measured from where the touch started,
+  // which is above the hand-over point whenever the drag began as an upward
+  // scroll — and iOS never rebases it, since only the automatic-activation
+  // path resets a recognizer's translation.
+  const dragOriginY = useSharedValue(0);
   // True once the dismiss pan has taken the touch stream (Android's manual
   // activation). The touch gates below only decide whether to hand a drag
   // over, so they must stop second-guessing a drag already in flight —
@@ -292,7 +327,10 @@ function GlassTxDetailModal(props: Props) {
         swapRaf.current = undefined;
       }
       swapPending.current = false;
-      ty.value = withTiming(offscreenTy, {duration: 250});
+      const closeMs = Math.round(
+        (CLOSE_ANIM_MS * Math.max(0, offscreenTy - ty.value)) / offscreenTy,
+      );
+      ty.value = withTiming(offscreenTy, {duration: closeMs});
       animTimeout.current = setTimeout(() => {
         setMounted(false);
         snapshotRef.current = null;
@@ -305,7 +343,7 @@ function GlassTxDetailModal(props: Props) {
         contentSwap.value = 1;
         contentScrollY.value = 0;
         kbShift.value = 0;
-      }, 300);
+      }, closeMs + 50);
     }
     return () => {
       cancelled = true;
@@ -576,97 +614,88 @@ function GlassTxDetailModal(props: Props) {
   }, []);
 
   const panYGesture = useMemo(() => {
-    const pan =
-      Gesture.Pan().simultaneousWithExternalGesture(nativeScrollGesture);
-
-    if (Platform.OS === 'android') {
-      pan
-        .manualActivation(true)
-        .onTouchesDown(e => {
-          'worklet';
-          touchStartY.value = e.allTouches[0].absoluteY;
-          touchStartX.value = e.allTouches[0].absoluteX;
-        })
-        .onTouchesMove((e, manager) => {
-          'worklet';
-          if (dismissArmed.value) {
-            return;
-          }
-          const y = e.allTouches[0].absoluteY;
-          const x = e.allTouches[0].absoluteX;
-          if (contentScrollY.value > SCROLL_TOP_EPSILON) {
-            touchStartY.value = y;
-            touchStartX.value = x;
-            return;
-          }
-          const dy = y - touchStartY.value;
-          const dx = x - touchStartX.value;
-          if (isSwiperActive && Math.abs(dx) > 15) {
-            manager.fail();
-          } else if (dy < -10) {
-            touchStartY.value = y;
-            touchStartX.value = x;
-          } else if (dy > 10 && contentX.value === 0) {
-            dismissArmed.value = true;
-            manager.activate();
-          }
+    const settle = (velocityY: number) => {
+      'worklet';
+      if (!dismissArmed.value) {
+        return;
+      }
+      dismissArmed.value = false;
+      if (
+        ty.value > swipeTriggerHeightRange ||
+        (ty.value > 0 && velocityY > DISMISS_FLICK_VELOCITY)
+      ) {
+        runOnJS(animateClose)();
+      } else if (ty.value > 0) {
+        ty.value = withSpring(0, {
+          duration: 420,
+          dampingRatio: 0.75,
+          reduceMotion: ReduceMotion.Never,
         });
-    } else {
-      pan.activeOffsetY(10);
-    }
+      }
+    };
+
+    const pan = Gesture.Pan()
+      .simultaneousWithExternalGesture(nativeScrollGesture)
+      .manualActivation(true)
+      .onTouchesDown(e => {
+        'worklet';
+        touchStartY.value = e.allTouches[0].absoluteY;
+        touchStartX.value = e.allTouches[0].absoluteX;
+      })
+      .onTouchesMove((e, manager) => {
+        'worklet';
+        const y = e.allTouches[0].absoluteY;
+        const x = e.allTouches[0].absoluteX;
+        if (dismissArmed.value) {
+          ty.value = Math.max(0, y - dragOriginY.value);
+          return;
+        }
+        if (contentScrollY.value > SCROLL_TOP_EPSILON) {
+          touchStartY.value = y;
+          touchStartX.value = x;
+          return;
+        }
+        const dy = y - touchStartY.value;
+        const dx = x - touchStartX.value;
+        if (isSwiperActive && Math.abs(dx) > 15) {
+          manager.fail();
+        } else if (dy < -DISMISS_PULL_SLOP) {
+          touchStartY.value = y;
+          touchStartX.value = x;
+        } else if (dy > DISMISS_PULL_SLOP && Math.abs(contentX.value) < 1) {
+          if (!CAN_CLAIM_TOUCH) {
+            manager.fail();
+            runOnJS(dismissKeyboard)();
+            runOnJS(animateClose)();
+            return;
+          }
+          dragOriginY.value = y;
+          dismissArmed.value = true;
+          manager.activate();
+          runOnJS(dismissKeyboard)();
+        }
+      });
 
     pan
       .onBegin(() => {
         'worklet';
-        dragBase.value = -1;
         dismissArmed.value = false;
       })
       .onUpdate(e => {
         'worklet';
-        if (
-          contentX.value === 0 &&
-          contentScrollY.value <= SCROLL_TOP_EPSILON &&
-          e.translationY > 0
-        ) {
-          if (dragBase.value < 0) {
-            dragBase.value = e.translationY;
-            dismissArmed.value = true;
-            runOnJS(dismissKeyboard)();
-          }
-          ty.value = Math.max(0, e.translationY - dragBase.value);
-        }
-      })
-      .onEnd(() => {
-        'worklet';
-        if (contentX.value !== 0) {
+        if (!dismissArmed.value) {
           return;
         }
-        if (ty.value > 0) {
-          if (ty.value > swipeTriggerHeightRange) {
-            runOnJS(animateClose)();
-          } else {
-            ty.value = withSpring(0, {
-              duration: 420,
-              dampingRatio: 0.75,
-              reduceMotion: ReduceMotion.Never,
-            });
-          }
-        }
+        ty.value = Math.max(0, e.absoluteY - dragOriginY.value);
       })
-      .onFinalize((_, success) => {
+      .onEnd(e => {
         'worklet';
-        dismissArmed.value = false;
-        if (!success && ty.value > 0) {
-          ty.value = withSpring(0, {
-            duration: 420,
-            dampingRatio: 0.75,
-            reduceMotion: ReduceMotion.Never,
-          });
-        }
+        settle(e.velocityY);
+      })
+      .onFinalize(() => {
+        'worklet';
+        settle(0);
       });
-    if (isSwiperActive) {
-      pan.failOffsetX([-15, 15]);
-    }
     return pan;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSwiperActive, swipeTriggerHeightRange, animateClose, dismissKeyboard]);
@@ -677,7 +706,7 @@ function GlassTxDetailModal(props: Props) {
         .enabled(isSwiperActive)
         .activeOffsetX([-15, 15])
         .failOffsetY([-15, 15])
-        .onBegin(() => {
+        .onStart(() => {
           'worklet';
           horizontalActive.value = true;
           contentXStart.value = contentSwap.value === 0 ? 0 : contentX.value;
@@ -692,6 +721,11 @@ function GlassTxDetailModal(props: Props) {
         .onEnd(e => {
           'worklet';
           if (ty.value !== 0) {
+            contentX.value = withSpring(0, {
+              duration: 420,
+              dampingRatio: 0.8,
+              reduceMotion: ReduceMotion.Never,
+            });
             return;
           }
           if (e.translationX > swipeTriggerWidthRange) {
@@ -712,9 +746,16 @@ function GlassTxDetailModal(props: Props) {
             });
           }
         })
-        .onFinalize(() => {
+        .onFinalize((_, success) => {
           'worklet';
           horizontalActive.value = false;
+          if (!success && contentSwap.value !== 0 && contentX.value !== 0) {
+            contentX.value = withSpring(0, {
+              duration: 420,
+              dampingRatio: 0.8,
+              reduceMotion: ReduceMotion.Never,
+            });
+          }
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isSwiperActive, swipeTriggerWidthRange, cardWidth, finishSwipe],

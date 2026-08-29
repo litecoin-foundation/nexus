@@ -197,9 +197,11 @@ const RenderCard: React.FC<CardProps> = props => {
     <Animated.View>
       <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
         {activeTab === 0 ? (
-          <GestureDetector gesture={panGesture}>
-            <View>{txView}</View>
-          </GestureDetector>
+          // The tx card wires its own drags: the list holds on to them while
+          // it still has rows to scroll back through, and its title row is
+          // the sheet's handle. A pan here would outrank both and fold the
+          // sheet from the middle of the list.
+          <View>{txView}</View>
         ) : null}
         {activeTab === 1 ? (
           <GestureDetector gesture={panGesture}>
