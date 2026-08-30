@@ -13,13 +13,31 @@ import {useAppDispatch} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
 import {setRunning} from '../mbsxSlice';
 import {
+  addCaCert,
   applyConfig,
   coinsWithActiveSwaps,
   defaultConfig,
   isRunning,
+  listCaCerts,
   readConfig,
+  removeCaCert,
 } from '../adapter';
-import type {MbsxConfig} from '../adapter';
+import type {
+  CaCert,
+  ElectrumServer,
+  MbsxConfig,
+  VerifyCertsMode,
+} from '../adapter';
+import {getNetwork} from '../network';
+
+// none is refused off regtest by the module, so it is not offered there.
+const ALL_MODES: VerifyCertsMode[] = ['none', 'pinned', 'optional', 'strict'];
+
+// Only these validate a chain, so only these have anchors or a hostname to
+// check: under none and pinned mbedtls performs no name check at all.
+const chainsChecked = (server: ElectrumServer) =>
+  server.verify_certs_mode === 'optional' ||
+  server.verify_certs_mode === 'strict';
 
 const MbsxSettings: React.FC = () => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -34,16 +52,68 @@ const MbsxSettings: React.FC = () => {
   const [errorCoin, setErrorCoin] = useState('');
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
+  const [certs, setCerts] = useState<CaCert[]>([]);
+  const [certLabel, setCertLabel] = useState('');
+  const [certHost, setCertHost] = useState('');
+  const [certPort, setCertPort] = useState('');
+  const [certPem, setCertPem] = useState('');
+
+  const modes =
+    getNetwork() === 'regtest'
+      ? ALL_MODES
+      : ALL_MODES.filter(mode => mode !== 'none');
 
   const fail = (message: string, coin = '') => {
     setError(message);
     setErrorCoin(coin);
   };
 
-  const load = useCallback(async () => {
-    setConfig((await readConfig()) ?? defaultConfig());
-    setActiveCoins(coinsWithActiveSwaps());
+  const loadCerts = useCallback(() => {
+    try {
+      setCerts(listCaCerts());
+    } catch (e) {
+      // Reaches only the db, so this is a real failure rather than the core not
+      // being up.  Said out loud: an empty list on a security screen reads as
+      // "no anchors" when it means "could not tell".
+      setCerts([]);
+      fail(`Could not read certificates: ${String(e)}`);
+    }
   }, []);
+
+  // The module refuses verify_certs_mode none off regtest, so a config holding
+  // one cannot be saved back: it would fail initialise and roll back to itself.
+  // Coerced to the default here rather than left to render as no mode at all.
+  const normaliseModes = (cfg: MbsxConfig): MbsxConfig => {
+    if (getNetwork() === 'regtest') {
+      return cfg;
+    }
+    let found = false;
+    const coins = Object.fromEntries(
+      Object.entries(cfg.coins).map(([coin, settings]) => [
+        coin,
+        {
+          ...settings,
+          electrumx: settings.electrumx.map(server => {
+            if (server.verify_certs_mode !== 'none') {
+              return server;
+            }
+            found = true;
+            return {...server, verify_certs_mode: 'pinned' as VerifyCertsMode};
+          }),
+        },
+      ]),
+    ) as MbsxConfig['coins'];
+    if (found) {
+      setStatus('Certificate checking was off; set to pinned');
+    }
+    return {...cfg, coins};
+  };
+
+  const load = useCallback(async () => {
+    setConfig(normaliseModes((await readConfig()) ?? defaultConfig()));
+    setActiveCoins(coinsWithActiveSwaps());
+    loadCerts();
+  }, [loadCerts]);
 
   useEffect(() => {
     load();
@@ -79,6 +149,35 @@ const MbsxSettings: React.FC = () => {
     );
   };
 
+  const editTlsField = (
+    coin: string,
+    index: number,
+    patch: Partial<ElectrumServer>,
+  ) => {
+    setStatus('');
+    setConfig(prev => {
+      if (!prev) {
+        return prev;
+      }
+      const servers = prev.coins[coin].electrumx.map((server, i) =>
+        i === index ? {...server, ...patch} : server,
+      );
+      return {
+        ...prev,
+        coins: {
+          ...prev.coins,
+          [coin]: {...prev.coins[coin], electrumx: servers},
+        },
+      };
+    });
+  };
+
+  const editMode = (coin: string, index: number, mode: VerifyCertsMode) =>
+    editTlsField(coin, index, {verify_certs_mode: mode});
+
+  const editHostname = (coin: string, index: number, value: boolean) =>
+    editTlsField(coin, index, {verify_hostname: value});
+
   const editServer = (coin: string, index: number, url: string) => {
     setStatus('');
     setConfig(prev => {
@@ -90,7 +189,10 @@ const MbsxSettings: React.FC = () => {
       );
       return {
         ...prev,
-        coins: {...prev.coins, [coin]: {...prev.coins[coin], electrumx: servers}},
+        coins: {
+          ...prev.coins,
+          [coin]: {...prev.coins[coin], electrumx: servers},
+        },
       };
     });
   };
@@ -138,6 +240,52 @@ const MbsxSettings: React.FC = () => {
           }
         : prev,
     );
+  };
+
+  // The module reloads its anchors and reconnects the affected clients on its
+  // next pass, so this needs no restart.
+  const addCert = () => {
+    fail('');
+    setStatus('');
+    if (!certPem.trim()) {
+      fail('Paste a certificate first');
+      return;
+    }
+    // An anchor is looked up by host and port together, so a host without a
+    // usable port is stored where nothing will ever match it.
+    const host = certHost.trim();
+    const port = certPort.trim() ? Number(certPort.trim()) : 0;
+    if (!Number.isInteger(port) || port < 0 || port > 65535) {
+      fail('Port must be a whole number from 1 to 65535');
+      return;
+    }
+    if (host && port === 0) {
+      fail('A certificate for one server needs its port');
+      return;
+    }
+    try {
+      addCaCert(certLabel.trim(), host, port, certPem.trim());
+      setCertLabel('');
+      setCertHost('');
+      setCertPort('');
+      setCertPem('');
+      setStatus('Certificate added');
+      loadCerts();
+    } catch (e) {
+      fail((e as Error).message);
+    }
+  };
+
+  const removeCert = (id: bigint) => {
+    fail('');
+    setStatus('');
+    try {
+      removeCaCert(id);
+      setStatus('Certificate removed');
+      loadCerts();
+    } catch (e) {
+      fail((e as Error).message);
+    }
   };
 
   const save = async () => {
@@ -236,6 +384,49 @@ const MbsxSettings: React.FC = () => {
                         onChangeText={url => editServer(coin, index, url)}
                         autoCapitalize="none"
                       />
+                      {server.url.startsWith('ssl://') ? (
+                        <>
+                          <Text style={styles.inputLabel}>
+                            Certificate checks
+                          </Text>
+                          <View style={styles.modeRow}>
+                            {modes.map(mode => {
+                              const active =
+                                (server.verify_certs_mode ?? 'pinned') === mode;
+                              return (
+                                <TouchableOpacity
+                                  key={mode}
+                                  testID={`mbsx-mode-${coin}-${mode}`}
+                                  style={[
+                                    styles.modeOption,
+                                    active ? styles.modeOptionActive : null,
+                                  ]}
+                                  onPress={() => editMode(coin, index, mode)}>
+                                  <Text
+                                    style={[
+                                      styles.modeText,
+                                      active ? styles.modeTextActive : null,
+                                    ]}>
+                                    {mode}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+                          {chainsChecked(server) ? (
+                            <View style={styles.row}>
+                              <Text style={styles.label}>Verify hostname</Text>
+                              <Switch
+                                testID={`mbsx-verify-hostname-${coin}`}
+                                value={server.verify_hostname !== false}
+                                onValueChange={value =>
+                                  editHostname(coin, index, value)
+                                }
+                              />
+                            </View>
+                          ) : null}
+                        </>
+                      ) : null}
                       <TouchableOpacity
                         onPress={() => removeServer(coin, index)}>
                         <Text style={styles.error}>Remove</Text>
@@ -259,6 +450,67 @@ const MbsxSettings: React.FC = () => {
           );
         })}
 
+        <Text style={styles.section}>Certificates</Text>
+        <Text style={styles.value}>
+          Trust anchors for the optional and strict checks. Naming a server
+          confines the certificate to it, and replaces the built in roots for
+          that server rather than adding to them.
+        </Text>
+        {certs.map(cert => (
+          <View key={String(cert.id)} style={styles.certRow}>
+            <Text style={styles.label}>{cert.label || 'Unlabelled'}</Text>
+            <Text style={styles.value}>
+              {cert.host ? `${cert.host}:${cert.port}` : 'Every server'}
+            </Text>
+            <TouchableOpacity
+              testID={`mbsx-remove-cert-${cert.id}`}
+              onPress={() => removeCert(cert.id)}>
+              <Text style={styles.error}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+        <Text style={styles.inputLabel}>Label</Text>
+        <TextInput
+          testID="mbsx-cert-label"
+          style={styles.input}
+          value={certLabel}
+          onChangeText={setCertLabel}
+          autoCapitalize="none"
+        />
+        <Text style={styles.inputLabel}>Host (blank for every server)</Text>
+        <TextInput
+          testID="mbsx-cert-host"
+          style={styles.input}
+          value={certHost}
+          onChangeText={setCertHost}
+          autoCapitalize="none"
+        />
+        <Text style={styles.inputLabel}>Port</Text>
+        <TextInput
+          testID="mbsx-cert-port"
+          style={styles.input}
+          value={certPort}
+          onChangeText={setCertPort}
+          keyboardType="numeric"
+        />
+        <Text style={styles.inputLabel}>Certificate (PEM)</Text>
+        <TextInput
+          testID="mbsx-cert-pem"
+          style={[styles.input, styles.pemInput]}
+          value={certPem}
+          onChangeText={setCertPem}
+          placeholder="-----BEGIN CERTIFICATE-----"
+          multiline
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <TouchableOpacity
+          testID="mbsx-add-cert"
+          style={styles.button}
+          onPress={addCert}>
+          <Text style={styles.buttonText}>Add certificate</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           testID="mbsx-settings-save"
           style={[styles.button, saving ? styles.buttonDisabled : null]}
@@ -277,9 +529,15 @@ const MbsxSettings: React.FC = () => {
           <Text style={styles.buttonText}>Restore defaults</Text>
         </TouchableOpacity>
         {error !== '' && errorCoin === '' ? (
-          <Text style={styles.error}>{error}</Text>
+          <Text testID="mbsx-settings-error" style={styles.error}>
+            {error}
+          </Text>
         ) : null}
-        {status !== '' ? <Text style={styles.status}>{status}</Text> : null}
+        {status !== '' ? (
+          <Text testID="mbsx-settings-status" style={styles.status}>
+            {status}
+          </Text>
+        ) : null}
       </ScrollView>
     </View>
   );

@@ -1,6 +1,5 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import {fileExists} from './file';
-import {isRegtest} from './network';
 
 const ELECTRUM_SERVERS = [
   'electrum-us.nexuswallet.com:50002',
@@ -8,36 +7,6 @@ const ELECTRUM_SERVERS = [
   // 'litecoin.stackwallet.com:20063',
   // 'fallacy.fiatfaucet.com:50002',
 ];
-
-// 10.0.2.2 is the host loopback as seen from the Android emulator.
-const REGTEST_ELECTRUM_SERVER = '10.0.2.2:50004';
-const REGTEST_ELECTRUM_RESTURL = 'http://10.0.2.2:3002';
-
-const getRegtestConfig = (
-  litecoinBackend: 'neutrino' | 'electrum' = 'electrum',
-) => `
-  [Application Options]
-  debuglevel=debug
-  maxbackoff=2s
-  norest=1
-  nolisten=1
-  sync-freelist=1
-  accept-keysend=1
-  tlsdisableautofill=1
-
-  [Routing]
-  routing.assumechanvalid=1
-
-  [Litecoin]
-  litecoin.active=1
-  litecoin.regtest=1
-  litecoin.node=${litecoinBackend}
-
-  [electrum]
-  electrum.server=${REGTEST_ELECTRUM_SERVER}
-  electrum.resturl=${REGTEST_ELECTRUM_RESTURL}
-  electrum.ssl=false
-  `;
 
 const getMainnetConfig = (
   torEnabled: boolean = false,
@@ -110,9 +79,7 @@ export const createConfig = (
         await RNFS.mkdir(lndDir);
       }
 
-      const config = isRegtest()
-        ? getRegtestConfig(litecoinBackend)
-        : getMainnetConfig(torEnabled, litecoinBackend);
+      const config = getMainnetConfig(torEnabled, litecoinBackend);
       RNFS.writeFile(lndConfPath, config).then(() => {
         resolve(true);
       });

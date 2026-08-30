@@ -62,7 +62,6 @@ const parseBech32 = (address: string): AddressInfo => {
   const mapPrefixToNetwork: {[key: string]: Network} = {
     ltc: Network.mainnet,
     tltc: Network.testnet,
-    rltc: Network.regtest,
   };
 
   const network: Network = mapPrefixToNetwork[decoded.prefix];
@@ -108,7 +107,6 @@ const parseMweb = (address: string): AddressInfo => {
   const mapPrefixToNetwork: {[key: string]: Network} = {
     ltcmweb: Network.mainnet,
     tmweb: Network.testnet,
-    rmweb: Network.regtest,
   };
 
   const network: Network = mapPrefixToNetwork[decoded.prefix];
@@ -135,7 +133,7 @@ const getAddressInfo = (address: string): AddressInfo => {
 
   // check and handle bech32 address
   const prefix = address.substring(0, 4).toLowerCase();
-  if (prefix === 'ltc1' || prefix === 'tltc' || prefix === 'rltc') {
+  if (prefix === 'ltc1' || prefix === 'tltc') {
     if (address.length >= 15 && address.length <= 92) {
       return parseBech32(address);
     } else {
@@ -145,11 +143,7 @@ const getAddressInfo = (address: string): AddressInfo => {
 
   // check and handle mweb address
   const mwebPrefix = address.substring(0, 6).toLowerCase();
-  if (
-    mwebPrefix === 'ltcmwe' ||
-    mwebPrefix === 'tmweb1' ||
-    mwebPrefix === 'rmweb1'
-  ) {
+  if (mwebPrefix === 'ltcmwe' || mwebPrefix === 'tmweb1') {
     return parseMweb(address);
   }
 

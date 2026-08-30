@@ -170,6 +170,38 @@ export const getMbsxStyles = (screenHeight: number) => {
       color: colors.textSecondary,
       marginBottom: spacing.xs,
     },
+    modeRow: {
+      flexDirection: 'row' as const,
+      flexWrap: 'wrap' as const,
+      marginBottom: spacing.sm,
+    },
+    modeOption: {
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.md,
+      marginRight: spacing.sm,
+      marginTop: spacing.xs,
+      borderRadius: radius.sm,
+      backgroundColor: colors.grayLight,
+    },
+    modeOptionActive: {
+      backgroundColor: colors.primary,
+    },
+    modeText: {
+      fontSize: font.sm,
+      color: colors.textSecondary,
+    },
+    modeTextActive: {
+      color: colors.white,
+    },
+    certRow: {
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    pemInput: {
+      minHeight: screenHeight * 0.12,
+      textAlignVertical: 'top' as const,
+    },
     button: {
       height: screenHeight * 0.06,
       backgroundColor: colors.primary,

@@ -33,7 +33,12 @@ export {
   spendableBalance,
 } from './prevouts';
 export type {SelectedPrevout} from './prevouts';
-export type {CoinConfig, ElectrumServer, MbsxConfig} from './config';
+export type {
+  CoinConfig,
+  ElectrumServer,
+  MbsxConfig,
+  VerifyCertsMode,
+} from './config';
 
 // The module reports "busy" when it could not take its locks. It is not a
 // failure: the next onMessage tick retries, so callers keep their last data.
@@ -445,6 +450,47 @@ export const requestExpired = (request: SwapRequestDetails): boolean => {
 export const removeRequest = async (requestId: string) => {
   await releaseLeases(requestId);
   const rv = NitroBSX.removeRequest(requestId) as MbsxResult<{}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
+export type CaCert = {
+  id: bigint;
+  label: string;
+  host: string;
+  port: number;
+};
+
+// The three below reach only the db, not the core, so unlike the reads above
+// they need no isRunning() gate - and must not have one: a missing trust anchor
+// is what stops the core starting, so it has to be addable while it is down.
+export const listCaCerts = (): CaCert[] => {
+  const rv = NitroBSX.listCaCerts() as MbsxResult<{certs?: CaCert[]}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+  return rv.certs ?? [];
+};
+
+/**
+ * An empty host makes the anchor general; naming a server confines it to that
+ * one, and replaces the general anchors for it rather than adding to them.
+ */
+export const addCaCert = (
+  label: string,
+  host: string,
+  port: number,
+  pem: string,
+) => {
+  const rv = NitroBSX.addCaCert(label, host, port, pem) as MbsxResult<{}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
+export const removeCaCert = (id: bigint) => {
+  const rv = NitroBSX.removeCaCert(id) as MbsxResult<{}>;
   if (rv.error) {
     throw new Error(rv.error);
   }

@@ -1,6 +1,6 @@
 import {cancelWake, scheduleWake} from 'react-native-nitro-bsx';
 
-import {getNetwork} from '../../../utils/network';
+import {getNetwork} from '../network';
 
 import {hasActiveSwaps, resumeIfNeeded} from './index';
 

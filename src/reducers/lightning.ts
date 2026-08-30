@@ -35,7 +35,6 @@ import {pollRates} from './ticker';
 import {pollBalance} from './balance';
 import {pollTransactions} from './transaction';
 import {createConfig} from '../utils/config';
-import {chainDir} from '../utils/network';
 import {stringToUint8Array} from '../utils';
 import {sleep} from '../utils/poll';
 import {purgeStore} from '../store';
@@ -111,7 +110,7 @@ export const startLnd = (): AppThunk => async (dispatch, getState) => {
     const appFolderPath = `${RNFS.DocumentDirectoryPath}/lndltc/`;
 
     // check if wallet.db is missing - if so, clean up stale macaroons before starting LND
-    const dbPath = `${chainDir(RNFS.DocumentDirectoryPath)}/wallet.db`;
+    const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
     const walletExists = await fileExists(dbPath);
 
     if (!walletExists) {
@@ -232,7 +231,7 @@ export const initWallet = (): AppThunk => async (dispatch, getState) => {
 export const unlockWallet = (): AppThunk => async (dispatch, getState) => {
   let password = await getItem(PASS);
 
-  const dbPath = `${chainDir(RNFS.DocumentDirectoryPath)}/wallet.db`;
+  const dbPath = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet/wallet.db`;
 
   // check if wallet exists, otherwise initWallet
   if ((await fileExists(dbPath)) === false) {
@@ -357,11 +356,11 @@ export const runElectrumMigrationIfNeeded =
       return;
     }
 
-    const dir = chainDir(RNFS.DocumentDirectoryPath);
+    const mainnetDir = `${RNFS.DocumentDirectoryPath}/lndltc/data/chain/litecoin/mainnet`;
     const hasNeutrinoState =
-      (await fileExists(`${dir}/neutrino.db`)) ||
-      (await fileExists(`${dir}/block_headers.bin`)) ||
-      (await fileExists(`${dir}/reg_filter_headers.bin`));
+      (await fileExists(`${mainnetDir}/neutrino.db`)) ||
+      (await fileExists(`${mainnetDir}/block_headers.bin`)) ||
+      (await fileExists(`${mainnetDir}/reg_filter_headers.bin`));
 
     const currentBackend = getState().settings.litecoinBackend;
 

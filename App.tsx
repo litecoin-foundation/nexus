@@ -61,10 +61,6 @@ import {store, pStore} from './src/store';
 
 import {startTor} from './src/utils/tor';
 import initI18N from './src/utils/i18n';
-import NitroBSX from 'react-native-nitro-bsx';
-
-// Temporary: confirms the linked module autolinks and its hybrid object registers.
-console.log('NitroBSX version:', NitroBSX.getVersionString());
 
 const {APNSTokenModule} = NativeModules;
 

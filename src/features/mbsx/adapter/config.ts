@@ -1,13 +1,20 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
 import {fileExists} from '../../../utils/file';
-import {getNetwork} from '../../../utils/network';
-import type {LitecoinNetwork} from '../../../utils/network';
+import {getNetwork} from '../network';
+import type {LitecoinNetwork} from '../network';
+
+export type VerifyCertsMode = 'none' | 'pinned' | 'optional' | 'strict';
 
 export type ElectrumServer = {
   url: string;
   // electrs answers blockchain.transaction.get non-verbose only.
   haveverbosetx?: boolean;
+  // Absent means pinned.
+  verify_certs_mode?: VerifyCertsMode;
+  // Absent means on, matching TlsOptions::verify_hostname; the settings screen
+  // renders the switch from that, so the two have to stay in step.
+  verify_hostname?: boolean;
 };
 
 export type SwapFee = {
@@ -44,10 +51,9 @@ export const MBSX_DATA_DIR = `${RNFS.DocumentDirectoryPath}/mbsx`;
 const CONFIG_PATH = `${MBSX_DATA_DIR}/config.json`;
 
 // Seed values only: written once when no config exists, and never applied over
-// one the user has edited. 10.0.2.2 is the host loopback from the emulator, and
-// the ports match test_glueserver.py so the app and the python tests share a
-// backend. The ltc entry is also what lnd is pointed at in utils/config.ts —
-// two chain views that disagree would show a swap as funded on one side only.
+// one the user has edited. On regtest 10.0.2.2 is the host loopback from the
+// emulator, and the ports match test_glueserver.py so the app and the python
+// tests share a backend.
 const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
   regtest: {
     chain: 'regtest',
@@ -85,7 +91,18 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
     debug: false,
     bridge_host: '',
     bridge_pubkey: '',
-    coins: {},
+    coins: {
+      ltc: {
+        electrumx: [{url: 'ssl://backup.electrum-ltc.org:443'}],
+        wallet: {type: 'host'},
+      },
+      btc: {
+        electrumx: [{url: 'ssl://electrum.bitaroo.net:50002'}],
+      },
+      part: {
+        electrumx: [{url: 'ssl://178.62.110.5:50002'}],
+      },
+    },
   },
 };
 

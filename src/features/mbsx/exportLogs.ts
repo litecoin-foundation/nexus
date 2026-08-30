@@ -3,7 +3,7 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 import Share from 'react-native-share';
 import {readLog} from 'react-native-nitro-bsx';
 
-import {getNetwork} from '../../utils/network';
+import {getNetwork} from './network';
 
 import {
   getInfo,
