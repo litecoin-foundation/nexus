@@ -42,7 +42,7 @@ import CategoryPickerModal from '../components/Modals/CategoryPickerModal';
 import HeaderButton from '../components/Buttons/HeaderButton';
 import TranslateText from '../components/TranslateText';
 import {
-  useGlassChromeFeeds,
+  useGlassWalletFeed,
   useGlassShopFeedPublisher,
   GlassShopFeed,
 } from '../components/glassChromeFeeds';
@@ -112,7 +112,7 @@ const NexusShop: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const {t} = useTranslation('nexusShop');
-  const {wallet} = useGlassChromeFeeds();
+  const wallet = useGlassWalletFeed();
   const drawerStatus = useDrawerStatus();
   const drawerOpen = drawerStatus === 'open';
 

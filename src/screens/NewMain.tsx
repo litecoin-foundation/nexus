@@ -64,7 +64,7 @@ import {
 } from '../components/glassTabBarLayout';
 import {
   GlassWalletFeed,
-  useGlassChromeFeeds,
+  useGlassShopFeed,
   useGlassWalletFeedPublisher,
 } from '../components/glassChromeFeeds';
 import TranslateText from '../components/TranslateText';
@@ -239,7 +239,7 @@ const NewMain: React.FC<Props> = props => {
   // the shop screen owns the shared nav bar past its transition's hand-off
   // point; the wallet's header elements fade out/in with that same value so
   // the two headers crossfade (and track the back-swipe scrub)
-  const {shop: shopFeed} = useGlassChromeFeeds();
+  const shopFeed = useGlassShopFeed();
   const shopOwnsHeader = shopFeed?.ownsHeader ?? false;
   const idleShopTransition = useSharedValue(0);
   // hold the last shop transition across the feed-null teardown commit: a
@@ -865,6 +865,7 @@ const NewMain: React.FC<Props> = props => {
         mainSheetsTranslationY={mainSheetsTranslationY}
         txListScrollY={txListScrollY}
         listHeaderOffset={txListHeaderOffset}
+        showTxRows={showTxRows}
       />
 
       <PlasmaModal

@@ -58,6 +58,9 @@ interface Props {
   mainSheetsTranslationY: SharedValue<number>;
   txListScrollY: SharedValue<number>;
   listHeaderOffset: SharedValue<number>;
+  // Mirrors the chrome's showTxList: the tx list only exists on the wallet
+  // tab, so on any other tab there is nothing behind us to redraw.
+  showTxRows: boolean;
 }
 
 const HORIZONTAL_MARGIN = 16;
@@ -73,6 +76,7 @@ export default function LiquidGlassWalletModal({
   mainSheetsTranslationY,
   txListScrollY,
   listHeaderOffset,
+  showTxRows,
 }: Props) {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -232,7 +236,7 @@ export default function LiquidGlassWalletModal({
     mainSheetsTranslationY,
     txListScrollY,
     listHeaderOffset,
-    enabled: isVisible,
+    enabled: isVisible && showTxRows,
   });
 
   if (!isVisible) {

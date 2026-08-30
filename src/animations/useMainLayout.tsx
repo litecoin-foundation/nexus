@@ -1,6 +1,6 @@
 import React, {
+  useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useMemo,
   useContext,
@@ -76,13 +76,17 @@ export function useMainLayout(props: Props) {
   }, [stackHeaderHeight, headerButtonsHeight]);
 
   const walletButtonRef = useRef<View>(null);
-  useLayoutEffect(() => {
+  const lastPlasmaGap = useRef<number | null>(null);
+  const measureWalletButton = useCallback(() => {
     walletButtonRef.current?.measure(
       (_: any, __: any, ___: any, height: any, ____: any, pageY: any) => {
-        setPlasmaModalGapInPixels(height + pageY);
+        const gap = height + pageY;
+        if (!Number.isFinite(gap) || lastPlasmaGap.current === gap) return;
+        lastPlasmaGap.current = gap;
+        setPlasmaModalGapInPixels(gap);
       },
     );
-  });
+  }, [setPlasmaModalGapInPixels]);
 
   const walletButton = useMemo(
     () => (
@@ -91,6 +95,7 @@ export function useMainLayout(props: Props) {
       <View key="wallet-title" style={alignHeaderElementsWithMarginTop}>
         <Animated.View
           ref={walletButtonRef}
+          onLayout={measureWalletButton}
           style={[styles.walletButton, animatedWalletButtonOpacity]}>
           {/* nested, not stacked: two styles writing one opacity fight */}
           <Animated.View style={shopHeaderFadeStyle}>
