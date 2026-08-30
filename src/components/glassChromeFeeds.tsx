@@ -64,7 +64,8 @@ interface Feeds {
   shop: GlassShopFeed | null;
 }
 
-const FeedsContext = createContext<Feeds>({wallet: null, shop: null});
+const WalletFeedContext = createContext<GlassWalletFeed | null>(null);
+const ShopFeedContext = createContext<GlassShopFeed | null>(null);
 const SetWalletContext = createContext<(feed: GlassWalletFeed | null) => void>(
   () => {},
 );
@@ -77,13 +78,14 @@ export const GlassChromeProvider: React.FC<{children: React.ReactNode}> = ({
 }) => {
   const [wallet, setWallet] = useState<GlassWalletFeed | null>(null);
   const [shop, setShop] = useState<GlassShopFeed | null>(null);
-  // derived in render, NOT via an effect: consumers must see publishes and
-  // teardowns in the same commit, or the chrome draws from a dead feed
-  const feeds = useMemo<Feeds>(() => ({wallet, shop}), [wallet, shop]);
   return (
     <SetWalletContext.Provider value={setWallet}>
       <SetShopContext.Provider value={setShop}>
-        <FeedsContext.Provider value={feeds}>{children}</FeedsContext.Provider>
+        <WalletFeedContext.Provider value={wallet}>
+          <ShopFeedContext.Provider value={shop}>
+            {children}
+          </ShopFeedContext.Provider>
+        </WalletFeedContext.Provider>
       </SetShopContext.Provider>
     </SetWalletContext.Provider>
   );
@@ -107,4 +109,17 @@ export const useGlassShopFeedPublisher = (feed: GlassShopFeed) => {
   useEffect(() => () => setShop(null), [setShop]);
 };
 
-export const useGlassChromeFeeds = (): Feeds => useContext(FeedsContext);
+// subscribe to ONE feed wherever only one is read — a screen that publishes
+// the other must not re-render on its own publish
+export const useGlassWalletFeed = (): GlassWalletFeed | null =>
+  useContext(WalletFeedContext);
+
+export const useGlassShopFeed = (): GlassShopFeed | null =>
+  useContext(ShopFeedContext);
+
+// for the chrome itself, which draws from both and publishes neither
+export const useGlassChromeFeeds = (): Feeds => {
+  const wallet = useContext(WalletFeedContext);
+  const shop = useContext(ShopFeedContext);
+  return useMemo(() => ({wallet, shop}), [wallet, shop]);
+};
