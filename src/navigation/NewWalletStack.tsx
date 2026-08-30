@@ -45,7 +45,7 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="Main"
         component={MainStack}
-        options={({navigation}) => navigationOptions(navigation)}
+        options={() => navigationOptions()}
       />
       <Stack.Screen
         name="SettingsStack"

@@ -35,7 +35,6 @@ import GlassTopSectionChart from '../components/GlassTopSectionChart';
 import MainIntroOverlay, {
   consumeMainIntro,
 } from '../components/MainIntroOverlay';
-import HeaderButton from '../components/Buttons/HeaderButton';
 import GlassTabSelector from '../components/GlassTabSelector';
 import GlassReceive from '../components/Cards/GlassReceive';
 import Send from '../components/Cards/Send';
@@ -54,7 +53,7 @@ import {
   useGlassTxRowModels,
 } from '../components/GlassTxRows';
 import GlassTransactionList from '../components/GlassTransactionList';
-import LiquidGlassWalletButton from '../components/Buttons/LiquidGlassWalletButton';
+import MainHeader from '../components/MainHeader';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
 import {
@@ -406,7 +405,6 @@ const NewMain: React.FC<Props> = props => {
   const {
     mainSheetsTranslationY,
     mainSheetsTranslationYStart,
-    walletButtonAnimDuration,
     rotateArrow,
     animatedChartOpacity,
     animatedHeaderButtonOpacity,
@@ -612,27 +610,18 @@ const NewMain: React.FC<Props> = props => {
     }
   }, [activeTab, uri, deeplinkSet, dispatch]);
 
-  useMainLayout({
-    walletButtonAnimDuration,
-    rotateArrow,
-    animatedHeaderButtonOpacity,
-    animatedWalletButtonOpacity,
-    animatedWalletButtonArrowRotation,
-    currentWallet,
-    activeTab,
-    navigation,
-    isWalletsModalOpened,
-    setWalletsModalOpened,
-    shopOwnsHeader,
-    shopHeaderFadeStyle,
-    isTxDetailModalOpened,
-    setPlasmaModalGapInPixels,
-    setBottomSheetFolded,
-    setActiveTab,
-    manualPayment,
-    isFlexaCustomer,
-    styles,
-  });
+  // the navigator's header for this route only exists for the shop to take
+  // over; the wallet's own header is <MainHeader /> below
+  useMainLayout({navigation, shopOwnsHeader});
+
+  const onPressWalletButton = useCallback(() => {
+    setWalletsModalOpened(!isWalletsModalOpened);
+  }, [isWalletsModalOpened]);
+
+  const onHeaderBack = useCallback(() => {
+    setBottomSheetFolded(true);
+    setActiveTab(0);
+  }, [setBottomSheetFolded]);
 
   const handleTabPress = useCallback(
     (tab: number) => {
@@ -831,6 +820,27 @@ const NewMain: React.FC<Props> = props => {
 
       {BottomSheetMemo}
 
+      {/* after the content so it draws over it, before the modals so they
+          still cover it */}
+      <MainHeader
+        currentWallet={currentWallet}
+        activeTab={activeTab}
+        navigation={navigation}
+        isFlexaCustomer={isFlexaCustomer}
+        manualPayment={manualPayment}
+        onBack={onHeaderBack}
+        onPressWalletButton={onPressWalletButton}
+        rotateArrow={rotateArrow}
+        arrowSpinAnim={animatedWalletButtonArrowRotation}
+        animatedHeaderButtonOpacity={animatedHeaderButtonOpacity}
+        animatedWalletButtonOpacity={animatedWalletButtonOpacity}
+        shopHeaderFadeStyle={shopHeaderFadeStyle}
+        onWalletButtonMeasured={setPlasmaModalGapInPixels}
+        interactive={
+          !isWalletsModalOpened && !isTxDetailModalOpened && !shopOwnsHeader
+        }
+      />
+
       {!introDone && (
         <MainIntroOverlay online={!!isInternetReachable} onDone={finishIntro} />
       )}
@@ -979,33 +989,13 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
   });
 
-export const navigationOptions = (navigation: any): StackNavigationOptions => {
+export const navigationOptions = (): StackNavigationOptions => {
   return {
     headerShown: true,
-    headerTitle: () => (
-      <LiquidGlassWalletButton
-        title={'Wallet Title'}
-        onPress={() => {}}
-        disabled={false}
-        rotateArrow={() => {}}
-        arrowSpinAnim={undefined}
-      />
-    ),
-    headerTitleAlign: 'center',
     headerTransparent: true,
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.navigate('SettingsStack')}
-        imageSource={require('../assets/icons/settings-cog.png')}
-      />
-    ),
-    headerRight: () => (
-      <HeaderButton
-        onPress={() => navigation.navigate('AlertsStack')}
-        imageSource={require('../assets/icons/alerts-icon.png')}
-        rightPadding={true}
-      />
-    ),
+    headerTitle: () => null,
+    headerLeft: () => null,
+    headerRight: () => null,
   };
 };
 
