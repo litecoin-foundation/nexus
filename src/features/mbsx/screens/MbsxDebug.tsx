@@ -5,12 +5,14 @@ import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import MessageList from '../components/MessageList';
 import {getInfo, getMemStats, getVersion, resetState} from '../adapter';
+import {readConfig} from '../adapter/config';
+import {getNetwork} from '../network';
 import {clearMessages} from '../mbsxSlice';
 import {EXPORT_CONTENTS, exportLogs} from '../exportLogs';
 import {stringifyRpc} from '../json';
 import {getMbsxStyles} from '../theme';
 
-type ChainRow = {ticker: string; chainHeight: number};
+type ChainRow = {ticker: string; chainHeight: number; bridged: boolean};
 
 const MbsxDebug: React.FC = () => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -22,6 +24,19 @@ const MbsxDebug: React.FC = () => {
   const [connected, setConnected] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [chains, setChains] = useState<ChainRow[]>([]);
+  // Disabled coins never reach getInfo, so their rows come from the config.
+  const [disabledCoins, setDisabledCoins] = useState<string[]>([]);
+  const canReset = getNetwork() === 'regtest';
+
+  useEffect(() => {
+    readConfig().then(cfg => {
+      setDisabledCoins(
+        Object.entries(cfg?.coins ?? {})
+          .filter(([, coin]) => coin.enabled === false)
+          .map(([ticker]) => ticker.toUpperCase()),
+      );
+    });
+  }, []);
 
   // Polled rather than driven by onMessage so heights keep updating while the
   // module is idle. Unchanged values reuse the previous array, so a tick that
@@ -38,13 +53,15 @@ const MbsxDebug: React.FC = () => {
       const rows = Object.entries(info.coins ?? {}).map(([ticker, coin]) => ({
         ticker,
         chainHeight: coin.chain_height,
+        bridged: coin.bridge_supported !== false,
       }));
       setChains(prev =>
         prev.length === rows.length &&
         prev.every(
           (p, i) =>
             p.ticker === rows[i].ticker &&
-            p.chainHeight === rows[i].chainHeight,
+            p.chainHeight === rows[i].chainHeight &&
+            p.bridged === rows[i].bridged,
         )
           ? prev
           : rows,
@@ -74,28 +91,41 @@ const MbsxDebug: React.FC = () => {
         </View>
 
         <Text style={styles.section}>Chains</Text>
-        {chains.length === 0 ? (
+        {chains.length === 0 && disabledCoins.length === 0 ? (
           <Text style={styles.empty}>No active chains</Text>
         ) : (
-          chains.map(chain => (
-            <View key={chain.ticker} style={styles.row}>
-              <Text style={styles.label}>{chain.ticker}</Text>
-              <Text style={styles.value}>{String(chain.chainHeight)}</Text>
-            </View>
-          ))
+          <>
+            {chains.map(chain => (
+              <View key={chain.ticker} style={styles.row}>
+                <Text style={styles.label}>{chain.ticker}</Text>
+                <Text style={styles.value}>
+                  {String(chain.chainHeight)}
+                  {chain.bridged ? '' : ' (no bridge)'}
+                </Text>
+              </View>
+            ))}
+            {disabledCoins.map(ticker => (
+              <View key={ticker} style={styles.row}>
+                <Text style={styles.label}>{ticker}</Text>
+                <Text style={styles.value}>disabled</Text>
+              </View>
+            ))}
+          </>
         )}
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={async () => {
-            const rv = await resetState();
-            if (rv.error) {
-              console.error('mbsx resetState failed:', rv.error);
-            }
-            dispatch(clearMessages());
-          }}>
-          <Text style={styles.buttonText}>Reset state</Text>
-        </TouchableOpacity>
+        {canReset ? (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={async () => {
+              const rv = await resetState();
+              if (rv.error) {
+                console.error('mbsx resetState failed:', rv.error);
+              }
+              dispatch(clearMessages());
+            }}>
+            <Text style={styles.buttonText}>Reset state</Text>
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity
           style={styles.button}
           onPress={() => {

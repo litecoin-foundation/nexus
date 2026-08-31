@@ -89,8 +89,10 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
   mainnet: {
     chain: 'mainnet',
     debug: false,
-    bridge_host: '',
-    bridge_pubkey: '',
+    // Local test glue server; production values are not settled yet.
+    bridge_host: '10.0.2.2',
+    bridge_pubkey:
+      '0349fcd0a8e2d7e9472e757d34758f61d1980097326dd7823bfd00072717518a49',
     coins: {
       ltc: {
         electrumx: [{url: 'ssl://backup.electrum-ltc.org:443'}],

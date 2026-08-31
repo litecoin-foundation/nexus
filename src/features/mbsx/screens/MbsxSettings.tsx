@@ -1,5 +1,6 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {
+  Alert,
   ScrollView,
   Switch,
   Text,
@@ -7,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch} from '../../../store/hooks';
@@ -52,6 +54,7 @@ const MbsxSettings: React.FC = () => {
   const [errorCoin, setErrorCoin] = useState('');
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
+  const [savedJson, setSavedJson] = useState<string | null>(null);
   const [certs, setCerts] = useState<CaCert[]>([]);
   const [certLabel, setCertLabel] = useState('');
   const [certHost, setCertHost] = useState('');
@@ -110,7 +113,9 @@ const MbsxSettings: React.FC = () => {
   };
 
   const load = useCallback(async () => {
-    setConfig(normaliseModes((await readConfig()) ?? defaultConfig()));
+    const loaded = normaliseModes((await readConfig()) ?? defaultConfig());
+    setConfig(loaded);
+    setSavedJson(JSON.stringify(loaded));
     setActiveCoins(coinsWithActiveSwaps());
     loadCerts();
   }, [loadCerts]);
@@ -118,6 +123,29 @@ const MbsxSettings: React.FC = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  const dirty =
+    config !== null && savedJson !== null && JSON.stringify(config) !== savedJson;
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
+
+  // A drawer switch cannot be blocked, so the alert offers the way back
+  // instead of preventing it.
+  const navigation = useNavigation();
+  useEffect(() => {
+    return navigation.addListener('blur', () => {
+      if (!dirtyRef.current) {
+        return;
+      }
+      Alert.alert('Settings not applied', 'Save to apply your changes.', [
+        {text: 'Discard', style: 'destructive', onPress: () => load()},
+        {
+          text: 'Keep editing',
+          onPress: () => navigation.navigate('MbsxSettings' as never),
+        },
+      ]);
+    });
+  }, [navigation, load]);
 
   const edit = (patch: Partial<MbsxConfig>) => {
     setStatus('');
@@ -306,6 +334,7 @@ const MbsxSettings: React.FC = () => {
     setSaving(true);
     try {
       await applyConfig(config);
+      setSavedJson(JSON.stringify(config));
       setStatus('Saved and restarted');
     } catch (e) {
       fail(`Saved, but the restart failed: ${(e as Error).message}`);
@@ -329,6 +358,7 @@ const MbsxSettings: React.FC = () => {
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled">
+        {dirty ? <Text style={styles.empty}>Unsaved changes</Text> : null}
         <Text style={styles.section}>Bridge</Text>
         <Text style={styles.inputLabel}>Pubkey</Text>
         <TextInput
@@ -517,7 +547,7 @@ const MbsxSettings: React.FC = () => {
           disabled={saving}
           onPress={save}>
           <Text style={styles.buttonText}>
-            {saving ? 'Restarting…' : 'Save'}
+            {saving ? 'Restarting…' : dirty ? 'Save changes' : 'Save'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={load}>
