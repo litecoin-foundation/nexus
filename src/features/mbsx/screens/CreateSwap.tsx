@@ -28,6 +28,7 @@ import {
   requestSwap,
   selectAndLeasePrevouts,
   serialisePrevout,
+  validateAddress,
 } from '../adapter';
 import {getMbsxStyles} from '../theme';
 import type {MbsxCoinPrices, MbsxDrawerParamList} from '../types';
@@ -91,6 +92,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [rateAcknowledged, setRateAcknowledged] = useState(false);
   const offReference =
     valueDeviation !== null && Math.abs(valueDeviation) > RATE_TOLERANCE;
+  const addressInvalid =
+    addressTo !== '' && coinTo !== '' && !validateAddress(coinTo, addressTo);
   const amountFrom = amounts.fromCoin;
   const amountTo = amounts.toCoin;
 
@@ -187,6 +190,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       }
       if (!addressTo) {
         throw new Error('Missing receive address');
+      }
+      if (!validateAddress(coinTo, addressTo)) {
+        throw new Error(`Not a ${coinTo} address`);
       }
       // Amounts are entered in whole coins; the module holds the only conversion.
       let amountFromSats: bigint;
@@ -296,9 +302,11 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             ))}
           </View>
         ) : null}
-        {/* The address is on coin_to, so nothing here can judge it - validating
-            it against Litecoin would reject every correct one. Scanning is the
-            defence against a typo instead. */}
+        {addressInvalid ? (
+          <Text testID="mbsx-address-error" style={styles.error}>
+            Not a {coinTo} address
+          </Text>
+        ) : null}
         <TouchableOpacity
           testID="mbsx-scan"
           onPress={() =>
@@ -363,7 +371,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               )}% ${
                 (valueDeviation as number) < 0 ? 'less' : 'more'
               } than the reference rate.${
-                rateAcknowledged ? '' : ' Tap to continue anyway.'
+                rateAcknowledged ? '' : ' Tap this warning to continue anyway.'
               }`}
             </Text>
           </TouchableOpacity>
@@ -372,12 +380,14 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           testID="mbsx-submit"
           style={[
             styles.button,
-            busy || (offReference && !rateAcknowledged)
+            busy || addressInvalid || (offReference && !rateAcknowledged)
               ? styles.buttonDisabled
               : null,
           ]}
           onPress={submit}
-          disabled={busy || (offReference && !rateAcknowledged)}>
+          disabled={
+            busy || addressInvalid || (offReference && !rateAcknowledged)
+          }>
           <Text style={styles.buttonText}>
             {busy ? 'Requesting…' : 'Request swap'}
           </Text>

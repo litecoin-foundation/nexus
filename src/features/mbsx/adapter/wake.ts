@@ -3,6 +3,7 @@ import {cancelWake, scheduleWake} from 'react-native-nitro-bsx';
 import {getNetwork} from '../network';
 
 import {hasActiveSwaps, resumeIfNeeded} from './index';
+import {notifySwapProblem} from './notify';
 
 // How long the wake holds the service while the engine works. The task's native
 // timeout is longer, so this is what ends it in the ordinary case.
@@ -57,7 +58,9 @@ export const runWakeTask = async () => {
     await resumeIfNeeded();
     scheduleWakes();
   } catch (e) {
-    console.warn('mbsx wake task failed:', (e as Error).message);
+    await notifySwapProblem(
+      `Could not check on your swap: ${(e as Error).message}`,
+    );
     return;
   }
 

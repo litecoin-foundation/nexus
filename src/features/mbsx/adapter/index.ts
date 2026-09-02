@@ -133,7 +133,7 @@ export const reconcileLeases = async () => {
     }
     const swapIds = request.swapids ?? [];
     if (swapIds.length === 0) {
-      if (request.error) {
+      if (request.error || request.state === 'EXPIRED') {
         await releaseLeases(requestId);
       }
       continue;
@@ -389,10 +389,6 @@ export const getRequestInfo = (requestId: string): SwapRequestDetails | null =>
     ? (NitroBSX.getRequestInfo(requestId) as SwapRequestDetails)
     : null;
 
-// Matches the glue server's pushed_offer_valid_seconds: a request that has
-// drawn no offer by then never will.
-const REQUEST_EXPIRY_MS = 10 * 60 * 1000;
-
 // Null when any of them could not be read. getSwapInfo reports BUSY when the
 // module cannot take its locks, and dropping that swap would let the request
 // read as finished on the strength of the ones that did answer.
@@ -427,7 +423,8 @@ export const requestExpired = (request: SwapRequestDetails): boolean => {
   }
   if (swaps.length === 0) {
     return (
-      Date.parse(`${request.created_at}Z`) + REQUEST_EXPIRY_MS < Date.now()
+      request.state === 'EXPIRED' ||
+      Date.parse(`${request.expire_at}Z`) <= Date.now()
     );
   }
   return swaps.every(swap => {
@@ -609,6 +606,11 @@ export const parseAmount = (coin: string, amount: string): bigint => {
   }
   return NitroBSX.parseAmount(coin, amount);
 };
+
+// True when the core is down: nothing can judge the address then, and
+// requestSwap re-checks with the same decoder.
+export const validateAddress = (coin: string, address: string): boolean =>
+  !isRunning() || NitroBSX.validateAddress(coin, address);
 
 export const acceptSwap = (swapId: string) =>
   NitroBSX.acceptSwap(swapId) as Promise<MbsxResult<{}>>;

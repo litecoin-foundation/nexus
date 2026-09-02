@@ -19,6 +19,18 @@ export const recordLeases = (
 
 export const leasedRequestIds = () => Array.from(leased.keys());
 
+// Every outpoint currently leased to any request, as "txid:vout" in internal
+// byte order.
+export const leasedOutpointKeys = (): Set<string> => {
+  const keys = new Set<string>();
+  for (const prevouts of leased.values()) {
+    for (const p of prevouts) {
+      keys.add(`${p.txid}:${p.vout}`);
+    }
+  }
+  return keys;
+};
+
 /**
  * The outpoints lnd still has leased, or null when it could not be asked.
  *

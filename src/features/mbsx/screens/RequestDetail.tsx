@@ -174,6 +174,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           <Text style={styles.value}>{request.created_at}</Text>
         </View>
         <View style={styles.row}>
+          <Text style={styles.label}>Expires</Text>
+          <Text style={styles.value}>{request.expire_at}</Text>
+        </View>
+        <View style={styles.row}>
           <Text style={styles.label}>From</Text>
           <Text style={styles.value}>
             {request.amount_from} {request.coin_from}
@@ -209,7 +213,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             </View>
             <Text style={styles.empty}>
               {swaps.length === 0
-                ? `On the ${request.fees_coin} chain if the offer is pushed. A bridged offer moves them to the chain it makes us follow.`
+                ? `On the ${request.fees_coin} chain if the offer is private. A bridged offer moves them to the chain it makes us follow.`
                 : 'Chain fees per offer below.'}
             </Text>
           </>
@@ -240,7 +244,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                     navigation.navigate('SwapDetail', {swapId: swap.id})
                   }>
                   <Text style={styles.rowPrimary}>
-                    {`${swap.initiating ? 'Pushed' : 'Bridged'} — send ${sendAmount} ${sendCoin}, receive ${recvAmount} ${recvCoin}`}
+                    {`${swap.initiating ? 'Private' : 'Bridged'} — send ${sendAmount} ${sendCoin}, receive ${recvAmount} ${recvCoin}`}
                   </Text>
                   <Text style={styles.rowMessage}>
                     {acceptable(swap)

@@ -14,6 +14,7 @@ export type SwapSummary = {
 export type SwapRequestSummary = {
   id: string;
   created_at: string;
+  expire_at: string;
   state: string;
   coin_from: string;
   coin_to: string;
@@ -30,8 +31,8 @@ export type MbsxFee = {
 };
 
 // Absent when the coin has no fee schedule configured. fees_coin names the
-// chain they sit on, which follows the role: the initiating chain for a pushed
-// swap, the participating one for a bridged swap.
+// chain they sit on, which follows the role the offer assigns: our initiating
+// chain when initiating, the participating one when not.
 export type MbsxSwapFees = {
   fees?: MbsxFee[];
   fees_coin?: string;
