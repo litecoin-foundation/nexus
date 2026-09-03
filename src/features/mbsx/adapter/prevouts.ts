@@ -4,6 +4,8 @@ import {
   walletKitListUnspent,
 } from 'react-native-nitro-lndltc';
 
+export type FundingOutput = {address: string; value: number};
+
 export type SelectedPrevout = {
   // Hex of lnd's outpoint.txid_bytes: internal byte order, which is both what
   // the module's wire format takes and what ReleaseOutput wants back. Reverse it
@@ -83,11 +85,12 @@ export const spendableBalance = async (account?: string): Promise<bigint> => {
 };
 
 /**
- * Asks lnd to fund a transaction of `amountSat`, which selects coins **and
+ * Asks lnd to fund a transaction paying `outputs`, which selects coins **and
  * leases them**, then hands back what it picked. The transaction itself is
- * discarded: the module builds the real one. Leasing is the point, and
- * FundPsbt is the only route to it — liblnd exports ReleaseOutput and
- * ListLeases but no LeaseOutput.
+ * discarded: the module builds the real one, so the outputs are the shape it
+ * will have rather than its destinations. Leasing is the point, and FundPsbt
+ * is the only route to it — liblnd exports ReleaseOutput and ListLeases but no
+ * LeaseOutput.
  *
  * The returned leases must be released when the swap ends, or the coins stay
  * locked out of Nexus's own send flow.
@@ -98,8 +101,7 @@ export const spendableBalance = async (account?: string): Promise<bigint> => {
  * whose protos are already generated.
  */
 export const selectAndLeasePrevouts = async (
-  amountSat: bigint,
-  destinationAddress: string,
+  outputs: FundingOutput[],
   // From isHwWalletSelectedSelector. A parameter rather than a check inside,
   // so selection cannot happen without the question being answered.
   isHardwareWallet: boolean,
@@ -136,9 +138,14 @@ export const selectAndLeasePrevouts = async (
   const funded = await walletKitFundPsbt({
     template: {
       case: 'raw',
-      value: {outputs: {[destinationAddress]: amountSat}},
+      value: {
+        outputs: Object.fromEntries(
+          outputs.map(o => [o.address, BigInt(o.value)]),
+        ),
+      },
     },
-    fees: {case: 'targetConf', value: 3},
+    // The glue server prices lock tx a at a two block estimate
+    fees: {case: 'targetConf', value: 2},
     minConfs: 1,
     spendUnconfirmed: false,
     changeType: ChangeAddressType.UNSPECIFIED,

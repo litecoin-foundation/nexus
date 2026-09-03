@@ -21,6 +21,7 @@ import {
 import type {MbsxConfig} from './config';
 import {leasedRequestIds, releaseAllLeases, releaseLeases} from './leases';
 import {spendableBalance} from './prevouts';
+import type {FundingOutput} from './prevouts';
 import {signSwapTx} from './signTx';
 import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
 import {scheduleWakes} from './wake';
@@ -32,7 +33,7 @@ export {
   serialisePrevout,
   spendableBalance,
 } from './prevouts';
-export type {SelectedPrevout} from './prevouts';
+export type {FundingOutput, SelectedPrevout} from './prevouts';
 export type {
   CoinConfig,
   ElectrumServer,
@@ -593,6 +594,11 @@ export type SwapRequest = {
 
 export const requestSwap = (request: SwapRequest) =>
   NitroBSX.requestSwap(request) as Promise<MbsxResult<{request_id: string}>>;
+
+export const getSwapFundingOutputs = (coin: string, amount: string) =>
+  NitroBSX.getSwapFundingOutputs(coin, amount) as MbsxResult<{
+    outputs?: FundingOutput[];
+  }>;
 
 /**
  * A decimal amount in whole coins to the coin's smallest unit, by the module's

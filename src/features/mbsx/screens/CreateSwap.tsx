@@ -21,6 +21,7 @@ import CoinSelector, {COINS} from '../components/CoinSelector';
 import {
   getCoinPrices,
   getInfo,
+  getSwapFundingOutputs,
   isRunning,
   parseAmount,
   recordLeases,
@@ -221,9 +222,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         throw new Error('Could not get a change address');
       }
 
+      const funding = getSwapFundingOutputs(COIN_FROM, amountFrom);
+      if (funding.error || !funding.outputs) {
+        throw new Error(`Could not size the swap: ${funding.error}`);
+      }
       const prevouts = await selectAndLeasePrevouts(
-        amountFromSats,
-        change.address,
+        funding.outputs,
         isHwWallet,
         ltcAccount,
       );
