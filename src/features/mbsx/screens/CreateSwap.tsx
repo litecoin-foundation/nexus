@@ -32,7 +32,7 @@ import {
   validateAddress,
 } from '../adapter';
 import {getMbsxStyles} from '../theme';
-import type {MbsxCoinPrices, MbsxDrawerParamList} from '../types';
+import type {MbsxCoinPrices, MbsxDrawerParamList, MbsxInfo} from '../types';
 import {
   AmountSide,
   RATE_TOLERANCE,
@@ -58,7 +58,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [prices, setPrices] = useState<MbsxCoinPrices | null>(null);
-  const [loadedCoins, setLoadedCoins] = useState<string[] | null>(null);
+  const [info, setInfo] = useState<MbsxInfo | null>(null);
   const [addressFocused, setAddressFocused] = useState(false);
 
   // `running` goes true when initialise() returns, before the handshake that
@@ -67,8 +67,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     useCallback(() => {
       const read = () => {
         setPrices(getCoinPrices());
-        const info = getInfo();
-        setLoadedCoins(info ? Object.keys(info.coins) : null);
+        setInfo(getInfo());
       };
       read();
       const timer = setInterval(read, 2000);
@@ -78,9 +77,20 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   // getInfo reports the coins the module loaded, so one disabled in settings is
   // absent here.
+  const loadedCoins = info ? Object.keys(info.coins) : null;
   const offeredCoins = loadedCoins
     ? COINS.filter(coin => loadedCoins.includes(coin))
     : COINS;
+
+  // The handshake says which coins the server bridges; no request before it
+  const unbridgedCoin = [COIN_FROM, coinTo].find(
+    coin => coin !== '' && info?.coins[coin]?.bridge_supported !== true,
+  );
+  const bridgeNote = !info?.connected
+    ? 'Waiting for the swap server…'
+    : unbridgedCoin
+    ? `The swap server has no bridge for ${unbridgedCoin}`
+    : '';
 
   const {
     amounts,
@@ -384,18 +394,29 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           testID="mbsx-submit"
           style={[
             styles.button,
-            busy || addressInvalid || (offReference && !rateAcknowledged)
+            busy ||
+            addressInvalid ||
+            bridgeNote !== '' ||
+            (offReference && !rateAcknowledged)
               ? styles.buttonDisabled
               : null,
           ]}
           onPress={submit}
           disabled={
-            busy || addressInvalid || (offReference && !rateAcknowledged)
+            busy ||
+            addressInvalid ||
+            bridgeNote !== '' ||
+            (offReference && !rateAcknowledged)
           }>
           <Text style={styles.buttonText}>
             {busy ? 'Requesting…' : 'Request swap'}
           </Text>
         </TouchableOpacity>
+        {bridgeNote !== '' ? (
+          <Text testID="mbsx-bridge-note" style={styles.rowMessage}>
+            {bridgeNote}
+          </Text>
+        ) : null}
         {error !== '' ? (
           <Text testID="mbsx-error" style={styles.error}>
             {error}
