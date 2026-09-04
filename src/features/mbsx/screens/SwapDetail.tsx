@@ -5,7 +5,14 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {getMbsxStyles} from '../theme';
-import {BUSY, acceptSwap, getSwapInfo, onMessage, removeSwap} from '../adapter';
+import {
+  BUSY,
+  acceptSwap,
+  displayTxid,
+  getSwapInfo,
+  onMessage,
+  removeSwap,
+} from '../adapter';
 import RemoveButton from '../components/RemoveButton';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
 
@@ -18,6 +25,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
 
   const [swap, setSwap] = useState<SwapDetails | null>(null);
   const [acceptError, setAcceptError] = useState('');
+  const [openEvent, setOpenEvent] = useState<number | null>(null);
 
   const fetchSwap = useCallback(() => {
     const rv = getSwapInfo(swapId);
@@ -93,20 +101,47 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
         {acceptError !== '' && <Text style={styles.error}>{acceptError}</Text>}
 
         <Text style={styles.section}>Events</Text>
-        {(swap.events ?? []).map((event: SwapEvent) => (
-          <View key={event.id} style={styles.stackedRow}>
-            <Text style={styles.rowPrimary}>
-              {event.event_type}
-              {event.event_sub_type ? `: ${event.event_sub_type}` : ''}
-            </Text>
-            <Text style={styles.rowSecondary}>{event.time}</Text>
-            {(event.event_msg ?? event.event_data) ? (
-              <Text style={styles.rowMessage}>
-                {String(event.event_msg ?? event.event_data)}
+        {(swap.events ?? []).map((event: SwapEvent) => {
+          const expanded = openEvent === event.id;
+          // The module holds txids in internal byte order; explorers and people
+          // read the other way round.
+          const isTx = event.linked_type === 'SWAP_TX';
+          return (
+            <TouchableOpacity
+              key={event.id}
+              testID={`mbsx-event-${event.id}`}
+              style={styles.stackedRow}
+              onPress={() => setOpenEvent(expanded ? null : event.id)}>
+              <Text style={styles.rowPrimary}>
+                {event.event_type}
+                {event.event_sub_type ? `: ${event.event_sub_type}` : ''}
               </Text>
-            ) : null}
-          </View>
-        ))}
+              <Text style={styles.rowSecondary}>{event.time}</Text>
+              {(event.event_msg ?? event.event_data) ? (
+                <Text style={styles.rowMessage}>
+                  {String(event.event_msg ?? event.event_data)}
+                </Text>
+              ) : null}
+              {expanded && event.linked_id ? (
+                <>
+                  <Text style={styles.rowSecondary}>
+                    {isTx ? 'Transaction' : String(event.linked_type)}
+                  </Text>
+                  <Text selectable style={styles.rowMessage}>
+                    {isTx ? displayTxid(event.linked_id) : event.linked_id}
+                  </Text>
+                </>
+              ) : null}
+              {expanded &&
+              event.event_msg !== undefined &&
+              event.event_data !== undefined ? (
+                <Text style={styles.rowMessage}>
+                  {String(event.event_data)}
+                </Text>
+              ) : null}
+            </TouchableOpacity>
+          );
+        })}
 
         {/* Removes this offer alone. The request that funded it, and any other
             offer under it, stay. */}

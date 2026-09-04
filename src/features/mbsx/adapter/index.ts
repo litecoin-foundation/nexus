@@ -29,6 +29,7 @@ import {scheduleWakes} from './wake';
 export {defaultConfig, MBSX_DATA_DIR, readConfig, writeConfig} from './config';
 export {recordLeases, releaseLeases, releasePrevouts} from './leases';
 export {
+  displayTxid,
   selectAndLeasePrevouts,
   serialisePrevout,
   spendableBalance,
