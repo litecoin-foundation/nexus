@@ -22,6 +22,7 @@ const MbsxDebug: React.FC = () => {
   const running = useAppSelector(state => state.mbsx.running);
   const messages = useAppSelector(state => state.mbsx.messages);
   const [connected, setConnected] = useState(false);
+  const [dbVersion, setDbVersion] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
   const [chains, setChains] = useState<ChainRow[]>([]);
   // Disabled coins never reach getInfo, so their rows come from the config.
@@ -50,6 +51,7 @@ const MbsxDebug: React.FC = () => {
         return;
       }
       setConnected(Boolean(info.connected));
+      setDbVersion(info.db_version ?? null);
       const rows = Object.entries(info.coins ?? {}).map(([ticker, coin]) => ({
         ticker,
         chainHeight: coin.chain_height,
@@ -88,6 +90,10 @@ const MbsxDebug: React.FC = () => {
           <Text style={styles.value}>
             {connected ? 'connected' : 'disconnected'}
           </Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>DB version</Text>
+          <Text style={styles.value}>{dbVersion ?? '-'}</Text>
         </View>
 
         <Text style={styles.section}>Chains</Text>

@@ -76,6 +76,7 @@ export type MbsxSettings = {
 // getInfo is declared as AnyMap in the spec, which cannot describe a record.
 export type MbsxInfo = {
   connected: boolean;
+  db_version?: number;
   coins: Record<string, {chain_height: number; bridge_supported: boolean}>;
 };
 

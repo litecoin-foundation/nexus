@@ -17,12 +17,6 @@ export type ElectrumServer = {
   verify_hostname?: boolean;
 };
 
-export type SwapFee = {
-  address: string;
-  desc: string;
-  bps: number;
-};
-
 export type WalletConfig = {
   // 'host' leaves the funding prevouts and their keys on this side; 'debug' has
   // the module own everything. Absent means debug.
@@ -33,7 +27,6 @@ export type CoinConfig = {
   // Absent means enabled.
   enabled?: boolean;
   electrumx: ElectrumServer[];
-  fees?: SwapFee[];
   wallet?: WalletConfig;
 };
 
@@ -43,10 +36,12 @@ export type MbsxConfig = {
   bridge_host: string;
   bridge_pubkey: string;
   bridge_port?: number;
+  // Absent means the module's default.
+  max_fee_bps?: number;
   coins: Record<string, CoinConfig>;
 };
 
-export const MBSX_DATA_DIR = `${RNFS.DocumentDirectoryPath}/mbsx`;
+export const MBSX_DATA_DIR = `${RNFS.DocumentDirectoryPath}/mbsx/${getNetwork()}`;
 
 const CONFIG_PATH = `${MBSX_DATA_DIR}/config.json`;
 
@@ -65,18 +60,6 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
       ltc: {
         electrumx: [{url: 'tcp://10.0.2.2:50004', haveverbosetx: false}],
         wallet: {type: 'host'},
-        fees: [
-          {
-            address: 'rltc1q6jymkhc5qy080x8mmdcwysna2uh4jwdyutx5pa',
-            desc: 'nexus',
-            bps: 50,
-          },
-          {
-            address: 'rltc1qua7lr3c6zg48la6j990mljmt40kkgdl9xrgwx2',
-            desc: 'bsx',
-            bps: 50,
-          },
-        ],
       },
       btc: {
         electrumx: [{url: 'tcp://10.0.2.2:50001'}],
@@ -95,7 +78,9 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
       '0349fcd0a8e2d7e9472e757d34758f61d1980097326dd7823bfd00072717518a49',
     coins: {
       ltc: {
-        electrumx: [{url: 'ssl://backup.electrum-ltc.org:443'}],
+        electrumx: [
+          {url: 'ssl://backup.electrum-ltc.org:443', haveverbosetx: false},
+        ],
         wallet: {type: 'host'},
       },
       btc: {
