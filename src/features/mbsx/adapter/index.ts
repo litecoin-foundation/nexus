@@ -599,6 +599,8 @@ export const requestSwap = (request: SwapRequest) =>
 export const getSwapFundingOutputs = (coin: string, amount: string) =>
   NitroBSX.getSwapFundingOutputs(coin, amount) as MbsxResult<{
     outputs?: FundingOutput[];
+    total_fee_bps?: number;
+    max_fee_bps?: number;
   }>;
 
 /**
@@ -621,6 +623,9 @@ export const validateAddress = (coin: string, address: string): boolean =>
 
 export const acceptSwap = (swapId: string) =>
   NitroBSX.acceptSwap(swapId) as Promise<MbsxResult<{}>>;
+
+export const chooseBridgedOffer = (bridgedOfferId: string) =>
+  NitroBSX.chooseBridgedOffer(bridgedOfferId) as MbsxResult<{}>;
 
 // Nothing fills this on Nexus: the ltc wallet is a host wallet, which derives
 // its own keys and signs through installSigner rather than handing keys over.

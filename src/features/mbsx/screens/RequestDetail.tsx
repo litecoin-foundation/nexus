@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -14,6 +14,7 @@ import {getMbsxStyles} from '../theme';
 import {
   BUSY,
   acceptSwap,
+  chooseBridgedOffer,
   getRequestInfo,
   getSwapInfo,
   isTerminalState,
@@ -22,6 +23,7 @@ import {
 } from '../adapter';
 import RemoveButton from '../components/RemoveButton';
 import type {
+  BridgedOffer,
   MbsxDrawerParamList,
   SwapDetails,
   SwapRequestDetails,
@@ -50,6 +52,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const [showAll, setShowAll] = useState(false);
   const [acceptError, setAcceptError] = useState('');
   const [accepting, setAccepting] = useState(false);
+  const [chooseError, setChooseError] = useState('');
+  const [choosing, setChoosing] = useState(false);
 
   const fetchRequest = useCallback(() => {
     const rv = getRequestInfo(requestId);
@@ -127,6 +131,38 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   // Only the collapsed fast path accepts from here; with several offers on
   // screen the row opens the swap and it is accepted there.
   const selectedSwap = collapsed ? best : null;
+
+  const bridgedOffers = request?.bridged_offers ?? [];
+  const chosenOffer = bridgedOffers.find(offer => offer.chosen) ?? null;
+
+  // Choosing is what commits: the bid follows it, and the swap it brings back
+  // is accepted without asking again.
+  const onChoose = (offer: BridgedOffer) => {
+    const run = () => {
+      setChoosing(true);
+      setChooseError('');
+      try {
+        const rv = chooseBridgedOffer(offer.id);
+        if (rv.error) {
+          setChooseError(rv.error);
+          return;
+        }
+        fetchRequest();
+      } catch (e) {
+        setChooseError((e as Error).message);
+      } finally {
+        setChoosing(false);
+      }
+    };
+    Alert.alert(
+      'Choose offer',
+      `Send ${offer.amount_send} ${offer.coin_send} for ${offer.amount_receive} ${offer.coin_receive}?\n\nThe swap starts on its own once this offer comes back.`,
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {text: 'Choose', onPress: run},
+      ],
+    );
+  };
 
   const onAccept = async () => {
     if (!selectedSwap) {
@@ -213,15 +249,41 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             </View>
             <Text style={styles.empty}>
               {swaps.length === 0
-                ? `On the ${request.fees_coin} chain if the offer is private. A bridged offer moves them to the chain it makes us follow.`
+                ? `Paid in the ${request.fees_coin} you send, whichever offer you take. The exact amount follows the offer.`
                 : 'Chain fees per offer below.'}
             </Text>
           </>
         )}
 
         <Text style={styles.section}>Offers</Text>
+        {bridgedOffers.map(offer => (
+          <TouchableOpacity
+            key={offer.id}
+            testID={`mbsx-bridged-offer-${offer.id}`}
+            style={styles.stackedRow}
+            disabled={chosenOffer !== null || choosing}
+            onPress={() => onChoose(offer)}>
+            <Text style={styles.rowPrimary}>
+              {`Bridged — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
+            </Text>
+            <Text style={styles.rowMessage}>
+              {offer.chosen
+                ? 'Chosen, waiting for the offer'
+                : chosenOffer !== null
+                  ? `Expires ${offer.expire_at}`
+                  : `Tap to choose. Expires ${offer.expire_at}`}
+            </Text>
+          </TouchableOpacity>
+        ))}
+        {chooseError !== '' ? (
+          <Text testID="mbsx-choose-error" style={styles.error}>
+            {chooseError}
+          </Text>
+        ) : null}
         {offers.length === 0 ? (
-          <Text style={styles.empty}>Waiting for an offer</Text>
+          bridgedOffers.length === 0 ? (
+            <Text style={styles.empty}>Waiting for an offer</Text>
+          ) : null
         ) : (
           <>
             {shown.map(swap => {

@@ -89,8 +89,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const bridgeNote = !info?.connected
     ? 'Waiting for the swap server…'
     : unbridgedCoin
-    ? `The swap server has no bridge for ${unbridgedCoin}`
-    : '';
+      ? `The swap server has no bridge for ${unbridgedCoin}`
+      : '';
 
   const {
     amounts,
@@ -107,6 +107,29 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     addressTo !== '' && coinTo !== '' && !validateAddress(coinTo, addressTo);
   const amountFrom = amounts.fromCoin;
   const amountTo = amounts.toCoin;
+
+  // The cap is enforced at offer receipt; refusing here saves leasing coins
+  const [feeNote, setFeeNote] = useState('');
+  useEffect(() => {
+    setFeeNote('');
+    if (amountFrom === '') {
+      return;
+    }
+    const funding = getSwapFundingOutputs(COIN_FROM, amountFrom);
+    if (
+      funding.error ||
+      funding.total_fee_bps === undefined ||
+      funding.max_fee_bps === undefined ||
+      funding.total_fee_bps <= funding.max_fee_bps
+    ) {
+      return;
+    }
+    setFeeNote(
+      `The swap server charges ${funding.total_fee_bps / 100}%, above your limit of ${funding.max_fee_bps / 100}%`,
+    );
+  }, [amountFrom]);
+
+  const blockNote = bridgeNote || feeNote;
 
   const dispatch = useAppDispatch();
   const savedAddresses = useAppSelector(state =>
@@ -396,7 +419,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             styles.button,
             busy ||
             addressInvalid ||
-            bridgeNote !== '' ||
+            blockNote !== '' ||
             (offReference && !rateAcknowledged)
               ? styles.buttonDisabled
               : null,
@@ -405,16 +428,16 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           disabled={
             busy ||
             addressInvalid ||
-            bridgeNote !== '' ||
+            blockNote !== '' ||
             (offReference && !rateAcknowledged)
           }>
           <Text style={styles.buttonText}>
             {busy ? 'Requesting…' : 'Request swap'}
           </Text>
         </TouchableOpacity>
-        {bridgeNote !== '' ? (
+        {blockNote !== '' ? (
           <Text testID="mbsx-bridge-note" style={styles.rowMessage}>
-            {bridgeNote}
+            {blockNote}
           </Text>
         ) : null}
         {error !== '' ? (

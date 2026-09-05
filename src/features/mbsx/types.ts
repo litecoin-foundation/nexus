@@ -39,9 +39,22 @@ export type MbsxSwapFees = {
   fees_total?: string;
 };
 
+// A bridged offer to pick from. Its amounts are what this offer's rate would
+// mean for the request, not the network offer's own size.
+export type BridgedOffer = {
+  id: string;
+  expire_at: string;
+  chosen: boolean;
+  coin_send: string;
+  coin_receive: string;
+  amount_send: string;
+  amount_receive: string;
+};
+
 export type SwapRequestDetails = SwapRequestSummary &
   MbsxSwapFees & {
     swapids?: string[];
+    bridged_offers?: BridgedOffer[];
     error?: string;
   };
 
