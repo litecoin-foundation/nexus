@@ -52,6 +52,12 @@ import {
   SCROLLING_SCALE,
 } from './glassTabBarLayout';
 import {glassTxRowCallbacks, useGlassTxRowContext} from './GlassTxSkiaRows';
+import {
+  sheetTopClip,
+  titleTopInCanvas,
+  useGlassTxTitleElements,
+} from './GlassTxTitleRow';
+import {useGlassRowsLayerPublisher} from './glassChromeFeeds';
 import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
 import {ScreenSizeContext} from '../context/screenSize';
 import {useSkiaList} from './SkiaList';
@@ -269,6 +275,26 @@ const GlassTxCanvas: React.FC<Props> = props => {
     <Picture picture={skiaList.picture} />
   ) : null;
 
+  // Sheet colour from the last row down; the recording stops at the final row.
+  // Collapsed at zero rows so an empty list still shows its empty state.
+  const emptyTail = useMemo(() => Skia.XYWHRect(0, 0, 0, 0), []);
+  const rowsTail = useDerivedValue(() => {
+    const top = skiaList.contentHeight.value;
+    if (top <= 0) {
+      return emptyTail;
+    }
+    return Skia.XYWHRect(0, top, SCREEN_WIDTH, SCREEN_HEIGHT);
+  });
+  const rowsTailNode = <Rect rect={rowsTail} color={SHEET_BACKGROUND} />;
+
+  // ...and so do the wallet's overlays, which fade this canvas out. Recording
+  // keeps running underneath, so they inherit a live, already-shaped list.
+  const rowsLayer = useMemo(
+    () => ({picture: skiaList.picture, contentHeight: skiaList.contentHeight}),
+    [skiaList.picture, skiaList.contentHeight],
+  );
+  useGlassRowsLayerPublisher(rowsLayer);
+
   // shop rows in the same canvas; the surface's slide carries this layer, so
   // there is no fade of its own — just the delayed unmount from showShop
   const shopHeaderOffset = useSharedValue(0);
@@ -372,6 +398,34 @@ const GlassTxCanvas: React.FC<Props> = props => {
   const shopBandClip = useDerivedValue(() => {
     const top = Math.max(0, shopRowsTop.value + shopTravel.value);
     return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandBottom - top));
+  });
+
+  // The heading rides the sheet only — no list scroll, no sync-header offset.
+  const titleElements = useGlassTxTitleElements();
+  const titleTransform = useDerivedValue(() => [
+    {
+      translateY: titleTopInCanvas(
+        mainSheetsTranslationY.value,
+        SCREEN_HEIGHT,
+        canvasTop,
+      ),
+    },
+  ]);
+  // Collapsed behind the settled shop, as the row clips are: the heading is
+  // the wallet's and must not draw over another screen.
+  const emptySheetClip = useMemo(
+    () => Skia.RRectXY(Skia.XYWHRect(0, 0, 0, 0), 0, 0),
+    [],
+  );
+  const sheetClip = useDerivedValue(() => {
+    if (walletShopFade.value <= 0) {
+      return emptySheetClip;
+    }
+    return sheetTopClip(
+      titleTopInCanvas(mainSheetsTranslationY.value, SCREEN_HEIGHT, canvasTop),
+      SCREEN_WIDTH,
+      SCREEN_HEIGHT,
+    );
   });
 
   // List-content coordinates -> canvas coordinates.
@@ -563,7 +617,10 @@ const GlassTxCanvas: React.FC<Props> = props => {
               color={SHEET_BACKGROUND}
             />
           ) : null}
-          <Group transform={contentTransform}>{rowsNode}</Group>
+          <Group transform={contentTransform}>
+            {rowsNode}
+            {rowsTailNode}
+          </Group>
         </Group>
       ) : null}
       {shopNode ? (
@@ -591,8 +648,16 @@ const GlassTxCanvas: React.FC<Props> = props => {
       {rowsNode ? (
         <Group clip={listClip}>
           <Group opacity={walletRowsOpacity}>
-            <Group transform={contentTransform}>{rowsNode}</Group>
+            <Group transform={contentTransform}>
+              {rowsNode}
+              {rowsTailNode}
+            </Group>
           </Group>
+        </Group>
+      ) : null}
+      {rowsMounted && titleElements ? (
+        <Group opacity={walletRowsOpacity} clip={sheetClip}>
+          <Group transform={titleTransform}>{titleElements}</Group>
         </Group>
       ) : null}
       {shopNode ? (

@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import type {SharedValue} from 'react-native-reanimated';
+import type {SkPicture} from '@shopify/react-native-skia';
 
 import type {GlassTxRowModels} from './GlassTxRows';
 import type {ShopRowModels} from './GiftCardShop/GlassShopRows';
@@ -73,19 +74,37 @@ const SetShopContext = createContext<(feed: GlassShopFeed | null) => void>(
   () => {},
 );
 
+// The one channel that runs the other way: the chrome's canvas records the
+// rows on the UI thread and the wallet's overlays draw that same recording,
+// rather than each shaping its own window of paragraphs.
+export interface GlassRowsLayer {
+  picture: SharedValue<SkPicture>;
+  contentHeight: SharedValue<number>;
+}
+
+const RowsLayerContext = createContext<GlassRowsLayer | null>(null);
+const SetRowsLayerContext = createContext<
+  (layer: GlassRowsLayer | null) => void
+>(() => {});
+
 export const GlassChromeProvider: React.FC<{children: React.ReactNode}> = ({
   children,
 }) => {
   const [wallet, setWallet] = useState<GlassWalletFeed | null>(null);
   const [shop, setShop] = useState<GlassShopFeed | null>(null);
+  const [rowsLayer, setRowsLayer] = useState<GlassRowsLayer | null>(null);
   return (
     <SetWalletContext.Provider value={setWallet}>
       <SetShopContext.Provider value={setShop}>
-        <WalletFeedContext.Provider value={wallet}>
-          <ShopFeedContext.Provider value={shop}>
-            {children}
-          </ShopFeedContext.Provider>
-        </WalletFeedContext.Provider>
+        <SetRowsLayerContext.Provider value={setRowsLayer}>
+          <WalletFeedContext.Provider value={wallet}>
+            <ShopFeedContext.Provider value={shop}>
+              <RowsLayerContext.Provider value={rowsLayer}>
+                {children}
+              </RowsLayerContext.Provider>
+            </ShopFeedContext.Provider>
+          </WalletFeedContext.Provider>
+        </SetRowsLayerContext.Provider>
       </SetShopContext.Provider>
     </SetWalletContext.Provider>
   );
@@ -108,6 +127,19 @@ export const useGlassShopFeedPublisher = (feed: GlassShopFeed) => {
   }, [feed, setShop]);
   useEffect(() => () => setShop(null), [setShop]);
 };
+
+// Shared values keep their identity for the canvas's life, so a memoized
+// layer publishes once and never re-renders subscribers again.
+export const useGlassRowsLayerPublisher = (layer: GlassRowsLayer) => {
+  const setRowsLayer = useContext(SetRowsLayerContext);
+  useEffect(() => {
+    setRowsLayer(layer);
+    return () => setRowsLayer(null);
+  }, [layer, setRowsLayer]);
+};
+
+export const useGlassRowsLayer = (): GlassRowsLayer | null =>
+  useContext(RowsLayerContext);
 
 // subscribe to ONE feed wherever only one is read — a screen that publishes
 // the other must not re-render on its own publish

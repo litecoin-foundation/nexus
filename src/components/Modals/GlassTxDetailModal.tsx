@@ -39,6 +39,7 @@ import {
   Image as SkiaImage,
   ImageFilter,
   LinearGradient as SkiaLinearGradient,
+  Picture,
   Rect,
   RoundedRect,
   Skia,
@@ -52,7 +53,7 @@ import {glassModalShader, makeGlassModalFilter} from './glassModalShader';
 import {SWIPE_CARDS_ANIM_DURATION} from './PlasmaModal';
 import GlassTxDetailContent from './GlassTxDetailContent';
 import {SHEET_BACKGROUND} from '../GlassTxRows';
-import type {GlassTxRowModels} from '../GlassTxRows';
+import {useGlassTxTitleElements} from '../GlassTxTitleRow';
 import {useGlassTxRowOverlay} from '../glassTxRowOverlay';
 import {
   BORDER_GRADIENT_COLORS,
@@ -155,8 +156,6 @@ interface Props {
   // Screen-covering view with collapsable={false} to snapshot as the glass
   // backdrop base.
   contentViewRef: React.RefObject<View | null>;
-  // Live row pipeline shared with GlassTxCanvas.
-  rowModels: GlassTxRowModels;
   mainSheetsTranslationY: SharedValue<number>;
   txListScrollY: SharedValue<number>;
   listHeaderOffset: SharedValue<number>;
@@ -176,7 +175,6 @@ function GlassTxDetailModal(props: Props) {
     swipeToPrevTx,
     swipeToNextTx,
     contentViewRef,
-    rowModels,
     mainSheetsTranslationY,
     txListScrollY,
     listHeaderOffset,
@@ -424,8 +422,9 @@ function GlassTxDetailModal(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted, bottomMargin, cardTop, insets.top]);
 
+  const titleElements = useGlassTxTitleElements();
+
   const rows = useGlassTxRowOverlay({
-    rowModels,
     mainSheetsTranslationY,
     txListScrollY,
     listHeaderOffset,
@@ -873,16 +872,20 @@ function GlassTxDetailModal(props: Props) {
             />
           </Group>
         </Group>
-        {/* Rows are NOT ring-clipped: the chrome canvas that draws them on the
-            page fades out with the tab bar while this is open, so off-card
-            pixels would have no rows at all. Drawn once here they are
-            refracted inside the card and dimmed outside it. Each row paints
-            its own background, so no backdrop rect is needed out here. */}
         <Group clip={rows.clip}>
-          {rows.rowElements ? (
-            <Group transform={rows.transform}>{rows.rowElements}</Group>
+          {rows.picture ? (
+            <Group transform={rows.transform}>
+              <Picture picture={rows.picture} />
+              <Rect rect={rows.tailRect} color={SHEET_BACKGROUND} />
+            </Group>
           ) : null}
         </Group>
+        {rows.picture && titleElements ? (
+          <Group clip={rows.sheetClip}>
+            <Rect rect={rows.titleBandRect} color={SHEET_BACKGROUND} />
+            <Group transform={rows.titleTransform}>{titleElements}</Group>
+          </Group>
+        ) : null}
         <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
         <Group clip={cardRRect} invertClip>
           <Rect

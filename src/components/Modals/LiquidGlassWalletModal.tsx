@@ -21,6 +21,7 @@ import {useTranslation} from 'react-i18next';
 import {
   Canvas,
   Group,
+  Picture,
   Rect,
   RoundedRect,
   LinearGradient,
@@ -37,7 +38,8 @@ import type {SkImage} from '@shopify/react-native-skia';
 
 import {liquidGlassShader} from './liquidGlassShader';
 import WalletTab from '../Tabs/WalletTab';
-import type {GlassTxRowModels} from '../GlassTxRows';
+import {SHEET_BACKGROUND} from '../GlassTxRows';
+import {useGlassTxTitleElements} from '../GlassTxTitleRow';
 import {useGlassTxRowOverlay} from '../glassTxRowOverlay';
 import {useAppSelector} from '../../store/hooks';
 import {satsToSubunitSelector} from '../../reducers/settings';
@@ -51,10 +53,7 @@ interface Props {
   gapInPixels: number;
   rotateWalletButtonArrow?: () => void;
   contentViewRef?: React.RefObject<View | null>;
-  // Live row pipeline shared with GlassTxCanvas: the chrome that draws the
-  // rows on the page fades out with the tab bar while this is open, so the
-  // rows behind our transparent backdrop are redrawn here.
-  rowModels: GlassTxRowModels;
+  // Place the chrome's recorded row picture, as its own canvas does.
   mainSheetsTranslationY: SharedValue<number>;
   txListScrollY: SharedValue<number>;
   listHeaderOffset: SharedValue<number>;
@@ -72,7 +71,6 @@ export default function LiquidGlassWalletModal({
   gapInPixels,
   rotateWalletButtonArrow,
   contentViewRef,
-  rowModels,
   mainSheetsTranslationY,
   txListScrollY,
   listHeaderOffset,
@@ -230,9 +228,10 @@ export default function LiquidGlassWalletModal({
     close();
   };
 
+  const titleElements = useGlassTxTitleElements();
+
   // Live tx rows for the transparent area behind this modal.
   const rows = useGlassTxRowOverlay({
-    rowModels,
     mainSheetsTranslationY,
     txListScrollY,
     listHeaderOffset,
@@ -245,16 +244,21 @@ export default function LiquidGlassWalletModal({
 
   return (
     <View style={styles.overlay} pointerEvents="box-none">
-      {/* Live tx rows, under the dim. The chrome canvas that draws them on
-          the page fades out with the tab bar while this is open, so without
-          this the transparent area behind the modal shows the bare sheet.
-          Each row paints its own background, so no backdrop rect is needed. */}
       <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
         <Group clip={rows.clip}>
-          {rows.rowElements ? (
-            <Group transform={rows.transform}>{rows.rowElements}</Group>
+          {rows.picture ? (
+            <Group transform={rows.transform}>
+              <Picture picture={rows.picture} />
+              <Rect rect={rows.tailRect} color={SHEET_BACKGROUND} />
+            </Group>
           ) : null}
         </Group>
+        {rows.picture && titleElements ? (
+          <Group clip={rows.sheetClip}>
+            <Rect rect={rows.titleBandRect} color={SHEET_BACKGROUND} />
+            <Group transform={rows.titleTransform}>{titleElements}</Group>
+          </Group>
+        ) : null}
       </Canvas>
 
       {/* Backdrop */}

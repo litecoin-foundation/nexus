@@ -21,7 +21,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import {RouteProp} from '@react-navigation/native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {Canvas, Image, useImage} from '@shopify/react-native-skia';
 import {
   CUSTODY_MODEL,
   dismissAllModals,
@@ -66,7 +65,6 @@ import {
   useGlassShopFeed,
   useGlassWalletFeedPublisher,
 } from '../components/glassChromeFeeds';
-import TranslateText from '../components/TranslateText';
 import PinModalContent from '../components/Modals/PinModalContent';
 import PopUpModal from '../components/Modals/PopUpModal';
 import ScheduledPopUpModal from '../components/Modals/ScheduledPopUpModal';
@@ -130,11 +128,8 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
     txListScrollY,
     txListHeaderOffset,
   } = props;
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const insets = useSafeAreaInsets();
-
-  const image = useImage(require('../assets/icons/search-icon.png'));
 
   const {onDragUpdate, onEndTrigger} = makeSheetSnapHandlers({
     mainSheetsTranslationY,
@@ -155,27 +150,10 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
     <View>
       <GestureDetector gesture={titleDragGesture}>
         <View style={styles.txTitleContainer}>
-          <TranslateText
-            textKey={'txs'}
-            domain={'main'}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-            maxLengthInPixels={SCREEN_WIDTH * 0.8}
-            textStyle={styles.txTitleText}
-            numberOfLines={1}
+          <Pressable
+            style={styles.txSearchBtn}
+            onPress={() => navigation.navigate('SearchTransaction')}
           />
-
-          <Pressable onPress={() => navigation.navigate('SearchTransaction')}>
-            <Canvas style={styles.txSearchBtnCanvas} pointerEvents="none">
-              <Image
-                image={image}
-                x={SCREEN_HEIGHT * 0.024}
-                y={SCREEN_HEIGHT * 0.024}
-                width={SCREEN_HEIGHT * 0.022}
-                height={SCREEN_HEIGHT * 0.022}
-                fit="scaleDown"
-              />
-            </Canvas>
-          </Pressable>
         </View>
       </GestureDetector>
       <GlassTransactionList
@@ -856,7 +834,6 @@ const NewMain: React.FC<Props> = props => {
         swipeToPrevTx={swipeToPrevTx}
         swipeToNextTx={swipeToNextTx}
         contentViewRef={mainContentRef}
-        rowModels={txRowModels}
         mainSheetsTranslationY={mainSheetsTranslationY}
         txListScrollY={txListScrollY}
         listHeaderOffset={txListHeaderOffset}
@@ -871,7 +848,6 @@ const NewMain: React.FC<Props> = props => {
         gapInPixels={plasmaModalGapInPixels}
         rotateWalletButtonArrow={rotateArrow}
         contentViewRef={mainContentRef}
-        rowModels={txRowModels}
         mainSheetsTranslationY={mainSheetsTranslationY}
         txListScrollY={txListScrollY}
         listHeaderOffset={txListHeaderOffset}
@@ -972,18 +948,10 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       height: screenHeight * TX_TITLE_ROW_HEIGHT_RATIO,
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       alignItems: 'center',
     },
-    txTitleText: {
-      color: '#2E2E2E',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.025,
-      fontWeight: '500',
-      letterSpacing: -0.59,
-      paddingLeft: screenWidth * 0.04,
-    },
-    txSearchBtnCanvas: {
+    txSearchBtn: {
       width: screenHeight * 0.07,
       height: screenHeight * 0.07,
     },
