@@ -248,9 +248,18 @@ const GlassTxCanvas: React.FC<Props> = props => {
 
   // the wallet rows crossfade with the shop hand-off: they sink and fade as
   // the shop arrives and return with it, composed into the existing opacity
-  // and scroll transform so the hot path gains no layers
+  // and scroll transform so the hot path gains no layers. The crossfade only
+  // means anything while the shop layer is drawn — once it is dropped (the
+  // close cuts it before the morph plays out) the wallet is whole again.
   const walletShopFade = useDerivedValue(() =>
-    interpolate(shopTransition.value, [0.1, 0.5], [1, 0], Extrapolation.CLAMP),
+    !showShop
+      ? 1
+      : interpolate(
+          shopTransition.value,
+          [0.1, 0.5],
+          [1, 0],
+          Extrapolation.CLAMP,
+        ),
   );
   const walletRowsOpacity = useDerivedValue(
     () => rowsOpacity.value * walletShopFade.value,

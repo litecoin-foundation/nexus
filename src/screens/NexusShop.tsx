@@ -139,6 +139,11 @@ const NexusShop: React.FC<Props> = props => {
     [transition],
   );
   const closingRef = useRef(false);
+  // everything under the card — the sheet colour here, the drawn rows in the
+  // chrome canvas — is cut on the frame the close commits; only the card and
+  // its content keep animating out. Scrubbing the back swipe still fades the
+  // whole surface with the transition, so a swipe that springs back is intact.
+  const beneathCut = useSharedValue(0);
 
   const state = useShopScreenState({
     navigation,
@@ -196,6 +201,11 @@ const NexusShop: React.FC<Props> = props => {
     if (drawerOpen) {
       navigation.closeDrawer();
     }
+    // drop the sheet and the rows drawn on it before the morph starts; the
+    // canvas layer unmounts in the same commit that hides the sheet colour,
+    // so the wallet is uncovered whole rather than through a fade
+    beneathCut.value = 1;
+    setCanvasActive(false);
     setPresented(false);
     seedMorphFrom();
     transition.value = withTiming(
@@ -207,7 +217,14 @@ const NexusShop: React.FC<Props> = props => {
         }
       },
     );
-  }, [drawerOpen, navigation, seedMorphFrom, transition, finishClose]);
+  }, [
+    drawerOpen,
+    navigation,
+    seedMorphFrom,
+    transition,
+    finishClose,
+    beneathCut,
+  ]);
 
   // arrive on focus: seed the morph origin from the live wallet and play
   // the hand-off. No blur cleanup — a pushed gift-card screen keeps the shop
@@ -216,6 +233,7 @@ const NexusShop: React.FC<Props> = props => {
   useFocusEffect(
     useCallback(() => {
       closingRef.current = false;
+      beneathCut.value = 0;
       seedMorphFrom();
       setPresented(true);
       setCanvasActive(true);
@@ -223,7 +241,7 @@ const NexusShop: React.FC<Props> = props => {
         duration: 380,
         easing: Easing.bezier(0.22, 1, 0.36, 1),
       });
-    }, [seedMorphFrom, transition]),
+    }, [seedMorphFrom, transition, beneathCut]),
   );
 
   // the android back button leaves the shop like the edge swipe does
@@ -287,6 +305,9 @@ const NexusShop: React.FC<Props> = props => {
       [0, 1],
       Extrapolation.CLAMP,
     ),
+  }));
+  const sheetStyle = useAnimatedStyle(() => ({
+    opacity: beneathCut.value ? 0 : 1,
   }));
   // the card's bottom edge is the container boundary. It stays pinned at
   // the wallet sheet's edge while the surface fades over ([0, 0.35]), THEN
@@ -636,6 +657,8 @@ const NexusShop: React.FC<Props> = props => {
       <Animated.View
         style={[styles.container, fadeStyle]}
         pointerEvents={visible ? 'auto' : 'none'}>
+        <Animated.View style={[styles.sheet, sheetStyle]} />
+
         <Animated.View style={[styles.gradientCard, gradientStyle]}>
           <LinearGradient
             style={styles.gradient}
@@ -747,8 +770,11 @@ const getStyles = (
   StyleSheet.create({
     container: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: SHEET_BACKGROUND,
       zIndex: 2,
+    },
+    sheet: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: SHEET_BACKGROUND,
     },
     gradientCard: {
       position: 'absolute',
