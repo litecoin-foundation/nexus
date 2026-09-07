@@ -10,6 +10,7 @@ import {
   acceptSwap,
   displayTxid,
   getSwapInfo,
+  isTerminalState,
   onMessage,
   removeSwap,
 } from '../adapter';
@@ -149,6 +150,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           testID="mbsx-remove-swap"
           label="Delete swap"
           confirm="Permanently delete this swap and its events?"
+          disabled={!isTerminalState(swap.state)}
           onConfirm={async () => {
             removeSwap(swapId);
             navigation.navigate('SwapList');

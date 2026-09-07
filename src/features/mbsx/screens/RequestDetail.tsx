@@ -42,6 +42,17 @@ const PRE_ACCEPT = new Set([
   'REJECTED',
 ]);
 
+const offererRecord = (reliability: bigint): string => {
+  const net = Number(reliability) / 5 - 10;
+  if (net > 0) {
+    return `${net} more completed than failed`;
+  }
+  if (net < 0) {
+    return `${-net} more failed than completed`;
+  }
+  return 'neither better nor worse';
+};
+
 const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
@@ -267,6 +278,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               {`Bridged — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
             </Text>
             <Text style={styles.rowMessage}>
+              {`From ${offer.offerer_address.slice(0, 12)}…, on the server's record: ${offererRecord(offer.offerer_reliability)}`}
+            </Text>
+            <Text style={styles.rowMessage}>
               {offer.chosen
                 ? 'Chosen, waiting for the offer'
                 : chosenOffer !== null
@@ -275,6 +289,12 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             </Text>
           </TouchableOpacity>
         ))}
+        {bridgedOffers.length > 0 ? (
+          <Text style={styles.empty}>
+            A record counts only the swaps the server has seen from that exact
+            address.
+          </Text>
+        ) : null}
         {chooseError !== '' ? (
           <Text testID="mbsx-choose-error" style={styles.error}>
             {chooseError}
@@ -344,11 +364,19 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               testID="mbsx-accept"
               style={[
                 styles.button,
-                !selectedSwap || !acceptable(selectedSwap) || accepting
+                !selectedSwap ||
+                !acceptable(selectedSwap) ||
+                accepting ||
+                chosenOffer !== null
                   ? styles.buttonDisabled
                   : null,
               ]}
-              disabled={!selectedSwap || !acceptable(selectedSwap) || accepting}
+              disabled={
+                !selectedSwap ||
+                !acceptable(selectedSwap) ||
+                accepting ||
+                chosenOffer !== null
+              }
               onPress={onAccept}>
               <Text style={styles.buttonText}>
                 {accepting ? 'Accepting…' : 'Accept offer'}
@@ -366,6 +394,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           testID="mbsx-remove-request"
           label="Delete request"
           confirm="Permanently delete this request and every offer under it?"
+          disabled={!swaps.every(swap => isTerminalState(swap.state))}
           onConfirm={async () => {
             await removeRequest(requestId);
             navigation.navigate('RequestList');

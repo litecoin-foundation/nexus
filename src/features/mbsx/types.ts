@@ -49,6 +49,10 @@ export type BridgedOffer = {
   coin_receive: string;
   amount_send: string;
   amount_receive: string;
+  // The server's record of the offerer: its address, and 0-100 from what the
+  // server has seen of it, 50 for one it has not.
+  offerer_address: string;
+  offerer_reliability: bigint;
 };
 
 export type SwapRequestDetails = SwapRequestSummary &
