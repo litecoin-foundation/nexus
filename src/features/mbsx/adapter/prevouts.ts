@@ -69,6 +69,35 @@ export const serialisePrevout = (prevout: SelectedPrevout): string => {
  * coins are excluded for free — lnd leaves them out of ListUnspent — so this
  * falls as coins are committed to swaps in flight.
  */
+/**
+ * What a swap could use now, and what is waiting on a block to join it.
+ *
+ * One listing rather than two, so the pair cannot come from different moments
+ * and disagree.
+ */
+export const swapBalances = async (
+  account?: string,
+): Promise<{spendable: bigint; unconfirmed: bigint}> => {
+  const {utxos} = await walletKitListUnspent({
+    minConfs: 0,
+    maxConfs: MAX_CONFS,
+    ...(account ? {account} : {}),
+  });
+  let spendable = 0n;
+  let unconfirmed = 0n;
+  for (const u of utxos ?? []) {
+    if (!u.pkScript || !isP2wpkh(Buffer.from(u.pkScript, 'hex'))) {
+      continue;
+    }
+    if (Number(u.confirmations ?? 0) > 0) {
+      spendable += BigInt(u.amountSat);
+    } else {
+      unconfirmed += BigInt(u.amountSat);
+    }
+  }
+  return {spendable, unconfirmed};
+};
+
 export const spendableBalance = async (account?: string): Promise<bigint> => {
   const {utxos} = await walletKitListUnspent({
     minConfs: 1,
@@ -85,15 +114,13 @@ export const spendableBalance = async (account?: string): Promise<bigint> => {
 };
 
 /**
- * Asks lnd to fund a transaction paying `outputs`, which selects coins **and
- * leases them**, then hands back what it picked. The transaction itself is
- * discarded: the module builds the real one, so the outputs are the shape it
- * will have rather than its destinations. Leasing is the point, and FundPsbt
- * is the only route to it — liblnd exports ReleaseOutput and ListLeases but no
- * LeaseOutput.
+ * Funds a transaction paying `outputs` and hands back the coins lnd picked and
+ * leased; the transaction itself is discarded. Leasing is the point and
+ * FundPsbt is the only route to it — liblnd exports ReleaseOutput and
+ * ListLeases but no LeaseOutput.
  *
- * The returned leases must be released when the swap ends, or the coins stay
- * locked out of Nexus's own send flow.
+ * The leases must be released when the swap ends, or the coins stay locked out
+ * of Nexus's own send flow.
  *
  * The lock is best-effort: FundPsbt applies lnd's default duration and offers no
  * way to set one, so on a swap lasting longer the coins silently unlock. Fixing
@@ -113,14 +140,10 @@ export const selectAndLeasePrevouts = async (
     throw new Error('Swaps are not available with a hardware wallet');
   }
 
-  // Before funding, not after: lnd leaves leased outputs out of ListUnspent, so
-  // the value and script would be gone by the time they were needed.
+  // Before funding, not after: lnd leaves leased outputs out of ListUnspent.
   //
-  // Confirmed only, matching the funding call below. A lock tx built on an
-  // unconfirmed parent can be orphaned with the swap already in flight, and the
-  // counterparty's bridge rejects the prevout outright: it resolves each one
-  // with gettxout against its own node, which knows nothing of a parent sitting
-  // in ours.
+  // Confirmed only - the counterparty's bridge resolves each prevout with
+  // gettxout against its own node, which knows nothing of an unconfirmed parent.
   const {utxos} = await walletKitListUnspent({
     minConfs: 1,
     maxConfs: MAX_CONFS,

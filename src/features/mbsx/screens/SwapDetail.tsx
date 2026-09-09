@@ -1,5 +1,6 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -18,6 +19,12 @@ import RemoveButton from '../components/RemoveButton';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapDetail'>;
+
+const copyLinkedId = (isTx: boolean, linkedId: string): void => {
+  const value = isTx ? displayTxid(linkedId) : String(linkedId);
+  Clipboard.setString(value);
+  Alert.alert('Copied', value);
+};
 
 const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   const {swapId} = route.params;
@@ -128,9 +135,13 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                   <Text style={styles.rowSecondary}>
                     {isTx ? 'Transaction' : String(event.linked_type)}
                   </Text>
-                  <Text selectable style={styles.rowMessage}>
-                    {isTx ? displayTxid(event.linked_id) : event.linked_id}
-                  </Text>
+                  <TouchableOpacity
+                    testID={`mbsx-copy-${event.id}`}
+                    onPress={() => copyLinkedId(isTx, event.linked_id)}>
+                    <Text selectable style={styles.rowMessage}>
+                      {isTx ? displayTxid(event.linked_id) : event.linked_id}
+                    </Text>
+                  </TouchableOpacity>
                 </>
               ) : null}
               {expanded &&

@@ -272,7 +272,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             key={offer.id}
             testID={`mbsx-bridged-offer-${offer.id}`}
             style={styles.stackedRow}
-            disabled={chosenOffer !== null || choosing}
+            disabled={
+              chosenOffer !== null || offer.state === 'REVOKED' || choosing
+            }
             onPress={() => onChoose(offer)}>
             <Text style={styles.rowPrimary}>
               {`Bridged — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
@@ -283,9 +285,11 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             <Text style={styles.rowMessage}>
               {offer.chosen
                 ? 'Chosen, waiting for the offer'
-                : chosenOffer !== null
-                  ? `Expires ${offer.expire_at}`
-                  : `Tap to choose. Expires ${offer.expire_at}`}
+                : offer.state === 'REVOKED'
+                  ? 'Withdrawn by the offerer'
+                  : chosenOffer !== null
+                    ? `Expires ${offer.expire_at}`
+                    : `Tap to choose. Expires ${offer.expire_at}`}
             </Text>
           </TouchableOpacity>
         ))}
@@ -394,7 +398,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           testID="mbsx-remove-request"
           label="Delete request"
           confirm="Permanently delete this request and every offer under it?"
-          disabled={!swaps.every(swap => isTerminalState(swap.state))}
+          disabled={underway !== undefined}
           onConfirm={async () => {
             await removeRequest(requestId);
             navigation.navigate('RequestList');

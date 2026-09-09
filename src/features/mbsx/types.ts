@@ -45,6 +45,7 @@ export type BridgedOffer = {
   id: string;
   expire_at: string;
   chosen: boolean;
+  state: 'RECEIVED' | 'REVOKED';
   coin_send: string;
   coin_receive: string;
   amount_send: string;

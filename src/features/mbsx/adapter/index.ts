@@ -19,7 +19,11 @@ import {
   writeConfig,
 } from './config';
 import type {MbsxConfig} from './config';
-import {leasedRequestIds, releaseAllLeases, releaseLeases} from './leases';
+import {
+  releaseAllLeases,
+  releaseLeases,
+  requestIdsWithLocks,
+} from './leases';
 import {spendableBalance} from './prevouts';
 import type {FundingOutput} from './prevouts';
 import {signSwapTx} from './signTx';
@@ -27,12 +31,18 @@ import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
 import {scheduleWakes} from './wake';
 
 export {defaultConfig, MBSX_DATA_DIR, readConfig, writeConfig} from './config';
-export {recordLeases, releaseLeases, releasePrevouts} from './leases';
+export {
+  recordLeases,
+  releaseLeases,
+  releasePrevouts,
+  reservedBalance,
+} from './leases';
 export {
   displayTxid,
   selectAndLeasePrevouts,
   serialisePrevout,
   spendableBalance,
+  swapBalances,
 } from './prevouts';
 export type {FundingOutput, SelectedPrevout} from './prevouts';
 export type {
@@ -128,7 +138,7 @@ const TERMINAL_STATES = new Set([
  * decides whether the core can stop, so it does not need a timer of its own.
  */
 export const reconcileLeases = async () => {
-  for (const requestId of leasedRequestIds()) {
+  for (const requestId of requestIdsWithLocks()) {
     const request = getRequestInfo(requestId);
     if (request === null) {
       continue; // Core is down, so nothing is known: leave the lease alone.

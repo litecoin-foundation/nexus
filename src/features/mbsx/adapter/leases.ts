@@ -2,34 +2,68 @@ import {
   walletKitListLeases,
   walletKitReleaseOutput,
 } from 'react-native-nitro-lndltc';
+import NitroBSX from 'react-native-nitro-bsx';
 
 import {displayTxid, type SelectedPrevout} from './prevouts';
 
-// Keyed by request id, because that is what is known when the coins are picked:
-// a swap id only exists once a counterparty answers, and a request that is never
-// answered still holds its leases.
-const leased = new Map<string, SelectedPrevout[]>();
+// Nexus funds every swap from its own LTC wallet; the module records which coin
+// each lock is on so a second wallet can be told apart later.
+const COIN = 'LTC';
+
+export type WalletLock = {
+  coin: string;
+  txid: string;
+  vout: bigint;
+  handle: string;
+  request_id: string;
+  value: bigint;
+  locked_at: bigint;
+  released: boolean;
+};
+
+const outpointKey = (txid: string, vout: number | bigint) => `${txid}:${vout}`;
+
+/**
+ * The locks the module is holding for us, newest first by nothing in
+ * particular: it stores the lease id lnd gave us and the request it was taken
+ * for, which is the only way to release the right coin on the right request's
+ * behalf after a restart.
+ */
+export const walletLocks = (unreleasedOnly = true): WalletLock[] => {
+  const rv = NitroBSX.listWalletLocks(unreleasedOnly) as {
+    locks?: WalletLock[];
+    error?: string;
+  };
+  if (rv?.error) {
+    console.warn('mbsx could not list wallet locks:', rv.error);
+    return [];
+  }
+  return rv?.locks ?? [];
+};
 
 export const recordLeases = (
   requestId: string,
   prevouts: SelectedPrevout[],
 ) => {
-  leased.set(requestId, prevouts);
-};
-
-export const leasedRequestIds = () => Array.from(leased.keys());
-
-// Every outpoint currently leased to any request, as "txid:vout" in internal
-// byte order.
-export const leasedOutpointKeys = (): Set<string> => {
-  const keys = new Set<string>();
-  for (const prevouts of leased.values()) {
-    for (const p of prevouts) {
-      keys.add(`${p.txid}:${p.vout}`);
-    }
+  for (const prevout of prevouts) {
+    NitroBSX.recordWalletLock(
+      requestId,
+      COIN,
+      prevout.txid,
+      prevout.vout,
+      prevout.leaseId,
+      BigInt(prevout.amountSat),
+    );
   }
-  return keys;
 };
+
+// Every outpoint still locked for a swap, as "txid:vout" in internal byte order.
+export const leasedOutpointKeys = (): Set<string> =>
+  new Set(walletLocks().map(lock => outpointKey(lock.txid, lock.vout)));
+
+export const requestIdsWithLocks = (): string[] => [
+  ...new Set(walletLocks().map(lock => lock.request_id)),
+];
 
 /**
  * The outpoints lnd still has leased, or null when it could not be asked.
@@ -44,11 +78,11 @@ const heldOutpoints = async (): Promise<Set<string> | null> => {
     return new Set(
       (leases.lockedUtxos ?? [])
         .filter(u => u.outpoint)
-        .map(
-          u =>
-            `${Buffer.from(u.outpoint!.txidBytes).toString('hex')}:${
-              u.outpoint!.outputIndex
-            }`,
+        .map(u =>
+          outpointKey(
+            Buffer.from(u.outpoint!.txidBytes).toString('hex'),
+            u.outpoint!.outputIndex,
+          ),
         ),
     );
   } catch (e) {
@@ -70,7 +104,7 @@ export const releasePrevouts = async (prevouts: SelectedPrevout[]) => {
   const held = await heldOutpoints();
 
   for (const prevout of prevouts) {
-    if (held !== null && !held.has(`${prevout.txid}:${prevout.vout}`)) {
+    if (held !== null && !held.has(outpointKey(prevout.txid, prevout.vout))) {
       continue;
     }
     try {
@@ -93,25 +127,85 @@ export const releasePrevouts = async (prevouts: SelectedPrevout[]) => {
 };
 
 /**
- * Safe to call twice: a lease lnd has already expired releases as a no-op, and
- * the entry is dropped either way, since leaving it would retry forever.
+ * Safe to call twice: a lock already marked released is not offered again.
+ *
+ * The id released is the one recorded when the coin was locked, never the one
+ * lnd happens to hold now - a coin this request released and another has since
+ * leased would otherwise have the newer request's reservation torn up.
+ * A release that fails leaves the row unreleased, so the next pass retries it.
  */
 export const releaseLeases = async (requestId: string) => {
-  const prevouts = leased.get(requestId);
-  if (!prevouts) {
+  const locks = walletLocks().filter(lock => lock.request_id === requestId);
+  if (locks.length === 0) {
     return;
   }
-  leased.delete(requestId);
-  // A lease vanishing is otherwise indistinguishable from lnd's own timer
-  // lapsing, and the two mean very different things about this code.
-  console.log(
-    `mbsx releasing ${prevouts.length} coin(s) for request ${requestId}`,
-  );
-  await releasePrevouts(prevouts);
+  const held = await heldOutpoints();
+  if (held === null) {
+    return;
+  }
+  // A coin another request relocked while we awaited is not an error here.
+  const markReleased = (lock: WalletLock) => {
+    const rv = NitroBSX.markWalletLockReleased(
+      requestId,
+      lock.coin,
+      lock.txid,
+      Number(lock.vout),
+    ) as {error?: string};
+    if (rv?.error) {
+      console.warn(
+        `mbsx could not mark ${displayTxid(lock.txid)}:${lock.vout} released`,
+        rv.error,
+      );
+    }
+  };
+  for (const lock of locks) {
+    const key = outpointKey(lock.txid, lock.vout);
+    if (!held.has(key)) {
+      // Spent, or lnd's own timer lapsed: nothing to release, and nothing to
+      // retry either.
+      markReleased(lock);
+      continue;
+    }
+    try {
+      await walletKitReleaseOutput({
+        id: Buffer.from(lock.handle, 'hex'),
+        outpoint: {
+          txidBytes: Buffer.from(lock.txid, 'hex'),
+          outputIndex: Number(lock.vout),
+        },
+      });
+      markReleased(lock);
+    } catch (e) {
+      console.warn(
+        `mbsx could not release ${displayTxid(lock.txid)}:${lock.vout}`,
+        e,
+      );
+    }
+  }
+};
+
+/**
+ * What swaps are holding out of the wallet, in satoshis.
+ *
+ * Counted against lnd's own leases, so a coin already spent into a lock tx - or
+ * one whose lease lapsed on lnd's timer - is not reported as still reserved.
+ */
+export const reservedBalance = async (): Promise<bigint> => {
+  const held = await heldOutpoints();
+  if (held === null) {
+    return 0n;
+  }
+  let total = 0n;
+  for (const lock of walletLocks()) {
+    if (held.has(outpointKey(lock.txid, lock.vout))) {
+      total += BigInt(lock.value);
+    }
+  }
+  return total;
 };
 
 export const releaseAllLeases = async () => {
-  for (const requestId of leasedRequestIds()) {
+  for (const requestId of requestIdsWithLocks()) {
     await releaseLeases(requestId);
   }
 };

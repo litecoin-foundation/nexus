@@ -25,7 +25,7 @@ const num = (value: string): number | null => {
   return Number.isFinite(n) && n > 0 ? n : null;
 };
 
-const coinString = (n: number | null): string => {
+export const coinString = (n: number | null): string => {
   if (n === null || !Number.isFinite(n) || n <= 0) {
     return '';
   }

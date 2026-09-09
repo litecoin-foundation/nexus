@@ -12,7 +12,9 @@ import {
   onMessage,
   removeRequests,
   requestFinished,
+  reservedBalance,
 } from '../adapter';
+import {coinString} from '../useSwapAmounts';
 import RemoveButton from '../components/RemoveButton';
 import type {MbsxDrawerParamList, SwapSummary} from '../types';
 
@@ -25,13 +27,21 @@ const SwapList: React.FC<Props> = ({navigation}) => {
   const running = useAppSelector(state => state.mbsx.running);
   const error = useAppSelector(state => state.mbsx.error);
   const [swaps, setSwaps] = useState<SwapSummary[]>([]);
+  const [reserved, setReserved] = useState<bigint | null>(null);
 
   const fetchSwaps = useCallback(() => {
     const rows = listSwaps();
     if (rows) {
       setSwaps(rows);
     }
-  }, []);
+    if (!running) {
+      setReserved(null);
+      return;
+    }
+    reservedBalance()
+      .then(setReserved)
+      .catch(() => setReserved(null));
+  }, [running]);
 
   useFocusEffect(fetchSwaps);
 
@@ -69,6 +79,11 @@ const SwapList: React.FC<Props> = ({navigation}) => {
           }}
         />
       </View>
+      {reserved !== null && reserved > 0n ? (
+        <Text style={styles.empty}>
+          {`Reserved for swaps: ${coinString(Number(reserved) / 1e8)} LTC`}
+        </Text>
+      ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {!running && !error ? <Text style={styles.empty}>Starting…</Text> : null}
       <ScrollView contentContainerStyle={styles.scroll}>

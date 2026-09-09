@@ -29,6 +29,7 @@ import {
   requestSwap,
   selectAndLeasePrevouts,
   serialisePrevout,
+  swapBalances,
   validateAddress,
 } from '../adapter';
 import {getMbsxStyles} from '../theme';
@@ -37,6 +38,7 @@ import {
   AmountSide,
   RATE_TOLERANCE,
   SLIPPAGE,
+  coinString,
   useSwapAmounts,
 } from '../useSwapAmounts';
 
@@ -59,19 +61,30 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [busy, setBusy] = useState(false);
   const [prices, setPrices] = useState<MbsxCoinPrices | null>(null);
   const [info, setInfo] = useState<MbsxInfo | null>(null);
+  const [balances, setBalances] = useState<{
+    spendable: bigint;
+    unconfirmed: bigint;
+  } | null>(null);
   const [addressFocused, setAddressFocused] = useState(false);
 
   // `running` goes true when initialise() returns, before the handshake that
   // carries the prices.
   useFocusEffect(
     useCallback(() => {
+      let live = true;
       const read = () => {
         setPrices(getCoinPrices());
         setInfo(getInfo());
       };
       read();
+      swapBalances()
+        .then(rv => live && setBalances(rv))
+        .catch(() => live && setBalances(null));
       const timer = setInterval(read, 2000);
-      return () => clearInterval(timer);
+      return () => {
+        live = false;
+        clearInterval(timer);
+      };
     }, []),
   );
 
@@ -379,6 +392,18 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           coin: COIN_FROM,
           priced: Boolean(prices?.prices?.[COIN_FROM]),
         })}
+        {balances ? (
+          <Text style={styles.empty}>
+            {`Available: ${
+              coinString(Number(balances.spendable) / 1e8) || '0'
+            } ${COIN_FROM}`}
+            {balances.unconfirmed > 0n
+              ? ` (${coinString(
+                  Number(balances.unconfirmed) / 1e8,
+                )} unconfirmed)`
+              : ''}
+          </Text>
+        ) : null}
         {canConvert ? (
           <>
             <TouchableOpacity

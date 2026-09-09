@@ -9,14 +9,8 @@ import {notifySwapProblem} from './notify';
 // timeout is longer, so this is what ends it in the ordinary case.
 const WAKE_HOLD_MS = 90 * 1000;
 
-// A swap in flight needs us repeatedly and long before any lock expires: the
-// counterparty locks chain b, we release, they spend, we spend. Those are
-// minutes apart, so a closed app has to be woken on a cadence to carry a swap
-// at all - waking only at the lock deadline would stall it and then refund it.
-//
-// A minute on regtest, where blocks come in seconds and the wake is the thing
-// under test. Conditional rather than edited by hand for a run: a bare 60000
-// left behind is a battery bug on mainnet.
+// Waking only at the lock deadline would stall a swap and then refund it: the
+// steps are minutes apart, so a closed app has to be woken on a cadence.
 const WAKE_INTERVAL_MS =
   getNetwork() === 'regtest' ? 60 * 1000 : 15 * 60 * 1000;
 const POLL_MS = 5 * 1000;
@@ -68,4 +62,8 @@ export const runWakeTask = async () => {
   while (Date.now() < until && hasActiveSwaps()) {
     await new Promise(resolve => setTimeout(resolve, POLL_MS));
   }
+
+  // ExistingWorkPolicy.KEEP drops an alarm that fires while this still holds
+  // the worker, so the one armed above is gone whenever the hold outlasts it.
+  scheduleWakes();
 };
