@@ -19,11 +19,7 @@ import {
   writeConfig,
 } from './config';
 import type {MbsxConfig} from './config';
-import {
-  releaseAllLeases,
-  releaseLeases,
-  requestIdsWithLocks,
-} from './leases';
+import {releaseAllLeases, releaseLeases, requestIdsWithLocks} from './leases';
 import {spendableBalance} from './prevouts';
 import type {FundingOutput} from './prevouts';
 import {signSwapTx} from './signTx';
@@ -359,6 +355,7 @@ const watchSwapStates = () =>
 
 export const onMessage = NitroBSX.onMessage;
 export const onSettingsChanged = NitroBSX.onSettingsChanged;
+export const onBridgeState = NitroBSX.onBridgeState;
 
 // Every read below reaches the native core, which is only safe once
 // initialise() has run. Calling before that crashes rather than returning an

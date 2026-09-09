@@ -5,12 +5,14 @@ export type MbsxMessage = {id: number; data: string};
 
 interface IMbsx {
   running: boolean;
+  connected: boolean;
   messages: MbsxMessage[];
   error: string | null;
 }
 
 const initialState: IMbsx = {
   running: false,
+  connected: false,
   messages: [],
   error: null,
 };
@@ -23,6 +25,9 @@ export const mbsxSlice = createSlice({
   reducers: {
     setRunning: (state, action: PayloadAction<boolean>) => {
       state.running = action.payload;
+    },
+    setConnected: (state, action: PayloadAction<boolean>) => {
+      state.connected = action.payload;
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
@@ -44,7 +49,7 @@ export const mbsxSlice = createSlice({
   },
 });
 
-export const {setRunning, setError, pushMessage, clearMessages} =
+export const {setRunning, setConnected, setError, pushMessage, clearMessages} =
   mbsxSlice.actions;
 
 export default mbsxSlice.reducer;

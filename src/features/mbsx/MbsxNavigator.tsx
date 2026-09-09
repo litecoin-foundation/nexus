@@ -1,4 +1,5 @@
 import React, {useEffect} from 'react';
+import {View} from 'react-native';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -8,8 +9,16 @@ import {
 import type {DrawerContentComponentProps} from '@react-navigation/drawer';
 
 import {useAppDispatch} from '../../store/hooks';
-import {onMessage, setSectionMounted, start, stopIfIdle} from './adapter';
-import {pushMessage, setError, setRunning} from './mbsxSlice';
+import {
+  getInfo,
+  onBridgeState,
+  onMessage,
+  setSectionMounted,
+  start,
+  stopIfIdle,
+} from './adapter';
+import {pushMessage, setConnected, setError, setRunning} from './mbsxSlice';
+import BridgeStatus from './components/BridgeStatus';
 import CreateSwap from './screens/CreateSwap';
 import SwapList from './screens/SwapList';
 import SwapDetail from './screens/SwapDetail';
@@ -77,58 +86,72 @@ const MbsxNavigator: React.FC = () => {
     return () => subscription.remove();
   }, [dispatch]);
 
+  // Seeded first: the event fires only on a change, never on the current state.
+  useEffect(() => {
+    dispatch(setConnected(getInfo()?.connected === true));
+    const subscription = onBridgeState((connected: boolean) =>
+      dispatch(setConnected(connected)),
+    );
+    return () => subscription.remove();
+  }, [dispatch]);
+
   return (
-    <Drawer.Navigator
-      initialRouteName="SwapList"
-      backBehavior="history"
-      drawerContent={DrawerContent}>
-      <Drawer.Screen
-        name="CreateSwap"
-        component={CreateSwap}
-        options={{title: 'New swap'}}
-      />
-      <Drawer.Screen
-        name="SwapList"
-        component={SwapList}
-        options={{title: 'Swaps'}}
-      />
-      <Drawer.Screen
-        name="SwapDetail"
-        component={SwapDetail}
-        options={{title: 'Swap', ...hidden}}
-      />
-      <Drawer.Screen
-        name="RequestList"
-        component={RequestList}
-        options={{title: 'Requests'}}
-      />
-      <Drawer.Screen
-        name="RequestDetail"
-        component={RequestDetail}
-        options={{title: 'Request', ...hidden}}
-      />
-      <Drawer.Screen
-        name="AddressList"
-        component={AddressList}
-        options={{title: 'Addresses'}}
-      />
-      <Drawer.Screen
-        name="CoinAddresses"
-        component={CoinAddresses}
-        options={{title: 'Addresses', ...hidden}}
-      />
-      <Drawer.Screen
-        name="MbsxSettings"
-        component={MbsxSettings}
-        options={{title: 'Settings'}}
-      />
-      <Drawer.Screen
-        name="MbsxDebug"
-        component={MbsxDebug}
-        options={{title: 'Debug'}}
-      />
-    </Drawer.Navigator>
+    <View style={flexOne}>
+      <BridgeStatus />
+      <Drawer.Navigator
+        initialRouteName="SwapList"
+        backBehavior="history"
+        drawerContent={DrawerContent}>
+        <Drawer.Screen
+          name="CreateSwap"
+          component={CreateSwap}
+          options={{title: 'New swap'}}
+        />
+        <Drawer.Screen
+          name="SwapList"
+          component={SwapList}
+          options={{title: 'Swaps'}}
+        />
+        <Drawer.Screen
+          name="SwapDetail"
+          component={SwapDetail}
+          options={{title: 'Swap', ...hidden}}
+        />
+        <Drawer.Screen
+          name="RequestList"
+          component={RequestList}
+          options={{title: 'Requests'}}
+        />
+        <Drawer.Screen
+          name="RequestDetail"
+          component={RequestDetail}
+          options={{title: 'Request', ...hidden}}
+        />
+        <Drawer.Screen
+          name="AddressList"
+          component={AddressList}
+          options={{title: 'Addresses'}}
+        />
+        <Drawer.Screen
+          name="CoinAddresses"
+          component={CoinAddresses}
+          options={{title: 'Addresses', ...hidden}}
+        />
+        <Drawer.Screen
+          name="MbsxSettings"
+          component={MbsxSettings}
+          options={{title: 'Settings'}}
+        />
+        <Drawer.Screen
+          name="MbsxDebug"
+          component={MbsxDebug}
+          options={{title: 'Debug'}}
+        />
+      </Drawer.Navigator>
+    </View>
   );
 };
+
+const flexOne = {flex: 1} as const;
 
 export default MbsxNavigator;
