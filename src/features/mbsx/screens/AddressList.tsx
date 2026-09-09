@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -6,6 +6,7 @@ import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppSelector} from '../../../store/hooks';
 import {COINS} from '../components/CoinSelector';
 import {getMbsxStyles} from '../theme';
+import MbsxBackButton from '../components/MbsxBackButton';
 import type {MbsxDrawerParamList} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'AddressList'>;
@@ -15,6 +16,12 @@ const AddressList: React.FC<Props> = ({navigation}) => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
 
   const byCoin = useAppSelector(state => state.mbsxAddresses.byCoin);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
+    });
+  }, [navigation]);
 
   return (
     <View style={styles.container}>

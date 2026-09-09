@@ -138,6 +138,15 @@ export const getMbsxStyles = (screenHeight: number) => {
       color: colors.text,
       marginTop: spacing.xs,
     },
+    rowDimmed: {
+      opacity: 0.4,
+    },
+    rowLink: {
+      fontSize: font.sm,
+      color: colors.primary,
+      fontWeight: '600',
+      marginTop: spacing.xs,
+    },
     label: {
       fontSize: font.md,
       fontWeight: '700',
@@ -146,6 +155,11 @@ export const getMbsxStyles = (screenHeight: number) => {
     value: {
       fontSize: font.md,
       color: colors.textSecondary,
+    },
+    valueLink: {
+      fontSize: font.md,
+      color: colors.primary,
+      fontWeight: '600',
     },
     section: {
       fontSize: font.lg,

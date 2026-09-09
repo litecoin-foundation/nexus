@@ -1,5 +1,6 @@
 export type SwapSummary = {
   id: string;
+  request_id: string;
   created_at: string;
   state: string;
   coin_from: string;

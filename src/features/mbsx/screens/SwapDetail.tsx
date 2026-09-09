@@ -5,7 +5,9 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
+import {formatTimestamp} from '../format';
 import {getMbsxStyles} from '../theme';
+import MbsxBackButton from '../components/MbsxBackButton';
 import {
   BUSY,
   acceptSwap,
@@ -30,6 +32,12 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   const {swapId} = route.params;
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
+    });
+  }, [navigation]);
 
   const [swap, setSwap] = useState<SwapDetails | null>(null);
   const [acceptError, setAcceptError] = useState('');
@@ -91,8 +99,17 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <LabeledRow label="ID" value={swap.id} />
+        <TouchableOpacity
+          testID="mbsx-swap-request"
+          style={styles.row}
+          onPress={() =>
+            navigation.navigate('RequestDetail', {requestId: swap.request_id})
+          }>
+          <Text style={styles.label}>Request</Text>
+          <Text style={styles.valueLink}>{swap.request_id}</Text>
+        </TouchableOpacity>
         <LabeledRow label="State" value={swap.state} />
-        <LabeledRow label="Created" value={swap.created_at} />
+        <LabeledRow label="Created" value={formatTimestamp(swap.created_at)} />
         <LabeledRow
           label="From"
           value={`${swap.amount_from} ${swap.coin_from}`}

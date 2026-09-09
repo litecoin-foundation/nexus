@@ -13,8 +13,10 @@ import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {getCoinPrices} from '../adapter';
 import {forgetAddress, rememberAddress} from '../addressesSlice';
-import {formatPrice, formatUpdatedAt} from 'react-native-nitro-bsx';
+import {formatPrice} from 'react-native-nitro-bsx';
+import {formatTimestamp} from '../format';
 import {getMbsxStyles} from '../theme';
+import MbsxBackButton from '../components/MbsxBackButton';
 import type {MbsxCoinPrices, MbsxDrawerParamList} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CoinAddresses'>;
@@ -45,7 +47,10 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   );
 
   useEffect(() => {
-    navigation.setOptions({title: `${coin} addresses`});
+    navigation.setOptions({
+      title: `${coin} addresses`,
+      headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
+    });
   }, [navigation, coin]);
 
   // Scan pops back onto this screen with the result merged into its params.
@@ -78,7 +83,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
                 {`1 ${coin} = ${formatPrice(price)} ${prices?.currency}`}
               </Text>
               <Text style={styles.rowMessage}>
-                {`Updated ${formatUpdatedAt(prices?.updated_at ?? '')}`}
+                {`Updated ${formatTimestamp(prices?.updated_at ?? '')}`}
               </Text>
             </>
           ) : (

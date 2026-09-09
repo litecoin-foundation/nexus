@@ -112,6 +112,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     fixedRate,
     setFixedRate,
     valueDeviation,
+    reset: resetAmounts,
   } = useSwapAmounts(prices?.prices?.[COIN_FROM], prices?.prices?.[coinTo]);
   const [rateAcknowledged, setRateAcknowledged] = useState(false);
   const offReference =
@@ -302,6 +303,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       recordLeases(rv.request_id, prevouts);
       dispatch(rememberAddress({coin: coinTo, address: addressTo}));
       setRequestId(rv.request_id);
+      // coinTo is deliberately kept: it is lastCoin.
+      resetAmounts();
+      setAddressTo('');
+      setRateAcknowledged(false);
       navigation.navigate('RequestDetail', {requestId: rv.request_id});
     } catch (e) {
       setError((e as Error).message);

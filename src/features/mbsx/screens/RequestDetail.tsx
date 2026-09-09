@@ -10,7 +10,9 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
+import {formatExpiry, formatTimestamp, shortAddress} from '../format';
 import {getMbsxStyles} from '../theme';
+import MbsxBackButton from '../components/MbsxBackButton';
 import {
   BUSY,
   acceptSwap,
@@ -42,20 +44,22 @@ const PRE_ACCEPT = new Set([
   'REJECTED',
 ]);
 
-const offererRecord = (reliability: bigint): string => {
-  const net = Number(reliability) / 5 - 10;
-  if (net > 0) {
-    return `${net} more completed than failed`;
-  }
-  if (net < 0) {
-    return `${-net} more failed than completed`;
-  }
-  return 'neither better nor worse';
-};
+const explainReliability = () =>
+  Alert.alert(
+    'Reliability',
+    'A score out of 100 for this offerer, from swaps the server has seen from ' +
+      'this exact address. 50 means it has not seen them before.',
+  );
 
 const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
+    });
+  }, [navigation]);
 
   const {requestId} = route.params;
   const [request, setRequest] = useState<SwapRequestDetails | null>(null);
@@ -126,6 +130,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     }
   }, [swaps, underway, navigation]);
 
+  const bridgedOffers = request?.bridged_offers ?? [];
+  const chosenOffer = bridgedOffers.find(offer => offer.chosen) ?? null;
+
   // fast path offer
   const acceptable = (swap: SwapDetails) =>
     swap.state === 'RECEIVED' && Date.parse(`${swap.expire_at}Z`) > Date.now();
@@ -142,9 +149,6 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   // Only the collapsed fast path accepts from here; with several offers on
   // screen the row opens the swap and it is accepted there.
   const selectedSwap = collapsed ? best : null;
-
-  const bridgedOffers = request?.bridged_offers ?? [];
-  const chosenOffer = bridgedOffers.find(offer => offer.chosen) ?? null;
 
   // Choosing is what commits: the bid follows it, and the swap it brings back
   // is accepted without asking again.
@@ -218,11 +222,13 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Created</Text>
-          <Text style={styles.value}>{request.created_at}</Text>
+          <Text style={styles.value}>
+            {formatTimestamp(request.created_at)}
+          </Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Expires</Text>
-          <Text style={styles.value}>{request.expire_at}</Text>
+          <Text style={styles.value}>{formatTimestamp(request.expire_at)}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>From</Text>
@@ -267,48 +273,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         )}
 
         <Text style={styles.section}>Offers</Text>
-        {bridgedOffers.map(offer => (
-          <TouchableOpacity
-            key={offer.id}
-            testID={`mbsx-bridged-offer-${offer.id}`}
-            style={styles.stackedRow}
-            disabled={
-              chosenOffer !== null || offer.state === 'REVOKED' || choosing
-            }
-            onPress={() => onChoose(offer)}>
-            <Text style={styles.rowPrimary}>
-              {`Bridged — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
-            </Text>
-            <Text style={styles.rowMessage}>
-              {`From ${offer.offerer_address.slice(0, 12)}…, on the server's record: ${offererRecord(offer.offerer_reliability)}`}
-            </Text>
-            <Text style={styles.rowMessage}>
-              {offer.chosen
-                ? 'Chosen, waiting for the offer'
-                : offer.state === 'REVOKED'
-                  ? 'Withdrawn by the offerer'
-                  : chosenOffer !== null
-                    ? `Expires ${offer.expire_at}`
-                    : `Tap to choose. Expires ${offer.expire_at}`}
-            </Text>
-          </TouchableOpacity>
-        ))}
-        {bridgedOffers.length > 0 ? (
-          <Text style={styles.empty}>
-            A record counts only the swaps the server has seen from that exact
-            address.
-          </Text>
-        ) : null}
-        {chooseError !== '' ? (
-          <Text testID="mbsx-choose-error" style={styles.error}>
-            {chooseError}
-          </Text>
-        ) : null}
-        {offers.length === 0 ? (
-          bridgedOffers.length === 0 ? (
-            <Text style={styles.empty}>Waiting for an offer</Text>
-          ) : null
-        ) : (
+        {offers.length > 0 ? (
           <>
             {shown.map(swap => {
               // A bridged swap reports chain a / chain b, which is the reverse
@@ -325,7 +290,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 <TouchableOpacity
                   key={swap.id}
                   testID={`mbsx-offer-${swap.id}`}
-                  style={styles.stackedRow}
+                  style={[
+                    styles.stackedRow,
+                    chosenOffer !== null ? styles.rowDimmed : null,
+                  ]}
                   onPress={() =>
                     navigation.navigate('SwapDetail', {swapId: swap.id})
                   }>
@@ -334,8 +302,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                   </Text>
                   <Text style={styles.rowMessage}>
                     {acceptable(swap)
-                      ? `Expires ${swap.expire_at}`
-                      : `${swap.state}, expired ${swap.expire_at}`}
+                      ? `Expires ${formatExpiry(swap.expire_at)}`
+                      : `${swap.state}, expired ${formatExpiry(swap.expire_at)}`}
                   </Text>
                   {/* Named per chain: two bare rates read as one number over
                       another, with nothing saying which coin either is on. */}
@@ -364,6 +332,55 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 </Text>
               </TouchableOpacity>
             ) : null}
+          </>
+        ) : null}
+
+        {bridgedOffers.map(offer => (
+          <TouchableOpacity
+            key={offer.id}
+            testID={`mbsx-bridged-offer-${offer.id}`}
+            style={[
+              styles.stackedRow,
+              chosenOffer !== null && !offer.chosen ? styles.rowDimmed : null,
+            ]}
+            disabled={
+              chosenOffer !== null || offer.state === 'REVOKED' || choosing
+            }
+            onPress={() => onChoose(offer)}>
+            <Text style={styles.rowPrimary}>
+              {`Bridged — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
+            </Text>
+            <Text style={styles.rowMessage}>
+              {`From ${shortAddress(offer.offerer_address)}`}
+            </Text>
+            <TouchableOpacity
+              testID={`mbsx-reliability-${offer.id}`}
+              onPress={explainReliability}>
+              <Text style={styles.rowLink}>
+                {`Reliability: ${offer.offerer_reliability}`}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.rowMessage}>
+              {offer.chosen
+                ? 'Chosen, waiting for the offer'
+                : offer.state === 'REVOKED'
+                  ? 'Withdrawn by the offerer'
+                  : chosenOffer !== null
+                    ? `Expires ${formatExpiry(offer.expire_at)}`
+                    : `Tap to choose. Expires ${formatExpiry(offer.expire_at)}`}
+            </Text>
+          </TouchableOpacity>
+        ))}
+        {chooseError !== '' ? (
+          <Text testID="mbsx-choose-error" style={styles.error}>
+            {chooseError}
+          </Text>
+        ) : null}
+        {offers.length === 0 && bridgedOffers.length === 0 ? (
+          <Text style={styles.empty}>Waiting for an offer</Text>
+        ) : null}
+        {offers.length > 0 ? (
+          <>
             <TouchableOpacity
               testID="mbsx-accept"
               style={[
@@ -392,7 +409,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               </Text>
             ) : null}
           </>
-        )}
+        ) : null}
 
         <RemoveButton
           testID="mbsx-remove-request"
