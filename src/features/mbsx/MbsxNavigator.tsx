@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {View} from 'react-native';
 import {
   createDrawerNavigator,
@@ -8,7 +8,7 @@ import {
 } from '@react-navigation/drawer';
 import type {DrawerContentComponentProps} from '@react-navigation/drawer';
 
-import {useAppDispatch} from '../../store/hooks';
+import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {
   getInfo,
   onBridgeState,
@@ -48,6 +48,11 @@ const DrawerContent = (props: DrawerContentComponentProps) => (
 
 const MbsxNavigator: React.FC = () => {
   const dispatch = useAppDispatch();
+  // Read at mount only: a change while mounted would run leave() and start()
+  // back to back, and start() would see the core still up and do nothing.
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
+  const torRef = useRef(torEnabled);
+  torRef.current = torEnabled;
 
   useEffect(() => {
     let left = false;
@@ -63,7 +68,7 @@ const MbsxNavigator: React.FC = () => {
     };
 
     dispatch(setError(null));
-    start()
+    start(torRef.current)
       .then(() => {
         dispatch(setRunning(true));
         // Unmounted while starting: nothing else will call this now.

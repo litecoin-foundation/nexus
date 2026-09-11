@@ -1,4 +1,10 @@
-import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   Alert,
   ScrollView,
@@ -11,13 +17,14 @@ import {
 import {useNavigation} from '@react-navigation/native';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
-import {useAppDispatch} from '../../../store/hooks';
+import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
 import {setRunning} from '../mbsxSlice';
 import {
   addCaCert,
   applyConfig,
   coinsWithActiveSwaps,
+  getInfo,
   defaultConfig,
   isRunning,
   listCaCerts,
@@ -47,7 +54,11 @@ const MbsxSettings: React.FC = () => {
 
   const dispatch = useAppDispatch();
   const [config, setConfig] = useState<MbsxConfig | null>(null);
+  // Read-only here: Nexus owns the switch, and a second one could disagree.
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
   const [activeCoins, setActiveCoins] = useState<Set<string> | null>(null);
+  // Null while the core is stopped, which shows every coin in the config.
+  const [compiledCoins, setCompiledCoins] = useState<string[] | null>(null);
   const [error, setError] = useState('');
   // A coin-scoped error renders inside that coin's block. At the foot of the
   // screen, next to Save, it is off screen for whichever coin was pressed.
@@ -117,6 +128,7 @@ const MbsxSettings: React.FC = () => {
     setConfig(loaded);
     setSavedJson(JSON.stringify(loaded));
     setActiveCoins(coinsWithActiveSwaps());
+    setCompiledCoins(getInfo()?.compiled_coins ?? null);
     loadCerts();
   }, [loadCerts]);
 
@@ -125,7 +137,9 @@ const MbsxSettings: React.FC = () => {
   }, [load]);
 
   const dirty =
-    config !== null && savedJson !== null && JSON.stringify(config) !== savedJson;
+    config !== null &&
+    savedJson !== null &&
+    JSON.stringify(config) !== savedJson;
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
 
@@ -353,6 +367,18 @@ const MbsxSettings: React.FC = () => {
     );
   }
 
+  // What the running core has, which is last start's setting rather than the
+  // one the switch shows.
+  const torPending = torEnabled !== (config.proxy !== undefined);
+
+  // A coin the build does not have cannot be enabled, so its switch would do
+  // nothing.
+  const shownCoins = Object.keys(config.coins).filter(
+    coin =>
+      !compiledCoins ||
+      compiledCoins.some(ticker => ticker.toLowerCase() === coin.toLowerCase()),
+  );
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -384,7 +410,18 @@ const MbsxSettings: React.FC = () => {
           keyboardType="numeric"
         />
 
-        {Object.keys(config.coins).map(coin => {
+        <Text style={styles.section}>Privacy</Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Tor</Text>
+          <Switch testID="mbsx-tor" value={torEnabled} disabled />
+        </View>
+        <Text style={styles.rowMessage}>
+          {torPending
+            ? 'Set in Nexus settings. Applies to swaps on re-entering this section, or after an app restart while a swap is in flight.'
+            : 'Set in Nexus settings, and applied to swaps as well.'}
+        </Text>
+
+        {shownCoins.map(coin => {
           const enabled = config.coins[coin].enabled !== false;
           // The coin this app funds its own side of every swap from. Turning it
           // off leaves nothing to swap with.

@@ -12,7 +12,9 @@ import type {
   SwapRequestSummary,
   SwapSummary,
 } from '../types';
+import {canUseTorOnThisDevice} from '../../../utils/tor';
 import {
+  applyTorSetting,
   loadOrCreateConfig,
   MBSX_DATA_DIR,
   readConfig,
@@ -66,7 +68,9 @@ let started = false;
 
 export const isRunning = () => started && NitroBSX.isRunning();
 
-export const start = async () => {
+// tor_enabled is the navigator's, which owns the switch. Omitted, the proxy
+// already in the config stands: an internal restart must not re-decide it.
+export const start = async (tor_enabled?: boolean) => {
   if (isRunning()) {
     return;
   }
@@ -77,7 +81,15 @@ export const start = async () => {
     return;
   }
 
-  await loadOrCreateConfig();
+  const config = await loadOrCreateConfig();
+  if (tor_enabled !== undefined) {
+    // Refusing beats starting in the clear: the user asked for tor, and on
+    // armeabi-v7a Nexus has none to give.
+    if (tor_enabled && !(await canUseTorOnThisDevice())) {
+      throw new Error('Tor is on, but this device cannot run it');
+    }
+    await applyTorSetting(config, tor_enabled);
+  }
 
   // Must precede initialise(): the core can ask for a key during startup while
   // it reactivates in-flight swaps.

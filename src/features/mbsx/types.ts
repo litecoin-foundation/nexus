@@ -96,7 +96,9 @@ export type MbsxSettings = {
 export type MbsxInfo = {
   connected: boolean;
   db_version?: number;
+  // Only the coins config enabled; compiled_coins is every one the build has.
   coins: Record<string, {chain_height: number; bridge_supported: boolean}>;
+  compiled_coins?: string[];
 };
 
 export type MbsxCoinPrices = {

@@ -38,8 +38,19 @@ export type MbsxConfig = {
   bridge_port?: number;
   // Absent means the module's default.
   max_fee_bps?: number;
+  // Owned by the Tor switch, which rewrites it on every start; only
+  // timeout_seconds survives a hand edit. Absent is a direct connection.
+  proxy?: {host: string; port: number; timeout_seconds?: number};
   coins: Record<string, CoinConfig>;
 };
+
+// The socks port react-native-nitro-tor listens on, from src/utils/tor.ts.
+const TOR_SOCKS_PORT = 9150;
+
+// Nexus's own Tor switch is the only one: a second toggle here could disagree
+// with it, and the module would then be the half still in the clear.
+export const proxyForTor = (tor_enabled: boolean): MbsxConfig['proxy'] =>
+  tor_enabled ? {host: '127.0.0.1', port: TOR_SOCKS_PORT} : undefined;
 
 export const MBSX_DATA_DIR = `${RNFS.DocumentDirectoryPath}/mbsx/${getNetwork()}`;
 
@@ -121,6 +132,27 @@ export const writeConfig = async (config: MbsxConfig) => {
 
 // The module reads config.json once, in initialise(). Anything written here
 // takes effect on the next start, not immediately.
+// Rewritten on every start rather than merged, since the module reads it once
+// and the switch may have moved while the core was down.
+export const applyTorSetting = async (
+  config: MbsxConfig,
+  tor_enabled: boolean,
+): Promise<MbsxConfig> => {
+  const proxy = proxyForTor(tor_enabled);
+  if (proxy && config.proxy?.timeout_seconds !== undefined) {
+    proxy.timeout_seconds = config.proxy.timeout_seconds;
+  }
+  if (JSON.stringify(config.proxy) === JSON.stringify(proxy)) {
+    return config;
+  }
+  const updated = {...config, proxy};
+  if (!proxy) {
+    delete updated.proxy;
+  }
+  await writeConfig(updated);
+  return updated;
+};
+
 export const loadOrCreateConfig = async (): Promise<MbsxConfig> => {
   const existing = await readConfig();
   if (existing) {
