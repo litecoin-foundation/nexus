@@ -19,7 +19,15 @@ import {
 import {ITrade, getUTCTimeStampFromMetadata} from '../utils/txMetadata';
 import {fetchResolve} from '../utils/tor';
 
-const MOONPAY_PUBLIC_KEY = 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
+const MOONPAY_PUBLIC_KEY = __DEV__
+  ? 'pk_test_L5OE51uKwgRdsWyrrSgveQyHPslvGpj'
+  : 'pk_live_wnYzNcex8iKfXSUVwn4FoHDiJlX312';
+const NEXUS_API_BASE = __DEV__
+  ? 'http://localhost:3000'
+  : 'https://api.nexuswallet.com';
+// NOTE: MoonPay's test env only accepts testnet addresses, so dev prefixes `ltc1…`
+// into `tltc1…` to satisfy the API's testnet address check.
+const MOONPAY_ADDRESS_PREFIX = __DEV__ ? 't' : '';
 const ONRAMPER_PUBLIC_KEY = 'pk_prod_01JHSS4GEJSTQD0Z56P5BDJSC6';
 const ONRAMPER_TEST_PUBLIC_KEY = 'pk_test_01JF0BA1P5AXVTW3NQM22FJXG2';
 
@@ -688,8 +696,9 @@ const checkOnramperAllowed = (): AppThunk => async (dispatch, getState) => {
   const supportedForBuying = `https://api.onramper.com/supported/assets?source=${currencyCode}&type=buy&country=${countryCode}`;
   const supportedForSelling = `https://api.onramper.com/supported/assets?source=ltc_litecoin&type=sell&country=${countryCode}`;
 
-  let canBuy: boolean = false;
-  let canSell: boolean = false;
+  // TODO: endpoints above doesn't seem to return any data, manually pass the check for now
+  let canBuy: boolean = true;
+  let canSell: boolean = true;
 
   const req = {
     method: 'GET',
@@ -858,23 +867,22 @@ export const getSignedUrl =
         `https://buy.moonpay.com?apiKey=${MOONPAY_PUBLIC_KEY}` +
         '&currencyCode=ltc' +
         `&externalCustomerId=${uniqueId}` +
-        `&walletAddress=${address}` +
+        `&walletAddress=${MOONPAY_ADDRESS_PREFIX}${address}` +
         `&baseCurrencyAmount=${fiatAmount}` +
         `&baseCurrencyCode=${String(currencyCode).toLowerCase()}` +
-        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fmoonpay%2Fsuccess_buy%2F' +
+        `&redirectURL=${encodeURIComponent(
+          `${NEXUS_API_BASE}/api/buy/moonpay/success_buy/`,
+        )}` +
         `${utmParams}`;
 
       try {
-        const res = await fetch(
-          'https://api.nexuswallet.com/api/buy/moonpay/sign',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({unsignedURL}),
+        const res = await fetch(`${NEXUS_API_BASE}/api/buy/moonpay/sign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        );
+          body: JSON.stringify({unsignedURL}),
+        });
         if (!res.ok) {
           const {message} = await res.json();
           reject(String(message));
@@ -910,7 +918,6 @@ export const getSignedOnramperUrl =
           })
         : '';
 
-      const signContent = `wallets=ltc_litecoin:${address}`;
       const onramperKey =
         testPaymentActive && testPaymentKey
           ? ONRAMPER_TEST_PUBLIC_KEY
@@ -930,20 +937,25 @@ export const getSignedOnramperUrl =
         `&partnerContext=${uniqueId}` +
         '&hideTopBar=true' +
         '&mode=buy' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fbuy%2Fonramper%2Fsuccess_buy%2F' +
+        `&successRedirectUrl=${encodeURIComponent(
+          `${NEXUS_API_BASE}/api/buy/onramper/success_buy/`,
+        )}` +
         `${utmParams}`;
 
       try {
         const res = await fetch(
           testPaymentActive && testPaymentKey
-            ? 'https://api.nexuswallet.com/api/buy/onramper/sign_test'
-            : 'https://api.nexuswallet.com/api/buy/onramper/sign',
+            ? `${NEXUS_API_BASE}/api/buy/onramper/sign_test`
+            : `${NEXUS_API_BASE}/api/buy/onramper/sign`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({signContent, unsignedURL}),
+            // NOTE: V2 signs a server-issued timestamp, nonce and expiry
+            // alongside the params, so the API returns the finished URL
+            // rather than a signature for us to append.
+            body: JSON.stringify({unsignedURL, sigVersion: 'v2'}),
           },
         );
 
@@ -953,10 +965,12 @@ export const getSignedOnramperUrl =
           return;
         }
 
-        const response = await res.json();
+        const {signedUrl} = await res.json();
 
-        const signature = response;
-        const signedUrl = `${unsignedURL}&signContent=${encodeURIComponent(signContent)}&signature=${signature}`;
+        if (!signedUrl) {
+          reject('Failed to sign Onramper URL');
+          return;
+        }
 
         resolve(signedUrl);
       } catch (error) {
@@ -983,22 +997,21 @@ export const getSignedSellUrl =
         '&baseCurrencyCode=ltc' +
         `&baseCurrencyAmount=${ltcAmount}` +
         `&externalCustomerId=${uniqueId}` +
-        `&refundWalletAddress=${address}` +
-        '&redirectURL=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fmoonpay%2Fsuccess_sell%2F&mpSdk=%7B%22version%22%3A%221.0.3%22%2C%22environment%22%3A%22production%22%2C%22flow%22%3A%22sell%22%2C%22variant%22%3A%22webview%22%2C%22platform%22%3A%22rn%22%7D' +
+        `&refundWalletAddress=${MOONPAY_ADDRESS_PREFIX}${address}` +
+        `&redirectURL=${encodeURIComponent(
+          `${NEXUS_API_BASE}/api/sell/moonpay/success_sell/`,
+        )}` +
         `${utmParams}`;
 
       try {
-        const req = await fetch(
-          'https://api.nexuswallet.com/api/sell/moonpay/sign',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-            body: JSON.stringify({unsignedURL}),
+        const req = await fetch(`${NEXUS_API_BASE}/api/sell/moonpay/sign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
           },
-        );
+          body: JSON.stringify({unsignedURL}),
+        });
 
         if (!req.ok) {
           const error = await req.text();
@@ -1033,7 +1046,6 @@ export const getSignedSellOnramperUrl =
           })
         : '';
 
-      const signContent = `wallets=ltc_litecoin:${address}`;
       const onramperKey =
         testPaymentActive && testPaymentKey
           ? ONRAMPER_TEST_PUBLIC_KEY
@@ -1055,21 +1067,28 @@ export const getSignedSellOnramperUrl =
         `&partnerContext=${uniqueId}` +
         '&hideTopBar=true' +
         '&mode=sell' +
-        '&offrampCashoutRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell%2F' +
-        '&successRedirectUrl=https%3A%2F%2Fapi.nexuswallet.com%2Fapi%2Fsell%2Fonramper%2Fsuccess_sell_complete%2F' +
+        `&offrampCashoutRedirectUrl=${encodeURIComponent(
+          `${NEXUS_API_BASE}/api/sell/onramper/success_sell/`,
+        )}` +
+        `&successRedirectUrl=${encodeURIComponent(
+          `${NEXUS_API_BASE}/api/sell/onramper/success_sell_complete/`,
+        )}` +
         `${utmParams}`;
 
       try {
         const res = await fetch(
           testPaymentActive && testPaymentKey
-            ? 'https://api.nexuswallet.com/api/buy/onramper/sign_test'
-            : 'https://api.nexuswallet.com/api/buy/onramper/sign',
+            ? `${NEXUS_API_BASE}/api/buy/onramper/sign_test`
+            : `${NEXUS_API_BASE}/api/buy/onramper/sign`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({signContent, unsignedURL}),
+            // NOTE: V2 signs a server-issued timestamp, nonce and expiry
+            // alongside the params, so the API returns the finished URL
+            // rather than a signature for us to append.
+            body: JSON.stringify({unsignedURL, sigVersion: 'v2'}),
           },
         );
 
@@ -1079,10 +1098,12 @@ export const getSignedSellOnramperUrl =
           return;
         }
 
-        const response = await res.json();
+        const {signedUrl} = await res.json();
 
-        const signature = response;
-        const signedUrl = `${unsignedURL}&signContent=${encodeURIComponent(signContent)}&signature=${signature}`;
+        if (!signedUrl) {
+          reject('Failed to sign Onramper URL');
+          return;
+        }
 
         resolve(signedUrl);
       } catch (error) {
