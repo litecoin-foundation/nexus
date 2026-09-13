@@ -55,12 +55,14 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
     setSwap(rv);
   }, [swapId, navigation]);
 
-  useFocusEffect(fetchSwap);
-
-  useEffect(() => {
-    const subscription = onMessage(fetchSwap);
-    return () => subscription.remove();
-  }, [fetchSwap]);
+  // Unfocused, a stale id's error must not navigate away from the screen shown.
+  useFocusEffect(
+    useCallback(() => {
+      fetchSwap();
+      const subscription = onMessage(fetchSwap);
+      return () => subscription.remove();
+    }, [fetchSwap]),
+  );
 
   const onAccept = async () => {
     // acceptSwap rejects rather than returning an error for most failures, and

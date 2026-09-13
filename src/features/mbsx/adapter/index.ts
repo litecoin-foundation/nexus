@@ -12,7 +12,8 @@ import type {
   SwapRequestSummary,
   SwapSummary,
 } from '../types';
-import {canUseTorOnThisDevice} from '../../../utils/tor';
+import {pStore, store} from '../../../store';
+import {canUseTorOnThisDevice, startTor} from '../../../utils/tor';
 import {
   applyTorSetting,
   loadOrCreateConfig,
@@ -68,16 +69,32 @@ let started = false;
 
 export const isRunning = () => started && NitroBSX.isRunning();
 
+// Nexus's Tor switch; a headless process asks before the persisted store is back.
+const torPreference = (): Promise<boolean> =>
+  new Promise(resolve => {
+    const read = () => resolve(store.getState().settings.torEnabled === true);
+    if (pStore.getState().bootstrapped) {
+      read();
+      return;
+    }
+    const unsubscribe = pStore.subscribe(() => {
+      if (pStore.getState().bootstrapped) {
+        unsubscribe();
+        read();
+      }
+    });
+  });
+
 // tor_enabled is the navigator's, which owns the switch. Omitted, the proxy
 // already in the config stands: an internal restart must not re-decide it.
 export const start = async (tor_enabled?: boolean) => {
-  if (isRunning()) {
-    return;
-  }
   // A js reload leaves the native core running with `started` reset. Re-running
   // initialise() on it would be worse than adopting what is already there.
-  if (NitroBSX.isRunning()) {
+  const running = NitroBSX.isRunning();
+  if (running) {
     started = true;
+  }
+  if (running && tor_enabled === undefined) {
     return;
   }
 
@@ -86,9 +103,18 @@ export const start = async (tor_enabled?: boolean) => {
     // Refusing beats starting in the clear: the user asked for tor, and on
     // armeabi-v7a Nexus has none to give.
     if (tor_enabled && !(await canUseTorOnThisDevice())) {
+      if (running) {
+        stop();
+      }
       throw new Error('Tor is on, but this device cannot run it');
     }
-    await applyTorSetting(config, tor_enabled);
+    const updated = await applyTorSetting(config, tor_enabled);
+    if (running) {
+      if (updated === config) {
+        return;
+      }
+      stop();
+    }
   }
 
   // Must precede initialise(): the core can ask for a key during startup while
@@ -140,20 +166,33 @@ const TERMINAL_STATES = new Set([
   'ERROR',
 ]);
 
+// From SwapRequestStates::to_str: no further swap will come of these.
+const ENDED_REQUEST_STATES = new Set(['EXPIRED', 'REVOKED', 'ERROR']);
+
 /**
  * Frees the coins behind any request whose swaps have all finished, and behind a
  * request that errored before producing one. Called on the same tick that
  * decides whether the core can stop, so it does not need a timer of its own.
  */
 export const reconcileLeases = async () => {
-  for (const requestId of requestIdsWithLocks()) {
+  const requestIds = requestIdsWithLocks();
+  console.log(`mbsx reconciling leases of ${requestIds.length} request(s)`);
+  for (const requestId of requestIds) {
     const request = getRequestInfo(requestId);
     if (request === null) {
       continue; // Core is down, so nothing is known: leave the lease alone.
     }
+    // The module's reading, ahead of the TERMINAL_STATES copy below.
+    if (request.swaps_active) {
+      continue;
+    }
     const swapIds = request.swapids ?? [];
     if (swapIds.length === 0) {
-      if (request.error || request.state === 'EXPIRED') {
+      if (
+        request.error ||
+        request.state === 'EXPIRED' ||
+        request.state === 'REVOKED'
+      ) {
         await releaseLeases(requestId);
       }
       continue;
@@ -240,7 +279,9 @@ export const stopIfIdle = async () => {
   // Still here as the backstop: a request that errored before producing a swap
   // never emits a state change for the watcher to see.
   await reconcileNow();
-  if (!isRunning() || hasActiveSwaps()) {
+  const idle = isRunning() && !hasActiveSwaps();
+  console.log(`mbsx stopIfIdle: ${idle ? 'stopping' : 'staying up'}`);
+  if (!idle) {
     return false;
   }
   stop();
@@ -270,7 +311,11 @@ export const resumeIfNeeded = async () => {
   if (!rv.has_swaps) {
     return false;
   }
-  await start();
+  const tor_enabled = await torPreference();
+  if (tor_enabled && !(await startTor())) {
+    throw new Error('Tor is on, but it could not be started');
+  }
+  await start(tor_enabled);
   return true;
 };
 
@@ -310,26 +355,30 @@ const restart = async () => {
 };
 
 export const getVersion = () => NitroBSX.getVersionString();
+export const getSqliteVersion = () => NitroBSX.getSqliteVersion();
 
-let reconciling = false;
+let reconcilePending: Promise<void> | null = null;
 let reconcileAgain = false;
 
-const reconcileNow = async () => {
-  if (reconciling) {
+// A second caller shares the run in flight, so a stop on its return sees its releases.
+export const reconcileNow = (): Promise<void> => {
+  if (reconcilePending) {
     reconcileAgain = true;
-    return;
+    return reconcilePending;
   }
-  reconciling = true;
-  try {
-    do {
-      reconcileAgain = false;
-      await reconcileLeases();
-    } while (reconcileAgain);
-  } catch (e) {
-    console.warn('mbsx could not reconcile leases', e);
-  } finally {
-    reconciling = false;
-  }
+  reconcilePending = (async () => {
+    try {
+      do {
+        reconcileAgain = false;
+        await reconcileLeases();
+      } while (reconcileAgain);
+    } catch (e) {
+      console.warn('mbsx could not reconcile leases', e);
+    } finally {
+      reconcilePending = null;
+    }
+  })();
+  return reconcilePending;
 };
 
 let stateWatch: {remove: () => void} | null = null;
@@ -348,10 +397,16 @@ const watchSwapStates = () =>
     }
     try {
       const event = JSON.parse(payload.data);
-      if (event.event_type !== 'STATE_CHANGED') {
+      const ended =
+        event.event_type === 'STATE_CHANGED'
+          ? TERMINAL_STATES.has(event.event_sub_type)
+          : event.event_type === 'REQUEST_STATE_CHANGED'
+            ? ENDED_REQUEST_STATES.has(event.event_sub_type)
+            : null;
+      if (ended === null) {
         return;
       }
-      if (TERMINAL_STATES.has(event.event_sub_type)) {
+      if (ended) {
         // stopIfIdle reconciles first, and declines while anything is active.
         void (sectionMounted ? reconcileNow() : stopIfIdle());
       }
@@ -465,6 +520,18 @@ export const requestExpired = (request: SwapRequestDetails): boolean => {
  * The leases go first: they are held against the request id, so once the row is
  * gone nothing links the locked coins to anything that could free them.
  */
+/** Withdraws every open request; the module refuses any with an offer accepted or chosen. */
+export const revokeOpenRequests = async (): Promise<string[]> => {
+  if (!isRunning()) {
+    return [];
+  }
+  const rv = NitroBSX.revokeOpenRequests() as MbsxResult<{revoked?: string[]}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+  return rv.revoked ?? [];
+};
+
 export const removeRequest = async (requestId: string) => {
   await releaseLeases(requestId);
   const rv = NitroBSX.removeRequest(requestId) as MbsxResult<{}>;

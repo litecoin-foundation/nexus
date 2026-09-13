@@ -41,6 +41,8 @@ export type MbsxConfig = {
   // Owned by the Tor switch, which rewrites it on every start; only
   // timeout_seconds survives a hand edit. Absent is a direct connection.
   proxy?: {host: string; port: number; timeout_seconds?: number};
+  // Nexus's own; the module ignores keys it does not read.
+  revoke_open_requests_on_exit?: boolean;
   coins: Record<string, CoinConfig>;
 };
 

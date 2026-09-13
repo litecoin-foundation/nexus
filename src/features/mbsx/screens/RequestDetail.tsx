@@ -82,12 +82,14 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     setRequest(rv);
   }, [requestId, navigation]);
 
-  useFocusEffect(fetchRequest);
-
-  useEffect(() => {
-    const subscription = onMessage(fetchRequest);
-    return () => subscription.remove();
-  }, [fetchRequest]);
+  // Unfocused, a stale id's error must not navigate away from the screen shown.
+  useFocusEffect(
+    useCallback(() => {
+      fetchRequest();
+      const subscription = onMessage(fetchRequest);
+      return () => subscription.remove();
+    }, [fetchRequest]),
+  );
 
   // Keyed on the ids rather than refetched per notification: one getSwapInfo
   // per swap on every main loop pass would be a lot of db locks for a screen.

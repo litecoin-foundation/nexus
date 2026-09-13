@@ -5,6 +5,7 @@ import {
 import NitroBSX from 'react-native-nitro-bsx';
 
 import {displayTxid, type SelectedPrevout} from './prevouts';
+import {store} from '../../../store';
 
 // Nexus funds every swap from its own LTC wallet; the module records which coin
 // each lock is on so a second wallet can be told apart later.
@@ -22,6 +23,33 @@ export type WalletLock = {
 };
 
 const outpointKey = (txid: string, vout: number | bigint) => `${txid}:${vout}`;
+
+const LND_CALL_MS = 30_000;
+
+// nitro-lndltc's calls settle only when lndmobile answers; before lnd starts they never do.
+const withDeadline = <T>(call: Promise<T>, what: string): Promise<T> =>
+  new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () =>
+        reject(new Error(`${what} did not answer in ${LND_CALL_MS / 1000}s`)),
+      LND_CALL_MS,
+    );
+    call.then(
+      value => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      error => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+
+const listLeases = () => withDeadline(walletKitListLeases({}), 'ListLeases');
+
+const releaseOutput = (request: Parameters<typeof walletKitReleaseOutput>[0]) =>
+  withDeadline(walletKitReleaseOutput(request), 'ReleaseOutput');
 
 /**
  * The locks the module is holding for us, newest first by nothing in
@@ -73,8 +101,12 @@ export const requestIdsWithLocks = (): string[] => [
  * lnd's own timer lapsed.
  */
 const heldOutpoints = async (): Promise<Set<string> | null> => {
+  if (!store.getState().lightning.lndActive) {
+    console.warn('mbsx lnd is not up, so its leases cannot be read');
+    return null;
+  }
   try {
-    const leases = await walletKitListLeases({});
+    const leases = await listLeases();
     return new Set(
       (leases.lockedUtxos ?? [])
         .filter(u => u.outpoint)
@@ -108,7 +140,7 @@ export const releasePrevouts = async (prevouts: SelectedPrevout[]) => {
       continue;
     }
     try {
-      await walletKitReleaseOutput({
+      await releaseOutput({
         id: Buffer.from(prevout.leaseId, 'hex'),
         outpoint: {
           txidBytes: Buffer.from(prevout.txid, 'hex'),
@@ -139,6 +171,7 @@ export const releaseLeases = async (requestId: string) => {
   if (locks.length === 0) {
     return;
   }
+  console.log(`mbsx releasing ${locks.length} lease(s) of ${requestId}`);
   const held = await heldOutpoints();
   if (held === null) {
     return;
@@ -167,7 +200,7 @@ export const releaseLeases = async (requestId: string) => {
       continue;
     }
     try {
-      await walletKitReleaseOutput({
+      await releaseOutput({
         id: Buffer.from(lock.handle, 'hex'),
         outpoint: {
           txidBytes: Buffer.from(lock.txid, 'hex'),

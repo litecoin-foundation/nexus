@@ -60,6 +60,8 @@ export type BridgedOffer = {
 export type SwapRequestDetails = SwapRequestSummary &
   MbsxSwapFees & {
     swapids?: string[];
+    // Any swap under the request in a state the module counts as in progress.
+    swaps_active?: boolean;
     bridged_offers?: BridgedOffer[];
     error?: string;
   };

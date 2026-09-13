@@ -4,7 +4,13 @@ import {Alert, Text, TouchableOpacity, View} from 'react-native';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import MessageList from '../components/MessageList';
-import {getInfo, getMemStats, getVersion, resetState} from '../adapter';
+import {
+  getInfo,
+  getMemStats,
+  getSqliteVersion,
+  getVersion,
+  resetState,
+} from '../adapter';
 import {readConfig} from '../adapter/config';
 import {getNetwork} from '../network';
 import {clearMessages} from '../mbsxSlice';
@@ -80,6 +86,10 @@ const MbsxDebug: React.FC = () => {
         <View style={styles.row}>
           <Text style={styles.label}>Native</Text>
           <Text style={styles.value}>{getVersion()}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>SQLite</Text>
+          <Text style={styles.value}>{getSqliteVersion()}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Running</Text>

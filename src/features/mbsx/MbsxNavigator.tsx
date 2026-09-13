@@ -13,10 +13,13 @@ import {
   getInfo,
   onBridgeState,
   onMessage,
+  reconcileNow,
+  revokeOpenRequests,
   setSectionMounted,
   start,
   stopIfIdle,
 } from './adapter';
+import {readConfig} from './adapter/config';
 import {pushMessage, setConnected, setError, setRunning} from './mbsxSlice';
 import BridgeStatus from './components/BridgeStatus';
 import CreateSwap from './screens/CreateSwap';
@@ -31,6 +34,21 @@ import MbsxDebug from './screens/MbsxDebug';
 import type {MbsxDrawerParamList} from './types';
 
 const Drawer = createDrawerNavigator<MbsxDrawerParamList>();
+
+const revokeOnExit = async () => {
+  const config = await readConfig();
+  if (!config?.revoke_open_requests_on_exit) {
+    return;
+  }
+  try {
+    const revoked = await revokeOpenRequests();
+    if (revoked.length > 0) {
+      console.log(`mbsx revoked ${revoked.length} open request(s) on exit`);
+    }
+  } catch (e) {
+    console.warn('mbsx could not revoke open requests:', (e as Error).message);
+  }
+};
 
 // Detail screens are reachable only from their list, so they stay out of the
 // drawer itself.
@@ -58,13 +76,16 @@ const MbsxNavigator: React.FC = () => {
     let left = false;
     setSectionMounted(true);
 
+    // Revoked first: the requests' coins are what would keep the core up.
     const leave = () => {
       setSectionMounted(false);
-      stopIfIdle().then(stopped => {
-        if (stopped) {
-          dispatch(setRunning(false));
-        }
-      });
+      revokeOnExit()
+        .then(stopIfIdle)
+        .then(stopped => {
+          if (stopped) {
+            dispatch(setRunning(false));
+          }
+        });
     };
 
     dispatch(setError(null));
@@ -74,7 +95,10 @@ const MbsxNavigator: React.FC = () => {
         // Unmounted while starting: nothing else will call this now.
         if (left) {
           leave();
+          return;
         }
+        // A wake may have ended a swap with lnd down; its leases wait for this.
+        void reconcileNow();
       })
       .catch((error: Error) => dispatch(setError(error.message)));
 
@@ -85,9 +109,18 @@ const MbsxNavigator: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    const subscription = onMessage((payload: {type: string; data: string}) =>
-      dispatch(pushMessage(String(payload.data))),
-    );
+    const subscription = onMessage((payload: {type: string; data: string}) => {
+      if (payload.type === 'event') {
+        try {
+          if (JSON.parse(payload.data).visible === false) {
+            return;
+          }
+        } catch {
+          // Unreadable, so shown.
+        }
+      }
+      dispatch(pushMessage(String(payload.data)));
+    });
     return () => subscription.remove();
   }, [dispatch]);
 

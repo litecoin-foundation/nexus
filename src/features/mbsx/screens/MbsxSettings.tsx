@@ -410,6 +410,20 @@ const MbsxSettings: React.FC = () => {
           keyboardType="numeric"
         />
 
+        <Text style={styles.section}>Requests</Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Revoke open requests on exit</Text>
+          <Switch
+            testID="mbsx-revoke-on-exit"
+            value={config.revoke_open_requests_on_exit === true}
+            onValueChange={value => edit({revoke_open_requests_on_exit: value})}
+          />
+        </View>
+        <Text style={styles.rowMessage}>
+          Leaving this section withdraws any request that has not accepted or
+          chosen an offer, and frees the coins held for it.
+        </Text>
+
         <Text style={styles.section}>Privacy</Text>
         <View style={styles.row}>
           <Text style={styles.label}>Tor</Text>
