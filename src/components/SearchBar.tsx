@@ -90,16 +90,21 @@ const SearchBar: React.FC<Props> = props => {
   );
 };
 
+const BAR_HEIGHT_RATIO = 0.05;
+const ICON_BOX_RATIO = 0.038;
+
 const getStyles = (
   screenWidth: number,
   screenHeight: number,
   options?: {noShadow?: boolean; borderRadius?: number},
 ) => {
-  const br = options?.borderRadius ?? screenHeight * 0.01;
+  const barHeight = screenHeight * BAR_HEIGHT_RATIO;
+  const iconBox = screenHeight * ICON_BOX_RATIO;
+  const br = options?.borderRadius ?? barHeight / 2;
   return StyleSheet.create({
     shadowContainer: {
       width: '100%',
-      height: screenHeight * 0.05,
+      height: barHeight,
       borderRadius: br,
       backgroundColor: '#fff',
       shadowColor: '#000',
@@ -121,10 +126,8 @@ const getStyles = (
       paddingHorizontal: screenHeight * 0.006,
     },
     imageContainer: {
-      width: screenHeight * 0.038,
-      height: screenHeight * 0.038,
-      borderRadius: br * 0.8,
-      backgroundColor: '#d8d8d833',
+      width: iconBox,
+      height: iconBox,
       justifyContent: 'center',
       alignItems: 'center',
     },

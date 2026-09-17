@@ -182,6 +182,7 @@
     "receive_mweb_description": "Menerima secara privat menyembunyikan alamat pengirim dan penerima, dan jumlah yang dikirim."
   },
   "searchTab": {
+    "type_filter": "Tipe: {{value}}",
     "transactions": "Transaksi",
     "all": "Semua",
     "regular": "Regular",

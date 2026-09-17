@@ -39,7 +39,6 @@ import TransactionCell from './Cells/TransactionCell';
 import TransactionListEmpty from './TransactionListEmpty';
 
 import {useAppDispatch, useAppSelector} from '../store/hooks';
-import {getTransactions} from '../reducers/transaction';
 import {txDetailSelector} from '../reducers/transaction';
 import {groupTransactions} from '../utils/groupTransactions';
 import {DisplayedMetadataType} from '../utils/txMetadata';
@@ -69,6 +68,11 @@ interface Props {
   headerBackgroundColor: string;
   mainSheetsTranslationY?: SharedValue<number>;
   mainSheetsTranslationYStart?: SharedValue<number>;
+  firstItemPaddingTop?: number;
+  // Fill the parent instead of the hardcoded SCREEN_HEIGHT - 230 below. That
+  // figure is tuned to one caller's chrome, and a caller whose container is
+  // sized some other way ends up with the list stopping short of it.
+  fillParent?: boolean;
 }
 
 type ItemType = {
@@ -102,7 +106,6 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const insets = useSafeAreaInsets();
 
   const transactionListRef = useRef<any>(null);
-  const [flattenedTxs, setFlattenedTxs] = useState<FlashListItemType[]>([]);
 
   const {
     onPress,
@@ -116,13 +119,18 @@ const TransactionList = forwardRef((props: Props, ref) => {
     headerBackgroundColor,
     mainSheetsTranslationY,
     mainSheetsTranslationYStart,
+    firstItemPaddingTop,
+    fillParent,
   } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   // NOTE: when parent causes TransactionList to rerender, styles get a new ref each time, this in turn
   // leads to TransactionCell flickering, use useMemo or React.memo and never put styles in the deps to avoid this
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_WIDTH, SCREEN_HEIGHT],
+  );
 
   const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
   const SWIPE_TRIGGER_Y_RANGE = SCREEN_HEIGHT * 0.15;
@@ -140,43 +148,13 @@ const TransactionList = forwardRef((props: Props, ref) => {
   );
   const transactions = useAppSelector(state => txDetailSelector(state));
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      scrollToLocation: (sectionIndex: number) => {
-        // Find the index of the section header in the flattened array
-        let targetIndex = 0;
-        let currentSectionIndex = 0;
-
-        for (let i = 0; i < flattenedTxs.length; i++) {
-          const item = flattenedTxs[i];
-          if ('type' in item && item.type === 'sectionHeader') {
-            if (currentSectionIndex === sectionIndex) {
-              targetIndex = i;
-              break;
-            }
-            currentSectionIndex++;
-          }
-        }
-
-        transactionListRef.current?.scrollToIndex({
-          animated: true,
-          index: targetIndex,
-          viewPosition: 0,
-        });
-      },
-    }),
-    [flattenedTxs],
-  );
-
   const dispatch = useAppDispatch();
 
   useLayoutEffect(() => {
-    dispatch(getTransactions());
     dispatch(getRecoveryInfo());
   }, [dispatch]);
 
-  const filterTransactions = () => {
+  const flattenedTxs = useMemo((): FlashListItemType[] => {
     const txArray = [];
 
     switch (transactionType) {
@@ -236,12 +214,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
       // transactions
       flattened.push(...section.data);
     });
-    setFlattenedTxs(flattened);
-  };
-
-  useEffect(() => {
-    filterTransactions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return flattened;
   }, [
     transactions,
     transactionType,
@@ -250,13 +223,58 @@ const TransactionList = forwardRef((props: Props, ref) => {
     txPrivacyTypeFilter,
   ]);
 
-  const renderItem: ListRenderItem<FlashListItemType> = ({item}) => {
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToLocation: (sectionIndex: number) => {
+        // Find the index of the section header in the flattened array
+        let targetIndex = 0;
+        let currentSectionIndex = 0;
+
+        for (let i = 0; i < flattenedTxs.length; i++) {
+          const item = flattenedTxs[i];
+          if ('type' in item && item.type === 'sectionHeader') {
+            if (currentSectionIndex === sectionIndex) {
+              targetIndex = i;
+              break;
+            }
+            currentSectionIndex++;
+          }
+        }
+
+        transactionListRef.current?.scrollToIndex({
+          animated: true,
+          index: targetIndex,
+          viewPosition: 0,
+        });
+      },
+    }),
+    [flattenedTxs],
+  );
+
+  // Show the sync/recovery progress bar whenever chain sync OR an
+  // address-recovery rescan is in flight. A resumed recovery has the chain
+  // already synced (syncedToChain=true) but is still rescanning, so this must
+  // gate on recoveryMode too — not syncedToChain alone.
+  const showSyncProgress =
+    (recoveryMode && !recoveryFinished) || !syncedToChain;
+  const firstItemStyle = useMemo(
+    () => (firstItemPaddingTop ? {paddingTop: firstItemPaddingTop} : null),
+    [firstItemPaddingTop],
+  );
+  const syncRowStyle = showSyncProgress ? firstItemStyle : null;
+  const listLeadingStyle = showSyncProgress ? null : firstItemStyle;
+
+  const renderItem: ListRenderItem<FlashListItemType> = ({item, index}) => {
+    const leadingGap = index === 0 ? listLeadingStyle : null;
+
     if ('type' in item && item.type === 'sectionHeader') {
       return (
         <View
           style={[
             styles.sectionHeaderContainer,
             {backgroundColor: headerBackgroundColor},
+            leadingGap,
           ]}>
           <TranslateText
             textValue={item.title}
@@ -268,31 +286,22 @@ const TransactionList = forwardRef((props: Props, ref) => {
       );
     }
 
-    // Regular transaction item
-    return (
-      <TransactionCellMemo
-        item={item as ItemType}
-        onPress={() => onPress(item as ItemType)}
-      />
+    // Regular transaction item. The list's own handler goes down as is — the
+    // memo wrapper binds the item — so a re-render of the list leaves the
+    // cells alone; a closure made here would remount every one of them.
+    const cell = (
+      <TransactionCellMemo item={item as ItemType} onPress={onPress} />
     );
+    // Only the leading row is wrapped, so the rest keep a flat view tree.
+    return leadingGap ? <View style={leadingGap}>{cell}</View> : cell;
   };
 
   // DashboardButton is 110, txTitleContainer is screenHeight * 0.07 in Main component
   // Gap in SearchTransaction component is 200 + 30 padding
-  const [scrollContainerHeight, setScrollContainerHeight] = useState(
-    SCREEN_HEIGHT - 230,
-  );
-  // Wait until scroll height is set then render the list
-  const [renderTxs, setRenderTxs] = useState(false);
-
-  useLayoutEffect(() => {
-    if (folded !== undefined) {
-      setScrollContainerHeight(
-        SCREEN_HEIGHT - UNFOLD_SHEET_POINT - 110 - SCREEN_HEIGHT * 0.07,
-      );
-    }
-    setRenderTxs(true);
-  }, [folded, SCREEN_HEIGHT, UNFOLD_SHEET_POINT]);
+  const scrollContainerHeight =
+    folded !== undefined
+      ? SCREEN_HEIGHT - UNFOLD_SHEET_POINT - 110 - SCREEN_HEIGHT * 0.07
+      : SCREEN_HEIGHT - 230;
 
   // Start with 0.1% progress
   const decProgress = recoveryMode
@@ -356,16 +365,9 @@ const TransactionList = forwardRef((props: Props, ref) => {
     };
   }, [percentageProgress, recoveryMode, recoveryProgress]);
 
-  // Show the sync/recovery progress bar whenever chain sync OR an
-  // address-recovery rescan is in flight. A resumed recovery has the chain
-  // already synced (syncedToChain=true) but is still rescanning, so this must
-  // gate on recoveryMode too — not syncedToChain alone.
-  const showSyncProgress =
-    (recoveryMode && !recoveryFinished) || !syncedToChain;
-
   const SyncProgressIndicator = (
     <>
-      <View style={styles.headerContainer}>
+      <View style={[styles.headerContainer, syncRowStyle]}>
         <TranslateText
           textKey={recoveryMode ? 'recover_txs' : 'load_txs'}
           domain="main"
@@ -412,13 +414,14 @@ const TransactionList = forwardRef((props: Props, ref) => {
   const startClosing = useSharedValue(false);
   const yStartPos = useSharedValue(-1);
 
-  const handleContentSizeChange = (
-    contentWidth: number,
-    contentHeight: number,
-  ) => {
-    const scrollable = contentHeight > scrollContainerHeight;
-    setIsListScrollable(scrollable);
-  };
+  // It is a dep of the memoized list element, and the first layout
+  // fires it — a fresh one there would rebuild the list right after mount.
+  const handleContentSizeChange = useCallback(
+    (_contentWidth: number, contentHeight: number) => {
+      setIsListScrollable(contentHeight > scrollContainerHeight);
+    },
+    [scrollContainerHeight],
+  );
 
   const txSignature = flattenedTxs
     .filter(item => !('type' in item))
@@ -504,6 +507,7 @@ const TransactionList = forwardRef((props: Props, ref) => {
       handleFold,
       showSyncProgress,
       styles,
+      listLeadingStyle,
     ],
   );
 
@@ -635,8 +639,8 @@ const TransactionList = forwardRef((props: Props, ref) => {
       }
     });
 
-  return renderTxs ? (
-    <View style={{height: scrollContainerHeight}}>
+  return (
+    <View style={fillParent ? styles.fill : {height: scrollContainerHeight}}>
       {showSyncProgress ? SyncProgressIndicator : <></>}
       {mainSheetsTranslationY ? (
         <GestureDetector gesture={panGesture}>{FlashListMemo}</GestureDetector>
@@ -644,13 +648,14 @@ const TransactionList = forwardRef((props: Props, ref) => {
         FlashListMemo
       )}
     </View>
-  ) : (
-    <></>
   );
 });
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    fill: {
+      flex: 1,
+    },
     sectionHeaderContainer: {
       paddingVertical: screenHeight * 0.006,
       borderBottomWidth: 0.5,

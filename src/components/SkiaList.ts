@@ -116,6 +116,10 @@ export const useSkiaList = <T, B, C>(
   // Range covered by the current picture; -1 forces the first record.
   const drawnFrom = useSharedValue(-1);
   const drawnTo = useSharedValue(-1);
+  // Whether the published picture holds rows. The range alone cannot say: a
+  // reset clears it while the old picture is still up, and a list that then
+  // has nothing to draw must replace that picture rather than keep it.
+  const pictureHasRows = useSharedValue(false);
   // Retired pictures, released a generation late: the recorder still holds the
   // outgoing one until the next applyUpdates.
   const retired = useSharedValue<SkPicture | null>(null);
@@ -214,9 +218,10 @@ export const useSkiaList = <T, B, C>(
     const rowHeights = heights.value;
 
     if (!active.value || list.length === 0 || rowHeights.length !== list.length) {
-      if (drawnFrom.value !== -1) {
+      if (pictureHasRows.value) {
         drawnFrom.value = -1;
         drawnTo.value = -1;
+        pictureHasRows.value = false;
         publish(emptyPicture());
       }
       return;
@@ -272,6 +277,7 @@ export const useSkiaList = <T, B, C>(
       drawItem(canvas, item, getBuilt(item, i, key), i, rowY, context_);
       rowY += rowHeights[i];
     }
+    pictureHasRows.value = true;
     publish(recorder.finishRecordingAsPicture());
 
     evict(Math.min(index, heldFrom), Math.max(last, heldTo));
@@ -287,6 +293,7 @@ export const useSkiaList = <T, B, C>(
     firstY,
     drawnFrom,
     drawnTo,
+    pictureHasRows,
     ctx,
     overscan,
     keyExtractor,

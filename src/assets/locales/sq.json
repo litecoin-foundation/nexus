@@ -182,6 +182,7 @@
     "receive_mweb_description": "Të marrësh privatisht fsheh adresën e dërguesit dhe të marrësit, si dhe shumën që dërgohet."
   },
   "searchTab": {
+    "type_filter": "Lloji: {{value}}",
     "transactions": "Transaksionet",
     "all": "TË GJITHA",
     "regular": "Të Rregullta",

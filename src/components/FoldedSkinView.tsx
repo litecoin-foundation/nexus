@@ -1,13 +1,18 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {interpolateColor} from 'react-native-reanimated';
+import Animated, {
+  interpolateColor,
+  SharedValue,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {
   GRADIENT_COLORS,
   GRADIENT_POSITIONS,
   GRADIENT_RY_RATIO,
+  OFFLINE_CARD_COLOR,
 } from './LiquidGlassBackdrop';
 import {SHEET_BACKGROUND} from './GlassTxRows';
 import {
@@ -19,7 +24,9 @@ import {ScreenSizeContext} from '../context/screenSize';
 // The Main screen's folded backdrop (gray page + gradient card) built
 // from plain RN views — Skia canvases paint a few frames late and would
 // flicker on first render. Used by the lock screen and the unlock
-// reveal overlay.
+// reveal overlay, and as the search screen's page — where the card follows
+// the list container's edge as the wallet's follows its sheet, so the
+// gradient compresses and shifts darker with the rise, as a fold's does.
 //
 // The vertical gradient is the radial backdrop's centre-line profile:
 // each radial stop t maps to location 1 − t·RY_RATIO, and the top edge
@@ -42,35 +49,57 @@ export const SKIN_GRADIENT_LOCATIONS = [
   ...stopsBelowTopEdge.map(s => s.location),
 ];
 
-interface Props {
-  online: boolean;
+export interface SkinCard {
+  height: number;
+  radius: number;
 }
 
-const FoldedSkinView: React.FC<Props> = ({online}) => {
+interface Props {
+  online: boolean;
+  // The card following a moving edge (see getTopHalfCard); folded when left
+  // out. Its height is laid out per frame, and the gradient with it.
+  card?: SharedValue<SkinCard>;
+}
+
+const FoldedSkinView: React.FC<Props> = ({online, card}) => {
   const insets = useSafeAreaInsets();
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
 
-  const topHalfHeight = getFoldedTopHalfHeight(SCREEN_HEIGHT, insets.top);
-  const styles = getStyles(SCREEN_HEIGHT, topHalfHeight);
+  const styles = getStyles(
+    getFoldedTopHalfHeight(SCREEN_HEIGHT, insets.top),
+    SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO,
+  );
+
+  const cardStyle = useAnimatedStyle(
+    () =>
+      card
+        ? {
+            height: card.value.height,
+            borderBottomLeftRadius: card.value.radius,
+            borderBottomRightRadius: card.value.radius,
+          }
+        : {},
+    [card],
+  );
 
   return (
     <View style={styles.base} pointerEvents="none">
       {online ? (
-        <View style={styles.card}>
+        <Animated.View style={[styles.card, cardStyle]}>
           <LinearGradient
             style={styles.gradient}
             colors={SKIN_GRADIENT_COLORS}
             locations={SKIN_GRADIENT_LOCATIONS}
           />
-        </View>
+        </Animated.View>
       ) : (
-        <View style={[styles.card, styles.offlineCard]} />
+        <Animated.View style={[styles.card, styles.offlineCard, cardStyle]} />
       )}
     </View>
   );
 };
 
-const getStyles = (screenHeight: number, topHalfHeight: number) =>
+const getStyles = (cardHeight: number, cardRadius: number) =>
   StyleSheet.create({
     base: {
       ...StyleSheet.absoluteFillObject,
@@ -78,16 +107,16 @@ const getStyles = (screenHeight: number, topHalfHeight: number) =>
     },
     card: {
       width: '100%',
-      height: topHalfHeight,
-      borderBottomLeftRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
-      borderBottomRightRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
+      height: cardHeight,
+      borderBottomLeftRadius: cardRadius,
+      borderBottomRightRadius: cardRadius,
       overflow: 'hidden',
     },
     gradient: {
       flex: 1,
     },
     offlineCard: {
-      backgroundColor: '#F36F56',
+      backgroundColor: OFFLINE_CARD_COLOR,
     },
   });
 

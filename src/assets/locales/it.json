@@ -182,6 +182,7 @@
     "receive_mweb_description": "Ricevere privatamente nasconde gli indirizzi del mittente e del destinatario, e l'importo inviato."
   },
   "searchTab": {
+    "type_filter": "Tipo: {{value}}",
     "transactions": "Transazioni",
     "all": "Tutto",
     "regular": "Regolare",

@@ -22,10 +22,8 @@ type RootStackParamList = {
     amount: number;
     toAddress: string;
   };
-  SearchTransaction: undefined;
-  Main: {
-    isInitial: boolean;
-  };
+  // NOTE: params land on the wallet; a screen addresses the Main stack's own routes
+  Main: {isInitial: boolean} | {screen: 'SearchTransaction'};
 };
 
 interface Props {
@@ -138,7 +136,7 @@ const SuccessSend: React.FC<Props> = ({route}) => {
               small={false}
               value="View Transaction"
               onPress={() => {
-                navigation.navigate('SearchTransaction');
+                navigation.navigate('Main', {screen: 'SearchTransaction'});
               }}
             />
             <WhiteButton

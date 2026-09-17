@@ -182,6 +182,7 @@
     "receive_mweb_description": "Privat Empfangen verbirgt die Adressen des Senders und Empfängers, sowie den gesendeten Betrag."
   },
   "searchTab": {
+    "type_filter": "Typ: {{value}}",
     "transactions": "Transaktionen",
     "all": "Alle",
     "regular": "Normale",

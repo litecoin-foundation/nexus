@@ -60,17 +60,31 @@ export interface GlassShopFeed {
   drawerOpen: boolean;
 }
 
+// The search screen takes the sheet whole rather than morphing it: the chrome
+// is cut on the commit it lands and returns under its lifting page.
+export interface GlassSearchFeed {
+  // true from mount until the close starts
+  presented: boolean;
+  // 0 wallet, 1 search
+  transition: SharedValue<number>;
+}
+
 interface Feeds {
   wallet: GlassWalletFeed | null;
   shop: GlassShopFeed | null;
+  search: GlassSearchFeed | null;
 }
 
 const WalletFeedContext = createContext<GlassWalletFeed | null>(null);
 const ShopFeedContext = createContext<GlassShopFeed | null>(null);
+const SearchFeedContext = createContext<GlassSearchFeed | null>(null);
 const SetWalletContext = createContext<(feed: GlassWalletFeed | null) => void>(
   () => {},
 );
 const SetShopContext = createContext<(feed: GlassShopFeed | null) => void>(
+  () => {},
+);
+const SetSearchContext = createContext<(feed: GlassSearchFeed | null) => void>(
   () => {},
 );
 
@@ -92,25 +106,30 @@ export const GlassChromeProvider: React.FC<{children: React.ReactNode}> = ({
 }) => {
   const [wallet, setWallet] = useState<GlassWalletFeed | null>(null);
   const [shop, setShop] = useState<GlassShopFeed | null>(null);
+  const [search, setSearch] = useState<GlassSearchFeed | null>(null);
   const [rowsLayer, setRowsLayer] = useState<GlassRowsLayer | null>(null);
   return (
     <SetWalletContext.Provider value={setWallet}>
       <SetShopContext.Provider value={setShop}>
-        <SetRowsLayerContext.Provider value={setRowsLayer}>
-          <WalletFeedContext.Provider value={wallet}>
-            <ShopFeedContext.Provider value={shop}>
-              <RowsLayerContext.Provider value={rowsLayer}>
-                {children}
-              </RowsLayerContext.Provider>
-            </ShopFeedContext.Provider>
-          </WalletFeedContext.Provider>
-        </SetRowsLayerContext.Provider>
+        <SetSearchContext.Provider value={setSearch}>
+          <SetRowsLayerContext.Provider value={setRowsLayer}>
+            <WalletFeedContext.Provider value={wallet}>
+              <ShopFeedContext.Provider value={shop}>
+                <SearchFeedContext.Provider value={search}>
+                  <RowsLayerContext.Provider value={rowsLayer}>
+                    {children}
+                  </RowsLayerContext.Provider>
+                </SearchFeedContext.Provider>
+              </ShopFeedContext.Provider>
+            </WalletFeedContext.Provider>
+          </SetRowsLayerContext.Provider>
+        </SetSearchContext.Provider>
       </SetShopContext.Provider>
     </SetWalletContext.Provider>
   );
 };
 
-// publish on every render so state-driven redraws flow through; clear on
+// Publish on every render so state-driven redraws flow through; clear on
 // unmount. Callers memoize the feed so quiet renders publish the same one.
 export const useGlassWalletFeedPublisher = (feed: GlassWalletFeed) => {
   const setWallet = useContext(SetWalletContext);
@@ -128,6 +147,14 @@ export const useGlassShopFeedPublisher = (feed: GlassShopFeed) => {
   useEffect(() => () => setShop(null), [setShop]);
 };
 
+export const useGlassSearchFeedPublisher = (feed: GlassSearchFeed) => {
+  const setSearch = useContext(SetSearchContext);
+  useEffect(() => {
+    setSearch(feed);
+  }, [feed, setSearch]);
+  useEffect(() => () => setSearch(null), [setSearch]);
+};
+
 // Shared values keep their identity for the canvas's life, so a memoized
 // layer publishes once and never re-renders subscribers again.
 export const useGlassRowsLayerPublisher = (layer: GlassRowsLayer) => {
@@ -141,17 +168,18 @@ export const useGlassRowsLayerPublisher = (layer: GlassRowsLayer) => {
 export const useGlassRowsLayer = (): GlassRowsLayer | null =>
   useContext(RowsLayerContext);
 
-// subscribe to ONE feed wherever only one is read — a screen that publishes
-// the other must not re-render on its own publish
+// Subscribe to ONE feed wherever only one is read — a screen that publishes
+// the other must not re-render on its own publish.
 export const useGlassWalletFeed = (): GlassWalletFeed | null =>
   useContext(WalletFeedContext);
 
 export const useGlassShopFeed = (): GlassShopFeed | null =>
   useContext(ShopFeedContext);
 
-// for the chrome itself, which draws from both and publishes neither
+// For the chrome itself, which draws from all of them and publishes none.
 export const useGlassChromeFeeds = (): Feeds => {
   const wallet = useContext(WalletFeedContext);
   const shop = useContext(ShopFeedContext);
-  return useMemo(() => ({wallet, shop}), [wallet, shop]);
+  const search = useContext(SearchFeedContext);
+  return useMemo(() => ({wallet, shop, search}), [wallet, shop, search]);
 };

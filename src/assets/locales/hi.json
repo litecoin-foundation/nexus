@@ -182,6 +182,7 @@
     "receive_mweb_description": "गुप्त रूप से प्राप्त करने पर प्रेषक और प्राप्तकर्ता के पते तथा भेजी गई राशि छिप जाती है।"
   },
   "searchTab": {
+    "type_filter": "प्रकार: {{value}}",
     "transactions": "लेन-देन",
     "all": "सभी",
     "regular": "नियमित",

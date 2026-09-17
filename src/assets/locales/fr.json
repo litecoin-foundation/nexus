@@ -182,6 +182,7 @@
     "receive_mweb_description": "Recevoir en privé masque les adresses de l'expéditeur et du destinataire, ainsi que le montant envoyé."
   },
   "searchTab": {
+    "type_filter": "Type : {{value}}",
     "transactions": "Transactions",
     "all": "Tout",
     "regular": "Régulier",

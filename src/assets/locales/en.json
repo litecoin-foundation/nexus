@@ -182,6 +182,7 @@
     "receive_mweb_description": "Receiving privately hides the sender and receiver addresses, and amount being sent."
   },
   "searchTab": {
+    "type_filter": "Type: {{value}}",
     "transactions": "Transactions",
     "all": "All",
     "regular": "Regular",

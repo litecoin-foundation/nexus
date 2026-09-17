@@ -182,6 +182,7 @@
     "receive_mweb_description": "接收私下隐藏发送者和接收者地址和发送金额."
   },
   "searchTab": {
+    "type_filter": "类型：{{value}}",
     "transactions": "交易",
     "all": "全部",
     "regular": "正常",

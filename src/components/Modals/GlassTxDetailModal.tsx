@@ -114,6 +114,11 @@ const FADE_GRADIENT_LOCATIONS = [0, 0.35, 0.6, 0.8, 1];
 // A close that starts partway down is scaled from this so it travels at the
 // same speed rather than for the same time.
 const CLOSE_ANIM_MS = 250;
+// Clearance between the card's bottom edge and the top of the keyboard once
+// the sheet has lifted for the label field. The card is opaque glass right to
+// its rim, so it needs more than a hairline here or it reads as sitting on
+// the keyboard rather than floating above it.
+const KEYBOARD_GAP = 20;
 // Android reports scroll offsets as rounded dp floats, so a hair above zero
 // still counts as resting at the top for the dismiss hand-off.
 const SCROLL_TOP_EPSILON = 0.5;
@@ -156,9 +161,14 @@ interface Props {
   // Screen-covering view with collapsable={false} to snapshot as the glass
   // backdrop base.
   contentViewRef: React.RefObject<View | null>;
-  mainSheetsTranslationY: SharedValue<number>;
-  txListScrollY: SharedValue<number>;
-  listHeaderOffset: SharedValue<number>;
+  // Wallet-chrome row overlay. On the main screen the chrome draws the tx
+  // rows and fades out for this sheet, so the sheet has to redraw that same
+  // recording under its glass — these place it. A screen whose list is plain
+  // RN views (the search screen) passes none, and the glass simply refracts
+  // the snapshot, which already has its list in it.
+  mainSheetsTranslationY?: SharedValue<number>;
+  txListScrollY?: SharedValue<number>;
+  listHeaderOffset?: SharedValue<number>;
   // True once the overlay is actually on screen and drawing its own rows —
   // which is a good while after isOpened, since the snapshot is taken first.
   // The chrome must not fade its rows out before then, or nothing draws them.
@@ -399,9 +409,9 @@ function GlassTxDetailModal(props: Props) {
     const hideEvent =
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
     // Never lift the card's top past the safe area.
-    const maxLift = cardTop - (insets.top + 8);
+    const maxLift = cardTop - insets.top;
     const showSub = Keyboard.addListener(showEvent, e => {
-      const overlap = e.endCoordinates.height - bottomMargin + 8;
+      const overlap = e.endCoordinates.height - bottomMargin + KEYBOARD_GAP;
       kbShift.value = withSpring(-Math.min(Math.max(overlap, 0), maxLift), {
         duration: 420,
         dampingRatio: 0.9,
@@ -424,11 +434,21 @@ function GlassTxDetailModal(props: Props) {
 
   const titleElements = useGlassTxTitleElements();
 
+  // Stand-in for the chrome's shared values on screens that publish none, so
+  // the overlay's mappers exist either way. Disabled, its clip is empty and
+  // nothing they feed is ever drawn.
+  const idleOffset = useSharedValue(0);
+  const drawsRows = !!(
+    mainSheetsTranslationY &&
+    txListScrollY &&
+    listHeaderOffset
+  );
+
   const rows = useGlassTxRowOverlay({
-    mainSheetsTranslationY,
-    txListScrollY,
-    listHeaderOffset,
-    enabled: isMounted,
+    mainSheetsTranslationY: mainSheetsTranslationY ?? idleOffset,
+    txListScrollY: txListScrollY ?? idleOffset,
+    listHeaderOffset: listHeaderOffset ?? idleOffset,
+    enabled: isMounted && drawsRows,
   });
 
   // Hoisted builder + blur child: per frame only the box uniform changes.

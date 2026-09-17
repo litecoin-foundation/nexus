@@ -182,6 +182,7 @@
     "receive_mweb_description": "دریافت به صورت خصوصی، آدرس فرستنده و گیرنده و مقدار ارسالی را پنهان می‌کند."
   },
   "searchTab": {
+    "type_filter": "نوع: {{value}}",
     "transactions": "تراکنش‌ها",
     "all": "همه",
     "regular": "معمولی",

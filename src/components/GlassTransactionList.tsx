@@ -5,6 +5,7 @@ import React, {
   useState,
   useContext,
   useCallback,
+  useMemo,
 } from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -55,12 +56,23 @@ import {
 // The sync header is pinned above the scroller, so the scroller's origin is
 // the first row's origin: a tap at e.y is at content offset e.y + scrollY, and
 // listHeaderOffset (the header's height) is what shifts the Skia rows down.
+// A content inset — the search screen's bar, which the rows scroll under —
+// pads the scroller instead, and is that same offset. With the header up it
+// pads the header in the scroller's place, so the rows follow the header
+// directly rather than a second inset below it.
+//
+// The wallet's list is the sheet's: it hands drags to the sheet and is sized
+// to the unfolded sheet. The search screen's has no sheet and fills its
+// container; it draws the rows in a canvas of its own (GlassSearchTxCanvas).
 
 // How far the finger has to travel before the sheet takes a drag away from the
 // list; anything shorter reads as jitter inside a scroll.
 const SHEET_PULL_SLOP = 8;
 
 const IS_ANDROID = Platform.OS === 'android';
+
+// What a list with no sheet folds nothing.
+const noSheetFold = (_unfold: boolean) => {};
 
 type ItemType = {
   hash: string;
@@ -75,17 +87,33 @@ type ItemType = {
 
 type RowType = ItemType | {type: 'sectionHeader'; title: string};
 
-interface Props {
-  onPress(item: ItemType): void;
-  rows: RowType[];
-  rowModels: GlassTxRowModels;
+// The sheet the wallet's list lives on; absent for a list that stands alone.
+export interface GlassTxListSheet {
   folded: boolean;
   foldUnfold: (unfold: boolean) => void;
   mainSheetsTranslationY: SharedValue<number>;
   mainSheetsTranslationYStart: SharedValue<number>;
+}
+
+interface Props {
+  onPress(item: ItemType): void;
+  rows: RowType[];
+  rowModels: GlassTxRowModels;
+  sheet?: GlassTxListSheet;
   onScrollActivity?: () => void;
   scrollY: SharedValue<number>;
-  listHeaderOffset: SharedValue<number>;
+  // Where the rows start below the container's top — the pinned sync header
+  // plus the inset. For the chrome canvas, which draws in screen space; a
+  // rows layer below draws in the scroller's and needs only the inset.
+  listHeaderOffset?: SharedValue<number>;
+  // Gap above the first row, inside the scroller. While the sync header is
+  // up it pads the header instead, so whatever sits in the gap covers no
+  // text and the rows start right under the header.
+  contentTopInset?: number;
+  // Drawn beneath the scroller, in its coordinates: a canvas for a list whose
+  // rows are not in the chrome. Handed where the first row starts below the
+  // scroller's top — the inset, or nothing under the sync header.
+  rowsLayer?: (topInset: number) => React.ReactNode;
 }
 
 const GlassTransactionList: React.FC<Props> = props => {
@@ -95,13 +123,12 @@ const GlassTransactionList: React.FC<Props> = props => {
     onPress,
     rows,
     rowModels,
-    folded,
-    foldUnfold,
-    mainSheetsTranslationY,
-    mainSheetsTranslationYStart,
+    sheet,
     onScrollActivity,
     scrollY,
     listHeaderOffset,
+    contentTopInset = 0,
+    rowsLayer,
   } = props;
 
   const {rowTops, rowBottoms} = rowModels;
@@ -115,11 +142,21 @@ const GlassTransactionList: React.FC<Props> = props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Stand-ins for a list with no sheet, so the drag worklets exist either
+  // way; the gestures that would read them are not attached.
+  const idleSheetY = useSharedValue(0);
+  const folded = sheet?.folded ?? false;
+  const foldUnfold = sheet?.foldUnfold ?? noSheetFold;
+  const mainSheetsTranslationY = sheet?.mainSheetsTranslationY ?? idleSheetY;
+  const mainSheetsTranslationYStart =
+    sheet?.mainSheetsTranslationYStart ?? idleSheetY;
+
   const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
   const scrollContainerHeight =
     SCREEN_HEIGHT -
     UNFOLD_SHEET_POINT -
     SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
+  const containerStyle = sheet ? {height: scrollContainerHeight} : styles.fill;
 
   const listContentHeight =
     rowBottoms.length > 0 ? rowBottoms[rowBottoms.length - 1] : 0;
@@ -202,18 +239,32 @@ const GlassTransactionList: React.FC<Props> = props => {
   const showSyncProgress =
     (recoveryMode && !recoveryFinished) || !syncedToChain;
 
-  useEffect(() => {
-    if (!showSyncProgress) {
-      listHeaderOffset.value = 0;
-    }
-  }, [showSyncProgress, listHeaderOffset]);
+  // The inset pads whichever comes first: the pinned header while it is up,
+  // else the scroller's content. Never both, or the rows would sit a whole
+  // inset below the header's note.
+  const insetStyle = useMemo(
+    () => ({paddingTop: contentTopInset}),
+    [contentTopInset],
+  );
+  const rowsTopInset = showSyncProgress ? 0 : contentTopInset;
+  const contentStyle = useMemo(
+    () => ({paddingTop: rowsTopInset}),
+    [rowsTopInset],
+  );
 
-  // Pinned above the scroller. Its height is the offset the Skia rows are
-  // drawn at, so it is measured into listHeaderOffset.
+  useEffect(() => {
+    if (!showSyncProgress && listHeaderOffset) {
+      listHeaderOffset.value = contentTopInset;
+    }
+  }, [showSyncProgress, listHeaderOffset, contentTopInset]);
+
   const SyncProgressIndicator = (
     <View
+      style={insetStyle}
       onLayout={e => {
-        listHeaderOffset.value = e.nativeEvent.layout.height;
+        if (listHeaderOffset) {
+          listHeaderOffset.value = e.nativeEvent.layout.height;
+        }
       }}>
       <View style={styles.headerContainer}>
         <TranslateText
@@ -413,7 +464,7 @@ const GlassTransactionList: React.FC<Props> = props => {
       if (caughtFling.value || rowBottoms.length === 0) {
         return;
       }
-      const y = e.y + scrollY.value;
+      const y = e.y + scrollY.value - rowsTopInset;
       const index = firstRowAt(rowBottoms, y);
       // Past the last row (the footer) the tap falls outside every row.
       if (y < rowTops[index] || y >= rowBottoms[index]) {
@@ -422,33 +473,46 @@ const GlassTransactionList: React.FC<Props> = props => {
       runOnJS(handleRowPress)(index);
     });
 
-  const listGestures = Gesture.Simultaneous(panGesture, tapGesture);
+  // No sheet, no drag to hand it - the scroller keeps every drag itself.
+  const listGestures = sheet
+    ? Gesture.Simultaneous(panGesture, tapGesture)
+    : tapGesture;
 
   return (
-    <View style={{height: scrollContainerHeight}}>
+    <View style={containerStyle}>
       {showSyncProgress ? SyncProgressIndicator : <></>}
-      <GestureDetector gesture={listGestures}>
-        <Animated.ScrollView
-          style={styles.scroller}
-          bounces={false}
-          scrollEventThrottle={1}
-          onLayout={e => setViewportHeight(e.nativeEvent.layout.height)}
-          onContentSizeChange={(_, height) => setContentHeight(height)}
-          onScroll={scrollHandler}>
-          {rows.length === 0 ? (
-            <TransactionListEmpty />
-          ) : (
-            <View style={{height: listContentHeight}} />
-          )}
-          <View style={styles.emptyView} />
-        </Animated.ScrollView>
-      </GestureDetector>
+      <View style={styles.viewport}>
+        {rowsLayer?.(rowsTopInset)}
+        <GestureDetector gesture={listGestures}>
+          <Animated.ScrollView
+            style={styles.scroller}
+            contentContainerStyle={contentStyle}
+            bounces={false}
+            scrollEventThrottle={1}
+            onLayout={e => setViewportHeight(e.nativeEvent.layout.height)}
+            onContentSizeChange={(_, height) => setContentHeight(height)}
+            onScroll={scrollHandler}>
+            {rows.length === 0 ? (
+              <TransactionListEmpty />
+            ) : (
+              <View style={{height: listContentHeight}} />
+            )}
+            <View style={styles.emptyView} />
+          </Animated.ScrollView>
+        </GestureDetector>
+      </View>
     </View>
   );
 };
 
 const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
+    fill: {
+      flex: 1,
+    },
+    viewport: {
+      flex: 1,
+    },
     scroller: {
       flex: 1,
     },

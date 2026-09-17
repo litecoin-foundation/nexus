@@ -9,11 +9,13 @@ import React, {
 } from 'react';
 import {StyleSheet, Image, Pressable, LayoutChangeEvent} from 'react-native';
 import Animated, {
+  SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   useAnimatedProps,
 } from 'react-native-reanimated';
+import {useTranslation} from 'react-i18next';
 import {v4 as uuidv4} from 'uuid';
 
 import TranslateText from '../../components/TranslateText';
@@ -30,6 +32,17 @@ interface Props {
   tickDisabled?: boolean;
   smallPadding?: boolean;
   centerText?: boolean;
+  // Frames the closed box's own label, with the selected option interpolated
+  // as {{value}} — "Type: All" rather than a bare "All". The option rows
+  // below are never framed, they stay the plain names.
+  titleTextKey?: string;
+  // Pass 'transparent' when something behind the box already draws its
+  // surface — the search screen puts a Skia lens there.
+  backgroundColor?: string;
+  // Receives the box's live height. A caller drawing that surface itself has
+  // to follow the fold, and a shared value is the only way to do it without
+  // a re-render per frame.
+  heightValue?: SharedValue<number>;
 }
 
 interface OptionProps {
@@ -46,6 +59,7 @@ interface OptionProps {
 
 const FOLDING_ANIM_DURATION = 200;
 const OPTIONS_ANIM_DURATION = FOLDING_ANIM_DURATION;
+const BACKGROUND_COLOR = '#0F4CAD';
 
 const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
   const {
@@ -132,7 +146,12 @@ const DropDownButton: React.FC<Props> = props => {
     tickDisabled,
     smallPadding,
     centerText,
+    titleTextKey,
+    backgroundColor,
+    heightValue,
   } = props;
+
+  const {t} = useTranslation(textDomain || 'searchTab');
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -157,6 +176,7 @@ const DropDownButton: React.FC<Props> = props => {
         separatorGapHeight,
         smallPadding || false,
         centerText || false,
+        backgroundColor ?? BACKGROUND_COLOR,
       ),
     [
       SCREEN_WIDTH,
@@ -167,6 +187,7 @@ const DropDownButton: React.FC<Props> = props => {
       separatorGapHeight,
       smallPadding,
       centerText,
+      backgroundColor,
     ],
   );
 
@@ -181,7 +202,10 @@ const DropDownButton: React.FC<Props> = props => {
     [cellHeight, cellHeightMultiplier, separatorGapHeight, options],
   );
 
-  const heightSharedValue = useSharedValue(cellHeight);
+  const ownHeight = useSharedValue(cellHeight);
+  // The caller's value when it has one, so whatever it draws behind the box
+  // animates off the very same number this does.
+  const heightSharedValue = heightValue ?? ownHeight;
   const cellHeightSharedValue = useSharedValue(cellHeight);
 
   useEffect(() => {
@@ -222,8 +246,13 @@ const DropDownButton: React.FC<Props> = props => {
         <Animated.View
           style={[styles.boxTitleContainer, cellHeightAnimatedStyle]}>
           <TranslateText
-            textKey={String(currentOption).toLowerCase()}
+            textKey={titleTextKey ?? String(currentOption).toLowerCase()}
             domain={textDomain || 'searchTab'}
+            interpolationObj={
+              titleTextKey
+                ? {value: t(String(currentOption).toLowerCase())}
+                : undefined
+            }
             maxSizeInPixels={SCREEN_HEIGHT * 0.02}
             textStyle={styles.boxText}
             numberOfLines={1}
@@ -268,6 +297,7 @@ const getStyles = (
   separatorGapHeight: number,
   smallPadding: boolean,
   centerText: boolean,
+  backgroundColor: string,
 ) =>
   StyleSheet.create({
     container: {
@@ -275,8 +305,8 @@ const getStyles = (
       top: 0,
       left: 0,
       width: '100%',
-      borderRadius: screenHeight * 0.01,
-      backgroundColor: '#0F4CAD',
+      borderRadius: cellHeight / 2,
+      backgroundColor,
     },
     dropDownBox: {
       width: '100%',

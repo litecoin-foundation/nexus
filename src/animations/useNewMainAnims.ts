@@ -28,6 +28,7 @@ export const getNewMainSheetPoints = (
   screenHeight: number,
   topInset: number,
 ) => {
+  'worklet';
   const UNFOLD_SHEET_POINT = topInset + screenHeight * UNFOLD_SHEET_RATIO;
   const FOLD_SHEET_POINT = topInset + screenHeight * FOLD_SHEET_RATIO;
   return {
@@ -144,6 +145,33 @@ export const getNewMainTopHalfHeight = (
       Extrapolation.CLAMP,
     )
   );
+};
+
+// The top-half card as the backdrop draws it at a sheet position.
+export const getTopHalfCard = (
+  sheetY: number,
+  screenHeight: number,
+  topInset: number,
+) => {
+  'worklet';
+  const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
+    screenHeight,
+    topInset,
+  );
+  return {
+    height: getNewMainTopHalfHeight(
+      sheetY,
+      screenHeight,
+      UNFOLD_SHEET_POINT,
+      FOLD_SHEET_POINT,
+    ),
+    radius: interpolate(
+      sheetY,
+      [UNFOLD_SHEET_POINT, FOLD_SHEET_POINT],
+      [0, screenHeight * CARD_FOLD_RADIUS_RATIO],
+      Extrapolation.CLAMP,
+    ),
+  };
 };
 
 // Top-half card height when the sheet rests folded.

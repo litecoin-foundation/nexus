@@ -182,6 +182,7 @@
     "receive_mweb_description": "Privatus gavimas slepia siuntėjo ir gavėjo adresus bei siunčiamą sumą."
   },
   "searchTab": {
+    "type_filter": "Tipas: {{value}}",
     "transactions": "Transakcijos",
     "all": "Visi",
     "regular": "Reguliarus",

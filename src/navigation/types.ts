@@ -23,8 +23,8 @@ export type ShopDrawerParamList = {
   NexusShopScreen: {section?: string} | undefined;
 };
 
-// transparent stack inside the Main route: the shop presents over the live
-// wallet so the glass morph can fade between them
+// transparent stack inside the Main route: the shop and the transaction
+// search present over the live wallet so their hand-offs can play against it
 export type MainStackParamList = {
   MainScreen: {
     scanData?: string;
@@ -33,6 +33,11 @@ export type MainStackParamList = {
     shopScreen?: string;
   };
   NexusShop: NavigatorScreenParams<ShopDrawerParamList> | undefined;
+  SearchTransaction:
+    | {
+        openFilter?: string;
+      }
+    | undefined;
 };
 
 export type NewWalletStackParamList = {
@@ -48,9 +53,6 @@ export type NewWalletStackParamList = {
     uri: string;
     observeURL?: string;
     returnRoute?: string;
-  };
-  SearchTransaction: {
-    openFilter?: string;
   };
   ConfirmSend: {
     sendAll?: boolean;

@@ -67,6 +67,7 @@ export const GRADIENT_COLORS = [
 export const GRADIENT_POSITIONS = [0, 0.285, 0.503, 0.756, 1];
 export const GRADIENT_RY_RATIO = 1.0365;
 const GRADIENT_RX_RATIO = 3.6453;
+export const OFFLINE_CARD_COLOR = '#F36F56';
 
 const GLASS_DARKEN = 1.0;
 
@@ -220,13 +221,10 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
       SCREEN_HEIGHT,
       UNFOLD_SHEET_POINT,
       FOLD_SHEET_POINT,
-    ) - SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO,
+    ) -
+      SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO,
   );
-  const layouts = getGlassTabLayouts(
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    insets.top,
-  );
+  const layouts = getGlassTabLayouts(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top);
   const buttonHeight = SCREEN_HEIGHT * GLASS_TAB_BUTTON_HEIGHT_RATIO;
   // The SDF radius can't exceed the box half-extents.
   const cornerRadius = Math.min(GLASS_TAB_CORNER_RADIUS, buttonHeight / 2);
@@ -399,7 +397,7 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
           y={0}
           width={SCREEN_WIDTH}
           height={CANVAS_HEIGHT}
-          color="#F36F56"
+          color={OFFLINE_CARD_COLOR}
         />
       )}
       {online && showChart ? chartGraphics : null}

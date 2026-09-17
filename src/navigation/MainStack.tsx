@@ -1,21 +1,26 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {createStackNavigator} from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  StackNavigationOptions,
+} from '@react-navigation/stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {ScreenSizeContext} from '../context/screenSize';
 import NewMain from '../screens/NewMain';
 import NexusShop from '../screens/NexusShop';
+import SearchTransaction from '../screens/Wallet/SearchTransaction';
 import ShopAccountDrawerContent from '../components/Drawers/ShopAccountDrawerContent';
 import GlassChrome from '../components/GlassChrome';
 import {GlassChromeProvider} from '../components/glassChromeFeeds';
 import {CardUnderlayProvider} from '../components/cardUnderlay';
 import {MainStackParamList, ShopDrawerParamList} from './types';
 
-// The Main route: a transparent stack so the shop can present over the LIVE
-// wallet — the glass morph fades between them, so both must stay attached
-// and visible (a drawer or plain stack hides its blurred scene). The glass
-// tab bar + canvas render once here, above both screens; pushed
-// NewWalletStack screens cover the whole route, chrome included.
+// The Main route: a transparent stack so the shop and the transaction search
+// can present over the LIVE wallet — each plays its own hand-off against it,
+// so both must stay attached and visible (a drawer or plain stack hides its
+// blurred scene). The glass tab bar + canvas render once here, above every
+// screen; pushed NewWalletStack screens cover the whole route, chrome
+// included.
 
 const Stack = createStackNavigator<MainStackParamList>();
 const Drawer = createDrawerNavigator<ShopDrawerParamList>();
@@ -49,6 +54,26 @@ function ShopDrawer(): React.JSX.Element {
   );
 }
 
+const styles = StyleSheet.create({
+  host: {
+    flex: 1,
+  },
+  transparentCard: {
+    backgroundColor: 'transparent',
+  },
+});
+
+// The screen drives its own hand-off; the navigator must not animate, dim,
+// or detach the wallet underneath.
+const overLiveWallet: StackNavigationOptions = {
+  presentation: 'transparentModal',
+  animation: 'none',
+  cardOverlayEnabled: false,
+  detachPreviousScreen: false,
+  cardStyle: styles.transparentCard,
+  gestureEnabled: false,
+};
+
 function MainStack(): React.JSX.Element {
   return (
     <CardUnderlayProvider>
@@ -59,33 +84,19 @@ function MainStack(): React.JSX.Element {
             <Stack.Screen
               name="NexusShop"
               component={ShopDrawer}
-              options={{
-                // the screen drives its own morph; the navigator must not
-                // animate, dim, or detach the wallet underneath
-                presentation: 'transparentModal',
-                animation: 'none',
-                cardOverlayEnabled: false,
-                detachPreviousScreen: false,
-                cardStyle: styles.transparentCard,
-                gestureEnabled: false,
-              }}
+              options={overLiveWallet}
+            />
+            <Stack.Screen
+              name="SearchTransaction"
+              component={SearchTransaction}
+              options={overLiveWallet}
             />
           </Stack.Navigator>
-          {/* one glass bar + canvas for both screens */}
           <GlassChrome />
         </View>
       </GlassChromeProvider>
     </CardUnderlayProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  host: {
-    flex: 1,
-  },
-  transparentCard: {
-    backgroundColor: 'transparent',
-  },
-});
 
 export default MainStack;

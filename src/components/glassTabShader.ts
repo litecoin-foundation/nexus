@@ -10,6 +10,7 @@ uniform vec4 b0;
 uniform vec4 b1;
 uniform vec4 b2;
 uniform vec4 b3;
+uniform vec4 b4;
 uniform float cornerR;
 uniform float darken;
 uniform float splitProgress;
@@ -63,6 +64,9 @@ float sdf(vec2 xy) {
 
   d = min(d, sdButton(xy, b2));
   d = min(d, sdButton(xy, b3));
+  // Fifth slot for callers with a wider row; four-box callers pass b0 again,
+  // and a box unioned with itself changes nothing.
+  d = min(d, sdButton(xy, b4));
   return d;
 }
 
@@ -185,10 +189,14 @@ export const makeGlassTabFilter = (
   processUniforms(
     glassTabShader,
     {
+      // Every slot must be filled — a missing uniform is a runtime error, not
+      // a default. Unused ones repeat b0, and a box unioned with itself adds
+      // nothing to the SDF, so a caller passes only the boxes it has.
       b0: boxes[0],
-      b1: boxes[1],
-      b2: boxes[2],
+      b1: boxes[1] ?? boxes[0],
+      b2: boxes[2] ?? boxes[0],
       b3: boxes[3] ?? boxes[0],
+      b4: boxes[4] ?? boxes[0],
       cornerR,
       darken,
       splitProgress,

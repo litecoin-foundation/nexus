@@ -182,6 +182,7 @@
     "receive_mweb_description": "Odbieranie prywatne ukrywa adresy nadawcy i odbiorcy oraz przesyłaną kwotę."
   },
   "searchTab": {
+    "type_filter": "Typ: {{value}}",
     "transactions": "Transakcje",
     "all": "Wszystkie",
     "regular": "Zwyczajne",

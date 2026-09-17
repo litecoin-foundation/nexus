@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {StyleSheet, View, TouchableOpacity, Image} from 'react-native';
+import {StyleSheet, View, Pressable, Image} from 'react-native';
 import Svg, {Circle} from 'react-native-svg';
 
 import {useAppSelector} from '../../store/hooks';
@@ -125,7 +125,7 @@ const TransactionCell: React.FC<Props> = props => {
   }
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.circleContainer}>
         <View style={styles.circle}>
           <Image source={txIcon} />
@@ -196,7 +196,7 @@ const TransactionCell: React.FC<Props> = props => {
           numberOfLines={1}
         />
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

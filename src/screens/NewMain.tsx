@@ -146,6 +146,23 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
     })
     .onEnd(onEndTrigger);
 
+  // NOTE: the list hands its drags to the sheet; one object per fold state, so a
+  // quiet render does not rebuild the list's gestures.
+  const sheet = useMemo(
+    () => ({
+      folded: isBottomSheetFolded,
+      foldUnfold: foldUnfoldBottomSheet,
+      mainSheetsTranslationY,
+      mainSheetsTranslationYStart,
+    }),
+    [
+      isBottomSheetFolded,
+      foldUnfoldBottomSheet,
+      mainSheetsTranslationY,
+      mainSheetsTranslationYStart,
+    ],
+  );
+
   return (
     <View>
       <GestureDetector gesture={titleDragGesture}>
@@ -163,10 +180,7 @@ const TxListComponent: React.FC<TxListComponentProps> = memo(props => {
         }}
         rows={txRows}
         rowModels={txRowModels}
-        folded={isBottomSheetFolded}
-        foldUnfold={foldUnfoldBottomSheet}
-        mainSheetsTranslationY={mainSheetsTranslationY}
-        mainSheetsTranslationYStart={mainSheetsTranslationYStart}
+        sheet={sheet}
         onScrollActivity={onScrollActivity}
         scrollY={txListScrollY}
         listHeaderOffset={txListHeaderOffset}

@@ -182,6 +182,7 @@
     "receive_mweb_description": "Itinatago ng pribadong pagtanggap ang mga address ng nagpadala at tagatanggap, at halagang ipinapadala."
   },
   "searchTab": {
+    "type_filter": "Uri: {{value}}",
     "transactions": "Mga transaksyon",
     "all": "Lahat",
     "regular": "Regular",

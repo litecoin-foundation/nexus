@@ -1,6 +1,8 @@
 import React, {useCallback, useEffect, useRef} from 'react';
 import {StyleSheet} from 'react-native';
 import Animated, {
+  Extrapolation,
+  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -26,7 +28,7 @@ const EMPTY_SHOP_MODELS: ShopRowModels = {
 const EMPTY_LOGOS: ShopLogoImages = {};
 
 const GlassChrome: React.FC = () => {
-  const {wallet, shop} = useGlassChromeFeeds();
+  const {wallet, shop, search} = useGlassChromeFeeds();
   const isInternetReachable = useAppSelector(
     state => state.info!.isInternetReachable,
   );
@@ -76,8 +78,26 @@ const GlassChrome: React.FC = () => {
   useEffect(() => {
     chromeOpacity.value = withTiming(suppressed ? 0 : 1, {duration: 150});
   }, [suppressed, chromeOpacity]);
+
+  // the search screen takes the sheet whole
+  const fallbackSearchTransition = useSharedValue(0);
+  const searchTransitionRef = useRef(fallbackSearchTransition);
+  if (search) {
+    searchTransitionRef.current = search.transition;
+  }
+  const searchTransition = searchTransitionRef.current;
+  const searchPresented = search?.presented ?? false;
   const chromeStyle = useAnimatedStyle(() => ({
-    opacity: chromeOpacity.value,
+    opacity:
+      chromeOpacity.value *
+      (searchPresented
+        ? 0
+        : interpolate(
+            searchTransition.value,
+            [0.9, 0.1],
+            [0, 1],
+            Extrapolation.CLAMP,
+          )),
   }));
 
   const shopPresented = shop?.presented ?? false;
@@ -99,7 +119,7 @@ const GlassChrome: React.FC = () => {
   return (
     <Animated.View
       style={[StyleSheet.absoluteFill, chromeStyle]}
-      pointerEvents={suppressed ? 'none' : 'box-none'}>
+      pointerEvents={suppressed || search ? 'none' : 'box-none'}>
       <LiquidGlassTabBar
         activeIndex={shopPresented ? 1 : 0}
         onSelectSection={onSelectSection}

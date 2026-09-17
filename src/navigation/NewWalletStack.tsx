@@ -26,9 +26,6 @@ import ConfirmSell, {
 import ConfirmSellOnramper, {
   ConfirmSellOnramperNavigationOptions,
 } from '../screens/Buy/ConfirmSellOnramper';
-import SearchTransaction, {
-  SearchTransactionNavigationOptions,
-} from '../screens/Wallet/SearchTransaction';
 import {NewWalletStackParamList} from './types';
 import ConfirmConvert, {
   ConfirmConvertNavigationOptions,
@@ -104,13 +101,6 @@ function NewWalletStack(): React.JSX.Element {
         component={ConfirmSellOnramper}
         options={({navigation}) =>
           ConfirmSellOnramperNavigationOptions(navigation)
-        }
-      />
-      <Stack.Screen
-        name="SearchTransaction"
-        component={SearchTransaction}
-        options={({navigation}) =>
-          SearchTransactionNavigationOptions(navigation)
         }
       />
       <Stack.Screen
