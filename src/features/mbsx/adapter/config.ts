@@ -87,10 +87,9 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
   mainnet: {
     chain: 'mainnet',
     debug: false,
-    // Local test glue server; production values are not settled yet.
-    bridge_host: '10.0.2.2',
+    bridge_host: 'wss://glue.basicswapdex.com:9002',
     bridge_pubkey:
-      '0349fcd0a8e2d7e9472e757d34758f61d1980097326dd7823bfd00072717518a49',
+      '03f7b229a9733e925745e0df01c8c3e69386a0fc8c165c157ae258a9cc51c1782b',
     coins: {
       ltc: {
         electrumx: [
