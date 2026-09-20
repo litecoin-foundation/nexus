@@ -4,6 +4,9 @@ import {
   walletKitListUnspent,
 } from 'react-native-nitro-lndltc';
 
+import {selectedAccountNamesSelector} from '../../../reducers/wallets';
+import {store} from '../../../store';
+
 export type FundingOutput = {address: string; value: number};
 
 export type SelectedPrevout = {
@@ -27,6 +30,11 @@ const isP2wpkh = (script: Uint8Array) =>
 // lnd reads min_confs and max_confs together: left at 0/0 it widens max_confs to
 // MaxInt32 and returns unconfirmed coins alongside confirmed ones.
 const MAX_CONFS = 0x7fffffff;
+
+// Unnamed, lnd lists every account, and one coin it cannot classify fails the
+// whole call
+const litecoinAccount = (account?: string): string =>
+  account ?? selectedAccountNamesSelector(store.getState()).ltcAccount;
 
 const compactSize = (n: number): Buffer => {
   if (n < 0xfd) {
@@ -81,7 +89,7 @@ export const swapBalances = async (
   const {utxos} = await walletKitListUnspent({
     minConfs: 0,
     maxConfs: MAX_CONFS,
-    ...(account ? {account} : {}),
+    account: litecoinAccount(account),
   });
   let spendable = 0n;
   let unconfirmed = 0n;
@@ -102,7 +110,7 @@ export const spendableBalance = async (account?: string): Promise<bigint> => {
   const {utxos} = await walletKitListUnspent({
     minConfs: 1,
     maxConfs: MAX_CONFS,
-    ...(account ? {account} : {}),
+    account: litecoinAccount(account),
   });
   return (utxos ?? []).reduce(
     (total, u) =>
@@ -147,7 +155,7 @@ export const selectAndLeasePrevouts = async (
   const {utxos} = await walletKitListUnspent({
     minConfs: 1,
     maxConfs: MAX_CONFS,
-    ...(account ? {account} : {}),
+    account: litecoinAccount(account),
   });
   const byOutpoint = new Map(
     (utxos ?? []).map(u => [
@@ -172,7 +180,7 @@ export const selectAndLeasePrevouts = async (
     minConfs: 1,
     spendUnconfirmed: false,
     changeType: ChangeAddressType.UNSPECIFIED,
-    ...(account ? {account} : {}),
+    account: litecoinAccount(account),
   });
 
   if (!funded?.lockedUtxos?.length) {

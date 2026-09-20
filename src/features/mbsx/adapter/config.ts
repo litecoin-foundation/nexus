@@ -26,6 +26,8 @@ export type WalletConfig = {
 export type CoinConfig = {
   // Absent means enabled.
   enabled?: boolean;
+  // Proof of stake chains only, absent means validated.
+  verify_pos?: boolean;
   electrumx: ElectrumServer[];
   wallet?: WalletConfig;
 };

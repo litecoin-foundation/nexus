@@ -42,6 +42,8 @@ import {getNetwork} from '../network';
 // none is refused off regtest by the module, so it is not offered there.
 const ALL_MODES: VerifyCertsMode[] = ['none', 'pinned', 'optional', 'strict'];
 
+const POS_COINS = ['part'];
+
 // Only these validate a chain, so only these have anchors or a hostname to
 // check: under none and pinned mbedtls performs no name check at all.
 const chainsChecked = (server: ElectrumServer) =>
@@ -186,6 +188,18 @@ const MbsxSettings: React.FC = () => {
         ? {
             ...prev,
             coins: {...prev.coins, [coin]: {...prev.coins[coin], enabled}},
+          }
+        : prev,
+    );
+  };
+
+  const toggleVerifyPos = (coin: string, verify_pos: boolean) => {
+    setStatus('');
+    setConfig(prev =>
+      prev
+        ? {
+            ...prev,
+            coins: {...prev.coins, [coin]: {...prev.coins[coin], verify_pos}},
           }
         : prev,
     );
@@ -454,6 +468,23 @@ const MbsxSettings: React.FC = () => {
                   />
                 )}
               </View>
+              {enabled && POS_COINS.includes(coin) ? (
+                <>
+                  <View style={styles.row}>
+                    <Text style={styles.label}>PoS validation</Text>
+                    <Switch
+                      testID={`mbsx-verify-pos-${coin}`}
+                      value={config.coins[coin].verify_pos !== false}
+                      onValueChange={value => toggleVerifyPos(coin, value)}
+                    />
+                  </View>
+                  <Text style={styles.rowMessage}>
+                    Each block is checked against the stake that signed it, and
+                    a swap confirms only once that check reaches it. Off, the
+                    server's word is taken for the chain.
+                  </Text>
+                </>
+              ) : null}
               {enabled ? (
                 <>
                   {config.coins[coin].electrumx.map((server, index) => (
