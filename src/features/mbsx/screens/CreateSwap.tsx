@@ -117,8 +117,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [rateAcknowledged, setRateAcknowledged] = useState(false);
   const offReference =
     valueDeviation !== null && Math.abs(valueDeviation) > RATE_TOLERANCE;
+  const coinChosen = coinTo !== '';
   const addressInvalid =
-    addressTo !== '' && coinTo !== '' && !validateAddress(coinTo, addressTo);
+    addressTo !== '' && coinChosen && !validateAddress(coinTo, addressTo);
   const amountFrom = amounts.fromCoin;
   const amountTo = amounts.toCoin;
 
@@ -195,10 +196,14 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         <View style={styles.amountLine}>
           <TextInput
             testID={`mbsx-amount-${side}`}
-            style={styles.amountInput}
+            style={[
+              styles.amountInput,
+              coinChosen ? null : styles.amountDisabled,
+            ]}
             placeholder="0"
             value={side === 'from' ? amounts.fromCoin : amounts.toCoin}
             onChangeText={value => setAmount(side, 'coin', value)}
+            editable={coinChosen}
             keyboardType="numeric"
           />
           <Text style={styles.amountUnit}>{coin || '—'}</Text>
@@ -206,15 +211,21 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         <View style={[styles.amountLine, styles.amountLineLower]}>
           <TextInput
             testID={`mbsx-amount-${side}-usd`}
-            style={[styles.amountInput, priced ? null : styles.amountDisabled]}
+            style={[
+              styles.amountInput,
+              priced && coinChosen ? null : styles.amountDisabled,
+            ]}
             placeholder="0.00"
             value={side === 'from' ? amounts.fromUsd : amounts.toUsd}
             onChangeText={value => setAmount(side, 'usd', value)}
-            editable={priced}
+            editable={priced && coinChosen}
             keyboardType="numeric"
           />
           <Text
-            style={[styles.amountUnit, priced ? null : styles.amountDisabled]}>
+            style={[
+              styles.amountUnit,
+              priced && coinChosen ? null : styles.amountDisabled,
+            ]}>
             {prices?.currency ?? 'USD'}
           </Text>
         </View>
@@ -328,15 +339,21 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           coins={offeredCoins}
           onChange={selectCoin}
         />
+        {coinChosen ? null : (
+          <Text testID="mbsx-select-coin-note" style={styles.rowMessage}>
+            Select the coin to receive first
+          </Text>
+        )}
         <Text style={styles.inputLabel}>Receive address</Text>
         <TextInput
           testID="mbsx-address-to"
-          style={styles.input}
+          style={[styles.input, coinChosen ? null : styles.inputDisabled]}
           placeholder="Address"
           value={addressTo}
           onChangeText={setAddressTo}
           onFocus={() => setAddressFocused(true)}
           onBlur={() => setAddressFocused(false)}
+          editable={coinChosen}
           autoCapitalize="none"
         />
         {addressFocused && !addressTo && savedAddresses.length > 0 ? (
@@ -364,22 +381,22 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         ) : null}
         <TouchableOpacity
           testID="mbsx-scan"
+          disabled={!coinChosen}
           onPress={() =>
             navigation.getParent()?.navigate('Scan', {
               returnRoute: 'MbsxStack',
               returnScreen: 'CreateSwap',
             })
           }>
-          <Text style={styles.link}>Scan a QR code</Text>
+          <Text style={[styles.link, coinChosen ? null : styles.linkDisabled]}>
+            Scan a QR code
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           testID="mbsx-addresses"
-          onPress={() =>
-            coinTo
-              ? navigation.navigate('CoinAddresses', {coin: coinTo})
-              : navigation.navigate('AddressList')
-          }>
-          <Text style={styles.link}>
+          disabled={!coinChosen}
+          onPress={() => navigation.navigate('CoinAddresses', {coin: coinTo})}>
+          <Text style={[styles.link, coinChosen ? null : styles.linkDisabled]}>
             {savedAddresses.length > MAX_SUGGESTED_ADDRESSES
               ? 'All saved addresses'
               : 'Saved addresses'}
@@ -448,6 +465,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           style={[
             styles.button,
             busy ||
+            !coinChosen ||
             addressInvalid ||
             blockNote !== '' ||
             (offReference && !rateAcknowledged)
@@ -457,6 +475,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           onPress={submit}
           disabled={
             busy ||
+            !coinChosen ||
             addressInvalid ||
             blockNote !== '' ||
             (offReference && !rateAcknowledged)

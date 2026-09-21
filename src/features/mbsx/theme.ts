@@ -178,6 +178,10 @@ export const getMbsxStyles = (screenHeight: number) => {
       paddingHorizontal: spacing.md,
       marginBottom: spacing.md,
     },
+    inputDisabled: {
+      color: colors.grayMedium,
+      borderColor: colors.grayLight,
+    },
     inputLabel: {
       fontSize: font.sm,
       fontWeight: '600',
@@ -253,6 +257,10 @@ export const getMbsxStyles = (screenHeight: number) => {
       textAlign: 'center',
       paddingVertical: spacing.sm,
       textDecorationLine: 'underline',
+    },
+    linkDisabled: {
+      color: colors.grayMedium,
+      textDecorationLine: 'none',
     },
     messageRow: {
       paddingVertical: spacing.xs,
