@@ -7,6 +7,7 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {formatTimestamp} from '../format';
 import {getMbsxStyles} from '../theme';
+import {offerWarning} from '../useSwapAmounts';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {
   BUSY,
@@ -117,6 +118,23 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           value={`${swap.amount_from} ${swap.coin_from}`}
         />
         <LabeledRow label="To" value={`${swap.amount_to} ${swap.coin_to}`} />
+        {swap.asked_amount_to ? (
+          <LabeledRow
+            label="Asked"
+            value={`${swap.asked_amount_to} ${swap.coin_to}`}
+          />
+        ) : null}
+        {swap.market_amount_to ? (
+          <LabeledRow
+            label="Reference"
+            value={`${swap.market_amount_to} ${swap.coin_to}`}
+          />
+        ) : null}
+        {offerWarning(swap) ? (
+          <Text testID="mbsx-offer-warning" style={styles.error}>
+            {offerWarning(swap)}
+          </Text>
+        ) : null}
 
         <TouchableOpacity
           style={[styles.button, !canAccept && styles.buttonDisabled]}

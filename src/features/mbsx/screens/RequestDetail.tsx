@@ -12,6 +12,7 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {formatExpiry, formatTimestamp, shortAddress} from '../format';
 import {getMbsxStyles} from '../theme';
+import {offerWarning} from '../useSwapAmounts';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {
   BUSY,
@@ -302,6 +303,13 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                   <Text style={styles.rowPrimary}>
                     {`${swap.initiating ? 'Private' : 'Bridged'} — send ${sendAmount} ${sendCoin}, receive ${recvAmount} ${recvCoin}`}
                   </Text>
+                  {offerWarning(swap) ? (
+                    <Text
+                      testID={`mbsx-offer-warning-${swap.id}`}
+                      style={styles.error}>
+                      {offerWarning(swap)}
+                    </Text>
+                  ) : null}
                   <Text style={styles.rowMessage}>
                     {acceptable(swap)
                       ? `Expires ${formatExpiry(swap.expire_at)}`

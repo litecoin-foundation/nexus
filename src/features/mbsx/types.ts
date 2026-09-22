@@ -8,6 +8,9 @@ export type SwapSummary = {
   // Decimal strings in whole coins, matching getSwapInfo.
   amount_from: string;
   amount_to: string;
+  // Private swaps only; market is absent when the server had no price.
+  asked_amount_to?: string;
+  market_amount_to?: string;
   initiating: boolean;
   participating: boolean;
 };
