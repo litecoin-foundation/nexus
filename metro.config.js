@@ -37,6 +37,7 @@ const config = {
       defaultConfig.resolver.blockList,
       new RegExp(`${MBSX}/example/.*`),
       new RegExp(`${MBSX}/node_modules/.*`),
+      new RegExp(`${MBSX}/android/(\\.cxx[^/]*|build)/.*`),
     ],
   },
   watchFolders: [MBSX],
