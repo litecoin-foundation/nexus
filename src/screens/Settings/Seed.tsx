@@ -1,11 +1,13 @@
 import React, {useEffect, useContext} from 'react';
-import {View, StyleSheet, Text, Platform} from 'react-native';
+import {View, StyleSheet, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {v4 as uuidv4} from 'uuid';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {StackNavigationOptions} from '@react-navigation/stack';
 
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {updateLastViewSeed} from '../../reducers/settings';
 import {formatDate, formatTime} from '../../utils/date';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -15,12 +17,16 @@ import {ScreenSizeContext} from '../../context/screenSize';
 
 interface Props {}
 
+const PILL_COLOR = '#0A1F44CC';
+
 const Seed: React.FC<Props> = () => {
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const seedArray = useAppSelector(state => state.onboarding.seed);
   const lastViewSeed = useAppSelector(state => state.settings.lastViewSeed);
@@ -66,11 +72,19 @@ const Seed: React.FC<Props> = () => {
       </View>
       {words}
       <SafeAreaView />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="view_seed"
+        titleDomain="settingsTab"
+        fadeStyle={headerFadeStyle}
+        pillColor={PILL_COLOR}
+      />
     </LinearGradient>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (_screenWidth: number, _screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -118,50 +132,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingLeft: 18,
       textAlign: 'left',
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
-
-export const SeedNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey="view_seed"
-        domain="settingsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default Seed;

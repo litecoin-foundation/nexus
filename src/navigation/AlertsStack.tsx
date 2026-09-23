@@ -1,8 +1,9 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import Alert, {AlertNavigationOptions} from '../screens/Alert/Alert';
-import Dial, {DialNavigationOptions} from '../screens/Alert/Dial';
+import Alert from '../screens/Alert/Alert';
+import {ScreenHeaderNavigationOptions} from '../components/ScreenHeader';
+import Dial from '../screens/Alert/Dial';
 
 const Stack = createStackNavigator();
 
@@ -23,12 +24,12 @@ function AlertsStack() {
       <Stack.Screen
         name="Alert"
         component={Alert}
-        options={({navigation}) => AlertNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="Dial"
         component={Dial}
-        options={({navigation}) => DialNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
     </Stack.Navigator>
   );

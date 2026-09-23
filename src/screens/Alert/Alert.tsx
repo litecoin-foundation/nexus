@@ -1,24 +1,31 @@
-import React, {useState, useContext} from 'react';
-import {View, StyleSheet, FlatList, Platform} from 'react-native';
+import React, {useState, useContext, useCallback} from 'react';
+import {View, StyleSheet, FlatList} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {useHeaderHeight} from '@react-navigation/elements';
-import {StackNavigationOptions} from '@react-navigation/stack';
 
 import AlertCell from '../../components/Cells/AlertCell';
 import AlertModal from '../../components/Modals/AlertModalContent';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {removeAlert} from '../../reducers/alerts';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
-interface Props {}
+interface Props {
+  navigation: any;
+}
 
-const Alert: React.FC<Props> = () => {
+const Alert: React.FC<Props> = props => {
+  const {navigation} = props;
+
   const {width, height} = useContext(ScreenSizeContext);
-  const deviceHeaderHeight = useHeaderHeight();
-  const styles = getStyles(width, height, deviceHeaderHeight);
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout();
+  const styles = getStyles(width, height, cardHeight);
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const dispatch = useAppDispatch();
   const [alertModalVisible, setAlertModalVisible] = useState(false);
@@ -29,6 +36,9 @@ const Alert: React.FC<Props> = () => {
     setSelectedIndex(index);
     setAlertModalVisible(true);
   };
+
+  const goBack = useCallback(() => navigation.goBack(), [navigation]);
+  const openDial = useCallback(() => navigation.navigate('Dial'), [navigation]);
 
   const EmptySectionList = (
     <View style={styles.emptySectionListContainer}>
@@ -53,7 +63,6 @@ const Alert: React.FC<Props> = () => {
     <LinearGradient
       style={styles.container}
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
-      <View style={styles.fakeHeader} />
       <FlatList
         data={alerts}
         renderItem={({item}) => (
@@ -63,6 +72,20 @@ const Alert: React.FC<Props> = () => {
           />
         )}
         ListEmptyComponent={EmptySectionList}
+        contentContainerStyle={styles.scrollContent}
+      />
+      <ScreenHeaderCard cardHeight={cardHeight} />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="price_alerts"
+        titleDomain="alertsTab"
+        onBack={goBack}
+        rightTextKey="create_alert"
+        rightTextDomain="alertsTab"
+        onRightPress={openDial}
+        fadeStyle={headerFadeStyle}
+        interactive={!alertModalVisible}
       />
       <AlertModal
         isVisible={alertModalVisible}
@@ -76,19 +99,14 @@ const Alert: React.FC<Props> = () => {
 const getStyles = (
   screenWidth: number,
   screenHeight: number,
-  deviceHeaderHeight: number,
+  cardHeight: number,
 ) =>
   StyleSheet.create({
     container: {
       flex: 1,
     },
-    fakeHeader: {
-      width: screenWidth,
-      height: deviceHeaderHeight + screenHeight * 0.008,
-      backgroundColor: '#0070F0',
-    },
-    headerRight: {
-      paddingRight: screenWidth * 0.04,
+    scrollContent: {
+      paddingTop: cardHeight,
     },
     emptySectionListContainer: {
       alignItems: 'center',
@@ -104,57 +122,6 @@ const getStyles = (
       textAlign: 'center',
       marginBottom: screenHeight * 0.02,
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
-
-export const AlertNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-
-  return {
-    headerTransparent: true,
-    headerTitle: () => (
-      <TranslateText
-        textKey="price_alerts"
-        domain="alertsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerRight: () => (
-      <HeaderButton
-        textKey="create_alert"
-        textDomain="alertsTab"
-        onPress={() => navigation.navigate('Dial')}
-        rightPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default Alert;

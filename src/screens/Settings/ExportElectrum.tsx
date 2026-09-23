@@ -10,18 +10,18 @@ import {
 } from 'react-native';
 import {RouteProp} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
-import {
-  StackNavigationOptions,
-  StackNavigationProp,
-} from '@react-navigation/stack';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 
-import Header from '../../components/Header';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import SkeletonLines from '../../components/SkeletonLines';
 import {useAppSelector} from '../../store/hooks';
@@ -46,7 +46,9 @@ const ExportElectrum: React.FC<Props> = () => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, cardHeight);
 
   const [electrumKey, setElectrumKey] = useState<string>('');
   const [isPrivateKey, setIsPrivateKey] = useState<boolean>(true);
@@ -102,8 +104,9 @@ const ExportElectrum: React.FC<Props> = () => {
         Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
       ]}
       colors={['#F2F8FD', '#d2e1ef00']}>
-      <Header />
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <TranslateText
             textKey="export_electrum_description"
@@ -182,11 +185,23 @@ const ExportElectrum: React.FC<Props> = () => {
           )}
         </View>
       </ScrollView>
+      <ScreenHeaderCard cardHeight={cardHeight} />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="export_electrum"
+        titleDomain="settingsTab"
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  cardHeight: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -194,6 +209,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     scrollView: {
       flex: 1,
+    },
+    scrollContent: {
+      paddingTop: cardHeight,
     },
     content: {
       padding: 20,
@@ -305,50 +323,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: 14,
       lineHeight: 20,
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
-
-export const ExportElectrumNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey={'export_electrum'}
-        domain={'settingsTab'}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default ExportElectrum;

@@ -10,6 +10,7 @@ import React, {
 import {StyleSheet, Image, Pressable, LayoutChangeEvent} from 'react-native';
 import Animated, {
   SharedValue,
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -39,6 +40,7 @@ interface Props {
   // Pass 'transparent' when something behind the box already draws its
   // surface — the search screen puts a Skia lens there.
   backgroundColor?: string;
+  openedBackgroundColor?: string;
   // Receives the box's live height. A caller drawing that surface itself has
   // to follow the fold, and a shared value is the only way to do it without
   // a re-render per frame.
@@ -60,6 +62,8 @@ interface OptionProps {
 const FOLDING_ANIM_DURATION = 200;
 const OPTIONS_ANIM_DURATION = FOLDING_ANIM_DURATION;
 const BACKGROUND_COLOR = '#0F4CAD';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const RenderOptionsWithDelay: React.FC<OptionProps> = props => {
   const {
@@ -148,6 +152,7 @@ const DropDownButton: React.FC<Props> = props => {
     centerText,
     titleTextKey,
     backgroundColor,
+    openedBackgroundColor,
     heightValue,
   } = props;
 
@@ -207,6 +212,7 @@ const DropDownButton: React.FC<Props> = props => {
   // animates off the very same number this does.
   const heightSharedValue = heightValue ?? ownHeight;
   const cellHeightSharedValue = useSharedValue(cellHeight);
+  const openProgress = useSharedValue(0);
 
   useEffect(() => {
     heightSharedValue.value = withTiming(isOpened ? unfoldHeight : cellHeight, {
@@ -218,6 +224,9 @@ const DropDownButton: React.FC<Props> = props => {
         duration: FOLDING_ANIM_DURATION,
       },
     );
+    openProgress.value = withTiming(isOpened ? 1 : 0, {
+      duration: FOLDING_ANIM_DURATION,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpened, unfoldHeight]);
 
@@ -226,6 +235,20 @@ const DropDownButton: React.FC<Props> = props => {
       height: heightSharedValue.value,
     };
   });
+
+  const closedColor = backgroundColor ?? BACKGROUND_COLOR;
+  const containerAnimatedStyle = useAnimatedStyle(() => {
+    if (!openedBackgroundColor) {
+      return {};
+    }
+    return {
+      backgroundColor: interpolateColor(
+        openProgress.value,
+        [0, 1],
+        [closedColor, openedBackgroundColor],
+      ),
+    };
+  }, [closedColor, openedBackgroundColor]);
 
   const cellHeightAnimatedStyle = useAnimatedProps(() => {
     return {
@@ -238,8 +261,8 @@ const DropDownButton: React.FC<Props> = props => {
   }
 
   return (
-    <Pressable
-      style={styles.container}
+    <AnimatedPressable
+      style={[styles.container, containerAnimatedStyle]}
       onPress={() => foldUnfold(!isOpened)}
       onLayout={calcUnfoldHeight}>
       <Animated.View style={[styles.dropDownBox, animatedStyle]}>
@@ -284,7 +307,7 @@ const DropDownButton: React.FC<Props> = props => {
           />
         </Animated.View>
       </Animated.View>
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 

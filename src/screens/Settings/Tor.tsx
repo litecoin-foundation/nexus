@@ -1,16 +1,16 @@
 import React, {useEffect, useContext, useState} from 'react';
-import {StyleSheet, View, Platform} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
-import {
-  StackNavigationOptions,
-  StackNavigationProp,
-} from '@react-navigation/stack';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 
 import Card from '../../components/Card';
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import WarningModal from '../../components/Modals/WarningModal';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setTorEnabled} from '../../reducers/settings';
@@ -33,9 +33,12 @@ interface Props {
 }
 
 const Tor: React.FC<Props> = props => {
+  const {navigation} = props;
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const dispatch = useAppDispatch();
   const {t} = useTranslation('settingsTab');
@@ -152,6 +155,14 @@ const Tor: React.FC<Props> = props => {
         textDomain="settingsTab"
         textKey="restart_required_message"
       />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="enable_tor"
+        titleDomain="settingsTab"
+        onBack={() => navigation.popTo('Settings', {})}
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
@@ -162,13 +173,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flex: 1,
       alignItems: 'center',
       justifyContent: 'flex-end',
-    },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: '700',
     },
     cardContainer: {
       flex: 1,
@@ -197,42 +201,5 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingBottom: screenHeight * 0.015,
     },
   });
-
-export const TorNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey="enable_tor"
-        domain="settingsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.popTo('Settings', {updateHeader: true})}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default Tor;

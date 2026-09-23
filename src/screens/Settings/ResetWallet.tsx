@@ -7,16 +7,16 @@ import {
   Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {
-  StackNavigationOptions,
-  StackNavigationProp,
-} from '@react-navigation/stack';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import {resetPincode} from '../../reducers/authentication';
@@ -51,6 +51,8 @@ const ResetWallet: React.FC<Props> = () => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('reset-wallet-auth');
@@ -134,6 +136,12 @@ const ResetWallet: React.FC<Props> = () => {
             }}
           />
         </View>
+        <ScreenHeader
+          rects={rects}
+          paddingHorizontal={paddingHorizontal}
+          fadeStyle={headerFadeStyle}
+          interactive={!isPinModalOpened}
+        />
       </LinearGradient>
 
       <PlasmaModal
@@ -201,40 +209,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
       paddingHorizontal: screenWidth * 0.06,
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
-
-export const ResetWalletNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
-
-  return {
-    headerTitle: '',
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default ResetWallet;

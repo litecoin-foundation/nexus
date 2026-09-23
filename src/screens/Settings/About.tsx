@@ -1,14 +1,16 @@
 import React, {useEffect, useContext, useState} from 'react';
-import {View, StyleSheet, ScrollView, Text, Platform} from 'react-native';
+import {View, StyleSheet, ScrollView, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {StackNavigationOptions} from '@react-navigation/stack';
 import {useFocusEffect} from '@react-navigation/native';
 
 import TableCell from '../../components/Cells/TableCell';
 import VerticalTableCell from '../../components/Cells/VerticalTableCell';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import Card from '../../components/Card';
 import LogViewer from '../../components/LogViewer';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -41,6 +43,8 @@ const About: React.FC<Props> = () => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   useEffect(() => {
     dispatch(getRecoveryInfo());
@@ -112,6 +116,11 @@ const About: React.FC<Props> = () => {
           <Text style={styles.idText}>{uniqueId}</Text>
         </ScrollView>
       </SafeAreaView>
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
@@ -148,32 +157,5 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignSelf: 'center',
     },
   });
-
-export const AboutNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
-
-  return {
-    headerTitle: '',
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default About;

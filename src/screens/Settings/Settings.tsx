@@ -20,19 +20,19 @@ import {FlashList} from '@shopify/flash-list';
 import {RouteProp} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import {
-  StackNavigationOptions,
-  StackNavigationProp,
-} from '@react-navigation/stack';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 
 import PlasmaModal from '../../components/Modals/PlasmaModal';
-import Header from '../../components/Header';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import SettingCell from '../../components/Cells/SettingCell';
 import PinModalContent from '../../components/Modals/PinModalContent';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import SupportCell from '../../components/Cells/SupportCell';
 import SectionHeader from '../../components/SectionHeader';
 import {setBiometricEnabled} from '../../reducers/authentication';
@@ -81,7 +81,7 @@ interface Props {
 }
 
 const Settings: React.FC<Props> = props => {
-  const {navigation, route} = props;
+  const {navigation} = props;
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
@@ -89,10 +89,14 @@ const Settings: React.FC<Props> = props => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout();
   const styles = useMemo(
-    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
-    [SCREEN_WIDTH, SCREEN_HEIGHT],
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, cardHeight),
+    [SCREEN_WIDTH, SCREEN_HEIGHT, cardHeight],
   );
+
+  const headerFadeStyle = useScreenHeaderArrival();
+  const goBack = useCallback(() => navigation.goBack(), [navigation]);
 
   const [torDeviceCompatible, setTorDeviceCompatible] = useState(false);
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
@@ -166,21 +170,6 @@ const Settings: React.FC<Props> = props => {
       });
     });
   };
-
-  // fixes a bug where going back from webpage causes header to disappear
-  useEffect(() => {
-    if (route.params?.updateHeader) {
-      navigation.setOptions({
-        headerShown: false,
-      });
-
-      setTimeout(() => {
-        navigation.setOptions({
-          headerShown: true,
-        });
-      }, 10);
-    }
-  }, [route, navigation]);
 
   const settingsData = useMemo(
     () => [
@@ -500,7 +489,6 @@ const Settings: React.FC<Props> = props => {
           Platform.OS === 'android' ? {paddingBottom: insets.bottom} : null,
         ]}
         colors={['#F2F8FD', '#d2e1ef00']}>
-        <Header />
         <FlashList
           data={settingsData}
           renderItem={renderItem}
@@ -511,6 +499,16 @@ const Settings: React.FC<Props> = props => {
           drawDistance={200}
           overrideItemLayout={getItemLayout}
           key={`flashlist-${notificationsEnabled}`}
+        />
+        <ScreenHeaderCard cardHeight={cardHeight} />
+        <ScreenHeader
+          rects={rects}
+          paddingHorizontal={paddingHorizontal}
+          titleKey="settings"
+          titleDomain="settingsTab"
+          onBack={goBack}
+          fadeStyle={headerFadeStyle}
+          interactive={!isPinModalOpened}
         />
       </LinearGradient>
 
@@ -538,21 +536,19 @@ const Settings: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (_screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  _screenWidth: number,
+  screenHeight: number,
+  cardHeight: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#F7F7F7',
     },
     scrollContent: {
+      paddingTop: cardHeight,
       paddingBottom: screenHeight * 0.04,
-    },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: '700',
     },
     switchContainer: {
       flex: 1,
@@ -584,42 +580,5 @@ const getStyles = (_screenWidth: number, screenHeight: number) =>
       fontWeight: 'bold',
     },
   });
-
-export const SettingsNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey={'settings'}
-        domain={'settingsTab'}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default Settings;

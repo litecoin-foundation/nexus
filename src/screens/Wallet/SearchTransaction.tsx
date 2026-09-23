@@ -50,6 +50,7 @@ import {
   getNewMainSheetPoints,
   getTopHalfCard,
 } from '../../animations/useNewMainAnims';
+import {FADE_EASING, OPEN_MS} from '../../animations/screenTransitions';
 import {useAppSelector} from '../../store/hooks';
 import {txDetailSelector} from '../../reducers/transaction';
 import {flattenGroupedTransactions} from '../../utils/groupTransactions';
@@ -98,9 +99,7 @@ const ANIMATION_TIMING = {
   FADE_IN_DURATION: 250,
 } as const;
 
-const OPEN_MS = 600;
 const OPEN_EASING = Easing.bezier(0.22, 1, 0.36, 1);
-const FADE_EASING = Easing.inOut(Easing.quad);
 const CLOSE_MS = 300;
 const CLOSE_EASING = Easing.bezier(0.4, 0, 0.6, 1);
 

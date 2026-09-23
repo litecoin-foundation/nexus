@@ -18,7 +18,14 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Header from '../../components/Header';
 import {ScreenSizeContext} from '../../context/screenSize';
-import {fetchCollectionsWithProducts, CategoryWithProducts, Product, createCart, addToCart, getCheckoutUrl} from '../../services/shopify';
+import {
+  fetchCollectionsWithProducts,
+  CategoryWithProducts,
+  Product,
+  createCart,
+  addToCart,
+  getCheckoutUrl,
+} from '../../services/shopify';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setCartLoading, setCartError, setCart} from '../../reducers/cart';
 
@@ -40,7 +47,11 @@ const Products: React.FC<Props> = props => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  const {cart, cartId, loading: cartLoading} = useAppSelector(state => state.cart);
+  const {
+    cart,
+    cartId,
+    loading: cartLoading,
+  } = useAppSelector(state => state.cart);
   const [categories, setCategories] = useState<CategoryWithProducts[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -105,7 +116,11 @@ const Products: React.FC<Props> = props => {
       Alert.alert('Success', `${product.title} added to cart!`);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      dispatch(setCartError(error instanceof Error ? error.message : 'Failed to add to cart'));
+      dispatch(
+        setCartError(
+          error instanceof Error ? error.message : 'Failed to add to cart',
+        ),
+      );
       Alert.alert('Error', 'Failed to add product to cart');
     }
   };
@@ -126,8 +141,13 @@ const Products: React.FC<Props> = props => {
   };
 
   const getCartItemCount = () => {
-    if (!cart) {return 0;}
-    return cart.lines.edges.reduce((total, edge) => total + edge.node.quantity, 0);
+    if (!cart) {
+      return 0;
+    }
+    return cart.lines.edges.reduce(
+      (total, edge) => total + edge.node.quantity,
+      0,
+    );
   };
 
   const renderProduct = (product: Product) => {
@@ -175,7 +195,11 @@ const Products: React.FC<Props> = props => {
           onPress={() => handleAddToCart(product)}
           disabled={!isAvailable || cartLoading}>
           <Text style={styles.addToCartButtonText}>
-            {cartLoading ? 'Adding...' : !isAvailable ? 'Unavailable' : 'Add to Cart'}
+            {cartLoading
+              ? 'Adding...'
+              : !isAvailable
+                ? 'Unavailable'
+                : 'Add to Cart'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -211,9 +235,7 @@ const Products: React.FC<Props> = props => {
             <TouchableOpacity
               style={styles.cartButton}
               onPress={handleCheckout}>
-              <Text style={styles.cartButtonText}>
-                Cart ({cartItemCount})
-              </Text>
+              <Text style={styles.cartButtonText}>Cart ({cartItemCount})</Text>
             </TouchableOpacity>
           ) : null
         }
@@ -240,9 +262,7 @@ const Products: React.FC<Props> = props => {
               <Text style={styles.emptyText}>No products available</Text>
             </View>
           ) : (
-            <>
-              {categories.map(renderCategory)}
-            </>
+            <>{categories.map(renderCategory)}</>
           )}
         </ScrollView>
       </LinearGradient>

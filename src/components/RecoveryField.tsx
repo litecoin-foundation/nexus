@@ -29,6 +29,7 @@ import {ScreenSizeContext} from '../context/screenSize';
 interface Props {
   handleLogin: (seed: string[]) => void;
   headerText: string;
+  headerTextPaddingHorizontal?: number;
   isLitewalletRecovery: boolean;
   handleLWRecovery?: (seed: string[]) => void;
   // returns whether the screen is currently focused; used to avoid validating
@@ -40,6 +41,7 @@ const RecoveryField: React.FC<Props> = props => {
   const {
     handleLogin,
     headerText,
+    headerTextPaddingHorizontal,
     isLitewalletRecovery,
     handleLWRecovery,
     isScreenFocused,
@@ -308,7 +310,12 @@ const RecoveryField: React.FC<Props> = props => {
       <View style={styles.container}>
         <TranslateText
           textValue={headerText}
-          textStyle={styles.headerText}
+          textStyle={[
+            styles.headerText,
+            headerTextPaddingHorizontal !== undefined
+              ? {paddingHorizontal: headerTextPaddingHorizontal}
+              : null,
+          ]}
           maxSizeInPixels={SCREEN_HEIGHT * 0.017}
         />
         <FlatList

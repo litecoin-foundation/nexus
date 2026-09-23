@@ -1,4 +1,4 @@
-import {useEffect, useContext, useState} from 'react';
+import {useEffect, useContext, useRef, useState} from 'react';
 import {
   Extrapolation,
   interpolate,
@@ -13,6 +13,7 @@ import {
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SHEET_TOP_RADIUS_RATIO} from '../components/GlassBottomSheet.tsx';
+import {FADE_EASING, OPEN_MS} from './screenTransitions';
 
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -255,24 +256,32 @@ export function useNewMainAnims(props: Props) {
   });
 
   const [preRendered, setPreRendered] = useState(false);
+  const wasPreRendered = useRef(false);
 
   useEffect(() => {
     if (preRendered) {
+      // Arriving on the screen: the same fade the other screens' headers use.
+      // Coming back from a modal: the quicker fade timed against its close.
+      const arriving = !wasPreRendered.current;
+      wasPreRendered.current = true;
+      const fadeIn = () =>
+        arriving
+          ? withTiming(1, {duration: OPEN_MS, easing: FADE_EASING})
+          : withDelay(150, withTiming(1, {duration: 250}));
+
       if (isWalletsModalOpened || isTxDetailModalOpened) {
         buttonOpacity.value = withTiming(0, {duration: 150});
       } else {
-        buttonOpacity.value = withDelay(150, withTiming(1, {duration: 250}));
+        buttonOpacity.value = fadeIn();
       }
 
       if (isTxDetailModalOpened) {
         walletButtonOpacity.value = withTiming(0, {duration: 150});
       } else {
-        walletButtonOpacity.value = withDelay(
-          150,
-          withTiming(1, {duration: 250}),
-        );
+        walletButtonOpacity.value = fadeIn();
       }
     } else {
+      wasPreRendered.current = false;
       buttonOpacity.value = 0;
       walletButtonOpacity.value = 0;
     }

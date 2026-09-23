@@ -4,22 +4,22 @@ import {
   ScrollView,
   View,
   Text,
-  Platform,
   Alert,
   TouchableOpacity,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
-import Header from '../../components/Header';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setLitecoinBackend} from '../../reducers/settings';
 import {getItem, resetItem} from '../../utils/keychain';
 
-import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import {StackNavigationOptions} from '@react-navigation/stack';
 
 const MIGRATION_FLAG_KEY = 'ELECTRUM_MIGRATION';
 
@@ -29,7 +29,9 @@ const TestMigration: React.FC = () => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, cardHeight);
 
   const litecoinBackend = useAppSelector(
     state => state.settings.litecoinBackend,
@@ -97,8 +99,7 @@ const TestMigration: React.FC = () => {
 
   return (
     <LinearGradient style={styles.container} colors={['#F2F8FD', '#d2e1ef00']}>
-      <Header />
-      <ScrollView>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.separator}>
           <Text style={styles.separatorTitle}>Current state</Text>
         </View>
@@ -136,15 +137,30 @@ const TestMigration: React.FC = () => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      <ScreenHeaderCard cardHeight={cardHeight} />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="Test Migration"
+        titleDomain="settingsTab"
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  cardHeight: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#F7F7F7',
+    },
+    scrollContent: {
+      paddingTop: cardHeight,
     },
     separator: {
       width: '100%',
@@ -184,50 +200,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.018,
       fontWeight: '600',
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
-
-export const TestMigrationNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey="Test Migration"
-        domain="settingsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default TestMigration;

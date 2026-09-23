@@ -1,18 +1,19 @@
 import React, {useState, useContext} from 'react';
-import {StyleSheet, FlatList, View, Text, Platform} from 'react-native';
+import {StyleSheet, FlatList, View, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import OptionCell from '../../components/Cells/OptionCell';
-import Header from '../../components/Header';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setTestPayment} from '../../reducers/settings';
 import {moonpayCountries, onramperCountries} from '../../reducers/buy';
 import fiat from '../../assets/fiat';
 
-import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import {StackNavigationOptions} from '@react-navigation/stack';
 
 const TEST_PAYMENT_ACTIVE: boolean[] = [true, false];
 const TEST_PAYMENT_METHODS: string[] = ['MOONPAY', 'ONRAMPER'];
@@ -25,7 +26,9 @@ const TestPayment: React.FC = () => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, cardHeight);
 
   const {
     testPaymentActive,
@@ -148,7 +151,7 @@ const TestPayment: React.FC = () => {
       <LinearGradient
         style={styles.container}
         colors={['#F2F8FD', '#d2e1ef00']}>
-        <Header />
+        <View style={styles.headerSpacer} />
         <View style={styles.separator}>
           <Text style={styles.separatorTitle}>Active</Text>
         </View>
@@ -179,16 +182,31 @@ const TestPayment: React.FC = () => {
         <View style={styles.flatListContainer}>
           <FlatList data={TEST_PAYMENT_FIATS} renderItem={renderItemTPF} />
         </View>
+        <ScreenHeaderCard cardHeight={cardHeight} />
+        <ScreenHeader
+          rects={rects}
+          paddingHorizontal={paddingHorizontal}
+          titleKey="Setup Test Payment"
+          titleDomain="settingsTab"
+          fadeStyle={headerFadeStyle}
+        />
       </LinearGradient>
     </>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  cardHeight: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#F7F7F7',
+    },
+    headerSpacer: {
+      height: cardHeight,
     },
     separator: {
       width: '100%',
@@ -209,50 +227,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.014,
       fontStyle: 'normal',
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
-
-export const TestPaymentNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey="Setup Test Payment"
-        domain="settingsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default TestPayment;

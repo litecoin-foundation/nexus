@@ -1,12 +1,15 @@
-import React, {useContext, useLayoutEffect, useRef, useState} from 'react';
-import {View, StyleSheet, Alert, Platform} from 'react-native';
+import React, {useContext, useRef, useState} from 'react';
+import {View, StyleSheet, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import PasscodeInput from '../../components/PasscodeInput';
 import PadGrid from '../../components/Numpad/PadGrid';
 import BuyButton from '../../components/Numpad/BuyButton';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {addPincode} from '../../reducers/authentication';
 import {setItem} from '../../utils/keychain';
@@ -36,37 +39,8 @@ const ChangePincode: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitleAlign: 'left',
-      headerTitleContainerStyle: {
-        left: 7,
-      },
-      headerTransparent: true,
-      headerTintColor: 'white',
-      headerLeft: () => (
-        <HeaderButton
-          onPress={() => navigation.goBack()}
-          imageSource={require('../../assets/images/back-icon.png')}
-          leftPadding
-        />
-      ),
-      headerTitle: () => (
-        <TranslateText
-          textKey="change_login_pin"
-          domain="settingsTab"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-          textStyle={styles.headerTitle}
-          numberOfLines={1}
-        />
-      ),
-      headerLeftContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-      headerRightContainerStyle:
-        Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-    });
-  });
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const [currentPin, setCurrentPin] = useState(
     route.params.type === 'RESET' ? false : true,
@@ -200,6 +174,13 @@ const ChangePincode: React.FC<Props> = props => {
         <PadGrid />
         <View style={styles.buttonContainer}>{buttons}</View>
       </View>
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="change_login_pin"
+        titleDomain="settingsTab"
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
@@ -248,13 +229,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     emptyBuyButton: {
       width: screenWidth / 3,
       height: screenHeight * 0.1,
-    },
-    headerTitle: {
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      color: 'white',
-      fontSize: 17,
     },
   });
 

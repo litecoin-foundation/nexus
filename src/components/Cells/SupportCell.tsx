@@ -10,8 +10,9 @@ interface Props {
 const SupportCell: React.FC<Props> = props => {
   const {onPress} = props;
 
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
-  const styles = getStyles();
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return (
     <TouchableOpacity style={styles.container} onPress={() => onPress()}>
@@ -32,18 +33,22 @@ const SupportCell: React.FC<Props> = props => {
   );
 };
 
-const getStyles = () =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
       flexDirection: 'row',
-      gap: 11,
+      gap: screenWidth * 0.03,
       alignItems: 'center',
-      paddingLeft: 25,
-      paddingRight: 25,
-      height: 66,
+      paddingLeft: screenWidth * 0.05,
+      paddingRight: screenWidth * 0.05,
+      height: screenHeight * 0.06,
       backgroundColor: 'white',
-      marginBottom: 27,
+      marginHorizontal: screenWidth * 0.04,
+      marginTop: screenHeight * 0.02,
+      marginBottom: screenHeight * 0.01,
+      borderRadius: (screenHeight * 0.06) / 2,
+      overflow: 'hidden',
     },
     title: {
       fontFamily: 'Satoshi Variable',

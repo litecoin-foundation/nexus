@@ -7,14 +7,14 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {
-  StackNavigationOptions,
-  StackScreenProps,
-} from '@react-navigation/stack';
+import {StackScreenProps} from '@react-navigation/stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import RecoveryField from '../../components/RecoveryField';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import {SettingsStackParamList} from '../../navigation/types';
@@ -23,7 +23,6 @@ import {sweepLitewallet} from '../../utils/sweep';
 import {getAddress} from '../../reducers/address';
 import {publishTransaction} from '../../reducers/transaction';
 
-import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const RecoverLitewallet = ({
@@ -40,6 +39,8 @@ const RecoverLitewallet = ({
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal, titleLeft} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   useLayoutEffect(() => {
     dispatch(getAddress());
@@ -103,12 +104,20 @@ const RecoverLitewallet = ({
             <RecoveryField
               handleLogin={() => {}}
               headerText={t('litewallet_description')}
+              headerTextPaddingHorizontal={titleLeft}
               isLitewalletRecovery={true}
               handleLWRecovery={seed => handleLWRecovery(seed)}
               isScreenFocused={() => navigation.isFocused()}
             />
           </SafeAreaView>
         </KeyboardAvoidingView>
+        <ScreenHeader
+          rects={rects}
+          paddingHorizontal={paddingHorizontal}
+          titleKey="import_litewallet"
+          titleDomain="settingsTab"
+          fadeStyle={headerFadeStyle}
+        />
       </LinearGradient>
 
       <LoadingIndicator visible={loading} />
@@ -116,7 +125,7 @@ const RecoverLitewallet = ({
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (_screenWidth: number, _screenHeight: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -130,53 +139,9 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.026,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
     flex: {
       flex: 1,
     },
   });
-
-export const RecoverLitewalletNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey="import_litewallet"
-        domain="settingsTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default RecoverLitewallet;

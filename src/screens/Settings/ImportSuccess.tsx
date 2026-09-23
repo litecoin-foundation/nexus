@@ -65,7 +65,12 @@ const ImportSuccess: React.FC<Props> = props => {
             onPress={() => {
               navigation.reset({
                 index: 0,
-                routes: [{name: 'NewWalletStack', params: {screen: 'Main', params: {isInitial: true}}}],
+                routes: [
+                  {
+                    name: 'NewWalletStack',
+                    params: {screen: 'Main', params: {isInitial: true}},
+                  },
+                ],
               });
             }}
           />

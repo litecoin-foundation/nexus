@@ -1,14 +1,22 @@
 import React, {useState, useContext, useCallback, useMemo} from 'react';
-import {View, StyleSheet, Image, Platform} from 'react-native';
+import {View, StyleSheet, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import SlideRuler from '../../components/SlideRuler';
 import GreenButton from '../../components/Buttons/GreenButton';
+import MegaphoneArt from '../../components/MegaphoneArt';
 import {addAlert} from '../../reducers/alerts';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {convertLocalFiatToUSD, ltcRateSelector} from '../../reducers/ticker';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
+import {
+  SKIN_GRADIENT_COLORS,
+  SKIN_GRADIENT_LOCATIONS,
+} from '../../components/FoldedSkinView';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -28,6 +36,8 @@ const Dial: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const dispatch = useAppDispatch();
   const currentRate =
@@ -63,6 +73,8 @@ const Dial: React.FC<Props> = props => {
     [],
   );
 
+  const goBack = useCallback(() => navigation.goBack(), [navigation]);
+
   const handlePress = useCallback(() => {
     dispatch(
       addAlert({
@@ -93,12 +105,12 @@ const Dial: React.FC<Props> = props => {
       colors={['#F6F9FC', 'rgb(238,244,249)']}>
       <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
         <View style={styles.subContainer}>
-          <View style={styles.topContainer}>
+          <LinearGradient
+            style={styles.topContainer}
+            colors={SKIN_GRADIENT_COLORS}
+            locations={SKIN_GRADIENT_LOCATIONS}>
             <View style={styles.imageContainer}>
-              <Image
-                style={styles.image}
-                source={require('../../assets/images/gramophone-art.png')}
-              />
+              <MegaphoneArt />
             </View>
             <TranslateText
               textKey="alert_me"
@@ -139,7 +151,7 @@ const Dial: React.FC<Props> = props => {
                 />
               </View>
             </View>
-          </View>
+          </LinearGradient>
 
           <View style={styles.valueContainer}>
             <TranslateText
@@ -153,6 +165,14 @@ const Dial: React.FC<Props> = props => {
         </View>
         {CreateAlertButton}
       </CustomSafeAreaView>
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="set_alerts"
+        titleDomain="alertsTab"
+        onBack={goBack}
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
@@ -172,21 +192,17 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     topContainer: {
       width: '100%',
       height: screenHeight * 0.62,
-      backgroundColor: '#0070F0',
       borderBottomLeftRadius: screenHeight * 0.07,
       borderBottomRightRadius: screenHeight * 0.07,
+      borderCurve: 'continuous',
       justifyContent: 'flex-start',
       alignItems: 'center',
     },
     imageContainer: {
       width: '100%',
       height: screenHeight * 0.55,
-      marginBottom: screenHeight * 0.12 * -1,
-    },
-    image: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'contain',
+      marginTop: screenHeight * 0.047,
+      marginBottom: screenHeight * (0.12 + 0.047) * -1,
     },
     text: {
       color: '#fff',
@@ -204,7 +220,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       borderRadius: screenHeight * 0.028,
       borderColor: '#fff',
       borderWidth: screenHeight < 701 ? 2 : 3,
-      backgroundColor: '#fff',
       flexDirection: 'row',
       marginTop: screenHeight * 0.02,
       overflow: 'hidden',
@@ -212,7 +227,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     toggle: {
       flexBasis: '50%',
       height: '100%',
-      backgroundColor: '#0070F0',
+      backgroundColor: 'transparent',
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -256,35 +271,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenWidth * 0.06,
       paddingBottom: screenHeight * 0.01,
     },
-    headerTitle: {
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      color: 'white',
-      fontSize: 17,
-    },
   });
-
-export const DialNavigationOptions = (navigation: any) => {
-  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
-
-  return {
-    headerTitle: '',
-    headerTransparent: true,
-    headerLeft: () => (
-      <HeaderButton
-        textKey="set_alerts"
-        textDomain="alertsTab"
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default Dial;

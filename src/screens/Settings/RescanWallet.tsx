@@ -7,16 +7,16 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {
-  StackNavigationOptions,
-  StackNavigationProp,
-} from '@react-navigation/stack';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteProp} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import BlueButton from '../../components/Buttons/BlueButton';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -44,6 +44,8 @@ const RescanWallet: React.FC<Props> = ({navigation}) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const [isRescanning, setIsRescanning] = useState(false);
@@ -192,6 +194,12 @@ const RescanWallet: React.FC<Props> = ({navigation}) => {
             />
           )}
         </View>
+        <ScreenHeader
+          rects={rects}
+          paddingHorizontal={paddingHorizontal}
+          fadeStyle={headerFadeStyle}
+          interactive={!isPinModalOpened}
+        />
       </LinearGradient>
 
       <PlasmaModal
@@ -275,25 +283,5 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenWidth * 0.06,
     },
   });
-
-export const RescanWalletNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  return {
-    headerTitle: '',
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-      />
-    ),
-  };
-};
 
 export default RescanWallet;

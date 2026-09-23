@@ -1,12 +1,22 @@
 import React, {useCallback, useContext, useMemo, useRef} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import HeaderButton from './Buttons/HeaderButton';
 import LiquidGlassWalletButton from './Buttons/LiquidGlassWalletButton';
+import {
+  PADDING_HORIZONTAL_RATIO,
+  ScreenHeaderBackIcon,
+  ScreenHeaderPill,
+} from './ScreenHeader';
 import {ScreenSizeContext} from '../context/screenSize';
+
+// Height fractions
+const SETTINGS_ICON_RATIO = 0.02;
+const FLEXA_ICON_RATIO = 0.02;
+const ALERTS_ICON_RATIO = 0.028;
+const PILL_GAP_RATIO = 0.01;
 
 interface Props {
   currentWallet: string;
@@ -50,8 +60,14 @@ const MainHeader: React.FC<Props> = ({
     useContext(ScreenSizeContext);
 
   const styles = useMemo(
-    () => getStyles(insets.top, headerHeight - insets.top),
-    [insets.top, headerHeight],
+    () =>
+      getStyles(
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        insets.top,
+        headerHeight - insets.top,
+      ),
+    [SCREEN_WIDTH, SCREEN_HEIGHT, insets.top, headerHeight],
   );
 
   const walletButtonRef = useRef<View>(null);
@@ -66,6 +82,15 @@ const MainHeader: React.FC<Props> = ({
       },
     );
   }, [onWalletButtonMeasured]);
+
+  const openSettings = useCallback(
+    () => navigation.navigate('SettingsStack'),
+    [navigation],
+  );
+  const openAlerts = useCallback(
+    () => navigation.navigate('AlertsStack'),
+    [navigation],
+  );
 
   const sidePointerEvents = interactive ? 'box-none' : 'none';
 
@@ -94,27 +119,24 @@ const MainHeader: React.FC<Props> = ({
           pointerEvents={sidePointerEvents}>
           <Animated.View style={[styles.sideRow, shopHeaderFadeStyle]}>
             {activeTab !== 0 ? (
-              <HeaderButton
-                onPress={onBack}
-                imageSource={require('../assets/images/back-icon.png')}
-                leftPadding
-              />
+              <ScreenHeaderPill onPress={onBack}>
+                <ScreenHeaderBackIcon />
+              </ScreenHeaderPill>
             ) : (
               <>
-                <HeaderButton
-                  onPress={() => navigation.navigate('SettingsStack')}
-                  imageSource={require('../assets/icons/settings-cog.png')}
-                  imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
-                  leftPadding
-                />
-                {isFlexaCustomer ? (
-                  <HeaderButton
-                    onPress={() => manualPayment()}
-                    imageSource={require('../assets/images/flexa-logo.png')}
-                    imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
-                    leftPadding
-                    marginLeft={SCREEN_WIDTH * 0.02 * -1}
+                <ScreenHeaderPill onPress={openSettings}>
+                  <Image
+                    style={styles.settingsIcon}
+                    source={require('../assets/icons/settings-cog.png')}
                   />
+                </ScreenHeaderPill>
+                {isFlexaCustomer ? (
+                  <ScreenHeaderPill onPress={manualPayment}>
+                    <Image
+                      style={styles.flexaIcon}
+                      source={require('../assets/images/flexa-logo.png')}
+                    />
+                  </ScreenHeaderPill>
                 ) : null}
               </>
             )}
@@ -125,12 +147,12 @@ const MainHeader: React.FC<Props> = ({
           style={[styles.side, styles.right, animatedHeaderButtonOpacity]}
           pointerEvents={sidePointerEvents}>
           <Animated.View style={[styles.sideRow, shopHeaderFadeStyle]}>
-            <HeaderButton
-              onPress={() => navigation.navigate('AlertsStack')}
-              imageSource={require('../assets/icons/alerts-icon.png')}
-              imageXY={{x: SCREEN_HEIGHT * 0.028, y: SCREEN_HEIGHT * 0.028}}
-              rightPadding
-            />
+            <ScreenHeaderPill onPress={openAlerts}>
+              <Image
+                style={styles.alertsIcon}
+                source={require('../assets/icons/alerts-icon.png')}
+              />
+            </ScreenHeaderPill>
           </Animated.View>
         </Animated.View>
       </View>
@@ -138,7 +160,12 @@ const MainHeader: React.FC<Props> = ({
   );
 };
 
-const getStyles = (topInset: number, rowHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  topInset: number,
+  rowHeight: number,
+) =>
   StyleSheet.create({
     host: {
       position: 'absolute',
@@ -156,13 +183,14 @@ const getStyles = (topInset: number, rowHeight: number) =>
       top: 0,
     },
     left: {
-      left: 0,
+      left: screenWidth * PADDING_HORIZONTAL_RATIO,
     },
     right: {
-      right: 0,
+      right: screenWidth * PADDING_HORIZONTAL_RATIO,
     },
     sideRow: {
       flexDirection: 'row',
+      gap: screenHeight * PILL_GAP_RATIO,
     },
     centre: {
       position: 'absolute',
@@ -170,6 +198,21 @@ const getStyles = (topInset: number, rowHeight: number) =>
       left: 0,
       right: 0,
       alignItems: 'center',
+    },
+    settingsIcon: {
+      width: screenHeight * SETTINGS_ICON_RATIO,
+      height: screenHeight * SETTINGS_ICON_RATIO,
+      resizeMode: 'contain',
+    },
+    flexaIcon: {
+      width: screenHeight * FLEXA_ICON_RATIO,
+      height: screenHeight * FLEXA_ICON_RATIO,
+      resizeMode: 'contain',
+    },
+    alertsIcon: {
+      width: screenHeight * ALERTS_ICON_RATIO,
+      height: screenHeight * ALERTS_ICON_RATIO,
+      resizeMode: 'contain',
     },
   });
 

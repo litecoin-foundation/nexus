@@ -17,8 +17,12 @@ import {ScreenSizeContext} from '../context/screenSize';
 // Neither control paints its own surface: GlassHeaderSurface, the first child
 // here, draws the lens under both, so the rest is icons, text and touch only.
 
+const ENABLE_GLASS = false;
+export const FLAT_PILL_COLOR = '#8FBCFB80';
+const FLAT_PILL_OPENED_COLOR = '#8FBCFBFF';
+
 const TITLE_FONT_RATIO = 0.02;
-const BACK_ICON_RATIO = 0.018;
+export const BACK_ICON_RATIO = 0.018;
 const PRESSED_OPACITY = 0.7;
 
 interface Props {
@@ -65,14 +69,16 @@ const SearchHeader: React.FC<Props> = props => {
     <Animated.View
       style={[styles.host, fadeStyle]}
       pointerEvents={interactive ? 'box-none' : 'none'}>
-      <GlassHeaderSurface
-        screenWidth={screenWidth}
-        screenHeight={screenHeight}
-        online={online}
-        cardHeight={cardHeight}
-        rects={rects}
-        dropdownHeight={dropdownHeight}
-      />
+      {ENABLE_GLASS ? (
+        <GlassHeaderSurface
+          screenWidth={screenWidth}
+          screenHeight={screenHeight}
+          online={online}
+          cardHeight={cardHeight}
+          rects={rects}
+          dropdownHeight={dropdownHeight}
+        />
+      ) : null}
 
       <Pressable
         onPress={onBack}
@@ -83,7 +89,9 @@ const SearchHeader: React.FC<Props> = props => {
             top: rects.back.y,
             width: rects.back.width,
             height: rects.back.height,
+            borderRadius: rects.back.height / 2,
           },
+          ENABLE_GLASS ? null : styles.flatPill,
           pressed ? styles.pressed : null,
         ]}>
         <Image
@@ -133,7 +141,10 @@ const SearchHeader: React.FC<Props> = props => {
           cellHeightExpandMultiplier={cellHeightExpandMultiplier}
           titleTextKey="type_filter"
           tickDisabled
-          backgroundColor="transparent"
+          backgroundColor={ENABLE_GLASS ? 'transparent' : FLAT_PILL_COLOR}
+          openedBackgroundColor={
+            ENABLE_GLASS ? undefined : FLAT_PILL_OPENED_COLOR
+          }
           heightValue={dropdownHeight}
           centerText
         />
@@ -158,6 +169,9 @@ const getStyles = (screenHeight: number) =>
       height: screenHeight * BACK_ICON_RATIO,
       resizeMode: 'contain',
       tintColor: '#ffffff',
+    },
+    flatPill: {
+      backgroundColor: FLAT_PILL_COLOR,
     },
     pressed: {
       opacity: PRESSED_OPACITY,

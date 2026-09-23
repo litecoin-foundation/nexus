@@ -1,27 +1,17 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import Settings, {
-  SettingsNavigationOptions,
-} from '../screens/Settings/Settings';
-import Explorer, {
-  ExplorerNavigationOptions,
-} from '../screens/Settings/Explorer';
-import Language, {
-  LanguageNavigationOptions,
-} from '../screens/Settings/Language';
+import Settings from '../screens/Settings/Settings';
+import Explorer from '../screens/Settings/Explorer';
+import Language from '../screens/Settings/Language';
 import ChangePincode from '../screens/Settings/ChangePincode';
-import Seed, {SeedNavigationOptions} from '../screens/Settings/Seed';
-import RootKey, {RootKeyNavigationOptions} from '../screens/Settings/RootKey';
-import About, {AboutNavigationOptions} from '../screens/Settings/About';
-import Currency, {
-  CurrencyNavigationOptions,
-} from '../screens/Settings/Currency';
+import Seed from '../screens/Settings/Seed';
+import RootKey from '../screens/Settings/RootKey';
+import About from '../screens/Settings/About';
+import Currency from '../screens/Settings/Currency';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
-import Import, {ImportNavigationOptions} from '../screens/Settings/Import';
-import RecoverLitewallet, {
-  RecoverLitewalletNavigationOptions,
-} from '../screens/Settings/RecoverLitewallet';
+import Import from '../screens/Settings/Import';
+import RecoverLitewallet from '../screens/Settings/RecoverLitewallet';
 import ImportSuccess, {
   ImportSuccessNavigationOptions,
 } from '../screens/Settings/ImportSuccess';
@@ -29,23 +19,14 @@ import ImportDeeplink, {
   ImportDeeplinkNavigationOptions,
 } from '../screens/Settings/ImportDeeplink';
 import Support, {SupportNavigationOptions} from '../screens/Settings/Support';
-import ResetWallet, {
-  ResetWalletNavigationOptions,
-} from '../screens/Settings/ResetWallet';
-import RescanWallet, {
-  RescanWalletNavigationOptions,
-} from '../screens/Settings/RescanWallet';
-import TestPayment, {
-  TestPaymentNavigationOptions,
-} from '../screens/Settings/TestPayment';
-import TestMigration, {
-  TestMigrationNavigationOptions,
-} from '../screens/Settings/TestMigration';
+import ResetWallet from '../screens/Settings/ResetWallet';
+import RescanWallet from '../screens/Settings/RescanWallet';
+import TestPayment from '../screens/Settings/TestPayment';
+import TestMigration from '../screens/Settings/TestMigration';
 import Products from '../screens/Settings/Products';
-import Tor, {TorNavigationOptions} from '../screens/Settings/Tor';
-import ExportElectrum, {
-  ExportElectrumNavigationOptions,
-} from '../screens/Settings/ExportElectrum';
+import Tor from '../screens/Settings/Tor';
+import ExportElectrum from '../screens/Settings/ExportElectrum';
+import {ScreenHeaderNavigationOptions} from '../components/ScreenHeader';
 import {SettingsStackParamList} from './types';
 
 const Stack = createStackNavigator<SettingsStackParamList>();
@@ -67,38 +48,42 @@ function SettingsStack() {
       <Stack.Screen
         name="Settings"
         component={Settings}
-        options={({navigation}) => SettingsNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
-      <Stack.Screen name="ChangePincode" component={ChangePincode} />
+      <Stack.Screen
+        name="ChangePincode"
+        component={ChangePincode}
+        options={ScreenHeaderNavigationOptions}
+      />
       <Stack.Screen
         name="Seed"
         component={Seed}
-        options={({navigation}) => SeedNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="RootKey"
         component={RootKey}
-        options={({navigation}) => RootKeyNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="About"
         component={About}
-        options={({navigation}) => AboutNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="Currency"
         component={Currency}
-        options={({navigation}) => CurrencyNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="Explorer"
         component={Explorer}
-        options={({navigation}) => ExplorerNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="Language"
         component={Language}
-        options={({navigation}) => LanguageNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen name="Products" component={Products} />
       <Stack.Screen
@@ -109,7 +94,7 @@ function SettingsStack() {
       <Stack.Screen
         name="Import"
         component={Import}
-        options={({navigation}) => ImportNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="ImportSuccess"
@@ -124,9 +109,7 @@ function SettingsStack() {
       <Stack.Screen
         name="RecoverLitewallet"
         component={RecoverLitewallet}
-        options={({navigation}) =>
-          RecoverLitewalletNavigationOptions(navigation)
-        }
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="Support"
@@ -136,32 +119,32 @@ function SettingsStack() {
       <Stack.Screen
         name="ResetWallet"
         component={ResetWallet}
-        options={({navigation}) => ResetWalletNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="RescanWallet"
         component={RescanWallet}
-        options={({navigation}) => RescanWalletNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="TestPayment"
         component={TestPayment}
-        options={({navigation}) => TestPaymentNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="TestMigration"
         component={TestMigration}
-        options={({navigation}) => TestMigrationNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="Tor"
         component={Tor}
-        options={({navigation}) => TorNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="ExportElectrum"
         component={ExportElectrum}
-        options={({navigation}) => ExportElectrumNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
     </Stack.Navigator>
   );
