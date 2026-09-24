@@ -4,7 +4,11 @@ import {
 } from 'react-native-nitro-lndltc';
 import NitroBSX from 'react-native-nitro-bsx';
 
-import {displayTxid, type SelectedPrevout} from './prevouts';
+import {
+  displayTxid,
+  serialisedOutpointKey,
+  type SelectedPrevout,
+} from './prevouts';
 import {store} from '../../../store';
 
 // Nexus funds every swap from its own LTC wallet; the module records which coin
@@ -88,6 +92,25 @@ export const recordLeases = (
 // Every outpoint still locked for a swap, as "txid:vout" in internal byte order.
 export const leasedOutpointKeys = (): Set<string> =>
   new Set(walletLocks().map(lock => outpointKey(lock.txid, lock.vout)));
+
+const pendingOutpoints = new Set<string>();
+
+// requestSwap signs the outputs' ownership proof before recordLeases has an id
+export const withPendingOutputs = async <T>(
+  outputs: string[],
+  call: () => Promise<T>,
+): Promise<T> => {
+  const keys = outputs.map(serialisedOutpointKey);
+  keys.forEach(key => pendingOutpoints.add(key));
+  try {
+    return await call();
+  } finally {
+    keys.forEach(key => pendingOutpoints.delete(key));
+  }
+};
+
+export const signableOutpointKeys = (): Set<string> =>
+  new Set([...leasedOutpointKeys(), ...pendingOutpoints]);
 
 export const requestIdsWithLocks = (): string[] => [
   ...new Set(walletLocks().map(lock => lock.request_id)),

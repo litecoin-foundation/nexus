@@ -1,6 +1,6 @@
 import {walletKitFinalizePsbt} from 'react-native-nitro-lndltc';
 
-import {leasedOutpointKeys} from './leases';
+import {signableOutpointKeys} from './leases';
 
 const PSBT_MAGIC = '70736274ff';
 const GLOBAL_INPUT_COUNT = 0x04;
@@ -104,7 +104,7 @@ export const psbtInputOutpoints = (psbtHex: string): string[] => {
 export const signSwapTx = async (psbtHex: string): Promise<string> => {
   // Caps a module fault at the leased amounts: lnd signs any input it holds
   // keys for, so the psbt must spend nothing this app did not lease for swaps.
-  const held = leasedOutpointKeys();
+  const held = signableOutpointKeys();
   for (const outpoint of psbtInputOutpoints(psbtHex)) {
     if (!held.has(outpoint)) {
       throw new Error(`Refusing to sign for unleased output ${outpoint}`);

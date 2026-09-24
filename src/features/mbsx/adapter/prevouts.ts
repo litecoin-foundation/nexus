@@ -69,6 +69,12 @@ export const serialisePrevout = (prevout: SelectedPrevout): string => {
   );
 };
 
+// "txid:vout" of a serialisePrevout output, in the same byte order as leases.
+export const serialisedOutpointKey = (output: string): string => {
+  const head = Buffer.from(output.slice(0, 72), 'hex');
+  return `${head.subarray(0, 32).toString('hex')}:${head.readUInt32LE(32)}`;
+};
+
 /**
  * What lnd could fund a swap with right now, in satoshis.
  *

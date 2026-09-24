@@ -22,7 +22,12 @@ import {
   writeConfig,
 } from './config';
 import type {MbsxConfig} from './config';
-import {releaseAllLeases, releaseLeases, requestIdsWithLocks} from './leases';
+import {
+  releaseAllLeases,
+  releaseLeases,
+  requestIdsWithLocks,
+  withPendingOutputs,
+} from './leases';
 import {spendableBalance} from './prevouts';
 import type {FundingOutput} from './prevouts';
 import {signSwapTx} from './signTx';
@@ -680,7 +685,13 @@ export type SwapRequest = {
 };
 
 export const requestSwap = (request: SwapRequest) =>
-  NitroBSX.requestSwap(request) as Promise<MbsxResult<{request_id: string}>>;
+  withPendingOutputs(
+    request.outputs,
+    () =>
+      NitroBSX.requestSwap(request) as Promise<
+        MbsxResult<{request_id: string}>
+      >,
+  );
 
 export const getSwapFundingOutputs = (coin: string, amount: string) =>
   NitroBSX.getSwapFundingOutputs(coin, amount) as MbsxResult<{
