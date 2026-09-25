@@ -131,7 +131,7 @@ const MbsxDebug: React.FC = () => {
 
         {canReset ? (
           <TouchableOpacity
-            style={styles.button}
+            style={styles.buttonSecondary}
             onPress={async () => {
               const rv = await resetState();
               if (rv.error) {
@@ -139,18 +139,18 @@ const MbsxDebug: React.FC = () => {
               }
               dispatch(clearMessages());
             }}>
-            <Text style={styles.buttonText}>Reset state</Text>
+            <Text style={styles.buttonSecondaryText}>Reset state</Text>
           </TouchableOpacity>
         ) : null}
         <TouchableOpacity
-          style={styles.button}
+          style={styles.buttonSecondary}
           onPress={() => {
             // Logged rather than rendered: this is for diffing successive
             // samples in logcat, and polling it would add churn to what it
             // measures.
             console.log('MEMSTATS ' + stringifyRpc(getMemStats()));
           }}>
-          <Text style={styles.buttonText}>Log mem stats</Text>
+          <Text style={styles.buttonSecondaryText}>Log mem stats</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}

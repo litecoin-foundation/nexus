@@ -29,8 +29,9 @@ const styles = StyleSheet.create({
   },
   text: {
     color: colors.white,
+    fontFamily: 'Satoshi Variable',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'center',
   },
 });

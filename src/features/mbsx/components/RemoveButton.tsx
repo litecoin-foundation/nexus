@@ -52,10 +52,15 @@ const RemoveButton: React.FC<Props> = ({
     <View>
       <TouchableOpacity
         testID={testID}
-        style={[styles.button, disabled || busy ? styles.buttonDisabled : null]}
+        style={[
+          styles.buttonSecondary,
+          disabled || busy ? styles.buttonDisabled : null,
+        ]}
         disabled={disabled || busy}
         onPress={ask}>
-        <Text style={styles.buttonText}>{busy ? 'Removing…' : label}</Text>
+        <Text style={styles.buttonSecondaryText}>
+          {busy ? 'Removing…' : label}
+        </Text>
       </TouchableOpacity>
       {error !== '' ? (
         <Text testID={`${testID}-error`} style={styles.error}>

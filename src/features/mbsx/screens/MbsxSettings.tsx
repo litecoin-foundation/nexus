@@ -632,13 +632,13 @@ const MbsxSettings: React.FC = () => {
             {saving ? 'Restarting…' : dirty ? 'Save changes' : 'Save'}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={load}>
-          <Text style={styles.buttonText}>Revert</Text>
+        <TouchableOpacity style={styles.buttonSecondary} onPress={load}>
+          <Text style={styles.buttonSecondaryText}>Revert</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.button}
+          style={styles.buttonSecondary}
           onPress={() => setConfig(defaultConfig())}>
-          <Text style={styles.buttonText}>Restore defaults</Text>
+          <Text style={styles.buttonSecondaryText}>Restore defaults</Text>
         </TouchableOpacity>
         {error !== '' && errorCoin === '' ? (
           <Text testID="mbsx-settings-error" style={styles.error}>

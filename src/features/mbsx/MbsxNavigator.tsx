@@ -1,12 +1,23 @@
-import React, {useEffect, useRef} from 'react';
-import {View} from 'react-native';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import {
+  BackHandler,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   createDrawerNavigator,
-  DrawerContentScrollView,
-  DrawerItem,
-  DrawerItemList,
+  useDrawerStatus,
 } from '@react-navigation/drawer';
 import type {DrawerContentComponentProps} from '@react-navigation/drawer';
+import LinearGradient from 'react-native-linear-gradient';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import {ScreenSizeContext} from '../../context/screenSize';
+import HeaderButton from '../../components/Buttons/HeaderButton';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {
@@ -54,15 +65,89 @@ const revokeOnExit = async () => {
 // drawer itself.
 const hidden = {drawerItemStyle: {display: 'none' as const}};
 
-const DrawerContent = (props: DrawerContentComponentProps) => (
-  <DrawerContentScrollView {...props}>
-    <DrawerItemList {...props} />
-    <DrawerItem
-      label="Back to wallet"
-      onPress={() => props.navigation.getParent()?.goBack()}
-    />
-  </DrawerContentScrollView>
-);
+const isHiddenDrawerItem = (style: object | undefined) =>
+  !!style && 'display' in style && style.display === 'none';
+
+let menuChoiceMade = false;
+
+const DrawerContent = (props: DrawerContentComponentProps) => {
+  const insets = useSafeAreaInsets();
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = useMemo(
+    () => getDrawerStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_WIDTH, SCREEN_HEIGHT],
+  );
+  const {state, navigation, descriptors} = props;
+  const drawerStatus = useDrawerStatus();
+  const [choiceMade, setChoiceMade] = useState(menuChoiceMade);
+
+  useEffect(() => {
+    if (drawerStatus !== 'open') {
+      return;
+    }
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        navigation.getParent()?.goBack();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, [drawerStatus, navigation]);
+
+  const items = state.routes.filter(
+    route =>
+      !isHiddenDrawerItem(
+        descriptors[route.key].options.drawerItemStyle as object | undefined,
+      ),
+  );
+
+  return (
+    <LinearGradient
+      style={styles.menu}
+      colors={['#F2F8FD', '#d2e1ef00']}>
+      <View style={styles.menuHeader}>
+        <HeaderButton
+          onPress={() => navigation.getParent()?.goBack()}
+          imageSource={require('../../assets/images/back-icon.png')}
+          leftPadding
+        />
+        <Text style={styles.menuTitle}>Swap</Text>
+      </View>
+      <ScrollView
+        contentContainerStyle={{paddingBottom: insets.bottom + 16}}
+        showsVerticalScrollIndicator={false}>
+        {items.map(route => {
+          const focused =
+            choiceMade && state.routes[state.index]?.key === route.key;
+          const label = descriptors[route.key].options.title ?? route.name;
+          return (
+            <TouchableOpacity
+              key={route.key}
+              style={styles.cell}
+              onPress={() => {
+                menuChoiceMade = true;
+                setChoiceMade(true);
+                navigation.navigate(route.name);
+                navigation.closeDrawer();
+              }}>
+              <Text style={[styles.cellTitle, focused ? styles.cellTitleActive : null]}>
+                {label}
+              </Text>
+              <Image source={require('../../assets/images/forward.png')} />
+            </TouchableOpacity>
+          );
+        })}
+        <TouchableOpacity
+          style={styles.cell}
+          onPress={() => navigation.getParent()?.goBack()}>
+          <Text style={styles.cellTitle}>Back to Nexus</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </LinearGradient>
+  );
+};
 
 const MbsxNavigator: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -74,6 +159,7 @@ const MbsxNavigator: React.FC = () => {
 
   useEffect(() => {
     let left = false;
+    menuChoiceMade = false;
     setSectionMounted(true);
 
     // Revoked first: the requests' coins are what would keep the core up.
@@ -133,13 +219,37 @@ const MbsxNavigator: React.FC = () => {
     return () => subscription.remove();
   }, [dispatch]);
 
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+
   return (
     <View style={flexOne}>
       <BridgeStatus />
       <Drawer.Navigator
         initialRouteName="SwapList"
+        defaultStatus="open"
         backBehavior="history"
-        drawerContent={DrawerContent}>
+        drawerContent={DrawerContent}
+        screenOptions={{
+          drawerType: 'front',
+          drawerStyle: {
+            width: SCREEN_WIDTH,
+            backgroundColor: '#F7F7F7',
+          },
+          overlayColor: 'transparent',
+          headerStyle: {
+            backgroundColor: '#1162E6',
+            height: SCREEN_HEIGHT * 0.13,
+          },
+          headerTintColor: '#fff',
+          headerTitleAlign: 'left',
+          headerTitleStyle: {
+            fontFamily: 'Satoshi Variable',
+            fontWeight: '700',
+            fontSize: SCREEN_HEIGHT * 0.026,
+            color: '#fff',
+          },
+        }}>
         <Drawer.Screen
           name="CreateSwap"
           component={CreateSwap}
@@ -191,5 +301,48 @@ const MbsxNavigator: React.FC = () => {
 };
 
 const flexOne = {flex: 1} as const;
+
+const getDrawerStyles = (_screenWidth: number, screenHeight: number) =>
+  StyleSheet.create({
+    menu: {
+      flex: 1,
+      backgroundColor: '#F7F7F7',
+    },
+    menuHeader: {
+      height: screenHeight * 0.13,
+      backgroundColor: '#1162E6',
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      paddingBottom: screenHeight * 0.012,
+    },
+    menuTitle: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.026,
+      fontWeight: '700',
+      marginStart: 11,
+      marginBottom: screenHeight * 0.004,
+    },
+    cell: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingLeft: 25,
+      paddingRight: 25,
+      height: 50,
+      borderTopWidth: 1,
+      borderColor: '#9797974d',
+      backgroundColor: 'white',
+    },
+    cellTitle: {
+      fontFamily: 'Satoshi Variable',
+      fontWeight: '700',
+      color: '#484859',
+      fontSize: 14,
+    },
+    cellTitleActive: {
+      color: '#1162E6',
+    },
+  });
 
 export default MbsxNavigator;
