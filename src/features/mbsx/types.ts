@@ -50,7 +50,7 @@ export type SwapOffer = {
   kind: OfferKind;
   expire_at: string;
   accepted: boolean;
-  state: 'RECEIVED' | 'REVOKED';
+  state: 'RECEIVED' | 'REVOKED' | 'REJECTED';
   coin_send: string;
   coin_receive: string;
   amount_send: string;

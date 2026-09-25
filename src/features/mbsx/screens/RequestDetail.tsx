@@ -60,7 +60,7 @@ const rate = (offer: SwapOffer) =>
   Number(offer.amount_receive) / Number(offer.amount_send);
 
 const live = (offer: SwapOffer) =>
-  offer.state !== 'REVOKED' && Date.parse(`${offer.expire_at}Z`) > Date.now();
+  offer.state === 'RECEIVED' && Date.parse(`${offer.expire_at}Z`) > Date.now();
 
 const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -191,6 +191,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     }
     if (offer.state === 'REVOKED') {
       return 'Withdrawn by the offerer';
+    }
+    if (offer.state === 'REJECTED') {
+      return "The server's swap did not match this offer";
     }
     if (!live(offer)) {
       return `Expired ${formatExpiry(offer.expire_at)}`;
