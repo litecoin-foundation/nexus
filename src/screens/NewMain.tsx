@@ -52,6 +52,7 @@ import {
   useGlassTxRowModels,
 } from '../components/GlassTxRows';
 import GlassTransactionList from '../components/GlassTransactionList';
+import SwapEntryRow from '../features/mbsx/components/SwapEntryRow';
 import MainHeader from '../components/MainHeader';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
@@ -807,6 +808,12 @@ const NewMain: React.FC<Props> = props => {
         activeTab={activeTab}
         onPressTab={handleTabPress}
         isInternetReachable={!!isInternetReachable}
+      />
+      <SwapEntryRow
+        mainSheetsTranslationY={mainSheetsTranslationY}
+        visible={activeTab === 0}
+        folded={isBottomSheetFolded}
+        onPress={() => navigation.navigate('MbsxStack')}
       />
 
       {BottomSheetMemo}

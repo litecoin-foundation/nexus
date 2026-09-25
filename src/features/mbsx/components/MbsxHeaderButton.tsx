@@ -9,8 +9,6 @@ const RUNNING_COLOUR = '#34C759';
 
 interface Props {
   onPress: () => void;
-  imageXY: {x: number; y: number};
-  marginLeft: number;
 }
 
 /**
@@ -20,18 +18,16 @@ interface Props {
  * option - so the flag flipping on the way out of the section re-applied the
  * whole header and made it flash.
  */
-const MbsxHeaderButton: React.FC<Props> = ({onPress, imageXY, marginLeft}) => {
+const MbsxHeaderButton: React.FC<Props> = ({onPress}) => {
   const running = useAppSelector((state: any) => state.mbsx.running);
 
   return (
     <HeaderButton
       testID="mbsx-entry"
       onPress={onPress}
+      title="Swap"
       imageSource={require('../../../assets/icons/converttx.png')}
       tintColor="#ffffff"
-      imageXY={imageXY}
-      leftPadding
-      marginLeft={marginLeft}
       backgroundColorSpecified={running ? RUNNING_COLOUR : undefined}
     />
   );

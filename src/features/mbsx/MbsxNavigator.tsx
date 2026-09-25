@@ -106,7 +106,7 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
   return (
     <LinearGradient
       style={styles.menu}
-      colors={['#F2F8FD', '#d2e1ef00']}>
+      colors={['#F2F8FD', '#F2F8FD']}>
       <View style={styles.menuHeader}>
         <HeaderButton
           onPress={() => navigation.getParent()?.goBack()}
@@ -226,8 +226,8 @@ const MbsxNavigator: React.FC = () => {
     <View style={flexOne}>
       <BridgeStatus />
       <Drawer.Navigator
-        initialRouteName="SwapList"
-        defaultStatus="open"
+        initialRouteName="CreateSwap"
+        defaultStatus="closed"
         backBehavior="history"
         drawerContent={DrawerContent}
         screenOptions={{
@@ -237,6 +237,7 @@ const MbsxNavigator: React.FC = () => {
             backgroundColor: '#F7F7F7',
           },
           overlayColor: 'transparent',
+          sceneStyle: {backgroundColor: '#F2F8FD'},
           headerStyle: {
             backgroundColor: '#1162E6',
             height: SCREEN_HEIGHT * 0.13,
@@ -300,7 +301,7 @@ const MbsxNavigator: React.FC = () => {
   );
 };
 
-const flexOne = {flex: 1} as const;
+const flexOne = {flex: 1, backgroundColor: '#F2F8FD'} as const;
 
 const getDrawerStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({

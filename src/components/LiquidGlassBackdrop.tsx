@@ -33,7 +33,9 @@ import {getCapsuleShadowImage} from './capsuleShadowImage';
 import type {CapsuleShadow} from './capsuleShadowImage';
 import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
 import {
+  FOLDED_SWAP_SLOT,
   getGlassTabLayouts,
+  glassTabExpansionProgressAt,
   glassTabRectAt,
   glassTabSplitProgressAt,
   GLASS_TAB_BUTTON_HEIGHT_RATIO,
@@ -229,16 +231,28 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
   // The SDF radius can't exceed the box half-extents.
   const cornerRadius = Math.min(GLASS_TAB_CORNER_RADIUS, buttonHeight / 2);
 
-  const rects = useDerivedValue(() =>
-    layouts.map(layout =>
+  const rects = useDerivedValue(() => {
+    const tabs = layouts.map(layout =>
       glassTabRectAt(
         layout,
         mainSheetsTranslationY.value,
         UNFOLD_SHEET_POINT,
         FOLD_SHEET_POINT,
       ),
-    ),
-  );
+    );
+    const expansion = glassTabExpansionProgressAt(
+      mainSheetsTranslationY.value,
+      UNFOLD_SHEET_POINT,
+      FOLD_SHEET_POINT,
+    );
+    const swapFade = expansion < 0.35 ? 1 - expansion / 0.35 : 0;
+    tabs.push({
+      x: SCREEN_WIDTH * FOLDED_SWAP_SLOT.left,
+      y: tabs[0].y,
+      width: SCREEN_WIDTH * FOLDED_SWAP_SLOT.width * swapFade,
+    });
+    return tabs;
+  });
   // Sell is the only control that splits into view.
   const splitOpacity = useDerivedValue(() =>
     interpolate(
@@ -405,7 +419,7 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
       {online && showChart ? chartCursorGraphics : null}
       {balanceGraphics}
       {capsuleShadow
-        ? layouts.map((_, i) => (
+        ? [0, 1, 2, 3, 4].map(i => (
             <GlassButtonShadow
               key={`shadow-${i}`}
               index={i}
@@ -419,14 +433,14 @@ const LiquidGlassBackdrop: React.FC<Props> = props => {
           ))
         : null}
       <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
-      {layouts.map((_, i) => (
+      {[0, 1, 2, 3, 4].map(i => (
         <GlassButtonAccent
           key={`accent-${i}`}
           index={i}
           rects={rects}
           buttonHeight={buttonHeight}
           cornerRadius={cornerRadius}
-          active={activeTab === GLASS_TAB_IDS[i]}
+          active={i < GLASS_TAB_IDS.length && activeTab === GLASS_TAB_IDS[i]}
           splitOpacity={i === 1 ? splitOpacity : undefined}
         />
       ))}

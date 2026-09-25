@@ -1,0 +1,147 @@
+import React, {useContext, useEffect} from 'react';
+import {Pressable, StyleSheet} from 'react-native';
+import Animated, {
+  Easing,
+  Extrapolation,
+  interpolate,
+  SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import {ScreenSizeContext} from '../../../context/screenSize';
+import {getNewMainSheetPoints} from '../../../animations/useNewMainAnims';
+import {
+  FOLDED_SWAP_SLOT,
+  getGlassTabLayouts,
+  glassTabExpansionProgressAt,
+  GLASS_TAB_BUTTON_HEIGHT_RATIO,
+  GLASS_TAB_CORNER_RADIUS,
+} from '../../../components/glassTabLayout';
+import {useAppSelector} from '../../../store/hooks';
+
+interface Props {
+  onPress: () => void;
+  mainSheetsTranslationY: SharedValue<number>;
+  visible: boolean;
+  folded: boolean;
+}
+
+const SwapEntryRow: React.FC<Props> = ({
+  onPress,
+  mainSheetsTranslationY,
+  visible,
+  folded,
+}) => {
+  const insets = useSafeAreaInsets();
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const running = useAppSelector(state => state.mbsx.running);
+  const spin = useSharedValue(0);
+  useEffect(() => {
+    spin.value = running
+      ? withRepeat(
+          withTiming(1, {duration: 1400, easing: Easing.linear}),
+          -1,
+          false,
+        )
+      : 0;
+  }, [running, spin]);
+  const iconSpin = useAnimatedStyle(() => ({
+    transform: [{rotate: `${spin.value * 360}deg`}],
+  }));
+  const buttonHeight = SCREEN_HEIGHT * GLASS_TAB_BUTTON_HEIGHT_RATIO;
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, buttonHeight);
+
+  const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
+    SCREEN_HEIGHT,
+    insets.top,
+  );
+  const layout = getGlassTabLayouts(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top)[0];
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const expansion = glassTabExpansionProgressAt(
+      mainSheetsTranslationY.value,
+      UNFOLD_SHEET_POINT,
+      FOLD_SHEET_POINT,
+    );
+    const buttonTop =
+      mainSheetsTranslationY.value +
+      interpolate(
+        expansion,
+        [0, 1],
+        [layout.folded.topOffset, layout.unfolded.topOffset],
+      );
+    return {
+      top: buttonTop,
+      opacity: visible
+        ? interpolate(expansion, [0, 0.35], [1, 0], Extrapolation.CLAMP)
+        : 0,
+    };
+  });
+
+  return (
+    <Animated.View
+      pointerEvents={visible && folded ? 'box-none' : 'none'}
+      style={[styles.host, animatedStyle]}>
+      <Pressable
+        testID="mbsx-sheet-entry"
+        onPress={onPress}
+        style={({pressed}) => [styles.pill, pressed ? styles.pressed : null]}>
+        <Animated.Image
+          source={require('../../../assets/icons/switch-arrow.png')}
+          style={[styles.icon, iconSpin]}
+        />
+        <Animated.Text style={styles.label} numberOfLines={1}>
+          Swap
+        </Animated.Text>
+      </Pressable>
+    </Animated.View>
+  );
+};
+
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  buttonHeight: number,
+) =>
+  StyleSheet.create({
+    host: {
+      position: 'absolute',
+      left: screenWidth * FOLDED_SWAP_SLOT.left,
+      width: screenWidth * FOLDED_SWAP_SLOT.width,
+      height: buttonHeight,
+      zIndex: 3,
+    },
+    pill: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: screenWidth * 0.03,
+      gap: screenWidth * 0.012,
+      borderRadius: Math.min(GLASS_TAB_CORNER_RADIUS, buttonHeight / 2),
+      backgroundColor: 'transparent',
+    },
+    pressed: {
+      opacity: 0.7,
+    },
+    icon: {
+      width: screenHeight * 0.022,
+      height: screenHeight * 0.022,
+      resizeMode: 'contain',
+      tintColor: '#ffffff',
+    },
+    label: {
+      flexShrink: 1,
+      fontFamily: 'Satoshi Variable',
+      fontWeight: '500',
+      color: '#ffffff',
+      fontSize: screenHeight * 0.013,
+    },
+  });
+
+export default SwapEntryRow;
