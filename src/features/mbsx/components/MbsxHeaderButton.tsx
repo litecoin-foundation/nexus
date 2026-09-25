@@ -27,7 +27,8 @@ const MbsxHeaderButton: React.FC<Props> = ({onPress, imageXY, marginLeft}) => {
     <HeaderButton
       testID="mbsx-entry"
       onPress={onPress}
-      imageSource={require('../../../assets/icons/convert-icon.png')}
+      imageSource={require('../../../assets/icons/converttx.png')}
+      tintColor="#ffffff"
       imageXY={imageXY}
       leftPadding
       marginLeft={marginLeft}
