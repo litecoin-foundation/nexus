@@ -5,6 +5,7 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppSelector} from '../../../store/hooks';
+import {kindLabel} from '../format';
 import {getMbsxStyles} from '../theme';
 import {
   describeRemoval,
@@ -100,7 +101,13 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                 navigation.navigate('SwapDetail', {swapId: swap.id})
               }>
               <Text style={styles.rowPrimary}>
-                {swap.coin_from} → {swap.coin_to} · {swap.state}
+                {[
+                  `${swap.coin_from} → ${swap.coin_to}`,
+                  kindLabel(swap.kind),
+                  swap.state,
+                ]
+                  .filter(part => part !== '')
+                  .join(' · ')}
               </Text>
               <Text style={styles.rowSecondary}>{swap.id}</Text>
             </TouchableOpacity>

@@ -193,11 +193,7 @@ export const reconcileLeases = async () => {
     }
     const swapIds = request.swapids ?? [];
     if (swapIds.length === 0) {
-      if (
-        request.error ||
-        request.state === 'EXPIRED' ||
-        request.state === 'REVOKED'
-      ) {
+      if (request.error || ENDED_REQUEST_STATES.has(request.state)) {
         await releaseLeases(requestId);
       }
       continue;
@@ -525,7 +521,7 @@ export const requestExpired = (request: SwapRequestDetails): boolean => {
  * The leases go first: they are held against the request id, so once the row is
  * gone nothing links the locked coins to anything that could free them.
  */
-/** Withdraws every open request; the module refuses any with an offer accepted or chosen. */
+/** Withdraws every open request; the module refuses any with an accepted offer. */
 export const revokeOpenRequests = async (): Promise<string[]> => {
   if (!isRunning()) {
     return [];
@@ -718,11 +714,8 @@ export const parseAmount = (coin: string, amount: string): bigint => {
 export const validateAddress = (coin: string, address: string): boolean =>
   !isRunning() || NitroBSX.validateAddress(coin, address);
 
-export const acceptSwap = (swapId: string) =>
-  NitroBSX.acceptSwap(swapId) as Promise<MbsxResult<{}>>;
-
-export const chooseBridgedOffer = (bridgedOfferId: string) =>
-  NitroBSX.chooseBridgedOffer(bridgedOfferId) as MbsxResult<{}>;
+export const acceptOffer = (offerId: string) =>
+  NitroBSX.acceptOffer(offerId) as Promise<MbsxResult<{}>>;
 
 // Nothing fills this on Nexus: the ltc wallet is a host wallet, which derives
 // its own keys and signs through installSigner rather than handing keys over.

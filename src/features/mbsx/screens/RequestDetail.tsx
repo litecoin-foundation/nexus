@@ -10,14 +10,18 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
-import {formatExpiry, formatTimestamp, shortAddress} from '../format';
+import {
+  formatExpiry,
+  formatTimestamp,
+  kindLabel,
+  shortAddress,
+} from '../format';
 import {getMbsxStyles} from '../theme';
 import {offerWarning} from '../useSwapAmounts';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {
   BUSY,
-  acceptSwap,
-  chooseBridgedOffer,
+  acceptOffer,
   getRequestInfo,
   getSwapInfo,
   isTerminalState,
@@ -26,16 +30,16 @@ import {
 } from '../adapter';
 import RemoveButton from '../components/RemoveButton';
 import type {
-  BridgedOffer,
   MbsxDrawerParamList,
   SwapDetails,
+  SwapOffer,
   SwapRequestDetails,
 } from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'RequestDetail'>;
 
-// Everything an offer can be while it is still only an offer. Anything else and
-// the swap is under way, so the request page is no longer the thing to look at.
+// Everything a swap can be before it is signed. Anything else and it is under
+// way, so the request page is no longer the thing to look at.
 const PRE_ACCEPT = new Set([
   'SENT',
   'RECEIVING',
@@ -52,6 +56,12 @@ const explainReliability = () =>
       'this exact address. 50 means it has not seen them before.',
   );
 
+const rate = (offer: SwapOffer) =>
+  Number(offer.amount_receive) / Number(offer.amount_send);
+
+const live = (offer: SwapOffer) =>
+  offer.state !== 'REVOKED' && Date.parse(`${offer.expire_at}Z`) > Date.now();
+
 const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
@@ -65,11 +75,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {requestId} = route.params;
   const [request, setRequest] = useState<SwapRequestDetails | null>(null);
   const [swaps, setSwaps] = useState<SwapDetails[]>([]);
-  const [showAll, setShowAll] = useState(false);
   const [acceptError, setAcceptError] = useState('');
   const [accepting, setAccepting] = useState(false);
-  const [chooseError, setChooseError] = useState('');
-  const [choosing, setChoosing] = useState(false);
 
   const fetchRequest = useCallback(() => {
     const rv = getRequestInfo(requestId);
@@ -133,73 +140,41 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     }
   }, [swaps, underway, navigation]);
 
-  const bridgedOffers = request?.bridged_offers ?? [];
-  const chosenOffer = bridgedOffers.find(offer => offer.chosen) ?? null;
+  const offers = [...(request?.offers ?? [])].sort(
+    (a, b) =>
+      Number(b.kind === 'PRIVATE') - Number(a.kind === 'PRIVATE') ||
+      rate(b) - rate(a),
+  );
+  const acceptedOffer = offers.find(offer => offer.accepted) ?? null;
+  const canAccept = request?.state === 'OFFER_RECEIVED' && !accepting;
 
-  // fast path offer
-  const acceptable = (swap: SwapDetails) =>
-    swap.state === 'RECEIVED' && Date.parse(`${swap.expire_at}Z`) > Date.now();
-  const offers = [...swaps].sort((a, b) => {
-    if (acceptable(a) !== acceptable(b)) {
-      return acceptable(a) ? -1 : 1;
-    }
-    return Number(b.initiating) - Number(a.initiating);
-  });
-  const best = offers.length > 0 && acceptable(offers[0]) ? offers[0] : null;
-  // Only the fast path offer is worth collapsing to
-  const collapsed = !showAll && best !== null && best.initiating;
-  const shown = collapsed ? [best] : offers;
-  // Only the collapsed fast path accepts from here; with several offers on
-  // screen the row opens the swap and it is accepted there.
-  const selectedSwap = collapsed ? best : null;
-
-  // Choosing is what commits: the bid follows it, and the swap it brings back
-  // is accepted without asking again.
-  const onChoose = (offer: BridgedOffer) => {
-    const run = () => {
-      setChoosing(true);
-      setChooseError('');
+  // Accepting is what commits: the swap it brings back is signed without
+  // asking again.
+  const onAccept = (offer: SwapOffer) => {
+    const run = async () => {
+      setAccepting(true);
+      setAcceptError('');
       try {
-        const rv = chooseBridgedOffer(offer.id);
+        const rv = await acceptOffer(offer.id);
         if (rv.error) {
-          setChooseError(rv.error);
+          setAcceptError(rv.error);
           return;
         }
         fetchRequest();
       } catch (e) {
-        setChooseError((e as Error).message);
+        setAcceptError((e as Error).message);
       } finally {
-        setChoosing(false);
+        setAccepting(false);
       }
     };
     Alert.alert(
-      'Choose offer',
-      `Send ${offer.amount_send} ${offer.coin_send} for ${offer.amount_receive} ${offer.coin_receive}?\n\nThe swap starts on its own once this offer comes back.`,
+      'Accept offer',
+      `Send ${offer.amount_send} ${offer.coin_send} for ${offer.amount_receive} ${offer.coin_receive}?\n\nThe swap starts on its own once the offer is set up.`,
       [
         {text: 'Cancel', style: 'cancel'},
-        {text: 'Choose', onPress: run},
+        {text: 'Accept', onPress: run},
       ],
     );
-  };
-
-  const onAccept = async () => {
-    if (!selectedSwap) {
-      return;
-    }
-    setAccepting(true);
-    setAcceptError('');
-    try {
-      const rv = await acceptSwap(selectedSwap.id);
-      if (rv.error) {
-        setAcceptError(rv.error);
-        return;
-      }
-      navigation.navigate('SwapDetail', {swapId: selectedSwap.id});
-    } catch (e) {
-      setAcceptError((e as Error).message);
-    } finally {
-      setAccepting(false);
-    }
   };
 
   if (!request) {
@@ -209,6 +184,21 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
       </View>
     );
   }
+
+  const offerStatus = (offer: SwapOffer): string => {
+    if (offer.accepted) {
+      return swaps.length > 0 ? 'Accepted' : 'Accepted, waiting for the swap';
+    }
+    if (offer.state === 'REVOKED') {
+      return 'Withdrawn by the offerer';
+    }
+    if (!live(offer)) {
+      return `Expired ${formatExpiry(offer.expire_at)}`;
+    }
+    return canAccept
+      ? `Tap to accept. Expires ${formatExpiry(offer.expire_at)}`
+      : `Expires ${formatExpiry(offer.expire_at)}`;
+  };
 
   return (
     <View style={styles.container}>
@@ -269,157 +259,98 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             </View>
             <Text style={styles.empty}>
               {swaps.length === 0
-                ? `Paid in the ${request.fees_coin} you send, whichever offer you take. The exact amount follows the offer.`
-                : 'Chain fees per offer below.'}
+                ? `Paid in the ${request.fees_coin} you send, whichever offer you accept. The exact amount follows the offer.`
+                : 'Chain fees under the swap below.'}
             </Text>
           </>
         )}
 
         <Text style={styles.section}>Offers</Text>
-        {offers.length > 0 ? (
-          <>
-            {shown.map(swap => {
-              // A bridged swap reports chain a / chain b, which is the reverse
-              // of the request's own from/to.
-              const sendCoin = swap.initiating ? swap.coin_from : swap.coin_to;
-              const sendAmount = swap.initiating
-                ? swap.amount_from
-                : swap.amount_to;
-              const recvCoin = swap.initiating ? swap.coin_to : swap.coin_from;
-              const recvAmount = swap.initiating
-                ? swap.amount_to
-                : swap.amount_from;
-              return (
-                <TouchableOpacity
-                  key={swap.id}
-                  testID={`mbsx-offer-${swap.id}`}
-                  style={[
-                    styles.stackedRow,
-                    chosenOffer !== null ? styles.rowDimmed : null,
-                  ]}
-                  onPress={() =>
-                    navigation.navigate('SwapDetail', {swapId: swap.id})
-                  }>
-                  <Text style={styles.rowPrimary}>
-                    {`${swap.initiating ? 'Private' : 'Bridged'} — send ${sendAmount} ${sendCoin}, receive ${recvAmount} ${recvCoin}`}
-                  </Text>
-                  {offerWarning(swap) ? (
-                    <Text
-                      testID={`mbsx-offer-warning-${swap.id}`}
-                      style={styles.error}>
-                      {offerWarning(swap)}
-                    </Text>
-                  ) : null}
-                  <Text style={styles.rowMessage}>
-                    {acceptable(swap)
-                      ? `Expires ${formatExpiry(swap.expire_at)}`
-                      : `${swap.state}, expired ${formatExpiry(swap.expire_at)}`}
-                  </Text>
-                  {/* Named per chain: two bare rates read as one number over
-                      another, with nothing saying which coin either is on. */}
-                  <Text style={styles.rowMessage}>
-                    {`Chain fee ${swap.coin_from} ~${swap.chain_fee_from ?? '?'} (${swap.fee_rate_from} sat/kvB)`}
-                  </Text>
-                  <Text style={styles.rowMessage}>
-                    {`Chain fee ${swap.coin_to} ~${swap.chain_fee_to ?? '?'} (${swap.fee_rate_to} sat/kvB)`}
-                  </Text>
-                  {swap.fees_coin ? (
-                    <Text style={styles.rowMessage}>
-                      {`Swap fees ${swap.fees_total} ${swap.fees_coin}`}
-                    </Text>
-                  ) : null}
-                </TouchableOpacity>
-              );
-            })}
-            {collapsed && offers.length > 1 ? (
-              <TouchableOpacity
-                testID="mbsx-more-offers"
-                onPress={() => setShowAll(true)}>
-                <Text style={styles.link}>
-                  {`Show ${offers.length - 1} more offer${
-                    offers.length === 2 ? '' : 's'
-                  }`}
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-          </>
-        ) : null}
-
-        {bridgedOffers.map(offer => (
-          <TouchableOpacity
-            key={offer.id}
-            testID={`mbsx-bridged-offer-${offer.id}`}
-            style={[
-              styles.stackedRow,
-              chosenOffer !== null && !offer.chosen ? styles.rowDimmed : null,
-            ]}
-            disabled={
-              chosenOffer !== null || offer.state === 'REVOKED' || choosing
-            }
-            onPress={() => onChoose(offer)}>
-            <Text style={styles.rowPrimary}>
-              {`Bridged — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
-            </Text>
-            <Text style={styles.rowMessage}>
-              {`From ${shortAddress(offer.offerer_address)}`}
-            </Text>
+        {offers.map(offer => {
+          const warning = offerWarning(offer);
+          return (
             <TouchableOpacity
-              testID={`mbsx-reliability-${offer.id}`}
-              onPress={explainReliability}>
-              <Text style={styles.rowLink}>
-                {`Reliability: ${offer.offerer_reliability}`}
-              </Text>
-            </TouchableOpacity>
-            <Text style={styles.rowMessage}>
-              {offer.chosen
-                ? 'Chosen, waiting for the offer'
-                : offer.state === 'REVOKED'
-                  ? 'Withdrawn by the offerer'
-                  : chosenOffer !== null
-                    ? `Expires ${formatExpiry(offer.expire_at)}`
-                    : `Tap to choose. Expires ${formatExpiry(offer.expire_at)}`}
-            </Text>
-          </TouchableOpacity>
-        ))}
-        {chooseError !== '' ? (
-          <Text testID="mbsx-choose-error" style={styles.error}>
-            {chooseError}
-          </Text>
-        ) : null}
-        {offers.length === 0 && bridgedOffers.length === 0 ? (
-          <Text style={styles.empty}>Waiting for an offer</Text>
-        ) : null}
-        {offers.length > 0 ? (
-          <>
-            <TouchableOpacity
-              testID="mbsx-accept"
+              key={offer.id}
+              testID={`mbsx-offer-${offer.id}`}
               style={[
-                styles.button,
-                !selectedSwap ||
-                !acceptable(selectedSwap) ||
-                accepting ||
-                chosenOffer !== null
-                  ? styles.buttonDisabled
+                styles.stackedRow,
+                acceptedOffer !== null && !offer.accepted
+                  ? styles.rowDimmed
                   : null,
               ]}
-              disabled={
-                !selectedSwap ||
-                !acceptable(selectedSwap) ||
-                accepting ||
-                chosenOffer !== null
-              }
-              onPress={onAccept}>
-              <Text style={styles.buttonText}>
-                {accepting ? 'Accepting…' : 'Accept offer'}
+              disabled={!canAccept || !live(offer)}
+              onPress={() => onAccept(offer)}>
+              <Text style={styles.rowPrimary}>
+                {`${kindLabel(offer.kind)} — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
               </Text>
+              {Number(offer.amount_send) < Number(request.amount_from) ? (
+                <Text style={styles.rowMessage}>
+                  {`Of the ${request.amount_from} ${request.coin_from} you offered; the rest comes back as change`}
+                </Text>
+              ) : null}
+              {warning ? (
+                <Text
+                  testID={`mbsx-offer-warning-${offer.id}`}
+                  style={styles.error}>
+                  {warning}
+                </Text>
+              ) : null}
+              {offer.kind === 'BRIDGED' ? (
+                <>
+                  <Text style={styles.rowMessage}>
+                    {`From ${shortAddress(offer.offerer_address ?? '')}`}
+                  </Text>
+                  <TouchableOpacity
+                    testID={`mbsx-reliability-${offer.id}`}
+                    onPress={explainReliability}>
+                    <Text style={styles.rowLink}>
+                      {`Reliability: ${offer.offerer_reliability}`}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              ) : null}
+              <Text style={styles.rowMessage}>{offerStatus(offer)}</Text>
             </TouchableOpacity>
-            {acceptError !== '' ? (
-              <Text testID="mbsx-accept-error" style={styles.error}>
-                {acceptError}
+          );
+        })}
+        {acceptError !== '' ? (
+          <Text testID="mbsx-accept-error" style={styles.error}>
+            {acceptError}
+          </Text>
+        ) : null}
+        {offers.length === 0 ? (
+          <Text style={styles.empty}>Waiting for an offer</Text>
+        ) : null}
+
+        {swaps.length > 0 ? <Text style={styles.section}>Swap</Text> : null}
+        {swaps.map(swap => (
+          <TouchableOpacity
+            key={swap.id}
+            testID={`mbsx-swap-${swap.id}`}
+            style={styles.stackedRow}
+            onPress={() =>
+              navigation.navigate('SwapDetail', {swapId: swap.id})
+            }>
+            <Text style={styles.rowPrimary}>
+              {[kindLabel(swap.kind), swap.state]
+                .filter(part => part !== '')
+                .join(' · ')}
+            </Text>
+            {/* Named per chain: two bare rates read as one number over
+                another, with nothing saying which coin either is on. */}
+            <Text style={styles.rowMessage}>
+              {`Chain fee ${swap.coin_from} ~${swap.chain_fee_from ?? '?'} (${swap.fee_rate_from} sat/kvB)`}
+            </Text>
+            <Text style={styles.rowMessage}>
+              {`Chain fee ${swap.coin_to} ~${swap.chain_fee_to ?? '?'} (${swap.fee_rate_to} sat/kvB)`}
+            </Text>
+            {swap.fees_coin ? (
+              <Text style={styles.rowMessage}>
+                {`Swap fees ${swap.fees_total} ${swap.fees_coin}`}
               </Text>
             ) : null}
-          </>
-        ) : null}
+          </TouchableOpacity>
+        ))}
 
         <RemoveButton
           testID="mbsx-remove-request"

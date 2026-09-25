@@ -434,8 +434,8 @@ const MbsxSettings: React.FC = () => {
           />
         </View>
         <Text style={styles.rowMessage}>
-          Leaving this section withdraws any request that has not accepted or
-          chosen an offer, and frees the coins held for it.
+          Leaving this section withdraws any request that has not accepted an
+          offer, and frees the coins held for it.
         </Text>
 
         <Text style={styles.section}>Privacy</Text>

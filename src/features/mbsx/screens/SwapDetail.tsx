@@ -5,13 +5,11 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
-import {formatTimestamp} from '../format';
+import {formatTimestamp, kindLabel} from '../format';
 import {getMbsxStyles} from '../theme';
-import {offerWarning} from '../useSwapAmounts';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {
   BUSY,
-  acceptSwap,
   displayTxid,
   getSwapInfo,
   isTerminalState,
@@ -41,7 +39,6 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   }, [navigation]);
 
   const [swap, setSwap] = useState<SwapDetails | null>(null);
-  const [acceptError, setAcceptError] = useState('');
   const [openEvent, setOpenEvent] = useState<number | null>(null);
 
   const fetchSwap = useCallback(() => {
@@ -65,22 +62,6 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
     }, [fetchSwap]),
   );
 
-  const onAccept = async () => {
-    // acceptSwap rejects rather than returning an error for most failures, and
-    // refusing a second offer under one request is now one of them.
-    try {
-      const rv = await acceptSwap(swapId);
-      if (rv.error) {
-        setAcceptError(rv.error);
-        return;
-      }
-      setAcceptError('');
-      fetchSwap();
-    } catch (e) {
-      setAcceptError((e as Error).message);
-    }
-  };
-
   if (!swap) {
     return (
       <View style={styles.container}>
@@ -88,8 +69,6 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
       </View>
     );
   }
-
-  const canAccept = swap.state === 'RECEIVED';
 
   const LabeledRow = ({label, value}: {label: string; value: string}) => (
     <View style={styles.row}>
@@ -112,38 +91,15 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           <Text style={styles.valueLink}>{swap.request_id}</Text>
         </TouchableOpacity>
         <LabeledRow label="State" value={swap.state} />
+        {swap.kind ? (
+          <LabeledRow label="Offer" value={kindLabel(swap.kind)} />
+        ) : null}
         <LabeledRow label="Created" value={formatTimestamp(swap.created_at)} />
         <LabeledRow
           label="From"
           value={`${swap.amount_from} ${swap.coin_from}`}
         />
         <LabeledRow label="To" value={`${swap.amount_to} ${swap.coin_to}`} />
-        {swap.asked_amount_to ? (
-          <LabeledRow
-            label="Asked"
-            value={`${swap.asked_amount_to} ${swap.coin_to}`}
-          />
-        ) : null}
-        {swap.market_amount_to ? (
-          <LabeledRow
-            label="Reference"
-            value={`${swap.market_amount_to} ${swap.coin_to}`}
-          />
-        ) : null}
-        {offerWarning(swap) ? (
-          <Text testID="mbsx-offer-warning" style={styles.error}>
-            {offerWarning(swap)}
-          </Text>
-        ) : null}
-
-        <TouchableOpacity
-          style={[styles.button, !canAccept && styles.buttonDisabled]}
-          disabled={!canAccept}
-          onPress={onAccept}>
-          <Text style={styles.buttonText}>Accept Swap</Text>
-        </TouchableOpacity>
-
-        {acceptError !== '' && <Text style={styles.error}>{acceptError}</Text>}
 
         <Text style={styles.section}>Events</Text>
         {(swap.events ?? []).map((event: SwapEvent) => {
@@ -192,8 +148,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           );
         })}
 
-        {/* Removes this offer alone. The request that funded it, and any other
-            offer under it, stay. */}
+        {/* Removes this swap alone; the request that funded it stays. */}
         <RemoveButton
           testID="mbsx-remove-swap"
           label="Delete swap"

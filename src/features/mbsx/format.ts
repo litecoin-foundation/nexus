@@ -27,6 +27,9 @@ export const formatExpiry = (
   return ms >= 0 ? 'in under a minute' : 'just now';
 };
 
+export const kindLabel = (kind?: string): string =>
+  kind === 'PRIVATE' ? 'Private' : kind === 'BRIDGED' ? 'Bridged' : '';
+
 // Both ends: a head alone matches every address sharing a prefix.
 export const shortAddress = (address: string): string =>
   address.length > 15

@@ -28,35 +28,24 @@ const num = (value: string): number | null => {
 const percent = (fraction: number): number =>
   Math.round(Math.abs(fraction) * 100);
 
-// Only private swaps carry the asked and market amounts to judge against.
-export const offerWarning = (swap: {
-  amount_to: string;
-  asked_amount_to?: string;
-  market_amount_to?: string;
+export const offerWarning = (offer: {
+  amount_receive: string;
+  market_amount_receive?: string;
 }): string | null => {
-  const got = num(swap.amount_to);
+  const got = num(offer.amount_receive);
   if (got === null) {
-    return 'You would receive nothing for this swap.';
+    return 'You would receive nothing for this offer.';
   }
-  const notes: string[] = [];
-  const asked = num(swap.asked_amount_to ?? '');
-  if (asked !== null && got < asked * (1 - RATE_TOLERANCE)) {
-    notes.push(`${percent(1 - got / asked)}% less than you asked`);
+  const market = num(offer.market_amount_receive ?? '');
+  if (market === null) {
+    return null;
   }
-  const market = num(swap.market_amount_to ?? '');
-  if (market !== null) {
-    const deviation = got / market - 1;
-    if (Math.abs(deviation) > RATE_TOLERANCE) {
-      notes.push(
-        `${percent(deviation)}% ${
-          deviation < 0 ? 'less' : 'more'
-        } than the reference rate`,
-      );
-    }
-  }
-  return notes.length === 0
-    ? null
-    : `You would receive ${notes.join(' and ')}.`;
+  const deviation = got / market - 1;
+  return Math.abs(deviation) > RATE_TOLERANCE
+    ? `You would receive ${percent(deviation)}% ${
+        deviation < 0 ? 'less' : 'more'
+      } than the reference rate.`
+    : null;
 };
 
 export const coinString = (n: number | null): string => {

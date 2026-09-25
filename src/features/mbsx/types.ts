@@ -8,9 +8,7 @@ export type SwapSummary = {
   // Decimal strings in whole coins, matching getSwapInfo.
   amount_from: string;
   amount_to: string;
-  // Private swaps only; market is absent when the server had no price.
-  asked_amount_to?: string;
-  market_amount_to?: string;
+  kind?: OfferKind;
   initiating: boolean;
   participating: boolean;
 };
@@ -43,21 +41,26 @@ export type MbsxSwapFees = {
   fees_total?: string;
 };
 
-// A bridged offer to pick from. Its amounts are what this offer's rate would
-// mean for the request, not the network offer's own size.
-export type BridgedOffer = {
+export type OfferKind = 'PRIVATE' | 'BRIDGED';
+
+// An offer to accept. A bridged offer's amounts are what its rate would mean for
+// the request, not the network offer's own size.
+export type SwapOffer = {
   id: string;
+  kind: OfferKind;
   expire_at: string;
-  chosen: boolean;
+  accepted: boolean;
   state: 'RECEIVED' | 'REVOKED';
   coin_send: string;
   coin_receive: string;
   amount_send: string;
   amount_receive: string;
-  // The server's record of the offerer: its address, and 0-100 from what the
-  // server has seen of it, 50 for one it has not.
-  offerer_address: string;
-  offerer_reliability: bigint;
+  // Absent when the server had no price.
+  market_amount_receive?: string;
+  // Bridged only: the server's record of the offerer, its address and 0-100
+  // from what the server has seen of it, 50 for one it has not.
+  offerer_address?: string;
+  offerer_reliability?: bigint;
 };
 
 export type SwapRequestDetails = SwapRequestSummary &
@@ -65,7 +68,7 @@ export type SwapRequestDetails = SwapRequestSummary &
     swapids?: string[];
     // Any swap under the request in a state the module counts as in progress.
     swaps_active?: boolean;
-    bridged_offers?: BridgedOffer[];
+    offers?: SwapOffer[];
     error?: string;
   };
 
