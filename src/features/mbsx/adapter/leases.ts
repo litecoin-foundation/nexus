@@ -6,6 +6,8 @@ import NitroBSX from 'react-native-nitro-bsx';
 
 import {
   displayTxid,
+  LEASE_ID_PREFIX,
+  LEASE_SECONDS,
   serialisedOutpointKey,
   type SelectedPrevout,
 } from './prevouts';
@@ -61,17 +63,20 @@ const releaseOutput = (request: Parameters<typeof walletKitReleaseOutput>[0]) =>
  * for, which is the only way to release the right coin on the right request's
  * behalf after a restart.
  */
-export const walletLocks = (unreleasedOnly = true): WalletLock[] => {
+const readWalletLocks = (unreleasedOnly: boolean): WalletLock[] | null => {
   const rv = NitroBSX.listWalletLocks(unreleasedOnly) as {
     locks?: WalletLock[];
     error?: string;
   };
   if (rv?.error) {
     console.warn('mbsx could not list wallet locks:', rv.error);
-    return [];
+    return null;
   }
   return rv?.locks ?? [];
 };
+
+export const walletLocks = (unreleasedOnly = true): WalletLock[] =>
+  readWalletLocks(unreleasedOnly) ?? [];
 
 export const recordLeases = (
   requestId: string,
@@ -236,6 +241,52 @@ export const releaseLeases = async (requestId: string) => {
         `mbsx could not release ${displayTxid(lock.txid)}:${lock.vout}`,
         e,
       );
+    }
+  }
+};
+
+// Younger than a request's life, a lease with no row may be a request being made.
+const ORPHAN_MIN_AGE_SECONDS = 10 * 60;
+
+// A crash between LeaseOutput and recordLeases leaves a lease no row owns.
+export const releaseOrphanLeases = async () => {
+  if (!store.getState().lightning.lndActive) {
+    return;
+  }
+  const locks = readWalletLocks(true);
+  if (locks === null) {
+    return;
+  }
+  let leases;
+  try {
+    leases = await listLeases();
+  } catch (e) {
+    console.warn('mbsx could not list leases:', (e as Error).message);
+    return;
+  }
+  const owned = new Set(
+    locks.map(lock => `${lock.handle}:${outpointKey(lock.txid, lock.vout)}`),
+  );
+  const newest = Date.now() / 1000 + LEASE_SECONDS - ORPHAN_MIN_AGE_SECONDS;
+  for (const lease of leases.lockedUtxos ?? []) {
+    const id = Buffer.from(lease.id);
+    if (
+      !lease.outpoint ||
+      !id.subarray(0, LEASE_ID_PREFIX.length).equals(LEASE_ID_PREFIX) ||
+      Number(lease.expiration) > newest
+    ) {
+      continue;
+    }
+    const txid = Buffer.from(lease.outpoint.txidBytes).toString('hex');
+    const vout = lease.outpoint.outputIndex;
+    if (owned.has(`${id.toString('hex')}:${outpointKey(txid, vout)}`)) {
+      continue;
+    }
+    console.log(`mbsx releasing orphan lease of ${displayTxid(txid)}:${vout}`);
+    try {
+      await releaseOutput({id, outpoint: lease.outpoint});
+    } catch (e) {
+      console.warn(`mbsx could not release ${displayTxid(txid)}:${vout}`, e);
     }
   }
 };

@@ -25,6 +25,7 @@ import type {MbsxConfig} from './config';
 import {
   releaseAllLeases,
   releaseLeases,
+  releaseOrphanLeases,
   requestIdsWithLocks,
   withPendingOutputs,
 } from './leases';
@@ -211,6 +212,7 @@ export const reconcileLeases = async () => {
       await releaseLeases(requestId);
     }
   }
+  await releaseOrphanLeases();
 };
 
 export const isTerminalState = (state: string) => TERMINAL_STATES.has(state);
@@ -283,7 +285,7 @@ export const stopIfIdle = async () => {
   // Still here as the backstop: a request that errored before producing a swap
   // never emits a state change for the watcher to see.
   await reconcileNow();
-  const idle = isRunning() && !hasActiveSwaps();
+  const idle = isRunning() && !sectionMounted && !hasActiveSwaps();
   console.log(`mbsx stopIfIdle: ${idle ? 'stopping' : 'staying up'}`);
   if (!idle) {
     return false;

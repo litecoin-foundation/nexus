@@ -1,11 +1,18 @@
 import {
   ChangeAddressType,
   walletKitFundPsbt,
+  walletKitLeaseOutput,
   walletKitListUnspent,
+  walletKitReleaseOutput,
 } from 'react-native-nitro-lndltc';
+import Crypto from 'react-native-quick-crypto';
 
 import {selectedAccountNamesSelector} from '../../../reducers/wallets';
 import {store} from '../../../store';
+
+export const LEASE_ID_PREFIX = Buffer.from('mbsx');
+// Released when the swap ends; the day only bounds a crash.
+export const LEASE_SECONDS = 24 * 60 * 60;
 
 export type FundingOutput = {address: string; value: number};
 
@@ -127,19 +134,54 @@ export const spendableBalance = async (account?: string): Promise<bigint> => {
   );
 };
 
+// lnd refuses its own id to LeaseOutput; one id per request keeps releases apart.
+const leaseForSwap = async (
+  selected: SelectedPrevout[],
+): Promise<SelectedPrevout[]> => {
+  const id = Buffer.concat([
+    LEASE_ID_PREFIX,
+    Buffer.from(Crypto.randomBytes(32 - LEASE_ID_PREFIX.length)),
+  ]);
+  const held = selected.map(prevout => ({...prevout}));
+  const outpoint = (prevout: SelectedPrevout) => ({
+    txidBytes: Buffer.from(prevout.txid, 'hex'),
+    outputIndex: prevout.vout,
+  });
+  try {
+    for (const prevout of held) {
+      await walletKitReleaseOutput({
+        id: Buffer.from(prevout.leaseId, 'hex'),
+        outpoint: outpoint(prevout),
+      });
+      prevout.leaseId = '';
+      await walletKitLeaseOutput({
+        id,
+        outpoint: outpoint(prevout),
+        expirationSeconds: BigInt(LEASE_SECONDS),
+      });
+      prevout.leaseId = id.toString('hex');
+    }
+  } catch (e) {
+    for (const prevout of held.filter(p => p.leaseId)) {
+      await walletKitReleaseOutput({
+        id: Buffer.from(prevout.leaseId, 'hex'),
+        outpoint: outpoint(prevout),
+      }).catch(() => undefined);
+    }
+    throw new Error(
+      `Could not reserve the swap's coins: ${(e as Error).message}`,
+    );
+  }
+  console.log(`mbsx leased ${held.length} coin(s) for 24h`);
+  return held;
+};
+
 /**
  * Funds a transaction paying `outputs` and hands back the coins lnd picked and
- * leased; the transaction itself is discarded. Leasing is the point and
- * FundPsbt is the only route to it — liblnd exports ReleaseOutput and
- * ListLeases but no LeaseOutput.
+ * leased; the transaction itself is discarded.
  *
  * The leases must be released when the swap ends, or the coins stay locked out
  * of Nexus's own send flow.
- *
- * The lock is best-effort: FundPsbt applies lnd's default duration and offers no
- * way to set one, so on a swap lasting longer the coins silently unlock. Fixing
- * it means binding walletKitLeaseOutput, which takes expiration_seconds and
- * whose protos are already generated.
  */
 export const selectAndLeasePrevouts = async (
   outputs: FundingOutput[],
@@ -222,5 +264,5 @@ export const selectAndLeasePrevouts = async (
       .map(p => `${displayTxid(p.txid)}:${p.vout} ${p.amountSat}`)
       .join(', '),
   );
-  return selected;
+  return leaseForSwap(selected);
 };

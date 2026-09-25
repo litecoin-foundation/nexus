@@ -1,0 +1,166 @@
+diff --git a/node_modules/react-native-nitro-lndltc/cpp/HybridLnd.cpp b/node_modules/react-native-nitro-lndltc/cpp/HybridLnd.cpp
+index 6edfebf..79b700b 100644
+--- a/node_modules/react-native-nitro-lndltc/cpp/HybridLnd.cpp
++++ b/node_modules/react-native-nitro-lndltc/cpp/HybridLnd.cpp
+@@ -171,6 +171,11 @@ HybridLnd::walletKitReleaseOutput(const std::shared_ptr<ArrayBuffer>& data) {
+     return callUnaryRpc(::walletKitReleaseOutput, data);
+ }
+ 
++std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>
++HybridLnd::walletKitLeaseOutput(const std::shared_ptr<ArrayBuffer>& data) {
++    return callUnaryRpc(::walletKitLeaseOutput, data);
++}
++
+ std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>
+ HybridLnd::walletKitPublishTransaction(const std::shared_ptr<ArrayBuffer>& data) {
+     return callUnaryRpc(::walletKitPublishTransaction, data);
+diff --git a/node_modules/react-native-nitro-lndltc/cpp/HybridLnd.hpp b/node_modules/react-native-nitro-lndltc/cpp/HybridLnd.hpp
+index 957be09..6b562aa 100644
+--- a/node_modules/react-native-nitro-lndltc/cpp/HybridLnd.hpp
++++ b/node_modules/react-native-nitro-lndltc/cpp/HybridLnd.hpp
+@@ -36,6 +36,7 @@ public:
+     std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitListUnspent(const std::shared_ptr<ArrayBuffer>& data) override;
+     std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitLabelTransaction(const std::shared_ptr<ArrayBuffer>& data) override;
+     std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitReleaseOutput(const std::shared_ptr<ArrayBuffer>& data) override;
++    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitLeaseOutput(const std::shared_ptr<ArrayBuffer>& data) override;
+     std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitPublishTransaction(const std::shared_ptr<ArrayBuffer>& data) override;
+     std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitSignMessageWithAddr(const std::shared_ptr<ArrayBuffer>& data) override;
+     std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitVerifyMessageWithAddr(const std::shared_ptr<ArrayBuffer>& data) override;
+diff --git a/node_modules/react-native-nitro-lndltc/cpp/liblnd.h b/node_modules/react-native-nitro-lndltc/cpp/liblnd.h
+index 5f2e5ae..ef2d5b8 100644
+--- a/node_modules/react-native-nitro-lndltc/cpp/liblnd.h
++++ b/node_modules/react-native-nitro-lndltc/cpp/liblnd.h
+@@ -54,6 +54,7 @@ extern void walletKitListLeases(char* data, int length, CCallback callback);
+ extern void walletKitListUnspent(char* data, int length, CCallback callback);
+ extern void walletKitLabelTransaction(char* data, int length, CCallback callback);
+ extern void walletKitReleaseOutput(char* data, int length, CCallback callback);
++extern void walletKitLeaseOutput(char* data, int length, CCallback callback);
+ extern void walletKitPublishTransaction(char* data, int length, CCallback callback);
+ extern void walletKitSignMessageWithAddr(char* data, int length, CCallback callback);
+ extern void walletKitVerifyMessageWithAddr(char* data, int length, CCallback callback);
+diff --git a/node_modules/react-native-nitro-lndltc/lib/index.d.ts b/node_modules/react-native-nitro-lndltc/lib/index.d.ts
+index 51243a7..c63e637 100644
+--- a/node_modules/react-native-nitro-lndltc/lib/index.d.ts
++++ b/node_modules/react-native-nitro-lndltc/lib/index.d.ts
+@@ -3,7 +3,7 @@ export type { Subscription } from './specs/Lnd.nitro';
+ import { WalletBalanceRequestSchema, EstimateFeeRequestSchema, NewAddressRequestSchema, GetTransactionsRequestSchema, SendCoinsRequestSchema, type Transaction } from './proto/lightning_pb';
+ import { GenSeedRequestSchema, InitWalletRequestSchema, UnlockWalletRequestSchema } from './proto/walletunlocker_pb';
+ import { type SubscribeStateResponse } from './proto/stateservice_pb';
+-import { ImportAccountRequestSchema, ListAccountsRequestSchema, ListAddressesRequestSchema, ListLeasesRequestSchema, ListUnspentRequestSchema as WalletKitListUnspentRequestSchema, LabelTransactionRequestSchema, ReleaseOutputRequestSchema, TransactionSchema as WalletKitTransactionSchema, SignMessageWithAddrRequestSchema, VerifyMessageWithAddrRequestSchema, SignPsbtRequestSchema, FundPsbtRequestSchema, FinalizePsbtRequestSchema, ImportMwebScanKeyRequestSchema } from './proto/walletrpc/walletkit_pb';
++import { ImportAccountRequestSchema, ListAccountsRequestSchema, ListAddressesRequestSchema, ListLeasesRequestSchema, ListUnspentRequestSchema as WalletKitListUnspentRequestSchema, LabelTransactionRequestSchema, ReleaseOutputRequestSchema, LeaseOutputRequestSchema, TransactionSchema as WalletKitTransactionSchema, SignMessageWithAddrRequestSchema, VerifyMessageWithAddrRequestSchema, SignPsbtRequestSchema, FundPsbtRequestSchema, FinalizePsbtRequestSchema, ImportMwebScanKeyRequestSchema } from './proto/walletrpc/walletkit_pb';
+ export type { WalletBalanceRequest, WalletBalanceResponse, EstimateFeeRequest, EstimateFeeResponse, NewAddressRequest, NewAddressResponse, GetInfoRequest, GetInfoResponse, GetRecoveryInfoRequest, GetRecoveryInfoResponse, StopRequest, StopResponse, GetTransactionsRequest, TransactionDetails, SendCoinsRequest, SendCoinsResponse, Transaction, Utxo, OutPoint, PreviousOutPoint, } from './proto/lightning_pb';
+ export { AddressType, OutputScriptType } from './proto/lightning_pb';
+ export type { GenSeedRequest, GenSeedResponse, InitWalletRequest, InitWalletResponse, UnlockWalletRequest, UnlockWalletResponse, } from './proto/walletunlocker_pb';
+@@ -31,6 +31,7 @@ export declare function walletKitListLeases(request?: MessageInitShape<typeof Li
+ export declare function walletKitListUnspent(request?: MessageInitShape<typeof WalletKitListUnspentRequestSchema>): Promise<import("./proto/walletrpc/walletkit_pb").ListUnspentResponse>;
+ export declare function walletKitLabelTransaction(request: MessageInitShape<typeof LabelTransactionRequestSchema>): Promise<import("@bufbuild/protobuf").Message<"walletrpc.LabelTransactionResponse">>;
+ export declare function walletKitReleaseOutput(request: MessageInitShape<typeof ReleaseOutputRequestSchema>): Promise<import("@bufbuild/protobuf").Message<"walletrpc.ReleaseOutputResponse">>;
++export declare function walletKitLeaseOutput(request: MessageInitShape<typeof LeaseOutputRequestSchema>): Promise<import("./proto/walletrpc/walletkit_pb").LeaseOutputResponse>;
+ export declare function walletKitPublishTransaction(request: MessageInitShape<typeof WalletKitTransactionSchema>): Promise<import("./proto/walletrpc/walletkit_pb").PublishResponse>;
+ export declare function walletKitSignMessageWithAddr(request: MessageInitShape<typeof SignMessageWithAddrRequestSchema>): Promise<import("./proto/walletrpc/walletkit_pb").SignMessageWithAddrResponse>;
+ export declare function walletKitVerifyMessageWithAddr(request: MessageInitShape<typeof VerifyMessageWithAddrRequestSchema>): Promise<import("./proto/walletrpc/walletkit_pb").VerifyMessageWithAddrResponse>;
+diff --git a/node_modules/react-native-nitro-lndltc/lib/index.js b/node_modules/react-native-nitro-lndltc/lib/index.js
+index ce345d8..5c0608b 100644
+--- a/node_modules/react-native-nitro-lndltc/lib/index.js
++++ b/node_modules/react-native-nitro-lndltc/lib/index.js
+@@ -7,7 +7,7 @@ import { GenSeedRequestSchema, GenSeedResponseSchema, InitWalletRequestSchema, I
+ // proto schemas - StateService
+ import { SubscribeStateResponseSchema, } from './proto/stateservice_pb';
+ // proto schemas - WalletKit
+-import { ImportAccountRequestSchema, ImportAccountResponseSchema, ListAccountsRequestSchema, ListAccountsResponseSchema, ListAddressesRequestSchema, ListAddressesResponseSchema, ListLeasesRequestSchema, ListLeasesResponseSchema, ListUnspentRequestSchema as WalletKitListUnspentRequestSchema, ListUnspentResponseSchema as WalletKitListUnspentResponseSchema, LabelTransactionRequestSchema, LabelTransactionResponseSchema, ReleaseOutputRequestSchema, ReleaseOutputResponseSchema, TransactionSchema as WalletKitTransactionSchema, PublishResponseSchema, SignMessageWithAddrRequestSchema, SignMessageWithAddrResponseSchema, VerifyMessageWithAddrRequestSchema, VerifyMessageWithAddrResponseSchema, SignPsbtRequestSchema, SignPsbtResponseSchema, FundPsbtRequestSchema, FundPsbtResponseSchema, FinalizePsbtRequestSchema, FinalizePsbtResponseSchema, ImportMwebScanKeyRequestSchema, ImportMwebScanKeyResponseSchema, } from './proto/walletrpc/walletkit_pb';
++import { ImportAccountRequestSchema, ImportAccountResponseSchema, ListAccountsRequestSchema, ListAccountsResponseSchema, ListAddressesRequestSchema, ListAddressesResponseSchema, ListLeasesRequestSchema, ListLeasesResponseSchema, ListUnspentRequestSchema as WalletKitListUnspentRequestSchema, ListUnspentResponseSchema as WalletKitListUnspentResponseSchema, LabelTransactionRequestSchema, LabelTransactionResponseSchema, ReleaseOutputRequestSchema, ReleaseOutputResponseSchema, LeaseOutputRequestSchema, LeaseOutputResponseSchema, TransactionSchema as WalletKitTransactionSchema, PublishResponseSchema, SignMessageWithAddrRequestSchema, SignMessageWithAddrResponseSchema, VerifyMessageWithAddrRequestSchema, VerifyMessageWithAddrResponseSchema, SignPsbtRequestSchema, SignPsbtResponseSchema, FundPsbtRequestSchema, FundPsbtResponseSchema, FinalizePsbtRequestSchema, FinalizePsbtResponseSchema, ImportMwebScanKeyRequestSchema, ImportMwebScanKeyResponseSchema, } from './proto/walletrpc/walletkit_pb';
+ // proto schemas - NeutrinoKit
+ import { StatusResponseSchema as NeutrinoStatusResponseSchema } from './proto/neutrinorpc/neutrino_pb';
+ export { AddressType, OutputScriptType } from './proto/lightning_pb';
+@@ -125,6 +125,10 @@ export async function walletKitReleaseOutput(request) {
+     const bytes = toBinary(ReleaseOutputRequestSchema, create(ReleaseOutputRequestSchema, request));
+     return fromBinary(ReleaseOutputResponseSchema, unwrapEnvelope(await getLnd().walletKitReleaseOutput(toArrayBuffer(bytes))));
+ }
++export async function walletKitLeaseOutput(request) {
++    const bytes = toBinary(LeaseOutputRequestSchema, create(LeaseOutputRequestSchema, request));
++    return fromBinary(LeaseOutputResponseSchema, unwrapEnvelope(await getLnd().walletKitLeaseOutput(toArrayBuffer(bytes))));
++}
+ export async function walletKitPublishTransaction(request) {
+     const bytes = toBinary(WalletKitTransactionSchema, create(WalletKitTransactionSchema, request));
+     return fromBinary(PublishResponseSchema, unwrapEnvelope(await getLnd().walletKitPublishTransaction(toArrayBuffer(bytes))));
+diff --git a/node_modules/react-native-nitro-lndltc/lib/specs/Lnd.nitro.d.ts b/node_modules/react-native-nitro-lndltc/lib/specs/Lnd.nitro.d.ts
+index 1df82b9..ecfc224 100644
+--- a/node_modules/react-native-nitro-lndltc/lib/specs/Lnd.nitro.d.ts
++++ b/node_modules/react-native-nitro-lndltc/lib/specs/Lnd.nitro.d.ts
+@@ -38,6 +38,7 @@ export interface Lnd extends HybridObject<{
+     walletKitListUnspent(data: ArrayBuffer): Promise<ArrayBuffer>;
+     walletKitLabelTransaction(data: ArrayBuffer): Promise<ArrayBuffer>;
+     walletKitReleaseOutput(data: ArrayBuffer): Promise<ArrayBuffer>;
++    walletKitLeaseOutput(data: ArrayBuffer): Promise<ArrayBuffer>;
+     walletKitPublishTransaction(data: ArrayBuffer): Promise<ArrayBuffer>;
+     walletKitSignMessageWithAddr(data: ArrayBuffer): Promise<ArrayBuffer>;
+     walletKitVerifyMessageWithAddr(data: ArrayBuffer): Promise<ArrayBuffer>;
+diff --git a/node_modules/react-native-nitro-lndltc/nitrogen/generated/shared/c++/HybridLndSpec.cpp b/node_modules/react-native-nitro-lndltc/nitrogen/generated/shared/c++/HybridLndSpec.cpp
+index 93071b2..239076a 100644
+--- a/node_modules/react-native-nitro-lndltc/nitrogen/generated/shared/c++/HybridLndSpec.cpp
++++ b/node_modules/react-native-nitro-lndltc/nitrogen/generated/shared/c++/HybridLndSpec.cpp
+@@ -33,6 +33,7 @@ namespace margelo::nitro::nitrolndltc {
+       prototype.registerHybridMethod("walletKitListUnspent", &HybridLndSpec::walletKitListUnspent);
+       prototype.registerHybridMethod("walletKitLabelTransaction", &HybridLndSpec::walletKitLabelTransaction);
+       prototype.registerHybridMethod("walletKitReleaseOutput", &HybridLndSpec::walletKitReleaseOutput);
++      prototype.registerHybridMethod("walletKitLeaseOutput", &HybridLndSpec::walletKitLeaseOutput);
+       prototype.registerHybridMethod("walletKitPublishTransaction", &HybridLndSpec::walletKitPublishTransaction);
+       prototype.registerHybridMethod("walletKitSignMessageWithAddr", &HybridLndSpec::walletKitSignMessageWithAddr);
+       prototype.registerHybridMethod("walletKitVerifyMessageWithAddr", &HybridLndSpec::walletKitVerifyMessageWithAddr);
+diff --git a/node_modules/react-native-nitro-lndltc/nitrogen/generated/shared/c++/HybridLndSpec.hpp b/node_modules/react-native-nitro-lndltc/nitrogen/generated/shared/c++/HybridLndSpec.hpp
+index 987808b..34a29c4 100644
+--- a/node_modules/react-native-nitro-lndltc/nitrogen/generated/shared/c++/HybridLndSpec.hpp
++++ b/node_modules/react-native-nitro-lndltc/nitrogen/generated/shared/c++/HybridLndSpec.hpp
+@@ -73,6 +73,7 @@ namespace margelo::nitro::nitrolndltc {
+       virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitListUnspent(const std::shared_ptr<ArrayBuffer>& data) = 0;
+       virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitLabelTransaction(const std::shared_ptr<ArrayBuffer>& data) = 0;
+       virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitReleaseOutput(const std::shared_ptr<ArrayBuffer>& data) = 0;
++      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitLeaseOutput(const std::shared_ptr<ArrayBuffer>& data) = 0;
+       virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitPublishTransaction(const std::shared_ptr<ArrayBuffer>& data) = 0;
+       virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitSignMessageWithAddr(const std::shared_ptr<ArrayBuffer>& data) = 0;
+       virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> walletKitVerifyMessageWithAddr(const std::shared_ptr<ArrayBuffer>& data) = 0;
+diff --git a/node_modules/react-native-nitro-lndltc/src/index.ts b/node_modules/react-native-nitro-lndltc/src/index.ts
+index 1c2d2ba..eab534e 100644
+--- a/node_modules/react-native-nitro-lndltc/src/index.ts
++++ b/node_modules/react-native-nitro-lndltc/src/index.ts
+@@ -59,6 +59,8 @@ import {
+   LabelTransactionResponseSchema,
+   ReleaseOutputRequestSchema,
+   ReleaseOutputResponseSchema,
++  LeaseOutputRequestSchema,
++  LeaseOutputResponseSchema,
+   TransactionSchema as WalletKitTransactionSchema,
+   PublishResponseSchema,
+   SignMessageWithAddrRequestSchema,
+@@ -420,6 +422,19 @@ export async function walletKitReleaseOutput(
+   )
+ }
+ 
++export async function walletKitLeaseOutput(
++  request: MessageInitShape<typeof LeaseOutputRequestSchema>
++) {
++  const bytes = toBinary(
++    LeaseOutputRequestSchema,
++    create(LeaseOutputRequestSchema, request)
++  )
++  return fromBinary(
++    LeaseOutputResponseSchema,
++    unwrapEnvelope(await getLnd().walletKitLeaseOutput(toArrayBuffer(bytes)))
++  )
++}
++
+ export async function walletKitPublishTransaction(
+   request: MessageInitShape<typeof WalletKitTransactionSchema>
+ ) {
+diff --git a/node_modules/react-native-nitro-lndltc/src/specs/Lnd.nitro.ts b/node_modules/react-native-nitro-lndltc/src/specs/Lnd.nitro.ts
+index e1f339b..ca3fc81 100644
+--- a/node_modules/react-native-nitro-lndltc/src/specs/Lnd.nitro.ts
++++ b/node_modules/react-native-nitro-lndltc/src/specs/Lnd.nitro.ts
+@@ -44,6 +44,7 @@ export interface Lnd extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
+   walletKitListUnspent(data: ArrayBuffer): Promise<ArrayBuffer>
+   walletKitLabelTransaction(data: ArrayBuffer): Promise<ArrayBuffer>
+   walletKitReleaseOutput(data: ArrayBuffer): Promise<ArrayBuffer>
++  walletKitLeaseOutput(data: ArrayBuffer): Promise<ArrayBuffer>
+   walletKitPublishTransaction(data: ArrayBuffer): Promise<ArrayBuffer>
+   walletKitSignMessageWithAddr(data: ArrayBuffer): Promise<ArrayBuffer>
+   walletKitVerifyMessageWithAddr(data: ArrayBuffer): Promise<ArrayBuffer>
