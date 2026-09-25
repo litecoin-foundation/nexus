@@ -174,6 +174,9 @@ const TERMINAL_STATES = new Set([
 // From SwapRequestStates::to_str: no further swap will come of these.
 const ENDED_REQUEST_STATES = new Set(['EXPIRED', 'REVOKED', 'ERROR']);
 
+// A request in these can still accept an offer, so its coins may yet fund a swap.
+const OPEN_REQUEST_STATES = new Set(['SENT', 'OFFER_RECEIVED']);
+
 /**
  * Frees the coins behind any request whose swaps have all finished, and behind a
  * request that errored before producing one. Called on the same tick that
@@ -188,7 +191,7 @@ export const reconcileLeases = async () => {
       continue; // Core is down, so nothing is known: leave the lease alone.
     }
     // The module's reading, ahead of the TERMINAL_STATES copy below.
-    if (request.swaps_active) {
+    if (request.swaps_active || OPEN_REQUEST_STATES.has(request.state)) {
       continue;
     }
     const swapIds = request.swapids ?? [];
