@@ -82,6 +82,9 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
       part: {
         electrumx: [{url: 'tcp://10.0.2.2:50007'}],
       },
+      firo: {
+        electrumx: [{url: 'tcp://10.0.2.2:50010'}],
+      },
     },
   },
   mainnet: {
@@ -102,6 +105,9 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
       },
       part: {
         electrumx: [{url: 'ssl://178.62.110.5:50002'}],
+      },
+      firo: {
+        electrumx: [{url: 'ssl://electrumx.firo.org:50002'}],
       },
     },
   },
