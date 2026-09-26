@@ -24,6 +24,7 @@ import {
   removeSwap,
 } from '../adapter';
 import RemoveButton from '../components/RemoveButton';
+import CoinPair from '../components/CoinPair';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
@@ -85,6 +86,19 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={swapCards.card}>
+          <View style={swapCards.historyRow}>
+            <CoinPair from={swap.coin_from} to={swap.coin_to} size={40} />
+            <View style={swapCards.historyMid}>
+              <Text style={swapCards.historyTitle}>
+                {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+              </Text>
+              {showRaw ? (
+                <Text style={swapCards.historySub}>{swap.state}</Text>
+              ) : null}
+            </View>
+          </View>
+        </View>
         <Text style={swapCards.section}>Send</Text>
         <View style={swapCards.card}>
           <View style={swapCards.amountRow}>
@@ -101,10 +115,6 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
               <Text style={swapCards.coinPillText}>{swap.coin_from}</Text>
             </View>
           </View>
-          <Text style={swapCards.status}>
-            {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
-          </Text>
-          {showRaw ? <Text style={swapCards.id}>{swap.state}</Text> : null}
           {swap.kind ? (
             <Text style={swapCards.meta}>{kindLabel(swap.kind)}</Text>
           ) : null}

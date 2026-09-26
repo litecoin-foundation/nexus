@@ -35,6 +35,43 @@ export const swapCards = StyleSheet.create({
     color: '#484859',
     paddingVertical: 4,
   },
+  historyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  historyMid: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  historyTitle: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 15,
+  },
+  historySub: {
+    marginTop: 2,
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 12,
+  },
+  historyAmounts: {
+    alignItems: 'flex-end',
+    marginLeft: 8,
+    flexShrink: 1,
+  },
+  historyIn: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 13,
+  },
+  historyOut: {
+    marginTop: 2,
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 13,
+  },
   pair: {
     flexDirection: 'row',
     alignItems: 'center',

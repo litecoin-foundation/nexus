@@ -1,5 +1,5 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {Image, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -17,7 +17,8 @@ import {
 import {coinString} from '../useSwapAmounts';
 import RemoveButton from '../components/RemoveButton';
 import {kindLabel} from '../format';
-import {COIN_ICONS, swapCards} from '../swapCards';
+import CoinPair from '../components/CoinPair';
+import {swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
 import type {MbsxDrawerParamList, SwapSummary} from '../types';
 
@@ -105,36 +106,33 @@ const SwapList: React.FC<Props> = ({navigation}) => {
               onPress={() =>
                 navigation.navigate('SwapDetail', {swapId: swap.id})
               }>
-              <View style={swapCards.pair}>
-                {COIN_ICONS[swap.coin_from] ? (
-                  <Image
-                    source={COIN_ICONS[swap.coin_from]}
-                    style={swapCards.coinLogo}
-                  />
-                ) : null}
-                <Text style={swapCards.pairText}>
-                  {`${swap.coin_from} → ${swap.coin_to}`}
-                </Text>
-                {COIN_ICONS[swap.coin_to] ? (
-                  <Image
-                    source={COIN_ICONS[swap.coin_to]}
-                    style={swapCards.coinLogoEnd}
-                  />
-                ) : null}
+              <View style={swapCards.historyRow}>
+                <CoinPair from={swap.coin_from} to={swap.coin_to} />
+                <View style={swapCards.historyMid}>
+                  <Text style={swapCards.historyTitle} numberOfLines={2}>
+                    {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                  </Text>
+                  {showRaw ? (
+                    <Text style={swapCards.historySub}>{swap.state}</Text>
+                  ) : null}
+                  {swap.kind ? (
+                    <Text style={swapCards.historySub}>
+                      {kindLabel(swap.kind)}
+                    </Text>
+                  ) : null}
+                  <Text style={swapCards.historySub} numberOfLines={1}>
+                    {swap.id}
+                  </Text>
+                </View>
+                <View style={swapCards.historyAmounts}>
+                  <Text style={swapCards.historyIn} numberOfLines={1}>
+                    {`+ ${swap.amount_to} ${swap.coin_to}`}
+                  </Text>
+                  <Text style={swapCards.historyOut} numberOfLines={1}>
+                    {`− ${swap.amount_from} ${swap.coin_from}`}
+                  </Text>
+                </View>
               </View>
-              <Text style={swapCards.status}>
-                {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
-              </Text>
-              {showRaw ? (
-                <Text style={swapCards.id}>{swap.state}</Text>
-              ) : null}
-              {swap.kind ? (
-                <Text style={swapCards.meta}>{kindLabel(swap.kind)}</Text>
-              ) : null}
-              <Text style={swapCards.meta}>
-                {`${swap.amount_from} ${swap.coin_from}`}
-              </Text>
-              <Text style={swapCards.id}>{swap.id}</Text>
             </TouchableOpacity>
           ))
         )}

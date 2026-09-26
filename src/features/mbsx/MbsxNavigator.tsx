@@ -36,6 +36,7 @@ import {
 } from './adapter';
 import {readConfig} from './adapter/config';
 import {pushMessage, setConnected, setError, setRunning} from './mbsxSlice';
+import BasicSwapMark from './components/BasicSwapMark';
 import BridgeStatus from './components/BridgeStatus';
 import MbsxMenuButton from './components/MbsxMenuButton';
 import CreateSwap from './screens/CreateSwap';
@@ -123,9 +124,7 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
           <Text style={styles.menuTitle}>Swap</Text>
         </View>
       </View>
-      <ScrollView
-        contentContainerStyle={{paddingBottom: insets.bottom + 16}}
-        showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
         {items.map(route => {
           const focused =
             choiceMade && state.routes[state.index]?.key === route.key;
@@ -153,6 +152,9 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
           <Text style={styles.cellTitle}>Back to Nexus</Text>
         </TouchableOpacity>
       </ScrollView>
+      <View style={[styles.mark, {paddingBottom: Math.max(insets.bottom, 16)}]}>
+        <BasicSwapMark />
+      </View>
     </LinearGradient>
   );
 };
@@ -344,6 +346,13 @@ const getDrawerStyles = (_screenWidth: number, screenHeight: number) =>
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
+    },
+    menuList: {
+      flex: 1,
+    },
+    mark: {
+      alignItems: 'center',
+      paddingTop: 16,
     },
     menuTitle: {
       color: '#fff',

@@ -1,3 +1,4 @@
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import NitroBSX, {
   startBackgroundService,
   stopBackgroundService,
@@ -146,6 +147,7 @@ export const start = async (tor_enabled?: boolean) => {
   stateWatch = watchSwapStates();
   startBackgroundService();
   scheduleWakes();
+  void rememberFinishedSwaps();
 
   // Tests only. __DEV__ so metro strips it from a release bundle, and the native
   // listener is compiled out of a release build regardless (BSX_DEBUG_RPC), so
@@ -300,6 +302,7 @@ export const stopIfIdle = async () => {
   await reconcileNow();
   const idle = isRunning() && !sectionMounted && !hasActiveSwaps();
   console.log(`mbsx stopIfIdle: ${idle ? 'stopping' : 'staying up'}`);
+  await rememberFinishedSwaps();
   if (!idle) {
     return false;
   }
@@ -434,6 +437,7 @@ const watchSwapStates = () =>
       // state alone, a swap made while the app is open never gets an alarm - the
       // only one that did was one already in flight when start() ran.
       scheduleWakes();
+      void rememberFinishedSwaps();
     } catch {
       // Not an event we can read, so not one that changes a swap's state.
     }
@@ -458,6 +462,62 @@ export const listSwaps = (): SwapSummary[] | null => {
     return null;
   }
   return rv.swaps ?? [];
+};
+
+const FINISHED_SWAPS_PATH = `${MBSX_DATA_DIR}/finished-swaps.json`;
+
+export type FinishedSwap = Pick<
+  SwapSummary,
+  | 'id'
+  | 'coin_from'
+  | 'coin_to'
+  | 'amount_from'
+  | 'amount_to'
+  | 'state'
+  | 'created_at'
+>;
+
+const finishedFrom = (swaps: SwapSummary[]): FinishedSwap[] =>
+  swaps
+    .filter(swap => swap.state === 'COMPLETED')
+    .map(swap => ({
+      id: swap.id,
+      coin_from: swap.coin_from,
+      coin_to: swap.coin_to,
+      amount_from: swap.amount_from,
+      amount_to: swap.amount_to,
+      state: swap.state,
+      created_at: swap.created_at,
+    }))
+    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+
+export const rememberFinishedSwaps = async () => {
+  const swaps = listSwaps();
+  if (swaps === null) {
+    return;
+  }
+  try {
+    await RNFS.mkdir(MBSX_DATA_DIR).catch(() => undefined);
+    await RNFS.writeFile(
+      FINISHED_SWAPS_PATH,
+      JSON.stringify(finishedFrom(swaps)),
+      'utf8',
+    );
+  } catch (e) {
+    console.warn('mbsx could not store finished swaps', e);
+  }
+};
+
+export const readFinishedSwaps = async (): Promise<FinishedSwap[]> => {
+  try {
+    if (!(await RNFS.exists(FINISHED_SWAPS_PATH))) {
+      return [];
+    }
+    const parsed = JSON.parse(await RNFS.readFile(FINISHED_SWAPS_PATH, 'utf8'));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 };
 
 export const listRequests = (): SwapRequestSummary[] | null => {
