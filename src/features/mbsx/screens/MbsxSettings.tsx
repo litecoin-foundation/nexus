@@ -8,6 +8,8 @@ import React, {
 import {
   Alert,
   Image,
+  Keyboard,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -66,6 +68,22 @@ const MbsxSettings: React.FC = () => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const insets = useSafeAreaInsets();
   const [advanced, setAdvanced] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, event => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   const dispatch = useAppDispatch();
   const [config, setConfig] = useState<MbsxConfig | null>(null);
@@ -468,7 +486,7 @@ const MbsxSettings: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
         style={look.scroller}
         contentContainerStyle={styles.scroll}
@@ -755,7 +773,14 @@ const MbsxSettings: React.FC = () => {
         {dirty ? null : saveActions}
       </ScrollView>
       {dirty ? (
-        <View style={[look.footer, {paddingBottom: Math.max(insets.bottom, 12)}]}>
+        <View
+          style={[
+            look.footer,
+            {
+              paddingBottom:
+                keyboardHeight > 0 ? 12 : Math.max(insets.bottom, 12),
+            },
+          ]}>
           {saveActions}
         </View>
       ) : null}

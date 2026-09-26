@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Pressable, StyleSheet} from 'react-native';
 import Animated, {
   Easing,
@@ -21,7 +21,7 @@ import {
   GLASS_TAB_BUTTON_HEIGHT_RATIO,
   GLASS_TAB_CORNER_RADIUS,
 } from '../../../components/glassTabLayout';
-import {useAppSelector} from '../../../store/hooks';
+import {swapInProgress} from '../adapter';
 
 interface Props {
   onPress: () => void;
@@ -39,17 +39,32 @@ const SwapEntryRow: React.FC<Props> = ({
   const insets = useSafeAreaInsets();
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const running = useAppSelector(state => state.mbsx.running);
+  const [active, setActive] = useState(false);
   const spin = useSharedValue(0);
   useEffect(() => {
-    spin.value = running
+    let live = true;
+    const read = () => {
+      const next = swapInProgress();
+      if (live) {
+        setActive(next);
+      }
+    };
+    read();
+    const id = setInterval(read, 2000);
+    return () => {
+      live = false;
+      clearInterval(id);
+    };
+  }, []);
+  useEffect(() => {
+    spin.value = active
       ? withRepeat(
           withTiming(1, {duration: 1400, easing: Easing.linear}),
           -1,
           false,
         )
       : 0;
-  }, [running, spin]);
+  }, [active, spin]);
   const iconSpin = useAnimatedStyle(() => ({
     transform: [{rotate: `${spin.value * 360}deg`}],
   }));

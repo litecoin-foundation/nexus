@@ -242,6 +242,17 @@ export const hasActiveSwaps = (): boolean => {
   return rv.has_swaps === true;
 };
 
+export const swapInProgress = (): boolean => {
+  if (NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
+    return false;
+  }
+  const rv = NitroBSX.hasActiveSwaps() as MbsxResult<{has_swaps?: boolean}>;
+  if (rv.error) {
+    return false;
+  }
+  return rv.has_swaps === true;
+};
+
 // Uppercase tickers, as the module reports them. A swap names its coins in its
 // own chain a / chain b frame, so either field naming a coin means it is needed.
 // Null when the swaps cannot be read: no coins and no answer must not look alike
