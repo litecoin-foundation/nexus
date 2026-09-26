@@ -135,7 +135,9 @@ export const start = async (tor_enabled?: boolean) => {
   // Also before initialise(): a module given its key never generates or stores
   // one, so this is what keeps the seed phrase the only thing to back up.
   NitroBSX.setAppType(APP_TYPE_NEXUS);
-  NitroBSX.setMainExtkey(await deriveMainExtkey());
+  if (NitroBSX.setMainExtkey(await deriveMainExtkey()) !== 0) {
+    throw new Error('mbsx could not use its main key');
+  }
   if (NitroBSX.initialise() !== 0) {
     throw new Error('mbsx failed to initialise');
   }
