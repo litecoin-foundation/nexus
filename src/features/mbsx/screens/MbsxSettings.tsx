@@ -631,7 +631,7 @@ const MbsxSettings: React.FC = () => {
             />
 
             {shownCoins.map(coin => {
-              const enabled = config.coins[coin].enabled !== false;
+              const enabled = config.coins[coin].enabled === true;
               if (!enabled) {
                 return null;
               }
