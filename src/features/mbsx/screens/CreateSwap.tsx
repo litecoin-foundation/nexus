@@ -1,6 +1,8 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Image,
+  Keyboard,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -59,6 +61,14 @@ const COIN_ICONS: Record<string, number> = {
   FIRO: require('../../../assets/images/coins/firo.png'),
 };
 const DUST_LIMIT = 294n;
+const CHAIN_FEE_RESERVE = 10000n;
+
+const swapFeeSats = (
+  outputs: {value: number | bigint}[] | undefined,
+): bigint =>
+  (outputs ?? [])
+    .slice(1)
+    .reduce((sum, output) => sum + BigInt(output.value), 0n);
 const numericAmount = (value: string) => {
   const cleaned = value.replace(/[^0-9.]/g, '');
   const dot = cleaned.indexOf('.');
@@ -96,6 +106,23 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [advanced, setAdvanced] = useState(false);
   const [coinOpen, setCoinOpen] = useState(false);
   const [receiversOpen, setReceiversOpen] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [spendNote, setSpendNote] = useState('');
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, event => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   // `running` goes true when initialise() returns, before the handshake that
   // carries the prices.
@@ -157,22 +184,40 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [feeNote, setFeeNote] = useState('');
   useEffect(() => {
     setFeeNote('');
+    setSpendNote('');
     if (amountFrom === '') {
       return;
     }
     const funding = getSwapFundingOutputs(COIN_FROM, amountFrom);
     if (
-      funding.error ||
-      funding.total_fee_bps === undefined ||
-      funding.max_fee_bps === undefined ||
-      funding.total_fee_bps <= funding.max_fee_bps
+      !funding.error &&
+      funding.total_fee_bps !== undefined &&
+      funding.max_fee_bps !== undefined
     ) {
+      const totalFee = Number(funding.total_fee_bps);
+      const maxFee = Number(funding.max_fee_bps);
+      if (totalFee > maxFee) {
+        setFeeNote(
+          `The swap server charges ${totalFee / 100}%, above your limit of ${maxFee / 100}%`,
+        );
+      }
+    }
+    if (!balances || !isRunning()) {
       return;
     }
-    setFeeNote(
-      `The swap server charges ${Number(funding.total_fee_bps) / 100}%, above your limit of ${Number(funding.max_fee_bps) / 100}%`,
-    );
-  }, [amountFrom]);
+    let amountSats: bigint;
+    try {
+      amountSats = parseAmount(COIN_FROM, amountFrom);
+    } catch {
+      return;
+    }
+    const feeSats = funding.error ? 0n : swapFeeSats(funding.outputs);
+    if (amountSats + feeSats + CHAIN_FEE_RESERVE > balances.spendable) {
+      setSpendNote(
+        'That is more than you can spend. The network fee and the swap fee come out of this Litecoin.',
+      );
+    }
+  }, [amountFrom, balances]);
 
   const blockNote = bridgeNote || feeNote;
 
@@ -303,6 +348,20 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     }
   };
 
+  const fillMax = () => {
+    if (!balances) {
+      return;
+    }
+    const probe = coinString(Number(balances.spendable) / 1e8);
+    const funding = probe ? getSwapFundingOutputs(COIN_FROM, probe) : null;
+    const feeSats = funding && !funding.error ? swapFeeSats(funding.outputs) : 0n;
+    const room = balances.spendable - feeSats - CHAIN_FEE_RESERVE;
+    setAmount(
+      'from',
+      'coin',
+      coinString(Number(room > 0n ? room : 0n) / 1e8),
+    );
+  };
   const spendableLabel =
     coinString(Number(balances?.spendable ?? 0n) / 1e8) || '0';
   const selectedSaved = savedAddresses.find(
@@ -311,7 +370,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const currency = prices?.currency ?? 'USD';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
         style={look.scroller}
         contentContainerStyle={styles.scroll}
@@ -351,8 +410,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               <Text style={look.fiat}>{currency}</Text>
             </View>
             <TouchableOpacity
-              disabled={!coinChosen || !balances}
-              onPress={() => setAmount('from', 'coin', spendableLabel)}>
+              testID="mbsx-max"
+              disabled={!balances}
+              onPress={fillMax}>
               <Text style={look.max}>{`Max.  ${spendableLabel} ${COIN_FROM}`}</Text>
             </TouchableOpacity>
           </View>
@@ -364,6 +424,11 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           <Text style={look.fromLine}>
             {`From  ${ltcAccount || 'LTC wallet'}`}
           </Text>
+          {spendNote !== '' ? (
+            <Text testID="mbsx-spend-note" style={styles.error}>
+              {spendNote}
+            </Text>
+          ) : null}
         </View>
 
         <View style={look.flipWrap}>
@@ -602,7 +667,14 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           </TouchableOpacity>
         ) : null}
       </ScrollView>
-      <View style={[look.footer, {paddingBottom: Math.max(insets.bottom, 12)}]}>
+      <View
+        style={[
+          look.footer,
+          {
+            paddingBottom:
+              keyboardHeight > 0 ? 12 : Math.max(insets.bottom, 12),
+          },
+        ]}>
         <TouchableOpacity
           testID="mbsx-submit"
           style={[

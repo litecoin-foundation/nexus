@@ -12,7 +12,11 @@ import {
   createDrawerNavigator,
   useDrawerStatus,
 } from '@react-navigation/drawer';
-import type {DrawerContentComponentProps} from '@react-navigation/drawer';
+import type {
+  DrawerContentComponentProps,
+  DrawerHeaderProps,
+} from '@react-navigation/drawer';
+import {getHeaderTitle, Header} from '@react-navigation/elements';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -33,6 +37,7 @@ import {
 import {readConfig} from './adapter/config';
 import {pushMessage, setConnected, setError, setRunning} from './mbsxSlice';
 import BridgeStatus from './components/BridgeStatus';
+import MbsxMenuButton from './components/MbsxMenuButton';
 import CreateSwap from './screens/CreateSwap';
 import SwapList from './screens/SwapList';
 import SwapDetail from './screens/SwapDetail';
@@ -227,13 +232,15 @@ const MbsxNavigator: React.FC = () => {
 
   return (
     <View style={flexOne}>
-      <BridgeStatus />
       <Drawer.Navigator
         initialRouteName="CreateSwap"
         defaultStatus="closed"
         backBehavior="history"
         drawerContent={DrawerContent}
         screenOptions={{
+          header: MbsxScreenHeader,
+          headerLeft: () => <MbsxMenuButton />,
+          headerTitleContainerStyle: {left: 7},
           drawerType: 'front',
           drawerStyle: {
             width: SCREEN_WIDTH,
@@ -260,7 +267,7 @@ const MbsxNavigator: React.FC = () => {
         <Drawer.Screen
           name="CreateSwap"
           component={CreateSwap}
-          options={{title: 'New swap'}}
+          options={{title: 'New Swap'}}
         />
         <Drawer.Screen
           name="SwapList"
@@ -309,6 +316,20 @@ const MbsxNavigator: React.FC = () => {
 
 const flexOne = {flex: 1, backgroundColor: '#F2F8FD'} as const;
 
+const MbsxScreenHeader = ({layout, options, route}: DrawerHeaderProps) => {
+  const {header: _header, ...headerOptions} = options;
+  return (
+    <View>
+      <Header
+        {...headerOptions}
+        layout={layout}
+        title={getHeaderTitle(options, route.name)}
+      />
+      <BridgeStatus />
+    </View>
+  );
+};
+
 const getDrawerStyles = (_screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     menu: {
@@ -352,7 +373,7 @@ const getDrawerStyles = (_screenWidth: number, screenHeight: number) =>
       fontSize: 14,
     },
     cellTitleActive: {
-      color: '#1162E6',
+      color: '#2C72FF',
     },
   });
 

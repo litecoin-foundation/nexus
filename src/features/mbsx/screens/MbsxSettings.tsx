@@ -7,7 +7,9 @@ import React, {
 } from 'react';
 import {
   Alert,
+  Image,
   ScrollView,
+  StyleSheet,
   Switch,
   Text,
   TextInput,
@@ -15,10 +17,12 @@ import {
   View,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
+import {COIN_ICONS, swapCards} from '../swapCards';
 import {setRunning} from '../mbsxSlice';
 import {
   addCaCert,
@@ -51,9 +55,17 @@ const chainsChecked = (server: ElectrumServer) =>
   server.verify_certs_mode === 'optional' ||
   server.verify_certs_mode === 'strict';
 
+const persisted = (cfg: MbsxConfig) => {
+  const copy = {...cfg};
+  delete copy.show_raw_states;
+  return JSON.stringify(copy);
+};
+
 const MbsxSettings: React.FC = () => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const insets = useSafeAreaInsets();
+  const [advanced, setAdvanced] = useState(false);
 
   const dispatch = useAppDispatch();
   const [config, setConfig] = useState<MbsxConfig | null>(null);
@@ -129,7 +141,7 @@ const MbsxSettings: React.FC = () => {
   const load = useCallback(async () => {
     const loaded = normaliseModes((await readConfig()) ?? defaultConfig());
     setConfig(loaded);
-    setSavedJson(JSON.stringify(loaded));
+    setSavedJson(persisted(loaded));
     setActiveCoins(coinsWithActiveSwaps());
     setCompiledCoins(getInfo()?.compiled_coins ?? null);
     loadCerts();
@@ -142,7 +154,7 @@ const MbsxSettings: React.FC = () => {
   const dirty =
     config !== null &&
     savedJson !== null &&
-    JSON.stringify(config) !== savedJson;
+    persisted(config) !== savedJson;
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
 
@@ -279,6 +291,17 @@ const MbsxSettings: React.FC = () => {
     );
   };
 
+  const confirmRemoveServer = (coin: string, index: number) => {
+    Alert.alert('Remove server', 'Remove this server?', [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: () => removeServer(coin, index),
+      },
+    ]);
+  };
+
   const removeServer = (coin: string, index: number) => {
     setStatus('');
     setConfig(prev =>
@@ -333,6 +356,17 @@ const MbsxSettings: React.FC = () => {
     }
   };
 
+  const confirmRemoveCert = (id: bigint) => {
+    Alert.alert('Remove certificate', 'Remove this certificate?', [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: () => removeCert(id),
+      },
+    ]);
+  };
+
   const removeCert = (id: bigint) => {
     fail('');
     setStatus('');
@@ -357,13 +391,14 @@ const MbsxSettings: React.FC = () => {
         coin.electrumx.some(server => !server.url.trim()),
     );
     if (blank) {
+      setAdvanced(true);
       fail(`Empty server url for ${blank[0]}`, blank[0]);
       return;
     }
     setSaving(true);
     try {
       await applyConfig(config);
-      setSavedJson(JSON.stringify(config));
+      setSavedJson(persisted(config));
       setStatus('Saved and restarted');
     } catch (e) {
       fail(`Saved, but the restart failed: ${(e as Error).message}`);
@@ -394,92 +429,115 @@ const MbsxSettings: React.FC = () => {
       compiledCoins.some(ticker => ticker.toLowerCase() === coin.toLowerCase()),
   );
 
+  const saveActions = (
+    <>
+      <TouchableOpacity
+        testID="mbsx-settings-save"
+        style={[styles.button, saving ? styles.buttonDisabled : null]}
+        disabled={saving}
+        onPress={save}>
+        <Text style={styles.buttonText}>
+          {saving ? 'Restarting…' : dirty ? 'Save and restart' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.buttonSecondary} onPress={load}>
+        <Text style={styles.buttonSecondaryText}>Revert</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.buttonSecondary}
+        onPress={() =>
+          setConfig(current =>
+            current
+              ? {...defaultConfig(), show_raw_states: current.show_raw_states}
+              : defaultConfig(),
+          )
+        }>
+        <Text style={styles.buttonSecondaryText}>Restore defaults</Text>
+      </TouchableOpacity>
+      {error !== '' && errorCoin === '' ? (
+        <Text testID="mbsx-settings-error" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
+      {status !== '' ? (
+        <Text testID="mbsx-settings-status" style={styles.status}>
+          {status}
+        </Text>
+      ) : null}
+    </>
+  );
+
   return (
     <View style={styles.container}>
       <ScrollView
+        style={look.scroller}
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled">
-        {dirty ? <Text style={styles.empty}>Unsaved changes</Text> : null}
-        <Text style={styles.section}>Bridge</Text>
-        <Text style={styles.inputLabel}>Pubkey</Text>
-        <TextInput
-          style={styles.input}
-          value={config.bridge_pubkey}
-          onChangeText={bridge_pubkey => edit({bridge_pubkey})}
-          autoCapitalize="none"
-        />
-        <Text style={styles.inputLabel}>Host</Text>
-        <TextInput
-          style={styles.input}
-          value={config.bridge_host}
-          onChangeText={bridge_host => edit({bridge_host})}
-          autoCapitalize="none"
-        />
-        <Text style={styles.inputLabel}>Port</Text>
-        <TextInput
-          style={styles.input}
-          value={config.bridge_port ? String(config.bridge_port) : ''}
-          onChangeText={text =>
-            edit({bridge_port: text ? Number(text) : undefined})
-          }
-          keyboardType="numeric"
-        />
+        <View style={swapCards.card}>
+          <Text style={swapCards.section}>Requests</Text>
+          <View style={look.cardRow}>
+            <Text style={[styles.label, look.rowLabel]}>
+              Revoke open requests on exit
+            </Text>
+            <Switch
+              testID="mbsx-revoke-on-exit"
+              value={config.revoke_open_requests_on_exit === true}
+              onValueChange={value =>
+                edit({revoke_open_requests_on_exit: value})
+              }
+            />
+          </View>
+          <Text style={look.note}>
+            Leaving this section withdraws any request that has not accepted an
+            offer, and frees the coins held for it.
+          </Text>
 
-        <Text style={styles.section}>Requests</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Revoke open requests on exit</Text>
-          <Switch
-            testID="mbsx-revoke-on-exit"
-            value={config.revoke_open_requests_on_exit === true}
-            onValueChange={value => edit({revoke_open_requests_on_exit: value})}
-          />
-        </View>
-        <Text style={styles.rowMessage}>
-          Leaving this section withdraws any request that has not accepted an
-          offer, and frees the coins held for it.
-        </Text>
+          <Text style={swapCards.section}>Display</Text>
+          <View style={look.cardRow}>
+            <Text style={[styles.label, look.rowLabel]}>Show state names</Text>
+            <Switch
+              testID="mbsx-show-raw-states"
+              value={config.show_raw_states === true}
+              onValueChange={value => {
+                edit({show_raw_states: value});
+                readConfig().then(current => {
+                  if (current) {
+                    writeConfig({...current, show_raw_states: value});
+                  }
+                });
+              }}
+            />
+          </View>
+          <Text style={look.note}>
+            Cards say what a swap is doing. Turn this on to also show the raw
+            state name.
+          </Text>
 
-        <Text style={styles.section}>Display</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Show state names</Text>
-          <Switch
-            testID="mbsx-show-raw-states"
-            value={config.show_raw_states === true}
-            onValueChange={value => {
-              edit({show_raw_states: value});
-              readConfig().then(current => {
-                if (current) {
-                  writeConfig({...current, show_raw_states: value});
-                }
-              });
-            }}
-          />
-        </View>
-        <Text style={styles.rowMessage}>
-          Cards say what a swap is doing. Turn this on to also show the raw
-          state name.
-        </Text>
-
-        <Text style={styles.section}>Privacy</Text>
-        <View style={styles.row}>
+          <Text style={swapCards.section}>Privacy</Text>
           <Text style={styles.label}>Tor</Text>
-          <Switch testID="mbsx-tor" value={torEnabled} disabled />
+          <Text testID="mbsx-tor" style={look.note}>
+            {torPending
+              ? 'Set in Nexus settings. Applies to swaps on re-entering this section, or after an app restart while a swap is in flight.'
+              : 'Set in Nexus settings, and applied to swaps as well.'}
+          </Text>
         </View>
-        <Text style={styles.rowMessage}>
-          {torPending
-            ? 'Set in Nexus settings. Applies to swaps on re-entering this section, or after an app restart while a swap is in flight.'
-            : 'Set in Nexus settings, and applied to swaps as well.'}
-        </Text>
 
+        <Text style={swapCards.section}>Coins</Text>
         {shownCoins.map(coin => {
           const enabled = config.coins[coin].enabled === true;
           // The coin this app funds its own side of every swap from. Turning it
           // off leaves nothing to swap with.
           const ownCoin = config.coins[coin].wallet?.type === 'host';
+          const ticker = coin.toUpperCase();
           return (
-            <View key={coin}>
-              <View style={styles.row}>
-                <Text style={styles.label}>{coin.toUpperCase()}</Text>
+            <View key={coin} style={swapCards.card}>
+              <View style={look.cardRow}>
+                <View style={look.coinTitle}>
+                  {COIN_ICONS[ticker] ? (
+                    <Image source={COIN_ICONS[ticker]} style={swapCards.coinLogo} />
+                  ) : null}
+                  <Text style={styles.label}>{ticker}</Text>
+                </View>
                 {ownCoin ? (
                   <Text style={styles.value}>Always on</Text>
                 ) : (
@@ -492,23 +550,76 @@ const MbsxSettings: React.FC = () => {
               </View>
               {enabled && POS_COINS.includes(coin) ? (
                 <>
-                  <View style={styles.row}>
-                    <Text style={styles.label}>PoS validation</Text>
+                  <View style={[look.cardRow, look.cardRowLine]}>
+                    <Text style={[styles.label, look.rowLabel]}>
+                      PoS validation
+                    </Text>
                     <Switch
                       testID={`mbsx-verify-pos-${coin}`}
                       value={config.coins[coin].verify_pos !== false}
                       onValueChange={value => toggleVerifyPos(coin, value)}
                     />
                   </View>
-                  <Text style={styles.rowMessage}>
+                  <Text style={look.note}>
                     Each block is checked against the stake that signed it, and
                     a swap confirms only once that check reaches it. Off, the
                     server's word is taken for the chain.
                   </Text>
                 </>
               ) : null}
-              {enabled ? (
-                <>
+              {errorCoin === coin ? (
+                <Text testID={`mbsx-coin-error-${coin}`} style={styles.error}>
+                  {error}
+                </Text>
+              ) : null}
+            </View>
+          );
+        })}
+
+        <TouchableOpacity
+          style={swapCards.advancedToggle}
+          onPress={() => setAdvanced(open => !open)}>
+          <Text style={swapCards.advancedLabel}>Advanced</Text>
+          <Image
+            source={require('../../../assets/images/forward.png')}
+            style={[swapCards.chevron, advanced ? swapCards.chevronOpen : null]}
+          />
+        </TouchableOpacity>
+        {advanced ? (
+          <>
+            <Text style={styles.section}>Bridge</Text>
+            <Text style={styles.inputLabel}>Pubkey</Text>
+            <TextInput
+              style={styles.input}
+              value={config.bridge_pubkey}
+              onChangeText={bridge_pubkey => edit({bridge_pubkey})}
+              autoCapitalize="none"
+            />
+            <Text style={styles.inputLabel}>Host</Text>
+            <TextInput
+              style={styles.input}
+              value={config.bridge_host}
+              onChangeText={bridge_host => edit({bridge_host})}
+              autoCapitalize="none"
+            />
+            <Text style={styles.inputLabel}>Port</Text>
+            <TextInput
+              style={styles.input}
+              value={config.bridge_port ? String(config.bridge_port) : ''}
+              onChangeText={text =>
+                edit({bridge_port: text ? Number(text) : undefined})
+              }
+              keyboardType="numeric"
+            />
+
+            {shownCoins.map(coin => {
+              const enabled = config.coins[coin].enabled !== false;
+              if (!enabled) {
+                return null;
+              }
+              return (
+                <View key={coin}>
+                  <Text style={styles.section}>{`${coin.toUpperCase()} servers`}</Text>
                   {config.coins[coin].electrumx.map((server, index) => (
                     <View key={index}>
                       <TextInput
@@ -562,8 +673,9 @@ const MbsxSettings: React.FC = () => {
                         </>
                       ) : null}
                       <TouchableOpacity
-                        onPress={() => removeServer(coin, index)}>
-                        <Text style={styles.error}>Remove</Text>
+                        style={styles.buttonSecondary}
+                        onPress={() => confirmRemoveServer(coin, index)}>
+                        <Text style={styles.buttonSecondaryText}>Remove</Text>
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -573,108 +685,120 @@ const MbsxSettings: React.FC = () => {
                     onPress={() => addServer(coin)}>
                     <Text style={styles.buttonText}>Add server</Text>
                   </TouchableOpacity>
-                </>
-              ) : null}
-              {errorCoin === coin ? (
-                <Text testID={`mbsx-coin-error-${coin}`} style={styles.error}>
-                  {error}
-                </Text>
-              ) : null}
-            </View>
-          );
-        })}
+                </View>
+              );
+            })}
 
-        <Text style={styles.section}>Certificates</Text>
-        <Text style={styles.value}>
-          Trust anchors for the optional and strict checks. Naming a server
-          confines the certificate to it, and replaces the built in roots for
-          that server rather than adding to them.
-        </Text>
-        {certs.map(cert => (
-          <View key={String(cert.id)} style={styles.certRow}>
-            <Text style={styles.label}>{cert.label || 'Unlabelled'}</Text>
+            <Text style={styles.section}>Certificates</Text>
             <Text style={styles.value}>
-              {cert.host ? `${cert.host}:${cert.port}` : 'Every server'}
+              Trust anchors for the optional and strict checks. Naming a server
+              confines the certificate to it, and replaces the built in roots for
+              that server rather than adding to them.
             </Text>
+            {certs.map(cert => (
+              <View key={String(cert.id)} style={styles.certRow}>
+                <Text style={styles.label}>{cert.label || 'Unlabelled'}</Text>
+                <Text style={styles.value}>
+                  {cert.host ? `${cert.host}:${cert.port}` : 'Every server'}
+                </Text>
+                <TouchableOpacity
+                  testID={`mbsx-remove-cert-${cert.id}`}
+                  style={styles.buttonSecondary}
+                  onPress={() => confirmRemoveCert(cert.id)}>
+                  <Text style={styles.buttonSecondaryText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+            <Text style={styles.inputLabel}>Label</Text>
+            <TextInput
+              testID="mbsx-cert-label"
+              style={styles.input}
+              value={certLabel}
+              onChangeText={setCertLabel}
+              autoCapitalize="none"
+            />
+            <Text style={styles.inputLabel}>Host (blank for every server)</Text>
+            <TextInput
+              testID="mbsx-cert-host"
+              style={styles.input}
+              value={certHost}
+              onChangeText={setCertHost}
+              autoCapitalize="none"
+            />
+            <Text style={styles.inputLabel}>Port</Text>
+            <TextInput
+              testID="mbsx-cert-port"
+              style={styles.input}
+              value={certPort}
+              onChangeText={setCertPort}
+              keyboardType="numeric"
+            />
+            <Text style={styles.inputLabel}>Certificate (PEM)</Text>
+            <TextInput
+              testID="mbsx-cert-pem"
+              style={[styles.input, styles.pemInput]}
+              value={certPem}
+              onChangeText={setCertPem}
+              placeholder="-----BEGIN CERTIFICATE-----"
+              multiline
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
             <TouchableOpacity
-              testID={`mbsx-remove-cert-${cert.id}`}
-              onPress={() => removeCert(cert.id)}>
-              <Text style={styles.error}>Remove</Text>
+              testID="mbsx-add-cert"
+              style={styles.button}
+              onPress={addCert}>
+              <Text style={styles.buttonText}>Add certificate</Text>
             </TouchableOpacity>
-          </View>
-        ))}
-        <Text style={styles.inputLabel}>Label</Text>
-        <TextInput
-          testID="mbsx-cert-label"
-          style={styles.input}
-          value={certLabel}
-          onChangeText={setCertLabel}
-          autoCapitalize="none"
-        />
-        <Text style={styles.inputLabel}>Host (blank for every server)</Text>
-        <TextInput
-          testID="mbsx-cert-host"
-          style={styles.input}
-          value={certHost}
-          onChangeText={setCertHost}
-          autoCapitalize="none"
-        />
-        <Text style={styles.inputLabel}>Port</Text>
-        <TextInput
-          testID="mbsx-cert-port"
-          style={styles.input}
-          value={certPort}
-          onChangeText={setCertPort}
-          keyboardType="numeric"
-        />
-        <Text style={styles.inputLabel}>Certificate (PEM)</Text>
-        <TextInput
-          testID="mbsx-cert-pem"
-          style={[styles.input, styles.pemInput]}
-          value={certPem}
-          onChangeText={setCertPem}
-          placeholder="-----BEGIN CERTIFICATE-----"
-          multiline
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <TouchableOpacity
-          testID="mbsx-add-cert"
-          style={styles.button}
-          onPress={addCert}>
-          <Text style={styles.buttonText}>Add certificate</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          testID="mbsx-settings-save"
-          style={[styles.button, saving ? styles.buttonDisabled : null]}
-          disabled={saving}
-          onPress={save}>
-          <Text style={styles.buttonText}>
-            {saving ? 'Restarting…' : dirty ? 'Save changes' : 'Save'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonSecondary} onPress={load}>
-          <Text style={styles.buttonSecondaryText}>Revert</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.buttonSecondary}
-          onPress={() => setConfig(defaultConfig())}>
-          <Text style={styles.buttonSecondaryText}>Restore defaults</Text>
-        </TouchableOpacity>
-        {error !== '' && errorCoin === '' ? (
-          <Text testID="mbsx-settings-error" style={styles.error}>
-            {error}
-          </Text>
+          </>
         ) : null}
-        {status !== '' ? (
-          <Text testID="mbsx-settings-status" style={styles.status}>
-            {status}
-          </Text>
-        ) : null}
+        {dirty ? null : saveActions}
       </ScrollView>
+      {dirty ? (
+        <View style={[look.footer, {paddingBottom: Math.max(insets.bottom, 12)}]}>
+          {saveActions}
+        </View>
+      ) : null}
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  scroller: {
+    flex: 1,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  cardRowLine: {
+    borderTopWidth: 1,
+    borderTopColor: '#E8E8E8',
+    marginTop: 8,
+  },
+  rowLabel: {
+    flex: 1,
+    marginRight: 12,
+  },
+  note: {
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 14,
+    marginTop: 6,
+  },
+  coinTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    backgroundColor: '#F2F8FD',
+  },
+});
 
 export default MbsxSettings;

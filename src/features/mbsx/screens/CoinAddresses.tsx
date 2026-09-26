@@ -1,21 +1,26 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
+  Alert,
   Image,
+  Keyboard,
+  Platform,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 import {useFocusEffect} from '@react-navigation/native';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
-import {getCoinPrices} from '../adapter';
+import {getCoinPrices, validateAddress} from '../adapter';
 import {forgetAddress, rememberAddress} from '../addressesSlice';
 import {formatPrice} from 'react-native-nitro-bsx';
-import {formatTimestamp} from '../format';
+import {formatTimestamp, shortAddress} from '../format';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
@@ -34,6 +39,23 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
 
   const [address, setAddress] = useState('');
   const [label, setLabel] = useState('');
+  const [addressError, setAddressError] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, event => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
   const [prices, setPrices] = useState<MbsxCoinPrices | null>(null);
   const price = prices?.prices?.[coin];
 
@@ -69,13 +91,29 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
     if (!trimmed) {
       return;
     }
+    if (!validateAddress(coin, trimmed)) {
+      setAddressError(`Not a ${coin} address`);
+      return;
+    }
+    setAddressError('');
     dispatch(rememberAddress({coin, address: trimmed, label: label.trim()}));
     setAddress('');
     setLabel('');
   };
 
+  const forget = (savedAddress: string) => {
+    Alert.alert('Remove address', 'Remove this saved address?', [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: () => dispatch(forgetAddress({coin, address: savedAddress})),
+      },
+    ]);
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled">
@@ -104,32 +142,63 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
 
         <View style={swapCards.card}>
           <Text style={styles.inputLabel}>{`${coin} address`}</Text>
-          <TextInput
-            testID="mbsx-address-input"
-            style={styles.input}
-            placeholder="Address"
-            value={address}
-            onChangeText={setAddress}
-            autoCapitalize="none"
-          />
+          <View style={look.receiverRow}>
+            <TextInput
+              testID="mbsx-address-input"
+              style={look.receiver}
+              placeholder="Address"
+              placeholderTextColor="#9AA0AE"
+              value={address}
+              onChangeText={value => {
+                setAddress(value);
+                setAddressError('');
+              }}
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              testID="mbsx-address-paste"
+              style={look.iconBtn}
+              onPress={async () => {
+                const text = await Clipboard.getString();
+                if (text.trim()) {
+                  setAddress(text.trim());
+                  setAddressError('');
+                }
+              }}>
+              <Image
+                source={require('../../../assets/icons/copy-icon.png')}
+                style={look.toolIcon}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              testID="mbsx-address-scan"
+              style={look.iconBtn}
+              onPress={() =>
+                navigation.getParent()?.navigate('Scan', {
+                  returnRoute: 'MbsxStack',
+                  returnScreen: 'CoinAddresses',
+                })
+              }>
+              <Image
+                source={require('../../../assets/images/qrcode-btn.png')}
+                style={look.toolIcon}
+              />
+            </TouchableOpacity>
+          </View>
+          {addressError !== '' ? (
+            <Text testID="mbsx-address-error" style={styles.error}>
+              {addressError}
+            </Text>
+          ) : null}
           <Text style={styles.inputLabel}>Label</Text>
           <TextInput
             testID="mbsx-address-label"
-            style={styles.input}
+            style={look.receiver}
             placeholder="Optional"
+            placeholderTextColor="#9AA0AE"
             value={label}
             onChangeText={setLabel}
           />
-          <TouchableOpacity
-            testID="mbsx-address-scan"
-            onPress={() =>
-              navigation.getParent()?.navigate('Scan', {
-                returnRoute: 'MbsxStack',
-                returnScreen: 'CoinAddresses',
-              })
-            }>
-            <Text style={swapCards.link}>Scan a QR code</Text>
-          </TouchableOpacity>
         </View>
         <TouchableOpacity
           testID="mbsx-address-add"
@@ -150,16 +219,17 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
         ) : (
           saved.map(entry => (
             <View key={entry.address} style={swapCards.card}>
-              {entry.label ? (
-                <Text style={swapCards.pairText}>{entry.label}</Text>
-              ) : null}
-              <Text style={swapCards.meta}>{entry.address}</Text>
+              <Text style={swapCards.pairText}>
+                {entry.label || shortAddress(entry.address)}
+              </Text>
+              <Text style={swapCards.meta} selectable>
+                {entry.address}
+              </Text>
               <TouchableOpacity
                 testID={`mbsx-forget-${entry.address}`}
-                onPress={() =>
-                  dispatch(forgetAddress({coin, address: entry.address}))
-                }>
-                <Text style={swapCards.link}>Remove</Text>
+                style={styles.buttonSecondary}
+                onPress={() => forget(entry.address)}>
+                <Text style={styles.buttonSecondaryText}>Remove</Text>
               </TouchableOpacity>
             </View>
           ))
@@ -168,5 +238,38 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  receiverRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  receiver: {
+    flex: 1,
+    borderRadius: 22,
+    backgroundColor: '#F4F7FB',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F4F7FB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  toolIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#484859',
+  },
+});
 
 export default CoinAddresses;

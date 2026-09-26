@@ -1,5 +1,6 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {Alert, Text, TouchableOpacity, View} from 'react-native';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
+import {Alert, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
@@ -17,6 +18,7 @@ import {clearMessages} from '../mbsxSlice';
 import {EXPORT_CONTENTS, exportLogs} from '../exportLogs';
 import {stringifyRpc} from '../json';
 import {getMbsxStyles} from '../theme';
+import {COIN_ICONS, swapCards} from '../swapCards';
 
 type ChainRow = {ticker: string; chainHeight: number; bridged: boolean};
 
@@ -30,20 +32,30 @@ const MbsxDebug: React.FC = () => {
   const [connected, setConnected] = useState(false);
   const [dbVersion, setDbVersion] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [resetError, setResetError] = useState('');
   const [chains, setChains] = useState<ChainRow[]>([]);
   // Disabled coins never reach getInfo, so their rows come from the config.
   const [disabledCoins, setDisabledCoins] = useState<string[]>([]);
   const canReset = getNetwork() === 'regtest';
 
-  useEffect(() => {
-    readConfig().then(cfg => {
-      setDisabledCoins(
-        Object.entries(cfg?.coins ?? {})
-          .filter(([, coin]) => coin.enabled !== true)
-          .map(([ticker]) => ticker.toUpperCase()),
-      );
-    });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      readConfig().then(cfg => {
+        if (!active) {
+          return;
+        }
+        setDisabledCoins(
+          Object.entries(cfg?.coins ?? {})
+            .filter(([, coin]) => coin.enabled !== true)
+            .map(([ticker]) => ticker.toUpperCase()),
+        );
+      });
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   // Polled rather than driven by onMessage so heights keep updating while the
   // module is idle. Unchanged values reuse the previous array, so a tick that
@@ -80,67 +92,113 @@ const MbsxDebug: React.FC = () => {
     return () => clearInterval(id);
   }, []);
 
+  const onReset = () => {
+    Alert.alert(
+      'Reset state',
+      'Clear the swap state on this regtest? This cannot be undone.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            const rv = await resetState();
+            if (rv.error) {
+              setResetError(rv.error);
+              console.error('mbsx resetState failed:', rv.error);
+              return;
+            }
+            setResetError('');
+            dispatch(clearMessages());
+          },
+        },
+      ],
+    );
+  };
+
+  const chainRow = (
+    ticker: string,
+    detail: string | null,
+    value: string | null,
+    lined: boolean,
+  ) => (
+    <View key={ticker} style={[look.chainRow, lined ? look.chainLine : null]}>
+      <View style={look.coinTitle}>
+        {COIN_ICONS[ticker] ? (
+          <Image source={COIN_ICONS[ticker]} style={swapCards.coinLogo} />
+        ) : null}
+        <View style={look.coinText}>
+          <Text style={styles.label}>{ticker}</Text>
+          {detail ? <Text style={look.detail}>{detail}</Text> : null}
+        </View>
+      </View>
+      {value ? <Text style={styles.value}>{value}</Text> : null}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <View style={styles.scroll}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Native</Text>
-          <Text style={styles.value}>{getVersion()}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>SQLite</Text>
-          <Text style={styles.value}>{getSqliteVersion()}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Running</Text>
-          <Text style={styles.value}>{String(running)}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Bridge</Text>
-          <Text style={styles.value}>
-            {connected ? 'connected' : 'disconnected'}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>DB version</Text>
-          <Text style={styles.value}>{dbVersion ?? '-'}</Text>
+      <View style={[styles.scroll, look.top]}>
+        <View style={swapCards.card}>
+          <View style={look.statusRow}>
+            <Text style={styles.label}>Native</Text>
+            <Text style={styles.value}>{getVersion()}</Text>
+          </View>
+          <View style={[look.statusRow, look.chainLine]}>
+            <Text style={styles.label}>SQLite</Text>
+            <Text style={styles.value}>{getSqliteVersion()}</Text>
+          </View>
+          <View style={[look.statusRow, look.chainLine]}>
+            <Text style={styles.label}>Running</Text>
+            <Text style={styles.value}>{running ? 'Running' : 'Stopped'}</Text>
+          </View>
+          <View style={[look.statusRow, look.chainLine]}>
+            <Text style={styles.label}>Bridge</Text>
+            <Text style={styles.value}>
+              {connected ? 'Connected' : 'Not connected'}
+            </Text>
+          </View>
+          <View style={[look.statusRow, look.chainLine]}>
+            <Text style={styles.label}>DB version</Text>
+            <Text style={styles.value}>{dbVersion ?? '-'}</Text>
+          </View>
         </View>
 
-        <Text style={styles.section}>Chains</Text>
-        {chains.length === 0 && disabledCoins.length === 0 ? (
-          <Text style={styles.empty}>No active chains</Text>
-        ) : (
-          <>
-            {chains.map(chain => (
-              <View key={chain.ticker} style={styles.row}>
-                <Text style={styles.label}>{chain.ticker}</Text>
-                <Text style={styles.value}>
-                  {String(chain.chainHeight)}
-                  {chain.bridged ? '' : ' (no bridge)'}
-                </Text>
-              </View>
-            ))}
-            {disabledCoins.map(ticker => (
-              <View key={ticker} style={styles.row}>
-                <Text style={styles.label}>{ticker}</Text>
-                <Text style={styles.value}>disabled</Text>
-              </View>
-            ))}
-          </>
-        )}
+        <Text style={swapCards.section}>Chains</Text>
+        <View style={swapCards.card}>
+          {chains.length === 0 && disabledCoins.length === 0 ? (
+            <Text style={swapCards.note}>No active chains</Text>
+          ) : (
+            <>
+              {chains.map((chain, index) =>
+                chainRow(
+                  chain.ticker.toUpperCase(),
+                  chain.bridged ? null : 'No bridge',
+                  String(chain.chainHeight),
+                  index > 0,
+                ),
+              )}
+              {disabledCoins.map((ticker, index) =>
+                chainRow(
+                  ticker,
+                  'Disabled',
+                  null,
+                  chains.length > 0 || index > 0,
+                ),
+              )}
+            </>
+          )}
+        </View>
 
         {canReset ? (
-          <TouchableOpacity
-            style={styles.buttonSecondary}
-            onPress={async () => {
-              const rv = await resetState();
-              if (rv.error) {
-                console.error('mbsx resetState failed:', rv.error);
-              }
-              dispatch(clearMessages());
-            }}>
+          <TouchableOpacity style={styles.buttonSecondary} onPress={onReset}>
             <Text style={styles.buttonSecondaryText}>Reset state</Text>
           </TouchableOpacity>
+        ) : null}
+        {resetError !== '' ? (
+          <Text testID="mbsx-reset-error" style={styles.error}>
+            {resetError}
+          </Text>
         ) : null}
         <TouchableOpacity
           style={styles.buttonSecondary}
@@ -187,11 +245,51 @@ const MbsxDebug: React.FC = () => {
             {exporting ? 'Exporting…' : 'Export logs'}
           </Text>
         </TouchableOpacity>
+        <Text style={swapCards.section}>Events</Text>
       </View>
 
       <MessageList style={styles.messages} />
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  top: {
+    flexGrow: 0,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 36,
+  },
+  chainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  chainLine: {
+    borderTopWidth: 1,
+    borderTopColor: '#E8E8E8',
+    marginTop: 8,
+    paddingTop: 8,
+  },
+  coinTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  coinText: {
+    flex: 1,
+  },
+  detail: {
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 13,
+    marginTop: 2,
+  },
+});
 
 export default MbsxDebug;

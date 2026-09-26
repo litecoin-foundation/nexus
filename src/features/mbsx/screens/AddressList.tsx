@@ -1,12 +1,12 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext} from 'react';
 import {Image, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppSelector} from '../../../store/hooks';
 import {COINS} from '../components/CoinSelector';
+import {shortAddress} from '../format';
 import {getMbsxStyles} from '../theme';
-import MbsxBackButton from '../components/MbsxBackButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import type {MbsxDrawerParamList} from '../types';
 
@@ -18,18 +18,15 @@ const AddressList: React.FC<Props> = ({navigation}) => {
 
   const byCoin = useAppSelector(state => state.mbsxAddresses.byCoin);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
-      headerTitleContainerStyle: {left: 7},
-    });
-  }, [navigation]);
-
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {COINS.map(coin => {
           const saved = byCoin[coin] ?? [];
+          const latest = saved[0];
+          const latestName = latest
+            ? latest.label || shortAddress(latest.address)
+            : '';
           return (
             <TouchableOpacity
               key={coin}
@@ -47,6 +44,9 @@ const AddressList: React.FC<Props> = ({navigation}) => {
                   ? 'No addresses'
                   : `${saved.length} address${saved.length === 1 ? '' : 'es'}`}
               </Text>
+              {latestName ? (
+                <Text style={swapCards.id}>{latestName}</Text>
+              ) : null}
             </TouchableOpacity>
           );
         })}
