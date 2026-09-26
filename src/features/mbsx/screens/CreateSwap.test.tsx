@@ -21,8 +21,8 @@ jest.mock('@react-navigation/native', () => ({
 
 jest.mock('../adapter', () => ({
   getCoinPrices: () => null,
-  getInfo: () => null,
-  getSwapFundingOutputs: () => ({error: 'not running'}),
+  getInfo: jest.fn(() => null),
+  getSwapFundingOutputs: jest.fn(() => ({error: 'not running'})),
   isRunning: () => false,
   parseAmount: () => 0n,
   recordLeases: jest.fn(),
@@ -84,5 +84,26 @@ describe('CreateSwap', () => {
     expect(getByTestId('mbsx-scan')).toBeEnabled();
     expect(getByTestId('mbsx-addresses')).toBeEnabled();
     expect(queryByTestId('mbsx-select-coin-note')).toBeNull();
+  });
+
+  it('notes server fees above the limit, which cross from native as bigint', () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.getInfo.mockReturnValueOnce({
+      connected: true,
+      coins: {LTC: {bridge_supported: true}, BTC: {bridge_supported: true}},
+    });
+    adapter.getSwapFundingOutputs.mockReturnValueOnce({
+      outputs: [],
+      total_fee_bps: 500n,
+      max_fee_bps: 200n,
+    });
+    const {getByTestId} = renderScreen();
+
+    fireEvent.press(getByTestId('mbsx-coin-BTC'));
+    fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+
+    expect(getByTestId('mbsx-bridge-note')).toHaveTextContent(
+      'The swap server charges 5%, above your limit of 2%',
+    );
   });
 });

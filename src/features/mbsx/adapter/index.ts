@@ -697,8 +697,8 @@ export const requestSwap = (request: SwapRequest) =>
 export const getSwapFundingOutputs = (coin: string, amount: string) =>
   NitroBSX.getSwapFundingOutputs(coin, amount) as MbsxResult<{
     outputs?: FundingOutput[];
-    total_fee_bps?: number;
-    max_fee_bps?: number;
+    total_fee_bps?: bigint;
+    max_fee_bps?: bigint;
   }>;
 
 /**

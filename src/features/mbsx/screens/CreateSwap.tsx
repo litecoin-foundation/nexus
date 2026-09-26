@@ -140,7 +140,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       return;
     }
     setFeeNote(
-      `The swap server charges ${funding.total_fee_bps / 100}%, above your limit of ${funding.max_fee_bps / 100}%`,
+      `The swap server charges ${Number(funding.total_fee_bps) / 100}%, above your limit of ${Number(funding.max_fee_bps) / 100}%`,
     );
   }, [amountFrom]);
 
