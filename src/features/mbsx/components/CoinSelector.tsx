@@ -5,10 +5,10 @@ import {ScreenSizeContext} from '../../../context/screenSize';
 import {getMbsxStyles} from '../theme';
 
 // Replaces the example's react-native-element-dropdown, which nexus does not
-// depend on. Two coins do not need a searchable dropdown.
+// depend on. Three coins do not need a searchable dropdown.
 //
 // The receivable coins, so anything listing them per coin reads them from here.
-const COINS = ['BTC', 'PART'];
+const COINS = ['BTC', 'PART', 'FIRO'];
 
 type Props = {
   label: string;
