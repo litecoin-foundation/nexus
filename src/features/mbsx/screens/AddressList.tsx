@@ -1,5 +1,5 @@
 import React, {useContext, useEffect} from 'react';
-import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {Image, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
@@ -7,6 +7,7 @@ import {useAppSelector} from '../../../store/hooks';
 import {COINS} from '../components/CoinSelector';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
+import {COIN_ICONS, swapCards} from '../swapCards';
 import type {MbsxDrawerParamList} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'AddressList'>;
@@ -20,6 +21,7 @@ const AddressList: React.FC<Props> = ({navigation}) => {
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
+      headerTitleContainerStyle: {left: 7},
     });
   }, [navigation]);
 
@@ -32,10 +34,15 @@ const AddressList: React.FC<Props> = ({navigation}) => {
             <TouchableOpacity
               key={coin}
               testID={`mbsx-addresses-${coin}`}
-              style={styles.stackedRow}
+              style={swapCards.card}
               onPress={() => navigation.navigate('CoinAddresses', {coin})}>
-              <Text style={styles.rowPrimary}>{coin}</Text>
-              <Text style={styles.rowSecondary}>
+              <View style={swapCards.pair}>
+                {COIN_ICONS[coin] ? (
+                  <Image source={COIN_ICONS[coin]} style={swapCards.coinLogo} />
+                ) : null}
+                <Text style={swapCards.pairText}>{coin}</Text>
+              </View>
+              <Text style={swapCards.meta}>
                 {saved.length === 0
                   ? 'No addresses'
                   : `${saved.length} address${saved.length === 1 ? '' : 'es'}`}

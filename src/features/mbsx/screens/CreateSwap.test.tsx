@@ -69,13 +69,14 @@ describe('CreateSwap', () => {
     const {getByTestId, queryByTestId} = renderScreen();
 
     expect(getByTestId('mbsx-address-to')).toBeDisabled();
-    expect(getByTestId('mbsx-amount-to')).toBeDisabled();
-    expect(getByTestId('mbsx-amount-from')).toBeDisabled();
+    expect(getByTestId('mbsx-amount-to')).toBeEnabled();
+    expect(getByTestId('mbsx-amount-from')).toBeEnabled();
     expect(getByTestId('mbsx-scan')).toBeDisabled();
     expect(getByTestId('mbsx-addresses')).toBeDisabled();
     expect(getByTestId('mbsx-submit')).toBeDisabled();
     expect(getByTestId('mbsx-select-coin-note')).toBeTruthy();
 
+    fireEvent.press(getByTestId('mbsx-coin-pill'));
     fireEvent.press(getByTestId('mbsx-coin-BTC'));
 
     expect(getByTestId('mbsx-address-to')).toBeEnabled();
@@ -99,6 +100,7 @@ describe('CreateSwap', () => {
     });
     const {getByTestId} = renderScreen();
 
+    fireEvent.press(getByTestId('mbsx-coin-pill'));
     fireEvent.press(getByTestId('mbsx-coin-BTC'));
     fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
 

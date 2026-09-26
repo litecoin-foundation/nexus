@@ -30,6 +30,7 @@ import {
   listCaCerts,
   readConfig,
   removeCaCert,
+  writeConfig,
 } from '../adapter';
 import type {
   CaCert,
@@ -436,6 +437,27 @@ const MbsxSettings: React.FC = () => {
         <Text style={styles.rowMessage}>
           Leaving this section withdraws any request that has not accepted an
           offer, and frees the coins held for it.
+        </Text>
+
+        <Text style={styles.section}>Display</Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Show state names</Text>
+          <Switch
+            testID="mbsx-show-raw-states"
+            value={config.show_raw_states === true}
+            onValueChange={value => {
+              edit({show_raw_states: value});
+              readConfig().then(current => {
+                if (current) {
+                  writeConfig({...current, show_raw_states: value});
+                }
+              });
+            }}
+          />
+        </View>
+        <Text style={styles.rowMessage}>
+          Cards say what a swap is doing. Turn this on to also show the raw
+          state name.
         </Text>
 
         <Text style={styles.section}>Privacy</Text>

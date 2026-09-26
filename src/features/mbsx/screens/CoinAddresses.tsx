@@ -1,5 +1,6 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
+  Image,
   ScrollView,
   Text,
   TextInput,
@@ -17,6 +18,7 @@ import {formatPrice} from 'react-native-nitro-bsx';
 import {formatTimestamp} from '../format';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
+import {COIN_ICONS, swapCards} from '../swapCards';
 import type {MbsxCoinPrices, MbsxDrawerParamList} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CoinAddresses'>;
@@ -50,6 +52,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
     navigation.setOptions({
       title: `${coin} addresses`,
       headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
+      headerTitleContainerStyle: {left: 7},
     });
   }, [navigation, coin]);
 
@@ -76,50 +79,58 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled">
-        <View style={styles.stackedRow}>
+        <View style={swapCards.card}>
+          <View style={swapCards.pair}>
+            {COIN_ICONS[coin] ? (
+              <Image source={COIN_ICONS[coin]} style={swapCards.coinLogo} />
+            ) : null}
+            <Text style={swapCards.pairText}>{coin}</Text>
+          </View>
           {price ? (
             <>
-              <Text testID="mbsx-coin-price" style={styles.rowPrimary}>
+              <Text testID="mbsx-coin-price" style={swapCards.meta}>
                 {`1 ${coin} = ${formatPrice(price)} ${prices?.currency}`}
               </Text>
-              <Text style={styles.rowMessage}>
+              <Text style={swapCards.id}>
                 {`Updated ${formatTimestamp(prices?.updated_at ?? '')}`}
               </Text>
             </>
           ) : (
-            <Text testID="mbsx-coin-price" style={styles.rowMessage}>
+            <Text testID="mbsx-coin-price" style={swapCards.meta}>
               {running ? 'No price available' : 'Starting…'}
             </Text>
           )}
         </View>
 
-        <Text style={styles.inputLabel}>{`${coin} address`}</Text>
-        <TextInput
-          testID="mbsx-address-input"
-          style={styles.input}
-          placeholder="Address"
-          value={address}
-          onChangeText={setAddress}
-          autoCapitalize="none"
-        />
-        <Text style={styles.inputLabel}>Label</Text>
-        <TextInput
-          testID="mbsx-address-label"
-          style={styles.input}
-          placeholder="Optional"
-          value={label}
-          onChangeText={setLabel}
-        />
-        <TouchableOpacity
-          testID="mbsx-address-scan"
-          onPress={() =>
-            navigation.getParent()?.navigate('Scan', {
-              returnRoute: 'MbsxStack',
-              returnScreen: 'CoinAddresses',
-            })
-          }>
-          <Text style={styles.link}>Scan a QR code</Text>
-        </TouchableOpacity>
+        <View style={swapCards.card}>
+          <Text style={styles.inputLabel}>{`${coin} address`}</Text>
+          <TextInput
+            testID="mbsx-address-input"
+            style={styles.input}
+            placeholder="Address"
+            value={address}
+            onChangeText={setAddress}
+            autoCapitalize="none"
+          />
+          <Text style={styles.inputLabel}>Label</Text>
+          <TextInput
+            testID="mbsx-address-label"
+            style={styles.input}
+            placeholder="Optional"
+            value={label}
+            onChangeText={setLabel}
+          />
+          <TouchableOpacity
+            testID="mbsx-address-scan"
+            onPress={() =>
+              navigation.getParent()?.navigate('Scan', {
+                returnRoute: 'MbsxStack',
+                returnScreen: 'CoinAddresses',
+              })
+            }>
+            <Text style={swapCards.link}>Scan a QR code</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity
           testID="mbsx-address-add"
           style={[
@@ -131,22 +142,24 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
           <Text style={styles.buttonText}>Save address</Text>
         </TouchableOpacity>
 
-        <Text style={styles.section}>Saved</Text>
+        <Text style={swapCards.section}>Saved</Text>
         {saved.length === 0 ? (
-          <Text style={styles.empty}>No addresses</Text>
+          <View style={swapCards.card}>
+            <Text style={swapCards.note}>No addresses</Text>
+          </View>
         ) : (
           saved.map(entry => (
-            <View key={entry.address} style={styles.stackedRow}>
+            <View key={entry.address} style={swapCards.card}>
               {entry.label ? (
-                <Text style={styles.rowPrimary}>{entry.label}</Text>
+                <Text style={swapCards.pairText}>{entry.label}</Text>
               ) : null}
-              <Text style={styles.rowMessage}>{entry.address}</Text>
+              <Text style={swapCards.meta}>{entry.address}</Text>
               <TouchableOpacity
                 testID={`mbsx-forget-${entry.address}`}
                 onPress={() =>
                   dispatch(forgetAddress({coin, address: entry.address}))
                 }>
-                <Text style={styles.link}>Remove</Text>
+                <Text style={swapCards.link}>Remove</Text>
               </TouchableOpacity>
             </View>
           ))

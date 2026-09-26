@@ -1,5 +1,5 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {Image, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -14,6 +14,8 @@ import {
   requestExpired,
 } from '../adapter';
 import RemoveButton from '../components/RemoveButton';
+import {COIN_ICONS, swapCards} from '../swapCards';
+import {requestStateText, useShowRawStates} from '../stateText';
 import type {MbsxDrawerParamList, SwapRequestSummary} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'RequestList'>;
@@ -23,6 +25,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
 
   const running = useAppSelector(state => state.mbsx.running);
+  const showRaw = useShowRawStates();
   const [requests, setRequests] = useState<SwapRequestSummary[]>([]);
 
   const fetchRequests = useCallback(() => {
@@ -58,20 +61,45 @@ const RequestList: React.FC<Props> = ({navigation}) => {
       <ScrollView contentContainerStyle={styles.scroll}>
         {requests.length === 0 ? (
           running ? (
-            <Text style={styles.empty}>No requests</Text>
+            <View style={swapCards.card}>
+              <Text style={swapCards.note}>No requests</Text>
+            </View>
           ) : null
         ) : (
           requests.map(request => (
             <TouchableOpacity
               key={request.id}
-              style={styles.stackedRow}
+              style={swapCards.card}
               onPress={() =>
                 navigation.navigate('RequestDetail', {requestId: request.id})
               }>
-              <Text style={styles.rowPrimary}>
-                {request.coin_from} → {request.coin_to} · {request.state}
+              <View style={swapCards.pair}>
+                {COIN_ICONS[request.coin_from] ? (
+                  <Image
+                    source={COIN_ICONS[request.coin_from]}
+                    style={swapCards.coinLogo}
+                  />
+                ) : null}
+                <Text style={swapCards.pairText}>
+                  {`${request.coin_from} → ${request.coin_to}`}
+                </Text>
+                {COIN_ICONS[request.coin_to] ? (
+                  <Image
+                    source={COIN_ICONS[request.coin_to]}
+                    style={swapCards.coinLogoEnd}
+                  />
+                ) : null}
+              </View>
+              <Text style={swapCards.status}>
+                {requestStateText(request.state)}
               </Text>
-              <Text style={styles.rowSecondary}>{request.id}</Text>
+              {showRaw ? (
+                <Text style={swapCards.id}>{request.state}</Text>
+              ) : null}
+              <Text style={swapCards.meta}>
+                {`${request.amount_from} ${request.coin_from}`}
+              </Text>
+              <Text style={swapCards.id}>{request.id}</Text>
             </TouchableOpacity>
           ))
         )}

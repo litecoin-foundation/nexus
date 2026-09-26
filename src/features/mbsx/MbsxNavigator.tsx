@@ -108,12 +108,15 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
       style={styles.menu}
       colors={['#F2F8FD', '#F2F8FD']}>
       <View style={styles.menuHeader}>
-        <HeaderButton
-          onPress={() => navigation.getParent()?.goBack()}
-          imageSource={require('../../assets/images/back-icon.png')}
-          leftPadding
-        />
-        <Text style={styles.menuTitle}>Swap</Text>
+        <View style={{height: insets.top}} />
+        <View style={styles.menuBar}>
+          <HeaderButton
+            onPress={() => navigation.getParent()?.goBack()}
+            imageSource={require('../../assets/images/back-icon.png')}
+            leftPadding
+          />
+          <Text style={styles.menuTitle}>Swap</Text>
+        </View>
       </View>
       <ScrollView
         contentContainerStyle={{paddingBottom: insets.bottom + 16}}
@@ -248,7 +251,10 @@ const MbsxNavigator: React.FC = () => {
             fontFamily: 'Satoshi Variable',
             fontWeight: '700',
             fontSize: SCREEN_HEIGHT * 0.026,
+            lineHeight: SCREEN_HEIGHT * 0.026,
             color: '#fff',
+            includeFontPadding: false,
+            textAlignVertical: 'center',
           },
         }}>
         <Drawer.Screen
@@ -312,17 +318,21 @@ const getDrawerStyles = (_screenWidth: number, screenHeight: number) =>
     menuHeader: {
       height: screenHeight * 0.13,
       backgroundColor: '#1162E6',
+    },
+    menuBar: {
+      flex: 1,
       flexDirection: 'row',
-      alignItems: 'flex-end',
-      paddingBottom: screenHeight * 0.012,
+      alignItems: 'center',
     },
     menuTitle: {
       color: '#fff',
       fontFamily: 'Satoshi Variable',
       fontSize: screenHeight * 0.026,
+      lineHeight: screenHeight * 0.026,
       fontWeight: '700',
       marginStart: 11,
-      marginBottom: screenHeight * 0.004,
+      includeFontPadding: false,
+      textAlignVertical: 'center',
     },
     cell: {
       flexDirection: 'row',

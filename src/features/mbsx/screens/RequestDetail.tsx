@@ -5,7 +5,14 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -19,6 +26,8 @@ import {
 import {getMbsxStyles} from '../theme';
 import {offerWarning} from '../useSwapAmounts';
 import MbsxBackButton from '../components/MbsxBackButton';
+import {COIN_ICONS, swapCards} from '../swapCards';
+import {requestStateText, swapStateText, useShowRawStates} from '../stateText';
 import {
   BUSY,
   acceptOffer,
@@ -65,10 +74,12 @@ const live = (offer: SwapOffer) =>
 const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const showRaw = useShowRawStates();
 
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
+      headerTitleContainerStyle: {left: 7},
     });
   }, [navigation]);
 
@@ -206,69 +217,93 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.stackedRow}>
-          <Text style={styles.label}>ID</Text>
-          <Text testID="mbsx-request-id" style={styles.rowMessage} selectable>
-            {request.id}
+        <Text style={swapCards.section}>Send</Text>
+        <View style={swapCards.card}>
+          <View style={swapCards.amountRow}>
+            <Text style={swapCards.amount} numberOfLines={1} adjustsFontSizeToFit>
+              {request.amount_from}
+            </Text>
+            <View style={swapCards.coinPill}>
+              {COIN_ICONS[request.coin_from] ? (
+                <Image
+                  source={COIN_ICONS[request.coin_from]}
+                  style={swapCards.coinLogo}
+                />
+              ) : null}
+              <Text style={swapCards.coinPillText}>{request.coin_from}</Text>
+            </View>
+          </View>
+          <Text style={swapCards.status}>{requestStateText(request.state)}</Text>
+          {showRaw ? <Text style={swapCards.id}>{request.state}</Text> : null}
+          <Text style={swapCards.fromLine}>
+            {`Created ${formatTimestamp(request.created_at)}`}
           </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>State</Text>
-          <Text style={styles.value}>{request.state}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Created</Text>
-          <Text style={styles.value}>
-            {formatTimestamp(request.created_at)}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Expires</Text>
-          <Text style={styles.value}>{formatTimestamp(request.expire_at)}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>From</Text>
-          <Text style={styles.value}>
-            {request.amount_from} {request.coin_from}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>To (min)</Text>
-          <Text style={styles.value}>
-            {request.min_amount_to} {request.coin_to}
+          <Text style={swapCards.meta}>
+            {`Expires ${formatTimestamp(request.expire_at)}`}
           </Text>
         </View>
 
-        <Text style={styles.section}>Swap fees</Text>
-        {(request.fees ?? []).length === 0 ? (
-          <Text style={styles.empty}>No fees configured</Text>
-        ) : (
-          <>
-            {request.fees?.map(fee => (
-              <View key={fee.desc} style={styles.row}>
-                <Text style={styles.label}>
-                  {`${fee.desc} (${Number(fee.bps) / 100}%)`}
-                </Text>
+        <View style={swapCards.flipWrap}>
+          <View style={swapCards.flipLine} />
+          <View style={swapCards.flip}>
+            <Image
+              source={require('../../../assets/icons/switch-arrow.png')}
+              style={swapCards.flipIcon}
+            />
+          </View>
+        </View>
+
+        <Text style={swapCards.section}>Receive</Text>
+        <View style={swapCards.card}>
+          <View style={swapCards.amountRow}>
+            <Text style={swapCards.amount} numberOfLines={1} adjustsFontSizeToFit>
+              {request.min_amount_to}
+            </Text>
+            <View style={swapCards.coinPill}>
+              {COIN_ICONS[request.coin_to] ? (
+                <Image
+                  source={COIN_ICONS[request.coin_to]}
+                  style={swapCards.coinLogo}
+                />
+              ) : null}
+              <Text style={swapCards.coinPillText}>{request.coin_to}</Text>
+            </View>
+          </View>
+          <Text style={swapCards.meta}>At least</Text>
+        </View>
+
+        <Text style={swapCards.section}>Fees</Text>
+        <View style={swapCards.card}>
+          {(request.fees ?? []).length === 0 ? (
+            <Text style={swapCards.note}>No fees configured</Text>
+          ) : (
+            <>
+              {request.fees?.map(fee => (
+                <View key={fee.desc} style={styles.row}>
+                  <Text style={styles.label}>
+                    {`${fee.desc} (${Number(fee.bps) / 100}%)`}
+                  </Text>
+                  <Text style={styles.value}>
+                    {fee.amount} {request.fees_coin}
+                  </Text>
+                </View>
+              ))}
+              <View style={styles.row}>
+                <Text style={styles.label}>Total</Text>
                 <Text style={styles.value}>
-                  {fee.amount} {request.fees_coin}
+                  {request.fees_total} {request.fees_coin}
                 </Text>
               </View>
-            ))}
-            <View style={styles.row}>
-              <Text style={styles.label}>Total</Text>
-              <Text style={styles.value}>
-                {request.fees_total} {request.fees_coin}
+              <Text style={swapCards.note}>
+                {swaps.length === 0
+                  ? `Paid in the ${request.fees_coin} you send, whichever offer you accept. The exact amount follows the offer.`
+                  : 'Chain fees under the swap below.'}
               </Text>
-            </View>
-            <Text style={styles.empty}>
-              {swaps.length === 0
-                ? `Paid in the ${request.fees_coin} you send, whichever offer you accept. The exact amount follows the offer.`
-                : 'Chain fees under the swap below.'}
-            </Text>
-          </>
-        )}
+            </>
+          )}
+        </View>
 
-        <Text style={styles.section}>Offers</Text>
+        <Text style={swapCards.section}>Offers</Text>
         {offers.map(offer => {
           const warning = offerWarning(offer);
           return (
@@ -276,7 +311,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               key={offer.id}
               testID={`mbsx-offer-${offer.id}`}
               style={[
-                styles.stackedRow,
+                swapCards.card,
                 acceptedOffer !== null && !offer.accepted
                   ? styles.rowDimmed
                   : null,
@@ -322,23 +357,27 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           </Text>
         ) : null}
         {offers.length === 0 ? (
-          <Text style={styles.empty}>Waiting for an offer</Text>
+          <View style={swapCards.card}>
+            <Text style={swapCards.note}>Waiting for an offer</Text>
+          </View>
         ) : null}
 
-        {swaps.length > 0 ? <Text style={styles.section}>Swap</Text> : null}
+        {swaps.length > 0 ? <Text style={swapCards.section}>Swap</Text> : null}
         {swaps.map(swap => (
           <TouchableOpacity
             key={swap.id}
             testID={`mbsx-swap-${swap.id}`}
-            style={styles.stackedRow}
+            style={swapCards.card}
             onPress={() =>
               navigation.navigate('SwapDetail', {swapId: swap.id})
             }>
             <Text style={styles.rowPrimary}>
-              {[kindLabel(swap.kind), swap.state]
-                .filter(part => part !== '')
-                .join(' · ')}
+              {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
             </Text>
+            {showRaw ? <Text style={swapCards.id}>{swap.state}</Text> : null}
+            {swap.kind ? (
+              <Text style={swapCards.meta}>{kindLabel(swap.kind)}</Text>
+            ) : null}
             {/* Named per chain: two bare rates read as one number over
                 another, with nothing saying which coin either is on. */}
             <Text style={styles.rowMessage}>
@@ -354,6 +393,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             ) : null}
           </TouchableOpacity>
         ))}
+
+        <Text testID="mbsx-request-id" style={swapCards.id} selectable>
+          {request.id}
+        </Text>
 
         <RemoveButton
           testID="mbsx-remove-request"

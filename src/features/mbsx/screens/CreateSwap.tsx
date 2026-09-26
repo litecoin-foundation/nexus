@@ -1,14 +1,19 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
+  Image,
   ScrollView,
+  StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import {AddressType, newAddress} from 'react-native-nitro-lndltc';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 import {useFocusEffect} from '@react-navigation/native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
@@ -17,7 +22,7 @@ import {
   selectedAccountNamesSelector,
 } from '../../../reducers/wallets';
 import {rememberAddress, setLastCoin} from '../addressesSlice';
-import CoinSelector, {COINS} from '../components/CoinSelector';
+import {COINS} from '../components/CoinSelector';
 import {
   getCoinPrices,
   getInfo,
@@ -35,7 +40,6 @@ import {
 import {getMbsxStyles} from '../theme';
 import type {MbsxCoinPrices, MbsxDrawerParamList, MbsxInfo} from '../types';
 import {
-  AmountSide,
   RATE_TOLERANCE,
   SLIPPAGE,
   coinString,
@@ -46,11 +50,34 @@ type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
 // Nexus funds every swap from its own wallet, so the sending side is fixed.
 const COIN_FROM = 'LTC';
+
+const COIN_ICONS: Record<string, number> = {
+  LTC: require('../../../assets/images/coins/ltc.png'),
+  BTC: require('../../../assets/images/coins/btc.png'),
+  PART: require('../../../assets/images/coins/part.png'),
+  XMR: require('../../../assets/images/coins/xmr.png'),
+  FIRO: require('../../../assets/images/coins/firo.png'),
+};
 const DUST_LIMIT = 294n;
-const MAX_SUGGESTED_ADDRESSES = 3;
+const numericAmount = (value: string) => {
+  const cleaned = value.replace(/[^0-9.]/g, '');
+  const dot = cleaned.indexOf('.');
+  if (dot === -1) {
+    return cleaned;
+  }
+  return cleaned.slice(0, dot + 1) + cleaned.slice(dot + 1).replace(/\./g, '');
+};
+const fiatFieldWidth = (value: string) =>
+  Math.max(18, (value || '0').length * 10);
+
+const shortAddress = (address: string) =>
+  address.length > 18
+    ? `${address.slice(0, 8)}…${address.slice(-6)}`
+    : address;
 
 const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const insets = useSafeAreaInsets();
   const styles = getMbsxStyles(SCREEN_HEIGHT);
 
   const lastCoin = useAppSelector(state => state.mbsxAddresses.lastCoin);
@@ -66,6 +93,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     unconfirmed: bigint;
   } | null>(null);
   const [addressFocused, setAddressFocused] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
+  const [coinOpen, setCoinOpen] = useState(false);
+  const [receiversOpen, setReceiversOpen] = useState(false);
 
   // `running` goes true when initialise() returns, before the handshake that
   // carries the prices.
@@ -173,65 +203,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   const selectCoin = (coin: string) => {
     setCoinTo(coin);
+    setCoinOpen(false);
     dispatch(setLastCoin(coin));
   };
 
   const isHwWallet = useAppSelector(isHwWalletSelectedSelector);
   const {ltcAccount} = useAppSelector(selectedAccountNamesSelector);
-
-  const renderAmountRow = ({
-    side,
-    label,
-    coin,
-    priced,
-  }: {
-    side: AmountSide;
-    label: string;
-    coin: string;
-    priced: boolean;
-  }) => (
-    <View key={side}>
-      <Text style={styles.inputLabel}>{label}</Text>
-      <View style={styles.amountBox}>
-        <View style={styles.amountLine}>
-          <TextInput
-            testID={`mbsx-amount-${side}`}
-            style={[
-              styles.amountInput,
-              coinChosen ? null : styles.amountDisabled,
-            ]}
-            placeholder="0"
-            value={side === 'from' ? amounts.fromCoin : amounts.toCoin}
-            onChangeText={value => setAmount(side, 'coin', value)}
-            editable={coinChosen}
-            keyboardType="numeric"
-          />
-          <Text style={styles.amountUnit}>{coin || '—'}</Text>
-        </View>
-        <View style={[styles.amountLine, styles.amountLineLower]}>
-          <TextInput
-            testID={`mbsx-amount-${side}-usd`}
-            style={[
-              styles.amountInput,
-              priced && coinChosen ? null : styles.amountDisabled,
-            ]}
-            placeholder="0.00"
-            value={side === 'from' ? amounts.fromUsd : amounts.toUsd}
-            onChangeText={value => setAmount(side, 'usd', value)}
-            editable={priced && coinChosen}
-            keyboardType="numeric"
-          />
-          <Text
-            style={[
-              styles.amountUnit,
-              priced && coinChosen ? null : styles.amountDisabled,
-            ]}>
-            {prices?.currency ?? 'USD'}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
 
   const submit = async () => {
     setRequestId('');
@@ -326,125 +303,272 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     }
   };
 
+  const spendableLabel =
+    coinString(Number(balances?.spendable ?? 0n) / 1e8) || '0';
+  const selectedSaved = savedAddresses.find(
+    entry => entry.address === addressTo,
+  );
+  const currency = prices?.currency ?? 'USD';
+
   return (
     <View style={styles.container}>
-      {/* Without this a tap while the keyboard is up never reaches the button
-          under it. */}
       <ScrollView
+        style={look.scroller}
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled">
-        <CoinSelector
-          label="Receive"
-          value={coinTo}
-          coins={offeredCoins}
-          onChange={selectCoin}
-        />
-        {coinChosen ? null : (
-          <Text testID="mbsx-select-coin-note" style={styles.rowMessage}>
-            Select the coin to receive first
+        <Text style={look.section}>Send</Text>
+        <View style={look.card}>
+          <View style={look.amountRow}>
+            <TextInput
+              testID="mbsx-amount-from"
+              style={look.amount}
+              placeholder="0"
+              placeholderTextColor="#C5C5CE"
+              value={amounts.fromCoin}
+              onChangeText={value => setAmount('from', 'coin', numericAmount(value))}
+              keyboardType="decimal-pad"
+              autoCorrect={false}
+              underlineColorAndroid="transparent"
+            />
+            <View style={look.coinPill}>
+              <Image source={COIN_ICONS[COIN_FROM]} style={look.coinLogo} />
+              <Text style={look.coinPillText}>{COIN_FROM}</Text>
+            </View>
+          </View>
+          <View style={look.metaRow}>
+            <View style={look.fiatLine}>
+              <TextInput
+                testID="mbsx-usd-from"
+                style={[look.fiatInput, {width: fiatFieldWidth(amounts.fromUsd)}]}
+                placeholder="0"
+                placeholderTextColor="#747E87"
+                value={amounts.fromUsd}
+                onChangeText={value =>
+                  setAmount('from', 'usd', numericAmount(value))
+                }
+                keyboardType="decimal-pad"
+              />
+              <Text style={look.fiat}>{currency}</Text>
+            </View>
+            <TouchableOpacity
+              disabled={!coinChosen || !balances}
+              onPress={() => setAmount('from', 'coin', spendableLabel)}>
+              <Text style={look.max}>{`Max.  ${spendableLabel} ${COIN_FROM}`}</Text>
+            </TouchableOpacity>
+          </View>
+          {balances && balances.unconfirmed > 0n ? (
+            <Text style={look.unconfirmed}>
+              {`${coinString(Number(balances.unconfirmed) / 1e8)} ${COIN_FROM} unconfirmed`}
+            </Text>
+          ) : null}
+          <Text style={look.fromLine}>
+            {`From  ${ltcAccount || 'LTC wallet'}`}
           </Text>
-        )}
-        <Text style={styles.inputLabel}>Receive address</Text>
-        <TextInput
-          testID="mbsx-address-to"
-          style={[styles.input, coinChosen ? null : styles.inputDisabled]}
-          placeholder="Address"
-          value={addressTo}
-          onChangeText={setAddressTo}
-          onFocus={() => setAddressFocused(true)}
-          onBlur={() => setAddressFocused(false)}
-          editable={coinChosen}
-          autoCapitalize="none"
-        />
-        {addressFocused && !addressTo && savedAddresses.length > 0 ? (
-          <View testID="mbsx-saved-addresses" style={styles.dropdown}>
-            {savedAddresses.slice(0, MAX_SUGGESTED_ADDRESSES).map(entry => (
+        </View>
+
+        <View style={look.flipWrap}>
+          <View style={look.flipLine} />
+          <View style={look.flip}>
+            <Image
+              source={require('../../../assets/icons/switch-arrow.png')}
+              style={look.flipIcon}
+            />
+          </View>
+        </View>
+
+        <Text style={look.section}>Receive</Text>
+        <View style={look.card}>
+          <View style={look.amountRow}>
+            <TextInput
+              testID="mbsx-amount-to"
+              style={look.amount}
+              placeholder="0"
+              placeholderTextColor="#C5C5CE"
+              value={amounts.toCoin}
+              onChangeText={value => setAmount('to', 'coin', numericAmount(value))}
+              keyboardType="decimal-pad"
+              autoCorrect={false}
+              underlineColorAndroid="transparent"
+            />
+            <TouchableOpacity
+              testID="mbsx-coin-pill"
+              style={look.coinPill}
+              onPress={() => setCoinOpen(open => !open)}>
+              {coinTo && COIN_ICONS[coinTo] ? (
+                <Image source={COIN_ICONS[coinTo]} style={look.coinLogo} />
+              ) : null}
+              <Text style={look.coinPillText}>{coinTo || 'Coin'}</Text>
+              <Image
+                source={require('../../../assets/images/forward.png')}
+                style={look.chevron}
+              />
+            </TouchableOpacity>
+          </View>
+          {coinOpen ? (
+            <View style={look.coinMenu}>
+              {offeredCoins.map(coin => (
+                <TouchableOpacity
+                  key={coin}
+                  testID={`mbsx-coin-${coin}`}
+                  accessibilityState={{selected: coinTo === coin}}
+                  style={look.coinOption}
+                  onPress={() => selectCoin(coin)}>
+                  {COIN_ICONS[coin] ? (
+                    <Image source={COIN_ICONS[coin]} style={look.coinLogo} />
+                  ) : null}
+                  <Text style={look.coinPillText}>{coin}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : null}
+          <View style={[look.fiatLine, look.fiatLineBelow]}>
+            <TextInput
+              testID="mbsx-usd-to"
+              style={[look.fiatInput, {width: fiatFieldWidth(amounts.toUsd)}]}
+              placeholder="0"
+              placeholderTextColor="#747E87"
+              value={amounts.toUsd}
+              onChangeText={value =>
+                setAmount('to', 'usd', numericAmount(value))
+              }
+              keyboardType="decimal-pad"
+            />
+            <Text style={look.fiat}>{currency}</Text>
+          </View>
+          {coinChosen ? null : (
+            <Text testID="mbsx-select-coin-note" style={styles.rowMessage}>
+              Select the coin to receive first
+            </Text>
+          )}
+          <View style={look.receiverRow}>
+            <TextInput
+              key={coinChosen ? 'address-on' : 'address-off'}
+              testID="mbsx-address-to"
+              style={[look.receiver, coinChosen ? null : styles.inputDisabled]}
+              placeholder="Receive address"
+              placeholderTextColor="#9AA0AE"
+              value={addressTo}
+              onChangeText={setAddressTo}
+              onFocus={() => setAddressFocused(true)}
+              onBlur={() => setAddressFocused(false)}
+              editable={coinChosen}
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              testID="mbsx-paste"
+              disabled={!coinChosen}
+              style={[look.iconBtn, coinChosen ? null : look.iconBtnOff]}
+              onPress={async () => {
+                const text = await Clipboard.getString();
+                if (text.trim()) {
+                  setAddressTo(text.trim());
+                }
+              }}>
+              <Image
+                source={require('../../../assets/icons/copy-icon.png')}
+                style={look.toolIcon}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              testID="mbsx-scan"
+              disabled={!coinChosen}
+              style={[look.iconBtn, coinChosen ? null : look.iconBtnOff]}
+              onPress={() =>
+                navigation.getParent()?.navigate('Scan', {
+                  returnRoute: 'MbsxStack',
+                  returnScreen: 'CreateSwap',
+                })
+              }>
+              <Image
+                source={require('../../../assets/images/qrcode-btn.png')}
+                style={look.toolIcon}
+              />
+            </TouchableOpacity>
+          </View>
+          {addressInvalid ? (
+            <Text testID="mbsx-address-error" style={styles.error}>
+              Not a {coinTo} address
+            </Text>
+          ) : null}
+          <TouchableOpacity
+            testID="mbsx-addresses"
+            disabled={!coinChosen}
+            style={[look.receiverPick, coinChosen ? null : look.iconBtnOff]}
+            onPress={() => setReceiversOpen(open => !open)}>
+            <Text style={look.receiverPickText} numberOfLines={1}>
+              {selectedSaved?.label ||
+                (addressTo ? shortAddress(addressTo) : 'Select receiver')}
+            </Text>
+            <Image
+              source={require('../../../assets/images/forward.png')}
+              style={look.chevron}
+            />
+          </TouchableOpacity>
+          {receiversOpen ? (
+            <View testID="mbsx-saved-addresses" style={look.coinMenu}>
+              {savedAddresses.length === 0 ? (
+                <Text style={look.emptyReceivers}>No saved addresses</Text>
+              ) : (
+                savedAddresses.map(entry => (
+                  <TouchableOpacity
+                    key={entry.address}
+                    testID={`mbsx-saved-${entry.address}`}
+                    style={look.coinOption}
+                    onPress={() => {
+                      setAddressTo(entry.address);
+                      setReceiversOpen(false);
+                    }}>
+                    {entry.label ? (
+                      <Text style={look.coinPillText}>{entry.label}</Text>
+                    ) : null}
+                    <Text style={look.receiverAddr} numberOfLines={1}>
+                      {shortAddress(entry.address)}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              )}
               <TouchableOpacity
-                key={entry.address}
-                testID={`mbsx-saved-${entry.address}`}
-                onPress={() => setAddressTo(entry.address)}
-                style={styles.stackedRow}>
-                {entry.label ? (
-                  <Text style={styles.rowPrimary}>{entry.label}</Text>
-                ) : null}
-                <Text style={styles.rowMessage} numberOfLines={1}>
-                  {entry.address}
-                </Text>
+                testID="mbsx-manage-addresses"
+                style={look.manage}
+                onPress={() =>
+                  navigation.navigate('CoinAddresses', {coin: coinTo})
+                }>
+                <Text style={look.saved}>Manage addresses</Text>
               </TouchableOpacity>
-            ))}
+            </View>
+          ) : null}
+        </View>
+
+        <TouchableOpacity
+          style={look.advancedToggle}
+          onPress={() => setAdvanced(open => !open)}>
+          <Text style={look.advancedLabel}>Advanced</Text>
+          <Image
+            source={require('../../../assets/images/forward.png')}
+            style={[look.chevron, advanced ? look.chevronOpen : null]}
+          />
+        </TouchableOpacity>
+        {advanced ? (
+          <View style={look.card}>
+            <View style={look.settingRow}>
+              <Text style={look.settingLabel}>Fix rate</Text>
+              <Switch
+                testID="mbsx-fix-rate"
+                value={fixedRate}
+                onValueChange={setFixedRate}
+                trackColor={{false: '#E5E5EA', true: '#2C72FF'}}
+                thumbColor="#fff"
+              />
+            </View>
+            {fixedRate ? (
+              <View style={[look.settingRow, look.settingRowLine]}>
+                <Text style={look.settingLabel}>Slippage</Text>
+                <Text style={look.settingValue}>{`${SLIPPAGE * 100}%`}</Text>
+              </View>
+            ) : null}
           </View>
         ) : null}
-        {addressInvalid ? (
-          <Text testID="mbsx-address-error" style={styles.error}>
-            Not a {coinTo} address
-          </Text>
-        ) : null}
-        <TouchableOpacity
-          testID="mbsx-scan"
-          disabled={!coinChosen}
-          onPress={() =>
-            navigation.getParent()?.navigate('Scan', {
-              returnRoute: 'MbsxStack',
-              returnScreen: 'CreateSwap',
-            })
-          }>
-          <Text style={[styles.link, coinChosen ? null : styles.linkDisabled]}>
-            Scan a QR code
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          testID="mbsx-addresses"
-          disabled={!coinChosen}
-          onPress={() => navigation.navigate('CoinAddresses', {coin: coinTo})}>
-          <Text style={[styles.link, coinChosen ? null : styles.linkDisabled]}>
-            {savedAddresses.length > MAX_SUGGESTED_ADDRESSES
-              ? 'All saved addresses'
-              : 'Saved addresses'}
-          </Text>
-        </TouchableOpacity>
-        {renderAmountRow({
-          side: 'to',
-          label: 'Amount to receive',
-          coin: coinTo,
-          priced: Boolean(coinTo && prices?.prices?.[coinTo]),
-        })}
-        {renderAmountRow({
-          side: 'from',
-          label: 'Amount to send',
-          coin: COIN_FROM,
-          priced: Boolean(prices?.prices?.[COIN_FROM]),
-        })}
-        {balances ? (
-          <Text style={styles.empty}>
-            {`Available: ${
-              coinString(Number(balances.spendable) / 1e8) || '0'
-            } ${COIN_FROM}`}
-            {balances.unconfirmed > 0n
-              ? ` (${coinString(
-                  Number(balances.unconfirmed) / 1e8,
-                )} unconfirmed)`
-              : ''}
-          </Text>
-        ) : null}
-        {canConvert ? (
-          <>
-            <TouchableOpacity
-              testID="mbsx-fix-rate"
-              accessibilityState={{checked: fixedRate}}
-              onPress={() => setFixedRate(!fixedRate)}>
-              <Text style={styles.link}>
-                {fixedRate ? 'Fix rate: on' : 'Fix rate: off'}
-              </Text>
-            </TouchableOpacity>
-            <Text style={styles.empty}>
-              {fixedRate
-                ? `Reference rate from the swap server. A derived amount allows ${
-                    SLIPPAGE * 100
-                  }% slippage.`
-                : 'Both amounts are as entered, at whatever rate they imply.'}
-            </Text>
-          </>
-        ) : null}
+
         {offReference ? (
           <TouchableOpacity
             testID="mbsx-rate-warning"
@@ -460,30 +584,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             </Text>
           </TouchableOpacity>
         ) : null}
-        <TouchableOpacity
-          testID="mbsx-submit"
-          style={[
-            styles.button,
-            busy ||
-            !coinChosen ||
-            addressInvalid ||
-            blockNote !== '' ||
-            (offReference && !rateAcknowledged)
-              ? styles.buttonDisabled
-              : null,
-          ]}
-          onPress={submit}
-          disabled={
-            busy ||
-            !coinChosen ||
-            addressInvalid ||
-            blockNote !== '' ||
-            (offReference && !rateAcknowledged)
-          }>
-          <Text style={styles.buttonText}>
-            {busy ? 'Requesting…' : 'Request swap'}
-          </Text>
-        </TouchableOpacity>
         {blockNote !== '' ? (
           <Text testID="mbsx-bridge-note" style={styles.rowMessage}>
             {blockNote}
@@ -502,8 +602,309 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           </TouchableOpacity>
         ) : null}
       </ScrollView>
+      <View style={[look.footer, {paddingBottom: Math.max(insets.bottom, 12)}]}>
+        <TouchableOpacity
+          testID="mbsx-submit"
+          style={[
+            styles.button,
+            look.submit,
+            busy ||
+            !coinChosen ||
+            addressInvalid ||
+            blockNote !== '' ||
+            (offReference && !rateAcknowledged)
+              ? styles.buttonDisabled
+              : null,
+          ]}
+          onPress={submit}
+          disabled={
+            busy ||
+            !coinChosen ||
+            addressInvalid ||
+            blockNote !== '' ||
+            (offReference && !rateAcknowledged)
+          }>
+          <Text style={styles.buttonText}>{busy ? 'Requesting…' : 'Swap'}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  section: {
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#747E87',
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 8,
+  },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  amount: {
+    flex: 1,
+    minHeight: 48,
+    fontSize: 36,
+    color: '#484859',
+    paddingVertical: 4,
+    textAlignVertical: 'center',
+  },
+  coinRow: {
+    flexDirection: 'row',
+  },
+  coinPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#F2F4F8',
+    marginLeft: 6,
+  },
+  coinLogo: {
+    width: 20,
+    height: 20,
+    marginRight: 6,
+    borderRadius: 10,
+  },
+  coinPillText: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
+  },
+  chevron: {
+    width: 10,
+    height: 10,
+    marginLeft: 6,
+    tintColor: '#747E87',
+    transform: [{rotate: '90deg'}],
+  },
+  coinMenu: {
+    marginTop: 8,
+    borderRadius: 12,
+    backgroundColor: '#F4F7FB',
+    overflow: 'hidden',
+  },
+  coinOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  fiatLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+  },
+  fiatLineBelow: {
+    marginTop: 6,
+  },
+  fiatInput: {
+    minWidth: 12,
+    color: '#747E87',
+    fontSize: 14,
+    padding: 0,
+  },
+  fiat: {
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 14,
+    marginLeft: 4,
+  },
+  max: {
+    fontFamily: 'Satoshi Variable',
+    color: '#2C72FF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  fromLine: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E8E8E8',
+    paddingTop: 12,
+    fontFamily: 'Satoshi Variable',
+    color: '#484859',
+    fontSize: 14,
+  },
+  flipWrap: {
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+    marginBottom: 0,
+    zIndex: 2,
+  },
+  flipLine: {
+    position: 'absolute',
+    left: 28,
+    right: 28,
+    height: 1,
+    backgroundColor: '#E4E8EE',
+  },
+  flip: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E4E8EE',
+  },
+  flipIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#8B93A7',
+    transform: [{rotate: '90deg'}],
+  },
+  receiverRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  receiver: {
+    flex: 1,
+    borderRadius: 22,
+    backgroundColor: '#F4F7FB',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F4F7FB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  iconBtnOff: {
+    opacity: 0.4,
+  },
+  toolIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#484859',
+  },
+  receiverPick: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#2C72FF',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  receiverPickText: {
+    flex: 1,
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#2C72FF',
+    fontSize: 14,
+    marginRight: 8,
+  },
+  receiverAddr: {
+    flex: 1,
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 13,
+    marginLeft: 8,
+  },
+  emptyReceivers: {
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 14,
+    padding: 14,
+  },
+  manage: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  saved: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#2C72FF',
+    fontSize: 14,
+  },
+  unconfirmed: {
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 13,
+    marginTop: 6,
+  },
+  advancedToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  advancedLabel: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#747E87',
+    fontSize: 13,
+  },
+  chevronOpen: {
+    transform: [{rotate: '270deg'}],
+  },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  settingRowLine: {
+    borderTopWidth: 1,
+    borderTopColor: '#E8E8E8',
+  },
+  settingLabel: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
+  },
+  settingValue: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#747E87',
+    fontSize: 14,
+  },
+  scroller: {
+    flex: 1,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    backgroundColor: '#F2F8FD',
+  },
+  submit: {
+    marginTop: 0,
+    marginBottom: 0,
+  },
+});
 
 export default CreateSwap;

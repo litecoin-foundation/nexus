@@ -33,6 +33,7 @@ export type CoinConfig = {
 };
 
 export type MbsxConfig = {
+  config_version?: number;
   chain: LitecoinNetwork;
   debug: boolean;
   bridge_host: string;
@@ -45,8 +46,7 @@ export type MbsxConfig = {
   proxy?: {host: string; port: number; timeout_seconds?: number};
   // Nexus's own; the module ignores keys it does not read.
   revoke_open_requests_on_exit?: boolean;
-  // Nexus's own. Absent is a config from before readConfig migrated them.
-  config_version?: number;
+  show_raw_states?: boolean;
   coins: Record<string, CoinConfig>;
 };
 
