@@ -352,7 +352,7 @@ const MbsxSettings: React.FC = () => {
     setStatus('');
     const blank = Object.entries(config.coins).find(
       ([, coin]) =>
-        coin.enabled !== false &&
+        coin.enabled === true &&
         coin.electrumx.some(server => !server.url.trim()),
     );
     if (blank) {
@@ -450,7 +450,7 @@ const MbsxSettings: React.FC = () => {
         </Text>
 
         {shownCoins.map(coin => {
-          const enabled = config.coins[coin].enabled !== false;
+          const enabled = config.coins[coin].enabled === true;
           // The coin this app funds its own side of every swap from. Turning it
           // off leaves nothing to swap with.
           const ownCoin = config.coins[coin].wallet?.type === 'host';

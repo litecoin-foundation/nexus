@@ -39,7 +39,7 @@ const MbsxDebug: React.FC = () => {
     readConfig().then(cfg => {
       setDisabledCoins(
         Object.entries(cfg?.coins ?? {})
-          .filter(([, coin]) => coin.enabled === false)
+          .filter(([, coin]) => coin.enabled !== true)
           .map(([ticker]) => ticker.toUpperCase()),
       );
     });
