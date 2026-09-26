@@ -12,7 +12,8 @@ import {walletKitListUnspent} from 'react-native-nitro-lndltc';
 
 import ConvertField from '../InputFields/ConvertField';
 import BuyPad from '../Numpad/BuyPad';
-import BlueButton from '../Buttons/BlueButton';
+import BlueButtonV2, {BUTTON_HEIGHT_RATIO} from '../ButtonsV2/BlueButtonV2';
+import {useFixedBottomStyle} from '../ButtonsV2/fixedBottomStyle';
 import {useAppSelector, useAppDispatch} from '../../store/hooks';
 import {
   satsToSubunitSelector,
@@ -24,10 +25,10 @@ import {
   updateRegularAmount,
 } from '../../reducers/input';
 
-import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {estimateMWEBTransaction} from '../../utils/estimateFee';
+import {NUMPAD_GAP_RATIO, PADDING_RATIO} from './cardLayout';
 
 // interface Props {}
 
@@ -44,9 +45,12 @@ type RootStackParamList = {
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'Convert'>;
+  // the view's height in Send's card, from below its title row to the card's
+  // bottom, see Send's convertTop
+  containerHeight: number;
 }
 
-const Convert: React.FC<Props> = () => {
+const Convert: React.FC<Props> = ({containerHeight}) => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<Props['navigation']>();
 
@@ -66,7 +70,17 @@ const Convert: React.FC<Props> = () => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  const fixedBottomStyle = useFixedBottomStyle();
+  // what the convert button takes up above the card's bottom edge
+  const buttonClearance =
+    fixedBottomStyle.bottom + SCREEN_HEIGHT * BUTTON_HEIGHT_RATIO;
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    containerHeight,
+    buttonClearance,
+  );
 
   useEffect(() => {
     return function cleanup() {
@@ -202,7 +216,7 @@ const Convert: React.FC<Props> = () => {
         const fee = Math.max(0, total) / 100000000;
         dispatch(updatePrivateAmount(fee.toFixed(8)));
       }
-    } catch (error) {
+    } catch {
       if (destination === 'private') {
         dispatch(updateRegularAmount('0'));
       } else {
@@ -285,60 +299,53 @@ const Convert: React.FC<Props> = () => {
       </View>
 
       <View style={styles.bottomContainer}>
-        <CustomSafeAreaView styles={{...styles.safeArea}} edges={['bottom']}>
-          <View style={styles.col}>
-            <View style={styles.numpadContainer}>
-              {Platform.OS === 'android' ? (
-                <BuyPad
-                  onChange={(value: string) => onChange(value)}
-                  currentValue={
-                    activeField === 'regular' ? regularAmount : privateAmount
-                  }
-                  extraSmall
-                />
-              ) : (
-                <BuyPad
-                  onChange={(value: string) => onChange(value)}
-                  currentValue={
-                    activeField === 'regular' ? regularAmount : privateAmount
-                  }
-                  small
-                />
-              )}
-            </View>
-
-            <View style={styles.buttonContainer}>
-              <BlueButton
-                disabled={false}
-                textKey="convert_button"
-                textDomain="convertTab"
-                onPress={() => handleConvert()}
+        <View style={styles.col}>
+          <View style={styles.numpadContainer}>
+            {Platform.OS === 'android' ? (
+              <BuyPad
+                onChange={(value: string) => onChange(value)}
+                currentValue={
+                  activeField === 'regular' ? regularAmount : privateAmount
+                }
+                extraSmall
               />
-            </View>
+            ) : (
+              <BuyPad
+                onChange={(value: string) => onChange(value)}
+                currentValue={
+                  activeField === 'regular' ? regularAmount : privateAmount
+                }
+                small
+              />
+            )}
           </View>
-        </CustomSafeAreaView>
+
+          <View style={styles.buttonSpacer} />
+        </View>
+      </View>
+
+      <View style={fixedBottomStyle}>
+        <BlueButtonV2
+          textKey="convert_button"
+          textDomain="convertTab"
+          onPress={() => handleConvert()}
+        />
       </View>
     </View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  containerHeight: number,
+  buttonClearance: number,
+) =>
   StyleSheet.create({
-    containerStandaloneCard: {
-      width: screenWidth,
-      // BottomSheet is screenHeight * 0.76
-      // DashboardButton is 110
-      // Header margin is 5
-      height: screenHeight * 0.76 - 110 - 5,
-      paddingHorizontal: screenWidth * 0.06,
-    },
     container: {
       width: screenWidth,
-      height: '100%',
-      paddingHorizontal: screenWidth * 0.06,
-    },
-    safeArea: {
-      height: '100%',
+      height: containerHeight,
+      paddingHorizontal: screenWidth * PADDING_RATIO,
     },
     inputsContainer: {
       flexDirection: 'row',
@@ -351,19 +358,19 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     bottomContainer: {
       position: 'absolute',
-      left: screenWidth * 0.06,
+      left: 0,
+      right: 0,
       bottom: 0,
-      width: '100%',
     },
     col: {
-      gap: screenHeight * 0.02,
+      gap: screenHeight * NUMPAD_GAP_RATIO,
       alignItems: 'center',
     },
     numpadContainer: {
       width: screenWidth,
     },
-    buttonContainer: {
-      width: '100%',
+    buttonSpacer: {
+      height: buttonClearance,
     },
     smallText: {
       fontFamily: 'Satoshi Variable',

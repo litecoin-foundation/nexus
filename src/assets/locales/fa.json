@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "دریافت لایت‌کوین",
     "receive_privately": "دریافت به صورت خصوصی",
+    "regular_ltc": "LTC عادی",
+    "private_ltc": "LTC خصوصی",
     "my_ltc_address": "آدرس LTC من",
     "receive_mweb_description": "دریافت به صورت خصوصی، آدرس فرستنده و گیرنده و مقدار ارسالی را پنهان می‌کند."
   },

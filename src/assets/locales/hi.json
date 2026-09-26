@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "लाइटकॉइन प्राप्त करें",
     "receive_privately": "गुप्त रूप से प्राप्त करें",
+    "regular_ltc": "सामान्य LTC",
+    "private_ltc": "निजी LTC",
     "my_ltc_address": "मेरा LTC पता",
     "receive_mweb_description": "गुप्त रूप से प्राप्त करने पर प्रेषक और प्राप्तकर्ता के पते तथा भेजी गई राशि छिप जाती है।"
   },

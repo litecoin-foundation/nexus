@@ -131,7 +131,10 @@ describe('Sell Component UI', () => {
       <Provider store={store}>
         <NavigationContainer>
           <ScreenSizeContext.Provider value={mockScreenSize}>
-            <Sell navigation={mockNavigation} />
+            <Sell
+              navigation={mockNavigation}
+              containerHeight={mockScreenSize.height}
+            />
           </ScreenSizeContext.Provider>
         </NavigationContainer>
       </Provider>,
@@ -193,7 +196,10 @@ describe('Sell Component UI', () => {
       <Provider store={store}>
         <NavigationContainer>
           <ScreenSizeContext.Provider value={mockScreenSize}>
-            <Sell navigation={mockNavigation} />
+            <Sell
+              navigation={mockNavigation}
+              containerHeight={mockScreenSize.height}
+            />
           </ScreenSizeContext.Provider>
         </NavigationContainer>
       </Provider>,
@@ -246,7 +252,10 @@ describe('Sell Component UI', () => {
       <Provider store={store}>
         <NavigationContainer>
           <ScreenSizeContext.Provider value={mockScreenSize}>
-            <Sell navigation={mockNavigation} />
+            <Sell
+              navigation={mockNavigation}
+              containerHeight={mockScreenSize.height}
+            />
           </ScreenSizeContext.Provider>
         </NavigationContainer>
       </Provider>,

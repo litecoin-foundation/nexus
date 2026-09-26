@@ -18,12 +18,10 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Animated, {
-  useDerivedValue,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import {useTranslation} from 'react-i18next';
 import type {Utxo} from 'react-native-nitro-lndltc';
 
 import PlasmaModal from '../Modals/PlasmaModal';
@@ -32,8 +30,8 @@ import Switch from '../Buttons/Switch';
 import InputField from '../InputField';
 import AddressField from '../AddressField';
 import AmountPicker from '../Buttons/AmountPicker';
-import {useCardUnderlay} from '../cardUnderlay';
-import {useUnderGlassBlueButton} from '../Buttons/underGlassBlueButton';
+import BlueButtonV2, {BUTTON_HEIGHT_RATIO} from '../ButtonsV2/BlueButtonV2';
+import {useFixedBottomStyle} from '../ButtonsV2/fixedBottomStyle';
 import BuyPad from '../Numpad/BuyPad';
 import {decodeBIP21} from '../../utils/bip21';
 import {validate as validateLtcAddress} from '../../utils/validate';
@@ -55,11 +53,18 @@ import {
 } from '../../reducers/input';
 import {fetchResolve} from '../../utils/tor';
 import Convert from './Convert';
+import {
+  NUMPAD_GAP_RATIO,
+  PADDING_RATIO,
+  TITLE_ROW_HEIGHT_RATIO,
+} from './cardLayout';
 
-import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {PopUpContext} from '../../context/popUpContext';
+
+// the gap under the title row, as a fraction of the screen's height
+const TITLE_ROW_GAP_RATIO = 0.02;
 
 type RootStackParamList = {
   MainScreen: {
@@ -75,7 +80,8 @@ type RootStackParamList = {
 interface Props {
   route: RouteProp<RootStackParamList, 'MainScreen'>;
   navigation: StackNavigationProp<RootStackParamList, 'MainScreen'>;
-  containerHeight?: number;
+  // the card's height in the main screen's sheet, see NewMain's cardHeight
+  containerHeight: number;
 }
 
 interface URIHandlerRef {
@@ -107,7 +113,26 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, containerHeight);
+  // the card runs to the screen's bottom edge, but its content runs in by its
+  // padding from the screen's sides
+  const fixedBottomStyle = useFixedBottomStyle({
+    horizontal: SCREEN_WIDTH * PADDING_RATIO,
+  });
+  // what the bottom button takes up above the card's bottom edge
+  const buttonClearance =
+    fixedBottomStyle.bottom + SCREEN_HEIGHT * BUTTON_HEIGHT_RATIO;
+  // the convert view overlays the card from where the send view starts, under
+  // the title row and its gap, to the card's bottom
+  const convertTop =
+    SCREEN_WIDTH * PADDING_RATIO +
+    SCREEN_HEIGHT * (TITLE_ROW_HEIGHT_RATIO + TITLE_ROW_GAP_RATIO);
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    containerHeight,
+    buttonClearance,
+    convertTop,
+  );
 
   const [address, setAddress] = useState('');
   const [addressDomain, setAddressDomain] = useState('');
@@ -515,38 +540,14 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalVisible]);
 
-  const {t} = useTranslation('sendTab');
-  const cardRootRef = useRef<View>(null);
   const handleConfirmAmount = async () => {
     padOpacity.value = withTiming(0, {duration: 230});
     await sleep(230);
     setAmountPickerActive(false);
   };
-  // bottom ctas draw under the glass band in the shared canvas
-  const sendBtnOpacity = useDerivedValue(
-    () => detailsOpacity.value * sendOpacity.value,
-  );
-  const confirmBtnOpacity = useDerivedValue(
-    () => padOpacity.value * sendOpacity.value,
-  );
-  const sendBtn = useUnderGlassBlueButton(
-    cardRootRef,
-    t('send_litecoin'),
-    handleSend,
-    isSendDisabled,
-    sendBtnOpacity,
-  );
-  const confirmBtn = useUnderGlassBlueButton(
-    cardRootRef,
-    t('confirm'),
-    handleConfirmAmount,
-    false,
-    confirmBtnOpacity,
-  );
-  useCardUnderlay(amountPickerActive ? confirmBtn.graphics : sendBtn.graphics);
 
   return (
-    <View ref={cardRootRef} collapsable={false} style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.titleRow}>
         <TranslateText
           textKey={showConvert ? 'convert_litecoin' : 'send_litecoin'}
@@ -584,7 +585,10 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         style={[styles.sheetOverlay, convertAnimStyle]}
         pointerEvents={showConvert ? 'auto' : 'none'}>
         <View style={styles.convertContainer}>
-          <Convert navigation={navigation as any} />
+          <Convert
+            navigation={navigation as any}
+            containerHeight={containerHeight - convertTop}
+          />
         </View>
       </Animated.View>
 
@@ -775,59 +779,58 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
         </ScrollView>
 
         {amountPickerActive ? null : (
-          <Animated.View
-            style={[styles.bottomContainer, {opacity: detailsOpacity}]}>
-            <CustomSafeAreaView
-              styles={{...styles.safeArea}}
-              edges={['bottom']}>
-              <View style={styles.row}>
-                <View style={styles.blueBtnContainer}>
-                  {sendBtn.ghost}
-
-                  {noteKey ? (
-                    <TranslateText
-                      textKey={noteKey}
-                      domain="sendTab"
-                      maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-                      textStyle={styles.minText}
-                      numberOfLines={3}
-                    />
-                  ) : null}
-                </View>
-              </View>
-            </CustomSafeAreaView>
+          <Animated.View style={[fixedBottomStyle, {opacity: detailsOpacity}]}>
+            <BlueButtonV2
+              textKey="send_litecoin"
+              textDomain="sendTab"
+              onPress={handleSend}
+              disabled={isSendDisabled}
+            />
+            {noteKey ? (
+              <TranslateText
+                textKey={noteKey}
+                domain="sendTab"
+                maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+                textStyle={styles.minText}
+                numberOfLines={3}
+              />
+            ) : null}
           </Animated.View>
         )}
 
         {amountPickerActive ? (
           <Animated.View
             style={[styles.amountPickerActiveBottom, {opacity: padOpacity}]}>
-            <CustomSafeAreaView
-              styles={{...styles.safeArea}}
-              edges={['bottom']}>
-              <View style={styles.col}>
-                <View style={styles.numpadContainer}>
-                  {Platform.OS === 'android' ? (
-                    <BuyPad
-                      onChange={(value: string) => onChange(value)}
-                      currentValue={
-                        toggleLTC ? String(amount) : String(fiatAmount)
-                      }
-                      extraSmall
-                    />
-                  ) : (
-                    <BuyPad
-                      onChange={(value: string) => onChange(value)}
-                      currentValue={
-                        toggleLTC ? String(amount) : String(fiatAmount)
-                      }
-                      small
-                    />
-                  )}
-                </View>
-                <View style={styles.blueBtnContainer}>{confirmBtn.ghost}</View>
+            <View style={styles.col}>
+              <View style={styles.numpadContainer}>
+                {Platform.OS === 'android' ? (
+                  <BuyPad
+                    onChange={(value: string) => onChange(value)}
+                    currentValue={
+                      toggleLTC ? String(amount) : String(fiatAmount)
+                    }
+                    extraSmall
+                  />
+                ) : (
+                  <BuyPad
+                    onChange={(value: string) => onChange(value)}
+                    currentValue={
+                      toggleLTC ? String(amount) : String(fiatAmount)
+                    }
+                    small
+                  />
+                )}
               </View>
-            </CustomSafeAreaView>
+              {/* keeps the numpad clear of the confirm button */}
+              <View style={styles.buttonSpacer} />
+            </View>
+            <View style={fixedBottomStyle}>
+              <BlueButtonV2
+                textKey="confirm"
+                textDomain="sendTab"
+                onPress={handleConfirmAmount}
+              />
+            </View>
           </Animated.View>
         ) : null}
       </Animated.View>
@@ -838,28 +841,22 @@ const Send = forwardRef<URIHandlerRef, Props>((props, ref) => {
 const getStyles = (
   screenWidth: number,
   screenHeight: number,
-  containerHeight?: number,
+  containerHeight: number,
+  buttonClearance: number,
+  convertTop: number,
 ) =>
   StyleSheet.create({
     container: {
-      width: '100%',
-      // BottomSheet is screenHeight * 0.76
-      // DashboardButton is 110
-      // Header margin is 5
-      height: containerHeight ?? screenHeight * 0.76 - 110 - 5,
+      height: containerHeight,
       backgroundColor: '#f7f7f7',
-      paddingHorizontal: screenWidth * 0.06,
-      position: 'relative',
+      paddingTop: screenWidth * PADDING_RATIO,
+      paddingHorizontal: screenWidth * PADDING_RATIO,
     },
     convertContainer: {
       flex: 1,
     },
     scrollViewContent: {
       minHeight: screenHeight,
-    },
-    subScrollContainer: {
-      width: '100%',
-      height: containerHeight ?? screenHeight * 0.76 - 110 - 5,
     },
     subContainer: {
       flex: 1,
@@ -868,7 +865,7 @@ const getStyles = (
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingBottom: screenHeight * 0.02,
+      paddingBottom: screenHeight * TITLE_ROW_GAP_RATIO,
     },
     titleText: {
       fontFamily: 'Satoshi Variable',
@@ -878,10 +875,11 @@ const getStyles = (
       fontSize: screenHeight * 0.025,
     },
     toggleButton: {
+      height: screenHeight * TITLE_ROW_HEIGHT_RATIO,
       backgroundColor: '#2C72FF',
-      borderRadius: screenHeight * 0.012,
+      borderRadius: (screenHeight * TITLE_ROW_HEIGHT_RATIO) / 2,
       paddingHorizontal: screenWidth * 0.035,
-      paddingVertical: screenHeight * 0.008,
+      justifyContent: 'center',
     },
     toggleButtonInner: {
       flexDirection: 'row',
@@ -902,7 +900,7 @@ const getStyles = (
     },
     sheetOverlay: {
       position: 'absolute',
-      top: screenHeight * 0.05,
+      top: convertTop,
       bottom: 0,
       left: 0,
       right: 0,
@@ -959,25 +957,11 @@ const getStyles = (
     inputFieldContainer: {
       paddingTop: 5,
     },
-    bottomContainer: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
-    },
-    row: {
-      width: '100%',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
     greenBtnContainer: {
       flexBasis: '37%',
     },
-    blueBtnContainer: {
-      width: '100%',
-    },
-    safeArea: {
-      flex: 1,
+    buttonSpacer: {
+      height: buttonClearance,
     },
     amountPickerActiveBottom: {
       position: 'absolute',
@@ -986,7 +970,7 @@ const getStyles = (
       bottom: 0,
     },
     col: {
-      gap: screenHeight * 0.03,
+      gap: screenHeight * NUMPAD_GAP_RATIO,
       alignItems: 'center',
     },
     numpadContainer: {

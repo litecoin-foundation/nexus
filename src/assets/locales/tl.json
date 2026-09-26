@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "Tanggapin ang Litecoin",
     "receive_privately": "Tanggapin nang pribado",
+    "regular_ltc": "Regular na LTC",
+    "private_ltc": "Pribadong LTC",
     "my_ltc_address": "AKING LTC ADDRESS",
     "receive_mweb_description": "Itinatago ng pribadong pagtanggap ang mga address ng nagpadala at tagatanggap, at halagang ipinapadala."
   },

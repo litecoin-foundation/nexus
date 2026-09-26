@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState, useContext} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
@@ -10,7 +10,6 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
   withTiming,
-  withSequence,
 } from 'react-native-reanimated';
 
 import {ScreenSizeContext} from '../context/screenSize';
@@ -139,20 +138,17 @@ const GlassBottomSheet: React.FC<Props> = props => {
 
   const [dalayedActiveTab, setDalayedActiveTab] = useState(activeTab);
 
-  const animTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
-
   useEffect(() => {
-    animTimeout.current = setTimeout(() => {
+    if (dalayedActiveTab === activeTab) {
+      cardOpacity.value = withTiming(1, {duration: 300});
+      return;
+    }
+    cardOpacity.value = withTiming(0, {duration: 150});
+    const timeout = setTimeout(() => {
       setDalayedActiveTab(activeTab);
     }, CARD_SWAP_DELAY);
-    cardOpacity.value = withSequence(
-      withTiming(0, {duration: 150}),
-      withTiming(1, {duration: 300}),
-    );
-    return () => {
-      clearTimeout(animTimeout.current);
-    };
-  }, [activeTab, cardOpacity]);
+    return () => clearTimeout(timeout);
+  }, [activeTab, dalayedActiveTab, cardOpacity]);
 
   return (
     <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>

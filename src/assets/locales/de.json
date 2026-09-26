@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "Litecoin empfangen",
     "receive_privately": "Privat empfangen",
+    "regular_ltc": "Reguläres LTC",
+    "private_ltc": "Privates LTC",
     "my_ltc_address": "MEINE LTC ADRESSE",
     "receive_mweb_description": "Privat Empfangen verbirgt die Adressen des Senders und Empfängers, sowie den gesendeten Betrag."
   },

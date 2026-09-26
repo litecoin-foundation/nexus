@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "Litecoin பெறவும்",
     "receive_privately": "தனிப்பட்ட முறையில் பெறவும்",
+    "regular_ltc": "வழக்கமான LTC",
+    "private_ltc": "தனிப்பட்ட LTC",
     "my_ltc_address": "எனது LTC முகவரி",
     "receive_mweb_description": "தனிப்பட்ட முறையில் பெறுவது அனுப்புநர் மற்றும் பெறுநர் முகவரிகளை மறைக்கும், மேலும் அனுப்பப்படும் தொகையையும் மறைக்கும்."
   },

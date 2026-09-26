@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "Gauti Litecoin",
     "receive_privately": "Gauti Privačiai",
+    "regular_ltc": "Įprastas LTC",
+    "private_ltc": "Privatus LTC",
     "my_ltc_address": "MANO LTC ADRESAS",
     "receive_mweb_description": "Privatus gavimas slepia siuntėjo ir gavėjo adresus bei siunčiamą sumą."
   },

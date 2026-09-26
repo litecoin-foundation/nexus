@@ -1,6 +1,14 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {useEffect, useRef, useState, useContext} from 'react';
 import {StyleSheet, View, Pressable} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Animated, {
+  cancelAnimation,
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import Share from 'react-native-share';
@@ -12,17 +20,30 @@ import {
   setRegularAddressAddress,
   setMWEBAddressAddress,
 } from '../../reducers/address';
-import NewBlueButton from '../Buttons/NewBlueButton';
 import NewButton from '../Buttons/NewButton';
+import SegmentedPills, {Segment} from '../ButtonsV2/SegmentedPills';
 import InfoModal from '../Modals/InfoModalContent';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import SkeletonLines from '../../components/SkeletonLines';
 
 import TranslateText from '../TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {PADDING_RATIO, TITLE_ROW_HEIGHT_RATIO} from './cardLayout';
+
+// index 0 regular address, 1 mweb
+const ADDRESS_TYPES: Segment[] = [
+  {key: 'litecoin', textKey: 'regular_ltc', textDomain: 'receiveTab'},
+  {key: 'mweb', textKey: 'private_ltc', textDomain: 'receiveTab'},
+];
+
+// switching between two known addresses: the old one slides out away from
+// the selected pill, the new one slides in from its side
+const SWAP_OUT = {duration: 140, easing: Easing.in(Easing.quad)};
+const SWAP_IN = {duration: 240, easing: Easing.bezier(0.22, 1, 0.36, 1)};
+const SWAP_SHIFT_RATIO = 0.05;
 
 interface Props {
-  containerHeight?: number;
+  containerHeight: number;
 }
 
 const Receive: React.FC<Props> = ({containerHeight}) => {
@@ -42,19 +63,26 @@ const Receive: React.FC<Props> = ({containerHeight}) => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    address.length,
-    containerHeight,
-  );
 
   const [regularAddressState, setRegularAddressState] =
     useState(regularAddress);
   const [mwebAddressState, setMwebAddressState] = useState(mwebAddress);
   const [isMwebAddress, setIsMwebAddress] = useState(false);
-  const [uri, setURI] = useState('');
+  const selectedAddress = isMwebAddress
+    ? mwebAddressState
+    : regularAddressState;
+  const [shown, setShown] = useState({
+    mweb: isMwebAddress,
+    address: selectedAddress,
+  });
   const [isInfoModalVisible, setInfoModalVisible] = useState(false);
+
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    shown.address.length,
+    containerHeight,
+  );
   const [loading, setLoading] = useState(
     regularAddress && mwebAddress ? false : true,
   );
@@ -75,13 +103,65 @@ const Receive: React.FC<Props> = ({containerHeight}) => {
     if (isMwebAddress && address.includes('ltcmweb')) {
       setMwebAddressState(address);
       dispatch(setMWEBAddressAddress(address));
-      setURI(address);
     } else if (!isMwebAddress && !address.includes('ltcmweb')) {
       setRegularAddressState(address);
       dispatch(setRegularAddressAddress(address));
-      setURI(address);
     }
   }, [address, isMwebAddress, dispatch]);
+
+  // NOTE: Both addresses known: the old one slides out, the new one is rendered at
+  // the midpoint and slides in. A fresh address of the same type (the tap
+  // also asks lnd for one) crossfades in place. An address not loaded yet
+  // swaps straight to the skeleton.
+  const contentOpacity = useSharedValue(1);
+  const contentShift = useSharedValue(0);
+  // the side the next address enters from, set at a switch's midpoint
+  const enterFrom = useRef(0);
+  useEffect(() => {
+    const shift = SCREEN_WIDTH * SWAP_SHIFT_RATIO;
+    if (shown.mweb === isMwebAddress && shown.address === selectedAddress) {
+      // swapped at the midpoint, or a switch reversed before reaching it
+      if (enterFrom.current) {
+        contentShift.value = enterFrom.current * shift;
+        enterFrom.current = 0;
+      }
+      contentOpacity.value = withTiming(1, SWAP_IN);
+      contentShift.value = withTiming(0, SWAP_IN);
+      return;
+    }
+    const next = {mweb: isMwebAddress, address: selectedAddress};
+    if (!shown.address || !selectedAddress) {
+      cancelAnimation(contentOpacity);
+      cancelAnimation(contentShift);
+      contentOpacity.value = 1;
+      contentShift.value = 0;
+      enterFrom.current = 0;
+      setShown(next);
+      return;
+    }
+    const direction = shown.mweb === isMwebAddress ? 0 : isMwebAddress ? 1 : -1;
+    const swap = () => {
+      enterFrom.current = direction;
+      setShown(next);
+    };
+    contentShift.value = withTiming(-direction * shift, SWAP_OUT);
+    contentOpacity.value = withTiming(0, SWAP_OUT, finished => {
+      if (finished) {
+        runOnJS(swap)();
+      }
+    });
+  }, [
+    isMwebAddress,
+    selectedAddress,
+    shown,
+    SCREEN_WIDTH,
+    contentOpacity,
+    contentShift,
+  ]);
+  const contentStyle = useAnimatedStyle(() => ({
+    opacity: contentOpacity.value,
+    transform: [{translateX: contentShift.value}],
+  }));
 
   // handle loading indicator
   useEffect(() => {
@@ -102,43 +182,40 @@ const Receive: React.FC<Props> = ({containerHeight}) => {
     return () => clearTimeout(timeout);
   }, [regularAddressState, mwebAddressState, isMwebAddress]);
 
+  // the shown address, not the store's latest
   const handleCopy = async () => {
     setInfoModalVisible(true);
-    Clipboard.setString(address);
+    Clipboard.setString(shown.address);
   };
 
   const handleShare = () => {
-    Share.open({message: address});
+    Share.open({message: shown.address});
   };
 
   return (
     <>
       <View style={styles.container}>
-        <TranslateText
-          textKey="receive_ltc"
-          domain="receiveTab"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-          textStyle={styles.titleText}
-          numberOfLines={1}
-        />
+        <View style={styles.titleRow}>
+          <TranslateText
+            textKey="receive_ltc"
+            domain="receiveTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.025}
+            textStyle={styles.titleText}
+            numberOfLines={1}
+          />
+        </View>
 
         <View style={styles.txTypeContainer}>
-          <NewBlueButton
-            title="Litecoin"
-            active={!isMwebAddress}
-            onPress={() => {
-              dispatch(getAddress(false));
-              setIsMwebAddress(false);
+          <SegmentedPills
+            segments={ADDRESS_TYPES}
+            activeIndex={isMwebAddress ? 1 : 0}
+            onSelect={index => {
+              const mweb = index === 1;
+              dispatch(getAddress(mweb));
+              setIsMwebAddress(mweb);
             }}
-          />
-          <NewBlueButton
-            textKey="receive_privately"
-            textDomain="receiveTab"
-            active={isMwebAddress}
-            onPress={() => {
-              dispatch(getAddress(true));
-              setIsMwebAddress(true);
-            }}
+            width={SCREEN_WIDTH * (1 - PADDING_RATIO * 2)}
+            tone="light"
           />
         </View>
 
@@ -149,73 +226,73 @@ const Receive: React.FC<Props> = ({containerHeight}) => {
           textStyle={styles.subtitleText}
         />
 
-        <View style={styles.addressContainer}>
-          {!loading ? (
-            <View style={styles.address}>
-              <Pressable
-                style={styles.pressableContainer}
-                onPress={() => handleCopy()}>
-                <TranslateText
-                  textValue={
-                    isMwebAddress ? mwebAddressState : regularAddressState
-                  }
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.021}
-                  textStyle={styles.addressText}
+        <Animated.View style={contentStyle}>
+          <View style={styles.addressContainer}>
+            {!loading ? (
+              <View style={styles.address}>
+                <Pressable
+                  style={styles.pressableContainer}
+                  onPress={() => handleCopy()}>
+                  <TranslateText
+                    textValue={shown.address}
+                    maxSizeInPixels={SCREEN_HEIGHT * 0.021}
+                    textStyle={styles.addressText}
+                  />
+                </Pressable>
+
+                <NewButton
+                  onPress={() => handleShare()}
+                  imageSource={require('../../assets/icons/share-icon.png')}
                 />
-              </Pressable>
-
-              <NewButton
-                onPress={() => handleShare()}
-                imageSource={require('../../assets/icons/share-icon.png')}
-              />
-            </View>
-          ) : (
-            <SkeletonLines
-              numberOfLines={isMwebAddress ? 3 : 1}
-              shortLastLine
-              lineHeight={SCREEN_HEIGHT * 0.022}
-              lineGap={SCREEN_HEIGHT * 0.01}
-            />
-          )}
-
-          <View style={styles.qrContainer}>
-            {!loading && uri ? (
-              <QRCode
-                value={uri}
-                size={
-                  isMwebAddress
-                    ? SCREEN_HEIGHT * 0.22 - insets.bottom
-                    : SCREEN_HEIGHT * 0.27 - insets.bottom
-                }
-                color="#000"
-                backgroundColor="#fff"
-              />
+              </View>
             ) : (
-              <View
-                style={[
-                  styles.qrSkeleton,
-                  {
-                    height: isMwebAddress
-                      ? SCREEN_HEIGHT * 0.22 - insets.bottom
-                      : SCREEN_HEIGHT * 0.27 - insets.bottom,
-                  },
-                ]}
+              <SkeletonLines
+                numberOfLines={shown.mweb ? 3 : 1}
+                shortLastLine
+                lineHeight={SCREEN_HEIGHT * 0.022}
+                lineGap={SCREEN_HEIGHT * 0.01}
               />
             )}
 
-            <LoadingIndicator visible={loading} noBlur tinted />
-          </View>
-        </View>
+            <View style={styles.qrContainer}>
+              {!loading && shown.address ? (
+                <QRCode
+                  value={shown.address}
+                  size={
+                    shown.mweb
+                      ? SCREEN_HEIGHT * 0.22 - insets.bottom
+                      : SCREEN_HEIGHT * 0.27 - insets.bottom
+                  }
+                  color="#000"
+                  backgroundColor="#fff"
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.qrSkeleton,
+                    {
+                      height: shown.mweb
+                        ? SCREEN_HEIGHT * 0.22 - insets.bottom
+                        : SCREEN_HEIGHT * 0.27 - insets.bottom,
+                    },
+                  ]}
+                />
+              )}
 
-        {isMwebAddress ? (
-          <TranslateText
-            textKey="receive_mweb_description"
-            domain="receiveTab"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-            textStyle={styles.minText}
-            numberOfLines={3}
-          />
-        ) : null}
+              <LoadingIndicator visible={loading} noBlur tinted />
+            </View>
+          </View>
+
+          {shown.mweb ? (
+            <TranslateText
+              textKey="receive_mweb_description"
+              domain="receiveTab"
+              maxSizeInPixels={SCREEN_HEIGHT * 0.015}
+              textStyle={styles.minText}
+              numberOfLines={3}
+            />
+          ) : null}
+        </Animated.View>
       </View>
 
       <InfoModal
@@ -234,14 +311,18 @@ const getStyles = (
   screenWidth: number,
   screenHeight: number,
   addressLength: number,
-  containerHeight?: number,
+  containerHeight: number,
 ) =>
   StyleSheet.create({
     container: {
-      // DashboardButton is 110
-      height: containerHeight ?? screenHeight * 0.76 - 110,
+      height: containerHeight,
       backgroundColor: '#f7f7f7',
-      paddingHorizontal: screenWidth * 0.06,
+      paddingTop: screenWidth * PADDING_RATIO,
+      paddingHorizontal: screenWidth * PADDING_RATIO,
+    },
+    titleRow: {
+      height: screenHeight * TITLE_ROW_HEIGHT_RATIO,
+      justifyContent: 'center',
     },
     titleText: {
       fontFamily: 'Satoshi Variable',
@@ -251,8 +332,6 @@ const getStyles = (
       fontSize: screenHeight * 0.025,
     },
     txTypeContainer: {
-      flexDirection: 'row',
-      gap: 8,
       paddingTop: screenHeight * 0.019,
       paddingBottom: screenHeight * 0.022,
     },

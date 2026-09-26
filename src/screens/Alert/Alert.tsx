@@ -3,7 +3,9 @@ import {View, StyleSheet, FlatList} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import AlertCell from '../../components/Cells/AlertCell';
-import AlertModal from '../../components/Modals/AlertModalContent';
+import AlertModal, {
+  SelectedAlert,
+} from '../../components/Modals/AlertModalContent';
 import ScreenHeader, {
   ScreenHeaderCard,
   useScreenHeaderArrival,
@@ -29,11 +31,15 @@ const Alert: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
   const [alertModalVisible, setAlertModalVisible] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedAlert, setSelectedAlert] = useState<SelectedAlert | null>(
+    null,
+  );
   const {alerts} = useAppSelector(state => state.alerts);
 
   const handleAlertPress = (index: number) => {
-    setSelectedIndex(index);
+    setSelectedAlert(
+      alerts.find((alert: SelectedAlert) => alert.index === index) ?? null,
+    );
     setAlertModalVisible(true);
   };
 
@@ -89,8 +95,13 @@ const Alert: React.FC<Props> = props => {
       />
       <AlertModal
         isVisible={alertModalVisible}
+        alert={selectedAlert}
         close={() => setAlertModalVisible(false)}
-        onPress={() => dispatch(removeAlert(selectedIndex))}
+        onPress={() => {
+          if (selectedAlert) {
+            dispatch(removeAlert(selectedAlert.index));
+          }
+        }}
       />
     </LinearGradient>
   );
@@ -107,6 +118,7 @@ const getStyles = (
     },
     scrollContent: {
       paddingTop: cardHeight,
+      paddingBottom: screenWidth * 0.02,
     },
     emptySectionListContainer: {
       alignItems: 'center',

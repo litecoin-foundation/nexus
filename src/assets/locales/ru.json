@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "Получить Litecoin",
     "receive_privately": "Приватный Litecoin",
+    "regular_ltc": "Обычный LTC",
+    "private_ltc": "Приватный LTC",
     "my_ltc_address": "МОЙ LTC АДРЕС",
     "receive_mweb_description": "Скрытные транзакции прячут адреса отправителя и получателя, а также отправляемую сумму."
   },

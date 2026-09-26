@@ -19,9 +19,8 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {useSharedValue, withTiming} from 'react-native-reanimated';
 
 import BuyPad from '../Numpad/BuyPad';
-import {useTranslation} from 'react-i18next';
-import {useCardUnderlay} from '../cardUnderlay';
-import {useUnderGlassBlueButton} from '../Buttons/underGlassBlueButton';
+import BlueButtonV2 from '../ButtonsV2/BlueButtonV2';
+import {useFixedBottomStyle} from '../ButtonsV2/fixedBottomStyle';
 import WhiteButton from '../Buttons/WhiteButton';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {checkAllowed, setLimits, setBuyQuote} from '../../reducers/buy';
@@ -35,6 +34,7 @@ import {callRates} from '../../reducers/ticker';
 import TranslateText from '../../components/TranslateText';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {PADDING_RATIO} from './cardLayout';
 
 type RootStackParamList = {
   Buy: undefined;
@@ -51,7 +51,8 @@ type RootStackParamList = {
 
 interface Props {
   navigation: StackNavigationProp<RootStackParamList, 'Buy'>;
-  containerHeight?: number;
+  // the card's height in the main screen's sheet, see NewMain's cardHeight
+  containerHeight: number;
 }
 
 const Buy: React.FC<Props> = ({containerHeight}) => {
@@ -74,12 +75,10 @@ const Buy: React.FC<Props> = ({containerHeight}) => {
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const OFFSET_HEADER_DIFF = insets.top - SCREEN_HEIGHT * 0.07;
   const styles = getStyles(
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
     insets.bottom,
-    OFFSET_HEADER_DIFF,
     containerHeight,
   );
 
@@ -377,8 +376,6 @@ const Buy: React.FC<Props> = ({containerHeight}) => {
     </>
   );
 
-  const {t} = useTranslation('buyTab');
-  const cardRootRef = useRef<View>(null);
   const handlePreview = () => {
     // NOTE: quote's polled every 15 sec but we have to
     // instant update it for preview
@@ -395,17 +392,11 @@ const Buy: React.FC<Props> = ({containerHeight}) => {
       return;
     }
   };
-  // bottom cta draws under the glass band in the shared canvas
-  const previewBtn = useUnderGlassBlueButton(
-    cardRootRef,
-    t('preview_buy'),
-    handlePreview,
-    !(regionValid && (isUK || amountValid)),
-  );
-  useCardUnderlay(previewBtn.graphics);
+
+  const fixedBottomStyle = useFixedBottomStyle();
 
   return (
-    <View ref={cardRootRef} collapsable={false} style={styles.container}>
+    <View style={styles.container}>
       <CustomSafeAreaView styles={styles.safeArea} edges={['bottom']}>
         {regionValid ? (
           isUK ? null : (
@@ -419,65 +410,70 @@ const Buy: React.FC<Props> = ({containerHeight}) => {
             maxSizeInPixels={SCREEN_HEIGHT * 0.022}
           />
         )}
-        <View style={styles.bottom}>
-          <View style={styles.buttons}>
-            {/* <View style={styles.btn1}>
-            <NewWhiteButton
-              textKey="schedule_buy"
+      </CustomSafeAreaView>
+      <View style={fixedBottomStyle}>
+        <View style={styles.buttons}>
+          {/* <View style={styles.btn1}>
+          <NewWhiteButton
+            textKey="schedule_buy"
+            textDomain="buyTab"
+            disabled={!(regionValid && amountValid)}
+            onPress={() => {}}
+            imageSource={require('../../assets/icons/schedule-icon.png')}
+          />
+        </View> */}
+          <View style={styles.btn2}>
+            <BlueButtonV2
+              textKey="preview_buy"
               textDomain="buyTab"
-              disabled={!(regionValid && amountValid)}
-              onPress={() => {}}
-              imageSource={require('../../assets/icons/schedule-icon.png')}
+              onPress={handlePreview}
+              disabled={!(regionValid && (isUK || amountValid))}
             />
-          </View> */}
-            <View style={styles.btn2}>
-              {previewBtn.ghost}
-            </View>
           </View>
-          {errorTextKey ? (
-            <View
-              style={
-                regionValid ? styles.underButtonNotification : {display: 'none'}
-              }>
-              <TranslateText
-                textKey={errorTextKey}
-                domain={'buyTab'}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.minText}
-                numberOfLines={1}
-              />
-              <TranslateText
-                textValue=" "
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.minText}
-                numberOfLines={1}
-              />
-              {proceedToGetBuyLimits ? null : (
-                <TranslateText
-                  textKey={'min_purchase'}
-                  domain={'buyTab'}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.minText}
-                  numberOfLines={1}
-                  interpolationObj={{
-                    currencySymbol,
-                    minAmountInFiat: minBuyAmount,
-                  }}
-                />
-              )}
-            </View>
-          ) : proceedToGetBuyLimits ? null : (
+        </View>
+        {errorTextKey ? (
+          <View
+            style={
+              regionValid ? styles.underButtonNotification : {display: 'none'}
+            }>
             <TranslateText
-              textKey={'min_purchase'}
+              textKey={errorTextKey}
               domain={'buyTab'}
               maxSizeInPixels={SCREEN_HEIGHT * 0.02}
               textStyle={styles.minText}
               numberOfLines={1}
-              interpolationObj={{currencySymbol, minAmountInFiat: minBuyAmount}}
             />
-          )}
-        </View>
-      </CustomSafeAreaView>
+            <TranslateText
+              textValue=" "
+              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+              textStyle={styles.minText}
+              numberOfLines={1}
+            />
+            {proceedToGetBuyLimits ? null : (
+              <TranslateText
+                textKey={'min_purchase'}
+                domain={'buyTab'}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+                textStyle={styles.minText}
+                numberOfLines={1}
+                interpolationObj={{
+                  currencySymbol,
+                  minAmountInFiat: minBuyAmount,
+                }}
+              />
+            )}
+          </View>
+        ) : proceedToGetBuyLimits ? null : (
+          <TranslateText
+            textKey={'min_purchase'}
+            domain={'buyTab'}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
+            textStyle={styles.minText}
+            numberOfLines={1}
+            interpolationObj={{currencySymbol, minAmountInFiat: minBuyAmount}}
+          />
+        )}
+      </View>
     </View>
   );
 };
@@ -486,19 +482,15 @@ const getStyles = (
   screenWidth: number,
   screenHeight: number,
   bottomInset: number,
-  offsetHeaderDiff: number,
-  containerHeight?: number,
+  containerHeight: number,
 ) =>
   StyleSheet.create({
     container: {
-      // BottomSheet is screenHeight * 0.76
-      // DashboardButton is 110
-      // Header margin is 5
       width: screenWidth,
-      height:
-        containerHeight ?? screenHeight * 0.76 - 110 - offsetHeaderDiff - 5,
+      height: containerHeight,
       backgroundColor: '#f7f7f7',
-      paddingHorizontal: screenWidth * 0.06,
+      paddingTop: screenWidth * PADDING_RATIO,
+      paddingHorizontal: screenWidth * PADDING_RATIO,
     },
     safeArea: {
       flex: 1,
@@ -526,7 +518,7 @@ const getStyles = (
       flexDirection: 'row',
       gap: 8,
       // History button's border is 1
-      marginRight: screenWidth * 0.06 * -1 - 1,
+      marginRight: screenWidth * PADDING_RATIO * -1 - 1,
     },
     presetButtons: {
       flexDirection: 'row',
@@ -549,12 +541,6 @@ const getStyles = (
     numpadContainer: {
       width: screenWidth,
       marginTop: screenHeight * 0.01,
-    },
-    bottom: {
-      position: 'absolute',
-      bottom:
-        Platform.OS === 'android' ? screenHeight * 0.01 : screenHeight * 0.02,
-      width: '100%',
     },
     buttons: {
       flexDirection: 'row',

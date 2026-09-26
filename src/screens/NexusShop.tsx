@@ -32,7 +32,6 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
@@ -40,6 +39,7 @@ import {useTranslation} from 'react-i18next';
 import GlassShopList from '../components/GlassShopList';
 import CategoryPickerModal from '../components/Modals/CategoryPickerModal';
 import HeaderButton from '../components/Buttons/HeaderButton';
+import SegmentedPills from '../components/ButtonsV2/SegmentedPills';
 import TranslateText from '../components/TranslateText';
 import {
   useGlassWalletFeed,
@@ -87,17 +87,16 @@ import {useAppSelector} from '../store/hooks';
 // seamless), then the card morphs from the wallet top-half's height down to
 // the header while the pills and search settle in.
 
-const SEGMENT_SPRING = {mass: 0.4, damping: 16, stiffness: 200};
 const SEARCH_DEBOUNCE_MS = 180;
 // iOS-style back swipe: starts at the left edge, scrubs the transition
 const BACK_EDGE_WIDTH = 32;
 const BACK_COMMIT_BELOW = 0.65;
 const BACK_COMMIT_VELOCITY = 500;
 
-const SECTIONS: {key: ShopSection; textKey: string}[] = [
-  {key: 'browse', textKey: 'shop'},
-  {key: 'my-cards', textKey: 'my_cards'},
-  {key: 'wishlist', textKey: 'wishlist'},
+const SECTIONS: {key: ShopSection; textKey: string; textDomain: string}[] = [
+  {key: 'browse', textKey: 'shop', textDomain: 'nexusShop'},
+  {key: 'my-cards', textKey: 'my_cards', textDomain: 'nexusShop'},
+  {key: 'wishlist', textKey: 'wishlist', textDomain: 'nexusShop'},
 ];
 
 interface Props {
@@ -412,19 +411,6 @@ const NexusShop: React.FC<Props> = props => {
       }
     });
 
-  // sliding white pill behind the active section
-  const segmentCount = sections.length;
-  const segmentsInnerWidth = SCREEN_WIDTH * 0.88 - SCREEN_HEIGHT * 0.008;
-  const segmentWidth = segmentsInnerWidth / segmentCount;
-  const thumbX = useSharedValue(activeSection * segmentWidth);
-  useEffect(() => {
-    thumbX.value = withSpring(activeSection * segmentWidth, SEGMENT_SPRING);
-  }, [activeSection, segmentWidth, thumbX]);
-  const thumbStyle = useAnimatedStyle(() => ({
-    transform: [{translateX: thumbX.value}],
-    width: segmentWidth,
-  }));
-
   // account drawer toggle in the nav bar; hidden while the country picker
   // inside the drawer is open
   const isCountryPickerOpen = useAppSelector(
@@ -668,27 +654,14 @@ const NexusShop: React.FC<Props> = props => {
         </Animated.View>
 
         <View style={styles.header}>
-          <Animated.View style={[styles.segments, segmentsSettleStyle]}>
-            <Animated.View style={[styles.segmentThumb, thumbStyle]} />
-            {sections.map(section => (
-              <Pressable
-                key={section.key}
-                style={styles.segment}
-                onPress={() => state.setSection(section.key)}>
-                <TranslateText
-                  textKey={section.textKey}
-                  domain="nexusShop"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-                  textStyle={
-                    state.section === section.key
-                      ? styles.segmentTextActive
-                      : styles.segmentText
-                  }
-                  numberOfLines={1}
-                />
-              </Pressable>
-            ))}
-          </Animated.View>
+          <SegmentedPills
+            segments={sections}
+            activeIndex={activeSection}
+            onSelect={index => state.setSection(sections[index].key)}
+            width={SCREEN_WIDTH * 0.88}
+            height={SCREEN_HEIGHT * SHOP_HEADER_SEGMENTS_HEIGHT_RATIO}
+            style={[styles.segments, segmentsSettleStyle]}
+          />
 
           {state.section === 'browse' ? (
             <Animated.View style={[styles.searchPill, searchSettleStyle]}>
@@ -797,42 +770,7 @@ const getStyles = (
       right: 0,
     },
     segments: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      height: screenHeight * SHOP_HEADER_SEGMENTS_HEIGHT_RATIO,
       marginHorizontal: screenWidth * 0.06,
-      padding: screenHeight * 0.004,
-      borderRadius: (screenHeight * SHOP_HEADER_SEGMENTS_HEIGHT_RATIO) / 2,
-      borderCurve: 'continuous',
-      backgroundColor: 'rgba(255, 255, 255, 0.12)',
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: 'rgba(238, 235, 235, 0.45)',
-    },
-    segmentThumb: {
-      position: 'absolute',
-      left: screenHeight * 0.004,
-      top: screenHeight * 0.004,
-      bottom: screenHeight * 0.004,
-      borderRadius: (screenHeight * SHOP_HEADER_SEGMENTS_HEIGHT_RATIO) / 2,
-      borderCurve: 'continuous',
-      backgroundColor: '#ffffff',
-    },
-    segment: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    segmentText: {
-      color: 'rgba(255, 255, 255, 0.85)',
-      fontFamily: 'Satoshi Variable',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.015,
-    },
-    segmentTextActive: {
-      color: '#2E2E2E',
-      fontFamily: 'Satoshi Variable',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.015,
     },
     searchPill: {
       flexDirection: 'row',

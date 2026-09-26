@@ -35,7 +35,7 @@ import MainIntroOverlay, {
   consumeMainIntro,
 } from '../components/MainIntroOverlay';
 import GlassTabSelector from '../components/GlassTabSelector';
-import GlassReceive from '../components/Cards/GlassReceive';
+import Receive from '../components/Cards/Receive';
 import Send from '../components/Cards/Send';
 import Buy from '../components/Cards/Buy';
 import Sell from '../components/Cards/Sell';
@@ -55,11 +55,7 @@ import GlassTransactionList from '../components/GlassTransactionList';
 import MainHeader from '../components/MainHeader';
 import LiquidGlassWalletModal from './../components/Modals/LiquidGlassWalletModal';
 import LiquidGlassAlertModal from '../components/Modals/LiquidGlassAlertModal';
-import {
-  getBottomOffset,
-  getTabBarClearance,
-  SHOP_TAB,
-} from '../components/glassTabBarLayout';
+import {getTabBarClearance, SHOP_TAB} from '../components/glassTabBarLayout';
 import {
   GlassWalletFeed,
   useGlassShopFeed,
@@ -201,13 +197,10 @@ const NewMain: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
 
   const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(SCREEN_HEIGHT, insets.top);
-  const cardSpan =
+  const cardHeight =
     SCREEN_HEIGHT -
     UNFOLD_SHEET_POINT -
     SCREEN_HEIGHT * DRAG_STRIP_HEIGHT_RATIO;
-  // cards run to the bottom edge since the bar hides; their under-glass
-  // content keeps refracting through the departing/returning bar
-  const cardHeight = cardSpan - getBottomOffset(SCREEN_HEIGHT, insets.bottom);
   const tabBarBandTop =
     SCREEN_HEIGHT - getTabBarClearance(SCREEN_HEIGHT, insets.bottom);
 
@@ -743,7 +736,7 @@ const NewMain: React.FC<Props> = props => {
             containerHeight={cardHeight}
           />
         }
-        receiveViewComponent={<GlassReceive containerHeight={cardHeight} />}
+        receiveViewComponent={<Receive containerHeight={cardHeight} />}
       />
     ),
     [

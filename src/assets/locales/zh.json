@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "接收莱特币",
     "receive_privately": "私下秘密接收",
+    "regular_ltc": "普通 LTC",
+    "private_ltc": "私密 LTC",
     "my_ltc_address": "我的莱特币地址",
     "receive_mweb_description": "接收私下隐藏发送者和接收者地址和发送金额."
   },

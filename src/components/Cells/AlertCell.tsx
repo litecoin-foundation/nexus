@@ -2,7 +2,7 @@ import React, {useState, useContext, useLayoutEffect, useCallback} from 'react';
 import {View, TouchableOpacity, StyleSheet} from 'react-native';
 
 import LitecoinIcon from '../LitecoinIcon';
-import Switch from '../Buttons/Switch';
+import GlassSwitch from '../Buttons/GlassSwitch';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setAlertAvailability, updateLastTimePrice} from '../../reducers/alerts';
 import {formatTxDate} from '../../utils/date';
@@ -143,7 +143,7 @@ const AlertCell: React.FC<Props> = props => {
           </View>
         </View>
         <View style={styles.switchContainer}>
-          <Switch initialValue={!data.isFired} onPress={handleSwitch} />
+          <GlassSwitch initialValue={!data.isFired} onPress={handleSwitch} />
         </View>
       </View>
       <View style={styles.bottomContainer}>
@@ -166,9 +166,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     container: {
       height: screenHeight * 0.12,
-      borderColor: '#97979748',
-      borderBottomWidth: 1,
-      backgroundColor: '#fff',
+      marginHorizontal: screenWidth * 0.02,
+      marginTop: screenWidth * 0.02,
+      borderRadius: screenHeight * 0.03,
+      borderCurve: 'continuous',
+      backgroundColor: '#0e0921',
     },
     topContainer: {
       flexBasis: '75%',
@@ -189,25 +191,25 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingRight: screenWidth * 0.04,
     },
     text: {
-      color: '#484859',
+      color: '#8E8E93',
       fontSize: screenHeight * 0.015,
       fontWeight: '700',
       letterSpacing: -0.18,
     },
     valueText: {
-      color: '#2C72FF',
+      color: '#fff',
       fontSize: screenHeight * 0.03,
       fontWeight: '700',
       letterSpacing: -0.39,
     },
     dateText: {
-      color: '#7C96AE',
+      color: '#8E8E93',
       fontSize: screenHeight * 0.013,
       fontWeight: '600',
       letterSpacing: -0.28,
     },
     lowercaseText: {
-      color: '#484859',
+      color: '#8E8E93',
       fontSize: screenHeight * 0.015,
       fontWeight: '700',
       letterSpacing: -0.18,

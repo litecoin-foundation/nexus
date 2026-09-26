@@ -10,6 +10,7 @@ import {FlatList, View, StyleSheet} from 'react-native';
 import {triggerHeavyFeedback, triggerLightFeedback} from '../utils/haptic';
 
 import TranslateText from '../components/TranslateText';
+import {GLASS_BUTTON_TINT} from './Buttons/GlassButtonSurface';
 import {ScreenSizeContext} from '../context/screenSize';
 
 interface ItemProps {
@@ -177,7 +178,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenHeight * 0.025,
       borderTopLeftRadius: screenHeight < 701 ? 2 : 3,
       borderTopRightRadius: screenHeight < 701 ? 2 : 3,
-      backgroundColor: '#20bb7420',
+      backgroundColor: `${GLASS_BUTTON_TINT}20`,
       marginBottom: screenHeight * 0.02,
     },
     innerThumb: {
@@ -185,7 +186,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: screenHeight * 0.009,
       borderTopLeftRadius: screenHeight < 701 ? 2 : 3,
       borderTopRightRadius: screenHeight < 701 ? 2 : 3,
-      backgroundColor: '#20BB74',
+      backgroundColor: GLASS_BUTTON_TINT,
       alignSelf: 'center',
       marginTop: screenHeight * 0.01,
     },

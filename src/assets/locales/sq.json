@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "Merr Litecoin",
     "receive_privately": "Merr Privatisht",
+    "regular_ltc": "LTC i Rregullt",
+    "private_ltc": "LTC Privat",
     "my_ltc_address": "ADRESA IME E LTC",
     "receive_mweb_description": "Të marrësh privatisht fsheh adresën e dërguesit dhe të marrësit, si dhe shumën që dërgohet."
   },

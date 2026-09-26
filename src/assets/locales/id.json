@@ -178,6 +178,8 @@
   "receiveTab": {
     "receive_ltc": "Terima Litecoin",
     "receive_privately": "Terima Secara Privat",
+    "regular_ltc": "LTC Reguler",
+    "private_ltc": "LTC Privat",
     "my_ltc_address": "ALAMAT LTC SAYA",
     "receive_mweb_description": "Menerima secara privat menyembunyikan alamat pengirim dan penerima, dan jumlah yang dikirim."
   },

@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import SlideRuler from '../../components/SlideRuler';
-import GreenButton from '../../components/Buttons/GreenButton';
+import BlueButtonV2 from '../../components/ButtonsV2/BlueButtonV2';
 import MegaphoneArt from '../../components/MegaphoneArt';
 import {addAlert} from '../../reducers/alerts';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -21,6 +21,7 @@ import {
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 
 type RootStackParamList = {
   Dial: undefined;
@@ -86,17 +87,18 @@ const Dial: React.FC<Props> = props => {
     navigation.goBack();
   }, [value, usdValue, dispatch, navigation]);
 
+  const fixedBottomStyle = useFixedBottomStyle();
   const CreateAlertButton = useMemo(
     () => (
-      <View style={styles.buttonContainer}>
-        <GreenButton
+      <View style={fixedBottomStyle}>
+        <BlueButtonV2
           textKey="create_alert"
           textDomain="alertsTab"
           onPress={() => handlePress()}
         />
       </View>
     ),
-    [styles, handlePress],
+    [fixedBottomStyle, handlePress],
   );
 
   return (
@@ -163,8 +165,8 @@ const Dial: React.FC<Props> = props => {
           </View>
           <View style={styles.rulerContainer}>{Ruler}</View>
         </View>
-        {CreateAlertButton}
       </CustomSafeAreaView>
+      {CreateAlertButton}
       <ScreenHeader
         rects={rects}
         paddingHorizontal={paddingHorizontal}
@@ -264,12 +266,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     rulerContainer: {
       width: '100%',
       marginTop: screenHeight * 0.01,
-    },
-    buttonContainer: {
-      width: '100%',
-      alignItems: 'center',
-      paddingHorizontal: screenWidth * 0.06,
-      paddingBottom: screenHeight * 0.01,
     },
   });
 
