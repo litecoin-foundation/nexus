@@ -8,6 +8,14 @@ export const COIN_ICONS: Record<string, number> = {
   FIRO: require('../../assets/images/coins/firo.png'),
 };
 
+export const COIN_COLORS: Record<string, string> = {
+  LTC: '#345D9D',
+  BTC: '#F7931A',
+  PART: '#43B35D',
+  XMR: '#FF6600',
+  FIRO: '#9B1C2E',
+};
+
 export const swapCards = StyleSheet.create({
   section: {
     fontFamily: 'Satoshi Variable',
@@ -84,24 +92,20 @@ export const swapCards = StyleSheet.create({
     fontSize: 16,
   },
   coinLogo: {
-    width: 20,
-    height: 20,
-    marginRight: 6,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    marginRight: 8,
+    borderRadius: 16,
   },
   coinLogoEnd: {
-    width: 20,
-    height: 20,
-    marginLeft: 6,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    marginLeft: 8,
+    borderRadius: 16,
   },
   coinPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#F2F4F8',
     marginLeft: 6,
   },
   coinPillText: {

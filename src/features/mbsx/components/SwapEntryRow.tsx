@@ -104,6 +104,9 @@ const SwapEntryRow: React.FC<Props> = ({
       style={[styles.host, animatedStyle]}>
       <Pressable
         testID="mbsx-sheet-entry"
+        accessibilityRole="button"
+        accessibilityLabel={active ? 'Swap, in progress' : 'Swap'}
+        accessibilityState={{busy: active}}
         onPress={onPress}
         style={({pressed}) => [styles.pill, pressed ? styles.pressed : null]}>
         <Animated.Image

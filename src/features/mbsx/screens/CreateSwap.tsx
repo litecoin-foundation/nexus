@@ -25,6 +25,7 @@ import {
 } from '../../../reducers/wallets';
 import {rememberAddress, setLastCoin} from '../addressesSlice';
 import {COINS} from '../components/CoinSelector';
+import {COIN_COLORS, COIN_ICONS} from '../swapCards';
 import {
   getCoinPrices,
   getInfo,
@@ -53,13 +54,6 @@ type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 // Nexus funds every swap from its own wallet, so the sending side is fixed.
 const COIN_FROM = 'LTC';
 
-const COIN_ICONS: Record<string, number> = {
-  LTC: require('../../../assets/images/coins/ltc.png'),
-  BTC: require('../../../assets/images/coins/btc.png'),
-  PART: require('../../../assets/images/coins/part.png'),
-  XMR: require('../../../assets/images/coins/xmr.png'),
-  FIRO: require('../../../assets/images/coins/firo.png'),
-};
 const DUST_LIMIT = 294n;
 const CHAIN_FEE_RESERVE = 10000n;
 
@@ -84,6 +78,22 @@ const shortAddress = (address: string) =>
   address.length > 18
     ? `${address.slice(0, 8)}…${address.slice(-6)}`
     : address;
+
+const CoinMark = ({ticker}: {ticker?: string}) => (
+  <View
+    style={[
+      look.coinCircle,
+      {
+        backgroundColor: ticker
+          ? (COIN_COLORS[ticker] ?? '#C5C5CE')
+          : '#C5C5CE',
+      },
+    ]}>
+    {ticker && COIN_ICONS[ticker] ? (
+      <Image source={COIN_ICONS[ticker]} style={look.coinLogo} />
+    ) : null}
+  </View>
+);
 
 const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -182,9 +192,13 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   // The cap is enforced at offer receipt; refusing here saves leasing coins
   const [feeNote, setFeeNote] = useState('');
+  const [quote, setQuote] = useState<{feeBps: number; feeSats: bigint} | null>(
+    null,
+  );
   useEffect(() => {
     setFeeNote('');
     setSpendNote('');
+    setQuote(null);
     if (amountFrom === '') {
       return;
     }
@@ -196,6 +210,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     ) {
       const totalFee = Number(funding.total_fee_bps);
       const maxFee = Number(funding.max_fee_bps);
+      setQuote({feeBps: totalFee, feeSats: swapFeeSats(funding.outputs)});
       if (totalFee > maxFee) {
         setFeeNote(
           `The swap server charges ${totalFee / 100}%, above your limit of ${maxFee / 100}%`,
@@ -369,6 +384,22 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   );
   const currency = prices?.currency ?? 'USD';
 
+  const from = Number(amountFrom);
+  const to = Number(amountTo);
+  const rateLine =
+    coinChosen && from > 0 && to > 0
+      ? `1 ${COIN_FROM} ≈ ${coinString(to / from)} ${coinTo}`
+      : '';
+  const feeLine =
+    quote && quote.feeBps > 0
+      ? `Swap fee ${quote.feeBps / 100}%${
+          quote.feeSats > 0n
+            ? ` (${coinString(Number(quote.feeSats) / 1e8)} ${COIN_FROM})`
+            : ''
+        }`
+      : '';
+  const noSaved = coinChosen && savedAddresses.length === 0;
+
   return (
     <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
@@ -390,7 +421,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               underlineColorAndroid="transparent"
             />
             <View style={look.coinPill}>
-              <Image source={COIN_ICONS[COIN_FROM]} style={look.coinLogo} />
+              <CoinMark ticker={COIN_FROM} />
               <Text style={look.coinPillText}>{COIN_FROM}</Text>
             </View>
           </View>
@@ -459,9 +490,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               testID="mbsx-coin-pill"
               style={look.coinPill}
               onPress={() => setCoinOpen(open => !open)}>
-              {coinTo && COIN_ICONS[coinTo] ? (
-                <Image source={COIN_ICONS[coinTo]} style={look.coinLogo} />
-              ) : null}
+              <CoinMark ticker={coinTo || undefined} />
               <Text style={look.coinPillText}>{coinTo || 'Coin'}</Text>
               <Image
                 source={require('../../../assets/images/forward.png')}
@@ -478,9 +507,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                   accessibilityState={{selected: coinTo === coin}}
                   style={look.coinOption}
                   onPress={() => selectCoin(coin)}>
-                  {COIN_ICONS[coin] ? (
-                    <Image source={COIN_ICONS[coin]} style={look.coinLogo} />
-                  ) : null}
+                  <CoinMark ticker={coin} />
                   <Text style={look.coinPillText}>{coin}</Text>
                 </TouchableOpacity>
               ))}
@@ -559,10 +586,18 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             testID="mbsx-addresses"
             disabled={!coinChosen}
             style={[look.receiverPick, coinChosen ? null : look.iconBtnOff]}
-            onPress={() => setReceiversOpen(open => !open)}>
+            onPress={() =>
+              noSaved
+                ? navigation.navigate('CoinAddresses', {coin: coinTo})
+                : setReceiversOpen(open => !open)
+            }>
             <Text style={look.receiverPickText} numberOfLines={1}>
               {selectedSaved?.label ||
-                (addressTo ? shortAddress(addressTo) : 'Select receiver')}
+                (addressTo
+                  ? shortAddress(addressTo)
+                  : noSaved
+                    ? `Add a ${coinTo} address`
+                    : 'Select receiver')}
             </Text>
             <Image
               source={require('../../../assets/images/forward.png')}
@@ -603,6 +638,17 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             </View>
           ) : null}
         </View>
+
+        {rateLine !== '' || feeLine !== '' ? (
+          <View testID="mbsx-quote" style={look.quote}>
+            {rateLine !== '' ? (
+              <Text style={look.quoteText}>{rateLine}</Text>
+            ) : null}
+            {feeLine !== '' ? (
+              <Text style={look.quoteText}>{feeLine}</Text>
+            ) : null}
+          </View>
+        ) : null}
 
         <TouchableOpacity
           style={look.advancedToggle}
@@ -738,17 +784,20 @@ const look = StyleSheet.create({
   coinPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#F2F4F8',
     marginLeft: 6,
   },
+  coinCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginRight: 8,
+  },
   coinLogo: {
-    width: 20,
-    height: 20,
-    marginRight: 6,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
   },
   coinPillText: {
     fontFamily: 'Satoshi Variable',
@@ -927,6 +976,18 @@ const look = StyleSheet.create({
     color: '#747E87',
     fontSize: 13,
     marginTop: 6,
+  },
+  quote: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    paddingHorizontal: 4,
+    paddingTop: 4,
+  },
+  quoteText: {
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 13,
   },
   advancedToggle: {
     flexDirection: 'row',

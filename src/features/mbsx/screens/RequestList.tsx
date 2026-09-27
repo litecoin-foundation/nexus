@@ -8,11 +8,14 @@ import {useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
 import {
   describeRemoval,
+  isEndedRequestState,
   listRequests,
   onMessage,
   removeRequests,
   requestExpired,
+  sortNewestFirst,
 } from '../adapter';
+import {formatExpiry} from '../format';
 import RemoveButton from '../components/RemoveButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {requestStateText, useShowRawStates} from '../stateText';
@@ -43,6 +46,14 @@ const RequestList: React.FC<Props> = ({navigation}) => {
     return () => subscription.remove();
   }, [fetchRequests, running]);
 
+  const sorted = sortNewestFirst(requests);
+  const open = sorted.filter(request => !isEndedRequestState(request.state));
+  const ended = sorted.filter(request => isEndedRequestState(request.state));
+  const groups: [string, SwapRequestSummary[]][] = [
+    ['Open', open],
+    ['Ended', ended],
+  ];
+
   return (
     <View style={styles.container}>
       <View style={styles.headerAction}>
@@ -59,49 +70,62 @@ const RequestList: React.FC<Props> = ({navigation}) => {
         />
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {requests.length === 0 ? (
+        {sorted.length === 0 ? (
           running ? (
             <View style={swapCards.card}>
               <Text style={swapCards.note}>No requests</Text>
             </View>
           ) : null
         ) : (
-          requests.map(request => (
-            <TouchableOpacity
-              key={request.id}
-              style={swapCards.card}
-              onPress={() =>
-                navigation.navigate('RequestDetail', {requestId: request.id})
-              }>
-              <View style={swapCards.pair}>
-                {COIN_ICONS[request.coin_from] ? (
-                  <Image
-                    source={COIN_ICONS[request.coin_from]}
-                    style={swapCards.coinLogo}
-                  />
+          groups.map(([title, rows]) =>
+            rows.length === 0 ? null : (
+              <View key={title}>
+                {open.length > 0 && ended.length > 0 ? (
+                  <Text style={swapCards.section}>{title}</Text>
                 ) : null}
-                <Text style={swapCards.pairText}>
-                  {`${request.coin_from} → ${request.coin_to}`}
-                </Text>
-                {COIN_ICONS[request.coin_to] ? (
-                  <Image
-                    source={COIN_ICONS[request.coin_to]}
-                    style={swapCards.coinLogoEnd}
-                  />
-                ) : null}
+                {rows.map(request => (
+                  <TouchableOpacity
+                    key={request.id}
+                    style={swapCards.card}
+                    onPress={() =>
+                      navigation.navigate('RequestDetail', {
+                        requestId: request.id,
+                      })
+                    }>
+                    <View style={swapCards.pair}>
+                      {COIN_ICONS[request.coin_from] ? (
+                        <Image
+                          source={COIN_ICONS[request.coin_from]}
+                          style={swapCards.coinLogo}
+                        />
+                      ) : null}
+                      <Text style={swapCards.pairText}>
+                        {`${request.coin_from} → ${request.coin_to}`}
+                      </Text>
+                      {COIN_ICONS[request.coin_to] ? (
+                        <Image
+                          source={COIN_ICONS[request.coin_to]}
+                          style={swapCards.coinLogoEnd}
+                        />
+                      ) : null}
+                    </View>
+                    <Text style={swapCards.status}>
+                      {requestStateText(request.state)}
+                    </Text>
+                    {showRaw ? (
+                      <Text style={swapCards.id}>{request.state}</Text>
+                    ) : null}
+                    <Text style={swapCards.meta}>
+                      {`${request.amount_from} ${request.coin_from} · ${formatExpiry(
+                        request.created_at,
+                      )}`}
+                    </Text>
+                    <Text style={swapCards.id}>{request.id}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
-              <Text style={swapCards.status}>
-                {requestStateText(request.state)}
-              </Text>
-              {showRaw ? (
-                <Text style={swapCards.id}>{request.state}</Text>
-              ) : null}
-              <Text style={swapCards.meta}>
-                {`${request.amount_from} ${request.coin_from}`}
-              </Text>
-              <Text style={swapCards.id}>{request.id}</Text>
-            </TouchableOpacity>
-          ))
+            ),
+          )
         )}
       </ScrollView>
     </View>

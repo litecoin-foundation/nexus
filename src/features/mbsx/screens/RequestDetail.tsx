@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -278,26 +279,35 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             <Text style={swapCards.note}>No fees configured</Text>
           ) : (
             <>
-              {request.fees?.map(fee => (
-                <View key={fee.desc} style={styles.row}>
-                  <Text style={styles.label}>
-                    {`${fee.desc} (${Number(fee.bps) / 100}%)`}
-                  </Text>
-                  <Text style={styles.value}>
-                    {fee.amount} {request.fees_coin}
+              {request.fees?.map((fee, index) => (
+                <View
+                  key={fee.desc}
+                  style={[look.feeRow, index > 0 ? look.feeLine : null]}>
+                  <Text style={look.feeLabel}>{fee.desc}</Text>
+                  <Text style={look.feePct}>{`${Number(fee.bps) / 100}%`}</Text>
+                  <Text style={look.feeValue}>
+                    {`${fee.amount} ${request.fees_coin}`}
                   </Text>
                 </View>
               ))}
-              <View style={styles.row}>
-                <Text style={styles.label}>Total</Text>
-                <Text style={styles.value}>
-                  {request.fees_total} {request.fees_coin}
+              <View style={[look.feeRow, look.feeTotal]}>
+                <Text style={look.feeTotalLabel}>Total</Text>
+                <Text style={look.feePct}>
+                  {`${
+                    (request.fees ?? []).reduce(
+                      (sum, fee) => sum + Number(fee.bps),
+                      0,
+                    ) / 100
+                  }%`}
+                </Text>
+                <Text style={look.feeTotalValue}>
+                  {`${request.fees_total} ${request.fees_coin}`}
                 </Text>
               </View>
-              <Text style={swapCards.note}>
+              <Text style={look.feeNote}>
                 {swaps.length === 0
-                  ? `Paid in the ${request.fees_coin} you send, whichever offer you accept. The exact amount follows the offer.`
-                  : 'Chain fees under the swap below.'}
+                  ? `Taken from the ${request.fees_coin} you send, whichever offer you accept. The exact amount follows the offer.`
+                  : 'Chain fees are under the swap below.'}
               </Text>
             </>
           )}
@@ -413,5 +423,63 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  feeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  feeLine: {
+    borderTopWidth: 1,
+    borderTopColor: '#EEF1F5',
+  },
+  feeLabel: {
+    flex: 1,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    color: '#484859',
+  },
+  feePct: {
+    width: 56,
+    textAlign: 'right',
+    fontFamily: 'Satoshi Variable',
+    fontSize: 13,
+    color: '#747E87',
+  },
+  feeValue: {
+    minWidth: 110,
+    textAlign: 'right',
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    color: '#484859',
+  },
+  feeTotal: {
+    borderTopWidth: 1,
+    borderTopColor: '#D5DBE4',
+    marginTop: 2,
+  },
+  feeTotalLabel: {
+    flex: 1,
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#484859',
+  },
+  feeTotalValue: {
+    minWidth: 110,
+    textAlign: 'right',
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#484859',
+  },
+  feeNote: {
+    marginTop: 10,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 13,
+    color: '#747E87',
+  },
+});
 
 export default RequestDetail;

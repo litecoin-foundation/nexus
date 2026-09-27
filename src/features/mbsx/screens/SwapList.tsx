@@ -8,15 +8,17 @@ import {useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
 import {
   describeRemoval,
+  isTerminalState,
   listSwaps,
   onMessage,
   removeRequests,
   requestFinished,
   reservedBalance,
+  sortNewestFirst,
 } from '../adapter';
 import {coinString} from '../useSwapAmounts';
 import RemoveButton from '../components/RemoveButton';
-import {kindLabel} from '../format';
+import {formatExpiry, kindLabel} from '../format';
 import CoinPair from '../components/CoinPair';
 import {swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
@@ -58,6 +60,14 @@ const SwapList: React.FC<Props> = ({navigation}) => {
     return () => subscription.remove();
   }, [fetchSwaps, running]);
 
+  const sorted = sortNewestFirst(swaps);
+  const active = sorted.filter(swap => !isTerminalState(swap.state));
+  const finished = sorted.filter(swap => isTerminalState(swap.state));
+  const groups: [string, SwapSummary[]][] = [
+    ['Active', active],
+    ['Finished', finished],
+  ];
+
   return (
     <View style={styles.container}>
       {/* Outside the ScrollView, so the section's main action stays put however
@@ -92,49 +102,65 @@ const SwapList: React.FC<Props> = ({navigation}) => {
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {!running && !error ? <Text style={styles.empty}>Starting…</Text> : null}
       <ScrollView contentContainerStyle={styles.scroll}>
-        {swaps.length === 0 ? (
+        {sorted.length === 0 ? (
           running ? (
             <View style={swapCards.card}>
               <Text style={swapCards.note}>No swaps</Text>
             </View>
           ) : null
         ) : (
-          swaps.map(swap => (
-            <TouchableOpacity
-              key={swap.id}
-              style={swapCards.card}
-              onPress={() =>
-                navigation.navigate('SwapDetail', {swapId: swap.id})
-              }>
-              <View style={swapCards.historyRow}>
-                <CoinPair from={swap.coin_from} to={swap.coin_to} />
-                <View style={swapCards.historyMid}>
-                  <Text style={swapCards.historyTitle} numberOfLines={2}>
-                    {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
-                  </Text>
-                  {showRaw ? (
-                    <Text style={swapCards.historySub}>{swap.state}</Text>
-                  ) : null}
-                  {swap.kind ? (
-                    <Text style={swapCards.historySub}>
-                      {kindLabel(swap.kind)}
-                    </Text>
-                  ) : null}
-                  <Text style={swapCards.historySub} numberOfLines={1}>
-                    {swap.id}
-                  </Text>
-                </View>
-                <View style={swapCards.historyAmounts}>
-                  <Text style={swapCards.historyIn} numberOfLines={1}>
-                    {`+ ${swap.amount_to} ${swap.coin_to}`}
-                  </Text>
-                  <Text style={swapCards.historyOut} numberOfLines={1}>
-                    {`− ${swap.amount_from} ${swap.coin_from}`}
-                  </Text>
-                </View>
+          groups.map(([title, rows]) =>
+            rows.length === 0 ? null : (
+              <View key={title}>
+                {active.length > 0 && finished.length > 0 ? (
+                  <Text style={swapCards.section}>{title}</Text>
+                ) : null}
+                {rows.map(swap => (
+                  <TouchableOpacity
+                    key={swap.id}
+                    style={swapCards.card}
+                    onPress={() =>
+                      navigation.navigate('SwapDetail', {swapId: swap.id})
+                    }>
+                    <View style={swapCards.historyRow}>
+                      <CoinPair from={swap.coin_from} to={swap.coin_to} />
+                      <View style={swapCards.historyMid}>
+                        <Text style={swapCards.historyTitle} numberOfLines={2}>
+                          {swapStateText(
+                            swap.state,
+                            swap.coin_from,
+                            swap.coin_to,
+                          )}
+                        </Text>
+                        {showRaw ? (
+                          <Text style={swapCards.historySub}>{swap.state}</Text>
+                        ) : null}
+                        {swap.kind ? (
+                          <Text style={swapCards.historySub}>
+                            {kindLabel(swap.kind)}
+                          </Text>
+                        ) : null}
+                        <Text style={swapCards.historySub} numberOfLines={1}>
+                          {swap.id}
+                        </Text>
+                      </View>
+                      <View style={swapCards.historyAmounts}>
+                        <Text style={swapCards.historyIn} numberOfLines={1}>
+                          {`+ ${swap.amount_to} ${swap.coin_to}`}
+                        </Text>
+                        <Text style={swapCards.historyOut} numberOfLines={1}>
+                          {`− ${swap.amount_from} ${swap.coin_from}`}
+                        </Text>
+                        <Text style={swapCards.historyOut} numberOfLines={1}>
+                          {formatExpiry(swap.created_at)}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
               </View>
-            </TouchableOpacity>
-          ))
+            ),
+          )
         )}
       </ScrollView>
     </View>

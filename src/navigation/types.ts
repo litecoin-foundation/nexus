@@ -1,5 +1,7 @@
 import {NavigatorScreenParams} from '@react-navigation/native';
 
+import type {MbsxDrawerParamList} from '../features/mbsx/types';
+
 export type RootStackParamList = {
   Loading: undefined;
   AuthStack: undefined;
@@ -45,7 +47,7 @@ export type MainStackParamList = {
 export type NewWalletStackParamList = {
   Main: NavigatorScreenParams<MainStackParamList>;
   SettingsStack: undefined;
-  MbsxStack: undefined;
+  MbsxStack: NavigatorScreenParams<MbsxDrawerParamList> | undefined;
   NexusShopStack: undefined;
   AlertsStack: undefined;
   Scan: {

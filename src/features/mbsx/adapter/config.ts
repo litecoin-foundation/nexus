@@ -47,6 +47,8 @@ export type MbsxConfig = {
   // Nexus's own; the module ignores keys it does not read.
   revoke_open_requests_on_exit?: boolean;
   show_raw_states?: boolean;
+  notify_swaps?: boolean;
+  show_debug?: boolean;
   coins: Record<string, CoinConfig>;
 };
 

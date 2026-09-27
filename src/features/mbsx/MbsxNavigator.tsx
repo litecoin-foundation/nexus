@@ -87,6 +87,19 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
   const {state, navigation, descriptors} = props;
   const drawerStatus = useDrawerStatus();
   const [choiceMade, setChoiceMade] = useState(menuChoiceMade);
+  const [showDebug, setShowDebug] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    readConfig().then(config => {
+      if (live) {
+        setShowDebug(config?.show_debug === true);
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, [drawerStatus]);
 
   useEffect(() => {
     if (drawerStatus !== 'open') {
@@ -102,12 +115,16 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
     return () => subscription.remove();
   }, [drawerStatus, navigation]);
 
-  const items = state.routes.filter(
-    route =>
-      !isHiddenDrawerItem(
+  const items = state.routes.filter(route => {
+    if (
+      isHiddenDrawerItem(
         descriptors[route.key].options.drawerItemStyle as object | undefined,
-      ),
-  );
+      )
+    ) {
+      return false;
+    }
+    return route.name !== 'MbsxDebug' || showDebug;
+  });
 
   return (
     <LinearGradient

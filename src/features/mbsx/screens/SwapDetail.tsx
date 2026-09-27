@@ -25,6 +25,8 @@ import {
 } from '../adapter';
 import RemoveButton from '../components/RemoveButton';
 import CoinPair from '../components/CoinPair';
+import SwapProgress from '../components/SwapProgress';
+import {useAppSelector} from '../../../store/hooks';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
@@ -66,19 +68,24 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
     setSwap(rv);
   }, [swapId, navigation]);
 
-  // Unfocused, a stale id's error must not navigate away from the screen shown.
+  const running = useAppSelector(state => state.mbsx.running);
   useFocusEffect(
     useCallback(() => {
+      if (!running) {
+        return;
+      }
       fetchSwap();
       const subscription = onMessage(fetchSwap);
       return () => subscription.remove();
-    }, [fetchSwap]),
+    }, [fetchSwap, running]),
   );
 
   if (!swap) {
     return (
       <View style={styles.container}>
-        <Text style={styles.empty}>No swap selected</Text>
+        <Text style={styles.empty}>
+          {running ? 'No swap selected' : 'Starting…'}
+        </Text>
       </View>
     );
   }
@@ -98,6 +105,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
               ) : null}
             </View>
           </View>
+          <SwapProgress state={swap.state} expireAt={swap.expire_at} />
         </View>
         <Text style={swapCards.section}>Send</Text>
         <View style={swapCards.card}>

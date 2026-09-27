@@ -34,6 +34,7 @@ import {spendableBalance} from './prevouts';
 import type {FundingOutput} from './prevouts';
 import {signSwapTx} from './signTx';
 import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
+import {notifySwapEnded} from './notify';
 import {scheduleWakes} from './wake';
 
 export {defaultConfig, MBSX_DATA_DIR, readConfig, writeConfig} from './config';
@@ -144,6 +145,7 @@ export const start = async (tor_enabled?: boolean) => {
   }
 
   started = true;
+  seedEndedSwaps();
   stateWatch = watchSwapStates();
   startBackgroundService();
   scheduleWakes();
@@ -220,6 +222,40 @@ export const reconcileLeases = async () => {
 };
 
 export const isTerminalState = (state: string) => TERMINAL_STATES.has(state);
+
+export const isEndedRequestState = (state: string) =>
+  ENDED_REQUEST_STATES.has(state);
+
+const WALLET_STATES = new Set(
+  [...TERMINAL_STATES].filter(
+    state => state !== 'REJECTED' && state !== 'EXPIRED',
+  ),
+);
+
+export const showsInWallet = (state: string) =>
+  WALLET_STATES.has(state) || !TERMINAL_STATES.has(state);
+
+const endedSwaps = new Set<string>();
+
+const seedEndedSwaps = () => {
+  for (const swap of listSwaps() ?? []) {
+    if (TERMINAL_STATES.has(swap.state)) {
+      endedSwaps.add(swap.id);
+    }
+  }
+};
+
+const notifyNewlyEnded = () => {
+  for (const swap of listSwaps() ?? []) {
+    if (!TERMINAL_STATES.has(swap.state) || endedSwaps.has(swap.id)) {
+      continue;
+    }
+    endedSwaps.add(swap.id);
+    if (WALLET_STATES.has(swap.state)) {
+      void notifySwapEnded(swap);
+    }
+  }
+};
 
 /**
  * Whether anything is still in flight, answered by the module rather than by
@@ -376,6 +412,8 @@ const restart = async () => {
   await start();
 };
 
+export const reconnect = restart;
+
 export const getVersion = () => NitroBSX.getVersionString();
 export const getSqliteVersion = () => NitroBSX.getSqliteVersion();
 
@@ -429,6 +467,9 @@ const watchSwapStates = () =>
         return;
       }
       if (ended) {
+        if (event.event_type === 'STATE_CHANGED') {
+          notifyNewlyEnded();
+        }
         // stopIfIdle reconciles first, and declines while anything is active.
         void (sectionMounted ? reconcileNow() : stopIfIdle());
       }
@@ -477,9 +518,12 @@ export type FinishedSwap = Pick<
   | 'created_at'
 >;
 
+export const sortNewestFirst = <T extends {created_at: string}>(rows: T[]) =>
+  [...rows].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+
 const finishedFrom = (swaps: SwapSummary[]): FinishedSwap[] =>
-  swaps
-    .filter(swap => swap.state === 'COMPLETED')
+  sortNewestFirst(swaps)
+    .filter(swap => WALLET_STATES.has(swap.state))
     .map(swap => ({
       id: swap.id,
       coin_from: swap.coin_from,
@@ -488,8 +532,18 @@ const finishedFrom = (swaps: SwapSummary[]): FinishedSwap[] =>
       amount_to: swap.amount_to,
       state: swap.state,
       created_at: swap.created_at,
-    }))
-    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    }));
+
+export const walletSwaps = (): FinishedSwap[] | null => {
+  const swaps = listSwaps();
+  if (swaps === null) {
+    return null;
+  }
+  const live = sortNewestFirst(swaps).filter(
+    swap => !TERMINAL_STATES.has(swap.state),
+  );
+  return [...live, ...finishedFrom(swaps)];
+};
 
 export const rememberFinishedSwaps = async () => {
   const swaps = listSwaps();

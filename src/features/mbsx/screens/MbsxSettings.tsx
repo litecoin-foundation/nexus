@@ -19,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import notifee from '@notifee/react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
@@ -60,6 +61,8 @@ const chainsChecked = (server: ElectrumServer) =>
 const persisted = (cfg: MbsxConfig) => {
   const copy = {...cfg};
   delete copy.show_raw_states;
+  delete copy.notify_swaps;
+  delete copy.show_debug;
   return JSON.stringify(copy);
 };
 
@@ -466,7 +469,12 @@ const MbsxSettings: React.FC = () => {
         onPress={() =>
           setConfig(current =>
             current
-              ? {...defaultConfig(), show_raw_states: current.show_raw_states}
+              ? {
+                  ...defaultConfig(),
+                  show_raw_states: current.show_raw_states,
+                  notify_swaps: current.notify_swaps,
+                  show_debug: current.show_debug,
+                }
               : defaultConfig(),
           )
         }>
@@ -510,29 +518,33 @@ const MbsxSettings: React.FC = () => {
             offer, and frees the coins held for it.
           </Text>
 
-          <Text style={swapCards.section}>Display</Text>
+          <Text style={swapCards.section}>Privacy</Text>
           <View style={look.cardRow}>
-            <Text style={[styles.label, look.rowLabel]}>Show state names</Text>
+            <Text style={[styles.label, look.rowLabel]}>
+              Swap notifications
+            </Text>
             <Switch
-              testID="mbsx-show-raw-states"
-              value={config.show_raw_states === true}
+              testID="mbsx-notify-swaps"
+              value={config.notify_swaps !== false}
               onValueChange={value => {
-                edit({show_raw_states: value});
+                edit({notify_swaps: value});
+                if (value) {
+                  void notifee.requestPermission();
+                }
                 readConfig().then(current => {
                   if (current) {
-                    writeConfig({...current, show_raw_states: value});
+                    writeConfig({...current, notify_swaps: value});
                   }
                 });
               }}
             />
           </View>
           <Text style={look.note}>
-            Cards say what a swap is doing. Turn this on to also show the raw
-            state name.
+            Alerts when a swap ends or needs attention. Amounts are never
+            included.
           </Text>
 
-          <Text style={swapCards.section}>Privacy</Text>
-          <Text style={styles.label}>Tor</Text>
+          <Text style={[styles.label, look.torLabel]}>Tor</Text>
           <Text testID="mbsx-tor" style={look.note}>
             {torPending
               ? 'Set in Nexus settings. Applies to swaps on re-entering this section, or after an app restart while a swap is in flight.'
@@ -605,6 +617,49 @@ const MbsxSettings: React.FC = () => {
         </TouchableOpacity>
         {advanced ? (
           <>
+            <View style={swapCards.card}>
+              <Text style={swapCards.section}>Display</Text>
+              <View style={look.cardRow}>
+                <Text style={[styles.label, look.rowLabel]}>
+                  Show state names
+                </Text>
+                <Switch
+                  testID="mbsx-show-raw-states"
+                  value={config.show_raw_states === true}
+                  onValueChange={value => {
+                    edit({show_raw_states: value});
+                    readConfig().then(current => {
+                      if (current) {
+                        writeConfig({...current, show_raw_states: value});
+                      }
+                    });
+                  }}
+                />
+              </View>
+              <Text style={look.note}>
+                Cards say what a swap is doing. Turn this on to also show the
+                raw state name.
+              </Text>
+              <View style={[look.cardRow, look.cardRowLine]}>
+                <Text style={[styles.label, look.rowLabel]}>Show debug</Text>
+                <Switch
+                  testID="mbsx-show-debug"
+                  value={config.show_debug === true}
+                  onValueChange={value => {
+                    edit({show_debug: value});
+                    readConfig().then(current => {
+                      if (current) {
+                        writeConfig({...current, show_debug: value});
+                      }
+                    });
+                  }}
+                />
+              </View>
+              <Text style={look.note}>
+                Adds Debug to the swap menu. Off by default.
+              </Text>
+            </View>
+
             <Text style={styles.section}>Bridge</Text>
             <Text style={styles.inputLabel}>Pubkey</Text>
             <TextInput
@@ -812,6 +867,9 @@ const look = StyleSheet.create({
     color: '#747E87',
     fontSize: 14,
     marginTop: 6,
+  },
+  torLabel: {
+    marginTop: 16,
   },
   coinTitle: {
     flexDirection: 'row',
