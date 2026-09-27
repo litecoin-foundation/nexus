@@ -54,6 +54,7 @@ import {
 import {isAppFirstTimeOpened} from './src/reducers/info';
 import RootNavigator from './src/navigation/RootNavigator';
 import MbsxResume from './src/features/mbsx/components/MbsxResume';
+import MbsxNotificationOpen from './src/features/mbsx/components/MbsxNotificationOpen';
 import Error from './src/components/Error';
 import MigrationModal from './src/components/Modals/MigrationModal';
 import {acknowledgeMigration} from './src/reducers/lightning';
@@ -349,6 +350,7 @@ const App: React.FC = () => {
                   <ContextExecutable deviceToken={deviceToken} />
                   <DeviceTokenHandler deviceToken={deviceToken} />
                   <MbsxResume />
+                  <MbsxNotificationOpen />
                   <OpenNotificationHandler
                     notification={openedNotificationData}
                   />

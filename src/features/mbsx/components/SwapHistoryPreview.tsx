@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import {useNavigation} from '@react-navigation/native';
 import type {NavigationProp} from '@react-navigation/native';
 
@@ -21,12 +22,24 @@ import {isSwapComplete, walletTitle} from '../walletText';
 import BasicSwapMark from './BasicSwapMark';
 import CoinPair from './CoinPair';
 
+const WALLET_FINISHED = 3;
+
+const walletRows = (rows: FinishedSwap[]) => {
+  const active = rows.filter(swap => !isTerminalState(swap.state));
+  const finished = rows
+    .filter(swap => isTerminalState(swap.state))
+    .slice(0, WALLET_FINISHED);
+  return [...active, ...finished];
+};
+
 const SwapRow = ({
   swap,
   onPress,
+  onOpenRequest,
 }: {
   swap: FinishedSwap;
   onPress: () => void;
+  onOpenRequest: (requestId: string) => void;
 }) => {
   const ended = isTerminalState(swap.state);
   const complete = isSwapComplete(swap.state);
@@ -39,7 +52,28 @@ const SwapRow = ({
       accessibilityRole="button"
       accessibilityLabel={`${title}. ${sentence}`}
       style={styles.row}
-      onPress={onPress}>
+      onPress={onPress}
+      onLongPress={
+        ended
+          ? () => {
+              Alert.alert(title, undefined, [
+                {
+                  text: 'Copy swap id',
+                  onPress: () => Clipboard.setString(swap.id),
+                },
+                ...(swap.request_id
+                  ? [
+                      {
+                        text: 'Open request',
+                        onPress: () => onOpenRequest(swap.request_id),
+                      },
+                    ]
+                  : []),
+                {text: 'Cancel', style: 'cancel'},
+              ]);
+            }
+          : undefined
+      }>
       <CoinPair from={swap.coin_from} to={swap.coin_to} size={36} />
       <View style={styles.mid}>
         <Text
@@ -81,11 +115,11 @@ const SwapHistoryPreview = () => {
   const load = useCallback(() => {
     const live = walletSwaps();
     if (live) {
-      setSwaps(live);
+      setSwaps(walletRows(live));
       void rememberFinishedSwaps();
       return;
     }
-    readFinishedSwaps().then(setSwaps);
+    readFinishedSwaps().then(rows => setSwaps(walletRows(rows)));
   }, []);
 
   useEffect(() => {
@@ -108,11 +142,22 @@ const SwapHistoryPreview = () => {
       params: {swapId},
       initial: false,
     });
+  const openRequest = (requestId: string) =>
+    navigation.navigate('MbsxStack', {
+      screen: 'RequestDetail',
+      params: {requestId},
+      initial: false,
+    });
 
   return (
     <>
       {swaps.map(swap => (
-        <SwapRow key={swap.id} swap={swap} onPress={() => open(swap.id)} />
+        <SwapRow
+          key={swap.id}
+          swap={swap}
+          onPress={() => open(swap.id)}
+          onOpenRequest={openRequest}
+        />
       ))}
     </>
   );

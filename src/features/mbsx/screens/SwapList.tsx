@@ -1,9 +1,17 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
+import {triggerLightFeedback} from '../../../utils/haptic';
 import {useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
 import {
@@ -35,6 +43,10 @@ const SwapList: React.FC<Props> = ({navigation}) => {
   const showRaw = useShowRawStates();
   const [swaps, setSwaps] = useState<SwapSummary[]>([]);
   const [reserved, setReserved] = useState<bigint | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'active' | 'finished' | 'failed'>(
+    'all',
+  );
 
   const fetchSwaps = useCallback(() => {
     const rows = listSwaps();
@@ -61,11 +73,25 @@ const SwapList: React.FC<Props> = ({navigation}) => {
   }, [fetchSwaps, running]);
 
   const sorted = sortNewestFirst(swaps);
-  const active = sorted.filter(swap => !isTerminalState(swap.state));
-  const finished = sorted.filter(swap => isTerminalState(swap.state));
-  const groups: [string, SwapSummary[]][] = [
-    ['Active', active],
-    ['Finished', finished],
+  const failedState = (state: string) =>
+    isTerminalState(state) && state !== 'COMPLETED';
+  const shown = sorted.filter(swap => {
+    if (filter === 'active') {
+      return !isTerminalState(swap.state);
+    }
+    if (filter === 'finished') {
+      return swap.state === 'COMPLETED';
+    }
+    if (filter === 'failed') {
+      return failedState(swap.state);
+    }
+    return true;
+  });
+  const chips: {id: typeof filter; label: string}[] = [
+    {id: 'all', label: 'All'},
+    {id: 'active', label: 'Active'},
+    {id: 'finished', label: 'Finished'},
+    {id: 'failed', label: 'Failed'},
   ];
 
   return (
@@ -100,67 +126,95 @@ const SwapList: React.FC<Props> = ({navigation}) => {
         </Text>
       ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      {!running && !error ? <Text style={styles.empty}>Starting…</Text> : null}
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {sorted.length === 0 ? (
+      {!running && !error ? (
+        <ActivityIndicator style={styles.empty} color="#2C72FF" />
+      ) : null}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              fetchSwaps();
+              setRefreshing(false);
+            }}
+          />
+        }>
+        <View style={styles.chipRow}>
+          {chips.map(chip => {
+            const on = filter === chip.id;
+            return (
+              <TouchableOpacity
+                key={chip.id}
+                testID={`mbsx-swap-filter-${chip.id}`}
+                style={[styles.chip, on ? styles.chipSelected : null]}
+                onPress={() => setFilter(chip.id)}>
+                <Text style={[styles.chipText, on ? styles.chipTextSelected : null]}>
+                  {chip.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        {shown.length === 0 ? (
           running ? (
             <View style={swapCards.card}>
-              <Text style={swapCards.note}>No swaps</Text>
+              <Text style={swapCards.note}>
+                {filter === 'all' ? 'No swaps yet' : 'Nothing here'}
+              </Text>
+              {filter === 'all' ? (
+                <TouchableOpacity
+                  testID="mbsx-empty-new-swap"
+                  onPress={() => {
+                    triggerLightFeedback();
+                    navigation.navigate('CreateSwap');
+                  }}>
+                  <Text style={swapCards.link}>New Swap</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           ) : null
         ) : (
-          groups.map(([title, rows]) =>
-            rows.length === 0 ? null : (
-              <View key={title}>
-                {active.length > 0 && finished.length > 0 ? (
-                  <Text style={swapCards.section}>{title}</Text>
-                ) : null}
-                {rows.map(swap => (
-                  <TouchableOpacity
-                    key={swap.id}
-                    style={swapCards.card}
-                    onPress={() =>
-                      navigation.navigate('SwapDetail', {swapId: swap.id})
-                    }>
-                    <View style={swapCards.historyRow}>
-                      <CoinPair from={swap.coin_from} to={swap.coin_to} />
-                      <View style={swapCards.historyMid}>
-                        <Text style={swapCards.historyTitle} numberOfLines={2}>
-                          {swapStateText(
-                            swap.state,
-                            swap.coin_from,
-                            swap.coin_to,
-                          )}
-                        </Text>
-                        {showRaw ? (
-                          <Text style={swapCards.historySub}>{swap.state}</Text>
-                        ) : null}
-                        {swap.kind ? (
-                          <Text style={swapCards.historySub}>
-                            {kindLabel(swap.kind)}
-                          </Text>
-                        ) : null}
-                        <Text style={swapCards.historySub} numberOfLines={1}>
-                          {swap.id}
-                        </Text>
-                      </View>
-                      <View style={swapCards.historyAmounts}>
-                        <Text style={swapCards.historyIn} numberOfLines={1}>
-                          {`+ ${swap.amount_to} ${swap.coin_to}`}
-                        </Text>
-                        <Text style={swapCards.historyOut} numberOfLines={1}>
-                          {`− ${swap.amount_from} ${swap.coin_from}`}
-                        </Text>
-                        <Text style={swapCards.historyOut} numberOfLines={1}>
-                          {formatExpiry(swap.created_at)}
-                        </Text>
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+          shown.map(swap => (
+            <TouchableOpacity
+              key={swap.id}
+              style={swapCards.card}
+              onPress={() =>
+                navigation.navigate('SwapDetail', {swapId: swap.id})
+              }>
+              <View style={swapCards.historyRow}>
+                <CoinPair from={swap.coin_from} to={swap.coin_to} />
+                <View style={swapCards.historyMid}>
+                  <Text style={swapCards.historyTitle} numberOfLines={2}>
+                    {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                  </Text>
+                  {showRaw ? (
+                    <Text style={swapCards.historySub}>{swap.state}</Text>
+                  ) : null}
+                  {swap.kind ? (
+                    <Text style={swapCards.historySub}>
+                      {kindLabel(swap.kind)}
+                    </Text>
+                  ) : null}
+                  <Text style={swapCards.historySub} numberOfLines={1}>
+                    {swap.id}
+                  </Text>
+                </View>
+                <View style={swapCards.historyAmounts}>
+                  <Text style={swapCards.historyIn} numberOfLines={1}>
+                    {`+ ${swap.amount_to} ${swap.coin_to}`}
+                  </Text>
+                  <Text style={swapCards.historyOut} numberOfLines={1}>
+                    {`− ${swap.amount_from} ${swap.coin_from}`}
+                  </Text>
+                  <Text style={swapCards.historyOut} numberOfLines={1}>
+                    {formatExpiry(swap.created_at)}
+                  </Text>
+                </View>
               </View>
-            ),
-          )
+            </TouchableOpacity>
+          ))
         )}
       </ScrollView>
     </View>

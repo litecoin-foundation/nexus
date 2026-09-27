@@ -510,6 +510,7 @@ const FINISHED_SWAPS_PATH = `${MBSX_DATA_DIR}/finished-swaps.json`;
 export type FinishedSwap = Pick<
   SwapSummary,
   | 'id'
+  | 'request_id'
   | 'coin_from'
   | 'coin_to'
   | 'amount_from'
@@ -526,6 +527,7 @@ const finishedFrom = (swaps: SwapSummary[]): FinishedSwap[] =>
     .filter(swap => WALLET_STATES.has(swap.state))
     .map(swap => ({
       id: swap.id,
+      request_id: swap.request_id,
       coin_from: swap.coin_from,
       coin_to: swap.coin_to,
       amount_from: swap.amount_from,

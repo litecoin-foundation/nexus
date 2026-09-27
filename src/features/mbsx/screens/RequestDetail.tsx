@@ -18,6 +18,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
+import {triggerLightFeedback} from '../../../utils/haptic';
 import {
   formatExpiry,
   formatTimestamp,
@@ -25,7 +26,7 @@ import {
   shortAddress,
 } from '../format';
 import {getMbsxStyles} from '../theme';
-import {offerWarning} from '../useSwapAmounts';
+import {coinString, offerWarning} from '../useSwapAmounts';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {requestStateText, swapStateText, useShowRawStates} from '../stateText';
@@ -66,8 +67,14 @@ const explainReliability = () =>
       'this exact address. 50 means it has not seen them before.',
   );
 
-const rate = (offer: SwapOffer) =>
-  Number(offer.amount_receive) / Number(offer.amount_send);
+const rate = (offer: SwapOffer) => {
+  const send = Number(offer.amount_send);
+  const receive = Number(offer.amount_receive);
+  if (!send || !receive) {
+    return 0;
+  }
+  return receive / send;
+};
 
 const live = (offer: SwapOffer) =>
   offer.state === 'RECEIVED' && Date.parse(`${offer.expire_at}Z`) > Date.now();
@@ -154,9 +161,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 
   const offers = [...(request?.offers ?? [])].sort(
     (a, b) =>
-      Number(b.kind === 'PRIVATE') - Number(a.kind === 'PRIVATE') ||
-      rate(b) - rate(a),
+      rate(b) - rate(a) ||
+      Number(b.kind === 'PRIVATE') - Number(a.kind === 'PRIVATE'),
   );
+  const bestOfferId = offers.find(offer => live(offer))?.id;
   const acceptedOffer = offers.find(offer => offer.accepted) ?? null;
   const canAccept = request?.state === 'OFFER_RECEIVED' && !accepting;
 
@@ -164,6 +172,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   // asking again.
   const onAccept = (offer: SwapOffer) => {
     const run = async () => {
+      triggerLightFeedback();
       setAccepting(true);
       setAcceptError('');
       try {
@@ -331,6 +340,16 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               <Text style={styles.rowPrimary}>
                 {`${kindLabel(offer.kind)} — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
               </Text>
+              {offer.id === bestOfferId ? (
+                <Text testID={`mbsx-best-rate-${offer.id}`} style={look.best}>
+                  Best rate
+                </Text>
+              ) : null}
+              {rate(offer) > 0 ? (
+                <Text style={styles.rowMessage}>
+                  {`1 ${offer.coin_send} ≈ ${coinString(rate(offer))} ${offer.coin_receive}`}
+                </Text>
+              ) : null}
               {Number(offer.amount_send) < Number(request.amount_from) ? (
                 <Text style={styles.rowMessage}>
                   {`Of the ${request.amount_from} ${request.coin_from} you offered; the rest comes back as change`}
@@ -352,8 +371,21 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                     testID={`mbsx-reliability-${offer.id}`}
                     onPress={explainReliability}>
                     <Text style={styles.rowLink}>
-                      {`Reliability: ${offer.offerer_reliability}`}
+                      {`Reliability ${offer.offerer_reliability ?? 0}`}
                     </Text>
+                    <View style={look.barTrack}>
+                      <View
+                        style={[
+                          look.barFill,
+                          {
+                            width: `${Math.max(
+                              0,
+                              Math.min(100, Number(offer.offerer_reliability ?? 0)),
+                            )}%`,
+                          },
+                        ]}
+                      />
+                    </View>
                   </TouchableOpacity>
                 </>
               ) : null}
@@ -425,6 +457,25 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 };
 
 const look = StyleSheet.create({
+  barTrack: {
+    marginTop: 6,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E4E8EE',
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#2C72FF',
+  },
+  best: {
+    marginTop: 4,
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    fontSize: 13,
+    color: '#2C72FF',
+  },
   feeRow: {
     flexDirection: 'row',
     alignItems: 'center',

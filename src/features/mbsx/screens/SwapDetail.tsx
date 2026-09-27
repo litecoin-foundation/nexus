@@ -1,5 +1,6 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -29,9 +30,34 @@ import SwapProgress from '../components/SwapProgress';
 import {useAppSelector} from '../../../store/hooks';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
+import {coinString} from '../useSwapAmounts';
+import {isSwapComplete, walletTitle} from '../walletText';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapDetail'>;
+
+const REFUND_TX = [
+  'Lock A Refund Spend',
+  'Lock A pre-Refund',
+  'Lock B Refund',
+  'Lock A Refund Swipe',
+];
+
+const refundTxid = (events: SwapEvent[] | undefined): string => {
+  const hit = (events ?? [])
+    .filter(
+      event =>
+        event.linked_type === 'SWAP_TX' &&
+        typeof event.linked_id === 'string' &&
+        REFUND_TX.includes(String(event.event_data)),
+    )
+    .sort(
+      (a, b) =>
+        REFUND_TX.indexOf(String(a.event_data)) -
+        REFUND_TX.indexOf(String(b.event_data)),
+    )[0];
+  return hit?.linked_id ? displayTxid(String(hit.linked_id)) : '';
+};
 
 const copyLinkedId = (isTx: boolean, linkedId: string): void => {
   const value = isTx ? displayTxid(linkedId) : String(linkedId);
@@ -69,6 +95,9 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   }, [swapId, navigation]);
 
   const running = useAppSelector(state => state.mbsx.running);
+  const destinations = useAppSelector(
+    state => state.mbsxAddresses.destinations,
+  );
   useFocusEffect(
     useCallback(() => {
       if (!running) {
@@ -83,9 +112,138 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   if (!swap) {
     return (
       <View style={styles.container}>
-        <Text style={styles.empty}>
-          {running ? 'No swap selected' : 'Starting…'}
-        </Text>
+        {running ? (
+          <Text style={styles.empty}>No swap selected</Text>
+        ) : (
+          <ActivityIndicator style={styles.empty} color="#2C72FF" />
+        )}
+      </View>
+    );
+  }
+
+  if (isTerminalState(swap.state)) {
+    const complete = isSwapComplete(swap.state);
+    const sent = Number(swap.amount_from);
+    const received = Number(swap.amount_to);
+    const rate =
+      sent > 0 && received > 0
+        ? `1 ${swap.coin_from} ≈ ${coinString(received / sent)} ${swap.coin_to}`
+        : '';
+    const feeBps = (swap.fees ?? []).reduce(
+      (sum, fee) => sum + Number(fee.bps),
+      0,
+    );
+    const address = destinations?.[swap.request_id] ?? '';
+    const refund = refundTxid(swap.events);
+    return (
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <View style={swapCards.card}>
+            <View style={swapCards.historyRow}>
+              <CoinPair from={swap.coin_from} to={swap.coin_to} size={40} />
+              <View style={swapCards.historyMid}>
+                <Text style={swapCards.historyTitle}>
+                  {walletTitle(swap.state)}
+                </Text>
+                {complete ? null : (
+                  <Text style={swapCards.historySub}>
+                    {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                  </Text>
+                )}
+                <Text style={swapCards.historySub}>
+                  {formatTimestamp(swap.created_at)}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <Text style={swapCards.section}>Sent</Text>
+          <View style={swapCards.card}>
+            <Text style={swapCards.amount}>
+              {`${swap.amount_from} ${swap.coin_from}`}
+            </Text>
+          </View>
+          <Text style={swapCards.section}>Received</Text>
+          <View style={swapCards.card}>
+            <Text style={swapCards.amount}>
+              {`${swap.amount_to} ${swap.coin_to}`}
+            </Text>
+          </View>
+          {rate ? (
+            <>
+              <Text style={swapCards.section}>Rate</Text>
+              <View style={swapCards.card}>
+                <Text testID="mbsx-receipt-rate" style={swapCards.meta}>
+                  {rate}
+                </Text>
+              </View>
+            </>
+          ) : null}
+          {feeBps > 0 || swap.chain_fee_from ? (
+            <>
+              <Text style={swapCards.section}>Fees</Text>
+              <View style={swapCards.card}>
+                {feeBps > 0 ? (
+                  <Text testID="mbsx-receipt-fee" style={swapCards.meta}>
+                    {`Swap fee ${feeBps / 100}%${
+                      swap.fees_total
+                        ? ` (${swap.fees_total} ${swap.fees_coin})`
+                        : ''
+                    }`}
+                  </Text>
+                ) : null}
+                {swap.chain_fee_from ? (
+                  <Text style={swapCards.meta}>
+                    {`Network fee ~${swap.chain_fee_from} ${swap.coin_from}`}
+                  </Text>
+                ) : null}
+              </View>
+            </>
+          ) : null}
+          {address ? (
+            <>
+              <Text style={swapCards.section}>Receive address</Text>
+              <View style={swapCards.card}>
+                <Text testID="mbsx-receipt-address" selectable style={swapCards.meta}>
+                  {address}
+                </Text>
+              </View>
+            </>
+          ) : null}
+          {refund ? (
+            <>
+              <Text style={swapCards.section}>Refund transaction</Text>
+              <TouchableOpacity
+                testID="mbsx-receipt-refund"
+                style={swapCards.card}
+                onPress={() => {
+                  Clipboard.setString(refund);
+                  Alert.alert('Copied', refund);
+                }}>
+                <Text selectable style={swapCards.meta}>
+                  {refund}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
+          <TouchableOpacity
+            testID="mbsx-receipt-done"
+            style={styles.button}
+            onPress={() => navigation.goBack()}>
+            <Text style={styles.buttonText}>Done</Text>
+          </TouchableOpacity>
+          {complete ? null : (
+            <RemoveButton
+              testID="mbsx-remove-swap"
+              label="Delete swap"
+              confirm="Permanently delete this swap and its events?"
+              onConfirm={async () => {
+                removeSwap(swapId);
+                navigation.navigate('SwapList');
+                return 'Removed';
+              }}
+            />
+          )}
+        </ScrollView>
       </View>
     );
   }

@@ -34,7 +34,11 @@ export const notifySwapEnded = async (swap: EndedSwap) => {
       id: `mbsx-swap-${swap.id}`,
       title: walletTitle(swap.state),
       body,
-      android: {channelId, pressAction: {id: 'default'}},
+      data: {swapId: swap.id},
+      android: {
+        channelId,
+        pressAction: {id: 'mbsx-swap', launchActivity: 'default'},
+      },
     });
   } catch (e) {
     console.warn('mbsx could not notify:', (e as Error).message);

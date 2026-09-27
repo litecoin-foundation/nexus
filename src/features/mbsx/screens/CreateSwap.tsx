@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {
   Image,
   Keyboard,
@@ -18,12 +18,17 @@ import {useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
+import {triggerLightFeedback} from '../../../utils/haptic';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {
   isHwWalletSelectedSelector,
   selectedAccountNamesSelector,
 } from '../../../reducers/wallets';
-import {rememberAddress, setLastCoin} from '../addressesSlice';
+import {
+  rememberAddress,
+  rememberDestination,
+  setLastCoin,
+} from '../addressesSlice';
 import {COINS} from '../components/CoinSelector';
 import {COIN_COLORS, COIN_ICONS} from '../swapCards';
 import {
@@ -32,6 +37,7 @@ import {
   getSwapFundingOutputs,
   isRunning,
   parseAmount,
+  readConfig,
   recordLeases,
   releasePrevouts,
   requestSwap,
@@ -84,9 +90,9 @@ const CoinMark = ({ticker}: {ticker?: string}) => (
     style={[
       look.coinCircle,
       {
-        backgroundColor: ticker
-          ? (COIN_COLORS[ticker] ?? '#C5C5CE')
-          : '#C5C5CE',
+        backgroundColor: ticker ? (COIN_COLORS[ticker] ?? '#C5C5CE') : '#F4F7FB',
+        borderWidth: ticker ? 0 : 1,
+        borderColor: '#D5DBE4',
       },
     ]}>
     {ticker && COIN_ICONS[ticker] ? (
@@ -101,11 +107,15 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
 
   const lastCoin = useAppSelector(state => state.mbsxAddresses.lastCoin);
+  const connected = useAppSelector(state => state.mbsx.connected);
+  const torEnabled = useAppSelector(state => state.settings.torEnabled);
+  const [torApplied, setTorApplied] = useState<boolean | null>(null);
   const [coinTo, setCoinTo] = useState(lastCoin);
   const [addressTo, setAddressTo] = useState('');
   const [requestId, setRequestId] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [prices, setPrices] = useState<MbsxCoinPrices | null>(null);
   const [info, setInfo] = useState<MbsxInfo | null>(null);
   const [balances, setBalances] = useState<{
@@ -144,6 +154,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         setInfo(getInfo());
       };
       read();
+      readConfig().then(cfg => live && setTorApplied(cfg?.proxy !== undefined));
       swapBalances()
         .then(rv => live && setBalances(rv))
         .catch(() => live && setBalances(null));
@@ -166,11 +177,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const unbridgedCoin = [COIN_FROM, coinTo].find(
     coin => coin !== '' && info?.coins[coin]?.bridge_supported !== true,
   );
-  const bridgeNote = !info?.connected
-    ? 'Waiting for the swap server…'
-    : unbridgedCoin
-      ? `The swap server has no bridge for ${unbridgedCoin}`
-      : '';
+  const bridgeNote = unbridgedCoin
+    ? `The swap server has no bridge for ${unbridgedCoin}`
+    : '';
+  const torPending = torApplied !== null && torEnabled !== torApplied;
 
   const {
     amounts,
@@ -243,11 +253,25 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   // Scan pops back onto this screen with the result in params.
   const scanned = route.params?.scanData;
+  const addressFilledFor = useRef('');
   useEffect(() => {
     if (scanned) {
       setAddressTo(scanned);
+      addressFilledFor.current = coinTo;
     }
-  }, [scanned]);
+  }, [scanned, coinTo]);
+
+  useEffect(() => {
+    if (!coinTo || addressFilledFor.current === coinTo) {
+      return;
+    }
+    const last = savedAddresses[0]?.address;
+    if (!last) {
+      return;
+    }
+    addressFilledFor.current = coinTo;
+    setAddressTo(last);
+  }, [coinTo, savedAddresses]);
 
   // Rehydration can land after the first render, so the initial state above is
   // not enough on its own.
@@ -271,6 +295,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const {ltcAccount} = useAppSelector(selectedAccountNamesSelector);
 
   const submit = async () => {
+    setConfirming(false);
+    triggerLightFeedback();
     setRequestId('');
     setError('');
     setBusy(true);
@@ -350,6 +376,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
       recordLeases(rv.request_id, prevouts);
       dispatch(rememberAddress({coin: coinTo, address: addressTo}));
+      dispatch(
+        rememberDestination({requestId: rv.request_id, address: addressTo}),
+      );
       setRequestId(rv.request_id);
       // coinTo is deliberately kept: it is lastCoin.
       resetAmounts();
@@ -399,6 +428,18 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         }`
       : '';
   const noSaved = coinChosen && savedAddresses.length === 0;
+
+  useEffect(() => {
+    setConfirming(false);
+  }, [amountFrom, amountTo, addressTo, coinTo]);
+
+  const confirmSwap = () => {
+    if (!coinTo || !addressTo || !amountFrom || !amountTo || addressInvalid) {
+      void submit();
+      return;
+    }
+    setConfirming(true);
+  };
 
   return (
     <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
@@ -532,20 +573,51 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               Select the coin to receive first
             </Text>
           )}
+          <TextInput
+            key={coinChosen ? 'address-on' : 'address-off'}
+            testID="mbsx-address-to"
+            style={[look.receiver, coinChosen ? null : styles.inputDisabled]}
+            placeholder="Receive address"
+            placeholderTextColor="#9AA0AE"
+            value={addressTo}
+            onChangeText={setAddressTo}
+            onFocus={() => setAddressFocused(true)}
+            onBlur={() => setAddressFocused(false)}
+            editable={coinChosen}
+            autoCapitalize="none"
+          />
+          {addressInvalid ? (
+            <Text testID="mbsx-address-error" style={styles.error}>
+              Not a {coinTo} address
+            </Text>
+          ) : null}
           <View style={look.receiverRow}>
-            <TextInput
-              key={coinChosen ? 'address-on' : 'address-off'}
-              testID="mbsx-address-to"
-              style={[look.receiver, coinChosen ? null : styles.inputDisabled]}
-              placeholder="Receive address"
-              placeholderTextColor="#9AA0AE"
-              value={addressTo}
-              onChangeText={setAddressTo}
-              onFocus={() => setAddressFocused(true)}
-              onBlur={() => setAddressFocused(false)}
-              editable={coinChosen}
-              autoCapitalize="none"
-            />
+            <TouchableOpacity
+              testID="mbsx-addresses"
+              disabled={!coinChosen}
+              style={[
+                look.receiverPick,
+                look.receiverPickFlex,
+                coinChosen ? null : look.iconBtnOff,
+              ]}
+              onPress={() =>
+                noSaved
+                  ? navigation.navigate('CoinAddresses', {coin: coinTo})
+                  : setReceiversOpen(open => !open)
+              }>
+              <Text style={look.receiverPickText} numberOfLines={1}>
+                {selectedSaved?.label ||
+                  (addressTo
+                    ? shortAddress(addressTo)
+                    : noSaved
+                      ? `Add a ${coinTo} address`
+                      : 'Select receiver')}
+              </Text>
+              <Image
+                source={require('../../../assets/images/forward.png')}
+                style={look.chevron}
+              />
+            </TouchableOpacity>
             <TouchableOpacity
               testID="mbsx-paste"
               disabled={!coinChosen}
@@ -577,33 +649,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               />
             </TouchableOpacity>
           </View>
-          {addressInvalid ? (
-            <Text testID="mbsx-address-error" style={styles.error}>
-              Not a {coinTo} address
-            </Text>
-          ) : null}
-          <TouchableOpacity
-            testID="mbsx-addresses"
-            disabled={!coinChosen}
-            style={[look.receiverPick, coinChosen ? null : look.iconBtnOff]}
-            onPress={() =>
-              noSaved
-                ? navigation.navigate('CoinAddresses', {coin: coinTo})
-                : setReceiversOpen(open => !open)
-            }>
-            <Text style={look.receiverPickText} numberOfLines={1}>
-              {selectedSaved?.label ||
-                (addressTo
-                  ? shortAddress(addressTo)
-                  : noSaved
-                    ? `Add a ${coinTo} address`
-                    : 'Select receiver')}
-            </Text>
-            <Image
-              source={require('../../../assets/images/forward.png')}
-              style={look.chevron}
-            />
-          </TouchableOpacity>
           {receiversOpen ? (
             <View testID="mbsx-saved-addresses" style={look.coinMenu}>
               {savedAddresses.length === 0 ? (
@@ -695,6 +740,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             </Text>
           </TouchableOpacity>
         ) : null}
+        {torPending ? (
+          <Text testID="mbsx-tor-pending" style={styles.rowMessage}>
+            Tor is on in Nexus. It applies to this swap after you leave and
+            come back, or after the app restarts while a swap is in flight.
+          </Text>
+        ) : null}
         {blockNote !== '' ? (
           <Text testID="mbsx-bridge-note" style={styles.rowMessage}>
             {blockNote}
@@ -721,29 +772,72 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               keyboardHeight > 0 ? 12 : Math.max(insets.bottom, 12),
           },
         ]}>
-        <TouchableOpacity
-          testID="mbsx-submit"
-          style={[
-            styles.button,
-            look.submit,
-            busy ||
-            !coinChosen ||
-            addressInvalid ||
-            blockNote !== '' ||
-            (offReference && !rateAcknowledged)
-              ? styles.buttonDisabled
-              : null,
-          ]}
-          onPress={submit}
-          disabled={
-            busy ||
-            !coinChosen ||
-            addressInvalid ||
-            blockNote !== '' ||
-            (offReference && !rateAcknowledged)
-          }>
-          <Text style={styles.buttonText}>{busy ? 'Requesting…' : 'Swap'}</Text>
-        </TouchableOpacity>
+        {confirming ? (
+          <View testID="mbsx-confirm" style={look.confirmCard}>
+            <Text style={look.confirmTitle}>Confirm swap</Text>
+            <Text style={look.confirmLine}>
+              {`Send ${amountFrom} ${COIN_FROM}`}
+            </Text>
+            <Text style={look.confirmLine}>
+              {`Receive ${amountTo} ${coinTo}`}
+            </Text>
+            <Text style={look.confirmLine} numberOfLines={2}>
+              {`To ${addressTo}`}
+            </Text>
+            {rateLine ? (
+              <Text style={look.confirmLine}>{rateLine}</Text>
+            ) : null}
+            {feeLine ? <Text style={look.confirmLine}>{feeLine}</Text> : null}
+          </View>
+        ) : null}
+        {confirming ? (
+          <View style={look.confirmActions}>
+            <TouchableOpacity
+              testID="mbsx-confirm-cancel"
+              style={[styles.buttonSecondary, look.confirmAction]}
+              onPress={() => setConfirming(false)}
+              disabled={busy}>
+              <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              testID="mbsx-submit"
+              style={[styles.button, look.submit, look.confirmAction]}
+              onPress={() => void submit()}
+              disabled={busy}>
+              <Text style={styles.buttonText}>
+                {busy ? 'Requesting…' : 'Swap'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            testID="mbsx-submit"
+            style={[
+              styles.button,
+              look.submit,
+              busy ||
+              !connected ||
+              !coinChosen ||
+              addressInvalid ||
+              blockNote !== '' ||
+              (offReference && !rateAcknowledged)
+                ? styles.buttonDisabled
+                : null,
+            ]}
+            onPress={confirmSwap}
+            disabled={
+              busy ||
+              !connected ||
+              !coinChosen ||
+              addressInvalid ||
+              blockNote !== '' ||
+              (offReference && !rateAcknowledged)
+            }>
+            <Text style={styles.buttonText}>
+              {busy ? 'Requesting…' : 'Swap'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -899,10 +993,15 @@ const look = StyleSheet.create({
   receiverRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 10,
+  },
+  receiverPickFlex: {
+    flex: 1,
+    marginTop: 0,
   },
   receiver: {
     flex: 1,
+    marginTop: 16,
     borderRadius: 22,
     backgroundColor: '#F4F7FB',
     paddingHorizontal: 14,
@@ -1033,6 +1132,34 @@ const look = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     backgroundColor: '#F2F8FD',
+  },
+  confirmCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 8,
+  },
+  confirmTitle: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    fontSize: 16,
+    color: '#484859',
+    marginBottom: 8,
+  },
+  confirmLine: {
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    color: '#484859',
+    marginTop: 4,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  confirmAction: {
+    flex: 1,
+    marginVertical: 0,
   },
   submit: {
     marginTop: 0,

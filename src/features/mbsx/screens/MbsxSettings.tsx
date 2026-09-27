@@ -25,7 +25,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
-import {COIN_ICONS, swapCards} from '../swapCards';
+import {COIN_COLORS, COIN_ICONS, swapCards} from '../swapCards';
 import {setRunning} from '../mbsxSlice';
 import {
   addCaCert,
@@ -563,9 +563,15 @@ const MbsxSettings: React.FC = () => {
             <View key={coin} style={swapCards.card}>
               <View style={look.cardRow}>
                 <View style={look.coinTitle}>
-                  {COIN_ICONS[ticker] ? (
-                    <Image source={COIN_ICONS[ticker]} style={swapCards.coinLogo} />
-                  ) : null}
+                  <View
+                    style={[
+                      look.coinCircle,
+                      {backgroundColor: COIN_COLORS[ticker] ?? '#C5C5CE'},
+                    ]}>
+                    {COIN_ICONS[ticker] ? (
+                      <Image source={COIN_ICONS[ticker]} style={look.coinMark} />
+                    ) : null}
+                  </View>
                   <Text style={styles.label}>{ticker}</Text>
                 </View>
                 {ownCoin ? (
@@ -876,6 +882,17 @@ const look = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     marginRight: 12,
+  },
+  coinCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginRight: 10,
+  },
+  coinMark: {
+    width: 32,
+    height: 32,
   },
   footer: {
     paddingHorizontal: 16,

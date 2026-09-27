@@ -16,9 +16,14 @@ interface IMbsxAddresses {
   // Keyed by coin ticker, most recently used first.
   byCoin: Record<string, MbsxAddress[]>;
   lastCoin: string;
+  destinations: Record<string, string>;
 }
 
-const initialState: IMbsxAddresses = {byCoin: {}, lastCoin: ''};
+const initialState: IMbsxAddresses = {
+  byCoin: {},
+  lastCoin: '',
+  destinations: {},
+};
 
 const MAX_PER_COIN = 20;
 
@@ -51,6 +56,19 @@ export const mbsxAddressesSlice = createSlice({
     setLastCoin: (state, action: PayloadAction<string>) => {
       state.lastCoin = action.payload;
     },
+    rememberDestination: (
+      state,
+      action: PayloadAction<{requestId: string; address: string}>,
+    ) => {
+      const {requestId, address} = action.payload;
+      if (!requestId || !address) {
+        return;
+      }
+      if (!state.destinations) {
+        state.destinations = {};
+      }
+      state.destinations[requestId] = address;
+    },
     forgetAddress: (
       state,
       action: PayloadAction<{coin: string; address: string}>,
@@ -66,7 +84,7 @@ export const mbsxAddressesSlice = createSlice({
   },
 });
 
-export const {rememberAddress, forgetAddress, setLastCoin} =
+export const {rememberAddress, forgetAddress, setLastCoin, rememberDestination} =
   mbsxAddressesSlice.actions;
 
 export default mbsxAddressesSlice.reducer;
