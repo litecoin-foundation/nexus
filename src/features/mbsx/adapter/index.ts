@@ -5,6 +5,7 @@ import NitroBSX, {
 } from 'react-native-nitro-bsx';
 
 import type {
+  Deposit,
   MbsxCoinPrices,
   MbsxInfo,
   MbsxSettings,
@@ -670,6 +671,68 @@ export const revokeOpenRequests = async (): Promise<string[]> => {
 export const removeRequest = async (requestId: string) => {
   await releaseLeases(requestId);
   const rv = NitroBSX.removeRequest(requestId) as MbsxResult<{}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
+export const PAY_IN_COINS = ['BTC', 'PART'];
+
+export const ENDED_DEPOSIT_STATES = new Set([
+  'SPENT',
+  'SWEPT',
+  'EXPIRED',
+  'CANCELLED',
+]);
+
+export const listDeposits = (): Deposit[] | null => {
+  if (!isRunning()) {
+    return null;
+  }
+  const rv = NitroBSX.listDeposits() as MbsxResult<{deposits?: Deposit[]}>;
+  if (rv.error) {
+    if (!isBusy(rv)) {
+      console.error('mbsx listDeposits failed:', rv.error);
+    }
+    return null;
+  }
+  return rv.deposits ?? [];
+};
+
+export const createDeposit = (data: {
+  coin_from: string;
+  amount_from: string;
+  coin_to: string;
+  min_amount_to: string;
+  refund_address: string;
+  address_to: string;
+}): Deposit => {
+  const rv = NitroBSX.createDeposit(data) as MbsxResult<Deposit>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+  return rv;
+};
+
+export const cancelDeposit = (depositId: string) => {
+  const rv = NitroBSX.cancelDeposit(depositId) as MbsxResult<Deposit>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
+export const requoteDeposit = (deposit: Deposit, minAmountTo: string) => {
+  const rv = NitroBSX.requoteDeposit(
+    deposit.deposit_id,
+    parseAmount(deposit.coin_to, minAmountTo),
+  ) as MbsxResult<Deposit>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
+export const rescanDeposits = (coin: string) => {
+  const rv = NitroBSX.rescanDeposits(coin) as MbsxResult<{}>;
   if (rv.error) {
     throw new Error(rv.error);
   }

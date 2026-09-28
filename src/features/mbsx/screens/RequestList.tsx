@@ -15,8 +15,10 @@ import {triggerLightFeedback} from '../../../utils/haptic';
 import {useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
 import {
+  ENDED_DEPOSIT_STATES,
   describeRemoval,
   isEndedRequestState,
+  listDeposits,
   listRequests,
   onMessage,
   removeRequests,
@@ -26,10 +28,30 @@ import {
 import {formatExpiry} from '../format';
 import RemoveButton from '../components/RemoveButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
-import {requestStateText, useShowRawStates} from '../stateText';
-import type {MbsxDrawerParamList, SwapRequestSummary} from '../types';
+import {
+  depositStateText,
+  requestStateText,
+  useShowRawStates,
+} from '../stateText';
+import type {
+  Deposit,
+  MbsxDrawerParamList,
+  SwapRequestSummary,
+} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'RequestList'>;
+
+const Pair = ({from, to}: {from: string; to: string}) => (
+  <View style={swapCards.pair}>
+    {COIN_ICONS[from] ? (
+      <Image source={COIN_ICONS[from]} style={swapCards.coinLogo} />
+    ) : null}
+    <Text style={swapCards.pairText}>{`${from} → ${to}`}</Text>
+    {COIN_ICONS[to] ? (
+      <Image source={COIN_ICONS[to]} style={swapCards.coinLogoEnd} />
+    ) : null}
+  </View>
+);
 
 const RequestList: React.FC<Props> = ({navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -38,6 +60,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
   const running = useAppSelector(state => state.mbsx.running);
   const showRaw = useShowRawStates();
   const [requests, setRequests] = useState<SwapRequestSummary[]>([]);
+  const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'open' | 'ended'>('all');
 
@@ -46,9 +69,20 @@ const RequestList: React.FC<Props> = ({navigation}) => {
     if (rows) {
       setRequests(rows);
     }
+    const payIns = listDeposits();
+    if (payIns) {
+      setDeposits(payIns);
+    }
   }, []);
 
-  useFocusEffect(fetchRequests);
+  // Pay-ins move on the deposit watch's polls, which send no message.
+  useFocusEffect(
+    useCallback(() => {
+      fetchRequests();
+      const timer = setInterval(fetchRequests, 3000);
+      return () => clearInterval(timer);
+    }, [fetchRequests]),
+  );
 
   useEffect(() => {
     fetchRequests();
@@ -66,6 +100,10 @@ const RequestList: React.FC<Props> = ({navigation}) => {
     }
     return true;
   });
+  const payIns =
+    filter === 'ended'
+      ? []
+      : deposits.filter(deposit => !ENDED_DEPOSIT_STATES.has(deposit.state));
   const chips: {id: typeof filter; label: string}[] = [
     {id: 'all', label: 'All'},
     {id: 'open', label: 'Open'},
@@ -115,7 +153,29 @@ const RequestList: React.FC<Props> = ({navigation}) => {
             );
           })}
         </View>
-        {shown.length === 0 ? (
+        {payIns.map(deposit => (
+          <TouchableOpacity
+            key={deposit.deposit_id}
+            testID={`mbsx-payin-${deposit.deposit_id}`}
+            style={swapCards.card}
+            onPress={() =>
+              navigation.navigate('PayInDetail', {
+                depositId: deposit.deposit_id,
+              })
+            }>
+            <Pair from={deposit.coin} to={deposit.coin_to} />
+            <Text style={swapCards.status}>
+              {depositStateText(deposit.state, deposit.coin)}
+            </Text>
+            {showRaw ? (
+              <Text style={swapCards.id}>{deposit.state}</Text>
+            ) : null}
+            <Text style={swapCards.meta}>
+              {`Pay-in · ${deposit.amount_due} ${deposit.coin}`}
+            </Text>
+          </TouchableOpacity>
+        ))}
+        {shown.length === 0 && payIns.length === 0 ? (
           running ? (
             <View style={swapCards.card}>
               <Text style={swapCards.note}>
@@ -143,23 +203,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                         requestId: request.id,
                       })
                     }>
-                    <View style={swapCards.pair}>
-                      {COIN_ICONS[request.coin_from] ? (
-                        <Image
-                          source={COIN_ICONS[request.coin_from]}
-                          style={swapCards.coinLogo}
-                        />
-                      ) : null}
-                      <Text style={swapCards.pairText}>
-                        {`${request.coin_from} → ${request.coin_to}`}
-                      </Text>
-                      {COIN_ICONS[request.coin_to] ? (
-                        <Image
-                          source={COIN_ICONS[request.coin_to]}
-                          style={swapCards.coinLogoEnd}
-                        />
-                      ) : null}
-                    </View>
+                    <Pair from={request.coin_from} to={request.coin_to} />
                     <Text style={swapCards.status}>
                       {requestStateText(request.state)}
                     </Text>

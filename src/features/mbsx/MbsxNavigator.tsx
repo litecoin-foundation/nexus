@@ -44,6 +44,7 @@ import SwapList from './screens/SwapList';
 import SwapDetail from './screens/SwapDetail';
 import RequestList from './screens/RequestList';
 import RequestDetail from './screens/RequestDetail';
+import PayInDetail from './screens/PayInDetail';
 import AddressList from './screens/AddressList';
 import CoinAddresses from './screens/CoinAddresses';
 import MbsxSettings from './screens/MbsxSettings';
@@ -307,6 +308,11 @@ const MbsxNavigator: React.FC = () => {
           name="RequestDetail"
           component={RequestDetail}
           options={{title: 'Request', ...hidden}}
+        />
+        <Drawer.Screen
+          name="PayInDetail"
+          component={PayInDetail}
+          options={{title: 'Pay-in', ...hidden}}
         />
         <Drawer.Screen
           name="AddressList"

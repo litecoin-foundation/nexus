@@ -32,6 +32,8 @@ import {
 import {COINS} from '../components/CoinSelector';
 import {COIN_COLORS, COIN_ICONS} from '../swapCards';
 import {
+  PAY_IN_COINS,
+  createDeposit,
   getCoinPrices,
   getInfo,
   getSwapFundingOutputs,
@@ -57,8 +59,8 @@ import {
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
-// Nexus funds every swap from its own wallet, so the sending side is fixed.
-const COIN_FROM = 'LTC';
+// The coin lnd holds: a swap sends it from there, a pay-in receives it there.
+const HOST_COIN = 'LTC';
 
 const DUST_LIMIT = 294n;
 const CHAIN_FEE_RESERVE = 10000n;
@@ -111,6 +113,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const torEnabled = useAppSelector(state => state.settings.torEnabled);
   const [torApplied, setTorApplied] = useState<boolean | null>(null);
   const [coinTo, setCoinTo] = useState(lastCoin);
+  const [payIn, setPayIn] = useState(false);
   const [addressTo, setAddressTo] = useState('');
   const [requestId, setRequestId] = useState('');
   const [error, setError] = useState('');
@@ -174,13 +177,15 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     : COINS;
 
   // The handshake says which coins the server bridges; no request before it
-  const unbridgedCoin = [COIN_FROM, coinTo].find(
+  const unbridgedCoin = [HOST_COIN, coinTo].find(
     coin => coin !== '' && info?.coins[coin]?.bridge_supported !== true,
   );
   const bridgeNote = unbridgedCoin
     ? `The swap server has no bridge for ${unbridgedCoin}`
     : '';
   const torPending = torApplied !== null && torEnabled !== torApplied;
+  const sendCoin = payIn ? coinTo : HOST_COIN;
+  const receiveCoin = payIn ? HOST_COIN : coinTo;
 
   const {
     amounts,
@@ -190,7 +195,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setFixedRate,
     valueDeviation,
     reset: resetAmounts,
-  } = useSwapAmounts(prices?.prices?.[COIN_FROM], prices?.prices?.[coinTo]);
+  } = useSwapAmounts(
+    prices?.prices?.[sendCoin],
+    prices?.prices?.[receiveCoin],
+  );
   const [rateAcknowledged, setRateAcknowledged] = useState(false);
   const offReference =
     valueDeviation !== null && Math.abs(valueDeviation) > RATE_TOLERANCE;
@@ -209,10 +217,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setFeeNote('');
     setSpendNote('');
     setQuote(null);
-    if (amountFrom === '') {
+    if (amountFrom === '' || sendCoin === '') {
       return;
     }
-    const funding = getSwapFundingOutputs(COIN_FROM, amountFrom);
+    const funding = getSwapFundingOutputs(sendCoin, amountFrom);
     if (
       !funding.error &&
       funding.total_fee_bps !== undefined &&
@@ -227,12 +235,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         );
       }
     }
-    if (!balances || !isRunning()) {
+    if (payIn || !balances || !isRunning()) {
       return;
     }
     let amountSats: bigint;
     try {
-      amountSats = parseAmount(COIN_FROM, amountFrom);
+      amountSats = parseAmount(HOST_COIN, amountFrom);
     } catch {
       return;
     }
@@ -242,7 +250,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         'That is more than you can spend. The network fee and the swap fee come out of this Litecoin.',
       );
     }
-  }, [amountFrom, balances]);
+  }, [amountFrom, balances, payIn, sendCoin]);
 
   const blockNote = bridgeNote || feeNote;
 
@@ -276,10 +284,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   // Rehydration can land after the first render, so the initial state above is
   // not enough on its own.
   useEffect(() => {
-    if (!coinTo && lastCoin) {
+    if (!coinTo && lastCoin && (!payIn || PAY_IN_COINS.includes(lastCoin))) {
       setCoinTo(lastCoin);
     }
-  }, [coinTo, lastCoin]);
+  }, [coinTo, lastCoin, payIn]);
 
   useEffect(() => {
     setRateAcknowledged(false);
@@ -289,6 +297,20 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setCoinTo(coin);
     setCoinOpen(false);
     dispatch(setLastCoin(coin));
+  };
+
+  const flip = () => {
+    const next = !payIn;
+    setPayIn(next);
+    setCoinOpen(false);
+    setReceiversOpen(false);
+    setError('');
+    resetAmounts();
+    if (next && !PAY_IN_COINS.includes(coinTo)) {
+      setCoinTo('');
+      setAddressTo('');
+      addressFilledFor.current = '';
+    }
   };
 
   const isHwWallet = useAppSelector(isHwWalletSelectedSelector);
@@ -305,13 +327,15 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         throw new Error('Swaps are not running');
       }
       if (!coinTo) {
-        throw new Error('Select a coin to receive');
+        throw new Error(payIn ? 'Select a coin to pay' : 'Select a coin to receive');
       }
       if (!offeredCoins.includes(coinTo)) {
         throw new Error(`${coinTo} is disabled`);
       }
       if (!addressTo) {
-        throw new Error('Missing receive address');
+        throw new Error(
+          payIn ? 'Missing refund address' : 'Missing receive address',
+        );
       }
       if (!validateAddress(coinTo, addressTo)) {
         throw new Error(`Not a ${coinTo} address`);
@@ -319,7 +343,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       // Amounts are entered in whole coins; the module holds the only conversion.
       let amountFromSats: bigint;
       try {
-        amountFromSats = parseAmount(COIN_FROM, amountFrom);
+        amountFromSats = parseAmount(sendCoin, amountFrom);
       } catch {
         throw new Error('Invalid amount to send');
       }
@@ -329,9 +353,32 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       // Parsed only to reject it here: the module is sent the string. Leasing
       // coins and then failing on the receive amount would strand them.
       try {
-        parseAmount(coinTo, amountTo);
+        parseAmount(receiveCoin, amountTo);
       } catch {
         throw new Error('Invalid amount to receive');
+      }
+      if (payIn) {
+        const receive = await newAddress({
+          type: AddressType.UNUSED_WITNESS_PUBKEY_HASH,
+          account: ltcAccount,
+        });
+        if (!receive?.address) {
+          throw new Error('Could not get a receive address');
+        }
+        const deposit = createDeposit({
+          coin_from: coinTo,
+          amount_from: amountFrom,
+          coin_to: HOST_COIN,
+          min_amount_to: amountTo,
+          refund_address: addressTo,
+          address_to: receive.address,
+        });
+        dispatch(rememberAddress({coin: coinTo, address: addressTo}));
+        resetAmounts();
+        setAddressTo('');
+        setRateAcknowledged(false);
+        navigation.navigate('PayInDetail', {depositId: deposit.deposit_id});
+        return;
       }
       // Change and, if the swap fails, the whole refund come back here rather
       // than to a module key, so it is one of ours.
@@ -343,7 +390,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         throw new Error('Could not get a change address');
       }
 
-      const funding = getSwapFundingOutputs(COIN_FROM, amountFrom);
+      const funding = getSwapFundingOutputs(HOST_COIN, amountFrom);
       if (funding.error || !funding.outputs) {
         throw new Error(`Could not size the swap: ${funding.error}`);
       }
@@ -356,7 +403,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       let rv;
       try {
         rv = await requestSwap({
-          coin_from: COIN_FROM,
+          coin_from: HOST_COIN,
           coin_to: coinTo,
           amount_from: amountFrom,
           amount_to: amountTo,
@@ -397,7 +444,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       return;
     }
     const probe = coinString(Number(balances.spendable) / 1e8);
-    const funding = probe ? getSwapFundingOutputs(COIN_FROM, probe) : null;
+    const funding = probe ? getSwapFundingOutputs(HOST_COIN, probe) : null;
     const feeSats = funding && !funding.error ? swapFeeSats(funding.outputs) : 0n;
     const room = balances.spendable - feeSats - CHAIN_FEE_RESERVE;
     setAmount(
@@ -417,13 +464,13 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const to = Number(amountTo);
   const rateLine =
     coinChosen && from > 0 && to > 0
-      ? `1 ${COIN_FROM} ≈ ${coinString(to / from)} ${coinTo}`
+      ? `1 ${sendCoin} ≈ ${coinString(to / from)} ${receiveCoin}`
       : '';
   const feeLine =
     quote && quote.feeBps > 0
       ? `Swap fee ${quote.feeBps / 100}%${
           quote.feeSats > 0n
-            ? ` (${coinString(Number(quote.feeSats) / 1e8)} ${COIN_FROM})`
+            ? ` (${coinString(Number(quote.feeSats) / 1e8)} ${sendCoin})`
             : ''
         }`
       : '';
@@ -431,7 +478,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   useEffect(() => {
     setConfirming(false);
-  }, [amountFrom, amountTo, addressTo, coinTo]);
+  }, [amountFrom, amountTo, addressTo, coinTo, payIn]);
 
   const confirmSwap = () => {
     if (!coinTo || !addressTo || !amountFrom || !amountTo || addressInvalid) {
@@ -440,6 +487,164 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     }
     setConfirming(true);
   };
+
+  const menuCoins = payIn
+    ? offeredCoins.filter(coin => PAY_IN_COINS.includes(coin))
+    : offeredCoins;
+  const hostPill = (
+    <View style={look.coinPill}>
+      <CoinMark ticker={HOST_COIN} />
+      <Text style={look.coinPillText}>{HOST_COIN}</Text>
+    </View>
+  );
+  const coinPill = (
+    <TouchableOpacity
+      testID="mbsx-coin-pill"
+      style={look.coinPill}
+      onPress={() => setCoinOpen(open => !open)}>
+      <CoinMark ticker={coinTo || undefined} />
+      <Text style={look.coinPillText}>{coinTo || 'Coin'}</Text>
+      <Image
+        source={require('../../../assets/images/forward.png')}
+        style={look.chevron}
+      />
+    </TouchableOpacity>
+  );
+  const coinMenu = coinOpen ? (
+    <View style={look.coinMenu}>
+      {menuCoins.map(coin => (
+        <TouchableOpacity
+          key={coin}
+          testID={`mbsx-coin-${coin}`}
+          accessibilityState={{selected: coinTo === coin}}
+          style={look.coinOption}
+          onPress={() => selectCoin(coin)}>
+          <CoinMark ticker={coin} />
+          <Text style={look.coinPillText}>{coin}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  ) : null;
+  const addressBlock = (
+    <>
+      {coinChosen ? null : (
+        <Text testID="mbsx-select-coin-note" style={styles.rowMessage}>
+          {payIn
+            ? 'Select the coin to pay first'
+            : 'Select the coin to receive first'}
+        </Text>
+      )}
+      <TextInput
+        key={coinChosen ? 'address-on' : 'address-off'}
+        testID="mbsx-address-to"
+        style={[look.receiver, coinChosen ? null : styles.inputDisabled]}
+        placeholder={payIn ? 'Refund address' : 'Receive address'}
+        placeholderTextColor="#9AA0AE"
+        value={addressTo}
+        onChangeText={setAddressTo}
+        onFocus={() => setAddressFocused(true)}
+        onBlur={() => setAddressFocused(false)}
+        editable={coinChosen}
+        autoCapitalize="none"
+      />
+      {addressInvalid ? (
+        <Text testID="mbsx-address-error" style={styles.error}>
+          Not a {coinTo} address
+        </Text>
+      ) : null}
+      <View style={look.receiverRow}>
+        <TouchableOpacity
+          testID="mbsx-addresses"
+          disabled={!coinChosen}
+          style={[
+            look.receiverPick,
+            look.receiverPickFlex,
+            coinChosen ? null : look.iconBtnOff,
+          ]}
+          onPress={() =>
+            noSaved
+              ? navigation.navigate('CoinAddresses', {coin: coinTo})
+              : setReceiversOpen(open => !open)
+          }>
+          <Text style={look.receiverPickText} numberOfLines={1}>
+            {selectedSaved?.label ||
+              (addressTo
+                ? shortAddress(addressTo)
+                : noSaved
+                  ? `Add a ${coinTo} address`
+                  : 'Select receiver')}
+          </Text>
+          <Image
+            source={require('../../../assets/images/forward.png')}
+            style={look.chevron}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="mbsx-paste"
+          disabled={!coinChosen}
+          style={[look.iconBtn, coinChosen ? null : look.iconBtnOff]}
+          onPress={async () => {
+            const text = await Clipboard.getString();
+            if (text.trim()) {
+              setAddressTo(text.trim());
+            }
+          }}>
+          <Image
+            source={require('../../../assets/icons/copy-icon.png')}
+            style={look.toolIcon}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="mbsx-scan"
+          disabled={!coinChosen}
+          style={[look.iconBtn, coinChosen ? null : look.iconBtnOff]}
+          onPress={() =>
+            navigation.getParent()?.navigate('Scan', {
+              returnRoute: 'MbsxStack',
+              returnScreen: 'CreateSwap',
+            })
+          }>
+          <Image
+            source={require('../../../assets/images/qrcode-btn.png')}
+            style={look.toolIcon}
+          />
+        </TouchableOpacity>
+      </View>
+      {receiversOpen ? (
+        <View testID="mbsx-saved-addresses" style={look.coinMenu}>
+          {savedAddresses.length === 0 ? (
+            <Text style={look.emptyReceivers}>No saved addresses</Text>
+          ) : (
+            savedAddresses.map(entry => (
+              <TouchableOpacity
+                key={entry.address}
+                testID={`mbsx-saved-${entry.address}`}
+                style={look.coinOption}
+                onPress={() => {
+                  setAddressTo(entry.address);
+                  setReceiversOpen(false);
+                }}>
+                {entry.label ? (
+                  <Text style={look.coinPillText}>{entry.label}</Text>
+                ) : null}
+                <Text style={look.receiverAddr} numberOfLines={1}>
+                  {shortAddress(entry.address)}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
+          <TouchableOpacity
+            testID="mbsx-manage-addresses"
+            style={look.manage}
+            onPress={() =>
+              navigation.navigate('CoinAddresses', {coin: coinTo})
+            }>
+            <Text style={look.saved}>Manage addresses</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+    </>
+  );
 
   return (
     <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
@@ -461,11 +666,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               autoCorrect={false}
               underlineColorAndroid="transparent"
             />
-            <View style={look.coinPill}>
-              <CoinMark ticker={COIN_FROM} />
-              <Text style={look.coinPillText}>{COIN_FROM}</Text>
-            </View>
+            {payIn ? coinPill : hostPill}
           </View>
+          {payIn ? coinMenu : null}
           <View style={look.metaRow}>
             <View style={look.fiatLine}>
               <TextInput
@@ -481,21 +684,24 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               />
               <Text style={look.fiat}>{currency}</Text>
             </View>
-            <TouchableOpacity
-              testID="mbsx-max"
-              disabled={!balances}
-              onPress={fillMax}>
-              <Text style={look.max}>{`Max.  ${spendableLabel} ${COIN_FROM}`}</Text>
-            </TouchableOpacity>
+            {payIn ? null : (
+              <TouchableOpacity
+                testID="mbsx-max"
+                disabled={!balances}
+                onPress={fillMax}>
+                <Text style={look.max}>{`Max.  ${spendableLabel} ${HOST_COIN}`}</Text>
+              </TouchableOpacity>
+            )}
           </View>
-          {balances && balances.unconfirmed > 0n ? (
+          {!payIn && balances && balances.unconfirmed > 0n ? (
             <Text style={look.unconfirmed}>
-              {`${coinString(Number(balances.unconfirmed) / 1e8)} ${COIN_FROM} unconfirmed`}
+              {`${coinString(Number(balances.unconfirmed) / 1e8)} ${HOST_COIN} unconfirmed`}
             </Text>
           ) : null}
           <Text style={look.fromLine}>
-            {`From  ${ltcAccount || 'LTC wallet'}`}
+            {payIn ? 'From another wallet' : `From  ${ltcAccount || 'LTC wallet'}`}
           </Text>
+          {payIn ? addressBlock : null}
           {spendNote !== '' ? (
             <Text testID="mbsx-spend-note" style={styles.error}>
               {spendNote}
@@ -505,12 +711,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
         <View style={look.flipWrap}>
           <View style={look.flipLine} />
-          <View style={look.flip}>
+          <TouchableOpacity testID="mbsx-flip" style={look.flip} onPress={flip}>
             <Image
               source={require('../../../assets/icons/switch-arrow.png')}
               style={look.flipIcon}
             />
-          </View>
+          </TouchableOpacity>
         </View>
 
         <Text style={look.section}>Receive</Text>
@@ -527,33 +733,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               autoCorrect={false}
               underlineColorAndroid="transparent"
             />
-            <TouchableOpacity
-              testID="mbsx-coin-pill"
-              style={look.coinPill}
-              onPress={() => setCoinOpen(open => !open)}>
-              <CoinMark ticker={coinTo || undefined} />
-              <Text style={look.coinPillText}>{coinTo || 'Coin'}</Text>
-              <Image
-                source={require('../../../assets/images/forward.png')}
-                style={look.chevron}
-              />
-            </TouchableOpacity>
+            {payIn ? hostPill : coinPill}
           </View>
-          {coinOpen ? (
-            <View style={look.coinMenu}>
-              {offeredCoins.map(coin => (
-                <TouchableOpacity
-                  key={coin}
-                  testID={`mbsx-coin-${coin}`}
-                  accessibilityState={{selected: coinTo === coin}}
-                  style={look.coinOption}
-                  onPress={() => selectCoin(coin)}>
-                  <CoinMark ticker={coin} />
-                  <Text style={look.coinPillText}>{coin}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : null}
+          {payIn ? null : coinMenu}
           <View style={[look.fiatLine, look.fiatLineBelow]}>
             <TextInput
               testID="mbsx-usd-to"
@@ -568,120 +750,13 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             />
             <Text style={look.fiat}>{currency}</Text>
           </View>
-          {coinChosen ? null : (
-            <Text testID="mbsx-select-coin-note" style={styles.rowMessage}>
-              Select the coin to receive first
+          {payIn ? (
+            <Text style={look.fromLine}>
+              {`To  ${ltcAccount || 'LTC wallet'}`}
             </Text>
+          ) : (
+            addressBlock
           )}
-          <TextInput
-            key={coinChosen ? 'address-on' : 'address-off'}
-            testID="mbsx-address-to"
-            style={[look.receiver, coinChosen ? null : styles.inputDisabled]}
-            placeholder="Receive address"
-            placeholderTextColor="#9AA0AE"
-            value={addressTo}
-            onChangeText={setAddressTo}
-            onFocus={() => setAddressFocused(true)}
-            onBlur={() => setAddressFocused(false)}
-            editable={coinChosen}
-            autoCapitalize="none"
-          />
-          {addressInvalid ? (
-            <Text testID="mbsx-address-error" style={styles.error}>
-              Not a {coinTo} address
-            </Text>
-          ) : null}
-          <View style={look.receiverRow}>
-            <TouchableOpacity
-              testID="mbsx-addresses"
-              disabled={!coinChosen}
-              style={[
-                look.receiverPick,
-                look.receiverPickFlex,
-                coinChosen ? null : look.iconBtnOff,
-              ]}
-              onPress={() =>
-                noSaved
-                  ? navigation.navigate('CoinAddresses', {coin: coinTo})
-                  : setReceiversOpen(open => !open)
-              }>
-              <Text style={look.receiverPickText} numberOfLines={1}>
-                {selectedSaved?.label ||
-                  (addressTo
-                    ? shortAddress(addressTo)
-                    : noSaved
-                      ? `Add a ${coinTo} address`
-                      : 'Select receiver')}
-              </Text>
-              <Image
-                source={require('../../../assets/images/forward.png')}
-                style={look.chevron}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              testID="mbsx-paste"
-              disabled={!coinChosen}
-              style={[look.iconBtn, coinChosen ? null : look.iconBtnOff]}
-              onPress={async () => {
-                const text = await Clipboard.getString();
-                if (text.trim()) {
-                  setAddressTo(text.trim());
-                }
-              }}>
-              <Image
-                source={require('../../../assets/icons/copy-icon.png')}
-                style={look.toolIcon}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              testID="mbsx-scan"
-              disabled={!coinChosen}
-              style={[look.iconBtn, coinChosen ? null : look.iconBtnOff]}
-              onPress={() =>
-                navigation.getParent()?.navigate('Scan', {
-                  returnRoute: 'MbsxStack',
-                  returnScreen: 'CreateSwap',
-                })
-              }>
-              <Image
-                source={require('../../../assets/images/qrcode-btn.png')}
-                style={look.toolIcon}
-              />
-            </TouchableOpacity>
-          </View>
-          {receiversOpen ? (
-            <View testID="mbsx-saved-addresses" style={look.coinMenu}>
-              {savedAddresses.length === 0 ? (
-                <Text style={look.emptyReceivers}>No saved addresses</Text>
-              ) : (
-                savedAddresses.map(entry => (
-                  <TouchableOpacity
-                    key={entry.address}
-                    testID={`mbsx-saved-${entry.address}`}
-                    style={look.coinOption}
-                    onPress={() => {
-                      setAddressTo(entry.address);
-                      setReceiversOpen(false);
-                    }}>
-                    {entry.label ? (
-                      <Text style={look.coinPillText}>{entry.label}</Text>
-                    ) : null}
-                    <Text style={look.receiverAddr} numberOfLines={1}>
-                      {shortAddress(entry.address)}
-                    </Text>
-                  </TouchableOpacity>
-                ))
-              )}
-              <TouchableOpacity
-                testID="mbsx-manage-addresses"
-                style={look.manage}
-                onPress={() =>
-                  navigation.navigate('CoinAddresses', {coin: coinTo})
-                }>
-                <Text style={look.saved}>Manage addresses</Text>
-              </TouchableOpacity>
-            </View>
-          ) : null}
         </View>
 
         {rateLine !== '' || feeLine !== '' ? (
@@ -776,13 +851,15 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           <View testID="mbsx-confirm" style={look.confirmCard}>
             <Text style={look.confirmTitle}>Confirm swap</Text>
             <Text style={look.confirmLine}>
-              {`Send ${amountFrom} ${COIN_FROM}`}
+              {payIn
+                ? `Pay ${amountFrom} ${sendCoin} from another wallet`
+                : `Send ${amountFrom} ${sendCoin}`}
             </Text>
             <Text style={look.confirmLine}>
-              {`Receive ${amountTo} ${coinTo}`}
+              {`Receive ${amountTo} ${receiveCoin}`}
             </Text>
             <Text style={look.confirmLine} numberOfLines={2}>
-              {`To ${addressTo}`}
+              {payIn ? `Refund to ${addressTo}` : `To ${addressTo}`}
             </Text>
             {rateLine ? (
               <Text style={look.confirmLine}>{rateLine}</Text>

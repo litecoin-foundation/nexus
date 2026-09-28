@@ -69,6 +69,30 @@ export const requestStateText = (state: string | undefined): string => {
   return text[state] ?? state;
 };
 
+export const depositStateText = (
+  state: string | undefined,
+  coin: string,
+): string => {
+  if (!state) {
+    return '';
+  }
+  const paid = coinName(coin);
+  const text: Record<string, string> = {
+    WAITING: `Waiting for your ${paid}`,
+    SEEN: 'Payment seen, waiting for a confirmation',
+    SHORT: 'Less than the amount due arrived',
+    RECEIVED: 'Payment received',
+    REQUESTED: 'Finding a swap',
+    NO_QUOTE: 'No acceptable offer',
+    SWEEPING: `Returning your ${paid}`,
+    SWEPT: `Your ${paid} was returned`,
+    SPENT: 'Swapping',
+    EXPIRED: 'Expired unpaid',
+    CANCELLED: 'Cancelled',
+  };
+  return text[state] ?? state;
+};
+
 export const useShowRawStates = () => {
   const [showRaw, setShowRaw] = useState(false);
   useFocusEffect(

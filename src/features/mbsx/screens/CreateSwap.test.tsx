@@ -12,6 +12,11 @@ jest.mock('react-native-nitro-lndltc', () => ({
   newAddress: jest.fn(),
 }));
 
+jest.mock('@react-native-clipboard/clipboard', () => ({
+  getString: jest.fn(),
+  setString: jest.fn(),
+}));
+
 jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (effect: () => void | (() => void)) => {
     const {useEffect} = require('react');
@@ -20,6 +25,8 @@ jest.mock('@react-navigation/native', () => ({
 }));
 
 jest.mock('../adapter', () => ({
+  PAY_IN_COINS: ['BTC', 'PART'],
+  createDeposit: jest.fn(),
   getCoinPrices: () => null,
   getInfo: jest.fn(() => null),
   getSwapFundingOutputs: jest.fn(() => ({error: 'not running'})),
@@ -51,6 +58,8 @@ const route = {key: 'CreateSwap', name: 'CreateSwap', params: undefined} as any;
 const renderScreen = () => {
   const store = configureStore({
     reducer: {
+      mbsx: (state = {connected: false}) => state,
+      settings: (state = {torEnabled: false}) => state,
       mbsxAddresses: mbsxAddressesReducer,
       wallets: (state = {wallets: [], selectedWalletId: ''}) => state,
     },
@@ -85,6 +94,28 @@ describe('CreateSwap', () => {
     expect(getByTestId('mbsx-scan')).toBeEnabled();
     expect(getByTestId('mbsx-addresses')).toBeEnabled();
     expect(queryByTestId('mbsx-select-coin-note')).toBeNull();
+  });
+
+  it('flipped, pays in a coin with no host wallet and asks where to refund it', () => {
+    const {getByTestId, queryByTestId} = renderScreen();
+
+    fireEvent.press(getByTestId('mbsx-flip'));
+
+    expect(queryByTestId('mbsx-max')).toBeNull();
+    expect(getByTestId('mbsx-address-to')).toBeDisabled();
+    expect(getByTestId('mbsx-address-to').props.placeholder).toBe(
+      'Refund address',
+    );
+    fireEvent.press(getByTestId('mbsx-coin-pill'));
+    expect(queryByTestId('mbsx-coin-FIRO')).toBeNull();
+    fireEvent.press(getByTestId('mbsx-coin-BTC'));
+    expect(getByTestId('mbsx-address-to')).toBeEnabled();
+
+    fireEvent.press(getByTestId('mbsx-flip'));
+    expect(getByTestId('mbsx-max')).toBeTruthy();
+    expect(getByTestId('mbsx-address-to').props.placeholder).toBe(
+      'Receive address',
+    );
   });
 
   it('notes server fees above the limit, which cross from native as bigint', () => {

@@ -28,6 +28,7 @@ import {getMbsxStyles} from '../theme';
 import {COIN_COLORS, COIN_ICONS, swapCards} from '../swapCards';
 import {setRunning} from '../mbsxSlice';
 import {
+  PAY_IN_COINS,
   addCaCert,
   applyConfig,
   coinsWithActiveSwaps,
@@ -37,6 +38,7 @@ import {
   listCaCerts,
   readConfig,
   removeCaCert,
+  rescanDeposits,
   writeConfig,
 } from '../adapter';
 import type {
@@ -100,6 +102,7 @@ const MbsxSettings: React.FC = () => {
   // screen, next to Save, it is off screen for whichever coin was pressed.
   const [errorCoin, setErrorCoin] = useState('');
   const [status, setStatus] = useState('');
+  const [rescanned, setRescanned] = useState('');
   const [saving, setSaving] = useState(false);
   const [savedJson, setSavedJson] = useState<string | null>(null);
   const [certs, setCerts] = useState<CaCert[]>([]);
@@ -116,6 +119,17 @@ const MbsxSettings: React.FC = () => {
   const fail = (message: string, coin = '') => {
     setError(message);
     setErrorCoin(coin);
+  };
+
+  const rescan = (coin: string) => {
+    setRescanned('');
+    try {
+      rescanDeposits(coin.toUpperCase());
+      fail('');
+      setRescanned(coin);
+    } catch (e) {
+      fail((e as Error).message, coin);
+    }
   };
 
   const loadCerts = useCallback(() => {
@@ -601,6 +615,24 @@ const MbsxSettings: React.FC = () => {
                     a swap confirms only once that check reaches it. Off, the
                     server's word is taken for the chain.
                   </Text>
+                </>
+              ) : null}
+              {enabled && PAY_IN_COINS.includes(ticker) ? (
+                <>
+                  <TouchableOpacity
+                    testID={`mbsx-rescan-deposits-${coin}`}
+                    style={styles.buttonSecondary}
+                    disabled={!isRunning()}
+                    onPress={() => rescan(coin)}>
+                    <Text style={styles.buttonSecondaryText}>
+                      Rescan pay-in addresses
+                    </Text>
+                  </TouchableOpacity>
+                  {rescanned === coin ? (
+                    <Text testID={`mbsx-rescan-started-${coin}`} style={look.note}>
+                      Looking for pay-ins made from this seed
+                    </Text>
+                  ) : null}
                 </>
               ) : null}
               {errorCoin === coin ? (

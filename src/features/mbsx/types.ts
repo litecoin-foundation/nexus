@@ -24,6 +24,23 @@ export type SwapRequestSummary = {
   min_amount_to: string;
 };
 
+export type Deposit = {
+  deposit_id: string;
+  coin: string;
+  address: string;
+  state: string;
+  amount_due: string;
+  received: string;
+  refund_address: string;
+  coin_to: string;
+  min_amount_to: string;
+  address_to: string;
+  created_at: bigint;
+  expire_at: bigint;
+  request_id?: string;
+  sweep_txid?: string;
+};
+
 // Integers cross from the module as int64 and arrive as bigint, so these are
 // not numbers and cannot be mixed with one.
 export type MbsxFee = {
@@ -123,6 +140,7 @@ export type MbsxDrawerParamList = {
   SwapDetail: {swapId: string};
   RequestList: undefined;
   RequestDetail: {requestId: string};
+  PayInDetail: {depositId: string};
   MbsxSettings: undefined;
   MbsxDebug: undefined;
 };
