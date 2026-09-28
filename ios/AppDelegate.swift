@@ -11,6 +11,7 @@ class AppDelegate: ExpoAppDelegate, UNUserNotificationCenterDelegate {
 
     var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
     var reactNativeFactory: RCTReactNativeFactory?
+    var reactNativeLaunchOptions: [UIApplication.LaunchOptionsKey: Any]?
 
     public override func application(
         _ application: UIApplication,
@@ -22,14 +23,8 @@ class AppDelegate: ExpoAppDelegate, UNUserNotificationCenterDelegate {
 
         reactNativeDelegate = delegate
         reactNativeFactory = factory
-
-        window = UIWindow(frame: UIScreen.main.bounds)
-
-        factory.startReactNative(
-            withModuleName: "nexus",
-            in: window,
-            launchOptions: launchOptions
-        )
+        reactNativeLaunchOptions = launchOptions
+        // SceneDelegate creates the window and starts React Native when UIKit connects a scene.
 
         // Request notification permission
         UNUserNotificationCenter.current().delegate = self
@@ -74,7 +69,7 @@ class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
         #endif
     }
 
-    override func customize(_ rootView: RCTRootView) {
+    override func customize(_ rootView: UIView) {
         super.customize(rootView)
         RNBootSplash.initWithStoryboard("BootSplash", rootView: rootView) // ⬅️ initialize the splash screen
     }

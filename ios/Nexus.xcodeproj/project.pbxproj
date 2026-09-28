@@ -11,6 +11,7 @@
 		1B15493B2CFFB7FC00CC5912 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B15493A2CFFB7FC00CC5912 /* LaunchScreen.storyboard */; };
 		1B41065C2FAC04A100DD231D /* nexus-liquid-icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 1B41065B2FAC04A100DD231D /* nexus-liquid-icon.icon */; };
 		1B50CFF22DF9D4FB00494F5C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B50CFF12DF9D4FB00494F5C /* AppDelegate.swift */; };
+		A97DE3B75C6E42E9891F1A01 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97DE3B75C6E42E9891F1A02 /* SceneDelegate.swift */; };
 		1B772B682CF8102B009C0FB4 /* liblnd.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B672CF8102B009C0FB4 /* liblnd.a */; };
 		1B772B6A2CF81E57009C0FB4 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B772B692CF81E4E009C0FB4 /* libresolv.tbd */; };
 		1BA2A1362DFFD06700B69460 /* APNSTokenModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BA2A1342DFFD06700B69460 /* APNSTokenModule.m */; };
@@ -58,6 +59,7 @@
 		1B41065B2FAC04A100DD231D /* nexus-liquid-icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "nexus-liquid-icon.icon"; sourceTree = "<group>"; };
 		1B44BEF52CA0F9CB0043B966 /* OpenSSL.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:67RAULRX93:Marcin Krzyzanowski"; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		1B50CFF12DF9D4FB00494F5C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A97DE3B75C6E42E9891F1A02 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		1B772B672CF8102B009C0FB4 /* liblnd.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblnd.a; sourceTree = "<group>"; };
 		1B772B692CF81E4E009C0FB4 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		1BA2A1342DFFD06700B69460 /* APNSTokenModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = APNSTokenModule.m; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 			children = (
 				D8A583672E0A1FA900FF887F /* BootSplash.storyboard */,
 				1B50CFF12DF9D4FB00494F5C /* AppDelegate.swift */,
+				A97DE3B75C6E42E9891F1A02 /* SceneDelegate.swift */,
 				1BA2A1342DFFD06700B69460 /* APNSTokenModule.m */,
 				1BA2A1352DFFD06700B69460 /* APNSTokenModule.swift */,
 				1B772B672CF8102B009C0FB4 /* liblnd.a */,
@@ -331,9 +334,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -394,9 +401,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nexus/Pods-nexus-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -437,6 +448,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1B50CFF22DF9D4FB00494F5C /* AppDelegate.swift in Sources */,
+				A97DE3B75C6E42E9891F1A01 /* SceneDelegate.swift in Sources */,
 				1BA2A1362DFFD06700B69460 /* APNSTokenModule.m in Sources */,
 				1BA2A1372DFFD06700B69460 /* APNSTokenModule.swift in Sources */,
 				BDFAED61002727AD53812A22 /* ExpoModulesProvider.swift in Sources */,
@@ -521,7 +533,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = nexus/nexus.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
 				ENABLE_BITCODE = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -538,7 +550,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				MARKETING_VERSION = 1.3.3;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -566,7 +578,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = nexus/nexus.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = ZV7987N2ZC;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = nexus/Info.plist;
@@ -582,7 +594,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				MARKETING_VERSION = 1.3.3;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -676,10 +688,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -754,10 +763,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
