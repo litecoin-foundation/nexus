@@ -19,14 +19,20 @@ import {
   FillType,
   Group,
   Image,
+  LinearGradient,
   Path,
   RoundedRect,
   Skia,
   useImage,
+  vec,
 } from '@shopify/react-native-skia';
 import type {SkImage, SkPath} from '@shopify/react-native-skia';
 
 import GlassTxCanvas from './GlassTxCanvas';
+import {
+  BORDER_GRADIENT_COLORS,
+  BORDER_GRADIENT_POSITIONS,
+} from './LiquidGlassBackdrop';
 import {GlassTxRowModels} from './GlassTxRows';
 import type {ShopRowModels} from './GiftCardShop/GlassShopRows';
 import type {ShopLogoImages} from './GiftCardShop/shopLogoImages';
@@ -47,7 +53,7 @@ import {ScreenSizeContext} from '../context/screenSize';
 
 // Screen-fixed tab bar. The glass itself is drawn by GlassTxCanvas, which sits
 // just below this overlay and owns every pixel the glass refracts; this
-// component is only the hairline, thumb, icons and gestures on top of it.
+// component is only the rim, thumb, icons and gestures on top of it.
 
 type IconKind = 'wallet' | 'shop' | 'card';
 
@@ -466,28 +472,33 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
 
   // Published into GlassTxCanvas rather than drawn in a <Canvas> of its own:
   // a second canvas costs a per-frame setJsiProperty hand-off on the UI thread
-  // whatever it draws, and this one is a hairline, a pill and three icons.
+  // whatever it draws, and this one is a rim, a pill and three icons.
   // Bar-local coords; GlassTxCanvas applies the capsule transform.
   const barChrome = useMemo(
     () => (
       <>
         <RoundedRect
-          x={0.5}
-          y={0.5}
-          width={barWidth - 1}
-          height={barHeight - 1}
-          r={(barHeight - 1) / 2}
+          x={0.25}
+          y={0.25}
+          width={barWidth - 0.5}
+          height={barHeight - 0.5}
+          r={(barHeight - 0.5) / 2}
           style="stroke"
-          strokeWidth={0.5}
-          color="rgba(238, 235, 235, 0.67)"
-        />
+          strokeWidth={0.5}>
+          <LinearGradient
+            start={vec(0, 0)}
+            end={vec(0, barHeight)}
+            colors={BORDER_GRADIENT_COLORS}
+            positions={BORDER_GRADIENT_POSITIONS}
+          />
+        </RoundedRect>
         <RoundedRect
           x={thumbX}
           y={thumbInsetY}
           width={thumbWidth}
           height={thumbHeight}
           r={thumbHeight / 2}
-          color="rgba(74, 75, 76, 0.39)"
+          color="rgba(0, 0, 0, 0.32)"
         />
         {sections.map((section, i) => (
           <TabIcon

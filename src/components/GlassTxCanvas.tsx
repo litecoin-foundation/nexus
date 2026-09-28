@@ -1,14 +1,15 @@
 import React, {useContext, useEffect, useMemo, useState} from 'react';
-import {StyleSheet} from 'react-native';
+import {PixelRatio, StyleSheet} from 'react-native';
 import {
   BackdropFilter,
   Canvas,
+  FilterMode,
   Group,
   Image,
   ImageFilter,
+  MipmapMode,
   Picture,
   Rect,
-  RoundedRect,
   Skia,
   TileMode,
 } from '@shopify/react-native-skia';
@@ -25,7 +26,7 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ProgressiveEdgeBlur from './ProgressiveEdgeBlur';
-import {useCardUnderlayValue} from './cardUnderlay';
+import {useCardUnderlayValue, useNativeCardBackdrop} from './cardUnderlay';
 import {getCapsuleShadowImage} from './capsuleShadowImage';
 import {
   getShopListTop,
@@ -35,7 +36,8 @@ import {
 } from './GiftCardShop/GlassShopRows';
 import {shopRowCallbacks, useShopRowContext} from './GiftCardShop/ShopSkiaRows';
 import type {ShopLogoImages} from './GiftCardShop/shopLogoImages';
-import {glassTabShader, makeGlassTabFilter} from './glassTabShader';
+import {glassTabBarShader, makeGlassTabBarFilter} from './glassTabBarShader';
+import {GLASS_BACKDROP_BLUR} from './nativeCardBackdropTexture';
 import {
   DRAG_STRIP_HEIGHT_RATIO,
   GlassTxRowModels,
@@ -62,16 +64,12 @@ import {getNewMainSheetPoints} from '../animations/useNewMainAnims';
 import {ScreenSizeContext} from '../context/screenSize';
 import {useSkiaList} from './SkiaList';
 
-// A Skia BackdropFilter can only sample pixels drawn in its own canvas, so
-// everything the tab bar's glass refracts has to live here: this one
-// screen-fixed canvas draws the transaction rows, frosts the bottom band, and
-// applies the glass. Drawing the rows in a second canvas inside the sheet
-// would double every row's paragraph shaping and rasterisation, so the sheet
-// has no canvas of its own — the rows are positioned from the sheet's
-// translation instead, on the UI thread, and clipped to the list viewport.
+// BackdropFilter samples this canvas's rows; native cards supply cached textures
+// as a separate shader input. Keeping rows and glass in one screen-fixed canvas
+// avoids shaping and rasterising a second copy inside the sheet. The rows
+// follow the sheet's translation on the UI thread, clipped to the list viewport.
 
-const GLASS_DARKEN = 0.63;
-const GLASS_BLUR_SIGMA = 1;
+const GLASS_DARKEN = 0.6;
 
 // drawn past the screen bottom so layout rounding can't leave a hairline gap
 const BOTTOM_OVERSCAN = 4;
@@ -158,7 +156,7 @@ interface Props {
   pressScale: SharedValue<number>;
   // 0 resting, 1 hidden; drives the capsule, shadow and frost
   hideProgress: SharedValue<number>;
-  // The bar's border, thumb and icons, in bar-local coords. Drawn here rather
+  // The bar's rim, thumb and icons, in bar-local coords. Drawn here rather
   // than in their own <Canvas>: every extra canvas costs a per-frame
   // setJsiProperty hand-off on the UI thread (~4ms), regardless of content.
   barChrome?: React.ReactNode;
@@ -194,6 +192,11 @@ const GlassTxCanvas: React.FC<Props> = props => {
   const insets = useSafeAreaInsets();
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
+  const pixelRatio = PixelRatio.get();
+  const glassPixelTransform = useMemo(
+    () => [{scale: 1 / pixelRatio}],
+    [pixelRatio],
+  );
 
   // The canvas is pinned just above the higher of its two list viewports —
   // the tx list at the unfolded sheet, or the shop list under its shorter
@@ -286,11 +289,11 @@ const GlassTxCanvas: React.FC<Props> = props => {
 
   // Sheet colour from the last row down; the recording stops at the final row.
   // Collapsed at zero rows so an empty list still shows its empty state.
-  const emptyTail = useMemo(() => Skia.XYWHRect(0, 0, 0, 0), []);
+  const emptyRect = useMemo(() => Skia.XYWHRect(0, 0, 0, 0), []);
   const rowsTail = useDerivedValue(() => {
     const top = skiaList.contentHeight.value;
     if (top <= 0) {
-      return emptyTail;
+      return emptyRect;
     }
     return Skia.XYWHRect(0, top, SCREEN_WIDTH, SCREEN_HEIGHT);
   });
@@ -402,10 +405,6 @@ const GlassTxCanvas: React.FC<Props> = props => {
   // territory and must never draw over it
   const shopMainClip = useDerivedValue(() => {
     const top = Math.max(0, shopRowsTop.value + shopTravel.value);
-    return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandTop - top));
-  });
-  const shopBandClip = useDerivedValue(() => {
-    const top = Math.max(0, shopRowsTop.value + shopTravel.value);
     return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandBottom - top));
   });
 
@@ -453,13 +452,12 @@ const GlassTxCanvas: React.FC<Props> = props => {
     },
   ]);
 
-  // Rows scrolled above that origin would paint over the pinned sync header
-  // and the title row, and the band below draws its own copy, so the plain
-  // pass covers neither.
+  // A continuous plain pass through the bottom band avoids a raster seam
+  // between separately clipped copies of the same rows.
   const listClip = useDerivedValue(() => {
     // fully faded behind the settled shop: collapse instead of alpha-0 draws
     if (walletShopFade.value <= 0) {
-      return Skia.XYWHRect(0, 0, 0, 0);
+      return emptyRect;
     }
     const rowsTop = Math.max(
       0,
@@ -474,7 +472,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
       0,
       rowsTop,
       SCREEN_WIDTH,
-      Math.max(0, bandTop - rowsTop),
+      Math.max(0, bandBottom - rowsTop),
     );
   });
 
@@ -483,9 +481,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
     [bandTop, SCREEN_WIDTH, bandBottom],
   );
   const walletBandClip = useDerivedValue(() =>
-    walletShopFade.value <= 0
-      ? Skia.XYWHRect(0, 0, 0, 0)
-      : Skia.XYWHRect(0, bandTop, SCREEN_WIDTH, bandBottom - bandTop),
+    walletShopFade.value <= 0 ? emptyRect : bandClip,
   );
 
   // only the capsule and its shadow slide, the band stays put
@@ -501,6 +497,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
 
   // open card's skia content, drawn here so the glass refracts it live
   const underlayEntry = useCardUnderlayValue();
+  const nativeBackdrop = useNativeCardBackdrop();
   const underlay = underlayEntry?.node ?? null;
   const underlayCoversCard = underlayEntry?.coversCard === true;
   const cardTopInSheet = SCREEN_HEIGHT * DRAG_STRIP_HEIGHT_RATIO;
@@ -508,14 +505,14 @@ const GlassTxCanvas: React.FC<Props> = props => {
   const underlayTransform = useDerivedValue(() => [
     {translateY: mainSheetsTranslationY.value + cardTopInSheet - canvasTop},
   ]);
-  // stops at the band, which draws its own copy below; overlapping the two
-  // would double-draw semi-transparent content (disabled buttons, fades)
+  // The plain underlay runs through the band once, including translucent
+  // content. Only the gradient-masked frost draws another copy.
   const underlayClip = useDerivedValue(() => {
     const top = Math.max(
       0,
       mainSheetsTranslationY.value + cardTopInSheet - canvasTop,
     );
-    return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandTop - top));
+    return Skia.XYWHRect(0, top, SCREEN_WIDTH, Math.max(0, bandBottom - top));
   });
   const underlayContent = underlay ? (
     <Group opacity={cardSwapOpacity}>
@@ -523,20 +520,22 @@ const GlassTxCanvas: React.FC<Props> = props => {
     </Group>
   ) : null;
 
-  // Builder and blur child are hoisted; only uniforms change per frame.
+  // Reuse the shader builder and canvas blur; the prepared card texture only
+  // needs its offset and opacity updated during transitions.
   const shaderBuilder = useMemo(
-    () => Skia.RuntimeShaderBuilder(glassTabShader),
+    () => Skia.RuntimeShaderBuilder(glassTabBarShader),
     [],
   );
   const glassBlurChild = useMemo(
     () =>
       Skia.ImageFilter.MakeBlur(
-        GLASS_BLUR_SIGMA,
-        GLASS_BLUR_SIGMA,
+        GLASS_BACKDROP_BLUR * pixelRatio,
+        GLASS_BACKDROP_BLUR * pixelRatio,
         TileMode.Clamp,
       ),
-    [],
+    [pixelRatio],
   );
+  const emptyGlassFilter = useMemo(() => Skia.ImageFilter.MakeEmpty(), []);
   const glassFilter = useDerivedValue(() => {
     const scale =
       pressScale.value *
@@ -551,13 +550,33 @@ const GlassTxCanvas: React.FC<Props> = props => {
     const x = (SCREEN_WIDTH - width) / 2;
     const y =
       barTop + (barHeight - height) / 2 + hideProgress.value * hideDistance;
+    if (y - 1 / pixelRatio >= bandBottom) {
+      // The bar stays mounted while a card is open. Skip its entire filter
+      // once offscreen, including when the prepared backdrop is published.
+      return emptyGlassFilter;
+    }
     const capsule = [x, y, width, height];
-    return makeGlassTabFilter(
+    const snapshot = underlayCoversCard ? null : nativeBackdrop.value;
+    const opacity = snapshot
+      ? Math.min(1, Math.max(0, cardSwapOpacity.value))
+      : 0;
+    const nativeImage =
+      snapshot && opacity > 0
+        ? Skia.ImageFilter.MakeOffset(
+            0,
+            (mainSheetsTranslationY.value + cardTopInSheet - canvasTop) *
+              pixelRatio,
+            snapshot.filter,
+          )
+        : emptyGlassFilter;
+    return makeGlassTabBarFilter(
       shaderBuilder,
       glassBlurChild,
-      [capsule, capsule, capsule],
-      height / 2,
+      capsule,
+      pixelRatio,
       GLASS_DARKEN,
+      nativeImage,
+      opacity,
     );
   });
 
@@ -584,7 +603,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
   });
 
   // the split passes and panel, in content coordinates; drawn in both the
-  // main pass and the band copy inside their own scroll groups
+  // main pass and the frost source inside their own scroll groups
   const shopSplitLayers = shopNode ? (
     <>
       <Group clip={shopClipAbove}>{shopNode}</Group>
@@ -604,59 +623,17 @@ const GlassTxCanvas: React.FC<Props> = props => {
   // rows bring theirs inside the fade so it never pops; partial underlays
   // leave the band clear or they'd cover the native card sliding through it
   const fullCardUnderlay = underlay !== null && underlayCoversCard;
-  const bandSource = (
+  const sceneContent = (
     <>
       {fullCardUnderlay ? (
-        <Rect
-          x={0}
-          y={bandTop}
-          width={SCREEN_WIDTH}
-          height={bandBottom - bandTop}
-          color={SHEET_BACKGROUND}
-        />
+        <Rect rect={bandClip} color={SHEET_BACKGROUND} />
       ) : null}
-      {rowsMounted && rowsNode ? (
-        <Group clip={walletBandClip} opacity={walletRowsOpacity}>
-          {!fullCardUnderlay ? (
-            <Rect
-              x={0}
-              y={bandTop}
-              width={SCREEN_WIDTH}
-              height={bandBottom - bandTop}
-              color={SHEET_BACKGROUND}
-            />
-          ) : null}
-          <Group transform={contentTransform}>
-            {rowsNode}
-            {rowsTailNode}
-          </Group>
-        </Group>
-      ) : null}
-      {shopNode ? (
-        <Group opacity={shopLayerOpacity}>
-          <Rect
-            x={0}
-            y={bandTop}
-            width={SCREEN_WIDTH}
-            height={bandBottom - bandTop}
-            color={SHEET_BACKGROUND}
-          />
-          <Group clip={shopBandClip}>
-            <Group transform={shopScrollTransform}>{shopSplitLayers}</Group>
-          </Group>
-        </Group>
-      ) : null}
-      {underlayContent}
-    </>
-  );
-
-  const styles = getStyles(SCREEN_WIDTH, canvasTop, bandBottom);
-
-  return (
-    <Canvas style={styles.canvas} pointerEvents="none">
       {rowsNode ? (
-        <Group clip={listClip}>
-          <Group opacity={walletRowsOpacity}>
+        <Group opacity={walletRowsOpacity}>
+          {!fullCardUnderlay ? (
+            <Rect rect={walletBandClip} color={SHEET_BACKGROUND} />
+          ) : null}
+          <Group clip={listClip}>
             <Group transform={contentTransform}>
               {rowsNode}
               {rowsTailNode}
@@ -671,6 +648,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
       ) : null}
       {shopNode ? (
         <Group opacity={shopLayerOpacity}>
+          <Rect rect={bandClip} color={SHEET_BACKGROUND} />
           <Group clip={shopMainClip}>
             <Group transform={shopScrollTransform}>
               {shopSplitLayers}
@@ -684,24 +662,15 @@ const GlassTxCanvas: React.FC<Props> = props => {
       {underlayContent ? (
         <Group clip={underlayClip}>{underlayContent}</Group>
       ) : null}
-      {!fullCardUnderlay ? (
-        // flat stand-in behind the moving capsule, under the band content,
-        // so the rim never samples transparency; rides offscreen with the
-        // hidden bar instead of unmounting — a fresh node can draw one
-        // frame before its animated transform binds
-        <Group transform={hideTransform}>
-          <RoundedRect
-            x={(SCREEN_WIDTH - barWidth) / 2 - 3}
-            y={barTop - 3}
-            width={barWidth + 6}
-            height={barHeight + 6}
-            r={(barHeight + 6) / 2}
-            color={SHEET_BACKGROUND}
-          />
-        </Group>
-      ) : null}
+    </>
+  );
+
+  const styles = getStyles(SCREEN_WIDTH, canvasTop, bandBottom);
+
+  return (
+    <Canvas style={styles.canvas} pointerEvents="none">
+      {sceneContent}
       <Group clip={bandClip}>
-        {bandSource}
         {rowsMounted || showShop || underlayContent ? (
           // frost is skipped over the flat band, blurred flat is flat
           <Group opacity={frostOpacity}>
@@ -711,29 +680,33 @@ const GlassTxCanvas: React.FC<Props> = props => {
               bottom={bandBottom}
               blurHeight={bandHeight * 0.65}
               maxBlur={BAND_BLUR_SIGMA}>
-              {bandSource}
+              {sceneContent}
             </ProgressiveEdgeBlur>
           </Group>
         ) : null}
-        <Group transform={hideTransform}>
-          {barShadow ? (
-            <Image
-              image={barShadow.image}
-              x={(SCREEN_WIDTH - barWidth) / 2 - barShadow.pad}
-              y={barTop + 2 - barShadow.pad}
-              width={barWidth + barShadow.pad * 2}
-              height={barHeight + barShadow.pad * 2}
-              fit="fill"
-            />
-          ) : null}
-        </Group>
       </Group>
-      {/* Unclipped on purpose: the backdrop layer takes the current clip, and
-          Skia measures a filter's coordinates from the layer's origin, so a
-          clip here would shift the capsule. Outside the capsule the shader
-          returns the sampled pixel untouched, so covering the whole canvas
-          changes nothing visually. */}
-      <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
+      {/* Let the shadow fade above the frost band instead of cutting it off
+          at a screen-wide horizontal boundary. */}
+      <Group transform={hideTransform}>
+        {barShadow ? (
+          <Image
+            image={barShadow.image}
+            x={(SCREEN_WIDTH - barWidth) / 2 - barShadow.pad}
+            y={barTop + 2 - barShadow.pad}
+            width={barWidth + barShadow.pad * 2}
+            height={barHeight + barShadow.pad * 2}
+            fit="fill"
+            sampling={{filter: FilterMode.Linear, mipmap: MipmapMode.None}}
+          />
+        ) : null}
+      </Group>
+      {/* Runtime image filters otherwise rasterize at one pixel per point.
+          Cancel the canvas density transform for this backdrop layer; its
+          uniforms, blur and crop use physical pixels. Keep the canvas origin
+          so the sampled backdrop and capsule stay aligned while animating. */}
+      <Group transform={glassPixelTransform}>
+        <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
+      </Group>
       {barChrome ? <Group transform={barTransform}>{barChrome}</Group> : null}
     </Canvas>
   );

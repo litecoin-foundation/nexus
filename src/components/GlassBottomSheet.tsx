@@ -19,6 +19,7 @@ import {
   makeSheetSnapHandlers,
 } from '../animations/useNewMainAnims';
 import {SHEET_BACKGROUND} from './GlassTxRows';
+import NativeCardBackdrop from './NativeCardBackdrop';
 
 export const SHEET_FOLD_ANIM_MS = 200;
 export const SHEET_TOP_RADIUS_RATIO = 0.03;
@@ -136,19 +137,19 @@ const GlassBottomSheet: React.FC<Props> = props => {
     };
   });
 
-  const [dalayedActiveTab, setDalayedActiveTab] = useState(activeTab);
+  const [delayedActiveTab, setDelayedActiveTab] = useState(activeTab);
 
   useEffect(() => {
-    if (dalayedActiveTab === activeTab) {
+    if (delayedActiveTab === activeTab) {
       cardOpacity.value = withTiming(1, {duration: 300});
       return;
     }
     cardOpacity.value = withTiming(0, {duration: 150});
     const timeout = setTimeout(() => {
-      setDalayedActiveTab(activeTab);
+      setDelayedActiveTab(activeTab);
     }, CARD_SWAP_DELAY);
     return () => clearTimeout(timeout);
-  }, [activeTab, dalayedActiveTab, cardOpacity]);
+  }, [activeTab, delayedActiveTab, cardOpacity]);
 
   return (
     <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
@@ -159,15 +160,22 @@ const GlassBottomSheet: React.FC<Props> = props => {
           </View>
         </GestureDetector>
         <Animated.View style={animatedCardOpacityStyle}>
-          <RenderCard
-            txView={txViewComponent}
-            buyView={buyViewComponent}
-            sellView={sellViewComponent}
-            sendView={sendViewComponent}
-            receiveView={receiveViewComponent}
-            activeTab={dalayedActiveTab}
-            panGesture={panGesture}
-          />
+          <NativeCardBackdrop
+            activeTab={delayedActiveTab}
+            requestedTab={activeTab}
+            sheetY={mainSheetsTranslationY}
+            cardOpacity={cardOpacity}
+            expandedY={UNFOLD_SHEET_POINT}>
+            <RenderCard
+              txView={txViewComponent}
+              buyView={buyViewComponent}
+              sellView={sellViewComponent}
+              sendView={sendViewComponent}
+              receiveView={receiveViewComponent}
+              activeTab={delayedActiveTab}
+              panGesture={panGesture}
+            />
+          </NativeCardBackdrop>
         </Animated.View>
       </View>
     </Animated.View>
