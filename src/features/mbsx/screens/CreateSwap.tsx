@@ -210,9 +210,11 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   // The cap is enforced at offer receipt; refusing here saves leasing coins
   const [feeNote, setFeeNote] = useState('');
-  const [quote, setQuote] = useState<{feeBps: number; feeSats: bigint} | null>(
-    null,
-  );
+  const [quote, setQuote] = useState<{
+    feeBps: number;
+    feeSats: bigint;
+    unit: bigint;
+  } | null>(null);
   useEffect(() => {
     setFeeNote('');
     setSpendNote('');
@@ -228,7 +230,13 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     ) {
       const totalFee = Number(funding.total_fee_bps);
       const maxFee = Number(funding.max_fee_bps);
-      setQuote({feeBps: totalFee, feeSats: swapFeeSats(funding.outputs)});
+      let unit: bigint;
+      try {
+        unit = parseAmount(sendCoin, '1');
+      } catch {
+        unit = 0n;
+      }
+      setQuote({feeBps: totalFee, feeSats: swapFeeSats(funding.outputs), unit});
       if (totalFee > maxFee) {
         setFeeNote(
           `The swap server charges ${totalFee / 100}%, above your limit of ${maxFee / 100}%`,
@@ -347,7 +355,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       } catch {
         throw new Error('Invalid amount to send');
       }
-      if (amountFromSats < DUST_LIMIT) {
+      if (!payIn && amountFromSats < DUST_LIMIT) {
         throw new Error('Amount to send is too small to spend');
       }
       // Parsed only to reject it here: the module is sent the string. Leasing
@@ -469,8 +477,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const feeLine =
     quote && quote.feeBps > 0
       ? `Swap fee ${quote.feeBps / 100}%${
-          quote.feeSats > 0n
-            ? ` (${coinString(Number(quote.feeSats) / 1e8)} ${sendCoin})`
+          quote.feeSats > 0n && quote.unit > 0n
+            ? ` (${coinString(Number(quote.feeSats) / Number(quote.unit))} ${sendCoin})`
             : ''
         }`
       : '';

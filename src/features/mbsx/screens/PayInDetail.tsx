@@ -60,9 +60,16 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const showRaw = useShowRawStates();
   const {depositId} = route.params;
-  const [deposit, setDeposit] = useState<Deposit | null>(null);
+  const [loaded, setLoaded] = useState<Deposit | null>(null);
   const [floor, setFloor] = useState('');
   const [error, setError] = useState('');
+  // Stays mounted, so the last pay-in shown is still loaded when another opens
+  const deposit = loaded?.deposit_id === depositId ? loaded : null;
+
+  useEffect(() => {
+    setFloor('');
+    setError('');
+  }, [depositId]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -81,7 +88,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
       navigation.navigate('RequestList');
       return;
     }
-    setDeposit(found);
+    setLoaded(found);
   }, [depositId, navigation]);
 
   // The deposit watch moves a pay-in on its own polls, which send no message.
@@ -125,8 +132,10 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         </Text>
         {PAYABLE.has(deposit.state) ? (
           <View style={look.block}>
-            <Text style={styles.label}>Pay exactly</Text>
-            <Text testID="mbsx-payin-amount" style={styles.value}>
+            <Text style={styles.value}>Pay exactly</Text>
+            <Text
+              testID="mbsx-payin-amount"
+              style={[styles.label, look.amountDue]}>
               {`${deposit.amount_due} ${deposit.coin}`}
             </Text>
             <View style={look.qr}>
@@ -135,7 +144,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             <TouchableOpacity
               testID="mbsx-payin-address"
               onPress={() => Clipboard.setString(deposit.address)}>
-              <Text style={styles.valueLink} selectable>
+              <Text style={[styles.valueLink, look.address]} selectable>
                 {deposit.address}
               </Text>
             </TouchableOpacity>
@@ -225,6 +234,13 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
 };
 
 const look = StyleSheet.create({
+  amountDue: {
+    fontSize: 26,
+    marginTop: 4,
+  },
+  address: {
+    fontSize: 16,
+  },
   block: {
     marginBottom: 16,
   },

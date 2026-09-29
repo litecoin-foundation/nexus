@@ -676,7 +676,7 @@ export const removeRequest = async (requestId: string) => {
   }
 };
 
-export const PAY_IN_COINS = ['BTC', 'PART'];
+export const PAY_IN_COINS = ['BTC', 'PART', 'FIRO'];
 
 export const ENDED_DEPOSIT_STATES = new Set([
   'SPENT',
