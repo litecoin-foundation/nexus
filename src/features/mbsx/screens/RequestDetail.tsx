@@ -35,7 +35,7 @@ import {
   acceptOffer,
   getRequestInfo,
   getSwapInfo,
-  isTerminalState,
+  isUnderwayState,
   onMessage,
   removeRequest,
 } from '../adapter';
@@ -48,17 +48,6 @@ import type {
 } from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'RequestDetail'>;
-
-// Everything a swap can be before it is signed. Anything else and it is under
-// way, so the request page is no longer the thing to look at.
-const PRE_ACCEPT = new Set([
-  'SENT',
-  'RECEIVING',
-  'RECEIVED',
-  'RECEIVING_ACC',
-  'EXPIRED',
-  'REJECTED',
-]);
 
 const explainReliability = () =>
   Alert.alert(
@@ -139,9 +128,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     return () => clearInterval(timer);
   }, [swapIdKey]);
 
-  const underway = swaps.find(
-    swap => !PRE_ACCEPT.has(swap.state) && !isTerminalState(swap.state),
-  );
+  const underway = swaps.find(swap => isUnderwayState(swap.state));
   const navigatedFor = useRef<string | null>(null);
   useEffect(() => {
     if (swaps.length === 0) {

@@ -1,4 +1,10 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -22,6 +28,9 @@ import {depositStateText, useShowRawStates} from '../stateText';
 import {
   cancelDeposit,
   getCoinPrices,
+  getRequestInfo,
+  getSwapInfo,
+  isUnderwayState,
   listDeposits,
   requoteDeposit,
 } from '../adapter';
@@ -55,6 +64,23 @@ const suggestedFloor = (deposit: Deposit) => {
   return coinString(((Number(deposit.received) * from) / to) * (1 - SLIPPAGE));
 };
 
+const underwaySwapId = (requestId?: string): string | null => {
+  if (!requestId) {
+    return '';
+  }
+  const request = getRequestInfo(requestId);
+  if (!request || request.error) {
+    return null;
+  }
+  for (const swapId of request.swapids ?? []) {
+    const swap = getSwapInfo(swapId);
+    if (swap && !swap.error && isUnderwayState(swap.state)) {
+      return swap.id;
+    }
+  }
+  return '';
+};
+
 const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
@@ -65,10 +91,12 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const [error, setError] = useState('');
   // Stays mounted, so the last pay-in shown is still loaded when another opens
   const deposit = loaded?.deposit_id === depositId ? loaded : null;
+  const openedSwapId = useRef<string | null>(null);
 
   useEffect(() => {
     setFloor('');
     setError('');
+    openedSwapId.current = null;
   }, [depositId]);
 
   useEffect(() => {
@@ -89,6 +117,18 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
       return;
     }
     setLoaded(found);
+
+    const swapId = underwaySwapId(found.request_id);
+    if (swapId === null) {
+      return;
+    }
+    // A swap already under way when the page opened is history.
+    if (openedSwapId.current === null) {
+      openedSwapId.current = swapId;
+    } else if (swapId !== '' && swapId !== openedSwapId.current) {
+      openedSwapId.current = swapId;
+      navigation.navigate('SwapDetail', {swapId});
+    }
   }, [depositId, navigation]);
 
   // The deposit watch moves a pay-in on its own polls, which send no message.

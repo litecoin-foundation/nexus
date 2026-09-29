@@ -224,6 +224,18 @@ export const reconcileLeases = async () => {
 
 export const isTerminalState = (state: string) => TERMINAL_STATES.has(state);
 
+const PRE_ACCEPT = new Set([
+  'SENT',
+  'RECEIVING',
+  'RECEIVED',
+  'RECEIVING_ACC',
+  'EXPIRED',
+  'REJECTED',
+]);
+
+export const isUnderwayState = (state: string) =>
+  !PRE_ACCEPT.has(state) && !TERMINAL_STATES.has(state);
+
 export const isEndedRequestState = (state: string) =>
   ENDED_REQUEST_STATES.has(state);
 
