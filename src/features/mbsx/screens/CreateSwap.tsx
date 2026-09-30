@@ -114,6 +114,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [torApplied, setTorApplied] = useState<boolean | null>(null);
   const [coinTo, setCoinTo] = useState(lastCoin);
   const [payIn, setPayIn] = useState(false);
+  const [buyCoin, setBuyCoin] = useState(HOST_COIN);
+  const [buyOpen, setBuyOpen] = useState(false);
+  const [buyAddress, setBuyAddress] = useState('');
   const [addressTo, setAddressTo] = useState('');
   const [requestId, setRequestId] = useState('');
   const [error, setError] = useState('');
@@ -176,16 +179,19 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     ? COINS.filter(coin => loadedCoins.includes(coin))
     : COINS;
 
+  const sendCoin = payIn ? coinTo : HOST_COIN;
+  const receiveCoin = payIn ? buyCoin : coinTo;
+  const buysToHost = !payIn || buyCoin === HOST_COIN;
+  const buyCoins = [HOST_COIN, ...offeredCoins].filter(coin => coin !== coinTo);
+
   // The handshake says which coins the server bridges; no request before it
-  const unbridgedCoin = [HOST_COIN, coinTo].find(
+  const unbridgedCoin = [sendCoin, receiveCoin].find(
     coin => coin !== '' && info?.coins[coin]?.bridge_supported !== true,
   );
   const bridgeNote = unbridgedCoin
     ? `The swap server has no bridge for ${unbridgedCoin}`
     : '';
   const torPending = torApplied !== null && torEnabled !== torApplied;
-  const sendCoin = payIn ? coinTo : HOST_COIN;
-  const receiveCoin = payIn ? HOST_COIN : coinTo;
 
   const {
     amounts,
@@ -205,6 +211,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const coinChosen = coinTo !== '';
   const addressInvalid =
     addressTo !== '' && coinChosen && !validateAddress(coinTo, addressTo);
+  const buyAddressInvalid =
+    !buysToHost && buyAddress !== '' && !validateAddress(buyCoin, buyAddress);
   const amountFrom = amounts.fromCoin;
   const amountTo = amounts.toCoin;
 
@@ -305,6 +313,16 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setCoinTo(coin);
     setCoinOpen(false);
     dispatch(setLastCoin(coin));
+    if (payIn && coin === buyCoin) {
+      setBuyCoin(HOST_COIN);
+      setBuyAddress('');
+    }
+  };
+
+  const selectBuyCoin = (coin: string) => {
+    setBuyCoin(coin);
+    setBuyOpen(false);
+    setBuyAddress('');
   };
 
   const flip = () => {
@@ -312,6 +330,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setPayIn(next);
     setCoinOpen(false);
     setReceiversOpen(false);
+    setBuyCoin(HOST_COIN);
+    setBuyOpen(false);
+    setBuyAddress('');
     setError('');
     resetAmounts();
     if (next && !PAY_IN_COINS.includes(coinTo)) {
@@ -366,24 +387,41 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         throw new Error('Invalid amount to receive');
       }
       if (payIn) {
-        const receive = await newAddress({
-          type: AddressType.UNUSED_WITNESS_PUBKEY_HASH,
-          account: ltcAccount,
-        });
-        if (!receive?.address) {
-          throw new Error('Could not get a receive address');
+        if (!buysToHost && !offeredCoins.includes(buyCoin)) {
+          throw new Error(`${buyCoin} is disabled`);
+        }
+        if (!buysToHost && !buyAddress) {
+          throw new Error('Missing receive address');
+        }
+        if (!buysToHost && !validateAddress(buyCoin, buyAddress)) {
+          throw new Error(`Not a ${buyCoin} address`);
+        }
+        let receiveAddress = buyAddress;
+        if (buysToHost) {
+          const receive = await newAddress({
+            type: AddressType.UNUSED_WITNESS_PUBKEY_HASH,
+            account: ltcAccount,
+          });
+          if (!receive?.address) {
+            throw new Error('Could not get a receive address');
+          }
+          receiveAddress = receive.address;
         }
         const deposit = createDeposit({
           coin_from: coinTo,
           amount_from: amountFrom,
-          coin_to: HOST_COIN,
+          coin_to: buyCoin,
           min_amount_to: amountTo,
           refund_address: addressTo,
-          address_to: receive.address,
+          address_to: receiveAddress,
         });
         dispatch(rememberAddress({coin: coinTo, address: addressTo}));
+        if (!buysToHost) {
+          dispatch(rememberAddress({coin: buyCoin, address: buyAddress}));
+        }
         resetAmounts();
         setAddressTo('');
+        setBuyAddress('');
         setRateAcknowledged(false);
         navigation.navigate('PayInDetail', {depositId: deposit.deposit_id});
         return;
@@ -486,10 +524,17 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   useEffect(() => {
     setConfirming(false);
-  }, [amountFrom, amountTo, addressTo, coinTo, payIn]);
+  }, [amountFrom, amountTo, addressTo, coinTo, payIn, buyCoin, buyAddress]);
 
   const confirmSwap = () => {
-    if (!coinTo || !addressTo || !amountFrom || !amountTo || addressInvalid) {
+    if (
+      !coinTo ||
+      !addressTo ||
+      !amountFrom ||
+      !amountTo ||
+      addressInvalid ||
+      (!buysToHost && (!buyAddress || buyAddressInvalid))
+    ) {
       void submit();
       return;
     }
@@ -518,6 +563,34 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       />
     </TouchableOpacity>
   );
+  const buyPill = (
+    <TouchableOpacity
+      testID="mbsx-buy-pill"
+      style={look.coinPill}
+      onPress={() => setBuyOpen(open => !open)}>
+      <CoinMark ticker={buyCoin} />
+      <Text style={look.coinPillText}>{buyCoin}</Text>
+      <Image
+        source={require('../../../assets/images/forward.png')}
+        style={look.chevron}
+      />
+    </TouchableOpacity>
+  );
+  const buyMenu = buyOpen ? (
+    <View style={look.coinMenu}>
+      {buyCoins.map(coin => (
+        <TouchableOpacity
+          key={coin}
+          testID={`mbsx-buy-${coin}`}
+          accessibilityState={{selected: buyCoin === coin}}
+          style={look.coinOption}
+          onPress={() => selectBuyCoin(coin)}>
+          <CoinMark ticker={coin} />
+          <Text style={look.coinPillText}>{coin}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  ) : null;
   const coinMenu = coinOpen ? (
     <View style={look.coinMenu}>
       {menuCoins.map(coin => (
@@ -741,9 +814,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               autoCorrect={false}
               underlineColorAndroid="transparent"
             />
-            {payIn ? hostPill : coinPill}
+            {payIn ? buyPill : coinPill}
           </View>
-          {payIn ? null : coinMenu}
+          {payIn ? buyMenu : coinMenu}
           <View style={[look.fiatLine, look.fiatLineBelow]}>
             <TextInput
               testID="mbsx-usd-to"
@@ -758,12 +831,29 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             />
             <Text style={look.fiat}>{currency}</Text>
           </View>
-          {payIn ? (
+          {!payIn ? (
+            addressBlock
+          ) : buysToHost ? (
             <Text style={look.fromLine}>
               {`To  ${ltcAccount || 'LTC wallet'}`}
             </Text>
           ) : (
-            addressBlock
+            <>
+              <TextInput
+                testID="mbsx-buy-address"
+                style={look.receiver}
+                placeholder="Receive address"
+                placeholderTextColor="#9AA0AE"
+                value={buyAddress}
+                onChangeText={setBuyAddress}
+                autoCapitalize="none"
+              />
+              {buyAddressInvalid ? (
+                <Text testID="mbsx-buy-address-error" style={styles.error}>
+                  Not a {buyCoin} address
+                </Text>
+              ) : null}
+            </>
           )}
         </View>
 
@@ -869,6 +959,11 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             <Text style={look.confirmLine} numberOfLines={2}>
               {payIn ? `Refund to ${addressTo}` : `To ${addressTo}`}
             </Text>
+            {buysToHost ? null : (
+              <Text style={look.confirmLine} numberOfLines={2}>
+                {`To ${buyAddress}`}
+              </Text>
+            )}
             {rateLine ? (
               <Text style={look.confirmLine}>{rateLine}</Text>
             ) : null}
@@ -904,6 +999,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               !connected ||
               !coinChosen ||
               addressInvalid ||
+              buyAddressInvalid ||
               blockNote !== '' ||
               (offReference && !rateAcknowledged)
                 ? styles.buttonDisabled
@@ -915,6 +1011,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               !connected ||
               !coinChosen ||
               addressInvalid ||
+              buyAddressInvalid ||
               blockNote !== '' ||
               (offReference && !rateAcknowledged)
             }>

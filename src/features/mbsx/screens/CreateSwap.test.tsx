@@ -1,5 +1,6 @@
 import React from 'react';
-import {fireEvent, render} from '@testing-library/react-native';
+import {Keyboard} from 'react-native';
+import {fireEvent, render, waitFor} from '@testing-library/react-native';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
 
@@ -10,6 +11,10 @@ import CreateSwap from './CreateSwap';
 jest.mock('react-native-nitro-lndltc', () => ({
   AddressType: {UNUSED_WITNESS_PUBKEY_HASH: 0},
   newAddress: jest.fn(),
+}));
+
+jest.mock('../../../utils/haptic', () => ({
+  triggerLightFeedback: jest.fn(),
 }));
 
 jest.mock('@react-native-clipboard/clipboard', () => ({
@@ -30,16 +35,19 @@ jest.mock('../adapter', () => ({
   getCoinPrices: () => null,
   getInfo: jest.fn(() => null),
   getSwapFundingOutputs: jest.fn(() => ({error: 'not running'})),
-  isRunning: () => false,
+  isRunning: jest.fn(() => false),
   parseAmount: () => 0n,
+  readConfig: () => Promise.resolve(null),
   recordLeases: jest.fn(),
   releasePrevouts: jest.fn(),
   requestSwap: jest.fn(),
   selectAndLeasePrevouts: jest.fn(),
   serialisePrevout: jest.fn(),
   swapBalances: () => Promise.resolve(null),
-  validateAddress: () => true,
+  validateAddress: jest.fn(() => true),
 }));
+
+jest.spyOn(Keyboard, 'addListener').mockReturnValue({remove: jest.fn()} as any);
 
 const screenSize = {
   width: 375,
@@ -55,10 +63,10 @@ const navigation = {
 
 const route = {key: 'CreateSwap', name: 'CreateSwap', params: undefined} as any;
 
-const renderScreen = () => {
+const renderScreen = (connected = false) => {
   const store = configureStore({
     reducer: {
-      mbsx: (state = {connected: false}) => state,
+      mbsx: (state = {connected}) => state,
       settings: (state = {torEnabled: false}) => state,
       mbsxAddresses: mbsxAddressesReducer,
       wallets: (state = {wallets: [], selectedWalletId: ''}) => state,
@@ -138,5 +146,90 @@ describe('CreateSwap', () => {
     expect(getByTestId('mbsx-bridge-note')).toHaveTextContent(
       'The swap server charges 5%, above your limit of 2%',
     );
+  });
+
+  it('pays in for any other coin, and asks where one with no host wallet goes', async () => {
+    const adapter = jest.requireMock('../adapter');
+    const bridged = {bridge_supported: true};
+    adapter.getInfo.mockReturnValue({
+      connected: true,
+      coins: {LTC: bridged, BTC: bridged, PART: bridged, FIRO: bridged},
+    });
+    adapter.isRunning.mockReturnValue(true);
+    adapter.createDeposit.mockReturnValueOnce({deposit_id: 'd1'});
+    adapter.validateAddress.mockImplementation(
+      (coin: string, address: string) => address !== `not ${coin}`,
+    );
+    try {
+      const {getByTestId, queryByTestId} = renderScreen(true);
+
+      fireEvent.press(getByTestId('mbsx-flip'));
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      expect(queryByTestId('mbsx-buy-address')).toBeNull();
+      fireEvent.press(getByTestId('mbsx-buy-pill'));
+      expect(queryByTestId('mbsx-buy-BTC')).toBeNull();
+      fireEvent.press(getByTestId('mbsx-buy-PART'));
+      expect(getByTestId('mbsx-buy-address')).toBeTruthy();
+
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-PART'));
+      expect(queryByTestId('mbsx-buy-address')).toBeNull();
+
+      fireEvent.press(getByTestId('mbsx-buy-pill'));
+      fireEvent.press(getByTestId('mbsx-buy-FIRO'));
+      fireEvent.changeText(getByTestId('mbsx-address-to'), 'refund');
+      fireEvent.changeText(getByTestId('mbsx-buy-address'), 'not FIRO');
+      expect(getByTestId('mbsx-buy-address-error')).toBeTruthy();
+      expect(getByTestId('mbsx-submit')).toBeDisabled();
+      fireEvent.changeText(getByTestId('mbsx-buy-address'), 'firo-dest');
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+      fireEvent.changeText(getByTestId('mbsx-amount-to'), '2');
+      fireEvent.press(getByTestId('mbsx-submit'));
+      expect(getByTestId('mbsx-confirm')).toHaveTextContent(/To firo-dest/);
+      fireEvent.press(getByTestId('mbsx-submit'));
+
+      await waitFor(() =>
+        expect(adapter.createDeposit).toHaveBeenCalledWith({
+          coin_from: 'PART',
+          amount_from: '1',
+          coin_to: 'FIRO',
+          min_amount_to: '2',
+          refund_address: 'refund',
+          address_to: 'firo-dest',
+        }),
+      );
+      expect(navigation.navigate).toHaveBeenCalledWith('PayInDetail', {
+        depositId: 'd1',
+      });
+    } finally {
+      adapter.getInfo.mockReturnValue(null);
+      adapter.isRunning.mockReturnValue(false);
+      adapter.validateAddress.mockImplementation(() => true);
+    }
+  });
+
+  it('notes a coin to buy that the server has no bridge for', () => {
+    const adapter = jest.requireMock('../adapter');
+    const bridged = {bridge_supported: true};
+    adapter.getInfo.mockReturnValue({
+      connected: true,
+      coins: {LTC: bridged, BTC: bridged, FIRO: {bridge_supported: false}},
+    });
+    try {
+      const {getByTestId, queryByTestId} = renderScreen(true);
+
+      fireEvent.press(getByTestId('mbsx-flip'));
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      expect(queryByTestId('mbsx-bridge-note')).toBeNull();
+      fireEvent.press(getByTestId('mbsx-buy-pill'));
+      fireEvent.press(getByTestId('mbsx-buy-FIRO'));
+      expect(getByTestId('mbsx-bridge-note')).toHaveTextContent(
+        'The swap server has no bridge for FIRO',
+      );
+    } finally {
+      adapter.getInfo.mockReturnValue(null);
+    }
   });
 });
