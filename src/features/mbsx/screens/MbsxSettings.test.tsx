@@ -68,39 +68,31 @@ const renderSettings = () => {
 };
 
 describe('MbsxSettings servers', () => {
-  it('keeps one enabled server per coin, and saves a disabled one', async () => {
-    const {
-      getAllByPlaceholderText,
-      getByTestId,
-      getByText,
-      queryByTestId,
-      queryByText,
-    } = renderSettings();
+  it('takes several servers per coin, and saves a disabled one', async () => {
+    const {getAllByPlaceholderText, getByTestId, getByText} = renderSettings();
     fireEvent.press(await waitFor(() => getByText('Advanced')));
 
     fireEvent.press(getByTestId('mbsx-add-server-part'));
-    getByText('Only one server per coin is supported for now');
-    expect(queryByTestId('mbsx-server-enabled-part-1')).toBeNull();
-
-    fireEvent(getByTestId('mbsx-server-enabled-part-0'), 'valueChange', false);
-    expect(
-      queryByText('Only one server per coin is supported for now'),
-    ).toBeNull();
-    fireEvent.press(getByTestId('mbsx-add-server-part'));
+    expect(getByTestId('mbsx-server-enabled-part-0').props.value).toBe(true);
     expect(getByTestId('mbsx-server-enabled-part-1').props.value).toBe(true);
     fireEvent.changeText(
       getAllByPlaceholderText('tcp://host:port')[1],
       'tcp://b:2',
     );
 
-    fireEvent(getByTestId('mbsx-server-enabled-part-0'), 'valueChange', true);
-    getByText('Only one server per coin is supported for now');
+    fireEvent(getByTestId('mbsx-server-enabled-part-0'), 'valueChange', false);
     expect(getByTestId('mbsx-server-enabled-part-0').props.value).toBe(false);
+    fireEvent(getByTestId('mbsx-server-enabled-part-0'), 'valueChange', true);
+    expect(getByTestId('mbsx-server-enabled-part-0').props.value).toBe(true);
+    fireEvent(getByTestId('mbsx-server-enabled-part-1'), 'valueChange', false);
 
     fireEvent.press(getByTestId('mbsx-settings-save'));
     await waitFor(() => expect(applyConfig).toHaveBeenCalledTimes(1));
     expect(
       (applyConfig as jest.Mock).mock.calls[0][0].coins.part.electrumx,
-    ).toEqual([{url: 'tcp://a:1', disabled: true}, {url: 'tcp://b:2'}]);
+    ).toEqual([
+      {url: 'tcp://a:1', disabled: false},
+      {url: 'tcp://b:2', disabled: true},
+    ]);
   });
 });

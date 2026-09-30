@@ -282,17 +282,8 @@ const MbsxSettings: React.FC = () => {
   const editHostname = (coin: string, index: number, value: boolean) =>
     editTlsField(coin, index, {verify_hostname: value});
 
-  const editEnabled = (coin: string, index: number, enabled: boolean) => {
-    const others = config?.coins[coin].electrumx.filter(
-      (server, i) => i !== index && !server.disabled,
-    );
-    if (enabled && others?.length) {
-      fail('Only one server per coin is supported for now', coin);
-      return;
-    }
-    fail('');
+  const editEnabled = (coin: string, index: number, enabled: boolean) =>
     editTlsField(coin, index, {disabled: !enabled});
-  };
 
   const editServer = (coin: string, index: number, url: string) => {
     setStatus('');
@@ -313,17 +304,8 @@ const MbsxSettings: React.FC = () => {
     });
   };
 
-  // TODO: the module only ever uses m_electrum_servers[0], so a second one is
-  // configured and never reached.
   const addServer = (coin: string) => {
     setStatus('');
-    if (
-      !config ||
-      config.coins[coin].electrumx.some(server => !server.disabled)
-    ) {
-      fail('Only one server per coin is supported for now', coin);
-      return;
-    }
     fail('');
     setConfig(prev =>
       prev
