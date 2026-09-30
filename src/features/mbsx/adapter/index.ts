@@ -920,8 +920,17 @@ export const parseAmount = (coin: string, amount: string): bigint => {
 
 // True when the core is down: nothing can judge the address then, and
 // requestSwap re-checks with the same decoder.
-export const validateAddress = (coin: string, address: string): boolean =>
-  !isRunning() || NitroBSX.validateAddress(coin, address);
+// Native throws for a coin whose interface isn't loaded, such as one disabled
+export const validateAddress = (coin: string, address: string): boolean => {
+  if (!isRunning()) {
+    return true;
+  }
+  try {
+    return NitroBSX.validateAddress(coin, address);
+  } catch {
+    return false;
+  }
+};
 
 export const acceptOffer = (offerId: string) =>
   NitroBSX.acceptOffer(offerId) as Promise<MbsxResult<{}>>;
