@@ -1,6 +1,6 @@
 import React from 'react';
 import {Keyboard} from 'react-native';
-import {fireEvent, render, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, render, waitFor} from '@testing-library/react-native';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
 
@@ -206,6 +206,64 @@ describe('CreateSwap', () => {
       adapter.getInfo.mockReturnValue(null);
       adapter.isRunning.mockReturnValue(false);
       adapter.validateAddress.mockImplementation(() => true);
+    }
+  });
+
+  it('rechecks the fee limit and the bridge from the confirm card', async () => {
+    jest.useFakeTimers();
+    const adapter = jest.requireMock('../adapter');
+    adapter.createDeposit.mockClear();
+    const bridged = {bridge_supported: true};
+    adapter.getInfo.mockReturnValue({
+      connected: true,
+      coins: {LTC: bridged, BTC: bridged, PART: bridged, FIRO: bridged},
+    });
+    adapter.isRunning.mockReturnValue(true);
+    try {
+      const {getByTestId} = renderScreen(true);
+      fireEvent.press(getByTestId('mbsx-flip'));
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-PART'));
+      fireEvent.press(getByTestId('mbsx-buy-pill'));
+      fireEvent.press(getByTestId('mbsx-buy-FIRO'));
+      fireEvent.changeText(getByTestId('mbsx-address-to'), 'refund');
+      fireEvent.changeText(getByTestId('mbsx-buy-address'), 'firo-dest');
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+      fireEvent.changeText(getByTestId('mbsx-amount-to'), '2');
+      fireEvent.press(getByTestId('mbsx-submit'));
+      expect(getByTestId('mbsx-confirm')).toBeTruthy();
+
+      adapter.getSwapFundingOutputs.mockReturnValue({
+        outputs: [],
+        total_fee_bps: 500n,
+        max_fee_bps: 200n,
+      });
+      fireEvent.press(getByTestId('mbsx-submit'));
+      await waitFor(() =>
+        expect(getByTestId('mbsx-bridge-note')).toHaveTextContent(
+          'The swap server charges 5%, above your limit of 2%',
+        ),
+      );
+      expect(adapter.createDeposit).not.toHaveBeenCalled();
+
+      adapter.getSwapFundingOutputs.mockReturnValue({error: 'not running'});
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1.5');
+      fireEvent.press(getByTestId('mbsx-submit'));
+      expect(getByTestId('mbsx-submit')).toBeEnabled();
+      adapter.getInfo.mockReturnValue({
+        connected: true,
+        coins: {LTC: bridged, BTC: bridged, PART: bridged, FIRO: {}},
+      });
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+      expect(getByTestId('mbsx-confirm')).toBeTruthy();
+      expect(getByTestId('mbsx-submit')).toBeDisabled();
+    } finally {
+      jest.useRealTimers();
+      adapter.getInfo.mockReturnValue(null);
+      adapter.isRunning.mockReturnValue(false);
+      adapter.getSwapFundingOutputs.mockReturnValue({error: 'not running'});
     }
   });
 

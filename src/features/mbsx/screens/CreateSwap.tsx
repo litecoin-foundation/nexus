@@ -71,6 +71,20 @@ const swapFeeSats = (
   (outputs ?? [])
     .slice(1)
     .reduce((sum, output) => sum + BigInt(output.value), 0n);
+const feeCapNote = (funding: ReturnType<typeof getSwapFundingOutputs>) => {
+  if (
+    funding.error ||
+    funding.total_fee_bps === undefined ||
+    funding.max_fee_bps === undefined
+  ) {
+    return '';
+  }
+  const totalFee = Number(funding.total_fee_bps);
+  const maxFee = Number(funding.max_fee_bps);
+  return totalFee > maxFee
+    ? `The swap server charges ${totalFee / 100}%, above your limit of ${maxFee / 100}%`
+    : '';
+};
 const numericAmount = (value: string) => {
   const cleaned = value.replace(/[^0-9.]/g, '');
   const dot = cleaned.indexOf('.');
@@ -237,7 +251,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       funding.max_fee_bps !== undefined
     ) {
       const totalFee = Number(funding.total_fee_bps);
-      const maxFee = Number(funding.max_fee_bps);
       let unit: bigint;
       try {
         unit = parseAmount(sendCoin, '1');
@@ -245,11 +258,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         unit = 0n;
       }
       setQuote({feeBps: totalFee, feeSats: swapFeeSats(funding.outputs), unit});
-      if (totalFee > maxFee) {
-        setFeeNote(
-          `The swap server charges ${totalFee / 100}%, above your limit of ${maxFee / 100}%`,
-        );
-      }
+      setFeeNote(feeCapNote(funding));
     }
     if (payIn || !balances || !isRunning()) {
       return;
@@ -385,6 +394,11 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         parseAmount(receiveCoin, amountTo);
       } catch {
         throw new Error('Invalid amount to receive');
+      }
+      const capNote = feeCapNote(getSwapFundingOutputs(sendCoin, amountFrom));
+      if (capNote) {
+        setFeeNote(capNote);
+        throw new Error(capNote);
       }
       if (payIn) {
         if (!buysToHost && !offeredCoins.includes(buyCoin)) {
@@ -981,9 +995,14 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             </TouchableOpacity>
             <TouchableOpacity
               testID="mbsx-submit"
-              style={[styles.button, look.submit, look.confirmAction]}
+              style={[
+                styles.button,
+                look.submit,
+                look.confirmAction,
+                busy || blockNote !== '' ? styles.buttonDisabled : null,
+              ]}
               onPress={() => void submit()}
-              disabled={busy}>
+              disabled={busy || blockNote !== ''}>
               <Text style={styles.buttonText}>
                 {busy ? 'Requesting…' : 'Swap'}
               </Text>
