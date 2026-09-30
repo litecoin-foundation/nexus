@@ -8,6 +8,7 @@ export type VerifyCertsMode = 'none' | 'pinned' | 'optional' | 'strict';
 
 export type ElectrumServer = {
   url: string;
+  disabled?: boolean;
   // electrs answers blockchain.transaction.get non-verbose only.
   haveverbosetx?: boolean;
   // Absent means pinned.

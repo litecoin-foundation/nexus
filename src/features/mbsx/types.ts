@@ -122,7 +122,18 @@ export type MbsxInfo = {
   connected: boolean;
   db_version?: number;
   // Only the coins config enabled; compiled_coins is every one the build has.
-  coins: Record<string, {chain_height: number; bridge_supported: boolean}>;
+  coins: Record<
+    string,
+    {
+      chain_height: number;
+      bridge_supported: boolean;
+      anchor_dispute?: {
+        url: string;
+        height: number;
+        source: 'glue' | 'database';
+      };
+    }
+  >;
   compiled_coins?: string[];
 };
 

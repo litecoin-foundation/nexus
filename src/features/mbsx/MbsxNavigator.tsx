@@ -37,6 +37,7 @@ import {
 import {readConfig} from './adapter/config';
 import {pushMessage, setConnected, setError, setRunning} from './mbsxSlice';
 import BasicSwapMark from './components/BasicSwapMark';
+import AnchorDispute from './components/AnchorDispute';
 import BridgeStatus from './components/BridgeStatus';
 import MbsxMenuButton from './components/MbsxMenuButton';
 import CreateSwap from './screens/CreateSwap';
@@ -351,6 +352,7 @@ const MbsxScreenHeader = ({layout, options, route}: DrawerHeaderProps) => {
         title={getHeaderTitle(options, route.name)}
       />
       <BridgeStatus />
+      <AnchorDispute />
     </View>
   );
 };

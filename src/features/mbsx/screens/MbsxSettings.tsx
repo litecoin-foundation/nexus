@@ -282,6 +282,18 @@ const MbsxSettings: React.FC = () => {
   const editHostname = (coin: string, index: number, value: boolean) =>
     editTlsField(coin, index, {verify_hostname: value});
 
+  const editEnabled = (coin: string, index: number, enabled: boolean) => {
+    const others = config?.coins[coin].electrumx.filter(
+      (server, i) => i !== index && !server.disabled,
+    );
+    if (enabled && others?.length) {
+      fail('Only one server per coin is supported for now', coin);
+      return;
+    }
+    fail('');
+    editTlsField(coin, index, {disabled: !enabled});
+  };
+
   const editServer = (coin: string, index: number, url: string) => {
     setStatus('');
     setConfig(prev => {
@@ -305,7 +317,10 @@ const MbsxSettings: React.FC = () => {
   // configured and never reached.
   const addServer = (coin: string) => {
     setStatus('');
-    if (!config || config.coins[coin].electrumx.length > 0) {
+    if (
+      !config ||
+      config.coins[coin].electrumx.some(server => !server.disabled)
+    ) {
       fail('Only one server per coin is supported for now', coin);
       return;
     }
@@ -740,6 +755,16 @@ const MbsxSettings: React.FC = () => {
                         onChangeText={url => editServer(coin, index, url)}
                         autoCapitalize="none"
                       />
+                      <View style={styles.row}>
+                        <Text style={styles.label}>Enabled</Text>
+                        <Switch
+                          testID={`mbsx-server-enabled-${coin}-${index}`}
+                          value={server.disabled !== true}
+                          onValueChange={value =>
+                            editEnabled(coin, index, value)
+                          }
+                        />
+                      </View>
                       {server.url.startsWith('ssl://') ? (
                         <>
                           <Text style={styles.inputLabel}>
