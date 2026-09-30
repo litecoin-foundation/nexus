@@ -170,13 +170,13 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             ? deposit.state
             : depositStateText(deposit.state, deposit.coin)}
         </Text>
-        {PAYABLE.has(deposit.state) ? (
+        {deposit.payable ? (
           <View style={look.block}>
             <Text style={styles.value}>Pay exactly</Text>
             <Text
               testID="mbsx-payin-amount"
               style={[styles.label, look.amountDue]}>
-              {`${deposit.amount_due} ${deposit.coin}`}
+              {`${deposit.remaining} ${deposit.coin}`}
             </Text>
             <View style={look.qr}>
               <QRCode value={deposit.address} size={SCREEN_HEIGHT * 0.25} />
@@ -192,6 +192,11 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
               {`Tap the address to copy it. Expires ${expiry(deposit)}.`}
             </Text>
           </View>
+        ) : PAYABLE.has(deposit.state) ? (
+          <Text testID="mbsx-payin-ended" style={styles.rowMessage}>
+            This pay-in has ended, so don't pay into its address. Anything it
+            received goes back to your refund address.
+          </Text>
         ) : null}
         <View style={look.block}>
           <Text style={styles.label}>Received</Text>

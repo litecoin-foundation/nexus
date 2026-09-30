@@ -31,6 +31,8 @@ export type Deposit = {
   state: string;
   amount_due: string;
   received: string;
+  remaining: string;
+  payable: boolean;
   refund_address: string;
   coin_to: string;
   min_amount_to: string;
