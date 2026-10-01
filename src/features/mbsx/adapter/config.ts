@@ -63,6 +63,17 @@ const TOR_SOCKS_PORT = 9150;
 export const proxyForTor = (tor_enabled: boolean): MbsxConfig['proxy'] =>
   tor_enabled ? {host: '127.0.0.1', port: TOR_SOCKS_PORT} : undefined;
 
+// What the module's electrum client accepts: tcp or ssl, a host and a port
+export const electrumUrlError = (url: string): string => {
+  const match =
+    /^(tcp|ssl):\/\/(\[[^\]\s]+\]|[^\s:/[\]]+):(\d{1,5})(\/\S*)?$/i.exec(url);
+  if (!match) {
+    return 'must be tcp://host:port or ssl://host:port';
+  }
+  const port = Number(match[3]);
+  return port >= 1 && port <= 65535 ? '' : 'has a port out of range';
+};
+
 export const MBSX_DATA_DIR = `${RNFS.DocumentDirectoryPath}/mbsx/${getNetwork()}`;
 
 const CONFIG_PATH = `${MBSX_DATA_DIR}/config.json`;

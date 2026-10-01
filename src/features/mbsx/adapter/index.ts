@@ -38,7 +38,13 @@ import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
 import {notifySwapEnded} from './notify';
 import {scheduleWakes} from './wake';
 
-export {defaultConfig, MBSX_DATA_DIR, readConfig, writeConfig} from './config';
+export {
+  defaultConfig,
+  electrumUrlError,
+  MBSX_DATA_DIR,
+  readConfig,
+  writeConfig,
+} from './config';
 export {
   recordLeases,
   releaseLeases,

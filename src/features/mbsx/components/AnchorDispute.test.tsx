@@ -180,4 +180,27 @@ describe('AnchorDispute', () => {
     await waitFor(() => expect(alert).toHaveBeenCalled());
     expect(alert.mock.calls[0][1]).toContain('A PART swap is in progress');
   });
+
+  it('drops a dispute whose server is no longer enabled', async () => {
+    (getInfo as jest.Mock).mockReturnValue(disputed);
+    (readConfig as jest.Mock).mockResolvedValue({
+      ...config,
+      coins: {
+        ...config.coins,
+        part: {
+          enabled: true,
+          electrumx: [{url: 'tcp://a:1'}, {url: 'tcp://b:2', disabled: true}],
+        },
+      },
+    });
+    const alert = jest.spyOn(Alert, 'alert');
+    const {getByTestId, queryByTestId} = renderBanner();
+    fireEvent.press(getByTestId('mbsx-anchor-dispute-disable-PART'));
+    await waitFor(() => expect(alert).toHaveBeenCalled());
+    expect(alert.mock.calls[0][1]).toContain(
+      'no longer an enabled PART server',
+    );
+    expect(queryByTestId('mbsx-anchor-dispute-disable-PART')).toBeNull();
+    expect(applyConfig).not.toHaveBeenCalled();
+  });
 });

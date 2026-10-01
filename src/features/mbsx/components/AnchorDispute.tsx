@@ -94,6 +94,14 @@ const AnchorDispute: React.FC = () => {
     const enabled = (
       config?.coins[dispute.ticker.toLowerCase()]?.electrumx ?? []
     ).filter(server => !server.disabled);
+    if (!enabled.some(server => server.url === dispute.url)) {
+      Alert.alert(
+        'Disable server',
+        `${dispute.url} is no longer an enabled ${dispute.ticker} server.`,
+      );
+      keep(dispute);
+      return;
+    }
     if (enabled.length <= 1) {
       Alert.alert(
         'Disable server',

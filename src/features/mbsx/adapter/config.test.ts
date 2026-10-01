@@ -5,6 +5,7 @@ import {
   CONFIG_VERSION,
   MbsxConfig,
   defaultConfig,
+  electrumUrlError,
   migrateConfig,
   readConfig,
 } from './config';
@@ -39,6 +40,37 @@ const versionZero = (): MbsxConfig => ({
 beforeEach(() => {
   jest.clearAllMocks();
   exists.mockResolvedValue(true);
+});
+
+describe('electrumUrlError', () => {
+  it('accepts what the module accepts', () => {
+    for (const url of [
+      'tcp://host:50001',
+      'SSL://electrum.example.org:50002',
+      'ssl://[2001:db8::1]:50002',
+      'tcp://10.0.2.2:1/path',
+    ]) {
+      expect(electrumUrlError(url)).toBe('');
+    }
+  });
+
+  it('refuses what the module would drop', () => {
+    for (const url of [
+      'tcp://host',
+      'host:50001',
+      'ws://host:50001',
+      'tcp://:50001',
+      'tcp://2001:db8::1:50002',
+      'tcp://host:50001 ',
+      'tcp://host:port',
+    ]) {
+      expect(electrumUrlError(url)).not.toBe('');
+    }
+    expect(electrumUrlError('tcp://host:65536')).toBe(
+      'has a port out of range',
+    );
+    expect(electrumUrlError('tcp://host:0')).toBe('has a port out of range');
+  });
 });
 
 describe('migrateConfig', () => {

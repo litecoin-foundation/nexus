@@ -34,6 +34,7 @@ import {
   coinsWithActiveSwaps,
   getInfo,
   defaultConfig,
+  electrumUrlError,
   isRunning,
   listCaCerts,
   readConfig,
@@ -173,8 +174,12 @@ const MbsxSettings: React.FC = () => {
     return {...cfg, coins};
   };
 
+  // The stored config as last loaded or saved, to tell a change made elsewhere
+  const storedJsonRef = useRef<string | null>(null);
   const load = useCallback(async () => {
-    const loaded = normaliseModes((await readConfig()) ?? defaultConfig());
+    const stored = (await readConfig()) ?? defaultConfig();
+    storedJsonRef.current = persisted(stored);
+    const loaded = normaliseModes(stored);
     setConfig(loaded);
     setSavedJson(persisted(loaded));
     setActiveCoins(coinsWithActiveSwaps());
@@ -193,9 +198,34 @@ const MbsxSettings: React.FC = () => {
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
 
+  const changedElsewhere = async () =>
+    storedJsonRef.current !== null &&
+    persisted((await readConfig()) ?? defaultConfig()) !==
+      storedJsonRef.current;
+
   // A drawer switch cannot be blocked, so the alert offers the way back
   // instead of preventing it.
   const navigation = useNavigation();
+  useEffect(() => {
+    return navigation.addListener('focus', async () => {
+      if (!(await changedElsewhere())) {
+        return;
+      }
+      if (!dirtyRef.current) {
+        load();
+        return;
+      }
+      Alert.alert(
+        'Settings changed',
+        'The settings were changed outside this screen, for example by the ' +
+          'server banner. Reload them and drop your unsaved changes?',
+        [
+          {text: 'Keep editing', style: 'cancel'},
+          {text: 'Reload', style: 'destructive', onPress: () => load()},
+        ],
+      );
+    });
+  }, [navigation, load]);
   useEffect(() => {
     return navigation.addListener('blur', () => {
       if (!dirtyRef.current) {
@@ -427,10 +457,54 @@ const MbsxSettings: React.FC = () => {
       fail(`Empty server url for ${blank[0]}`, blank[0]);
       return;
     }
+    for (const [coin, settings] of Object.entries(config.coins)) {
+      const bad =
+        settings.enabled === true &&
+        settings.electrumx.find(server => electrumUrlError(server.url));
+      if (bad) {
+        setAdvanced(true);
+        fail(
+          `Server url ${bad.url} for ${coin} ${electrumUrlError(bad.url)}`,
+          coin,
+        );
+        return;
+      }
+    }
+    const warnings: string[] = [];
+    const unserved = Object.entries(config.coins)
+      .filter(
+        ([, settings]) =>
+          settings.enabled === true &&
+          !settings.electrumx.some(server => !server.disabled),
+      )
+      .map(([coin]) => coin);
+    if (unserved.length > 0) {
+      warnings.push(
+        `${unserved.join(', ')} has no enabled server, so the app can't watch it.`,
+      );
+    }
+    if (await changedElsewhere()) {
+      warnings.push(
+        'The settings were changed outside this screen since it loaded them, ' +
+          'for example by the server banner, and saving replaces those changes.',
+      );
+    }
+    if (warnings.length > 0) {
+      Alert.alert('Save settings?', warnings.join('\n\n'), [
+        {text: 'Cancel', style: 'cancel'},
+        {text: 'Save', onPress: () => void apply(config)},
+      ]);
+      return;
+    }
+    await apply(config);
+  };
+
+  const apply = async (applied: MbsxConfig) => {
     setSaving(true);
     try {
-      await applyConfig(config);
-      setSavedJson(persisted(config));
+      await applyConfig(applied);
+      storedJsonRef.current = persisted(applied);
+      setSavedJson(persisted(applied));
       setStatus('Saved and restarted');
     } catch (e) {
       fail(`Saved, but the restart failed: ${(e as Error).message}`);
