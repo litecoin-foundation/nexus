@@ -134,6 +134,12 @@ export type MbsxInfo = {
         height: number;
         source: 'glue' | 'database';
       };
+      electrum_servers?: {
+        url: string;
+        state: 'active' | 'idle' | 'cooldown';
+        live: boolean;
+        error: string;
+      }[];
     }
   >;
   compiled_coins?: string[];

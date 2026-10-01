@@ -30,6 +30,8 @@ export type CoinConfig = {
   // Proof of stake chains only, absent means validated.
   verify_pos?: boolean;
   electrumx: ElectrumServer[];
+  // Absent means the config's max_electrum_servers.
+  max_electrum_servers?: number;
   wallet?: WalletConfig;
 };
 
@@ -42,6 +44,9 @@ export type MbsxConfig = {
   bridge_port?: number;
   // Absent means the module's default.
   max_fee_bps?: number;
+  // Servers kept connected per coin, drawn at random from its list. Absent
+  // means the module's default of 2.
+  max_electrum_servers?: number;
   // Owned by the Tor switch, which rewrites it on every start; only
   // timeout_seconds survives a hand edit. Absent is a direct connection.
   proxy?: {host: string; port: number; timeout_seconds?: number};
@@ -53,7 +58,7 @@ export type MbsxConfig = {
   coins: Record<string, CoinConfig>;
 };
 
-export const CONFIG_VERSION = 1;
+export const CONFIG_VERSION = 2;
 
 // The socks port react-native-nitro-tor listens on, from src/utils/tor.ts.
 const TOR_SOCKS_PORT = 9150;
@@ -122,6 +127,8 @@ const DEFAULTS: Record<LitecoinNetwork, MbsxConfig> = {
         enabled: true,
         electrumx: [
           {url: 'ssl://backup.electrum-ltc.org:443', haveverbosetx: false},
+          {url: 'ssl://electrum-ltc.org:50002', haveverbosetx: false},
+          {url: 'ssl://electrum1.cipig.net:20063', haveverbosetx: false},
         ],
         wallet: {type: 'host'},
       },
@@ -147,15 +154,32 @@ export const defaultConfig = (): MbsxConfig => {
   return JSON.parse(JSON.stringify(defaults));
 };
 
-// Version 0 read a coin with no enabled flag as on
+// Version 1's only mainnet ltc server.
+const OLD_LTC_DEFAULT = 'ssl://backup.electrum-ltc.org:443';
+
 export const migrateConfig = (config: MbsxConfig): boolean => {
-  if ((config.config_version ?? 0) >= CONFIG_VERSION) {
+  const version = config.config_version ?? 0;
+  if (version >= CONFIG_VERSION) {
     return false;
   }
-  for (const coin of Object.values(config.coins ?? {})) {
-    if (coin.enabled === undefined) {
-      coin.enabled = true;
+  // Version 0 read a coin with no enabled flag as on
+  if (version < 1) {
+    for (const coin of Object.values(config.coins ?? {})) {
+      if (coin.enabled === undefined) {
+        coin.enabled = true;
+      }
     }
+  }
+  const ltc = config.coins?.ltc;
+  if (
+    version < 2 &&
+    config.chain === 'mainnet' &&
+    ltc?.electrumx.length === 1 &&
+    ltc.electrumx[0].url === OLD_LTC_DEFAULT
+  ) {
+    ltc.electrumx = JSON.parse(
+      JSON.stringify(DEFAULTS.mainnet.coins.ltc.electrumx),
+    );
   }
   config.config_version = CONFIG_VERSION;
   return true;

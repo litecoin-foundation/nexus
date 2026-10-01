@@ -55,6 +55,16 @@ const ALL_MODES: VerifyCertsMode[] = ['none', 'pinned', 'optional', 'strict'];
 
 const POS_COINS = ['part'];
 
+// The module's own default when the config leaves it out.
+const DEFAULT_MAX_ELECTRUM_SERVERS = 2;
+
+type ElectrumServerState = {state: string; live: boolean; error: string};
+
+const serverStateText = (server: ElectrumServerState) =>
+  [server.state, server.live ? 'connected' : '', server.error]
+    .filter(Boolean)
+    .join(', ');
+
 // Only these validate a chain, so only these have anchors or a hostname to
 // check: under none and pinned mbedtls performs no name check at all.
 const chainsChecked = (server: ElectrumServer) =>
@@ -116,6 +126,10 @@ const MbsxSettings: React.FC = () => {
     getNetwork() === 'regtest'
       ? ALL_MODES
       : ALL_MODES.filter(mode => mode !== 'none');
+
+  const [serverStates, setServerStates] = useState<
+    Record<string, ElectrumServerState>
+  >({});
 
   const fail = (message: string, coin = '') => {
     setError(message);
@@ -183,7 +197,15 @@ const MbsxSettings: React.FC = () => {
     setConfig(loaded);
     setSavedJson(persisted(loaded));
     setActiveCoins(coinsWithActiveSwaps());
-    setCompiledCoins(getInfo()?.compiled_coins ?? null);
+    const info = getInfo();
+    setCompiledCoins(info?.compiled_coins ?? null);
+    const states: Record<string, ElectrumServerState> = {};
+    for (const [ticker, coin] of Object.entries(info?.coins ?? {})) {
+      for (const server of coin.electrum_servers ?? []) {
+        states[`${ticker.toLowerCase()} ${server.url}`] = server;
+      }
+    }
+    setServerStates(states);
     loadCerts();
   }, [loadCerts]);
 
@@ -266,6 +288,22 @@ const MbsxSettings: React.FC = () => {
         ? {
             ...prev,
             coins: {...prev.coins, [coin]: {...prev.coins[coin], enabled}},
+          }
+        : prev,
+    );
+  };
+
+  const editCoinCap = (coin: string, text: string) => {
+    setStatus('');
+    const max_electrum_servers = text ? Number(text) : undefined;
+    setConfig(prev =>
+      prev
+        ? {
+            ...prev,
+            coins: {
+              ...prev.coins,
+              [coin]: {...prev.coins[coin], max_electrum_servers},
+            },
           }
         : prev,
     );
@@ -447,6 +485,25 @@ const MbsxSettings: React.FC = () => {
     }
     fail('');
     setStatus('');
+    const badCap = (cap?: number) =>
+      cap !== undefined && !(Number.isInteger(cap) && cap >= 1);
+    if (badCap(config.max_electrum_servers)) {
+      setAdvanced(true);
+      fail('Servers kept connected must be a whole number, at least 1');
+      return;
+    }
+    const capCoin = Object.entries(config.coins).find(
+      ([, settings]) =>
+        settings.enabled === true && badCap(settings.max_electrum_servers),
+    );
+    if (capCoin) {
+      setAdvanced(true);
+      fail(
+        `Servers kept connected for ${capCoin[0]} must be a whole number, at least 1`,
+        capCoin[0],
+      );
+      return;
+    }
     const blank = Object.entries(config.coins).find(
       ([, coin]) =>
         coin.enabled === true &&
@@ -794,6 +851,23 @@ const MbsxSettings: React.FC = () => {
               keyboardType="numeric"
             />
 
+            <Text style={styles.section}>Electrum servers</Text>
+            <Text style={styles.inputLabel}>Kept connected per coin</Text>
+            <TextInput
+              testID="mbsx-max-electrum-servers"
+              style={styles.input}
+              value={
+                config.max_electrum_servers
+                  ? String(config.max_electrum_servers)
+                  : ''
+              }
+              placeholder={String(DEFAULT_MAX_ELECTRUM_SERVERS)}
+              onChangeText={text =>
+                edit({max_electrum_servers: text ? Number(text) : undefined})
+              }
+              keyboardType="numeric"
+            />
+
             {shownCoins.map(coin => {
               const enabled = config.coins[coin].enabled === true;
               if (!enabled) {
@@ -802,6 +876,22 @@ const MbsxSettings: React.FC = () => {
               return (
                 <View key={coin}>
                   <Text style={styles.section}>{`${coin.toUpperCase()} servers`}</Text>
+                  <Text style={styles.inputLabel}>Kept connected</Text>
+                  <TextInput
+                    testID={`mbsx-max-electrum-servers-${coin}`}
+                    style={styles.input}
+                    value={
+                      config.coins[coin].max_electrum_servers
+                        ? String(config.coins[coin].max_electrum_servers)
+                        : ''
+                    }
+                    placeholder={String(
+                      config.max_electrum_servers ??
+                        DEFAULT_MAX_ELECTRUM_SERVERS,
+                    )}
+                    onChangeText={text => editCoinCap(coin, text)}
+                    keyboardType="numeric"
+                  />
                   {config.coins[coin].electrumx.map((server, index) => (
                     <View key={index}>
                       <TextInput
@@ -811,6 +901,15 @@ const MbsxSettings: React.FC = () => {
                         onChangeText={url => editServer(coin, index, url)}
                         autoCapitalize="none"
                       />
+                      {serverStates[`${coin} ${server.url}`] ? (
+                        <Text
+                          testID={`mbsx-server-state-${coin}-${index}`}
+                          style={styles.value}>
+                          {serverStateText(
+                            serverStates[`${coin} ${server.url}`],
+                          )}
+                        </Text>
+                      ) : null}
                       <View style={styles.row}>
                         <Text style={styles.label}>Enabled</Text>
                         <Switch

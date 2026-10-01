@@ -7,7 +7,7 @@ import {configureStore} from '@reduxjs/toolkit';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import mbsxReducer from '../mbsxSlice';
 import MbsxSettings from './MbsxSettings';
-import {applyConfig, readConfig} from '../adapter';
+import {applyConfig, getInfo, readConfig} from '../adapter';
 
 jest.mock('@notifee/react-native', () => ({}));
 
@@ -39,7 +39,7 @@ jest.mock('../adapter', () => ({
   coinsWithActiveSwaps: () => new Set(),
   defaultConfig: jest.fn(),
   electrumUrlError: jest.requireActual('../adapter/config').electrumUrlError,
-  getInfo: () => null,
+  getInfo: jest.fn(() => null),
   isRunning: () => true,
   listCaCerts: () => [],
   readConfig: jest.fn(),
@@ -114,6 +114,57 @@ describe('MbsxSettings servers', () => {
       {url: 'tcp://a:1', disabled: false},
       {url: 'tcp://b:2', disabled: true},
     ]);
+  });
+
+  it('saves the servers kept connected, and refuses fewer than one', async () => {
+    const {getByTestId, getByText} = renderSettings();
+    fireEvent.press(await waitFor(() => getByText('Advanced')));
+    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers-part'), '0');
+    fireEvent.press(getByTestId('mbsx-settings-save'));
+    await waitFor(() =>
+      expect(getByTestId('mbsx-coin-error-part')).toHaveTextContent(
+        'Servers kept connected for part must be a whole number, at least 1',
+      ),
+    );
+    expect(applyConfig).not.toHaveBeenCalled();
+
+    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers-part'), '');
+    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers'), '3');
+    fireEvent.press(getByTestId('mbsx-settings-save'));
+    await waitFor(() => expect(applyConfig).toHaveBeenCalled());
+    const saved = (applyConfig as jest.Mock).mock.calls[0][0];
+    expect(saved.max_electrum_servers).toBe(3);
+    expect(saved.coins.part.max_electrum_servers).toBeUndefined();
+  });
+
+  it('shows what the module made of each server', async () => {
+    (getInfo as jest.Mock).mockReturnValue({
+      coins: {
+        PART: {
+          electrum_servers: [
+            {url: 'tcp://a:1', state: 'active', live: true, error: ''},
+            {
+              url: 'tcp://b:2',
+              state: 'cooldown',
+              live: false,
+              error: 'connect failed',
+            },
+          ],
+        },
+      },
+    });
+    (readConfig as jest.Mock).mockImplementation(() =>
+      Promise.resolve(stored([{url: 'tcp://a:1'}, {url: 'tcp://b:2'}])),
+    );
+    const {getByTestId, getByText} = renderSettings();
+    fireEvent.press(await waitFor(() => getByText('Advanced')));
+    expect(getByTestId('mbsx-server-state-part-0')).toHaveTextContent(
+      'active, connected',
+    );
+    expect(getByTestId('mbsx-server-state-part-1')).toHaveTextContent(
+      'cooldown, connect failed',
+    );
+    (getInfo as jest.Mock).mockReturnValue(null);
   });
 
   it('refuses a server url the module would drop', async () => {

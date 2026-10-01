@@ -89,6 +89,39 @@ describe('migrateConfig', () => {
     expect(config.coins.btc.enabled).toBeUndefined();
   });
 
+  it('extends only the old mainnet ltc default', () => {
+    const mainnet = (urls: string[]): MbsxConfig => ({
+      ...versionZero(),
+      chain: 'mainnet',
+      config_version: 1,
+      coins: {
+        ltc: {
+          enabled: true,
+          electrumx: urls.map(url => ({url, haveverbosetx: false})),
+        },
+      },
+    });
+    const old = mainnet(['ssl://backup.electrum-ltc.org:443']);
+    expect(migrateConfig(old)).toBe(true);
+    expect(old.coins.ltc.electrumx.map(s => s.url)).toEqual([
+      'ssl://backup.electrum-ltc.org:443',
+      'ssl://electrum-ltc.org:50002',
+      'ssl://electrum1.cipig.net:20063',
+    ]);
+
+    const edited = mainnet([
+      'ssl://backup.electrum-ltc.org:443',
+      'ssl://ltc.example:50002',
+    ]);
+    expect(migrateConfig(edited)).toBe(true);
+    expect(edited.coins.ltc.electrumx).toHaveLength(2);
+    expect(edited.coins.ltc.electrumx[1].url).toBe('ssl://ltc.example:50002');
+
+    const regtest = {...versionZero(), config_version: 1};
+    expect(migrateConfig(regtest)).toBe(true);
+    expect(regtest.coins.ltc.electrumx[0].url).toBe('tcp://10.0.2.2:50004');
+  });
+
   it('has nothing to do for the defaults', () => {
     const config = defaultConfig();
     expect(migrateConfig(config)).toBe(false);
