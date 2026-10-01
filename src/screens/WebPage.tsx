@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useContext,
-  useCallback,
-} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -22,15 +16,19 @@ import type {
   FileDownloadEvent,
 } from 'react-native-webview/lib/WebViewTypes';
 import DeviceInfo from 'react-native-device-info';
-import {TransitionPresets} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  TransitionPresets,
+} from '@react-navigation/stack';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 
-import Header from '../components/Header';
-import HeaderButton from '../components/Buttons/HeaderButton';
-
-import TranslateText from '../components/TranslateText';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  ScreenHeaderNavigationOptions,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../components/ScreenHeader';
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
-import {ScreenSizeContext} from '../context/screenSize';
 
 type RootStackParamList = {
   WebPage: {
@@ -45,21 +43,16 @@ interface Props {
   route: RouteProp<RootStackParamList, 'WebPage'>;
 }
 
-const HeaderTitle = ({title, fontSize}: {title: string; fontSize: number}) => (
-  <TranslateText
-    textValue={title}
-    maxSizeInPixels={fontSize}
-    textStyle={[styles.headerTitleText, {fontSize}]}
-    numberOfLines={1}
-  />
-);
-
 const WebPage: React.FC<Props> = props => {
   const {route} = props;
   const WebPageRef = useRef<WebView>(null);
   const navigation = useNavigation();
 
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  // Presented as a modal card on iOS only, see WebPageNavigationOptions
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout(
+    Platform.OS === 'ios',
+  );
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const [ableToGoBack, setCanGoBack] = useState(false);
   const [ableToGoForward, setCanGoForward] = useState(false);
@@ -67,19 +60,6 @@ const WebPage: React.FC<Props> = props => {
   const [currentUrl, setCurrentUrl] = useState('');
 
   const {observeURL, returnRoute, title} = route.params || {};
-
-  useEffect(() => {
-    if (title) {
-      navigation.setOptions({
-        // eslint-disable-next-line react/no-unstable-nested-components
-        headerTitle: () => (
-          <HeaderTitle title={title} fontSize={SCREEN_HEIGHT * 0.022} />
-        ),
-        headerTitleAlign: 'center',
-        headerTitleContainerStyle: styles.headerTitleContainer,
-      });
-    }
-  }, [title, navigation, SCREEN_HEIGHT]);
 
   const handleEvent = useCallback(
     (syntheticEvent: WebViewNavigationEvent | WebViewErrorEvent) => {
@@ -178,26 +158,27 @@ const WebPage: React.FC<Props> = props => {
 
   return (
     <CustomSafeAreaView styles={styles.container} edges={['bottom']}>
-      <Header modal={Platform.OS !== 'android'} />
-      <WebView
-        style={styles.webview}
-        source={{uri: route.params.uri}}
-        ref={WebPageRef}
-        enableApplePay
-        onLoadStart={handleEvent}
-        onLoadEnd={handleEvent}
-        originWhitelist={[
-          'https://*',
-          'http://*',
-          'about:blank',
-          'about:srcdoc',
-        ]}
-        onShouldStartLoadWithRequest={handleShouldStartLoad}
-        onNavigationStateChange={handleNavigationStateChange}
-        applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${DeviceInfo.getSystemVersion()}`}
-        allowsInlineMediaPlayback
-        onFileDownload={handleFileDownload}
-      />
+      <View style={[styles.container, {paddingTop: cardHeight}]}>
+        <WebView
+          style={styles.webview}
+          source={{uri: route.params.uri}}
+          ref={WebPageRef}
+          enableApplePay
+          onLoadStart={handleEvent}
+          onLoadEnd={handleEvent}
+          originWhitelist={[
+            'https://*',
+            'http://*',
+            'about:blank',
+            'about:srcdoc',
+          ]}
+          onShouldStartLoadWithRequest={handleShouldStartLoad}
+          onNavigationStateChange={handleNavigationStateChange}
+          applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${DeviceInfo.getSystemVersion()}`}
+          allowsInlineMediaPlayback
+          onFileDownload={handleFileDownload}
+        />
+      </View>
       <View style={styles.optionsContainer}>
         <TouchableOpacity
           onPress={() => {
@@ -230,6 +211,13 @@ const WebPage: React.FC<Props> = props => {
           />
         </TouchableOpacity>
       </View>
+      <ScreenHeaderCard cardHeight={cardHeight} rounded={false} />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleValue={title}
+        fadeStyle={headerFadeStyle}
+      />
     </CustomSafeAreaView>
   );
 };
@@ -251,58 +239,11 @@ const styles = StyleSheet.create({
   opacity: {
     opacity: 0.4,
   },
-  headerButtonContainer: {
-    paddingTop: 30,
-  },
-  headerTitleContainer: {
-    paddingTop: 30,
-    ...Platform.select({
-      android: {
-        position: 'absolute' as const,
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        maxWidth: '100%' as const,
-        alignItems: 'center' as const,
-      },
-    }),
-  },
-  headerTitleText: {
-    color: '#fff',
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-  },
 });
 
-export const WebPageNavigationOptions = (navigation: any) => {
-  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
-
-  const presentation =
-    Platform.OS === 'ios' ? {...TransitionPresets.ModalPresentationIOS} : {};
-  return {
-    ...presentation,
-    headerTitle: '',
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <View style={styles.headerButtonContainer}>
-        <HeaderButton
-          onPress={() => navigation.goBack()}
-          imageSource={require('../assets/images/back-icon.png')}
-          leftPadding
-          textKey="back"
-          textDomain="buyTab"
-        />
-      </View>
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
+export const WebPageNavigationOptions: StackNavigationOptions = {
+  ...(Platform.OS === 'ios' ? TransitionPresets.ModalPresentationIOS : {}),
+  ...ScreenHeaderNavigationOptions,
 };
 
 export default WebPage;

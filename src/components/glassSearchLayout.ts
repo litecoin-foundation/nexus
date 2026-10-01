@@ -14,9 +14,11 @@ export const GLASS_FILTER_PILL_WIDTH_RATIO = 0.165;
 // Header controls are shorter than the filter pills — they have to sit inside
 // the navigator's header row.
 export const GLASS_HEADER_PILL_HEIGHT_RATIO = 0.035;
-// The back pill is a stadium rather than a circle. Its corner radius stays
+// Header pills are stadiums rather than circles. Their corner radius stays
 // half the height, so the caps stay round and only the flat run grows.
-export const BACK_PILL_ASPECT = 1.6;
+export const HEADER_PILL_ASPECT = 1.6;
+// The back pill holds only an arrow, so it runs shorter than the icon pills.
+export const BACK_PILL_ASPECT = 1.4;
 
 // A filter control is its pill, a gap, then the label's line box. Both the
 // button and the band that spaces it measure from this, so the cluster has no

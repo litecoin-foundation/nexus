@@ -22,9 +22,13 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Switch from '../components/Buttons/Switch';
-import Header from '../components/Header';
-import HeaderButton from '../components/Buttons/HeaderButton';
 import BlueButton from '../components/Buttons/BlueButton';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  ScreenHeaderNavigationOptions,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../components/ScreenHeader';
 
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
@@ -45,6 +49,21 @@ const Scan = ({
   const [scanned, triggerScanned] = useState(false);
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout(true);
+  const headerFadeStyle = useScreenHeaderArrival();
+
+  const HeaderView = (
+    <>
+      <ScreenHeaderCard cardHeight={cardHeight} rounded={false} />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="scan_qr"
+        titleDomain="sendTab"
+        fadeStyle={headerFadeStyle}
+      />
+    </>
+  );
 
   const codeScanner = useCodeScanner({
     codeTypes: ['qr'],
@@ -111,7 +130,6 @@ const Scan = ({
 
   const PermissionsView = (
     <View style={styles.container}>
-      <Header modal={true} />
       <View style={styles.permissionsContainer}>
         <BlueButton
           textKey="enable_camera"
@@ -119,6 +137,7 @@ const Scan = ({
           onPress={() => requestPermission()}
         />
       </View>
+      {HeaderView}
     </View>
   );
 
@@ -135,7 +154,6 @@ const Scan = ({
         styles.container,
         Platform.OS === 'android' ? {marginBottom: insets.bottom} : null,
       ]}>
-      <Header modal={true} />
       <View style={styles.container}>
         <Camera
           codeScanner={codeScanner}
@@ -170,6 +188,7 @@ const Scan = ({
           />
         </View>
       </LinearGradient>
+      {HeaderView}
     </View>
   );
 };
@@ -184,7 +203,6 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
-    marginTop: -37,
   },
   bottomContainer: {
     height: 90,
@@ -220,13 +238,6 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
   },
-  headerTitle: {
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    color: 'white',
-    fontSize: 17,
-  },
   permissionsContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -235,37 +246,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ScanNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
-
-  return {
-    ...TransitionPresets.ModalPresentationIOS,
-    headerTitle: () => (
-      <TranslateText
-        textKey="scan_qr"
-        domain="sendTab"
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../assets/images/close-white.png')}
-        textKey="close"
-        textDomain="sendTab"
-      />
-    ),
-  };
+export const ScanNavigationOptions: StackNavigationOptions = {
+  ...TransitionPresets.ModalPresentationIOS,
+  ...ScreenHeaderNavigationOptions,
 };
 
 export default Scan;

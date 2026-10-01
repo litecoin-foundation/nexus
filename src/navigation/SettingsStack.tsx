@@ -85,11 +85,15 @@ function SettingsStack() {
         component={Language}
         options={ScreenHeaderNavigationOptions}
       />
-      <Stack.Screen name="Products" component={Products} />
+      <Stack.Screen
+        name="Products"
+        component={Products}
+        options={ScreenHeaderNavigationOptions}
+      />
       <Stack.Screen
         name="Scan"
         component={Scan}
-        options={({navigation}) => ScanNavigationOptions(navigation)}
+        options={ScanNavigationOptions}
       />
       <Stack.Screen
         name="Import"
@@ -114,7 +118,7 @@ function SettingsStack() {
       <Stack.Screen
         name="Support"
         component={Support}
-        options={({navigation}) => SupportNavigationOptions(navigation)}
+        options={SupportNavigationOptions}
       />
       <Stack.Screen
         name="ResetWallet"

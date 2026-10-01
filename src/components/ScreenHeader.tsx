@@ -18,10 +18,11 @@ import {
   getGlassHeaderRects,
   GLASS_HEADER_PILL_HEIGHT_RATIO,
   GlassHeaderRects,
+  HEADER_PILL_ASPECT,
 } from './glassSearchLayout';
-import {useHeaderHeight} from './useHeaderHeight';
+import {getHeaderRowHeight} from './useHeaderHeight';
 import {SKIN_GRADIENT_COLORS, SKIN_GRADIENT_LOCATIONS} from './FoldedSkinView';
-import {CARD_FOLD_RADIUS_RATIO} from '../animations/useNewMainAnims';
+import {CARD_HEADER_RADIUS_RATIO} from '../animations/useNewMainAnims';
 import {FADE_EASING, OPEN_MS} from '../animations/screenTransitions';
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -29,7 +30,6 @@ import {ScreenSizeContext} from '../context/screenSize';
 export const PADDING_HORIZONTAL_RATIO = 0.04;
 const BUTTON_PADDING_RATIO = 0.04;
 // Height fractions
-const HEADER_GAP_RATIO = 0;
 const HEADER_GRADIENT_EXTEND_RATIO = 0.1;
 const TITLE_FONT_RATIO = 0.02;
 const TITLE_PADDING_LEFT_RATIO = 0.012;
@@ -45,24 +45,31 @@ export const ScreenHeaderNavigationOptions: StackNavigationOptions = {
   headerRight: () => null,
 };
 
-export const useScreenHeaderLayout = () => {
+// NOTE: A card presented with ModalPresentationIOS is already pushed below the
+// status bar by the navigator, so pass `modal` there to drop the top inset.
+export const useScreenHeaderLayout = (modal = false) => {
   const {width, height} = useContext(ScreenSizeContext);
   const insets = useSafeAreaInsets();
-  const headerHeight = useHeaderHeight();
   const paddingHorizontal = width * PADDING_HORIZONTAL_RATIO;
+  const topInset = modal ? 0 : insets.top;
+  const rowHeight = modal
+    ? height * GLASS_HEADER_PILL_HEIGHT_RATIO + paddingHorizontal * 2
+    : getHeaderRowHeight(width, height);
+  const headerHeight = topInset + rowHeight;
   const rects = useMemo(
     () =>
       getGlassHeaderRects({
         screenWidth: width,
         screenHeight: height,
-        topInset: insets.top,
-        rowHeight: headerHeight - insets.top,
+        topInset,
+        rowHeight,
         paddingHorizontal,
         dropdownWidth: 0,
       }),
-    [width, height, insets.top, headerHeight, paddingHorizontal],
+    [width, height, topInset, rowHeight, paddingHorizontal],
   );
-  const cardHeight = headerHeight + height * HEADER_GAP_RATIO;
+
+  const cardHeight = rects.back.y + rects.back.height + paddingHorizontal;
   const titleLeft = rects.titleLeft + height * TITLE_PADDING_LEFT_RATIO;
   return {headerHeight, cardHeight, rects, paddingHorizontal, titleLeft};
 };
@@ -79,14 +86,15 @@ export const useScreenHeaderArrival = () => {
 
 interface CardProps {
   cardHeight: number;
+  rounded?: boolean;
 }
 
 export const ScreenHeaderCard: React.FC<CardProps> = props => {
-  const {cardHeight} = props;
+  const {cardHeight, rounded = true} = props;
   const {height} = useContext(ScreenSizeContext);
   const styles = useMemo(
-    () => getCardStyles(height, cardHeight),
-    [height, cardHeight],
+    () => getCardStyles(height, cardHeight, rounded),
+    [height, cardHeight, rounded],
   );
   return (
     <View style={styles.card} pointerEvents="none">
@@ -99,8 +107,13 @@ export const ScreenHeaderCard: React.FC<CardProps> = props => {
   );
 };
 
-const getCardStyles = (screenHeight: number, cardHeight: number) =>
-  StyleSheet.create({
+const getCardStyles = (
+  screenHeight: number,
+  cardHeight: number,
+  rounded: boolean,
+) => {
+  const radius = rounded ? screenHeight * CARD_HEADER_RADIUS_RATIO : 0;
+  return StyleSheet.create({
     card: {
       position: 'absolute',
       top: 0,
@@ -108,8 +121,8 @@ const getCardStyles = (screenHeight: number, cardHeight: number) =>
       right: 0,
       height: cardHeight,
       zIndex: 1,
-      borderBottomLeftRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
-      borderBottomRightRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
+      borderBottomLeftRadius: radius,
+      borderBottomRightRadius: radius,
       borderCurve: 'continuous',
       overflow: 'hidden',
     },
@@ -121,16 +134,19 @@ const getCardStyles = (screenHeight: number, cardHeight: number) =>
       height: cardHeight + screenHeight * HEADER_GRADIENT_EXTEND_RATIO,
     },
   });
+};
 
 interface PillProps {
   onPress: () => void;
   style?: any;
   color?: string;
+  // NOTE: the shorter back-arrow pill instead of an icon pill
+  back?: boolean;
   children?: React.ReactNode;
 }
 
 export const ScreenHeaderPill: React.FC<PillProps> = props => {
-  const {onPress, style, color, children} = props;
+  const {onPress, style, color, back, children} = props;
   const {height} = useContext(ScreenSizeContext);
   const styles = useMemo(() => getPillStyles(height), [height]);
   return (
@@ -138,6 +154,7 @@ export const ScreenHeaderPill: React.FC<PillProps> = props => {
       onPress={onPress}
       style={({pressed}) => [
         styles.pill,
+        back ? styles.backPill : null,
         color ? {backgroundColor: color} : null,
         style,
         pressed ? styles.pressed : null,
@@ -162,12 +179,15 @@ const getPillStyles = (screenHeight: number) => {
   const pillHeight = screenHeight * GLASS_HEADER_PILL_HEIGHT_RATIO;
   return StyleSheet.create({
     pill: {
-      width: pillHeight * BACK_PILL_ASPECT,
+      width: pillHeight * HEADER_PILL_ASPECT,
       height: pillHeight,
       borderRadius: pillHeight / 2,
       backgroundColor: FLAT_PILL_COLOR,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    backPill: {
+      width: pillHeight * BACK_PILL_ASPECT,
     },
     backIcon: {
       width: screenHeight * BACK_ICON_RATIO,
@@ -186,9 +206,11 @@ interface Props {
   paddingHorizontal: number;
   titleKey?: string;
   titleDomain?: string;
+  titleValue?: string;
   onBack?: () => void;
   rightTextKey?: string;
   rightTextDomain?: string;
+  rightTextValue?: string;
   onRightPress?: () => void;
   fadeStyle: any;
   interactive?: boolean;
@@ -201,9 +223,11 @@ const ScreenHeader: React.FC<Props> = props => {
     paddingHorizontal,
     titleKey,
     titleDomain,
+    titleValue,
     onBack,
     rightTextKey,
     rightTextDomain,
+    rightTextValue,
     onRightPress,
     fadeStyle,
     interactive = true,
@@ -240,7 +264,7 @@ const ScreenHeader: React.FC<Props> = props => {
         <ScreenHeaderBackIcon />
       </ScreenHeaderPill>
 
-      {titleKey ? (
+      {titleKey || titleValue ? (
         <View
           style={[
             styles.title,
@@ -255,6 +279,7 @@ const ScreenHeader: React.FC<Props> = props => {
           <TranslateText
             textKey={titleKey}
             domain={titleDomain}
+            textValue={titleValue}
             maxSizeInPixels={SCREEN_HEIGHT * TITLE_FONT_RATIO}
             textStyle={styles.titleText}
             numberOfLines={1}
@@ -262,7 +287,7 @@ const ScreenHeader: React.FC<Props> = props => {
         </View>
       ) : null}
 
-      {rightTextKey && onRightPress ? (
+      {(rightTextKey || rightTextValue) && onRightPress ? (
         <ScreenHeaderPill
           onPress={onRightPress}
           color={pillColor}
@@ -276,7 +301,7 @@ const ScreenHeader: React.FC<Props> = props => {
             },
           ]}>
           <TranslateText
-            textValue={t(rightTextKey).toUpperCase()}
+            textValue={(rightTextValue ?? t(rightTextKey!)).toUpperCase()}
             maxSizeInPixels={SCREEN_HEIGHT * TITLE_FONT_RATIO}
             textStyle={styles.rightButtonText}
             numberOfLines={1}

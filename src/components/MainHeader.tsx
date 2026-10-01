@@ -119,7 +119,7 @@ const MainHeader: React.FC<Props> = ({
           pointerEvents={sidePointerEvents}>
           <Animated.View style={[styles.sideRow, shopHeaderFadeStyle]}>
             {activeTab !== 0 ? (
-              <ScreenHeaderPill onPress={onBack}>
+              <ScreenHeaderPill back onPress={onBack}>
                 <ScreenHeaderBackIcon />
               </ScreenHeaderPill>
             ) : (

@@ -62,12 +62,12 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="Scan"
         component={Scan}
-        options={({navigation}) => ScanNavigationOptions(navigation)}
+        options={ScanNavigationOptions}
       />
       <Stack.Screen
         name="WebPage"
         component={WebPage}
-        options={({navigation}) => WebPageNavigationOptions(navigation)}
+        options={WebPageNavigationOptions}
       />
       <Stack.Screen
         name="ConfirmSend"

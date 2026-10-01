@@ -16,7 +16,11 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import Header from '../../components/Header';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {
   fetchCollectionsWithProducts,
@@ -38,14 +42,15 @@ interface Props {
   route: RouteProp<RootStackParamList, 'Products'>;
 }
 
-const Products: React.FC<Props> = props => {
-  const {navigation} = props;
+const Products: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, cardHeight);
 
   const {
     cart,
@@ -225,52 +230,50 @@ const Products: React.FC<Props> = props => {
   const cartItemCount = getCartItemCount();
 
   return (
-    <>
-      <Header
-        title="Products"
-        onBackPress={() => navigation.goBack()}
-        showBackButton
-        rightComponent={
-          cartItemCount > 0 ? (
-            <TouchableOpacity
-              style={styles.cartButton}
-              onPress={handleCheckout}>
-              <Text style={styles.cartButtonText}>Cart ({cartItemCount})</Text>
-            </TouchableOpacity>
-          ) : null
-        }
+    <LinearGradient
+      colors={['#2C72FF', '#8BB8FF']}
+      style={[styles.container, {paddingBottom: insets.bottom}]}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#fff"
+          />
+        }>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#fff" />
+            <Text style={styles.loadingText}>Loading products...</Text>
+          </View>
+        ) : categories.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No products available</Text>
+          </View>
+        ) : (
+          <>{categories.map(renderCategory)}</>
+        )}
+      </ScrollView>
+      <ScreenHeaderCard cardHeight={cardHeight} />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="Products"
+        titleDomain="settingsTab"
+        rightTextValue={`Cart (${cartItemCount})`}
+        onRightPress={cartItemCount > 0 ? handleCheckout : undefined}
+        fadeStyle={headerFadeStyle}
       />
-      <LinearGradient
-        colors={['#2C72FF', '#8BB8FF']}
-        style={[styles.container, {paddingBottom: insets.bottom}]}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor="#fff"
-            />
-          }>
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#fff" />
-              <Text style={styles.loadingText}>Loading products...</Text>
-            </View>
-          ) : categories.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No products available</Text>
-            </View>
-          ) : (
-            <>{categories.map(renderCategory)}</>
-          )}
-        </ScrollView>
-      </LinearGradient>
-    </>
+    </LinearGradient>
   );
 };
 
-const getStyles = (screenWidth: number, _screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  _screenHeight: number,
+  cardHeight: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -278,7 +281,8 @@ const getStyles = (screenWidth: number, _screenHeight: number) =>
     },
     scrollContainer: {
       paddingHorizontal: 20,
-      paddingVertical: 20,
+      paddingTop: cardHeight + 20,
+      paddingBottom: 20,
     },
     loadingContainer: {
       flex: 1,
@@ -401,19 +405,6 @@ const getStyles = (screenWidth: number, _screenHeight: number) =>
     },
     addToCartButtonText: {
       color: '#fff',
-      fontSize: 12,
-      fontWeight: 'bold',
-      fontFamily: 'Satoshi Variable',
-    },
-    cartButton: {
-      backgroundColor: '#fff',
-      paddingVertical: 6,
-      paddingHorizontal: 12,
-      borderRadius: 16,
-      marginRight: 10,
-    },
-    cartButtonText: {
-      color: '#2C72FF',
       fontSize: 12,
       fontWeight: 'bold',
       fontFamily: 'Satoshi Variable',

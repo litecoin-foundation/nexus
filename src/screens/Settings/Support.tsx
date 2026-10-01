@@ -1,14 +1,20 @@
-import React, {useContext} from 'react';
-import {View, StyleSheet, Platform} from 'react-native';
+import React from 'react';
+import {View, StyleSheet} from 'react-native';
 
-import {StackNavigationProp, TransitionPresets} from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+  TransitionPresets,
+} from '@react-navigation/stack';
 
-import Header from '../../components/Header';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import ScreenHeader, {
+  ScreenHeaderCard,
+  ScreenHeaderNavigationOptions,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import ChatwootModal from '../../components/Modals/ChatwootModal';
 import {useAppSelector} from '../../store/hooks';
-
-import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
   Support: undefined;
@@ -22,6 +28,8 @@ const Support: React.FC<Props> = props => {
   const {navigation} = props;
   const {uniqueId, supportId} = useAppSelector(state => state.onboarding);
   const {languageCode} = useAppSelector(state => state.settings);
+  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout(true);
+  const headerFadeStyle = useScreenHeaderArrival();
 
   console.log(supportId);
 
@@ -49,16 +57,22 @@ const Support: React.FC<Props> = props => {
   const locale = getChatwootLocale(languageCode);
   return (
     <View style={styles.container}>
-      <Header modal={true} />
-
-      <ChatwootModal
-        websiteToken={websiteToken}
-        locale={locale}
-        baseUrl={baseUrl}
-        closeModal={() => navigation.goBack()}
-        user={user}
-        customAttributes={customAttributes}
-        colorScheme="light"
+      <View style={[styles.container, {paddingTop: cardHeight}]}>
+        <ChatwootModal
+          websiteToken={websiteToken}
+          locale={locale}
+          baseUrl={baseUrl}
+          closeModal={() => navigation.goBack()}
+          user={user}
+          customAttributes={customAttributes}
+          colorScheme="light"
+        />
+      </View>
+      <ScreenHeaderCard cardHeight={cardHeight} rounded={false} />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        fadeStyle={headerFadeStyle}
       />
     </View>
   );
@@ -81,36 +95,11 @@ const styles = StyleSheet.create({
   opacity: {
     opacity: 0.4,
   },
-  headerButtonContainer: {
-    paddingTop: 30,
-  },
 });
 
-export const SupportNavigationOptions = (navigation: any) => {
-  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
-
-  return {
-    ...TransitionPresets.ModalPresentationIOS,
-    headerTitle: '',
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <View style={styles.headerButtonContainer}>
-        <HeaderButton
-          onPress={() => navigation.goBack()}
-          imageSource={require('../../assets/images/back-icon.png')}
-          textKey="back"
-          textDomain="buyTab"
-          leftPadding
-        />
-      </View>
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
+export const SupportNavigationOptions: StackNavigationOptions = {
+  ...TransitionPresets.ModalPresentationIOS,
+  ...ScreenHeaderNavigationOptions,
 };
 
 export default Support;

@@ -64,6 +64,7 @@ import {
 import {useShopScreenState} from '../components/GiftCardShop/useShopScreenState';
 import {
   CARD_FOLD_RADIUS_RATIO,
+  CARD_HEADER_RADIUS_RATIO,
   getFoldedTopHalfHeight,
   getNewMainSheetPoints,
   getNewMainTopHalfHeight,
@@ -308,9 +309,10 @@ const NexusShop: React.FC<Props> = props => {
   const sheetStyle = useAnimatedStyle(() => ({
     opacity: beneathCut.value ? 0 : 1,
   }));
-  // the card's bottom edge is the container boundary. It stays pinned at
+  // NOTE: The card's bottom edge is the container boundary. It stays pinned at
   // the wallet sheet's edge while the surface fades over ([0, 0.35]), THEN
-  // travels to the shop header — one continuously visible edge, no jump
+  // travels to the shop header — one continuously visible edge, no jump.
+  // Its corners flatten from the wallet card's to the header's on the way.
   const gradientStyle = useAnimatedStyle(() => {
     const travelled = interpolate(
       transition.value,
@@ -318,10 +320,20 @@ const NexusShop: React.FC<Props> = props => {
       [0, 1],
       Extrapolation.CLAMP,
     );
+    const radius = interpolate(
+      travelled,
+      [0, 1],
+      [
+        SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO,
+        SCREEN_HEIGHT * CARD_HEADER_RADIUS_RATIO,
+      ],
+    );
     return {
       height:
         morphFrom.value +
         (headerHeight - headerShrink.value - morphFrom.value) * travelled,
+      borderBottomLeftRadius: radius,
+      borderBottomRightRadius: radius,
     };
   });
   const segmentsSettleStyle = useAnimatedStyle(() => {
@@ -755,8 +767,8 @@ const getStyles = (
       left: 0,
       right: 0,
       height: headerHeight,
-      borderBottomLeftRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
-      borderBottomRightRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
+      borderBottomLeftRadius: screenHeight * CARD_HEADER_RADIUS_RATIO,
+      borderBottomRightRadius: screenHeight * CARD_HEADER_RADIUS_RATIO,
       borderCurve: 'continuous',
       overflow: 'hidden',
     },

@@ -22,6 +22,8 @@ const SPRING_BACK_ANIM_DURATION = 100;
 // Bottom-corner radius of the folded top-half card, as a ratio of
 // screen height.
 export const CARD_FOLD_RADIUS_RATIO = 0.037;
+// The same card's radius once it has shrunk down to a header.
+export const CARD_HEADER_RADIUS_RATIO = 0.028;
 const UNFOLD_SHEET_RATIO = 0.28;
 const FOLD_SHEET_RATIO = 0.5;
 
