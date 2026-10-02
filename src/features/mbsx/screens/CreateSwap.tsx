@@ -248,7 +248,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setFeeNote('');
     setSpendNote('');
     setQuote(null);
-    if (amountFrom === '' || sendCoin === '') {
+    if (amountFrom === '' || sendCoin === '' || !isRunning()) {
       return;
     }
     const funding = getSwapFundingOutputs(sendCoin, amountFrom);

@@ -1,8 +1,8 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
-  Alert,
   Image,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -58,10 +58,95 @@ const refundTxid = (events: SwapEvent[] | undefined): string => {
   return hit?.linked_id ? displayTxid(String(hit.linked_id)) : '';
 };
 
-const copyLinkedId = (isTx: boolean, linkedId: string): void => {
-  const value = isTx ? displayTxid(linkedId) : String(linkedId);
-  Clipboard.setString(value);
-  Alert.alert('Copied', value);
+const CoinAmount = ({amount, coin}: {amount: string; coin: string}) => (
+  <View style={swapCards.historyRow}>
+    {COIN_ICONS[coin] ? (
+      <Image source={COIN_ICONS[coin]} style={swapCards.coinLogo} />
+    ) : null}
+    <Text style={swapCards.historyTitle}>{`${amount} ${coin}`}</Text>
+  </View>
+);
+
+const Flip = () => (
+  <View style={swapCards.flipWrap}>
+    <View style={swapCards.flipLine} />
+    <View style={swapCards.flip}>
+      <Image
+        source={require('../../../assets/icons/switch-arrow.png')}
+        style={swapCards.flipIcon}
+      />
+    </View>
+  </View>
+);
+
+const CopyField = ({testID, value}: {testID: string; value: string}) => (
+  <View style={look.addressRow}>
+    <View style={look.addressBox}>
+      <Text style={look.address} selectable>
+        {value}
+      </Text>
+    </View>
+    <TouchableOpacity
+      testID={testID}
+      accessibilityLabel="Copy"
+      style={look.iconBtn}
+      onPress={() => Clipboard.setString(value)}>
+      <Image
+        source={require('../../../assets/icons/copy-icon.png')}
+        style={look.toolIcon}
+      />
+    </TouchableOpacity>
+  </View>
+);
+
+const SwapFees = ({swap}: {swap: SwapDetails}) => {
+  const fees = swap.fees ?? [];
+  const show =
+    fees.length > 0 ||
+    Boolean(swap.chain_fee_from) ||
+    Boolean(swap.chain_fee_to);
+  if (!show) {
+    return null;
+  }
+  const bps = fees.reduce((sum, fee) => sum + Number(fee.bps), 0);
+  const chains: [string, string | undefined, bigint][] = [
+    [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
+    [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
+  ];
+  return (
+    <>
+      <Text style={swapCards.section}>Fees</Text>
+      <View style={swapCards.card}>
+        {fees.map((fee, index) => (
+          <View
+            key={fee.desc}
+            style={[look.feeRow, index > 0 ? look.feeLine : null]}>
+            <Text style={look.feeLabel}>{fee.desc}</Text>
+            <Text style={look.feePct}>{`${Number(fee.bps) / 100}%`}</Text>
+            <Text style={look.feeValue}>
+              {`${fee.amount} ${swap.fees_coin ?? ''}`}
+            </Text>
+          </View>
+        ))}
+        {fees.length > 0 ? (
+          <View style={[look.feeRow, look.feeTotal]}>
+            <Text style={look.feeTotalLabel}>Total</Text>
+            <Text style={look.feePct}>{`${bps / 100}%`}</Text>
+            <Text testID="mbsx-receipt-fee" style={look.feeTotalValue}>
+              {`${swap.fees_total ?? ''} ${swap.fees_coin ?? ''}`}
+            </Text>
+          </View>
+        ) : null}
+        {chains.map(([coin, amount, rate]) => (
+          <View key={coin} style={[look.feeRow, look.feeLine]}>
+            <Text style={look.feeLabel}>{`Chain fee ${coin}`}</Text>
+            <Text style={look.feeRate}>{`${rate} sat/kvB`}</Text>
+            <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
+          </View>
+        ))}
+      </View>
+    </>
+  );
 };
 
 const SwapDetail: React.FC<Props> = ({route, navigation}) => {
@@ -124,10 +209,6 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
       sent > 0 && received > 0
         ? `1 ${swap.coin_from} ≈ ${coinString(received / sent)} ${swap.coin_to}`
         : '';
-    const feeBps = (swap.fees ?? []).reduce(
-      (sum, fee) => sum + Number(fee.bps),
-      0,
-    );
     const address = destinations?.[swap.request_id] ?? '';
     const refund = refundTxid(swap.events);
     return (
@@ -153,71 +234,33 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           </View>
           <Text style={swapCards.section}>Sent</Text>
           <View style={swapCards.card}>
-            <Text style={swapCards.amount}>
-              {`${swap.amount_from} ${swap.coin_from}`}
-            </Text>
+            <CoinAmount amount={swap.amount_from} coin={swap.coin_from} />
           </View>
+          <Flip />
           <Text style={swapCards.section}>Received</Text>
           <View style={swapCards.card}>
-            <Text style={swapCards.amount}>
-              {`${swap.amount_to} ${swap.coin_to}`}
-            </Text>
+            <CoinAmount amount={swap.amount_to} coin={swap.coin_to} />
+            {rate ? (
+              <Text testID="mbsx-receipt-rate" style={swapCards.meta}>
+                {rate}
+              </Text>
+            ) : null}
           </View>
-          {rate ? (
-            <>
-              <Text style={swapCards.section}>Rate</Text>
-              <View style={swapCards.card}>
-                <Text testID="mbsx-receipt-rate" style={swapCards.meta}>
-                  {rate}
-                </Text>
-              </View>
-            </>
-          ) : null}
-          {feeBps > 0 || swap.chain_fee_from ? (
-            <>
-              <Text style={swapCards.section}>Fees</Text>
-              <View style={swapCards.card}>
-                {feeBps > 0 ? (
-                  <Text testID="mbsx-receipt-fee" style={swapCards.meta}>
-                    {`Swap fee ${feeBps / 100}%${
-                      swap.fees_total
-                        ? ` (${swap.fees_total} ${swap.fees_coin})`
-                        : ''
-                    }`}
-                  </Text>
-                ) : null}
-                {swap.chain_fee_from ? (
-                  <Text style={swapCards.meta}>
-                    {`Network fee ~${swap.chain_fee_from} ${swap.coin_from}`}
-                  </Text>
-                ) : null}
-              </View>
-            </>
-          ) : null}
+          <SwapFees swap={swap} />
           {address ? (
             <>
               <Text style={swapCards.section}>Receive address</Text>
               <View style={swapCards.card}>
-                <Text testID="mbsx-receipt-address" selectable style={swapCards.meta}>
-                  {address}
-                </Text>
+                <CopyField testID="mbsx-receipt-address" value={address} />
               </View>
             </>
           ) : null}
           {refund ? (
             <>
               <Text style={swapCards.section}>Refund transaction</Text>
-              <TouchableOpacity
-                testID="mbsx-receipt-refund"
-                style={swapCards.card}
-                onPress={() => {
-                  Clipboard.setString(refund);
-                  Alert.alert('Copied', refund);
-                }}>
-                <Text selectable style={swapCards.meta}>
-                  {refund}
-                </Text>
-              </TouchableOpacity>
+              <View style={swapCards.card}>
+                <CopyField testID="mbsx-receipt-refund" value={refund} />
+              </View>
             </>
           ) : null}
           <TouchableOpacity
@@ -262,20 +305,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
         </View>
         <Text style={swapCards.section}>Send</Text>
         <View style={swapCards.card}>
-          <View style={swapCards.amountRow}>
-            <Text style={swapCards.amount} numberOfLines={1} adjustsFontSizeToFit>
-              {swap.amount_from}
-            </Text>
-            <View style={swapCards.coinPill}>
-              {COIN_ICONS[swap.coin_from] ? (
-                <Image
-                  source={COIN_ICONS[swap.coin_from]}
-                  style={swapCards.coinLogo}
-                />
-              ) : null}
-              <Text style={swapCards.coinPillText}>{swap.coin_from}</Text>
-            </View>
-          </View>
+          <CoinAmount amount={swap.amount_from} coin={swap.coin_from} />
           {swap.kind ? (
             <Text style={swapCards.meta}>{kindLabel(swap.kind)}</Text>
           ) : null}
@@ -291,30 +321,20 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           </TouchableOpacity>
         </View>
 
-        <View style={swapCards.flipWrap}>
-          <View style={swapCards.flipLine} />
-          <View style={swapCards.flip}>
-            <Image
-              source={require('../../../assets/icons/switch-arrow.png')}
-              style={swapCards.flipIcon}
-            />
-          </View>
-        </View>
+        <Flip />
 
         <Text style={swapCards.section}>Receive</Text>
         <View style={swapCards.card}>
-          <View style={swapCards.amountRow}>
-            <Text style={swapCards.amount} numberOfLines={1} adjustsFontSizeToFit>
-              {swap.amount_to}
+          <CoinAmount amount={swap.amount_to} coin={swap.coin_to} />
+          {Number(swap.amount_from) > 0 && Number(swap.amount_to) > 0 ? (
+            <Text style={swapCards.meta}>
+              {`1 ${swap.coin_from} ≈ ${coinString(
+                Number(swap.amount_to) / Number(swap.amount_from),
+              )} ${swap.coin_to}`}
             </Text>
-            <View style={swapCards.coinPill}>
-              {COIN_ICONS[swap.coin_to] ? (
-                <Image source={COIN_ICONS[swap.coin_to]} style={swapCards.coinLogo} />
-              ) : null}
-              <Text style={swapCards.coinPillText}>{swap.coin_to}</Text>
-            </View>
-          </View>
+          ) : null}
         </View>
+        <SwapFees swap={swap} />
 
         <TouchableOpacity
           style={swapCards.advancedToggle}
@@ -347,7 +367,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                   testID={`mbsx-event-${event.id}`}
                   style={swapCards.card}
                   onPress={() => setOpenEvent(expanded ? null : event.id)}>
-                  <Text style={styles.rowPrimary}>
+                  <Text style={swapCards.historyTitle}>
                     {stepText !== event.event_sub_type
                       ? stepText
                       : `${event.event_type}${
@@ -357,32 +377,36 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                   {showRaw && event.event_sub_type ? (
                     <Text style={swapCards.id}>{String(event.event_sub_type)}</Text>
                   ) : null}
-                  <Text style={styles.rowSecondary}>{event.time}</Text>
+                  <Text style={swapCards.historySub}>
+                    {event.time ??
+                      (event.created_at
+                        ? formatTimestamp(String(event.created_at))
+                        : '')}
+                  </Text>
                   {(event.event_msg ?? event.event_data) ? (
-                    <Text style={styles.rowMessage}>
+                    <Text style={swapCards.meta}>
                       {String(event.event_msg ?? event.event_data)}
                     </Text>
                   ) : null}
                   {expanded && event.linked_id ? (
-                    <>
-                      <Text style={styles.rowSecondary}>
+                    <View style={look.eventCopy}>
+                      <Text style={swapCards.historySub}>
                         {isTx ? 'Transaction' : String(event.linked_type)}
                       </Text>
-                      <TouchableOpacity
+                      <CopyField
                         testID={`mbsx-copy-${event.id}`}
-                        onPress={() => copyLinkedId(isTx, event.linked_id)}>
-                        <Text selectable style={styles.rowMessage}>
-                          {isTx ? displayTxid(event.linked_id) : event.linked_id}
-                        </Text>
-                      </TouchableOpacity>
-                    </>
+                        value={
+                          isTx
+                            ? displayTxid(event.linked_id)
+                            : String(event.linked_id)
+                        }
+                      />
+                    </View>
                   ) : null}
                   {expanded &&
                   event.event_msg !== undefined &&
                   event.event_data !== undefined ? (
-                    <Text style={styles.rowMessage}>
-                      {String(event.event_data)}
-                    </Text>
+                    <Text style={swapCards.meta}>{String(event.event_data)}</Text>
                   ) : null}
                 </TouchableOpacity>
               );
@@ -411,5 +435,100 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addressBox: {
+    flex: 1,
+    borderRadius: 22,
+    backgroundColor: '#F4F7FB',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  address: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#484859',
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F4F7FB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  toolIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#484859',
+  },
+  eventCopy: {
+    marginTop: 8,
+  },
+  feeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  feeLine: {
+    borderTopWidth: 1,
+    borderTopColor: '#EEF1F5',
+  },
+  feeLabel: {
+    flex: 1,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    color: '#484859',
+  },
+  feePct: {
+    width: 56,
+    textAlign: 'right',
+    fontFamily: 'Satoshi Variable',
+    fontSize: 13,
+    color: '#747E87',
+  },
+  feeRate: {
+    marginLeft: 8,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 12,
+    color: '#747E87',
+    textAlign: 'right',
+  },
+  feeValue: {
+    minWidth: 88,
+    marginLeft: 8,
+    textAlign: 'right',
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    color: '#484859',
+  },
+  feeTotal: {
+    borderTopWidth: 1,
+    borderTopColor: '#D5DBE4',
+    marginTop: 2,
+  },
+  feeTotalLabel: {
+    flex: 1,
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#484859',
+  },
+  feeTotalValue: {
+    minWidth: 88,
+    marginLeft: 8,
+    textAlign: 'right',
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#484859',
+  },
+});
 
 export default SwapDetail;

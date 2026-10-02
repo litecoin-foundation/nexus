@@ -27,6 +27,14 @@ export const formatExpiry = (
   return ms >= 0 ? 'in under a minute' : 'just now';
 };
 
+export const depositTimeLeft = (expireAt: bigint, now?: number): string => {
+  const phrase = formatExpiry(
+    new Date(Number(expireAt) * 1000).toISOString().slice(0, -1),
+    now,
+  );
+  return phrase.startsWith('in ') ? `Expires ${phrase}` : 'Expired';
+};
+
 export const kindLabel = (kind?: string): string =>
   kind === 'PRIVATE' ? 'Private' : kind === 'BRIDGED' ? 'Bridged' : '';
 

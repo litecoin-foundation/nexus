@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,10 +21,12 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {triggerLightFeedback} from '../../../utils/haptic';
-import {formatExpiry} from '../format';
+import {depositTimeLeft} from '../format';
 import {getMbsxStyles} from '../theme';
 import {coinString, slippageFor} from '../useSwapAmounts';
+import CoinPair from '../components/CoinPair';
 import MbsxBackButton from '../components/MbsxBackButton';
+import {COIN_ICONS, swapCards} from '../swapCards';
 import {depositStateText, useShowRawStates} from '../stateText';
 import {
   cancelDeposit,
@@ -49,11 +52,6 @@ const CANCELLABLE = new Set([
   'NO_QUOTE',
   'REQUESTED',
 ]);
-
-const expiry = (deposit: Deposit) =>
-  formatExpiry(
-    new Date(Number(deposit.expire_at) * 1000).toISOString().slice(0, -1),
-  );
 
 const suggestedFloor = (deposit: Deposit) => {
   const prices = getCoinPrices()?.prices;
@@ -91,6 +89,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const [loaded, setLoaded] = useState<Deposit | null>(null);
   const [floor, setFloor] = useState('');
   const [error, setError] = useState('');
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
   // Stays mounted, so the last pay-in shown is still loaded when another opens
   const deposit = loaded?.deposit_id === depositId ? loaded : null;
   const openedSwapId = useRef<string | null>(null);
@@ -98,6 +97,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   useEffect(() => {
     setFloor('');
     setError('');
+    setConfirmingCancel(false);
     openedSwapId.current = null;
   }, [depositId]);
 
@@ -164,64 +164,110 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
     }
   };
 
+  const coinMark = (ticker: string) =>
+    COIN_ICONS[ticker] ? (
+      <Image source={COIN_ICONS[ticker]} style={swapCards.coinLogo} />
+    ) : null;
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text testID="mbsx-payin-state" style={styles.rowPrimary}>
-          {showRaw
-            ? deposit.state
-            : depositStateText(deposit.state, deposit.coin)}
-        </Text>
-        {deposit.payable ? (
-          <View style={look.block}>
-            <Text style={styles.value}>Pay exactly</Text>
-            <Text
-              testID="mbsx-payin-amount"
-              style={[styles.label, look.amountDue]}>
-              {`${deposit.remaining} ${deposit.coin}`}
-            </Text>
-            <View style={look.qr}>
-              <QRCode value={deposit.address} size={SCREEN_HEIGHT * 0.25} />
-            </View>
-            <TouchableOpacity
-              testID="mbsx-payin-address"
-              onPress={() => Clipboard.setString(deposit.address)}>
-              <Text style={[styles.valueLink, look.address]} selectable>
-                {deposit.address}
+        <View style={swapCards.card}>
+          <View style={swapCards.historyRow}>
+            <CoinPair from={deposit.coin} to={deposit.coin_to} size={40} />
+            <View style={swapCards.historyMid}>
+              <Text testID="mbsx-payin-state" style={swapCards.historyTitle}>
+                {depositStateText(deposit.state, deposit.coin)}
               </Text>
-            </TouchableOpacity>
-            <Text style={styles.rowMessage}>
-              {`Tap the address to copy it. Expires ${expiry(deposit)}.`}
+              {showRaw ? (
+                <Text style={swapCards.historySub}>{deposit.state}</Text>
+              ) : null}
+              <Text style={swapCards.historySub}>
+                {depositTimeLeft(deposit.expire_at)}
+              </Text>
+            </View>
+          </View>
+        </View>
+        {deposit.payable ? (
+          <>
+            <View style={swapCards.card}>
+              <View style={swapCards.historyRow}>
+                {coinMark(deposit.coin)}
+                <Text testID="mbsx-payin-amount" style={swapCards.historyTitle}>
+                  {`${deposit.remaining} ${deposit.coin}`}
+                </Text>
+              </View>
+              <Text style={swapCards.historySub}>Pay exactly</Text>
+              <View style={look.qr}>
+                <QRCode value={deposit.address} size={SCREEN_HEIGHT * 0.22} />
+              </View>
+              <View style={look.addressRow}>
+                <View style={look.addressBox}>
+                  <Text
+                    testID="mbsx-payin-address"
+                    style={look.address}
+                    selectable>
+                    {deposit.address}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  testID="mbsx-payin-copy"
+                  accessibilityLabel="Copy"
+                  style={look.iconBtn}
+                  onPress={() => Clipboard.setString(deposit.address)}>
+                  <Image
+                    source={require('../../../assets/icons/copy-icon.png')}
+                    style={look.toolIcon}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        ) : PAYABLE.has(deposit.state) ? (
+          <View style={swapCards.card}>
+            <Text testID="mbsx-payin-ended" style={swapCards.note}>
+              This pay-in has ended, so don't pay into its address. Anything it
+              received goes back to your refund address.
             </Text>
           </View>
-        ) : PAYABLE.has(deposit.state) ? (
-          <Text testID="mbsx-payin-ended" style={styles.rowMessage}>
-            This pay-in has ended, so don't pay into its address. Anything it
-            received goes back to your refund address.
-          </Text>
         ) : null}
-        <View style={look.block}>
-          <Text style={styles.label}>Received</Text>
-          <Text testID="mbsx-payin-received" style={styles.value}>
-            {`${deposit.received} ${deposit.coin}`}
-          </Text>
-          <Text style={styles.label}>You receive at least</Text>
-          <Text style={styles.value}>
-            {`${deposit.min_amount_to} ${deposit.coin_to}`}
-          </Text>
-          <Text style={styles.label}>Refunds go to</Text>
-          <Text style={styles.value} selectable>
+        <Text style={swapCards.section}>Received</Text>
+        <View style={swapCards.card}>
+          <View style={swapCards.amountRow}>
+            {coinMark(deposit.coin)}
+            <Text testID="mbsx-payin-received" style={swapCards.historyTitle}>
+              {`${deposit.received} ${deposit.coin}`}
+            </Text>
+          </View>
+        </View>
+        <Text style={swapCards.section}>You receive at least</Text>
+        <View style={swapCards.card}>
+          <View style={swapCards.amountRow}>
+            {coinMark(deposit.coin_to)}
+            <Text style={swapCards.historyTitle}>
+              {`${deposit.min_amount_to} ${deposit.coin_to}`}
+            </Text>
+          </View>
+        </View>
+        <Text style={swapCards.section}>Refunds go to</Text>
+        <View style={swapCards.card}>
+          <Text selectable style={swapCards.meta}>
             {deposit.refund_address}
           </Text>
-          {deposit.sweep_txid ? (
-            <>
-              <Text style={styles.label}>Refund transaction</Text>
-              <Text testID="mbsx-payin-sweep" style={styles.value} selectable>
+        </View>
+        {deposit.sweep_txid ? (
+          <>
+            <Text style={swapCards.section}>Refund transaction</Text>
+            <TouchableOpacity
+              testID="mbsx-payin-sweep"
+              style={swapCards.card}
+              onPress={() => Clipboard.setString(deposit.sweep_txid as string)}>
+              <Text selectable style={swapCards.meta}>
                 {deposit.sweep_txid}
               </Text>
-            </>
-          ) : null}
-        </View>
+            </TouchableOpacity>
+          </>
+        ) : null}
         {deposit.request_id ? (
           <TouchableOpacity
             testID="mbsx-payin-request"
@@ -230,44 +276,83 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 requestId: deposit.request_id as string,
               })
             }>
-            <Text style={styles.link}>View the swap request</Text>
+            <Text style={swapCards.link}>View the swap request</Text>
           </TouchableOpacity>
         ) : null}
         {paused ? (
-          <View style={look.block}>
-            <Text style={styles.rowMessage}>
-              {`Swap the ${deposit.received} ${deposit.coin} received for at least`}
+          <>
+            <Text style={swapCards.section}>
+              {deposit.state === 'NO_QUOTE' ? 'Lower the minimum' : 'New minimum'}
             </Text>
-            <TextInput
-              testID="mbsx-payin-floor"
-              style={styles.input}
-              value={floor}
-              onChangeText={setFloor}
-              placeholder={`${deposit.coin_to} to receive`}
-              keyboardType="decimal-pad"
-            />
-            <TouchableOpacity
-              testID="mbsx-payin-requote"
-              style={[
-                styles.button,
-                floor === '' ? styles.buttonDisabled : null,
-              ]}
-              disabled={floor === ''}
-              onPress={() => act(() => requoteDeposit(deposit, floor))}>
-              <Text style={styles.buttonText}>Re-quote</Text>
-            </TouchableOpacity>
-          </View>
+            <View style={swapCards.card}>
+              <Text style={swapCards.note}>
+                {deposit.state === 'NO_QUOTE'
+                  ? `No offer met ${deposit.min_amount_to} ${deposit.coin_to}. Lower it to try again.`
+                  : `Swap the ${deposit.received} ${deposit.coin} received for at least`}
+              </Text>
+              <TextInput
+                testID="mbsx-payin-floor"
+                style={styles.input}
+                value={floor}
+                onChangeText={setFloor}
+                placeholder={`${deposit.coin_to} to receive`}
+                keyboardType="decimal-pad"
+              />
+              <TouchableOpacity
+                testID="mbsx-payin-requote"
+                style={[
+                  styles.button,
+                  look.requote,
+                  floor === '' ? styles.buttonDisabled : null,
+                ]}
+                disabled={floor === ''}
+                onPress={() => act(() => requoteDeposit(deposit, floor))}>
+                <Text style={styles.buttonText}>Re-quote</Text>
+              </TouchableOpacity>
+            </View>
+          </>
         ) : null}
         {error !== '' ? (
           <Text testID="mbsx-payin-error" style={styles.error}>
             {error}
           </Text>
         ) : null}
-        {CANCELLABLE.has(deposit.state) ? (
+        {confirmingCancel ? (
+          <View testID="mbsx-payin-cancel-confirm" style={swapCards.card}>
+            <Text style={swapCards.historyTitle}>Return the payment?</Text>
+            <Text style={swapCards.note}>
+              {`${deposit.received} ${deposit.coin} goes back to your refund address.`}
+            </Text>
+            <View style={look.confirmActions}>
+              <TouchableOpacity
+                testID="mbsx-payin-cancel-keep"
+                style={[styles.buttonSecondary, look.confirmAction]}
+                onPress={() => setConfirmingCancel(false)}>
+                <Text style={styles.buttonSecondaryText}>Keep it</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                testID="mbsx-payin-cancel-confirm-button"
+                style={[styles.button, look.confirmAction]}
+                onPress={() => {
+                  setConfirmingCancel(false);
+                  act(() => cancelDeposit(deposit.deposit_id));
+                }}>
+                <Text style={styles.buttonText}>Return payment</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : null}
+        {CANCELLABLE.has(deposit.state) && !confirmingCancel ? (
           <TouchableOpacity
             testID="mbsx-payin-cancel"
             style={styles.buttonSecondary}
-            onPress={() => act(() => cancelDeposit(deposit.deposit_id))}>
+            onPress={() => {
+              if (Number(deposit.received) > 0) {
+                setConfirmingCancel(true);
+                return;
+              }
+              act(() => cancelDeposit(deposit.deposit_id));
+            }}>
             <Text style={styles.buttonSecondaryText}>
               {deposit.state === 'WAITING'
                 ? 'Cancel'
@@ -281,19 +366,52 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
 };
 
 const look = StyleSheet.create({
-  amountDue: {
-    fontSize: 26,
-    marginTop: 4,
-  },
-  address: {
-    fontSize: 16,
-  },
-  block: {
-    marginBottom: 16,
-  },
   qr: {
     alignItems: 'center',
     marginVertical: 16,
+  },
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addressBox: {
+    flex: 1,
+    borderRadius: 22,
+    backgroundColor: '#F4F7FB',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  address: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#484859',
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F4F7FB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  toolIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#484859',
+  },
+  requote: {
+    marginTop: 12,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  confirmAction: {
+    flex: 1,
+    marginVertical: 0,
   },
 });
 

@@ -1,47 +1,113 @@
-import React, {memo, useCallback, useContext} from 'react';
-import {FlatList, Text, View} from 'react-native';
+import React, {memo, useCallback, useState} from 'react';
+import {FlatList, Text, TouchableOpacity, View} from 'react-native';
 import type {StyleProp, ViewStyle} from 'react-native';
 
-import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppSelector} from '../../../store/hooks';
-import {getMbsxStyles} from '../theme';
+import {formatTimestamp} from '../format';
+import {swapCards} from '../swapCards';
+import {requestStateText, swapStateText} from '../stateText';
 import type {MbsxMessage} from '../mbsxSlice';
 
-// A row's text never changes once appended, so memoising means appending a
-// message leaves the rows already on screen untouched.
-const Row = memo(function Row({data, style}: {data: string; style: any}) {
+type ParsedEvent = {
+  title: string;
+  time: string;
+  message: string;
+  raw: string;
+};
+
+const sentenceOrRaw = (sentence: string, raw: string) =>
+  sentence === sentence.trim() && !sentence.includes('  ') ? sentence : raw;
+
+const parsedEvent = (data: string): ParsedEvent | null => {
+  let value: Record<string, unknown>;
+  try {
+    value = JSON.parse(data);
+  } catch {
+    return null;
+  }
+  if (typeof value.event_type !== 'string') {
+    return null;
+  }
+  const sub = value.event_sub_type;
+  const subText = typeof sub === 'string' ? sub : '';
+  let title = value.event_type;
+  if (value.event_type === 'STATE_CHANGED' && subText) {
+    title = sentenceOrRaw(swapStateText(subText, '', ''), subText);
+  } else if (value.event_type === 'REQUEST_STATE_CHANGED' && subText) {
+    title = sentenceOrRaw(requestStateText(subText), subText);
+  } else if (subText) {
+    title = `${value.event_type} · ${subText}`;
+  }
+  const time = typeof value.time === 'string' ? formatTimestamp(value.time) : '';
+  const message = typeof value.event_msg === 'string' ? value.event_msg : '';
+  return {title, time, message, raw: data};
+};
+
+const Row = memo(function Row({data}: {data: string}) {
+  const [open, setOpen] = useState(false);
+  const event = parsedEvent(data);
+  if (!event) {
+    return (
+      <View style={swapCards.card}>
+        <Text style={swapCards.historyTitle} selectable>
+          {data}
+        </Text>
+      </View>
+    );
+  }
   return (
-    <View style={style}>
-      <Text numberOfLines={3}>{data}</Text>
-    </View>
+    <TouchableOpacity
+      style={swapCards.card}
+      onPress={() => setOpen(shown => !shown)}>
+      <Text style={swapCards.historyTitle}>{event.title}</Text>
+      {event.time ? (
+        <Text style={swapCards.historySub}>{event.time}</Text>
+      ) : null}
+      {event.message ? (
+        <Text style={swapCards.meta}>{event.message}</Text>
+      ) : null}
+      {open ? (
+        <Text style={swapCards.id} selectable>
+          {event.raw}
+        </Text>
+      ) : null}
+    </TouchableOpacity>
   );
 });
 
 const MessageList: React.FC<{style?: StyleProp<ViewStyle>}> = ({style}) => {
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
-  const styles = getMbsxStyles(SCREEN_HEIGHT);
   const messages = useAppSelector(state => state.mbsx.messages);
 
-  // Both must keep their identity across renders or FlatList discards its cells.
   const renderItem = useCallback(
-    ({item}: {item: MbsxMessage}) => (
-      <Row data={item.data} style={styles.messageRow} />
-    ),
-    [styles.messageRow],
+    ({item}: {item: MbsxMessage}) => <Row data={item.data} />,
+    [],
   );
   const keyExtractor = useCallback((item: MbsxMessage) => String(item.id), []);
 
   return (
     <FlatList
       style={style}
+      contentContainerStyle={look.list}
       data={messages}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       initialNumToRender={12}
       windowSize={5}
       removeClippedSubviews
+      ListEmptyComponent={
+        <View style={swapCards.card}>
+          <Text style={swapCards.note}>No events yet</Text>
+        </View>
+      }
     />
   );
+};
+
+const look = {
+  list: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
 };
 
 export default MessageList;

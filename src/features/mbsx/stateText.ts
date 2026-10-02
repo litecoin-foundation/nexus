@@ -60,7 +60,7 @@ export const requestStateText = (state: string | undefined): string => {
   }
   const text: Record<string, string> = {
     SENT: 'Waiting for an offer',
-    OFFER_RECEIVED: 'Offer received',
+    OFFER_RECEIVED: 'Offer ready to accept',
     ACCEPT_SENT: 'Accepting the offer',
     REVOKED: 'Request cancelled',
     EXPIRED: 'Request expired',

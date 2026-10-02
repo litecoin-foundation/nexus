@@ -25,7 +25,7 @@ import {
   requestExpired,
   sortNewestFirst,
 } from '../adapter';
-import {formatExpiry} from '../format';
+import {depositTimeLeft, formatExpiry} from '../format';
 import RemoveButton from '../components/RemoveButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {
@@ -171,7 +171,9 @@ const RequestList: React.FC<Props> = ({navigation}) => {
               <Text style={swapCards.id}>{deposit.state}</Text>
             ) : null}
             <Text style={swapCards.meta}>
-              {`Pay-in · ${deposit.amount_due} ${deposit.coin}`}
+              {Number(deposit.remaining) > 0
+                ? `${deposit.remaining} ${deposit.coin} still to pay · ${depositTimeLeft(deposit.expire_at)}`
+                : `${deposit.received} ${deposit.coin} received · ${depositTimeLeft(deposit.expire_at)}`}
             </Text>
           </TouchableOpacity>
         ))}
@@ -211,9 +213,9 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                       <Text style={swapCards.id}>{request.state}</Text>
                     ) : null}
                     <Text style={swapCards.meta}>
-                      {`${request.amount_from} ${request.coin_from} · ${formatExpiry(
-                        request.created_at,
-                      )}`}
+                      {isEndedRequestState(request.state)
+                        ? `${request.amount_from} ${request.coin_from} · ${formatExpiry(request.created_at)}`
+                        : `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`}
                     </Text>
                     <Text style={swapCards.id}>{request.id}</Text>
                   </TouchableOpacity>

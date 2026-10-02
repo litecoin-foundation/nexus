@@ -9,6 +9,7 @@ import {
 
 import {useAppSelector} from '../../../store/hooks';
 import {colors} from '../theme';
+import BasicSwapMark from './BasicSwapMark';
 
 const STEP_TEXT: Record<string, string> = {
   key: 'Deriving the swap key',
@@ -34,6 +35,9 @@ const StartingScreen: React.FC<Props> = ({onRetry}) => {
 
   return (
     <View style={styles.screen} testID="mbsx-starting">
+      <View style={styles.logo}>
+        <BasicSwapMark width={168} />
+      </View>
       {error ? (
         <>
           <Text style={styles.title}>Swaps did not start</Text>
@@ -67,6 +71,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.page,
     paddingHorizontal: 24,
+  },
+  logo: {
+    marginBottom: 28,
   },
   title: {
     marginTop: 16,

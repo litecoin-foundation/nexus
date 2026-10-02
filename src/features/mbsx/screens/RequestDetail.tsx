@@ -27,6 +27,7 @@ import {
 } from '../format';
 import {getMbsxStyles} from '../theme';
 import {coinString, offerWarning} from '../useSwapAmounts';
+import CoinPair from '../components/CoinPair';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {requestStateText, swapStateText, useShowRawStates} from '../stateText';
@@ -85,6 +86,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const [swaps, setSwaps] = useState<SwapDetails[]>([]);
   const [acceptError, setAcceptError] = useState('');
   const [accepting, setAccepting] = useState(false);
+  const [pendingOffer, setPendingOffer] = useState<SwapOffer | null>(null);
 
   const fetchRequest = useCallback(() => {
     const rv = getRequestInfo(requestId);
@@ -158,31 +160,30 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   // Accepting is what commits: the swap it brings back is signed without
   // asking again.
   const onAccept = (offer: SwapOffer) => {
-    const run = async () => {
-      triggerLightFeedback();
-      setAccepting(true);
-      setAcceptError('');
-      try {
-        const rv = await acceptOffer(offer.id);
-        if (rv.error) {
-          setAcceptError(rv.error);
-          return;
-        }
-        fetchRequest();
-      } catch (e) {
-        setAcceptError((e as Error).message);
-      } finally {
-        setAccepting(false);
+    setPendingOffer(offer);
+  };
+
+  const confirmAccept = async () => {
+    const offer = pendingOffer;
+    if (!offer) {
+      return;
+    }
+    triggerLightFeedback();
+    setAccepting(true);
+    setAcceptError('');
+    try {
+      const rv = await acceptOffer(offer.id);
+      if (rv.error) {
+        setAcceptError(rv.error);
+        return;
       }
-    };
-    Alert.alert(
-      'Accept offer',
-      `Send ${offer.amount_send} ${offer.coin_send} for ${offer.amount_receive} ${offer.coin_receive}?\n\nThe swap starts on its own once the offer is set up.`,
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {text: 'Accept', onPress: run},
-      ],
-    );
+      setPendingOffer(null);
+      fetchRequest();
+    } catch (e) {
+      setAcceptError((e as Error).message);
+    } finally {
+      setAccepting(false);
+    }
   };
 
   if (!request) {
@@ -193,7 +194,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     );
   }
 
-  const offerStatus = (offer: SwapOffer): string => {
+  const offerStatus = (offer: SwapOffer): string | null => {
     if (offer.accepted) {
       return swaps.length > 0 ? 'Accepted' : 'Accepted, waiting for the swap';
     }
@@ -206,9 +207,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
     if (!live(offer)) {
       return `Expired ${formatExpiry(offer.expire_at)}`;
     }
-    return canAccept
-      ? `Tap to accept. Expires ${formatExpiry(offer.expire_at)}`
-      : `Expires ${formatExpiry(offer.expire_at)}`;
+    return null;
   };
 
   return (
@@ -266,7 +265,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               <Text style={swapCards.coinPillText}>{request.coin_to}</Text>
             </View>
           </View>
-          <Text style={swapCards.meta}>At least</Text>
+          <Text style={swapCards.meta}>Offers below this are declined</Text>
         </View>
 
         <Text style={swapCards.section}>Fees</Text>
@@ -312,26 +311,53 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         <Text style={swapCards.section}>Offers</Text>
         {offers.map(offer => {
           const warning = offerWarning(offer);
+          const status = offerStatus(offer);
+          const kind = kindLabel(offer.kind);
+          const open = live(offer);
+          const confirming = pendingOffer?.id === offer.id;
+          const dimmed =
+            (acceptedOffer !== null && !offer.accepted) ||
+            (pendingOffer !== null && !confirming);
           return (
-            <TouchableOpacity
+            <View
               key={offer.id}
               testID={`mbsx-offer-${offer.id}`}
-              style={[
-                swapCards.card,
-                acceptedOffer !== null && !offer.accepted
-                  ? styles.rowDimmed
-                  : null,
-              ]}
-              disabled={!canAccept || !live(offer)}
-              onPress={() => onAccept(offer)}>
-              <Text style={styles.rowPrimary}>
-                {`${kindLabel(offer.kind)} — send ${offer.amount_send} ${offer.coin_send}, receive ${offer.amount_receive} ${offer.coin_receive}`}
-              </Text>
-              {offer.id === bestOfferId ? (
-                <Text testID={`mbsx-best-rate-${offer.id}`} style={look.best}>
-                  Best rate
-                </Text>
+              style={[swapCards.card, dimmed ? styles.rowDimmed : null]}>
+              {open || offer.id === bestOfferId || kind ? (
+                <View style={look.offerHead}>
+                  <View style={look.offerMarks}>
+                    {offer.id === bestOfferId ? (
+                      <Text testID={`mbsx-best-rate-${offer.id}`} style={look.best}>
+                        Best rate
+                      </Text>
+                    ) : null}
+                    {kind ? <Text style={look.offerKind}>{kind}</Text> : null}
+                  </View>
+                  {open ? (
+                    <Text style={look.offerExpiry}>{formatExpiry(offer.expire_at)}</Text>
+                  ) : null}
+                </View>
               ) : null}
+              <View style={swapCards.amountRow}>
+                <Text
+                  style={swapCards.amount}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit>
+                  {offer.amount_receive}
+                </Text>
+                <View style={swapCards.coinPill}>
+                  {COIN_ICONS[offer.coin_receive] ? (
+                    <Image
+                      source={COIN_ICONS[offer.coin_receive]}
+                      style={swapCards.coinLogo}
+                    />
+                  ) : null}
+                  <Text style={swapCards.coinPillText}>{offer.coin_receive}</Text>
+                </View>
+              </View>
+              <Text style={swapCards.meta}>
+                {`for ${offer.amount_send} ${offer.coin_send}`}
+              </Text>
               {rate(offer) > 0 ? (
                 <Text style={styles.rowMessage}>
                   {`1 ${offer.coin_send} ≈ ${coinString(rate(offer))} ${offer.coin_receive}`}
@@ -376,15 +402,51 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                   </TouchableOpacity>
                 </>
               ) : null}
-              <Text style={styles.rowMessage}>{offerStatus(offer)}</Text>
-            </TouchableOpacity>
+              {status ? <Text style={styles.rowMessage}>{status}</Text> : null}
+              {confirming ? (
+                <View testID="mbsx-accept-confirm">
+                  <Text style={[swapCards.note, look.confirmNote]}>
+                    {`Send ${offer.amount_send} ${offer.coin_send} for ${offer.amount_receive} ${offer.coin_receive}. The swap starts on its own once the offer is set up.`}
+                  </Text>
+                  {acceptError !== '' ? (
+                    <Text testID="mbsx-accept-error" style={styles.error}>
+                      {acceptError}
+                    </Text>
+                  ) : null}
+                  <View style={look.confirmActions}>
+                    <TouchableOpacity
+                      testID="mbsx-accept-cancel"
+                      style={[styles.buttonSecondary, look.confirmAction]}
+                      onPress={() => {
+                        setPendingOffer(null);
+                        setAcceptError('');
+                      }}
+                      disabled={accepting}>
+                      <Text style={styles.buttonSecondaryText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      testID="mbsx-accept-confirm-button"
+                      style={[styles.button, look.confirmAction]}
+                      onPress={() => void confirmAccept()}
+                      disabled={accepting}>
+                      <Text style={styles.buttonText}>
+                        {accepting ? 'Accepting…' : 'Accept'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : null}
+              {canAccept && open && pendingOffer === null ? (
+                <TouchableOpacity
+                  testID={`mbsx-accept-${offer.id}`}
+                  style={[styles.button, look.acceptButton]}
+                  onPress={() => onAccept(offer)}>
+                  <Text style={styles.buttonText}>Accept</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
           );
         })}
-        {acceptError !== '' ? (
-          <Text testID="mbsx-accept-error" style={styles.error}>
-            {acceptError}
-          </Text>
-        ) : null}
         {offers.length === 0 ? (
           <View style={swapCards.card}>
             <Text style={swapCards.note}>Waiting for an offer</Text>
@@ -400,26 +462,64 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             onPress={() =>
               navigation.navigate('SwapDetail', {swapId: swap.id})
             }>
-            <Text style={styles.rowPrimary}>
-              {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
-            </Text>
-            {showRaw ? <Text style={swapCards.id}>{swap.state}</Text> : null}
-            {swap.kind ? (
-              <Text style={swapCards.meta}>{kindLabel(swap.kind)}</Text>
-            ) : null}
-            {/* Named per chain: two bare rates read as one number over
-                another, with nothing saying which coin either is on. */}
-            <Text style={styles.rowMessage}>
-              {`Chain fee ${swap.coin_from} ~${swap.chain_fee_from ?? '?'} (${swap.fee_rate_from} sat/kvB)`}
-            </Text>
-            <Text style={styles.rowMessage}>
-              {`Chain fee ${swap.coin_to} ~${swap.chain_fee_to ?? '?'} (${swap.fee_rate_to} sat/kvB)`}
-            </Text>
+            <View style={swapCards.historyRow}>
+              <CoinPair from={swap.coin_from} to={swap.coin_to} size={36} />
+              <View style={swapCards.historyMid}>
+                <Text style={swapCards.historyTitle}>
+                  {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                </Text>
+                {showRaw ? (
+                  <Text style={swapCards.historySub}>{swap.state}</Text>
+                ) : null}
+                {swap.kind ? (
+                  <Text style={swapCards.historySub}>{kindLabel(swap.kind)}</Text>
+                ) : null}
+              </View>
+            </View>
+            <View style={look.swapAmounts}>
+              <View style={swapCards.historyRow}>
+                {COIN_ICONS[swap.coin_from] ? (
+                  <Image
+                    source={COIN_ICONS[swap.coin_from]}
+                    style={swapCards.coinLogo}
+                  />
+                ) : null}
+                <Text style={swapCards.historyTitle}>
+                  {`${swap.amount_from} ${swap.coin_from}`}
+                </Text>
+              </View>
+              <View style={[swapCards.historyRow, look.swapAmountNext]}>
+                {COIN_ICONS[swap.coin_to] ? (
+                  <Image
+                    source={COIN_ICONS[swap.coin_to]}
+                    style={swapCards.coinLogo}
+                  />
+                ) : null}
+                <Text style={swapCards.historyTitle}>
+                  {`${swap.amount_to} ${swap.coin_to}`}
+                </Text>
+              </View>
+            </View>
             {swap.fees_coin ? (
-              <Text style={styles.rowMessage}>
-                {`Swap fees ${swap.fees_total} ${swap.fees_coin}`}
-              </Text>
+              <View style={[look.feeRow, look.feeLine]}>
+                <Text style={look.feeLabel}>Swap fees</Text>
+                <Text style={look.feeValue}>
+                  {`${swap.fees_total} ${swap.fees_coin}`}
+                </Text>
+              </View>
             ) : null}
+            {(
+              [
+                [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
+                [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
+              ] as [string, string | undefined, bigint][]
+            ).map(([coin, amount, rate]) => (
+              <View key={coin} style={[look.feeRow, look.feeLine]}>
+                <Text style={look.feeLabel}>{`Chain fee ${coin}`}</Text>
+                <Text style={look.feeRate}>{`${rate} sat/kvB`}</Text>
+                <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
+              </View>
+            ))}
           </TouchableOpacity>
         ))}
 
@@ -456,12 +556,50 @@ const look = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#2C72FF',
   },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  confirmAction: {
+    flex: 1,
+    marginVertical: 0,
+  },
+  offerHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  offerMarks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    gap: 8,
+  },
+  offerKind: {
+    fontFamily: 'Satoshi Variable',
+    fontSize: 13,
+    color: '#747E87',
+  },
+  offerExpiry: {
+    marginLeft: 8,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 13,
+    color: '#747E87',
+  },
   best: {
-    marginTop: 4,
     fontFamily: 'Satoshi Variable',
     fontWeight: '700',
     fontSize: 13,
     color: '#2C72FF',
+  },
+  acceptButton: {
+    marginTop: 12,
+    marginBottom: 0,
+  },
+  confirmNote: {
+    marginTop: 12,
   },
   feeRow: {
     flexDirection: 'row',
@@ -484,6 +622,19 @@ const look = StyleSheet.create({
     fontFamily: 'Satoshi Variable',
     fontSize: 13,
     color: '#747E87',
+  },
+  feeRate: {
+    marginLeft: 8,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 12,
+    color: '#747E87',
+    textAlign: 'right',
+  },
+  swapAmounts: {
+    marginTop: 12,
+  },
+  swapAmountNext: {
+    marginTop: 6,
   },
   feeValue: {
     minWidth: 110,
