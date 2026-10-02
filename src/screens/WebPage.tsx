@@ -1,12 +1,5 @@
 import React, {useEffect, useRef, useState, useCallback} from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Platform,
-  Linking,
-} from 'react-native';
+import {View, StyleSheet, Platform, Linking} from 'react-native';
 import WebView from 'react-native-webview';
 import type {
   WebViewNavigation,
@@ -22,13 +15,18 @@ import {
 } from '@react-navigation/stack';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 
-import ScreenHeader, {
-  ScreenHeaderCard,
+import {
   ScreenHeaderNavigationOptions,
   useScreenHeaderArrival,
   useScreenHeaderLayout,
 } from '../components/ScreenHeader';
+import WebPageHeader, {WebPageFooter} from '../components/WebPageHeader';
 import CustomSafeAreaView from '../components/CustomSafeAreaView';
+
+// NOTE: with enableApplePay the iOS WebView skips its history API shim, so
+// in-page (pushState) navigations reach canGoBack/canGoForward only through
+// patches/react-native-webview+13.16.0.patch.
+const ENABLE_HISTORY_BUTTONS = true;
 
 type RootStackParamList = {
   WebPage: {
@@ -49,9 +47,7 @@ const WebPage: React.FC<Props> = props => {
   const navigation = useNavigation();
 
   // Presented as a modal card on iOS only, see WebPageNavigationOptions
-  const {cardHeight, rects, paddingHorizontal} = useScreenHeaderLayout(
-    Platform.OS === 'ios',
-  );
+  const {cardHeight, rects} = useScreenHeaderLayout(Platform.OS === 'ios');
   const headerFadeStyle = useScreenHeaderArrival();
 
   const [ableToGoBack, setCanGoBack] = useState(false);
@@ -59,7 +55,7 @@ const WebPage: React.FC<Props> = props => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
 
-  const {observeURL, returnRoute, title} = route.params || {};
+  const {observeURL, returnRoute} = route.params || {};
 
   const handleEvent = useCallback(
     (syntheticEvent: WebViewNavigationEvent | WebViewErrorEvent) => {
@@ -71,6 +67,10 @@ const WebPage: React.FC<Props> = props => {
     },
     [],
   );
+
+  const handleRefresh = useCallback(() => WebPageRef.current?.reload(), []);
+  const handleBack = useCallback(() => WebPageRef.current?.goBack(), []);
+  const handleForward = useCallback(() => WebPageRef.current?.goForward(), []);
 
   const handleShouldStartLoad = useCallback(
     (request: ShouldStartLoadRequest) => {
@@ -157,7 +157,10 @@ const WebPage: React.FC<Props> = props => {
   }, [currentUrl, observeURL, returnRoute, navigation]);
 
   return (
-    <CustomSafeAreaView styles={styles.container} edges={['bottom']}>
+    <CustomSafeAreaView
+      styles={styles.page}
+      edges={['bottom']}
+      platform={ENABLE_HISTORY_BUTTONS ? 'both' : 'android'}>
       <View style={[styles.container, {paddingTop: cardHeight}]}>
         <WebView
           style={styles.webview}
@@ -172,6 +175,9 @@ const WebPage: React.FC<Props> = props => {
             'about:blank',
             'about:srcdoc',
           ]}
+          contentInsetAdjustmentBehavior={
+            ENABLE_HISTORY_BUTTONS ? 'never' : 'always'
+          }
           onShouldStartLoadWithRequest={handleShouldStartLoad}
           onNavigationStateChange={handleNavigationStateChange}
           applicationNameForUserAgent={`lndmobile-${DeviceInfo.getVersion()}/${DeviceInfo.getSystemName()}:${DeviceInfo.getSystemVersion()}`}
@@ -179,43 +185,20 @@ const WebPage: React.FC<Props> = props => {
           onFileDownload={handleFileDownload}
         />
       </View>
-      <View style={styles.optionsContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            WebPageRef.current?.goBack();
-          }}
-          disabled={!ableToGoBack}>
-          <Image
-            style={ableToGoBack ? null : styles.opacity}
-            source={require('../assets/images/previous.png')}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => WebPageRef.current?.reload()}>
-          <Image
-            source={
-              isLoading
-                ? require('../assets/images/close-white.png')
-                : require('../assets/images/refresh.png')
-            }
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => WebPageRef.current?.goForward()}
-          disabled={!ableToGoForward}
-          style={ableToGoForward ? null : styles.opacity}>
-          <Image
-            style={ableToGoForward ? null : styles.opacity}
-            source={require('../assets/images/next.png')}
-          />
-        </TouchableOpacity>
-      </View>
-      <ScreenHeaderCard cardHeight={cardHeight} rounded={false} />
-      <ScreenHeader
+      {ENABLE_HISTORY_BUTTONS ? (
+        <WebPageFooter
+          canGoBack={ableToGoBack}
+          canGoForward={ableToGoForward}
+          onBack={handleBack}
+          onForward={handleForward}
+        />
+      ) : null}
+      <WebPageHeader
+        url={currentUrl || route.params.uri}
+        isLoading={isLoading}
+        onRefresh={handleRefresh}
+        cardHeight={cardHeight}
         rects={rects}
-        paddingHorizontal={paddingHorizontal}
-        titleValue={title}
         fadeStyle={headerFadeStyle}
       />
     </CustomSafeAreaView>
@@ -223,21 +206,15 @@ const WebPage: React.FC<Props> = props => {
 };
 
 const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
   container: {
     flex: 1,
   },
   webview: {
     height: 400,
-  },
-  optionsContainer: {
-    height: 100,
-    backgroundColor: '#1D385F',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  opacity: {
-    opacity: 0.4,
   },
 });
 
