@@ -96,6 +96,10 @@ const numericAmount = (value: string) => {
 const fiatFieldWidth = (value: string) =>
   Math.max(18, (value || '0').length * 10);
 
+// 36 fits eight characters beside the coin pill on a 320dp screen
+const amountFontSize = (value: string) =>
+  Math.max(18, Math.min(36, Math.floor(288 / Math.max(value.length, 1))));
+
 const shortAddress = (address: string) =>
   address.length > 18
     ? `${address.slice(0, 8)}…${address.slice(-6)}`
@@ -752,7 +756,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           <View style={look.amountRow}>
             <TextInput
               testID="mbsx-amount-from"
-              style={look.amount}
+              style={[
+                look.amount,
+                {fontSize: amountFontSize(amounts.fromCoin)},
+              ]}
               placeholder="0"
               placeholderTextColor="#C5C5CE"
               value={amounts.fromCoin}
@@ -819,7 +826,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           <View style={look.amountRow}>
             <TextInput
               testID="mbsx-amount-to"
-              style={look.amount}
+              style={[look.amount, {fontSize: amountFontSize(amounts.toCoin)}]}
               placeholder="0"
               placeholderTextColor="#C5C5CE"
               value={amounts.toCoin}
