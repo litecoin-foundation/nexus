@@ -28,6 +28,7 @@ import {
   getInfo,
   onBridgeState,
   onMessage,
+  onStartup,
   reconcileNow,
   revokeOpenRequests,
   setSectionMounted,
@@ -35,11 +36,18 @@ import {
   stopIfIdle,
 } from './adapter';
 import {readConfig} from './adapter/config';
-import {pushMessage, setConnected, setError, setRunning} from './mbsxSlice';
+import {
+  pushMessage,
+  setConnected,
+  setError,
+  setRunning,
+  setStartupStep,
+} from './mbsxSlice';
 import BasicSwapMark from './components/BasicSwapMark';
 import AnchorDispute from './components/AnchorDispute';
 import BridgeStatus from './components/BridgeStatus';
 import MbsxMenuButton from './components/MbsxMenuButton';
+import StartingScreen from './components/StartingScreen';
 import CreateSwap from './screens/CreateSwap';
 import SwapList from './screens/SwapList';
 import SwapDetail from './screens/SwapDetail';
@@ -187,6 +195,11 @@ const MbsxNavigator: React.FC = () => {
   torRef.current = torEnabled;
 
   useEffect(() => {
+    const subscription = onStartup(step => dispatch(setStartupStep(step)));
+    return () => subscription.remove();
+  }, [dispatch]);
+
+  useEffect(() => {
     let left = false;
     menuChoiceMade = false;
     setSectionMounted(true);
@@ -203,19 +216,24 @@ const MbsxNavigator: React.FC = () => {
         });
     };
 
-    dispatch(setError(null));
-    start(torRef.current)
-      .then(() => {
-        dispatch(setRunning(true));
-        // Unmounted while starting: nothing else will call this now.
-        if (left) {
-          leave();
-          return;
-        }
-        // A wake may have ended a swap with lnd down; its leases wait for this.
-        void reconcileNow();
-      })
-      .catch((error: Error) => dispatch(setError(error.message)));
+    const begin = () => {
+      dispatch(setError(null));
+      dispatch(setStartupStep(null));
+      start(torRef.current)
+        .then(() => {
+          dispatch(setRunning(true));
+          // Unmounted while starting: nothing else will call this now.
+          if (left) {
+            leave();
+            return;
+          }
+          // A wake may have ended a swap with lnd down; its leases wait for this.
+          void reconcileNow();
+        })
+        .catch((error: Error) => dispatch(setError(error.message)));
+    };
+    retryStart = begin;
+    begin();
 
     return () => {
       left = true;
@@ -254,6 +272,7 @@ const MbsxNavigator: React.FC = () => {
   return (
     <View style={flexOne}>
       <Drawer.Navigator
+        screenLayout={ScreenLayout}
         initialRouteName="CreateSwap"
         defaultStatus="closed"
         backBehavior="history"
@@ -341,6 +360,16 @@ const MbsxNavigator: React.FC = () => {
 };
 
 const flexOne = {flex: 1, backgroundColor: '#F2F8FD'} as const;
+const contentLayout = {flex: 1} as const;
+
+let retryStart = () => {};
+
+const ScreenLayout = ({children}: {children: React.ReactNode}) => (
+  <View style={contentLayout}>
+    {children}
+    <StartingScreen onRetry={() => retryStart()} />
+  </View>
+);
 
 const MbsxScreenHeader = ({layout, options, route}: DrawerHeaderProps) => {
   const {header: _header, ...headerOptions} = options;

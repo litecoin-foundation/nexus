@@ -8,6 +8,7 @@ interface IMbsx {
   connected: boolean;
   messages: MbsxMessage[];
   error: string | null;
+  startupStep: string | null;
 }
 
 const initialState: IMbsx = {
@@ -15,6 +16,7 @@ const initialState: IMbsx = {
   connected: false,
   messages: [],
   error: null,
+  startupStep: null,
 };
 
 const MAX_MESSAGES = 200;
@@ -31,6 +33,9 @@ export const mbsxSlice = createSlice({
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
+    },
+    setStartupStep: (state, action: PayloadAction<string | null>) => {
+      state.startupStep = action.payload;
     },
     pushMessage: (state, action: PayloadAction<string>) => {
       const nextId = (state.messages[state.messages.length - 1]?.id ?? -1) + 1;
@@ -49,7 +54,13 @@ export const mbsxSlice = createSlice({
   },
 });
 
-export const {setRunning, setConnected, setError, pushMessage, clearMessages} =
-  mbsxSlice.actions;
+export const {
+  setRunning,
+  setConnected,
+  setError,
+  setStartupStep,
+  pushMessage,
+  clearMessages,
+} = mbsxSlice.actions;
 
 export default mbsxSlice.reducer;

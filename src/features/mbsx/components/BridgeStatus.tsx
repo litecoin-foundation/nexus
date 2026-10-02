@@ -10,10 +10,11 @@ const BridgeStatus: React.FC = () => {
   const dispatch = useAppDispatch();
   const running = useAppSelector(state => state.mbsx.running);
   const connected = useAppSelector(state => state.mbsx.connected);
+  const startupStep = useAppSelector(state => state.mbsx.startupStep);
   const [retrying, setRetrying] = useState(false);
 
   // A stopped core is an idle section, not a server that is unreachable.
-  if (!running || connected) {
+  if (!running || connected || startupStep === 'bridge') {
     return null;
   }
 

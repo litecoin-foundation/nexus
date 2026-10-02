@@ -1,6 +1,6 @@
 import ecc from '@bitcoinerlab/secp256k1';
 import {BIP32Factory, BIP32Interface} from 'bip32';
-import * as bip39 from 'bip39';
+import {pbkdf2} from 'react-native-quick-crypto';
 
 import {getItem} from '../../../utils/keychain';
 import {LITECOIN} from '../../../utils/litecoin';
@@ -14,6 +14,21 @@ export const APP_TYPE_NEXUS = 1;
 export const MBSX_MAIN_KEY_PATH = `m/44445555'/0'/${APP_TYPE_NEXUS}'`;
 
 const EXTKEY_SIZE = 74;
+
+// bip39.mnemonicToSeed done natively: its pure-js PBKDF2 holds the js thread
+// for over a second.
+const mnemonicToSeed = (mnemonic: string): Promise<Buffer> =>
+  new Promise((resolve, reject) => {
+    pbkdf2(
+      Buffer.from(mnemonic.normalize('NFKD'), 'utf8'),
+      Buffer.from('mnemonic', 'utf8'),
+      2048,
+      64,
+      'sha512',
+      (error, key) =>
+        error || !key ? reject(error) : resolve(Buffer.from(key)),
+    );
+  });
 
 // depth[1] | parent fingerprint[4] | child number[4 BE] | chaincode[32] |
 // 0x00 | privkey[32], matching ExtKey::encodeV. Not base58: the module has no
@@ -44,7 +59,7 @@ export const deriveMainExtkey = async (): Promise<string> => {
   // Stored comma-joined, and read through bip39 rather than aezeed: this is a
   // side tree, so all that matters is that the same words always reach it.
   const mnemonic = stored.split(',').join(' ');
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
+  const seed = await mnemonicToSeed(mnemonic);
   const root = bip32.fromSeed(seed, LITECOIN);
 
   return serialiseExtkey(root.derivePath(MBSX_MAIN_KEY_PATH));

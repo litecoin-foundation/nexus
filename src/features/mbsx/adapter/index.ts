@@ -102,7 +102,7 @@ const torPreference = (): Promise<boolean> =>
 
 // tor_enabled is the navigator's, which owns the switch. Omitted, the proxy
 // already in the config stands: an internal restart must not re-decide it.
-export const start = async (tor_enabled?: boolean) => {
+const startOnce = async (tor_enabled?: boolean) => {
   // A js reload leaves the native core running with `started` reset. Re-running
   // initialise() on it would be worse than adopting what is already there.
   const running = NitroBSX.isRunning();
@@ -144,6 +144,7 @@ export const start = async (tor_enabled?: boolean) => {
   // Also before initialise(): a module given its key never generates or stores
   // one, so this is what keeps the seed phrase the only thing to back up.
   NitroBSX.setAppType(APP_TYPE_NEXUS);
+  emitStartup('key');
   const deriveStart = Date.now();
   const mainExtkey = await deriveMainExtkey();
   console.log(`mbsx main key derived in ${Date.now() - deriveStart} ms`);
@@ -151,7 +152,7 @@ export const start = async (tor_enabled?: boolean) => {
     throw new Error('mbsx could not use its main key');
   }
   const initialiseStart = Date.now();
-  const rv = NitroBSX.initialise();
+  const rv = await NitroBSX.initialise();
   console.log(
     `mbsx initialise returned ${rv} in ${Date.now() - initialiseStart} ms`,
   );
@@ -173,6 +174,16 @@ export const start = async (tor_enabled?: boolean) => {
   if (__DEV__ && NitroBSX.startDebugRpc(DEBUG_RPC_PORT) !== 0) {
     console.warn('mbsx debug rpc did not start');
   }
+};
+
+// initialise runs off the js thread, so the module refuses calls until it returns
+let starting: Promise<void> | null = null;
+
+export const start = (tor_enabled?: boolean) => {
+  starting ??= startOnce(tor_enabled).finally(() => {
+    starting = null;
+  });
+  return starting;
 };
 
 // Terminal states, from SwapStates::to_str in the module. Anything else — an
@@ -308,7 +319,7 @@ export const hasActiveSwaps = (): boolean => {
 };
 
 export const swapInProgress = (): boolean => {
-  if (NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
+  if (starting || NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
     return false;
   }
   const rv = NitroBSX.hasActiveSwaps() as MbsxResult<{has_swaps?: boolean}>;
@@ -381,7 +392,7 @@ export const stopIfIdle = async () => {
  * rather than a core start.
  */
 export const resumeIfNeeded = async () => {
-  if (isRunning()) {
+  if (isRunning() || starting) {
     return false;
   }
   if (NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
@@ -514,6 +525,23 @@ const watchSwapStates = () =>
 export const onMessage = NitroBSX.onMessage;
 export const onSettingsChanged = NitroBSX.onSettingsChanged;
 export const onBridgeState = NitroBSX.onBridgeState;
+
+const startupListeners = new Set<(step: string) => void>();
+const emitStartup = (step: string) => {
+  for (const listener of Array.from(startupListeners)) {
+    listener(step);
+  }
+};
+export const onStartup = (listener: (step: string) => void) => {
+  startupListeners.add(listener);
+  const subscription = NitroBSX.onStartup(listener);
+  return {
+    remove: () => {
+      startupListeners.delete(listener);
+      subscription.remove();
+    },
+  };
+};
 
 // Every read below reaches the native core, which is only safe once
 // initialise() has run. Calling before that crashes rather than returning an

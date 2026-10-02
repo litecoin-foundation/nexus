@@ -1,6 +1,5 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
@@ -126,9 +125,6 @@ const SwapList: React.FC<Props> = ({navigation}) => {
         </Text>
       ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      {!running && !error ? (
-        <ActivityIndicator style={styles.empty} color="#2C72FF" />
-      ) : null}
       <ScrollView
         contentContainerStyle={styles.scroll}
         refreshControl={

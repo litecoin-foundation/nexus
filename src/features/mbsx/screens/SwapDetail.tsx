@@ -1,6 +1,5 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -112,11 +111,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   if (!swap) {
     return (
       <View style={styles.container}>
-        {running ? (
-          <Text style={styles.empty}>No swap selected</Text>
-        ) : (
-          <ActivityIndicator style={styles.empty} color="#2C72FF" />
-        )}
+        <Text style={styles.empty}>No swap selected</Text>
       </View>
     );
   }
