@@ -513,10 +513,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
                 [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
               ] as [string, string | undefined, bigint][]
-            ).map(([coin, amount, rate]) => (
+            ).map(([coin, amount, feeRate]) => (
               <View key={coin} style={[look.feeRow, look.feeLine]}>
                 <Text style={look.feeLabel}>{`Chain fee ${coin}`}</Text>
-                <Text style={look.feeRate}>{`${rate} sat/kvB`}</Text>
+                <Text style={look.feeRate}>{`${feeRate} sat/kvB`}</Text>
                 <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
               </View>
             ))}

@@ -137,15 +137,20 @@ describe('CreateSwap', () => {
       total_fee_bps: 500n,
       max_fee_bps: 200n,
     });
-    const {getByTestId} = renderScreen();
+    adapter.isRunning.mockReturnValue(true);
+    try {
+      const {getByTestId} = renderScreen();
 
-    fireEvent.press(getByTestId('mbsx-coin-pill'));
-    fireEvent.press(getByTestId('mbsx-coin-BTC'));
-    fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
 
-    expect(getByTestId('mbsx-bridge-note')).toHaveTextContent(
-      'The swap server charges 5%, above your limit of 2%',
-    );
+      expect(getByTestId('mbsx-bridge-note')).toHaveTextContent(
+        'The swap server charges 5%, above your limit of 2%',
+      );
+    } finally {
+      adapter.isRunning.mockReturnValue(false);
+    }
   });
 
   it('pays in for any other coin, and asks where one with no host wallet goes', async () => {
