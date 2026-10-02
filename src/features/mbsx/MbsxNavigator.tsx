@@ -34,6 +34,7 @@ import {
   setSectionMounted,
   start,
   stopIfIdle,
+  swapInProgress,
 } from './adapter';
 import {readConfig} from './adapter/config';
 import {
@@ -195,6 +196,10 @@ const MbsxNavigator: React.FC = () => {
   const torEnabled = useAppSelector(state => state.settings.torEnabled);
   const torRef = useRef(torEnabled);
   torRef.current = torEnabled;
+  // Before the start effect runs, which makes swapInProgress read false
+  const [initialRoute] = useState<keyof MbsxDrawerParamList>(() =>
+    swapInProgress() ? 'SwapList' : 'CreateSwap',
+  );
 
   useEffect(() => {
     const subscription = onStartup(step => dispatch(setStartupStep(step)));
@@ -275,7 +280,7 @@ const MbsxNavigator: React.FC = () => {
     <View style={flexOne}>
       <Drawer.Navigator
         screenLayout={ScreenLayout}
-        initialRouteName="CreateSwap"
+        initialRouteName={initialRoute}
         defaultStatus="closed"
         backBehavior="history"
         drawerContent={DrawerContent}
