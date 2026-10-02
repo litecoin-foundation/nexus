@@ -144,6 +144,7 @@ export type MbsxInfo = {
     }
   >;
   compiled_coins?: string[];
+  max_margin_bps?: number;
 };
 
 export type MbsxCoinPrices = {

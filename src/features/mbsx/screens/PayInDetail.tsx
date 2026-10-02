@@ -22,12 +22,13 @@ import {ScreenSizeContext} from '../../../context/screenSize';
 import {triggerLightFeedback} from '../../../utils/haptic';
 import {formatExpiry} from '../format';
 import {getMbsxStyles} from '../theme';
-import {SLIPPAGE, coinString} from '../useSwapAmounts';
+import {coinString, slippageFor} from '../useSwapAmounts';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {depositStateText, useShowRawStates} from '../stateText';
 import {
   cancelDeposit,
   getCoinPrices,
+  getInfo,
   getRequestInfo,
   getSwapInfo,
   isUnderwayState,
@@ -61,7 +62,8 @@ const suggestedFloor = (deposit: Deposit) => {
   if (!from || !to) {
     return '';
   }
-  return coinString(((Number(deposit.received) * from) / to) * (1 - SLIPPAGE));
+  const slippage = slippageFor(getInfo()?.max_margin_bps);
+  return coinString(((Number(deposit.received) * from) / to) * (1 - slippage));
 };
 
 const underwaySwapId = (requestId?: string): string | null => {

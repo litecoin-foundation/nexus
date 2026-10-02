@@ -5,9 +5,16 @@ export type AmountSide = 'from' | 'to';
 
 // Applied whenever min_amount_to is derived rather than typed. The reference
 // price is what the feed said, and a real offer sits below it by the
-// counterparty's margin plus both platform fees, so a floor set exactly at the
-// reference would reject every honest offer.
-export const SLIPPAGE = 0.01;
+// counterparty's margin, so a floor set exactly at the reference would reject
+// every honest offer. The glue announces the margin it allows; this is used
+// until it has.
+export const DEFAULT_SLIPPAGE = 0.01;
+export const MAX_SLIPPAGE_BPS = 500;
+
+export const slippageFor = (maxMarginBps?: number): number =>
+  maxMarginBps === undefined
+    ? DEFAULT_SLIPPAGE
+    : Math.min(Math.max(maxMarginBps, 0), MAX_SLIPPAGE_BPS) / 10000;
 
 export const RATE_TOLERANCE = 0.05;
 
@@ -70,6 +77,7 @@ const usdString = (n: number | null): string =>
 export const useSwapAmounts = (
   priceFrom: string | undefined,
   priceTo: string | undefined,
+  slippage: number = DEFAULT_SLIPPAGE,
 ) => {
   const [amounts, setAmounts] = useState<SwapAmounts>(EMPTY);
   // basicswap's rate_lock, "Fix rate", and on by default for the same reason:
@@ -123,18 +131,18 @@ export const useSwapAmounts = (
           return next;
         }
         if (side === 'from') {
-          const otherUsd = usd * (1 - SLIPPAGE);
+          const otherUsd = usd * (1 - slippage);
           next.toUsd = usdString(otherUsd);
           next.toCoin = coinString(otherUsd / (pTo as number));
         } else {
-          const otherUsd = usd / (1 - SLIPPAGE);
+          const otherUsd = usd / (1 - slippage);
           next.fromUsd = usdString(otherUsd);
           next.fromCoin = coinString(otherUsd / (pFrom as number));
         }
         return next;
       });
     },
-    [canConvert, fixedRate, pFrom, pTo],
+    [canConvert, fixedRate, pFrom, pTo, slippage],
   );
 
   const reset = useCallback(() => setAmounts(EMPTY), []);

@@ -52,8 +52,8 @@ import {getMbsxStyles} from '../theme';
 import type {MbsxCoinPrices, MbsxDrawerParamList, MbsxInfo} from '../types';
 import {
   RATE_TOLERANCE,
-  SLIPPAGE,
   coinString,
+  slippageFor,
   useSwapAmounts,
 } from '../useSwapAmounts';
 
@@ -142,6 +142,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [confirming, setConfirming] = useState(false);
   const [prices, setPrices] = useState<MbsxCoinPrices | null>(null);
   const [info, setInfo] = useState<MbsxInfo | null>(null);
+  const slippage = slippageFor(info?.max_margin_bps);
+  const slippageLabel = `${+(slippage * 100).toFixed(2)}%`;
   const [balances, setBalances] = useState<{
     spendable: bigint;
     unconfirmed: bigint;
@@ -222,6 +224,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   } = useSwapAmounts(
     prices?.prices?.[sendCoin],
     prices?.prices?.[receiveCoin],
+    slippage,
   );
   const [rateAcknowledged, setRateAcknowledged] = useState(false);
   const offReference =
@@ -913,7 +916,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             {fixedRate ? (
               <View style={[look.settingRow, look.settingRowLine]}>
                 <Text style={look.settingLabel}>Slippage</Text>
-                <Text style={look.settingValue}>{`${SLIPPAGE * 100}%`}</Text>
+                <Text style={look.settingValue}>{slippageLabel}</Text>
               </View>
             ) : null}
           </View>
