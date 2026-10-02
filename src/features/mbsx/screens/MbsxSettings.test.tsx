@@ -7,7 +7,7 @@ import {configureStore} from '@reduxjs/toolkit';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import mbsxReducer from '../mbsxSlice';
 import MbsxSettings from './MbsxSettings';
-import {applyConfig, getInfo, readConfig} from '../adapter';
+import {addCaCert, applyConfig, getInfo, readConfig} from '../adapter';
 
 jest.mock('@notifee/react-native', () => ({}));
 
@@ -16,13 +16,14 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const listeners: Record<string, () => void> = {};
+const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     addListener: (event: string, listener: () => void) => {
       listeners[event] = listener;
       return () => {};
     },
-    navigate: jest.fn(),
+    navigate: mockNavigate,
   }),
 }));
 
@@ -41,7 +42,7 @@ jest.mock('../adapter', () => ({
   electrumUrlError: jest.requireActual('../adapter/config').electrumUrlError,
   getInfo: jest.fn(() => null),
   isRunning: () => true,
-  listCaCerts: () => [],
+  listCaCerts: jest.fn(() => []),
   readConfig: jest.fn(),
   removeCaCert: jest.fn(),
   rescanDeposits: jest.fn(),
@@ -88,131 +89,68 @@ describe('MbsxSettings servers', () => {
     );
   });
 
-  it('takes several servers per coin, and saves a disabled one', async () => {
-    const {getAllByPlaceholderText, getByTestId, getByText} = renderSettings();
-    fireEvent.press(await waitFor(() => getByText('Advanced')));
-
-    fireEvent.press(getByTestId('mbsx-add-server-part'));
-    expect(getByTestId('mbsx-server-enabled-part-0').props.value).toBe(true);
-    expect(getByTestId('mbsx-server-enabled-part-1').props.value).toBe(true);
-    fireEvent.changeText(
-      getAllByPlaceholderText('tcp://host:port')[1],
-      'tcp://b:2',
-    );
-
-    fireEvent(getByTestId('mbsx-server-enabled-part-0'), 'valueChange', false);
-    expect(getByTestId('mbsx-server-enabled-part-0').props.value).toBe(false);
-    fireEvent(getByTestId('mbsx-server-enabled-part-0'), 'valueChange', true);
-    expect(getByTestId('mbsx-server-enabled-part-0').props.value).toBe(true);
-    fireEvent(getByTestId('mbsx-server-enabled-part-1'), 'valueChange', false);
-
-    fireEvent.press(getByTestId('mbsx-settings-save'));
-    await waitFor(() => expect(applyConfig).toHaveBeenCalledTimes(1));
-    expect(
-      (applyConfig as jest.Mock).mock.calls[0][0].coins.part.electrumx,
-    ).toEqual([
-      {url: 'tcp://a:1', disabled: false},
-      {url: 'tcp://b:2', disabled: true},
-    ]);
-  });
-
-  it('saves the servers kept connected, and refuses fewer than one', async () => {
-    const {getByTestId, getByText} = renderSettings();
-    fireEvent.press(await waitFor(() => getByText('Advanced')));
-    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers-part'), '0');
-    fireEvent.press(getByTestId('mbsx-settings-save'));
-    await waitFor(() =>
-      expect(getByTestId('mbsx-coin-error-part')).toHaveTextContent(
-        'Servers kept connected for part must be a whole number, at least 1',
-      ),
-    );
-    expect(applyConfig).not.toHaveBeenCalled();
-
-    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers-part'), '');
-    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers'), '3');
-    fireEvent.press(getByTestId('mbsx-settings-save'));
-    await waitFor(() => expect(applyConfig).toHaveBeenCalled());
-    const saved = (applyConfig as jest.Mock).mock.calls[0][0];
-    expect(saved.max_electrum_servers).toBe(3);
-    expect(saved.coins.part.max_electrum_servers).toBeUndefined();
-  });
-
-  it('shows what the module made of each server', async () => {
+  it('sums up the servers of each coin and opens its list', async () => {
     (getInfo as jest.Mock).mockReturnValue({
       coins: {
         PART: {
           electrum_servers: [
             {url: 'tcp://a:1', state: 'active', live: true, error: ''},
-            {
-              url: 'tcp://b:2',
-              state: 'cooldown',
-              live: false,
-              error: 'connect failed',
-            },
+            {url: 'tcp://b:2', state: 'cooldown', live: false, error: ''},
           ],
         },
       },
     });
     (readConfig as jest.Mock).mockImplementation(() =>
-      Promise.resolve(stored([{url: 'tcp://a:1'}, {url: 'tcp://b:2'}])),
+      Promise.resolve({
+        ...stored([
+          {url: 'tcp://a:1'},
+          {url: 'tcp://b:2'},
+          {url: 'tcp://c:3', disabled: true},
+        ]),
+        max_electrum_servers: 1,
+      }),
     );
-    const {getByTestId, getByText} = renderSettings();
-    fireEvent.press(await waitFor(() => getByText('Advanced')));
-    expect(getByTestId('mbsx-server-state-part-0')).toHaveTextContent(
-      'active, connected',
+    const {getByTestId} = renderSettings();
+    await waitFor(() =>
+      expect(getByTestId('mbsx-servers-summary-part')).toHaveTextContent(
+        '1 connected · 2 enabled · keeps 1',
+      ),
     );
-    expect(getByTestId('mbsx-server-state-part-1')).toHaveTextContent(
-      'cooldown, connect failed',
-    );
+    fireEvent.press(getByTestId('mbsx-servers-part'));
+    expect(mockNavigate).toHaveBeenCalledWith('ElectrumServers', {
+      coin: 'part',
+    });
     (getInfo as jest.Mock).mockReturnValue(null);
   });
 
-  it('refuses a server url the module would drop', async () => {
-    const {getAllByPlaceholderText, getByTestId, getByText} = renderSettings();
+  it('saves the servers kept connected, and refuses fewer than one', async () => {
+    const {getByTestId, getByText} = renderSettings();
     fireEvent.press(await waitFor(() => getByText('Advanced')));
-    fireEvent.changeText(
-      getAllByPlaceholderText('tcp://host:port')[0],
-      'tcp://b',
-    );
-
+    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers'), '0');
     fireEvent.press(getByTestId('mbsx-settings-save'));
     await waitFor(() =>
-      expect(getByTestId('mbsx-coin-error-part')).toHaveTextContent(
-        'Server url tcp://b for part must be tcp://host:port or ssl://host:port',
+      expect(getByTestId('mbsx-settings-error')).toHaveTextContent(
+        'Servers kept connected must be a whole number, at least 1',
       ),
     );
     expect(applyConfig).not.toHaveBeenCalled();
-  });
 
-  it('asks before saving a coin with no enabled server', async () => {
-    const alert = jest.spyOn(Alert, 'alert');
-    const {getByTestId, getByText} = renderSettings();
-    fireEvent.press(await waitFor(() => getByText('Advanced')));
-    fireEvent(getByTestId('mbsx-server-enabled-part-0'), 'valueChange', false);
-
+    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers'), '3');
     fireEvent.press(getByTestId('mbsx-settings-save'));
-    await waitFor(() => expect(alert).toHaveBeenCalled());
-    expect(alert.mock.calls[0][1]).toContain('part has no enabled server');
-    expect(applyConfig).not.toHaveBeenCalled();
-    await act(async () => {
-      alert.mock.calls[0][2]!.find(button => button.text === 'Save')!
-        .onPress!();
-    });
-    expect(applyConfig).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(applyConfig).toHaveBeenCalled());
+    expect(
+      (applyConfig as jest.Mock).mock.calls[0][0].max_electrum_servers,
+    ).toBe(3);
   });
 
   it('asks before saving over settings changed elsewhere', async () => {
     const alert = jest.spyOn(Alert, 'alert');
-    const {getAllByPlaceholderText, getByTestId, getByText} = renderSettings();
+    const {getByTestId, getByText} = renderSettings();
     fireEvent.press(await waitFor(() => getByText('Advanced')));
     (readConfig as jest.Mock).mockImplementation(() =>
       Promise.resolve(stored([{url: 'tcp://a:1', disabled: true}])),
     );
-    fireEvent.press(getByTestId('mbsx-add-server-part'));
-    fireEvent.changeText(
-      getAllByPlaceholderText('tcp://host:port')[1],
-      'tcp://b:2',
-    );
+    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers'), '3');
 
     fireEvent.press(getByTestId('mbsx-settings-save'));
     await waitFor(() => expect(alert).toHaveBeenCalled());
@@ -223,24 +161,49 @@ describe('MbsxSettings servers', () => {
   it('reloads settings changed elsewhere when it comes back into view', async () => {
     const alert = jest.spyOn(Alert, 'alert');
     const {getByTestId, getByText} = renderSettings();
-    fireEvent.press(await waitFor(() => getByText('Advanced')));
-    expect(getByTestId('mbsx-server-enabled-part-0').props.value).toBe(true);
+    await waitFor(() =>
+      expect(getByTestId('mbsx-servers-summary-part')).toHaveTextContent(
+        '0 connected · 1 enabled',
+      ),
+    );
     (readConfig as jest.Mock).mockImplementation(() =>
       Promise.resolve(stored([{url: 'tcp://a:1', disabled: true}])),
     );
 
     await act(async () => listeners.focus());
     await waitFor(() =>
-      expect(getByTestId('mbsx-server-enabled-part-0').props.value).toBe(false),
+      expect(getByTestId('mbsx-servers-summary-part')).toHaveTextContent(
+        '0 connected · 0 enabled · no enabled server',
+      ),
     );
     expect(alert).not.toHaveBeenCalled();
 
     (readConfig as jest.Mock).mockImplementation(() =>
       Promise.resolve(stored([{url: 'tcp://a:1'}])),
     );
-    fireEvent.press(getByTestId('mbsx-add-server-part'));
+    fireEvent.press(getByText('Advanced'));
+    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers'), '3');
     await act(async () => listeners.focus());
     await waitFor(() => expect(alert).toHaveBeenCalled());
     expect(alert.mock.calls[0][0]).toBe('Settings changed');
+  });
+
+  it('lists every certificate, and adds one for a server', async () => {
+    const {listCaCerts} = jest.requireMock('../adapter');
+    (listCaCerts as jest.Mock).mockReturnValue([
+      {id: 1n, label: 'everyone', host: '', port: 0},
+      {id: 2n, label: 'glue', host: 'glue.example', port: 9002},
+    ]);
+    const {getByTestId, getByText} = renderSettings();
+    fireEvent.press(await waitFor(() => getByText('Advanced')));
+    expect(getByText('Every server')).toBeTruthy();
+    expect(getByText('glue.example:9002')).toBeTruthy();
+
+    fireEvent.changeText(getByTestId('mbsx-cert-label'), 'mine');
+    fireEvent.changeText(getByTestId('mbsx-cert-host'), 'glue.example');
+    fireEvent.changeText(getByTestId('mbsx-cert-port'), '9002');
+    fireEvent.changeText(getByTestId('mbsx-cert-pem'), 'PEM');
+    fireEvent.press(getByTestId('mbsx-add-cert'));
+    expect(addCaCert).toHaveBeenCalledWith('mine', 'glue.example', 9002, 'PEM');
   });
 });

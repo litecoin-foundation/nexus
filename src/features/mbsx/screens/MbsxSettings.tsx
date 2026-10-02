@@ -19,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import type {DrawerNavigationProp} from '@react-navigation/drawer';
 import notifee from '@notifee/react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -30,11 +31,9 @@ import {setRunning} from '../mbsxSlice';
 import {
   PAY_IN_COINS,
   addCaCert,
-  applyConfig,
   coinsWithActiveSwaps,
   getInfo,
   defaultConfig,
-  electrumUrlError,
   isRunning,
   listCaCerts,
   readConfig,
@@ -42,42 +41,21 @@ import {
   rescanDeposits,
   writeConfig,
 } from '../adapter';
-import type {
-  CaCert,
-  ElectrumServer,
-  MbsxConfig,
-  VerifyCertsMode,
-} from '../adapter';
-import {getNetwork} from '../network';
-
-// none is refused off regtest by the module, so it is not offered there.
-const ALL_MODES: VerifyCertsMode[] = ['none', 'pinned', 'optional', 'strict'];
+import type {CaCert, MbsxConfig} from '../adapter';
+import {
+  changedElsewhere,
+  loadSettingsDraft,
+  saveSettingsDraft,
+  useSettingsDraft,
+  useUnsavedDraftGuard,
+} from '../settingsDraft';
+import type {ServerRow} from '../settingsDraft';
+import type {MbsxDrawerParamList} from '../types';
 
 const POS_COINS = ['part'];
 
 // The module's own default when the config leaves it out.
 const DEFAULT_MAX_ELECTRUM_SERVERS = 2;
-
-type ElectrumServerState = {state: string; live: boolean; error: string};
-
-const serverStateText = (server: ElectrumServerState) =>
-  [server.state, server.live ? 'connected' : '', server.error]
-    .filter(Boolean)
-    .join(', ');
-
-// Only these validate a chain, so only these have anchors or a hostname to
-// check: under none and pinned mbedtls performs no name check at all.
-const chainsChecked = (server: ElectrumServer) =>
-  server.verify_certs_mode === 'optional' ||
-  server.verify_certs_mode === 'strict';
-
-const persisted = (cfg: MbsxConfig) => {
-  const copy = {...cfg};
-  delete copy.show_raw_states;
-  delete copy.notify_swaps;
-  delete copy.show_debug;
-  return JSON.stringify(copy);
-};
 
 const MbsxSettings: React.FC = () => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
@@ -102,7 +80,8 @@ const MbsxSettings: React.FC = () => {
   }, []);
 
   const dispatch = useAppDispatch();
-  const [config, setConfig] = useState<MbsxConfig | null>(null);
+  const {config, setConfig, dirty} = useSettingsDraft();
+  const storedJson = useAppSelector(state => state.mbsx.settingsStoredJson);
   // Read-only here: Nexus owns the switch, and a second one could disagree.
   const torEnabled = useAppSelector(state => state.settings.torEnabled);
   const [activeCoins, setActiveCoins] = useState<Set<string> | null>(null);
@@ -115,21 +94,15 @@ const MbsxSettings: React.FC = () => {
   const [status, setStatus] = useState('');
   const [rescanned, setRescanned] = useState('');
   const [saving, setSaving] = useState(false);
-  const [savedJson, setSavedJson] = useState<string | null>(null);
   const [certs, setCerts] = useState<CaCert[]>([]);
   const [certLabel, setCertLabel] = useState('');
   const [certHost, setCertHost] = useState('');
   const [certPort, setCertPort] = useState('');
   const [certPem, setCertPem] = useState('');
 
-  const modes =
-    getNetwork() === 'regtest'
-      ? ALL_MODES
-      : ALL_MODES.filter(mode => mode !== 'none');
-
-  const [serverStates, setServerStates] = useState<
-    Record<string, ElectrumServerState>
-  >({});
+  const [serverStates, setServerStates] = useState<Record<string, ServerRow>>(
+    {},
+  );
 
   const fail = (message: string, coin = '') => {
     setError(message);
@@ -159,78 +132,43 @@ const MbsxSettings: React.FC = () => {
     }
   }, []);
 
-  // The module refuses verify_certs_mode none off regtest, so a config holding
-  // one cannot be saved back: it would fail initialise and roll back to itself.
-  // Coerced to the default here rather than left to render as no mode at all.
-  const normaliseModes = (cfg: MbsxConfig): MbsxConfig => {
-    if (getNetwork() === 'regtest') {
-      return cfg;
-    }
-    let found = false;
-    const coins = Object.fromEntries(
-      Object.entries(cfg.coins).map(([coin, settings]) => [
-        coin,
-        {
-          ...settings,
-          electrumx: settings.electrumx.map(server => {
-            if (server.verify_certs_mode !== 'none') {
-              return server;
-            }
-            found = true;
-            return {...server, verify_certs_mode: 'pinned' as VerifyCertsMode};
-          }),
-        },
-      ]),
-    ) as MbsxConfig['coins'];
-    if (found) {
-      setStatus('Certificate checking was off; set to pinned');
-    }
-    return {...cfg, coins};
-  };
-
-  // The stored config as last loaded or saved, to tell a change made elsewhere
-  const storedJsonRef = useRef<string | null>(null);
-  const load = useCallback(async () => {
-    const stored = (await readConfig()) ?? defaultConfig();
-    storedJsonRef.current = persisted(stored);
-    const loaded = normaliseModes(stored);
-    setConfig(loaded);
-    setSavedJson(persisted(loaded));
-    setActiveCoins(coinsWithActiveSwaps());
+  const readServerStates = useCallback(() => {
     const info = getInfo();
     setCompiledCoins(info?.compiled_coins ?? null);
-    const states: Record<string, ElectrumServerState> = {};
+    const states: Record<string, ServerRow> = {};
     for (const [ticker, coin] of Object.entries(info?.coins ?? {})) {
       for (const server of coin.electrum_servers ?? []) {
         states[`${ticker.toLowerCase()} ${server.url}`] = server;
       }
     }
     setServerStates(states);
+  }, []);
+
+  const load = useCallback(async () => {
+    if (await loadSettingsDraft(dispatch)) {
+      setStatus('Certificate checking was off; set to pinned');
+    }
+    setActiveCoins(coinsWithActiveSwaps());
+    readServerStates();
     loadCerts();
-  }, [loadCerts]);
+  }, [dispatch, loadCerts, readServerStates]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const dirty =
-    config !== null &&
-    savedJson !== null &&
-    persisted(config) !== savedJson;
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
-
-  const changedElsewhere = async () =>
-    storedJsonRef.current !== null &&
-    persisted((await readConfig()) ?? defaultConfig()) !==
-      storedJsonRef.current;
+  const storedJsonRef = useRef(storedJson);
+  storedJsonRef.current = storedJson;
 
   // A drawer switch cannot be blocked, so the alert offers the way back
   // instead of preventing it.
-  const navigation = useNavigation();
+  const navigation = useNavigation<DrawerNavigationProp<MbsxDrawerParamList>>();
   useEffect(() => {
     return navigation.addListener('focus', async () => {
-      if (!(await changedElsewhere())) {
+      readServerStates();
+      if (!(await changedElsewhere(storedJsonRef.current))) {
         return;
       }
       if (!dirtyRef.current) {
@@ -247,21 +185,8 @@ const MbsxSettings: React.FC = () => {
         ],
       );
     });
-  }, [navigation, load]);
-  useEffect(() => {
-    return navigation.addListener('blur', () => {
-      if (!dirtyRef.current) {
-        return;
-      }
-      Alert.alert('Settings not applied', 'Save to apply your changes.', [
-        {text: 'Discard', style: 'destructive', onPress: () => load()},
-        {
-          text: 'Keep editing',
-          onPress: () => navigation.navigate('MbsxSettings' as never),
-        },
-      ]);
-    });
-  }, [navigation, load]);
+  }, [navigation, load, readServerStates]);
+  useUnsavedDraftGuard(dirty, 'MbsxSettings');
 
   const edit = (patch: Partial<MbsxConfig>) => {
     setStatus('');
@@ -293,22 +218,6 @@ const MbsxSettings: React.FC = () => {
     );
   };
 
-  const editCoinCap = (coin: string, text: string) => {
-    setStatus('');
-    const max_electrum_servers = text ? Number(text) : undefined;
-    setConfig(prev =>
-      prev
-        ? {
-            ...prev,
-            coins: {
-              ...prev.coins,
-              [coin]: {...prev.coins[coin], max_electrum_servers},
-            },
-          }
-        : prev,
-    );
-  };
-
   const toggleVerifyPos = (coin: string, verify_pos: boolean) => {
     setStatus('');
     setConfig(prev =>
@@ -316,107 +225,6 @@ const MbsxSettings: React.FC = () => {
         ? {
             ...prev,
             coins: {...prev.coins, [coin]: {...prev.coins[coin], verify_pos}},
-          }
-        : prev,
-    );
-  };
-
-  const editTlsField = (
-    coin: string,
-    index: number,
-    patch: Partial<ElectrumServer>,
-  ) => {
-    setStatus('');
-    setConfig(prev => {
-      if (!prev) {
-        return prev;
-      }
-      const servers = prev.coins[coin].electrumx.map((server, i) =>
-        i === index ? {...server, ...patch} : server,
-      );
-      return {
-        ...prev,
-        coins: {
-          ...prev.coins,
-          [coin]: {...prev.coins[coin], electrumx: servers},
-        },
-      };
-    });
-  };
-
-  const editMode = (coin: string, index: number, mode: VerifyCertsMode) =>
-    editTlsField(coin, index, {verify_certs_mode: mode});
-
-  const editHostname = (coin: string, index: number, value: boolean) =>
-    editTlsField(coin, index, {verify_hostname: value});
-
-  const editEnabled = (coin: string, index: number, enabled: boolean) =>
-    editTlsField(coin, index, {disabled: !enabled});
-
-  const editServer = (coin: string, index: number, url: string) => {
-    setStatus('');
-    setConfig(prev => {
-      if (!prev) {
-        return prev;
-      }
-      const servers = prev.coins[coin].electrumx.map((server, i) =>
-        i === index ? {...server, url} : server,
-      );
-      return {
-        ...prev,
-        coins: {
-          ...prev.coins,
-          [coin]: {...prev.coins[coin], electrumx: servers},
-        },
-      };
-    });
-  };
-
-  const addServer = (coin: string) => {
-    setStatus('');
-    fail('');
-    setConfig(prev =>
-      prev
-        ? {
-            ...prev,
-            coins: {
-              ...prev.coins,
-              [coin]: {
-                ...prev.coins[coin],
-                electrumx: [...prev.coins[coin].electrumx, {url: ''}],
-              },
-            },
-          }
-        : prev,
-    );
-  };
-
-  const confirmRemoveServer = (coin: string, index: number) => {
-    Alert.alert('Remove server', 'Remove this server?', [
-      {text: 'Cancel', style: 'cancel'},
-      {
-        text: 'Remove',
-        style: 'destructive',
-        onPress: () => removeServer(coin, index),
-      },
-    ]);
-  };
-
-  const removeServer = (coin: string, index: number) => {
-    setStatus('');
-    setConfig(prev =>
-      prev
-        ? {
-            ...prev,
-            coins: {
-              ...prev.coins,
-              [coin]: {
-                ...prev.coins[coin],
-                electrumx: prev.coins[coin].electrumx.filter(
-                  (_, i) => i !== index,
-                ),
-              },
-            },
           }
         : prev,
     );
@@ -485,90 +293,23 @@ const MbsxSettings: React.FC = () => {
     }
     fail('');
     setStatus('');
-    const badCap = (cap?: number) =>
-      cap !== undefined && !(Number.isInteger(cap) && cap >= 1);
-    if (badCap(config.max_electrum_servers)) {
-      setAdvanced(true);
-      fail('Servers kept connected must be a whole number, at least 1');
-      return;
-    }
-    const capCoin = Object.entries(config.coins).find(
-      ([, settings]) =>
-        settings.enabled === true && badCap(settings.max_electrum_servers),
-    );
-    if (capCoin) {
-      setAdvanced(true);
-      fail(
-        `Servers kept connected for ${capCoin[0]} must be a whole number, at least 1`,
-        capCoin[0],
-      );
-      return;
-    }
-    const blank = Object.entries(config.coins).find(
-      ([, coin]) =>
-        coin.enabled === true &&
-        coin.electrumx.some(server => !server.url.trim()),
-    );
-    if (blank) {
-      setAdvanced(true);
-      fail(`Empty server url for ${blank[0]}`, blank[0]);
-      return;
-    }
-    for (const [coin, settings] of Object.entries(config.coins)) {
-      const bad =
-        settings.enabled === true &&
-        settings.electrumx.find(server => electrumUrlError(server.url));
-      if (bad) {
-        setAdvanced(true);
-        fail(
-          `Server url ${bad.url} for ${coin} ${electrumUrlError(bad.url)}`,
-          coin,
-        );
-        return;
-      }
-    }
-    const warnings: string[] = [];
-    const unserved = Object.entries(config.coins)
-      .filter(
-        ([, settings]) =>
-          settings.enabled === true &&
-          !settings.electrumx.some(server => !server.disabled),
-      )
-      .map(([coin]) => coin);
-    if (unserved.length > 0) {
-      warnings.push(
-        `${unserved.join(', ')} has no enabled server, so the app can't watch it.`,
-      );
-    }
-    if (await changedElsewhere()) {
-      warnings.push(
-        'The settings were changed outside this screen since it loaded them, ' +
-          'for example by the server banner, and saving replaces those changes.',
-      );
-    }
-    if (warnings.length > 0) {
-      Alert.alert('Save settings?', warnings.join('\n\n'), [
-        {text: 'Cancel', style: 'cancel'},
-        {text: 'Save', onPress: () => void apply(config)},
-      ]);
-      return;
-    }
-    await apply(config);
-  };
-
-  const apply = async (applied: MbsxConfig) => {
     setSaving(true);
     try {
-      await applyConfig(applied);
-      storedJsonRef.current = persisted(applied);
-      setSavedJson(persisted(applied));
-      setStatus('Saved and restarted');
+      if (
+        await saveSettingsDraft(config, storedJson, dispatch, problem => {
+          setAdvanced(true);
+          fail(problem.message, problem.coin);
+        })
+      ) {
+        setStatus('Saved and restarted');
+      }
     } catch (e) {
       fail(`Saved, but the restart failed: ${(e as Error).message}`);
     } finally {
       setSaving(false);
       dispatch(setRunning(isRunning()));
       setActiveCoins(coinsWithActiveSwaps());
+      readServerStates();
     }
   };
 
@@ -656,8 +397,8 @@ const MbsxSettings: React.FC = () => {
             />
           </View>
           <Text style={look.note}>
-            Leaving this section withdraws any request that has not accepted an
-            offer, and frees the coins held for it.
+            Leaving the BasicSwap section withdraws any request that has not
+            accepted an offer, and frees the coins held for it.
           </Text>
 
           <Text style={swapCards.section}>Privacy</Text>
@@ -689,7 +430,7 @@ const MbsxSettings: React.FC = () => {
           <Text style={[styles.label, look.torLabel]}>Tor</Text>
           <Text testID="mbsx-tor" style={look.note}>
             {torPending
-              ? 'Set in Nexus settings. Applies to swaps on re-entering this section, or after an app restart while a swap is in flight.'
+              ? 'Set in Nexus settings. Applies to swaps on re-entering the BasicSwap section, or after an app restart while a swap is in flight.'
               : 'Set in Nexus settings, and applied to swaps as well.'}
           </Text>
         </View>
@@ -771,6 +512,50 @@ const MbsxSettings: React.FC = () => {
             </View>
           );
         })}
+
+        <Text style={swapCards.section}>Electrum servers</Text>
+        <View style={swapCards.card}>
+          {shownCoins
+            .filter(coin => config.coins[coin].enabled === true)
+            .map((coin, i) => {
+              const servers = config.coins[coin].electrumx;
+              const enabledCount = servers.filter(
+                server => !server.disabled,
+              ).length;
+              const connected = servers.filter(server => {
+                const row = serverStates[`${coin} ${server.url}`];
+                return !server.disabled && row?.state === 'active' && row.live;
+              }).length;
+              const cap =
+                config.coins[coin].max_electrum_servers ??
+                config.max_electrum_servers ??
+                DEFAULT_MAX_ELECTRUM_SERVERS;
+              const summary = [
+                `${connected} connected`,
+                `${enabledCount} enabled`,
+                ...(cap < enabledCount ? [`keeps ${cap}`] : []),
+                ...(enabledCount === 0 ? ['no enabled server'] : []),
+              ].join(' · ');
+              return (
+                <TouchableOpacity
+                  key={coin}
+                  testID={`mbsx-servers-${coin}`}
+                  style={[look.cardRow, i > 0 ? look.cardRowLine : null]}
+                  onPress={() =>
+                    navigation.navigate('ElectrumServers', {coin})
+                  }>
+                  <Text style={[styles.label, look.rowLabel]}>
+                    {coin.toUpperCase()}
+                  </Text>
+                  <Text
+                    testID={`mbsx-servers-summary-${coin}`}
+                    style={enabledCount === 0 ? styles.error : styles.value}>
+                    {summary}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+        </View>
 
         <TouchableOpacity
           style={swapCards.advancedToggle}
@@ -867,118 +652,6 @@ const MbsxSettings: React.FC = () => {
               }
               keyboardType="numeric"
             />
-
-            {shownCoins.map(coin => {
-              const enabled = config.coins[coin].enabled === true;
-              if (!enabled) {
-                return null;
-              }
-              return (
-                <View key={coin}>
-                  <Text style={styles.section}>{`${coin.toUpperCase()} servers`}</Text>
-                  <Text style={styles.inputLabel}>Kept connected</Text>
-                  <TextInput
-                    testID={`mbsx-max-electrum-servers-${coin}`}
-                    style={styles.input}
-                    value={
-                      config.coins[coin].max_electrum_servers
-                        ? String(config.coins[coin].max_electrum_servers)
-                        : ''
-                    }
-                    placeholder={String(
-                      config.max_electrum_servers ??
-                        DEFAULT_MAX_ELECTRUM_SERVERS,
-                    )}
-                    onChangeText={text => editCoinCap(coin, text)}
-                    keyboardType="numeric"
-                  />
-                  {config.coins[coin].electrumx.map((server, index) => (
-                    <View key={index}>
-                      <TextInput
-                        style={styles.input}
-                        value={server.url}
-                        placeholder="tcp://host:port"
-                        onChangeText={url => editServer(coin, index, url)}
-                        autoCapitalize="none"
-                      />
-                      {serverStates[`${coin} ${server.url}`] ? (
-                        <Text
-                          testID={`mbsx-server-state-${coin}-${index}`}
-                          style={styles.value}>
-                          {serverStateText(
-                            serverStates[`${coin} ${server.url}`],
-                          )}
-                        </Text>
-                      ) : null}
-                      <View style={styles.row}>
-                        <Text style={styles.label}>Enabled</Text>
-                        <Switch
-                          testID={`mbsx-server-enabled-${coin}-${index}`}
-                          value={server.disabled !== true}
-                          onValueChange={value =>
-                            editEnabled(coin, index, value)
-                          }
-                        />
-                      </View>
-                      {server.url.startsWith('ssl://') ? (
-                        <>
-                          <Text style={styles.inputLabel}>
-                            Certificate checks
-                          </Text>
-                          <View style={styles.modeRow}>
-                            {modes.map(mode => {
-                              const active =
-                                (server.verify_certs_mode ?? 'pinned') === mode;
-                              return (
-                                <TouchableOpacity
-                                  key={mode}
-                                  testID={`mbsx-mode-${coin}-${mode}`}
-                                  style={[
-                                    styles.modeOption,
-                                    active ? styles.modeOptionActive : null,
-                                  ]}
-                                  onPress={() => editMode(coin, index, mode)}>
-                                  <Text
-                                    style={[
-                                      styles.modeText,
-                                      active ? styles.modeTextActive : null,
-                                    ]}>
-                                    {mode}
-                                  </Text>
-                                </TouchableOpacity>
-                              );
-                            })}
-                          </View>
-                          {chainsChecked(server) ? (
-                            <View style={styles.row}>
-                              <Text style={styles.label}>Verify hostname</Text>
-                              <Switch
-                                testID={`mbsx-verify-hostname-${coin}`}
-                                value={server.verify_hostname !== false}
-                                onValueChange={value =>
-                                  editHostname(coin, index, value)
-                                }
-                              />
-                            </View>
-                          ) : null}
-                        </>
-                      ) : null}
-                      <TouchableOpacity
-                        style={styles.buttonSecondary}
-                        onPress={() => confirmRemoveServer(coin, index)}>
-                        <Text style={styles.buttonSecondaryText}>Remove</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                  <TouchableOpacity
-                    testID={`mbsx-add-server-${coin}`}
-                    style={styles.button}
-                    onPress={() => addServer(coin)}>
-                    <Text style={styles.buttonText}>Add server</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
 
             <Text style={styles.section}>Certificates</Text>
             <Text style={styles.value}>

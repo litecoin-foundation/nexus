@@ -57,6 +57,8 @@ import PayInDetail from './screens/PayInDetail';
 import AddressList from './screens/AddressList';
 import CoinAddresses from './screens/CoinAddresses';
 import MbsxSettings from './screens/MbsxSettings';
+import ElectrumServers from './screens/ElectrumServers';
+import ElectrumServer from './screens/ElectrumServer';
 import MbsxDebug from './screens/MbsxDebug';
 import type {MbsxDrawerParamList} from './types';
 
@@ -348,6 +350,16 @@ const MbsxNavigator: React.FC = () => {
           name="MbsxSettings"
           component={MbsxSettings}
           options={{title: 'Settings'}}
+        />
+        <Drawer.Screen
+          name="ElectrumServers"
+          component={ElectrumServers}
+          options={{title: 'Electrum servers', ...hidden}}
+        />
+        <Drawer.Screen
+          name="ElectrumServer"
+          component={ElectrumServer}
+          options={{title: 'Electrum server', ...hidden}}
         />
         <Drawer.Screen
           name="MbsxDebug"

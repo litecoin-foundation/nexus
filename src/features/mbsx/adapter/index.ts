@@ -833,6 +833,29 @@ export const removeCaCert = (id: bigint) => {
   }
 };
 
+export type PinnedCert = {
+  host: string;
+  port: number;
+  fingerprint: string;
+  first_seen: number;
+  ca_signed: boolean;
+};
+
+export const listPinnedCerts = (): PinnedCert[] => {
+  const rv = NitroBSX.listPinnedCerts() as MbsxResult<{certs?: PinnedCert[]}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+  return rv.certs ?? [];
+};
+
+export const removePinnedCert = (host: string, port: number) => {
+  const rv = NitroBSX.removePinnedCert(host, port) as MbsxResult<{}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
 export const removeSwap = (swapId: string) => {
   const rv = NitroBSX.removeSwap(swapId) as MbsxResult<{}>;
   if (rv.error) {

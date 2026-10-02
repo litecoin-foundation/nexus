@@ -139,6 +139,7 @@ export type MbsxInfo = {
         state: 'active' | 'idle' | 'cooldown';
         live: boolean;
         error: string;
+        version?: string;
       }[];
     }
   >;
@@ -161,5 +162,7 @@ export type MbsxDrawerParamList = {
   RequestDetail: {requestId: string};
   PayInDetail: {depositId: string};
   MbsxSettings: undefined;
+  ElectrumServers: {coin: string};
+  ElectrumServer: {coin: string; index: number};
   MbsxDebug: undefined;
 };
