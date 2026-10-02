@@ -11,10 +11,10 @@ export type AmountSide = 'from' | 'to';
 export const DEFAULT_SLIPPAGE = 0.01;
 export const MAX_SLIPPAGE_BPS = 500;
 
-export const slippageFor = (maxMarginBps?: number): number =>
+export const slippageFor = (maxMarginBps?: bigint | number): number =>
   maxMarginBps === undefined
     ? DEFAULT_SLIPPAGE
-    : Math.min(Math.max(maxMarginBps, 0), MAX_SLIPPAGE_BPS) / 10000;
+    : Math.min(Math.max(Number(maxMarginBps), 0), MAX_SLIPPAGE_BPS) / 10000;
 
 export const RATE_TOLERANCE = 0.05;
 
