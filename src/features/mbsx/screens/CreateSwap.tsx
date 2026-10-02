@@ -1011,7 +1011,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               onPress={() => void submit()}
               disabled={busy || blockNote !== ''}>
               <Text style={styles.buttonText}>
-                {busy ? 'Requesting…' : 'Swap'}
+                {busy ? 'Requesting…' : 'Get offers'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1042,7 +1042,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               (offReference && !rateAcknowledged)
             }>
             <Text style={styles.buttonText}>
-              {busy ? 'Requesting…' : 'Swap'}
+              {busy ? 'Requesting…' : 'Get offers'}
             </Text>
           </TouchableOpacity>
         )}
