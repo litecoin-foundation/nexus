@@ -58,13 +58,15 @@ const screenSize = {
   testDeviceHeaderHeight: 103,
 };
 
-const renderSettings = () => {
-  const store = configureStore({
+const makeStore = () =>
+  configureStore({
     reducer: {
       mbsx: mbsxReducer,
       settings: (state = {torEnabled: false}) => state,
     },
   });
+
+const renderSettings = (store = makeStore()) => {
   return render(
     <Provider store={store}>
       <ScreenSizeContext.Provider value={screenSize}>
@@ -186,6 +188,36 @@ describe('MbsxSettings servers', () => {
     await act(async () => listeners.focus());
     await waitFor(() => expect(alert).toHaveBeenCalled());
     expect(alert.mock.calls[0][0]).toBe('Settings changed');
+  });
+
+  it('keeps unsaved edits when the section is opened again', async () => {
+    const alert = jest.spyOn(Alert, 'alert');
+    const store = makeStore();
+    const first = renderSettings(store);
+    fireEvent.press(await waitFor(() => first.getByText('Advanced')));
+    fireEvent.changeText(first.getByTestId('mbsx-max-electrum-servers'), '3');
+    first.unmount();
+
+    const again = renderSettings(store);
+    fireEvent.press(await waitFor(() => again.getByText('Advanced')));
+    await waitFor(() => expect(readConfig).toHaveBeenCalledTimes(2));
+    expect(again.getByTestId('mbsx-max-electrum-servers').props.value).toBe(
+      '3',
+    );
+    expect(alert).not.toHaveBeenCalled();
+  });
+
+  it('leaves a failed restart for the starting screen to offer a retry', async () => {
+    (applyConfig as jest.Mock).mockRejectedValueOnce(new Error('no core'));
+    const store = makeStore();
+    const {getByTestId, getByText} = renderSettings(store);
+    fireEvent.press(await waitFor(() => getByText('Advanced')));
+    fireEvent.changeText(getByTestId('mbsx-max-electrum-servers'), '3');
+    fireEvent.press(getByTestId('mbsx-settings-save'));
+    await waitFor(() => expect(store.getState().mbsx.error).toBe('no core'));
+    expect(getByTestId('mbsx-settings-error')).toHaveTextContent(
+      'Saved, but the restart failed: no core',
+    );
   });
 
   it('lists every certificate, and adds one for a server', async () => {

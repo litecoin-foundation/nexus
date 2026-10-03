@@ -446,6 +446,8 @@ export const applyConfig = async (config: MbsxConfig) => {
 };
 
 const restart = async () => {
+  // start() hands back a start already in flight, which read the old config
+  await starting?.catch(() => undefined);
   stop();
   await start();
 };

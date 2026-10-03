@@ -12,7 +12,7 @@ import {
   readConfig,
 } from './adapter';
 import type {ElectrumServer, MbsxConfig, VerifyCertsMode} from './adapter';
-import {draftChanged, draftLoaded, draftSaved} from './mbsxSlice';
+import {draftChanged, draftLoaded, draftSaved, setError} from './mbsxSlice';
 import {getNetwork} from './network';
 
 export const SETTINGS_ROUTES = [
@@ -151,11 +151,19 @@ export const editCoinCap = (
   },
 });
 
+// An ipv6 host comes back without its brackets, the form the module keys
+// certificates by.
 export const serverHostPort = (
   url: string,
 ): {host: string; port: number} | null => {
-  const match = /^(?:tcp|ssl):\/\/([^:/]+):(\d+)/.exec(url.trim());
-  return match ? {host: match[1], port: Number(match[2])} : null;
+  const trimmed = url.trim();
+  if (electrumUrlError(trimmed) !== '') {
+    return null;
+  }
+  const match = /^(?:tcp|ssl):\/\/(?:\[([^\]]+)\]|([^:/]+)):(\d+)/i.exec(
+    trimmed,
+  );
+  return match ? {host: match[1] ?? match[2], port: Number(match[3])} : null;
 };
 
 export type ServerRow = {
@@ -267,7 +275,13 @@ export const saveSettingsDraft = async (
   if (warnings.length > 0 && !(await confirmSave(warnings))) {
     return false;
   }
-  await applyConfig(config);
+  dispatch(setError(null));
+  try {
+    await applyConfig(config);
+  } catch (e) {
+    dispatch(setError((e as Error).message));
+    throw e;
+  }
   dispatch(draftSaved(persisted(config)));
   return true;
 };

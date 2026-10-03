@@ -153,39 +153,51 @@ const MbsxSettings: React.FC = () => {
     loadCerts();
   }, [dispatch, loadCerts, readServerStates]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
   const storedJsonRef = useRef(storedJson);
   storedJsonRef.current = storedJson;
 
+  const offerReload = useCallback(async () => {
+    if (!(await changedElsewhere(storedJsonRef.current))) {
+      return;
+    }
+    if (!dirtyRef.current) {
+      load();
+      return;
+    }
+    Alert.alert(
+      'Settings changed',
+      'The settings were changed outside this screen, for example by the ' +
+        'server banner. Reload them and drop your unsaved changes?',
+      [
+        {text: 'Keep editing', style: 'cancel'},
+        {text: 'Reload', style: 'destructive', onPress: () => load()},
+      ],
+    );
+  }, [load]);
+
+  // Unsaved edits outlive leaving the section, so coming back keeps them
+  useEffect(() => {
+    if (!dirtyRef.current) {
+      load();
+      return;
+    }
+    setActiveCoins(coinsWithActiveSwaps());
+    readServerStates();
+    loadCerts();
+    offerReload();
+  }, [load, loadCerts, offerReload, readServerStates]);
+
   // A drawer switch cannot be blocked, so the alert offers the way back
   // instead of preventing it.
   const navigation = useNavigation<DrawerNavigationProp<MbsxDrawerParamList>>();
   useEffect(() => {
-    return navigation.addListener('focus', async () => {
+    return navigation.addListener('focus', () => {
       readServerStates();
-      if (!(await changedElsewhere(storedJsonRef.current))) {
-        return;
-      }
-      if (!dirtyRef.current) {
-        load();
-        return;
-      }
-      Alert.alert(
-        'Settings changed',
-        'The settings were changed outside this screen, for example by the ' +
-          'server banner. Reload them and drop your unsaved changes?',
-        [
-          {text: 'Keep editing', style: 'cancel'},
-          {text: 'Reload', style: 'destructive', onPress: () => load()},
-        ],
-      );
+      offerReload();
     });
-  }, [navigation, load, readServerStates]);
+  }, [navigation, offerReload, readServerStates]);
   useUnsavedDraftGuard(dirty, 'MbsxSettings');
 
   const edit = (patch: Partial<MbsxConfig>) => {
@@ -452,7 +464,10 @@ const MbsxSettings: React.FC = () => {
                       {backgroundColor: COIN_COLORS[ticker] ?? '#C5C5CE'},
                     ]}>
                     {COIN_ICONS[ticker] ? (
-                      <Image source={COIN_ICONS[ticker]} style={look.coinMark} />
+                      <Image
+                        source={COIN_ICONS[ticker]}
+                        style={look.coinMark}
+                      />
                     ) : null}
                   </View>
                   <Text style={styles.label}>{ticker}</Text>
@@ -498,7 +513,9 @@ const MbsxSettings: React.FC = () => {
                     </Text>
                   </TouchableOpacity>
                   {rescanned === coin ? (
-                    <Text testID={`mbsx-rescan-started-${coin}`} style={look.note}>
+                    <Text
+                      testID={`mbsx-rescan-started-${coin}`}
+                      style={look.note}>
                       Looking for pay-ins made from this seed
                     </Text>
                   ) : null}
@@ -656,8 +673,8 @@ const MbsxSettings: React.FC = () => {
             <Text style={styles.section}>Certificates</Text>
             <Text style={styles.value}>
               Trust anchors for the optional and strict checks. Naming a server
-              confines the certificate to it, and replaces the built in roots for
-              that server rather than adding to them.
+              confines the certificate to it, and replaces the built in roots
+              for that server rather than adding to them.
             </Text>
             {certs.map(cert => (
               <View key={String(cert.id)} style={styles.certRow}>

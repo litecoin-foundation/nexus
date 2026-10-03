@@ -191,6 +191,23 @@ describe('ElectrumServer', () => {
     expect(addCaCert).toHaveBeenCalledWith('new', 'a', 1, 'PEM');
   });
 
+  it('adds no CA certificate for a port out of range', () => {
+    const {view} = renderServer(draft([{url: 'ssl://a:115538'}]));
+    fireEvent.changeText(view.getByTestId('mbsx-server-ca-pem'), 'PEM');
+    fireEvent.press(view.getByTestId('mbsx-server-add-ca'));
+    expect(view.getByTestId('mbsx-server-error')).toHaveTextContent(
+      'Set a valid server url first',
+    );
+    expect(addCaCert).not.toHaveBeenCalled();
+  });
+
+  it('adds a CA certificate for an ipv6 server without the brackets', () => {
+    const {view} = renderServer(draft([{url: 'ssl://[::1]:50002'}]));
+    fireEvent.changeText(view.getByTestId('mbsx-server-ca-pem'), 'PEM');
+    fireEvent.press(view.getByTestId('mbsx-server-add-ca'));
+    expect(addCaCert).toHaveBeenCalledWith('', '::1', 50002, 'PEM');
+  });
+
   it('removes the server after asking and goes back to the list', () => {
     const alert = jest.spyOn(Alert, 'alert');
     const {store, view} = renderServer(
