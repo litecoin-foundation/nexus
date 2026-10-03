@@ -165,5 +165,6 @@ export type MbsxDrawerParamList = {
   MbsxSettings: undefined;
   ElectrumServers: {coin: string};
   ElectrumServer: {coin: string; index: number};
+  CoinRateServices: undefined;
   MbsxDebug: undefined;
 };

@@ -18,6 +18,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
+import {useAppSelector} from '../../../store/hooks';
 import {triggerLightFeedback} from '../../../utils/haptic';
 import {
   formatExpiry,
@@ -25,6 +26,7 @@ import {
   kindLabel,
   shortAddress,
 } from '../format';
+import {independentReference} from '../rates';
 import {getMbsxStyles} from '../theme';
 import {coinString, offerWarning} from '../useSwapAmounts';
 import CoinPair from '../components/CoinPair';
@@ -87,6 +89,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const [acceptError, setAcceptError] = useState('');
   const [accepting, setAccepting] = useState(false);
   const [pendingOffer, setPendingOffer] = useState<SwapOffer | null>(null);
+  const [acknowledged, setAcknowledged] = useState<string[]>([]);
+  const rates = useAppSelector(state => state.mbsx.rates);
 
   const fetchRequest = useCallback(() => {
     const rv = getRequestInfo(requestId);
@@ -310,7 +314,16 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 
         <Text style={swapCards.section}>Offers</Text>
         {offers.map(offer => {
-          const warning = offerWarning(offer);
+          const warning = offerWarning(
+            offer,
+            independentReference(
+              rates,
+              offer.coin_send,
+              offer.coin_receive,
+              Date.now() / 1000,
+            ),
+          );
+          const held = warning !== null && !acknowledged.includes(offer.id);
           const status = offerStatus(offer);
           const kind = kindLabel(offer.kind);
           const open = live(offer);
@@ -369,11 +382,19 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 </Text>
               ) : null}
               {warning ? (
-                <Text
+                <TouchableOpacity
                   testID={`mbsx-offer-warning-${offer.id}`}
-                  style={styles.error}>
-                  {warning}
-                </Text>
+                  onPress={() =>
+                    setAcknowledged(ids =>
+                      ids.includes(offer.id) ? ids : [...ids, offer.id],
+                    )
+                  }>
+                  <Text style={styles.error}>
+                    {held
+                      ? `${warning} Tap this warning to accept anyway.`
+                      : warning}
+                  </Text>
+                </TouchableOpacity>
               ) : null}
               {offer.kind === 'BRIDGED' ? (
                 <>
@@ -426,9 +447,13 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       testID="mbsx-accept-confirm-button"
-                      style={[styles.button, look.confirmAction]}
+                      style={[
+                        styles.button,
+                        look.confirmAction,
+                        held ? styles.buttonDisabled : null,
+                      ]}
                       onPress={() => void confirmAccept()}
-                      disabled={accepting}>
+                      disabled={accepting || held}>
                       <Text style={styles.buttonText}>
                         {accepting ? 'Accepting…' : 'Accept'}
                       </Text>
@@ -439,7 +464,12 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               {canAccept && open && pendingOffer === null ? (
                 <TouchableOpacity
                   testID={`mbsx-accept-${offer.id}`}
-                  style={[styles.button, look.acceptButton]}
+                  style={[
+                    styles.button,
+                    look.acceptButton,
+                    held ? styles.buttonDisabled : null,
+                  ]}
+                  disabled={held}
                   onPress={() => onAccept(offer)}>
                   <Text style={styles.buttonText}>Accept</Text>
                 </TouchableOpacity>

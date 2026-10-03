@@ -25,6 +25,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
+import {readRateServices} from '../rates';
 import {getMbsxStyles} from '../theme';
 import {COIN_COLORS, COIN_ICONS, swapCards} from '../swapCards';
 import {setRunning} from '../mbsxSlice';
@@ -85,6 +86,7 @@ const MbsxSettings: React.FC = () => {
   // Read-only here: Nexus owns the switch, and a second one could disagree.
   const torEnabled = useAppSelector(state => state.settings.torEnabled);
   const [activeCoins, setActiveCoins] = useState<Set<string> | null>(null);
+  const [ratesOn, setRatesOn] = useState<boolean | null>(null);
   // Null while the core is stopped, which shows every coin in the config.
   const [compiledCoins, setCompiledCoins] = useState<string[] | null>(null);
   const [error, setError] = useState('');
@@ -193,8 +195,12 @@ const MbsxSettings: React.FC = () => {
   // instead of preventing it.
   const navigation = useNavigation<DrawerNavigationProp<MbsxDrawerParamList>>();
   useEffect(() => {
+    const readRates = () =>
+      readRateServices().then(services => setRatesOn(services.enabled));
+    readRates();
     return navigation.addListener('focus', () => {
       readServerStates();
+      readRates();
       offerReload();
     });
   }, [navigation, offerReload, readServerStates]);
@@ -572,6 +578,19 @@ const MbsxSettings: React.FC = () => {
                 </TouchableOpacity>
               );
             })}
+        </View>
+
+        <Text style={swapCards.section}>Coin Rate Services</Text>
+        <View style={swapCards.card}>
+          <TouchableOpacity
+            testID="mbsx-rate-services"
+            style={look.cardRow}
+            onPress={() => navigation.navigate('CoinRateServices')}>
+            <Text style={[styles.label, look.rowLabel]}>Fetch coin rates</Text>
+            <Text testID="mbsx-rate-services-summary" style={styles.value}>
+              {ratesOn === null ? '' : ratesOn ? 'On' : "Off, server's prices"}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity

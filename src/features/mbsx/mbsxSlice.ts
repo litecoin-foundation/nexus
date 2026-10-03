@@ -2,6 +2,7 @@ import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {PURGE} from 'redux-persist';
 
 import type {MbsxConfig} from './adapter/config';
+import type {CoinRate, RateSource, SourceResult} from './rates';
 
 export type MbsxMessage = {id: number; data: string};
 
@@ -14,6 +15,8 @@ interface IMbsx {
   settingsDraft: MbsxConfig | null;
   settingsSavedJson: string | null;
   settingsStoredJson: string | null;
+  rates: Record<string, CoinRate>;
+  rateResults: Partial<Record<RateSource, SourceResult>>;
 }
 
 const initialState: IMbsx = {
@@ -25,6 +28,8 @@ const initialState: IMbsx = {
   settingsDraft: null,
   settingsSavedJson: null,
   settingsStoredJson: null,
+  rates: {},
+  rateResults: {},
 };
 
 const MAX_MESSAGES = 200;
@@ -75,6 +80,21 @@ export const mbsxSlice = createSlice({
     clearMessages: state => {
       state.messages = [];
     },
+    // Merged, so a source that fails one round leaves the last rates to age out
+    ratesFetched: (
+      state,
+      action: PayloadAction<{
+        rates: Record<string, CoinRate>;
+        results: Partial<Record<RateSource, SourceResult>>;
+      }>,
+    ) => {
+      state.rates = {...state.rates, ...action.payload.rates};
+      state.rateResults = {...state.rateResults, ...action.payload.results};
+    },
+    ratesCleared: state => {
+      state.rates = {};
+      state.rateResults = {};
+    },
   },
   extraReducers: builder => {
     builder.addCase(PURGE, () => initialState);
@@ -91,6 +111,8 @@ export const {
   draftSaved,
   pushMessage,
   clearMessages,
+  ratesFetched,
+  ratesCleared,
 } = mbsxSlice.actions;
 
 export default mbsxSlice.reducer;

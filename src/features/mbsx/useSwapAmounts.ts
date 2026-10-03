@@ -1,5 +1,7 @@
 import {useCallback, useState} from 'react';
 
+import type {Reference} from './rates';
+
 export type AmountUnit = 'coin' | 'usd';
 export type AmountSide = 'from' | 'to';
 
@@ -35,13 +37,29 @@ const num = (value: string): number | null => {
 const percent = (fraction: number): number =>
   Math.round(Math.abs(fraction) * 100);
 
-export const offerWarning = (offer: {
-  amount_receive: string;
-  market_amount_receive?: string;
-}): string | null => {
+export const offerWarning = (
+  offer: {
+    amount_send: string;
+    amount_receive: string;
+    market_amount_receive?: string;
+  },
+  reference?: Reference | null,
+): string | null => {
   const got = num(offer.amount_receive);
   if (got === null) {
     return 'You would receive nothing for this offer.';
+  }
+  if (reference) {
+    const sent = num(offer.amount_send);
+    if (sent === null) {
+      return null;
+    }
+    const deviation = got / ((sent * reference.send) / reference.receive) - 1;
+    return deviation < -RATE_TOLERANCE
+      ? `You would receive ${percent(deviation)}% less than the ${
+          reference.label
+        }.`
+      : null;
   }
   const market = num(offer.market_amount_receive ?? '');
   if (market === null) {
@@ -51,7 +69,7 @@ export const offerWarning = (offer: {
   return Math.abs(deviation) > RATE_TOLERANCE
     ? `You would receive ${percent(deviation)}% ${
         deviation < 0 ? 'less' : 'more'
-      } than the reference rate.`
+      } than the server's rate.`
     : null;
 };
 

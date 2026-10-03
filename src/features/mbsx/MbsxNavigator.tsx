@@ -36,6 +36,7 @@ import {
   stopIfIdle,
   swapInProgress,
 } from './adapter';
+import {startRateFetcher} from './rates';
 import {readConfig} from './adapter/config';
 import {
   pushMessage,
@@ -60,6 +61,7 @@ import CoinAddresses from './screens/CoinAddresses';
 import MbsxSettings from './screens/MbsxSettings';
 import ElectrumServers from './screens/ElectrumServers';
 import ElectrumServer from './screens/ElectrumServer';
+import CoinRateServices from './screens/CoinRateServices';
 import MbsxDebug from './screens/MbsxDebug';
 import type {MbsxDrawerParamList} from './types';
 
@@ -264,6 +266,11 @@ const MbsxNavigator: React.FC = () => {
     return () => subscription.remove();
   }, [dispatch]);
 
+  useEffect(
+    () => startRateFetcher(dispatch, () => torRef.current === true),
+    [dispatch],
+  );
+
   // Seeded first: the event fires only on a change, never on the current state.
   useEffect(() => {
     dispatch(setConnected(getInfo()?.connected === true));
@@ -365,6 +372,11 @@ const MbsxNavigator: React.FC = () => {
           name="ElectrumServer"
           component={ElectrumServer}
           options={{title: 'Electrum Server', ...hidden}}
+        />
+        <Drawer.Screen
+          name="CoinRateServices"
+          component={CoinRateServices}
+          options={{title: 'Coin Rate Services', ...hidden}}
         />
         <Drawer.Screen
           name="MbsxDebug"

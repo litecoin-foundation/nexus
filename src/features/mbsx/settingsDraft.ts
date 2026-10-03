@@ -19,6 +19,7 @@ export const SETTINGS_ROUTES = [
   'MbsxSettings',
   'ElectrumServers',
   'ElectrumServer',
+  'CoinRateServices',
 ];
 
 export const persisted = (cfg: MbsxConfig) => {
@@ -286,11 +287,17 @@ export const saveSettingsDraft = async (
   return true;
 };
 
-export const useUnsavedDraftGuard = (dirty: boolean, route: string) => {
+export const useUnsavedDraftGuard = (
+  dirty: boolean,
+  route: string,
+  onDiscard?: () => void,
+) => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
+  const discardRef = useRef(onDiscard);
+  discardRef.current = onDiscard;
   useEffect(() => {
     return navigation.addListener('blur', () => {
       if (!dirtyRef.current) {
@@ -305,7 +312,10 @@ export const useUnsavedDraftGuard = (dirty: boolean, route: string) => {
         {
           text: 'Discard',
           style: 'destructive',
-          onPress: () => loadSettingsDraft(dispatch),
+          onPress: () =>
+            discardRef.current
+              ? discardRef.current()
+              : loadSettingsDraft(dispatch),
         },
         {
           text: 'Keep editing',

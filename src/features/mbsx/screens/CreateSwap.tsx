@@ -48,6 +48,7 @@ import {
   swapBalances,
   validateAddress,
 } from '../adapter';
+import {independentReference} from '../rates';
 import {getMbsxStyles} from '../theme';
 import type {MbsxCoinPrices, MbsxDrawerParamList, MbsxInfo} from '../types';
 import {
@@ -212,6 +213,25 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     : '';
   const torPending = torApplied !== null && torEnabled !== torApplied;
 
+  const rates = useAppSelector(state => state.mbsx.rates);
+  const reference = independentReference(
+    rates,
+    sendCoin,
+    receiveCoin,
+    Date.now() / 1000,
+  );
+  const glueFrom = Number(prices?.prices?.[sendCoin] ?? 0);
+  const glueTo = Number(prices?.prices?.[receiveCoin] ?? 0);
+  const priceFrom = reference ? reference.send : glueFrom;
+  const priceTo = reference ? reference.receive : glueTo;
+  const referenceName = reference
+    ? `the ${reference.label}`
+    : "the server's rate";
+  const serverDeviation =
+    reference && glueFrom > 0 && glueTo > 0
+      ? glueFrom / glueTo / (reference.send / reference.receive) - 1
+      : null;
+
   const {
     amounts,
     setAmount,
@@ -220,8 +240,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     valueDeviation,
     reset: resetAmounts,
   } = useSwapAmounts(
-    prices?.prices?.[sendCoin],
-    prices?.prices?.[receiveCoin],
+    priceFrom > 0 ? String(priceFrom) : undefined,
+    priceTo > 0 ? String(priceTo) : undefined,
     slippage,
   );
   const [rateAcknowledged, setRateAcknowledged] = useState(false);
@@ -523,13 +543,17 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const selectedSaved = savedAddresses.find(
     entry => entry.address === addressTo,
   );
-  const currency = prices?.currency ?? 'USD';
+  const currency = reference ? 'USD' : (prices?.currency ?? 'USD');
 
   const from = Number(amountFrom);
   const to = Number(amountTo);
   const rateLine =
     coinChosen && from > 0 && to > 0
       ? `1 ${sendCoin} ≈ ${coinString(to / from)} ${receiveCoin}`
+      : '';
+  const referenceLine =
+    coinChosen && priceFrom > 0 && priceTo > 0
+      ? `${reference ? reference.label : "Server's rate, not checked"}: 1 ${sendCoin} ≈ ${coinString(priceFrom / priceTo)} ${receiveCoin}`
       : '';
   const feeLine =
     quote && quote.feeBps > 0
@@ -877,10 +901,15 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           )}
         </View>
 
-        {rateLine !== '' || feeLine !== '' ? (
+        {rateLine !== '' || feeLine !== '' || referenceLine !== '' ? (
           <View testID="mbsx-quote" style={look.quote}>
             {rateLine !== '' ? (
               <Text style={look.quoteText}>{rateLine}</Text>
+            ) : null}
+            {referenceLine !== '' ? (
+              <Text testID="mbsx-reference" style={look.quoteText}>
+                {referenceLine}
+              </Text>
             ) : null}
             {feeLine !== '' ? (
               <Text style={look.quoteText}>{feeLine}</Text>
@@ -927,11 +956,19 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 Math.round((valueDeviation as number) * 100),
               )}% ${
                 (valueDeviation as number) < 0 ? 'less' : 'more'
-              } than the reference rate.${
+              } than ${referenceName}.${
                 rateAcknowledged ? '' : ' Tap this warning to continue anyway.'
               }`}
             </Text>
           </TouchableOpacity>
+        ) : null}
+        {serverDeviation !== null &&
+        Math.abs(serverDeviation) > RATE_TOLERANCE ? (
+          <Text testID="mbsx-server-price-note" style={styles.error}>
+            {`The server's prices differ from ${referenceName} by ${Math.round(
+              Math.abs(serverDeviation) * 100,
+            )}%.`}
+          </Text>
         ) : null}
         {torPending ? (
           <Text testID="mbsx-tor-pending" style={styles.rowMessage}>

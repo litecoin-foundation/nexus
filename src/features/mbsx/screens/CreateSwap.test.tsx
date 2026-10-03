@@ -8,6 +8,9 @@ import {ScreenSizeContext} from '../../../context/screenSize';
 import mbsxAddressesReducer from '../addressesSlice';
 import CreateSwap from './CreateSwap';
 
+jest.mock('@dr.pogodin/react-native-fs', () => ({
+  DocumentDirectoryPath: '/tmp',
+}));
 jest.mock('react-native-nitro-lndltc', () => ({
   AddressType: {UNUSED_WITNESS_PUBKEY_HASH: 0},
   newAddress: jest.fn(),
@@ -32,7 +35,7 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('../adapter', () => ({
   PAY_IN_COINS: ['BTC', 'PART'],
   createDeposit: jest.fn(),
-  getCoinPrices: () => null,
+  getCoinPrices: jest.fn(() => null),
   getInfo: jest.fn(() => null),
   getSwapFundingOutputs: jest.fn(() => ({error: 'not running'})),
   isRunning: jest.fn(() => false),
@@ -63,10 +66,10 @@ const navigation = {
 
 const route = {key: 'CreateSwap', name: 'CreateSwap', params: undefined} as any;
 
-const renderScreen = (connected = false) => {
+const renderScreen = (connected = false, rates = {}) => {
   const store = configureStore({
     reducer: {
-      mbsx: (state = {connected}) => state,
+      mbsx: (state = {connected, rates}) => state,
       settings: (state = {torEnabled: false}) => state,
       mbsxAddresses: mbsxAddressesReducer,
       wallets: (state = {wallets: [], selectedWalletId: ''}) => state,
@@ -293,6 +296,60 @@ describe('CreateSwap', () => {
       );
     } finally {
       adapter.getInfo.mockReturnValue(null);
+    }
+  });
+
+  it('derives the amounts from the independent rate and names it', () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.getCoinPrices.mockReturnValue({
+      currency: 'USD',
+      prices: {LTC: '100', BTC: '50000'},
+    });
+    try {
+      const now = Math.floor(Date.now() / 1000);
+      const {getByTestId} = renderScreen(false, {
+        LTC: {usd: 80, source: 'coingecko', at: now},
+        BTC: {usd: 100000, source: 'coinpaprika', at: now},
+      });
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+
+      expect(getByTestId('mbsx-amount-to').props.value).toBe('0.000792');
+      expect(getByTestId('mbsx-reference')).toHaveTextContent(
+        'CoinGecko and CoinPaprika rate: 1 LTC ≈ 0.0008 BTC',
+      );
+      expect(getByTestId('mbsx-server-price-note')).toHaveTextContent(
+        "The server's prices differ from the CoinGecko and CoinPaprika rate by 150%.",
+      );
+    } finally {
+      adapter.getCoinPrices.mockReturnValue(null);
+    }
+  });
+
+  it("uses the server's prices, labelled, when no rate is fresh", () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.getCoinPrices.mockReturnValue({
+      currency: 'USD',
+      prices: {LTC: '100', BTC: '50000'},
+    });
+    try {
+      const old = Math.floor(Date.now() / 1000) - 301;
+      const {getByTestId, queryByTestId} = renderScreen(false, {
+        LTC: {usd: 80, source: 'coingecko', at: old},
+        BTC: {usd: 100000, source: 'coingecko', at: old},
+      });
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+
+      expect(getByTestId('mbsx-amount-to').props.value).toBe('0.00198');
+      expect(getByTestId('mbsx-reference')).toHaveTextContent(
+        "Server's rate, not checked: 1 LTC ≈ 0.002 BTC",
+      );
+      expect(queryByTestId('mbsx-server-price-note')).toBeNull();
+    } finally {
+      adapter.getCoinPrices.mockReturnValue(null);
     }
   });
 });
