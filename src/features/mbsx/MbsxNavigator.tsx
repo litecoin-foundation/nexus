@@ -389,7 +389,7 @@ const ScreenLayout = ({children}: {children: React.ReactNode}) => (
 );
 
 const MbsxScreenHeader = ({layout, options, route}: DrawerHeaderProps) => {
-  const {header: _header, ...headerOptions} = options;
+  const headerOptions = {...options, header: undefined};
   return (
     <View>
       <Header

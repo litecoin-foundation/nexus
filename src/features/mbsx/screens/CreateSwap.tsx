@@ -148,7 +148,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     spendable: bigint;
     unconfirmed: bigint;
   } | null>(null);
-  const [addressFocused, setAddressFocused] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const [coinOpen, setCoinOpen] = useState(false);
   const [receiversOpen, setReceiversOpen] = useState(false);
@@ -216,7 +215,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const {
     amounts,
     setAmount,
-    canConvert,
     fixedRate,
     setFixedRate,
     valueDeviation,
@@ -644,8 +642,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         placeholderTextColor="#9AA0AE"
         value={addressTo}
         onChangeText={setAddressTo}
-        onFocus={() => setAddressFocused(true)}
-        onBlur={() => setAddressFocused(false)}
         editable={coinChosen}
         autoCapitalize="none"
       />
