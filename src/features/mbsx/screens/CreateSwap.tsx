@@ -63,7 +63,6 @@ type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 // The coin lnd holds: a swap sends it from there, a pay-in receives it there.
 const HOST_COIN = 'LTC';
 
-const DUST_LIMIT = 294n;
 const CHAIN_FEE_RESERVE = 10000n;
 
 const swapFeeSats = (
@@ -270,6 +269,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       return;
     }
     const funding = getSwapFundingOutputs(sendCoin, amountFrom);
+    if (funding.min_amount !== undefined) {
+      setFeeNote(funding.error ?? '');
+    }
     if (
       !funding.error &&
       funding.total_fee_bps !== undefined &&
@@ -404,14 +406,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         throw new Error(`Not a ${coinTo} address`);
       }
       // Amounts are entered in whole coins; the module holds the only conversion.
-      let amountFromSats: bigint;
       try {
-        amountFromSats = parseAmount(sendCoin, amountFrom);
+        parseAmount(sendCoin, amountFrom);
       } catch {
         throw new Error('Invalid amount to send');
-      }
-      if (!payIn && amountFromSats < DUST_LIMIT) {
-        throw new Error('Amount to send is too small to spend');
       }
       // Parsed only to reject it here: the module is sent the string. Leasing
       // coins and then failing on the receive amount would strand them.
@@ -420,7 +418,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       } catch {
         throw new Error('Invalid amount to receive');
       }
-      const capNote = feeCapNote(getSwapFundingOutputs(sendCoin, amountFrom));
+      const quoted = getSwapFundingOutputs(sendCoin, amountFrom);
+      if (quoted.min_amount !== undefined) {
+        setFeeNote(quoted.error ?? '');
+        throw new Error(quoted.error);
+      }
+      const capNote = feeCapNote(quoted);
       if (capNote) {
         setFeeNote(capNote);
         throw new Error(capNote);

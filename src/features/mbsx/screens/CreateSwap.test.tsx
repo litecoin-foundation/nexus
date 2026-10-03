@@ -156,6 +156,33 @@ describe('CreateSwap', () => {
     }
   });
 
+  it('names the smallest amount the server fees allow, and holds the swap', () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.getInfo.mockReturnValueOnce({
+      connected: true,
+      coins: {LTC: {bridge_supported: true}, BTC: {bridge_supported: true}},
+    });
+    adapter.getSwapFundingOutputs.mockReturnValueOnce({
+      error: "Too small for the swap server's fees: send at least 0.01176 LTC",
+      min_amount: '0.01176',
+    });
+    adapter.isRunning.mockReturnValue(true);
+    try {
+      const {getByTestId} = renderScreen();
+
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '0.0026');
+
+      expect(getByTestId('mbsx-bridge-note')).toHaveTextContent(
+        "Too small for the swap server's fees: send at least 0.01176 LTC",
+      );
+      expect(getByTestId('mbsx-submit')).toBeDisabled();
+    } finally {
+      adapter.isRunning.mockReturnValue(false);
+    }
+  });
+
   it('pays in for any other coin, and asks where one with no host wallet goes', async () => {
     const adapter = jest.requireMock('../adapter');
     const bridged = {bridge_supported: true};
