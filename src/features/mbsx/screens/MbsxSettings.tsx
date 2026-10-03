@@ -167,7 +167,7 @@ const MbsxSettings: React.FC = () => {
       return;
     }
     Alert.alert(
-      'Settings changed',
+      'Settings Changed',
       'The settings were changed outside this screen, for example by the ' +
         'server banner. Reload them and drop your unsaved changes?',
       [
@@ -277,7 +277,7 @@ const MbsxSettings: React.FC = () => {
   };
 
   const confirmRemoveCert = (id: bigint) => {
-    Alert.alert('Remove certificate', 'Remove this certificate?', [
+    Alert.alert('Remove Certificate', 'Remove this certificate?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -530,7 +530,7 @@ const MbsxSettings: React.FC = () => {
           );
         })}
 
-        <Text style={swapCards.section}>Electrum servers</Text>
+        <Text style={swapCards.section}>Electrum Servers</Text>
         <View style={swapCards.card}>
           {shownCoins
             .filter(coin => config.coins[coin].enabled === true)
@@ -653,7 +653,7 @@ const MbsxSettings: React.FC = () => {
               keyboardType="numeric"
             />
 
-            <Text style={styles.section}>Electrum servers</Text>
+            <Text style={styles.section}>Electrum Servers</Text>
             <Text style={styles.inputLabel}>Kept connected per coin</Text>
             <TextInput
               testID="mbsx-max-electrum-servers"

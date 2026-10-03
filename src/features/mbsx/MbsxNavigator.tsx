@@ -339,7 +339,7 @@ const MbsxNavigator: React.FC = () => {
         <Drawer.Screen
           name="PayInDetail"
           component={PayInDetail}
-          options={{title: 'Pay-in', ...hidden}}
+          options={{title: 'Pay-In', ...hidden}}
         />
         <Drawer.Screen
           name="AddressList"
@@ -359,12 +359,12 @@ const MbsxNavigator: React.FC = () => {
         <Drawer.Screen
           name="ElectrumServers"
           component={ElectrumServers}
-          options={{title: 'Electrum servers', ...hidden}}
+          options={{title: 'Electrum Servers', ...hidden}}
         />
         <Drawer.Screen
           name="ElectrumServer"
           component={ElectrumServer}
-          options={{title: 'Electrum server', ...hidden}}
+          options={{title: 'Electrum Server', ...hidden}}
         />
         <Drawer.Screen
           name="MbsxDebug"

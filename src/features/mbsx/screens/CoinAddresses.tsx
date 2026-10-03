@@ -102,7 +102,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   };
 
   const forget = (savedAddress: string) => {
-    Alert.alert('Remove address', 'Remove this saved address?', [
+    Alert.alert('Remove Address', 'Remove this saved address?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',

@@ -240,7 +240,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             </Text>
           </View>
         </View>
-        <Text style={swapCards.section}>You receive at least</Text>
+        <Text style={swapCards.section}>You Receive at Least</Text>
         <View style={swapCards.card}>
           <View style={swapCards.amountRow}>
             {coinMark(deposit.coin_to)}
@@ -249,7 +249,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             </Text>
           </View>
         </View>
-        <Text style={swapCards.section}>Refunds go to</Text>
+        <Text style={swapCards.section}>Refunds Go To</Text>
         <View style={swapCards.card}>
           <Text selectable style={swapCards.meta}>
             {deposit.refund_address}
@@ -257,7 +257,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         </View>
         {deposit.sweep_txid ? (
           <>
-            <Text style={swapCards.section}>Refund transaction</Text>
+            <Text style={swapCards.section}>Refund Transaction</Text>
             <TouchableOpacity
               testID="mbsx-payin-sweep"
               style={swapCards.card}
@@ -282,7 +282,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         {paused ? (
           <>
             <Text style={swapCards.section}>
-              {deposit.state === 'NO_QUOTE' ? 'Lower the minimum' : 'New minimum'}
+              {deposit.state === 'NO_QUOTE' ? 'Lower the Minimum' : 'New Minimum'}
             </Text>
             <View style={swapCards.card}>
               <Text style={swapCards.note}>
@@ -319,7 +319,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         ) : null}
         {confirmingCancel ? (
           <View testID="mbsx-payin-cancel-confirm" style={swapCards.card}>
-            <Text style={swapCards.historyTitle}>Return the payment?</Text>
+            <Text style={swapCards.historyTitle}>Return the Payment?</Text>
             <Text style={swapCards.note}>
               {`${deposit.received} ${deposit.coin} goes back to your refund address.`}
             </Text>

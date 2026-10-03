@@ -253,7 +253,7 @@ export const draftWarnings = async (
 
 const confirmSave = (warnings: string[]) =>
   new Promise<boolean>(resolve =>
-    Alert.alert('Save settings?', warnings.join('\n\n'), [
+    Alert.alert('Save Settings?', warnings.join('\n\n'), [
       {text: 'Cancel', style: 'cancel', onPress: () => resolve(false)},
       {text: 'Save', onPress: () => resolve(true)},
     ]),
@@ -301,7 +301,7 @@ export const useUnsavedDraftGuard = (dirty: boolean, route: string) => {
       if (focused && SETTINGS_ROUTES.includes(focused)) {
         return;
       }
-      Alert.alert('Settings not applied', 'Save to apply your changes.', [
+      Alert.alert('Settings Not Applied', 'Save to apply your changes.', [
         {
           text: 'Discard',
           style: 'destructive',

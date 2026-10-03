@@ -971,7 +971,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         ]}>
         {confirming ? (
           <View testID="mbsx-confirm" style={look.confirmCard}>
-            <Text style={look.confirmTitle}>Confirm swap</Text>
+            <Text style={look.confirmTitle}>Confirm Swap</Text>
             <Text style={look.confirmLine}>
               {payIn
                 ? `Pay ${amountFrom} ${sendCoin} from another wallet`

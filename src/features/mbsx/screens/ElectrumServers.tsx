@@ -105,7 +105,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.section}>{`${coin.toUpperCase()} servers`}</Text>
+        <Text style={styles.section}>{`${coin.toUpperCase()} Servers`}</Text>
         <Text style={styles.inputLabel}>Kept connected</Text>
         <TextInput
           testID="mbsx-servers-cap"

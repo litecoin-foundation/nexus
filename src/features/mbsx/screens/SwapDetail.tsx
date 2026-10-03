@@ -249,7 +249,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           <SwapFees swap={swap} />
           {address ? (
             <>
-              <Text style={swapCards.section}>Receive address</Text>
+              <Text style={swapCards.section}>Receive Address</Text>
               <View style={swapCards.card}>
                 <CopyField testID="mbsx-receipt-address" value={address} />
               </View>
@@ -257,7 +257,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           ) : null}
           {refund ? (
             <>
-              <Text style={swapCards.section}>Refund transaction</Text>
+              <Text style={swapCards.section}>Refund Transaction</Text>
               <View style={swapCards.card}>
                 <CopyField testID="mbsx-receipt-refund" value={refund} />
               </View>

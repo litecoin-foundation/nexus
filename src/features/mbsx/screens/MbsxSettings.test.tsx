@@ -187,7 +187,7 @@ describe('MbsxSettings servers', () => {
     fireEvent.changeText(getByTestId('mbsx-max-electrum-servers'), '3');
     await act(async () => listeners.focus());
     await waitFor(() => expect(alert).toHaveBeenCalled());
-    expect(alert.mock.calls[0][0]).toBe('Settings changed');
+    expect(alert.mock.calls[0][0]).toBe('Settings Changed');
   });
 
   it('keeps unsaved edits when the section is opened again', async () => {

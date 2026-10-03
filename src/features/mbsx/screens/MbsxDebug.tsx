@@ -94,7 +94,7 @@ const MbsxDebug: React.FC = () => {
 
   const onReset = () => {
     Alert.alert(
-      'Reset state',
+      'Reset State',
       'Clear the swap state on this regtest? This cannot be undone.',
       [
         {text: 'Cancel', style: 'cancel'},
@@ -218,7 +218,7 @@ const MbsxDebug: React.FC = () => {
             // share sheet is that the user chooses the recipient, and that is
             // only a choice if they know what is in it first.
             Alert.alert(
-              'Export debug report',
+              'Export Debug Report',
               `The report includes:\n\n${EXPORT_CONTENTS.map(
                 s => `• ${s}`,
               ).join('\n')}\n\nIt contains no keys and no seed phrase, and is ` +
@@ -232,7 +232,7 @@ const MbsxDebug: React.FC = () => {
                     try {
                       await exportLogs(messages);
                     } catch (e) {
-                      Alert.alert('Export failed', (e as Error).message);
+                      Alert.alert('Export Failed', (e as Error).message);
                     } finally {
                       setExporting(false);
                     }

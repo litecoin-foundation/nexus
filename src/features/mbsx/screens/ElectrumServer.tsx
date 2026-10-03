@@ -129,7 +129,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
       return;
     }
     Alert.alert(
-      'Forget pinned certificate',
+      'Forget Pinned Certificate',
       'The next connection trusts whatever certificate the server presents.',
       [
         {text: 'Cancel', style: 'cancel'},
@@ -173,7 +173,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   };
 
   const confirmRemoveCert = (id: bigint) => {
-    Alert.alert('Remove certificate', 'Remove this certificate?', [
+    Alert.alert('Remove Certificate', 'Remove this certificate?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -192,7 +192,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   };
 
   const confirmRemoveServer = () => {
-    Alert.alert('Remove server', 'Remove this server?', [
+    Alert.alert('Remove Server', 'Remove this server?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -243,7 +243,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.section}>
-          {url.replace(/^(tcp|ssl):\/\//, '') || 'New server'}
+          {url.replace(/^(tcp|ssl):\/\//, '') || 'New Server'}
         </Text>
         <View style={styles.row}>
           <Text style={styles.label}>Status</Text>
