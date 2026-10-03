@@ -19,7 +19,7 @@ const renderScreen = (onRetry = jest.fn()) => {
 describe('StartingScreen', () => {
   it('names the step the module is on', () => {
     const {store, view} = renderScreen();
-    expect(view.getByText('Starting BasicSwap')).toBeTruthy();
+    expect(view.getByText('Starting')).toBeTruthy();
     expect(view.queryByTestId('mbsx-starting-step')).toBeNull();
 
     act(() => {

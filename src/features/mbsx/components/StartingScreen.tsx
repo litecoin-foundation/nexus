@@ -52,7 +52,7 @@ const StartingScreen: React.FC<Props> = ({onRetry}) => {
       ) : (
         <>
           <ActivityIndicator color={colors.primary} size="large" />
-          <Text style={styles.title}>Starting BasicSwap</Text>
+          <Text style={styles.title}>Starting</Text>
           {step ? (
             <Text style={styles.step} testID="mbsx-starting-step">
               {STEP_TEXT[step] ?? step}
