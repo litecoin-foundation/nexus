@@ -41,7 +41,6 @@ import {
   acceptOffer,
   getRequestInfo,
   getSwapInfo,
-  isEndedRequestState,
   isUnderwayState,
   onMessage,
   removeRequest,

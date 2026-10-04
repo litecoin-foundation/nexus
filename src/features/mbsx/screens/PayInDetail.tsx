@@ -33,7 +33,6 @@ import MbsxBackButton from '../components/MbsxBackButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {depositStateText, useShowRawStates} from '../stateText';
 import {
-  ENDED_DEPOSIT_STATES,
   cancelDeposit,
   getCoinPrices,
   getInfo,
