@@ -38,10 +38,8 @@ import {GlassRect} from './glassSearchLayout';
 // (LiquidGlassBackdrop): a pre-blurred capsule shadow, the refracting glass,
 // then the hairline rim and the active tint on top.
 //
-// The header's pills are NOT here: this canvas is the first child, under the
-// search bar and the filter row, and an opened dropdown falls across both —
-// its lens would end up beneath the views it covers. GlassHeaderSurface draws
-// those on a canvas of its own, above the page.
+// The header's back pill is NOT here: GlassHeaderSurface draws it on a canvas
+// of its own, above the page.
 
 // 1.0 = clear glass, lower = darker
 const GLASS_DARKEN = 0.95;

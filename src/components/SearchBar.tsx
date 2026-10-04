@@ -1,12 +1,23 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {View, TextInput, StyleSheet, Image, Pressable} from 'react-native';
 import Animated, {
+  Easing,
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 import {ScreenSizeContext} from '../context/screenSize';
+
+const LIGHT_SURFACE = '#ffffff';
+const LIGHT_BORDER = '#e8e8e8';
+const LIGHT_PLACEHOLDER = '#2e2e2e65';
+const LIGHT_ICON = '#A7A7A7';
+const DARK_SURFACE = '#aeb5bc';
+const DARK_HINT = '#ffffffbf';
+const DARK_FADE = {duration: 400, easing: Easing.inOut(Easing.quad)};
 
 interface Props {
   value: string;
@@ -15,11 +26,19 @@ interface Props {
   noShadow?: boolean;
   borderRadius?: number;
   inputRef?: React.Ref<TextInput>;
+  dark?: boolean;
 }
 
 const SearchBar: React.FC<Props> = props => {
-  const {value, onChangeText, placeholder, noShadow, borderRadius, inputRef} =
-    props;
+  const {
+    value,
+    onChangeText,
+    placeholder,
+    noShadow,
+    borderRadius,
+    inputRef,
+    dark = false,
+  } = props;
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
@@ -27,6 +46,25 @@ const SearchBar: React.FC<Props> = props => {
     noShadow,
     borderRadius,
   });
+
+  const darkness = useSharedValue(dark ? 1 : 0);
+  useEffect(() => {
+    darkness.value = withTiming(dark ? 1 : 0, DARK_FADE);
+  }, [dark, darkness]);
+  const surfaceStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      darkness.value,
+      [0, 1],
+      [LIGHT_SURFACE, DARK_SURFACE],
+    ),
+  }));
+  const borderStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      darkness.value,
+      [0, 1],
+      [LIGHT_BORDER, DARK_SURFACE],
+    ),
+  }));
 
   const [isActive, setActive] = useState(false);
 
@@ -49,24 +87,25 @@ const SearchBar: React.FC<Props> = props => {
   }, [value, closeX]);
 
   return (
-    <View style={styles.shadowContainer}>
-      <View style={styles.container}>
+    <Animated.View style={[styles.shadowContainer, surfaceStyle]}>
+      <Animated.View style={[styles.container, borderStyle]}>
         <View style={styles.imageContainer}>
           <Image
-            style={styles.image}
+            style={[styles.image, dark ? styles.imageDark : null]}
             source={require('../assets/icons/search-icon.png')}
           />
         </View>
         <TextInput
           ref={inputRef}
           placeholder={placeholder ? placeholder : undefined}
-          placeholderTextColor="#2e2e2e65"
-          style={styles.text}
+          placeholderTextColor={dark ? DARK_HINT : LIGHT_PLACEHOLDER}
+          style={[styles.text, dark ? styles.textDark : null]}
           onChangeText={text => onChangeText(text)}
           value={value}
           autoCorrect={false}
           autoComplete="off"
           allowFontScaling={false}
+          keyboardAppearance={dark ? 'dark' : 'default'}
         />
 
         {!isActive ? null : (
@@ -77,16 +116,24 @@ const SearchBar: React.FC<Props> = props => {
               onChangeText('');
             }}>
             <Animated.View
-              style={[styles.closeSubContainer, closeContainerMotionStyle]}>
+              style={[
+                styles.closeSubContainer,
+                dark ? styles.closeSubContainerDark : null,
+                closeContainerMotionStyle,
+              ]}>
               <Image
                 style={styles.closeIcon}
-                source={require('../assets/images/close.png')}
+                source={
+                  dark
+                    ? require('../assets/images/close-white.png')
+                    : require('../assets/images/close.png')
+                }
               />
             </Animated.View>
           </Pressable>
         )}
-      </View>
-    </View>
+      </Animated.View>
+    </Animated.View>
   );
 };
 
@@ -106,7 +153,7 @@ const getStyles = (
       width: '100%',
       height: barHeight,
       borderRadius: br,
-      backgroundColor: '#fff',
+      backgroundColor: LIGHT_SURFACE,
       shadowColor: '#000',
       shadowOffset: {
         width: 0,
@@ -118,7 +165,7 @@ const getStyles = (
     container: {
       flex: 1,
       borderRadius: br,
-      borderColor: '#e8e8e8',
+      borderColor: LIGHT_BORDER,
       borderWidth: 1,
       overflow: 'hidden',
       flexDirection: 'row',
@@ -135,6 +182,10 @@ const getStyles = (
       width: '50%',
       height: '50%',
       objectFit: 'scale-down',
+      tintColor: LIGHT_ICON,
+    },
+    imageDark: {
+      tintColor: DARK_HINT,
     },
     text: {
       flex: 1,
@@ -144,7 +195,10 @@ const getStyles = (
       fontWeight: '500',
       letterSpacing: -0.39,
       fontSize: screenHeight * 0.02,
-      marginLeft: screenHeight * 0.01,
+      marginLeft: screenWidth * 0.01,
+    },
+    textDark: {
+      color: '#ffffff',
     },
     closeContainer: {
       right: 0,
@@ -162,6 +216,9 @@ const getStyles = (
       backgroundColor: '#f0f0f0',
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    closeSubContainerDark: {
+      backgroundColor: '#333333',
     },
     closeIcon: {
       width: 8,

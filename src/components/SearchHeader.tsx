@@ -1,8 +1,8 @@
-import React, {useContext, useMemo} from 'react';
+import React, {useContext, useMemo, useState} from 'react';
 import {Image, Pressable, StyleSheet, View} from 'react-native';
 import Animated, {SharedValue} from 'react-native-reanimated';
+import {useTranslation} from 'react-i18next';
 
-import DropDownButton from './Buttons/DropDownButton';
 import GlassHeaderSurface from './GlassHeaderSurface';
 import TranslateText from './TranslateText';
 import {GlassHeaderRects} from './glassSearchLayout';
@@ -11,18 +11,22 @@ import {ScreenSizeContext} from '../context/screenSize';
 // The search screen's own header, the same arrangement NewMain has with
 // MainHeader: the navigator's header for this route stays mounted but blank,
 // and everything visible is drawn here. That is what lets the back button and
-// the filter dropdown be glass — they need to sit on rects the Skia canvas
+// the private toggle be glass — they need to sit on rects the Skia canvas
 // knows about, which a navigator-supplied headerLeft/headerRight cannot do.
 //
-// Neither control paints its own surface: GlassHeaderSurface, the first child
-// here, draws the lens under both, so the rest is icons, text and touch only.
+// Neither pill paints its own surface: GlassHeaderSurface, the first child
+// here, draws the lens under both, so the rest is icon, text and touch only.
+// The toggle, switched on, is the exception: it turns solid white.
 
 const ENABLE_GLASS = false;
 export const FLAT_PILL_COLOR = '#8FBCFB80';
-const FLAT_PILL_OPENED_COLOR = '#8FBCFBFF';
+const ACTIVE_PILL_COLOR = '#ffffff';
+const ACTIVE_LABEL_COLOR = '#2C72FF';
 
 const TITLE_FONT_RATIO = 0.02;
 export const BACK_ICON_RATIO = 0.018;
+const PRIVATE_LABEL_FONT_RATIO = 0.013;
+const PRIVATE_LABEL_PADDING_RATIO = 0.04;
 const PRESSED_OPACITY = 0.7;
 
 interface Props {
@@ -35,12 +39,8 @@ interface Props {
   screenHeight: number;
   online: boolean;
   cardHeight: SharedValue<number>;
-  privacyFilter: string;
-  onSelectPrivacyFilter: (option: string) => void;
-  privacyFilterOptions: string[];
-  cellHeight: number;
-  cellHeightExpandMultiplier: number;
-  dropdownHeight: SharedValue<number>;
+  privateOnly: boolean;
+  onTogglePrivate: () => void;
   interactive: boolean;
 }
 
@@ -53,17 +53,29 @@ const SearchHeader: React.FC<Props> = props => {
     screenHeight,
     online,
     cardHeight,
-    privacyFilter,
-    onSelectPrivacyFilter,
-    privacyFilterOptions,
-    cellHeight,
-    cellHeightExpandMultiplier,
-    dropdownHeight,
+    privateOnly,
+    onTogglePrivate,
     interactive,
   } = props;
 
-  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
-  const styles = useMemo(() => getStyles(SCREEN_HEIGHT), [SCREEN_HEIGHT]);
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const styles = useMemo(
+    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
+    [SCREEN_WIDTH, SCREEN_HEIGHT],
+  );
+  const {t} = useTranslation('searchTab');
+
+  const toggleRight = rects.dropdown.x + rects.dropdown.width;
+  const [toggleWidth, setToggleWidth] = useState(rects.dropdown.width);
+  const toggleX = toggleRight - toggleWidth;
+  const glassRects = useMemo(
+    () => ({
+      ...rects,
+      dropdown: {...rects.dropdown, x: toggleX, width: toggleWidth},
+    }),
+    [rects, toggleX, toggleWidth],
+  );
 
   return (
     <Animated.View
@@ -75,15 +87,14 @@ const SearchHeader: React.FC<Props> = props => {
           screenHeight={screenHeight}
           online={online}
           cardHeight={cardHeight}
-          rects={rects}
-          dropdownHeight={dropdownHeight}
+          rects={glassRects}
         />
       ) : null}
 
       <Pressable
         onPress={onBack}
         style={({pressed}) => [
-          styles.back,
+          styles.pill,
           {
             left: rects.back.x,
             top: rects.back.y,
@@ -107,7 +118,7 @@ const SearchHeader: React.FC<Props> = props => {
             left: rects.titleLeft,
             top: rects.back.y,
             height: rects.back.height,
-            right: rects.dropdown.width + (rects.back.x + rects.back.width),
+            right: screenWidth - toggleX,
           },
         ]}
         pointerEvents="none">
@@ -119,47 +130,51 @@ const SearchHeader: React.FC<Props> = props => {
           numberOfLines={1}
         />
       </View>
-      <View
-        style={[
-          styles.dropdown,
+
+      <Pressable
+        onPress={onTogglePrivate}
+        accessibilityRole="switch"
+        accessibilityLabel={t('mweb')}
+        accessibilityState={{checked: privateOnly}}
+        onLayout={e => setToggleWidth(e.nativeEvent.layout.width)}
+        style={({pressed}) => [
+          styles.pill,
+          styles.privatePill,
           {
-            left: rects.dropdown.x,
+            right: screenWidth - toggleRight,
             top: rects.dropdown.y,
-            width: rects.dropdown.width,
-            height:
-              cellHeight *
-              cellHeightExpandMultiplier *
-              privacyFilterOptions.length,
+            minWidth: rects.dropdown.width,
+            height: rects.dropdown.height,
+            borderRadius: rects.dropdown.height / 2,
           },
-        ]}
-        pointerEvents="box-none">
-        <DropDownButton
-          initial={privacyFilter}
-          options={privacyFilterOptions}
-          chooseOptionCallback={onSelectPrivacyFilter}
-          cellHeight={cellHeight}
-          cellHeightExpandMultiplier={cellHeightExpandMultiplier}
-          titleTextKey="type_filter"
-          tickDisabled
-          backgroundColor={ENABLE_GLASS ? 'transparent' : FLAT_PILL_COLOR}
-          openedBackgroundColor={
-            ENABLE_GLASS ? undefined : FLAT_PILL_OPENED_COLOR
-          }
-          heightValue={dropdownHeight}
-          centerText
+          privateOnly
+            ? styles.activePill
+            : ENABLE_GLASS
+              ? null
+              : styles.flatPill,
+          pressed ? styles.pressed : null,
+        ]}>
+        <TranslateText
+          textValue={t('mweb').toUpperCase()}
+          maxSizeInPixels={SCREEN_HEIGHT * PRIVATE_LABEL_FONT_RATIO}
+          textStyle={[
+            styles.privateLabel,
+            privateOnly ? styles.privateLabelActive : null,
+          ]}
+          numberOfLines={1}
         />
-      </View>
+      </Pressable>
     </Animated.View>
   );
 };
 
-const getStyles = (screenHeight: number) =>
+const getStyles = (screenWidth: number, screenHeight: number) =>
   StyleSheet.create({
     host: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       zIndex: 2,
     },
-    back: {
+    pill: {
       position: 'absolute',
       alignItems: 'center',
       justifyContent: 'center',
@@ -170,8 +185,24 @@ const getStyles = (screenHeight: number) =>
       resizeMode: 'contain',
       tintColor: '#ffffff',
     },
+    privatePill: {
+      paddingHorizontal: screenWidth * PRIVATE_LABEL_PADDING_RATIO,
+    },
+    privateLabel: {
+      color: '#ffffff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * PRIVATE_LABEL_FONT_RATIO,
+      fontStyle: 'normal',
+      fontWeight: '700',
+    },
+    privateLabelActive: {
+      color: ACTIVE_LABEL_COLOR,
+    },
     flatPill: {
       backgroundColor: FLAT_PILL_COLOR,
+    },
+    activePill: {
+      backgroundColor: ACTIVE_PILL_COLOR,
     },
     pressed: {
       opacity: PRESSED_OPACITY,
@@ -187,9 +218,6 @@ const getStyles = (screenHeight: number) =>
       fontSize: screenHeight * TITLE_FONT_RATIO,
       fontStyle: 'normal',
       fontWeight: '700',
-    },
-    dropdown: {
-      position: 'absolute',
     },
   });
 

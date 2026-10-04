@@ -23,20 +23,13 @@ import {
 import {SKIN_GRADIENT_COLORS, SKIN_GRADIENT_LOCATIONS} from './FoldedSkinView';
 import {GlassHeaderRects} from './glassSearchLayout';
 
-// The header's two pills, on a canvas of their own ABOVE the page content.
-//
-// They cannot ride the screen's backdrop canvas: that one has to be the first
-// child, under the search bar and the filter row, and an opened dropdown
-// falls across both — its lens would be painted beneath the very views it
-// covers. So this canvas is drawn last instead, and erases everything outside
-// the pills so only they float over the page.
+// The header's two pills, the back button and the private toggle, on a canvas
+// of their own ABOVE the page content, which erases everything outside the
+// pills so only they float over the page.
 //
 // It redraws the page's gradient card because a BackdropFilter refracts what
 // precedes it in its OWN canvas and nothing else. Behind the header that is
-// exactly what the screen shows anyway; where an opened dropdown overhangs
-// the content, the lens refracts gradient rather than the search bar beneath
-// it. Sampling live RN views is not something Skia can do at all, so that is
-// the floor.
+// exactly what the screen shows anyway.
 
 // Heavier than the filter row's 0.86: the header sits high on the gradient,
 // where the backdrop is at its lightest, and a thin pour there reads as a
@@ -52,12 +45,10 @@ interface Props {
   // pills sit well inside it.
   cardHeight: SharedValue<number>;
   rects: GlassHeaderRects;
-  dropdownHeight: SharedValue<number>;
 }
 
 const GlassHeaderSurface: React.FC<Props> = props => {
-  const {screenWidth, screenHeight, online, cardHeight, rects, dropdownHeight} =
-    props;
+  const {screenWidth, screenHeight, online, cardHeight, rects} = props;
 
   const radius = rects.back.height / 2;
 
@@ -70,51 +61,31 @@ const GlassHeaderSurface: React.FC<Props> = props => {
     [],
   );
 
-  const glassFilter = useDerivedValue(() => {
-    const {back, dropdown} = rects;
-    return makeGlassTabFilter(
+  const pills = useMemo(() => [rects.back, rects.dropdown], [rects]);
+
+  const glassFilter = useDerivedValue(() =>
+    makeGlassTabFilter(
       shaderBuilder,
       blurChild,
-      [
-        [back.x, back.y, back.width, back.height],
-        [dropdown.x, dropdown.y, dropdown.width, dropdownHeight.value],
-      ],
+      pills.map(pill => [pill.x, pill.y, pill.width, pill.height]),
       radius,
       HEADER_GLASS_DARKEN,
-    );
-  });
+    ),
+  );
 
   const pillsClip = useDerivedValue(() => {
-    const {back, dropdown} = rects;
     const path = Skia.Path.Make();
-    path.addRRect(
-      Skia.RRectXY(
-        Skia.XYWHRect(back.x, back.y, back.width, back.height),
-        radius,
-        radius,
-      ),
-    );
-    path.addRRect(
-      Skia.RRectXY(
-        Skia.XYWHRect(
-          dropdown.x,
-          dropdown.y,
-          dropdown.width,
-          dropdownHeight.value,
+    for (const pill of pills) {
+      path.addRRect(
+        Skia.RRectXY(
+          Skia.XYWHRect(pill.x, pill.y, pill.width, pill.height),
+          radius,
+          radius,
         ),
-        radius,
-        radius,
-      ),
-    );
+      );
+    }
     return path;
   });
-
-  const dropdownRimHeight = useDerivedValue(
-    () => dropdownHeight.value - RIM_WIDTH,
-  );
-  const dropdownRimEnd = useDerivedValue(() =>
-    vec(0, rects.dropdown.y + dropdownHeight.value),
-  );
 
   const gradientEnd = useDerivedValue(() => vec(0, cardHeight.value));
 
@@ -151,36 +122,24 @@ const GlassHeaderSurface: React.FC<Props> = props => {
         />
       </Group>
 
-      <RoundedRect
-        x={rects.back.x + RIM_WIDTH / 2}
-        y={rects.back.y + RIM_WIDTH / 2}
-        width={rects.back.width - RIM_WIDTH}
-        height={rects.back.height - RIM_WIDTH}
-        r={radius - RIM_WIDTH / 2}
-        style="stroke"
-        strokeWidth={RIM_WIDTH}>
-        <LinearGradient
-          start={vec(0, rects.back.y)}
-          end={vec(0, rects.back.y + rects.back.height)}
-          colors={BORDER_GRADIENT_COLORS}
-          positions={BORDER_GRADIENT_POSITIONS}
-        />
-      </RoundedRect>
-      <RoundedRect
-        x={rects.dropdown.x + RIM_WIDTH / 2}
-        y={rects.dropdown.y + RIM_WIDTH / 2}
-        width={rects.dropdown.width - RIM_WIDTH}
-        height={dropdownRimHeight}
-        r={radius - RIM_WIDTH / 2}
-        style="stroke"
-        strokeWidth={RIM_WIDTH}>
-        <LinearGradient
-          start={vec(0, rects.dropdown.y)}
-          end={dropdownRimEnd}
-          colors={BORDER_GRADIENT_COLORS}
-          positions={BORDER_GRADIENT_POSITIONS}
-        />
-      </RoundedRect>
+      {pills.map(pill => (
+        <RoundedRect
+          key={pill.x}
+          x={pill.x + RIM_WIDTH / 2}
+          y={pill.y + RIM_WIDTH / 2}
+          width={pill.width - RIM_WIDTH}
+          height={pill.height - RIM_WIDTH}
+          r={radius - RIM_WIDTH / 2}
+          style="stroke"
+          strokeWidth={RIM_WIDTH}>
+          <LinearGradient
+            start={vec(0, pill.y)}
+            end={vec(0, pill.y + pill.height)}
+            colors={BORDER_GRADIENT_COLORS}
+            positions={BORDER_GRADIENT_POSITIONS}
+          />
+        </RoundedRect>
+      ))}
     </Canvas>
   );
 };

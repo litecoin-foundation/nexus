@@ -24,18 +24,15 @@ import Animated, {
 
 import GlassTransactionList from '../../components/GlassTransactionList';
 import GlassSearchTxCanvas from '../../components/GlassSearchTxCanvas';
-import FilterButton from '../../components/Buttons/FilterButton';
+import SegmentedPills, {
+  Segment,
+  SEGMENTED_PILLS_HEIGHT_RATIO,
+} from '../../components/ButtonsV2/SegmentedPills';
 import SearchBar from '../../components/SearchBar';
 import SearchHeader from '../../components/SearchHeader';
 import GlassTxDetailModal from '../../components/Modals/GlassTxDetailModal';
-import GlassSearchBackdrop from '../../components/GlassSearchBackdrop';
 import FoldedSkinView from '../../components/FoldedSkinView';
-import {
-  getGlassFilterClusterHeight,
-  getGlassFilterRects,
-  getGlassHeaderRects,
-  GLASS_HEADER_PILL_HEIGHT_RATIO,
-} from '../../components/glassSearchLayout';
+import {getGlassHeaderRects} from '../../components/glassSearchLayout';
 import {SHEET_TOP_RADIUS_RATIO} from '../../components/GlassBottomSheet';
 import {
   SHEET_BACKGROUND,
@@ -67,15 +64,14 @@ import {ScreenSizeContext} from '../../context/screenSize';
 // sheet colour — so the swap underneath shows nothing, and the chrome above
 // (the rows, the bar) is cut as the feed lands. Then the list container — the
 // wallet's sheet, colour and corners, with the wallet's own rows already on
-// it — sets off from the sheet's edge to its resting place, while the filter
-// row, the search bar and the header fade in on top. Closing plays the
+// it — sets off from the sheet's edge to its resting place, while the
+// switches, the search bar and the header fade in on top. Closing plays the
 // container back and lifts the page on the same value; the list and the
 // controls are cut instead of faded, so what fades in is the wallet
 // underneath, and the chrome returns with it.
 //
-// The page is RN views rather than the glass canvas: a canvas paints late and
-// would show the wallet through for a frame. The canvases redraw the card
-// only for their lenses to refract and clear themselves down to the pills.
+// The page is RN views rather than a canvas: a canvas paints late and would
+// show the wallet through for a frame.
 
 interface Props {
   navigation: any;
@@ -84,13 +80,11 @@ interface Props {
 
 // Constants
 const SCREEN_RATIOS = {
-  HEADER_BUTTON_HEIGHT: GLASS_HEADER_PILL_HEIGHT_RATIO,
+  SWITCH_HEIGHT: SEGMENTED_PILLS_HEIGHT_RATIO,
   SEARCH_BAR_HEIGHT: 0.05,
-  // The single gap: below the header's pills, between the filter row and the
-  // search bar, and above the list.
   CONTROLS_GAP: 0.008,
-  DROPDOWN_WIDTH: 0.37,
   PADDING_HORIZONTAL: 0.04,
+  PRIVATE_PILL_WIDTH: 0.22,
 } as const;
 
 const ANIMATION_TIMING = {
@@ -106,7 +100,13 @@ const CLOSE_EASING = Easing.bezier(0.4, 0, 0.6, 1);
 // iOS-style back swipe: starts at the left edge.
 const BACK_EDGE_WIDTH = 32;
 
-const TX_PRIVACY_TYPES = ['All', 'Regular', 'MWEB'];
+const TX_TYPES: Segment[] = [
+  {key: 'All', textKey: 'all', textDomain: 'main'},
+  {key: 'Buy', textKey: 'buy', textDomain: 'main'},
+  {key: 'Sell', textKey: 'sell', textDomain: 'main'},
+  {key: 'Send', textKey: 'send', textDomain: 'main'},
+  {key: 'Receive', textKey: 'receive', textDomain: 'main'},
+];
 
 const TX_TYPE_FILTERS = ['Buy', 'Sell', 'Send', 'Receive', 'Convert'];
 
@@ -118,10 +118,9 @@ const SearchTransaction: React.FC<Props> = props => {
   const wallet = useGlassWalletFeed();
   const online = useAppSelector(state => !!state.info!.isInternetReachable);
 
-  const headerButtonsHeight =
-    SCREEN_HEIGHT * SCREEN_RATIOS.HEADER_BUTTON_HEIGHT;
+  const switchWidth = SCREEN_WIDTH * (1 - SCREEN_RATIOS.PADDING_HORIZONTAL * 2);
+  const switchHeight = SCREEN_HEIGHT * SCREEN_RATIOS.SWITCH_HEIGHT;
   const searchBarHeight = SCREEN_HEIGHT * SCREEN_RATIOS.SEARCH_BAR_HEIGHT;
-  const filterClusterHeight = getGlassFilterClusterHeight(SCREEN_HEIGHT);
   const deviceHeaderHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
   const stackHeaderHeight = deviceHeaderHeight - insets.top;
@@ -141,19 +140,15 @@ const SearchTransaction: React.FC<Props> = props => {
         topInset: insets.top,
         rowHeight: stackHeaderHeight,
         paddingHorizontal: SCREEN_WIDTH * SCREEN_RATIOS.PADDING_HORIZONTAL,
-        dropdownWidth: SCREEN_WIDTH * SCREEN_RATIOS.DROPDOWN_WIDTH,
+        dropdownWidth: SCREEN_WIDTH * SCREEN_RATIOS.PRIVATE_PILL_WIDTH,
       }),
     [SCREEN_WIDTH, SCREEN_HEIGHT, insets.top, stackHeaderHeight],
   );
 
-  // One gap everywhere: below the header's pills, below the filter row, then
-  // again above and below the search bar inside the list. Measured from the
-  // pills themselves rather than the header band, since the pills are what
-  // you see the gap against.
   const controlsGap = SCREEN_HEIGHT * SCREEN_RATIOS.CONTROLS_GAP;
-  const filterRowTop =
-    headerRects.back.y + headerRects.back.height + controlsGap;
-  const bandHeight = filterRowTop + filterClusterHeight + controlsGap;
+  const typeSwitchTop =
+    headerRects.back.y + headerRects.back.height + controlsGap * 2;
+  const bandHeight = typeSwitchTop + switchHeight + controlsGap * 2;
   // Where the list's own content starts: past the search bar pinned inside
   // the container, which the rows scroll up behind.
   const listContentTop = controlsGap + searchBarHeight + controlsGap;
@@ -162,8 +157,15 @@ const SearchTransaction: React.FC<Props> = props => {
   const listHeight = SCREEN_HEIGHT - bandHeight;
 
   const styles = useMemo(
-    () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, controlsGap, bandHeight),
-    [SCREEN_WIDTH, SCREEN_HEIGHT, controlsGap, bandHeight],
+    () =>
+      getStyles(
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        controlsGap,
+        bandHeight,
+        typeSwitchTop,
+      ),
+    [SCREEN_WIDTH, SCREEN_HEIGHT, controlsGap, bandHeight, typeSwitchTop],
   );
 
   const {t} = useTranslation('searchTab');
@@ -176,7 +178,8 @@ const SearchTransaction: React.FC<Props> = props => {
   const [isTxDetailModalOpened, setTxDetailModalOpened] = useState(false);
 
   const [searchFilter, setSearchFilter] = useState('');
-  const [txPrivacyTypeFilter, setTxPrivacyTypeFilter] = useState('All');
+  const [privateOnly, setPrivateOnly] = useState(false);
+  const togglePrivate = useCallback(() => setPrivateOnly(on => !on), []);
 
   // 0 wallet, 1 search: the value the hand-off plays on — the container's
   // travel, the page's lift, the chrome's return
@@ -271,6 +274,7 @@ const SearchTransaction: React.FC<Props> = props => {
     getTopHalfCard(containerTop.value, SCREEN_HEIGHT, insets.top),
   );
   const cardHeight = useDerivedValue(() => card.value.height);
+
   const containerStyle = useAnimatedStyle(() => ({
     transform: [{translateY: containerTop.value - bandHeight}],
   }));
@@ -278,7 +282,7 @@ const SearchTransaction: React.FC<Props> = props => {
     () => (closing ? 0 : arrival.value),
     [closing],
   );
-  const filterRowStyle = useAnimatedStyle(() => ({
+  const typeSwitchStyle = useAnimatedStyle(() => ({
     opacity: controlsOpacity.value,
   }));
   const searchBarStyle = useAnimatedStyle(() => ({
@@ -325,13 +329,11 @@ const SearchTransaction: React.FC<Props> = props => {
         (tx: any) => tx.label.indexOf(searchFilter) > -1,
       );
     }
-    if (txPrivacyTypeFilter === 'Regular') {
-      filtered = filtered.filter((tx: any) => !tx.isMweb);
-    } else if (txPrivacyTypeFilter === 'MWEB') {
+    if (privateOnly) {
       filtered = filtered.filter((tx: any) => tx.isMweb);
     }
     return flattenGroupedTransactions(filtered);
-  }, [transactions, txType, searchFilter, txPrivacyTypeFilter]);
+  }, [transactions, txType, searchFilter, privateOnly]);
   const txRowModels = useGlassTxRowModels(txRows);
   // Written on the UI thread by the scroller, read by the rows' canvas.
   const txListScrollY = useSharedValue(0);
@@ -348,56 +350,6 @@ const SearchTransaction: React.FC<Props> = props => {
   }, []);
   const noSwipe = useCallback(() => {}, []);
 
-  const filters = useMemo(
-    () => [
-      {
-        value: 'All',
-        imgSrc: require('../../assets/icons/blue-tick-oval.png'),
-      },
-      {value: 'Buy', imgSrc: require('../../assets/icons/buy-icon.png')},
-      {value: 'Sell', imgSrc: require('../../assets/icons/sell-icon.png')},
-      {value: 'Send', imgSrc: require('../../assets/icons/send-icon.png')},
-      {
-        value: 'Receive',
-        imgSrc: require('../../assets/icons/receive-icon.png'),
-      },
-    ],
-    [],
-  );
-
-  // One set of rects for the glass and for the buttons over it.
-  const filterRects = useMemo(
-    () =>
-      getGlassFilterRects({
-        screenWidth: SCREEN_WIDTH,
-        screenHeight: SCREEN_HEIGHT,
-        rowTop: filterRowTop,
-        count: filters.length,
-        paddingHorizontal: SCREEN_WIDTH * SCREEN_RATIOS.PADDING_HORIZONTAL,
-      }),
-    [SCREEN_WIDTH, SCREEN_HEIGHT, filterRowTop, filters.length],
-  );
-
-  // Written by the dropdown as it folds, read by the canvas drawing its lens.
-  const dropdownHeight = useSharedValue(headerButtonsHeight);
-
-  const filterButtons = useMemo(
-    () =>
-      filters.map((element, i) => (
-        <FilterButton
-          textKey={String(element.value).toLocaleLowerCase()}
-          textDomain="main"
-          active={txType === element.value}
-          onPress={() => setTxType(element.value)}
-          key={element.value}
-          imageSource={element.imgSrc}
-          tint={element.value !== 'All'}
-          rect={filterRects[i]}
-        />
-      )),
-    [filters, txType, filterRects],
-  );
-
   return (
     <GestureDetector gesture={backPan}>
       <View
@@ -406,37 +358,27 @@ const SearchTransaction: React.FC<Props> = props => {
         style={styles.container}
         pointerEvents={closing ? 'none' : 'auto'}>
         {/* The page: the wallet's skin, its card riding the container's
-            edge, and over it the filter pills' glass. First child, so
-            everything paints over it; one view, so the close lifts it as
-            one. */}
+            edge. First child, so everything paints over it; one view, so
+            the close lifts it as one. */}
         <Animated.View
           style={[StyleSheet.absoluteFill, pageStyle]}
           pointerEvents="none">
           <FoldedSkinView online={online} card={card} />
-          <GlassSearchBackdrop
-            screenWidth={SCREEN_WIDTH}
-            screenHeight={SCREEN_HEIGHT}
-            online={online}
-            cardHeight={cardHeight}
-            filterRects={filterRects}
-            activeFilterIndex={filters.findIndex(
-              element => element.value === txType,
-            )}
-            controlsOpacity={controlsOpacity}
-            lensActive={!closing}
-          />
         </Animated.View>
 
         {/* Reserves the controls band so the list starts below it; the controls
             themselves are placed absolutely over it. */}
         <View style={styles.band} />
 
-        {/* Each button places itself on its own rect, the same ones the canvas
-            drew, so no flex row can nudge an icon off its lens. */}
-        <Animated.View
-          style={[StyleSheet.absoluteFill, filterRowStyle]}
-          pointerEvents="box-none">
-          {filterButtons}
+        {/* On the gradient card, above the list container. */}
+        <Animated.View style={[styles.typeSwitch, typeSwitchStyle]}>
+          <SegmentedPills
+            segments={TX_TYPES}
+            activeIndex={TX_TYPES.findIndex(segment => segment.key === txType)}
+            onSelect={index => setTxType(TX_TYPES[index].key)}
+            width={switchWidth}
+            height={switchHeight}
+          />
         </Animated.View>
 
         <Animated.View style={[styles.txListContainer, containerStyle]}>
@@ -472,12 +414,12 @@ const SearchTransaction: React.FC<Props> = props => {
               value={searchFilter}
               placeholder={t('find_tx')}
               onChangeText={setSearchFilter}
+              dark={privateOnly}
             />
           </Animated.View>
         </Animated.View>
 
-        {/* After the list so the opened dropdown falls over it, before the
-            modal so the sheet still covers it. */}
+        {/* Before the modal so the sheet still covers it. */}
         <SearchHeader
           rects={headerRects}
           onBack={closeSearch}
@@ -486,16 +428,8 @@ const SearchTransaction: React.FC<Props> = props => {
           screenHeight={SCREEN_HEIGHT}
           online={online}
           cardHeight={cardHeight}
-          privacyFilter={txPrivacyTypeFilter}
-          onSelectPrivacyFilter={setTxPrivacyTypeFilter}
-          privacyFilterOptions={TX_PRIVACY_TYPES}
-          cellHeight={headerButtonsHeight}
-          // Opened, every row grows by this — the title cell included — so the
-          // box reaches farther down with its rows still equal. Extending it
-          // with separatorGapHeightInPx instead would leave the surplus below
-          // the last option, where it just reads as a taller last row.
-          cellHeightExpandMultiplier={1.8}
-          dropdownHeight={dropdownHeight}
+          privateOnly={privateOnly}
+          onTogglePrivate={togglePrivate}
           interactive={!isTxDetailModalOpened && !closing}
         />
 
@@ -524,6 +458,7 @@ const getStyles = (
   screenHeight: number,
   controlsGap: number,
   bandHeight: number,
+  typeSwitchTop: number,
 ) =>
   StyleSheet.create({
     // Transparent: the page is a child, and lifts off the live wallet.
@@ -540,6 +475,13 @@ const getStyles = (
     band: {
       width: '100%',
       height: bandHeight,
+    },
+    typeSwitch: {
+      position: 'absolute',
+      top: typeSwitchTop,
+      left: 0,
+      width: '100%',
+      paddingHorizontal: screenWidth * SCREEN_RATIOS.PADDING_HORIZONTAL,
     },
     // The wallet's sheet — its colour, its corners — so the hand-off at the
     // sheet's edge swaps nothing, and the rows sit on what they sit on there.

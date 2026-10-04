@@ -189,7 +189,7 @@
     "all": "Todo",
     "regular": "Estándar",
     "mweb": "Privado",
-    "find_tx": "Buscar una transacción",
+    "find_tx": "buscar transacciones",
     "paste": "Pegar"
   },
   "alertsTab": {
