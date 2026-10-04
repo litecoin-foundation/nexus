@@ -7,6 +7,8 @@ import React, {
 } from 'react';
 import {
   Image,
+  Keyboard,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,10 +27,13 @@ import {depositTimeLeft} from '../format';
 import {getMbsxStyles} from '../theme';
 import {coinString, slippageFor} from '../useSwapAmounts';
 import CoinPair from '../components/CoinPair';
+import {TimeLine} from '../components/Clock';
+import {useBottomInset} from '../components/useBottomInset';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {depositStateText, useShowRawStates} from '../stateText';
 import {
+  ENDED_DEPOSIT_STATES,
   cancelDeposit,
   getCoinPrices,
   getInfo,
@@ -84,6 +89,9 @@ const underwaySwapId = (requestId?: string): string | null => {
 const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
+  const scrollRef = useRef<ScrollView>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const showRaw = useShowRawStates();
   const {depositId} = route.params;
   const [loaded, setLoaded] = useState<Deposit | null>(null);
@@ -100,6 +108,21 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
     setConfirmingCancel(false);
     openedSwapId.current = null;
   }, [depositId]);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, event => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   useEffect(() => {
     navigation.setOptions({
@@ -171,7 +194,14 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        ref={scrollRef}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[
+          styles.scroll,
+          {paddingBottom: bottom + keyboardHeight},
+        ]}>
         <View style={swapCards.card}>
           <View style={swapCards.historyRow}>
             <CoinPair from={deposit.coin} to={deposit.coin_to} size={40} />
@@ -182,9 +212,10 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
               {showRaw ? (
                 <Text style={swapCards.historySub}>{deposit.state}</Text>
               ) : null}
-              <Text style={swapCards.historySub}>
-                {depositTimeLeft(deposit.expire_at)}
-              </Text>
+              <TimeLine
+                text={depositTimeLeft(deposit.expire_at)}
+                textStyle={swapCards.historySub}
+              />
             </View>
           </View>
         </View>
@@ -271,12 +302,13 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         {deposit.request_id ? (
           <TouchableOpacity
             testID="mbsx-payin-request"
+            style={styles.buttonSecondary}
             onPress={() =>
               navigation.navigate('RequestDetail', {
                 requestId: deposit.request_id as string,
               })
             }>
-            <Text style={swapCards.link}>View the swap request</Text>
+            <Text style={styles.buttonSecondaryText}>View the swap request</Text>
           </TouchableOpacity>
         ) : null}
         {paused ? (
@@ -295,6 +327,12 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 style={styles.input}
                 value={floor}
                 onChangeText={setFloor}
+                onFocus={() =>
+                  setTimeout(
+                    () => scrollRef.current?.scrollToEnd({animated: true}),
+                    80,
+                  )
+                }
                 placeholder={`${deposit.coin_to} to receive`}
                 keyboardType="decimal-pad"
               />

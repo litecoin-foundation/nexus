@@ -27,6 +27,8 @@ import {
 } from '../adapter';
 import {depositTimeLeft, formatExpiry} from '../format';
 import RemoveButton from '../components/RemoveButton';
+import {TimeLine} from '../components/Clock';
+import {useBottomInset} from '../components/useBottomInset';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {
   depositStateText,
@@ -56,6 +58,7 @@ const Pair = ({from, to}: {from: string; to: string}) => (
 const RequestList: React.FC<Props> = ({navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
 
   const running = useAppSelector(state => state.mbsx.running);
   const showRaw = useShowRawStates();
@@ -126,7 +129,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
         />
       </View>
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -170,11 +173,13 @@ const RequestList: React.FC<Props> = ({navigation}) => {
             {showRaw ? (
               <Text style={swapCards.id}>{deposit.state}</Text>
             ) : null}
-            <Text style={swapCards.meta}>
-              {Number(deposit.remaining) > 0
-                ? `${deposit.remaining} ${deposit.coin} still to pay · ${depositTimeLeft(deposit.expire_at)}`
-                : `${deposit.received} ${deposit.coin} received · ${depositTimeLeft(deposit.expire_at)}`}
-            </Text>
+            <TimeLine
+              text={
+                Number(deposit.remaining) > 0
+                  ? `${deposit.remaining} ${deposit.coin} still to pay · ${depositTimeLeft(deposit.expire_at)}`
+                  : `${deposit.received} ${deposit.coin} received · ${depositTimeLeft(deposit.expire_at)}`
+              }
+            />
           </TouchableOpacity>
         ))}
         {shown.length === 0 && payIns.length === 0 ? (
@@ -212,11 +217,13 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                     {showRaw ? (
                       <Text style={swapCards.id}>{request.state}</Text>
                     ) : null}
-                    <Text style={swapCards.meta}>
-                      {isEndedRequestState(request.state)
-                        ? `${request.amount_from} ${request.coin_from} · ${formatExpiry(request.created_at)}`
-                        : `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`}
-                    </Text>
+                    <TimeLine
+                      text={
+                        isEndedRequestState(request.state)
+                          ? `${request.amount_from} ${request.coin_from} · ${formatExpiry(request.created_at)}`
+                          : `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`
+                      }
+                    />
                     <Text style={swapCards.id}>{request.id}</Text>
                   </TouchableOpacity>
           ))

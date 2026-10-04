@@ -398,7 +398,10 @@ const MbsxSettings: React.FC = () => {
     <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
         style={look.scroller}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[
+          styles.scroll,
+          {paddingBottom: Math.max(insets.bottom, 16) + 24},
+        ]}
         keyboardShouldPersistTaps="handled">
         <View style={swapCards.card}>
           <Text style={swapCards.section}>Requests</Text>

@@ -7,6 +7,7 @@ import {useAppSelector} from '../../../store/hooks';
 import {COINS} from '../components/CoinSelector';
 import {shortAddress} from '../format';
 import {getMbsxStyles} from '../theme';
+import {useBottomInset} from '../components/useBottomInset';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import type {MbsxDrawerParamList} from '../types';
 
@@ -15,12 +16,14 @@ type Props = DrawerScreenProps<MbsxDrawerParamList, 'AddressList'>;
 const AddressList: React.FC<Props> = ({navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
 
   const byCoin = useAppSelector(state => state.mbsxAddresses.byCoin);
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
         {COINS.map(coin => {
           const saved = byCoin[coin] ?? [];
           const latest = saved[0];

@@ -27,6 +27,8 @@ import {coinString} from '../useSwapAmounts';
 import RemoveButton from '../components/RemoveButton';
 import {formatExpiry, kindLabel} from '../format';
 import CoinPair from '../components/CoinPair';
+import {TimeLine} from '../components/Clock';
+import {useBottomInset} from '../components/useBottomInset';
 import {swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
 import type {MbsxDrawerParamList, SwapSummary} from '../types';
@@ -36,6 +38,7 @@ type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapList'>;
 const SwapList: React.FC<Props> = ({navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
 
   const running = useAppSelector(state => state.mbsx.running);
   const error = useAppSelector(state => state.mbsx.error);
@@ -126,7 +129,7 @@ const SwapList: React.FC<Props> = ({navigation}) => {
       ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -204,9 +207,11 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                   <Text style={swapCards.historyOut} numberOfLines={1}>
                     {`− ${swap.amount_from} ${swap.coin_from}`}
                   </Text>
-                  <Text style={swapCards.historyOut} numberOfLines={1}>
-                    {formatExpiry(swap.created_at)}
-                  </Text>
+                  <TimeLine
+                    align="end"
+                    text={formatExpiry(swap.created_at)}
+                    textStyle={swapCards.historyOut}
+                  />
                 </View>
               </View>
             </TouchableOpacity>

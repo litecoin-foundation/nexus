@@ -75,7 +75,10 @@ const Row = memo(function Row({data}: {data: string}) {
   );
 });
 
-const MessageList: React.FC<{style?: StyleProp<ViewStyle>}> = ({style}) => {
+const MessageList: React.FC<{
+  style?: StyleProp<ViewStyle>;
+  embedded?: boolean;
+}> = ({style, embedded}) => {
   const messages = useAppSelector(state => state.mbsx.messages);
 
   const renderItem = useCallback(
@@ -83,6 +86,20 @@ const MessageList: React.FC<{style?: StyleProp<ViewStyle>}> = ({style}) => {
     [],
   );
   const keyExtractor = useCallback((item: MbsxMessage) => String(item.id), []);
+
+  if (embedded) {
+    return (
+      <View>
+        {messages.length === 0 ? (
+          <View style={swapCards.card}>
+            <Text style={swapCards.note}>No events yet</Text>
+          </View>
+        ) : (
+          messages.map(item => <Row key={item.id} data={item.data} />)
+        )}
+      </View>
+    );
+  }
 
   return (
     <FlatList

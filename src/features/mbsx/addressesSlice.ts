@@ -41,6 +41,10 @@ export const mbsxAddressesSlice = createSlice({
       }
       const existing = state.byCoin[coin] ?? [];
       const previous = existing.find(entry => entry.address === address);
+      if (previous && action.payload.label !== undefined) {
+        previous.label = action.payload.label;
+        return;
+      }
       const entry: MbsxAddress = {
         address,
         // Re-saving without a label keeps the one it already had.

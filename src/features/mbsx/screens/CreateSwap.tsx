@@ -152,6 +152,16 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [coinOpen, setCoinOpen] = useState(false);
   const [receiversOpen, setReceiversOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+  const amountY = useRef({from: 0, to: 0});
+  const showAmount = (which: 'from' | 'to') => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y: Math.max(0, amountY.current[which] - 8),
+        animated: true,
+      });
+    }, 80);
+  };
   const [spendNote, setSpendNote] = useState('');
 
   useEffect(() => {
@@ -774,11 +784,20 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   return (
     <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
+        ref={scrollRef}
         style={look.scroller}
-        contentContainerStyle={styles.scroll}
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={[
+          styles.scroll,
+          keyboardHeight > 0 ? {paddingBottom: 24} : null,
+        ]}
         keyboardShouldPersistTaps="handled">
         <Text style={look.section}>Send</Text>
-        <View style={look.card}>
+        <View
+          style={look.card}
+          onLayout={event => {
+            amountY.current.from = event.nativeEvent.layout.y;
+          }}>
           <View style={look.amountRow}>
             <TextInput
               testID="mbsx-amount-from"
@@ -793,6 +812,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               keyboardType="decimal-pad"
               autoCorrect={false}
               underlineColorAndroid="transparent"
+              onFocus={() => showAmount('from')}
             />
             {payIn ? coinPill : hostPill}
           </View>
@@ -809,6 +829,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                   setAmount('from', 'usd', numericAmount(value))
                 }
                 keyboardType="decimal-pad"
+                onFocus={() => showAmount('from')}
               />
               <Text style={look.fiat}>{currency}</Text>
             </View>
@@ -848,7 +869,11 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         </View>
 
         <Text style={look.section}>Receive</Text>
-        <View style={look.card}>
+        <View
+          style={look.card}
+          onLayout={event => {
+            amountY.current.to = event.nativeEvent.layout.y;
+          }}>
           <View style={look.amountRow}>
             <TextInput
               testID="mbsx-amount-to"
@@ -860,6 +885,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               keyboardType="decimal-pad"
               autoCorrect={false}
               underlineColorAndroid="transparent"
+              onFocus={() => showAmount('to')}
             />
             {payIn ? buyPill : coinPill}
           </View>
@@ -875,6 +901,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 setAmount('to', 'usd', numericAmount(value))
               }
               keyboardType="decimal-pad"
+              onFocus={() => showAmount('to')}
             />
             <Text style={look.fiat}>{currency}</Text>
           </View>

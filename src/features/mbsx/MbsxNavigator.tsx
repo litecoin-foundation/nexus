@@ -184,7 +184,8 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
           <Text style={styles.cellTitle}>Back to Nexus</Text>
         </TouchableOpacity>
       </ScrollView>
-      <View style={[styles.mark, {paddingBottom: Math.max(insets.bottom, 16)}]}>
+      <View
+        style={[styles.mark, {paddingBottom: Math.max(insets.bottom, 16) + 28}]}>
         <BasicSwapMark />
       </View>
     </LinearGradient>

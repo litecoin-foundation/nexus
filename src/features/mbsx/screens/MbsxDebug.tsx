@@ -1,5 +1,13 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {Alert, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
@@ -18,6 +26,7 @@ import {clearMessages} from '../mbsxSlice';
 import {EXPORT_CONTENTS, exportLogs} from '../exportLogs';
 import {stringifyRpc} from '../json';
 import {getMbsxStyles} from '../theme';
+import {useBottomInset} from '../components/useBottomInset';
 import {COIN_ICONS, swapCards} from '../swapCards';
 
 type ChainRow = {ticker: string; chainHeight: number; bridged: boolean};
@@ -25,6 +34,7 @@ type ChainRow = {ticker: string; chainHeight: number; bridged: boolean};
 const MbsxDebug: React.FC = () => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
   const dispatch = useAppDispatch();
 
   const running = useAppSelector(state => state.mbsx.running);
@@ -137,8 +147,11 @@ const MbsxDebug: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.scroll, look.top]}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}
+      keyboardShouldPersistTaps="handled">
+      <View>
         <View style={swapCards.card}>
           <View style={look.statusRow}>
             <Text style={styles.label}>Native</Text>
@@ -246,17 +259,13 @@ const MbsxDebug: React.FC = () => {
           </Text>
         </TouchableOpacity>
         <Text style={swapCards.section}>Events</Text>
+        <MessageList embedded />
       </View>
-
-      <MessageList style={styles.messages} />
-    </View>
+    </ScrollView>
   );
 };
 
 const look = StyleSheet.create({
-  top: {
-    flexGrow: 0,
-  },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',

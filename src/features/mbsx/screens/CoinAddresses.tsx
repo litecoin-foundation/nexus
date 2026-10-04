@@ -20,9 +20,10 @@ import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {getCoinPrices, validateAddress} from '../adapter';
 import {forgetAddress, rememberAddress} from '../addressesSlice';
 import {formatPrice} from 'react-native-nitro-bsx';
-import {formatTimestamp, shortAddress} from '../format';
+import {formatTimestamp} from '../format';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
+import {useBottomInset} from '../components/useBottomInset';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import type {MbsxCoinPrices, MbsxDrawerParamList} from '../types';
 
@@ -31,6 +32,7 @@ type Props = DrawerScreenProps<MbsxDrawerParamList, 'CoinAddresses'>;
 const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
   const dispatch = useAppDispatch();
 
   const {coin} = route.params;
@@ -115,7 +117,10 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   return (
     <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[
+          styles.scroll,
+          {paddingBottom: bottom + keyboardHeight},
+        ]}
         keyboardShouldPersistTaps="handled">
         <View style={swapCards.card}>
           <View style={swapCards.pair}>
@@ -219,9 +224,25 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
         ) : (
           saved.map(entry => (
             <View key={entry.address} style={swapCards.card}>
-              <Text style={swapCards.pairText}>
-                {entry.label || shortAddress(entry.address)}
-              </Text>
+              <TextInput
+                testID={`mbsx-saved-label-${entry.address}`}
+                style={look.labelInput}
+                placeholder="Add a label"
+                placeholderTextColor="#9AA0AE"
+                defaultValue={entry.label}
+                onEndEditing={event => {
+                  const next = event.nativeEvent.text.trim();
+                  if (next !== entry.label) {
+                    dispatch(
+                      rememberAddress({
+                        coin,
+                        address: entry.address,
+                        label: next,
+                      }),
+                    );
+                  }
+                }}
+              />
               <Text style={swapCards.meta} selectable>
                 {entry.address}
               </Text>
@@ -244,6 +265,17 @@ const look = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
+  },
+  labelInput: {
+    borderRadius: 22,
+    backgroundColor: '#F4F7FB',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 8,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#484859',
   },
   receiver: {
     flex: 1,

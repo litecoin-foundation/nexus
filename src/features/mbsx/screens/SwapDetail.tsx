@@ -12,7 +12,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
-import {formatTimestamp, kindLabel} from '../format';
+import {formatExpiry, formatTimestamp, kindLabel} from '../format';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {
@@ -26,6 +26,8 @@ import {
 import RemoveButton from '../components/RemoveButton';
 import CoinPair from '../components/CoinPair';
 import SwapProgress from '../components/SwapProgress';
+import {TimeLine} from '../components/Clock';
+import {useBottomInset} from '../components/useBottomInset';
 import {useAppSelector} from '../../../store/hooks';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
@@ -153,6 +155,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   const {swapId} = route.params;
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
   const showRaw = useShowRawStates();
 
   useEffect(() => {
@@ -213,7 +216,8 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
     const refund = refundTxid(swap.events);
     return (
       <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <ScrollView
+          contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
           <View style={swapCards.card}>
             <View style={swapCards.historyRow}>
               <CoinPair from={swap.coin_from} to={swap.coin_to} size={40} />
@@ -288,7 +292,8 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
         <View style={swapCards.card}>
           <View style={swapCards.historyRow}>
             <CoinPair from={swap.coin_from} to={swap.coin_to} size={40} />
@@ -312,6 +317,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           <Text style={swapCards.fromLine}>
             {`Created ${formatTimestamp(swap.created_at)}`}
           </Text>
+          <TimeLine text={formatExpiry(swap.expire_at)} />
           <TouchableOpacity
             testID="mbsx-swap-request"
             onPress={() =>

@@ -11,6 +11,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import type {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
+import {useBottomInset} from '../components/useBottomInset';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {getInfo, isRunning} from '../adapter';
 import {setRunning} from '../mbsxSlice';
@@ -37,6 +38,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
   const {coin} = route.params;
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
   const dispatch = useAppDispatch();
   const storedJson = useAppSelector(state => state.mbsx.settingsStoredJson);
   const {config, setConfig, dirty} = useSettingsDraft();
@@ -104,7 +106,8 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
         <Text style={styles.section}>{`${coin.toUpperCase()} Servers`}</Text>
         <Text style={styles.inputLabel}>Kept connected</Text>
         <TextInput

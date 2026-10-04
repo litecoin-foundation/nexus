@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -30,6 +31,8 @@ import {independentReference} from '../rates';
 import {getMbsxStyles} from '../theme';
 import {coinString, offerWarning} from '../useSwapAmounts';
 import CoinPair from '../components/CoinPair';
+import {TimeLine} from '../components/Clock';
+import {useBottomInset} from '../components/useBottomInset';
 import MbsxBackButton from '../components/MbsxBackButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {requestStateText, swapStateText, useShowRawStates} from '../stateText';
@@ -38,6 +41,7 @@ import {
   acceptOffer,
   getRequestInfo,
   getSwapInfo,
+  isEndedRequestState,
   isUnderwayState,
   onMessage,
   removeRequest,
@@ -74,6 +78,7 @@ const live = (offer: SwapOffer) =>
 const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
+  const bottom = useBottomInset();
   const showRaw = useShowRawStates();
 
   useEffect(() => {
@@ -216,7 +221,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}
+        keyboardShouldPersistTaps="handled">
         <Text style={swapCards.section}>Send</Text>
         <View style={swapCards.card}>
           <View style={swapCards.amountRow}>
@@ -238,9 +245,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           <Text style={swapCards.fromLine}>
             {`Created ${formatTimestamp(request.created_at)}`}
           </Text>
-          <Text style={swapCards.meta}>
-            {`Expires ${formatTimestamp(request.expire_at)}`}
-          </Text>
+          <TimeLine
+            text={`Expires ${formatTimestamp(request.expire_at)}`}
+          />
         </View>
 
         <View style={swapCards.flipWrap}>
@@ -479,7 +486,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         })}
         {offers.length === 0 ? (
           <View style={swapCards.card}>
-            <Text style={swapCards.note}>Waiting for an offer</Text>
+            <TimeLine
+              text="Waiting for an offer"
+              textStyle={look.waitText}
+            />
           </View>
         ) : null}
 
@@ -553,9 +563,16 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           </TouchableOpacity>
         ))}
 
-        <Text testID="mbsx-request-id" style={swapCards.id} selectable>
-          {request.id}
-        </Text>
+        <TouchableOpacity
+          testID="mbsx-request-id"
+          style={look.idChip}
+          onPress={() => Clipboard.setString(request.id)}
+          accessibilityLabel="Copy request id">
+          <Text style={look.idLabel}>Request</Text>
+          <Text style={look.idValue} numberOfLines={1}>
+            {shortAddress(request.id)}
+          </Text>
+        </TouchableOpacity>
 
         <RemoveButton
           testID="mbsx-remove-request"
@@ -574,6 +591,32 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 };
 
 const look = StyleSheet.create({
+  waitText: {
+    marginTop: 0,
+    color: '#484859',
+  },
+  idChip: {
+    marginTop: 16,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F4F7FB',
+    borderRadius: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  idLabel: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#747E87',
+    fontSize: 12,
+    marginRight: 8,
+  },
+  idValue: {
+    fontFamily: 'Satoshi Variable',
+    color: '#484859',
+    fontSize: 13,
+  },
   barTrack: {
     marginTop: 6,
     height: 4,
