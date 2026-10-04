@@ -563,7 +563,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         ))}
 
         <TouchableOpacity
-          testID="mbsx-request-id"
+          testID={`mbsx-request-id-${request.id}`}
           style={look.idChip}
           onPress={() => Clipboard.setString(request.id)}
           accessibilityLabel="Copy request id">
