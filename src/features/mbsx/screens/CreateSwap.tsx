@@ -356,6 +356,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   }, [amounts.fromCoin, amounts.toCoin]);
 
   const selectCoin = (coin: string) => {
+    if (coin !== coinTo) {
+      setAddressTo('');
+      addressFilledFor.current = '';
+    }
     setCoinTo(coin);
     setCoinOpen(false);
     dispatch(setLastCoin(coin));
