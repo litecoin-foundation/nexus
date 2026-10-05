@@ -394,6 +394,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   const isHwWallet = useAppSelector(isHwWalletSelectedSelector);
   const {ltcAccount} = useAppSelector(selectedAccountNamesSelector);
+  const walletName = ltcAccount
+    ? `Nexus Wallet: ${ltcAccount}`
+    : 'Nexus Wallet';
 
   const submit = async () => {
     setConfirming(false);
@@ -852,7 +855,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             </Text>
           ) : null}
           <Text style={look.fromLine}>
-            {payIn ? 'From another wallet' : `From  ${ltcAccount || 'LTC wallet'}`}
+            {payIn ? 'From another wallet' : `From  ${walletName}`}
           </Text>
           {payIn ? addressBlock : null}
           {spendNote !== '' ? (
@@ -913,7 +916,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             addressBlock
           ) : buysToHost ? (
             <Text style={look.fromLine}>
-              {`To  ${ltcAccount || 'LTC wallet'}`}
+              {`To  ${walletName}`}
             </Text>
           ) : (
             <>
