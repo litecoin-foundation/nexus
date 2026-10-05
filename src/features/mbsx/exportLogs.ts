@@ -26,6 +26,7 @@ import type {MbsxMessage} from './mbsxSlice';
  */
 export const EXPORT_CONTENTS = [
   'The module version and chain heights',
+  'Your public identity keyid on the swap server, which links all your activity there',
   'Your mbsx settings, including the servers it connects to',
   'Every swap and request: amounts, coins, states and on-chain ids',
   'The recent event log',
