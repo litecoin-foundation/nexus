@@ -223,9 +223,21 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             <View style={swapCards.card}>
               <View style={swapCards.historyRow}>
                 {coinMark(deposit.coin)}
-                <Text testID="mbsx-payin-amount" style={swapCards.historyTitle}>
+                <Text
+                  testID="mbsx-payin-amount"
+                  style={[swapCards.historyTitle, look.amount]}>
                   {`${deposit.remaining} ${deposit.coin}`}
                 </Text>
+                <TouchableOpacity
+                  testID="mbsx-payin-copy-amount"
+                  accessibilityLabel="Copy Amount"
+                  style={look.iconBtn}
+                  onPress={() => Clipboard.setString(deposit.remaining)}>
+                  <Image
+                    source={require('../../../assets/icons/copy-icon.png')}
+                    style={look.toolIcon}
+                  />
+                </TouchableOpacity>
               </View>
               <Text style={swapCards.historySub}>Pay Exactly</Text>
               <View style={look.qr}>
@@ -403,6 +415,9 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
 };
 
 const look = StyleSheet.create({
+  amount: {
+    flex: 1,
+  },
   qr: {
     alignItems: 'center',
     marginVertical: 16,
