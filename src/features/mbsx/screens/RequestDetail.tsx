@@ -275,7 +275,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               <Text style={swapCards.coinPillText}>{request.coin_to}</Text>
             </View>
           </View>
-          <Text style={swapCards.meta}>Offers below this are declined</Text>
+          <Text style={swapCards.meta}>
+            Offers below this need your approval
+          </Text>
         </View>
 
         <Text style={swapCards.section}>Fees</Text>
@@ -320,7 +322,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 
         <Text style={swapCards.section}>Offers</Text>
         {offers.map(offer => {
-          const warning = offerWarning(
+          const rateWarning = offerWarning(
             offer,
             independentReference(
               rates,
@@ -329,6 +331,11 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               Date.now() / 1000,
             ),
           );
+          const shortfall = offer.below_minimum
+            ? `You would receive ${offer.shortfall} ${offer.coin_receive} less than your minimum.`
+            : null;
+          const warning =
+            [shortfall, rateWarning].filter(Boolean).join(' ') || null;
           const held = warning !== null && !acknowledged.includes(offer.id);
           const status = offerStatus(offer);
           const kind = kindLabel(offer.kind);

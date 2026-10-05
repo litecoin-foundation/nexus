@@ -76,6 +76,9 @@ export type SwapOffer = {
   amount_receive: string;
   // Absent when the server had no price.
   market_amount_receive?: string;
+  // Set when the offer gives less than the request's minimum, by shortfall in coin_receive.
+  below_minimum?: boolean;
+  shortfall?: string;
   // Bridged only: the server's record of the offerer, its address and 0-100
   // from what the server has seen of it, 50 for one it has not.
   offerer_address?: string;
