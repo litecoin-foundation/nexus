@@ -41,6 +41,7 @@ const MbsxDebug: React.FC = () => {
   const messages = useAppSelector(state => state.mbsx.messages);
   const [connected, setConnected] = useState(false);
   const [dbVersion, setDbVersion] = useState<number | null>(null);
+  const [identityKeyid, setIdentityKeyid] = useState('');
   const [exporting, setExporting] = useState(false);
   const [resetError, setResetError] = useState('');
   const [chains, setChains] = useState<ChainRow[]>([]);
@@ -80,6 +81,7 @@ const MbsxDebug: React.FC = () => {
       }
       setConnected(Boolean(info.connected));
       setDbVersion(info.db_version ?? null);
+      setIdentityKeyid(info.identity_keyid ?? '');
       const rows = Object.entries(info.coins ?? {}).map(([ticker, coin]) => ({
         ticker,
         chainHeight: coin.chain_height,
@@ -168,11 +170,20 @@ const MbsxDebug: React.FC = () => {
           <View style={[look.statusRow, look.chainLine]}>
             <Text style={styles.label}>Bridge</Text>
             <Text style={styles.value}>
-              {connected ? 'Connected' : 'Not connected'}
+              {connected ? 'Connected' : 'Not Connected'}
             </Text>
           </View>
           <View style={[look.statusRow, look.chainLine]}>
-            <Text style={styles.label}>DB version</Text>
+            <Text style={styles.label}>Identity Keyid</Text>
+            <Text
+              testID="mbsx-identity-keyid"
+              selectable
+              style={[styles.value, look.keyid]}>
+              {identityKeyid || '-'}
+            </Text>
+          </View>
+          <View style={[look.statusRow, look.chainLine]}>
+            <Text style={styles.label}>DB Version</Text>
             <Text style={styles.value}>{dbVersion ?? '-'}</Text>
           </View>
         </View>
@@ -205,7 +216,7 @@ const MbsxDebug: React.FC = () => {
 
         {canReset ? (
           <TouchableOpacity style={styles.buttonSecondary} onPress={onReset}>
-            <Text style={styles.buttonSecondaryText}>Reset state</Text>
+            <Text style={styles.buttonSecondaryText}>Reset State</Text>
           </TouchableOpacity>
         ) : null}
         {resetError !== '' ? (
@@ -221,7 +232,7 @@ const MbsxDebug: React.FC = () => {
             // measures.
             console.log('MEMSTATS ' + stringifyRpc(getMemStats()));
           }}>
-          <Text style={styles.buttonSecondaryText}>Log mem stats</Text>
+          <Text style={styles.buttonSecondaryText}>Log Mem Stats</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
@@ -255,7 +266,7 @@ const MbsxDebug: React.FC = () => {
             );
           }}>
           <Text style={styles.buttonText}>
-            {exporting ? 'Exporting…' : 'Export logs'}
+            {exporting ? 'Exporting…' : 'Export Logs'}
           </Text>
         </TouchableOpacity>
         <Text style={swapCards.section}>Events</Text>
@@ -266,6 +277,11 @@ const MbsxDebug: React.FC = () => {
 };
 
 const look = StyleSheet.create({
+  keyid: {
+    flexShrink: 1,
+    marginLeft: 16,
+    textAlign: 'right',
+  },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',

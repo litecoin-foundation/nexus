@@ -123,6 +123,7 @@ export type MbsxSettings = {
 export type MbsxInfo = {
   connected: boolean;
   db_version?: number;
+  identity_keyid?: string;
   // Only the coins config enabled; compiled_coins is every one the build has.
   coins: Record<
     string,
