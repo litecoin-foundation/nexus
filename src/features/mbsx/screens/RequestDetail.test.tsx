@@ -14,6 +14,9 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('@dr.pogodin/react-native-fs', () => ({
   DocumentDirectoryPath: '/tmp',
 }));
+jest.mock('@react-native-clipboard/clipboard', () => ({
+  setString: jest.fn(),
+}));
 jest.mock('../network', () => ({getNetwork: () => 'mainnet'}));
 jest.mock('../../../utils/haptic', () => ({triggerLightFeedback: jest.fn()}));
 jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
@@ -48,7 +51,10 @@ const offer = (id: string, amount_receive: string) => ({
   market_amount_receive: amount_receive,
 });
 
-const renderRequest = (rates = {}) => {
+const renderRequest = (
+  rates = {},
+  offers: object[] = [offer('low', '0.00072'), offer('fair', '0.00079')],
+) => {
   (getRequestInfo as jest.Mock).mockReturnValue({
     id: 'r1',
     created_at: '2026-10-03T00:00:00',
@@ -58,7 +64,7 @@ const renderRequest = (rates = {}) => {
     coin_to: 'BTC',
     amount_from: '1',
     min_amount_to: '0.0007',
-    offers: [offer('low', '0.00072'), offer('fair', '0.00079')],
+    offers,
   });
   const store = configureStore({
     reducer: {mbsx: (state = {rates}) => state},
@@ -95,5 +101,28 @@ describe('RequestDetail', () => {
       'You would receive 10% less than the CoinGecko rate.',
     );
     expect(view.getByTestId('mbsx-accept-low')).toBeEnabled();
+  });
+
+  it('holds Accept on a short lock time until the warning is tapped', () => {
+    const bridged = (id: string, lock_time: number, short_lock: boolean) => ({
+      ...offer(id, '0.00079'),
+      kind: 'BRIDGED',
+      lock_time,
+      short_lock,
+    });
+    const view = renderRequest({}, [
+      bridged('brief', 9000, true),
+      bridged('long', 172800, false),
+    ]);
+
+    expect(view.getByTestId('mbsx-offer-warning-brief')).toHaveTextContent(
+      "This offer's lock time is only 2.5 hours. Keep your phone online until the swap completes: if it stalls and your phone is offline that long, you could lose funds. Tap this warning to accept anyway.",
+    );
+    expect(view.getByTestId('mbsx-accept-brief')).toBeDisabled();
+    expect(view.queryByTestId('mbsx-offer-warning-long')).toBeNull();
+    expect(view.getByTestId('mbsx-accept-long')).toBeEnabled();
+
+    fireEvent.press(view.getByTestId('mbsx-offer-warning-brief'));
+    expect(view.getByTestId('mbsx-accept-brief')).toBeEnabled();
   });
 });

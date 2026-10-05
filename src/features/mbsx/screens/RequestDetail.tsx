@@ -334,8 +334,13 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           const shortfall = offer.below_minimum
             ? `You would receive ${offer.shortfall} ${offer.coin_receive} less than your minimum.`
             : null;
+          const shortLock =
+            offer.short_lock && offer.lock_time
+              ? `This offer's lock time is only ${Math.round(offer.lock_time / 360) / 10} hours. Keep your phone online until the swap completes: if it stalls and your phone is offline that long, you could lose funds.`
+              : null;
           const warning =
-            [shortfall, rateWarning].filter(Boolean).join(' ') || null;
+            [shortfall, shortLock, rateWarning].filter(Boolean).join(' ') ||
+            null;
           const held = warning !== null && !acknowledged.includes(offer.id);
           const status = offerStatus(offer);
           const kind = kindLabel(offer.kind);

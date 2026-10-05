@@ -79,6 +79,9 @@ export type SwapOffer = {
   // Set when the offer gives less than the request's minimum, by shortfall in coin_receive.
   below_minimum?: boolean;
   shortfall?: string;
+  // Lock time 1 in seconds; short_lock is set on a bridged offer under 12 hours.
+  lock_time?: number;
+  short_lock?: boolean;
   // Bridged only: the server's record of the offerer, its address and 0-100
   // from what the server has seen of it, 50 for one it has not.
   offerer_address?: string;
