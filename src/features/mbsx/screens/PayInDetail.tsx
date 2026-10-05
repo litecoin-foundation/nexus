@@ -40,20 +40,20 @@ import {
   getSwapInfo,
   isUnderwayState,
   listDeposits,
-  requoteDeposit,
+  requestDepositAgain,
 } from '../adapter';
 import type {Deposit, MbsxDrawerParamList} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'PayInDetail'>;
 
 const PAYABLE = new Set(['WAITING', 'SEEN', 'SHORT']);
-const PAUSED = new Set(['SHORT', 'NO_QUOTE']);
+const PAUSED = new Set(['SHORT', 'NO_OFFER']);
 const CANCELLABLE = new Set([
   'WAITING',
   'SEEN',
   'SHORT',
   'RECEIVED',
-  'NO_QUOTE',
+  'NO_OFFER',
   'REQUESTED',
 ]);
 
@@ -344,11 +344,11 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         {paused ? (
           <>
             <Text style={swapCards.section}>
-              {deposit.state === 'NO_QUOTE' ? 'Lower the Minimum' : 'New Minimum'}
+              {deposit.state === 'NO_OFFER' ? 'Lower the Minimum' : 'New Minimum'}
             </Text>
             <View style={swapCards.card}>
               <Text style={swapCards.note}>
-                {deposit.state === 'NO_QUOTE'
+                {deposit.state === 'NO_OFFER'
                   ? `No offer met ${deposit.min_amount_to} ${deposit.coin_to}. Lower it to try again.`
                   : `Swap the ${deposit.received} ${deposit.coin} received for at least`}
               </Text>
@@ -367,15 +367,15 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 keyboardType="decimal-pad"
               />
               <TouchableOpacity
-                testID="mbsx-payin-requote"
+                testID="mbsx-payin-request-again"
                 style={[
                   styles.button,
-                  look.requote,
+                  look.requestAgain,
                   floor === '' ? styles.buttonDisabled : null,
                 ]}
                 disabled={floor === ''}
-                onPress={() => act(() => requoteDeposit(deposit, floor))}>
-                <Text style={styles.buttonText}>Re-quote</Text>
+                onPress={() => act(() => requestDepositAgain(deposit, floor))}>
+                <Text style={styles.buttonText}>Request Again</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -472,7 +472,7 @@ const look = StyleSheet.create({
     height: 18,
     tintColor: '#484859',
   },
-  requote: {
+  requestAgain: {
     marginTop: 12,
   },
   confirmActions: {

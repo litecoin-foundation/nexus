@@ -32,7 +32,7 @@ jest.mock('../adapter', () => ({
   isUnderwayState: jest.fn(() => false),
   listDeposits: jest.fn(),
   readConfig: () => Promise.resolve(null),
-  requoteDeposit: jest.fn(),
+  requestDepositAgain: jest.fn(),
 }));
 
 const screenSize = {width: 400, height: 800};

@@ -83,7 +83,7 @@ export const depositStateText = (
     SHORT: 'Less than the amount due arrived',
     RECEIVED: 'Payment received',
     REQUESTED: 'Finding a swap',
-    NO_QUOTE: 'No acceptable offer',
+    NO_OFFER: 'No acceptable offer',
     SWEEPING: `Returning your ${paid}`,
     SWEPT: `Your ${paid} was returned`,
     SPENT: 'Swapping',

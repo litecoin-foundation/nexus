@@ -777,8 +777,8 @@ export const cancelDeposit = (depositId: string) => {
   }
 };
 
-export const requoteDeposit = (deposit: Deposit, minAmountTo: string) => {
-  const rv = NitroBSX.requoteDeposit(
+export const requestDepositAgain = (deposit: Deposit, minAmountTo: string) => {
+  const rv = NitroBSX.requestDepositAgain(
     deposit.deposit_id,
     parseAmount(deposit.coin_to, minAmountTo),
   ) as MbsxResult<Deposit>;
