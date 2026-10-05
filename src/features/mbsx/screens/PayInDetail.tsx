@@ -97,6 +97,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const [floor, setFloor] = useState('');
   const [error, setError] = useState('');
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [offerWaiting, setOfferWaiting] = useState(false);
   // Stays mounted, so the last pay-in shown is still loaded when another opens
   const deposit = loaded?.deposit_id === depositId ? loaded : null;
   const openedSwapId = useRef<string | null>(null);
@@ -105,6 +106,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
     setFloor('');
     setError('');
     setConfirmingCancel(false);
+    setOfferWaiting(false);
     openedSwapId.current = null;
   }, [depositId]);
 
@@ -141,6 +143,11 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
       return;
     }
     setLoaded(found);
+    setOfferWaiting(
+      found.state === 'REQUESTED' &&
+        found.request_id !== undefined &&
+        getRequestInfo(found.request_id)?.state === 'OFFER_RECEIVED',
+    );
 
     const swapId = underwaySwapId(found.request_id);
     if (swapId === null) {
@@ -206,8 +213,15 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             <CoinPair from={deposit.coin} to={deposit.coin_to} size={40} />
             <View style={swapCards.historyMid}>
               <Text testID="mbsx-payin-state" style={swapCards.historyTitle}>
-                {depositStateText(deposit.state, deposit.coin)}
+                {offerWaiting
+                  ? 'Offer Received'
+                  : depositStateText(deposit.state, deposit.coin)}
               </Text>
+              {offerWaiting ? (
+                <Text testID="mbsx-payin-next" style={swapCards.historySub}>
+                  View the swap request to continue
+                </Text>
+              ) : null}
               {showRaw ? (
                 <Text style={swapCards.historySub}>{deposit.state}</Text>
               ) : null}
@@ -313,13 +327,18 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         {deposit.request_id ? (
           <TouchableOpacity
             testID="mbsx-payin-request"
-            style={styles.buttonSecondary}
+            style={offerWaiting ? styles.button : styles.buttonSecondary}
             onPress={() =>
               navigation.navigate('RequestDetail', {
                 requestId: deposit.request_id as string,
               })
             }>
-            <Text style={styles.buttonSecondaryText}>View the Swap Request</Text>
+            <Text
+              style={
+                offerWaiting ? styles.buttonText : styles.buttonSecondaryText
+              }>
+              View the Swap Request
+            </Text>
           </TouchableOpacity>
         ) : null}
         {paused ? (
