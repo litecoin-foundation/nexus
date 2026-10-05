@@ -58,13 +58,13 @@ const SwapRow = ({
           ? () => {
               Alert.alert(title, undefined, [
                 {
-                  text: 'Copy swap id',
+                  text: 'Copy Swap ID',
                   onPress: () => Clipboard.setString(swap.id),
                 },
                 ...(swap.request_id
                   ? [
                       {
-                        text: 'Open request',
+                        text: 'Open Request',
                         onPress: () => onOpenRequest(swap.request_id),
                       },
                     ]

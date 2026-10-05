@@ -173,7 +173,7 @@ const MbsxSettings: React.FC = () => {
       'The settings were changed outside this screen, for example by the ' +
         'server banner. Reload them and drop your unsaved changes?',
       [
-        {text: 'Keep editing', style: 'cancel'},
+        {text: 'Keep Editing', style: 'cancel'},
         {text: 'Reload', style: 'destructive', onPress: () => load()},
       ],
     );
@@ -359,7 +359,7 @@ const MbsxSettings: React.FC = () => {
         disabled={saving}
         onPress={save}>
         <Text style={styles.buttonText}>
-          {saving ? 'Restarting…' : dirty ? 'Save and restart' : 'Save'}
+          {saving ? 'Restarting…' : dirty ? 'Save and Restart' : 'Save'}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.buttonSecondary} onPress={load}>
@@ -379,7 +379,7 @@ const MbsxSettings: React.FC = () => {
               : defaultConfig(),
           )
         }>
-        <Text style={styles.buttonSecondaryText}>Restore defaults</Text>
+        <Text style={styles.buttonSecondaryText}>Restore Defaults</Text>
       </TouchableOpacity>
       {error !== '' && errorCoin === '' ? (
         <Text testID="mbsx-settings-error" style={styles.error}>
@@ -407,7 +407,7 @@ const MbsxSettings: React.FC = () => {
           <Text style={swapCards.section}>Requests</Text>
           <View style={look.cardRow}>
             <Text style={[styles.label, look.rowLabel]}>
-              Revoke open requests on exit
+              Revoke Open Requests on Exit
             </Text>
             <Switch
               testID="mbsx-revoke-on-exit"
@@ -425,7 +425,7 @@ const MbsxSettings: React.FC = () => {
           <Text style={swapCards.section}>Privacy</Text>
           <View style={look.cardRow}>
             <Text style={[styles.label, look.rowLabel]}>
-              Swap notifications
+              Swap Notifications
             </Text>
             <Switch
               testID="mbsx-notify-swaps"
@@ -589,7 +589,7 @@ const MbsxSettings: React.FC = () => {
             testID="mbsx-rate-services"
             style={look.cardRow}
             onPress={() => navigation.navigate('CoinRateServices')}>
-            <Text style={[styles.label, look.rowLabel]}>Fetch coin rates</Text>
+            <Text style={[styles.label, look.rowLabel]}>Fetch Coin Rates</Text>
             <Text testID="mbsx-rate-services-summary" style={styles.value}>
               {ratesOn === null ? '' : ratesOn ? 'On' : "Off, server's prices"}
             </Text>
@@ -611,7 +611,7 @@ const MbsxSettings: React.FC = () => {
               <Text style={swapCards.section}>Display</Text>
               <View style={look.cardRow}>
                 <Text style={[styles.label, look.rowLabel]}>
-                  Show state names
+                  Show State Names
                 </Text>
                 <Switch
                   testID="mbsx-show-raw-states"
@@ -631,7 +631,7 @@ const MbsxSettings: React.FC = () => {
                 raw state name.
               </Text>
               <View style={[look.cardRow, look.cardRowLine]}>
-                <Text style={[styles.label, look.rowLabel]}>Show debug</Text>
+                <Text style={[styles.label, look.rowLabel]}>Show Debug</Text>
                 <Switch
                   testID="mbsx-show-debug"
                   value={config.show_debug === true}
@@ -676,7 +676,7 @@ const MbsxSettings: React.FC = () => {
             />
 
             <Text style={styles.section}>Electrum Servers</Text>
-            <Text style={styles.inputLabel}>Kept connected per coin</Text>
+            <Text style={styles.inputLabel}>Kept Connected per Coin</Text>
             <TextInput
               testID="mbsx-max-electrum-servers"
               style={styles.input}
@@ -702,7 +702,7 @@ const MbsxSettings: React.FC = () => {
               <View key={String(cert.id)} style={styles.certRow}>
                 <Text style={styles.label}>{cert.label || 'Unlabelled'}</Text>
                 <Text style={styles.value}>
-                  {cert.host ? `${cert.host}:${cert.port}` : 'Every server'}
+                  {cert.host ? `${cert.host}:${cert.port}` : 'Every Server'}
                 </Text>
                 <TouchableOpacity
                   testID={`mbsx-remove-cert-${cert.id}`}
@@ -751,7 +751,7 @@ const MbsxSettings: React.FC = () => {
               testID="mbsx-add-cert"
               style={styles.button}
               onPress={addCert}>
-              <Text style={styles.buttonText}>Add certificate</Text>
+              <Text style={styles.buttonText}>Add Certificate</Text>
             </TouchableOpacity>
           </>
         ) : null}

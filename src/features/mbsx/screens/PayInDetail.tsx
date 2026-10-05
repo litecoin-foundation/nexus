@@ -227,7 +227,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                   {`${deposit.remaining} ${deposit.coin}`}
                 </Text>
               </View>
-              <Text style={swapCards.historySub}>Pay exactly</Text>
+              <Text style={swapCards.historySub}>Pay Exactly</Text>
               <View style={look.qr}>
                 <QRCode value={deposit.address} size={SCREEN_HEIGHT * 0.22} />
               </View>
@@ -307,7 +307,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 requestId: deposit.request_id as string,
               })
             }>
-            <Text style={styles.buttonSecondaryText}>View the swap request</Text>
+            <Text style={styles.buttonSecondaryText}>View the Swap Request</Text>
           </TouchableOpacity>
         ) : null}
         {paused ? (
@@ -365,7 +365,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 testID="mbsx-payin-cancel-keep"
                 style={[styles.buttonSecondary, look.confirmAction]}
                 onPress={() => setConfirmingCancel(false)}>
-                <Text style={styles.buttonSecondaryText}>Keep it</Text>
+                <Text style={styles.buttonSecondaryText}>Keep It</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 testID="mbsx-payin-cancel-confirm-button"
@@ -374,7 +374,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                   setConfirmingCancel(false);
                   act(() => cancelDeposit(deposit.deposit_id));
                 }}>
-                <Text style={styles.buttonText}>Return payment</Text>
+                <Text style={styles.buttonText}>Return Payment</Text>
               </TouchableOpacity>
             </View>
           </View>

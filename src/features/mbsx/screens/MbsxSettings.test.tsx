@@ -228,7 +228,7 @@ describe('MbsxSettings servers', () => {
     ]);
     const {getByTestId, getByText} = renderSettings();
     fireEvent.press(await waitFor(() => getByText('Advanced')));
-    expect(getByText('Every server')).toBeTruthy();
+    expect(getByText('Every Server')).toBeTruthy();
     expect(getByText('glue.example:9002')).toBeTruthy();
 
     fireEvent.changeText(getByTestId('mbsx-cert-label'), 'mine');

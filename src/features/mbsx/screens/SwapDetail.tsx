@@ -323,7 +323,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
             onPress={() =>
               navigation.navigate('RequestDetail', {requestId: swap.request_id})
             }>
-            <Text style={swapCards.link}>View request</Text>
+            <Text style={swapCards.link}>View Request</Text>
           </TouchableOpacity>
         </View>
 

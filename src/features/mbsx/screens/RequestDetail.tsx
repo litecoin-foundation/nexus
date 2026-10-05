@@ -207,7 +207,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
       return swaps.length > 0 ? 'Accepted' : 'Accepted, waiting for the swap';
     }
     if (offer.state === 'REVOKED') {
-      return 'Withdrawn by the offerer';
+      return 'Withdrawn by the Offerer';
     }
     if (offer.state === 'REJECTED') {
       return "The server's swap did not match this offer";
@@ -347,7 +347,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                   <View style={look.offerMarks}>
                     {offer.id === bestOfferId ? (
                       <Text testID={`mbsx-best-rate-${offer.id}`} style={look.best}>
-                        Best rate
+                        Best Rate
                       </Text>
                     ) : null}
                     {kind ? <Text style={look.offerKind}>{kind}</Text> : null}
@@ -541,7 +541,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             </View>
             {swap.fees_coin ? (
               <View style={[look.feeRow, look.feeLine]}>
-                <Text style={look.feeLabel}>Swap fees</Text>
+                <Text style={look.feeLabel}>Swap Fees</Text>
                 <Text style={look.feeValue}>
                   {`${swap.fees_total} ${swap.fees_coin}`}
                 </Text>

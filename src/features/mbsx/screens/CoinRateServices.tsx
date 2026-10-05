@@ -35,7 +35,7 @@ const time = (at: number) => new Date(at * 1000).toLocaleTimeString();
 
 const resultText = (result: SourceResult | undefined): string => {
   if (!result) {
-    return 'Not asked yet';
+    return 'Not Asked Yet';
   }
   switch (result.kind) {
     case 'ok':
@@ -147,7 +147,7 @@ const CoinRateServices: React.FC<Props> = () => {
           testID={`mbsx-rates-${source}-remove`}
           style={styles.buttonSecondary}
           onPress={() => setKey('')}>
-          <Text style={styles.buttonSecondaryText}>Remove key</Text>
+          <Text style={styles.buttonSecondaryText}>Remove Key</Text>
         </TouchableOpacity>
       ) : null}
     </>
@@ -163,7 +163,7 @@ const CoinRateServices: React.FC<Props> = () => {
           </Text>
         ) : null}
         <View style={styles.row}>
-          <Text style={styles.label}>Fetch coin rates</Text>
+          <Text style={styles.label}>Fetch Coin Rates</Text>
           <Switch
             testID="mbsx-rates-enabled"
             value={draft.enabled}

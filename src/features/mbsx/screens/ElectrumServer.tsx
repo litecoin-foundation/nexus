@@ -314,7 +314,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
             </View>
             {chainsChecked(server) ? (
               <View style={styles.row}>
-                <Text style={styles.label}>Verify hostname</Text>
+                <Text style={styles.label}>Verify Hostname</Text>
                 <Switch
                   testID="mbsx-server-verify-hostname"
                   value={server.verify_hostname !== false}
@@ -323,7 +323,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               </View>
             ) : null}
 
-            <Text style={styles.inputLabel}>Pinned certificate</Text>
+            <Text style={styles.inputLabel}>Pinned Certificate</Text>
             {pin ? (
               <>
                 <Text testID="mbsx-server-pin" style={styles.value} selectable>
@@ -342,7 +342,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
                   style={styles.buttonSecondary}
                   onPress={confirmForgetPin}>
                   <Text style={styles.buttonSecondaryText}>
-                    Forget pinned certificate
+                    Forget Pinned Certificate
                   </Text>
                 </TouchableOpacity>
               </>
@@ -352,7 +352,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               </Text>
             )}
 
-            <Text style={styles.inputLabel}>CA certificates</Text>
+            <Text style={styles.inputLabel}>CA Certificates</Text>
             {cas.map(cert => (
               <View key={String(cert.id)} style={styles.certRow}>
                 <Text style={styles.label}>{cert.label || 'Unlabelled'}</Text>
@@ -387,7 +387,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               testID="mbsx-server-add-ca"
               style={styles.buttonSecondary}
               onPress={addCert}>
-              <Text style={styles.buttonSecondaryText}>Add CA certificate</Text>
+              <Text style={styles.buttonSecondaryText}>Add CA Certificate</Text>
             </TouchableOpacity>
           </>
         ) : null}
@@ -400,7 +400,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
         {advanced ? (
           <>
             <View style={styles.row}>
-              <Text style={styles.label}>Verbose transactions</Text>
+              <Text style={styles.label}>Verbose Transactions</Text>
               <Switch
                 testID="mbsx-server-verbose"
                 value={server.haveverbosetx !== false}
@@ -412,7 +412,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               testID="mbsx-server-remove"
               style={styles.buttonSecondary}
               onPress={confirmRemoveServer}>
-              <Text style={styles.buttonSecondaryText}>Remove server</Text>
+              <Text style={styles.buttonSecondaryText}>Remove Server</Text>
             </TouchableOpacity>
           </>
         ) : null}
@@ -434,7 +434,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
             disabled={saving}
             onPress={save}>
             <Text style={styles.buttonText}>
-              {saving ? 'Restarting…' : 'Save and restart'}
+              {saving ? 'Restarting…' : 'Save and Restart'}
             </Text>
           </TouchableOpacity>
         ) : null}

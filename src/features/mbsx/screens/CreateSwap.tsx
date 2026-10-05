@@ -682,7 +682,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         key={coinChosen ? 'address-on' : 'address-off'}
         testID="mbsx-address-to"
         style={[look.receiver, coinChosen ? null : styles.inputDisabled]}
-        placeholder={payIn ? 'Refund address' : 'Receive address'}
+        placeholder={payIn ? 'Refund Address' : 'Receive Address'}
         placeholderTextColor="#9AA0AE"
         value={addressTo}
         onChangeText={setAddressTo}
@@ -713,8 +713,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               (addressTo
                 ? shortAddress(addressTo)
                 : noSaved
-                  ? `Add a ${coinTo} address`
-                  : 'Select receiver')}
+                  ? `Add a ${coinTo} Address`
+                  : 'Select Receiver')}
           </Text>
           <Image
             source={require('../../../assets/images/forward.png')}
@@ -781,7 +781,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             onPress={() =>
               navigation.navigate('CoinAddresses', {coin: coinTo})
             }>
-            <Text style={look.saved}>Manage addresses</Text>
+            <Text style={look.saved}>Manage Addresses</Text>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -855,7 +855,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             </Text>
           ) : null}
           <Text style={look.fromLine}>
-            {payIn ? 'From another wallet' : `From  ${walletName}`}
+            {payIn ? 'From External Wallet' : `From  ${walletName}`}
           </Text>
           {payIn ? addressBlock : null}
           {spendNote !== '' ? (
@@ -966,7 +966,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         {advanced ? (
           <View style={look.card}>
             <View style={look.settingRow}>
-              <Text style={look.settingLabel}>Fix rate</Text>
+              <Text style={look.settingLabel}>Fix Rate</Text>
               <Switch
                 testID="mbsx-fix-rate"
                 value={fixedRate}
@@ -1044,7 +1044,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             <Text style={look.confirmTitle}>Confirm Swap</Text>
             <Text style={look.confirmLine}>
               {payIn
-                ? `Pay ${amountFrom} ${sendCoin} from another wallet`
+                ? `Pay ${amountFrom} ${sendCoin} from an external wallet`
                 : `Send ${amountFrom} ${sendCoin}`}
             </Text>
             <Text style={look.confirmLine}>
@@ -1084,7 +1084,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               onPress={() => void submit()}
               disabled={busy || blockNote !== ''}>
               <Text style={styles.buttonText}>
-                {busy ? 'Requesting…' : 'Get offers'}
+                {busy ? 'Requesting…' : 'Get Offers'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1115,7 +1115,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               (offReference && !rateAcknowledged)
             }>
             <Text style={styles.buttonText}>
-              {busy ? 'Requesting…' : 'Get offers'}
+              {busy ? 'Requesting…' : 'Get Offers'}
             </Text>
           </TouchableOpacity>
         )}

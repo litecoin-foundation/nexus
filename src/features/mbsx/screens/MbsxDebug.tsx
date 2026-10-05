@@ -197,7 +197,7 @@ const MbsxDebug: React.FC = () => {
               {chains.map((chain, index) =>
                 chainRow(
                   chain.ticker.toUpperCase(),
-                  chain.bridged ? null : 'No bridge',
+                  chain.bridged ? null : 'No Bridge',
                   String(chain.chainHeight),
                   index > 0,
                 ),

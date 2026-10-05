@@ -140,7 +140,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
             </>
           ) : (
             <Text testID="mbsx-coin-price" style={swapCards.meta}>
-              {running ? 'No price available' : 'Starting…'}
+              {running ? 'No Price Available' : 'Starting…'}
             </Text>
           )}
         </View>
@@ -213,7 +213,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
           ]}
           disabled={!address.trim()}
           onPress={add}>
-          <Text style={styles.buttonText}>Save address</Text>
+          <Text style={styles.buttonText}>Save Address</Text>
         </TouchableOpacity>
 
         <Text style={swapCards.section}>Saved</Text>

@@ -109,7 +109,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
       <ScrollView
         contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
         <Text style={styles.section}>{`${coin.toUpperCase()} Servers`}</Text>
-        <Text style={styles.inputLabel}>Kept connected</Text>
+        <Text style={styles.inputLabel}>Kept Connected</Text>
         <TextInput
           testID="mbsx-servers-cap"
           style={styles.input}
@@ -138,7 +138,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
               <View style={styles.row}>
                 <View>
                   <Text style={styles.label}>
-                    {server.url.replace(/^(tcp|ssl):\/\//, '') || 'New server'}
+                    {server.url.replace(/^(tcp|ssl):\/\//, '') || 'New Server'}
                   </Text>
                   <Text
                     testID={`mbsx-server-state-${index}`}
@@ -172,7 +172,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
               index: settings.electrumx.length,
             });
           }}>
-          <Text style={styles.buttonSecondaryText}>Add server</Text>
+          <Text style={styles.buttonSecondaryText}>Add Server</Text>
         </TouchableOpacity>
         {error ? (
           <Text testID="mbsx-servers-error" style={styles.error}>
@@ -191,7 +191,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
             disabled={saving}
             onPress={save}>
             <Text style={styles.buttonText}>
-              {saving ? 'Restarting…' : 'Save and restart'}
+              {saving ? 'Restarting…' : 'Save and Restart'}
             </Text>
           </TouchableOpacity>
         ) : null}

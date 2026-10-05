@@ -115,7 +115,7 @@ describe('CreateSwap', () => {
     expect(queryByTestId('mbsx-max')).toBeNull();
     expect(getByTestId('mbsx-address-to')).toBeDisabled();
     expect(getByTestId('mbsx-address-to').props.placeholder).toBe(
-      'Refund address',
+      'Refund Address',
     );
     fireEvent.press(getByTestId('mbsx-coin-pill'));
     expect(queryByTestId('mbsx-coin-FIRO')).toBeNull();
@@ -125,7 +125,7 @@ describe('CreateSwap', () => {
     fireEvent.press(getByTestId('mbsx-flip'));
     expect(getByTestId('mbsx-max')).toBeTruthy();
     expect(getByTestId('mbsx-address-to').props.placeholder).toBe(
-      'Receive address',
+      'Receive Address',
     );
   });
 
