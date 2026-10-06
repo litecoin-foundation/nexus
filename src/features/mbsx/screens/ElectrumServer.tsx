@@ -81,7 +81,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
 
   const server = config?.coins[coin]?.electrumx[index];
   const url = server?.url ?? '';
-  const pageTitle = url.replace(/^(tcp|ssl):\/\//, '') || 'New server';
+  const pageTitle = url.replace(/^(tcp|ssl):\/\//, '') || 'New Server';
   useEffect(() => {
     navigation.setOptions?.({
       title: pageTitle,

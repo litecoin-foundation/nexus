@@ -206,6 +206,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
           shown.map(request => (
                   <TouchableOpacity
                     key={request.id}
+                    testID={`mbsx-request-${request.id}`}
                     style={swapCards.card}
                     onPress={() =>
                       navigation.navigate('RequestDetail', {
@@ -227,7 +228,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                       }
                     />
                     <TouchableOpacity
-                      testID={`mbsx-request-id-${request.id}`}
+                      testID={`mbsx-request-copy-${request.id}`}
                       style={look.idChip}
                       accessibilityLabel="Copy request id"
                       onPress={() => Clipboard.setString(request.id)}>
