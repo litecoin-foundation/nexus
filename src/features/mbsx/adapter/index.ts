@@ -415,6 +415,8 @@ export const resumeIfNeeded = async () => {
   return true;
 };
 
+let configQueue: Promise<void> = Promise.resolve();
+
 /**
  * Writes a config and reinitialises the core so it takes effect.
  *
@@ -423,8 +425,16 @@ export const resumeIfNeeded = async () => {
  * abandons. What it must not do is leave the core down — a swap that is not
  * reactivated has nothing watching its timelocks — so a start that fails puts
  * the previous config back and starts on that instead.
+ *
+ * Saves run one after another, so each rolls back to the config it replaced.
  */
-export const applyConfig = async (config: MbsxConfig) => {
+export const applyConfig = (config: MbsxConfig): Promise<void> => {
+  const run = configQueue.then(() => applyConfigNow(config));
+  configQueue = run.catch(() => undefined);
+  return run;
+};
+
+const applyConfigNow = async (config: MbsxConfig) => {
   const previous = await readConfig();
   await writeConfig(config);
   try {

@@ -94,4 +94,47 @@ describe('applyConfig', () => {
     expect(nitro.stop).toHaveBeenCalledTimes(1);
     expect(nitro.initialise).toHaveBeenCalledTimes(2);
   });
+
+  it('runs a second save only after the first has restarted', async () => {
+    const nitro = NitroBSX as unknown as Record<string, jest.Mock>;
+    let running = false;
+    let finishFirst: (rv: number) => void = () => {};
+    nitro.isRunning.mockImplementation(() => running);
+    nitro.stop.mockImplementation(() => {
+      running = false;
+    });
+    nitro.initialise
+      .mockReset()
+      .mockImplementationOnce(() =>
+        new Promise<number>(resolve => {
+          finishFirst = resolve;
+        }).then(rv => {
+          running = true;
+          return rv;
+        }),
+      )
+      .mockImplementation(() => {
+        running = true;
+        return Promise.resolve(0);
+      });
+    const config = {chain: 'regtest', debug: false, coins: {}} as any;
+    (loadOrCreateConfig as jest.Mock).mockResolvedValue(config);
+    (readConfig as jest.Mock).mockResolvedValue(config);
+    (writeConfig as jest.Mock).mockClear();
+
+    const first = applyConfig({...config, debug: true});
+    const second = applyConfig({...config, debug: false});
+    await settle();
+    expect(writeConfig).toHaveBeenCalledTimes(1);
+    expect(nitro.initialise).toHaveBeenCalledTimes(1);
+
+    finishFirst(0);
+    await first;
+    await second;
+    expect((writeConfig as jest.Mock).mock.calls).toEqual([
+      [{...config, debug: true}],
+      [{...config, debug: false}],
+    ]);
+    expect(nitro.initialise).toHaveBeenCalledTimes(2);
+  });
 });
