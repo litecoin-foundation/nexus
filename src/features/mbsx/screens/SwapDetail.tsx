@@ -139,8 +139,13 @@ const SwapFees = ({swap}: {swap: SwapDetails}) => {
             </Text>
           </View>
         ) : null}
-        {chains.map(([coin, amount, rate]) => (
-          <View key={coin} style={[look.feeRow, look.feeLine]}>
+        {chains.map(([coin, amount, rate], index) => (
+          <View
+            key={coin}
+            style={[
+              look.feeRow,
+              fees.length > 0 || index > 0 ? look.feeLine : null,
+            ]}>
             <Text style={look.feeLabel}>{`Chain fee ${coin}`}</Text>
             <Text style={look.feeRate}>{`${rate} sat/kvB`}</Text>
             <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
@@ -320,10 +325,11 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           <TimeLine text={formatExpiry(swap.expire_at)} />
           <TouchableOpacity
             testID="mbsx-swap-request"
+            style={[styles.buttonSecondary, look.requestButton]}
             onPress={() =>
               navigation.navigate('RequestDetail', {requestId: swap.request_id})
             }>
-            <Text style={swapCards.link}>View Request</Text>
+            <Text style={styles.buttonSecondaryText}>View Request</Text>
           </TouchableOpacity>
         </View>
 
@@ -473,6 +479,10 @@ const look = StyleSheet.create({
     width: 18,
     height: 18,
     tintColor: '#484859',
+  },
+  requestButton: {
+    marginTop: 14,
+    marginBottom: 0,
   },
   eventCopy: {
     marginTop: 8,

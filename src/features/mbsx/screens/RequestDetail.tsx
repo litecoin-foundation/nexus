@@ -236,7 +236,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             <Text style={swapCards.amount} numberOfLines={1} adjustsFontSizeToFit>
               {request.amount_from}
             </Text>
-            <View style={swapCards.coinPill}>
+            <View style={[swapCards.coinPill, look.coinGap]}>
               {COIN_ICONS[request.coin_from] ? (
                 <Image
                   source={COIN_ICONS[request.coin_from]}
@@ -254,6 +254,24 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           <TimeLine
             text={`Expires ${formatTimestamp(request.expire_at)}`}
           />
+          <View style={look.idRow}>
+            <View style={look.idPill}>
+              <Text style={look.idLabel}>Request</Text>
+              <Text style={look.idValue} numberOfLines={1} selectable>
+                {request.id}
+              </Text>
+            </View>
+            <TouchableOpacity
+              testID="mbsx-request-id"
+              accessibilityLabel="Copy request id"
+              style={look.iconBtn}
+              onPress={() => Clipboard.setString(request.id)}>
+              <Image
+                source={require('../../../assets/icons/copy-icon.png')}
+                style={look.toolIcon}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={swapCards.flipWrap}>
@@ -272,7 +290,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             <Text style={swapCards.amount} numberOfLines={1} adjustsFontSizeToFit>
               {request.min_amount_to}
             </Text>
-            <View style={swapCards.coinPill}>
+            <View style={[swapCards.coinPill, look.coinGap]}>
               {COIN_ICONS[request.coin_to] ? (
                 <Image
                   source={COIN_ICONS[request.coin_to]}
@@ -287,7 +305,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           </Text>
         </View>
 
-        <Text style={swapCards.section}>Fees</Text>
+        <Text style={[swapCards.section, look.feesHeading]}>Fees</Text>
         <View style={swapCards.card}>
           {(request.fees ?? []).length === 0 ? (
             <Text style={swapCards.note}>No fees configured</Text>
@@ -454,7 +472,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               {status ? <Text style={styles.rowMessage}>{status}</Text> : null}
               {confirming ? (
                 <View testID="mbsx-accept-confirm">
-                  <Text style={[swapCards.note, look.confirmNote]}>
+                  <Text style={[swapCards.note, look.confirmNote, look.confirmBold]}>
                     {`Send ${offer.amount_send} ${offer.coin_send} for ${offer.amount_receive} ${offer.coin_receive}. The swap starts on its own once the offer is set up.`}
                   </Text>
                   {acceptError !== '' ? (
@@ -562,7 +580,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               </View>
             </View>
             {swap.fees_coin ? (
-              <View style={[look.feeRow, look.feeLine]}>
+              <View style={[look.feeRow, look.feeFirst]}>
                 <Text style={look.feeLabel}>Swap Fees</Text>
                 <Text style={look.feeValue}>
                   {`${swap.fees_total} ${swap.fees_coin}`}
@@ -574,8 +592,13 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
                 [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
               ] as [string, string | undefined, bigint][]
-            ).map(([coin, amount, feeRate]) => (
-              <View key={coin} style={[look.feeRow, look.feeLine]}>
+            ).map(([coin, amount, feeRate], index) => (
+              <View
+                key={coin}
+                style={[
+                  look.feeRow,
+                  swap.fees_coin || index > 0 ? look.feeLine : look.feeFirst,
+                ]}>
                 <Text style={look.feeLabel}>{`Chain fee ${coin}`}</Text>
                 <Text style={look.feeRate}>{`${feeRate} sat/kvB`}</Text>
                 <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
@@ -583,17 +606,6 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             ))}
           </TouchableOpacity>
         ))}
-
-        <TouchableOpacity
-          testID={`mbsx-request-id-${request.id}`}
-          style={look.idChip}
-          onPress={() => Clipboard.setString(request.id)}
-          accessibilityLabel="Copy request id">
-          <Text style={look.idLabel}>Request</Text>
-          <Text style={look.idValue} numberOfLines={1}>
-            {shortAddress(request.id)}
-          </Text>
-        </TouchableOpacity>
 
         <RemoveButton
           testID="mbsx-remove-request"
@@ -616,27 +628,44 @@ const look = StyleSheet.create({
     marginTop: 0,
     color: '#484859',
   },
-  idChip: {
-    marginTop: 16,
-    alignSelf: 'flex-start',
+  idRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 14,
+  },
+  idPill: {
+    flex: 1,
+    borderRadius: 22,
     backgroundColor: '#F4F7FB',
-    borderRadius: 14,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
   idLabel: {
     fontFamily: 'Satoshi Variable',
     fontWeight: '700',
     color: '#747E87',
     fontSize: 12,
-    marginRight: 8,
+    marginBottom: 2,
   },
   idValue: {
     fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
     color: '#484859',
-    fontSize: 13,
+    fontSize: 14,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F4F7FB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  toolIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#484859',
   },
   barTrack: {
     marginTop: 6,
@@ -694,6 +723,19 @@ const look = StyleSheet.create({
   },
   confirmNote: {
     marginTop: 12,
+  },
+  confirmBold: {
+    fontWeight: '700',
+    color: '#484859',
+  },
+  feesHeading: {
+    marginTop: 18,
+  },
+  coinGap: {
+    marginLeft: 16,
+  },
+  feeFirst: {
+    marginTop: 14,
   },
   feeRow: {
     flexDirection: 'row',

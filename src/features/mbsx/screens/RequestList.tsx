@@ -3,10 +3,12 @@ import {
   Image,
   RefreshControl,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -25,7 +27,7 @@ import {
   requestExpired,
   sortNewestFirst,
 } from '../adapter';
-import {depositTimeLeft, formatExpiry} from '../format';
+import {depositTimeLeft, formatExpiry, shortAddress} from '../format';
 import RemoveButton from '../components/RemoveButton';
 import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
@@ -224,7 +226,16 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                           : `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`
                       }
                     />
-                    <Text style={swapCards.id}>{request.id}</Text>
+                    <TouchableOpacity
+                      testID={`mbsx-request-id-${request.id}`}
+                      style={look.idChip}
+                      accessibilityLabel="Copy request id"
+                      onPress={() => Clipboard.setString(request.id)}>
+                      <Text style={look.idLabel}>Request</Text>
+                      <Text style={look.idValue} numberOfLines={1}>
+                        {shortAddress(request.id)}
+                      </Text>
+                    </TouchableOpacity>
                   </TouchableOpacity>
           ))
         )}
@@ -232,5 +243,30 @@ const RequestList: React.FC<Props> = ({navigation}) => {
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  idChip: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F4F7FB',
+    borderRadius: 14,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  idLabel: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#747E87',
+    fontSize: 12,
+    marginRight: 8,
+  },
+  idValue: {
+    fontFamily: 'Satoshi Variable',
+    color: '#484859',
+    fontSize: 13,
+  },
+});
 
 export default RequestList;

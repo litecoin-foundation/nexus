@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {
   Alert,
   Image,
@@ -43,6 +43,16 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   const [label, setLabel] = useState('');
   const [addressError, setAddressError] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+  const fieldY = useRef<Record<string, number>>({});
+  const showField = (key: string) => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y: Math.max((fieldY.current[key] ?? 0) - 12, 0),
+        animated: true,
+      });
+    }, 80);
+  };
 
   useEffect(() => {
     const showEvent =
@@ -117,6 +127,8 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   return (
     <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
+        ref={scrollRef}
+        automaticallyAdjustKeyboardInsets
         contentContainerStyle={[
           styles.scroll,
           {paddingBottom: bottom + keyboardHeight},
@@ -145,7 +157,11 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
           )}
         </View>
 
-        <View style={swapCards.card}>
+        <View
+          style={swapCards.card}
+          onLayout={event => {
+            fieldY.current.form = event.nativeEvent.layout.y;
+          }}>
           <Text style={styles.inputLabel}>{`${coin} address`}</Text>
           <View style={look.receiverRow}>
             <TextInput
@@ -203,6 +219,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
             placeholderTextColor="#9AA0AE"
             value={label}
             onChangeText={setLabel}
+            onFocus={() => showField('form')}
           />
         </View>
         <TouchableOpacity
@@ -223,13 +240,19 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
           </View>
         ) : (
           saved.map(entry => (
-            <View key={entry.address} style={swapCards.card}>
+            <View
+              key={entry.address}
+              style={swapCards.card}
+              onLayout={event => {
+                fieldY.current[entry.address] = event.nativeEvent.layout.y;
+              }}>
               <TextInput
                 testID={`mbsx-saved-label-${entry.address}`}
                 style={look.labelInput}
                 placeholder="Add a label"
                 placeholderTextColor="#9AA0AE"
                 defaultValue={entry.label}
+                onFocus={() => showField(entry.address)}
                 onEndEditing={event => {
                   const next = event.nativeEvent.text.trim();
                   if (next !== entry.label) {
@@ -243,9 +266,26 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
                   }
                 }}
               />
-              <Text style={swapCards.meta} selectable>
-                {entry.address}
-              </Text>
+              <View style={look.receiverRow}>
+                <View style={look.savedAddress}>
+                  <Text
+                    style={look.savedAddressText}
+                    numberOfLines={1}
+                    selectable>
+                    {entry.address}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  testID={`mbsx-copy-${entry.address}`}
+                  accessibilityLabel="Copy address"
+                  style={look.iconBtn}
+                  onPress={() => Clipboard.setString(entry.address)}>
+                  <Image
+                    source={require('../../../assets/icons/copy-icon.png')}
+                    style={look.toolIcon}
+                  />
+                </TouchableOpacity>
+              </View>
               <TouchableOpacity
                 testID={`mbsx-forget-${entry.address}`}
                 style={styles.buttonSecondary}
@@ -276,6 +316,20 @@ const look = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#484859',
+  },
+  savedAddress: {
+    flex: 1,
+    borderRadius: 22,
+    backgroundColor: '#F4F7FB',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    justifyContent: 'center',
+  },
+  savedAddressText: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
   },
   receiver: {
     flex: 1,

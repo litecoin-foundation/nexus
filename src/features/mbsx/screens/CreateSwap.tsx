@@ -30,7 +30,7 @@ import {
   setLastCoin,
 } from '../addressesSlice';
 import {COINS} from '../components/CoinSelector';
-import {COIN_COLORS, COIN_ICONS} from '../swapCards';
+import {COIN_ICONS, coinPlate} from '../swapCards';
 import {
   PAY_IN_COINS,
   createDeposit,
@@ -110,7 +110,7 @@ const CoinMark = ({ticker}: {ticker?: string}) => (
     style={[
       look.coinCircle,
       {
-        backgroundColor: ticker ? (COIN_COLORS[ticker] ?? '#C5C5CE') : '#F4F7FB',
+        backgroundColor: coinPlate(ticker),
         borderWidth: ticker ? 0 : 1,
         borderColor: '#D5DBE4',
       },
@@ -571,9 +571,14 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     coinChosen && from > 0 && to > 0
       ? `1 ${sendCoin} ≈ ${coinString(to / from)} ${receiveCoin}`
       : '';
-  const referenceLine =
+  const marketRate =
     coinChosen && priceFrom > 0 && priceTo > 0
-      ? `${reference ? reference.label : "Server's rate, not checked"}: 1 ${sendCoin} ≈ ${coinString(priceFrom / priceTo)} ${receiveCoin}`
+      ? `1 ${sendCoin} ≈ ${coinString(priceFrom / priceTo)} ${receiveCoin}`
+      : '';
+  const marketLabel = reference
+    ? reference.label
+    : marketRate
+      ? "Server's rate, not checked"
       : '';
   const feeLine =
     quote && quote.feeBps > 0
@@ -938,18 +943,34 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           )}
         </View>
 
-        {rateLine !== '' || feeLine !== '' || referenceLine !== '' ? (
+        {rateLine !== '' || feeLine !== '' || marketRate !== '' ? (
           <View testID="mbsx-quote" style={look.quote}>
             {rateLine !== '' ? (
-              <Text style={look.quoteText}>{rateLine}</Text>
+              <View style={look.quoteRow}>
+                <Text style={look.quoteLabel}>Rate</Text>
+                <Text style={look.quoteValue}>{rateLine}</Text>
+              </View>
             ) : null}
-            {referenceLine !== '' ? (
-              <Text testID="mbsx-reference" style={look.quoteText}>
-                {referenceLine}
-              </Text>
+            {marketRate !== '' ? (
+              <View
+                style={[
+                  look.quoteRow,
+                  rateLine !== '' ? look.quoteRowLine : null,
+                ]}>
+                <Text style={look.quoteLabel}>{marketLabel}</Text>
+                <Text testID="mbsx-reference" style={look.quoteValue}>
+                  {marketRate}
+                </Text>
+              </View>
             ) : null}
             {feeLine !== '' ? (
-              <Text style={look.quoteText}>{feeLine}</Text>
+              <Text
+                style={[
+                  look.quoteFee,
+                  rateLine !== '' || marketRate !== '' ? look.quoteRowLine : null,
+                ]}>
+                {feeLine}
+              </Text>
             ) : null}
           </View>
         ) : null}
@@ -1358,16 +1379,42 @@ const look = StyleSheet.create({
     marginTop: 6,
   },
   quote: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    paddingHorizontal: 4,
-    paddingTop: 4,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
   },
-  quoteText: {
+  quoteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  quoteRowLine: {
+    borderTopWidth: 1,
+    borderTopColor: '#EEF1F5',
+  },
+  quoteLabel: {
+    flexShrink: 1,
+    marginRight: 12,
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#747E87',
+    fontSize: 14,
+  },
+  quoteValue: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
+    textAlign: 'right',
+  },
+  quoteFee: {
     fontFamily: 'Satoshi Variable',
     color: '#747E87',
     fontSize: 13,
+    paddingVertical: 12,
   },
   advancedToggle: {
     flexDirection: 'row',

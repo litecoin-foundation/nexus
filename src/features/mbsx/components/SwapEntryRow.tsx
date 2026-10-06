@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {Pressable, StyleSheet} from 'react-native';
+import {SvgXml} from 'react-native-svg';
 import Animated, {
   Easing,
   Extrapolation,
@@ -22,6 +23,8 @@ import {
   GLASS_TAB_CORNER_RADIUS,
 } from '../../../components/glassTabLayout';
 import {swapInProgress} from '../adapter';
+
+const SWAP_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`;
 
 interface Props {
   onPress: () => void;
@@ -69,6 +72,7 @@ const SwapEntryRow: React.FC<Props> = ({
     transform: [{rotate: `${spin.value * 360}deg`}],
   }));
   const buttonHeight = SCREEN_HEIGHT * GLASS_TAB_BUTTON_HEIGHT_RATIO;
+  const iconSize = SCREEN_HEIGHT * 0.022;
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, buttonHeight);
 
   const {UNFOLD_SHEET_POINT, FOLD_SHEET_POINT} = getNewMainSheetPoints(
@@ -109,10 +113,9 @@ const SwapEntryRow: React.FC<Props> = ({
         accessibilityState={{busy: active}}
         onPress={onPress}
         style={({pressed}) => [styles.pill, pressed ? styles.pressed : null]}>
-        <Animated.Image
-          source={require('../../../assets/icons/switch-arrow.png')}
-          style={[styles.icon, iconSpin]}
-        />
+        <Animated.View style={iconSpin}>
+          <SvgXml xml={SWAP_ICON} width={iconSize} height={iconSize} />
+        </Animated.View>
         <Animated.Text style={styles.label} numberOfLines={1}>
           Swap
         </Animated.Text>
@@ -146,12 +149,6 @@ const getStyles = (
     },
     pressed: {
       opacity: 0.7,
-    },
-    icon: {
-      width: screenHeight * 0.022,
-      height: screenHeight * 0.022,
-      resizeMode: 'contain',
-      tintColor: '#ffffff',
     },
     label: {
       flexShrink: 1,

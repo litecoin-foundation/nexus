@@ -1,6 +1,7 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   ScrollView,
+  StyleSheet,
   Switch,
   Text,
   TextInput,
@@ -26,6 +27,8 @@ import {
   useUnsavedDraftGuard,
 } from '../settingsDraft';
 import type {ServerRow} from '../settingsDraft';
+import MbsxBackButton from '../components/MbsxBackButton';
+import {swapCards} from '../swapCards';
 import {getMbsxStyles} from '../theme';
 import type {MbsxDrawerParamList} from '../types';
 
@@ -47,6 +50,16 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
   useUnsavedDraftGuard(dirty, 'ElectrumServers');
+
+  useEffect(() => {
+    navigation.setOptions?.({
+      title: `${coin.toUpperCase()} servers`,
+      headerLeft: () => (
+        <MbsxBackButton onPress={() => navigation.navigate('MbsxSettings')} />
+      ),
+      headerTitleContainerStyle: {left: 7},
+    });
+  }, [navigation, coin]);
 
   useEffect(() => {
     if (!config) {
@@ -108,7 +121,6 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
-        <Text style={styles.section}>{`${coin.toUpperCase()} Servers`}</Text>
         <Text style={styles.inputLabel}>Kept Connected</Text>
         <TextInput
           testID="mbsx-servers-cap"
@@ -135,7 +147,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
               onPress={() =>
                 navigation.navigate('ElectrumServer', {coin, index})
               }>
-              <View style={styles.row}>
+              <View style={[swapCards.card, look.serverRow]}>
                 <View>
                   <Text style={styles.label}>
                     {server.url.replace(/^(tcp|ssl):\/\//, '') || 'New Server'}
@@ -199,5 +211,13 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  serverRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+});
 
 export default ElectrumServers;

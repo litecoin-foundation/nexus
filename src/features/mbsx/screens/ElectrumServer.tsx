@@ -1,7 +1,8 @@
-import React, {useCallback, useContext, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Alert,
   ScrollView,
+  StyleSheet,
   Switch,
   Text,
   TextInput,
@@ -42,6 +43,8 @@ import {
   useUnsavedDraftGuard,
 } from '../settingsDraft';
 import type {ServerRow} from '../settingsDraft';
+import MbsxBackButton from '../components/MbsxBackButton';
+import {swapCards} from '../swapCards';
 import {getMbsxStyles} from '../theme';
 import type {MbsxDrawerParamList} from '../types';
 
@@ -78,6 +81,18 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
 
   const server = config?.coins[coin]?.electrumx[index];
   const url = server?.url ?? '';
+  const pageTitle = url.replace(/^(tcp|ssl):\/\//, '') || 'New server';
+  useEffect(() => {
+    navigation.setOptions?.({
+      title: pageTitle,
+      headerLeft: () => (
+        <MbsxBackButton
+          onPress={() => navigation.navigate('ElectrumServers', {coin})}
+        />
+      ),
+      headerTitleContainerStyle: {left: 7},
+    });
+  }, [navigation, coin, pageTitle]);
   const target = serverHostPort(url);
   const modes =
     getNetwork() === 'regtest'
@@ -245,10 +260,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
-        <Text style={styles.section}>
-          {url.replace(/^(tcp|ssl):\/\//, '') || 'New Server'}
-        </Text>
-        <View style={styles.row}>
+        <View style={[styles.row, look.row]}>
           <Text style={styles.label}>Status</Text>
           <Text testID="mbsx-server-status" style={styles.value}>
             {[serverStateLabel(server, row), row?.version]
@@ -261,7 +273,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
             {row.error}
           </Text>
         ) : null}
-        <View style={styles.row}>
+        <View style={[styles.row, look.row]}>
           <Text style={styles.label}>Enabled</Text>
           <Switch
             testID="mbsx-server-enabled"
@@ -287,7 +299,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
 
         {url.startsWith('ssl://') ? (
           <>
-            <Text style={styles.section}>Certificate</Text>
+            <Text style={swapCards.section}>Certificate</Text>
             <Text style={styles.inputLabel}>Check</Text>
             <View style={styles.modeRow}>
               {modes.map(mode => {
@@ -313,7 +325,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               })}
             </View>
             {chainsChecked(server) ? (
-              <View style={styles.row}>
+              <View style={[styles.row, look.row]}>
                 <Text style={styles.label}>Verify Hostname</Text>
                 <Switch
                   testID="mbsx-server-verify-hostname"
@@ -395,11 +407,11 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
         <TouchableOpacity
           testID="mbsx-server-advanced"
           onPress={() => setAdvanced(open => !open)}>
-          <Text style={styles.section}>Advanced</Text>
+          <Text style={swapCards.section}>Advanced</Text>
         </TouchableOpacity>
         {advanced ? (
           <>
-            <View style={styles.row}>
+            <View style={[styles.row, look.row]}>
               <Text style={styles.label}>Verbose Transactions</Text>
               <Switch
                 testID="mbsx-server-verbose"
@@ -442,5 +454,13 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
     </View>
   );
 };
+
+const look = StyleSheet.create({
+  row: {
+    paddingHorizontal: 0,
+    borderTopWidth: 0,
+    backgroundColor: 'transparent',
+  },
+});
 
 export default ElectrumServer;

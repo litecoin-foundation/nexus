@@ -19,7 +19,7 @@ import {formatExpiry} from '../format';
 import {swapStateText} from '../stateText';
 import {colors} from '../theme';
 import {isSwapComplete, walletTitle} from '../walletText';
-import BasicSwapMark from './BasicSwapMark';
+import {BasicSwapWord} from './BasicSwapMark';
 import CoinPair from './CoinPair';
 
 const WALLET_FINISHED = 3;
@@ -86,8 +86,8 @@ const SwapRow = ({
             {sentence}
           </Text>
         )}
-        <View style={muted ? styles.mutedMark : null}>
-          <BasicSwapMark width={78} align="left" />
+        <View style={styles.mark}>
+          <BasicSwapWord />
         </View>
       </View>
       <View style={styles.amounts}>
@@ -183,7 +183,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     fontSize: 15,
-    marginBottom: 4,
+    flexShrink: 1,
+  },
+  mark: {
+    marginTop: 2,
+    marginBottom: 2,
   },
   sub: {
     fontFamily: 'Satoshi Variable',
@@ -194,9 +198,6 @@ const styles = StyleSheet.create({
   mutedText: {
     color: colors.textSecondary,
   },
-  mutedMark: {
-    opacity: 0.45,
-  },
   amounts: {
     alignItems: 'flex-end',
     marginLeft: 8,
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
   in: {
     fontFamily: 'Satoshi Variable',
     fontWeight: '700',
-    color: colors.primary,
+    color: '#1C8C45',
     fontSize: 13,
   },
   out: {

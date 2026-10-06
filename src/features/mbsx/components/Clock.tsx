@@ -1,17 +1,15 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import type {StyleProp, TextStyle} from 'react-native';
+import {SvgXml} from 'react-native-svg';
 
 const INK = '#747E87';
 
+const CLOCK = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${INK}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
+
 const Clock = () => (
-  <View style={styles.face} accessibilityLabel="Clock">
-    <View style={[styles.handWrap, {transform: [{rotate: '-55deg'}]}]}>
-      <View style={styles.hourHand} />
-    </View>
-    <View style={[styles.handWrap, {transform: [{rotate: '50deg'}]}]}>
-      <View style={styles.minuteHand} />
-    </View>
+  <View accessibilityLabel="Clock">
+    <SvgXml xml={CLOCK} width={16} height={16} />
   </View>
 );
 
@@ -35,35 +33,6 @@ export const TimeLine = ({
 );
 
 const styles = StyleSheet.create({
-  face: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1.25,
-    borderColor: INK,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  handWrap: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    alignItems: 'center',
-  },
-  hourHand: {
-    width: 1.25,
-    height: 3.5,
-    marginTop: 4,
-    borderRadius: 1,
-    backgroundColor: INK,
-  },
-  minuteHand: {
-    width: 1.25,
-    height: 5,
-    marginTop: 2.5,
-    borderRadius: 1,
-    backgroundColor: INK,
-  },
   line: {
     flexDirection: 'row',
     alignItems: 'center',

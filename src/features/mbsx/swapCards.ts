@@ -6,6 +6,23 @@ export const COIN_ICONS: Record<string, number> = {
   PART: require('../../assets/images/coins/part.png'),
   XMR: require('../../assets/images/coins/xmr.png'),
   FIRO: require('../../assets/images/coins/firo.png'),
+  BCH: require('../../assets/images/coins/bch.png'),
+  DASH: require('../../assets/images/coins/dash.png'),
+  DCR: require('../../assets/images/coins/dcr.png'),
+  DOGE: require('../../assets/images/coins/doge.png'),
+  PIVX: require('../../assets/images/coins/pivx.png'),
+  WOW: require('../../assets/images/coins/wow.png'),
+};
+
+export const coinPlate = (ticker?: string) => {
+  if (!ticker) {
+    return '#F4F7FB';
+  }
+  // These files already include their own badge, so a plate shows around them.
+  if (ticker === 'PART' || (COIN_ICONS[ticker] && !COIN_COLORS[ticker])) {
+    return 'transparent';
+  }
+  return COIN_COLORS[ticker] ?? '#C5C5CE';
 };
 
 export const COIN_COLORS: Record<string, string> = {
@@ -71,7 +88,7 @@ export const swapCards = StyleSheet.create({
   historyIn: {
     fontFamily: 'Satoshi Variable',
     fontWeight: '700',
-    color: '#484859',
+    color: '#1C8C45',
     fontSize: 13,
   },
   historyOut: {

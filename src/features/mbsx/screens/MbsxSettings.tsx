@@ -27,7 +27,7 @@ import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {readRateServices} from '../rates';
 import {getMbsxStyles} from '../theme';
-import {COIN_COLORS, COIN_ICONS, swapCards} from '../swapCards';
+import {COIN_ICONS, coinPlate, swapCards} from '../swapCards';
 import {setRunning} from '../mbsxSlice';
 import {
   PAY_IN_COINS,
@@ -470,7 +470,9 @@ const MbsxSettings: React.FC = () => {
                   <View
                     style={[
                       look.coinCircle,
-                      {backgroundColor: COIN_COLORS[ticker] ?? '#C5C5CE'},
+                      {
+                        backgroundColor: coinPlate(ticker),
+                      },
                     ]}>
                     {COIN_ICONS[ticker] ? (
                       <Image
@@ -583,7 +585,7 @@ const MbsxSettings: React.FC = () => {
             })}
         </View>
 
-        <Text style={swapCards.section}>Coin Rate Services</Text>
+        <Text style={[swapCards.section, look.blockTitle]}>Coin Rate Services</Text>
         <View style={swapCards.card}>
           <TouchableOpacity
             testID="mbsx-rate-services"
@@ -650,7 +652,7 @@ const MbsxSettings: React.FC = () => {
               </Text>
             </View>
 
-            <Text style={styles.section}>Bridge</Text>
+            <Text style={[swapCards.section, look.blockTitle]}>Bridge</Text>
             <Text style={styles.inputLabel}>Pubkey</Text>
             <TextInput
               style={styles.input}
@@ -675,7 +677,7 @@ const MbsxSettings: React.FC = () => {
               keyboardType="numeric"
             />
 
-            <Text style={styles.section}>Electrum Servers</Text>
+            <Text style={[swapCards.section, look.blockTitle]}>Electrum Servers</Text>
             <Text style={styles.inputLabel}>Kept Connected per Coin</Text>
             <TextInput
               testID="mbsx-max-electrum-servers"
@@ -692,7 +694,7 @@ const MbsxSettings: React.FC = () => {
               keyboardType="numeric"
             />
 
-            <Text style={styles.section}>Certificates</Text>
+            <Text style={[swapCards.section, look.blockTitle]}>Certificates</Text>
             <Text style={styles.value}>
               Trust anchors for the optional and strict checks. Naming a server
               confines the certificate to it, and replaces the built in roots
@@ -791,6 +793,10 @@ const look = StyleSheet.create({
   rowLabel: {
     flex: 1,
     marginRight: 12,
+  },
+  blockTitle: {
+    marginTop: 22,
+    marginBottom: 12,
   },
   note: {
     fontFamily: 'Satoshi Variable',
