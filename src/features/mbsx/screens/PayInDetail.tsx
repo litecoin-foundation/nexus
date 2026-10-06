@@ -22,10 +22,12 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
+import {useAppSelector} from '../../../store/hooks';
 import {triggerLightFeedback} from '../../../utils/haptic';
 import {depositTimeLeft} from '../format';
+import {independentReference, refreshRates, type Reference} from '../rates';
 import {getMbsxStyles} from '../theme';
-import {coinString, slippageFor} from '../useSwapAmounts';
+import {RATE_TOLERANCE, coinString, slippageFor} from '../useSwapAmounts';
 import CoinPair from '../components/CoinPair';
 import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
@@ -57,10 +59,20 @@ const CANCELLABLE = new Set([
   'REQUESTED',
 ]);
 
-const suggestedFloor = (deposit: Deposit) => {
+type Prices = {from: number; to: number};
+
+const payInPrices = (deposit: Deposit, reference: Reference | null): Prices => {
+  if (reference) {
+    return {from: reference.send, to: reference.receive};
+  }
   const prices = getCoinPrices()?.prices;
-  const from = Number(prices?.[deposit.coin]);
-  const to = Number(prices?.[deposit.coin_to]);
+  return {
+    from: Number(prices?.[deposit.coin]),
+    to: Number(prices?.[deposit.coin_to]),
+  };
+};
+
+const suggestedFloor = (deposit: Deposit, {from, to}: Prices) => {
   if (!from || !to) {
     return '';
   }
@@ -95,6 +107,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const {depositId} = route.params;
   const [loaded, setLoaded] = useState<Deposit | null>(null);
   const [floor, setFloor] = useState('');
+  const rates = useAppSelector(state => state.mbsx.rates);
   const [error, setError] = useState('');
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [offerWaiting, setOfferWaiting] = useState(false);
@@ -166,17 +179,45 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   useFocusEffect(
     useCallback(() => {
       fetchDeposit();
+      refreshRates();
       const timer = setInterval(fetchDeposit, 3000);
       return () => clearInterval(timer);
     }, [fetchDeposit]),
   );
 
   const paused = deposit !== null && PAUSED.has(deposit.state);
+  const reference = deposit
+    ? independentReference(
+        rates,
+        deposit.coin,
+        deposit.coin_to,
+        Date.now() / 1000,
+      )
+    : null;
+  const prices = deposit && paused ? payInPrices(deposit, reference) : null;
+  const suggestion = deposit && prices ? suggestedFloor(deposit, prices) : '';
+  const lastSuggestion = useRef('');
   useEffect(() => {
-    if (deposit && paused && floor === '') {
-      setFloor(suggestedFloor(deposit));
+    if (
+      suggestion !== '' &&
+      (floor === '' || floor === lastSuggestion.current)
+    ) {
+      setFloor(suggestion);
     }
-  }, [deposit, paused, floor]);
+    lastSuggestion.current = suggestion;
+  }, [suggestion, floor]);
+  const priceLine =
+    deposit && prices && prices.from > 0 && prices.to > 0
+      ? `${reference ? reference.label : "Server's rate, not checked"}: 1 ${
+          deposit.coin
+        } ≈ ${coinString(prices.from / prices.to)} ${deposit.coin_to}`
+      : '';
+  const floorShortfall =
+    deposit && reference && Number(floor) > 0
+      ? 1 -
+        Number(floor) /
+          ((Number(deposit.received) * reference.send) / reference.receive)
+      : 0;
 
   if (!deposit) {
     return <View style={styles.container} />;
@@ -366,6 +407,18 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 placeholder={`${deposit.coin_to} to receive`}
                 keyboardType="decimal-pad"
               />
+              {priceLine ? (
+                <Text testID="mbsx-payin-rate" style={swapCards.note}>
+                  {priceLine}
+                </Text>
+              ) : null}
+              {reference && floorShortfall > RATE_TOLERANCE ? (
+                <Text testID="mbsx-payin-floor-warning" style={styles.error}>
+                  {`This minimum is ${Math.round(
+                    floorShortfall * 100,
+                  )}% below the ${reference.label}.`}
+                </Text>
+              ) : null}
               <TouchableOpacity
                 testID="mbsx-payin-request-again"
                 style={[
