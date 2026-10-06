@@ -11,6 +11,7 @@ import {
   getSwapInfo,
   getVersion,
   isRunning,
+  listDeposits,
   listRequests,
   listSwaps,
   readConfig,
@@ -29,6 +30,7 @@ export const EXPORT_CONTENTS = [
   'Your public identity keyid on the swap server, which links all your activity there',
   'Your mbsx settings, including the servers it connects to',
   'Every swap and request: amounts, coins, states and on-chain ids',
+  'Every pay-in deposit: its address, amounts and state, and the refund and receive addresses',
   'The recent event log',
   "The app's own native log, which is detailed and may name addresses",
 ];
@@ -43,6 +45,8 @@ const NEVER_EXPORTED = [
   'the mbsx database, which holds encrypted key material',
   'lnd wallet keys',
 ];
+
+const NATIVE_LOG_LINES = 20000;
 
 const section = (title: string, body: string) =>
   `\n## ${title}\n${body.trimEnd()}\n`;
@@ -117,6 +121,16 @@ export const buildReport = async (
     ),
   );
 
+  const deposits = listDeposits();
+  parts.push(
+    section(
+      `deposits (${deposits?.length ?? 'unreadable'})`,
+      deposits === null
+        ? 'not readable'
+        : deposits.map(d => stringifyRpc(d)).join('\n\n'),
+    ),
+  );
+
   parts.push(
     section(
       `events (${messages.length})`,
@@ -142,7 +156,7 @@ export const buildReport = async (
  */
 export const exportLogs = async (messages: MbsxMessage[]): Promise<void> => {
   const path = `${RNFS.CachesDirectoryPath}/mbsx-debug-${Date.now()}.txt`;
-  const report = await buildReport(messages, await readLog());
+  const report = await buildReport(messages, await readLog(NATIVE_LOG_LINES));
   await RNFS.writeFile(path, report, 'utf8');
   try {
     await Share.open({
