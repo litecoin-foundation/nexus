@@ -17,6 +17,7 @@ import {
   removePinnedCert,
 } from '../adapter';
 
+jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({addListener: () => () => {}, navigate: jest.fn()}),
   useFocusEffect: (effect: () => void | (() => void)) =>

@@ -334,7 +334,7 @@ describe('CreateSwap', () => {
     });
     try {
       const now = Math.floor(Date.now() / 1000);
-      const {getByTestId} = renderScreen(false, {
+      const {getByTestId, getByText} = renderScreen(false, {
         LTC: {usd: 80, source: 'coingecko', at: now},
         BTC: {usd: 100000, source: 'coinpaprika', at: now},
       });
@@ -343,8 +343,9 @@ describe('CreateSwap', () => {
       fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
 
       expect(getByTestId('mbsx-amount-to').props.value).toBe('0.000792');
+      expect(getByText('CoinGecko and CoinPaprika rate')).toBeTruthy();
       expect(getByTestId('mbsx-reference')).toHaveTextContent(
-        'CoinGecko and CoinPaprika rate: 1 LTC ≈ 0.0008 BTC',
+        '1 LTC ≈ 0.0008 BTC',
       );
       expect(getByTestId('mbsx-server-price-note')).toHaveTextContent(
         "The server's prices differ from the CoinGecko and CoinPaprika rate by 150%.",
@@ -362,7 +363,7 @@ describe('CreateSwap', () => {
     });
     try {
       const old = Math.floor(Date.now() / 1000) - 301;
-      const {getByTestId, queryByTestId} = renderScreen(false, {
+      const {getByTestId, getByText, queryByTestId} = renderScreen(false, {
         LTC: {usd: 80, source: 'coingecko', at: old},
         BTC: {usd: 100000, source: 'coingecko', at: old},
       });
@@ -371,8 +372,9 @@ describe('CreateSwap', () => {
       fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
 
       expect(getByTestId('mbsx-amount-to').props.value).toBe('0.00198');
+      expect(getByText("Server's rate, not checked")).toBeTruthy();
       expect(getByTestId('mbsx-reference')).toHaveTextContent(
-        "Server's rate, not checked: 1 LTC ≈ 0.002 BTC",
+        '1 LTC ≈ 0.002 BTC',
       );
       expect(queryByTestId('mbsx-server-price-note')).toBeNull();
     } finally {
