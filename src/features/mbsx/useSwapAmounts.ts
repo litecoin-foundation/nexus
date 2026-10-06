@@ -20,6 +20,9 @@ export const slippageFor = (maxMarginBps?: bigint | number): number =>
 
 export const RATE_TOLERANCE = 0.05;
 
+export const UNCHECKED_RATE =
+  "This offer is not checked against an independent rate, only the swap server's.";
+
 export type SwapAmounts = {
   fromCoin: string;
   fromUsd: string;
@@ -44,6 +47,7 @@ export const offerWarning = (
     market_amount_receive?: string;
   },
   reference?: Reference | null,
+  requireReference = false,
 ): string | null => {
   const got = num(offer.amount_receive);
   if (got === null) {
@@ -62,15 +66,18 @@ export const offerWarning = (
       : null;
   }
   const market = num(offer.market_amount_receive ?? '');
-  if (market === null) {
-    return null;
-  }
-  const deviation = got / market - 1;
-  return Math.abs(deviation) > RATE_TOLERANCE
-    ? `You would receive ${percent(deviation)}% ${
-        deviation < 0 ? 'less' : 'more'
-      } than the server's rate.`
-    : null;
+  const deviation = market === null ? 0 : got / market - 1;
+  const serverWarning =
+    Math.abs(deviation) > RATE_TOLERANCE
+      ? `You would receive ${percent(deviation)}% ${
+          deviation < 0 ? 'less' : 'more'
+        } than the server's rate.`
+      : null;
+  return (
+    [requireReference ? UNCHECKED_RATE : null, serverWarning]
+      .filter(Boolean)
+      .join(' ') || null
+  );
 };
 
 export const coinString = (n: number | null): string => {

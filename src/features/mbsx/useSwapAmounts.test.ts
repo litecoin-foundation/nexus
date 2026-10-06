@@ -1,4 +1,9 @@
-import {DEFAULT_SLIPPAGE, offerWarning, slippageFor} from './useSwapAmounts';
+import {
+  DEFAULT_SLIPPAGE,
+  UNCHECKED_RATE,
+  offerWarning,
+  slippageFor,
+} from './useSwapAmounts';
 
 describe('slippageFor', () => {
   it('follows the glue up to the 5% cap, and 1% until it says', () => {
@@ -36,6 +41,16 @@ describe('offerWarning', () => {
     );
     expect(offerWarning(offer('0', '1'), reference)).toBe(
       'You would receive nothing for this offer.',
+    );
+  });
+
+  it('says when no independent rate checked the offer', () => {
+    expect(offerWarning(offer('1', '1'), null, true)).toBe(UNCHECKED_RATE);
+    expect(offerWarning(offer('0.9', '1'), null, true)).toBe(
+      `${UNCHECKED_RATE} You would receive 10% less than the server's rate.`,
+    );
+    expect(offerWarning(offer('0.00072'), reference, true)).toBe(
+      'You would receive 10% less than the CoinGecko rate.',
     );
   });
 });

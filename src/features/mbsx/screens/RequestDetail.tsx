@@ -27,7 +27,8 @@ import {
   kindLabel,
   shortAddress,
 } from '../format';
-import {independentReference} from '../rates';
+import {getNetwork} from '../network';
+import {independentReference, refreshRates} from '../rates';
 import {getMbsxStyles} from '../theme';
 import {coinString, offerWarning} from '../useSwapAmounts';
 import CoinPair from '../components/CoinPair';
@@ -96,6 +97,11 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const [acknowledged, setAcknowledged] = useState<string[]>([]);
   const rates = useAppSelector(state => state.mbsx.rates);
 
+  useEffect(() => {
+    setPendingOffer(null);
+    setAcceptError('');
+  }, [requestId]);
+
   const fetchRequest = useCallback(() => {
     const rv = getRequestInfo(requestId);
     if (!rv || rv.error === BUSY) {
@@ -112,6 +118,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   useFocusEffect(
     useCallback(() => {
       fetchRequest();
+      refreshRates();
       const subscription = onMessage(fetchRequest);
       return () => subscription.remove();
     }, [fetchRequest]),
@@ -330,6 +337,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               offer.coin_receive,
               Date.now() / 1000,
             ),
+            // Real prices mean nothing for regtest coins, so none are fetched
+            getNetwork() !== 'regtest',
           );
           const shortfall = offer.below_minimum
             ? `You would receive ${offer.shortfall} ${offer.coin_receive} less than your minimum.`
@@ -341,7 +350,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           const warning =
             [shortfall, shortLock, rateWarning].filter(Boolean).join(' ') ||
             null;
-          const held = warning !== null && !acknowledged.includes(offer.id);
+          const ackKey = `${offer.id}:${warning}`;
+          const held = warning !== null && !acknowledged.includes(ackKey);
           const status = offerStatus(offer);
           const kind = kindLabel(offer.kind);
           const open = live(offer);
@@ -403,8 +413,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 <TouchableOpacity
                   testID={`mbsx-offer-warning-${offer.id}`}
                   onPress={() =>
-                    setAcknowledged(ids =>
-                      ids.includes(offer.id) ? ids : [...ids, offer.id],
+                    setAcknowledged(keys =>
+                      keys.includes(ackKey) ? keys : [...keys, ackKey],
                     )
                   }>
                   <Text style={styles.error}>

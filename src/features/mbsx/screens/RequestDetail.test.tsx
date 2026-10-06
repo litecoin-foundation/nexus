@@ -1,11 +1,12 @@
 import React from 'react';
-import {fireEvent, render} from '@testing-library/react-native';
+import {act, fireEvent, render} from '@testing-library/react-native';
 import {Provider} from 'react-redux';
-import {configureStore} from '@reduxjs/toolkit';
+import {configureStore, type UnknownAction} from '@reduxjs/toolkit';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import RequestDetail from './RequestDetail';
 import {getRequestInfo} from '../adapter';
+import {UNCHECKED_RATE} from '../useSwapAmounts';
 
 jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (effect: () => void | (() => void)) =>
@@ -67,9 +68,12 @@ const renderRequest = (
     offers,
   });
   const store = configureStore({
-    reducer: {mbsx: (state = {rates}) => state},
+    reducer: {
+      mbsx: (state = {rates}, action: UnknownAction) =>
+        action.type === 'rates' ? {rates: action.rates as typeof rates} : state,
+    },
   });
-  return render(
+  const view = render(
     <Provider store={store}>
       <ScreenSizeContext.Provider value={screenSize}>
         <RequestDetail
@@ -79,15 +83,25 @@ const renderRequest = (
       </ScreenSizeContext.Provider>
     </Provider>,
   );
+  return Object.assign(view, {
+    setRates: (next: object) =>
+      act(() => {
+        store.dispatch({type: 'rates', rates: next});
+      }),
+  });
+};
+
+const freshRates = () => {
+  const now = Math.floor(Date.now() / 1000);
+  return {
+    LTC: {usd: 80, source: 'coingecko', at: now},
+    BTC: {usd: 100000, source: 'coingecko', at: now},
+  };
 };
 
 describe('RequestDetail', () => {
   it('holds Accept on a warned offer until the warning is tapped', () => {
-    const now = Math.floor(Date.now() / 1000);
-    const view = renderRequest({
-      LTC: {usd: 80, source: 'coingecko', at: now},
-      BTC: {usd: 100000, source: 'coingecko', at: now},
-    });
+    const view = renderRequest(freshRates());
 
     expect(view.getByTestId('mbsx-offer-warning-low')).toHaveTextContent(
       'You would receive 10% less than the CoinGecko rate. Tap this warning to accept anyway.',
@@ -110,7 +124,7 @@ describe('RequestDetail', () => {
       lock_time,
       short_lock,
     });
-    const view = renderRequest({}, [
+    const view = renderRequest(freshRates(), [
       bridged('brief', 9000, true),
       bridged('long', 172800, false),
     ]);
@@ -124,5 +138,25 @@ describe('RequestDetail', () => {
 
     fireEvent.press(view.getByTestId('mbsx-offer-warning-brief'));
     expect(view.getByTestId('mbsx-accept-brief')).toBeEnabled();
+  });
+
+  it('holds an offer no independent rate checks, and again when its warning changes', () => {
+    const view = renderRequest();
+
+    expect(view.getByTestId('mbsx-offer-warning-low')).toHaveTextContent(
+      `${UNCHECKED_RATE} Tap this warning to accept anyway.`,
+    );
+    expect(view.getByTestId('mbsx-accept-low')).toBeDisabled();
+    expect(view.getByTestId('mbsx-accept-fair')).toBeDisabled();
+    fireEvent.press(view.getByTestId('mbsx-offer-warning-low'));
+    expect(view.getByTestId('mbsx-accept-low')).toBeEnabled();
+
+    view.setRates(freshRates());
+    expect(view.getByTestId('mbsx-offer-warning-low')).toHaveTextContent(
+      'You would receive 10% less than the CoinGecko rate. Tap this warning to accept anyway.',
+    );
+    expect(view.getByTestId('mbsx-accept-low')).toBeDisabled();
+    expect(view.queryByTestId('mbsx-offer-warning-fair')).toBeNull();
+    expect(view.getByTestId('mbsx-accept-fair')).toBeEnabled();
   });
 });
