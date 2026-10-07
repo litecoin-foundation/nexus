@@ -9,6 +9,7 @@ import type {
   MbsxCoinPrices,
   MbsxInfo,
   MbsxSettings,
+  OffersEstimate,
   SwapDetails,
   SwapRequestDetails,
   SwapRequestSummary,
@@ -778,6 +779,30 @@ export const createDeposit = (data: {
     throw new Error(rv.error);
   }
   return rv;
+};
+
+export type OffersEstimateRequest = {
+  coin_from: string;
+  amount_from: string;
+  coin_to: string;
+  min_amount_to: string;
+};
+
+export const requestOffersEstimate = (
+  data: OffersEstimateRequest,
+): MbsxResult<{message_id?: string; retry_in?: bigint}> => {
+  if (!isRunning()) {
+    return {error: 'Swaps are not running'};
+  }
+  return NitroBSX.requestOffersEstimate(data) as MbsxResult<{
+    message_id?: string;
+    retry_in?: bigint;
+  }>;
+};
+
+export const getOffersEstimate = (messageId: string): OffersEstimate | null => {
+  const rv = NitroBSX.getOffersEstimate(messageId) as MbsxResult<OffersEstimate>;
+  return rv.error ? null : rv;
 };
 
 export const cancelDeposit = (depositId: string) => {

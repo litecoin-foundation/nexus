@@ -43,6 +43,14 @@ export type Deposit = {
   sweep_txid?: string;
 };
 
+export type OffersEstimate = {
+  state: 'waiting' | 'answered' | 'none';
+  num_private?: bigint;
+  num_providers?: bigint;
+  num_bridged?: bigint;
+  num_below_minimum?: bigint;
+};
+
 // Integers cross from the module as int64 and arrive as bigint, so these are
 // not numbers and cannot be mixed with one.
 export type MbsxFee = {

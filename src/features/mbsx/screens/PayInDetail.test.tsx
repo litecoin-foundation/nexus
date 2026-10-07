@@ -25,6 +25,7 @@ jest.mock('@react-navigation/native', () => ({
     const {useEffect} = require('react');
     useEffect(effect, [effect]);
   },
+  useIsFocused: () => true,
 }));
 
 jest.spyOn(Keyboard, 'addListener').mockReturnValue({remove: jest.fn()} as any);
@@ -39,12 +40,14 @@ jest.mock('../adapter', () => ({
   cancelDeposit: jest.fn(),
   getCoinPrices: jest.fn(() => null),
   getInfo: () => ({max_margin_bps: 100}),
+  getOffersEstimate: jest.fn(),
   getRequestInfo: jest.fn(),
   getSwapInfo: jest.fn(),
   isUnderwayState: jest.fn(() => false),
   listDeposits: jest.fn(),
   readConfig: () => Promise.resolve(null),
   requestDepositAgain: jest.fn(),
+  requestOffersEstimate: jest.fn(() => ({error: 'not running'})),
 }));
 
 const screenSize = {width: 400, height: 800};
@@ -103,6 +106,48 @@ describe('PayInDetail', () => {
       '0.00400000 BTC',
     );
     expect(queryByTestId('mbsx-payin-ended')).toBeNull();
+  });
+
+  it('shows what an unpaid pay-in would be offered, and warns when nothing would', async () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.requestOffersEstimate.mockReturnValue({message_id: 'e1'});
+    adapter.getOffersEstimate.mockReturnValue({
+      state: 'answered',
+      num_private: 0n,
+      num_providers: 1n,
+      num_bridged: 2n,
+      num_below_minimum: 1n,
+    });
+    try {
+      const shown = renderScreen(deposit({}));
+      expect(await shown.findByTestId('mbsx-payin-estimate')).toHaveTextContent(
+        'Offers Now: 2 bridged (1 below your minimum)',
+      );
+      expect(shown.getByText('1 market maker will be asked.')).toBeTruthy();
+      expect(shown.queryByTestId('mbsx-payin-no-offers')).toBeNull();
+      expect(adapter.requestOffersEstimate).toHaveBeenCalledWith({
+        coin_from: 'BTC',
+        amount_from: '0.01000000',
+        coin_to: 'LTC',
+        min_amount_to: '1.00000000',
+      });
+      shown.unmount();
+
+      adapter.getOffersEstimate.mockReturnValue({state: 'answered'});
+      const empty = renderScreen(deposit({}));
+      expect(await empty.findByTestId('mbsx-payin-no-offers')).toBeTruthy();
+      empty.unmount();
+
+      adapter.requestOffersEstimate.mockReturnValue({error: 'not running'});
+      const none = renderScreen(deposit({}));
+      expect(await none.findByTestId('mbsx-payin-estimate')).toHaveTextContent(
+        'Offers Now: No estimate, the swap server did not answer',
+      );
+      expect(none.queryByTestId('mbsx-payin-no-offers')).toBeNull();
+    } finally {
+      adapter.requestOffersEstimate.mockReturnValue({error: 'not running'});
+      adapter.getOffersEstimate.mockReset();
+    }
   });
 
   it('stops asking for payment once the pay-in has ended', async () => {

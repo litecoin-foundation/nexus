@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useIsFocused} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
@@ -28,6 +28,13 @@ import {depositTimeLeft} from '../format';
 import {independentReference, refreshRates, type Reference} from '../rates';
 import {getMbsxStyles} from '../theme';
 import {RATE_TOLERANCE, coinString, slippageFor} from '../useSwapAmounts';
+import {
+  NO_OFFERS_WARNING,
+  offersAvailable,
+  offersEstimateText,
+  providersText,
+  useOffersEstimate,
+} from '../useOffersEstimate';
 import CoinPair from '../components/CoinPair';
 import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
@@ -186,6 +193,19 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   );
 
   const paused = deposit !== null && PAUSED.has(deposit.state);
+  const focused = useIsFocused();
+  const estimate = useOffersEstimate(
+    focused && deposit?.state === 'WAITING'
+      ? {
+          coin_from: deposit.coin,
+          amount_from: deposit.amount_due,
+          coin_to: deposit.coin_to,
+          min_amount_to: deposit.min_amount_to,
+        }
+      : null,
+    true,
+  );
+  const providersLine = providersText(estimate);
   const reference = deposit
     ? independentReference(
         rates,
@@ -326,6 +346,21 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
               This pay-in has ended, so don't pay into its address. Anything it
               received goes back to your refund address.
             </Text>
+          </View>
+        ) : null}
+        {deposit.state === 'WAITING' ? (
+          <View style={swapCards.card}>
+            <Text testID="mbsx-payin-estimate" style={swapCards.note}>
+              {`Offers Now: ${offersEstimateText(estimate)}`}
+            </Text>
+            {providersLine ? (
+              <Text style={swapCards.historySub}>{providersLine}</Text>
+            ) : null}
+            {estimate?.state === 'answered' && !offersAvailable(estimate) ? (
+              <Text testID="mbsx-payin-no-offers" style={styles.error}>
+                {NO_OFFERS_WARNING}
+              </Text>
+            ) : null}
           </View>
         ) : null}
         <Text style={swapCards.section}>Received</Text>

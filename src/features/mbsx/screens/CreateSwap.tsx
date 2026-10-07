@@ -57,6 +57,13 @@ import {
   slippageFor,
   useSwapAmounts,
 } from '../useSwapAmounts';
+import {
+  NO_OFFERS_WARNING,
+  offersAvailable,
+  offersEstimateText,
+  providersText,
+  useOffersEstimate,
+} from '../useOffersEstimate';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
@@ -602,6 +609,24 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setConfirming(false);
   }, [amountFrom, amountTo, addressTo, coinTo, payIn, buyCoin, buyAddress]);
 
+  const estimate = useOffersEstimate(
+    confirming && payIn && coinTo
+      ? {
+          coin_from: coinTo,
+          amount_from: amountFrom,
+          coin_to: buyCoin,
+          min_amount_to: amountTo,
+        }
+      : null,
+  );
+  const [noOffersAcknowledged, setNoOffersAcknowledged] = useState(false);
+  useEffect(() => {
+    setNoOffersAcknowledged(false);
+  }, [confirming]);
+  const noOffers =
+    payIn && estimate?.state === 'answered' && !offersAvailable(estimate);
+  const providersLine = providersText(estimate);
+
   const confirmSwap = () => {
     if (
       !coinTo ||
@@ -1091,6 +1116,33 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               <Text style={look.confirmLine}>{rateLine}</Text>
             ) : null}
             {feeLine ? <Text style={look.confirmLine}>{feeLine}</Text> : null}
+            {payIn ? (
+              <>
+                <Text testID="mbsx-offers-estimate" style={look.confirmLine}>
+                  {`Offers Now: ${offersEstimateText(estimate)}`}
+                </Text>
+                {providersLine ? (
+                  <Text style={look.confirmLine}>{providersLine}</Text>
+                ) : null}
+                <Text style={look.confirmNote}>
+                  An estimate: offers can be withdrawn before your payment
+                  confirms.
+                </Text>
+              </>
+            ) : null}
+            {noOffers ? (
+              <TouchableOpacity
+                testID="mbsx-no-offers-warning"
+                onPress={() => setNoOffersAcknowledged(true)}>
+                <Text style={styles.error}>
+                  {`${NO_OFFERS_WARNING}${
+                    noOffersAcknowledged
+                      ? ''
+                      : ' Tap this warning to continue anyway.'
+                  }`}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         ) : null}
         {confirming ? (
@@ -1108,10 +1160,14 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 styles.button,
                 look.submit,
                 look.confirmAction,
-                busy || blockNote !== '' ? styles.buttonDisabled : null,
+                busy || blockNote !== '' || (noOffers && !noOffersAcknowledged)
+                  ? styles.buttonDisabled
+                  : null,
               ]}
               onPress={() => void submit()}
-              disabled={busy || blockNote !== ''}>
+              disabled={
+                busy || blockNote !== '' || (noOffers && !noOffersAcknowledged)
+              }>
               <Text style={styles.buttonText}>
                 {busy ? 'Requesting…' : 'Get Offers'}
               </Text>
@@ -1487,6 +1543,12 @@ const look = StyleSheet.create({
     fontFamily: 'Satoshi Variable',
     fontSize: 14,
     color: '#484859',
+    marginTop: 4,
+  },
+  confirmNote: {
+    fontFamily: 'Satoshi Variable',
+    fontSize: 12,
+    color: '#747E87',
     marginTop: 4,
   },
   confirmActions: {

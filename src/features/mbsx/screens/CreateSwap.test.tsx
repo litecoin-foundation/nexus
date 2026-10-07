@@ -37,12 +37,14 @@ jest.mock('../adapter', () => ({
   createDeposit: jest.fn(),
   getCoinPrices: jest.fn(() => null),
   getInfo: jest.fn(() => null),
+  getOffersEstimate: jest.fn(),
   getSwapFundingOutputs: jest.fn(() => ({error: 'not running'})),
   isRunning: jest.fn(() => false),
   parseAmount: () => 0n,
   readConfig: () => Promise.resolve(null),
   recordLeases: jest.fn(),
   releasePrevouts: jest.fn(),
+  requestOffersEstimate: jest.fn(() => ({error: 'not running'})),
   requestSwap: jest.fn(),
   selectAndLeasePrevouts: jest.fn(),
   serialisePrevout: jest.fn(),
@@ -241,6 +243,61 @@ describe('CreateSwap', () => {
       adapter.getInfo.mockReturnValue(null);
       adapter.isRunning.mockReturnValue(false);
       adapter.validateAddress.mockImplementation(() => true);
+    }
+  });
+
+  it('holds a pay-in no offer would take until the warning is tapped', async () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.createDeposit.mockClear();
+    const bridged = {bridge_supported: true};
+    adapter.getInfo.mockReturnValue({
+      connected: true,
+      coins: {LTC: bridged, BTC: bridged, PART: bridged, FIRO: bridged},
+    });
+    adapter.isRunning.mockReturnValue(true);
+    adapter.createDeposit.mockReturnValueOnce({deposit_id: 'd1'});
+    adapter.requestOffersEstimate.mockReturnValue({message_id: 'e1'});
+    adapter.getOffersEstimate.mockReturnValue({
+      state: 'answered',
+      num_private: 0n,
+      num_providers: 0n,
+      num_bridged: 0n,
+      num_below_minimum: 0n,
+    });
+    try {
+      const {getByTestId} = renderScreen(true);
+      fireEvent.press(getByTestId('mbsx-flip'));
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      fireEvent.press(getByTestId('mbsx-buy-pill'));
+      fireEvent.press(getByTestId('mbsx-buy-PART'));
+      fireEvent.changeText(getByTestId('mbsx-address-to'), 'refund');
+      fireEvent.changeText(getByTestId('mbsx-buy-address'), 'part-dest');
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+      fireEvent.changeText(getByTestId('mbsx-amount-to'), '2');
+      fireEvent.press(getByTestId('mbsx-submit'));
+
+      await waitFor(() =>
+        expect(getByTestId('mbsx-offers-estimate')).toHaveTextContent(
+          'Offers Now: None',
+        ),
+      );
+      expect(adapter.requestOffersEstimate).toHaveBeenCalledWith({
+        coin_from: 'BTC',
+        amount_from: '1',
+        coin_to: 'PART',
+        min_amount_to: '2',
+      });
+      expect(getByTestId('mbsx-submit')).toBeDisabled();
+      fireEvent.press(getByTestId('mbsx-no-offers-warning'));
+      expect(getByTestId('mbsx-submit')).not.toBeDisabled();
+      fireEvent.press(getByTestId('mbsx-submit'));
+      await waitFor(() => expect(adapter.createDeposit).toHaveBeenCalled());
+    } finally {
+      adapter.getInfo.mockReturnValue(null);
+      adapter.isRunning.mockReturnValue(false);
+      adapter.requestOffersEstimate.mockReturnValue({error: 'not running'});
+      adapter.getOffersEstimate.mockReset();
     }
   });
 
