@@ -275,10 +275,15 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setFeeNote('');
     setSpendNote('');
     setQuote(null);
-    if (amountFrom === '' || sendCoin === '' || !isRunning()) {
+    if (
+      amountFrom === '' ||
+      sendCoin === '' ||
+      receiveCoin === '' ||
+      !isRunning()
+    ) {
       return;
     }
-    const funding = getSwapFundingOutputs(sendCoin, amountFrom);
+    const funding = getSwapFundingOutputs(sendCoin, receiveCoin, amountFrom);
     if (funding.min_amount !== undefined) {
       setFeeNote(funding.error ?? '');
     }
@@ -312,7 +317,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         'That is more than you can spend. The network fee and the swap fee come out of this Litecoin.',
       );
     }
-  }, [amountFrom, balances, payIn, sendCoin]);
+  }, [amountFrom, balances, payIn, receiveCoin, sendCoin]);
 
   const blockNote = bridgeNote || feeNote;
 
@@ -435,7 +440,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       } catch {
         throw new Error('Invalid amount to receive');
       }
-      const quoted = getSwapFundingOutputs(sendCoin, amountFrom);
+      const quoted = getSwapFundingOutputs(sendCoin, receiveCoin, amountFrom);
       if (quoted.min_amount !== undefined) {
         setFeeNote(quoted.error ?? '');
         throw new Error(quoted.error);
@@ -495,7 +500,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         throw new Error('Could not get a change address');
       }
 
-      const funding = getSwapFundingOutputs(HOST_COIN, amountFrom);
+      const funding = getSwapFundingOutputs(HOST_COIN, receiveCoin, amountFrom);
       if (funding.error || !funding.outputs) {
         throw new Error(`Could not size the swap: ${funding.error}`);
       }
@@ -549,7 +554,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       return;
     }
     const probe = coinString(Number(balances.spendable) / 1e8);
-    const funding = probe ? getSwapFundingOutputs(HOST_COIN, probe) : null;
+    const funding =
+      probe && receiveCoin
+        ? getSwapFundingOutputs(HOST_COIN, receiveCoin, probe)
+        : null;
     const feeSats = funding && !funding.error ? swapFeeSats(funding.outputs) : 0n;
     const room = balances.spendable - feeSats - CHAIN_FEE_RESERVE;
     setAmount(
