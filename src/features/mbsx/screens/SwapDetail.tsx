@@ -110,7 +110,10 @@ const SwapFees = ({swap}: {swap: SwapDetails}) => {
   if (!show) {
     return null;
   }
-  const bps = fees.reduce((sum, fee) => sum + Number(fee.bps), 0);
+  const bps =
+    swap.fees_bps !== undefined
+      ? Number(swap.fees_bps)
+      : fees.reduce((sum, fee) => sum + Number(fee.bps), 0);
   const chains: [string, string | undefined, bigint][] = [
     [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
     [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],

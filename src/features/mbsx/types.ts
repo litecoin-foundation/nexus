@@ -49,6 +49,8 @@ export type MbsxFee = {
   desc: string;
   bps: bigint;
   amount: string;
+  coin?: string;
+  paid_by?: 'APP' | 'PROVIDER';
 };
 
 // Absent when the coin has no fee schedule configured. fees_coin names the
@@ -58,13 +60,14 @@ export type MbsxSwapFees = {
   fees?: MbsxFee[];
   fees_coin?: string;
   fees_total?: string;
+  fees_bps?: bigint;
 };
 
 export type OfferKind = 'PRIVATE' | 'BRIDGED';
 
 // An offer to accept. A bridged offer's amounts are what its rate would mean for
 // the request, not the network offer's own size.
-export type SwapOffer = {
+export type SwapOffer = MbsxSwapFees & {
   id: string;
   kind: OfferKind;
   expire_at: string;

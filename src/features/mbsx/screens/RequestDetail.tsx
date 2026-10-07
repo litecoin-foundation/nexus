@@ -427,6 +427,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                   {`Of the ${request.amount_from} ${request.coin_from} you offered; the rest comes back as change`}
                 </Text>
               ) : null}
+              <OfferFees offer={offer} styles={styles} />
               {warning ? (
                 <TouchableOpacity
                   testID={`mbsx-offer-warning-${offer.id}`}
@@ -620,6 +621,52 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         />
       </ScrollView>
     </View>
+  );
+};
+
+const OfferFees = ({
+  offer,
+  styles,
+}: {
+  offer: SwapOffer;
+  styles: ReturnType<typeof getMbsxStyles>;
+}) => {
+  const [open, setOpen] = useState(false);
+  if (offer.fees === undefined) {
+    return null;
+  }
+  if (offer.fees.length === 0) {
+    return <Text style={styles.rowMessage}>No swap fee</Text>;
+  }
+  const bps = Number(offer.fees_bps ?? 0);
+  return (
+    <>
+      <TouchableOpacity
+        testID={`mbsx-offer-fee-${offer.id}`}
+        onPress={() => setOpen(shown => !shown)}>
+        <Text style={styles.rowLink}>
+          {bps > 0
+            ? `Swap fee ${bps / 100}% (${offer.fees_total} ${offer.fees_coin})`
+            : 'Swap fee paid by provider'}
+        </Text>
+      </TouchableOpacity>
+      {open
+        ? offer.fees.map((fee, index) => (
+            <View key={`${index}`}>
+              <View style={[look.feeRow, index > 0 ? look.feeLine : null]}>
+                <Text style={look.feeLabel}>{fee.desc || 'Fee'}</Text>
+                <Text style={look.feePct}>{`${Number(fee.bps) / 100}%`}</Text>
+                <Text style={look.feeValue}>
+                  {`${fee.amount} ${fee.coin ?? ''}`}
+                </Text>
+              </View>
+              {fee.paid_by === 'PROVIDER' ? (
+                <Text style={styles.rowMessage}>Fee paid by provider</Text>
+              ) : null}
+            </View>
+          ))
+        : null}
+    </>
   );
 };
 

@@ -117,6 +117,43 @@ describe('RequestDetail', () => {
     expect(view.getByTestId('mbsx-accept-low')).toBeEnabled();
   });
 
+  it('shows an offer fee compactly and its breakdown on a tap', () => {
+    const view = renderRequest({}, [
+      {
+        ...offer('fee', '0.00079'),
+        fees: [
+          {
+            desc: 'Platform fee',
+            bps: 15n,
+            amount: '0.0015',
+            coin: 'LTC',
+            paid_by: 'APP',
+          },
+          {
+            desc: 'Platform fee',
+            bps: 15n,
+            amount: '0.00000012',
+            coin: 'BTC',
+            paid_by: 'PROVIDER',
+          },
+        ],
+        fees_coin: 'LTC',
+        fees_total: '0.0015',
+        fees_bps: 15n,
+      },
+      {...offer('free', '0.00079'), fees: []},
+    ]);
+
+    expect(view.getByTestId('mbsx-offer-fee-fee')).toHaveTextContent(
+      'Swap fee 0.15% (0.0015 LTC)',
+    );
+    expect(view.queryByText('Fee paid by provider')).toBeNull();
+    fireEvent.press(view.getByTestId('mbsx-offer-fee-fee'));
+    expect(view.getByText('Fee paid by provider')).toBeTruthy();
+    expect(view.getByText('0.00000012 BTC')).toBeTruthy();
+    expect(view.getByText('No swap fee')).toBeTruthy();
+  });
+
   it('holds Accept on a short lock time until the warning is tapped', () => {
     const bridged = (id: string, lock_time: number, short_lock: boolean) => ({
       ...offer(id, '0.00079'),
