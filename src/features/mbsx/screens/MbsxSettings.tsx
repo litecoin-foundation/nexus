@@ -8,8 +8,6 @@ import React, {
 import {
   Alert,
   Image,
-  Keyboard,
-  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -18,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useKeyboardHeight} from '../useKeyboardHeight';
 import {useNavigation} from '@react-navigation/native';
 import type {DrawerNavigationProp} from '@react-navigation/drawer';
 import notifee from '@notifee/react-native';
@@ -63,22 +62,8 @@ const MbsxSettings: React.FC = () => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const insets = useSafeAreaInsets();
   const [advanced, setAdvanced] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight();
 
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, event => {
-      setKeyboardHeight(event.endCoordinates.height);
-    });
-    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
 
   const dispatch = useAppDispatch();
   const {config, setConfig, dirty} = useSettingsDraft();
@@ -155,14 +140,41 @@ const MbsxSettings: React.FC = () => {
     loadCerts();
   }, [dispatch, loadCerts, readServerStates]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
   const storedJsonRef = useRef(storedJson);
   storedJsonRef.current = storedJson;
+
+  const offerReload = useCallback(async () => {
+    if (!(await changedElsewhere(storedJsonRef.current))) {
+      return;
+    }
+    if (!dirtyRef.current) {
+      load();
+      return;
+    }
+    Alert.alert(
+      'Settings Changed',
+      'The settings were changed outside this screen, for example by the ' +
+        'server banner. Reload them and drop your unsaved changes?',
+      [
+        {text: 'Keep Editing', style: 'cancel'},
+        {text: 'Reload', style: 'destructive', onPress: () => load()},
+      ],
+    );
+  }, [load]);
+
+  // Unsaved edits outlive leaving the section, so coming back keeps them
+  useEffect(() => {
+    if (!dirtyRef.current) {
+      load();
+      return;
+    }
+    setActiveCoins(coinsWithActiveSwaps());
+    readServerStates();
+    loadCerts();
+    offerReload();
+  }, [load, loadCerts, offerReload, readServerStates]);
 
   // A drawer switch cannot be blocked, so the alert offers the way back
   // instead of preventing it.
@@ -171,27 +183,12 @@ const MbsxSettings: React.FC = () => {
     const readRates = () =>
       readRateServices().then(services => setRatesOn(services.enabled));
     readRates();
-    return navigation.addListener('focus', async () => {
+    return navigation.addListener('focus', () => {
       readServerStates();
       readRates();
-      if (!(await changedElsewhere(storedJsonRef.current))) {
-        return;
-      }
-      if (!dirtyRef.current) {
-        load();
-        return;
-      }
-      Alert.alert(
-        'Settings changed',
-        'The settings were changed outside this screen, for example by the ' +
-          'server banner. Reload them and drop your unsaved changes?',
-        [
-          {text: 'Keep editing', style: 'cancel'},
-          {text: 'Reload', style: 'destructive', onPress: () => load()},
-        ],
-      );
+      offerReload();
     });
-  }, [navigation, load, readServerStates]);
+  }, [navigation, offerReload, readServerStates]);
   useUnsavedDraftGuard(dirty, 'MbsxSettings');
 
   const edit = (patch: Partial<MbsxConfig>) => {
@@ -271,7 +268,7 @@ const MbsxSettings: React.FC = () => {
   };
 
   const confirmRemoveCert = (id: bigint) => {
-    Alert.alert('Remove certificate', 'Remove this certificate?', [
+    Alert.alert('Remove Certificate', 'Remove this certificate?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -347,7 +344,7 @@ const MbsxSettings: React.FC = () => {
         disabled={saving}
         onPress={save}>
         <Text style={styles.buttonText}>
-          {saving ? 'Restarting…' : dirty ? 'Save and restart' : 'Save'}
+          {saving ? 'Restarting…' : dirty ? 'Save and Restart' : 'Save'}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.buttonSecondary} onPress={load}>
@@ -367,7 +364,7 @@ const MbsxSettings: React.FC = () => {
               : defaultConfig(),
           )
         }>
-        <Text style={styles.buttonSecondaryText}>Restore defaults</Text>
+        <Text style={styles.buttonSecondaryText}>Restore Defaults</Text>
       </TouchableOpacity>
       {error !== '' && errorCoin === '' ? (
         <Text testID="mbsx-settings-error" style={styles.error}>
@@ -395,7 +392,7 @@ const MbsxSettings: React.FC = () => {
           <Text style={swapCards.section}>Requests</Text>
           <View style={look.cardRow}>
             <Text style={[styles.label, look.rowLabel]}>
-              Revoke open requests on exit
+              Revoke Open Requests on Exit
             </Text>
             <Switch
               testID="mbsx-revoke-on-exit"
@@ -413,7 +410,7 @@ const MbsxSettings: React.FC = () => {
           <Text style={swapCards.section}>Privacy</Text>
           <View style={look.cardRow}>
             <Text style={[styles.label, look.rowLabel]}>
-              Swap notifications
+              Swap Notifications
             </Text>
             <Switch
               testID="mbsx-notify-swaps"
@@ -524,7 +521,7 @@ const MbsxSettings: React.FC = () => {
           );
         })}
 
-        <Text style={swapCards.section}>Electrum servers</Text>
+        <Text style={swapCards.section}>Electrum Servers</Text>
         <View style={swapCards.card}>
           {shownCoins
             .filter(coin => config.coins[coin].enabled === true)
@@ -568,13 +565,13 @@ const MbsxSettings: React.FC = () => {
             })}
         </View>
 
-        <Text style={[swapCards.section, look.blockTitle]}>Coin rate services</Text>
+        <Text style={[swapCards.section, look.blockTitle]}>Coin Rate Services</Text>
         <View style={swapCards.card}>
           <TouchableOpacity
             testID="mbsx-rate-services"
             style={look.cardRow}
             onPress={() => navigation.navigate('CoinRateServices')}>
-            <Text style={[styles.label, look.rowLabel]}>Fetch coin rates</Text>
+            <Text style={[styles.label, look.rowLabel]}>Fetch Coin Rates</Text>
             <Text testID="mbsx-rate-services-summary" style={styles.value}>
               {ratesOn === null ? '' : ratesOn ? 'On' : "Off, server's prices"}
             </Text>
@@ -596,7 +593,7 @@ const MbsxSettings: React.FC = () => {
               <Text style={swapCards.section}>Display</Text>
               <View style={look.cardRow}>
                 <Text style={[styles.label, look.rowLabel]}>
-                  Show state names
+                  Show State Names
                 </Text>
                 <Switch
                   testID="mbsx-show-raw-states"
@@ -616,7 +613,7 @@ const MbsxSettings: React.FC = () => {
                 raw state name.
               </Text>
               <View style={[look.cardRow, look.cardRowLine]}>
-                <Text style={[styles.label, look.rowLabel]}>Show debug</Text>
+                <Text style={[styles.label, look.rowLabel]}>Show Debug</Text>
                 <Switch
                   testID="mbsx-show-debug"
                   value={config.show_debug === true}
@@ -663,10 +660,10 @@ const MbsxSettings: React.FC = () => {
             </View>
 
             <Text style={[swapCards.section, look.blockTitle]}>
-              Electrum servers
+              Electrum Servers
             </Text>
             <View style={swapCards.card}>
-              <Text style={styles.inputLabel}>Kept connected per coin</Text>
+              <Text style={styles.inputLabel}>Kept Connected per Coin</Text>
               <TextInput
                 testID="mbsx-max-electrum-servers"
                 style={styles.input}
@@ -706,7 +703,7 @@ const MbsxSettings: React.FC = () => {
                         {cert.label || 'Unlabelled'}
                       </Text>
                       <Text style={swapCards.note}>
-                        {cert.host ? `${cert.host}:${cert.port}` : 'Every server'}
+                        {cert.host ? `${cert.host}:${cert.port}` : 'Every Server'}
                       </Text>
                     </View>
                     <TouchableOpacity
@@ -719,7 +716,7 @@ const MbsxSettings: React.FC = () => {
               ))
             )}
             <Text style={[swapCards.section, look.blockTitle]}>
-              Add certificate
+              Add Certificate
             </Text>
             <View style={swapCards.card}>
               <Text style={styles.inputLabel}>Label</Text>

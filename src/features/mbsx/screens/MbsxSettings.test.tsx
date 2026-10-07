@@ -1,5 +1,5 @@
 import React from 'react';
-import {Alert, Keyboard} from 'react-native';
+import {Alert} from 'react-native';
 import {act, fireEvent, render, waitFor} from '@testing-library/react-native';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
@@ -49,7 +49,7 @@ jest.mock('../adapter', () => ({
   writeConfig: jest.fn(),
 }));
 
-jest.spyOn(Keyboard, 'addListener').mockReturnValue({remove: jest.fn()} as any);
+jest.mock('../useKeyboardHeight', () => ({useKeyboardHeight: () => 0}));
 
 const screenSize = {
   width: 375,
@@ -228,7 +228,7 @@ describe('MbsxSettings servers', () => {
     ]);
     const {getByTestId, getByText} = renderSettings();
     fireEvent.press(await waitFor(() => getByText('Advanced')));
-    expect(getByText('Every server')).toBeTruthy();
+    expect(getByText('Every Server')).toBeTruthy();
     expect(getByText('glue.example:9002')).toBeTruthy();
 
     fireEvent.changeText(getByTestId('mbsx-cert-label'), 'mine');

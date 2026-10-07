@@ -197,7 +197,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                     triggerLightFeedback();
                     navigation.navigate('CreateSwap');
                   }}>
-                  <Text style={swapCards.link}>New swap</Text>
+                  <Text style={swapCards.link}>New Swap</Text>
                 </TouchableOpacity>
               ) : null}
             </View>

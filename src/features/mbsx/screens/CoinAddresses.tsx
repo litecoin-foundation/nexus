@@ -2,8 +2,6 @@ import React, {useCallback, useContext, useEffect, useRef, useState} from 'react
 import {
   Alert,
   Image,
-  Keyboard,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useKeyboardHeight} from '../useKeyboardHeight';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 import {useFocusEffect} from '@react-navigation/native';
@@ -46,7 +45,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   const [address, setAddress] = useState('');
   const [label, setLabel] = useState('');
   const [addressError, setAddressError] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight();
   const scrollRef = useRef<ScrollView>(null);
   const fieldY = useRef<Record<string, number>>({});
   const showField = (key: string) => {
@@ -58,20 +57,6 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
     }, 80);
   };
 
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, event => {
-      setKeyboardHeight(event.endCoordinates.height);
-    });
-    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
   const [prices, setPrices] = useState<MbsxCoinPrices | null>(null);
   const price = prices?.prices?.[coin];
 
@@ -120,7 +105,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   };
 
   const forget = (savedAddress: string) => {
-    Alert.alert('Remove address', 'Remove this saved address?', [
+    Alert.alert('Remove Address', 'Remove this saved address?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -160,7 +145,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
             </>
           ) : (
             <Text testID="mbsx-coin-price" style={swapCards.meta}>
-              {running ? 'No price available' : 'Starting…'}
+              {running ? 'No Price Available' : 'Starting…'}
             </Text>
           )}
         </View>
@@ -238,7 +223,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
           ]}
           disabled={!address.trim()}
           onPress={add}>
-          <Text style={styles.buttonText}>Save address</Text>
+          <Text style={styles.buttonText}>Save Address</Text>
         </TouchableOpacity>
 
         <Text style={swapCards.section}>Saved</Text>

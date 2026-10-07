@@ -1,5 +1,4 @@
 import React from 'react';
-import {Keyboard} from 'react-native';
 import {fireEvent, render} from '@testing-library/react-native';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
@@ -28,7 +27,7 @@ jest.mock('@react-navigation/native', () => ({
   useIsFocused: () => true,
 }));
 
-jest.spyOn(Keyboard, 'addListener').mockReturnValue({remove: jest.fn()} as any);
+jest.mock('../useKeyboardHeight', () => ({useKeyboardHeight: () => 0}));
 
 jest.mock('../network', () => ({getNetwork: () => 'mainnet'}));
 

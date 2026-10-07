@@ -9,6 +9,7 @@ import mbsxReducer, {draftLoaded} from '../mbsxSlice';
 import ElectrumServers from './ElectrumServers';
 import {applyConfig, getInfo, readConfig} from '../adapter';
 
+jest.mock('../useKeyboardHeight', () => ({useKeyboardHeight: () => 0}));
 jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({addListener: () => () => {}, navigate: jest.fn()}),
@@ -101,7 +102,7 @@ describe('ElectrumServers', () => {
     const label = (i: number) => view.getByTestId(`mbsx-server-state-${i}`);
     expect(label(0)).toHaveTextContent('Connected');
     expect(label(1)).toHaveTextContent('Cooling down');
-    expect(view.getByText('connect failed')).toBeTruthy();
+    expect(view.getByText('Connect failed')).toBeTruthy();
     expect(label(2)).toHaveTextContent('Disabled');
     expect(label(3)).toHaveTextContent('Not started');
     expect(label(4)).toHaveTextContent('Standby');

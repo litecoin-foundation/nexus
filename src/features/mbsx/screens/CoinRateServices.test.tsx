@@ -9,6 +9,7 @@ import mbsxReducer, {ratesFetched} from '../mbsxSlice';
 import {refreshRates} from '../rates';
 import CoinRateServices from './CoinRateServices';
 
+jest.mock('../useKeyboardHeight', () => ({useKeyboardHeight: () => 0}));
 jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({addListener: () => () => {}, navigate: jest.fn()}),

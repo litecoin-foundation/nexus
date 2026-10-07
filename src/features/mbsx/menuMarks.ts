@@ -1,5 +1,5 @@
 import {
-  isEndedRequestState,
+  isOpenRequestState,
   isTerminalState,
   listDeposits,
   listRequests,
@@ -24,7 +24,7 @@ const counts = () => {
   ).length;
   const waiting = requests.filter(
     request =>
-      !isEndedRequestState(request.state) && request.state !== 'OFFER_RECEIVED',
+      isOpenRequestState(request.state) && request.state !== 'OFFER_RECEIVED',
   ).length;
   const short = (listDeposits() ?? []).filter(
     deposit => deposit.state === 'SHORT',

@@ -1,8 +1,6 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Alert,
-  Keyboard,
-  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -11,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useKeyboardHeight} from '../useKeyboardHeight';
 import {useFocusEffect} from '@react-navigation/native';
 import type {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -74,7 +73,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight();
   const dispatch = useAppDispatch();
   const storedJson = useAppSelector(state => state.mbsx.settingsStoredJson);
   const {config, setConfig, dirty} = useSettingsDraft();
@@ -91,21 +90,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
 
   const server = config?.coins[coin]?.electrumx[index];
   const url = server?.url ?? '';
-  const pageTitle = url.replace(/^(tcp|ssl):\/\//, '') || 'New server';
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, event => {
-      setKeyboardHeight(event.endCoordinates.height);
-    });
-    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
+  const pageTitle = url.replace(/^(tcp|ssl):\/\//, '') || 'New Server';
 
   useEffect(() => {
     navigation.setOptions?.({
@@ -171,7 +156,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
       return;
     }
     Alert.alert(
-      'Forget pinned certificate',
+      'Forget Pinned Certificate',
       'The next connection trusts whatever certificate the server presents.',
       [
         {text: 'Cancel', style: 'cancel'},
@@ -215,7 +200,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   };
 
   const confirmRemoveCert = (id: bigint) => {
-    Alert.alert('Remove certificate', 'Remove this certificate?', [
+    Alert.alert('Remove Certificate', 'Remove this certificate?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -234,7 +219,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   };
 
   const confirmRemoveServer = () => {
-    Alert.alert('Remove server', 'Remove this server?', [
+    Alert.alert('Remove Server', 'Remove this server?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -357,7 +342,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               </View>
               {chainsChecked(server) ? (
                 <View style={[look.rowPair, look.rowLine]}>
-                  <Text style={styles.label}>Verify hostname</Text>
+                  <Text style={styles.label}>Verify Hostname</Text>
                   <Switch
                     testID="mbsx-server-verify-hostname"
                     value={server.verify_hostname !== false}
@@ -367,7 +352,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               ) : null}
             </View>
 
-            <Text style={swapCards.section}>Pinned certificate</Text>
+            <Text style={swapCards.section}>Pinned Certificate</Text>
             <View style={swapCards.card}>
               {pin ? (
                 <>
@@ -394,7 +379,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               )}
             </View>
 
-            <Text style={swapCards.section}>CA certificates</Text>
+            <Text style={swapCards.section}>CA Certificates</Text>
             {cas.length === 0 ? (
               <View style={swapCards.card}>
                 <Text style={swapCards.note}>No certificates</Text>
@@ -416,7 +401,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               ))
             )}
 
-            <Text style={swapCards.section}>Add CA certificate</Text>
+            <Text style={swapCards.section}>Add CA Certificate</Text>
             <View style={swapCards.card}>
               <Text style={styles.inputLabel}>Label</Text>
               <TextInput
@@ -456,7 +441,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
           <View style={swapCards.card}>
             <View style={look.rowPair}>
               <Text style={[styles.label, look.rowLabel]}>
-                Verbose transactions
+                Verbose Transactions
               </Text>
               <Switch
                 testID="mbsx-server-verbose"
@@ -469,7 +454,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               testID="mbsx-server-remove"
               style={styles.buttonSecondary}
               onPress={confirmRemoveServer}>
-              <Text style={styles.buttonSecondaryText}>Remove server</Text>
+              <Text style={styles.buttonSecondaryText}>Remove Server</Text>
             </TouchableOpacity>
           </View>
         ) : null}
@@ -491,7 +476,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
             disabled={saving}
             onPress={save}>
             <Text style={styles.buttonText}>
-              {saving ? 'Restarting…' : 'Save and restart'}
+              {saving ? 'Restarting…' : 'Save and Restart'}
             </Text>
           </TouchableOpacity>
         ) : null}

@@ -360,7 +360,7 @@ const MbsxNavigator: React.FC = () => {
         <Drawer.Screen
           name="CreateSwap"
           component={CreateSwap}
-          options={{title: 'New swap'}}
+          options={{title: 'New Swap'}}
         />
         <Drawer.Screen
           name="SwapList"
@@ -405,17 +405,17 @@ const MbsxNavigator: React.FC = () => {
         <Drawer.Screen
           name="ElectrumServers"
           component={ElectrumServers}
-          options={{title: 'Electrum servers', ...hidden}}
+          options={{title: 'Electrum Servers', ...hidden}}
         />
         <Drawer.Screen
           name="ElectrumServer"
           component={ElectrumServer}
-          options={{title: 'Electrum server', ...hidden}}
+          options={{title: 'Electrum Server', ...hidden}}
         />
         <Drawer.Screen
           name="CoinRateServices"
           component={CoinRateServices}
-          options={{title: 'Coin rate services', ...hidden}}
+          options={{title: 'Coin Rate Services', ...hidden}}
         />
         <Drawer.Screen
           name="MbsxDebug"
@@ -440,7 +440,8 @@ const ScreenLayout = ({children}: {children: React.ReactNode}) => (
 );
 
 const MbsxScreenHeader = ({layout, options, route}: DrawerHeaderProps) => {
-  const {header: _header, ...headerOptions} = options;
+  const headerOptions = {...options};
+  delete headerOptions.header;
   return (
     <View>
       <Header

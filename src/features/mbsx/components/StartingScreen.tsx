@@ -40,7 +40,7 @@ const StartingScreen: React.FC<Props> = ({onRetry}) => {
       </View>
       {error ? (
         <>
-          <Text style={styles.title}>Swaps did not start</Text>
+          <Text style={styles.title}>Swaps Did Not Start</Text>
           <Text style={styles.error}>{error}</Text>
           <TouchableOpacity
             testID="mbsx-starting-retry"

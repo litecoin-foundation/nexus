@@ -37,7 +37,7 @@ describe('StartingScreen', () => {
     act(() => {
       store.dispatch(setError('mbsx failed to initialise'));
     });
-    expect(view.getByText('Swaps did not start')).toBeTruthy();
+    expect(view.getByText('Swaps Did Not Start')).toBeTruthy();
     expect(view.getByText('mbsx failed to initialise')).toBeTruthy();
     fireEvent.press(view.getByTestId('mbsx-starting-retry'));
     expect(onRetry).toHaveBeenCalledTimes(1);

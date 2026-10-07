@@ -1,7 +1,5 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
-  Keyboard,
-  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -10,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useKeyboardHeight} from '../useKeyboardHeight';
 import {useFocusEffect} from '@react-navigation/native';
 import type {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -45,7 +44,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight();
   const dispatch = useAppDispatch();
   const storedJson = useAppSelector(state => state.mbsx.settingsStoredJson);
   const {config, setConfig, dirty} = useSettingsDraft();
@@ -55,20 +54,6 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
   const [saving, setSaving] = useState(false);
   useUnsavedDraftGuard(dirty, 'ElectrumServers');
 
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, event => {
-      setKeyboardHeight(event.endCoordinates.height);
-    });
-    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
 
   useEffect(() => {
     navigation.setOptions?.({
@@ -141,7 +126,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
       <ScrollView
         contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
         <View style={swapCards.card}>
-          <Text style={styles.inputLabel}>Kept connected</Text>
+          <Text style={styles.inputLabel}>Kept Connected</Text>
           <TextInput
             testID="mbsx-servers-cap"
             style={styles.input}
@@ -171,7 +156,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
               <View style={[swapCards.card, look.serverRow]}>
                 <View>
                   <Text style={styles.label}>
-                    {server.url.replace(/^(tcp|ssl):\/\//, '') || 'New server'}
+                    {server.url.replace(/^(tcp|ssl):\/\//, '') || 'New Server'}
                   </Text>
                   <Text
                     testID={`mbsx-server-state-${index}`}
@@ -205,7 +190,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
               index: settings.electrumx.length,
             });
           }}>
-          <Text style={styles.buttonSecondaryText}>Add server</Text>
+          <Text style={styles.buttonSecondaryText}>Add Server</Text>
         </TouchableOpacity>
         {error ? (
           <Text testID="mbsx-servers-error" style={styles.error}>
@@ -224,7 +209,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
             disabled={saving}
             onPress={save}>
             <Text style={styles.buttonText}>
-              {saving ? 'Restarting…' : 'Save and restart'}
+              {saving ? 'Restarting…' : 'Save and Restart'}
             </Text>
           </TouchableOpacity>
         ) : null}

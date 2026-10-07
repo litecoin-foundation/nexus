@@ -34,7 +34,7 @@ const BridgeStatus: React.FC = () => {
 
   return (
     <View style={styles.banner}>
-      <Text style={styles.text}>Not connected</Text>
+      <Text style={styles.text}>Not Connected</Text>
       <TouchableOpacity
         testID="mbsx-bridge-retry"
         accessibilityRole="button"

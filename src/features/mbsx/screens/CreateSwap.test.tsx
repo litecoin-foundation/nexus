@@ -1,5 +1,4 @@
 import React from 'react';
-import {Keyboard} from 'react-native';
 import {act, fireEvent, render, waitFor} from '@testing-library/react-native';
 import {Provider} from 'react-redux';
 import {configureStore} from '@reduxjs/toolkit';
@@ -52,7 +51,7 @@ jest.mock('../adapter', () => ({
   validateAddress: jest.fn(() => true),
 }));
 
-jest.spyOn(Keyboard, 'addListener').mockReturnValue({remove: jest.fn()} as any);
+jest.mock('../useKeyboardHeight', () => ({useKeyboardHeight: () => 0}));
 
 const screenSize = {
   width: 375,
@@ -117,7 +116,7 @@ describe('CreateSwap', () => {
     expect(queryByTestId('mbsx-max')).toBeNull();
     expect(getByTestId('mbsx-address-to')).toBeDisabled();
     expect(getByTestId('mbsx-address-to').props.placeholder).toBe(
-      'Refund address',
+      'Refund Address',
     );
     fireEvent.press(getByTestId('mbsx-coin-pill'));
     expect(queryByTestId('mbsx-coin-FIRO')).toBeNull();
@@ -127,7 +126,7 @@ describe('CreateSwap', () => {
     fireEvent.press(getByTestId('mbsx-flip'));
     expect(getByTestId('mbsx-max')).toBeTruthy();
     expect(getByTestId('mbsx-address-to').props.placeholder).toBe(
-      'Receive address',
+      'Receive Address',
     );
   });
 

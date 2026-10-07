@@ -107,7 +107,7 @@ const MbsxDebug: React.FC = () => {
 
   const onReset = () => {
     Alert.alert(
-      'Reset state',
+      'Reset State',
       'Clear the swap state on this regtest? This cannot be undone.',
       [
         {text: 'Cancel', style: 'cancel'},
@@ -171,11 +171,11 @@ const MbsxDebug: React.FC = () => {
           <View style={[look.statusRow, look.chainLine]}>
             <Text style={styles.label}>Bridge</Text>
             <Text style={styles.value}>
-              {connected ? 'Connected' : 'Not connected'}
+              {connected ? 'Connected' : 'Not Connected'}
             </Text>
           </View>
           <View style={[look.statusRow, look.chainLine]}>
-            <Text style={styles.label}>Identity keyid</Text>
+            <Text style={styles.label}>Identity Keyid</Text>
             <Text
               testID="mbsx-identity-keyid"
               selectable
@@ -184,7 +184,7 @@ const MbsxDebug: React.FC = () => {
             </Text>
           </View>
           <View style={[look.statusRow, look.chainLine]}>
-            <Text style={styles.label}>DB version</Text>
+            <Text style={styles.label}>DB Version</Text>
             <Text style={styles.value}>{dbVersion ?? '-'}</Text>
           </View>
         </View>
@@ -198,7 +198,7 @@ const MbsxDebug: React.FC = () => {
               {chains.map((chain, index) =>
                 chainRow(
                   chain.ticker.toUpperCase(),
-                  chain.bridged ? null : 'No bridge',
+                  chain.bridged ? null : 'No Bridge',
                   String(chain.chainHeight),
                   index > 0,
                 ),
@@ -217,7 +217,7 @@ const MbsxDebug: React.FC = () => {
 
         {canReset ? (
           <TouchableOpacity style={styles.buttonSecondary} onPress={onReset}>
-            <Text style={styles.buttonSecondaryText}>Reset state</Text>
+            <Text style={styles.buttonSecondaryText}>Reset State</Text>
           </TouchableOpacity>
         ) : null}
         {resetError !== '' ? (
@@ -233,7 +233,7 @@ const MbsxDebug: React.FC = () => {
             // measures.
             console.log('MEMSTATS ' + stringifyRpc(getMemStats()));
           }}>
-          <Text style={styles.buttonSecondaryText}>Log mem stats</Text>
+          <Text style={styles.buttonSecondaryText}>Log Mem Stats</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
@@ -243,7 +243,7 @@ const MbsxDebug: React.FC = () => {
             // share sheet is that the user chooses the recipient, and that is
             // only a choice if they know what is in it first.
             Alert.alert(
-              'Export debug report',
+              'Export Debug Report',
               `The report includes:\n\n${EXPORT_CONTENTS.map(
                 s => `• ${s}`,
               ).join('\n')}\n\nIt contains no keys and no seed phrase, and is ` +
@@ -257,7 +257,7 @@ const MbsxDebug: React.FC = () => {
                     try {
                       await exportLogs(messages);
                     } catch (e) {
-                      Alert.alert('Export failed', (e as Error).message);
+                      Alert.alert('Export Failed', (e as Error).message);
                     } finally {
                       setExporting(false);
                     }
@@ -267,7 +267,7 @@ const MbsxDebug: React.FC = () => {
             );
           }}>
           <Text style={styles.buttonText}>
-            {exporting ? 'Exporting…' : 'Export logs'}
+            {exporting ? 'Exporting…' : 'Export Logs'}
           </Text>
         </TouchableOpacity>
         <Text style={swapCards.section}>Events</Text>

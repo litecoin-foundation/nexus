@@ -36,7 +36,7 @@ import {spendableBalance} from './prevouts';
 import type {FundingOutput} from './prevouts';
 import {signSwapTx} from './signTx';
 import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
-import {notifyOfferReady, notifySwapEnded} from './notify';
+import {notifySwapEnded} from './notify';
 import {scheduleWakes} from './wake';
 
 export {
@@ -265,6 +265,9 @@ export const isUnderwayState = (state: string) =>
 export const isEndedRequestState = (state: string) =>
   ENDED_REQUEST_STATES.has(state);
 
+export const isOpenRequestState = (state: string) =>
+  OPEN_REQUEST_STATES.has(state);
+
 const WALLET_STATES = new Set(
   [...TERMINAL_STATES].filter(
     state => state !== 'REJECTED' && state !== 'EXPIRED',
@@ -324,7 +327,7 @@ const openRequest = (): boolean | null => {
   if (requests === null) {
     return null;
   }
-  return requests.some(request => !isEndedRequestState(request.state));
+  return requests.some(request => isOpenRequestState(request.state));
 };
 
 export const swapActivity = (): {swaps: boolean; requests: boolean} => {
@@ -531,14 +534,6 @@ const watchSwapStates = () =>
           : event.event_type === 'REQUEST_STATE_CHANGED'
             ? ENDED_REQUEST_STATES.has(event.event_sub_type)
             : null;
-      if (
-        event.event_type === 'REQUEST_STATE_CHANGED' &&
-        event.event_sub_type === 'OFFER_RECEIVED'
-      ) {
-        void notifyOfferReady(
-          typeof event.linked_id === 'string' ? event.linked_id : undefined,
-        );
-      }
       if (ended === null) {
         return;
       }

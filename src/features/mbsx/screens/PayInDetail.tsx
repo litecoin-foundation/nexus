@@ -7,8 +7,6 @@ import React, {
 } from 'react';
 import {
   Image,
-  Keyboard,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useKeyboardHeight} from '../useKeyboardHeight';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import {useFocusEffect, useIsFocused} from '@react-navigation/native';
@@ -43,7 +42,6 @@ import CopyButton from '../components/CopyButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {depositStateText, useShowRawStates} from '../stateText';
 import {
-  ENDED_DEPOSIT_STATES,
   cancelDeposit,
   getCoinPrices,
   getInfo,
@@ -58,13 +56,12 @@ import type {Deposit, MbsxDrawerParamList} from '../types';
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'PayInDetail'>;
 
 const PAYABLE = new Set(['WAITING', 'SEEN', 'SHORT']);
-const PAUSED = new Set(['SHORT', 'NO_QUOTE', 'NO_OFFER']);
+const PAUSED = new Set(['SHORT', 'NO_OFFER']);
 const CANCELLABLE = new Set([
   'WAITING',
   'SEEN',
   'SHORT',
   'RECEIVED',
-  'NO_QUOTE',
   'NO_OFFER',
   'REQUESTED',
 ]);
@@ -112,7 +109,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
   const scrollRef = useRef<ScrollView>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight();
   const showRaw = useShowRawStates();
   const {depositId} = route.params;
   const [loaded, setLoaded] = useState<Deposit | null>(null);
@@ -133,20 +130,6 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
     openedSwapId.current = null;
   }, [depositId]);
 
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, event => {
-      setKeyboardHeight(event.endCoordinates.height);
-    });
-    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
 
   useEffect(() => {
     navigation.setOptions({
@@ -292,7 +275,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         {deposit.payable ? (
           <>
             <View style={swapCards.card}>
-              <Text style={swapCards.historySub}>Pay exactly</Text>
+              <Text style={swapCards.historySub}>Pay Exactly</Text>
               <View style={look.addressRow}>
                 <View style={look.addressBox}>
                   <Text testID="mbsx-payin-amount" style={look.address}>
@@ -301,7 +284,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 </View>
                 <CopyButton
                   testID="mbsx-payin-copy-amount"
-                  label="Copy amount"
+                  label="Copy Amount"
                   value={String(deposit.remaining)}
                   style={look.iconBtn}
                 />
@@ -359,7 +342,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             </Text>
           </View>
         </View>
-        <Text style={swapCards.section}>You receive at least</Text>
+        <Text style={swapCards.section}>You Receive at Least</Text>
         <View style={swapCards.card}>
           <View style={swapCards.amountRow}>
             {coinMark(deposit.coin_to)}
@@ -368,7 +351,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             </Text>
           </View>
         </View>
-        <Text style={swapCards.section}>Refunds go to</Text>
+        <Text style={swapCards.section}>Refunds Go To</Text>
         <View style={swapCards.card}>
           <Text selectable style={swapCards.meta}>
             {deposit.refund_address}
@@ -376,7 +359,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         </View>
         {deposit.sweep_txid ? (
           <>
-            <Text style={swapCards.section}>Refund transaction</Text>
+            <Text style={swapCards.section}>Refund Transaction</Text>
             <TouchableOpacity
               testID="mbsx-payin-sweep"
               style={swapCards.card}
@@ -400,20 +383,20 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
               style={
                 offerWaiting ? styles.buttonText : styles.buttonSecondaryText
               }>
-              View request
+              View Request
             </Text>
           </TouchableOpacity>
         ) : null}
         {paused ? (
           <>
             <Text style={swapCards.section}>
-              {deposit.state === 'NO_QUOTE' || deposit.state === 'NO_OFFER'
-                ? 'Lower the minimum'
-                : 'New minimum'}
+              {deposit.state === 'NO_OFFER'
+                ? 'Lower the Minimum'
+                : 'New Minimum'}
             </Text>
             <View style={swapCards.card}>
               <Text style={[swapCards.note, look.floorNote]}>
-                {deposit.state === 'NO_QUOTE' || deposit.state === 'NO_OFFER'
+                {deposit.state === 'NO_OFFER'
                   ? `No offer met ${deposit.min_amount_to} ${deposit.coin_to}. Lower it to try again.`
                   : `Swap the ${deposit.received} ${deposit.coin} received for at least`}
               </Text>
@@ -467,7 +450,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         ) : null}
         {confirmingCancel ? (
           <View testID="mbsx-payin-cancel-confirm" style={swapCards.card}>
-            <Text style={swapCards.historyTitle}>Return the payment?</Text>
+            <Text style={swapCards.historyTitle}>Return the Payment?</Text>
             <Text style={swapCards.note}>
               {`${deposit.received} ${deposit.coin} goes back to your refund address.`}
             </Text>
@@ -476,7 +459,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 testID="mbsx-payin-cancel-keep"
                 style={[styles.buttonSecondary, look.confirmAction]}
                 onPress={() => setConfirmingCancel(false)}>
-                <Text style={styles.buttonSecondaryText}>Keep it</Text>
+                <Text style={styles.buttonSecondaryText}>Keep It</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 testID="mbsx-payin-cancel-confirm-button"
@@ -485,7 +468,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                   setConfirmingCancel(false);
                   act(() => cancelDeposit(deposit.deposit_id));
                 }}>
-                <Text style={styles.buttonText}>Return payment</Text>
+                <Text style={styles.buttonText}>Return Payment</Text>
               </TouchableOpacity>
             </View>
           </View>

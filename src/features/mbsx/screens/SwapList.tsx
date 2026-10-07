@@ -110,7 +110,7 @@ const SwapList: React.FC<Props> = ({navigation}) => {
           ]}
           disabled={!running}
           onPress={() => navigation.navigate('CreateSwap')}>
-          <Text style={styles.buttonText}>New swap</Text>
+          <Text style={styles.buttonText}>New Swap</Text>
         </TouchableOpacity>
         {/* Removes the request each finished swap belongs to, since a swap on
             its own leaves the request that funded it behind. */}
@@ -173,7 +173,7 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                     triggerLightFeedback();
                     navigation.navigate('CreateSwap');
                   }}>
-                  <Text style={swapCards.link}>New swap</Text>
+                  <Text style={swapCards.link}>New Swap</Text>
                 </TouchableOpacity>
               ) : null}
             </View>

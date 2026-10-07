@@ -50,27 +50,6 @@ export const notifySwapEnded = async (swap: EndedSwap) => {
  * headless wake task where no ui exists. A no-op when notification permission
  * was never granted, so callers must not rely on it alone.
  */
-export const notifyOfferReady = async (requestId?: string) => {
-  if (!(await notificationsOn())) {
-    return;
-  }
-  try {
-    const channelId = await channel();
-    await notifee.displayNotification({
-      id: requestId ? `mbsx-offer-${requestId}` : 'mbsx-offer-ready',
-      title: 'Offer ready',
-      body: 'An offer is ready to accept',
-      data: requestId ? {requestId} : undefined,
-      android: {
-        channelId,
-        pressAction: {id: 'mbsx-request', launchActivity: 'default'},
-      },
-    });
-  } catch (e) {
-    console.warn('mbsx could not notify:', (e as Error).message);
-  }
-};
-
 export const notifySwapProblem = async (body: string) => {
   if (!(await notificationsOn())) {
     return;

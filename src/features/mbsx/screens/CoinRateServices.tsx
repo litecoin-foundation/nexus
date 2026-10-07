@@ -1,7 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {
-  Keyboard,
-  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -10,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {useKeyboardHeight} from '../useKeyboardHeight';
 import type {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
@@ -45,7 +44,7 @@ const time = (at: number) => new Date(at * 1000).toLocaleTimeString();
 
 const resultText = (result: SourceResult | undefined): string => {
   if (!result) {
-    return 'Not asked yet';
+    return 'Not Asked Yet';
   }
   switch (result.kind) {
     case 'ok':
@@ -63,7 +62,7 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardHeight = useKeyboardHeight();
   const results = useAppSelector(state => state.mbsx.rateResults);
   const [saved, setSaved] = useState<RateServices | null>(null);
   const [draft, setDraftState] = useState<RateServices | null>(null);
@@ -71,20 +70,6 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, event => {
-      setKeyboardHeight(event.endCoordinates.height);
-    });
-    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
 
   useEffect(() => {
     navigation.setOptions?.({

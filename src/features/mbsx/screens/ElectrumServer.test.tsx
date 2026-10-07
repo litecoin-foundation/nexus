@@ -17,6 +17,7 @@ import {
   removePinnedCert,
 } from '../adapter';
 
+jest.mock('../useKeyboardHeight', () => ({useKeyboardHeight: () => 0}));
 jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({addListener: () => () => {}, navigate: jest.fn()}),

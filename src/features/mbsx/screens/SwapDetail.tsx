@@ -250,7 +250,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           <SwapFees swap={swap} />
           {address ? (
             <>
-              <Text style={swapCards.section}>Receive address</Text>
+              <Text style={swapCards.section}>Receive Address</Text>
               <View style={swapCards.card}>
                 <CopyField testID="mbsx-receipt-address" value={address} />
               </View>
@@ -258,7 +258,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           ) : null}
           {refund ? (
             <>
-              <Text style={swapCards.section}>Refund transaction</Text>
+              <Text style={swapCards.section}>Refund Transaction</Text>
               <View style={swapCards.card}>
                 <CopyField testID="mbsx-receipt-refund" value={refund} />
               </View>
@@ -330,7 +330,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
             onPress={() =>
               navigation.navigate('RequestDetail', {requestId: swap.request_id})
             }>
-            <Text style={styles.buttonSecondaryText}>View request</Text>
+            <Text style={styles.buttonSecondaryText}>View Request</Text>
           </TouchableOpacity>
         </View>
 
@@ -433,7 +433,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
 
         <CopyChip
           testID="mbsx-swap-id"
-          label="Copy swap id"
+          label="Copy Swap ID"
           value={swap.id}
           display={shortAddress(swap.id)}
           style={look.idChip}
