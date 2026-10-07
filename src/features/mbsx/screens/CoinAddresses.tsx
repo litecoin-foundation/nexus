@@ -23,6 +23,7 @@ import {formatPrice} from 'react-native-nitro-bsx';
 import {formatTimestamp} from '../format';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
+import CopyButton from '../components/CopyButton';
 import {useBottomInset} from '../components/useBottomInset';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import type {MbsxCoinPrices, MbsxDrawerParamList} from '../types';
@@ -36,7 +37,10 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   const dispatch = useAppDispatch();
 
   const {coin} = route.params;
-  const saved = useAppSelector(state => state.mbsxAddresses.byCoin[coin] ?? []);
+  const savedRaw = useAppSelector(
+    state => state.mbsxAddresses.byCoin[coin] ?? [],
+  );
+  const saved = savedRaw;
   const running = useAppSelector(state => state.mbsx.running);
 
   const [address, setAddress] = useState('');
@@ -76,8 +80,10 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   // its own clock afterwards.
   useFocusEffect(
     useCallback(() => {
-      setPrices(getCoinPrices());
-      const timer = setInterval(() => setPrices(getCoinPrices()), 10000);
+      const readPrices = () =>
+        setPrices(getCoinPrices());
+      readPrices();
+      const timer = setInterval(readPrices, 10000);
       return () => clearInterval(timer);
     }, []),
   );
@@ -114,12 +120,14 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   };
 
   const forget = (savedAddress: string) => {
-    Alert.alert('Remove Address', 'Remove this saved address?', [
+    Alert.alert('Remove address', 'Remove this saved address?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
         style: 'destructive',
-        onPress: () => dispatch(forgetAddress({coin, address: savedAddress})),
+        onPress: () => {
+          dispatch(forgetAddress({coin, address: savedAddress}));
+        },
       },
     ]);
   };
@@ -152,7 +160,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
             </>
           ) : (
             <Text testID="mbsx-coin-price" style={swapCards.meta}>
-              {running ? 'No Price Available' : 'Starting…'}
+              {running ? 'No price available' : 'Starting…'}
             </Text>
           )}
         </View>
@@ -230,7 +238,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
           ]}
           disabled={!address.trim()}
           onPress={add}>
-          <Text style={styles.buttonText}>Save Address</Text>
+          <Text style={styles.buttonText}>Save address</Text>
         </TouchableOpacity>
 
         <Text style={swapCards.section}>Saved</Text>
@@ -275,16 +283,12 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
                     {entry.address}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <CopyButton
                   testID={`mbsx-copy-${entry.address}`}
-                  accessibilityLabel="Copy address"
+                  label="Copy address"
+                  value={entry.address}
                   style={look.iconBtn}
-                  onPress={() => Clipboard.setString(entry.address)}>
-                  <Image
-                    source={require('../../../assets/icons/copy-icon.png')}
-                    style={look.toolIcon}
-                  />
-                </TouchableOpacity>
+                />
               </View>
               <TouchableOpacity
                 testID={`mbsx-forget-${entry.address}`}

@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
+import {CopyChip} from '../components/CopyButton';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -197,7 +197,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                     triggerLightFeedback();
                     navigation.navigate('CreateSwap');
                   }}>
-                  <Text style={swapCards.link}>New Swap</Text>
+                  <Text style={swapCards.link}>New swap</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -227,16 +227,15 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                           : `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`
                       }
                     />
-                    <TouchableOpacity
+                    <CopyChip
                       testID={`mbsx-request-copy-${request.id}`}
+                      label="Request"
+                      value={request.id}
+                      display={shortAddress(request.id)}
                       style={look.idChip}
-                      accessibilityLabel="Copy request id"
-                      onPress={() => Clipboard.setString(request.id)}>
-                      <Text style={look.idLabel}>Request</Text>
-                      <Text style={look.idValue} numberOfLines={1}>
-                        {shortAddress(request.id)}
-                      </Text>
-                    </TouchableOpacity>
+                      labelStyle={look.idLabel}
+                      valueStyle={look.idValue}
+                    />
                   </TouchableOpacity>
           ))
         )}

@@ -24,11 +24,11 @@ export const swapStateText = (
   const sent = coinName(coinFrom);
   const got = coinName(coinTo);
   const text: Record<string, string> = {
-    SENT: 'Offer sent',
-    RECEIVING: 'Receiving the offer',
-    RECEIVED: 'Offer ready to accept',
-    RECEIVING_ACC: 'Accepting the offer',
-    ACCEPTED: 'Swap accepted',
+    SENT: 'Waiting to send the offer',
+    RECEIVING: 'Waiting for the offer',
+    RECEIVED: 'The offer is ready to accept',
+    RECEIVING_ACC: 'The offer is being accepted',
+    ACCEPTED: 'The swap has been accepted',
     SCRIPT_COIN_LOCKED: `${sent} is locked`,
     NOSCRIPT_COIN_LOCKED: `${got} is locked`,
     SCRIPT_COIN_LOCK_RELEASED: `${sent} can be redeemed`,
@@ -38,11 +38,11 @@ export const swapStateText = (
     NOSCRIPT_TX_RECOVERED: `${got} has been recovered`,
     SCRIPT_COIN_LOCK_PREREFUND: `Preparing to refund ${sent}`,
     COMPLETED: 'Swap complete',
-    REJECTED: 'Offer rejected',
-    EXPIRED: 'Offer expired',
-    TIMEDOUT: 'Swap timed out',
-    ABANDONED: 'Swap abandoned',
-    FAILED: 'Swap failed',
+    REJECTED: 'The offer was not accepted',
+    EXPIRED: 'The offer ran out of time',
+    TIMEDOUT: 'It ran out of time before it could finish',
+    ABANDONED: 'It was left before it could finish',
+    FAILED: 'The swap could not finish',
     FAILED_REFUNDED: `Swap failed. ${sent} was refunded`,
     ERROR: 'Something went wrong',
     FAILED_SWIPED: 'The other side took the locked coins',
@@ -60,10 +60,10 @@ export const requestStateText = (state: string | undefined): string => {
   }
   const text: Record<string, string> = {
     SENT: 'Waiting for an offer',
-    OFFER_RECEIVED: 'Offer ready to accept',
-    ACCEPT_SENT: 'Accepting the offer',
-    REVOKED: 'Request cancelled',
-    EXPIRED: 'Request expired',
+    OFFER_RECEIVED: 'An offer is ready to accept',
+    ACCEPT_SENT: 'The offer is being accepted',
+    REVOKED: 'The request was cancelled',
+    EXPIRED: 'The request expired',
     ERROR: 'Something went wrong',
   };
   return text[state] ?? state;
@@ -79,16 +79,17 @@ export const depositStateText = (
   const paid = coinName(coin);
   const text: Record<string, string> = {
     WAITING: `Waiting for your ${paid}`,
-    SEEN: 'Payment seen, waiting for a confirmation',
+    SEEN: 'Waiting for a confirmation',
     SHORT: 'Less than the amount due arrived',
-    RECEIVED: 'Payment received',
-    REQUESTED: 'Finding a swap',
-    NO_OFFER: 'No acceptable offer',
+    RECEIVED: 'The payment has arrived',
+    REQUESTED: 'Waiting for a swap',
+    NO_QUOTE: 'No offer met the minimum',
+    NO_OFFER: 'No offer met the minimum',
     SWEEPING: `Returning your ${paid}`,
     SWEPT: `Your ${paid} was returned`,
-    SPENT: 'Swapping',
-    EXPIRED: 'Expired unpaid',
-    CANCELLED: 'Cancelled',
+    SPENT: 'The swap is under way',
+    EXPIRED: 'The pay-in expired unpaid',
+    CANCELLED: 'The pay-in was cancelled',
   };
   return text[state] ?? state;
 };

@@ -7,14 +7,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
-import {formatExpiry, formatTimestamp, kindLabel} from '../format';
+import {formatExpiry, formatTimestamp, kindLabel, shortAddress} from '../format';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
+import CopyButton, {CopyChip} from '../components/CopyButton';
 import {
   BUSY,
   displayTxid,
@@ -88,16 +88,7 @@ const CopyField = ({testID, value}: {testID: string; value: string}) => (
         {value}
       </Text>
     </View>
-    <TouchableOpacity
-      testID={testID}
-      accessibilityLabel="Copy"
-      style={look.iconBtn}
-      onPress={() => Clipboard.setString(value)}>
-      <Image
-        source={require('../../../assets/icons/copy-icon.png')}
-        style={look.toolIcon}
-      />
-    </TouchableOpacity>
+    <CopyButton testID={testID} label="Copy" value={value} style={look.iconBtn} />
   </View>
 );
 
@@ -123,9 +114,7 @@ const SwapFees = ({swap}: {swap: SwapDetails}) => {
       <Text style={swapCards.section}>Fees</Text>
       <View style={swapCards.card}>
         {fees.map((fee, index) => (
-          <View
-            key={fee.desc}
-            style={[look.feeRow, index > 0 ? look.feeLine : null]}>
+          <View key={fee.desc} style={[look.feeRow, index > 0 ? look.feeLine : null]}>
             <Text style={look.feeLabel}>{fee.desc}</Text>
             <Text style={look.feePct}>{`${Number(fee.bps) / 100}%`}</Text>
             <Text style={look.feeValue}>
@@ -261,7 +250,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           <SwapFees swap={swap} />
           {address ? (
             <>
-              <Text style={swapCards.section}>Receive Address</Text>
+              <Text style={swapCards.section}>Receive address</Text>
               <View style={swapCards.card}>
                 <CopyField testID="mbsx-receipt-address" value={address} />
               </View>
@@ -269,7 +258,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           ) : null}
           {refund ? (
             <>
-              <Text style={swapCards.section}>Refund Transaction</Text>
+              <Text style={swapCards.section}>Refund transaction</Text>
               <View style={swapCards.card}>
                 <CopyField testID="mbsx-receipt-refund" value={refund} />
               </View>
@@ -307,8 +296,17 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
             <CoinPair from={swap.coin_from} to={swap.coin_to} size={40} />
             <View style={swapCards.historyMid}>
               <Text style={swapCards.historyTitle}>
-                {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                {walletTitle(swap.state)}
               </Text>
+              {swapStateText(
+                swap.state,
+                swap.coin_from,
+                swap.coin_to,
+              ).toLowerCase() === walletTitle(swap.state).toLowerCase() ? null : (
+                <Text style={swapCards.historySub}>
+                  {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                </Text>
+              )}
               {showRaw ? (
                 <Text style={swapCards.historySub}>{swap.state}</Text>
               ) : null}
@@ -332,7 +330,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
             onPress={() =>
               navigation.navigate('RequestDetail', {requestId: swap.request_id})
             }>
-            <Text style={styles.buttonSecondaryText}>View Request</Text>
+            <Text style={styles.buttonSecondaryText}>View request</Text>
           </TouchableOpacity>
         </View>
 
@@ -403,20 +401,24 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                       {String(event.event_msg ?? event.event_data)}
                     </Text>
                   ) : null}
-                  {expanded && event.linked_id ? (
-                    <View style={look.eventCopy}>
-                      <Text style={swapCards.historySub}>
-                        {isTx ? 'Transaction' : String(event.linked_type)}
-                      </Text>
-                      <CopyField
-                        testID={`mbsx-copy-${event.id}`}
-                        value={
-                          isTx
-                            ? displayTxid(event.linked_id)
-                            : String(event.linked_id)
-                        }
-                      />
-                    </View>
+                  {event.linked_id ? (
+                    <CopyChip
+                      testID={`mbsx-copy-${event.id}`}
+                      label={isTx ? 'Transaction' : 'Address'}
+                      value={
+                        isTx
+                          ? displayTxid(String(event.linked_id))
+                          : String(event.linked_id)
+                      }
+                      display={shortAddress(
+                        isTx
+                          ? displayTxid(String(event.linked_id))
+                          : String(event.linked_id),
+                      )}
+                      style={look.idChip}
+                      labelStyle={look.idLabel}
+                      valueStyle={look.idValue}
+                    />
                   ) : null}
                   {expanded &&
                   event.event_msg !== undefined &&
@@ -429,9 +431,15 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           )
         ) : null}
 
-        <Text style={swapCards.id} selectable>
-          {swap.id}
-        </Text>
+        <CopyChip
+          testID="mbsx-swap-id"
+          label="Copy swap id"
+          value={swap.id}
+          display={shortAddress(swap.id)}
+          style={look.idChip}
+          labelStyle={look.idLabel}
+          valueStyle={look.idValue}
+        />
 
         {/* Removes this swap alone; the request that funded it stays. */}
         {isTerminalState(swap.state) ? (
@@ -487,8 +495,27 @@ const look = StyleSheet.create({
     marginTop: 14,
     marginBottom: 0,
   },
-  eventCopy: {
-    marginTop: 8,
+  idChip: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F4F7FB',
+    borderRadius: 14,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  idLabel: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#747E87',
+    fontSize: 12,
+    marginRight: 8,
+  },
+  idValue: {
+    fontFamily: 'Satoshi Variable',
+    color: '#484859',
+    fontSize: 13,
   },
   feeRow: {
     flexDirection: 'row',

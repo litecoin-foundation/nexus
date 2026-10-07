@@ -25,7 +25,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
-import {readRateServices} from '../rates';
 import {getMbsxStyles} from '../theme';
 import {COIN_ICONS, coinPlate, swapCards} from '../swapCards';
 import {setRunning} from '../mbsxSlice';
@@ -51,6 +50,7 @@ import {
   useUnsavedDraftGuard,
 } from '../settingsDraft';
 import type {ServerRow} from '../settingsDraft';
+import {readRateServices} from '../rates';
 import type {MbsxDrawerParamList} from '../types';
 
 const POS_COINS = ['part'];
@@ -86,7 +86,6 @@ const MbsxSettings: React.FC = () => {
   // Read-only here: Nexus owns the switch, and a second one could disagree.
   const torEnabled = useAppSelector(state => state.settings.torEnabled);
   const [activeCoins, setActiveCoins] = useState<Set<string> | null>(null);
-  const [ratesOn, setRatesOn] = useState<boolean | null>(null);
   // Null while the core is stopped, which shows every coin in the config.
   const [compiledCoins, setCompiledCoins] = useState<string[] | null>(null);
   const [error, setError] = useState('');
@@ -96,6 +95,7 @@ const MbsxSettings: React.FC = () => {
   const [status, setStatus] = useState('');
   const [rescanned, setRescanned] = useState('');
   const [saving, setSaving] = useState(false);
+  const [ratesOn, setRatesOn] = useState<boolean | null>(null);
   const [certs, setCerts] = useState<CaCert[]>([]);
   const [certLabel, setCertLabel] = useState('');
   const [certHost, setCertHost] = useState('');
@@ -155,41 +155,14 @@ const MbsxSettings: React.FC = () => {
     loadCerts();
   }, [dispatch, loadCerts, readServerStates]);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
   const storedJsonRef = useRef(storedJson);
   storedJsonRef.current = storedJson;
-
-  const offerReload = useCallback(async () => {
-    if (!(await changedElsewhere(storedJsonRef.current))) {
-      return;
-    }
-    if (!dirtyRef.current) {
-      load();
-      return;
-    }
-    Alert.alert(
-      'Settings Changed',
-      'The settings were changed outside this screen, for example by the ' +
-        'server banner. Reload them and drop your unsaved changes?',
-      [
-        {text: 'Keep Editing', style: 'cancel'},
-        {text: 'Reload', style: 'destructive', onPress: () => load()},
-      ],
-    );
-  }, [load]);
-
-  // Unsaved edits outlive leaving the section, so coming back keeps them
-  useEffect(() => {
-    if (!dirtyRef.current) {
-      load();
-      return;
-    }
-    setActiveCoins(coinsWithActiveSwaps());
-    readServerStates();
-    loadCerts();
-    offerReload();
-  }, [load, loadCerts, offerReload, readServerStates]);
 
   // A drawer switch cannot be blocked, so the alert offers the way back
   // instead of preventing it.
@@ -198,12 +171,27 @@ const MbsxSettings: React.FC = () => {
     const readRates = () =>
       readRateServices().then(services => setRatesOn(services.enabled));
     readRates();
-    return navigation.addListener('focus', () => {
+    return navigation.addListener('focus', async () => {
       readServerStates();
       readRates();
-      offerReload();
+      if (!(await changedElsewhere(storedJsonRef.current))) {
+        return;
+      }
+      if (!dirtyRef.current) {
+        load();
+        return;
+      }
+      Alert.alert(
+        'Settings changed',
+        'The settings were changed outside this screen, for example by the ' +
+          'server banner. Reload them and drop your unsaved changes?',
+        [
+          {text: 'Keep editing', style: 'cancel'},
+          {text: 'Reload', style: 'destructive', onPress: () => load()},
+        ],
+      );
     });
-  }, [navigation, offerReload, readServerStates]);
+  }, [navigation, load, readServerStates]);
   useUnsavedDraftGuard(dirty, 'MbsxSettings');
 
   const edit = (patch: Partial<MbsxConfig>) => {
@@ -283,7 +271,7 @@ const MbsxSettings: React.FC = () => {
   };
 
   const confirmRemoveCert = (id: bigint) => {
-    Alert.alert('Remove Certificate', 'Remove this certificate?', [
+    Alert.alert('Remove certificate', 'Remove this certificate?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -359,7 +347,7 @@ const MbsxSettings: React.FC = () => {
         disabled={saving}
         onPress={save}>
         <Text style={styles.buttonText}>
-          {saving ? 'Restarting…' : dirty ? 'Save and Restart' : 'Save'}
+          {saving ? 'Restarting…' : dirty ? 'Save and restart' : 'Save'}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.buttonSecondary} onPress={load}>
@@ -379,7 +367,7 @@ const MbsxSettings: React.FC = () => {
               : defaultConfig(),
           )
         }>
-        <Text style={styles.buttonSecondaryText}>Restore Defaults</Text>
+        <Text style={styles.buttonSecondaryText}>Restore defaults</Text>
       </TouchableOpacity>
       {error !== '' && errorCoin === '' ? (
         <Text testID="mbsx-settings-error" style={styles.error}>
@@ -407,7 +395,7 @@ const MbsxSettings: React.FC = () => {
           <Text style={swapCards.section}>Requests</Text>
           <View style={look.cardRow}>
             <Text style={[styles.label, look.rowLabel]}>
-              Revoke Open Requests on Exit
+              Revoke open requests on exit
             </Text>
             <Switch
               testID="mbsx-revoke-on-exit"
@@ -425,7 +413,7 @@ const MbsxSettings: React.FC = () => {
           <Text style={swapCards.section}>Privacy</Text>
           <View style={look.cardRow}>
             <Text style={[styles.label, look.rowLabel]}>
-              Swap Notifications
+              Swap notifications
             </Text>
             <Switch
               testID="mbsx-notify-swaps"
@@ -475,10 +463,7 @@ const MbsxSettings: React.FC = () => {
                       },
                     ]}>
                     {COIN_ICONS[ticker] ? (
-                      <Image
-                        source={COIN_ICONS[ticker]}
-                        style={look.coinMark}
-                      />
+                      <Image source={COIN_ICONS[ticker]} style={look.coinMark} />
                     ) : null}
                   </View>
                   <Text style={styles.label}>{ticker}</Text>
@@ -524,9 +509,7 @@ const MbsxSettings: React.FC = () => {
                     </Text>
                   </TouchableOpacity>
                   {rescanned === coin ? (
-                    <Text
-                      testID={`mbsx-rescan-started-${coin}`}
-                      style={look.note}>
+                    <Text testID={`mbsx-rescan-started-${coin}`} style={look.note}>
                       Looking for pay-ins made from this seed
                     </Text>
                   ) : null}
@@ -541,7 +524,7 @@ const MbsxSettings: React.FC = () => {
           );
         })}
 
-        <Text style={swapCards.section}>Electrum Servers</Text>
+        <Text style={swapCards.section}>Electrum servers</Text>
         <View style={swapCards.card}>
           {shownCoins
             .filter(coin => config.coins[coin].enabled === true)
@@ -585,13 +568,13 @@ const MbsxSettings: React.FC = () => {
             })}
         </View>
 
-        <Text style={[swapCards.section, look.blockTitle]}>Coin Rate Services</Text>
+        <Text style={[swapCards.section, look.blockTitle]}>Coin rate services</Text>
         <View style={swapCards.card}>
           <TouchableOpacity
             testID="mbsx-rate-services"
             style={look.cardRow}
             onPress={() => navigation.navigate('CoinRateServices')}>
-            <Text style={[styles.label, look.rowLabel]}>Fetch Coin Rates</Text>
+            <Text style={[styles.label, look.rowLabel]}>Fetch coin rates</Text>
             <Text testID="mbsx-rate-services-summary" style={styles.value}>
               {ratesOn === null ? '' : ratesOn ? 'On' : "Off, server's prices"}
             </Text>
@@ -613,7 +596,7 @@ const MbsxSettings: React.FC = () => {
               <Text style={swapCards.section}>Display</Text>
               <View style={look.cardRow}>
                 <Text style={[styles.label, look.rowLabel]}>
-                  Show State Names
+                  Show state names
                 </Text>
                 <Switch
                   testID="mbsx-show-raw-states"
@@ -633,7 +616,7 @@ const MbsxSettings: React.FC = () => {
                 raw state name.
               </Text>
               <View style={[look.cardRow, look.cardRowLine]}>
-                <Text style={[styles.label, look.rowLabel]}>Show Debug</Text>
+                <Text style={[styles.label, look.rowLabel]}>Show debug</Text>
                 <Switch
                   testID="mbsx-show-debug"
                   value={config.show_debug === true}
@@ -653,108 +636,134 @@ const MbsxSettings: React.FC = () => {
             </View>
 
             <Text style={[swapCards.section, look.blockTitle]}>Bridge</Text>
-            <Text style={styles.inputLabel}>Pubkey</Text>
-            <TextInput
-              style={styles.input}
-              value={config.bridge_pubkey}
-              onChangeText={bridge_pubkey => edit({bridge_pubkey})}
-              autoCapitalize="none"
-            />
-            <Text style={styles.inputLabel}>Host</Text>
-            <TextInput
-              style={styles.input}
-              value={config.bridge_host}
-              onChangeText={bridge_host => edit({bridge_host})}
-              autoCapitalize="none"
-            />
-            <Text style={styles.inputLabel}>Port</Text>
-            <TextInput
-              style={styles.input}
-              value={config.bridge_port ? String(config.bridge_port) : ''}
-              onChangeText={text =>
-                edit({bridge_port: text ? Number(text) : undefined})
-              }
-              keyboardType="numeric"
-            />
+            <View style={swapCards.card}>
+              <Text style={styles.inputLabel}>Pubkey</Text>
+              <TextInput
+                style={styles.input}
+                value={config.bridge_pubkey}
+                onChangeText={bridge_pubkey => edit({bridge_pubkey})}
+                autoCapitalize="none"
+              />
+              <Text style={styles.inputLabel}>Host</Text>
+              <TextInput
+                style={styles.input}
+                value={config.bridge_host}
+                onChangeText={bridge_host => edit({bridge_host})}
+                autoCapitalize="none"
+              />
+              <Text style={styles.inputLabel}>Port</Text>
+              <TextInput
+                style={styles.input}
+                value={config.bridge_port ? String(config.bridge_port) : ''}
+                onChangeText={text =>
+                  edit({bridge_port: text ? Number(text) : undefined})
+                }
+                keyboardType="numeric"
+              />
+            </View>
 
-            <Text style={[swapCards.section, look.blockTitle]}>Electrum Servers</Text>
-            <Text style={styles.inputLabel}>Kept Connected per Coin</Text>
-            <TextInput
-              testID="mbsx-max-electrum-servers"
-              style={styles.input}
-              value={
-                config.max_electrum_servers
-                  ? String(config.max_electrum_servers)
-                  : ''
-              }
-              placeholder={String(DEFAULT_MAX_ELECTRUM_SERVERS)}
-              onChangeText={text =>
-                edit({max_electrum_servers: text ? Number(text) : undefined})
-              }
-              keyboardType="numeric"
-            />
-
-            <Text style={[swapCards.section, look.blockTitle]}>Certificates</Text>
-            <Text style={styles.value}>
-              Trust anchors for the optional and strict checks. Naming a server
-              confines the certificate to it, and replaces the built in roots
-              for that server rather than adding to them.
+            <Text style={[swapCards.section, look.blockTitle]}>
+              Electrum servers
             </Text>
-            {certs.map(cert => (
-              <View key={String(cert.id)} style={styles.certRow}>
-                <Text style={styles.label}>{cert.label || 'Unlabelled'}</Text>
-                <Text style={styles.value}>
-                  {cert.host ? `${cert.host}:${cert.port}` : 'Every Server'}
-                </Text>
-                <TouchableOpacity
-                  testID={`mbsx-remove-cert-${cert.id}`}
-                  style={styles.buttonSecondary}
-                  onPress={() => confirmRemoveCert(cert.id)}>
-                  <Text style={styles.buttonSecondaryText}>Remove</Text>
-                </TouchableOpacity>
+            <View style={swapCards.card}>
+              <Text style={styles.inputLabel}>Kept connected per coin</Text>
+              <TextInput
+                testID="mbsx-max-electrum-servers"
+                style={styles.input}
+                value={
+                  config.max_electrum_servers
+                    ? String(config.max_electrum_servers)
+                    : ''
+                }
+                placeholder={String(DEFAULT_MAX_ELECTRUM_SERVERS)}
+                onChangeText={text =>
+                  edit({max_electrum_servers: text ? Number(text) : undefined})
+                }
+                keyboardType="numeric"
+              />
+            </View>
+
+            <Text style={[swapCards.section, look.blockTitle]}>
+              Certificates
+            </Text>
+            <View style={swapCards.card}>
+              <Text style={swapCards.note}>
+                Trust anchors for the optional and strict checks. Naming a
+                server confines the certificate to it, and replaces the built
+                in roots for that server rather than adding to them.
+              </Text>
+            </View>
+            {certs.length === 0 ? (
+              <View style={swapCards.card}>
+                <Text style={swapCards.note}>No certificates</Text>
               </View>
-            ))}
-            <Text style={styles.inputLabel}>Label</Text>
-            <TextInput
-              testID="mbsx-cert-label"
-              style={styles.input}
-              value={certLabel}
-              onChangeText={setCertLabel}
-              autoCapitalize="none"
-            />
-            <Text style={styles.inputLabel}>Host (blank for every server)</Text>
-            <TextInput
-              testID="mbsx-cert-host"
-              style={styles.input}
-              value={certHost}
-              onChangeText={setCertHost}
-              autoCapitalize="none"
-            />
-            <Text style={styles.inputLabel}>Port</Text>
-            <TextInput
-              testID="mbsx-cert-port"
-              style={styles.input}
-              value={certPort}
-              onChangeText={setCertPort}
-              keyboardType="numeric"
-            />
-            <Text style={styles.inputLabel}>Certificate (PEM)</Text>
-            <TextInput
-              testID="mbsx-cert-pem"
-              style={[styles.input, styles.pemInput]}
-              value={certPem}
-              onChangeText={setCertPem}
-              placeholder="-----BEGIN CERTIFICATE-----"
-              multiline
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <TouchableOpacity
-              testID="mbsx-add-cert"
-              style={styles.button}
-              onPress={addCert}>
-              <Text style={styles.buttonText}>Add Certificate</Text>
-            </TouchableOpacity>
+            ) : (
+              certs.map(cert => (
+                <View key={String(cert.id)} style={swapCards.card}>
+                  <View style={look.cardRow}>
+                    <View style={look.rowLabel}>
+                      <Text style={styles.label}>
+                        {cert.label || 'Unlabelled'}
+                      </Text>
+                      <Text style={swapCards.note}>
+                        {cert.host ? `${cert.host}:${cert.port}` : 'Every server'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      testID={`mbsx-remove-cert-${cert.id}`}
+                      onPress={() => confirmRemoveCert(cert.id)}>
+                      <Text style={look.remove}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
+            <Text style={[swapCards.section, look.blockTitle]}>
+              Add certificate
+            </Text>
+            <View style={swapCards.card}>
+              <Text style={styles.inputLabel}>Label</Text>
+              <TextInput
+                testID="mbsx-cert-label"
+                style={styles.input}
+                value={certLabel}
+                onChangeText={setCertLabel}
+                autoCapitalize="none"
+              />
+              <Text style={styles.inputLabel}>Host (blank for every server)</Text>
+              <TextInput
+                testID="mbsx-cert-host"
+                style={styles.input}
+                value={certHost}
+                onChangeText={setCertHost}
+                autoCapitalize="none"
+              />
+              <Text style={styles.inputLabel}>Port</Text>
+              <TextInput
+                testID="mbsx-cert-port"
+                style={styles.input}
+                value={certPort}
+                onChangeText={setCertPort}
+                keyboardType="numeric"
+              />
+              <Text style={styles.inputLabel}>Certificate (PEM)</Text>
+              <TextInput
+                testID="mbsx-cert-pem"
+                style={[styles.input, styles.pemInput]}
+                value={certPem}
+                onChangeText={setCertPem}
+                placeholder="-----BEGIN CERTIFICATE-----"
+                multiline
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity
+                testID="mbsx-add-cert"
+                style={styles.button}
+                onPress={addCert}>
+                <Text style={styles.buttonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
           </>
         ) : null}
         {dirty ? null : saveActions}
@@ -828,6 +837,12 @@ const look = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     backgroundColor: '#F2F8FD',
+  },
+  remove: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#2C72FF',
+    fontSize: 14,
   },
 });
 

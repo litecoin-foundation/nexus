@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NavigationProp} from '@react-navigation/native';
 
@@ -19,7 +18,6 @@ import {formatExpiry} from '../format';
 import {swapStateText} from '../stateText';
 import {colors} from '../theme';
 import {isSwapComplete, walletTitle} from '../walletText';
-import {BasicSwapWord} from './BasicSwapMark';
 import CoinPair from './CoinPair';
 
 const WALLET_FINISHED = 3;
@@ -35,11 +33,9 @@ const walletRows = (rows: FinishedSwap[]) => {
 const SwapRow = ({
   swap,
   onPress,
-  onOpenRequest,
 }: {
   swap: FinishedSwap;
   onPress: () => void;
-  onOpenRequest: (requestId: string) => void;
 }) => {
   const ended = isTerminalState(swap.state);
   const complete = isSwapComplete(swap.state);
@@ -52,50 +48,38 @@ const SwapRow = ({
       accessibilityRole="button"
       accessibilityLabel={`${title}. ${sentence}`}
       style={styles.row}
-      onPress={onPress}
-      onLongPress={
-        ended
-          ? () => {
-              Alert.alert(title, undefined, [
-                {
-                  text: 'Copy Swap ID',
-                  onPress: () => Clipboard.setString(swap.id),
-                },
-                ...(swap.request_id
-                  ? [
-                      {
-                        text: 'Open Request',
-                        onPress: () => onOpenRequest(swap.request_id),
-                      },
-                    ]
-                  : []),
-                {text: 'Cancel', style: 'cancel'},
-              ]);
-            }
-          : undefined
-      }>
+      onPress={onPress}>
       <CoinPair from={swap.coin_from} to={swap.coin_to} size={36} />
       <View style={styles.mid}>
-        <Text
-          style={[styles.title, muted ? styles.mutedText : null]}
-          numberOfLines={1}>
-          {title}
-        </Text>
-        {complete ? null : (
+        {complete ? (
+          <Text style={styles.got} numberOfLines={1}>
+            {`+ ${swap.amount_to} ${swap.coin_to}`}
+          </Text>
+        ) : (
+          <Text
+            style={[styles.title, muted ? styles.mutedText : null]}
+            numberOfLines={1}>
+            {title}
+          </Text>
+        )}
+        {complete ? (
+          <Text style={styles.status} numberOfLines={1}>
+            {title}
+          </Text>
+        ) : (
           <Text style={styles.sub} numberOfLines={2}>
             {sentence}
           </Text>
         )}
-        <View style={styles.mark}>
-          <BasicSwapWord />
-        </View>
       </View>
       <View style={styles.amounts}>
-        <Text
-          style={[styles.in, muted ? styles.mutedText : null]}
-          numberOfLines={1}>
-          {`+ ${swap.amount_to} ${swap.coin_to}`}
-        </Text>
+        {complete ? null : (
+          <Text
+            style={[styles.in, muted ? styles.mutedText : null]}
+            numberOfLines={1}>
+            {`+ ${swap.amount_to} ${swap.coin_to}`}
+          </Text>
+        )}
         <Text style={styles.out} numberOfLines={1}>
           {`− ${swap.amount_from} ${swap.coin_from}`}
         </Text>
@@ -116,7 +100,9 @@ const SwapHistoryPreview = () => {
     const live = walletSwaps();
     if (live) {
       setSwaps(walletRows(live));
-      void rememberFinishedSwaps();
+      if (live) {
+        void rememberFinishedSwaps();
+      }
       return;
     }
     readFinishedSwaps().then(rows => setSwaps(walletRows(rows)));
@@ -142,13 +128,6 @@ const SwapHistoryPreview = () => {
       params: {swapId},
       initial: false,
     });
-  const openRequest = (requestId: string) =>
-    navigation.navigate('MbsxStack', {
-      screen: 'RequestDetail',
-      params: {requestId},
-      initial: false,
-    });
-
   return (
     <>
       {swaps.map(swap => (
@@ -156,7 +135,6 @@ const SwapHistoryPreview = () => {
           key={swap.id}
           swap={swap}
           onPress={() => open(swap.id)}
-          onOpenRequest={openRequest}
         />
       ))}
     </>
@@ -166,7 +144,7 @@ const SwapHistoryPreview = () => {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     backgroundColor: colors.white,
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -185,15 +163,23 @@ const styles = StyleSheet.create({
     fontSize: 15,
     flexShrink: 1,
   },
-  mark: {
-    marginTop: 2,
-    marginBottom: 2,
+  got: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#1162E6',
+    fontSize: 16,
   },
-  sub: {
+  status: {
+    marginTop: 2,
     fontFamily: 'Satoshi Variable',
     color: colors.textSecondary,
     fontSize: 12,
-    marginBottom: 4,
+  },
+  sub: {
+    marginTop: 2,
+    fontFamily: 'Satoshi Variable',
+    color: colors.textSecondary,
+    fontSize: 12,
   },
   mutedText: {
     color: colors.textSecondary,
@@ -205,7 +191,7 @@ const styles = StyleSheet.create({
   in: {
     fontFamily: 'Satoshi Variable',
     fontWeight: '700',
-    color: '#1C8C45',
+    color: '#1162E6',
     fontSize: 13,
   },
   out: {

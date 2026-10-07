@@ -34,14 +34,15 @@ const BridgeStatus: React.FC = () => {
 
   return (
     <View style={styles.banner}>
-      <Text style={styles.text}>Not connected to the swap server</Text>
+      <Text style={styles.text}>Not connected</Text>
       <TouchableOpacity
         testID="mbsx-bridge-retry"
         accessibilityRole="button"
+        accessibilityLabel="Retry"
         disabled={retrying}
         onPress={retry}>
         <Text style={[styles.retry, retrying ? styles.retryBusy : null]}>
-          {retrying ? 'Retrying…' : 'Retry'}
+          {retrying ? '(retrying…)' : '(retry)'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retry: {
-    marginLeft: 12,
+    marginLeft: 4,
     color: colors.white,
     fontFamily: 'Satoshi Variable',
     fontSize: 13,

@@ -96,7 +96,7 @@ const AnchorDispute: React.FC = () => {
     ).filter(server => !server.disabled);
     if (!enabled.some(server => server.url === dispute.url)) {
       Alert.alert(
-        'Disable Server',
+        'Disable server',
         `${dispute.url} is no longer an enabled ${dispute.ticker} server.`,
       );
       keep(dispute);
@@ -104,7 +104,7 @@ const AnchorDispute: React.FC = () => {
     }
     if (enabled.length <= 1) {
       Alert.alert(
-        'Disable Server',
+        'Disable server',
         `${dispute.url} is the only ${dispute.ticker} server enabled, and the app ` +
           `needs one to watch ${dispute.ticker}. Add another in Settings first.`,
       );
@@ -114,7 +114,7 @@ const AnchorDispute: React.FC = () => {
       ? ` A ${dispute.ticker} swap is in progress, so be sure before changing servers.`
       : '';
     Alert.alert(
-      'Disable Server',
+      'Disable server',
       `${dispute.url} reported a different ${dispute.ticker} block than ` +
         `${otherParty(dispute)}. Either may be wrong: if this server is right, ` +
         `disabling it lets the other chain through.${swapping} ` +

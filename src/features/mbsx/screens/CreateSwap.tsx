@@ -71,6 +71,7 @@ type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 // The coin lnd holds: a swap sends it from there, a pay-in receives it there.
 const HOST_COIN = 'LTC';
 
+const DUST_LIMIT = 294n;
 const CHAIN_FEE_RESERVE = 10000n;
 
 const swapFeeSats = (
@@ -156,6 +157,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     spendable: bigint;
     unconfirmed: bigint;
   } | null>(null);
+  const [addressFocused, setAddressFocused] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const [coinOpen, setCoinOpen] = useState(false);
   const [receiversOpen, setReceiversOpen] = useState(false);
@@ -222,15 +224,16 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const buyCoins = [HOST_COIN, ...offeredCoins].filter(coin => coin !== coinTo);
 
   // The handshake says which coins the server bridges; no request before it
-  const unbridgedCoin = [sendCoin, receiveCoin].find(
-    coin => coin !== '' && info?.coins[coin]?.bridge_supported !== true,
-  );
+  const unbridgedCoin =
+    [sendCoin, receiveCoin].find(
+          coin => coin !== '' && info?.coins[coin]?.bridge_supported !== true,
+        );
   const bridgeNote = unbridgedCoin
     ? `The swap server has no bridge for ${unbridgedCoin}`
     : '';
   const torPending = torApplied !== null && torEnabled !== torApplied;
 
-  const rates = useAppSelector(state => state.mbsx.rates);
+  const rates = useAppSelector(state => state.mbsx.rates ?? {});
   const reference = independentReference(
     rates,
     sendCoin,
@@ -252,6 +255,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const {
     amounts,
     setAmount,
+    canConvert,
     fixedRate,
     setFixedRate,
     valueDeviation,
@@ -338,9 +342,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const blockNote = bridgeNote || feeNote;
 
   const dispatch = useAppDispatch();
-  const savedAddresses = useAppSelector(state =>
+  const savedRaw = useAppSelector(state =>
     coinTo ? (state.mbsxAddresses.byCoin[coinTo] ?? []) : [],
   );
+  const savedAddresses = savedRaw;
 
   // Scan pops back onto this screen with the result in params.
   const scanned = route.params?.scanData;
@@ -444,10 +449,14 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         throw new Error(`Not a ${coinTo} address`);
       }
       // Amounts are entered in whole coins; the module holds the only conversion.
+      let amountFromSats: bigint;
       try {
-        parseAmount(sendCoin, amountFrom);
+        amountFromSats = parseAmount(sendCoin, amountFrom);
       } catch {
         throw new Error('Invalid amount to send');
+      }
+      if (!payIn && amountFromSats < DUST_LIMIT) {
+        throw new Error('Amount to send is too small to spend');
       }
       // Parsed only to reject it here: the module is sent the string. Leasing
       // coins and then failing on the receive amount would strand them.
@@ -733,10 +742,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         key={coinChosen ? 'address-on' : 'address-off'}
         testID="mbsx-address-to"
         style={[look.receiver, coinChosen ? null : styles.inputDisabled]}
-        placeholder={payIn ? 'Refund Address' : 'Receive Address'}
+        placeholder={payIn ? 'Refund address' : 'Receive address'}
         placeholderTextColor="#9AA0AE"
         value={addressTo}
         onChangeText={setAddressTo}
+        onFocus={() => setAddressFocused(true)}
+        onBlur={() => setAddressFocused(false)}
         editable={coinChosen}
         autoCapitalize="none"
       />
@@ -764,8 +775,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               (addressTo
                 ? shortAddress(addressTo)
                 : noSaved
-                  ? `Add a ${coinTo} Address`
-                  : 'Select Receiver')}
+                  ? `Add a ${coinTo} address`
+                  : 'Select receiver')}
           </Text>
           <Image
             source={require('../../../assets/images/forward.png')}
@@ -832,7 +843,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             onPress={() =>
               navigation.navigate('CoinAddresses', {coin: coinTo})
             }>
-            <Text style={look.saved}>Manage Addresses</Text>
+            <Text style={look.saved}>Manage addresses</Text>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -896,7 +907,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 testID="mbsx-max"
                 disabled={!balances}
                 onPress={fillMax}>
-                <Text style={look.max}>{`Max.  ${spendableLabel} ${HOST_COIN}`}</Text>
+                <Text style={look.max}>{`Max. ${spendableLabel} ${HOST_COIN}`}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -906,7 +917,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             </Text>
           ) : null}
           <Text style={look.fromLine}>
-            {payIn ? 'From External Wallet' : `From  ${walletName}`}
+            {payIn ? 'From another wallet' : `From ${walletName}`}
           </Text>
           {payIn ? addressBlock : null}
           {spendNote !== '' ? (
@@ -967,7 +978,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             addressBlock
           ) : buysToHost ? (
             <Text style={look.fromLine}>
-              {`To  ${walletName}`}
+              {`To ${walletName}`}
             </Text>
           ) : (
             <>
@@ -1038,7 +1049,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         {advanced ? (
           <View style={look.card}>
             <View style={look.settingRow}>
-              <Text style={look.settingLabel}>Fix Rate</Text>
+              <Text style={look.settingLabel}>Fix rate</Text>
               <Switch
                 testID="mbsx-fix-rate"
                 value={fixedRate}
@@ -1113,10 +1124,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         ]}>
         {confirming ? (
           <View testID="mbsx-confirm" style={look.confirmCard}>
-            <Text style={look.confirmTitle}>Confirm Request</Text>
+            <Text style={look.confirmTitle}>Confirm swap</Text>
             <Text style={look.confirmLine}>
               {payIn
-                ? `Pay ${amountFrom} ${sendCoin} from an external wallet`
+                ? `Pay ${amountFrom} ${sendCoin} from another wallet`
                 : `Send ${amountFrom} ${sendCoin}`}
             </Text>
             <Text style={look.confirmLine}>
@@ -1190,7 +1201,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 busy || blockNote !== '' || (noOffers && !noOffersAcknowledged)
               }>
               <Text style={styles.buttonText}>
-                {busy ? 'Requesting…' : 'Get Offers'}
+                {busy ? 'Requesting…' : 'Get offers'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1221,7 +1232,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               (offReference && !rateAcknowledged)
             }>
             <Text style={styles.buttonText}>
-              {busy ? 'Requesting…' : 'Get Offers'}
+              {busy ? 'Requesting…' : 'Get offers'}
             </Text>
           </TouchableOpacity>
         )}

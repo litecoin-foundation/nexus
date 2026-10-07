@@ -33,6 +33,10 @@ export const BasicSwapWord = () => (
   </View>
 );
 
+export const BasicSwapArrows = ({size = 16}: {size?: number}) => (
+  <SvgXml xml={ARROWS} width={size} height={size} />
+);
+
 const styles = StyleSheet.create({
   badge: {
     width: 22,

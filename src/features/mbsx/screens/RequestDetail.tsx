@@ -14,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
 import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
@@ -28,14 +27,15 @@ import {
   raisedFeeNote,
   shortAddress,
 } from '../format';
-import {getNetwork} from '../network';
-import {independentReference, refreshRates} from '../rates';
 import {getMbsxStyles} from '../theme';
+import {independentReference, refreshRates} from '../rates';
+import {getNetwork} from '../network';
 import {coinString, offerWarning} from '../useSwapAmounts';
 import CoinPair from '../components/CoinPair';
 import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
 import MbsxBackButton from '../components/MbsxBackButton';
+import CopyButton from '../components/CopyButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {requestStateText, swapStateText, useShowRawStates} from '../stateText';
 import {
@@ -43,6 +43,7 @@ import {
   acceptOffer,
   getRequestInfo,
   getSwapInfo,
+  isEndedRequestState,
   isUnderwayState,
   onMessage,
   removeRequest,
@@ -96,7 +97,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const [accepting, setAccepting] = useState(false);
   const [pendingOffer, setPendingOffer] = useState<SwapOffer | null>(null);
   const [acknowledged, setAcknowledged] = useState<string[]>([]);
-  const rates = useAppSelector(state => state.mbsx.rates);
+  const rates = useAppSelector(state => state.mbsx.rates ?? {});
 
   useEffect(() => {
     setPendingOffer(null);
@@ -212,10 +213,12 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 
   const offerStatus = (offer: SwapOffer): string | null => {
     if (offer.accepted) {
-      return swaps.length > 0 ? 'Accepted' : 'Accepted, waiting for the swap';
+      return swaps.length > 0
+        ? 'The offer was accepted'
+        : 'The offer was accepted and is waiting for the swap';
     }
     if (offer.state === 'REVOKED') {
-      return 'Withdrawn by the Offerer';
+      return 'Withdrawn by the offerer';
     }
     if (offer.state === 'REJECTED') {
       return "The server's swap did not match this offer";
@@ -262,16 +265,12 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 {request.id}
               </Text>
             </View>
-            <TouchableOpacity
+            <CopyButton
               testID={`mbsx-request-id-${request.id}`}
-              accessibilityLabel="Copy request id"
+              label="Copy request id"
+              value={request.id}
               style={look.iconBtn}
-              onPress={() => Clipboard.setString(request.id)}>
-              <Image
-                source={require('../../../assets/icons/copy-icon.png')}
-                style={look.toolIcon}
-              />
-            </TouchableOpacity>
+            />
           </View>
         </View>
 
@@ -356,7 +355,6 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               offer.coin_receive,
               Date.now() / 1000,
             ),
-            // Real prices mean nothing for regtest coins, so none are fetched
             getNetwork() !== 'regtest',
           );
           const shortfall = offer.below_minimum
@@ -388,7 +386,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                   <View style={look.offerMarks}>
                     {offer.id === bestOfferId ? (
                       <Text testID={`mbsx-best-rate-${offer.id}`} style={look.best}>
-                        Best Rate
+                        Best rate
                       </Text>
                     ) : null}
                     {kind ? <Text style={look.offerKind}>{kind}</Text> : null}
@@ -433,8 +431,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 <TouchableOpacity
                   testID={`mbsx-offer-warning-${offer.id}`}
                   onPress={() =>
-                    setAcknowledged(keys =>
-                      keys.includes(ackKey) ? keys : [...keys, ackKey],
+                    setAcknowledged(ids =>
+                      ids.includes(ackKey) ? ids : [...ids, ackKey],
                     )
                   }>
                   <Text style={styles.error}>
@@ -531,6 +529,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               text="Waiting for an offer"
               textStyle={look.waitText}
             />
+            <Text style={look.waitNote}>
+              Offers usually arrive within a few minutes. You can leave this
+              screen.
+            </Text>
           </View>
         ) : null}
 
@@ -583,7 +585,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             </View>
             {swap.fees_coin ? (
               <View style={[look.feeRow, look.feeFirst]}>
-                <Text style={look.feeLabel}>Swap Fees</Text>
+                <Text style={look.feeLabel}>Swap fees</Text>
                 <Text style={look.feeValue}>
                   {`${swap.fees_total} ${swap.fees_coin}`}
                 </Text>
@@ -682,6 +684,12 @@ const look = StyleSheet.create({
   waitText: {
     marginTop: 0,
     color: '#484859',
+  },
+  waitNote: {
+    marginTop: 8,
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 14,
   },
   idRow: {
     flexDirection: 'row',

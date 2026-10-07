@@ -19,7 +19,7 @@ const renderScreen = (onRetry = jest.fn()) => {
 describe('StartingScreen', () => {
   it('names the step the module is on', () => {
     const {store, view} = renderScreen();
-    expect(view.getByText('Starting')).toBeTruthy();
+    expect(view.getByText('Starting BasicSwap')).toBeTruthy();
     expect(view.queryByTestId('mbsx-starting-step')).toBeNull();
 
     act(() => {
@@ -37,7 +37,7 @@ describe('StartingScreen', () => {
     act(() => {
       store.dispatch(setError('mbsx failed to initialise'));
     });
-    expect(view.getByText('Swaps Did Not Start')).toBeTruthy();
+    expect(view.getByText('Swaps did not start')).toBeTruthy();
     expect(view.getByText('mbsx failed to initialise')).toBeTruthy();
     fireEvent.press(view.getByTestId('mbsx-starting-retry'));
     expect(onRetry).toHaveBeenCalledTimes(1);

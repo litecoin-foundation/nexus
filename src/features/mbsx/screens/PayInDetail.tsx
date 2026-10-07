@@ -39,9 +39,11 @@ import CoinPair from '../components/CoinPair';
 import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
 import MbsxBackButton from '../components/MbsxBackButton';
+import CopyButton from '../components/CopyButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {depositStateText, useShowRawStates} from '../stateText';
 import {
+  ENDED_DEPOSIT_STATES,
   cancelDeposit,
   getCoinPrices,
   getInfo,
@@ -56,12 +58,13 @@ import type {Deposit, MbsxDrawerParamList} from '../types';
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'PayInDetail'>;
 
 const PAYABLE = new Set(['WAITING', 'SEEN', 'SHORT']);
-const PAUSED = new Set(['SHORT', 'NO_OFFER']);
+const PAUSED = new Set(['SHORT', 'NO_QUOTE', 'NO_OFFER']);
 const CANCELLABLE = new Set([
   'WAITING',
   'SEEN',
   'SHORT',
   'RECEIVED',
+  'NO_QUOTE',
   'NO_OFFER',
   'REQUESTED',
 ]);
@@ -114,7 +117,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const {depositId} = route.params;
   const [loaded, setLoaded] = useState<Deposit | null>(null);
   const [floor, setFloor] = useState('');
-  const rates = useAppSelector(state => state.mbsx.rates);
+  const rates = useAppSelector(state => state.mbsx.rates ?? {});
   const [error, setError] = useState('');
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [offerWaiting, setOfferWaiting] = useState(false);
@@ -218,19 +221,19 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const suggestion = deposit && prices ? suggestedFloor(deposit, prices) : '';
   const lastSuggestion = useRef('');
   useEffect(() => {
-    if (
-      suggestion !== '' &&
-      (floor === '' || floor === lastSuggestion.current)
-    ) {
+    if (suggestion !== '' && (floor === '' || floor === lastSuggestion.current)) {
       setFloor(suggestion);
     }
     lastSuggestion.current = suggestion;
   }, [suggestion, floor]);
-  const priceLine =
+  const rateLabel = reference
+    ? reference.label
+    : "Server's rate, not checked";
+  const rateValue =
     deposit && prices && prices.from > 0 && prices.to > 0
-      ? `${reference ? reference.label : "Server's rate, not checked"}: 1 ${
-          deposit.coin
-        } ≈ ${coinString(prices.from / prices.to)} ${deposit.coin_to}`
+      ? `1 ${deposit.coin} ≈ ${coinString(prices.from / prices.to)} ${
+          deposit.coin_to
+        }`
       : '';
   const floorShortfall =
     deposit && reference && Number(floor) > 0
@@ -274,15 +277,8 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             <CoinPair from={deposit.coin} to={deposit.coin_to} size={40} />
             <View style={swapCards.historyMid}>
               <Text testID="mbsx-payin-state" style={swapCards.historyTitle}>
-                {offerWaiting
-                  ? 'Offer Received'
-                  : depositStateText(deposit.state, deposit.coin)}
+                {depositStateText(deposit.state, deposit.coin)}
               </Text>
-              {offerWaiting ? (
-                <Text testID="mbsx-payin-next" style={swapCards.historySub}>
-                  View the swap request to continue
-                </Text>
-              ) : null}
               {showRaw ? (
                 <Text style={swapCards.historySub}>{deposit.state}</Text>
               ) : null}
@@ -296,25 +292,20 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         {deposit.payable ? (
           <>
             <View style={swapCards.card}>
-              <View style={swapCards.historyRow}>
-                {coinMark(deposit.coin)}
-                <Text
-                  testID="mbsx-payin-amount"
-                  style={[swapCards.historyTitle, look.amount]}>
-                  {`${deposit.remaining} ${deposit.coin}`}
-                </Text>
-                <TouchableOpacity
+              <Text style={swapCards.historySub}>Pay exactly</Text>
+              <View style={look.addressRow}>
+                <View style={look.addressBox}>
+                  <Text testID="mbsx-payin-amount" style={look.address}>
+                    {`${deposit.remaining} ${deposit.coin}`}
+                  </Text>
+                </View>
+                <CopyButton
                   testID="mbsx-payin-copy-amount"
-                  accessibilityLabel="Copy Amount"
+                  label="Copy amount"
+                  value={String(deposit.remaining)}
                   style={look.iconBtn}
-                  onPress={() => Clipboard.setString(deposit.remaining)}>
-                  <Image
-                    source={require('../../../assets/icons/copy-icon.png')}
-                    style={look.toolIcon}
-                  />
-                </TouchableOpacity>
+                />
               </View>
-              <Text style={swapCards.historySub}>Pay Exactly</Text>
               <View style={look.qr}>
                 <QRCode value={deposit.address} size={SCREEN_HEIGHT * 0.22} />
               </View>
@@ -327,16 +318,12 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                     {deposit.address}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <CopyButton
                   testID="mbsx-payin-copy"
-                  accessibilityLabel="Copy"
+                  label="Copy address"
+                  value={deposit.address}
                   style={look.iconBtn}
-                  onPress={() => Clipboard.setString(deposit.address)}>
-                  <Image
-                    source={require('../../../assets/icons/copy-icon.png')}
-                    style={look.toolIcon}
-                  />
-                </TouchableOpacity>
+                />
               </View>
             </View>
           </>
@@ -372,7 +359,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             </Text>
           </View>
         </View>
-        <Text style={swapCards.section}>You Receive at Least</Text>
+        <Text style={swapCards.section}>You receive at least</Text>
         <View style={swapCards.card}>
           <View style={swapCards.amountRow}>
             {coinMark(deposit.coin_to)}
@@ -381,7 +368,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             </Text>
           </View>
         </View>
-        <Text style={swapCards.section}>Refunds Go To</Text>
+        <Text style={swapCards.section}>Refunds go to</Text>
         <View style={swapCards.card}>
           <Text selectable style={swapCards.meta}>
             {deposit.refund_address}
@@ -389,7 +376,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         </View>
         {deposit.sweep_txid ? (
           <>
-            <Text style={swapCards.section}>Refund Transaction</Text>
+            <Text style={swapCards.section}>Refund transaction</Text>
             <TouchableOpacity
               testID="mbsx-payin-sweep"
               style={swapCards.card}
@@ -413,18 +400,20 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
               style={
                 offerWaiting ? styles.buttonText : styles.buttonSecondaryText
               }>
-              View the Swap Request
+              View request
             </Text>
           </TouchableOpacity>
         ) : null}
         {paused ? (
           <>
             <Text style={swapCards.section}>
-              {deposit.state === 'NO_OFFER' ? 'Lower the Minimum' : 'New Minimum'}
+              {deposit.state === 'NO_QUOTE' || deposit.state === 'NO_OFFER'
+                ? 'Lower the minimum'
+                : 'New minimum'}
             </Text>
             <View style={swapCards.card}>
-              <Text style={swapCards.note}>
-                {deposit.state === 'NO_OFFER'
+              <Text style={[swapCards.note, look.floorNote]}>
+                {deposit.state === 'NO_QUOTE' || deposit.state === 'NO_OFFER'
                   ? `No offer met ${deposit.min_amount_to} ${deposit.coin_to}. Lower it to try again.`
                   : `Swap the ${deposit.received} ${deposit.coin} received for at least`}
               </Text>
@@ -442,10 +431,13 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 placeholder={`${deposit.coin_to} to receive`}
                 keyboardType="decimal-pad"
               />
-              {priceLine ? (
-                <Text testID="mbsx-payin-rate" style={swapCards.note}>
-                  {priceLine}
-                </Text>
+              {rateValue ? (
+                <View style={look.quoteRow}>
+                  <Text style={look.quoteLabel}>{rateLabel}</Text>
+                  <Text testID="mbsx-payin-rate" style={look.quoteValue}>
+                    {rateValue}
+                  </Text>
+                </View>
               ) : null}
               {reference && floorShortfall > RATE_TOLERANCE ? (
                 <Text testID="mbsx-payin-floor-warning" style={styles.error}>
@@ -455,15 +447,15 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 </Text>
               ) : null}
               <TouchableOpacity
-                testID="mbsx-payin-request-again"
+                testID="mbsx-payin-requote"
                 style={[
                   styles.button,
-                  look.requestAgain,
+                  look.requote,
                   floor === '' ? styles.buttonDisabled : null,
                 ]}
                 disabled={floor === ''}
                 onPress={() => act(() => requestDepositAgain(deposit, floor))}>
-                <Text style={styles.buttonText}>Request Again</Text>
+                <Text style={styles.buttonText}>Re-quote</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -475,7 +467,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
         ) : null}
         {confirmingCancel ? (
           <View testID="mbsx-payin-cancel-confirm" style={swapCards.card}>
-            <Text style={swapCards.historyTitle}>Return the Payment?</Text>
+            <Text style={swapCards.historyTitle}>Return the payment?</Text>
             <Text style={swapCards.note}>
               {`${deposit.received} ${deposit.coin} goes back to your refund address.`}
             </Text>
@@ -484,7 +476,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 testID="mbsx-payin-cancel-keep"
                 style={[styles.buttonSecondary, look.confirmAction]}
                 onPress={() => setConfirmingCancel(false)}>
-                <Text style={styles.buttonSecondaryText}>Keep It</Text>
+                <Text style={styles.buttonSecondaryText}>Keep it</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 testID="mbsx-payin-cancel-confirm-button"
@@ -493,7 +485,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                   setConfirmingCancel(false);
                   act(() => cancelDeposit(deposit.deposit_id));
                 }}>
-                <Text style={styles.buttonText}>Return Payment</Text>
+                <Text style={styles.buttonText}>Return payment</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -522,9 +514,6 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
 };
 
 const look = StyleSheet.create({
-  amount: {
-    flex: 1,
-  },
   qr: {
     alignItems: 'center',
     marginVertical: 16,
@@ -532,6 +521,7 @@ const look = StyleSheet.create({
   addressRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 8,
   },
   addressBox: {
     flex: 1,
@@ -560,8 +550,36 @@ const look = StyleSheet.create({
     height: 18,
     tintColor: '#484859',
   },
-  requestAgain: {
+  requote: {
     marginTop: 12,
+  },
+  floorNote: {
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  quoteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#EEF1F5',
+  },
+  quoteLabel: {
+    flexShrink: 1,
+    marginRight: 12,
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#747E87',
+    fontSize: 14,
+  },
+  quoteValue: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
+    textAlign: 'right',
   },
   confirmActions: {
     flexDirection: 'row',

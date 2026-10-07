@@ -191,6 +191,9 @@ export const serverStateLabel = (server: ElectrumServer, row?: ServerRow) => {
   return row.live ? 'Connected' : 'Connecting';
 };
 
+export const serverErrorLabel = (error: string) =>
+  error === 'connect failed' ? 'Connect failed' : error;
+
 export type DraftProblem = {message: string; coin: string};
 
 export const draftProblem = (config: MbsxConfig): DraftProblem | null => {

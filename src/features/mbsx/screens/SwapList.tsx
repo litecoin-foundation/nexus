@@ -31,6 +31,7 @@ import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
 import {swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
+import {walletTitle} from '../walletText';
 import type {MbsxDrawerParamList, SwapSummary} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapList'>;
@@ -103,10 +104,13 @@ const SwapList: React.FC<Props> = ({navigation}) => {
       <View style={styles.headerAction}>
         <TouchableOpacity
           testID="mbsx-new-swap"
-          style={[styles.button, !running ? styles.buttonDisabled : null]}
+          style={[
+            styles.button,
+            !running ? styles.buttonDisabled : null,
+          ]}
           disabled={!running}
           onPress={() => navigation.navigate('CreateSwap')}>
-          <Text style={styles.buttonText}>New Swap</Text>
+          <Text style={styles.buttonText}>New swap</Text>
         </TouchableOpacity>
         {/* Removes the request each finished swap belongs to, since a swap on
             its own leaves the request that funded it behind. */}
@@ -169,13 +173,20 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                     triggerLightFeedback();
                     navigation.navigate('CreateSwap');
                   }}>
-                  <Text style={swapCards.link}>New Swap</Text>
+                  <Text style={swapCards.link}>New swap</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
           ) : null
         ) : (
-          shown.map(swap => (
+          shown.map(swap => {
+            const title = walletTitle(swap.state);
+            const sentence = swapStateText(
+              swap.state,
+              swap.coin_from,
+              swap.coin_to,
+            );
+            return (
             <TouchableOpacity
               key={swap.id}
               style={swapCards.card}
@@ -185,9 +196,14 @@ const SwapList: React.FC<Props> = ({navigation}) => {
               <View style={swapCards.historyRow}>
                 <CoinPair from={swap.coin_from} to={swap.coin_to} />
                 <View style={swapCards.historyMid}>
-                  <Text style={swapCards.historyTitle} numberOfLines={2}>
-                    {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                  <Text style={swapCards.historyTitle} numberOfLines={1}>
+                    {title}
                   </Text>
+                  {sentence.toLowerCase() === title.toLowerCase() ? null : (
+                    <Text style={swapCards.historySub} numberOfLines={2}>
+                      {sentence}
+                    </Text>
+                  )}
                   {showRaw ? (
                     <Text style={swapCards.historySub}>{swap.state}</Text>
                   ) : null}
@@ -215,7 +231,8 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                 </View>
               </View>
             </TouchableOpacity>
-          ))
+            );
+          })
         )}
       </ScrollView>
     </View>

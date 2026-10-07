@@ -40,7 +40,7 @@ const StartingScreen: React.FC<Props> = ({onRetry}) => {
       </View>
       {error ? (
         <>
-          <Text style={styles.title}>Swaps Did Not Start</Text>
+          <Text style={styles.title}>Swaps did not start</Text>
           <Text style={styles.error}>{error}</Text>
           <TouchableOpacity
             testID="mbsx-starting-retry"
@@ -52,7 +52,7 @@ const StartingScreen: React.FC<Props> = ({onRetry}) => {
       ) : (
         <>
           <ActivityIndicator color={colors.primary} size="large" />
-          <Text style={styles.title}>Starting</Text>
+          <Text style={styles.title}>Starting BasicSwap</Text>
           {step ? (
             <Text style={styles.step} testID="mbsx-starting-step">
               {STEP_TEXT[step] ?? step}

@@ -1,5 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {
+  Keyboard,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -31,6 +33,10 @@ import type {MbsxDrawerParamList} from '../types';
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CoinRateServices'>;
 
 const PLANS: RateServices['coingecko']['plan'][] = ['demo', 'pro'];
+const PLAN_LABELS: Record<(typeof PLANS)[number], string> = {
+  demo: 'Demo',
+  pro: 'Pro',
+};
 
 // Outlives the page, as the settings draft outlives the section
 let unsaved: RateServices | null = null;
@@ -39,7 +45,7 @@ const time = (at: number) => new Date(at * 1000).toLocaleTimeString();
 
 const resultText = (result: SourceResult | undefined): string => {
   if (!result) {
-    return 'Not Asked Yet';
+    return 'Not asked yet';
   }
   switch (result.kind) {
     case 'ok':
@@ -57,12 +63,28 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const results = useAppSelector(state => state.mbsx.rateResults);
   const [saved, setSaved] = useState<RateServices | null>(null);
   const [draft, setDraftState] = useState<RateServices | null>(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, event => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   useEffect(() => {
     navigation.setOptions?.({
@@ -168,7 +190,7 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
         contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
         {getNetwork() === 'regtest' ? (
@@ -222,7 +244,7 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
                       styles.modeText,
                       active ? styles.modeTextActive : null,
                     ]}>
-                    {plan}
+                    {PLAN_LABELS[plan]}
                   </Text>
                 </TouchableOpacity>
               );

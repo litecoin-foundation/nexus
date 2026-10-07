@@ -1,5 +1,7 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
+  Keyboard,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -22,6 +24,7 @@ import {
   editServer,
   loadSettingsDraft,
   saveSettingsDraft,
+  serverErrorLabel,
   serverStateLabel,
   useSettingsDraft,
   useUnsavedDraftGuard,
@@ -42,6 +45,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const dispatch = useAppDispatch();
   const storedJson = useAppSelector(state => state.mbsx.settingsStoredJson);
   const {config, setConfig, dirty} = useSettingsDraft();
@@ -50,6 +54,21 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
   useUnsavedDraftGuard(dirty, 'ElectrumServers');
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, event => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   useEffect(() => {
     navigation.setOptions?.({
@@ -118,26 +137,28 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
         contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
-        <Text style={styles.inputLabel}>Kept Connected</Text>
-        <TextInput
-          testID="mbsx-servers-cap"
-          style={styles.input}
-          value={
-            settings.max_electrum_servers
-              ? String(settings.max_electrum_servers)
-              : ''
-          }
-          placeholder={String(
-            config.max_electrum_servers ?? DEFAULT_MAX_ELECTRUM_SERVERS,
-          )}
-          onChangeText={text =>
-            setConfig(prev => editCoinCap(prev, coin, text))
-          }
-          keyboardType="numeric"
-        />
+        <View style={swapCards.card}>
+          <Text style={styles.inputLabel}>Kept connected</Text>
+          <TextInput
+            testID="mbsx-servers-cap"
+            style={styles.input}
+            value={
+              settings.max_electrum_servers
+                ? String(settings.max_electrum_servers)
+                : ''
+            }
+            placeholder={String(
+              config.max_electrum_servers ?? DEFAULT_MAX_ELECTRUM_SERVERS,
+            )}
+            onChangeText={text =>
+              setConfig(prev => editCoinCap(prev, coin, text))
+            }
+            keyboardType="numeric"
+          />
+        </View>
         {settings.electrumx.map((server, index) => {
           const row = rows[server.url];
           return (
@@ -150,7 +171,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
               <View style={[swapCards.card, look.serverRow]}>
                 <View>
                   <Text style={styles.label}>
-                    {server.url.replace(/^(tcp|ssl):\/\//, '') || 'New Server'}
+                    {server.url.replace(/^(tcp|ssl):\/\//, '') || 'New server'}
                   </Text>
                   <Text
                     testID={`mbsx-server-state-${index}`}
@@ -158,7 +179,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
                     {serverStateLabel(server, row)}
                   </Text>
                   {row?.error && !server.disabled ? (
-                    <Text style={styles.error}>{row.error}</Text>
+                    <Text style={look.error}>{serverErrorLabel(row.error)}</Text>
                   ) : null}
                 </View>
                 <Switch
@@ -184,7 +205,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
               index: settings.electrumx.length,
             });
           }}>
-          <Text style={styles.buttonSecondaryText}>Add Server</Text>
+          <Text style={styles.buttonSecondaryText}>Add server</Text>
         </TouchableOpacity>
         {error ? (
           <Text testID="mbsx-servers-error" style={styles.error}>
@@ -203,7 +224,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
             disabled={saving}
             onPress={save}>
             <Text style={styles.buttonText}>
-              {saving ? 'Restarting…' : 'Save and Restart'}
+              {saving ? 'Restarting…' : 'Save and restart'}
             </Text>
           </TouchableOpacity>
         ) : null}
@@ -217,6 +238,13 @@ const look = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  error: {
+    marginTop: 2,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    color: '#ef3329',
+    textAlign: 'left',
   },
 });
 

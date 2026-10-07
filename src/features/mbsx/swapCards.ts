@@ -88,7 +88,7 @@ export const swapCards = StyleSheet.create({
   historyIn: {
     fontFamily: 'Satoshi Variable',
     fontWeight: '700',
-    color: '#1C8C45',
+    color: '#1162E6',
     fontSize: 13,
   },
   historyOut: {

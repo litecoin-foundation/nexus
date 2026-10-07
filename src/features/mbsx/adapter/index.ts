@@ -36,7 +36,7 @@ import {spendableBalance} from './prevouts';
 import type {FundingOutput} from './prevouts';
 import {signSwapTx} from './signTx';
 import {APP_TYPE_NEXUS, deriveMainExtkey} from './mainKey';
-import {notifySwapEnded} from './notify';
+import {notifyOfferReady, notifySwapEnded} from './notify';
 import {scheduleWakes} from './wake';
 
 export {
@@ -319,15 +319,28 @@ export const hasActiveSwaps = (): boolean => {
   return rv.has_swaps === true;
 };
 
-export const swapInProgress = (): boolean => {
+const openRequest = (): boolean | null => {
+  const requests = listRequests();
+  if (requests === null) {
+    return null;
+  }
+  return requests.some(request => !isEndedRequestState(request.state));
+};
+
+export const swapActivity = (): {swaps: boolean; requests: boolean} => {
   if (starting || NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
-    return false;
+    return {swaps: false, requests: false};
   }
   const rv = NitroBSX.hasActiveSwaps() as MbsxResult<{has_swaps?: boolean}>;
-  if (rv.error) {
-    return false;
-  }
-  return rv.has_swaps === true;
+  return {
+    swaps: !rv.error && rv.has_swaps === true,
+    requests: openRequest() === true,
+  };
+};
+
+export const swapInProgress = (): boolean => {
+  const activity = swapActivity();
+  return activity.swaps || activity.requests;
 };
 
 // Uppercase tickers, as the module reports them. A swap names its coins in its
@@ -375,7 +388,11 @@ export const stopIfIdle = async () => {
   // Still here as the backstop: a request that errored before producing a swap
   // never emits a state change for the watcher to see.
   await reconcileNow();
-  const idle = isRunning() && !sectionMounted && !hasActiveSwaps();
+  const idle =
+    isRunning() &&
+    !sectionMounted &&
+    !hasActiveSwaps() &&
+    openRequest() === false;
   console.log(`mbsx stopIfIdle: ${idle ? 'stopping' : 'staying up'}`);
   await rememberFinishedSwaps();
   if (!idle) {
@@ -514,6 +531,14 @@ const watchSwapStates = () =>
           : event.event_type === 'REQUEST_STATE_CHANGED'
             ? ENDED_REQUEST_STATES.has(event.event_sub_type)
             : null;
+      if (
+        event.event_type === 'REQUEST_STATE_CHANGED' &&
+        event.event_sub_type === 'OFFER_RECEIVED'
+      ) {
+        void notifyOfferReady(
+          typeof event.linked_id === 'string' ? event.linked_id : undefined,
+        );
+      }
       if (ended === null) {
         return;
       }

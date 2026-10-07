@@ -3,7 +3,7 @@ import notifee, {EventType} from '@notifee/react-native';
 
 import {navigationRef} from '../../../navigation/NavigationService';
 
-const openSwap = (swapId: string) => {
+const openScreen = (screen: string, params: Record<string, string>) => {
   (
     navigationRef.navigate as (
       name: string,
@@ -11,11 +11,7 @@ const openSwap = (swapId: string) => {
     ) => void
   )('NewWalletStack', {
     screen: 'MbsxStack',
-    params: {
-      screen: 'SwapDetail',
-      params: {swapId},
-      initial: false,
-    },
+    params: {screen, params, initial: false},
   });
 };
 
@@ -29,27 +25,32 @@ const walletIsOpen = () => {
 
 const MbsxNotificationOpen = () => {
   useEffect(() => {
-    let pending = '';
+    let pending: {screen: string; params: Record<string, string>} | null = null;
     let timer: ReturnType<typeof setInterval> | undefined;
 
     const flush = () => {
       if (!pending || !walletIsOpen()) {
         return;
       }
-      const swapId = pending;
-      pending = '';
-      openSwap(swapId);
+      const target = pending;
+      pending = null;
+      openScreen(target.screen, target.params);
       if (timer) {
         clearInterval(timer);
         timer = undefined;
       }
     };
 
-    const queue = (swapId: unknown) => {
-      if (typeof swapId !== 'string' || swapId === '') {
+    const queue = (data: {swapId?: unknown; requestId?: unknown} | undefined) => {
+      const swapId = data?.swapId;
+      const requestId = data?.requestId;
+      if (typeof requestId === 'string' && requestId !== '') {
+        pending = {screen: 'RequestDetail', params: {requestId}};
+      } else if (typeof swapId === 'string' && swapId !== '') {
+        pending = {screen: 'SwapDetail', params: {swapId}};
+      } else {
         return;
       }
-      pending = swapId;
       flush();
       if (pending && !timer) {
         timer = setInterval(flush, 400);
@@ -58,11 +59,11 @@ const MbsxNotificationOpen = () => {
 
     const unsubscribe = notifee.onForegroundEvent(({type, detail}) => {
       if (type === EventType.PRESS) {
-        queue(detail.notification?.data?.swapId);
+        queue(detail.notification?.data);
       }
     });
     notifee.getInitialNotification().then(initial => {
-      queue(initial?.notification.data?.swapId);
+      queue(initial?.notification.data);
     });
 
     return () => {

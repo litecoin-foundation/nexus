@@ -175,8 +175,9 @@ describe('PayInDetail', () => {
       'value',
       '12.375',
     );
+    expect(checked.getByText('CoinGecko rate')).toBeTruthy();
     expect(checked.getByTestId('mbsx-payin-rate')).toHaveTextContent(
-      'CoinGecko rate: 1 BTC ≈ 1250 LTC',
+      '1 BTC ≈ 1250 LTC',
     );
     expect(checked.queryByTestId('mbsx-payin-floor-warning')).toBeNull();
     fireEvent.changeText(checked.getByTestId('mbsx-payin-floor'), '10');
@@ -190,8 +191,9 @@ describe('PayInDetail', () => {
       'value',
       '6.1875',
     );
+    expect(unchecked.getByText("Server's rate, not checked")).toBeTruthy();
     expect(unchecked.getByTestId('mbsx-payin-rate')).toHaveTextContent(
-      "Server's rate, not checked: 1 BTC ≈ 625 LTC",
+      '1 BTC ≈ 625 LTC',
     );
   });
 });

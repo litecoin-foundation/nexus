@@ -1,6 +1,8 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Alert,
+  Keyboard,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -38,6 +40,7 @@ import {
   removeServer,
   saveSettingsDraft,
   serverHostPort,
+  serverErrorLabel,
   serverStateLabel,
   useSettingsDraft,
   useUnsavedDraftGuard,
@@ -49,6 +52,12 @@ import {getMbsxStyles} from '../theme';
 import type {MbsxDrawerParamList} from '../types';
 
 const ALL_MODES: VerifyCertsMode[] = ['none', 'pinned', 'optional', 'strict'];
+const MODE_LABELS: Record<VerifyCertsMode, string> = {
+  none: 'None',
+  pinned: 'Pinned',
+  optional: 'Optional',
+  strict: 'Strict',
+};
 const REFRESH_MS = 5000;
 
 // Only these validate a chain, so only these have anchors or a hostname to check
@@ -65,6 +74,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const dispatch = useAppDispatch();
   const storedJson = useAppSelector(state => state.mbsx.settingsStoredJson);
   const {config, setConfig, dirty} = useSettingsDraft();
@@ -81,7 +91,22 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
 
   const server = config?.coins[coin]?.electrumx[index];
   const url = server?.url ?? '';
-  const pageTitle = url.replace(/^(tcp|ssl):\/\//, '') || 'New Server';
+  const pageTitle = url.replace(/^(tcp|ssl):\/\//, '') || 'New server';
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, event => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
   useEffect(() => {
     navigation.setOptions?.({
       title: pageTitle,
@@ -146,7 +171,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
       return;
     }
     Alert.alert(
-      'Forget Pinned Certificate',
+      'Forget pinned certificate',
       'The next connection trusts whatever certificate the server presents.',
       [
         {text: 'Cancel', style: 'cancel'},
@@ -190,7 +215,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   };
 
   const confirmRemoveCert = (id: bigint) => {
-    Alert.alert('Remove Certificate', 'Remove this certificate?', [
+    Alert.alert('Remove certificate', 'Remove this certificate?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -209,7 +234,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   };
 
   const confirmRemoveServer = () => {
-    Alert.alert('Remove Server', 'Remove this server?', [
+    Alert.alert('Remove server', 'Remove this server?', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Remove',
@@ -257,150 +282,168 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
   const urlError = url.trim() ? electrumUrlError(url) : '';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingBottom: keyboardHeight}]}>
       <ScrollView
         contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
-        <View style={[styles.row, look.row]}>
-          <Text style={styles.label}>Status</Text>
-          <Text testID="mbsx-server-status" style={styles.value}>
-            {[serverStateLabel(server, row), row?.version]
-              .filter(Boolean)
-              .join(' · ')}
-          </Text>
+        <View style={swapCards.card}>
+          <View style={look.rowPair}>
+            <Text style={styles.label}>Status</Text>
+            <Text testID="mbsx-server-status" style={look.rowValue}>
+              {[serverStateLabel(server, row), row?.version]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+          </View>
+          {row?.error ? (
+            <Text testID="mbsx-server-last-error" style={look.error}>
+              {serverErrorLabel(row.error)}
+            </Text>
+          ) : null}
+          <View style={[look.rowPair, look.rowLine]}>
+            <Text style={styles.label}>Enabled</Text>
+            <Switch
+              testID="mbsx-server-enabled"
+              value={server.disabled !== true}
+              onValueChange={value => edit({disabled: !value})}
+            />
+          </View>
         </View>
-        {row?.error ? (
-          <Text testID="mbsx-server-last-error" style={styles.error}>
-            {row.error}
-          </Text>
-        ) : null}
-        <View style={[styles.row, look.row]}>
-          <Text style={styles.label}>Enabled</Text>
-          <Switch
-            testID="mbsx-server-enabled"
-            value={server.disabled !== true}
-            onValueChange={value => edit({disabled: !value})}
+        <View style={swapCards.card}>
+          <Text style={styles.inputLabel}>URL</Text>
+          <TextInput
+            testID="mbsx-server-url"
+            style={styles.input}
+            value={url}
+            placeholder="tcp://host:port"
+            onChangeText={text => edit({url: text})}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
+          {urlError ? (
+            <Text testID="mbsx-server-url-error" style={styles.error}>
+              {`Server url ${urlError}`}
+            </Text>
+          ) : null}
         </View>
-        <Text style={styles.inputLabel}>URL</Text>
-        <TextInput
-          testID="mbsx-server-url"
-          style={styles.input}
-          value={url}
-          placeholder="tcp://host:port"
-          onChangeText={text => edit({url: text})}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {urlError ? (
-          <Text testID="mbsx-server-url-error" style={styles.error}>
-            {`Server url ${urlError}`}
-          </Text>
-        ) : null}
 
         {url.startsWith('ssl://') ? (
           <>
             <Text style={swapCards.section}>Certificate</Text>
-            <Text style={styles.inputLabel}>Check</Text>
-            <View style={styles.modeRow}>
-              {modes.map(mode => {
-                const active = (server.verify_certs_mode ?? 'pinned') === mode;
-                return (
-                  <TouchableOpacity
-                    key={mode}
-                    testID={`mbsx-server-mode-${mode}`}
-                    style={[
-                      styles.modeOption,
-                      active ? styles.modeOptionActive : null,
-                    ]}
-                    onPress={() => edit({verify_certs_mode: mode})}>
-                    <Text
+            <View style={swapCards.card}>
+              <Text style={styles.inputLabel}>Check</Text>
+              <View style={styles.modeRow}>
+                {modes.map(mode => {
+                  const active = (server.verify_certs_mode ?? 'pinned') === mode;
+                  return (
+                    <TouchableOpacity
+                      key={mode}
+                      testID={`mbsx-server-mode-${mode}`}
                       style={[
-                        styles.modeText,
-                        active ? styles.modeTextActive : null,
-                      ]}>
-                      {mode}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {chainsChecked(server) ? (
-              <View style={[styles.row, look.row]}>
-                <Text style={styles.label}>Verify Hostname</Text>
-                <Switch
-                  testID="mbsx-server-verify-hostname"
-                  value={server.verify_hostname !== false}
-                  onValueChange={value => edit({verify_hostname: value})}
-                />
+                        styles.modeOption,
+                        look.chip,
+                        active ? styles.modeOptionActive : null,
+                      ]}
+                      onPress={() => edit({verify_certs_mode: mode})}>
+                      <Text
+                        style={[
+                          styles.modeText,
+                          active ? styles.modeTextActive : null,
+                        ]}>
+                        {MODE_LABELS[mode]}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
-            ) : null}
+              {chainsChecked(server) ? (
+                <View style={[look.rowPair, look.rowLine]}>
+                  <Text style={styles.label}>Verify hostname</Text>
+                  <Switch
+                    testID="mbsx-server-verify-hostname"
+                    value={server.verify_hostname !== false}
+                    onValueChange={value => edit({verify_hostname: value})}
+                  />
+                </View>
+              ) : null}
+            </View>
 
-            <Text style={styles.inputLabel}>Pinned Certificate</Text>
-            {pin ? (
-              <>
-                <Text testID="mbsx-server-pin" style={styles.value} selectable>
-                  {colonHex(pin.fingerprint)}
-                </Text>
-                <Text style={styles.value}>
-                  {`Since ${new Date(pin.first_seen * 1000)
-                    .toISOString()
-                    .slice(
-                      0,
-                      10,
-                    )}, ${pin.ca_signed ? 'CA-signed' : 'self-signed'}`}
-                </Text>
-                <TouchableOpacity
-                  testID="mbsx-server-forget-pin"
-                  style={styles.buttonSecondary}
-                  onPress={confirmForgetPin}>
-                  <Text style={styles.buttonSecondaryText}>
-                    Forget Pinned Certificate
+            <Text style={swapCards.section}>Pinned certificate</Text>
+            <View style={swapCards.card}>
+              {pin ? (
+                <>
+                  <Text testID="mbsx-server-pin" style={look.pin} selectable>
+                    {colonHex(pin.fingerprint)}
                   </Text>
-                </TouchableOpacity>
-              </>
+                  <Text style={swapCards.note}>
+                    {`Since ${new Date(pin.first_seen * 1000)
+                      .toISOString()
+                      .slice(0, 10)}, ${
+                      pin.ca_signed ? 'CA-signed' : 'self-signed'
+                    }`}
+                  </Text>
+                  <TouchableOpacity
+                    testID="mbsx-server-forget-pin"
+                    onPress={confirmForgetPin}>
+                    <Text style={swapCards.link}>Forget</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <Text testID="mbsx-server-pin" style={swapCards.note}>
+                  None yet. The first connection pins it.
+                </Text>
+              )}
+            </View>
+
+            <Text style={swapCards.section}>CA certificates</Text>
+            {cas.length === 0 ? (
+              <View style={swapCards.card}>
+                <Text style={swapCards.note}>No certificates</Text>
+              </View>
             ) : (
-              <Text testID="mbsx-server-pin" style={styles.value}>
-                None yet: the first connection pins it
-              </Text>
+              cas.map(cert => (
+                <View key={String(cert.id)} style={swapCards.card}>
+                  <View style={look.rowPair}>
+                    <Text style={[styles.label, look.rowLabel]}>
+                      {cert.label || 'Unlabelled'}
+                    </Text>
+                    <TouchableOpacity
+                      testID={`mbsx-server-remove-ca-${cert.id}`}
+                      onPress={() => confirmRemoveCert(cert.id)}>
+                      <Text style={look.remove}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
             )}
 
-            <Text style={styles.inputLabel}>CA Certificates</Text>
-            {cas.map(cert => (
-              <View key={String(cert.id)} style={styles.certRow}>
-                <Text style={styles.label}>{cert.label || 'Unlabelled'}</Text>
-                <TouchableOpacity
-                  testID={`mbsx-server-remove-ca-${cert.id}`}
-                  style={styles.buttonSecondary}
-                  onPress={() => confirmRemoveCert(cert.id)}>
-                  <Text style={styles.buttonSecondaryText}>Remove</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-            <Text style={styles.inputLabel}>Label</Text>
-            <TextInput
-              testID="mbsx-server-ca-label"
-              style={styles.input}
-              value={certLabel}
-              onChangeText={setCertLabel}
-              autoCapitalize="none"
-            />
-            <Text style={styles.inputLabel}>Certificate (PEM)</Text>
-            <TextInput
-              testID="mbsx-server-ca-pem"
-              style={[styles.input, styles.pemInput]}
-              value={certPem}
-              onChangeText={setCertPem}
-              placeholder="-----BEGIN CERTIFICATE-----"
-              multiline
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <TouchableOpacity
-              testID="mbsx-server-add-ca"
-              style={styles.buttonSecondary}
-              onPress={addCert}>
-              <Text style={styles.buttonSecondaryText}>Add CA Certificate</Text>
-            </TouchableOpacity>
+            <Text style={swapCards.section}>Add CA certificate</Text>
+            <View style={swapCards.card}>
+              <Text style={styles.inputLabel}>Label</Text>
+              <TextInput
+                testID="mbsx-server-ca-label"
+                style={styles.input}
+                value={certLabel}
+                onChangeText={setCertLabel}
+                autoCapitalize="none"
+              />
+              <Text style={styles.inputLabel}>Certificate (PEM)</Text>
+              <TextInput
+                testID="mbsx-server-ca-pem"
+                style={[styles.input, styles.pemInput]}
+                value={certPem}
+                onChangeText={setCertPem}
+                placeholder="-----BEGIN CERTIFICATE-----"
+                multiline
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity
+                testID="mbsx-server-add-ca"
+                style={styles.buttonSecondary}
+                onPress={addCert}>
+                <Text style={styles.buttonSecondaryText}>Add</Text>
+              </TouchableOpacity>
+            </View>
           </>
         ) : null}
 
@@ -410,23 +453,25 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
           <Text style={swapCards.section}>Advanced</Text>
         </TouchableOpacity>
         {advanced ? (
-          <>
-            <View style={[styles.row, look.row]}>
-              <Text style={styles.label}>Verbose Transactions</Text>
+          <View style={swapCards.card}>
+            <View style={look.rowPair}>
+              <Text style={[styles.label, look.rowLabel]}>
+                Verbose transactions
+              </Text>
               <Switch
                 testID="mbsx-server-verbose"
                 value={server.haveverbosetx !== false}
                 onValueChange={value => edit({haveverbosetx: value})}
               />
             </View>
-            <Text style={styles.value}>Off for electrs servers.</Text>
+            <Text style={look.note}>Off for electrs servers.</Text>
             <TouchableOpacity
               testID="mbsx-server-remove"
               style={styles.buttonSecondary}
               onPress={confirmRemoveServer}>
-              <Text style={styles.buttonSecondaryText}>Remove Server</Text>
+              <Text style={styles.buttonSecondaryText}>Remove server</Text>
             </TouchableOpacity>
-          </>
+          </View>
         ) : null}
 
         {error ? (
@@ -446,7 +491,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
             disabled={saving}
             onPress={save}>
             <Text style={styles.buttonText}>
-              {saving ? 'Restarting…' : 'Save and Restart'}
+              {saving ? 'Restarting…' : 'Save and restart'}
             </Text>
           </TouchableOpacity>
         ) : null}
@@ -456,10 +501,56 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
 };
 
 const look = StyleSheet.create({
-  row: {
-    paddingHorizontal: 0,
-    borderTopWidth: 0,
-    backgroundColor: 'transparent',
+  rowPair: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  rowLine: {
+    borderTopWidth: 1,
+    borderTopColor: '#E8E8E8',
+    marginTop: 8,
+  },
+  rowLabel: {
+    flex: 1,
+    marginRight: 12,
+  },
+  rowValue: {
+    flexShrink: 1,
+    textAlign: 'right',
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    color: '#747E87',
+  },
+  error: {
+    marginTop: 8,
+    fontFamily: 'Satoshi Variable',
+    fontSize: 14,
+    color: '#ef3329',
+    textAlign: 'left',
+  },
+  note: {
+    marginTop: 8,
+    fontFamily: 'Satoshi Variable',
+    color: '#747E87',
+    fontSize: 14,
+  },
+  chip: {
+    backgroundColor: '#F4F7FB',
+    borderWidth: 0,
+  },
+  pin: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#484859',
+    fontSize: 14,
+  },
+  remove: {
+    fontFamily: 'Satoshi Variable',
+    fontWeight: '700',
+    color: '#2C72FF',
+    fontSize: 14,
   },
 });
 

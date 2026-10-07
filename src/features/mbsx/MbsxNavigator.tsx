@@ -36,8 +36,8 @@ import {
   stopIfIdle,
   swapInProgress,
 } from './adapter';
-import {startRateFetcher} from './rates';
 import {readConfig} from './adapter/config';
+import {startRateFetcher} from './rates';
 import {
   pushMessage,
   setConnected,
@@ -46,6 +46,7 @@ import {
   setStartupStep,
 } from './mbsxSlice';
 import BasicSwapMark from './components/BasicSwapMark';
+import {readMenuMarks} from './menuMarks';
 import AnchorDispute from './components/AnchorDispute';
 import BridgeStatus from './components/BridgeStatus';
 import MbsxMenuButton from './components/MbsxMenuButton';
@@ -103,6 +104,7 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
   const drawerStatus = useDrawerStatus();
   const [choiceMade, setChoiceMade] = useState(menuChoiceMade);
   const [showDebug, setShowDebug] = useState(false);
+  const [activity, setActivity] = useState({swaps: '', requests: ''});
 
   useEffect(() => {
     let live = true;
@@ -113,6 +115,25 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
     });
     return () => {
       live = false;
+    };
+  }, [drawerStatus]);
+
+  useEffect(() => {
+    if (drawerStatus !== 'open') {
+      return;
+    }
+    let live = true;
+    const read = () => {
+      const next = readMenuMarks();
+      if (live) {
+        setActivity(next);
+      }
+    };
+    read();
+    const timer = setInterval(read, 2000);
+    return () => {
+      live = false;
+      clearInterval(timer);
     };
   }, [drawerStatus]);
 
@@ -161,6 +182,12 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
           const focused =
             choiceMade && state.routes[state.index]?.key === route.key;
           const label = descriptors[route.key].options.title ?? route.name;
+          const note =
+            route.name === 'SwapList'
+              ? activity.swaps
+              : route.name === 'RequestList'
+                ? activity.requests
+                : '';
           return (
             <TouchableOpacity
               key={route.key}
@@ -171,9 +198,20 @@ const DrawerContent = (props: DrawerContentComponentProps) => {
                 navigation.navigate(route.name);
                 navigation.closeDrawer();
               }}>
-              <Text style={[styles.cellTitle, focused ? styles.cellTitleActive : null]}>
+              <Text
+                style={[
+                  styles.cellTitle,
+                  styles.cellTitleGrow,
+                  focused ? styles.cellTitleActive : null,
+                ]}
+                numberOfLines={1}>
                 {label}
               </Text>
+              {note !== '' ? (
+                <Text style={styles.cellValue} numberOfLines={1}>
+                  {note}
+                </Text>
+              ) : null}
               <Image source={require('../../assets/images/forward.png')} />
             </TouchableOpacity>
           );
@@ -322,7 +360,7 @@ const MbsxNavigator: React.FC = () => {
         <Drawer.Screen
           name="CreateSwap"
           component={CreateSwap}
-          options={{title: 'New Swap'}}
+          options={{title: 'New swap'}}
         />
         <Drawer.Screen
           name="SwapList"
@@ -347,7 +385,7 @@ const MbsxNavigator: React.FC = () => {
         <Drawer.Screen
           name="PayInDetail"
           component={PayInDetail}
-          options={{title: 'Pay-In', ...hidden}}
+          options={{title: 'Pay-in', ...hidden}}
         />
         <Drawer.Screen
           name="AddressList"
@@ -367,17 +405,17 @@ const MbsxNavigator: React.FC = () => {
         <Drawer.Screen
           name="ElectrumServers"
           component={ElectrumServers}
-          options={{title: 'Electrum Servers', ...hidden}}
+          options={{title: 'Electrum servers', ...hidden}}
         />
         <Drawer.Screen
           name="ElectrumServer"
           component={ElectrumServer}
-          options={{title: 'Electrum Server', ...hidden}}
+          options={{title: 'Electrum server', ...hidden}}
         />
         <Drawer.Screen
           name="CoinRateServices"
           component={CoinRateServices}
-          options={{title: 'Coin Rate Services', ...hidden}}
+          options={{title: 'Coin rate services', ...hidden}}
         />
         <Drawer.Screen
           name="MbsxDebug"
@@ -402,7 +440,7 @@ const ScreenLayout = ({children}: {children: React.ReactNode}) => (
 );
 
 const MbsxScreenHeader = ({layout, options, route}: DrawerHeaderProps) => {
-  const headerOptions = {...options, header: undefined};
+  const {header: _header, ...headerOptions} = options;
   return (
     <View>
       <Header
@@ -463,6 +501,16 @@ const getDrawerStyles = (_screenWidth: number, screenHeight: number) =>
       fontFamily: 'Satoshi Variable',
       fontWeight: '700',
       color: '#484859',
+      fontSize: 14,
+    },
+    cellTitleGrow: {
+      flex: 1,
+      marginRight: 12,
+    },
+    cellValue: {
+      marginRight: 8,
+      fontFamily: 'Satoshi Variable',
+      color: '#747E87',
       fontSize: 14,
     },
     cellTitleActive: {
