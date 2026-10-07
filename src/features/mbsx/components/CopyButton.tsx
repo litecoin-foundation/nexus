@@ -1,7 +1,6 @@
 import React from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity} from 'react-native';
-
-import {useCopied} from './useCopied';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 export const CopyChip = ({
   testID,
@@ -20,14 +19,13 @@ export const CopyChip = ({
   labelStyle: object;
   valueStyle?: object;
 }) => {
-  const {copied, copy} = useCopied();
   return (
     <TouchableOpacity
       testID={testID}
-      accessibilityLabel={copied ? 'Copied' : label}
+      accessibilityLabel={label}
       style={style}
-      onPress={() => copy(value)}>
-      <Text style={labelStyle}>{copied ? 'Copied' : label}</Text>
+      onPress={() => Clipboard.setString(value)}>
+      <Text style={labelStyle}>{label}</Text>
       {display ? (
         <Text style={valueStyle} numberOfLines={1}>
           {display}
@@ -48,36 +46,21 @@ const CopyButton = ({
   value: string;
   style: object;
 }) => {
-  const {copied, copy} = useCopied();
   return (
     <TouchableOpacity
       testID={testID}
-      accessibilityLabel={copied ? 'Copied' : label}
-      style={copied ? look.copiedBtn : style}
-      onPress={() => copy(value)}>
-      {copied ? (
-        <Text style={look.copied}>Copied</Text>
-      ) : (
-        <Image
-          source={require('../../../assets/icons/copy-icon.png')}
-          style={look.icon}
-        />
-      )}
+      accessibilityLabel={label}
+      style={style}
+      onPress={() => Clipboard.setString(value)}>
+      <Image
+        source={require('../../../assets/icons/copy-icon.png')}
+        style={look.icon}
+      />
     </TouchableOpacity>
   );
 };
 
 const look = StyleSheet.create({
-  copiedBtn: {
-    marginLeft: 8,
-    justifyContent: 'center',
-  },
-  copied: {
-    fontFamily: 'Satoshi Variable',
-    fontWeight: '700',
-    fontSize: 14,
-    color: '#1C8C45',
-  },
   icon: {
     width: 18,
     height: 18,

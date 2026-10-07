@@ -180,7 +180,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
                 }
               }}>
               <Image
-                source={require('../../../assets/icons/copy-icon.png')}
+                source={require('../../../assets/images/paste.png')}
                 style={look.toolIcon}
               />
             </TouchableOpacity>
