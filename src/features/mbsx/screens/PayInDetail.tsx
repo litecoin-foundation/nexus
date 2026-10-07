@@ -303,7 +303,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 </View>
                 <CopyButton
                   testID="mbsx-payin-copy"
-                  label="Copy address"
+                  label="Copy Address"
                   value={deposit.address}
                   style={look.iconBtn}
                 />
@@ -411,7 +411,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                     80,
                   )
                 }
-                placeholder={`${deposit.coin_to} to receive`}
+                placeholder={`${deposit.coin_to} to Receive`}
                 keyboardType="decimal-pad"
               />
               {rateValue ? (

@@ -120,7 +120,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
       <View style={styles.headerAction}>
         <RemoveButton
           testID="mbsx-remove-expired"
-          label="Remove expired"
+          label="Remove Expired"
           confirm="Permanently delete every request that drew no offer it can still accept?"
           disabled={!running}
           onConfirm={async () => {

@@ -479,7 +479,7 @@ const MbsxSettings: React.FC = () => {
                 <>
                   <View style={[look.cardRow, look.cardRowLine]}>
                     <Text style={[styles.label, look.rowLabel]}>
-                      PoS validation
+                      PoS Validation
                     </Text>
                     <Switch
                       testID={`mbsx-verify-pos-${coin}`}
@@ -502,7 +502,7 @@ const MbsxSettings: React.FC = () => {
                     disabled={!isRunning()}
                     onPress={() => rescan(coin)}>
                     <Text style={styles.buttonSecondaryText}>
-                      Rescan pay-in addresses
+                      Rescan Pay-In Addresses
                     </Text>
                   </TouchableOpacity>
                   {rescanned === coin ? (
@@ -727,7 +727,7 @@ const MbsxSettings: React.FC = () => {
                 onChangeText={setCertLabel}
                 autoCapitalize="none"
               />
-              <Text style={styles.inputLabel}>Host (blank for every server)</Text>
+              <Text style={styles.inputLabel}>Host (Blank for Every Server)</Text>
               <TextInput
                 testID="mbsx-cert-host"
                 style={styles.input}

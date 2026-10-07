@@ -157,7 +157,7 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
         testID={`mbsx-rates-${source}-key`}
         style={styles.input}
         value={key}
-        placeholder="API key (optional)"
+        placeholder="API Key (Optional)"
         onChangeText={setKey}
         secureTextEntry
         autoCapitalize="none"
@@ -168,7 +168,7 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
           testID={`mbsx-rates-${source}-remove`}
           style={styles.buttonSecondary}
           onPress={() => setKey('')}>
-          <Text style={styles.buttonSecondaryText}>Remove key</Text>
+          <Text style={styles.buttonSecondaryText}>Remove Key</Text>
         </TouchableOpacity>
       ) : null}
     </>
@@ -185,7 +185,7 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
         ) : null}
         <View style={swapCards.card}>
           <View style={look.switchRow}>
-            <Text style={styles.label}>Fetch coin rates</Text>
+            <Text style={styles.label}>Fetch Coin Rates</Text>
             <Switch
               testID="mbsx-rates-enabled"
               value={draft.enabled}

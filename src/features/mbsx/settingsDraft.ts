@@ -321,7 +321,7 @@ export const useUnsavedDraftGuard = (
               : loadSettingsDraft(dispatch),
         },
         {
-          text: 'Keep editing',
+          text: 'Keep Editing',
           onPress: () => navigation.navigate(route as never),
         },
       ]);

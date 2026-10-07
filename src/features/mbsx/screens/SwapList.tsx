@@ -116,7 +116,7 @@ const SwapList: React.FC<Props> = ({navigation}) => {
             its own leaves the request that funded it behind. */}
         <RemoveButton
           testID="mbsx-remove-finished"
-          label="Remove finished"
+          label="Remove Finished"
           confirm="Permanently delete every finished swap and the requests they belong to?"
           disabled={!running}
           onConfirm={async () => {

@@ -57,7 +57,7 @@ const ElectrumServers: React.FC<Props> = ({navigation, route}) => {
 
   useEffect(() => {
     navigation.setOptions?.({
-      title: `${coin.toUpperCase()} servers`,
+      title: `${coin.toUpperCase()} Servers`,
       headerLeft: () => (
         <MbsxBackButton onPress={() => navigation.navigate('MbsxSettings')} />
       ),

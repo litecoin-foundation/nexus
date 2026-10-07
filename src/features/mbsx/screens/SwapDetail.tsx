@@ -138,7 +138,7 @@ const SwapFees = ({swap}: {swap: SwapDetails}) => {
               look.feeRow,
               fees.length > 0 || index > 0 ? look.feeLine : null,
             ]}>
-            <Text style={look.feeLabel}>{`Chain fee ${coin}`}</Text>
+            <Text style={look.feeLabel}>{`Chain Fee ${coin}`}</Text>
             <Text style={look.feeRate}>{`${rate} sat/kvB`}</Text>
             <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
           </View>
@@ -273,7 +273,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           {complete ? null : (
             <RemoveButton
               testID="mbsx-remove-swap"
-              label="Delete swap"
+              label="Delete Swap"
               confirm="Permanently delete this swap and its events?"
               onConfirm={async () => {
                 removeSwap(swapId);
@@ -445,7 +445,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
         {isTerminalState(swap.state) ? (
           <RemoveButton
             testID="mbsx-remove-swap"
-            label="Delete swap"
+            label="Delete Swap"
             confirm="Permanently delete this swap and its events?"
             onConfirm={async () => {
               removeSwap(swapId);

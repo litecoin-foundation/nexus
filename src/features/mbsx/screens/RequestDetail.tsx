@@ -27,7 +27,7 @@ import {
   raisedFeeNote,
   shortAddress,
 } from '../format';
-import {getMbsxStyles} from '../theme';
+import {colors, getMbsxStyles} from '../theme';
 import {independentReference, refreshRates} from '../rates';
 import {getNetwork} from '../network';
 import {coinString, offerWarning} from '../useSwapAmounts';
@@ -96,6 +96,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const [accepting, setAccepting] = useState(false);
   const [pendingOffer, setPendingOffer] = useState<SwapOffer | null>(null);
   const [acknowledged, setAcknowledged] = useState<string[]>([]);
+  const [feesOpen, setFeesOpen] = useState(false);
   const rates = useAppSelector(state => state.mbsx.rates ?? {});
 
   useEffect(() => {
@@ -260,13 +261,13 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           <View style={look.idRow}>
             <View style={look.idPill}>
               <Text style={look.idLabel}>Request</Text>
-              <Text style={look.idValue} numberOfLines={1} selectable>
-                {request.id}
+              <Text style={look.idValue} numberOfLines={1}>
+                {shortAddress(request.id)}
               </Text>
             </View>
             <CopyButton
               testID={`mbsx-request-id-${request.id}`}
-              label="Copy request id"
+              label="Copy Request ID"
               value={request.id}
               style={look.iconBtn}
             />
@@ -310,19 +311,28 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             <Text style={swapCards.note}>No fees configured</Text>
           ) : (
             <>
-              {request.fees?.map((fee, index) => (
-                <View
-                  key={fee.desc}
-                  style={[look.feeRow, index > 0 ? look.feeLine : null]}>
-                  <Text style={look.feeLabel}>{fee.desc}</Text>
-                  <Text style={look.feePct}>{`${Number(fee.bps) / 100}%`}</Text>
-                  <Text style={look.feeValue}>
-                    {`${fee.amount} ${request.fees_coin}`}
-                  </Text>
-                </View>
-              ))}
-              <View style={[look.feeRow, look.feeTotal]}>
-                <Text style={look.feeTotalLabel}>Total</Text>
+              {feesOpen
+                ? request.fees?.map((fee, index) => (
+                    <View
+                      key={fee.desc}
+                      style={[look.feeRow, index > 0 ? look.feeLine : null]}>
+                      <Text style={look.feeLabel}>{fee.desc}</Text>
+                      <Text style={look.feePct}>
+                        {`${Number(fee.bps) / 100}%`}
+                      </Text>
+                      <Text style={look.feeValue}>
+                        {`${fee.amount} ${request.fees_coin}`}
+                      </Text>
+                    </View>
+                  ))
+                : null}
+              <TouchableOpacity
+                testID="mbsx-request-fees"
+                accessibilityRole="button"
+                accessibilityState={{expanded: feesOpen}}
+                style={[look.feeRow, feesOpen ? look.feeTotal : null]}
+                onPress={() => setFeesOpen(shown => !shown)}>
+                <Text style={[look.feeTotalLabel, look.feeToggle]}>Total</Text>
                 <Text style={look.feePct}>
                   {`${
                     (request.fees ?? []).reduce(
@@ -334,7 +344,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 <Text style={look.feeTotalValue}>
                   {`${request.fees_total} ${request.fees_coin}`}
                 </Text>
-              </View>
+              </TouchableOpacity>
               <Text style={look.feeNote}>
                 {swaps.length === 0
                   ? `Taken from the ${request.fees_coin} you send, whichever offer you accept. The exact amount follows the offer.`
@@ -602,7 +612,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                   look.feeRow,
                   swap.fees_coin || index > 0 ? look.feeLine : look.feeFirst,
                 ]}>
-                <Text style={look.feeLabel}>{`Chain fee ${coin}`}</Text>
+                <Text style={look.feeLabel}>{`Chain Fee ${coin}`}</Text>
                 <Text style={look.feeRate}>{`${feeRate} sat/kvB`}</Text>
                 <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
               </View>
@@ -612,7 +622,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 
         <RemoveButton
           testID="mbsx-remove-request"
-          label="Delete request"
+          label="Delete Request"
           confirm="Permanently delete this request and every offer under it?"
           disabled={underway !== undefined}
           onConfirm={async () => {
@@ -836,6 +846,7 @@ const look = StyleSheet.create({
   },
   feeValue: {
     minWidth: 110,
+    marginLeft: 8,
     textAlign: 'right',
     fontFamily: 'Satoshi Variable',
     fontSize: 14,
@@ -855,11 +866,15 @@ const look = StyleSheet.create({
   },
   feeTotalValue: {
     minWidth: 110,
+    marginLeft: 8,
     textAlign: 'right',
     fontFamily: 'Satoshi Variable',
     fontWeight: '700',
     fontSize: 14,
     color: '#484859',
+  },
+  feeToggle: {
+    color: colors.primary,
   },
   feeNote: {
     marginTop: 10,

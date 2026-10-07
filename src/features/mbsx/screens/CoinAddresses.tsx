@@ -75,7 +75,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
 
   useEffect(() => {
     navigation.setOptions({
-      title: `${coin} addresses`,
+      title: `${coin} Addresses`,
       headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
       headerTitleContainerStyle: {left: 7},
     });
@@ -155,7 +155,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
           onLayout={event => {
             fieldY.current.form = event.nativeEvent.layout.y;
           }}>
-          <Text style={styles.inputLabel}>{`${coin} address`}</Text>
+          <Text style={styles.inputLabel}>{`${coin} Address`}</Text>
           <View style={look.receiverRow}>
             <TextInput
               testID="mbsx-address-input"
@@ -242,7 +242,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
               <TextInput
                 testID={`mbsx-saved-label-${entry.address}`}
                 style={look.labelInput}
-                placeholder="Add a label"
+                placeholder="Add a Label"
                 placeholderTextColor="#9AA0AE"
                 defaultValue={entry.label}
                 onFocus={() => showField(entry.address)}
@@ -261,16 +261,13 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
               />
               <View style={look.receiverRow}>
                 <View style={look.savedAddress}>
-                  <Text
-                    style={look.savedAddressText}
-                    numberOfLines={1}
-                    selectable>
+                  <Text style={look.savedAddressText} selectable>
                     {entry.address}
                   </Text>
                 </View>
                 <CopyButton
                   testID={`mbsx-copy-${entry.address}`}
-                  label="Copy address"
+                  label="Copy Address"
                   value={entry.address}
                   style={look.iconBtn}
                 />

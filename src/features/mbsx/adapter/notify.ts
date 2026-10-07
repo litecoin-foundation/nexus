@@ -57,7 +57,7 @@ export const notifySwapProblem = async (body: string) => {
   try {
     const channelId = await channel();
     await notifee.displayNotification({
-      title: 'Swaps need attention',
+      title: 'Swaps Need Attention',
       body,
       android: {channelId},
     });

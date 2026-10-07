@@ -960,7 +960,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               <TextInput
                 testID="mbsx-buy-address"
                 style={look.receiver}
-                placeholder="Receive address"
+                placeholder="Receive Address"
                 placeholderTextColor="#9AA0AE"
                 value={buyAddress}
                 onChangeText={setBuyAddress}

@@ -55,6 +55,7 @@ const offer = (id: string, amount_receive: string) => ({
 const renderRequest = (
   rates = {},
   offers: object[] = [offer('low', '0.00072'), offer('fair', '0.00079')],
+  extra: object = {},
 ) => {
   (getRequestInfo as jest.Mock).mockReturnValue({
     id: 'r1',
@@ -66,6 +67,7 @@ const renderRequest = (
     amount_from: '1',
     min_amount_to: '0.0007',
     offers,
+    ...extra,
   });
   const store = configureStore({
     reducer: {
@@ -173,6 +175,25 @@ describe('RequestDetail', () => {
     expect(view.getByText('Fee paid by provider')).toBeTruthy();
     expect(view.getByText('0.00000012 BTC')).toBeTruthy();
     expect(view.getByText('No swap fee')).toBeTruthy();
+  });
+
+  it('folds the fee breakdown under its total until tapped', () => {
+    const view = renderRequest({}, [], {
+      fees: [
+        {desc: 'Nexus', bps: 50n, amount: '0.005'},
+        {desc: 'BSX', bps: 50n, amount: '0.005'},
+      ],
+      fees_coin: 'LTC',
+      fees_total: '0.01',
+    });
+
+    expect(view.getByTestId('mbsx-request-fees')).toHaveTextContent(
+      /Total\s*1%\s*0\.01 LTC/,
+    );
+    expect(view.queryByText('Nexus')).toBeNull();
+    fireEvent.press(view.getByTestId('mbsx-request-fees'));
+    expect(view.getByText('Nexus')).toBeTruthy();
+    expect(view.getByText('BSX')).toBeTruthy();
   });
 
   it('holds Accept on a short lock time until the warning is tapped', () => {
