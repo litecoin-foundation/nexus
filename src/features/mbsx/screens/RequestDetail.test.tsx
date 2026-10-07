@@ -142,10 +142,31 @@ describe('RequestDetail', () => {
         fees_bps: 15n,
       },
       {...offer('free', '0.00079'), fees: []},
+      {
+        ...offer('raised', '0.00079'),
+        fees: [
+          {
+            desc: 'Nexus',
+            bps: 196n,
+            amount: '0.0000294',
+            coin: 'LTC',
+            paid_by: 'APP',
+          },
+        ],
+        fees_coin: 'LTC',
+        fees_total: '0.0000294',
+        fees_bps: 196n,
+        nominal_fee_bps: 100n,
+        fees_raised: true,
+      },
     ]);
 
     expect(view.getByTestId('mbsx-offer-fee-fee')).toHaveTextContent(
       'Swap fee 0.15% (0.0015 LTC)',
+    );
+    expect(view.queryByTestId('mbsx-offer-fee-raised-fee')).toBeNull();
+    expect(view.getByTestId('mbsx-offer-fee-raised-raised')).toHaveTextContent(
+      'Raised from 1% because the amount is small',
     );
     expect(view.queryByText('Fee paid by provider')).toBeNull();
     fireEvent.press(view.getByTestId('mbsx-offer-fee-fee'));

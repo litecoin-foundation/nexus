@@ -1009,6 +1009,9 @@ export const getSwapFundingOutputs = (
     outputs?: FundingOutput[];
     total_fee_bps?: bigint;
     max_fee_bps?: bigint;
+    fee_bps?: bigint;
+    nominal_fee_bps?: bigint;
+    fees_raised?: boolean;
     // Set when an output would be dust: the amount to send at least
     min_amount?: string;
   }>;

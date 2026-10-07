@@ -39,6 +39,9 @@ export const kindLabel = (kind?: string): string =>
   kind === 'PRIVATE' ? 'Private' : kind === 'BRIDGED' ? 'Bridged' : '';
 
 // Both ends: a head alone matches every address sharing a prefix.
+export const raisedFeeNote = (nominalBps: bigint | number): string =>
+  `Raised from ${Number(nominalBps) / 100}% because the amount is small`;
+
 export const shortAddress = (address: string): string =>
   address.length > 15
     ? `${address.slice(0, 12)}…${address.slice(-3)}`

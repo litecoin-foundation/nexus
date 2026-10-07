@@ -64,6 +64,7 @@ import {
   providersText,
   useOffersEstimate,
 } from '../useOffersEstimate';
+import {raisedFeeNote} from '../format';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
@@ -277,6 +278,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     feeBps: number;
     feeSats: bigint;
     unit: bigint;
+    raisedFrom: bigint | null;
   } | null>(null);
   useEffect(() => {
     setFeeNote('');
@@ -299,14 +301,21 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       funding.total_fee_bps !== undefined &&
       funding.max_fee_bps !== undefined
     ) {
-      const totalFee = Number(funding.total_fee_bps);
       let unit: bigint;
       try {
         unit = parseAmount(sendCoin, '1');
       } catch {
         unit = 0n;
       }
-      setQuote({feeBps: totalFee, feeSats: swapFeeSats(funding.outputs), unit});
+      setQuote({
+        feeBps: Number(funding.fee_bps ?? funding.total_fee_bps),
+        feeSats: swapFeeSats(funding.outputs),
+        unit,
+        raisedFrom:
+          funding.fees_raised && funding.nominal_fee_bps !== undefined
+            ? funding.nominal_fee_bps
+            : null,
+      });
       setFeeNote(feeCapNote(funding));
     }
     if (payIn || !balances || !isRunning()) {
@@ -602,6 +611,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             ? ` (${coinString(Number(quote.feeSats) / Number(quote.unit))} ${sendCoin})`
             : ''
         }`
+      : '';
+  const raisedNote =
+    feeLine !== '' && quote?.raisedFrom != null
+      ? raisedFeeNote(quote.raisedFrom)
       : '';
   const noSaved = coinChosen && savedAddresses.length === 0;
 
@@ -1005,6 +1018,11 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 {feeLine}
               </Text>
             ) : null}
+            {raisedNote !== '' ? (
+              <Text testID="mbsx-fee-raised" style={styles.rowMessage}>
+                {raisedNote}
+              </Text>
+            ) : null}
           </View>
         ) : null}
 
@@ -1116,6 +1134,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               <Text style={look.confirmLine}>{rateLine}</Text>
             ) : null}
             {feeLine ? <Text style={look.confirmLine}>{feeLine}</Text> : null}
+            {raisedNote ? (
+              <Text style={look.confirmNote}>{raisedNote}</Text>
+            ) : null}
             {payIn ? (
               <>
                 <Text testID="mbsx-offers-estimate" style={look.confirmLine}>

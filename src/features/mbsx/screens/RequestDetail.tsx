@@ -25,6 +25,7 @@ import {
   formatExpiry,
   formatTimestamp,
   kindLabel,
+  raisedFeeNote,
   shortAddress,
 } from '../format';
 import {getNetwork} from '../network';
@@ -650,6 +651,13 @@ const OfferFees = ({
             : 'Swap fee paid by provider'}
         </Text>
       </TouchableOpacity>
+      {offer.fees_raised && offer.nominal_fee_bps !== undefined ? (
+        <Text
+          testID={`mbsx-offer-fee-raised-${offer.id}`}
+          style={styles.rowMessage}>
+          {raisedFeeNote(offer.nominal_fee_bps)}
+        </Text>
+      ) : null}
       {open
         ? offer.fees.map((fee, index) => (
             <View key={`${index}`}>

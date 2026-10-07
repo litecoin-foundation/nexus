@@ -69,6 +69,8 @@ export type MbsxSwapFees = {
   fees_coin?: string;
   fees_total?: string;
   fees_bps?: bigint;
+  nominal_fee_bps?: bigint;
+  fees_raised?: boolean;
 };
 
 export type OfferKind = 'PRIVATE' | 'BRIDGED';

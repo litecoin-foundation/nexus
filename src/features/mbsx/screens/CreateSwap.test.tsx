@@ -131,6 +131,38 @@ describe('CreateSwap', () => {
     );
   });
 
+  it('shows the fee at this amount, and says when it was raised', () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.getInfo.mockReturnValueOnce({
+      connected: true,
+      coins: {LTC: {bridge_supported: true}, BTC: {bridge_supported: true}},
+    });
+    adapter.getSwapFundingOutputs.mockReturnValue({
+      outputs: [],
+      total_fee_bps: 200n,
+      max_fee_bps: 500n,
+      fee_bps: 196n,
+      nominal_fee_bps: 100n,
+      fees_raised: true,
+    });
+    adapter.isRunning.mockReturnValue(true);
+    try {
+      const {getByTestId, getByText} = renderScreen();
+
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '0.0015');
+
+      expect(getByText('Swap fee 1.96%')).toBeTruthy();
+      expect(getByTestId('mbsx-fee-raised')).toHaveTextContent(
+        'Raised from 1% because the amount is small',
+      );
+    } finally {
+      adapter.getSwapFundingOutputs.mockReturnValue({error: 'not running'});
+      adapter.isRunning.mockReturnValue(false);
+    }
+  });
+
   it('notes server fees above the limit, which cross from native as bigint', () => {
     const adapter = jest.requireMock('../adapter');
     adapter.getInfo.mockReturnValueOnce({
