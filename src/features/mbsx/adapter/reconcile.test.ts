@@ -2,9 +2,11 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 import NitroBSX from 'react-native-nitro-bsx';
 
 import {
+  dismissDispute,
   getInfo,
   installBalanceProvider,
   installSigner,
+  readDismissedDisputes,
   reconcileLeases,
   rememberFinishedSwaps,
   start,
@@ -27,7 +29,9 @@ jest.mock('react-native-nitro-bsx', () => {
 
 jest.mock('@dr.pogodin/react-native-fs', () => ({
   DocumentDirectoryPath: '/tmp',
+  exists: jest.fn(() => Promise.resolve(false)),
   mkdir: jest.fn(() => Promise.resolve()),
+  readFile: jest.fn(),
   writeFile: jest.fn(() => Promise.resolve()),
 }));
 
@@ -155,5 +159,30 @@ describe('rememberFinishedSwaps', () => {
     nitro.listSwaps.mockReturnValue({swaps: [swap('a'), swap('bb')]});
     await rememberFinishedSwaps();
     expect(writeFile).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('dismissDispute', () => {
+  it('keeps the newest dismissals, each once', async () => {
+    const files: Record<string, string> = {};
+    (RNFS.writeFile as jest.Mock).mockImplementation(
+      async (path: string, data: string) => {
+        files[path] = data;
+      },
+    );
+    (RNFS.exists as jest.Mock).mockImplementation(
+      async (path: string) => path in files,
+    );
+    (RNFS.readFile as jest.Mock).mockImplementation(
+      async (path: string) => files[path],
+    );
+    for (let n = 0; n < 25; n++) {
+      void dismissDispute(`k${n}`);
+    }
+    await dismissDispute('k3');
+    const keys = await readDismissedDisputes();
+    expect(keys).toHaveLength(20);
+    expect(keys[0]).toBe('k6');
+    expect(keys[19]).toBe('k3');
   });
 });

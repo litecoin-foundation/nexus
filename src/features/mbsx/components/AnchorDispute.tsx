@@ -5,10 +5,12 @@ import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {
   applyConfig,
   coinsWithActiveSwaps,
+  dismissDispute,
   getInfo,
   isRunning,
   onMessage,
   readConfig,
+  readDismissedDisputes,
 } from '../adapter';
 import {setError, setRunning} from '../mbsxSlice';
 import {colors} from '../theme';
@@ -37,8 +39,20 @@ const AnchorDispute: React.FC = () => {
   const dispatch = useAppDispatch();
   const running = useAppSelector(state => state.mbsx.running);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
-  const [kept, setKept] = useState<Set<string>>(new Set());
+  const [dismissed, setDismissed] = useState<Set<string> | null>(null);
   const [disabling, setDisabling] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    readDismissedDisputes().then(keys => {
+      if (mounted) {
+        setDismissed(new Set(keys));
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!running) {
@@ -51,13 +65,18 @@ const AnchorDispute: React.FC = () => {
     return () => subscription.remove();
   }, [running]);
 
-  const shown = disputes.filter(dispute => !kept.has(disputeKey(dispute)));
+  const shown = dismissed
+    ? disputes.filter(dispute => !dismissed.has(disputeKey(dispute)))
+    : [];
   if (shown.length === 0) {
     return null;
   }
 
-  const keep = (dispute: Dispute) =>
-    setKept(previous => new Set(previous).add(disputeKey(dispute)));
+  const dismiss = (dispute: Dispute) => {
+    const key = disputeKey(dispute);
+    setDismissed(previous => new Set(previous).add(key));
+    void dismissDispute(key);
+  };
 
   const disable = async ({ticker, url}: Dispute) => {
     setDisabling(true);
@@ -99,7 +118,7 @@ const AnchorDispute: React.FC = () => {
         'Disable Server',
         `${dispute.url} is no longer an enabled ${dispute.ticker} server.`,
       );
-      keep(dispute);
+      dismiss(dispute);
       return;
     }
     if (enabled.length <= 1) {
@@ -138,11 +157,11 @@ const AnchorDispute: React.FC = () => {
             {`${dispute.ticker} server ${dispute.url} disagrees with ${otherParty(dispute)}`}
           </Text>
           <TouchableOpacity
-            testID={`mbsx-anchor-dispute-keep-${dispute.ticker}`}
+            testID={`mbsx-anchor-dispute-dismiss-${dispute.ticker}`}
             accessibilityRole="button"
             disabled={disabling}
-            onPress={() => keep(dispute)}>
-            <Text style={styles.action}>Keep</Text>
+            onPress={() => dismiss(dispute)}>
+            <Text style={styles.action}>Dismiss</Text>
           </TouchableOpacity>
           <TouchableOpacity
             testID={`mbsx-anchor-dispute-disable-${dispute.ticker}`}

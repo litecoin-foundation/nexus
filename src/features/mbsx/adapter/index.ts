@@ -679,6 +679,42 @@ export const readFinishedSwaps = async (): Promise<FinishedSwap[]> => {
   }
 };
 
+const DISMISSED_DISPUTES_PATH = `${MBSX_DATA_DIR}/dismissed-disputes.json`;
+const DISMISSED_DISPUTES_KEPT = 20;
+let dismissing = Promise.resolve();
+
+export const readDismissedDisputes = async (): Promise<string[]> => {
+  try {
+    if (!(await RNFS.exists(DISMISSED_DISPUTES_PATH))) {
+      return [];
+    }
+    const parsed = JSON.parse(
+      await RNFS.readFile(DISMISSED_DISPUTES_PATH, 'utf8'),
+    );
+    return Array.isArray(parsed)
+      ? parsed.filter(key => typeof key === 'string')
+      : [];
+  } catch {
+    return [];
+  }
+};
+
+export const dismissDispute = (key: string) =>
+  (dismissing = dismissing.then(async () => {
+    const keys = (await readDismissedDisputes()).filter(kept => kept !== key);
+    keys.push(key);
+    try {
+      await RNFS.mkdir(MBSX_DATA_DIR).catch(() => undefined);
+      await RNFS.writeFile(
+        DISMISSED_DISPUTES_PATH,
+        JSON.stringify(keys.slice(-DISMISSED_DISPUTES_KEPT)),
+        'utf8',
+      );
+    } catch (e) {
+      console.warn('mbsx could not store a dismissed dispute', e);
+    }
+  }));
+
 export const listRequests = (): SwapRequestSummary[] | null => {
   if (!isRunning()) {
     return null;
