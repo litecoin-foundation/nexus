@@ -299,7 +299,7 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
             testID="mbsx-server-url"
             style={styles.input}
             value={url}
-            placeholder="tcp://host:port"
+            placeholder="ssl://host:port"
             onChangeText={text => edit({url: text})}
             autoCapitalize="none"
             autoCorrect={false}
@@ -318,7 +318,8 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
               <Text style={styles.inputLabel}>Check</Text>
               <View style={styles.modeRow}>
                 {modes.map(mode => {
-                  const active = (server.verify_certs_mode ?? 'pinned') === mode;
+                  const active =
+                    (server.verify_certs_mode ?? 'pinned') === mode;
                   return (
                     <TouchableOpacity
                       key={mode}

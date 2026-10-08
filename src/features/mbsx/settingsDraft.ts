@@ -297,6 +297,29 @@ export const draftWarnings = async (
         'anyone on the network path can see when this wallet uses it, and delay or drop its messages.',
     );
   }
+  if (config.chain === 'mainnet') {
+    const storedUrls = new Set(
+      Object.values(stored?.coins ?? {}).flatMap(coin =>
+        coin.electrumx.map(server => server.url),
+      ),
+    );
+    const plain = Object.values(config.coins)
+      .filter(coin => coin.enabled === true)
+      .flatMap(coin => coin.electrumx)
+      .filter(
+        server =>
+          !server.disabled &&
+          /^tcp:\/\//i.test(server.url) &&
+          !storedUrls.has(server.url),
+      )
+      .map(server => server.url);
+    if (plain.length > 0) {
+      warnings.push(
+        `${plain.join(', ')} is reached over plain tcp://: anyone on the network path ` +
+          'can see which addresses this wallet watches, or pose as the server. ssl:// avoids both.',
+      );
+    }
+  }
   if (await changedElsewhere(storedJson)) {
     warnings.push(
       'The settings were changed outside this screen since it loaded them, ' +

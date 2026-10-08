@@ -58,4 +58,36 @@ describe('the swap server settings', () => {
     (readConfig as jest.Mock).mockResolvedValue(own());
     expect(await draftWarnings(own(), persisted(own()))).toEqual([]);
   });
+
+  it('asks once before a new plain tcp server on mainnet', async () => {
+    const withTcp = (): MbsxConfig => {
+      const config: MbsxConfig = JSON.parse(JSON.stringify(shipped()));
+      const coin = Object.values(config.coins).find(
+        settings => settings.enabled === true,
+      )!;
+      coin.electrumx.push({url: 'tcp://plain.example:50001'});
+      return config;
+    };
+    (readConfig as jest.Mock).mockResolvedValue(shipped());
+    expect(await draftWarnings(withTcp(), persisted(shipped()))).toEqual([
+      expect.stringMatching(
+        /^tcp:\/\/plain.example:50001 is reached over plain tcp:\/\//,
+      ),
+    ]);
+    expect(
+      await draftWarnings(
+        {...withTcp(), chain: 'regtest'},
+        persisted(shipped()),
+      ),
+    ).toEqual([]);
+    const withSsl: MbsxConfig = JSON.parse(JSON.stringify(withTcp()));
+    Object.values(withSsl.coins).forEach(settings =>
+      settings.electrumx.forEach(server => {
+        server.url = server.url.replace('tcp://', 'ssl://');
+      }),
+    );
+    expect(await draftWarnings(withSsl, persisted(shipped()))).toEqual([]);
+    (readConfig as jest.Mock).mockResolvedValue(withTcp());
+    expect(await draftWarnings(withTcp(), persisted(withTcp()))).toEqual([]);
+  });
 });
