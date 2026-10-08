@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {useNavigation} from '@react-navigation/native';
@@ -119,6 +119,13 @@ const SwapHistoryPreview = () => {
   const running = useAppSelector(state => state.mbsx.running);
   const navigation = useNavigation<NavigationProp<NewWalletStackParamList>>();
   const [swaps, setSwaps] = useState<FinishedSwap[]>([]);
+  const mounted = useRef(true);
+  useEffect(
+    () => () => {
+      mounted.current = false;
+    },
+    [],
+  );
 
   const load = useCallback(() => {
     const live = walletSwaps();
@@ -127,7 +134,11 @@ const SwapHistoryPreview = () => {
       void rememberFinishedSwaps();
       return;
     }
-    readFinishedSwaps().then(rows => setSwaps(walletRows(rows)));
+    readFinishedSwaps().then(rows => {
+      if (mounted.current) {
+        setSwaps(walletRows(rows));
+      }
+    });
   }, []);
 
   useEffect(() => {

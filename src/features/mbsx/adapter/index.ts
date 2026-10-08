@@ -647,18 +647,21 @@ export const walletSwaps = (): FinishedSwap[] | null => {
   return [...live, ...finishedFrom(swaps)];
 };
 
+let finishedWritten: string | null = null;
+
 export const rememberFinishedSwaps = async () => {
   const swaps = listSwaps();
   if (swaps === null) {
     return;
   }
+  const finished = JSON.stringify(finishedFrom(swaps));
+  if (finished === finishedWritten) {
+    return;
+  }
   try {
     await RNFS.mkdir(MBSX_DATA_DIR).catch(() => undefined);
-    await RNFS.writeFile(
-      FINISHED_SWAPS_PATH,
-      JSON.stringify(finishedFrom(swaps)),
-      'utf8',
-    );
+    await RNFS.writeFile(FINISHED_SWAPS_PATH, finished, 'utf8');
+    finishedWritten = finished;
   } catch (e) {
     console.warn('mbsx could not store finished swaps', e);
   }

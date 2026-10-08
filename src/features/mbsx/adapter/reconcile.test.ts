@@ -1,3 +1,4 @@
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import NitroBSX from 'react-native-nitro-bsx';
 
 import {
@@ -5,6 +6,7 @@ import {
   installBalanceProvider,
   installSigner,
   reconcileLeases,
+  rememberFinishedSwaps,
   start,
 } from './index';
 import {loadOrCreateConfig, readConfig} from './config';
@@ -134,5 +136,24 @@ describe('the callbacks while lnd is down', () => {
     } finally {
       mockLightning.lndActive = true;
     }
+  });
+});
+
+describe('rememberFinishedSwaps', () => {
+  it('writes the finished swaps only when they change', async () => {
+    const writeFile = RNFS.writeFile as jest.Mock;
+    const swap = (id: string) => ({
+      id,
+      state: 'COMPLETED',
+      created_at: `2026-10-08T10:00:0${id.length}`,
+    });
+    nitro.listSwaps.mockReturnValue({swaps: [swap('a')]});
+    writeFile.mockClear();
+    await rememberFinishedSwaps();
+    await rememberFinishedSwaps();
+    expect(writeFile).toHaveBeenCalledTimes(1);
+    nitro.listSwaps.mockReturnValue({swaps: [swap('a'), swap('bb')]});
+    await rememberFinishedSwaps();
+    expect(writeFile).toHaveBeenCalledTimes(2);
   });
 });
