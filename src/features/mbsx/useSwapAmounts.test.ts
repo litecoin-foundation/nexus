@@ -1,8 +1,11 @@
+import {act, renderHook} from '@testing-library/react-native';
+
 import {
   DEFAULT_SLIPPAGE,
   UNCHECKED_RATE,
   offerWarning,
   slippageFor,
+  useSwapAmounts,
 } from './useSwapAmounts';
 
 describe('slippageFor', () => {
@@ -52,5 +55,26 @@ describe('offerWarning', () => {
     expect(offerWarning(offer('0.00072'), reference, true)).toBe(
       'You would receive 10% less than the CoinGecko rate.',
     );
+  });
+});
+
+describe('useSwapAmounts', () => {
+  it('reprices the fiat twins when their currency changes, not on every price', () => {
+    const {result, rerender} = renderHook(
+      ({from, to, currency}: {from: string; to: string; currency: string}) =>
+        useSwapAmounts(from, to, 0.01, currency),
+      {initialProps: {from: '100', to: '50000', currency: 'EUR'}},
+    );
+    act(() => result.current.setAmount('from', 'coin', '2'));
+    expect(result.current.amounts.fromUsd).toBe('200.00');
+
+    rerender({from: '110', to: '55000', currency: 'USD'});
+    const {amounts} = result.current;
+    expect(amounts.fromCoin).toBe('2');
+    expect(amounts.fromUsd).toBe('220.00');
+    expect(amounts.toUsd).toBe((Number(amounts.toCoin) * 55000).toFixed(2));
+
+    rerender({from: '120', to: '55000', currency: 'USD'});
+    expect(result.current.amounts.fromUsd).toBe('220.00');
   });
 });

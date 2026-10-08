@@ -22,6 +22,7 @@ import {useAppSelector} from '../../../store/hooks';
 import {triggerLightFeedback} from '../../../utils/haptic';
 import {
   addAmounts,
+  feeTotalBps,
   formatExpiry,
   formatTimestamp,
   kindLabel,
@@ -342,7 +343,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               {feesOpen
                 ? request.fees?.map((fee, index) => (
                     <View
-                      key={fee.desc}
+                      key={`${index}`}
                       style={[look.feeRow, index > 0 ? look.feeLine : null]}>
                       <Text style={look.feeLabel}>{fee.desc}</Text>
                       <Text style={look.feePct}>
@@ -362,12 +363,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 onPress={() => setFeesOpen(shown => !shown)}>
                 <Text style={[look.feeTotalLabel, look.feeToggle]}>Total</Text>
                 <Text style={look.feePct}>
-                  {`${
-                    (request.fees ?? []).reduce(
-                      (sum, fee) => sum + Number(fee.bps),
-                      0,
-                    ) / 100
-                  }%`}
+                  {`${feeTotalBps(request) / 100}%`}
                 </Text>
                 <Text style={look.feeTotalValue}>
                   {`${request.fees_total} ${request.fees_coin}`}
@@ -717,7 +713,7 @@ const OfferFees = ({
   if (offer.fees.length === 0) {
     return <Text style={styles.rowMessage}>No swap fee</Text>;
   }
-  const bps = Number(offer.fees_bps ?? 0);
+  const bps = feeTotalBps(offer);
   return (
     <>
       <TouchableOpacity

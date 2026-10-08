@@ -186,7 +186,10 @@ export const migrateConfig = (config: MbsxConfig): boolean => {
   return true;
 };
 
-export const readConfig = async (): Promise<MbsxConfig | null> => {
+const readStoredConfig = async (): Promise<{
+  config: MbsxConfig;
+  migrated: boolean;
+} | null> => {
   if (!(await fileExists(CONFIG_PATH))) {
     return null;
   }
@@ -197,26 +200,47 @@ export const readConfig = async (): Promise<MbsxConfig | null> => {
     console.error('mbsx config is unreadable:', (error as Error).message);
     return null;
   }
-  if (migrateConfig(config)) {
-    await writeConfig(config);
+  return {config, migrated: migrateConfig(config)};
+};
+
+export const readConfig = async (): Promise<MbsxConfig | null> => {
+  const stored = await readStoredConfig();
+  if (stored?.migrated) {
+    await writeConfig(stored.config);
   }
-  return config;
+  return stored?.config ?? null;
+};
+
+const writeConfigNow = async (config: MbsxConfig) => {
+  if (!(await fileExists(MBSX_DATA_DIR))) {
+    await RNFS.mkdir(MBSX_DATA_DIR);
+  }
+  const tmp = `${CONFIG_PATH}.tmp`;
+  await RNFS.writeFile(tmp, JSON.stringify(config, null, 2));
+  await RNFS.moveFile(tmp, CONFIG_PATH);
 };
 
 let configWrites: Promise<void> = Promise.resolve();
 
-export const writeConfig = (config: MbsxConfig): Promise<void> => {
-  const run = configWrites.then(async () => {
-    if (!(await fileExists(MBSX_DATA_DIR))) {
-      await RNFS.mkdir(MBSX_DATA_DIR);
-    }
-    const tmp = `${CONFIG_PATH}.tmp`;
-    await RNFS.writeFile(tmp, JSON.stringify(config, null, 2));
-    await RNFS.moveFile(tmp, CONFIG_PATH);
-  });
+const queueConfigWrite = (write: () => Promise<void>): Promise<void> => {
+  const run = configWrites.then(write);
   configWrites = run.catch(() => undefined);
   return run;
 };
+
+export const writeConfig = (config: MbsxConfig): Promise<void> =>
+  queueConfigWrite(() => writeConfigNow(config));
+
+export const updateConfig = (
+  change: (config: MbsxConfig) => MbsxConfig,
+): Promise<void> =>
+  queueConfigWrite(async () => {
+    const stored = await readStoredConfig();
+    if (!stored) {
+      throw new Error('There are no swap settings to change');
+    }
+    await writeConfigNow(change(stored.config));
+  });
 
 // The module reads config.json once, in initialise(). Anything written here
 // takes effect on the next start, not immediately.

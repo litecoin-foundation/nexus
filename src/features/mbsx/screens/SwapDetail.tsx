@@ -12,6 +12,7 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {
+  feeTotalBps,
   formatExpiry,
   formatTimestamp,
   kindLabel,
@@ -113,10 +114,7 @@ const SwapFees = ({swap}: {swap: SwapDetails}) => {
   if (!show) {
     return null;
   }
-  const bps =
-    swap.fees_bps !== undefined
-      ? Number(swap.fees_bps)
-      : fees.reduce((sum, fee) => sum + Number(fee.bps), 0);
+  const bps = feeTotalBps(swap);
   const chains: [string, string | undefined, bigint][] = [
     [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
     [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
@@ -128,7 +126,7 @@ const SwapFees = ({swap}: {swap: SwapDetails}) => {
         {open
           ? fees.map((fee, index) => (
               <View
-                key={fee.desc}
+                key={`${index}`}
                 style={[look.feeRow, index > 0 ? look.feeLine : null]}>
                 <Text style={look.feeLabel}>{fee.desc}</Text>
                 <Text style={look.feePct}>{`${Number(fee.bps) / 100}%`}</Text>

@@ -1,3 +1,5 @@
+import type {MbsxSwapFees} from './types';
+
 export const formatTimestamp = (value: string): string =>
   value.replace('T', ' ').replace(/:\d\d$/, '');
 
@@ -56,6 +58,13 @@ export const addAmounts = (a: string, b: string): string => {
 };
 
 // decimal-pad types the locale's separator; null refuses the keystroke
+export const feeTotalBps = ({fees, fees_bps}: MbsxSwapFees): number =>
+  fees_bps !== undefined
+    ? Number(fees_bps)
+    : (fees ?? [])
+        .filter(fee => fee.paid_by !== 'PROVIDER')
+        .reduce((sum, fee) => sum + Number(fee.bps), 0);
+
 export const typedAmount = (value: string): string | null => {
   const cleaned = value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
   return cleaned.indexOf('.') === cleaned.lastIndexOf('.') ? cleaned : null;

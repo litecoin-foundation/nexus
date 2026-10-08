@@ -9,6 +9,7 @@ import {
   loadOrCreateConfig,
   migrateConfig,
   readConfig,
+  updateConfig,
   writeConfig,
 } from './config';
 
@@ -167,5 +168,58 @@ describe('the config file', () => {
     await expect(loadOrCreateConfig()).rejects.toThrow('config.json.bad');
     expect(moveFile).toHaveBeenCalledWith(path, `${path}.bad`);
     expect(writeFile).not.toHaveBeenCalled();
+  });
+});
+
+describe('updateConfig', () => {
+  it('changes the stored config in turn with other writes, migrating it in one write', async () => {
+    const files: Record<string, string> = {};
+    const path = '/docs/mbsx/regtest/config.json';
+    exists.mockImplementation(
+      async (file: string) => file === '/docs/mbsx/regtest' || file in files,
+    );
+    readFile.mockImplementation(async (file: string) => files[file]);
+    writeFile.mockImplementation(async (file: string, data: string) => {
+      files[file] = data;
+    });
+    moveFile.mockImplementation(async (from: string, to: string) => {
+      if (!(from in files)) {
+        throw new Error(`ENOENT: ${from}`);
+      }
+      files[to] = files[from];
+      delete files[from];
+    });
+    try {
+      const named = (bridge_host: string) => ({
+        ...defaultConfig(),
+        bridge_host,
+      });
+      await Promise.all([
+        writeConfig(named('a')),
+        writeConfig(named('b')),
+        writeConfig(named('c')),
+      ]);
+      expect(JSON.parse(files[path]).bridge_host).toBe('c');
+
+      await Promise.all([
+        writeConfig(named('written')),
+        updateConfig(config => ({...config, show_debug: true})),
+      ]);
+      expect(JSON.parse(files[path])).toMatchObject({
+        bridge_host: 'written',
+        show_debug: true,
+      });
+
+      files[path] = JSON.stringify(versionZero());
+      writeFile.mockClear();
+      await updateConfig(config => ({...config, notify_swaps: false}));
+      expect(writeFile).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(files[path])).toMatchObject({
+        config_version: CONFIG_VERSION,
+        notify_swaps: false,
+      });
+    } finally {
+      [exists, readFile, writeFile, moveFile].forEach(mock => mock.mockReset());
+    }
   });
 });

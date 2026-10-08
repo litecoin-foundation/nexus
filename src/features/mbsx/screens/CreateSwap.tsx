@@ -73,7 +73,7 @@ import {
   providersText,
   useOffersEstimate,
 } from '../useOffersEstimate';
-import {raisedFeeNote, shortId, typedAmount} from '../format';
+import {raisedFeeNote, shortAddress, shortId, typedAmount} from '../format';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
@@ -82,6 +82,7 @@ const HOST_COIN = 'LTC';
 
 const CHAIN_FEE_RESERVE = 10000n;
 
+// getSwapFundingOutputs lists the lock output first, then one output per fee
 const swapFeeSats = (outputs: {value: number | bigint}[] | undefined): bigint =>
   (outputs ?? [])
     .slice(1)
@@ -107,9 +108,6 @@ const fiatFieldWidth = (value: string) =>
 const amountFontSize = (value: string) =>
   Math.max(18, Math.min(36, Math.floor(288 / Math.max(value.length, 1))));
 
-const shortAddress = (address: string) =>
-  address.length > 18 ? `${address.slice(0, 8)}…${address.slice(-6)}` : address;
-
 const CoinMark = ({ticker}: {ticker?: string}) => (
   <View
     style={[
@@ -133,6 +131,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
 
   const lastCoin = useAppSelector(state => state.mbsxAddresses.lastCoin);
   const connected = useAppSelector(state => state.mbsx.connected);
+  const running = useAppSelector(state => state.mbsx.running);
   const torEnabled = useAppSelector(state => state.settings.torEnabled);
   const [torApplied, setTorApplied] = useState<boolean | null>(null);
   const [coinTo, setCoinTo] = useState(lastCoin);
@@ -153,6 +152,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     spendable: bigint;
     unconfirmed: bigint;
   } | null>(null);
+  const [balanceReads, setBalanceReads] = useState(0);
   const [advanced, setAdvanced] = useState(false);
   const [coinOpen, setCoinOpen] = useState(false);
   const [receiversOpen, setReceiversOpen] = useState(false);
@@ -180,9 +180,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       };
       read();
       readConfig().then(cfg => live && setTorApplied(cfg?.proxy !== undefined));
-      swapBalances()
-        .then(rv => live && setBalances(rv))
-        .catch(() => live && setBalances(null));
+      setBalanceReads(reads => reads + 1);
       const timer = setInterval(read, 2000);
       return () => {
         live = false;
@@ -226,6 +224,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const referenceName = reference
     ? `the ${reference.label}`
     : "the server's rate";
+  const currency = reference ? 'USD' : (prices?.currency ?? 'USD');
   const serverDeviation =
     reference && glueFrom > 0 && glueTo > 0
       ? glueFrom / glueTo / (reference.send / reference.receive) - 1
@@ -242,6 +241,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     priceFrom > 0 ? String(priceFrom) : undefined,
     priceTo > 0 ? String(priceTo) : undefined,
     slippage,
+    currency,
   );
   const typeAmount =
     (side: AmountSide, unit: AmountUnit) => (value: string) => {
@@ -270,6 +270,18 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     raisedFrom: bigint | null;
   } | null>(null);
   useEffect(() => {
+    if (balanceReads === 0) {
+      return;
+    }
+    let live = true;
+    swapBalances()
+      .then(rv => live && setBalances(rv))
+      .catch(() => live && setBalances(null));
+    return () => {
+      live = false;
+    };
+  }, [balanceReads, running]);
+  useEffect(() => {
     setFeeNote('');
     setSpendNote('');
     setQuote(null);
@@ -277,7 +289,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       amountFrom === '' ||
       sendCoin === '' ||
       receiveCoin === '' ||
-      !isRunning()
+      !running
     ) {
       return;
     }
@@ -307,7 +319,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       });
       setFeeNote(feeCapNote(funding));
     }
-    if (payIn || !balances || !isRunning()) {
+    if (payIn || !balances) {
       return;
     }
     let amountSats: bigint;
@@ -322,7 +334,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         'That is more than you can spend. The network fee and the swap fee come out of this Litecoin.',
       );
     }
-  }, [amountFrom, balances, payIn, receiveCoin, sendCoin]);
+  }, [amountFrom, balances, payIn, receiveCoin, running, sendCoin]);
 
   const blockNote = bridgeNote || feeNote;
 
@@ -569,6 +581,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         rememberDestination({requestId: rv.request_id, address: addressTo}),
       );
       setRequestId(rv.request_id);
+      setBalanceReads(reads => reads + 1);
       // coinTo is deliberately kept: it is lastCoin.
       resetAmounts();
       setAddressTo('');
@@ -600,7 +613,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const selectedSaved = savedAddresses.find(
     entry => entry.address === addressTo,
   );
-  const currency = reference ? 'USD' : (prices?.currency ?? 'USD');
 
   const from = Number(amountFrom);
   const to = Number(amountTo);

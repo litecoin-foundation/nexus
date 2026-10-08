@@ -47,7 +47,7 @@ jest.mock('../adapter', () => ({
   requestSwap: jest.fn(),
   selectAndLeasePrevouts: jest.fn(),
   serialisePrevout: jest.fn(),
-  swapBalances: () => Promise.resolve(null),
+  swapBalances: jest.fn(() => Promise.resolve(null)),
   validateAddress: jest.fn(() => true),
 }));
 
@@ -71,19 +71,30 @@ const route = {key: 'CreateSwap', name: 'CreateSwap', params: undefined} as any;
 const renderScreen = (connected = false, rates = {}) => {
   const store = configureStore({
     reducer: {
-      mbsx: (state = {connected, rates}) => state,
+      mbsx: (
+        state: {connected: boolean; rates: object; running: boolean} = {
+          connected,
+          rates,
+          running: jest.requireMock('../adapter').isRunning(),
+        },
+        action: {type: string; payload?: boolean},
+      ) =>
+        action.type === 'test/running'
+          ? {...state, running: action.payload === true}
+          : state,
       settings: (state = {torEnabled: false}) => state,
       mbsxAddresses: mbsxAddressesReducer,
       wallets: (state = {wallets: [], selectedWalletId: ''}) => state,
     },
   });
-  return render(
+  const screen = render(
     <Provider store={store}>
       <ScreenSizeContext.Provider value={screenSize}>
         <CreateSwap navigation={navigation} route={route} />
       </ScreenSizeContext.Provider>
     </Provider>,
   );
+  return {...screen, store};
 };
 
 describe('CreateSwap', () => {
@@ -170,6 +181,37 @@ describe('CreateSwap', () => {
     } finally {
       adapter.getSwapFundingOutputs.mockReturnValue({error: 'not running'});
       adapter.isRunning.mockReturnValue(false);
+    }
+  });
+
+  it('quotes the fee and reads the balance again once the core runs', async () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.getInfo.mockReturnValue({
+      connected: true,
+      coins: {LTC: {bridge_supported: true}, BTC: {bridge_supported: true}},
+    });
+    adapter.getSwapFundingOutputs.mockReturnValue({
+      outputs: [],
+      total_fee_bps: 200n,
+      max_fee_bps: 500n,
+      fee_bps: 196n,
+    });
+    try {
+      const {getByTestId, queryByText, store} = renderScreen();
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '0.0015');
+      expect(queryByText('Swap fee 1.96%')).toBeNull();
+      const reads = adapter.swapBalances.mock.calls.length;
+
+      act(() => {
+        store.dispatch({type: 'test/running', payload: true});
+      });
+      await waitFor(() => expect(queryByText('Swap fee 1.96%')).toBeTruthy());
+      expect(adapter.swapBalances.mock.calls.length).toBeGreaterThan(reads);
+    } finally {
+      adapter.getInfo.mockReturnValue(null);
+      adapter.getSwapFundingOutputs.mockReturnValue({error: 'not running'});
     }
   });
 

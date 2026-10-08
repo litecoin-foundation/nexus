@@ -45,6 +45,7 @@ export {
   electrumUrlError,
   MBSX_DATA_DIR,
   readConfig,
+  updateConfig,
   writeConfig,
 } from './config';
 export {

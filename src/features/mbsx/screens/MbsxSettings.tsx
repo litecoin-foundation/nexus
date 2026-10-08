@@ -38,7 +38,7 @@ import {
   readConfig,
   removeCaCert,
   rescanDeposits,
-  writeConfig,
+  updateConfig,
 } from '../adapter';
 import type {CaCert, MbsxConfig} from '../adapter';
 import {
@@ -63,7 +63,6 @@ const MbsxSettings: React.FC = () => {
   const insets = useSafeAreaInsets();
   const [advanced, setAdvanced] = useState(false);
   const keyboardHeight = useKeyboardHeight();
-
 
   const dispatch = useAppDispatch();
   const {config, setConfig, dirty} = useSettingsDraft();
@@ -420,11 +419,10 @@ const MbsxSettings: React.FC = () => {
                 if (value) {
                   void notifee.requestPermission();
                 }
-                readConfig().then(current => {
-                  if (current) {
-                    writeConfig({...current, notify_swaps: value});
-                  }
-                });
+                updateConfig(current => ({
+                  ...current,
+                  notify_swaps: value,
+                })).catch(e => setError((e as Error).message));
               }}
             />
           </View>
@@ -460,7 +458,10 @@ const MbsxSettings: React.FC = () => {
                       },
                     ]}>
                     {COIN_ICONS[ticker] ? (
-                      <Image source={COIN_ICONS[ticker]} style={look.coinMark} />
+                      <Image
+                        source={COIN_ICONS[ticker]}
+                        style={look.coinMark}
+                      />
                     ) : null}
                   </View>
                   <Text style={styles.label}>{ticker}</Text>
@@ -506,7 +507,9 @@ const MbsxSettings: React.FC = () => {
                     </Text>
                   </TouchableOpacity>
                   {rescanned === coin ? (
-                    <Text testID={`mbsx-rescan-started-${coin}`} style={look.note}>
+                    <Text
+                      testID={`mbsx-rescan-started-${coin}`}
+                      style={look.note}>
                       Looking for pay-ins made from this seed
                     </Text>
                   ) : null}
@@ -565,7 +568,9 @@ const MbsxSettings: React.FC = () => {
             })}
         </View>
 
-        <Text style={[swapCards.section, look.blockTitle]}>Coin Rate Services</Text>
+        <Text style={[swapCards.section, look.blockTitle]}>
+          Coin Rate Services
+        </Text>
         <View style={swapCards.card}>
           <TouchableOpacity
             testID="mbsx-rate-services"
@@ -600,11 +605,10 @@ const MbsxSettings: React.FC = () => {
                   value={config.show_raw_states === true}
                   onValueChange={value => {
                     edit({show_raw_states: value});
-                    readConfig().then(current => {
-                      if (current) {
-                        writeConfig({...current, show_raw_states: value});
-                      }
-                    });
+                    updateConfig(current => ({
+                      ...current,
+                      show_raw_states: value,
+                    })).catch(e => setError((e as Error).message));
                   }}
                 />
               </View>
@@ -619,11 +623,10 @@ const MbsxSettings: React.FC = () => {
                   value={config.show_debug === true}
                   onValueChange={value => {
                     edit({show_debug: value});
-                    readConfig().then(current => {
-                      if (current) {
-                        writeConfig({...current, show_debug: value});
-                      }
-                    });
+                    updateConfig(current => ({
+                      ...current,
+                      show_debug: value,
+                    })).catch(e => setError((e as Error).message));
                   }}
                 />
               </View>
@@ -686,8 +689,8 @@ const MbsxSettings: React.FC = () => {
             <View style={swapCards.card}>
               <Text style={swapCards.note}>
                 Trust anchors for the optional and strict checks. Naming a
-                server confines the certificate to it, and replaces the built
-                in roots for that server rather than adding to them.
+                server confines the certificate to it, and replaces the built in
+                roots for that server rather than adding to them.
               </Text>
             </View>
             {certs.length === 0 ? (
@@ -703,7 +706,9 @@ const MbsxSettings: React.FC = () => {
                         {cert.label || 'Unlabelled'}
                       </Text>
                       <Text style={swapCards.note}>
-                        {cert.host ? `${cert.host}:${cert.port}` : 'Every Server'}
+                        {cert.host
+                          ? `${cert.host}:${cert.port}`
+                          : 'Every Server'}
                       </Text>
                     </View>
                     <TouchableOpacity
@@ -727,7 +732,9 @@ const MbsxSettings: React.FC = () => {
                 onChangeText={setCertLabel}
                 autoCapitalize="none"
               />
-              <Text style={styles.inputLabel}>Host (Blank for Every Server)</Text>
+              <Text style={styles.inputLabel}>
+                Host (Blank for Every Server)
+              </Text>
               <TextInput
                 testID="mbsx-cert-host"
                 style={styles.input}

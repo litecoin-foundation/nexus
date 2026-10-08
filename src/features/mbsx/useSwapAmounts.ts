@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 import type {Reference} from './rates';
 
@@ -103,6 +103,7 @@ export const useSwapAmounts = (
   priceFrom: string | undefined,
   priceTo: string | undefined,
   slippage: number = DEFAULT_SLIPPAGE,
+  currency?: string,
 ) => {
   const [amounts, setAmounts] = useState<SwapAmounts>(EMPTY);
   // basicswap's rate_lock, "Fix rate", and on by default for the same reason:
@@ -113,6 +114,23 @@ export const useSwapAmounts = (
   const pFrom = priceFrom ? num(priceFrom) : null;
   const pTo = priceTo ? num(priceTo) : null;
   const canConvert = pFrom !== null && pTo !== null;
+
+  const pricedIn = useRef(currency);
+  useEffect(() => {
+    if (pricedIn.current === currency) {
+      return;
+    }
+    pricedIn.current = currency;
+    const fiat = (coin: string, price: number | null) => {
+      const amount = num(coin);
+      return usdString(amount !== null && price ? amount * price : null);
+    };
+    setAmounts(prev => ({
+      ...prev,
+      fromUsd: fiat(prev.fromCoin, pFrom),
+      toUsd: fiat(prev.toCoin, pTo),
+    }));
+  }, [currency, pFrom, pTo]);
 
   const setAmount = useCallback(
     (side: AmountSide, unit: AmountUnit, raw: string) => {

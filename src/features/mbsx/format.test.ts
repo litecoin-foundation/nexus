@@ -1,4 +1,4 @@
-import {addAmounts, typedAmount} from './format';
+import {addAmounts, feeTotalBps, typedAmount} from './format';
 
 describe('typedAmount', () => {
   it('reads a comma as the decimal point', () => {
@@ -23,5 +23,21 @@ describe('addAmounts', () => {
     expect(addAmounts('1', '0.0015')).toBe('1.0015');
     expect(addAmounts('0.1', '0.2')).toBe('0.3');
     expect(addAmounts('0.00000001', '0.99999999')).toBe('1.00000000');
+  });
+});
+
+describe('feeTotalBps', () => {
+  it('takes the module total, else sums what the app pays', () => {
+    const fee = (bps: bigint, paid_by?: 'APP' | 'PROVIDER') => ({
+      desc: 'Fee',
+      bps,
+      amount: '0',
+      paid_by,
+    });
+    expect(feeTotalBps({fees_bps: 30n, fees: [fee(10n), fee(25n)]})).toBe(30);
+    expect(
+      feeTotalBps({fees: [fee(10n), fee(25n, 'APP'), fee(40n, 'PROVIDER')]}),
+    ).toBe(35);
+    expect(feeTotalBps({})).toBe(0);
   });
 });
