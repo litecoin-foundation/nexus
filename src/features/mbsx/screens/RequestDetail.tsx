@@ -690,7 +690,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         <RemoveButton
           testID="mbsx-remove-request"
           label="Delete Request"
-          confirm="Permanently delete this request and every offer under it?"
+          confirm="Permanently delete this request, every offer under it, and the history and keys of any swap it made?"
           disabled={underway !== undefined}
           onConfirm={async () => {
             await removeRequest(requestId);

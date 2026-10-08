@@ -47,9 +47,9 @@ const SwapList: React.FC<Props> = ({navigation}) => {
   const [swaps, setSwaps] = useState<SwapSummary[]>([]);
   const [reserved, setReserved] = useState<bigint | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'active' | 'finished' | 'failed'>(
-    'all',
-  );
+  const [filter, setFilter] = useState<
+    'all' | 'active' | 'finished' | 'failed'
+  >('all');
 
   const fetchSwaps = useCallback(() => {
     const rows = listSwaps();
@@ -104,10 +104,7 @@ const SwapList: React.FC<Props> = ({navigation}) => {
       <View style={styles.headerAction}>
         <TouchableOpacity
           testID="mbsx-new-swap"
-          style={[
-            styles.button,
-            !running ? styles.buttonDisabled : null,
-          ]}
+          style={[styles.button, !running ? styles.buttonDisabled : null]}
           disabled={!running}
           onPress={() => navigation.navigate('CreateSwap')}>
           <Text style={styles.buttonText}>New Swap</Text>
@@ -117,7 +114,7 @@ const SwapList: React.FC<Props> = ({navigation}) => {
         <RemoveButton
           testID="mbsx-remove-finished"
           label="Remove Finished"
-          confirm="Permanently delete every finished swap and the requests they belong to?"
+          confirm="Permanently delete every finished swap, with its history and keys, and the requests they belong to?"
           disabled={!running}
           onConfirm={async () => {
             const rv = await removeRequests(requestFinished);
@@ -153,7 +150,11 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                 testID={`mbsx-swap-filter-${chip.id}`}
                 style={[styles.chip, on ? styles.chipSelected : null]}
                 onPress={() => setFilter(chip.id)}>
-                <Text style={[styles.chipText, on ? styles.chipTextSelected : null]}>
+                <Text
+                  style={[
+                    styles.chipText,
+                    on ? styles.chipTextSelected : null,
+                  ]}>
                   {chip.label}
                 </Text>
               </TouchableOpacity>
@@ -187,50 +188,50 @@ const SwapList: React.FC<Props> = ({navigation}) => {
               swap.coin_to,
             );
             return (
-            <TouchableOpacity
-              key={swap.id}
-              style={swapCards.card}
-              onPress={() =>
-                navigation.navigate('SwapDetail', {swapId: swap.id})
-              }>
-              <View style={swapCards.historyRow}>
-                <CoinPair from={swap.coin_from} to={swap.coin_to} />
-                <View style={swapCards.historyMid}>
-                  <Text style={swapCards.historyTitle} numberOfLines={1}>
-                    {title}
-                  </Text>
-                  {sentence.toLowerCase() === title.toLowerCase() ? null : (
-                    <Text style={swapCards.historySub} numberOfLines={2}>
-                      {sentence}
+              <TouchableOpacity
+                key={swap.id}
+                style={swapCards.card}
+                onPress={() =>
+                  navigation.navigate('SwapDetail', {swapId: swap.id})
+                }>
+                <View style={swapCards.historyRow}>
+                  <CoinPair from={swap.coin_from} to={swap.coin_to} />
+                  <View style={swapCards.historyMid}>
+                    <Text style={swapCards.historyTitle} numberOfLines={1}>
+                      {title}
                     </Text>
-                  )}
-                  {showRaw ? (
-                    <Text style={swapCards.historySub}>{swap.state}</Text>
-                  ) : null}
-                  {swap.kind ? (
-                    <Text style={swapCards.historySub}>
-                      {kindLabel(swap.kind)}
+                    {sentence.toLowerCase() === title.toLowerCase() ? null : (
+                      <Text style={swapCards.historySub} numberOfLines={2}>
+                        {sentence}
+                      </Text>
+                    )}
+                    {showRaw ? (
+                      <Text style={swapCards.historySub}>{swap.state}</Text>
+                    ) : null}
+                    {swap.kind ? (
+                      <Text style={swapCards.historySub}>
+                        {kindLabel(swap.kind)}
+                      </Text>
+                    ) : null}
+                    <Text style={swapCards.historySub} numberOfLines={1}>
+                      {swap.id}
                     </Text>
-                  ) : null}
-                  <Text style={swapCards.historySub} numberOfLines={1}>
-                    {swap.id}
-                  </Text>
+                  </View>
+                  <View style={swapCards.historyAmounts}>
+                    <Text style={swapCards.historyIn} numberOfLines={1}>
+                      {`+ ${swap.amount_to} ${swap.coin_to}`}
+                    </Text>
+                    <Text style={swapCards.historyOut} numberOfLines={1}>
+                      {`− ${swap.amount_from} ${swap.coin_from}`}
+                    </Text>
+                    <TimeLine
+                      align="end"
+                      text={formatExpiry(swap.created_at)}
+                      textStyle={swapCards.historyOut}
+                    />
+                  </View>
                 </View>
-                <View style={swapCards.historyAmounts}>
-                  <Text style={swapCards.historyIn} numberOfLines={1}>
-                    {`+ ${swap.amount_to} ${swap.coin_to}`}
-                  </Text>
-                  <Text style={swapCards.historyOut} numberOfLines={1}>
-                    {`− ${swap.amount_from} ${swap.coin_from}`}
-                  </Text>
-                  <TimeLine
-                    align="end"
-                    text={formatExpiry(swap.created_at)}
-                    textStyle={swapCards.historyOut}
-                  />
-                </View>
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
             );
           })
         )}

@@ -298,7 +298,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
             <RemoveButton
               testID="mbsx-remove-swap"
               label="Delete Swap"
-              confirm="Permanently delete this swap and its events?"
+              confirm="Permanently delete this swap, its history and its keys? Anything it still holds can't be recovered afterwards."
               onConfirm={async () => {
                 removeSwap(swapId);
                 navigation.navigate('SwapList');
@@ -477,7 +477,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           <RemoveButton
             testID="mbsx-remove-swap"
             label="Delete Swap"
-            confirm="Permanently delete this swap and its events?"
+            confirm="Permanently delete this swap, its history and its keys? Anything it still holds can't be recovered afterwards."
             onConfirm={async () => {
               removeSwap(swapId);
               navigation.navigate('SwapList');
