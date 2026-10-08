@@ -79,7 +79,8 @@ export const electrumUrlError = (url: string): string => {
   return port >= 1 && port <= 65535 ? '' : 'has a port out of range';
 };
 
-export const MBSX_DATA_DIR = `${RNFS.DocumentDirectoryPath}/mbsx/${getNetwork()}`;
+export const MBSX_ROOT_DIR = `${RNFS.DocumentDirectoryPath}/mbsx`;
+export const MBSX_DATA_DIR = `${MBSX_ROOT_DIR}/${getNetwork()}`;
 
 const CONFIG_PATH = `${MBSX_DATA_DIR}/config.json`;
 

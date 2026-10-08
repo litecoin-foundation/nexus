@@ -94,6 +94,28 @@ beforeEach(() => {
   (releaseLeases as jest.Mock).mockClear();
 });
 
+describe('start', () => {
+  it('keeps the mbsx directory out of iOS backups before the core opens it', async () => {
+    const mkdir = RNFS.mkdir as jest.Mock;
+    mkdir.mockClear();
+    nitro.setDataDir.mockClear();
+    nitro.isRunning.mockReturnValue(false);
+    try {
+      await start();
+    } finally {
+      nitro.isRunning.mockReturnValue(true);
+    }
+    const excluded = mkdir.mock.calls.findIndex(
+      ([path, options]) =>
+        path === '/tmp/mbsx' && options?.NSURLIsExcludedFromBackupKey === true,
+    );
+    expect(excluded).toBeGreaterThanOrEqual(0);
+    expect(mkdir.mock.invocationCallOrder[excluded]).toBeLessThan(
+      nitro.setDataDir.mock.invocationCallOrder[0],
+    );
+  });
+});
+
 describe('reconcileLeases', () => {
   it('leaves the coins of a request it could not read', async () => {
     for (const error of [

@@ -21,6 +21,7 @@ import {
   applyTorSetting,
   loadOrCreateConfig,
   MBSX_DATA_DIR,
+  MBSX_ROOT_DIR,
   readConfig,
   writeConfig,
 } from './config';
@@ -145,6 +146,7 @@ const startOnce = async (tor_enabled?: boolean) => {
   installSigner();
   installBalanceProvider();
 
+  await RNFS.mkdir(MBSX_ROOT_DIR, {NSURLIsExcludedFromBackupKey: true});
   if (NitroBSX.setDataDir(MBSX_DATA_DIR) !== 0) {
     throw new Error(`mbsx could not use its data directory ${MBSX_DATA_DIR}`);
   }
