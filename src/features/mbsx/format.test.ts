@@ -1,4 +1,4 @@
-import {typedAmount} from './format';
+import {addAmounts, typedAmount} from './format';
 
 describe('typedAmount', () => {
   it('reads a comma as the decimal point', () => {
@@ -15,5 +15,13 @@ describe('typedAmount', () => {
   it('keeps only digits and the separator', () => {
     expect(typedAmount(' 1a2')).toBe('12');
     expect(typedAmount('')).toBe('');
+  });
+});
+
+describe('addAmounts', () => {
+  it('adds decimal amounts exactly', () => {
+    expect(addAmounts('1', '0.0015')).toBe('1.0015');
+    expect(addAmounts('0.1', '0.2')).toBe('0.3');
+    expect(addAmounts('0.00000001', '0.99999999')).toBe('1.00000000');
   });
 });

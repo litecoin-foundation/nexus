@@ -21,6 +21,7 @@ import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppSelector} from '../../../store/hooks';
 import {triggerLightFeedback} from '../../../utils/haptic';
 import {
+  addAmounts,
   formatExpiry,
   formatTimestamp,
   kindLabel,
@@ -65,8 +66,16 @@ const explainReliability = () =>
       'this exact address. 50 means it has not seen them before.',
   );
 
+// Paid on top of amount_send, in coin_send; a provider-paid fee costs this wallet nothing
+const appFee = (offer: SwapOffer): string | null =>
+  Number(offer.fees_bps ?? 0) > 0 &&
+  offer.fees_total &&
+  offer.fees_coin === offer.coin_send
+    ? offer.fees_total
+    : null;
+
 const rate = (offer: SwapOffer) => {
-  const send = Number(offer.amount_send);
+  const send = Number(offer.amount_send) + Number(appFee(offer) ?? 0);
   const receive = Number(offer.amount_receive);
   if (!send || !receive) {
     return 0;
@@ -357,7 +366,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               </TouchableOpacity>
               <Text style={look.feeNote}>
                 {swaps.length === 0
-                  ? `Taken from the ${request.fees_coin} you send, whichever offer you accept. The exact amount follows the offer.`
+                  ? `Added to the ${request.fees_coin} you send. The exact amount follows the offer you accept.`
                   : 'Chain fees are under the swap below.'}
               </Text>
             </>
@@ -508,6 +517,16 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                     ]}>
                     {`Send ${offer.amount_send} ${offer.coin_send} for ${offer.amount_receive} ${offer.coin_receive}. The swap starts on its own once the offer is set up.`}
                   </Text>
+                  {appFee(offer) ? (
+                    <Text
+                      testID="mbsx-accept-total"
+                      style={[swapCards.note, look.confirmNote]}>
+                      {`Total sent incl. fees: ${addAmounts(
+                        offer.amount_send,
+                        appFee(offer)!,
+                      )} ${offer.coin_send}, plus the network fee.`}
+                    </Text>
+                  ) : null}
                   {acceptError !== '' ? (
                     <Text testID="mbsx-accept-error" style={styles.error}>
                       {acceptError}

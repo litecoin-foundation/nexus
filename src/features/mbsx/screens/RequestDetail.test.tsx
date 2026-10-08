@@ -119,6 +119,81 @@ describe('RequestDetail', () => {
     expect(view.getByTestId('mbsx-accept-low')).toBeEnabled();
   });
 
+  it('ranks offers by what is sent, fee included', () => {
+    const view = renderRequest({}, [
+      {
+        ...offer('dear', '0.0008'),
+        fees: [
+          {
+            desc: 'Platform fee',
+            bps: 100n,
+            amount: '0.01',
+            coin: 'LTC',
+            paid_by: 'APP',
+          },
+        ],
+        fees_coin: 'LTC',
+        fees_total: '0.01',
+        fees_bps: 100n,
+      },
+      {
+        ...offer('cheap', '0.000795'),
+        fees: [
+          {
+            desc: 'Platform fee',
+            bps: 100n,
+            amount: '0.01',
+            coin: 'LTC',
+            paid_by: 'PROVIDER',
+          },
+        ],
+        fees_coin: 'LTC',
+        fees_total: '0.01',
+        fees_bps: 0n,
+      },
+    ]);
+    expect(view.getByTestId('mbsx-best-rate-cheap')).toBeTruthy();
+    expect(view.queryByTestId('mbsx-best-rate-dear')).toBeNull();
+  });
+
+  it('leaves out a fee that is not in the coin sent', () => {
+    const view = renderRequest({}, [
+      {
+        ...offer('other', '0.0008'),
+        fees: [],
+        fees_coin: 'BTC',
+        fees_total: '0.01',
+        fees_bps: 100n,
+      },
+      {...offer('plain', '0.000795'), fees: []},
+    ]);
+    expect(view.getByTestId('mbsx-best-rate-other')).toBeTruthy();
+  });
+
+  it('names the total sent, fee included, before Accept', () => {
+    const view = renderRequest(freshRates(), [
+      {
+        ...offer('fee', '0.00079'),
+        fees: [
+          {
+            desc: 'Platform fee',
+            bps: 15n,
+            amount: '0.0015',
+            coin: 'LTC',
+            paid_by: 'APP',
+          },
+        ],
+        fees_coin: 'LTC',
+        fees_total: '0.0015',
+        fees_bps: 15n,
+      },
+    ]);
+    fireEvent.press(view.getByTestId('mbsx-accept-fee'));
+    expect(view.getByTestId('mbsx-accept-total')).toHaveTextContent(
+      'Total sent incl. fees: 1.0015 LTC, plus the network fee.',
+    );
+  });
+
   it('shows an offer fee compactly and its breakdown on a tap', () => {
     const view = renderRequest({}, [
       {
@@ -191,6 +266,11 @@ describe('RequestDetail', () => {
       /Total\s*1%\s*0\.01 LTC/,
     );
     expect(view.queryByText('Nexus')).toBeNull();
+    expect(
+      view.getByText(
+        'Added to the LTC you send. The exact amount follows the offer you accept.',
+      ),
+    ).toBeTruthy();
     fireEvent.press(view.getByTestId('mbsx-request-fees'));
     expect(view.getByText('Nexus')).toBeTruthy();
     expect(view.getByText('BSX')).toBeTruthy();

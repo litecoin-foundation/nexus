@@ -42,6 +42,19 @@ export const kindLabel = (kind?: string): string =>
 export const raisedFeeNote = (nominalBps: bigint | number): string =>
   `Raised from ${Number(nominalBps) / 100}% because the amount is small`;
 
+export const addAmounts = (a: string, b: string): string => {
+  const places = Math.max(
+    a.split('.')[1]?.length ?? 0,
+    b.split('.')[1]?.length ?? 0,
+  );
+  const scaled = (x: string) => {
+    const [whole, fraction = ''] = x.split('.');
+    return BigInt(whole + fraction.padEnd(places, '0'));
+  };
+  const sum = (scaled(a) + scaled(b)).toString().padStart(places + 1, '0');
+  return places === 0 ? sum : `${sum.slice(0, -places)}.${sum.slice(-places)}`;
+};
+
 // decimal-pad types the locale's separator; null refuses the keystroke
 export const typedAmount = (value: string): string | null => {
   const cleaned = value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
