@@ -117,6 +117,20 @@ describe('the selected coins are leased to us for a day', () => {
   });
 });
 
+describe('lnd calls have a deadline', () => {
+  it('a balance read gives up when lnd never answers', async () => {
+    jest.useFakeTimers();
+    try {
+      listUnspent.mockReturnValue(new Promise(() => {}));
+      const read = spendableBalance();
+      jest.advanceTimersByTime(30_000);
+      await expect(read).rejects.toThrow('ListUnspent did not answer in 30s');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
 describe('lnd calls are scoped to the wallet´s litecoin account', () => {
   it('spendableBalance names the account', async () => {
     await spendableBalance();

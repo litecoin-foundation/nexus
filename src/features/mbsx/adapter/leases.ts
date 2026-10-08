@@ -11,6 +11,7 @@ import {
   readSerialisedPrevout,
   type SelectedPrevout,
 } from './prevouts';
+import {withDeadline} from './deadline';
 import {forgetSigning} from './signingRecords';
 import {store} from '../../../store';
 
@@ -30,28 +31,6 @@ export type WalletLock = {
 };
 
 const outpointKey = (txid: string, vout: number | bigint) => `${txid}:${vout}`;
-
-const LND_CALL_MS = 30_000;
-
-// nitro-lndltc's calls settle only when lndmobile answers; before lnd starts they never do.
-const withDeadline = <T>(call: Promise<T>, what: string): Promise<T> =>
-  new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(
-      () =>
-        reject(new Error(`${what} did not answer in ${LND_CALL_MS / 1000}s`)),
-      LND_CALL_MS,
-    );
-    call.then(
-      value => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      error => {
-        clearTimeout(timer);
-        reject(error);
-      },
-    );
-  });
 
 const listLeases = () => withDeadline(walletKitListLeases({}), 'ListLeases');
 

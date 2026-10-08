@@ -1,6 +1,7 @@
 import {Transaction} from 'bitcoinjs-lib';
 import {walletKitFinalizePsbt} from 'react-native-nitro-lndltc';
 
+import {withDeadline} from './deadline';
 import {pendingOutput} from './leases';
 import {signingRecordFor} from './signingRecords';
 
@@ -20,6 +21,8 @@ const SIGHASH_ALL = 1;
 const OWNERSHIP_PROOF_LOCKTIME = 499999999;
 // CoinInterface::maxFeeRate(), the module's ceiling on an offer's fee rate
 const MAX_FEE_SAT_PER_VBYTE = 1000n;
+// Inside HybridNitroBSX's 120 s wait for a signature
+const SIGN_MS = 90_000;
 
 const readCompactSize = (buf: Buffer, at: number): [number, number] => {
   const first = buf.readUInt8(at);
@@ -207,9 +210,11 @@ export const signSwapTx = async (
   }
   const outpoints = psbtInputOutpoints(psbtHex);
   const scope = await scopeFor(outpoints);
-  const finalized = await walletKitFinalizePsbt({
-    fundedPsbt: Buffer.from(psbtHex, 'hex'),
-  });
+  const finalized = await withDeadline(
+    walletKitFinalizePsbt({fundedPsbt: Buffer.from(psbtHex, 'hex')}),
+    'FinalizePsbt',
+    SIGN_MS,
+  );
   // Length, not truthiness: an empty Uint8Array is truthy, so a zero-length
   // response would pass for a signed transaction.
   if (!finalized?.rawFinalTx?.length) {

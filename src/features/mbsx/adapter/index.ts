@@ -1113,6 +1113,12 @@ export const installKeyProvider = () => {
 // rather than broadcasting anything.
 export const installSigner = () => {
   NitroBSX.setSignTx(async (psbtHex: string, coin: string) => {
+    if (!store.getState().lightning.lndActive) {
+      console.warn(
+        'mbsx could not sign a swap transaction: lnd is not running',
+      );
+      return '';
+    }
     try {
       return await signSwapTx(psbtHex, coin);
     } catch (e) {
@@ -1129,6 +1135,9 @@ export const installBalanceProvider = () => {
   NitroBSX.setGetBalance(async (coin: string) => {
     if (coin.toUpperCase() !== 'LTC') {
       throw new Error(`mbsx asked for a ${coin} balance, which Nexus has not`);
+    }
+    if (!store.getState().lightning.lndActive) {
+      throw new Error('lnd is not running');
     }
     return await spendableBalance();
   });

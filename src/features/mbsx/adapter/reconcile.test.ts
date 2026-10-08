@@ -1,8 +1,15 @@
 import NitroBSX from 'react-native-nitro-bsx';
 
-import {getInfo, reconcileLeases, start} from './index';
+import {
+  getInfo,
+  installBalanceProvider,
+  installSigner,
+  reconcileLeases,
+  start,
+} from './index';
 import {loadOrCreateConfig, readConfig} from './config';
 import {releaseLeases} from './leases';
+import {signSwapTx} from './signTx';
 
 jest.mock('react-native-nitro-bsx', () => {
   const fns: Record<string, jest.Mock> = {};
@@ -24,8 +31,13 @@ jest.mock('@dr.pogodin/react-native-fs', () => ({
 
 jest.mock('../network', () => ({getNetwork: () => 'regtest'}));
 
+const mockLightning = {lndActive: true};
 jest.mock('../../../store', () => ({
-  store: {getState: () => ({}), dispatch: jest.fn(), subscribe: jest.fn()},
+  store: {
+    getState: () => ({lightning: mockLightning}),
+    dispatch: jest.fn(),
+    subscribe: jest.fn(),
+  },
   pStore: {},
 }));
 
@@ -47,7 +59,9 @@ jest.mock('./leases', () => ({
   releaseOrphanLeases: jest.fn(() => Promise.resolve()),
 }));
 jest.mock('./prevouts', () => ({}));
-jest.mock('./signTx', () => ({}));
+jest.mock('./signTx', () => ({
+  signSwapTx: jest.fn(() => Promise.resolve('02')),
+}));
 jest.mock('./signingRecords', () => ({}));
 jest.mock('./mainKey', () => ({
   APP_TYPE_NEXUS: 1,
@@ -101,5 +115,24 @@ describe('getInfo', () => {
       throw new Error('The module is starting');
     });
     expect(getInfo()).toBeNull();
+  });
+});
+
+describe('the callbacks while lnd is down', () => {
+  it('refuse at once to sign or to read a balance', async () => {
+    installSigner();
+    installBalanceProvider();
+    const signCalls = nitro.setSignTx.mock.calls;
+    const balanceCalls = nitro.setGetBalance.mock.calls;
+    const sign = signCalls[signCalls.length - 1][0];
+    const balance = balanceCalls[balanceCalls.length - 1][0];
+    mockLightning.lndActive = false;
+    try {
+      await expect(sign('70736274ff', 'LTC')).resolves.toBe('');
+      expect(signSwapTx).not.toHaveBeenCalled();
+      await expect(balance('LTC')).rejects.toThrow('lnd is not running');
+    } finally {
+      mockLightning.lndActive = true;
+    }
   });
 });

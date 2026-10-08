@@ -9,6 +9,16 @@ import Crypto from 'react-native-quick-crypto';
 
 import {selectedAccountNamesSelector} from '../../../reducers/wallets';
 import {store} from '../../../store';
+import {withDeadline} from './deadline';
+
+const listUnspent = (request: Parameters<typeof walletKitListUnspent>[0]) =>
+  withDeadline(walletKitListUnspent(request), 'ListUnspent');
+const fundPsbt = (request: Parameters<typeof walletKitFundPsbt>[0]) =>
+  withDeadline(walletKitFundPsbt(request), 'FundPsbt');
+const leaseOutput = (request: Parameters<typeof walletKitLeaseOutput>[0]) =>
+  withDeadline(walletKitLeaseOutput(request), 'LeaseOutput');
+const releaseOutput = (request: Parameters<typeof walletKitReleaseOutput>[0]) =>
+  withDeadline(walletKitReleaseOutput(request), 'ReleaseOutput');
 
 export const LEASE_ID_PREFIX = Buffer.from('mbsx');
 // Released when the swap ends; the day only bounds a crash.
@@ -107,7 +117,7 @@ export const readSerialisedPrevout = (
 export const swapBalances = async (
   account?: string,
 ): Promise<{spendable: bigint; unconfirmed: bigint}> => {
-  const {utxos} = await walletKitListUnspent({
+  const {utxos} = await listUnspent({
     minConfs: 0,
     maxConfs: MAX_CONFS,
     account: litecoinAccount(account),
@@ -128,7 +138,7 @@ export const swapBalances = async (
 };
 
 export const spendableBalance = async (account?: string): Promise<bigint> => {
-  const {utxos} = await walletKitListUnspent({
+  const {utxos} = await listUnspent({
     minConfs: 1,
     maxConfs: MAX_CONFS,
     account: litecoinAccount(account),
@@ -157,12 +167,12 @@ const leaseForSwap = async (
   });
   try {
     for (const prevout of held) {
-      await walletKitReleaseOutput({
+      await releaseOutput({
         id: Buffer.from(prevout.leaseId, 'hex'),
         outpoint: outpoint(prevout),
       });
       prevout.leaseId = '';
-      await walletKitLeaseOutput({
+      await leaseOutput({
         id,
         outpoint: outpoint(prevout),
         expirationSeconds: BigInt(LEASE_SECONDS),
@@ -171,7 +181,7 @@ const leaseForSwap = async (
     }
   } catch (e) {
     for (const prevout of held.filter(p => p.leaseId)) {
-      await walletKitReleaseOutput({
+      await releaseOutput({
         id: Buffer.from(prevout.leaseId, 'hex'),
         outpoint: outpoint(prevout),
       }).catch(() => undefined);
@@ -208,7 +218,7 @@ export const selectAndLeasePrevouts = async (
   //
   // Confirmed only - the counterparty's bridge resolves each prevout with
   // gettxout against its own node, which knows nothing of an unconfirmed parent.
-  const {utxos} = await walletKitListUnspent({
+  const {utxos} = await listUnspent({
     minConfs: 1,
     maxConfs: MAX_CONFS,
     account: litecoinAccount(account),
@@ -222,7 +232,7 @@ export const selectAndLeasePrevouts = async (
     ]),
   );
 
-  const funded = await walletKitFundPsbt({
+  const funded = await fundPsbt({
     template: {
       case: 'raw',
       value: {

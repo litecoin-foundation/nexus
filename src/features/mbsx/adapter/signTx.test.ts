@@ -237,6 +237,25 @@ describe('a swap transaction', () => {
     expect(finalizePsbt).not.toHaveBeenCalled();
   });
 
+  it('gives up when lnd never signs', async () => {
+    await recordSigning('request g', [prevout('29')], CHANGE_ADDRESS, funding);
+    jest.useFakeTimers();
+    try {
+      finalizePsbt.mockReturnValue(new Promise(() => {}));
+      const signing = signSwapTx(
+        psbtV2([{txid: '29'.repeat(32), vout: 3}], lockOuts(297000n)),
+        'LTC',
+      );
+      const settled = expect(signing).rejects.toThrow(
+        'FinalizePsbt did not answer in 90s',
+      );
+      await jest.advanceTimersByTimeAsync(90_000);
+      await settled;
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('checks what lnd signed, not just the psbt', async () => {
     await recordSigning('request f', [prevout('27')], CHANGE_ADDRESS, funding);
     const ins = [{txid: '27'.repeat(32), vout: 3}];
