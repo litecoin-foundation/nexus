@@ -206,7 +206,9 @@ export const writeConfig = async (config: MbsxConfig) => {
   if (!(await fileExists(MBSX_DATA_DIR))) {
     await RNFS.mkdir(MBSX_DATA_DIR);
   }
-  await RNFS.writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
+  const tmp = `${CONFIG_PATH}.tmp`;
+  await RNFS.writeFile(tmp, JSON.stringify(config, null, 2));
+  await RNFS.moveFile(tmp, CONFIG_PATH);
 };
 
 // The module reads config.json once, in initialise(). Anything written here
@@ -236,6 +238,12 @@ export const loadOrCreateConfig = async (): Promise<MbsxConfig> => {
   const existing = await readConfig();
   if (existing) {
     return existing;
+  }
+  if (await fileExists(CONFIG_PATH)) {
+    await RNFS.moveFile(CONFIG_PATH, `${CONFIG_PATH}.bad`);
+    throw new Error(
+      'The swap settings could not be read. They are kept as config.json.bad, and the next start uses the defaults.',
+    );
   }
   const config = defaultConfig();
   if (!config.bridge_pubkey) {

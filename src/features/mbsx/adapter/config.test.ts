@@ -6,14 +6,17 @@ import {
   MbsxConfig,
   defaultConfig,
   electrumUrlError,
+  loadOrCreateConfig,
   migrateConfig,
   readConfig,
+  writeConfig,
 } from './config';
 
 jest.mock('@dr.pogodin/react-native-fs', () => ({
   DocumentDirectoryPath: '/docs',
   readFile: jest.fn(),
   writeFile: jest.fn(),
+  moveFile: jest.fn(),
   mkdir: jest.fn(),
 }));
 
@@ -23,6 +26,7 @@ jest.mock('../network', () => ({getNetwork: () => 'regtest'}));
 
 const readFile = RNFS.readFile as jest.Mock;
 const writeFile = RNFS.writeFile as jest.Mock;
+const moveFile = RNFS.moveFile as jest.Mock;
 const exists = fileExists as jest.Mock;
 
 const versionZero = (): MbsxConfig => ({
@@ -145,6 +149,23 @@ describe('readConfig', () => {
       JSON.stringify({...versionZero(), config_version: CONFIG_VERSION}),
     );
     await readConfig();
+    expect(writeFile).not.toHaveBeenCalled();
+  });
+});
+
+describe('the config file', () => {
+  const path = '/docs/mbsx/regtest/config.json';
+
+  it('is written beside and renamed into place', async () => {
+    await writeConfig(defaultConfig());
+    expect(writeFile).toHaveBeenCalledWith(`${path}.tmp`, expect.any(String));
+    expect(moveFile).toHaveBeenCalledWith(`${path}.tmp`, path);
+  });
+
+  it('is kept aside rather than reset when unreadable', async () => {
+    readFile.mockResolvedValue('{"chain": "regt');
+    await expect(loadOrCreateConfig()).rejects.toThrow('config.json.bad');
+    expect(moveFile).toHaveBeenCalledWith(path, `${path}.bad`);
     expect(writeFile).not.toHaveBeenCalled();
   });
 });
