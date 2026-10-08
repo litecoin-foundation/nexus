@@ -199,6 +199,15 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
       return;
     }
     triggerLightFeedback();
+    // A read that fails leaves the call to the module, which checks the offer too
+    const current = getRequestInfo(requestId);
+    if (current && !current.error) {
+      setRequest(current);
+      const fresh = current.offers?.find(o => o.id === offer.id);
+      if (current.state !== 'OFFER_RECEIVED' || !fresh || !live(fresh)) {
+        return;
+      }
+    }
     setAccepting(true);
     setAcceptError('');
     try {
@@ -388,10 +397,11 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           const shortfall = offer.below_minimum
             ? `You would receive ${offer.shortfall} ${offer.coin_receive} less than your minimum.`
             : null;
-          const shortLock =
-            offer.short_lock && offer.lock_time
+          const shortLock = !offer.short_lock
+            ? null
+            : offer.lock_time
               ? `This offer's lock time is only ${Math.round(offer.lock_time / 360) / 10} hours. Keep your phone online until the swap completes: if it stalls and your phone is offline that long, you could lose funds.`
-              : null;
+              : "This offer's lock time is short. Keep your phone online until the swap completes: if it stalls and your phone is offline for long, you could lose funds.";
           const warning =
             [shortfall, shortLock, rateWarning].filter(Boolean).join(' ') ||
             null;
@@ -400,6 +410,8 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           const status = offerStatus(offer);
           const kind = kindLabel(offer.kind);
           const open = live(offer);
+          const gone =
+            !accepting && !(open && request.state === 'OFFER_RECEIVED');
           const confirming = pendingOffer?.id === offer.id;
           const dimmed =
             (acceptedOffer !== null && !offer.accepted) ||
@@ -527,6 +539,11 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                       )} ${offer.coin_send}, plus the network fee.`}
                     </Text>
                   ) : null}
+                  {gone ? (
+                    <Text testID="mbsx-accept-gone" style={styles.error}>
+                      This offer is no longer available.
+                    </Text>
+                  ) : null}
                   {acceptError !== '' ? (
                     <Text testID="mbsx-accept-error" style={styles.error}>
                       {acceptError}
@@ -543,19 +560,21 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                       disabled={accepting}>
                       <Text style={styles.buttonSecondaryText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      testID="mbsx-accept-confirm-button"
-                      style={[
-                        styles.button,
-                        look.confirmAction,
-                        held ? styles.buttonDisabled : null,
-                      ]}
-                      onPress={() => void confirmAccept()}
-                      disabled={accepting || held}>
-                      <Text style={styles.buttonText}>
-                        {accepting ? 'Accepting…' : 'Accept'}
-                      </Text>
-                    </TouchableOpacity>
+                    {gone ? null : (
+                      <TouchableOpacity
+                        testID="mbsx-accept-confirm-button"
+                        style={[
+                          styles.button,
+                          look.confirmAction,
+                          held ? styles.buttonDisabled : null,
+                        ]}
+                        onPress={() => void confirmAccept()}
+                        disabled={accepting || held}>
+                        <Text style={styles.buttonText}>
+                          {accepting ? 'Accepting…' : 'Accept'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
               ) : null}

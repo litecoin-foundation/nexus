@@ -5,7 +5,7 @@ import {configureStore, type UnknownAction} from '@reduxjs/toolkit';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
 import RequestDetail from './RequestDetail';
-import {getRequestInfo} from '../adapter';
+import {acceptOffer, getRequestInfo} from '../adapter';
 import {UNCHECKED_RATE} from '../useSwapAmounts';
 
 jest.mock('@react-navigation/native', () => ({
@@ -286,7 +286,13 @@ describe('RequestDetail', () => {
     const view = renderRequest(freshRates(), [
       bridged('brief', 9000, true),
       bridged('long', 172800, false),
+      {...bridged('untimed', 0, true), lock_time: undefined},
     ]);
+
+    expect(view.getByTestId('mbsx-offer-warning-untimed')).toHaveTextContent(
+      /^This offer's lock time is short\. Keep your phone online/,
+    );
+    expect(view.getByTestId('mbsx-accept-untimed')).toBeDisabled();
 
     expect(view.getByTestId('mbsx-offer-warning-brief')).toHaveTextContent(
       "This offer's lock time is only 2.5 hours. Keep your phone online until the swap completes: if it stalls and your phone is offline that long, you could lose funds. Tap this warning to accept anyway.",
@@ -297,6 +303,26 @@ describe('RequestDetail', () => {
 
     fireEvent.press(view.getByTestId('mbsx-offer-warning-brief'));
     expect(view.getByTestId('mbsx-accept-brief')).toBeEnabled();
+  });
+
+  it('stops at an offer withdrawn since it was picked', async () => {
+    const view = renderRequest(freshRates());
+    fireEvent.press(view.getByTestId('mbsx-accept-fair'));
+    const before = (getRequestInfo as jest.Mock).mock.results[0].value;
+    (getRequestInfo as jest.Mock).mockReturnValue({
+      ...before,
+      offers: before.offers.map((o: {id: string}) =>
+        o.id === 'fair' ? {...o, state: 'REVOKED'} : o,
+      ),
+    });
+    await act(async () => {
+      fireEvent.press(view.getByTestId('mbsx-accept-confirm-button'));
+    });
+    expect(acceptOffer).not.toHaveBeenCalled();
+    expect(view.getByTestId('mbsx-accept-gone')).toHaveTextContent(
+      'This offer is no longer available.',
+    );
+    expect(view.queryByTestId('mbsx-accept-confirm-button')).toBeNull();
   });
 
   it('holds an offer no independent rate checks, and again when its warning changes', () => {
