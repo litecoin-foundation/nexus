@@ -46,3 +46,7 @@ export const shortAddress = (address: string): string =>
   address.length > 15
     ? `${address.slice(0, 12)}…${address.slice(-3)}`
     : address;
+
+// Every id opens with its 8-byte timestamp, whose top 4 bytes stay zero until 2106
+export const shortId = (id: string): string =>
+  shortAddress(id.replace(/^0{8}/, ''));

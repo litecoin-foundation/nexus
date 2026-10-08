@@ -1,4 +1,10 @@
-import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   Image,
   ScrollView,
@@ -63,7 +69,7 @@ import {
   providersText,
   useOffersEstimate,
 } from '../useOffersEstimate';
-import {raisedFeeNote} from '../format';
+import {raisedFeeNote, shortId} from '../format';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
@@ -72,9 +78,7 @@ const HOST_COIN = 'LTC';
 
 const CHAIN_FEE_RESERVE = 10000n;
 
-const swapFeeSats = (
-  outputs: {value: number | bigint}[] | undefined,
-): bigint =>
+const swapFeeSats = (outputs: {value: number | bigint}[] | undefined): bigint =>
   (outputs ?? [])
     .slice(1)
     .reduce((sum, output) => sum + BigInt(output.value), 0n);
@@ -108,9 +112,7 @@ const amountFontSize = (value: string) =>
   Math.max(18, Math.min(36, Math.floor(288 / Math.max(value.length, 1))));
 
 const shortAddress = (address: string) =>
-  address.length > 18
-    ? `${address.slice(0, 8)}…${address.slice(-6)}`
-    : address;
+  address.length > 18 ? `${address.slice(0, 8)}…${address.slice(-6)}` : address;
 
 const CoinMark = ({ticker}: {ticker?: string}) => (
   <View
@@ -171,7 +173,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   };
   const [spendNote, setSpendNote] = useState('');
 
-
   // `running` goes true when initialise() returns, before the handshake that
   // carries the prices.
   useFocusEffect(
@@ -207,10 +208,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const buyCoins = [HOST_COIN, ...offeredCoins].filter(coin => coin !== coinTo);
 
   // The handshake says which coins the server bridges; no request before it
-  const unbridgedCoin =
-    [sendCoin, receiveCoin].find(
-          coin => coin !== '' && info?.coins[coin]?.bridge_supported !== true,
-        );
+  const unbridgedCoin = [sendCoin, receiveCoin].find(
+    coin => coin !== '' && info?.coins[coin]?.bridge_supported !== true,
+  );
   const bridgeNote = unbridgedCoin
     ? `The swap server has no bridge for ${unbridgedCoin}`
     : '';
@@ -416,7 +416,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         throw new Error('Swaps are not running');
       }
       if (!coinTo) {
-        throw new Error(payIn ? 'Select a coin to pay' : 'Select a coin to receive');
+        throw new Error(
+          payIn ? 'Select a coin to pay' : 'Select a coin to receive',
+        );
       }
       if (!offeredCoins.includes(coinTo)) {
         throw new Error(`${coinTo} is disabled`);
@@ -560,13 +562,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       probe && receiveCoin
         ? getSwapFundingOutputs(HOST_COIN, receiveCoin, probe)
         : null;
-    const feeSats = funding && !funding.error ? swapFeeSats(funding.outputs) : 0n;
+    const feeSats =
+      funding && !funding.error ? swapFeeSats(funding.outputs) : 0n;
     const room = balances.spendable - feeSats - CHAIN_FEE_RESERVE;
-    setAmount(
-      'from',
-      'coin',
-      coinString(Number(room > 0n ? room : 0n) / 1e8),
-    );
+    setAmount('from', 'coin', coinString(Number(room > 0n ? room : 0n) / 1e8));
   };
   const spendableLabel =
     coinString(Number(balances?.spendable ?? 0n) / 1e8) || '0';
@@ -852,7 +851,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               placeholder="0"
               placeholderTextColor="#C5C5CE"
               value={amounts.fromCoin}
-              onChangeText={value => setAmount('from', 'coin', numericAmount(value))}
+              onChangeText={value =>
+                setAmount('from', 'coin', numericAmount(value))
+              }
               keyboardType="decimal-pad"
               autoCorrect={false}
               underlineColorAndroid="transparent"
@@ -865,7 +866,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             <View style={look.fiatLine}>
               <TextInput
                 testID="mbsx-usd-from"
-                style={[look.fiatInput, {width: fiatFieldWidth(amounts.fromUsd)}]}
+                style={[
+                  look.fiatInput,
+                  {width: fiatFieldWidth(amounts.fromUsd)},
+                ]}
                 placeholder="0"
                 placeholderTextColor="#747E87"
                 value={amounts.fromUsd}
@@ -882,7 +886,10 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 testID="mbsx-max"
                 disabled={!balances}
                 onPress={fillMax}>
-                <Text style={look.max}>{`Max. ${spendableLabel} ${HOST_COIN}`}</Text>
+                <Text
+                  style={
+                    look.max
+                  }>{`Max. ${spendableLabel} ${HOST_COIN}`}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -925,7 +932,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               placeholder="0"
               placeholderTextColor="#C5C5CE"
               value={amounts.toCoin}
-              onChangeText={value => setAmount('to', 'coin', numericAmount(value))}
+              onChangeText={value =>
+                setAmount('to', 'coin', numericAmount(value))
+              }
               keyboardType="decimal-pad"
               autoCorrect={false}
               underlineColorAndroid="transparent"
@@ -952,9 +961,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           {!payIn ? (
             addressBlock
           ) : buysToHost ? (
-            <Text style={look.fromLine}>
-              {`To ${walletName}`}
-            </Text>
+            <Text style={look.fromLine}>{`To ${walletName}`}</Text>
           ) : (
             <>
               <TextInput
@@ -999,7 +1006,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               <Text
                 style={[
                   look.quoteFee,
-                  rateLine !== '' || marketRate !== '' ? look.quoteRowLine : null,
+                  rateLine !== '' || marketRate !== ''
+                    ? look.quoteRowLine
+                    : null,
                 ]}>
                 {feeLine}
               </Text>
@@ -1067,8 +1076,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         ) : null}
         {torPending ? (
           <Text testID="mbsx-tor-pending" style={styles.rowMessage}>
-            Tor is on in Nexus. It applies to this swap after you leave and
-            come back, or after the app restarts while a swap is in flight.
+            Tor is on in Nexus. It applies to this swap after you leave and come
+            back, or after the app restarts while a swap is in flight.
           </Text>
         ) : null}
         {blockNote !== '' ? (
@@ -1085,7 +1094,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           <TouchableOpacity
             testID="mbsx-request"
             onPress={() => navigation.navigate('RequestDetail', {requestId})}>
-            <Text style={styles.link}>{`Request sent: ${requestId}`}</Text>
+            <Text
+              style={styles.link}>{`Request sent: ${shortId(requestId)}`}</Text>
           </TouchableOpacity>
         ) : null}
       </ScrollView>
@@ -1116,9 +1126,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 {`To ${buyAddress}`}
               </Text>
             )}
-            {rateLine ? (
-              <Text style={look.confirmLine}>{rateLine}</Text>
-            ) : null}
+            {rateLine ? <Text style={look.confirmLine}>{rateLine}</Text> : null}
             {feeLine ? <Text style={look.confirmLine}>{feeLine}</Text> : null}
             {raisedNote ? (
               <Text style={look.confirmNote}>{raisedNote}</Text>

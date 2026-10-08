@@ -27,7 +27,7 @@ import {
   requestExpired,
   sortNewestFirst,
 } from '../adapter';
-import {depositTimeLeft, formatExpiry, shortAddress} from '../format';
+import {depositTimeLeft, formatExpiry, shortId} from '../format';
 import RemoveButton from '../components/RemoveButton';
 import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
@@ -37,11 +37,7 @@ import {
   requestStateText,
   useShowRawStates,
 } from '../stateText';
-import type {
-  Deposit,
-  MbsxDrawerParamList,
-  SwapRequestSummary,
-} from '../types';
+import type {Deposit, MbsxDrawerParamList, SwapRequestSummary} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'RequestList'>;
 
@@ -151,7 +147,11 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                 testID={`mbsx-request-filter-${chip.id}`}
                 style={[styles.chip, on ? styles.chipSelected : null]}
                 onPress={() => setFilter(chip.id)}>
-                <Text style={[styles.chipText, on ? styles.chipTextSelected : null]}>
+                <Text
+                  style={[
+                    styles.chipText,
+                    on ? styles.chipTextSelected : null,
+                  ]}>
                   {chip.label}
                 </Text>
               </TouchableOpacity>
@@ -172,9 +172,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
             <Text style={swapCards.status}>
               {depositStateText(deposit.state, deposit.coin)}
             </Text>
-            {showRaw ? (
-              <Text style={swapCards.id}>{deposit.state}</Text>
-            ) : null}
+            {showRaw ? <Text style={swapCards.id}>{deposit.state}</Text> : null}
             <TimeLine
               text={
                 Number(deposit.remaining) > 0
@@ -204,39 +202,39 @@ const RequestList: React.FC<Props> = ({navigation}) => {
           ) : null
         ) : (
           shown.map(request => (
-                  <TouchableOpacity
-                    key={request.id}
-                    testID={`mbsx-request-${request.id}`}
-                    style={swapCards.card}
-                    onPress={() =>
-                      navigation.navigate('RequestDetail', {
-                        requestId: request.id,
-                      })
-                    }>
-                    <Pair from={request.coin_from} to={request.coin_to} />
-                    <Text style={swapCards.status}>
-                      {requestStateText(request.state)}
-                    </Text>
-                    {showRaw ? (
-                      <Text style={swapCards.id}>{request.state}</Text>
-                    ) : null}
-                    <TimeLine
-                      text={
-                        isEndedRequestState(request.state)
-                          ? `${request.amount_from} ${request.coin_from} · ${formatExpiry(request.created_at)}`
-                          : `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`
-                      }
-                    />
-                    <CopyChip
-                      testID={`mbsx-request-copy-${request.id}`}
-                      label="Request"
-                      value={request.id}
-                      display={shortAddress(request.id)}
-                      style={look.idChip}
-                      labelStyle={look.idLabel}
-                      valueStyle={look.idValue}
-                    />
-                  </TouchableOpacity>
+            <TouchableOpacity
+              key={request.id}
+              testID={`mbsx-request-${request.id}`}
+              style={swapCards.card}
+              onPress={() =>
+                navigation.navigate('RequestDetail', {
+                  requestId: request.id,
+                })
+              }>
+              <Pair from={request.coin_from} to={request.coin_to} />
+              <Text style={swapCards.status}>
+                {requestStateText(request.state)}
+              </Text>
+              {showRaw ? (
+                <Text style={swapCards.id}>{request.state}</Text>
+              ) : null}
+              <TimeLine
+                text={
+                  isEndedRequestState(request.state)
+                    ? `${request.amount_from} ${request.coin_from} · ${formatExpiry(request.created_at)}`
+                    : `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`
+                }
+              />
+              <CopyChip
+                testID={`mbsx-request-copy-${request.id}`}
+                label="Request"
+                value={request.id}
+                display={shortId(request.id)}
+                style={look.idChip}
+                labelStyle={look.idLabel}
+                valueStyle={look.idValue}
+              />
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>

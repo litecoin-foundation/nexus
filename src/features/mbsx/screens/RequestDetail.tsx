@@ -26,6 +26,7 @@ import {
   kindLabel,
   raisedFeeNote,
   shortAddress,
+  shortId,
 } from '../format';
 import {colors, getMbsxStyles} from '../theme';
 import {independentReference, refreshRates} from '../rates';
@@ -97,6 +98,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const [pendingOffer, setPendingOffer] = useState<SwapOffer | null>(null);
   const [acknowledged, setAcknowledged] = useState<string[]>([]);
   const [feesOpen, setFeesOpen] = useState(false);
+  const [swapFeesOpen, setSwapFeesOpen] = useState<string | null>(null);
   const rates = useAppSelector(state => state.mbsx.rates ?? {});
 
   useEffect(() => {
@@ -237,7 +239,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         <Text style={swapCards.section}>Send</Text>
         <View style={swapCards.card}>
           <View style={swapCards.amountRow}>
-            <Text style={swapCards.amount} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={swapCards.amount}
+              numberOfLines={1}
+              adjustsFontSizeToFit>
               {request.amount_from}
             </Text>
             <View style={[swapCards.coinPill, look.coinGap]}>
@@ -250,19 +255,19 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               <Text style={swapCards.coinPillText}>{request.coin_from}</Text>
             </View>
           </View>
-          <Text style={swapCards.status}>{requestStateText(request.state)}</Text>
+          <Text style={swapCards.status}>
+            {requestStateText(request.state)}
+          </Text>
           {showRaw ? <Text style={swapCards.id}>{request.state}</Text> : null}
           <Text style={swapCards.fromLine}>
             {`Created ${formatTimestamp(request.created_at)}`}
           </Text>
-          <TimeLine
-            text={`Expires ${formatTimestamp(request.expire_at)}`}
-          />
+          <TimeLine text={`Expires ${formatTimestamp(request.expire_at)}`} />
           <View style={look.idRow}>
             <View style={look.idPill}>
               <Text style={look.idLabel}>Request</Text>
               <Text style={look.idValue} numberOfLines={1}>
-                {shortAddress(request.id)}
+                {shortId(request.id)}
               </Text>
             </View>
             <CopyButton
@@ -287,7 +292,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         <Text style={swapCards.section}>Receive</Text>
         <View style={swapCards.card}>
           <View style={swapCards.amountRow}>
-            <Text style={swapCards.amount} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={swapCards.amount}
+              numberOfLines={1}
+              adjustsFontSizeToFit>
               {request.min_amount_to}
             </Text>
             <View style={[swapCards.coinPill, look.coinGap]}>
@@ -394,14 +402,18 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 <View style={look.offerHead}>
                   <View style={look.offerMarks}>
                     {offer.id === bestOfferId ? (
-                      <Text testID={`mbsx-best-rate-${offer.id}`} style={look.best}>
+                      <Text
+                        testID={`mbsx-best-rate-${offer.id}`}
+                        style={look.best}>
                         Best Rate
                       </Text>
                     ) : null}
                     {kind ? <Text style={look.offerKind}>{kind}</Text> : null}
                   </View>
                   {open ? (
-                    <Text style={look.offerExpiry}>{formatExpiry(offer.expire_at)}</Text>
+                    <Text style={look.offerExpiry}>
+                      {formatExpiry(offer.expire_at)}
+                    </Text>
                   ) : null}
                 </View>
               ) : null}
@@ -419,7 +431,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                       style={swapCards.coinLogo}
                     />
                   ) : null}
-                  <Text style={swapCards.coinPillText}>{offer.coin_receive}</Text>
+                  <Text style={swapCards.coinPillText}>
+                    {offer.coin_receive}
+                  </Text>
                 </View>
               </View>
               <Text style={swapCards.meta}>
@@ -469,7 +483,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                           {
                             width: `${Math.max(
                               0,
-                              Math.min(100, Number(offer.offerer_reliability ?? 0)),
+                              Math.min(
+                                100,
+                                Number(offer.offerer_reliability ?? 0),
+                              ),
                             )}%`,
                           },
                         ]}
@@ -481,7 +498,12 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               {status ? <Text style={styles.rowMessage}>{status}</Text> : null}
               {confirming ? (
                 <View testID="mbsx-accept-confirm">
-                  <Text style={[swapCards.note, look.confirmNote, look.confirmBold]}>
+                  <Text
+                    style={[
+                      swapCards.note,
+                      look.confirmNote,
+                      look.confirmBold,
+                    ]}>
                     {`Send ${offer.amount_send} ${offer.coin_send} for ${offer.amount_receive} ${offer.coin_receive}. The swap starts on its own once the offer is set up.`}
                   </Text>
                   {acceptError !== '' ? (
@@ -534,10 +556,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         })}
         {offers.length === 0 ? (
           <View style={swapCards.card}>
-            <TimeLine
-              text="Waiting for an offer"
-              textStyle={look.waitText}
-            />
+            <TimeLine text="Waiting for an offer" textStyle={look.waitText} />
             <Text style={look.waitNote}>
               Offers usually arrive within a few minutes. You can leave this
               screen.
@@ -564,7 +583,9 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                   <Text style={swapCards.historySub}>{swap.state}</Text>
                 ) : null}
                 {swap.kind ? (
-                  <Text style={swapCards.historySub}>{kindLabel(swap.kind)}</Text>
+                  <Text style={swapCards.historySub}>
+                    {kindLabel(swap.kind)}
+                  </Text>
                 ) : null}
               </View>
             </View>
@@ -592,31 +613,37 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                 </Text>
               </View>
             </View>
-            {swap.fees_coin ? (
-              <View style={[look.feeRow, look.feeFirst]}>
-                <Text style={look.feeLabel}>Swap Fees</Text>
+            <TouchableOpacity
+              testID={`mbsx-request-swap-fees-${swap.id}`}
+              accessibilityRole="button"
+              accessibilityState={{expanded: swapFeesOpen === swap.id}}
+              style={[look.feeRow, look.feeFirst]}
+              onPress={() =>
+                setSwapFeesOpen(open => (open === swap.id ? null : swap.id))
+              }>
+              <Text style={[look.feeLabel, look.feeToggle]}>
+                {swap.fees_coin ? 'Swap Fees' : 'Chain Fees'}
+              </Text>
+              {swap.fees_coin ? (
                 <Text style={look.feeValue}>
                   {`${swap.fees_total} ${swap.fees_coin}`}
                 </Text>
-              </View>
-            ) : null}
-            {(
-              [
-                [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
-                [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
-              ] as [string, string | undefined, bigint][]
-            ).map(([coin, amount, feeRate], index) => (
-              <View
-                key={coin}
-                style={[
-                  look.feeRow,
-                  swap.fees_coin || index > 0 ? look.feeLine : look.feeFirst,
-                ]}>
-                <Text style={look.feeLabel}>{`Chain Fee ${coin}`}</Text>
-                <Text style={look.feeRate}>{`${feeRate} sat/kvB`}</Text>
-                <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
-              </View>
-            ))}
+              ) : null}
+            </TouchableOpacity>
+            {swapFeesOpen === swap.id
+              ? (
+                  [
+                    [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
+                    [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
+                  ] as [string, string | undefined, bigint][]
+                ).map(([coin, amount, feeRate]) => (
+                  <View key={coin} style={[look.feeRow, look.feeLine]}>
+                    <Text style={look.feeLabel}>{`Chain Fee ${coin}`}</Text>
+                    <Text style={look.feeRate}>{`${feeRate} sat/kvB`}</Text>
+                    <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
+                  </View>
+                ))
+              : null}
           </TouchableOpacity>
         ))}
 

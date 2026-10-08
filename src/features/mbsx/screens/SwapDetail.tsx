@@ -11,8 +11,14 @@ import {useFocusEffect} from '@react-navigation/native';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 
 import {ScreenSizeContext} from '../../../context/screenSize';
-import {formatExpiry, formatTimestamp, kindLabel, shortAddress} from '../format';
-import {getMbsxStyles} from '../theme';
+import {
+  formatExpiry,
+  formatTimestamp,
+  kindLabel,
+  shortAddress,
+  shortId,
+} from '../format';
+import {colors, getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
 import CopyButton, {CopyChip} from '../components/CopyButton';
 import {
@@ -88,11 +94,17 @@ const CopyField = ({testID, value}: {testID: string; value: string}) => (
         {value}
       </Text>
     </View>
-    <CopyButton testID={testID} label="Copy" value={value} style={look.iconBtn} />
+    <CopyButton
+      testID={testID}
+      label="Copy"
+      value={value}
+      style={look.iconBtn}
+    />
   </View>
 );
 
 const SwapFees = ({swap}: {swap: SwapDetails}) => {
+  const [open, setOpen] = useState(false);
   const fees = swap.fees ?? [];
   const show =
     fees.length > 0 ||
@@ -113,36 +125,46 @@ const SwapFees = ({swap}: {swap: SwapDetails}) => {
     <>
       <Text style={swapCards.section}>Fees</Text>
       <View style={swapCards.card}>
-        {fees.map((fee, index) => (
-          <View key={fee.desc} style={[look.feeRow, index > 0 ? look.feeLine : null]}>
-            <Text style={look.feeLabel}>{fee.desc}</Text>
-            <Text style={look.feePct}>{`${Number(fee.bps) / 100}%`}</Text>
-            <Text style={look.feeValue}>
-              {`${fee.amount} ${swap.fees_coin ?? ''}`}
-            </Text>
-          </View>
-        ))}
-        {fees.length > 0 ? (
-          <View style={[look.feeRow, look.feeTotal]}>
-            <Text style={look.feeTotalLabel}>Total</Text>
-            <Text style={look.feePct}>{`${bps / 100}%`}</Text>
-            <Text testID="mbsx-receipt-fee" style={look.feeTotalValue}>
-              {`${swap.fees_total ?? ''} ${swap.fees_coin ?? ''}`}
-            </Text>
-          </View>
-        ) : null}
-        {chains.map(([coin, amount, rate], index) => (
-          <View
-            key={coin}
-            style={[
-              look.feeRow,
-              fees.length > 0 || index > 0 ? look.feeLine : null,
-            ]}>
-            <Text style={look.feeLabel}>{`Chain Fee ${coin}`}</Text>
-            <Text style={look.feeRate}>{`${rate} sat/kvB`}</Text>
-            <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
-          </View>
-        ))}
+        {open
+          ? fees.map((fee, index) => (
+              <View
+                key={fee.desc}
+                style={[look.feeRow, index > 0 ? look.feeLine : null]}>
+                <Text style={look.feeLabel}>{fee.desc}</Text>
+                <Text style={look.feePct}>{`${Number(fee.bps) / 100}%`}</Text>
+                <Text style={look.feeValue}>
+                  {`${fee.amount} ${swap.fees_coin ?? ''}`}
+                </Text>
+              </View>
+            ))
+          : null}
+        <TouchableOpacity
+          testID="mbsx-swap-fees"
+          accessibilityRole="button"
+          accessibilityState={{expanded: open}}
+          style={[look.feeRow, open && fees.length > 0 ? look.feeTotal : null]}
+          onPress={() => setOpen(shown => !shown)}>
+          {fees.length > 0 ? (
+            <>
+              <Text style={[look.feeTotalLabel, look.feeToggle]}>Total</Text>
+              <Text style={look.feePct}>{`${bps / 100}%`}</Text>
+              <Text testID="mbsx-receipt-fee" style={look.feeTotalValue}>
+                {`${swap.fees_total ?? ''} ${swap.fees_coin ?? ''}`}
+              </Text>
+            </>
+          ) : (
+            <Text style={[look.feeTotalLabel, look.feeToggle]}>Chain Fees</Text>
+          )}
+        </TouchableOpacity>
+        {open
+          ? chains.map(([coin, amount, rate]) => (
+              <View key={coin} style={[look.feeRow, look.feeLine]}>
+                <Text style={look.feeLabel}>{`Chain Fee ${coin}`}</Text>
+                <Text style={look.feeRate}>{`${rate} sat/kvB`}</Text>
+                <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
+              </View>
+            ))
+          : null}
       </View>
     </>
   );
@@ -302,7 +324,8 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                 swap.state,
                 swap.coin_from,
                 swap.coin_to,
-              ).toLowerCase() === walletTitle(swap.state).toLowerCase() ? null : (
+              ).toLowerCase() ===
+              walletTitle(swap.state).toLowerCase() ? null : (
                 <Text style={swapCards.historySub}>
                   {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
                 </Text>
@@ -384,11 +407,15 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                     {stepText !== event.event_sub_type
                       ? stepText
                       : `${event.event_type}${
-                          event.event_sub_type ? `: ${event.event_sub_type}` : ''
+                          event.event_sub_type
+                            ? `: ${event.event_sub_type}`
+                            : ''
                         }`}
                   </Text>
                   {showRaw && event.event_sub_type ? (
-                    <Text style={swapCards.id}>{String(event.event_sub_type)}</Text>
+                    <Text style={swapCards.id}>
+                      {String(event.event_sub_type)}
+                    </Text>
                   ) : null}
                   <Text style={swapCards.historySub}>
                     {event.time ??
@@ -410,11 +437,11 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                           ? displayTxid(String(event.linked_id))
                           : String(event.linked_id)
                       }
-                      display={shortAddress(
+                      display={
                         isTx
-                          ? displayTxid(String(event.linked_id))
-                          : String(event.linked_id),
-                      )}
+                          ? shortAddress(displayTxid(String(event.linked_id)))
+                          : shortId(String(event.linked_id))
+                      }
                       style={look.idChip}
                       labelStyle={look.idLabel}
                       valueStyle={look.idValue}
@@ -423,7 +450,9 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                   {expanded &&
                   event.event_msg !== undefined &&
                   event.event_data !== undefined ? (
-                    <Text style={swapCards.meta}>{String(event.event_data)}</Text>
+                    <Text style={swapCards.meta}>
+                      {String(event.event_data)}
+                    </Text>
                   ) : null}
                 </TouchableOpacity>
               );
@@ -435,7 +464,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           testID="mbsx-swap-id"
           label="Copy Swap ID"
           value={swap.id}
-          display={shortAddress(swap.id)}
+          display={shortId(swap.id)}
           style={look.idChip}
           labelStyle={look.idLabel}
           valueStyle={look.idValue}
@@ -558,6 +587,9 @@ const look = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#D5DBE4',
     marginTop: 2,
+  },
+  feeToggle: {
+    color: colors.primary,
   },
   feeTotalLabel: {
     flex: 1,
