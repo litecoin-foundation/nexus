@@ -22,12 +22,12 @@ import {colors, getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
 import CopyButton, {CopyChip} from '../components/CopyButton';
 import {
-  BUSY,
   displayTxid,
   getSwapInfo,
   isTerminalState,
   onMessage,
   removeSwap,
+  isGone,
 } from '../adapter';
 import RemoveButton from '../components/RemoveButton';
 import CoinPair from '../components/CoinPair';
@@ -190,11 +190,13 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
 
   const fetchSwap = useCallback(() => {
     const rv = getSwapInfo(swapId);
-    if (!rv || rv.error === BUSY) {
+    if (!rv) {
       return;
     }
     if (rv.error) {
-      navigation.navigate('SwapList');
+      if (isGone(rv)) {
+        navigation.navigate('SwapList');
+      }
       return;
     }
     setSwap(rv);

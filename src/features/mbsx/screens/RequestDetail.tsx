@@ -40,13 +40,13 @@ import CopyButton from '../components/CopyButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
 import {requestStateText, swapStateText, useShowRawStates} from '../stateText';
 import {
-  BUSY,
   acceptOffer,
   getRequestInfo,
   getSwapInfo,
   isUnderwayState,
   onMessage,
   removeRequest,
+  isGone,
 } from '../adapter';
 import RemoveButton from '../components/RemoveButton';
 import type {
@@ -108,11 +108,13 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
 
   const fetchRequest = useCallback(() => {
     const rv = getRequestInfo(requestId);
-    if (!rv || rv.error === BUSY) {
+    if (!rv) {
       return;
     }
     if (rv.error) {
-      navigation.navigate('RequestList');
+      if (isGone(rv)) {
+        navigation.navigate('RequestList');
+      }
       return;
     }
     setRequest(rv);

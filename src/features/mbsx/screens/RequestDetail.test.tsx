@@ -22,7 +22,7 @@ jest.mock('../network', () => ({getNetwork: () => 'mainnet'}));
 jest.mock('../../../utils/haptic', () => ({triggerLightFeedback: jest.fn()}));
 jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
 jest.mock('../adapter', () => ({
-  BUSY: 'busy',
+  isGone: (rv: {error?: string}) => rv.error === 'Swap request not found',
   acceptOffer: jest.fn(() => Promise.resolve({})),
   getRequestInfo: jest.fn(),
   getSwapInfo: jest.fn(() => null),

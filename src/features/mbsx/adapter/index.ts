@@ -68,16 +68,21 @@ export type {
   VerifyCertsMode,
 } from './config';
 
-// The module reports "busy" when it could not take its locks. It is not a
-// failure: the next onMessage tick retries, so callers keep their last data.
-export const BUSY = 'busy';
+// HybridNitroBSX::guarded while initialise() runs: the next read retries
+const STARTING = 'The module is starting';
+// BSXModule::getSwapRequestInfo and getSwapInfo for an id the module does not hold
+const GONE = new Set(['Swap request not found', 'Swap not found']);
 
 // The port test_glueserver.py expects, matching the example app's harness.
 const DEBUG_RPC_PORT = 31311;
 
 type MbsxResult<T> = T & {error?: string};
 
-const isBusy = (rv: {error?: string}) => rv.error === BUSY;
+const isStarting = (rv: {error?: string}) => rv.error === STARTING;
+
+// The only error that says a request or swap is over; any other says nothing
+export const isGone = (rv: {error?: string}) =>
+  rv.error !== undefined && GONE.has(rv.error);
 
 // isRunning() is not a readiness check: initialise() sets it before connecting
 // the bridge, so it stays true after a failed start. Only a zero return from
@@ -225,13 +230,19 @@ export const reconcileLeases = async () => {
     if (request === null) {
       continue; // Core is down, so nothing is known: leave the lease alone.
     }
+    if (request.error) {
+      if (isGone(request)) {
+        await releaseLeases(requestId);
+      }
+      continue;
+    }
     // The module's reading, ahead of the TERMINAL_STATES copy below.
     if (request.swaps_active || OPEN_REQUEST_STATES.has(request.state)) {
       continue;
     }
     const swapIds = request.swapids ?? [];
     if (swapIds.length === 0) {
-      if (request.error || ENDED_REQUEST_STATES.has(request.state)) {
+      if (ENDED_REQUEST_STATES.has(request.state)) {
         await releaseLeases(requestId);
       }
       continue;
@@ -313,7 +324,7 @@ const notifyNewlyEnded = () => {
 export const hasActiveSwaps = (): boolean => {
   const rv = NitroBSX.hasActiveSwaps() as MbsxResult<{has_swaps?: boolean}>;
   if (rv.error) {
-    if (!isBusy(rv)) {
+    if (!isStarting(rv)) {
       console.error('mbsx hasActiveSwaps failed:', rv.error);
     }
     // Unknown is not the same as none: a swap that cannot be read still has
@@ -586,7 +597,7 @@ export const listSwaps = (): SwapSummary[] | null => {
   }
   const rv = NitroBSX.listSwaps() as MbsxResult<{swaps?: SwapSummary[]}>;
   if (rv.error) {
-    if (!isBusy(rv)) {
+    if (!isStarting(rv)) {
       console.error('mbsx listSwaps failed:', rv.error);
     }
     return null;
@@ -673,7 +684,7 @@ export const listRequests = (): SwapRequestSummary[] | null => {
     requests?: SwapRequestSummary[];
   }>;
   if (rv.error) {
-    if (!isBusy(rv)) {
+    if (!isStarting(rv)) {
       console.error('mbsx listRequests failed:', rv.error);
     }
     return null;
@@ -689,9 +700,8 @@ export const getRequestInfo = (requestId: string): SwapRequestDetails | null =>
     ? (NitroBSX.getRequestInfo(requestId) as SwapRequestDetails)
     : null;
 
-// Null when any of them could not be read. getSwapInfo reports BUSY when the
-// module cannot take its locks, and dropping that swap would let the request
-// read as finished on the strength of the ones that did answer.
+// Null when any of them could not be read: dropping an unreadable swap would let
+// the request read as finished on the strength of the ones that did answer.
 const swapsOf = (request: SwapRequestDetails): SwapDetails[] | null => {
   const swaps: SwapDetails[] = [];
   for (const swapId of request.swapids ?? []) {
@@ -779,7 +789,7 @@ export const listDeposits = (): Deposit[] | null => {
   }
   const rv = NitroBSX.listDeposits() as MbsxResult<{deposits?: Deposit[]}>;
   if (rv.error) {
-    if (!isBusy(rv)) {
+    if (!isStarting(rv)) {
       console.error('mbsx listDeposits failed:', rv.error);
     }
     return null;
@@ -971,7 +981,7 @@ export const getCoinPrices = (): MbsxCoinPrices | null => {
   }
   const rv = NitroBSX.getCoinPrices() as MbsxResult<MbsxCoinPrices>;
   if (rv.error) {
-    if (!isBusy(rv)) {
+    if (!isStarting(rv)) {
       console.error('mbsx getCoinPrices failed:', rv.error);
     }
     return null;
