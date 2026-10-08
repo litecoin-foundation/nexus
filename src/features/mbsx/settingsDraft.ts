@@ -196,9 +196,44 @@ export const serverErrorLabel = (error: string) =>
 
 export type DraftProblem = {message: string; coin: string};
 
+// BSXModule::initialise takes ws:// or wss://, or a bare host it reaches over plain ws
+const bridgeHostError = (host: string): string | null => {
+  const trimmed = host.trim();
+  if (!trimmed) {
+    return 'is empty';
+  }
+  if (trimmed.includes('://')) {
+    return /^wss?:\/\/\S+$/i.test(trimmed)
+      ? null
+      : 'must start wss:// or ws://';
+  }
+  return /^[^\s/:]+$/.test(trimmed) ? null : 'must be wss://host:port';
+};
+
 export const draftProblem = (config: MbsxConfig): DraftProblem | null => {
   const badCap = (cap?: number) =>
     cap !== undefined && !(Number.isInteger(cap) && cap >= 1);
+  if (!/^0[23][0-9a-fA-F]{64}$/.test(config.bridge_pubkey ?? '')) {
+    return {
+      message:
+        'The swap server pubkey must be 66 hex characters starting 02 or 03',
+      coin: '',
+    };
+  }
+  const hostError = bridgeHostError(config.bridge_host ?? '');
+  if (hostError) {
+    return {message: `The swap server address ${hostError}`, coin: ''};
+  }
+  const port = config.bridge_port;
+  if (
+    port !== undefined &&
+    !(Number.isInteger(port) && port >= 1 && port <= 65535)
+  ) {
+    return {
+      message: 'The swap server port must be a whole number from 1 to 65535',
+      coin: '',
+    };
+  }
   if (badCap(config.max_electrum_servers)) {
     return {
       message: 'Servers kept connected must be a whole number, at least 1',
@@ -244,6 +279,22 @@ export const draftWarnings = async (
   if (unserved.length > 0) {
     warnings.push(
       `${unserved.join(', ')} has no enabled server, so the app can't watch it.`,
+    );
+  }
+  const stored = storedJson ? (JSON.parse(storedJson) as MbsxConfig) : null;
+  if (stored && stored.bridge_pubkey !== config.bridge_pubkey) {
+    warnings.push(
+      'This changes which swap server the app trusts. Use only a server you run or know.',
+    );
+  }
+  if (
+    config.chain === 'mainnet' &&
+    stored?.bridge_host !== config.bridge_host &&
+    !/^wss:\/\//i.test(config.bridge_host.trim())
+  ) {
+    warnings.push(
+      'The swap server is not reached over wss://, so the connection is unencrypted: ' +
+        'anyone on the network path can see when this wallet uses it, and delay or drop its messages.',
     );
   }
   if (await changedElsewhere(storedJson)) {

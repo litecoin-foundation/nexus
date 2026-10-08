@@ -55,7 +55,8 @@ const screenSize = {
 const draft = (electrumx: object[]) => ({
   chain: 'mainnet',
   debug: false,
-  bridge_host: 'tcp://glue:1',
+  bridge_host: 'wss://glue:1',
+  bridge_pubkey: `02${'ab'.repeat(32)}`,
   coins: {part: {enabled: true, electrumx}},
 });
 
