@@ -8,9 +8,10 @@ import {
   displayTxid,
   LEASE_ID_PREFIX,
   LEASE_SECONDS,
-  serialisedOutpointKey,
+  readSerialisedPrevout,
   type SelectedPrevout,
 } from './prevouts';
+import {forgetSigning} from './signingRecords';
 import {store} from '../../../store';
 
 // Nexus funds every swap from its own LTC wallet; the module records which coin
@@ -94,28 +95,25 @@ export const recordLeases = (
   }
 };
 
-// Every outpoint still locked for a swap, as "txid:vout" in internal byte order.
-export const leasedOutpointKeys = (): Set<string> =>
-  new Set(walletLocks().map(lock => outpointKey(lock.txid, lock.vout)));
-
-const pendingOutpoints = new Set<string>();
+const pendingOutputs = new Map<string, {valueSat: bigint; script: string}>();
 
 // requestSwap signs the outputs' ownership proof before recordLeases has an id
 export const withPendingOutputs = async <T>(
   outputs: string[],
   call: () => Promise<T>,
 ): Promise<T> => {
-  const keys = outputs.map(serialisedOutpointKey);
-  keys.forEach(key => pendingOutpoints.add(key));
+  const read = outputs.map(readSerialisedPrevout);
+  read.forEach(({key, valueSat, script}) =>
+    pendingOutputs.set(key, {valueSat, script}),
+  );
   try {
     return await call();
   } finally {
-    keys.forEach(key => pendingOutpoints.delete(key));
+    read.forEach(({key}) => pendingOutputs.delete(key));
   }
 };
 
-export const signableOutpointKeys = (): Set<string> =>
-  new Set([...leasedOutpointKeys(), ...pendingOutpoints]);
+export const pendingOutput = (key: string) => pendingOutputs.get(key);
 
 export const requestIdsWithLocks = (): string[] => [
   ...new Set(walletLocks().map(lock => lock.request_id)),
@@ -242,6 +240,11 @@ export const releaseLeases = async (requestId: string) => {
         e,
       );
     }
+  }
+  try {
+    await forgetSigning(requestId);
+  } catch (e) {
+    console.warn(`mbsx could not forget the signing record of ${requestId}`, e);
   }
 };
 

@@ -46,6 +46,7 @@ import {
   parseAmount,
   readConfig,
   recordLeases,
+  recordSigning,
   releasePrevouts,
   requestSwap,
   selectAndLeasePrevouts,
@@ -534,7 +535,17 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
         await releasePrevouts(prevouts);
         throw new Error(rv.error);
       }
-
+      try {
+        await recordSigning(
+          rv.request_id,
+          prevouts,
+          change.address,
+          funding.outputs,
+        );
+      } catch (e) {
+        await releasePrevouts(prevouts);
+        throw e;
+      }
       recordLeases(rv.request_id, prevouts);
       dispatch(rememberAddress({coin: coinTo, address: addressTo}));
       dispatch(

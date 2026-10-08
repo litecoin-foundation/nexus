@@ -52,6 +52,7 @@ export {
   releasePrevouts,
   reservedBalance,
 } from './leases';
+export {recordSigning} from './signingRecords';
 export {
   displayTxid,
   selectAndLeasePrevouts,
@@ -821,7 +822,9 @@ export const requestOffersEstimate = (
 };
 
 export const getOffersEstimate = (messageId: string): OffersEstimate | null => {
-  const rv = NitroBSX.getOffersEstimate(messageId) as MbsxResult<OffersEstimate>;
+  const rv = NitroBSX.getOffersEstimate(
+    messageId,
+  ) as MbsxResult<OffersEstimate>;
   return rv.error ? null : rv;
 };
 
@@ -1089,9 +1092,9 @@ export const installKeyProvider = () => {
 // lnd will sign but never export. Returning '' is a refusal the module reports
 // rather than broadcasting anything.
 export const installSigner = () => {
-  NitroBSX.setSignTx(async (psbtHex: string, _coin: string) => {
+  NitroBSX.setSignTx(async (psbtHex: string, coin: string) => {
     try {
-      return await signSwapTx(psbtHex);
+      return await signSwapTx(psbtHex, coin);
     } catch (e) {
       console.warn('mbsx could not sign a swap transaction', e);
       return '';

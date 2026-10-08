@@ -76,10 +76,18 @@ export const serialisePrevout = (prevout: SelectedPrevout): string => {
   );
 };
 
-// "txid:vout" of a serialisePrevout output, in the same byte order as leases.
-export const serialisedOutpointKey = (output: string): string => {
-  const head = Buffer.from(output.slice(0, 72), 'hex');
-  return `${head.subarray(0, 32).toString('hex')}:${head.readUInt32LE(32)}`;
+// A serialisePrevout output read back, keyed "txid:vout" in the same byte order as leases.
+export const readSerialisedPrevout = (
+  output: string,
+): {key: string; valueSat: bigint; script: string} => {
+  const buf = Buffer.from(output, 'hex');
+  const scriptLen = buf[44] < 0xfd ? buf[44] : buf.readUInt16LE(45);
+  const scriptAt = buf[44] < 0xfd ? 45 : 47;
+  return {
+    key: `${buf.subarray(0, 32).toString('hex')}:${buf.readUInt32LE(32)}`,
+    valueSat: buf.readBigInt64LE(36),
+    script: buf.subarray(scriptAt, scriptAt + scriptLen).toString('hex'),
+  };
 };
 
 /**

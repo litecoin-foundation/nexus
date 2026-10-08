@@ -6,6 +6,10 @@ import {
 
 import {releaseOrphanLeases} from './leases';
 
+jest.mock('./signingRecords', () => ({
+  forgetSigning: jest.fn(async () => undefined),
+}));
+
 jest.mock('react-native-nitro-lndltc', () => ({
   ChangeAddressType: {UNSPECIFIED: 0},
   walletKitListLeases: jest.fn(),
