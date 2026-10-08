@@ -45,6 +45,7 @@ import {
   isRunning,
   parseAmount,
   readConfig,
+  forgetSigning,
   recordLeases,
   recordSigning,
   releasePrevouts,
@@ -337,8 +338,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     if (scanned) {
       setAddressTo(scanned);
       addressFilledFor.current = coinTo;
+      navigation.setParams({scanData: undefined});
     }
-  }, [scanned, coinTo]);
+  }, [scanned, coinTo, navigation]);
 
   useEffect(() => {
     if (!coinTo || addressFilledFor.current === coinTo) {
@@ -543,11 +545,13 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           change.address,
           funding.outputs,
         );
+        recordLeases(rv.request_id, prevouts);
       } catch (e) {
+        // Unrecorded, the request must not be signable for coins it no longer holds
+        await forgetSigning(rv.request_id).catch(() => undefined);
         await releasePrevouts(prevouts);
         throw e;
       }
-      recordLeases(rv.request_id, prevouts);
       dispatch(rememberAddress({coin: coinTo, address: addressTo}));
       dispatch(
         rememberDestination({requestId: rv.request_id, address: addressTo}),

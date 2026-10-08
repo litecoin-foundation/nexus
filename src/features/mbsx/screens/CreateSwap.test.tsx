@@ -63,6 +63,7 @@ const screenSize = {
 const navigation = {
   navigate: jest.fn(),
   getParent: jest.fn(),
+  setParams: jest.fn(),
 } as any;
 
 const route = {key: 'CreateSwap', name: 'CreateSwap', params: undefined} as any;
@@ -86,6 +87,16 @@ const renderScreen = (connected = false, rates = {}) => {
 };
 
 describe('CreateSwap', () => {
+  it('takes a scanned address once, so a coin change does not bring it back', () => {
+    route.params = {scanData: 'rltc1qscanned'};
+    try {
+      renderScreen();
+      expect(navigation.setParams).toHaveBeenCalledWith({scanData: undefined});
+    } finally {
+      route.params = undefined;
+    }
+  });
+
   it('locks every other input until a coin is chosen', () => {
     const {getByTestId, queryByTestId} = renderScreen();
 

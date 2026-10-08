@@ -1,6 +1,6 @@
 import NitroBSX from 'react-native-nitro-bsx';
 
-import {reconcileLeases, start} from './index';
+import {getInfo, reconcileLeases, start} from './index';
 import {loadOrCreateConfig, readConfig} from './config';
 import {releaseLeases} from './leases';
 
@@ -92,5 +92,14 @@ describe('reconcileLeases', () => {
     nitro.getRequestInfo.mockReturnValue({state: 'EXPIRED', swapids: []});
     await reconcileLeases();
     expect(releaseLeases).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('getInfo', () => {
+  it('reads a failed call as nothing known', () => {
+    nitro.getInfo.mockImplementation(() => {
+      throw new Error('The module is starting');
+    });
+    expect(getInfo()).toBeNull();
   });
 });

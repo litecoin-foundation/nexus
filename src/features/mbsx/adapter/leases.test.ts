@@ -4,7 +4,7 @@ import {
   walletKitReleaseOutput,
 } from 'react-native-nitro-lndltc';
 
-import {releaseOrphanLeases} from './leases';
+import {recordLeases, releaseOrphanLeases} from './leases';
 
 jest.mock('./signingRecords', () => ({
   forgetSigning: jest.fn(async () => undefined),
@@ -18,7 +18,11 @@ jest.mock('react-native-nitro-lndltc', () => ({
 
 jest.mock('react-native-nitro-bsx', () => ({
   __esModule: true,
-  default: {listWalletLocks: jest.fn(), markWalletLockReleased: jest.fn()},
+  default: {
+    listWalletLocks: jest.fn(),
+    markWalletLockReleased: jest.fn(),
+    recordWalletLock: jest.fn(),
+  },
 }));
 
 jest.mock('../../../store', () => ({
@@ -58,6 +62,24 @@ const row = (id: Buffer, n: number) => ({
 beforeEach(() => {
   jest.clearAllMocks();
   releaseOutput.mockResolvedValue({});
+});
+
+describe('recordLeases', () => {
+  it('fails when a lease could not be recorded', () => {
+    const prevout = (byte: string) => ({
+      txid: byte.repeat(32),
+      vout: 0,
+      amountSat: 1000,
+      pkScript: '',
+      leaseId: '',
+    });
+    (NitroBSX.recordWalletLock as jest.Mock)
+      .mockReturnValueOnce({})
+      .mockReturnValueOnce({error: 'Could not open the database'});
+    expect(() => recordLeases('aa', [prevout('11'), prevout('22')])).toThrow(
+      'Could not record the lease',
+    );
+  });
 });
 
 describe('releaseOrphanLeases', () => {

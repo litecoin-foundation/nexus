@@ -52,7 +52,7 @@ export {
   releasePrevouts,
   reservedBalance,
 } from './leases';
-export {recordSigning} from './signingRecords';
+export {forgetSigning, recordSigning} from './signingRecords';
 export {
   displayTxid,
   selectAndLeasePrevouts,
@@ -989,8 +989,18 @@ export const getCoinPrices = (): MbsxCoinPrices | null => {
   return rv;
 };
 
-export const getInfo = (): MbsxInfo | null =>
-  isRunning() ? (NitroBSX.getInfo() as MbsxInfo) : null;
+// Throws rather than returning an error map, while starting or on a failed read
+export const getInfo = (): MbsxInfo | null => {
+  if (!isRunning()) {
+    return null;
+  }
+  try {
+    return NitroBSX.getInfo() as MbsxInfo;
+  } catch (e) {
+    console.warn('mbsx getInfo failed:', e);
+    return null;
+  }
+};
 
 export const getMemStats = () => NitroBSX.getMemStats();
 

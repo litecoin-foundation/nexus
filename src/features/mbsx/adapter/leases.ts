@@ -84,14 +84,19 @@ export const recordLeases = (
   prevouts: SelectedPrevout[],
 ) => {
   for (const prevout of prevouts) {
-    NitroBSX.recordWalletLock(
+    const rv = NitroBSX.recordWalletLock(
       requestId,
       COIN,
       prevout.txid,
       prevout.vout,
       prevout.leaseId,
       BigInt(prevout.amountSat),
-    );
+    ) as {error?: string};
+    if (rv?.error) {
+      throw new Error(
+        `Could not record the lease on ${displayTxid(prevout.txid)}:${prevout.vout}: ${rv.error}`,
+      );
+    }
   }
 };
 
