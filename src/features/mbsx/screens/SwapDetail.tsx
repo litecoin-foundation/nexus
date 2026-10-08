@@ -23,6 +23,7 @@ import {colors, getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
 import CopyButton, {CopyChip} from '../components/CopyButton';
 import {
+  abandonSwap,
   displayTxid,
   getSwapInfo,
   isTerminalState,
@@ -37,7 +38,7 @@ import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
 import {useAppSelector} from '../../../store/hooks';
 import {COIN_ICONS, swapCards} from '../swapCards';
-import {swapStateText, useShowRawStates} from '../stateText';
+import {swapStateText, useShowDebug, useShowRawStates} from '../stateText';
 import {coinString} from '../useSwapAmounts';
 import {isSwapComplete, walletTitle} from '../walletText';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
@@ -174,6 +175,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
   const showRaw = useShowRawStates();
+  const showDebug = useShowDebug();
 
   useEffect(() => {
     navigation.setOptions({
@@ -480,6 +482,19 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
               removeSwap(swapId);
               navigation.navigate('SwapList');
               return 'Removed';
+            }}
+          />
+        ) : null}
+        {showDebug ? (
+          <RemoveButton
+            testID="mbsx-abandon-swap"
+            label="Abandon Swap"
+            confirm="Abandon this swap? The app stops working on it: nothing more is sent for it, no refund and no swipe. Coins still locked in it can then only be recovered by hand."
+            confirmLabel="Abandon"
+            onConfirm={async () => {
+              abandonSwap(swapId);
+              fetchSwap();
+              return 'Abandoned';
             }}
           />
         ) : null}

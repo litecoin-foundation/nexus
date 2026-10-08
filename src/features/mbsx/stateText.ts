@@ -93,20 +93,24 @@ export const depositStateText = (
   return text[state] ?? state;
 };
 
-export const useShowRawStates = () => {
-  const [showRaw, setShowRaw] = useState(false);
+const useConfigFlag = (flag: 'show_raw_states' | 'show_debug') => {
+  const [on, setOn] = useState(false);
   useFocusEffect(
     useCallback(() => {
       let live = true;
       readConfig().then(config => {
         if (live) {
-          setShowRaw(config?.show_raw_states === true);
+          setOn(config?.[flag] === true);
         }
       });
       return () => {
         live = false;
       };
-    }, []),
+    }, [flag]),
   );
-  return showRaw;
+  return on;
 };
+
+export const useShowRawStates = () => useConfigFlag('show_raw_states');
+
+export const useShowDebug = () => useConfigFlag('show_debug');

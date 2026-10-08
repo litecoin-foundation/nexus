@@ -975,6 +975,13 @@ export const removeSwap = (swapId: string) => {
   }
 };
 
+export const abandonSwap = (swapId: string) => {
+  const rv = NitroBSX.abandonSwap(swapId) as MbsxResult<{}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+};
+
 /**
  * Removes every request the predicate selects, and reports both counts.
  *
