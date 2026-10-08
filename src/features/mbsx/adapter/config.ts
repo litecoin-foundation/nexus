@@ -203,13 +203,19 @@ export const readConfig = async (): Promise<MbsxConfig | null> => {
   return config;
 };
 
-export const writeConfig = async (config: MbsxConfig) => {
-  if (!(await fileExists(MBSX_DATA_DIR))) {
-    await RNFS.mkdir(MBSX_DATA_DIR);
-  }
-  const tmp = `${CONFIG_PATH}.tmp`;
-  await RNFS.writeFile(tmp, JSON.stringify(config, null, 2));
-  await RNFS.moveFile(tmp, CONFIG_PATH);
+let configWrites: Promise<void> = Promise.resolve();
+
+export const writeConfig = (config: MbsxConfig): Promise<void> => {
+  const run = configWrites.then(async () => {
+    if (!(await fileExists(MBSX_DATA_DIR))) {
+      await RNFS.mkdir(MBSX_DATA_DIR);
+    }
+    const tmp = `${CONFIG_PATH}.tmp`;
+    await RNFS.writeFile(tmp, JSON.stringify(config, null, 2));
+    await RNFS.moveFile(tmp, CONFIG_PATH);
+  });
+  configWrites = run.catch(() => undefined);
+  return run;
 };
 
 // The module reads config.json once, in initialise(). Anything written here
