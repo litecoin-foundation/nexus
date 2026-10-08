@@ -23,7 +23,7 @@ import {DrawerScreenProps} from '@react-navigation/drawer';
 import {ScreenSizeContext} from '../../../context/screenSize';
 import {useAppSelector} from '../../../store/hooks';
 import {triggerLightFeedback} from '../../../utils/haptic';
-import {depositTimeLeft} from '../format';
+import {depositTimeLeft, typedAmount} from '../format';
 import {independentReference, refreshRates, type Reference} from '../rates';
 import {getMbsxStyles} from '../theme';
 import {RATE_TOLERANCE, coinString, slippageFor} from '../useSwapAmounts';
@@ -130,7 +130,6 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
     openedSwapId.current = null;
   }, [depositId]);
 
-
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => <MbsxBackButton onPress={() => navigation.goBack()} />,
@@ -204,14 +203,15 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const suggestion = deposit && prices ? suggestedFloor(deposit, prices) : '';
   const lastSuggestion = useRef('');
   useEffect(() => {
-    if (suggestion !== '' && (floor === '' || floor === lastSuggestion.current)) {
+    if (
+      suggestion !== '' &&
+      (floor === '' || floor === lastSuggestion.current)
+    ) {
       setFloor(suggestion);
     }
     lastSuggestion.current = suggestion;
   }, [suggestion, floor]);
-  const rateLabel = reference
-    ? reference.label
-    : "Server's rate, not checked";
+  const rateLabel = reference ? reference.label : "Server's rate, not checked";
   const rateValue =
     deposit && prices && prices.from > 0 && prices.to > 0
       ? `1 ${deposit.coin} ≈ ${coinString(prices.from / prices.to)} ${
@@ -404,7 +404,12 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 testID="mbsx-payin-floor"
                 style={styles.input}
                 value={floor}
-                onChangeText={setFloor}
+                onChangeText={value => {
+                  const amount = typedAmount(value);
+                  if (amount !== null) {
+                    setFloor(amount);
+                  }
+                }}
                 onFocus={() =>
                   setTimeout(
                     () => scrollRef.current?.scrollToEnd({animated: true}),

@@ -42,6 +42,12 @@ export const kindLabel = (kind?: string): string =>
 export const raisedFeeNote = (nominalBps: bigint | number): string =>
   `Raised from ${Number(nominalBps) / 100}% because the amount is small`;
 
+// decimal-pad types the locale's separator; null refuses the keystroke
+export const typedAmount = (value: string): string | null => {
+  const cleaned = value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+  return cleaned.indexOf('.') === cleaned.lastIndexOf('.') ? cleaned : null;
+};
+
 export const shortAddress = (address: string): string =>
   address.length > 15
     ? `${address.slice(0, 12)}…${address.slice(-3)}`

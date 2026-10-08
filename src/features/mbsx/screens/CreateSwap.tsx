@@ -62,6 +62,8 @@ import {
   coinString,
   slippageFor,
   useSwapAmounts,
+  type AmountSide,
+  type AmountUnit,
 } from '../useSwapAmounts';
 import {
   NO_OFFERS_WARNING,
@@ -70,7 +72,7 @@ import {
   providersText,
   useOffersEstimate,
 } from '../useOffersEstimate';
-import {raisedFeeNote, shortId} from '../format';
+import {raisedFeeNote, shortId, typedAmount} from '../format';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
@@ -96,14 +98,6 @@ const feeCapNote = (funding: ReturnType<typeof getSwapFundingOutputs>) => {
   return totalFee > maxFee
     ? `The swap server charges ${totalFee / 100}%, above your limit of ${maxFee / 100}%`
     : '';
-};
-const numericAmount = (value: string) => {
-  const cleaned = value.replace(/[^0-9.]/g, '');
-  const dot = cleaned.indexOf('.');
-  if (dot === -1) {
-    return cleaned;
-  }
-  return cleaned.slice(0, dot + 1) + cleaned.slice(dot + 1).replace(/\./g, '');
 };
 const fiatFieldWidth = (value: string) =>
   Math.max(18, (value || '0').length * 10);
@@ -248,6 +242,13 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     priceTo > 0 ? String(priceTo) : undefined,
     slippage,
   );
+  const typeAmount =
+    (side: AmountSide, unit: AmountUnit) => (value: string) => {
+      const amount = typedAmount(value);
+      if (amount !== null) {
+        setAmount(side, unit, amount);
+      }
+    };
   const [rateAcknowledged, setRateAcknowledged] = useState(false);
   const offReference =
     valueDeviation !== null && Math.abs(valueDeviation) > RATE_TOLERANCE;
@@ -862,9 +863,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               placeholder="0"
               placeholderTextColor="#C5C5CE"
               value={amounts.fromCoin}
-              onChangeText={value =>
-                setAmount('from', 'coin', numericAmount(value))
-              }
+              onChangeText={typeAmount('from', 'coin')}
               keyboardType="decimal-pad"
               autoCorrect={false}
               underlineColorAndroid="transparent"
@@ -884,9 +883,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 placeholder="0"
                 placeholderTextColor="#747E87"
                 value={amounts.fromUsd}
-                onChangeText={value =>
-                  setAmount('from', 'usd', numericAmount(value))
-                }
+                onChangeText={typeAmount('from', 'usd')}
                 keyboardType="decimal-pad"
                 onFocus={() => showAmount('from')}
               />
@@ -943,9 +940,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               placeholder="0"
               placeholderTextColor="#C5C5CE"
               value={amounts.toCoin}
-              onChangeText={value =>
-                setAmount('to', 'coin', numericAmount(value))
-              }
+              onChangeText={typeAmount('to', 'coin')}
               keyboardType="decimal-pad"
               autoCorrect={false}
               underlineColorAndroid="transparent"
@@ -961,9 +956,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
               placeholder="0"
               placeholderTextColor="#747E87"
               value={amounts.toUsd}
-              onChangeText={value =>
-                setAmount('to', 'usd', numericAmount(value))
-              }
+              onChangeText={typeAmount('to', 'usd')}
               keyboardType="decimal-pad"
               onFocus={() => showAmount('to')}
             />
