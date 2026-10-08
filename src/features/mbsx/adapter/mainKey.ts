@@ -19,14 +19,23 @@ const EXTKEY_SIZE = 74;
 // for over a second.
 const mnemonicToSeed = (mnemonic: string): Promise<Buffer> =>
   new Promise((resolve, reject) => {
+    const password = Buffer.from(mnemonic.normalize('NFKD'), 'utf8');
     pbkdf2(
-      Buffer.from(mnemonic.normalize('NFKD'), 'utf8'),
+      password,
       Buffer.from('mnemonic', 'utf8'),
       2048,
       64,
       'sha512',
-      (error, key) =>
-        error || !key ? reject(error) : resolve(Buffer.from(key)),
+      (error, key) => {
+        password.fill(0);
+        if (error || !key) {
+          reject(error);
+          return;
+        }
+        const seed = Buffer.from(key);
+        key.fill(0);
+        resolve(seed);
+      },
     );
   });
 
@@ -41,10 +50,17 @@ const serialiseExtkey = (node: BIP32Interface): string => {
   out[0] = node.depth;
   out.writeUInt32BE(node.parentFingerprint, 1);
   out.writeUInt32BE(node.index, 5);
-  Buffer.from(node.chainCode).copy(out, 9);
+  out.set(node.chainCode, 9);
   out[41] = 0;
-  Buffer.from(node.privateKey).copy(out, 42);
-  return out.toString('hex');
+  out.set(node.privateKey, 42);
+  const hex = out.toString('hex');
+  out.fill(0);
+  return hex;
+};
+
+const wipeNode = (node: BIP32Interface) => {
+  node.privateKey?.fill(0);
+  node.chainCode.fill(0);
 };
 
 /**
@@ -61,6 +77,12 @@ export const deriveMainExtkey = async (): Promise<string> => {
   const mnemonic = stored.split(',').join(' ');
   const seed = await mnemonicToSeed(mnemonic);
   const root = bip32.fromSeed(seed, LITECOIN);
-
-  return serialiseExtkey(root.derivePath(MBSX_MAIN_KEY_PATH));
+  seed.fill(0);
+  const node = root.derivePath(MBSX_MAIN_KEY_PATH);
+  try {
+    return serialiseExtkey(node);
+  } finally {
+    wipeNode(root);
+    wipeNode(node);
+  }
 };
