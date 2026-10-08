@@ -288,6 +288,41 @@ describe('CreateSwap', () => {
     }
   });
 
+  it('stops at a missing field without starting the swap', () => {
+    const adapter = jest.requireMock('../adapter');
+    const haptic = jest.requireMock('../../../utils/haptic');
+    adapter.selectAndLeasePrevouts.mockClear();
+    adapter.requestSwap.mockClear();
+    adapter.createDeposit.mockClear();
+    haptic.triggerLightFeedback.mockClear();
+    const bridged = {bridge_supported: true};
+    adapter.getInfo.mockReturnValue({
+      connected: true,
+      coins: {LTC: bridged, BTC: bridged},
+    });
+    adapter.isRunning.mockReturnValue(true);
+    try {
+      const {getByTestId, queryByTestId} = renderScreen(true);
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+      fireEvent.changeText(getByTestId('mbsx-amount-to'), '2');
+      fireEvent.press(getByTestId('mbsx-submit'));
+
+      expect(getByTestId('mbsx-error')).toHaveTextContent(
+        'Missing receive address',
+      );
+      expect(queryByTestId('mbsx-confirm')).toBeNull();
+      expect(haptic.triggerLightFeedback).not.toHaveBeenCalled();
+      expect(adapter.selectAndLeasePrevouts).not.toHaveBeenCalled();
+      expect(adapter.requestSwap).not.toHaveBeenCalled();
+      expect(adapter.createDeposit).not.toHaveBeenCalled();
+    } finally {
+      adapter.getInfo.mockReturnValue(null);
+      adapter.isRunning.mockReturnValue(false);
+    }
+  });
+
   it('holds a pay-in no offer would take until the warning is tapped', async () => {
     const adapter = jest.requireMock('../adapter');
     adapter.createDeposit.mockClear();

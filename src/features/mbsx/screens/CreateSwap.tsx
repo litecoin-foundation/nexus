@@ -409,6 +409,62 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     ? `Nexus Wallet: ${ltcAccount}`
     : 'Nexus Wallet';
 
+  // Every check submit makes before it commits, so confirmSwap never needs to call it
+  const validate = (): {message: string; feeNote?: string} | null => {
+    if (!isRunning()) {
+      return {message: 'Swaps are not running'};
+    }
+    if (!coinTo) {
+      return {
+        message: payIn ? 'Select a coin to pay' : 'Select a coin to receive',
+      };
+    }
+    if (!offeredCoins.includes(coinTo)) {
+      return {message: `${coinTo} is disabled`};
+    }
+    if (!addressTo) {
+      return {
+        message: payIn ? 'Missing refund address' : 'Missing receive address',
+      };
+    }
+    if (!validateAddress(coinTo, addressTo)) {
+      return {message: `Not a ${coinTo} address`};
+    }
+    // Amounts are entered in whole coins; the module holds the only conversion.
+    try {
+      parseAmount(sendCoin, amountFrom);
+    } catch {
+      return {message: 'Invalid amount to send'};
+    }
+    // Parsed only to reject it here: the module is sent the string. Leasing
+    // coins and then failing on the receive amount would strand them.
+    try {
+      parseAmount(receiveCoin, amountTo);
+    } catch {
+      return {message: 'Invalid amount to receive'};
+    }
+    const quoted = getSwapFundingOutputs(sendCoin, receiveCoin, amountFrom);
+    if (quoted.min_amount !== undefined) {
+      return {message: quoted.error ?? '', feeNote: quoted.error ?? ''};
+    }
+    const capNote = feeCapNote(quoted);
+    if (capNote) {
+      return {message: capNote, feeNote: capNote};
+    }
+    if (payIn && !buysToHost) {
+      if (!offeredCoins.includes(buyCoin)) {
+        return {message: `${buyCoin} is disabled`};
+      }
+      if (!buyAddress) {
+        return {message: 'Missing receive address'};
+      }
+      if (!validateAddress(buyCoin, buyAddress)) {
+        return {message: `Not a ${buyCoin} address`};
+      }
+    }
+    return null;
+  };
+
   const submit = async () => {
     setConfirming(false);
     triggerLightFeedback();
@@ -416,58 +472,14 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setError('');
     setBusy(true);
     try {
-      if (!isRunning()) {
-        throw new Error('Swaps are not running');
-      }
-      if (!coinTo) {
-        throw new Error(
-          payIn ? 'Select a coin to pay' : 'Select a coin to receive',
-        );
-      }
-      if (!offeredCoins.includes(coinTo)) {
-        throw new Error(`${coinTo} is disabled`);
-      }
-      if (!addressTo) {
-        throw new Error(
-          payIn ? 'Missing refund address' : 'Missing receive address',
-        );
-      }
-      if (!validateAddress(coinTo, addressTo)) {
-        throw new Error(`Not a ${coinTo} address`);
-      }
-      // Amounts are entered in whole coins; the module holds the only conversion.
-      try {
-        parseAmount(sendCoin, amountFrom);
-      } catch {
-        throw new Error('Invalid amount to send');
-      }
-      // Parsed only to reject it here: the module is sent the string. Leasing
-      // coins and then failing on the receive amount would strand them.
-      try {
-        parseAmount(receiveCoin, amountTo);
-      } catch {
-        throw new Error('Invalid amount to receive');
-      }
-      const quoted = getSwapFundingOutputs(sendCoin, receiveCoin, amountFrom);
-      if (quoted.min_amount !== undefined) {
-        setFeeNote(quoted.error ?? '');
-        throw new Error(quoted.error);
-      }
-      const capNote = feeCapNote(quoted);
-      if (capNote) {
-        setFeeNote(capNote);
-        throw new Error(capNote);
+      const problem = validate();
+      if (problem) {
+        if (problem.feeNote !== undefined) {
+          setFeeNote(problem.feeNote);
+        }
+        throw new Error(problem.message);
       }
       if (payIn) {
-        if (!buysToHost && !offeredCoins.includes(buyCoin)) {
-          throw new Error(`${buyCoin} is disabled`);
-        }
-        if (!buysToHost && !buyAddress) {
-          throw new Error('Missing receive address');
-        }
-        if (!buysToHost && !validateAddress(buyCoin, buyAddress)) {
-          throw new Error(`Not a ${buyCoin} address`);
-        }
         let receiveAddress = buyAddress;
         if (buysToHost) {
           const receive = await newAddress({
@@ -642,17 +654,16 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const providersLine = providersText(estimate);
 
   const confirmSwap = () => {
-    if (
-      !coinTo ||
-      !addressTo ||
-      !amountFrom ||
-      !amountTo ||
-      addressInvalid ||
-      (!buysToHost && (!buyAddress || buyAddressInvalid))
-    ) {
-      void submit();
+    setRequestId('');
+    const problem = validate();
+    if (problem) {
+      if (problem.feeNote !== undefined) {
+        setFeeNote(problem.feeNote);
+      }
+      setError(problem.message);
       return;
     }
+    setError('');
     setConfirming(true);
   };
 
