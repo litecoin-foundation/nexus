@@ -631,7 +631,7 @@ const MbsxSettings: React.FC = () => {
                 />
               </View>
               <Text style={look.note}>
-                Adds Debug to the swap menu. Off by default.
+                Adds Debug page and options. Off by default.
               </Text>
             </View>
 
