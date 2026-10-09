@@ -8,6 +8,8 @@ import type {FundingOutput, SelectedPrevout} from './prevouts';
 export type SigningRecord = {
   // The confirm card's total; beyond it only the chain fee may leave
   spendSat: string;
+  // lnd's two block rate when the coins were leased, sats per vbyte
+  feeRate: string;
   changeScript: string;
   inputs: Record<string, string>;
 };
@@ -52,16 +54,52 @@ const p2wpkhScript = (changeAddress: string): string => {
   return `0014${Buffer.from(data).toString('hex')}`;
 };
 
+// Parsed here, not by the module: the bound must hold when its conversion is wrong
+const ltcSats = (amount: string): bigint => {
+  const match = /^(\d*)(?:\.(\d{0,8}))?$/.exec(amount.trim());
+  if (!match || `${match[1]}${match[2] ?? ''}` === '') {
+    throw new Error(`Could not read the amount ${amount}`);
+  }
+  return (
+    BigInt(match[1] || '0') * 100_000_000n +
+    BigInt((match[2] ?? '').padEnd(8, '0'))
+  );
+};
+
+// What the user confirmed: the amount typed and the swap fee the card showed
+export const confirmedSpend = (
+  outputs: FundingOutput[],
+  amount: string,
+  cardFeeSat: bigint,
+): bigint => {
+  const amountSat = ltcSats(amount);
+  const lockSat = outputs.length > 0 ? BigInt(outputs[0].value) : 0n;
+  if (lockSat !== amountSat) {
+    throw new Error(
+      `The swap would lock ${lockSat} sat, not the ${amountSat} sat confirmed`,
+    );
+  }
+  const feeSat = outputs
+    .slice(1)
+    .reduce((sum, output) => sum + BigInt(output.value), 0n);
+  if (feeSat > cardFeeSat) {
+    throw new Error(
+      `The swap fee would be ${feeSat} sat, above the ${cardFeeSat} sat shown`,
+    );
+  }
+  return amountSat + cardFeeSat;
+};
+
 export const recordSigning = (
   requestId: string,
   prevouts: SelectedPrevout[],
   changeAddress: string,
-  outputs: FundingOutput[],
+  spendSat: bigint,
+  feeRate: bigint,
 ): Promise<void> => {
   const record: SigningRecord = {
-    spendSat: outputs
-      .reduce((sum, output) => sum + BigInt(output.value), 0n)
-      .toString(),
+    spendSat: spendSat.toString(),
+    feeRate: feeRate.toString(),
     changeScript: p2wpkhScript(changeAddress),
     inputs: Object.fromEntries(
       prevouts.map(prevout => [

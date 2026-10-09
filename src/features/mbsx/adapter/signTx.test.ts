@@ -3,7 +3,7 @@ import {walletKitFinalizePsbt} from 'react-native-nitro-lndltc';
 
 import {withPendingOutputs} from './leases';
 import {serialisePrevout} from './prevouts';
-import {recordSigning} from './signingRecords';
+import {confirmedSpend, recordSigning} from './signingRecords';
 import {signSwapTx} from './signTx';
 
 jest.mock('react-native-nitro-lndltc', () => ({
@@ -187,15 +187,67 @@ describe('the ownership proof', () => {
   });
 });
 
+describe('the confirmed spend', () => {
+  it('is the amount typed and the swap fee shown', () => {
+    expect(confirmedSpend(funding, '0.002', 1000n)).toBe(201000n);
+    expect(() => confirmedSpend(funding, '0.0021', 1000n)).toThrow(
+      'would lock 200000 sat, not the 210000 sat confirmed',
+    );
+    expect(() => confirmedSpend(funding, '0.002', 999n)).toThrow(
+      'swap fee would be 1000 sat, above the 999 sat shown',
+    );
+    expect(() => confirmedSpend(funding, '0.000000001', 1000n)).toThrow(
+      'Could not read the amount',
+    );
+  });
+});
+
 describe('a swap transaction', () => {
+  it("pays at most ten times lnd's fee rate, and never over 1000 sat/vB", async () => {
+    await recordSigning(
+      'request h',
+      [prevout('2a')],
+      CHANGE_ADDRESS,
+      201000n,
+      1n,
+    );
+    const low = [{txid: '2a'.repeat(32), vout: 3}];
+    await expect(signs(low, lockOuts(297000n))).rejects.toThrow(
+      'would leave the wallet',
+    );
+    await recordSigning(
+      'request i',
+      [prevout('2b')],
+      CHANGE_ADDRESS,
+      201000n,
+      500n,
+    );
+    const high = [{txid: '2b'.repeat(32), vout: 3}];
+    await expect(signs(high, lockOuts(100000n))).rejects.toThrow(
+      'would leave the wallet',
+    );
+  });
+
   it('signs the lock, its fees and change back', async () => {
-    await recordSigning('request a', [prevout('21')], CHANGE_ADDRESS, funding);
+    await recordSigning(
+      'request a',
+      [prevout('21')],
+      CHANGE_ADDRESS,
+      201000n,
+      10n,
+    );
     const ins = [{txid: '21'.repeat(32), vout: 3, sighash: 1}];
     await expect(signs(ins, lockOuts(297000n))).resolves.toMatch(/^02/);
   });
 
   it('refuses to send the change anywhere else', async () => {
-    await recordSigning('request b', [prevout('22')], CHANGE_ADDRESS, funding);
+    await recordSigning(
+      'request b',
+      [prevout('22')],
+      CHANGE_ADDRESS,
+      201000n,
+      10n,
+    );
     const ins = [{txid: '22'.repeat(32), vout: 3}];
     await expect(signs(ins, lockOuts(50000n))).rejects.toThrow(
       'would leave the wallet',
@@ -206,8 +258,20 @@ describe('a swap transaction', () => {
   });
 
   it("spends one request's coins only", async () => {
-    await recordSigning('request c', [prevout('23')], CHANGE_ADDRESS, funding);
-    await recordSigning('request d', [prevout('24')], CHANGE_ADDRESS, funding);
+    await recordSigning(
+      'request c',
+      [prevout('23')],
+      CHANGE_ADDRESS,
+      201000n,
+      10n,
+    );
+    await recordSigning(
+      'request d',
+      [prevout('24')],
+      CHANGE_ADDRESS,
+      201000n,
+      10n,
+    );
     const ins = [
       {txid: '23'.repeat(32), vout: 3},
       {txid: '24'.repeat(32), vout: 3},
@@ -219,7 +283,13 @@ describe('a swap transaction', () => {
   });
 
   it('refuses another sighash, a duplicated key, or another coin', async () => {
-    await recordSigning('request e', [prevout('25')], CHANGE_ADDRESS, funding);
+    await recordSigning(
+      'request e',
+      [prevout('25')],
+      CHANGE_ADDRESS,
+      201000n,
+      10n,
+    );
     const txid = '25'.repeat(32);
     await expect(
       signs([{txid, vout: 3, sighash: 0x82}], lockOuts(297000n)),
@@ -238,7 +308,13 @@ describe('a swap transaction', () => {
   });
 
   it('gives up when lnd never signs', async () => {
-    await recordSigning('request g', [prevout('29')], CHANGE_ADDRESS, funding);
+    await recordSigning(
+      'request g',
+      [prevout('29')],
+      CHANGE_ADDRESS,
+      201000n,
+      10n,
+    );
     jest.useFakeTimers();
     try {
       finalizePsbt.mockReturnValue(new Promise(() => {}));
@@ -257,7 +333,13 @@ describe('a swap transaction', () => {
   });
 
   it('checks what lnd signed, not just the psbt', async () => {
-    await recordSigning('request f', [prevout('27')], CHANGE_ADDRESS, funding);
+    await recordSigning(
+      'request f',
+      [prevout('27')],
+      CHANGE_ADDRESS,
+      201000n,
+      10n,
+    );
     const ins = [{txid: '27'.repeat(32), vout: 3}];
     finalizePsbt.mockResolvedValue({
       rawFinalTx: signedTx(

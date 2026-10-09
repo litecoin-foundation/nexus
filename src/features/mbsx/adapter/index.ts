@@ -54,9 +54,10 @@ export {
   releasePrevouts,
   reservedBalance,
 } from './leases';
-export {forgetSigning, recordSigning} from './signingRecords';
+export {confirmedSpend, forgetSigning, recordSigning} from './signingRecords';
 export {
   displayTxid,
+  fundingFeeRate,
   selectAndLeasePrevouts,
   serialisePrevout,
   spendableBalance,

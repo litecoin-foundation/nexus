@@ -1,5 +1,6 @@
 import {
   ChangeAddressType,
+  estimateFee,
   walletKitFundPsbt,
   walletKitLeaseOutput,
   walletKitListUnspent,
@@ -201,6 +202,27 @@ const leaseForSwap = async (
  * The leases must be released when the swap ends, or the coins stay locked out
  * of Nexus's own send flow.
  */
+// Before leasing: EstimateFee selects from the coins still unleased
+export const fundingFeeRate = async (
+  outputs: FundingOutput[],
+): Promise<bigint> => {
+  const {satPerVbyte} = await withDeadline(
+    estimateFee({
+      AddrToAmount: Object.fromEntries(
+        outputs.map(o => [o.address, BigInt(o.value)]),
+      ),
+      targetConf: 2,
+      minConfs: 1,
+      spendUnconfirmed: false,
+    }),
+    'EstimateFee',
+  );
+  if (!satPerVbyte) {
+    throw new Error('lnd gave no fee estimate');
+  }
+  return satPerVbyte;
+};
+
 export const selectAndLeasePrevouts = async (
   outputs: FundingOutput[],
   // From isHwWalletSelectedSelector. A parameter rather than a check inside,

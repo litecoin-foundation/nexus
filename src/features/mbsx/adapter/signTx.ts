@@ -21,6 +21,8 @@ const SIGHASH_ALL = 1;
 const OWNERSHIP_PROOF_LOCKTIME = 499999999;
 // CoinInterface::maxFeeRate(), the module's ceiling on an offer's fee rate
 const MAX_FEE_SAT_PER_VBYTE = 1000n;
+// CoinInterface::maxFeeRateMultiple(), over lnd's estimate here rather than electrum's
+const FEE_RATE_MULTIPLE = 10n;
 // Inside HybridNitroBSX's 120 s wait for a signature
 const SIGN_MS = 90_000;
 
@@ -145,11 +147,12 @@ const scopeFor = async (outpoints: string[]): Promise<SigningScope> => {
       `Refusing to sign: no one request leased ${outpoints.join(', ')}`,
     );
   }
+  const feeRate = BigInt(record.feeRate) * FEE_RATE_MULTIPLE;
   return {
     values: new Map(outpoints.map(key => [key, BigInt(record.inputs[key])])),
     keep: new Set([record.changeScript]),
     spendSat: BigInt(record.spendSat),
-    feeRate: MAX_FEE_SAT_PER_VBYTE,
+    feeRate: feeRate < MAX_FEE_SAT_PER_VBYTE ? feeRate : MAX_FEE_SAT_PER_VBYTE,
   };
 };
 

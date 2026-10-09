@@ -45,7 +45,9 @@ import {
   isRunning,
   parseAmount,
   readConfig,
+  confirmedSpend,
   forgetSigning,
+  fundingFeeRate,
   recordLeases,
   recordSigning,
   releasePrevouts,
@@ -536,6 +538,12 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       if (funding.error || !funding.outputs) {
         throw new Error(`Could not size the swap: ${funding.error}`);
       }
+      const spendSat = confirmedSpend(
+        funding.outputs,
+        amountFrom,
+        quote && quote.feeBps > 0 ? quote.feeSats : 0n,
+      );
+      const feeRate = await fundingFeeRate(funding.outputs);
       const prevouts = await selectAndLeasePrevouts(
         funding.outputs,
         isHwWallet,
@@ -567,7 +575,8 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           rv.request_id,
           prevouts,
           change.address,
-          funding.outputs,
+          spendSat,
+          feeRate,
         );
         recordLeases(rv.request_id, prevouts);
       } catch (e) {

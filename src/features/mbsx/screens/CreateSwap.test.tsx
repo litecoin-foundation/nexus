@@ -33,7 +33,9 @@ jest.mock('@react-navigation/native', () => ({
 
 jest.mock('../adapter', () => ({
   PAY_IN_COINS: ['BTC', 'PART'],
+  confirmedSpend: jest.fn(() => 0n),
   createDeposit: jest.fn(),
+  fundingFeeRate: jest.fn(() => Promise.resolve(1n)),
   getCoinPrices: jest.fn(() => null),
   getInfo: jest.fn(() => null),
   getOffersEstimate: jest.fn(),
