@@ -9,6 +9,7 @@ jest.mock('react-native-nitro-bsx', () => {
     default: new Proxy(fns, {
       get: (target, key: string) => (target[key] ??= jest.fn()),
     }),
+    setBackgroundSwapActive: jest.fn(),
     startBackgroundService: jest.fn(),
     stopBackgroundService: jest.fn(),
   };

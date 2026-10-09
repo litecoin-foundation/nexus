@@ -1,4 +1,8 @@
-import {cancelWake, scheduleWake} from 'react-native-nitro-bsx';
+import {
+  cancelWake,
+  scheduleWake,
+  setBackgroundSwapActive,
+} from 'react-native-nitro-bsx';
 
 import {getNetwork} from '../network';
 
@@ -28,6 +32,7 @@ export const scheduleWakes = () => {
   try {
     if (!hasActiveSwaps()) {
       cancelWake();
+      setBackgroundSwapActive(false);
       return;
     }
     // One alarm serves every swap, so this is the whole schedule. It runs on
@@ -35,6 +40,7 @@ export const scheduleWakes = () => {
     // swaps for a deadline meant a db read each, and bought nothing a cadence
     // does not already cover.
     scheduleWake(Date.now() + WAKE_INTERVAL_MS);
+    setBackgroundSwapActive(true);
   } catch (e) {
     console.warn('mbsx could not schedule wakes:', (e as Error).message);
   }
