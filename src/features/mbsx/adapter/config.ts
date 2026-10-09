@@ -193,14 +193,21 @@ const readStoredConfig = async (): Promise<{
   if (!(await fileExists(CONFIG_PATH))) {
     return null;
   }
-  let config: MbsxConfig;
   try {
-    config = JSON.parse(await RNFS.readFile(CONFIG_PATH));
+    const config: unknown = JSON.parse(await RNFS.readFile(CONFIG_PATH));
+    if (
+      typeof config !== 'object' ||
+      config === null ||
+      Array.isArray(config)
+    ) {
+      throw new Error('not a settings object');
+    }
+    const settings = config as MbsxConfig;
+    return {config: settings, migrated: migrateConfig(settings)};
   } catch (error) {
     console.error('mbsx config is unreadable:', (error as Error).message);
     return null;
   }
-  return {config, migrated: migrateConfig(config)};
 };
 
 export const readConfig = async (): Promise<MbsxConfig | null> => {
@@ -271,6 +278,10 @@ export const loadOrCreateConfig = async (): Promise<MbsxConfig> => {
     return existing;
   }
   if (await fileExists(CONFIG_PATH)) {
+    // moveFile onto an existing file fails on iOS
+    if (await fileExists(`${CONFIG_PATH}.bad`)) {
+      await RNFS.unlink(`${CONFIG_PATH}.bad`);
+    }
     await RNFS.moveFile(CONFIG_PATH, `${CONFIG_PATH}.bad`);
     throw new Error(
       'The swap settings could not be read. They are kept as config.json.bad, and the next start uses the defaults.',

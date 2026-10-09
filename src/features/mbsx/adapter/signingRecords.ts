@@ -19,11 +19,35 @@ const PATH = `${MBSX_DATA_DIR}/signing.json`;
 let records: Record<string, SigningRecord> | null = null;
 let writing: Promise<void> = Promise.resolve();
 
+// Unreadable, it is set aside and started afresh: with no record the signer only refuses
+const readRecords = async (): Promise<Record<string, SigningRecord>> => {
+  if (!(await RNFS.exists(PATH))) {
+    return {};
+  }
+  let parsed: unknown = null;
+  try {
+    parsed = JSON.parse(await RNFS.readFile(PATH));
+  } catch {
+    parsed = null;
+  }
+  if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+    return parsed as Record<string, SigningRecord>;
+  }
+  console.error(`mbsx ${PATH} is unreadable, moving it to ${PATH}.bad`);
+  try {
+    if (await RNFS.exists(`${PATH}.bad`)) {
+      await RNFS.unlink(`${PATH}.bad`);
+    }
+    await RNFS.moveFile(PATH, `${PATH}.bad`);
+  } catch (e) {
+    console.warn(`mbsx could not move ${PATH} aside`, e);
+  }
+  return {};
+};
+
 const load = async (): Promise<Record<string, SigningRecord>> => {
   if (records === null) {
-    records = (await RNFS.exists(PATH))
-      ? (JSON.parse(await RNFS.readFile(PATH)) as Record<string, SigningRecord>)
-      : {};
+    records = await readRecords();
   }
   return records;
 };

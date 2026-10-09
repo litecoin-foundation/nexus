@@ -57,6 +57,7 @@ import {
   swapBalances,
   validateAddress,
 } from '../adapter';
+import {withDeadline} from '../adapter/deadline';
 import {independentReference} from '../rates';
 import {getMbsxStyles} from '../theme';
 import type {MbsxCoinPrices, MbsxDrawerParamList, MbsxInfo} from '../types';
@@ -496,10 +497,13 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       if (payIn) {
         let receiveAddress = buyAddress;
         if (buysToHost) {
-          const receive = await newAddress({
-            type: AddressType.UNUSED_WITNESS_PUBKEY_HASH,
-            account: ltcAccount,
-          });
+          const receive = await withDeadline(
+            newAddress({
+              type: AddressType.UNUSED_WITNESS_PUBKEY_HASH,
+              account: ltcAccount,
+            }),
+            'NewAddress',
+          );
           if (!receive?.address) {
             throw new Error('Could not get a receive address');
           }
@@ -526,10 +530,13 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       }
       // Change and, if the swap fails, the whole refund come back here rather
       // than to a module key, so it is one of ours.
-      const change = await newAddress({
-        type: AddressType.UNUSED_WITNESS_PUBKEY_HASH,
-        account: ltcAccount,
-      });
+      const change = await withDeadline(
+        newAddress({
+          type: AddressType.UNUSED_WITNESS_PUBKEY_HASH,
+          account: ltcAccount,
+        }),
+        'NewAddress',
+      );
       if (!change?.address) {
         throw new Error('Could not get a change address');
       }

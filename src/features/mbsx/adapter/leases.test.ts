@@ -4,7 +4,8 @@ import {
   walletKitReleaseOutput,
 } from 'react-native-nitro-lndltc';
 
-import {recordLeases, releaseOrphanLeases} from './leases';
+import {recordLeases, releaseLeases, releaseOrphanLeases} from './leases';
+import {forgetSigning} from './signingRecords';
 
 jest.mock('./signingRecords', () => ({
   forgetSigning: jest.fn(async () => undefined),
@@ -113,5 +114,13 @@ describe('releaseOrphanLeases', () => {
     listLeases.mockResolvedValue({lockedUtxos: [lease(ourId(1), 1, 3600)]});
     await releaseOrphanLeases();
     expect(releaseOutput).not.toHaveBeenCalled();
+  });
+});
+
+describe('releaseLeases', () => {
+  it('forgets the signing record of a request with no leases', async () => {
+    listWalletLocks.mockReturnValue({locks: []});
+    await releaseLeases('bb');
+    expect(forgetSigning).toHaveBeenCalledWith('bb');
   });
 });

@@ -19,6 +19,7 @@ jest.mock('@dr.pogodin/react-native-fs', () => ({
   writeFile: jest.fn(),
   moveFile: jest.fn(),
   mkdir: jest.fn(),
+  unlink: jest.fn(),
 }));
 
 jest.mock('../../../utils/file', () => ({fileExists: jest.fn()}));
@@ -28,6 +29,7 @@ jest.mock('../network', () => ({getNetwork: () => 'regtest'}));
 const readFile = RNFS.readFile as jest.Mock;
 const writeFile = RNFS.writeFile as jest.Mock;
 const moveFile = RNFS.moveFile as jest.Mock;
+const unlink = RNFS.unlink as jest.Mock;
 const exists = fileExists as jest.Mock;
 
 const versionZero = (): MbsxConfig => ({
@@ -168,6 +170,17 @@ describe('the config file', () => {
     await expect(loadOrCreateConfig()).rejects.toThrow('config.json.bad');
     expect(moveFile).toHaveBeenCalledWith(path, `${path}.bad`);
     expect(writeFile).not.toHaveBeenCalled();
+  });
+
+  it('is kept aside when it is JSON of the wrong shape', async () => {
+    for (const content of ['null', '[]', '"x"']) {
+      jest.clearAllMocks();
+      readFile.mockResolvedValue(content);
+      await expect(loadOrCreateConfig()).rejects.toThrow('config.json.bad');
+      expect(unlink).toHaveBeenCalledWith(`${path}.bad`);
+      expect(moveFile).toHaveBeenCalledWith(path, `${path}.bad`);
+      expect(writeFile).not.toHaveBeenCalled();
+    }
   });
 });
 

@@ -177,6 +177,11 @@ export const releasePrevouts = async (prevouts: SelectedPrevout[]) => {
  * A release that fails leaves the row unreleased, so the next pass retries it.
  */
 export const releaseLeases = async (requestId: string) => {
+  try {
+    await forgetSigning(requestId);
+  } catch (e) {
+    console.warn(`mbsx could not forget the signing record of ${requestId}`, e);
+  }
   const locks = walletLocks().filter(lock => lock.request_id === requestId);
   if (locks.length === 0) {
     return;
@@ -224,11 +229,6 @@ export const releaseLeases = async (requestId: string) => {
         e,
       );
     }
-  }
-  try {
-    await forgetSigning(requestId);
-  } catch (e) {
-    console.warn(`mbsx could not forget the signing record of ${requestId}`, e);
   }
 };
 
