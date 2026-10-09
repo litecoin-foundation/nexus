@@ -40,7 +40,7 @@ const screenSize = {
   testDeviceHeaderHeight: 103,
 };
 
-const renderSwap = async (showDebug: boolean) => {
+const renderSwap = async (showDebug: boolean, fundsAtRisk = false) => {
   (readConfig as jest.Mock).mockResolvedValue({show_debug: showDebug});
   (getSwapInfo as jest.Mock).mockReturnValue({
     id: 's1',
@@ -52,6 +52,7 @@ const renderSwap = async (showDebug: boolean) => {
     amount_to: '0.0008',
     fee_rate_from: 1000n,
     fee_rate_to: 1000n,
+    funds_at_risk: fundsAtRisk,
     events: [],
   });
   const store = configureStore({
@@ -93,6 +94,25 @@ describe('SwapDetail', () => {
     const abandon = buttons.find(button => button.text === 'Abandon')!;
     await act(async () => {
       abandon.onPress!();
+    });
+    await waitFor(() => expect(abandonSwap).toHaveBeenCalledWith('s1'));
+  });
+
+  it('asks again before abandoning a swap with funds at risk', async () => {
+    (abandonSwap as jest.Mock).mockClear();
+    const alert = jest.spyOn(Alert, 'alert');
+    alert.mockClear();
+    const {getByTestId} = await renderSwap(true, true);
+    fireEvent.press(getByTestId('mbsx-abandon-swap'));
+    const confirm = (call: number) =>
+      alert.mock.calls[call][2]!.find(button => button.text === 'Abandon')!;
+    await act(async () => {
+      confirm(0).onPress!();
+    });
+    expect(abandonSwap).not.toHaveBeenCalled();
+    expect(alert.mock.calls[1][1]).toMatch(/^Funds are at risk/);
+    await act(async () => {
+      confirm(1).onPress!();
     });
     await waitFor(() => expect(abandonSwap).toHaveBeenCalledWith('s1'));
   });

@@ -491,6 +491,11 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
             label="Abandon Swap"
             confirm="Abandon this swap? The app stops working on it: nothing more is sent for it, no refund and no swipe. Coins still locked in it can then only be recovered by hand."
             confirmLabel="Abandon"
+            confirmAgain={
+              swap.funds_at_risk
+                ? "Funds are at risk: this swap's lock transaction was sent and has not been refunded or claimed. Once abandoned, the app will not recover those coins. Abandon anyway?"
+                : undefined
+            }
             onConfirm={async () => {
               abandonSwap(swapId);
               fetchSwap();

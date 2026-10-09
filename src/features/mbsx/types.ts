@@ -128,6 +128,8 @@ export type SwapDetails = SwapSummary &
     lock_time_1: bigint;
     lock_time_2: bigint;
     expire_at: string;
+    // This side's lock tx was sent and the swap has not settled.
+    funds_at_risk?: boolean;
     events?: SwapEvent[];
     error?: string;
   };

@@ -9,6 +9,8 @@ type Props = {
   label: string;
   confirm: string;
   confirmLabel?: string;
+  // Asked after confirm, when set.
+  confirmAgain?: string;
   disabled?: boolean;
   // Resolves with what to show afterwards; a bulk removal reports its count so
   // the button can say nothing matched rather than looking as if it failed.
@@ -21,6 +23,7 @@ const RemoveButton: React.FC<Props> = ({
   label,
   confirm,
   confirmLabel = 'Remove',
+  confirmAgain,
   disabled,
   onConfirm,
 }) => {
@@ -44,11 +47,13 @@ const RemoveButton: React.FC<Props> = ({
     }
   };
 
-  const ask = () =>
-    Alert.alert(label, confirm, [
+  const askThen = (text: string, onPress: () => void) =>
+    Alert.alert(label, text, [
       {text: 'Cancel', style: 'cancel'},
-      {text: confirmLabel, style: 'destructive', onPress: run},
+      {text: confirmLabel, style: 'destructive', onPress},
     ]);
+  const ask = () =>
+    askThen(confirm, confirmAgain ? () => askThen(confirmAgain, run) : run);
 
   return (
     <View>
