@@ -1159,21 +1159,18 @@ export const installKeyProvider = () => {
 };
 
 // The module hands over whole transactions rather than asking for keys, because
-// lnd will sign but never export. Returning '' is a refusal the module reports
-// rather than broadcasting anything.
+// lnd will sign but never export. A throw is a refusal the module reports, its
+// message as the swap's error, rather than broadcasting anything.
 export const installSigner = () => {
   NitroBSX.setSignTx(async (psbtHex: string, coin: string) => {
     if (!store.getState().lightning.lndActive) {
-      console.warn(
-        'mbsx could not sign a swap transaction: lnd is not running',
-      );
-      return '';
+      throw new Error('lnd is not running');
     }
     try {
       return await signSwapTx(psbtHex, coin);
     } catch (e) {
       console.warn('mbsx could not sign a swap transaction', e);
-      return '';
+      throw e;
     }
   });
 };

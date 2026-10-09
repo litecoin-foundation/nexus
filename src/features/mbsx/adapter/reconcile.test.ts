@@ -156,12 +156,28 @@ describe('the callbacks while lnd is down', () => {
     const balance = balanceCalls[balanceCalls.length - 1][0];
     mockLightning.lndActive = false;
     try {
-      await expect(sign('70736274ff', 'LTC')).resolves.toBe('');
+      await expect(sign('70736274ff', 'LTC')).rejects.toThrow(
+        'lnd is not running',
+      );
       expect(signSwapTx).not.toHaveBeenCalled();
       await expect(balance('LTC')).rejects.toThrow('lnd is not running');
     } finally {
       mockLightning.lndActive = true;
     }
+  });
+});
+
+describe('the signer', () => {
+  it('passes a refusal on, so the module can report why', async () => {
+    installSigner();
+    const signCalls = nitro.setSignTx.mock.calls;
+    const sign = signCalls[signCalls.length - 1][0];
+    (signSwapTx as jest.Mock).mockRejectedValueOnce(
+      new Error('Refusing to sign: 5000 sat would leave the wallet'),
+    );
+    await expect(sign('70736274ff', 'LTC')).rejects.toThrow(
+      'Refusing to sign: 5000 sat would leave the wallet',
+    );
   });
 });
 
