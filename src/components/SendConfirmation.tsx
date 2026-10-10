@@ -1,13 +1,27 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {View, StyleSheet, DeviceEventEmitter, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 import {estimateFee} from 'react-native-nitro-lndltc';
 import type {Utxo} from 'react-native-nitro-lndltc';
 
 import PlasmaModal from './Modals/PlasmaModal';
 import PinModalContent from './Modals/PinModalContent';
 import LoadingIndicator from './LoadingIndicator';
-import GreenButton from './Buttons/GreenButton';
+import GreenButtonV2 from './ButtonsV2/GreenButtonV2';
+import {BUTTON_HEIGHT_RATIO} from './ButtonsV2/BlueButtonV2';
+import {GAP_RATIO, useFixedBottomStyle} from './ButtonsV2/fixedBottomStyle';
+import {
+  GlassCard,
+  GlassCardHairline,
+  GlassCardRow,
+  GlassCardStackedRow,
+} from './Cells/GlassCard';
+import {BORDER_GRADIENT_COLORS} from './LiquidGlassBackdrop';
+import {SHEET_BACKGROUND} from './GlassTxRows';
+import {SHEET_TOP_RADIUS_RATIO} from './GlassBottomSheet';
+import {SKIN_GRADIENT_COLORS, SKIN_GRADIENT_LOCATIONS} from './FoldedSkinView';
 import {useAppDispatch, useAppSelector} from '../store/hooks';
 import {showError} from '../reducers/errors';
 import {
@@ -22,7 +36,6 @@ import {
 } from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
 
-import CustomSafeAreaView from '../components/CustomSafeAreaView';
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
 
@@ -57,20 +70,30 @@ const SendConfirmation: React.FC<Props> = props => {
   const calculateFiatAmount = useAppSelector(state => fiatValueSelector(state));
   const amountSymbol = useAppSelector(state => subunitSymbolSelector(state));
   const amountCode = useAppSelector(state => subunitCodeSelector(state));
+  const {currencySymbol} = useAppSelector(state => state.settings);
 
   const sendAmount =
     sendAll === true ? Number(confirmedBalance) - 5100 : amount;
   const sendFiatAmount =
-    sendAll === true ? calculateFiatAmount(confirmedBalance) : fiatAmount;
+    sendAll === true
+      ? calculateFiatAmount(confirmedBalance)
+      : `${currencySymbol}${fiatAmount}`;
+  // NOTE: sending all spends the whole confirmed balance, whatever the fee comes to
+  const totalAmount =
+    sendAll === true ? Number(confirmedBalance) : sendAmount + fee;
 
   const convertToSubunit = useAppSelector(state =>
     satsToSubunitSelector(state),
   );
   const amountInSubunit = convertToSubunit(sendAmount);
 
+  const {t: tSend} = useTranslation('sendTab');
+
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, insets);
+  const fixedBottomStyle = useFixedBottomStyle();
 
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('send-auth');
@@ -152,127 +175,86 @@ const SendConfirmation: React.FC<Props> = props => {
 
   return (
     <>
-      {/* <Animated.View style={styles.chooseWalletBtnContainer}>
-        <ChooseWalletLargeButton
-          title={'Main Wallet (2.574LTC)'}
-          onPress={() => {
-            rotateArrow();
-            setWalletsModalOpened(!isWalletsModalOpened);
-          }}
-          arrowSpinAnim={animatedWalletButtonArrowStyle}
-          isOpen={isWalletsModalOpened}
-        />
-      </Animated.View> */}
-
-      <LinearGradient style={styles.background} colors={['#1162E6', '#0F55C7']}>
-        <CustomSafeAreaView
-          styles={{...styles.safeArea}}
-          edges={
-            Platform.OS === 'ios'
-              ? ['left', 'right']
-              : ['bottom', 'left', 'right']
-          }>
-          <View style={styles.body}>
+      <View style={styles.container}>
+        <View style={styles.topContainer}>
+          <LinearGradient
+            style={styles.background}
+            colors={SKIN_GRADIENT_COLORS}
+            locations={SKIN_GRADIENT_LOCATIONS}
+          />
+          <TranslateText
+            textKey="send"
+            domain="main"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+            textStyle={styles.titleText}
+            numberOfLines={1}
+          />
+          <TranslateText
+            textValue={amountInSubunit + ' ' + amountCode}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.08}
+            textStyle={styles.amountText}
+            numberOfLines={1}
+          />
+          <View style={styles.fiatAmount}>
             <TranslateText
-              textKey="send"
-              domain="main"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-              textStyle={styles.sendText}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue={amountInSubunit + ' ' + amountCode}
+              textValue={sendFiatAmount}
               maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-              textStyle={styles.amountText}
+              textStyle={styles.fiatAmountText}
               numberOfLines={1}
             />
-            <View style={styles.fiatAmount}>
-              <TranslateText
-                textValue={sendFiatAmount}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.025}
-                textStyle={styles.fiatAmountText}
-                numberOfLines={1}
-              />
-            </View>
+          </View>
+        </View>
 
+        <View style={styles.bottomSheetContainer}>
+          <GlassCard>
             {toDomain ? (
               <>
-                <TranslateText
-                  textKey="to"
-                  domain="main"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.valueSubtitle}
-                  numberOfLines={1}
+                <GlassCardRow
+                  titleTextKey="recipient"
+                  titleDomain="sendTab"
+                  value={toDomain}
                 />
-                <TranslateText
-                  textValue={toDomain}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.valueTitle}
-                  numberOfLines={1}
-                />
+                <GlassCardHairline />
               </>
             ) : null}
-            <TranslateText
-              textKey="send_to_address"
-              domain="sendTab"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.valueSubtitle}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue={toAddress}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.valueTitle}
-              numberOfLines={4}
+            <GlassCardStackedRow
+              titleTextValue={tSend('send_to_address').toUpperCase()}
+              value={toAddress}
             />
             {label ? (
               <>
-                <TranslateText
-                  textKey="description"
-                  domain="sendTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.valueSubtitle}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={label}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                  textStyle={styles.valueTitle}
+                <GlassCardHairline />
+                <GlassCardStackedRow
+                  titleTextValue={tSend('description').toUpperCase()}
+                  value={label}
                   numberOfLines={4}
                 />
               </>
             ) : null}
+            <GlassCardHairline />
+            <GlassCardRow
+              titleTextKey="network_fee"
+              value={`${convertToSubunit(fee)}${amountSymbol} (${calculateFiatAmount(fee)})`}
+            />
+          </GlassCard>
+          <GlassCard>
+            <GlassCardRow
+              titleTextKey="total"
+              value={`${convertToSubunit(totalAmount)} ${amountCode}`}
+              valueColor="#2c72ff"
+              emphasized
+            />
+          </GlassCard>
+        </View>
 
-            <TranslateText
-              textKey="fee"
-              domain="sendTab"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.valueSubtitle}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue={convertToSubunit(fee) + '' + amountSymbol}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.valueTitle}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue={calculateFiatAmount(fee)}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-              textStyle={styles.valueTitle}
-              numberOfLines={1}
-            />
-
-            <View style={styles.confirmButtonContainer}>
-              <GreenButton
-                textKey="confirm_and_send"
-                textDomain="sendTab"
-                onPress={() => handleAuthenticationRequired('send-auth')}
-              />
-            </View>
-          </View>
-        </CustomSafeAreaView>
-      </LinearGradient>
+        <View style={fixedBottomStyle}>
+          <GreenButtonV2
+            textKey="confirm_and_send"
+            textDomain="sendTab"
+            onPress={() => handleAuthenticationRequired('send-auth')}
+          />
+        </View>
+      </View>
 
       <PlasmaModal
         isOpened={isPinModalOpened}
@@ -301,143 +283,90 @@ const SendConfirmation: React.FC<Props> = props => {
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  insets: {top: number; bottom: number},
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: SKIN_GRADIENT_COLORS[SKIN_GRADIENT_COLORS.length - 1],
+      paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
     },
     background: {
+      ...StyleSheet.absoluteFill,
+    },
+    topContainer: {
       flex: 1,
+      paddingTop: insets.top,
+      paddingHorizontal: screenWidth * 0.04,
     },
-    safeArea: {
-      flex: 1,
-    },
-    body: {
+    bottomSheetContainer: {
       width: '100%',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      position: 'relative',
-      paddingTop: screenHeight * 0.12,
-      paddingHorizontal: screenWidth * 0.06,
+      backgroundColor: SHEET_BACKGROUND,
+      borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      paddingTop: screenWidth * 0.03,
+      paddingHorizontal: screenWidth * 0.03,
+      paddingBottom:
+        screenHeight * BUTTON_HEIGHT_RATIO + screenWidth * GAP_RATIO * 2,
+      overflow: 'hidden',
     },
-    chooseWalletBtnContainer: {
-      position: 'absolute',
-      top: 0,
-      width: '100%',
-      height: 'auto',
-      paddingLeft: screenHeight * 0.02,
-      paddingRight: screenHeight * 0.02,
-      marginTop: screenHeight * 0.12,
-      zIndex: 2,
-    },
-    chooseWalletBtn: {
-      width: '100%',
-      height: '100%',
-      borderRadius: screenHeight * 0.01,
-      backgroundColor: '#0d3d8a',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingLeft: screenHeight * 0.02,
-      paddingRight: screenHeight * 0.02,
-    },
-    chooseWalletBtnText: {
-      color: '#fff',
+    titleText: {
+      color: 'white',
       fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '500',
-      fontSize: screenHeight * 0.017,
-    },
-    btnArrow: {
-      height: screenHeight * 0.012,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 2,
-      marginLeft: 8,
-    },
-    btnArrowIcon: {
-      height: '100%',
-      objectFit: 'contain',
-    },
-    sendText: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.025,
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.025,
-      marginTop: screenHeight * 0.08,
+      marginTop: screenHeight * 0.1,
     },
     amountText: {
-      color: '#fff',
+      color: 'white',
       fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.06,
       fontStyle: 'normal',
       fontWeight: '400',
-      fontSize: screenHeight * 0.05,
+      marginTop: screenHeight * 0.01,
     },
     fiatAmount: {
       width: 'auto',
-      borderRadius: screenHeight * 0.01,
-      backgroundColor: '#0F4CAD',
-      paddingTop: screenHeight * 0.01,
-      paddingBottom: screenHeight * 0.01,
-      paddingLeft: screenHeight * 0.015,
-      paddingRight: screenHeight * 0.015,
+      height: screenHeight * 0.05,
+      borderRadius: screenHeight * 0.025,
+      borderCurve: 'continuous',
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: BORDER_GRADIENT_COLORS[1],
+      boxShadow: [
+        {offsetX: 0, offsetY: 2, blurRadius: 8, color: 'rgba(0, 0, 0, 0.07)'},
+        {
+          offsetX: 0,
+          offsetY: 0.5,
+          blurRadius: 0,
+          color: BORDER_GRADIENT_COLORS[0],
+          inset: true,
+        },
+        {
+          offsetX: 0,
+          offsetY: -0.5,
+          blurRadius: 0,
+          color: BORDER_GRADIENT_COLORS[2],
+          inset: true,
+        },
+      ],
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: screenHeight * 0.01,
+      paddingHorizontal: screenHeight * 0.02,
+      alignSelf: 'flex-start',
+      marginTop: screenHeight * 0.01,
     },
     fiatAmountText: {
       color: '#fff',
       fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
       fontSize: screenHeight * 0.02,
-      opacity: 0.4,
-    },
-    valueSubtitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
       fontStyle: 'normal',
       fontWeight: '700',
-      fontSize: screenHeight * 0.017,
-      textTransform: 'uppercase',
-      opacity: 0.6,
-      marginTop: screenHeight * 0.05,
-    },
-    valueTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.025,
-    },
-    confirmButtonContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.03,
-      left: screenWidth * 0.06,
-      width: '100%',
-    },
-    blurContainer: {
-      flex: 1,
-      padding: 20,
-      margin: 16,
-      textAlign: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-      borderRadius: 20,
-    },
-    box: {
-      width: '25%',
-      height: '20%',
-    },
-    boxEven: {
-      backgroundColor: 'orangered',
-    },
-    boxOdd: {
-      backgroundColor: 'gold',
-    },
-    text: {
-      fontSize: 24,
-      fontWeight: '600',
     },
   });
 

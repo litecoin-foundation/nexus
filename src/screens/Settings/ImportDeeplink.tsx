@@ -6,7 +6,11 @@ import {
   StackNavigationOptions,
   StackNavigationProp,
 } from '@react-navigation/stack';
-import {RouteProp, CommonActions} from '@react-navigation/native';
+import {
+  RouteProp,
+  CommonActions,
+  NavigatorScreenParams,
+} from '@react-navigation/native';
 
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {unsetDeeplink} from '../../reducers/deeplinks';
@@ -14,6 +18,7 @@ import {publishTransaction} from '../../reducers/transaction';
 import {getAddress} from '../../reducers/address';
 import {sweepQrKey} from '../../utils/sweep';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
+import {MainStackParamList} from '../../navigation/types';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -26,9 +31,7 @@ type RootStackParamList = {
   ImportSuccess: {
     txHash: string;
   };
-  Main: {
-    isInitial: boolean;
-  };
+  Main: NavigatorScreenParams<MainStackParamList>;
 };
 
 interface Props {
@@ -129,7 +132,10 @@ const ImportDeeplink: React.FC<Props> = props => {
             small={false}
             active={true}
             onPress={() => {
-              navigation.navigate('Main', {isInitial: true});
+              navigation.popTo('Main', {
+                screen: 'MainScreen',
+                params: {isInitial: true},
+              });
             }}
           />
         </CustomSafeAreaView>

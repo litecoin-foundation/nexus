@@ -50,7 +50,10 @@ const SuccessSell: React.FC<Props> = props => {
           small={true}
           active={true}
           onPress={() => {
-            navigation.navigate('Main', {isInitial: true});
+            navigation.popTo('Main', {
+              screen: 'MainScreen',
+              params: {isInitial: true},
+            });
           }}
         />
       </View>

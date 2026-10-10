@@ -29,6 +29,8 @@ export type MainStackParamList = {
   MainScreen: {
     scanData?: string;
     isInitial?: boolean;
+    // NOTE: with isInitial: open the transaction search over the reset wallet
+    openSearch?: boolean;
     activeCard?: number;
     shopScreen?: string;
   };

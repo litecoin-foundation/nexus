@@ -472,7 +472,12 @@ export const ConfirmConvertNavigationOptions = (navigation: any) => {
       <HeaderButton
         textKey="cancel"
         textDomain="buyTab"
-        onPress={() => navigation.navigate('Main', {isInitial: true})}
+        onPress={() =>
+          navigation.popTo('Main', {
+            screen: 'MainScreen',
+            params: {isInitial: true},
+          })
+        }
         rightPadding
       />
     ),

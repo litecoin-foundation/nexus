@@ -1,14 +1,16 @@
-import React, {useContext} from 'react';
-import {Platform} from 'react-native';
-import {RouteProp} from '@react-navigation/native';
+import React from 'react';
+import {StyleSheet, View} from 'react-native';
+import {NavigatorScreenParams, RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import type {Utxo} from 'react-native-nitro-lndltc';
 
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import SendConfirmation from '../../components/SendConfirmation';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {useAppSelector} from '../../store/hooks';
-
-import {ScreenSizeContext} from '../../context/screenSize';
+import {MainStackParamList} from '../../navigation/types';
 
 type RootStackParamList = {
   ConfirmSend: {
@@ -20,6 +22,7 @@ type RootStackParamList = {
     amount: number;
     toAddress: string;
   };
+  Main: NavigatorScreenParams<MainStackParamList>;
 };
 
 interface Props {
@@ -29,6 +32,9 @@ interface Props {
 
 const ConfirmSend: React.FC<Props> = props => {
   const {navigation, route} = props;
+
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const amount = useAppSelector(state => state.input!.send.amount);
   const fiatAmount = useAppSelector(state => state.input!.fiatAmount);
@@ -44,50 +50,40 @@ const ConfirmSend: React.FC<Props> = props => {
       : route.params.selectedUtxos!;
 
   return (
-    <SendConfirmation
-      toAddress={toAddress}
-      toDomain={toDomain}
-      amount={amount}
-      fiatAmount={fiatAmount}
-      label={label}
-      sendSuccessHandler={txid =>
-        navigation.navigate('SuccessSend', {txid, amount, toAddress})
-      }
-      sendAll={sendAll}
-      coinSelectionUtxos={coinSelectionUtxos}
-    />
+    <View style={styles.container}>
+      <SendConfirmation
+        toAddress={toAddress}
+        toDomain={toDomain}
+        amount={amount}
+        fiatAmount={fiatAmount}
+        label={label}
+        sendSuccessHandler={txid =>
+          navigation.navigate('SuccessSend', {txid, amount, toAddress})
+        }
+        sendAll={sendAll}
+        coinSelectionUtxos={coinSelectionUtxos}
+      />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        rightTextKey="cancel"
+        rightTextDomain="buyTab"
+        onRightPress={() =>
+          navigation.popTo('Main', {
+            screen: 'MainScreen',
+            params: {isInitial: true},
+          })
+        }
+        fadeStyle={headerFadeStyle}
+      />
+    </View>
   );
 };
 
-export const ConfirmSendNavigationOptions = (navigation: any) => {
-  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
-
-  return {
-    headerTitle: '',
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        textKey="change"
-        textDomain="buyTab"
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerRight: () => (
-      <HeaderButton
-        textKey="cancel"
-        textDomain="buyTab"
-        onPress={() => navigation.navigate('Main', {isInitial: true})}
-        rightPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default ConfirmSend;

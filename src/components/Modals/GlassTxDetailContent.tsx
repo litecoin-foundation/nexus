@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import Animated, {
   SharedValue,
   useAnimatedScrollHandler,
@@ -20,6 +20,15 @@ import Share from 'react-native-share';
 import InputActionField from '../InputActionField';
 import ChangeAddress from '../ChangeAddress';
 import TranslateText from '../TranslateText';
+import {
+  GlassCard,
+  GlassCardHairline,
+  GlassCardRow,
+  GlassCardRowProps,
+  GlassCardSubRow,
+  PRIMARY_TEXT,
+  SECONDARY_TEXT,
+} from '../Cells/GlassCard';
 import {
   getTxTitleMeta,
   useTxExplorerUrl,
@@ -43,10 +52,6 @@ import {ScreenSizeContext} from '../../context/screenSize';
 // chevron action rows. Everything the old TxDetailModalContent showed is here,
 // plus a status/confirmations row.
 
-const PRIMARY_TEXT = '#2E2E2E';
-const SECONDARY_TEXT = '#747E87';
-const HAIRLINE = 'rgba(60, 60, 67, 0.18)';
-const CARD_BACKGROUND = 'rgba(255, 255, 255, 0.96)';
 const CONFIRMED_GREEN = '#1ebc73';
 const PENDING_AMBER = '#f5a623';
 const CONFS_TARGET = 6;
@@ -184,89 +189,22 @@ function GlassTxDetailContent(props: Props) {
 
   // --- shared building blocks ---
 
-  const hairline = <View style={styles.hairline} />;
+  const hairline = <GlassCardHairline />;
 
-  const cardRow = (opts: {
-    titleTextKey?: string;
-    titleDomain?: string;
-    titleTextValue?: string;
-    valueTextKey?: string;
-    valueDomain?: string;
-    value?: string;
-    valueColor?: string;
-    smallValue?: boolean;
-    chevron?: boolean;
-    dotColor?: string;
-    onPress?: () => void;
-    key?: string;
-  }) => (
-    <TouchableOpacity
-      key={opts.key}
-      style={styles.cardRow}
-      activeOpacity={opts.onPress ? 0.6 : 1}
-      onPress={opts.onPress}
-      disabled={!opts.onPress}>
-      <TranslateText
-        textKey={opts.titleTextKey}
-        textValue={opts.titleTextValue}
-        domain={opts.titleDomain || 'main'}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-        textStyle={styles.cardRowTitle}
-        numberOfLines={1}
-      />
-      <View style={styles.cardRowRight}>
-        {opts.dotColor ? (
-          <View style={[styles.statusDot, {backgroundColor: opts.dotColor}]} />
-        ) : null}
-        <TranslateText
-          textKey={opts.valueTextKey}
-          textValue={opts.value}
-          domain={opts.valueDomain || 'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-          textStyle={{
-            ...styles.cardRowValue,
-            ...(opts.smallValue ? styles.cardRowValueSmall : {}),
-            ...(opts.valueColor ? {color: opts.valueColor} : {}),
-          }}
-          numberOfLines={opts.smallValue ? 2 : 1}
-        />
-        {opts.chevron ? (
-          <TranslateText
-            textValue={'›'}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.024}
-            textStyle={styles.chevron}
-            numberOfLines={1}
-          />
-        ) : null}
-      </View>
-    </TouchableOpacity>
+  const cardRow = ({key, ...rowProps}: GlassCardRowProps & {key?: string}) => (
+    <GlassCardRow key={key} {...rowProps} />
   );
 
   const card = (children: ReactNode, key?: string) => (
-    <View style={styles.card} key={key}>
-      {children}
-    </View>
+    <GlassCard key={key}>{children}</GlassCard>
   );
 
   const feeSubRow = (titleKey: string, value: string) => (
-    <View style={styles.feeSubRow} key={`sub-${titleKey}`}>
-      <View style={styles.feeSubRowLeft}>
-        <View style={styles.feeSubRowDot} />
-        <TranslateText
-          textKey={titleKey}
-          domain={'main'}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.016}
-          textStyle={styles.cardRowTitle}
-          numberOfLines={1}
-        />
-      </View>
-      <TranslateText
-        textValue={value}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-        textStyle={styles.feeSubRowValue}
-        numberOfLines={1}
-      />
-    </View>
+    <GlassCardSubRow
+      key={`sub-${titleKey}`}
+      titleTextKey={titleKey}
+      value={value}
+    />
   );
 
   // Status/confirmations — new detail the old modal never showed.
@@ -925,89 +863,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       paddingHorizontal: screenWidth * 0.04,
       // Clears the home-indicator overlap and the page-control pill.
       paddingBottom: screenHeight * 0.055,
-    },
-    card: {
-      width: '100%',
-      backgroundColor: CARD_BACKGROUND,
-      borderRadius: screenHeight * 0.028,
-      paddingHorizontal: screenWidth * 0.045,
-      marginBottom: screenHeight * 0.012,
-      overflow: 'hidden',
-    },
-    cardRow: {
-      minHeight: screenHeight * 0.055,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingVertical: screenHeight * 0.008,
-    },
-    cardRowTitle: {
-      color: SECONDARY_TEXT,
-      fontSize: screenHeight * 0.014,
-      fontWeight: '700',
-      fontFamily: 'Satoshi Variable',
-    },
-    cardRowRight: {
-      flexShrink: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingLeft: screenWidth * 0.03,
-    },
-    cardRowValue: {
-      color: PRIMARY_TEXT,
-      fontSize: screenHeight * 0.017,
-      fontWeight: '700',
-      fontFamily: 'Satoshi Variable',
-      textAlign: 'right',
-      flexShrink: 1,
-    },
-    cardRowValueSmall: {
-      fontSize: screenHeight * 0.012,
-      fontWeight: '500',
-    },
-    chevron: {
-      color: SECONDARY_TEXT,
-      fontSize: screenHeight * 0.024,
-      fontWeight: '400',
-      paddingLeft: screenWidth * 0.02,
-      marginTop: -screenHeight * 0.004,
-    },
-    statusDot: {
-      width: screenHeight * 0.009,
-      height: screenHeight * 0.009,
-      borderRadius: screenHeight * 0.0045,
-      marginRight: screenWidth * 0.02,
-    },
-    feeSubRow: {
-      minHeight: screenHeight * 0.04,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    feeSubRowLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    feeSubRowDot: {
-      width: screenHeight * 0.005,
-      height: screenHeight * 0.005,
-      borderRadius: screenHeight * 0.0025,
-      backgroundColor: SECONDARY_TEXT,
-      marginRight: screenWidth * 0.02,
-      marginLeft: screenWidth * 0.01,
-    },
-    feeSubRowValue: {
-      color: PRIMARY_TEXT,
-      fontSize: screenHeight * 0.016,
-      fontWeight: '500',
-      fontFamily: 'Satoshi Variable',
-      textAlign: 'right',
-      flexShrink: 1,
-    },
-    hairline: {
-      height: StyleSheet.hairlineWidth,
-      backgroundColor: HAIRLINE,
-      width: '100%',
     },
     fromToContainer: {
       width: '100%',

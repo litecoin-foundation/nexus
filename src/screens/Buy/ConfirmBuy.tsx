@@ -2,22 +2,45 @@ import React, {useEffect, useCallback, useContext, useState} from 'react';
 import {View, StyleSheet, Platform} from 'react-native';
 import {RouteProp, useFocusEffect} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
+import LinearGradient from 'react-native-linear-gradient';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {getCountry} from 'react-native-localize';
 import {WalletState} from 'react-native-nitro-lndltc';
 
-import TableCell from '../../components/Cells/TableCell';
-import HeaderButton from '../../components/Buttons/HeaderButton';
+import {
+  CARD_ROW_HEIGHT_RATIO,
+  GlassCard,
+  GlassCardHairline,
+  GlassCardRow,
+} from '../../components/Cells/GlassCard';
 import TranslateText from '../../components/TranslateText';
-import GreenButton from '../../components/Buttons/GreenButton';
+import GreenButtonV2 from '../../components/ButtonsV2/GreenButtonV2';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 import WhiteButton from '../../components/Buttons/WhiteButton';
 import {getSignedUrl, getBuyTransactionHistory} from '../../reducers/buy';
 import {getAddress} from '../../reducers/address';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {showError} from '../../reducers/errors';
 import {parseQueryString} from '../../utils/querystring';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 
+import {BORDER_GRADIENT_COLORS} from '../../components/LiquidGlassBackdrop';
+import {SHEET_BACKGROUND} from '../../components/GlassTxRows';
+import {SHEET_TOP_RADIUS_RATIO} from '../../components/GlassBottomSheet';
+import {
+  SKIN_GRADIENT_COLORS,
+  SKIN_GRADIENT_LOCATIONS,
+} from '../../components/FoldedSkinView';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import {ScreenSizeContext} from '../../context/screenSize';
+
+const SHEET_HEIGHT_RATIO = 0.38;
+// TODO: off until it's confirmed whether the quote's fee already has the discount
+// taken off, which a separate discount row would then take off twice
+const DISCOUNT_VIEW_ENABLED = false;
 
 type RootStackParamList = {
   ConfirmBuy: {
@@ -41,38 +64,9 @@ interface Props {
   route: RouteProp<RootStackParamList, 'ConfirmBuy'>;
 }
 
-interface LeftHeaderProps {
-  navigation: StackNavigationProp<RootStackParamList, 'ConfirmBuy'>;
-}
-
-const LeftHeaderButton: React.FC<LeftHeaderProps> = props => {
-  const {navigation} = props;
-  return (
-    <HeaderButton
-      textKey="back"
-      textDomain="buyTab"
-      onPress={() => navigation.goBack()}
-      imageSource={require('../../assets/images/back-icon.png')}
-      leftPadding
-    />
-  );
-};
-
 const ConfirmBuy: React.FC<Props> = props => {
   const {navigation, route} = props;
   const dispatch = useAppDispatch();
-
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  const isUK = getCountry() === 'GB';
-
-  const [hasBeenMounted, setHasBeenMounted] = useState(false);
-  const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
-  const [buyTxid, setBuyTxid] = useState<string>('');
-  const [buyTxStatus, setBuyTxStatus] = useState<string>('');
-  const [wasSuccessful, setWasSuccessful] = useState<boolean>(false);
 
   const {buyQuote: quote} = useAppSelector(state => state.buy);
   const {currencySymbol} = useAppSelector(state => state.settings);
@@ -85,6 +79,31 @@ const ConfirmBuy: React.FC<Props> = props => {
     feeAmount,
     discount,
   } = quote;
+
+  const hasDiscount = DISCOUNT_VIEW_ENABLED && discount > 0;
+  const sheetHeightRatio =
+    SHEET_HEIGHT_RATIO + (hasDiscount ? CARD_ROW_HEIGHT_RATIO : 0);
+
+  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
+    useContext(ScreenSizeContext);
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    insets.bottom,
+    sheetHeightRatio,
+  );
+  const fixedBottomStyle = useFixedBottomStyle();
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+
+  const isUK = getCountry() === 'GB';
+
+  const [hasBeenMounted, setHasBeenMounted] = useState(false);
+  const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
+  const [buyTxid, setBuyTxid] = useState<string>('');
+  const [buyTxStatus, setBuyTxStatus] = useState<string>('');
+  const [wasSuccessful, setWasSuccessful] = useState<boolean>(false);
 
   const walletState = useAppSelector(state => state.lightning!.walletState);
   const rpcReady =
@@ -174,11 +193,6 @@ const ConfirmBuy: React.FC<Props> = props => {
         dispatch(getBuyTransactionHistory());
         setWasSuccessful(true);
 
-        navigation.setOptions({
-          // eslint-disable-next-line react/no-unstable-nested-components
-          headerLeft: () => <LeftHeaderButton navigation={navigation} />,
-        });
-
         const parsedQueryString = parseQueryString(route.params.queryString);
         if (parsedQueryString) {
           if (parsedQueryString.hasOwnProperty('transactionId')) {
@@ -191,7 +205,7 @@ const ConfirmBuy: React.FC<Props> = props => {
       }
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [route.params, navigation]);
+  }, [route.params]);
 
   // NOTE: Removed beforeRemove listener that was causing navigation issues
   // The listener was preventing proper back navigation and causing infinite loops
@@ -240,12 +254,37 @@ const ConfirmBuy: React.FC<Props> = props => {
     </>
   );
 
+  const Header = (
+    <ScreenHeader
+      rects={rects}
+      paddingHorizontal={paddingHorizontal}
+      fadeStyle={headerFadeStyle}
+    />
+  );
+
+  // NOTE: NewMain's gradient, which bottoms out where the sheet meets it as on the
+  // main screen; with no sheet up it runs to the screen's bottom edge
+  const hasSheet = !isUK && !wasSuccessful;
+  const Background = (
+    <LinearGradient
+      style={[styles.background, hasSheet ? styles.aboveSheet : null]}
+      colors={SKIN_GRADIENT_COLORS}
+      locations={SKIN_GRADIENT_LOCATIONS}
+    />
+  );
+
   if (isUK && !wasSuccessful) {
-    return <View style={styles.container} />;
+    return (
+      <View style={styles.container}>
+        {Background}
+        {Header}
+      </View>
+    );
   }
 
   return (
     <View style={styles.container}>
+      {Background}
       {wasSuccessful ? (
         SuccessScreen
       ) : (
@@ -278,48 +317,77 @@ const ConfirmBuy: React.FC<Props> = props => {
             </View>
 
             <View style={styles.bottomSheetContainer}>
-              <TableCell
-                titleTextKey="rate"
-                titleTextDomain="buyTab"
-                value={`${currencySymbol}${ltcPrice.toFixed(2)} per 1 LTC`}
-                noBorder
-              />
-              <TableCell
-                titleTextKey="total_fee"
-                titleTextDomain="main"
-                value={`${currencySymbol}${feeAmount.toFixed(2)}`}
-              />
-              <TableCell
-                titleTextKey="network_fee"
-                titleTextDomain="main"
-                value={`${currencySymbol}${networkFeeAmount.toFixed(2)}`}
-              />
-              <TableCell
-                titleTextKey="will_spend"
-                titleTextDomain="buyTab"
-                value={`${currencySymbol}${totalAmount.toFixed(2)}`}
-                valueStyle={{color: '#20BB74'}}
-              />
-              <View style={styles.confirmButtonContainer}>
-                <GreenButton
-                  textKey="continue_purchase"
-                  textDomain="buyTab"
-                  onPress={() => openBuyWidget()}
+              <GlassCard>
+                <GlassCardRow
+                  titleTextKey="rate"
+                  titleDomain="buyTab"
+                  value={`${currencySymbol}${ltcPrice.toFixed(2)} per 1 LTC`}
                 />
-              </View>
+                <GlassCardHairline />
+                <GlassCardRow
+                  titleTextKey="provider_fee"
+                  value={`${currencySymbol}${feeAmount.toFixed(2)}`}
+                />
+                <GlassCardHairline />
+                <GlassCardRow
+                  titleTextKey="network_fee"
+                  value={`${currencySymbol}${networkFeeAmount.toFixed(2)}`}
+                />
+                {hasDiscount ? (
+                  <>
+                    <GlassCardHairline />
+                    <GlassCardRow
+                      titleTextKey="fee_discount"
+                      titleDomain="buyTab"
+                      value={`-${currencySymbol}${discount.toFixed(2)}`}
+                      valueColor="#1ebc73"
+                    />
+                  </>
+                ) : null}
+              </GlassCard>
+              <GlassCard>
+                <GlassCardRow
+                  titleTextKey="will_spend"
+                  titleDomain="buyTab"
+                  value={`${currencySymbol}${totalAmount.toFixed(2)}`}
+                  valueColor="#2c72ff"
+                  emphasized
+                />
+              </GlassCard>
             </View>
           </CustomSafeAreaView>
+          <View style={fixedBottomStyle}>
+            <GreenButtonV2
+              textKey="continue_purchase"
+              textDomain="buyTab"
+              onPress={() => openBuyWidget()}
+            />
+          </View>
         </>
       )}
+      {Header}
     </View>
   );
 };
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  bottomInset: number,
+  sheetHeightRatio: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#1162E6',
+      backgroundColor: SKIN_GRADIENT_COLORS[SKIN_GRADIENT_COLORS.length - 1],
+    },
+    background: {
+      ...StyleSheet.absoluteFill,
+    },
+    aboveSheet: {
+      bottom:
+        screenHeight * sheetHeightRatio +
+        (Platform.OS === 'android' ? bottomInset : 0),
     },
     safeArea: {
       flex: 1,
@@ -330,11 +398,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     bottomSheetContainer: {
       width: '100%',
-      height: screenHeight * 0.36,
-      backgroundColor: 'white',
-      borderTopLeftRadius: screenHeight * 0.03,
-      borderTopRightRadius: screenHeight * 0.03,
-      paddingTop: screenWidth * 0.04,
+      height: screenHeight * sheetHeightRatio,
+      backgroundColor: SHEET_BACKGROUND,
+      borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      paddingTop: screenWidth * 0.03,
+      paddingHorizontal: screenWidth * 0.03,
       overflow: 'hidden',
     },
     titleText: {
@@ -362,12 +431,32 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     fiatAmount: {
       width: 'auto',
       height: screenHeight * 0.05,
-      borderRadius: screenHeight * 0.01,
-      backgroundColor: '#0F4CAD',
+      borderRadius: screenHeight * 0.025,
+      borderCurve: 'continuous',
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: BORDER_GRADIENT_COLORS[1],
+      boxShadow: [
+        {offsetX: 0, offsetY: 2, blurRadius: 8, color: 'rgba(0, 0, 0, 0.07)'},
+        {
+          offsetX: 0,
+          offsetY: 0.5,
+          blurRadius: 0,
+          color: BORDER_GRADIENT_COLORS[0],
+          inset: true,
+        },
+        {
+          offsetX: 0,
+          offsetY: -0.5,
+          blurRadius: 0,
+          color: BORDER_GRADIENT_COLORS[2],
+          inset: true,
+        },
+      ],
       justifyContent: 'center',
       alignItems: 'center',
       paddingVertical: screenHeight * 0.01,
-      paddingHorizontal: screenHeight * 0.015,
+      paddingHorizontal: screenHeight * 0.02,
       alignSelf: 'flex-start',
       marginTop: screenHeight * 0.01,
     },
@@ -377,7 +466,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontSize: screenHeight * 0.02,
       fontStyle: 'normal',
       fontWeight: '700',
-      opacity: 0.4,
     },
     body: {
       width: '100%',
@@ -431,29 +519,5 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       textAlign: 'center',
     },
   });
-
-export const ConfirmBuyNavigationOptions = (navigation: any) => {
-  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
-
-  return {
-    headerTitle: '',
-    headerTransparent: true,
-    headerBackTitleVisible: false,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        textKey="change"
-        textDomain="buyTab"
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default ConfirmBuy;

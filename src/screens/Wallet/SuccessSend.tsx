@@ -1,5 +1,9 @@
 import React, {useContext, useEffect, useRef} from 'react';
-import {RouteProp, useNavigation} from '@react-navigation/native';
+import {
+  NavigatorScreenParams,
+  RouteProp,
+  useNavigation,
+} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {Animated, Image, StyleSheet, Text, View, Platform} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -11,6 +15,7 @@ import {
   subunitCodeSelector,
 } from '../../reducers/settings';
 import {useAppSelector} from '../../store/hooks';
+import {MainStackParamList} from '../../navigation/types';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -22,8 +27,7 @@ type RootStackParamList = {
     amount: number;
     toAddress: string;
   };
-  // NOTE: params land on the wallet; a screen addresses the Main stack's own routes
-  Main: {isInitial: boolean} | {screen: 'SearchTransaction'};
+  Main: NavigatorScreenParams<MainStackParamList>;
 };
 
 interface Props {
@@ -136,7 +140,10 @@ const SuccessSend: React.FC<Props> = ({route}) => {
               small={false}
               value="View Transaction"
               onPress={() => {
-                navigation.navigate('Main', {screen: 'SearchTransaction'});
+                navigation.popTo('Main', {
+                  screen: 'MainScreen',
+                  params: {isInitial: true, openSearch: true},
+                });
               }}
             />
             <WhiteButton
@@ -145,7 +152,10 @@ const SuccessSend: React.FC<Props> = ({route}) => {
               active={true}
               value="Back to Wallet"
               onPress={() => {
-                navigation.navigate('Main', {isInitial: true});
+                navigation.popTo('Main', {
+                  screen: 'MainScreen',
+                  params: {isInitial: true},
+                });
               }}
             />
           </CustomSafeAreaView>

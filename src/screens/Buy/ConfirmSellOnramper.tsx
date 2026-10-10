@@ -1,18 +1,14 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, View, Platform} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
-import {
-  StackNavigationOptions,
-  StackNavigationProp,
-} from '@react-navigation/stack';
+import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import {WalletState} from 'react-native-nitro-lndltc';
 
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import SendConfirmation from '../../components/SendConfirmation';
 import SuccessSell from '../../components/SuccessSell';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
@@ -23,8 +19,11 @@ import {
 } from '../../reducers/buy';
 import {parseQueryString} from '../../utils/querystring';
 import {showError} from '../../reducers/errors';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 
-import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 type RootStackParamList = {
@@ -56,6 +55,8 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const [hasBeenMounted, setHasBeenMounted] = useState(false);
   const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
@@ -184,6 +185,13 @@ const ConfirmSellOnramper: React.FC<Props> = props => {
           <SuccessSell toAmount={toAmount} saleTxid={saleTxid} />
         )}
       </LinearGradient>
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="sell_litecoin"
+        titleDomain="sellTab"
+        fadeStyle={headerFadeStyle}
+      />
     </View>
   );
 };
@@ -232,13 +240,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       alignItems: 'center',
       justifyContent: 'space-between',
     },
-    headerTitle: {
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      color: 'white',
-      fontSize: 17,
-    },
     toAddressContainer: {
       width: 'auto',
       height: 'auto',
@@ -261,41 +262,5 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       textAlign: 'center',
     },
   });
-
-export const ConfirmSellOnramperNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  return {
-    headerTitle: () => (
-      <TranslateText
-        textKey={'sell_litecoin'}
-        domain={'sellTab'}
-        numberOfLines={1}
-        textStyle={styles.headerTitle}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default ConfirmSellOnramper;

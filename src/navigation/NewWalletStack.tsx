@@ -7,26 +7,17 @@ import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import SettingsStack from './SettingsStack';
 import NexusShopStack from './NexusShopStack';
 import WebPage, {WebPageNavigationOptions} from '../screens/WebPage';
-import ConfirmSend, {
-  ConfirmSendNavigationOptions,
-} from '../screens/Wallet/ConfirmSend';
+import ConfirmSend from '../screens/Wallet/ConfirmSend';
 import SuccessSend, {
   SuccessSendNavigationOptions,
 } from '../screens/Wallet/SuccessSend';
-import ConfirmBuy, {
-  ConfirmBuyNavigationOptions,
-} from '../screens/Buy/ConfirmBuy';
-import ConfirmBuyOnramper, {
-  ConfirmBuyOnramperNavigationOptions,
-} from '../screens/Buy/ConfirmBuyOnramper';
+import ConfirmBuy from '../screens/Buy/ConfirmBuy';
+import ConfirmBuyOnramper from '../screens/Buy/ConfirmBuyOnramper';
 import AlertsStack from './AlertsStack';
-import ConfirmSell, {
-  ConfirmSellNavigationOptions,
-} from '../screens/Buy/ConfirmSell';
-import ConfirmSellOnramper, {
-  ConfirmSellOnramperNavigationOptions,
-} from '../screens/Buy/ConfirmSellOnramper';
+import ConfirmSell from '../screens/Buy/ConfirmSell';
+import ConfirmSellOnramper from '../screens/Buy/ConfirmSellOnramper';
 import {NewWalletStackParamList} from './types';
+import {ScreenHeaderNavigationOptions} from '../components/ScreenHeader';
 import ConfirmConvert, {
   ConfirmConvertNavigationOptions,
 } from '../screens/Wallet/ConfirmConvert';
@@ -72,7 +63,7 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="ConfirmSend"
         component={ConfirmSend}
-        options={({navigation}) => ConfirmSendNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="SuccessSend"
@@ -82,26 +73,22 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="ConfirmBuy"
         component={ConfirmBuy}
-        options={({navigation}) => ConfirmBuyNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="ConfirmBuyOnramper"
         component={ConfirmBuyOnramper}
-        options={({navigation}) =>
-          ConfirmBuyOnramperNavigationOptions(navigation)
-        }
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="ConfirmSell"
         component={ConfirmSell}
-        options={({navigation}) => ConfirmSellNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="ConfirmSellOnramper"
         component={ConfirmSellOnramper}
-        options={({navigation}) =>
-          ConfirmSellOnramperNavigationOptions(navigation)
-        }
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="ConfirmConvert"

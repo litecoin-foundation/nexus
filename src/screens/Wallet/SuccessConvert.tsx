@@ -1,5 +1,9 @@
 import React, {useContext} from 'react';
-import {RouteProp, useNavigation} from '@react-navigation/native';
+import {
+  NavigatorScreenParams,
+  RouteProp,
+  useNavigation,
+} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {Image, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -8,6 +12,7 @@ import WhiteButton from '../../components/Buttons/WhiteButton';
 import WhiteClearButton from '../../components/Buttons/WhiteClearButton';
 import {subunitCodeSelector} from '../../reducers/settings';
 import {useAppSelector} from '../../store/hooks';
+import {MainStackParamList} from '../../navigation/types';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
@@ -19,8 +24,7 @@ type RootStackParamList = {
     amount: number;
     isRegular: boolean;
   };
-  // NOTE: params land on the wallet; a screen addresses the Main stack's own routes
-  Main: {isInitial: boolean} | {screen: 'SearchTransaction'};
+  Main: NavigatorScreenParams<MainStackParamList>;
 };
 
 interface Props {
@@ -80,7 +84,10 @@ const SuccessConvert: React.FC<Props> = props => {
               small={false}
               value="View Transaction"
               onPress={() => {
-                navigation.navigate('Main', {screen: 'SearchTransaction'});
+                navigation.popTo('Main', {
+                  screen: 'MainScreen',
+                  params: {isInitial: true, openSearch: true},
+                });
               }}
             />
             <WhiteButton
@@ -89,7 +96,10 @@ const SuccessConvert: React.FC<Props> = props => {
               active={true}
               value="Back to Wallet"
               onPress={() => {
-                navigation.navigate('Main', {isInitial: true});
+                navigation.popTo('Main', {
+                  screen: 'MainScreen',
+                  params: {isInitial: true},
+                });
               }}
             />
           </CustomSafeAreaView>

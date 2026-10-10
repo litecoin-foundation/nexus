@@ -353,6 +353,12 @@ const NewMain: React.FC<Props> = props => {
   useEffect(() => {
     if (route.params?.isInitial) {
       foldUnfoldBottomSheet(false);
+      // a success screen's "View Transaction": the search presents over the
+      // folded wallet, as from the wallet's own search button, so backing out
+      // of it doesn't land on the card the flow started from
+      if (route.params.openSearch) {
+        navigation.navigate('SearchTransaction');
+      }
     } else if (route.params?.activeCard) {
       if (route.params.activeCard === SHOP_TAB) {
         // the shop is its own screen; deep links land there
