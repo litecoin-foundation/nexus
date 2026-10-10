@@ -3,6 +3,7 @@ import {act, renderHook} from '@testing-library/react-native';
 import {
   DEFAULT_SLIPPAGE,
   UNCHECKED_RATE,
+  coinString,
   offerWarning,
   slippageFor,
   useSwapAmounts,
@@ -76,5 +77,67 @@ describe('useSwapAmounts', () => {
 
     rerender({from: '120', to: '55000', currency: 'USD'});
     expect(result.current.amounts.fromUsd).toBe('220.00');
+  });
+
+  it('recalculates the receive side from the send amount at the prices given', () => {
+    const {result} = renderHook(() => useSwapAmounts('100', undefined, 0.01));
+    act(() => result.current.setAmount('from', 'coin', '2'));
+    expect(result.current.amounts.toCoin).toBe('');
+
+    act(() => result.current.recalculate('100', '50000'));
+    expect(result.current.amounts.fromCoin).toBe('2');
+    expect(result.current.amounts.toCoin).toBe('0.00396');
+
+    act(() => result.current.recalculate('100', undefined));
+    expect(result.current.amounts.toCoin).toBe('0.00396');
+  });
+
+  it('keeps a typed USD figure and reprices both coins from it', () => {
+    const {result} = renderHook(() => useSwapAmounts('100', undefined, 0.01));
+    act(() => result.current.setAmount('from', 'usd', '100'));
+    expect(result.current.amounts.fromCoin).toBe('1');
+
+    act(() => result.current.recalculate('80', '50000'));
+    expect(result.current.amounts.fromUsd).toBe('100');
+    expect(result.current.amounts.fromCoin).toBe('1.25');
+    expect(result.current.amounts.toCoin).toBe('0.00198');
+  });
+
+  it('derives the coins from a USD figure typed before the send coin had a price', () => {
+    const {result} = renderHook(() => useSwapAmounts(undefined, '100', 0.01));
+    act(() => result.current.setAmount('from', 'usd', '50'));
+    expect(result.current.amounts.fromCoin).toBe('');
+
+    act(() => result.current.recalculate('50000', '100'));
+    expect(result.current.amounts.fromCoin).toBe('0.001');
+    expect(result.current.amounts.toCoin).toBe('0.495');
+  });
+
+  it('drops a typed receive amount when its coin changes, keeps it when only the send coin does', () => {
+    const {result} = renderHook(() => useSwapAmounts('100', '50000', 0.01));
+    act(() => result.current.setAmount('to', 'coin', '0.001'));
+    const from = result.current.amounts.fromCoin;
+
+    act(() => result.current.recalculate('100', '1', true));
+    expect(result.current.amounts.fromCoin).toBe(from);
+    expect(result.current.amounts.toCoin).toBe(
+      coinString((Number(from) * 100 * (1 - 0.01)) / 1),
+    );
+
+    act(() => result.current.setAmount('to', 'coin', '0.001'));
+    act(() => result.current.recalculate('200', '50000', false));
+    expect(result.current.amounts.toCoin).toBe('0.001');
+    expect(result.current.amounts.fromCoin).toBe(
+      coinString((0.001 * 50000) / (1 - 0.01) / 200),
+    );
+  });
+
+  it('leaves both sides alone on a recalculation with the rate unfixed', () => {
+    const {result} = renderHook(() => useSwapAmounts('100', '50000', 0.01));
+    act(() => result.current.setFixedRate(false));
+    act(() => result.current.setAmount('to', 'coin', '0.001'));
+    act(() => result.current.setAmount('from', 'coin', '2'));
+    act(() => result.current.recalculate('100', '1'));
+    expect(result.current.amounts.toCoin).toBe('0.001');
   });
 });

@@ -214,16 +214,27 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const torPending = torApplied !== null && torEnabled !== torApplied;
 
   const rates = useAppSelector(state => state.mbsx.rates ?? {});
-  const reference = independentReference(
-    rates,
-    sendCoin,
-    receiveCoin,
-    Date.now() / 1000,
-  );
+  const pricesFor = (send: string, receive: string) => {
+    const independent = independentReference(
+      rates,
+      send,
+      receive,
+      Date.now() / 1000,
+    );
+    const glue = (coin: string) => Number(prices?.prices?.[coin] ?? 0);
+    return {
+      reference: independent,
+      from: independent ? independent.send : glue(send),
+      to: independent ? independent.receive : glue(receive),
+    };
+  };
+  const {
+    reference,
+    from: priceFrom,
+    to: priceTo,
+  } = pricesFor(sendCoin, receiveCoin);
   const glueFrom = Number(prices?.prices?.[sendCoin] ?? 0);
   const glueTo = Number(prices?.prices?.[receiveCoin] ?? 0);
-  const priceFrom = reference ? reference.send : glueFrom;
-  const priceTo = reference ? reference.receive : glueTo;
   const referenceName = reference
     ? `the ${reference.label}`
     : "the server's rate";
@@ -239,6 +250,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     fixedRate,
     setFixedRate,
     valueDeviation,
+    recalculate,
     reset: resetAmounts,
   } = useSwapAmounts(
     priceFrom > 0 ? String(priceFrom) : undefined,
@@ -381,6 +393,19 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setRateAcknowledged(false);
   }, [amounts.fromCoin, amounts.toCoin]);
 
+  const recalculateFor = (
+    send: string,
+    receive: string,
+    receiveChanged: boolean,
+  ) => {
+    const next = pricesFor(send, receive);
+    recalculate(
+      next.from > 0 ? String(next.from) : undefined,
+      next.to > 0 ? String(next.to) : undefined,
+      receiveChanged,
+    );
+  };
+
   const selectCoin = (coin: string) => {
     if (coin !== coinTo) {
       setAddressTo('');
@@ -389,9 +414,15 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setCoinTo(coin);
     setCoinOpen(false);
     dispatch(setLastCoin(coin));
+    const buy = payIn && coin === buyCoin ? HOST_COIN : buyCoin;
     if (payIn && coin === buyCoin) {
       setBuyCoin(HOST_COIN);
       setBuyAddress('');
+    }
+    if (payIn) {
+      recalculateFor(coin, buy, buy !== buyCoin);
+    } else {
+      recalculateFor(HOST_COIN, coin, true);
     }
   };
 
@@ -399,6 +430,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setBuyCoin(coin);
     setBuyOpen(false);
     setBuyAddress('');
+    recalculateFor(coinTo, coin, true);
   };
 
   const flip = () => {

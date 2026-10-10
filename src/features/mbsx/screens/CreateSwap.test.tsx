@@ -533,6 +533,56 @@ describe('CreateSwap', () => {
     }
   });
 
+  it('recalculates the receive amount when the receive coin is chosen or changed', () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.getCoinPrices.mockReturnValue({
+      currency: 'USD',
+      prices: {LTC: '100', BTC: '50000', PART: '1'},
+    });
+    try {
+      const {getByTestId} = renderScreen();
+      fireEvent.changeText(getByTestId('mbsx-amount-from'), '1');
+      expect(getByTestId('mbsx-amount-to').props.value).toBe('');
+
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      expect(getByTestId('mbsx-amount-to').props.value).toBe('0.00198');
+
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-PART'));
+      expect(getByTestId('mbsx-amount-to').props.value).toBe('99');
+      expect(getByTestId('mbsx-amount-from').props.value).toBe('1');
+    } finally {
+      adapter.getCoinPrices.mockReturnValue(null);
+    }
+  });
+
+  it('pay-in: keeps a USD figure typed before the pay coin and reprices the coins', () => {
+    const adapter = jest.requireMock('../adapter');
+    adapter.getCoinPrices.mockReturnValue({
+      currency: 'USD',
+      prices: {LTC: '100', BTC: '50000', PART: '1'},
+    });
+    try {
+      const {getByTestId} = renderScreen();
+      fireEvent.press(getByTestId('mbsx-flip'));
+      fireEvent.changeText(getByTestId('mbsx-usd-from'), '50');
+
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-BTC'));
+      expect(getByTestId('mbsx-amount-from').props.value).toBe('0.001');
+      expect(getByTestId('mbsx-amount-to').props.value).toBe('0.495');
+
+      fireEvent.press(getByTestId('mbsx-coin-pill'));
+      fireEvent.press(getByTestId('mbsx-coin-PART'));
+      expect(getByTestId('mbsx-usd-from').props.value).toBe('50');
+      expect(getByTestId('mbsx-amount-from').props.value).toBe('50');
+      expect(getByTestId('mbsx-amount-to').props.value).toBe('0.495');
+    } finally {
+      adapter.getCoinPrices.mockReturnValue(null);
+    }
+  });
+
   it("uses the server's prices, labelled, when no rate is fresh", () => {
     const adapter = jest.requireMock('../adapter');
     adapter.getCoinPrices.mockReturnValue({

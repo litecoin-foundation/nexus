@@ -92,6 +92,62 @@ export const coinString = (n: number | null): string => {
 const usdString = (n: number | null): string =>
   n === null || !Number.isFinite(n) || n <= 0 ? '' : n.toFixed(2);
 
+const deriveAmounts = (
+  prev: SwapAmounts,
+  side: AmountSide,
+  unit: AmountUnit,
+  raw: string,
+  pFrom: number | null,
+  pTo: number | null,
+  fixedRate: boolean,
+  slippage: number,
+): SwapAmounts => {
+  // The typed string is kept exactly as typed - reformatting it under the
+  // cursor makes a decimal point impossible to enter.
+  const typed = num(raw);
+  const price = side === 'from' ? pFrom : pTo;
+
+  // Kept unrounded.
+  const sideUsdValue =
+    unit === 'usd' ? typed : typed !== null && price ? typed * price : null;
+  const sideCoin =
+    unit === 'coin'
+      ? raw
+      : coinString(typed !== null && price ? typed / price : null);
+  const sideUsd = unit === 'usd' ? raw : usdString(sideUsdValue);
+
+  const next = {...EMPTY};
+  if (side === 'from') {
+    next.fromCoin = sideCoin;
+    next.fromUsd = sideUsd;
+  } else {
+    next.toCoin = sideCoin;
+    next.toUsd = sideUsd;
+  }
+  if (pFrom === null || pTo === null || !fixedRate) {
+    // Either the two sides cannot be related, or the user has said they
+    // should not be: the other one is left alone rather than guessed at.
+    return side === 'from'
+      ? {...next, toCoin: prev.toCoin, toUsd: prev.toUsd}
+      : {...next, fromCoin: prev.fromCoin, fromUsd: prev.fromUsd};
+  }
+
+  const usd = sideUsdValue;
+  if (usd === null || usd <= 0) {
+    return next;
+  }
+  if (side === 'from') {
+    const otherUsd = usd * (1 - slippage);
+    next.toUsd = usdString(otherUsd);
+    next.toCoin = coinString(otherUsd / pTo);
+  } else {
+    const otherUsd = usd / (1 - slippage);
+    next.fromUsd = usdString(otherUsd);
+    next.fromCoin = coinString(otherUsd / pFrom);
+  }
+  return next;
+};
+
 /**
  * The four values behind two amount fields, each with a fiat twin.
  *
@@ -132,63 +188,52 @@ export const useSwapAmounts = (
     }));
   }, [currency, pFrom, pTo]);
 
+  const typed = useRef<{
+    side: AmountSide;
+    unit: AmountUnit;
+    raw: string;
+  } | null>(null);
+
   const setAmount = useCallback(
     (side: AmountSide, unit: AmountUnit, raw: string) => {
-      setAmounts(prev => {
-        // The typed string is kept exactly as typed - reformatting it under the
-        // cursor makes a decimal point impossible to enter.
-        const typed = num(raw);
-        const price = side === 'from' ? pFrom : pTo;
-
-        // Kept unrounded.
-        const sideUsdValue =
-          unit === 'usd'
-            ? typed
-            : typed !== null && price
-              ? typed * price
-              : null;
-        const sideCoin =
-          unit === 'coin'
-            ? raw
-            : coinString(typed !== null && price ? typed / price : null);
-        const sideUsd = unit === 'usd' ? raw : usdString(sideUsdValue);
-
-        const next = {...EMPTY};
-        if (side === 'from') {
-          next.fromCoin = sideCoin;
-          next.fromUsd = sideUsd;
-        } else {
-          next.toCoin = sideCoin;
-          next.toUsd = sideUsd;
-        }
-        if (!canConvert || !fixedRate) {
-          // Either the two sides cannot be related, or the user has said they
-          // should not be: the other one is left alone rather than guessed at.
-          return side === 'from'
-            ? {...next, toCoin: prev.toCoin, toUsd: prev.toUsd}
-            : {...next, fromCoin: prev.fromCoin, fromUsd: prev.fromUsd};
-        }
-
-        const usd = sideUsdValue;
-        if (usd === null || usd <= 0) {
-          return next;
-        }
-        if (side === 'from') {
-          const otherUsd = usd * (1 - slippage);
-          next.toUsd = usdString(otherUsd);
-          next.toCoin = coinString(otherUsd / (pTo as number));
-        } else {
-          const otherUsd = usd / (1 - slippage);
-          next.fromUsd = usdString(otherUsd);
-          next.fromCoin = coinString(otherUsd / (pFrom as number));
-        }
-        return next;
-      });
+      typed.current = {side, unit, raw};
+      setAmounts(prev =>
+        deriveAmounts(prev, side, unit, raw, pFrom, pTo, fixedRate, slippage),
+      );
     },
-    [canConvert, fixedRate, pFrom, pTo, slippage],
+    [fixedRate, pFrom, pTo, slippage],
   );
 
-  const reset = useCallback(() => setAmounts(EMPTY), []);
+  const recalculate = useCallback(
+    (sendPrice?: string, receivePrice?: string, receiveChanged = true) => {
+      const last = typed.current;
+      setAmounts(prev => {
+        const source =
+          last === null ||
+          (last.side === 'to' && last.unit === 'coin' && receiveChanged)
+            ? {side: 'from' as const, unit: 'coin' as const, raw: prev.fromCoin}
+            : last;
+        return source.raw === ''
+          ? prev
+          : deriveAmounts(
+              prev,
+              source.side,
+              source.unit,
+              source.raw,
+              sendPrice ? num(sendPrice) : null,
+              receivePrice ? num(receivePrice) : null,
+              fixedRate,
+              slippage,
+            );
+      });
+    },
+    [fixedRate, slippage],
+  );
+
+  const reset = useCallback(() => {
+    typed.current = null;
+    setAmounts(EMPTY);
+  }, []);
 
   // How far the receive side sits from the send side in value. Negative means
   // receiving less than sending, which is the direction that costs the user.
@@ -204,6 +249,7 @@ export const useSwapAmounts = (
     setFixedRate,
     amounts,
     setAmount,
+    recalculate,
     reset,
     canConvert,
     valueDeviation,
