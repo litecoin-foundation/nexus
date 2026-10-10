@@ -5,6 +5,9 @@ import {swapStateText} from '../stateText';
 import {walletTitle} from '../walletText';
 import type {SwapSummary} from '../types';
 
+// A drawable react-native-nitro-bsx ships, merged into the app's resources
+const SMALL_ICON = 'bsx_ic_stat_swap';
+
 const channel = () =>
   notifee.createChannel({
     id: 'mbsx-swaps',
@@ -37,6 +40,7 @@ export const notifySwapEnded = async (swap: EndedSwap) => {
       data: {swapId: swap.id},
       android: {
         channelId,
+        smallIcon: SMALL_ICON,
         pressAction: {id: 'mbsx-swap', launchActivity: 'default'},
       },
     });
@@ -59,7 +63,7 @@ export const notifySwapProblem = async (body: string) => {
     await notifee.displayNotification({
       title: 'Swaps Need Attention',
       body,
-      android: {channelId},
+      android: {channelId, smallIcon: SMALL_ICON},
     });
   } catch (e) {
     console.warn('mbsx could not notify:', (e as Error).message);
