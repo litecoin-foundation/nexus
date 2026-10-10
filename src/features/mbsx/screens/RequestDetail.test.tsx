@@ -24,6 +24,7 @@ jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
 jest.mock('../adapter', () => ({
   isGone: (rv: {error?: string}) => rv.error === 'Swap request not found',
   acceptOffer: jest.fn(() => Promise.resolve({})),
+  acceptedSwap: () => undefined,
   getRequestInfo: jest.fn(),
   getSwapInfo: jest.fn(() => null),
   isUnderwayState: () => false,

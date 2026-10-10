@@ -43,6 +43,7 @@ import {COIN_ICONS, swapCards} from '../swapCards';
 import {requestStateText, swapStateText, useShowRawStates} from '../stateText';
 import {
   acceptOffer,
+  acceptedSwap,
   getRequestInfo,
   getSwapInfo,
   isUnderwayState,
@@ -162,6 +163,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   }, [swapIdKey]);
 
   const underway = swaps.find(swap => isUnderwayState(swap.state));
+  const outcome = request ? acceptedSwap(request.state, swaps) : undefined;
   const navigatedFor = useRef<string | null>(null);
   useEffect(() => {
     if (swaps.length === 0) {
@@ -277,13 +279,17 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             </View>
           </View>
           <Text style={swapCards.status}>
-            {requestStateText(request.state)}
+            {outcome
+              ? swapStateText(outcome.state, outcome.coin_from, outcome.coin_to)
+              : requestStateText(request.state)}
           </Text>
           {showRaw ? <Text style={swapCards.id}>{request.state}</Text> : null}
           <Text style={swapCards.fromLine}>
             {`Created ${formatTimestamp(request.created_at)}`}
           </Text>
-          <TimeLine text={`Expires ${formatTimestamp(request.expire_at)}`} />
+          {request.state === 'ACCEPT_SENT' ? null : (
+            <TimeLine text={`Expires ${formatTimestamp(request.expire_at)}`} />
+          )}
           <View style={look.idRow}>
             <View style={look.idPill}>
               <Text style={look.idLabel}>Request</Text>

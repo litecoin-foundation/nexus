@@ -278,8 +278,22 @@ const PRE_ACCEPT = new Set([
 export const isUnderwayState = (state: string) =>
   !PRE_ACCEPT.has(state) && !TERMINAL_STATES.has(state);
 
-export const isEndedRequestState = (state: string) =>
-  ENDED_REQUEST_STATES.has(state);
+// A request has no state of its own past ACCEPT_SENT: its swap carries the outcome.
+export const acceptedSwap = <T extends {state: string; created_at: string}>(
+  requestState: string,
+  swaps: T[],
+): T | undefined =>
+  requestState === 'ACCEPT_SENT'
+    ? (swaps.find(swap => isUnderwayState(swap.state)) ??
+      sortNewestFirst(swaps).find(swap => TERMINAL_STATES.has(swap.state)))
+    : undefined;
+
+export const isEndedRequest = (
+  requestState: string,
+  swaps: {state: string; created_at: string}[],
+) =>
+  ENDED_REQUEST_STATES.has(requestState) ||
+  TERMINAL_STATES.has(acceptedSwap(requestState, swaps)?.state ?? '');
 
 export const isOpenRequestState = (state: string) =>
   OPEN_REQUEST_STATES.has(state);

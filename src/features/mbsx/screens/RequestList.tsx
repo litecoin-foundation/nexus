@@ -18,10 +18,13 @@ import {useAppSelector} from '../../../store/hooks';
 import {getMbsxStyles} from '../theme';
 import {
   ENDED_DEPOSIT_STATES,
+  acceptedSwap,
   describeRemoval,
-  isEndedRequestState,
+  isEndedRequest,
+  isOpenRequestState,
   listDeposits,
   listRequests,
+  listSwaps,
   onMessage,
   removeRequests,
   requestExpired,
@@ -35,9 +38,15 @@ import {COIN_ICONS, swapCards} from '../swapCards';
 import {
   depositStateText,
   requestStateText,
+  swapStateText,
   useShowRawStates,
 } from '../stateText';
-import type {Deposit, MbsxDrawerParamList, SwapRequestSummary} from '../types';
+import type {
+  Deposit,
+  MbsxDrawerParamList,
+  SwapRequestSummary,
+  SwapSummary,
+} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'RequestList'>;
 
@@ -61,6 +70,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
   const running = useAppSelector(state => state.mbsx.running);
   const showRaw = useShowRawStates();
   const [requests, setRequests] = useState<SwapRequestSummary[]>([]);
+  const [swaps, setSwaps] = useState<SwapSummary[]>([]);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'open' | 'ended'>('all');
@@ -69,6 +79,10 @@ const RequestList: React.FC<Props> = ({navigation}) => {
     const rows = listRequests();
     if (rows) {
       setRequests(rows);
+    }
+    const swapRows = listSwaps();
+    if (swapRows) {
+      setSwaps(swapRows);
     }
     const payIns = listDeposits();
     if (payIns) {
@@ -91,13 +105,21 @@ const RequestList: React.FC<Props> = ({navigation}) => {
     return () => subscription.remove();
   }, [fetchRequests, running]);
 
+  const swapsOf = (request: SwapRequestSummary) =>
+    swaps.filter(swap => swap.request_id === request.id);
+  const statusOf = (request: SwapRequestSummary) => {
+    const swap = acceptedSwap(request.state, swapsOf(request));
+    return swap
+      ? swapStateText(swap.state, swap.coin_from, swap.coin_to)
+      : requestStateText(request.state);
+  };
   const sorted = sortNewestFirst(requests);
   const shown = sorted.filter(request => {
     if (filter === 'open') {
-      return !isEndedRequestState(request.state);
+      return !isEndedRequest(request.state, swapsOf(request));
     }
     if (filter === 'ended') {
-      return isEndedRequestState(request.state);
+      return isEndedRequest(request.state, swapsOf(request));
     }
     return true;
   });
@@ -212,17 +234,15 @@ const RequestList: React.FC<Props> = ({navigation}) => {
                 })
               }>
               <Pair from={request.coin_from} to={request.coin_to} />
-              <Text style={swapCards.status}>
-                {requestStateText(request.state)}
-              </Text>
+              <Text style={swapCards.status}>{statusOf(request)}</Text>
               {showRaw ? (
                 <Text style={swapCards.id}>{request.state}</Text>
               ) : null}
               <TimeLine
                 text={
-                  isEndedRequestState(request.state)
-                    ? `${request.amount_from} ${request.coin_from} · ${formatExpiry(request.created_at)}`
-                    : `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`
+                  isOpenRequestState(request.state)
+                    ? `${request.amount_from} ${request.coin_from} · expires ${formatExpiry(request.expire_at)}`
+                    : `${request.amount_from} ${request.coin_from} · ${formatExpiry(request.created_at)}`
                 }
               />
               <CopyChip
