@@ -341,6 +341,11 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
               {`${deposit.received} ${deposit.coin}`}
             </Text>
           </View>
+          {Number(deposit.unconfirmed) > 0 ? (
+            <Text testID="mbsx-payin-unconfirmed" style={swapCards.historySub}>
+              {`${deposit.unconfirmed} ${deposit.coin} unconfirmed`}
+            </Text>
+          ) : null}
         </View>
         <Text style={swapCards.section}>You Receive at Least</Text>
         <View style={swapCards.card}>
