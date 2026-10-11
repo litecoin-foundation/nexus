@@ -525,6 +525,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             testID="mbsx-payin-rescue"
             label="Force Refund"
             confirm="Sweep every coin the server lists at this address to the refund address, without proving it confirmed?"
+            confirmLabel="Refund"
             onConfirm={async () => {
               const swept = rescueDeposit(deposit.deposit_id);
               fetchDeposit();
