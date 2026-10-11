@@ -838,7 +838,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 : noSaved
                   ? `Add a ${coinTo} Address`
                   : payIn
-                    ? 'Select Refund Address'
+                    ? 'Select Address'
                     : 'Select Receiver')}
           </Text>
           <Image

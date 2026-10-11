@@ -605,7 +605,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
             </View>
           );
         })}
-        {offers.length === 0 ? (
+        {offers.length === 0 && request.state === 'SENT' ? (
           <View style={swapCards.card}>
             <TimeLine text="Waiting for an offer" textStyle={look.waitText} />
             <Text style={look.waitNote}>

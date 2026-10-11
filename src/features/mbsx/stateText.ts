@@ -86,7 +86,7 @@ export const depositStateText = (
     NO_OFFER: 'No acceptable offer',
     SWEEPING: `Returning your ${paid}`,
     SWEPT: `Your ${paid} was returned`,
-    SPENT: 'The swap is under way',
+    SPENT: `Your ${paid} went into the swap`,
     EXPIRED: 'The pay-in expired unpaid',
     CANCELLED: 'The pay-in was cancelled',
   };
