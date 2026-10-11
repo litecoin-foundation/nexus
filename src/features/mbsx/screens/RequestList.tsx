@@ -202,7 +202,7 @@ const RequestList: React.FC<Props> = ({navigation}) => {
             {showRaw ? <Text style={swapCards.id}>{deposit.state}</Text> : null}
             <TimeLine
               text={
-                Number(deposit.remaining) > 0
+                deposit.payable && Number(deposit.remaining) > 0
                   ? `${deposit.remaining} ${deposit.coin} still to pay · ${depositTimeLeft(deposit.expire_at)}`
                   : `${deposit.received} ${deposit.coin} received · ${depositTimeLeft(deposit.expire_at)}`
               }
