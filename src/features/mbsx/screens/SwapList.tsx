@@ -31,7 +31,7 @@ import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
 import {swapCards} from '../swapCards';
 import {swapStateText, useShowRawStates} from '../stateText';
-import {walletTitle} from '../walletText';
+import {swapSides, walletTitle} from '../walletText';
 import type {MbsxDrawerParamList, SwapSummary} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapList'>;
@@ -182,10 +182,12 @@ const SwapList: React.FC<Props> = ({navigation}) => {
         ) : (
           shown.map(swap => {
             const title = walletTitle(swap.state);
+            const sides = swapSides(swap);
             const sentence = swapStateText(
               swap.state,
               swap.coin_from,
               swap.coin_to,
+              swap.participating,
             );
             return (
               <TouchableOpacity
@@ -195,7 +197,7 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                   navigation.navigate('SwapDetail', {swapId: swap.id})
                 }>
                 <View style={swapCards.historyRow}>
-                  <CoinPair from={swap.coin_from} to={swap.coin_to} />
+                  <CoinPair from={sides.sendCoin} to={sides.receiveCoin} />
                   <View style={swapCards.historyMid}>
                     <Text style={swapCards.historyTitle} numberOfLines={1}>
                       {title}
@@ -219,10 +221,10 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                   </View>
                   <View style={swapCards.historyAmounts}>
                     <Text style={swapCards.historyIn} numberOfLines={1}>
-                      {`+ ${swap.amount_to} ${swap.coin_to}`}
+                      {`+ ${sides.receiveAmount} ${sides.receiveCoin}`}
                     </Text>
                     <Text style={swapCards.historyOut} numberOfLines={1}>
-                      {`− ${swap.amount_from} ${swap.coin_from}`}
+                      {`− ${sides.sendAmount} ${sides.sendCoin}`}
                     </Text>
                     <TimeLine
                       align="end"

@@ -2,7 +2,7 @@ import notifee, {AndroidImportance} from '@notifee/react-native';
 
 import {readConfig} from './config';
 import {swapStateText} from '../stateText';
-import {walletTitle} from '../walletText';
+import {swapSides, walletTitle} from '../walletText';
 import type {SwapSummary} from '../types';
 
 // A drawable react-native-nitro-bsx ships, merged into the app's resources
@@ -17,7 +17,13 @@ const channel = () =>
 
 type EndedSwap = Pick<
   SwapSummary,
-  'id' | 'state' | 'coin_from' | 'coin_to'
+  | 'id'
+  | 'state'
+  | 'coin_from'
+  | 'coin_to'
+  | 'amount_from'
+  | 'amount_to'
+  | 'participating'
 >;
 
 const notificationsOn = async () =>
@@ -31,8 +37,13 @@ export const notifySwapEnded = async (swap: EndedSwap) => {
     const channelId = await channel();
     const body =
       swap.state === 'COMPLETED'
-        ? `${swap.coin_from} for ${swap.coin_to}`
-        : swapStateText(swap.state, swap.coin_from, swap.coin_to);
+        ? `${swapSides(swap).sendCoin} for ${swapSides(swap).receiveCoin}`
+        : swapStateText(
+            swap.state,
+            swap.coin_from,
+            swap.coin_to,
+            swap.participating,
+          );
     await notifee.displayNotification({
       id: `mbsx-swap-${swap.id}`,
       title: walletTitle(swap.state),

@@ -46,6 +46,7 @@ import {
   useShowRawStates,
   useShowUtcTimes,
 } from '../stateText';
+import {swapSides} from '../walletText';
 import {
   acceptOffer,
   acceptedSwap,
@@ -295,7 +296,12 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           </View>
           <Text style={swapCards.status}>
             {outcome
-              ? swapStateText(outcome.state, outcome.coin_from, outcome.coin_to)
+              ? swapStateText(
+                  outcome.state,
+                  outcome.coin_from,
+                  outcome.coin_to,
+                  outcome.participating,
+                )
               : requestStateText(request.state)}
           </Text>
           {showRaw ? <Text style={swapCards.id}>{request.state}</Text> : null}
@@ -628,87 +634,99 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
         ) : null}
 
         {swaps.length > 0 ? <Text style={swapCards.section}>Swap</Text> : null}
-        {swaps.map(swap => (
-          <TouchableOpacity
-            key={swap.id}
-            testID={`mbsx-swap-${swap.id}`}
-            style={swapCards.card}
-            onPress={() =>
-              navigation.navigate('SwapDetail', {swapId: swap.id})
-            }>
-            <View style={swapCards.historyRow}>
-              <CoinPair from={swap.coin_from} to={swap.coin_to} size={36} />
-              <View style={swapCards.historyMid}>
-                <Text style={swapCards.historyTitle}>
-                  {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+        {swaps.map(swap => {
+          const sides = swapSides(swap);
+          return (
+            <TouchableOpacity
+              key={swap.id}
+              testID={`mbsx-swap-${swap.id}`}
+              style={swapCards.card}
+              onPress={() =>
+                navigation.navigate('SwapDetail', {swapId: swap.id})
+              }>
+              <View style={swapCards.historyRow}>
+                <CoinPair
+                  from={sides.sendCoin}
+                  to={sides.receiveCoin}
+                  size={36}
+                />
+                <View style={swapCards.historyMid}>
+                  <Text style={swapCards.historyTitle}>
+                    {swapStateText(
+                      swap.state,
+                      swap.coin_from,
+                      swap.coin_to,
+                      swap.participating,
+                    )}
+                  </Text>
+                  {showRaw ? (
+                    <Text style={swapCards.historySub}>{swap.state}</Text>
+                  ) : null}
+                  {swap.kind ? (
+                    <Text style={swapCards.historySub}>
+                      {kindLabel(swap.kind)}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+              <View style={look.swapAmounts}>
+                <View style={swapCards.historyRow}>
+                  {COIN_ICONS[sides.sendCoin] ? (
+                    <Image
+                      source={COIN_ICONS[sides.sendCoin]}
+                      style={swapCards.coinLogo}
+                    />
+                  ) : null}
+                  <Text style={swapCards.historyTitle}>
+                    {`${sides.sendAmount} ${sides.sendCoin}`}
+                  </Text>
+                </View>
+                <View style={[swapCards.historyRow, look.swapAmountNext]}>
+                  {COIN_ICONS[sides.receiveCoin] ? (
+                    <Image
+                      source={COIN_ICONS[sides.receiveCoin]}
+                      style={swapCards.coinLogo}
+                    />
+                  ) : null}
+                  <Text style={swapCards.historyTitle}>
+                    {`${sides.receiveAmount} ${sides.receiveCoin}`}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                testID={`mbsx-request-swap-fees-${swap.id}`}
+                accessibilityRole="button"
+                accessibilityState={{expanded: swapFeesOpen === swap.id}}
+                style={[look.feeRow, look.feeFirst]}
+                onPress={() =>
+                  setSwapFeesOpen(open => (open === swap.id ? null : swap.id))
+                }>
+                <Text style={[look.feeLabel, look.feeToggle]}>
+                  {swap.fees_coin ? 'Swap Fees' : 'Chain Fees'}
                 </Text>
-                {showRaw ? (
-                  <Text style={swapCards.historySub}>{swap.state}</Text>
-                ) : null}
-                {swap.kind ? (
-                  <Text style={swapCards.historySub}>
-                    {kindLabel(swap.kind)}
+                {swap.fees_coin ? (
+                  <Text style={look.feeValue}>
+                    {`${swap.fees_total} ${swap.fees_coin}`}
                   </Text>
                 ) : null}
-              </View>
-            </View>
-            <View style={look.swapAmounts}>
-              <View style={swapCards.historyRow}>
-                {COIN_ICONS[swap.coin_from] ? (
-                  <Image
-                    source={COIN_ICONS[swap.coin_from]}
-                    style={swapCards.coinLogo}
-                  />
-                ) : null}
-                <Text style={swapCards.historyTitle}>
-                  {`${swap.amount_from} ${swap.coin_from}`}
-                </Text>
-              </View>
-              <View style={[swapCards.historyRow, look.swapAmountNext]}>
-                {COIN_ICONS[swap.coin_to] ? (
-                  <Image
-                    source={COIN_ICONS[swap.coin_to]}
-                    style={swapCards.coinLogo}
-                  />
-                ) : null}
-                <Text style={swapCards.historyTitle}>
-                  {`${swap.amount_to} ${swap.coin_to}`}
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              testID={`mbsx-request-swap-fees-${swap.id}`}
-              accessibilityRole="button"
-              accessibilityState={{expanded: swapFeesOpen === swap.id}}
-              style={[look.feeRow, look.feeFirst]}
-              onPress={() =>
-                setSwapFeesOpen(open => (open === swap.id ? null : swap.id))
-              }>
-              <Text style={[look.feeLabel, look.feeToggle]}>
-                {swap.fees_coin ? 'Swap Fees' : 'Chain Fees'}
-              </Text>
-              {swap.fees_coin ? (
-                <Text style={look.feeValue}>
-                  {`${swap.fees_total} ${swap.fees_coin}`}
-                </Text>
-              ) : null}
+              </TouchableOpacity>
+              {swapFeesOpen === swap.id
+                ? (
+                    [
+                      [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
+                      [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
+                    ] as [string, string | undefined, bigint][]
+                  ).map(([coin, amount, feeRate]) => (
+                    <View key={coin} style={[look.feeRow, look.feeLine]}>
+                      <Text style={look.feeLabel}>{`Chain Fee ${coin}`}</Text>
+                      <Text style={look.feeRate}>{`${feeRate} sat/kvB`}</Text>
+                      <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
+                    </View>
+                  ))
+                : null}
             </TouchableOpacity>
-            {swapFeesOpen === swap.id
-              ? (
-                  [
-                    [swap.coin_from, swap.chain_fee_from, swap.fee_rate_from],
-                    [swap.coin_to, swap.chain_fee_to, swap.fee_rate_to],
-                  ] as [string, string | undefined, bigint][]
-                ).map(([coin, amount, feeRate]) => (
-                  <View key={coin} style={[look.feeRow, look.feeLine]}>
-                    <Text style={look.feeLabel}>{`Chain Fee ${coin}`}</Text>
-                    <Text style={look.feeRate}>{`${feeRate} sat/kvB`}</Text>
-                    <Text style={look.feeValue}>{`~${amount ?? '?'}`}</Text>
-                  </View>
-                ))
-              : null}
-          </TouchableOpacity>
-        ))}
+          );
+        })}
 
         {payInId ? (
           <TouchableOpacity

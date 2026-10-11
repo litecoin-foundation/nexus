@@ -112,7 +112,12 @@ const RequestList: React.FC<Props> = ({navigation}) => {
   const statusOf = (request: SwapRequestSummary) => {
     const swap = acceptedSwap(request.state, swapsOf(request));
     return swap
-      ? swapStateText(swap.state, swap.coin_from, swap.coin_to)
+      ? swapStateText(
+          swap.state,
+          swap.coin_from,
+          swap.coin_to,
+          swap.participating,
+        )
       : requestStateText(request.state);
   };
   const sorted = sortNewestFirst(requests);

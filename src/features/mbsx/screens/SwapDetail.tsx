@@ -44,7 +44,7 @@ import {
   useShowUtcTimes,
 } from '../stateText';
 import {coinString} from '../useSwapAmounts';
-import {isSwapComplete, walletTitle} from '../walletText';
+import {isSwapComplete, swapSides, walletTitle} from '../walletText';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'SwapDetail'>;
@@ -254,6 +254,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
               event.event_sub_type,
               swap.coin_from,
               swap.coin_to,
+              swap.participating,
             );
             return (
               <TouchableOpacity
@@ -315,13 +316,14 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
     </>
   );
 
+  const sides = swapSides(swap);
   if (isTerminalState(swap.state)) {
     const complete = isSwapComplete(swap.state);
-    const sent = Number(swap.amount_from);
-    const received = Number(swap.amount_to);
+    const sent = Number(sides.sendAmount);
+    const received = Number(sides.receiveAmount);
     const rate =
       sent > 0 && received > 0
-        ? `1 ${swap.coin_from} ≈ ${coinString(received / sent)} ${swap.coin_to}`
+        ? `1 ${sides.sendCoin} ≈ ${coinString(received / sent)} ${sides.receiveCoin}`
         : '';
     const address = destinations?.[swap.request_id] ?? '';
     const refund = refundTxid(swap.events);
@@ -331,30 +333,46 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
           <View style={swapCards.card}>
             <View style={swapCards.historyRow}>
-              <CoinPair from={swap.coin_from} to={swap.coin_to} size={40} />
+              <CoinPair
+                from={sides.sendCoin}
+                to={sides.receiveCoin}
+                size={40}
+              />
               <View style={swapCards.historyMid}>
                 <Text style={swapCards.historyTitle}>
                   {walletTitle(swap.state)}
                 </Text>
                 {complete ? null : (
                   <Text style={swapCards.historySub}>
-                    {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                    {swapStateText(
+                      swap.state,
+                      swap.coin_from,
+                      swap.coin_to,
+                      swap.participating,
+                    )}
                   </Text>
                 )}
                 <Text style={swapCards.historySub}>
                   {formatTimestamp(swap.created_at, utc)}
                 </Text>
+                {swap.initiating ? (
+                  <Text
+                    testID="mbsx-swap-reversed"
+                    style={swapCards.historySub}>
+                    Reversed
+                  </Text>
+                ) : null}
               </View>
             </View>
           </View>
           <Text style={swapCards.section}>Sent</Text>
           <View style={swapCards.card}>
-            <CoinAmount amount={swap.amount_from} coin={swap.coin_from} />
+            <CoinAmount amount={sides.sendAmount} coin={sides.sendCoin} />
           </View>
           <Flip />
           <Text style={swapCards.section}>Received</Text>
           <View style={swapCards.card}>
-            <CoinAmount amount={swap.amount_to} coin={swap.coin_to} />
+            <CoinAmount amount={sides.receiveAmount} coin={sides.receiveCoin} />
             {rate ? (
               <Text testID="mbsx-receipt-rate" style={swapCards.meta}>
                 {rate}
@@ -408,7 +426,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
         contentContainerStyle={[styles.scroll, {paddingBottom: bottom}]}>
         <View style={swapCards.card}>
           <View style={swapCards.historyRow}>
-            <CoinPair from={swap.coin_from} to={swap.coin_to} size={40} />
+            <CoinPair from={sides.sendCoin} to={sides.receiveCoin} size={40} />
             <View style={swapCards.historyMid}>
               <Text style={swapCards.historyTitle}>
                 {walletTitle(swap.state)}
@@ -417,10 +435,16 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                 swap.state,
                 swap.coin_from,
                 swap.coin_to,
+                swap.participating,
               ).toLowerCase() ===
               walletTitle(swap.state).toLowerCase() ? null : (
                 <Text style={swapCards.historySub}>
-                  {swapStateText(swap.state, swap.coin_from, swap.coin_to)}
+                  {swapStateText(
+                    swap.state,
+                    swap.coin_from,
+                    swap.coin_to,
+                    swap.participating,
+                  )}
                 </Text>
               )}
               {showRaw ? (
@@ -432,9 +456,14 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
         </View>
         <Text style={swapCards.section}>Send</Text>
         <View style={swapCards.card}>
-          <CoinAmount amount={swap.amount_from} coin={swap.coin_from} />
+          <CoinAmount amount={sides.sendAmount} coin={sides.sendCoin} />
           {swap.kind ? (
             <Text style={swapCards.meta}>{kindLabel(swap.kind)}</Text>
+          ) : null}
+          {swap.initiating ? (
+            <Text testID="mbsx-swap-reversed" style={swapCards.meta}>
+              Reversed
+            </Text>
           ) : null}
           <Text style={swapCards.fromLine}>
             {`Created ${formatTimestamp(swap.created_at, utc)}`}
@@ -456,12 +485,12 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
 
         <Text style={swapCards.section}>Receive</Text>
         <View style={swapCards.card}>
-          <CoinAmount amount={swap.amount_to} coin={swap.coin_to} />
-          {Number(swap.amount_from) > 0 && Number(swap.amount_to) > 0 ? (
+          <CoinAmount amount={sides.receiveAmount} coin={sides.receiveCoin} />
+          {Number(sides.sendAmount) > 0 && Number(sides.receiveAmount) > 0 ? (
             <Text style={swapCards.meta}>
-              {`1 ${swap.coin_from} ≈ ${coinString(
-                Number(swap.amount_to) / Number(swap.amount_from),
-              )} ${swap.coin_to}`}
+              {`1 ${sides.sendCoin} ≈ ${coinString(
+                Number(sides.receiveAmount) / Number(sides.sendAmount),
+              )} ${sides.receiveCoin}`}
             </Text>
           ) : null}
         </View>

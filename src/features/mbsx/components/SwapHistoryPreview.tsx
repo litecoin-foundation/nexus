@@ -18,7 +18,7 @@ import {
 import {formatExpiry} from '../format';
 import {swapStateText} from '../stateText';
 import {colors} from '../theme';
-import {isSwapComplete, walletTitle} from '../walletText';
+import {isSwapComplete, swapSides, walletTitle} from '../walletText';
 import CoinPair from './CoinPair';
 
 const WALLET_FINISHED = 3;
@@ -44,7 +44,13 @@ const SwapRow = ({
   const complete = isSwapComplete(swap.state);
   const muted = ended && !complete;
   const title = walletTitle(swap.state);
-  const sentence = swapStateText(swap.state, swap.coin_from, swap.coin_to);
+  const sentence = swapStateText(
+    swap.state,
+    swap.coin_from,
+    swap.coin_to,
+    swap.participating,
+  );
+  const sides = swapSides(swap);
   return (
     <TouchableOpacity
       testID={`mbsx-wallet-swap-${swap.id}`}
@@ -73,11 +79,11 @@ const SwapRow = ({
             }
           : undefined
       }>
-      <CoinPair from={swap.coin_from} to={swap.coin_to} size={36} />
+      <CoinPair from={sides.sendCoin} to={sides.receiveCoin} size={36} />
       <View style={styles.mid}>
         {complete ? (
           <Text style={styles.got} numberOfLines={1}>
-            {`+ ${swap.amount_to} ${swap.coin_to}`}
+            {`+ ${sides.receiveAmount} ${sides.receiveCoin}`}
           </Text>
         ) : (
           <Text
@@ -101,11 +107,11 @@ const SwapRow = ({
           <Text
             style={[styles.in, muted ? styles.mutedText : null]}
             numberOfLines={1}>
-            {`+ ${swap.amount_to} ${swap.coin_to}`}
+            {`+ ${sides.receiveAmount} ${sides.receiveCoin}`}
           </Text>
         )}
         <Text style={styles.out} numberOfLines={1}>
-          {`− ${swap.amount_from} ${swap.coin_from}`}
+          {`− ${sides.sendAmount} ${sides.sendCoin}`}
         </Text>
         <Text style={styles.when} numberOfLines={1}>
           {formatExpiry(swap.created_at)}

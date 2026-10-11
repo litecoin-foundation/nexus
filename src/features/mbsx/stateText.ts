@@ -17,6 +17,7 @@ export const swapStateText = (
   state: string | undefined,
   coinFrom: string,
   coinTo: string,
+  participating = false,
 ): string => {
   if (!state) {
     return '';
@@ -43,7 +44,7 @@ export const swapStateText = (
     TIMEDOUT: 'It ran out of time before it could finish',
     ABANDONED: 'It was left before it could finish',
     FAILED: 'The swap could not finish',
-    FAILED_REFUNDED: `Swap failed. ${sent} was refunded`,
+    FAILED_REFUNDED: `Swap failed. ${participating ? got : sent} was refunded`,
     ERROR: 'Something went wrong',
     FAILED_SWIPED: 'The other side took the locked coins',
     FAILED_SWIPED_SENDING_MERCY: 'Returning what can be recovered',

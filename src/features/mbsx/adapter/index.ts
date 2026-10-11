@@ -633,6 +633,7 @@ export type FinishedSwap = Pick<
   | 'coin_to'
   | 'amount_from'
   | 'amount_to'
+  | 'participating'
   | 'state'
   | 'created_at'
 >;
@@ -650,6 +651,7 @@ const finishedFrom = (swaps: SwapSummary[]): FinishedSwap[] =>
       coin_to: swap.coin_to,
       amount_from: swap.amount_from,
       amount_to: swap.amount_to,
+      participating: swap.participating,
       state: swap.state,
       created_at: swap.created_at,
     }));
