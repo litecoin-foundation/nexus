@@ -355,7 +355,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                 <Text style={swapCards.historySub}>
                   {formatTimestamp(swap.created_at, utc)}
                 </Text>
-                {swap.initiating ? (
+                {swap.initiating && showDebug ? (
                   <Text
                     testID="mbsx-swap-reversed"
                     style={swapCards.historySub}>
@@ -460,7 +460,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           {swap.kind ? (
             <Text style={swapCards.meta}>{kindLabel(swap.kind)}</Text>
           ) : null}
-          {swap.initiating ? (
+          {swap.initiating && showDebug ? (
             <Text testID="mbsx-swap-reversed" style={swapCards.meta}>
               Reversed
             </Text>
