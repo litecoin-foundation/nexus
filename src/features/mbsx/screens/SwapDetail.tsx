@@ -230,6 +230,91 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
     );
   }
 
+  const events = (
+    <>
+      <TouchableOpacity
+        style={swapCards.advancedToggle}
+        onPress={() => setAdvanced(open => !open)}>
+        <Text style={swapCards.advancedLabel}>Events</Text>
+        <Image
+          source={require('../../../assets/images/forward.png')}
+          style={[swapCards.chevron, advanced ? swapCards.chevronOpen : null]}
+        />
+      </TouchableOpacity>
+      {advanced ? (
+        (swap.events ?? []).length === 0 ? (
+          <View style={swapCards.card}>
+            <Text style={swapCards.note}>No events</Text>
+          </View>
+        ) : (
+          (swap.events ?? []).map((event: SwapEvent) => {
+            const expanded = openEvent === event.id;
+            const isTx = event.linked_type === 'SWAP_TX';
+            const stepText = swapStateText(
+              event.event_sub_type,
+              swap.coin_from,
+              swap.coin_to,
+            );
+            return (
+              <TouchableOpacity
+                key={event.id}
+                testID={`mbsx-event-${event.id}`}
+                style={swapCards.card}
+                onPress={() => setOpenEvent(expanded ? null : event.id)}>
+                <Text style={swapCards.historyTitle}>
+                  {stepText !== event.event_sub_type
+                    ? stepText
+                    : `${event.event_type}${
+                        event.event_sub_type ? `: ${event.event_sub_type}` : ''
+                      }`}
+                </Text>
+                {showRaw && event.event_sub_type ? (
+                  <Text style={swapCards.id}>
+                    {String(event.event_sub_type)}
+                  </Text>
+                ) : null}
+                <Text style={swapCards.historySub}>
+                  {(event.time ?? event.created_at)
+                    ? formatTimestamp(
+                        String(event.time ?? event.created_at),
+                        utc,
+                        true,
+                      )
+                    : ''}
+                </Text>
+                {(event.event_msg ?? event.event_data) ? (
+                  <Text style={swapCards.meta}>
+                    {String(event.event_msg ?? event.event_data)}
+                  </Text>
+                ) : null}
+                {event.linked_id ? (
+                  <CopyChip
+                    testID={`mbsx-copy-${event.id}`}
+                    label={isTx ? 'Transaction' : 'Address'}
+                    value={String(event.linked_id)}
+                    display={
+                      isTx
+                        ? shortAddress(String(event.linked_id))
+                        : shortId(String(event.linked_id))
+                    }
+                    style={look.idChip}
+                    labelStyle={look.idLabel}
+                    valueStyle={look.idValue}
+                  />
+                ) : null}
+                {expanded &&
+                event.event_msg !== undefined &&
+                event.event_data !== undefined ? (
+                  <Text style={swapCards.meta}>{String(event.event_data)}</Text>
+                ) : null}
+              </TouchableOpacity>
+            );
+          })
+        )
+      ) : null}
+    </>
+  );
+
   if (isTerminalState(swap.state)) {
     const complete = isSwapComplete(swap.state);
     const sent = Number(swap.amount_from);
@@ -293,6 +378,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
               </View>
             </>
           ) : null}
+          {events}
           <TouchableOpacity
             testID="mbsx-receipt-done"
             style={styles.button}
@@ -381,92 +467,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
         </View>
         <SwapFees swap={swap} />
 
-        <TouchableOpacity
-          style={swapCards.advancedToggle}
-          onPress={() => setAdvanced(open => !open)}>
-          <Text style={swapCards.advancedLabel}>Events</Text>
-          <Image
-            source={require('../../../assets/images/forward.png')}
-            style={[swapCards.chevron, advanced ? swapCards.chevronOpen : null]}
-          />
-        </TouchableOpacity>
-        {advanced ? (
-          (swap.events ?? []).length === 0 ? (
-            <View style={swapCards.card}>
-              <Text style={swapCards.note}>No events</Text>
-            </View>
-          ) : (
-            (swap.events ?? []).map((event: SwapEvent) => {
-              const expanded = openEvent === event.id;
-              // The module holds txids in internal byte order; explorers and people
-              // read the other way round.
-              const isTx = event.linked_type === 'SWAP_TX';
-              const stepText = swapStateText(
-                event.event_sub_type,
-                swap.coin_from,
-                swap.coin_to,
-              );
-              return (
-                <TouchableOpacity
-                  key={event.id}
-                  testID={`mbsx-event-${event.id}`}
-                  style={swapCards.card}
-                  onPress={() => setOpenEvent(expanded ? null : event.id)}>
-                  <Text style={swapCards.historyTitle}>
-                    {stepText !== event.event_sub_type
-                      ? stepText
-                      : `${event.event_type}${
-                          event.event_sub_type
-                            ? `: ${event.event_sub_type}`
-                            : ''
-                        }`}
-                  </Text>
-                  {showRaw && event.event_sub_type ? (
-                    <Text style={swapCards.id}>
-                      {String(event.event_sub_type)}
-                    </Text>
-                  ) : null}
-                  <Text style={swapCards.historySub}>
-                    {(event.time ?? event.created_at)
-                      ? formatTimestamp(
-                          String(event.time ?? event.created_at),
-                          utc,
-                          true,
-                        )
-                      : ''}
-                  </Text>
-                  {(event.event_msg ?? event.event_data) ? (
-                    <Text style={swapCards.meta}>
-                      {String(event.event_msg ?? event.event_data)}
-                    </Text>
-                  ) : null}
-                  {event.linked_id ? (
-                    <CopyChip
-                      testID={`mbsx-copy-${event.id}`}
-                      label={isTx ? 'Transaction' : 'Address'}
-                      value={String(event.linked_id)}
-                      display={
-                        isTx
-                          ? shortAddress(String(event.linked_id))
-                          : shortId(String(event.linked_id))
-                      }
-                      style={look.idChip}
-                      labelStyle={look.idLabel}
-                      valueStyle={look.idValue}
-                    />
-                  ) : null}
-                  {expanded &&
-                  event.event_msg !== undefined &&
-                  event.event_data !== undefined ? (
-                    <Text style={swapCards.meta}>
-                      {String(event.event_data)}
-                    </Text>
-                  ) : null}
-                </TouchableOpacity>
-              );
-            })
-          )
-        ) : null}
+        {events}
 
         <CopyChip
           testID="mbsx-swap-id"
