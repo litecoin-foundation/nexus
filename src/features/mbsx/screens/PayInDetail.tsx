@@ -229,6 +229,8 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
     return <View style={styles.container} />;
   }
 
+  const expired = Number(deposit.expire_at) * 1000 <= Date.now();
+
   const act = (action: () => void) => {
     triggerLightFeedback();
     setError('');
@@ -260,7 +262,12 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             <CoinPair from={deposit.coin} to={deposit.coin_to} size={40} />
             <View style={swapCards.historyMid}>
               <Text testID="mbsx-payin-state" style={swapCards.historyTitle}>
-                {depositStateText(deposit.state, deposit.coin)}
+                {depositStateText(
+                  deposit.cancelled && CANCELLABLE.has(deposit.state)
+                    ? 'CANCELLED'
+                    : deposit.state,
+                  deposit.coin,
+                )}
               </Text>
               {showRaw ? (
                 <Text style={swapCards.historySub}>{deposit.state}</Text>
@@ -269,6 +276,14 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 text={depositTimeLeft(deposit.expire_at)}
                 textStyle={swapCards.historySub}
               />
+              {expired && deposit.state === 'SEEN' ? (
+                <Text
+                  testID="mbsx-payin-returning"
+                  style={swapCards.historySub}>
+                  Your payment goes back to your refund address once it
+                  confirms.
+                </Text>
+              ) : null}
             </View>
           </View>
         </View>
@@ -483,7 +498,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
             </View>
           </View>
         ) : null}
-        {CANCELLABLE.has(deposit.state) && !confirmingCancel ? (
+        {CANCELLABLE.has(deposit.state) && !expired && !confirmingCancel ? (
           <TouchableOpacity
             testID="mbsx-payin-cancel"
             style={styles.buttonSecondary}

@@ -32,6 +32,7 @@ export type Deposit = {
   amount_due: string;
   received: string;
   unconfirmed: string;
+  cancelled: boolean;
   remaining: string;
   payable: boolean;
   refund_address: string;

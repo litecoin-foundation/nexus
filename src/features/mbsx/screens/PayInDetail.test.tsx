@@ -69,6 +69,7 @@ const deposit = (fields: Partial<Deposit>): Deposit => ({
   amount_due: '0.01000000',
   received: '0.00000000',
   unconfirmed: '0.00000000',
+  cancelled: false,
   remaining: '0.01000000',
   payable: true,
   refund_address: 'bcrt1qrefund',
