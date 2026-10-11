@@ -73,7 +73,9 @@ const RequestList: React.FC<Props> = ({navigation}) => {
   const [swaps, setSwaps] = useState<SwapSummary[]>([]);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'open' | 'ended'>('all');
+  const [filter, setFilter] = useState<'all' | 'open' | 'ended' | 'payins'>(
+    'all',
+  );
 
   const fetchRequests = useCallback(() => {
     const rows = listRequests();
@@ -121,16 +123,19 @@ const RequestList: React.FC<Props> = ({navigation}) => {
     if (filter === 'ended') {
       return isEndedRequest(request.state, swapsOf(request));
     }
-    return true;
+    return filter !== 'payins';
   });
   const payIns =
     filter === 'ended'
       ? []
-      : deposits.filter(deposit => !ENDED_DEPOSIT_STATES.has(deposit.state));
+      : filter === 'payins'
+        ? [...deposits].reverse()
+        : deposits.filter(deposit => !ENDED_DEPOSIT_STATES.has(deposit.state));
   const chips: {id: typeof filter; label: string}[] = [
     {id: 'all', label: 'All'},
     {id: 'open', label: 'Open'},
     {id: 'ended', label: 'Ended'},
+    {id: 'payins', label: 'Pay-ins'},
   ];
 
   return (

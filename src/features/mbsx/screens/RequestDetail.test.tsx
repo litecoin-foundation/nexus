@@ -28,6 +28,7 @@ jest.mock('../adapter', () => ({
   getRequestInfo: jest.fn(),
   getSwapInfo: jest.fn(() => null),
   isUnderwayState: () => false,
+  listDeposits: () => null,
   onMessage: () => ({remove: jest.fn()}),
   readConfig: () => Promise.resolve(null),
   removeRequest: jest.fn(),

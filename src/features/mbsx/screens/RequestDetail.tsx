@@ -47,6 +47,7 @@ import {
   getRequestInfo,
   getSwapInfo,
   isUnderwayState,
+  listDeposits,
   onMessage,
   removeRequest,
   isGone,
@@ -110,11 +111,13 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const [acknowledged, setAcknowledged] = useState<string[]>([]);
   const [feesOpen, setFeesOpen] = useState(false);
   const [swapFeesOpen, setSwapFeesOpen] = useState<string | null>(null);
+  const [payInId, setPayInId] = useState<string | null>(null);
   const rates = useAppSelector(state => state.mbsx.rates ?? {});
 
   useEffect(() => {
     setPendingOffer(null);
     setAcceptError('');
+    setPayInId(null);
   }, [requestId]);
 
   const fetchRequest = useCallback(() => {
@@ -129,6 +132,12 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
       return;
     }
     setRequest(rv);
+    const payIn = listDeposits()?.find(
+      deposit => deposit.request_id === requestId,
+    );
+    if (payIn) {
+      setPayInId(payIn.deposit_id);
+    }
   }, [requestId, navigation]);
 
   // Unfocused, a stale id's error must not navigate away from the screen shown.
@@ -689,6 +698,16 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           </TouchableOpacity>
         ))}
 
+        {payInId ? (
+          <TouchableOpacity
+            testID="mbsx-request-payin"
+            style={styles.buttonSecondary}
+            onPress={() =>
+              navigation.navigate('PayInDetail', {depositId: payInId})
+            }>
+            <Text style={styles.buttonSecondaryText}>View Pay-in</Text>
+          </TouchableOpacity>
+        ) : null}
         <RemoveButton
           testID="mbsx-remove-request"
           label="Delete Request"
