@@ -902,6 +902,14 @@ export const cancelDeposit = (depositId: string) => {
   }
 };
 
+export const rescueDeposit = (depositId: string): number => {
+  const rv = NitroBSX.rescueDeposit(depositId) as MbsxResult<{swept?: number}>;
+  if (rv.error) {
+    throw new Error(rv.error);
+  }
+  return Number(rv.swept ?? 0);
+};
+
 export const requestDepositAgain = (deposit: Deposit, minAmountTo: string) => {
   const rv = NitroBSX.requestDepositAgain(
     deposit.deposit_id,

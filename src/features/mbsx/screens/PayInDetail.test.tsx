@@ -37,6 +37,7 @@ jest.mock('@dr.pogodin/react-native-fs', () => ({
 
 jest.mock('../adapter', () => ({
   cancelDeposit: jest.fn(),
+  rescueDeposit: jest.fn(),
   getCoinPrices: jest.fn(() => null),
   getInfo: () => ({max_margin_bps: 100}),
   getOffersEstimate: jest.fn(),

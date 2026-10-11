@@ -40,7 +40,8 @@ import {useBottomInset} from '../components/useBottomInset';
 import MbsxBackButton from '../components/MbsxBackButton';
 import CopyButton from '../components/CopyButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
-import {depositStateText, useShowRawStates} from '../stateText';
+import RemoveButton from '../components/RemoveButton';
+import {depositStateText, useShowDebug, useShowRawStates} from '../stateText';
 import {
   cancelDeposit,
   getCoinPrices,
@@ -50,6 +51,7 @@ import {
   isUnderwayState,
   listDeposits,
   requestDepositAgain,
+  rescueDeposit,
 } from '../adapter';
 import type {Deposit, MbsxDrawerParamList} from '../types';
 
@@ -111,6 +113,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const scrollRef = useRef<ScrollView>(null);
   const keyboardHeight = useKeyboardHeight();
   const showRaw = useShowRawStates();
+  const showDebug = useShowDebug();
   const {depositId} = route.params;
   const [loaded, setLoaded] = useState<Deposit | null>(null);
   const [floor, setFloor] = useState('');
@@ -515,6 +518,19 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 : 'Cancel and return the payment'}
             </Text>
           </TouchableOpacity>
+        ) : null}
+        {showDebug &&
+        !['SWEEPING', 'SWEPT', 'SPENT'].includes(deposit.state) ? (
+          <RemoveButton
+            testID="mbsx-payin-rescue"
+            label="Force Refund"
+            confirm="Sweep every coin the server lists at this address to the refund address, without proving it confirmed?"
+            onConfirm={async () => {
+              const swept = rescueDeposit(deposit.deposit_id);
+              fetchDeposit();
+              return `Swept ${swept} coin${swept === 1 ? '' : 's'}`;
+            }}
+          />
         ) : null}
       </ScrollView>
     </View>
