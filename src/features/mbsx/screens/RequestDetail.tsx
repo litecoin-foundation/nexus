@@ -613,6 +613,10 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
               screen.
             </Text>
           </View>
+        ) : offers.length === 0 ? (
+          <View testID="mbsx-request-no-offers" style={swapCards.card}>
+            <Text style={swapCards.note}>No offers</Text>
+          </View>
         ) : null}
 
         {swaps.length > 0 ? <Text style={swapCards.section}>Swap</Text> : null}
