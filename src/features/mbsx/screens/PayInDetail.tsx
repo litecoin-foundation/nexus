@@ -124,6 +124,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   // Stays mounted, so the last pay-in shown is still loaded when another opens
   const deposit = loaded?.deposit_id === depositId ? loaded : null;
   const openedSwapId = useRef<string | null>(null);
+  const offerSeen = useRef<boolean | null>(null);
 
   useEffect(() => {
     setFloor('');
@@ -131,6 +132,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
     setConfirmingCancel(false);
     setOfferWaiting(false);
     openedSwapId.current = null;
+    offerSeen.current = null;
   }, [depositId]);
 
   useEffect(() => {
@@ -151,11 +153,18 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
       return;
     }
     setLoaded(found);
-    setOfferWaiting(
+    const waiting =
       found.state === 'REQUESTED' &&
-        found.request_id !== undefined &&
-        getRequestInfo(found.request_id)?.state === 'OFFER_RECEIVED',
-    );
+      found.request_id !== undefined &&
+      getRequestInfo(found.request_id)?.state === 'OFFER_RECEIVED';
+    setOfferWaiting(waiting);
+    // Only an offer arriving while the page is open moves to it.
+    if (waiting && offerSeen.current === false) {
+      navigation.navigate('RequestDetail', {
+        requestId: found.request_id as string,
+      });
+    }
+    offerSeen.current = waiting;
 
     const swapId = underwaySwapId(found.request_id);
     if (swapId === null) {
@@ -176,7 +185,10 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
       fetchDeposit();
       refreshRates();
       const timer = setInterval(fetchDeposit, 3000);
-      return () => clearInterval(timer);
+      return () => {
+        clearInterval(timer);
+        offerSeen.current = null;
+      };
     }, [fetchDeposit]),
   );
 
@@ -272,6 +284,11 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                   deposit.coin,
                 )}
               </Text>
+              {offerWaiting ? (
+                <Text testID="mbsx-payin-next" style={swapCards.historySub}>
+                  View the swap request to continue
+                </Text>
+              ) : null}
               {showRaw ? (
                 <Text style={swapCards.historySub}>{deposit.state}</Text>
               ) : null}
