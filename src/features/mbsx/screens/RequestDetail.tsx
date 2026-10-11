@@ -484,7 +484,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
                     )
                   }>
                   <Text style={styles.error}>
-                    {held
+                    {held && canAccept && open
                       ? `${warning} Tap this warning to accept anyway.`
                       : warning}
                   </Text>
