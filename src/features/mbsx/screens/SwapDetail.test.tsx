@@ -23,7 +23,6 @@ jest.mock('../../../utils/haptic', () => ({triggerLightFeedback: jest.fn()}));
 jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
 jest.mock('../adapter', () => ({
   abandonSwap: jest.fn(),
-  displayTxid: (txid: string) => txid,
   getSwapInfo: jest.fn(),
   isGone: () => false,
   isTerminalState: (state: string) =>

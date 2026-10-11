@@ -24,7 +24,6 @@ import MbsxBackButton from '../components/MbsxBackButton';
 import CopyButton, {CopyChip} from '../components/CopyButton';
 import {
   abandonSwap,
-  displayTxid,
   getSwapInfo,
   isTerminalState,
   onMessage,
@@ -65,7 +64,7 @@ const refundTxid = (events: SwapEvent[] | undefined): string => {
         REFUND_TX.indexOf(String(a.event_data)) -
         REFUND_TX.indexOf(String(b.event_data)),
     )[0];
-  return hit?.linked_id ? displayTxid(String(hit.linked_id)) : '';
+  return hit?.linked_id ? String(hit.linked_id) : '';
 };
 
 const CoinAmount = ({amount, coin}: {amount: string; coin: string}) => (
@@ -434,14 +433,10 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                     <CopyChip
                       testID={`mbsx-copy-${event.id}`}
                       label={isTx ? 'Transaction' : 'Address'}
-                      value={
-                        isTx
-                          ? displayTxid(String(event.linked_id))
-                          : String(event.linked_id)
-                      }
+                      value={String(event.linked_id)}
                       display={
                         isTx
-                          ? shortAddress(displayTxid(String(event.linked_id)))
+                          ? shortAddress(String(event.linked_id))
                           : shortId(String(event.linked_id))
                       }
                       style={look.idChip}
