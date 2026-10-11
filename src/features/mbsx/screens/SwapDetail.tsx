@@ -347,7 +347,9 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           <Text style={swapCards.fromLine}>
             {`Created ${formatTimestamp(swap.created_at)}`}
           </Text>
-          <TimeLine text={formatExpiry(swap.expire_at)} />
+          {swap.state === 'AWAITING_LOCK_SIGS' ? (
+            <TimeLine text={formatExpiry(swap.expire_at)} />
+          ) : null}
           <TouchableOpacity
             testID="mbsx-swap-request"
             style={[styles.buttonSecondary, look.requestButton]}
