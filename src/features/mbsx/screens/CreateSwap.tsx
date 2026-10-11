@@ -837,7 +837,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                 ? shortAddress(addressTo)
                 : noSaved
                   ? `Add a ${coinTo} Address`
-                  : 'Select Receiver')}
+                  : payIn
+                    ? 'Select Refund Address'
+                    : 'Select Receiver')}
           </Text>
           <Image
             source={require('../../../assets/images/forward.png')}
