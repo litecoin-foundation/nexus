@@ -28,6 +28,7 @@ import {useUnsavedDraftGuard} from '../settingsDraft';
 import {swapCards} from '../swapCards';
 import {getMbsxStyles} from '../theme';
 import type {MbsxDrawerParamList} from '../types';
+import {useShowUtcTimes} from '../stateText';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CoinRateServices'>;
 
@@ -40,25 +41,29 @@ const PLAN_LABELS: Record<(typeof PLANS)[number], string> = {
 // Outlives the page, as the settings draft outlives the section
 let unsaved: RateServices | null = null;
 
-const time = (at: number) => new Date(at * 1000).toLocaleTimeString();
+const time = (at: number, utc: boolean) =>
+  utc
+    ? `${new Date(at * 1000).toISOString().slice(11, 19)} UTC`
+    : new Date(at * 1000).toLocaleTimeString();
 
-const resultText = (result: SourceResult | undefined): string => {
+const resultText = (result: SourceResult | undefined, utc: boolean): string => {
   if (!result) {
     return 'Not Asked Yet';
   }
   switch (result.kind) {
     case 'ok':
       return result.coins.length > 0
-        ? `${result.coins.join(', ')} at ${time(result.at)}`
-        : `No rates at ${time(result.at)}`;
+        ? `${result.coins.join(', ')} at ${time(result.at, utc)}`
+        : `No rates at ${time(result.at, utc)}`;
     case 'limited':
-      return `Rate limited until ${time(result.until)}`;
+      return `Rate limited until ${time(result.until, utc)}`;
     case 'failed':
-      return `Failed at ${time(result.at)}: ${result.message}`;
+      return `Failed at ${time(result.at, utc)}: ${result.message}`;
   }
 };
 
 const CoinRateServices: React.FC<Props> = ({navigation}) => {
+  const utc = useShowUtcTimes();
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
@@ -143,7 +148,7 @@ const CoinRateServices: React.FC<Props> = ({navigation}) => {
 
   const sourceStatus = (source: RateSource) => (
     <Text testID={`mbsx-rates-status-${source}`} style={styles.value}>
-      {saved.enabled ? resultText(results[source]) : 'Off'}
+      {saved.enabled ? resultText(results[source], utc) : 'Off'}
     </Text>
   );
 

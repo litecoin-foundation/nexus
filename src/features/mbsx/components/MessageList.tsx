@@ -5,7 +5,7 @@ import type {StyleProp, ViewStyle} from 'react-native';
 import {useAppSelector} from '../../../store/hooks';
 import {formatTimestamp} from '../format';
 import {swapCards} from '../swapCards';
-import {requestStateText, swapStateText} from '../stateText';
+import {requestStateText, swapStateText, useShowUtcTimes} from '../stateText';
 import type {MbsxMessage} from '../mbsxSlice';
 
 type ParsedEvent = {
@@ -18,7 +18,7 @@ type ParsedEvent = {
 const sentenceOrRaw = (sentence: string, raw: string) =>
   sentence === sentence.trim() && !sentence.includes('  ') ? sentence : raw;
 
-const parsedEvent = (data: string): ParsedEvent | null => {
+const parsedEvent = (data: string, utc: boolean): ParsedEvent | null => {
   let value: Record<string, unknown>;
   try {
     value = JSON.parse(data);
@@ -38,14 +38,17 @@ const parsedEvent = (data: string): ParsedEvent | null => {
   } else if (subText) {
     title = `${value.event_type} · ${subText}`;
   }
-  const time = typeof value.time === 'string' ? formatTimestamp(value.time) : '';
+  const time =
+    typeof value.time === 'string'
+      ? formatTimestamp(value.time, utc, true)
+      : '';
   const message = typeof value.event_msg === 'string' ? value.event_msg : '';
   return {title, time, message, raw: data};
 };
 
-const Row = memo(function Row({data}: {data: string}) {
+const Row = memo(function Row({data, utc}: {data: string; utc: boolean}) {
   const [open, setOpen] = useState(false);
-  const event = parsedEvent(data);
+  const event = parsedEvent(data, utc);
   if (!event) {
     return (
       <View style={swapCards.card}>
@@ -80,10 +83,11 @@ const MessageList: React.FC<{
   embedded?: boolean;
 }> = ({style, embedded}) => {
   const messages = useAppSelector(state => state.mbsx.messages);
+  const utc = useShowUtcTimes();
 
   const renderItem = useCallback(
-    ({item}: {item: MbsxMessage}) => <Row data={item.data} />,
-    [],
+    ({item}: {item: MbsxMessage}) => <Row data={item.data} utc={utc} />,
+    [utc],
   );
   const keyExtractor = useCallback((item: MbsxMessage) => String(item.id), []);
 
@@ -95,7 +99,7 @@ const MessageList: React.FC<{
             <Text style={swapCards.note}>No events yet</Text>
           </View>
         ) : (
-          messages.map(item => <Row key={item.id} data={item.data} />)
+          messages.map(item => <Row key={item.id} data={item.data} utc={utc} />)
         )}
       </View>
     );

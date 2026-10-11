@@ -37,7 +37,12 @@ import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
 import {useAppSelector} from '../../../store/hooks';
 import {COIN_ICONS, swapCards} from '../swapCards';
-import {swapStateText, useShowDebug, useShowRawStates} from '../stateText';
+import {
+  swapStateText,
+  useShowDebug,
+  useShowRawStates,
+  useShowUtcTimes,
+} from '../stateText';
 import {coinString} from '../useSwapAmounts';
 import {isSwapComplete, walletTitle} from '../walletText';
 import type {MbsxDrawerParamList, SwapDetails, SwapEvent} from '../types';
@@ -175,6 +180,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   const bottom = useBottomInset();
   const showRaw = useShowRawStates();
   const showDebug = useShowDebug();
+  const utc = useShowUtcTimes();
 
   useEffect(() => {
     navigation.setOptions({
@@ -251,7 +257,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                   </Text>
                 )}
                 <Text style={swapCards.historySub}>
-                  {formatTimestamp(swap.created_at)}
+                  {formatTimestamp(swap.created_at, utc)}
                 </Text>
               </View>
             </View>
@@ -345,7 +351,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
             <Text style={swapCards.meta}>{kindLabel(swap.kind)}</Text>
           ) : null}
           <Text style={swapCards.fromLine}>
-            {`Created ${formatTimestamp(swap.created_at)}`}
+            {`Created ${formatTimestamp(swap.created_at, utc)}`}
           </Text>
           {swap.state === 'AWAITING_LOCK_SIGS' ? (
             <TimeLine text={formatExpiry(swap.expire_at)} />
@@ -421,10 +427,13 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                     </Text>
                   ) : null}
                   <Text style={swapCards.historySub}>
-                    {event.time ??
-                      (event.created_at
-                        ? formatTimestamp(String(event.created_at))
-                        : '')}
+                    {(event.time ?? event.created_at)
+                      ? formatTimestamp(
+                          String(event.time ?? event.created_at),
+                          utc,
+                          true,
+                        )
+                      : ''}
                   </Text>
                   {(event.event_msg ?? event.event_data) ? (
                     <Text style={swapCards.meta}>

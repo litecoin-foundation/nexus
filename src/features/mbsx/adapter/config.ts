@@ -55,6 +55,7 @@ export type MbsxConfig = {
   show_raw_states?: boolean;
   notify_swaps?: boolean;
   show_debug?: boolean;
+  show_utc_times?: boolean;
   coins: Record<string, CoinConfig>;
 };
 

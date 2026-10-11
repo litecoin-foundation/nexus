@@ -93,7 +93,9 @@ export const depositStateText = (
   return text[state] ?? state;
 };
 
-const useConfigFlag = (flag: 'show_raw_states' | 'show_debug') => {
+const useConfigFlag = (
+  flag: 'show_raw_states' | 'show_debug' | 'show_utc_times',
+) => {
   const [on, setOn] = useState(false);
   useFocusEffect(
     useCallback(() => {
@@ -114,3 +116,5 @@ const useConfigFlag = (flag: 'show_raw_states' | 'show_debug') => {
 export const useShowRawStates = () => useConfigFlag('show_raw_states');
 
 export const useShowDebug = () => useConfigFlag('show_debug');
+
+export const useShowUtcTimes = () => useConfigFlag('show_utc_times');

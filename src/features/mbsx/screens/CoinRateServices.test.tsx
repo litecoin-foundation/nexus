@@ -13,6 +13,10 @@ jest.mock('../useKeyboardHeight', () => ({useKeyboardHeight: () => 0}));
 jest.mock('../../../components/Buttons/HeaderButton', () => () => null);
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({addListener: () => () => {}, navigate: jest.fn()}),
+  useFocusEffect: (effect: () => void | (() => void)) => {
+    const {useEffect} = require('react');
+    useEffect(effect, [effect]);
+  },
 }));
 jest.mock('@dr.pogodin/react-native-fs', () => ({
   DocumentDirectoryPath: '/tmp',
@@ -30,7 +34,7 @@ jest.mock('../adapter', () => ({
   applyConfig: jest.fn(),
   defaultConfig: jest.fn(),
   electrumUrlError: jest.fn(() => ''),
-  readConfig: jest.fn(),
+  readConfig: jest.fn(() => Promise.resolve(null)),
 }));
 jest.mock('../rates', () => ({
   ...jest.requireActual('../rates'),

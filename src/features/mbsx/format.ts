@@ -1,7 +1,36 @@
 import type {MbsxSwapFees} from './types';
 
-export const formatTimestamp = (value: string): string =>
-  value.replace('T', ' ').replace(/:\d\d$/, '');
+const pad = (n: number) => String(n).padStart(2, '0');
+
+export const formatTimestamp = (
+  value: string,
+  utc: boolean,
+  seconds = false,
+): string => {
+  const at = new Date(`${value}Z`);
+  if (Number.isNaN(at.getTime())) {
+    return value;
+  }
+  const [year, month, day, hour, minute, second] = utc
+    ? [
+        at.getUTCFullYear(),
+        at.getUTCMonth() + 1,
+        at.getUTCDate(),
+        at.getUTCHours(),
+        at.getUTCMinutes(),
+        at.getUTCSeconds(),
+      ]
+    : [
+        at.getFullYear(),
+        at.getMonth() + 1,
+        at.getDate(),
+        at.getHours(),
+        at.getMinutes(),
+        at.getSeconds(),
+      ];
+  const time = `${pad(hour)}:${pad(minute)}${seconds ? `:${pad(second)}` : ''}`;
+  return `${year}-${pad(month)}-${pad(day)} ${time}${utc ? ' UTC' : ''}`;
+};
 
 const UNITS: [number, string][] = [
   [86400, 'day'],

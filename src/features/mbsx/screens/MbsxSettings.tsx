@@ -359,6 +359,7 @@ const MbsxSettings: React.FC = () => {
                   show_raw_states: current.show_raw_states,
                   notify_swaps: current.notify_swaps,
                   show_debug: current.show_debug,
+                  show_utc_times: current.show_utc_times,
                 }
               : defaultConfig(),
           )
@@ -632,6 +633,26 @@ const MbsxSettings: React.FC = () => {
               </View>
               <Text style={look.note}>
                 Adds Debug page and options. Off by default.
+              </Text>
+              <View style={[look.cardRow, look.cardRowLine]}>
+                <Text style={[styles.label, look.rowLabel]}>
+                  Show Times In UTC
+                </Text>
+                <Switch
+                  testID="mbsx-show-utc-times"
+                  value={config.show_utc_times === true}
+                  onValueChange={value => {
+                    edit({show_utc_times: value});
+                    updateConfig(current => ({
+                      ...current,
+                      show_utc_times: value,
+                    })).catch(e => setError((e as Error).message));
+                  }}
+                />
+              </View>
+              <Text style={look.note}>
+                Times show in this phone's time zone. Turn this on to show them
+                in UTC.
               </Text>
             </View>
 

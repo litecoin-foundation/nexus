@@ -40,7 +40,12 @@ import {useBottomInset} from '../components/useBottomInset';
 import MbsxBackButton from '../components/MbsxBackButton';
 import CopyButton from '../components/CopyButton';
 import {COIN_ICONS, swapCards} from '../swapCards';
-import {requestStateText, swapStateText, useShowRawStates} from '../stateText';
+import {
+  requestStateText,
+  swapStateText,
+  useShowRawStates,
+  useShowUtcTimes,
+} from '../stateText';
 import {
   acceptOffer,
   acceptedSwap,
@@ -94,6 +99,7 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
   const showRaw = useShowRawStates();
+  const utc = useShowUtcTimes();
 
   useEffect(() => {
     navigation.setOptions({
@@ -294,10 +300,12 @@ const RequestDetail: React.FC<Props> = ({route, navigation}) => {
           </Text>
           {showRaw ? <Text style={swapCards.id}>{request.state}</Text> : null}
           <Text style={swapCards.fromLine}>
-            {`Created ${formatTimestamp(request.created_at)}`}
+            {`Created ${formatTimestamp(request.created_at, utc)}`}
           </Text>
           {request.state === 'ACCEPT_SENT' ? null : (
-            <TimeLine text={`Expires ${formatTimestamp(request.expire_at)}`} />
+            <TimeLine
+              text={`Expires ${formatTimestamp(request.expire_at, utc)}`}
+            />
           )}
           <View style={look.idRow}>
             <View style={look.idPill}>

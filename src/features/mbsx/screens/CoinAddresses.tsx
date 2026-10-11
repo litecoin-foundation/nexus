@@ -20,6 +20,7 @@ import {getCoinPrices, validateAddress} from '../adapter';
 import {forgetAddress, rememberAddress} from '../addressesSlice';
 import {formatPrice} from 'react-native-nitro-bsx';
 import {formatTimestamp} from '../format';
+import {useShowUtcTimes} from '../stateText';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
 import CopyButton from '../components/CopyButton';
@@ -30,6 +31,7 @@ import type {MbsxCoinPrices, MbsxDrawerParamList} from '../types';
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CoinAddresses'>;
 
 const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
+  const utc = useShowUtcTimes();
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = getMbsxStyles(SCREEN_HEIGHT);
   const bottom = useBottomInset();
@@ -140,7 +142,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
                 {`1 ${coin} = ${formatPrice(price)} ${prices?.currency}`}
               </Text>
               <Text style={swapCards.id}>
-                {`Updated ${formatTimestamp(prices?.updated_at ?? '')}`}
+                {`Updated ${formatTimestamp(prices?.updated_at ?? '', utc)}`}
               </Text>
             </>
           ) : (

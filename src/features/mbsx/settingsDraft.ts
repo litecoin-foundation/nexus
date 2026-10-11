@@ -27,6 +27,7 @@ export const persisted = (cfg: MbsxConfig) => {
   delete copy.show_raw_states;
   delete copy.notify_swaps;
   delete copy.show_debug;
+  delete copy.show_utc_times;
   return JSON.stringify(copy);
 };
 
