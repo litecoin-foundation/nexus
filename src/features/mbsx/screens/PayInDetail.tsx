@@ -256,6 +256,13 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   }
 
   const expired = Number(deposit.expire_at) * 1000 <= Date.now();
+  // The module sweeps an expired deposit back unless its swap has started
+  const ended =
+    (PAYABLE.has(deposit.state) && Number(deposit.remaining) > 0) ||
+    (expired &&
+      !swapUnderway &&
+      Number(deposit.received) > 0 &&
+      ['RECEIVED', 'NO_OFFER', 'REQUESTED'].includes(deposit.state));
 
   const act = (action: () => void) => {
     triggerLightFeedback();
@@ -363,7 +370,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
               </View>
             </View>
           </>
-        ) : PAYABLE.has(deposit.state) && Number(deposit.remaining) > 0 ? (
+        ) : ended ? (
           <View style={swapCards.card}>
             <Text testID="mbsx-payin-ended" style={swapCards.note}>
               This pay-in has ended, so don't pay into its address. Anything it
