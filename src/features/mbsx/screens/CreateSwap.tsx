@@ -30,6 +30,7 @@ import {
   selectedAccountNamesSelector,
 } from '../../../reducers/wallets';
 import {
+  MbsxAddress,
   rememberAddress,
   rememberDestination,
   setLastCoin,
@@ -159,6 +160,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const [advanced, setAdvanced] = useState(false);
   const [coinOpen, setCoinOpen] = useState(false);
   const [receiversOpen, setReceiversOpen] = useState(false);
+  const [buyReceiversOpen, setBuyReceiversOpen] = useState(false);
   const keyboardHeight = useKeyboardHeight();
   const scrollRef = useRef<ScrollView>(null);
   const amountY = useRef({from: 0, to: 0});
@@ -357,14 +359,22 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   const savedAddresses = useAppSelector(state =>
     coinTo ? (state.mbsxAddresses.byCoin[coinTo] ?? []) : [],
   );
+  const savedBuyAddresses = useAppSelector(
+    state => state.mbsxAddresses.byCoin[buyCoin] ?? [],
+  );
 
   // Scan pops back onto this screen with the result in params.
   const scanned = route.params?.scanData;
+  const scanFor = useRef<'to' | 'buy'>('to');
   const addressFilledFor = useRef('');
   useEffect(() => {
     if (scanned) {
-      setAddressTo(scanned);
-      addressFilledFor.current = coinTo;
+      if (scanFor.current === 'buy') {
+        setBuyAddress(scanned);
+      } else {
+        setAddressTo(scanned);
+        addressFilledFor.current = coinTo;
+      }
       navigation.setParams({scanData: undefined});
     }
   }, [scanned, coinTo, navigation]);
@@ -438,6 +448,7 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     setPayIn(next);
     setCoinOpen(false);
     setReceiversOpen(false);
+    setBuyReceiversOpen(false);
     setBuyCoin(HOST_COIN);
     setBuyOpen(false);
     setBuyAddress('');
@@ -658,9 +669,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   };
   const spendableLabel =
     coinString(Number(balances?.spendable ?? 0n) / 1e8) || '0';
-  const selectedSaved = savedAddresses.find(
-    entry => entry.address === addressTo,
-  );
 
   const from = Number(amountFrom);
   const to = Number(amountTo);
@@ -689,7 +697,6 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
     feeLine !== '' && quote?.raisedFrom != null
       ? raisedFeeNote(quote.raisedFrom)
       : '';
-  const noSaved = coinChosen && savedAddresses.length === 0;
 
   useEffect(() => {
     setConfirming(false);
@@ -792,6 +799,127 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
       ))}
     </View>
   ) : null;
+  const addressTools = ({
+    coin,
+    address,
+    setAddress,
+    saved,
+    open,
+    setOpen,
+    enabled,
+    ids,
+    pickLabel,
+    scanTarget,
+  }: {
+    coin: string;
+    address: string;
+    setAddress: (value: string) => void;
+    saved: MbsxAddress[];
+    open: boolean;
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    enabled: boolean;
+    ids: string;
+    pickLabel: string;
+    scanTarget: 'to' | 'buy';
+  }) => {
+    const selectedSaved = saved.find(entry => entry.address === address);
+    const noSaved = enabled && saved.length === 0;
+    return (
+      <>
+        <View style={look.receiverRow}>
+          <TouchableOpacity
+            testID={`${ids}addresses`}
+            disabled={!enabled}
+            style={[
+              look.receiverPick,
+              look.receiverPickFlex,
+              enabled ? null : look.iconBtnOff,
+            ]}
+            onPress={() =>
+              noSaved
+                ? navigation.navigate('CoinAddresses', {coin})
+                : setOpen(wasOpen => !wasOpen)
+            }>
+            <Text style={look.receiverPickText} numberOfLines={1}>
+              {selectedSaved?.label ||
+                (address
+                  ? shortAddress(address)
+                  : noSaved
+                    ? `Add a ${coin} Address`
+                    : pickLabel)}
+            </Text>
+            <Image
+              source={require('../../../assets/images/forward.png')}
+              style={look.chevron}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID={`${ids}paste`}
+            disabled={!enabled}
+            style={[look.iconBtn, enabled ? null : look.iconBtnOff]}
+            onPress={async () => {
+              const text = await Clipboard.getString();
+              if (text.trim()) {
+                setAddress(text.trim());
+              }
+            }}>
+            <Image
+              source={require('../../../assets/images/paste.png')}
+              style={look.toolIcon}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID={`${ids}scan`}
+            disabled={!enabled}
+            style={[look.iconBtn, enabled ? null : look.iconBtnOff]}
+            onPress={() => {
+              scanFor.current = scanTarget;
+              navigation.getParent()?.navigate('Scan', {
+                returnRoute: 'MbsxStack',
+                returnScreen: 'CreateSwap',
+              });
+            }}>
+            <Image
+              source={require('../../../assets/images/qrcode-btn.png')}
+              style={look.toolIcon}
+            />
+          </TouchableOpacity>
+        </View>
+        {open ? (
+          <View testID={`${ids}saved-addresses`} style={look.coinMenu}>
+            {saved.length === 0 ? (
+              <Text style={look.emptyReceivers}>No saved addresses</Text>
+            ) : (
+              saved.map(entry => (
+                <TouchableOpacity
+                  key={entry.address}
+                  testID={`${ids}saved-${entry.address}`}
+                  style={look.coinOption}
+                  onPress={() => {
+                    setAddress(entry.address);
+                    setOpen(false);
+                  }}>
+                  {entry.label ? (
+                    <Text style={look.coinPillText}>{entry.label}</Text>
+                  ) : null}
+                  <Text style={look.receiverAddr} numberOfLines={1}>
+                    {shortAddress(entry.address)}
+                  </Text>
+                </TouchableOpacity>
+              ))
+            )}
+            <TouchableOpacity
+              testID={`${ids}manage-addresses`}
+              style={look.manage}
+              onPress={() => navigation.navigate('CoinAddresses', {coin})}>
+              <Text style={look.saved}>Manage Addresses</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   const addressBlock = (
     <>
       {coinChosen ? null : (
@@ -817,99 +945,18 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
           Not a {coinTo} address
         </Text>
       ) : null}
-      <View style={look.receiverRow}>
-        <TouchableOpacity
-          testID="mbsx-addresses"
-          disabled={!coinChosen}
-          style={[
-            look.receiverPick,
-            look.receiverPickFlex,
-            coinChosen ? null : look.iconBtnOff,
-          ]}
-          onPress={() =>
-            noSaved
-              ? navigation.navigate('CoinAddresses', {coin: coinTo})
-              : setReceiversOpen(open => !open)
-          }>
-          <Text style={look.receiverPickText} numberOfLines={1}>
-            {selectedSaved?.label ||
-              (addressTo
-                ? shortAddress(addressTo)
-                : noSaved
-                  ? `Add a ${coinTo} Address`
-                  : payIn
-                    ? 'Select Address'
-                    : 'Select Receiver')}
-          </Text>
-          <Image
-            source={require('../../../assets/images/forward.png')}
-            style={look.chevron}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          testID="mbsx-paste"
-          disabled={!coinChosen}
-          style={[look.iconBtn, coinChosen ? null : look.iconBtnOff]}
-          onPress={async () => {
-            const text = await Clipboard.getString();
-            if (text.trim()) {
-              setAddressTo(text.trim());
-            }
-          }}>
-          <Image
-            source={require('../../../assets/images/paste.png')}
-            style={look.toolIcon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          testID="mbsx-scan"
-          disabled={!coinChosen}
-          style={[look.iconBtn, coinChosen ? null : look.iconBtnOff]}
-          onPress={() =>
-            navigation.getParent()?.navigate('Scan', {
-              returnRoute: 'MbsxStack',
-              returnScreen: 'CreateSwap',
-            })
-          }>
-          <Image
-            source={require('../../../assets/images/qrcode-btn.png')}
-            style={look.toolIcon}
-          />
-        </TouchableOpacity>
-      </View>
-      {receiversOpen ? (
-        <View testID="mbsx-saved-addresses" style={look.coinMenu}>
-          {savedAddresses.length === 0 ? (
-            <Text style={look.emptyReceivers}>No saved addresses</Text>
-          ) : (
-            savedAddresses.map(entry => (
-              <TouchableOpacity
-                key={entry.address}
-                testID={`mbsx-saved-${entry.address}`}
-                style={look.coinOption}
-                onPress={() => {
-                  setAddressTo(entry.address);
-                  setReceiversOpen(false);
-                }}>
-                {entry.label ? (
-                  <Text style={look.coinPillText}>{entry.label}</Text>
-                ) : null}
-                <Text style={look.receiverAddr} numberOfLines={1}>
-                  {shortAddress(entry.address)}
-                </Text>
-              </TouchableOpacity>
-            ))
-          )}
-          <TouchableOpacity
-            testID="mbsx-manage-addresses"
-            style={look.manage}
-            onPress={() =>
-              navigation.navigate('CoinAddresses', {coin: coinTo})
-            }>
-            <Text style={look.saved}>Manage Addresses</Text>
-          </TouchableOpacity>
-        </View>
-      ) : null}
+      {addressTools({
+        coin: coinTo,
+        address: addressTo,
+        setAddress: setAddressTo,
+        saved: savedAddresses,
+        open: receiversOpen,
+        setOpen: setReceiversOpen,
+        enabled: coinChosen,
+        ids: 'mbsx-',
+        pickLabel: payIn ? 'Select Address' : 'Select Receiver',
+        scanTarget: 'to',
+      })}
     </>
   );
 
@@ -1059,6 +1106,18 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
                   Not a {buyCoin} address
                 </Text>
               ) : null}
+              {addressTools({
+                coin: buyCoin,
+                address: buyAddress,
+                setAddress: setBuyAddress,
+                saved: savedBuyAddresses,
+                open: buyReceiversOpen,
+                setOpen: setBuyReceiversOpen,
+                enabled: true,
+                ids: 'mbsx-buy-',
+                pickLabel: 'Select Receiver',
+                scanTarget: 'buy',
+              })}
             </>
           )}
         </View>
