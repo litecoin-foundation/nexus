@@ -157,6 +157,7 @@
     "enable_camera": "Paganahin ang kamera para ma-scan ang QR Codes",
     "awesome": "Kahanga-hanga!",
     "just_sent": "Nagpadala ka lang",
+    "view_transaction": "Tingnan ang Transaksyon",
     "balance_unconfirmed": "Hindi pa nakumpirmang balanse sa Wallet",
     "wallet_unsynced": "Sync ay Nagpapatuloy...",
     "try_less_amount": "Magpadala ng konti lang. Ang mga network fee ay umuubos sa inyong balance, bawasan ang halaga para sa mga fee.",

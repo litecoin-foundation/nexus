@@ -157,6 +157,7 @@
     "enable_camera": "Enable Camera to Scan QR Codes",
     "awesome": "Awesome!",
     "just_sent": "You just sent",
+    "view_transaction": "View Transaction",
     "balance_unconfirmed": "Unconfirmed Balance in Wallet",
     "wallet_unsynced": "Sync in Progress...",
     "try_less_amount": "Send a bit less. Network fees eat into your balance, lower the amount for fees.",

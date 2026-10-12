@@ -18,9 +18,7 @@ import ConfirmSell from '../screens/Buy/ConfirmSell';
 import ConfirmSellOnramper from '../screens/Buy/ConfirmSellOnramper';
 import {NewWalletStackParamList} from './types';
 import {ScreenHeaderNavigationOptions} from '../components/ScreenHeader';
-import ConfirmConvert, {
-  ConfirmConvertNavigationOptions,
-} from '../screens/Wallet/ConfirmConvert';
+import ConfirmConvert from '../screens/Wallet/ConfirmConvert';
 import SuccessConvert, {
   SuccessConvertNavigationOptions,
 } from '../screens/Wallet/SuccessConvert';
@@ -93,7 +91,7 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="ConfirmConvert"
         component={ConfirmConvert}
-        options={({navigation}) => ConfirmConvertNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="SuccessConvert"

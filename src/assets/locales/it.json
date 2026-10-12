@@ -157,6 +157,7 @@
     "enable_camera": "Abilita la camera per scannerizzare i codici QR",
     "awesome": "Fantastico!",
     "just_sent": "Hai appena inviato",
+    "view_transaction": "Visualizza transazione",
     "balance_unconfirmed": "Saldo non confermato nel portafoglio",
     "wallet_unsynced": "Sincronizzazione in corso...",
     "try_less_amount": "Invia un po' meno. Le commissioni di rete intaccano il tuo saldo, riduci l'importo per le commissioni.",

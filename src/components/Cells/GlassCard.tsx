@@ -154,18 +154,27 @@ interface StackedRowProps {
   // NOTE: no limit by default, so a value that must be read in full, such as an
   // address, is never cut short
   numberOfLines?: number;
+  // NOTE: a taller row with a larger value, for a figure such as a balance
+  largeValue?: boolean;
 }
 
 // NOTE: a row for a value too long to sit beside its title, set under it instead
 export const GlassCardStackedRow: React.FC<StackedRowProps> = props => {
-  const {titleTextKey, titleDomain, titleTextValue, value, numberOfLines} =
-    props;
+  const {
+    titleTextKey,
+    titleDomain,
+    titleTextValue,
+    value,
+    numberOfLines,
+    largeValue,
+  } = props;
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = useGlassCardStyles();
 
   return (
-    <View style={styles.stackedRow}>
+    <View
+      style={[styles.stackedRow, largeValue ? styles.stackedRowLarge : null]}>
       <TranslateText
         textKey={titleTextKey}
         textValue={titleTextValue}
@@ -176,8 +185,11 @@ export const GlassCardStackedRow: React.FC<StackedRowProps> = props => {
       />
       <TranslateText
         textValue={value}
-        maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-        textStyle={styles.stackedRowValue}
+        maxSizeInPixels={SCREEN_HEIGHT * (largeValue ? 0.028 : 0.02)}
+        textStyle={{
+          ...styles.stackedRowValue,
+          ...(largeValue ? styles.stackedRowValueLarge : {}),
+        }}
         numberOfLines={numberOfLines}
       />
     </View>
@@ -287,6 +299,14 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontWeight: '700',
       fontFamily: 'Satoshi Variable',
       marginTop: screenHeight * 0.004,
+    },
+    stackedRowLarge: {
+      minHeight: screenHeight * CARD_ROW_HEIGHT_RATIO * 1.6,
+      paddingVertical: screenHeight * 0.02,
+    },
+    stackedRowValueLarge: {
+      fontSize: screenHeight * 0.02,
+      marginTop: screenHeight * 0.008,
     },
     hairline: {
       height: StyleSheet.hairlineWidth,

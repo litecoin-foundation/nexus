@@ -157,6 +157,7 @@
     "enable_camera": "Habilitar cámara para escanear códigos QR",
     "awesome": "¡Genial!",
     "just_sent": "Acabas de enviar",
+    "view_transaction": "Ver transacción",
     "balance_unconfirmed": "Saldo no confirmado en la billetera",
     "wallet_unsynced": "Sincronización en progreso...",
     "try_less_amount": "Envía un poco menos. Las tarifas de red consumen tu saldo, reduce la cantidad para tarifas.",

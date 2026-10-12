@@ -157,6 +157,7 @@
     "enable_camera": "Kamera zum Scannen von QR-Codes aktivieren",
     "awesome": "Wunderbar!",
     "just_sent": "Sie haben gerade gesendet",
+    "view_transaction": "Transaktion ansehen",
     "balance_unconfirmed": "Unbestätigtes Guthaben im Wallet",
     "wallet_unsynced": "Synchronisierung läuft...",
     "try_less_amount": "Senden Sie etwas weniger. Netzwerkgebühren schmälern Ihr Guthaben, reduzieren Sie den Betrag für Gebühren.",

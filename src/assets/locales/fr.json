@@ -157,6 +157,7 @@
     "enable_camera": "Activer la caméra pour scanner les QR codes",
     "awesome": "Super !",
     "just_sent": "Vous venez d'envoyer",
+    "view_transaction": "Voir la transaction",
     "balance_unconfirmed": "Solde non confirmé dans le portefeuille",
     "wallet_unsynced": "Synchronisation en cours...",
     "try_less_amount": "Envoyez un peu moins. Les frais de réseau réduisent votre solde, diminuez le montant pour les frais.",

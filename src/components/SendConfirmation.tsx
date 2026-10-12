@@ -35,6 +35,7 @@ import {
   subunitSymbolSelector,
 } from '../reducers/settings';
 import {fiatValueSelector} from '../reducers/ticker';
+import {isLongAmount} from '../utils/satoshis';
 
 import TranslateText from '../components/TranslateText';
 import {ScreenSizeContext} from '../context/screenSize';
@@ -86,6 +87,7 @@ const SendConfirmation: React.FC<Props> = props => {
     satsToSubunitSelector(state),
   );
   const amountInSubunit = convertToSubunit(sendAmount);
+  const longAmount = isLongAmount(amountInSubunit);
 
   const {t: tSend} = useTranslation('sendTab');
 
@@ -191,8 +193,11 @@ const SendConfirmation: React.FC<Props> = props => {
           />
           <TranslateText
             textValue={amountInSubunit + ' ' + amountCode}
-            maxSizeInPixels={SCREEN_HEIGHT * 0.08}
-            textStyle={styles.amountText}
+            maxSizeInPixels={SCREEN_HEIGHT * (longAmount ? 0.056 : 0.08)}
+            textStyle={[
+              styles.amountText,
+              longAmount ? styles.amountTextSmall : null,
+            ]}
             numberOfLines={1}
           />
           <View style={styles.fiatAmount}>
@@ -328,6 +333,9 @@ const getStyles = (
       fontStyle: 'normal',
       fontWeight: '400',
       marginTop: screenHeight * 0.01,
+    },
+    amountTextSmall: {
+      fontSize: screenHeight * 0.042,
     },
     fiatAmount: {
       width: 'auto',

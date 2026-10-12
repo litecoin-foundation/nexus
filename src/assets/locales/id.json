@@ -157,6 +157,7 @@
     "enable_camera": "Aktifkan Kamera untuk Scan Kode QR",
     "awesome": "Keren!",
     "just_sent": "Anda telah mengirim",
+    "view_transaction": "Lihat Transaksi",
     "balance_unconfirmed": "Saldo Belum Terkonfirmasi di Dompet",
     "wallet_unsynced": "Sinkronisasi Sedang Berlangsung...",
     "try_less_amount": "Kirim sedikit lebih sedikit. Biaya jaringan mengurangi saldo Anda, kurangi jumlah untuk biaya.",

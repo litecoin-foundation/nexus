@@ -157,6 +157,7 @@
     "enable_camera": "开启相机来扫描二维码",
     "awesome": "太棒了！",
     "just_sent": "你刚刚发送",
+    "view_transaction": "查看交易",
     "balance_unconfirmed": "钱包中未确认的余额",
     "wallet_unsynced": "同步正在进行中...",
     "try_less_amount": "发送少一点。网络费用会消耗您的余额，请降低金额以支付费用。",

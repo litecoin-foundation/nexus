@@ -1,6 +1,13 @@
 // subunit is how we represent the unit used
 // by the wallet in the settings store
 
+// NOTE: an amount of this many digits or more, decimals included, is too long
+// to be set at full size across the confirm and success screens
+export const LONG_AMOUNT_DIGITS = 9;
+
+export const isLongAmount = (amount: number | string) =>
+  String(amount).replace(/\D/g, '').length >= LONG_AMOUNT_DIGITS;
+
 export const litecoinToSubunit = (amount: number, subunit: number) => {
   switch (subunit) {
     case 0: // litecoin

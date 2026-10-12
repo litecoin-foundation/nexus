@@ -157,6 +157,7 @@
     "enable_camera": "Włącz uprawnienia aparatu by zeskanować kod QR",
     "awesome": "Świetnie!",
     "just_sent": "Litecoin został wysłany",
+    "view_transaction": "Zobacz transakcję",
     "balance_unconfirmed": "Niepotwierdzone saldo w portfelu",
     "wallet_unsynced": "Trwa synchronizacja...",
     "try_less_amount": "Wyślij trochę mniej. Opłaty sieciowe zmniejszają Twoje saldo, zmniejsz kwotę na opłaty.",

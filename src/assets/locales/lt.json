@@ -157,6 +157,7 @@
     "enable_camera": "Įgalinti kamerą nuskaityti QR kodus",
     "awesome": "Nuostabu!",
     "just_sent": "Ką tik išsiuntėte",
+    "view_transaction": "Peržiūrėti sandorį",
     "balance_unconfirmed": "Nepatvirtintas likutis piniginėje",
     "wallet_unsynced": "Vyksta sinchronizacija...",
     "try_less_amount": "Siųskite šiek tiek mažiau. Tinklo mokesčiai sumažina jūsų balansą, sumažinkite sumą mokesčiams.",

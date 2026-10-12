@@ -4,19 +4,40 @@ import {
   StyleSheet,
   DeviceEventEmitter,
   Platform,
-  Image,
   Alert,
 } from 'react-native';
-import {RouteProp} from '@react-navigation/native';
+import {NavigatorScreenParams, RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
 
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import GreenButton from '../../components/Buttons/GreenButton';
-import {useTranslation} from 'react-i18next';
+import GreenButtonV2 from '../../components/ButtonsV2/GreenButtonV2';
+import {BUTTON_HEIGHT_RATIO} from '../../components/ButtonsV2/BlueButtonV2';
+import {
+  GAP_RATIO,
+  useFixedBottomStyle,
+} from '../../components/ButtonsV2/fixedBottomStyle';
+import {
+  GlassCard,
+  GlassCardHairline,
+  GlassCardStackedRow,
+  SECONDARY_TEXT,
+} from '../../components/Cells/GlassCard';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
+import {BORDER_GRADIENT_COLORS} from '../../components/LiquidGlassBackdrop';
+import {SHEET_BACKGROUND} from '../../components/GlassTxRows';
+import {SHEET_TOP_RADIUS_RATIO} from '../../components/GlassBottomSheet';
+import {
+  SKIN_GRADIENT_COLORS,
+  SKIN_GRADIENT_LOCATIONS,
+} from '../../components/FoldedSkinView';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {sendConvertWithPsbt} from '../../reducers/transaction';
 import {showError} from '../../reducers/errors';
@@ -25,12 +46,11 @@ import {
   subunitCodeSelector,
   subunitToSatsSelector,
 } from '../../reducers/settings';
+import {MainStackParamList} from '../../navigation/types';
+import {isLongAmount} from '../../utils/satoshis';
 
-import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-
-interface Props {}
 
 type RootStackParamList = {
   ConfirmConvert: {
@@ -45,6 +65,7 @@ type RootStackParamList = {
     amount: number;
     isRegular: boolean;
   };
+  Main: NavigatorScreenParams<MainStackParamList>;
 };
 
 interface Props {
@@ -64,6 +85,7 @@ const ConfirmConvert: React.FC<Props> = props => {
   const dispatch = useAppDispatch();
 
   const {t} = useTranslation('settingsTab');
+  const {t: tConvert} = useTranslation('convertTab');
 
   const [loading, setLoading] = useState(false);
 
@@ -96,10 +118,15 @@ const ConfirmConvert: React.FC<Props> = props => {
       )
     : privateAmountInSubunit;
   const amount = isRegular ? regularAmountInSubunit : privateAmountInSubunit;
+  const longAmount = isLongAmount(amount);
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, insets);
+  const fixedBottomStyle = useFixedBottomStyle();
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const [isPinModalOpened, setIsPinModalOpened] = useState(false);
   const pinModalAction = useRef<string>('convert-auth');
@@ -146,140 +173,72 @@ const ConfirmConvert: React.FC<Props> = props => {
   };
 
   return (
-    <>
-      <LinearGradient style={styles.background} colors={['#1162E6', '#0F55C7']}>
-        <CustomSafeAreaView
-          styles={styles.safeArea}
-          edges={
-            Platform.OS === 'ios'
-              ? ['top', 'left', 'right']
-              : ['top', 'bottom', 'left', 'right']
-          }>
-          <View style={styles.body}>
-            <TranslateText
-              textKey="convert"
-              domain="main"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.03}
-              textStyle={styles.convertText}
-              numberOfLines={1}
-            />
-            <TranslateText
-              textValue={amount + ' ' + amountCode}
-              maxSizeInPixels={SCREEN_HEIGHT * 0.05}
-              textStyle={styles.amountText}
-              numberOfLines={1}
-            />
-            <View style={styles.fromToContainer}>
-              <TranslateText
-                textKey={
-                  isRegular ? 'regular_to_private' : 'private_to_regular'
-                }
-                domain="convertTab"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-                textStyle={styles.fromToText}
-                numberOfLines={1}
-              />
-            </View>
+    <View style={styles.container}>
+      <View style={styles.topContainer}>
+        <LinearGradient
+          style={styles.background}
+          colors={SKIN_GRADIENT_COLORS}
+          locations={SKIN_GRADIENT_LOCATIONS}
+        />
+        <TranslateText
+          textKey="convert"
+          domain="main"
+          maxSizeInPixels={SCREEN_HEIGHT * 0.03}
+          textStyle={styles.titleText}
+          numberOfLines={1}
+        />
+        <TranslateText
+          textValue={amount + ' ' + amountCode}
+          maxSizeInPixels={SCREEN_HEIGHT * (longAmount ? 0.056 : 0.08)}
+          textStyle={[
+            styles.amountText,
+            longAmount ? styles.amountTextSmall : null,
+          ]}
+          numberOfLines={1}
+        />
+        <View style={styles.fromTo}>
+          <TranslateText
+            textKey={isRegular ? 'regular_to_private' : 'private_to_regular'}
+            domain="convertTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.05}
+            textStyle={styles.fromToText}
+            numberOfLines={1}
+          />
+        </View>
+      </View>
 
-            <View style={styles.balanceContainer}>
-              <View style={styles.balanceItem}>
-                <TranslateText
-                  textKey="regular"
-                  domain="convertTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.014}
-                  textStyle={styles.valueSubtitle}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={
-                    regularConfirmedBalanceInSubunit + ' ' + amountCode
-                  }
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                  textStyle={styles.valueTitle}
-                  numberOfLines={3}
-                />
-              </View>
-              <View style={styles.balanceItem}>
-                <TranslateText
-                  textKey="private"
-                  domain="convertTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.014}
-                  textStyle={styles.valueSubtitle}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={
-                    privateConfirmedBalanceInSubunit + ' ' + amountCode
-                  }
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                  textStyle={styles.valueTitle}
-                  numberOfLines={3}
-                />
-              </View>
-            </View>
+      <View style={styles.bottomSheetContainer}>
+        <GlassCard>
+          <GlassCardStackedRow
+            titleTextValue={tConvert('regular').toUpperCase()}
+            value={`${regularConfirmedBalanceInSubunit} → ${newRegularBalance} ${amountCode}`}
+            largeValue
+          />
+          <GlassCardHairline />
+          <GlassCardStackedRow
+            titleTextValue={tConvert('private').toUpperCase()}
+            value={`${privateConfirmedBalanceInSubunit} → ${newPrivateBalance} ${amountCode}`}
+            largeValue
+          />
+        </GlassCard>
+        {!isRegular ? (
+          <TranslateText
+            textKey="private_to_regular_note"
+            domain="convertTab"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+            textStyle={styles.noteText}
+            numberOfLines={6}
+          />
+        ) : null}
+      </View>
 
-            <View style={styles.imageContainer}>
-              <Image
-                source={require('../../assets/images/arrow-down.png')}
-                style={styles.image}
-              />
-            </View>
-
-            <View style={styles.balanceContainer}>
-              <View style={styles.balanceItem}>
-                <TranslateText
-                  textKey="regular"
-                  domain="convertTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.014}
-                  textStyle={styles.valueSubtitle}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={newRegularBalance + ' ' + amountCode}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                  textStyle={styles.valueTitle}
-                  numberOfLines={3}
-                />
-              </View>
-              <View style={styles.balanceItem}>
-                <TranslateText
-                  textKey="private"
-                  domain="convertTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.014}
-                  textStyle={styles.valueSubtitle}
-                  numberOfLines={1}
-                />
-                <TranslateText
-                  textValue={newPrivateBalance + ' ' + amountCode}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                  textStyle={styles.valueTitle}
-                  numberOfLines={3}
-                />
-              </View>
-            </View>
-
-            {!isRegular ? (
-              <View style={styles.noteContainer}>
-                <TranslateText
-                  textKey="private_to_regular_note"
-                  domain="convertTab"
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-                  textStyle={styles.noteText}
-                  numberOfLines={6}
-                />
-              </View>
-            ) : null}
-
-            <View style={styles.confirmButtonContainer}>
-              <GreenButton
-                textKey="confirm_convert"
-                textDomain="convertTab"
-                onPress={() => handleAuthenticationRequired('convert-auth')}
-              />
-            </View>
-          </View>
-        </CustomSafeAreaView>
-      </LinearGradient>
+      <View style={fixedBottomStyle}>
+        <GreenButtonV2
+          textKey="confirm_convert"
+          textDomain="convertTab"
+          onPress={() => handleAuthenticationRequired('convert-auth')}
+        />
+      </View>
 
       <PlasmaModal
         isOpened={isPinModalOpened}
@@ -309,183 +268,120 @@ const ConfirmConvert: React.FC<Props> = props => {
       />
 
       <LoadingIndicator visible={loading} />
-    </>
-  );
-};
 
-const getStyles = (screenWidth: number, screenHeight: number) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    background: {
-      flex: 1,
-    },
-    safeArea: {
-      flex: 1,
-    },
-    body: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'flex-start',
-      position: 'relative',
-      paddingTop: screenHeight * 0.05,
-      paddingHorizontal: screenWidth * 0.06,
-    },
-    convertText: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.03,
-      marginTop: screenHeight * 0.08,
-    },
-    amountText: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '400',
-      fontSize: screenHeight * 0.05,
-      textTransform: 'uppercase',
-    },
-    fromToContainer: {
-      width: 'auto',
-      borderRadius: screenHeight * 0.01,
-      backgroundColor: '#0F4CAD',
-      paddingTop: screenHeight * 0.01,
-      paddingBottom: screenHeight * 0.01,
-      paddingLeft: screenHeight * 0.014,
-      paddingRight: screenHeight * 0.014,
-      marginTop: screenHeight * 0.01,
-      marginBottom:
-        Platform.OS === 'ios' ? screenHeight * 0.1 : screenHeight * 0.08,
-    },
-    fromToText: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.02,
-      opacity: 0.4,
-      textTransform: 'uppercase',
-    },
-    balanceContainer: {
-      width: '100%',
-      flexDirection: 'row',
-      borderRadius: screenHeight * 0.02,
-      backgroundColor: '#2d333dcb',
-      paddingVertical: screenHeight * 0.02,
-      paddingHorizontal: screenWidth * 0.04,
-    },
-    balanceItem: {
-      flexBasis: '50%',
-    },
-    imageContainer: {
-      width: '100%',
-      height: screenHeight * 0.07,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    image: {
-      height: 16,
-    },
-    valueSubtitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.018,
-      textTransform: 'uppercase',
-      opacity: 0.6,
-    },
-    valueTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.025,
-    },
-    noteContainer: {
-      width: '100%',
-      height: screenHeight * 0.15,
-      alignItems: 'center',
-      paddingHorizontal: screenWidth * 0.07,
-      marginTop: screenHeight * 0.05,
-    },
-    noteText: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontStyle: 'normal',
-      fontWeight: '700',
-      fontSize: screenHeight * 0.02,
-      textAlign: 'justify',
-    },
-    confirmButtonContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.03,
-      left: screenWidth * 0.06,
-      width: '100%',
-    },
-    blurContainer: {
-      flex: 1,
-      padding: 20,
-      margin: 16,
-      textAlign: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-      borderRadius: 20,
-    },
-    box: {
-      width: '25%',
-      height: '20%',
-    },
-    boxEven: {
-      backgroundColor: 'orangered',
-    },
-    boxOdd: {
-      backgroundColor: 'gold',
-    },
-    text: {
-      fontSize: 24,
-      fontWeight: '600',
-    },
-  });
-
-export const ConfirmConvertNavigationOptions = (navigation: any) => {
-  const {width: SCREEN_WIDTH} = useContext(ScreenSizeContext);
-
-  return {
-    headerTitle: '',
-    headerTransparent: true,
-    headerTintColor: 'white',
-    headerLeft: () => (
-      <HeaderButton
-        textKey="change"
-        textDomain="buyTab"
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerRight: () => (
-      <HeaderButton
-        textKey="cancel"
-        textDomain="buyTab"
-        onPress={() =>
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        rightTextKey="cancel"
+        rightTextDomain="buyTab"
+        onRightPress={() =>
           navigation.popTo('Main', {
             screen: 'MainScreen',
             params: {isInitial: true},
           })
         }
-        rightPadding
+        fadeStyle={headerFadeStyle}
       />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414 ? {marginEnd: -5} : null,
-  };
+    </View>
+  );
 };
+
+const getStyles = (
+  screenWidth: number,
+  screenHeight: number,
+  insets: {top: number; bottom: number},
+) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: SKIN_GRADIENT_COLORS[SKIN_GRADIENT_COLORS.length - 1],
+      paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
+    },
+    background: {
+      ...StyleSheet.absoluteFill,
+    },
+    topContainer: {
+      flex: 1,
+      paddingTop: insets.top,
+      paddingHorizontal: screenWidth * 0.04,
+    },
+    bottomSheetContainer: {
+      width: '100%',
+      backgroundColor: SHEET_BACKGROUND,
+      borderTopLeftRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      borderTopRightRadius: screenHeight * SHEET_TOP_RADIUS_RATIO,
+      paddingTop: screenWidth * 0.03,
+      paddingHorizontal: screenWidth * 0.03,
+      paddingBottom:
+        screenHeight * BUTTON_HEIGHT_RATIO + screenWidth * GAP_RATIO * 2,
+      overflow: 'hidden',
+    },
+    titleText: {
+      color: 'white',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.025,
+      fontStyle: 'normal',
+      fontWeight: '700',
+      marginTop: screenHeight * 0.1,
+    },
+    amountText: {
+      color: 'white',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.06,
+      fontStyle: 'normal',
+      fontWeight: '400',
+      marginTop: screenHeight * 0.01,
+    },
+    amountTextSmall: {
+      fontSize: screenHeight * 0.042,
+    },
+    fromTo: {
+      width: 'auto',
+      height: screenHeight * 0.05,
+      borderRadius: screenHeight * 0.025,
+      borderCurve: 'continuous',
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: BORDER_GRADIENT_COLORS[1],
+      boxShadow: [
+        {offsetX: 0, offsetY: 2, blurRadius: 8, color: 'rgba(0, 0, 0, 0.07)'},
+        {
+          offsetX: 0,
+          offsetY: 0.5,
+          blurRadius: 0,
+          color: BORDER_GRADIENT_COLORS[0],
+          inset: true,
+        },
+        {
+          offsetX: 0,
+          offsetY: -0.5,
+          blurRadius: 0,
+          color: BORDER_GRADIENT_COLORS[2],
+          inset: true,
+        },
+      ],
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: screenHeight * 0.01,
+      paddingHorizontal: screenHeight * 0.02,
+      alignSelf: 'flex-start',
+      marginTop: screenHeight * 0.01,
+    },
+    fromToText: {
+      color: '#fff',
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.02,
+      fontStyle: 'normal',
+      fontWeight: '700',
+    },
+    noteText: {
+      color: SECONDARY_TEXT,
+      fontFamily: 'Satoshi Variable',
+      fontSize: screenHeight * 0.014,
+      fontStyle: 'normal',
+      fontWeight: '500',
+      paddingHorizontal: screenWidth * 0.045,
+    },
+  });
 
 export default ConfirmConvert;
