@@ -56,6 +56,13 @@ const REFUND_TX = [
   'Lock A Refund Swipe',
 ];
 
+const txCoin = (txType: string, swap: SwapDetails): string =>
+  txType.startsWith('Lock A')
+    ? swap.coin_from
+    : txType.startsWith('Lock B')
+      ? swap.coin_to
+      : '';
+
 const refundTxid = (events: SwapEvent[] | undefined): string => {
   const hit = (events ?? [])
     .filter(
@@ -250,6 +257,10 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
           (swap.events ?? []).map((event: SwapEvent) => {
             const expanded = openEvent === event.id;
             const isTx = event.linked_type === 'SWAP_TX';
+            const coin =
+              isTx && event.event_msg === undefined
+                ? txCoin(String(event.event_data), swap)
+                : '';
             const stepText = swapStateText(
               event.event_sub_type,
               swap.coin_from,
@@ -286,6 +297,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
                 {(event.event_msg ?? event.event_data) ? (
                   <Text style={swapCards.meta}>
                     {String(event.event_msg ?? event.event_data)}
+                    {coin ? ` (${coin})` : ''}
                   </Text>
                 ) : null}
                 {event.linked_id ? (
