@@ -58,6 +58,15 @@ import type {Deposit, MbsxDrawerParamList} from '../types';
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'PayInDetail'>;
 
 const PAYABLE = new Set(['WAITING', 'SEEN', 'SHORT']);
+const URI_SCHEMES: Record<string, string> = {
+  BTC: 'bitcoin',
+  PART: 'particl',
+  FIRO: 'firo',
+};
+const paymentUri = (coin: string, address: string, amount: string) =>
+  URI_SCHEMES[coin]
+    ? `${URI_SCHEMES[coin]}:${address}?amount=${amount}`
+    : address;
 const PAUSED = new Set(['SHORT', 'NO_OFFER']);
 const CANCELLABLE = new Set([
   'WAITING',
@@ -325,7 +334,14 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
                 />
               </View>
               <View style={look.qr}>
-                <QRCode value={deposit.address} size={SCREEN_HEIGHT * 0.22} />
+                <QRCode
+                  value={paymentUri(
+                    deposit.coin,
+                    deposit.address,
+                    deposit.remaining,
+                  )}
+                  size={SCREEN_HEIGHT * 0.22}
+                />
               </View>
               <View style={look.addressRow}>
                 <View style={look.addressBox}>
