@@ -27,6 +27,7 @@ import {
 } from './config';
 import type {MbsxConfig} from './config';
 import {
+  lndUp,
   releaseAllLeases,
   releaseLeases,
   releaseOrphanLeases,
@@ -1187,7 +1188,7 @@ export const installKeyProvider = () => {
 // message as the swap's error, rather than broadcasting anything.
 export const installSigner = () => {
   NitroBSX.setSignTx(async (psbtHex: string, coin: string) => {
-    if (!store.getState().lightning.lndActive) {
+    if (!(await lndUp())) {
       throw new Error('lnd is not running');
     }
     try {
@@ -1207,7 +1208,7 @@ export const installBalanceProvider = () => {
     if (coin.toUpperCase() !== 'LTC') {
       throw new Error(`mbsx asked for a ${coin} balance, which Nexus has not`);
     }
-    if (!store.getState().lightning.lndActive) {
+    if (!(await lndUp())) {
       throw new Error('lnd is not running');
     }
     return await spendableBalance();

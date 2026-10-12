@@ -61,6 +61,7 @@ jest.mock('./config', () => ({
 }));
 
 jest.mock('./leases', () => ({
+  lndUp: jest.fn(() => Promise.resolve(mockLightning.lndActive)),
   requestIdsWithLocks: jest.fn(() => ['aa']),
   releaseLeases: jest.fn(() => Promise.resolve()),
   releaseOrphanLeases: jest.fn(() => Promise.resolve()),

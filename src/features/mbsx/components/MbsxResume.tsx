@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 
 import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {resumeIfNeeded} from '../adapter';
+import {lndUp} from '../adapter/leases';
 import {notifySwapProblem} from '../adapter/notify';
 import {setError, setRunning} from '../mbsxSlice';
 
@@ -16,11 +17,9 @@ const MbsxResume = () => {
   const lndActive = useAppSelector(state => state.lightning.lndActive);
 
   useEffect(() => {
-    if (!lndActive) {
-      return;
-    }
     let left = false;
-    resumeIfNeeded()
+    lndUp()
+      .then(up => (up && !left ? resumeIfNeeded() : false))
       .then(resumed => {
         if (resumed && !left) {
           dispatch(setRunning(true));

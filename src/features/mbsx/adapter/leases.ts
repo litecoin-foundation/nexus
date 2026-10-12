@@ -37,6 +37,21 @@ const listLeases = () => withDeadline(walletKitListLeases({}), 'ListLeases');
 const releaseOutput = (request: Parameters<typeof walletKitReleaseOutput>[0]) =>
   withDeadline(walletKitReleaseOutput(request), 'ReleaseOutput');
 
+const LND_PROBE_MS = 5_000;
+
+// Nexus's lndActive can stay false after a relaunch into a process lnd still runs in
+export const lndUp = async (): Promise<boolean> => {
+  if (store.getState().lightning.lndActive) {
+    return true;
+  }
+  try {
+    await withDeadline(walletKitListLeases({}), 'ListLeases', LND_PROBE_MS);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 /**
  * The locks the module is holding for us, newest first by nothing in
  * particular: it stores the lease id lnd gave us and the request it was taken
@@ -111,7 +126,7 @@ export const requestIdsWithLocks = (): string[] => [
  * lnd's own timer lapsed.
  */
 const heldOutpoints = async (): Promise<Set<string> | null> => {
-  if (!store.getState().lightning.lndActive) {
+  if (!(await lndUp())) {
     console.warn('mbsx lnd is not up, so its leases cannot be read');
     return null;
   }
@@ -237,7 +252,7 @@ const ORPHAN_MIN_AGE_SECONDS = 10 * 60;
 
 // A crash between LeaseOutput and recordLeases leaves a lease no row owns.
 export const releaseOrphanLeases = async () => {
-  if (!store.getState().lightning.lndActive) {
+  if (!(await lndUp())) {
     return;
   }
   const locks = readWalletLocks(true);
