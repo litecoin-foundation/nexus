@@ -1,6 +1,7 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Alert,
+  Image,
   ScrollView,
   StyleSheet,
   Switch,
@@ -435,8 +436,13 @@ const ElectrumServer: React.FC<Props> = ({navigation, route}) => {
 
         <TouchableOpacity
           testID="mbsx-server-advanced"
+          style={swapCards.advancedToggle}
           onPress={() => setAdvanced(open => !open)}>
-          <Text style={swapCards.section}>Advanced</Text>
+          <Text style={swapCards.advancedLabel}>Advanced</Text>
+          <Image
+            source={require('../../../assets/images/forward.png')}
+            style={[swapCards.chevron, advanced ? swapCards.chevronOpen : null]}
+          />
         </TouchableOpacity>
         {advanced ? (
           <View style={swapCards.card}>
