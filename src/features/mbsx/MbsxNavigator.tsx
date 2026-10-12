@@ -44,6 +44,7 @@ import {
   setError,
   setRunning,
   setStartupStep,
+  setTorApplied,
 } from './mbsxSlice';
 import BasicSwapMark from './components/BasicSwapMark';
 import {readMenuMarks} from './menuMarks';
@@ -51,6 +52,7 @@ import AnchorDispute from './components/AnchorDispute';
 import BridgeStatus from './components/BridgeStatus';
 import MbsxMenuButton from './components/MbsxMenuButton';
 import StartingScreen from './components/StartingScreen';
+import TorIndicator from './components/TorIndicator';
 import CreateSwap from './screens/CreateSwap';
 import SwapList from './screens/SwapList';
 import SwapDetail from './screens/SwapDetail';
@@ -265,10 +267,13 @@ const MbsxNavigator: React.FC = () => {
     };
 
     const begin = () => {
+      const tor = torRef.current;
       dispatch(setError(null));
       dispatch(setStartupStep(null));
-      start(torRef.current)
+      dispatch(setTorApplied(null));
+      start(tor)
         .then(() => {
+          dispatch(setTorApplied(tor));
           dispatch(setRunning(true));
           // Unmounted while starting: nothing else will call this now.
           if (left) {
@@ -333,6 +338,7 @@ const MbsxNavigator: React.FC = () => {
         screenOptions={{
           header: MbsxScreenHeader,
           headerLeft: () => <MbsxMenuButton />,
+          headerRight: renderTorIndicator,
           headerTitleContainerStyle: {left: 7},
           drawerType: 'front',
           drawerStyle: {
@@ -425,6 +431,8 @@ const MbsxNavigator: React.FC = () => {
     </View>
   );
 };
+
+const renderTorIndicator = () => <TorIndicator />;
 
 const flexOne = {flex: 1, backgroundColor: '#F2F8FD'} as const;
 const contentLayout = {flex: 1} as const;
