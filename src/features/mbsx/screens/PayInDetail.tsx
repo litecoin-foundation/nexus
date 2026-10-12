@@ -130,6 +130,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
   const [error, setError] = useState('');
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [offerWaiting, setOfferWaiting] = useState(false);
+  const [swapUnderway, setSwapUnderway] = useState(false);
   // Stays mounted, so the last pay-in shown is still loaded when another opens
   const deposit = loaded?.deposit_id === depositId ? loaded : null;
   const openedSwapId = useRef<string | null>(null);
@@ -176,6 +177,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
     offerSeen.current = waiting;
 
     const swapId = underwaySwapId(found.request_id);
+    setSwapUnderway(Boolean(swapId));
     if (swapId === null) {
       return;
     }
@@ -553,12 +555,21 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
           </TouchableOpacity>
         ) : null}
         {showDebug &&
+        !offerWaiting &&
+        !swapUnderway &&
         !['SWEEPING', 'SWEPT', 'SPENT'].includes(deposit.state) ? (
           <RemoveButton
             testID="mbsx-payin-rescue"
             label="Force Refund"
             confirm="Sweep every coin the server lists at this address to the refund address, without proving it confirmed?"
             confirmLabel="Refund"
+            confirmAgain={
+              deposit.state === 'REQUESTED'
+                ? 'This also closes its swap request, so none of its offers can be accepted. Refund anyway?'
+                : Number(deposit.received) > 0
+                  ? 'It has received coins, and they go back to the refund address instead of being swapped. Refund anyway?'
+                  : undefined
+            }
             onConfirm={async () => {
               const swept = rescueDeposit(deposit.deposit_id);
               fetchDeposit();
