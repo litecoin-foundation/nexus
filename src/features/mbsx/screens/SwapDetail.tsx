@@ -63,6 +63,22 @@ const txCoin = (txType: string, swap: SwapDetails): string =>
       ? swap.coin_to
       : '';
 
+// Counts the fee the app pays on top of what it locks, as an offer's rate does
+const swapRate = (
+  swap: SwapDetails,
+  sides: ReturnType<typeof swapSides>,
+): string => {
+  const fee =
+    swap.fees_total && swap.fees_coin === sides.sendCoin
+      ? Number(swap.fees_total)
+      : 0;
+  const sent = Number(sides.sendAmount) + fee;
+  const received = Number(sides.receiveAmount);
+  return sent > 0 && received > 0
+    ? `1 ${sides.sendCoin} ≈ ${coinString(received / sent)} ${sides.receiveCoin}`
+    : '';
+};
+
 const refundTxid = (events: SwapEvent[] | undefined): string => {
   const hit = (events ?? [])
     .filter(
@@ -329,14 +345,9 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
   );
 
   const sides = swapSides(swap);
+  const rate = swapRate(swap, sides);
   if (isTerminalState(swap.state)) {
     const complete = isSwapComplete(swap.state);
-    const sent = Number(sides.sendAmount);
-    const received = Number(sides.receiveAmount);
-    const rate =
-      sent > 0 && received > 0
-        ? `1 ${sides.sendCoin} ≈ ${coinString(received / sent)} ${sides.receiveCoin}`
-        : '';
     const address = destinations?.[swap.request_id] ?? '';
     const refund = refundTxid(swap.events);
     return (
@@ -498,13 +509,7 @@ const SwapDetail: React.FC<Props> = ({route, navigation}) => {
         <Text style={swapCards.section}>Receive</Text>
         <View style={swapCards.card}>
           <CoinAmount amount={sides.receiveAmount} coin={sides.receiveCoin} />
-          {Number(sides.sendAmount) > 0 && Number(sides.receiveAmount) > 0 ? (
-            <Text style={swapCards.meta}>
-              {`1 ${sides.sendCoin} ≈ ${coinString(
-                Number(sides.receiveAmount) / Number(sides.sendAmount),
-              )} ${sides.receiveCoin}`}
-            </Text>
-          ) : null}
+          {rate ? <Text style={swapCards.meta}>{rate}</Text> : null}
         </View>
         <SwapFees swap={swap} />
 
