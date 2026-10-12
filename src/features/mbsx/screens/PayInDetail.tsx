@@ -361,7 +361,7 @@ const PayInDetail: React.FC<Props> = ({route, navigation}) => {
               </View>
             </View>
           </>
-        ) : PAYABLE.has(deposit.state) ? (
+        ) : PAYABLE.has(deposit.state) && Number(deposit.remaining) > 0 ? (
           <View style={swapCards.card}>
             <Text testID="mbsx-payin-ended" style={swapCards.note}>
               This pay-in has ended, so don't pay into its address. Anything it
