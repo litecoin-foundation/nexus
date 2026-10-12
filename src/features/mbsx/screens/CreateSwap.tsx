@@ -77,7 +77,13 @@ import {
   providersText,
   useOffersEstimate,
 } from '../useOffersEstimate';
-import {raisedFeeNote, shortAddress, shortId, typedAmount} from '../format';
+import {
+  plainAddress,
+  raisedFeeNote,
+  shortAddress,
+  shortId,
+  typedAmount,
+} from '../format';
 
 type Props = DrawerScreenProps<MbsxDrawerParamList, 'CreateSwap'>;
 
@@ -370,9 +376,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
   useEffect(() => {
     if (scanned) {
       if (scanFor.current === 'buy') {
-        setBuyAddress(scanned);
+        setBuyAddress(plainAddress(scanned));
       } else {
-        setAddressTo(scanned);
+        setAddressTo(plainAddress(scanned));
         addressFilledFor.current = coinTo;
       }
       navigation.setParams({scanData: undefined});
@@ -858,9 +864,9 @@ const CreateSwap: React.FC<Props> = ({navigation, route}) => {
             disabled={!enabled}
             style={[look.iconBtn, enabled ? null : look.iconBtnOff]}
             onPress={async () => {
-              const text = await Clipboard.getString();
-              if (text.trim()) {
-                setAddress(text.trim());
+              const text = plainAddress(await Clipboard.getString());
+              if (text) {
+                setAddress(text);
               }
             }}>
             <Image

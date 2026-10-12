@@ -19,7 +19,7 @@ import {useAppDispatch, useAppSelector} from '../../../store/hooks';
 import {getCoinPrices, validateAddress} from '../adapter';
 import {forgetAddress, rememberAddress} from '../addressesSlice';
 import {formatPrice} from 'react-native-nitro-bsx';
-import {formatTimestamp} from '../format';
+import {formatTimestamp, plainAddress} from '../format';
 import {useShowUtcTimes} from '../stateText';
 import {getMbsxStyles} from '../theme';
 import MbsxBackButton from '../components/MbsxBackButton';
@@ -87,7 +87,7 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
   const scanned = route.params?.scanData;
   useEffect(() => {
     if (scanned) {
-      setAddress(scanned);
+      setAddress(plainAddress(scanned));
     }
   }, [scanned]);
 
@@ -175,9 +175,9 @@ const CoinAddresses: React.FC<Props> = ({navigation, route}) => {
               testID="mbsx-address-paste"
               style={look.iconBtn}
               onPress={async () => {
-                const text = await Clipboard.getString();
-                if (text.trim()) {
-                  setAddress(text.trim());
+                const text = plainAddress(await Clipboard.getString());
+                if (text) {
+                  setAddress(text);
                   setAddressError('');
                 }
               }}>

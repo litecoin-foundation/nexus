@@ -107,3 +107,9 @@ export const shortAddress = (address: string): string =>
 // Every id opens with its 8-byte timestamp, whose top 4 bytes stay zero until 2106
 export const shortId = (id: string): string =>
   shortAddress(id.replace(/^0{8}/, ''));
+
+export const plainAddress = (text: string): string =>
+  text
+    .trim()
+    .replace(/^[a-z][a-z0-9+.-]*:(\/\/)?/i, '')
+    .replace(/[?#].*$/, '');
