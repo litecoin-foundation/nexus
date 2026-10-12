@@ -432,7 +432,12 @@ const MbsxSettings: React.FC = () => {
             included.
           </Text>
 
-          <Text style={[styles.label, look.torLabel]}>Tor</Text>
+          <View style={look.cardRow}>
+            <Text style={[styles.label, look.rowLabel]}>Tor</Text>
+            <Text testID="mbsx-tor-state" style={styles.value}>
+              {torEnabled ? 'On' : 'Off'}
+            </Text>
+          </View>
           <Text testID="mbsx-tor" style={look.note}>
             {torPending
               ? 'Set in Nexus settings. Applies to swaps on re-entering the BasicSwap section, or after an app restart while a swap is in flight.'
@@ -837,9 +842,6 @@ const look = StyleSheet.create({
     color: '#747E87',
     fontSize: 14,
     marginTop: 6,
-  },
-  torLabel: {
-    marginTop: 16,
   },
   coinTitle: {
     flexDirection: 'row',
