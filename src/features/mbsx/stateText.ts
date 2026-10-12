@@ -29,6 +29,7 @@ export const swapStateText = (
     RECEIVING: 'Waiting for the offer',
     RECEIVED: 'The offer is ready to accept',
     RECEIVING_ACC: 'The offer is being accepted',
+    AWAITING_LOCK_SIGS: "Waiting for the other side's signatures",
     ACCEPTED: 'The swap has been accepted',
     SCRIPT_COIN_LOCKED: `${sent} is locked`,
     NOSCRIPT_COIN_LOCKED: `${got} is locked`,
