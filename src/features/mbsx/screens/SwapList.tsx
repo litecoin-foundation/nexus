@@ -25,7 +25,7 @@ import {
 } from '../adapter';
 import {coinString} from '../useSwapAmounts';
 import RemoveButton from '../components/RemoveButton';
-import {formatExpiry, kindLabel} from '../format';
+import {formatExpiry, kindLabel, shortId} from '../format';
 import CoinPair from '../components/CoinPair';
 import {TimeLine} from '../components/Clock';
 import {useBottomInset} from '../components/useBottomInset';
@@ -216,7 +216,7 @@ const SwapList: React.FC<Props> = ({navigation}) => {
                       </Text>
                     ) : null}
                     <Text style={swapCards.historySub} numberOfLines={1}>
-                      {swap.id}
+                      {shortId(swap.id)}
                     </Text>
                   </View>
                   <View style={swapCards.historyAmounts}>
