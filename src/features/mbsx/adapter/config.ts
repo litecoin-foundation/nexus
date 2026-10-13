@@ -225,6 +225,9 @@ const writeConfigNow = async (config: MbsxConfig) => {
   }
   const tmp = `${CONFIG_PATH}.tmp`;
   await RNFS.writeFile(tmp, JSON.stringify(config, null, 2));
+  if (await fileExists(CONFIG_PATH)) {
+    await RNFS.unlink(CONFIG_PATH);
+  }
   await RNFS.moveFile(tmp, CONFIG_PATH);
 };
 

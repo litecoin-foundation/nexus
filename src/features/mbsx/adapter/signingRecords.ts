@@ -63,6 +63,9 @@ const update = (
     }
     const tmp = `${PATH}.tmp`;
     await RNFS.writeFile(tmp, JSON.stringify(updated));
+    if (await RNFS.exists(PATH)) {
+      await RNFS.unlink(PATH);
+    }
     await RNFS.moveFile(tmp, PATH);
     records = updated;
   });
