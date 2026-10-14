@@ -1,4 +1,5 @@
 const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const fs = require('fs');
 const path = require('path');
 const withStorybook = require('@storybook/react-native/metro/withStorybook');
 
@@ -8,8 +9,13 @@ const withStorybook = require('@storybook/react-native/metro/withStorybook');
  *
  * @type {import('expo/metro-config').MetroConfig}
  */
-// Dev-linked via `bun link`, so the source lives outside the app root.
-const MBSX = path.resolve(__dirname, '../iota_react-native-nitro-bsx');
+// A `bun link` puts the module's tree outside the app root, which metro must then watch.
+const MBSX = fs.realpathSync(
+  path.resolve(__dirname, 'node_modules/react-native-nitro-bsx'),
+);
+const MBSX_LINKED = path
+  .relative(fs.realpathSync(__dirname), MBSX)
+  .startsWith('..');
 
 const defaultConfig = getDefaultConfig(__dirname);
 
@@ -40,7 +46,7 @@ const config = {
       new RegExp(`${MBSX}/android/(\\.cxx[^/]*|build)/.*`),
     ],
   },
-  watchFolders: [MBSX],
+  watchFolders: MBSX_LINKED ? [MBSX] : [],
 };
 
 // module.exports = mergeConfig(getDefaultConfig(__dirname), config);
