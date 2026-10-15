@@ -35,7 +35,7 @@ import {
 import {
   firstRowAt,
   GlassTxRowModels,
-  glassTxListTop,
+  GLASS_TX_LIST_TOP_RATIO,
   ROW_BORDER,
   MUTED_TEXT,
 } from './GlassTxRows';
@@ -156,7 +156,7 @@ const GlassTransactionList: React.FC<Props> = props => {
   const scrollContainerHeight =
     SCREEN_HEIGHT -
     UNFOLD_SHEET_POINT -
-    glassTxListTop(SCREEN_HEIGHT);
+    SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
   const containerStyle = sheet ? {height: scrollContainerHeight} : styles.fill;
 
   const listContentHeight =

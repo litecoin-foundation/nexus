@@ -5,7 +5,6 @@ import {useTranslation} from 'react-i18next';
 import {buildParagraph, useSatoshiFontMgr} from './GlassBalanceGraphics';
 import {
   DRAG_STRIP_HEIGHT_RATIO,
-  SWAP_ENTRY_HEIGHT,
   makeCachedSkiaIcons,
   SHEET_BACKGROUND,
   TX_TITLE_ROW_HEIGHT_RATIO,
@@ -36,9 +35,7 @@ export const titleTopInCanvas = (
   canvasTop: number,
 ) => {
   'worklet';
-  return (
-    sheetY + screenHeight * DRAG_STRIP_HEIGHT_RATIO + SWAP_ENTRY_HEIGHT - canvasTop
-  );
+  return sheetY + screenHeight * DRAG_STRIP_HEIGHT_RATIO - canvasTop;
 };
 
 // The sheet's rounded top, as a clip. The heading paints an opaque band at the
