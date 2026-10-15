@@ -44,16 +44,28 @@ def main():
     require(all(count == 1 for count in Counter(files).values()), 'A file appears in more than one reconstruction unit.')
     require(set(files) == set(git('diff', '--name-only', base, vendor).splitlines()), 'Reconstruction omits vendor files.')
 
+    if data.get('followup_commits'):
+        parent = data['followup_base']
+        git('merge-base', '--is-ancestor', checkpoint, parent)
+        for commit in data['followup_commits']:
+            sha = commit['commit']
+            require(git('rev-parse', sha + '^') == parent, 'Unexpected follow-up parent.')
+            require(git('diff', '--name-only', parent, sha).splitlines() == commit['files'],
+                    'Follow-up file mapping differs for ' + sha)
+            parent = sha
+        git('merge-base', '--is-ancestor', parent, 'HEAD')
+
     changed = set(git('diff', '--name-only', checkpoint, 'HEAD').splitlines())
-    unexpected = changed - set(data['cleanup_allowed_paths'])
-    require(not unexpected, 'Undocumented cleanup paths: ' + ', '.join(sorted(unexpected)))
+    allowed = set(data['cleanup_allowed_paths']) | set(data.get('followup_allowed_paths', []))
+    unexpected = changed - allowed
+    require(not unexpected, 'Undocumented post-checkpoint paths: ' + ', '.join(sorted(unexpected)))
     require(not git('status', '--porcelain'), 'Commit or set aside worktree changes before verifying the final branch.')
     if '--check-protected-refs' in sys.argv:
         require(git('rev-parse', 'bsx_merge') == vendor, 'bsx_merge moved from the frozen vendor tip.')
         require(git('rev-parse', 'glass') == base, 'glass moved from the frozen base.')
     print(f'PASS: {len(original)} vendor commits reconstructed into {len(rebuilt)} commits.')
     print(f'PASS: identical vendor/checkpoint tree {data["tree"]}.')
-    print(f'PASS: {len(changed)} documented cleanup paths; working tree clean.')
+    print(f'PASS: {len(changed)} documented post-checkpoint paths; working tree clean.')
 
 
 if __name__ == '__main__':

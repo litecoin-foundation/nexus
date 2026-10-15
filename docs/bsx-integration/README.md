@@ -1,15 +1,19 @@
 # BasicSwap integration review
 
-This branch reconstructs 187 vendor commits into 12 review units, then applies
-four cleanup commits and a final documentation commit: 17 commits in total.
-It has not been merged into `glass` or pushed. The
-original vendor branch and the local native-module repository were not modified.
+The `codex/bsx-clean` baseline reconstructs 187 vendor commits into 12 review
+units, followed by four cleanup commits and one documentation commit. The
+`codex/bsx-merge-fixes` branch adds separate persistence, native-integration and
+review-documentation commits: 20 commits above `glass` in total. Neither branch
+is merged into `glass`; `bsx_merge` and
+the exact vendor checkpoint remain unchanged. Native fixes are committed only
+on the local native repository's `codex/bsx-merge-fixes` branch, as requested.
 
 ## Frozen inputs and preservation proof
 
 - Base (`glass`): `931b523eae65a0ed54199c8f8f6a16b468eb49b6`.
 - Vendor (`bsx_merge`): `8e723815a7d352f23529e4cbb3d698419fc8f165`.
-- Native module: `7f347514388e1162d68b93bff3dd7092296474e0` (unpublished version 0.2.11).
+- Original native module: `7f347514388e1162d68b93bff3dd7092296474e0` (unpublished version 0.2.11).
+- Current local native pin: `4a795a036b6dd98b614738bfa2261fc3bd513970`.
 - Reconstructed checkpoint: `333e5e1ecb735c1e8573d650b02b6e476d542785` (`codex/bsx-reconstructed`).
 - Vendor and reconstructed tree: `fcda8967ea2865275b8ad34fef8e03d44729e1cc`.
 - The source tip is also retained at `codex/bsx-vendor-2026-10-16`.
@@ -21,7 +25,7 @@ including temporary build artifacts that are removed only in later commits.
 ```sh
 git diff --exit-code bsx_merge codex/bsx-reconstructed
 python3 scripts/verify-bsx-history.py --check-protected-refs
-git diff codex/bsx-reconstructed codex/bsx-clean
+git diff codex/bsx-reconstructed HEAD
 ```
 
 The first command must be empty. The second checks the complete 187-commit index,
@@ -82,15 +86,19 @@ retain a final cleanup PR. No PRs have been created by this task.
   checksums without changing any existing pod versions.
 - Added the local native-source installer and this provenance/verification guide.
 
-No signing, fee-limit, lease, lifecycle or persisted-data behavior was rewritten.
+The reconstruction and initial cleanup did not rewrite signing, fee-limit,
+lease, lifecycle or persisted-data behavior. The follow-up persistence fix below
+is separate from those commits.
 The large adapter and screens are retained so a later focused refactor can be
 reviewed against a working baseline instead of mixed into history reconstruction.
 
 ## Install the unpublished native module
 
-The package and Bun lockfile retain the vendor's exact Git revision. There is no
+The package and Bun lockfile pin the reviewed local native commit. There is no
 committed absolute path, `file:` dependency or requirement for a globally linked
-package. The supplied local repository contained that exact clean commit.
+package. **The new native commit has not been pushed anywhere.** Reviewers need
+the local native repository containing that commit; ordinary remote installation
+and CI cannot fetch it until the native changes are shared in a later step.
 
 ```sh
 python3 scripts/install-bsx-local.py /path/to/react-native-nitro-bsx
@@ -100,13 +108,14 @@ This checks that the clone contains the pinned commit, then runs
 `bun install --frozen-lockfile` with a process-only Git URL rewrite. Bun obtains
 the committed revision; uncommitted files in the local clone are not used. The
 helper preserves existing command-level Git configuration and does not change
-global Git settings. Normal `bun install --frozen-lockfile` works when the GitLab
-source is accessible. No publication was attempted.
+global Git settings. Normal remote installation becomes available only after the
+pinned commit is shared or replaced with the approved published version. No
+package publication was attempted, and the native version remains 0.2.11.
 
 The local installation was exercised successfully with Bun 1.3.14 and Node
 24.14.0. All four repository patches applied using the pinned patch-package.
 
-## Validation on 2026-10-16
+## Initial cleanup validation on 2026-10-16
 
 ```sh
 bun run test -- src/features/mbsx --runInBand --watchman=false
@@ -154,48 +163,81 @@ Nexus LND libraries. They do not validate those prebuilt LND libraries from sour
 No app was installed on a device, no production swap was attempted, and no funds
 were used. A complete live regtest swap/refund/recovery run remains outstanding.
 
-## Required follow-up before merging or publishing
+## Follow-up fixes on 2026-10-16
 
-1. **Persistence interruption window.** `adapter/config.ts` and
-   `adapter/signingRecords.ts` write a temporary file, unlink the current file,
-   then move the temporary file into place. If the app stops between unlink and
-   move, their readers ignore the surviving temporary file. Configuration may
-   fall back to defaults; missing signing records make signing fail closed but
-   can disrupt an in-flight swap. Implement native atomic replacement or an
-   explicit recoverable journal in a separate behavior change, with interruption,
-   failed-rename, concurrent-write and restart tests. The vendor behavior is
-   intentionally preserved in this review branch.
-2. **Native publication packaging.** `npm pack --dry-run --ignore-scripts`
-   contains neither `build/ios/NitroBSXCore.xcframework` nor `scripts/build-ios.sh`.
-   The podspec expects that framework and still has a `TODO` source URL. Fix the
-   package contents/build workflow and metadata in the native repository before
-   publishing. Then replace the Git pin with the reviewed immutable release and
-   regenerate locks in a separate integration commit. Until then, build the iOS
-   core from the Git installation before running Pods:
+- Nexus `8c6cdd4a`: recover interrupted settings and signing writes. Writes keep
+  the old file in `.bak` until the pending `.tmp` becomes the primary. Readers
+  recover a complete pending write, or the previous backup when appropriate,
+  before deciding that a file is absent. Reads, migrations, first loads and writes
+  share a queue. Failed signing writes invalidate the in-memory permissions cache;
+  recovery failures propagate instead of returning stale permission or defaults.
+  Quarantine clears stale recovery files so old signing permission cannot return.
+- Native `127a284`: rename the wallet enum member to `DEBUG_WALLET`, preserving
+  its numeric value and the external `"debug"` configuration value. This avoids
+  Xcode's `DEBUG` macro without disabling debug checks in other dependencies.
+- Native `105229d`: include both iOS framework slices, the generated version
+  header and build script in packages; build the Release core during `prepack`;
+  provide real repository metadata and a CocoaPods source preparation command.
+  Explicitly disable the debug RPC listener when configuring the iOS core.
+- Native `4a795a0`: retain the bridge's supporting headers when CocoaPods cleans
+  a direct Git source installation.
+- Nexus `b29fe65f`: pin the final local native revision and refresh only
+  the corresponding Bun and CocoaPods lock entries. The native repository and
+  packages remain unpublished.
 
-   ```sh
-   bash node_modules/react-native-nitro-bsx/scripts/build-ios.sh
-   cd ios
-   RCT_NEW_ARCH_ENABLED=1 RCT_HERMES_V1_ENABLED=1 pod install
-   ```
+Validation after these fixes:
 
-3. **Native and device coverage.** Resolve the full-app build findings above,
-   cover release builds and supported Android ABIs, and exercise notifications,
-   denied permissions, background wakes, app termination/restart, Tor and server
-   trust transitions. Check that the debug RPC listener is absent from release.
-4. **Money-handling review.** Review the pinned native implementation alongside
+- **25/25 swap suites and 162/162 tests pass**, including 18 new recovery cases.
+  Tests cover interruption after each file mutation, partial writes, failed
+  renames, restarts, concurrent edits/reads, I/O errors and stale permissions.
+- Feature lint remains **0 errors and 31 existing warnings**. TypeScript has the
+  same **58 existing diagnostics**, with no new diagnostics or swap-path errors.
+- The complete production iOS JavaScript bundle and its 182 assets build with
+  Metro using the final local native dependency.
+- Native iOS core builds successfully for device arm64, simulator arm64 and
+  simulator x86_64. The package file-list check includes the framework's two
+  library slices, generated version header and build script. Symbol inspection
+  confirms that none of the three core libraries contains `DebugRpcServer`.
+  The actual `npm run prepack` hook also passes; nothing was published.
+- The React Native BSX bridge compiles on both simulator architectures. The full
+  simulator app stops at linking because the supplied `ios/liblnd.a` is built
+  for iOS devices, not the simulator; a simulator-compatible LND archive is
+  needed for that target.
+- The full unsigned iOS Debug device build **passes** with the final native pin:
+  `xcodebuild -workspace Nexus.xcworkspace -scheme nexus -configuration Debug
+  -sdk iphoneos -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build`.
+  Pods installation and the frozen local-source installation also pass.
+- Android builds were not run for this follow-up, as requested.
+
+The recovery tests model process interruption and filesystem failures. They do
+not establish durability during a physical power loss: RNFS does not expose a
+file/directory fsync transaction here. No funds, live swaps or device installations
+were used for validation.
+
+## Remaining integration and review work
+
+1. **Share the native source when approved.** This Nexus review branch depends
+   on a local-only native commit. Before merging, make that revision available to
+   CI and reviewers or publish the reviewed package and update the immutable pin
+   and locks. Package creation is fixed; no push, tag or package release was
+   performed in the native repository.
+2. **Device and release coverage.** Exercise notifications, denied permissions,
+   background wakes, app termination/restart, Tor and server trust transitions.
+   Validate release builds and obtain a simulator-compatible LND library for
+   simulator app tests. Android validation remains deferred at the user's request.
+3. **Money-handling review.** Review the pinned native implementation alongside
    the Nexus signer: confirmed amounts/fees, request input ownership, lease
    reconciliation, stale offers, pay-in underpayment, refunds and recovery.
-5. **Regtest environment.** The vendor debug branch has the three overlay commits
-   `bdf960bc`, `9c9e7c37`, `a281048e` for regtest, application namespaces and a
-   runtime guard. Adapt those to a separate test branch, keeping LND and BSX on
-   the same network and the separate application namespace. The referenced
-   `test_glueserver.py` harness is not in either supplied checkout; obtain the
-   vendor harness/backends for end-to-end tests.
-6. **Wallet UI review.** Verify send/receive, scanning, history, fold/unfold glass
-   transitions, screen sizes and accessibility on Android and iOS. Automated
-   component tests are not a replacement for this visual/device review.
+4. **Live regtest environment.** The vendor debug branch has the three overlay
+   commits `bdf960bc`, `9c9e7c37`, `a281048e` for regtest, application namespaces
+   and a runtime guard. Adapt those to a separate test branch, keeping LND and
+   BSX on the same network with a separate application namespace. The referenced
+   `test_glueserver.py` harness is not in either supplied checkout; the vendor
+   harness/backends are still needed for live swap/refund/recovery tests.
+5. **Wallet UI review.** Verify send/receive, scanning, history, fold/unfold glass
+   transitions, screen sizes and accessibility on a device. Automated component
+   tests do not cover this visual/device review.
 
-These are merge gates, not evidence that the history reconstruction is incomplete.
-Keep `bsx_merge` available for vendor follow-up and merge only the reviewed clean
-series when the gates are satisfied.
+The identified persistence, packaging and macro-collision defects are addressed;
+these remaining review and environment checks are not claimed as completed.
+Keep `bsx_merge` available for vendor follow-up and merge only after review.

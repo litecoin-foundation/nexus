@@ -281,6 +281,47 @@
     "src/features/mbsx/screens/MbsxSettings.tsx",
     "src/utils/validate.ts"
   ],
+  "followup_base": "8853661524bac852737a14165d1dee4c20cdcf2b",
+  "followup_commits": [
+    {
+      "commit": "8c6cdd4aee3e2b875feee401d3c645260b45691b",
+      "subject": "fix(bsx): recover interrupted settings and signing writes",
+      "files": [
+        "src/features/mbsx/adapter/config.test.ts",
+        "src/features/mbsx/adapter/config.ts",
+        "src/features/mbsx/adapter/persistence.test.ts",
+        "src/features/mbsx/adapter/recoverableFile.test.ts",
+        "src/features/mbsx/adapter/recoverableFile.ts",
+        "src/features/mbsx/adapter/signingRecords.ts"
+      ]
+    },
+    {
+      "commit": "b29fe65fea64473d939670ce4869529a3f0de304",
+      "subject": "build(bsx): pin the local native iOS fixes",
+      "files": [
+        "bun.lock",
+        "ios/Podfile.lock",
+        "package.json"
+      ]
+    }
+  ],
+  "followup_allowed_paths": [
+    "bun.lock",
+    "ios/Podfile.lock",
+    "package.json",
+    "src/features/mbsx/adapter/config.test.ts",
+    "src/features/mbsx/adapter/config.ts",
+    "src/features/mbsx/adapter/persistence.test.ts",
+    "src/features/mbsx/adapter/recoverableFile.test.ts",
+    "src/features/mbsx/adapter/recoverableFile.ts",
+    "src/features/mbsx/adapter/signingRecords.ts"
+  ],
+  "native_followup": {
+    "base": "7f347514388e1162d68b93bff3dd7092296474e0",
+    "tip": "4a795a036b6dd98b614738bfa2261fc3bd513970",
+    "branch": "codex/bsx-merge-fixes",
+    "remote_status": "local_only_do_not_push"
+  },
   "history": [
     {"sha": "f1cbf96f89c9874b64a47f3214bd75cd35d7cc93", "author": "tecnovert <tecnovert@tecnovert.net>", "subject": "build: add mbsx", "groups": [1, 2, 3, 5, 6, 9, 12], "historical_only_paths": ["src/navigation/SettingsStack.tsx", "src/screens/Settings/Settings.tsx"], "classification": "folded_into_final_tree"},
     {"sha": "ab08f55040c60835972c8d3242b244baecac2da6", "author": "tecnovert <tecnovert@tecnovert.net>", "subject": "feat: wip", "groups": [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12], "historical_only_paths": ["src/components/LogViewer.tsx", "src/navigation/SettingsStack.tsx", "src/reducers/lightning.ts", "src/reducers/onboarding.ts", "src/screens/Settings/Settings.tsx", "src/utils/config.ts", "src/utils/file.ts", "src/utils/network.ts"], "classification": "folded_into_final_tree"},
