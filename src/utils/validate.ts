@@ -62,6 +62,7 @@ const parseBech32 = (address: string): AddressInfo => {
   const mapPrefixToNetwork: {[key: string]: Network} = {
     ltc: Network.mainnet,
     tltc: Network.testnet,
+    rltc: Network.regtest,
   };
 
   const network: Network = mapPrefixToNetwork[decoded.prefix];
@@ -107,6 +108,7 @@ const parseMweb = (address: string): AddressInfo => {
   const mapPrefixToNetwork: {[key: string]: Network} = {
     ltcmweb: Network.mainnet,
     tmweb: Network.testnet,
+    rmweb: Network.regtest,
   };
 
   const network: Network = mapPrefixToNetwork[decoded.prefix];

@@ -35,7 +35,6 @@ import {
   defaultConfig,
   isRunning,
   listCaCerts,
-  readConfig,
   removeCaCert,
   rescanDeposits,
   updateConfig,
