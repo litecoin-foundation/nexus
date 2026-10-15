@@ -23,8 +23,13 @@ const TRADE_SPLIT_END = 0.98;
 // Horizontal slots only; both rows take their topOffset from the shared
 // top-half rhythm so the cluster keeps equal gaps above and below it.
 const FOLDED_ROW = {
-  width: 0.2773,
-  lefts: [0.0587, 0.3627, 0.6667],
+  width: 0.2013,
+  lefts: [0.0587, 0.2867, 0.5147],
+};
+
+export const FOLDED_SWAP_SLOT = {
+  left: 0.7427,
+  width: 0.2013,
 };
 const UNFOLDED_ROW = {
   width: 0.145,

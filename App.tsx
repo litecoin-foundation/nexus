@@ -53,6 +53,8 @@ import {
 } from './src/reducers/buy';
 import {isAppFirstTimeOpened} from './src/reducers/info';
 import RootNavigator from './src/navigation/RootNavigator';
+import MbsxResume from './src/features/mbsx/components/MbsxResume';
+import MbsxNotificationOpen from './src/features/mbsx/components/MbsxNotificationOpen';
 import Error from './src/components/Error';
 import MigrationModal from './src/components/Modals/MigrationModal';
 import {acknowledgeMigration} from './src/reducers/lightning';
@@ -83,7 +85,7 @@ declare global {
   }
 }
 
-const RESIZE_DEACTIVATED = __DEV__ ? false : true;
+const RESIZE_DEACTIVATED = true;
 
 function ResizedView(props: any) {
   const {children} = props;
@@ -347,6 +349,8 @@ const App: React.FC = () => {
                   publishableKey={flexaPublishableKey}>
                   <ContextExecutable deviceToken={deviceToken} />
                   <DeviceTokenHandler deviceToken={deviceToken} />
+                  <MbsxResume />
+                  <MbsxNotificationOpen />
                   <OpenNotificationHandler
                     notification={openedNotificationData}
                   />

@@ -184,8 +184,7 @@ const GlassTabButton: React.FC<Props> = props => {
               <TranslateText
                 textKey={foldedTextKey ?? textKey}
                 domain="main"
-                maxSizeInPixels={SCREEN_HEIGHT * 0.015}
-                maxLengthInPixels={layout.folded.width * 0.65}
+                maxSizeInPixels={SCREEN_HEIGHT * 0.013}
                 textStyle={styles.labelText}
                 numberOfLines={1}
               />
@@ -248,7 +247,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
-      gap: screenWidth * 0.02,
+      paddingHorizontal: screenWidth * 0.03,
+      gap: screenWidth * 0.012,
     },
     unfoldedContent: {
       position: 'absolute',
@@ -270,7 +270,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       fontStyle: 'normal',
       fontWeight: '500',
       color: '#ffffff',
-      fontSize: screenHeight * 0.015,
+      fontSize: screenHeight * 0.013,
     },
     centeredLabel: {
       textAlign: 'center',

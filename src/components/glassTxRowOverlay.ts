@@ -6,7 +6,7 @@ import {
   useSharedValue,
 } from 'react-native-reanimated';
 
-import {GLASS_TX_LIST_TOP_RATIO} from './GlassTxRows';
+import {glassTxListTop} from './GlassTxRows';
 import {rowsTopInCanvas} from './GlassTxCanvas';
 import {sheetTopClip, titleTopInCanvas} from './GlassTxTitleRow';
 import {useGlassRowsLayer} from './glassChromeFeeds';
@@ -37,7 +37,7 @@ export const useGlassTxRowOverlay = (params: Params) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
-  const listTopInSheet = SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
+  const listTopInSheet = glassTxListTop(SCREEN_HEIGHT);
 
   const layer = useGlassRowsLayer();
   const picture = layer?.picture ?? null;

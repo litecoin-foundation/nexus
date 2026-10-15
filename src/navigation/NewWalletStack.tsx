@@ -5,6 +5,7 @@ import {navigationOptions} from '../screens/NewMain';
 import MainStack from './MainStack';
 import Scan, {ScanNavigationOptions} from '../screens/Scan';
 import SettingsStack from './SettingsStack';
+import MbsxNavigator from '../features/mbsx/MbsxNavigator';
 import NexusShopStack from './NexusShopStack';
 import WebPage, {WebPageNavigationOptions} from '../screens/WebPage';
 import ConfirmSend from '../screens/Wallet/ConfirmSend';
@@ -36,6 +37,11 @@ function NewWalletStack(): React.JSX.Element {
       <Stack.Screen
         name="SettingsStack"
         component={SettingsStack}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="MbsxStack"
+        component={MbsxNavigator}
         options={{headerShown: false}}
       />
       <Stack.Screen

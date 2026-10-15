@@ -41,7 +41,7 @@ import {GLASS_BACKDROP_BLUR} from './nativeCardBackdropTexture';
 import {
   DRAG_STRIP_HEIGHT_RATIO,
   GlassTxRowModels,
-  GLASS_TX_LIST_TOP_RATIO,
+  glassTxListTop,
   SHEET_BACKGROUND,
 } from './GlassTxRows';
 import {
@@ -93,7 +93,7 @@ export const getGlassCanvasTop = (screenHeight: number, topInset: number) => {
   const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(screenHeight, topInset);
   return Math.min(
     UNFOLD_SHEET_POINT +
-      screenHeight * GLASS_TX_LIST_TOP_RATIO -
+      glassTxListTop(screenHeight) -
       screenHeight * SHEET_OVERSHOOT_RATIO,
     // the search block comes off the list top on the sections without a
     // search pill; the rows rise by it, and nothing draws above the canvas
@@ -202,7 +202,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
   // the tx list at the unfolded sheet, or the shop list under its shorter
   // gradient header — and runs to the screen bottom, so it spans the rows
   // and the tab bar band in every mode.
-  const listTopInSheet = SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
+  const listTopInSheet = glassTxListTop(SCREEN_HEIGHT);
   const canvasTop = getGlassCanvasTop(SCREEN_HEIGHT, insets.top);
   const canvasHeight = SCREEN_HEIGHT - canvasTop;
 

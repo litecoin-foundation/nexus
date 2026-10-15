@@ -66,7 +66,10 @@ float sdf(vec2 xy) {
   d = min(d, sdButton(xy, b3));
   // Fifth slot for callers with a wider row; four-box callers pass b0 again,
   // and a box unioned with itself changes nothing.
-  d = min(d, sdButton(xy, b4));
+  // A zero-width box still draws a sliver, so a collapsed slot is skipped.
+  if (b4.z > 1.0) {
+    d = min(d, sdButton(xy, b4));
+  }
   return d;
 }
 

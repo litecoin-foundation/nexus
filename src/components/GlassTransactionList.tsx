@@ -21,6 +21,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
+import SwapHistoryPreview from '../features/mbsx/components/SwapHistoryPreview';
 import TransactionListEmpty from './TransactionListEmpty';
 import TranslateText from '../components/TranslateText';
 import ProgressBar from './ProgressBar';
@@ -34,7 +35,7 @@ import {
 import {
   firstRowAt,
   GlassTxRowModels,
-  GLASS_TX_LIST_TOP_RATIO,
+  glassTxListTop,
   ROW_BORDER,
   MUTED_TEXT,
 } from './GlassTxRows';
@@ -155,7 +156,7 @@ const GlassTransactionList: React.FC<Props> = props => {
   const scrollContainerHeight =
     SCREEN_HEIGHT -
     UNFOLD_SHEET_POINT -
-    SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
+    glassTxListTop(SCREEN_HEIGHT);
   const containerStyle = sheet ? {height: scrollContainerHeight} : styles.fill;
 
   const listContentHeight =
@@ -246,26 +247,22 @@ const GlassTransactionList: React.FC<Props> = props => {
     () => ({paddingTop: contentTopInset}),
     [contentTopInset],
   );
-  const rowsTopInset = showSyncProgress ? 0 : contentTopInset;
+  // The wallet's list pins the swap preview, so its header is always up
+  const headerPinned = showSyncProgress || sheet !== undefined;
+  const rowsTopInset = headerPinned ? 0 : contentTopInset;
   const contentStyle = useMemo(
     () => ({paddingTop: rowsTopInset}),
     [rowsTopInset],
   );
 
   useEffect(() => {
-    if (!showSyncProgress && listHeaderOffset) {
+    if (!headerPinned && listHeaderOffset) {
       listHeaderOffset.value = contentTopInset;
     }
-  }, [showSyncProgress, listHeaderOffset, contentTopInset]);
+  }, [headerPinned, listHeaderOffset, contentTopInset]);
 
   const SyncProgressIndicator = (
-    <View
-      style={insetStyle}
-      onLayout={e => {
-        if (listHeaderOffset) {
-          listHeaderOffset.value = e.nativeEvent.layout.height;
-        }
-      }}>
+    <View>
       <View style={styles.headerContainer}>
         <TranslateText
           textKey={recoveryMode ? 'recover_txs' : 'load_txs'}
@@ -480,7 +477,18 @@ const GlassTransactionList: React.FC<Props> = props => {
 
   return (
     <View style={containerStyle}>
-      {showSyncProgress ? SyncProgressIndicator : <></>}
+      {headerPinned ? (
+        <View
+          style={insetStyle}
+          onLayout={e => {
+            if (listHeaderOffset) {
+              listHeaderOffset.value = e.nativeEvent.layout.height;
+            }
+          }}>
+          {showSyncProgress ? SyncProgressIndicator : null}
+          {sheet ? <SwapHistoryPreview /> : null}
+        </View>
+      ) : null}
       <View style={styles.viewport}>
         {rowsLayer?.(rowsTopInset)}
         <GestureDetector gesture={listGestures}>
