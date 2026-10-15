@@ -25,6 +25,8 @@ interface Props {
     y: number;
   };
   backgroundColorSpecified?: string;
+  tintColor?: string;
+  testID?: string;
 }
 
 const HeaderButton: React.FC<Props> = props => {
@@ -40,6 +42,8 @@ const HeaderButton: React.FC<Props> = props => {
     marginRight,
     imageXY,
     backgroundColorSpecified,
+    tintColor,
+    testID,
   } = props;
 
   const MARGIN_LEFT = marginLeft || 0;
@@ -67,10 +71,15 @@ const HeaderButton: React.FC<Props> = props => {
         leftPadding ? styles.padLeft : null,
         rightPadding ? styles.padRight : null,
       ]}
-      onPress={onPress}>
+      onPress={onPress}
+      testID={testID}>
       <View style={styles.subcontainer}>
         {imageSource ? (
-          <Image source={imageSource} style={imageXY ? styles.image : null} />
+          <Image
+            source={imageSource}
+            tintColor={tintColor}
+            style={[imageXY ? styles.image : null, tintColor ? {tintColor} : null]}
+          />
         ) : null}
         {textKey ? (
           <TranslateText

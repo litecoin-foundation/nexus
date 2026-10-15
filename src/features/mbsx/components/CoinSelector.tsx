@@ -1,0 +1,58 @@
+import React, {useContext} from 'react';
+import {Text, TouchableOpacity, View} from 'react-native';
+
+import {ScreenSizeContext} from '../../../context/screenSize';
+import {getMbsxStyles} from '../theme';
+
+// Replaces the example's react-native-element-dropdown, which nexus does not
+// depend on. Three coins do not need a searchable dropdown.
+//
+// The receivable coins, so anything listing them per coin reads them from here.
+const COINS = ['BTC', 'PART', 'FIRO'];
+
+type Props = {
+  label: string;
+  value: string;
+  coins?: string[];
+  onChange: (coin: string) => void;
+};
+
+const CoinSelector: React.FC<Props> = ({
+  label,
+  value,
+  coins = COINS,
+  onChange,
+}) => {
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
+  const styles = getMbsxStyles(SCREEN_HEIGHT);
+
+  return (
+    <View>
+      <Text style={styles.inputLabel}>{label}</Text>
+      <View style={styles.chipRow}>
+        {coins.map(coin => (
+          <TouchableOpacity
+            key={coin}
+            testID={`mbsx-coin-${coin}`}
+            accessibilityRole="button"
+            // Which chip is selected is otherwise carried by its styling alone,
+            // so nothing outside the render can tell whether a tap took.
+            accessibilityState={{selected: value === coin}}
+            style={[styles.chip, value === coin ? styles.chipSelected : null]}
+            onPress={() => onChange(coin)}>
+            <Text
+              style={[
+                styles.chipText,
+                value === coin ? styles.chipTextSelected : null,
+              ]}>
+              {coin}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+export {COINS};
+export default CoinSelector;
