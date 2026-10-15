@@ -3,6 +3,11 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 import {fileExists} from '../../../utils/file';
 import {getNetwork} from '../network';
 import type {LitecoinNetwork} from '../network';
+import {
+  clearRecoveryFiles,
+  recoverFile,
+  writeRecoverableFile,
+} from './recoverableFile';
 
 export type VerifyCertsMode = 'none' | 'pinned' | 'optional' | 'strict';
 
@@ -191,11 +196,12 @@ const readStoredConfig = async (): Promise<{
   config: MbsxConfig;
   migrated: boolean;
 } | null> => {
-  if (!(await fileExists(CONFIG_PATH))) {
+  if (!(await recoverFile(CONFIG_PATH))) {
     return null;
   }
+  const content = await RNFS.readFile(CONFIG_PATH);
   try {
-    const config: unknown = JSON.parse(await RNFS.readFile(CONFIG_PATH));
+    const config: unknown = JSON.parse(content);
     if (
       typeof config !== 'object' ||
       config === null ||
@@ -211,10 +217,10 @@ const readStoredConfig = async (): Promise<{
   }
 };
 
-export const readConfig = async (): Promise<MbsxConfig | null> => {
+const readConfigNow = async (): Promise<MbsxConfig | null> => {
   const stored = await readStoredConfig();
   if (stored?.migrated) {
-    await writeConfig(stored.config);
+    await writeConfigNow(stored.config);
   }
   return stored?.config ?? null;
 };
@@ -223,21 +229,22 @@ const writeConfigNow = async (config: MbsxConfig) => {
   if (!(await fileExists(MBSX_DATA_DIR))) {
     await RNFS.mkdir(MBSX_DATA_DIR);
   }
-  const tmp = `${CONFIG_PATH}.tmp`;
-  await RNFS.writeFile(tmp, JSON.stringify(config, null, 2));
-  if (await fileExists(CONFIG_PATH)) {
-    await RNFS.unlink(CONFIG_PATH);
-  }
-  await RNFS.moveFile(tmp, CONFIG_PATH);
+  await writeRecoverableFile(CONFIG_PATH, JSON.stringify(config, null, 2));
 };
 
 let configWrites: Promise<void> = Promise.resolve();
 
-const queueConfigWrite = (write: () => Promise<void>): Promise<void> => {
+const queueConfigWrite = <T>(write: () => Promise<T>): Promise<T> => {
   const run = configWrites.then(write);
-  configWrites = run.catch(() => undefined);
+  configWrites = run.then(
+    () => undefined,
+    () => undefined,
+  );
   return run;
 };
+
+export const readConfig = (): Promise<MbsxConfig | null> =>
+  queueConfigWrite(readConfigNow);
 
 export const writeConfig = (config: MbsxConfig): Promise<void> =>
   queueConfigWrite(() => writeConfigNow(config));
@@ -276,25 +283,28 @@ export const applyTorSetting = async (
   return updated;
 };
 
-export const loadOrCreateConfig = async (): Promise<MbsxConfig> => {
-  const existing = await readConfig();
-  if (existing) {
-    return existing;
-  }
-  if (await fileExists(CONFIG_PATH)) {
-    // moveFile onto an existing file fails on iOS
-    if (await fileExists(`${CONFIG_PATH}.bad`)) {
-      await RNFS.unlink(`${CONFIG_PATH}.bad`);
+export const loadOrCreateConfig = (): Promise<MbsxConfig> =>
+  queueConfigWrite(async () => {
+    const existing = await readConfigNow();
+    if (existing) {
+      return existing;
     }
-    await RNFS.moveFile(CONFIG_PATH, `${CONFIG_PATH}.bad`);
-    throw new Error(
-      'The swap settings could not be read. They are kept as config.json.bad, and the next start uses the defaults.',
-    );
-  }
-  const config = defaultConfig();
-  if (!config.bridge_pubkey) {
-    throw new Error(`mbsx has no default config for ${config.chain}`);
-  }
-  await writeConfig(config);
-  return config;
-};
+    if (await fileExists(CONFIG_PATH)) {
+      // Stale backups must not resurrect settings after deliberate quarantine.
+      await clearRecoveryFiles(CONFIG_PATH);
+      // moveFile onto an existing file fails on iOS
+      if (await fileExists(`${CONFIG_PATH}.bad`)) {
+        await RNFS.unlink(`${CONFIG_PATH}.bad`);
+      }
+      await RNFS.moveFile(CONFIG_PATH, `${CONFIG_PATH}.bad`);
+      throw new Error(
+        'The swap settings could not be read. They are kept as config.json.bad, and the next start uses the defaults.',
+      );
+    }
+    const config = defaultConfig();
+    if (!config.bridge_pubkey) {
+      throw new Error(`mbsx has no default config for ${config.chain}`);
+    }
+    await writeConfigNow(config);
+    return config;
+  });

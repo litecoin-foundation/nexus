@@ -15,6 +15,7 @@ import {
 
 jest.mock('@dr.pogodin/react-native-fs', () => ({
   DocumentDirectoryPath: '/docs',
+  exists: jest.fn(),
   readFile: jest.fn(),
   writeFile: jest.fn(),
   moveFile: jest.fn(),
@@ -47,6 +48,7 @@ const versionZero = (): MbsxConfig => ({
 beforeEach(() => {
   jest.clearAllMocks();
   exists.mockResolvedValue(true);
+  (RNFS.exists as jest.Mock).mockImplementation((path: string) => exists(path));
 });
 
 describe('electrumUrlError', () => {

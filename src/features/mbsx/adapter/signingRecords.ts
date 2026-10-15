@@ -3,6 +3,11 @@ import {address as btcAddress} from 'bitcoinjs-lib';
 
 import {MBSX_DATA_DIR} from './config';
 import type {FundingOutput, SelectedPrevout} from './prevouts';
+import {
+  clearRecoveryFiles,
+  recoverFile,
+  writeRecoverableFile,
+} from './recoverableFile';
 
 // Kept here, not read back from the module: the bound must hold when the module is wrong
 export type SigningRecord = {
@@ -21,12 +26,13 @@ let writing: Promise<void> = Promise.resolve();
 
 // Unreadable, it is set aside and started afresh: with no record the signer only refuses
 const readRecords = async (): Promise<Record<string, SigningRecord>> => {
-  if (!(await RNFS.exists(PATH))) {
+  if (!(await recoverFile(PATH))) {
     return {};
   }
   let parsed: unknown = null;
+  const content = await RNFS.readFile(PATH);
   try {
-    parsed = JSON.parse(await RNFS.readFile(PATH));
+    parsed = JSON.parse(content);
   } catch {
     parsed = null;
   }
@@ -34,6 +40,8 @@ const readRecords = async (): Promise<Record<string, SigningRecord>> => {
     return parsed as Record<string, SigningRecord>;
   }
   console.error(`mbsx ${PATH} is unreadable, moving it to ${PATH}.bad`);
+  // A stale backup must never resurrect signing permission after quarantine.
+  await clearRecoveryFiles(PATH);
   try {
     if (await RNFS.exists(`${PATH}.bad`)) {
       await RNFS.unlink(`${PATH}.bad`);
@@ -41,6 +49,7 @@ const readRecords = async (): Promise<Record<string, SigningRecord>> => {
     await RNFS.moveFile(PATH, `${PATH}.bad`);
   } catch (e) {
     console.warn(`mbsx could not move ${PATH} aside`, e);
+    throw e;
   }
   return {};
 };
@@ -55,21 +64,30 @@ const load = async (): Promise<Record<string, SigningRecord>> => {
 const update = (
   change: (current: Record<string, SigningRecord>) => void,
 ): Promise<void> => {
-  const next = writing.then(async () => {
+  return queueRecords(async () => {
     const updated = {...(await load())};
     change(updated);
     if (!(await RNFS.exists(MBSX_DATA_DIR))) {
       await RNFS.mkdir(MBSX_DATA_DIR);
     }
-    const tmp = `${PATH}.tmp`;
-    await RNFS.writeFile(tmp, JSON.stringify(updated));
-    if (await RNFS.exists(PATH)) {
-      await RNFS.unlink(PATH);
+    try {
+      await writeRecoverableFile(PATH, JSON.stringify(updated));
+      records = updated;
+    } catch (error) {
+      // The move may have completed even if its promise rejected. Reconcile
+      // from disk before a later read or update can use stale permissions.
+      records = null;
+      throw error;
     }
-    await RNFS.moveFile(tmp, PATH);
-    records = updated;
   });
-  writing = next.catch(() => undefined);
+};
+
+const queueRecords = <T>(operation: () => Promise<T>): Promise<T> => {
+  const next = writing.then(operation);
+  writing = next.then(
+    () => undefined,
+    () => undefined,
+  );
   return next;
 };
 
@@ -151,14 +169,14 @@ export const forgetSigning = (requestId: string): Promise<void> =>
     delete current[requestId];
   });
 
-export const signingRecordFor = async (
+export const signingRecordFor = (
   outpoints: string[],
-): Promise<SigningRecord | null> => {
-  await writing;
-  for (const record of Object.values(await load())) {
-    if (outpoints.every(key => key in record.inputs)) {
-      return record;
+): Promise<SigningRecord | null> =>
+  queueRecords(async () => {
+    for (const record of Object.values(await load())) {
+      if (outpoints.every(key => key in record.inputs)) {
+        return record;
+      }
     }
-  }
-  return null;
-};
+    return null;
+  });
