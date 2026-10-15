@@ -60,7 +60,7 @@
         "react-native-localize": "3.4.1",
         "react-native-mmkv": "4.3.1",
         "react-native-modal": "14.0.0-rc.1",
-        "react-native-nitro-bsx": "git+ssh://git@gitlab.com/nexus-bsx/react-native-nitro-bsx.git#7f347514388e1162d68b93bff3dd7092296474e0",
+        "react-native-nitro-bsx": "git+ssh://git@gitlab.com/nexus-bsx/react-native-nitro-bsx.git#4a795a036b6dd98b614738bfa2261fc3bd513970",
         "react-native-nitro-jade": "0.0.2",
         "react-native-nitro-lndltc": "0.0.6",
         "react-native-nitro-modules": "0.35.4",
@@ -2182,7 +2182,7 @@
 
     "react-native-modal-datetime-picker": ["react-native-modal-datetime-picker@18.0.0", "", { "dependencies": { "prop-types": "^15.7.2" }, "peerDependencies": { "@react-native-community/datetimepicker": ">=6.7.0", "react-native": ">=0.65.0" } }, "sha512-0jdvhhraZQlRACwr7pM6vmZ2kxgzJ4CpnmV6J3TVA6MrXMXK6Zo/upRBKkRp0+fTOiKuNblzesA2U59rYo6SGA=="],
 
-    "react-native-nitro-bsx": ["react-native-nitro-bsx@git+ssh://git@gitlab.com/nexus-bsx/react-native-nitro-bsx.git#7f347514388e1162d68b93bff3dd7092296474e0", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-nitro-modules": "*" } }, "7f347514388e1162d68b93bff3dd7092296474e0"],
+    "react-native-nitro-bsx": ["react-native-nitro-bsx@git+ssh://git@gitlab.com/nexus-bsx/react-native-nitro-bsx.git#4a795a036b6dd98b614738bfa2261fc3bd513970", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-nitro-modules": "*" } }, "4a795a036b6dd98b614738bfa2261fc3bd513970"],
 
     "react-native-nitro-jade": ["react-native-nitro-jade@0.0.2", "", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-nitro-modules": "*" } }, "sha512-9DBDRub3/884il66DoTgRokF3w26y4oG2Hg8RRSd+TQNYn2UrCSpobrRObDYE7R9AXDCA8a831MudDAMrgL5YQ=="],
 
