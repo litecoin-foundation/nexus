@@ -6,7 +6,7 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|react-redux|@reduxjs/toolkit|@shopify/flash-list|@shopify/react-native-skia|react-native-.*|@react-navigation|react-i18next|i18next|expo-.*|@expo|lottie-react-native|@bitcoinerlab|@craftzdog|@dr.pogodin|@flexa|@noble|@notifee|@react-native-async-storage|@react-native-clipboard|@react-native-community|@react-native-segmented-control|@shopify|react-native-.*)/)',
+    'node_modules/(?!(react-native|@react-native|react-redux|@reduxjs/toolkit|immer|@shopify/flash-list|@shopify/react-native-skia|react-native-.*|@react-navigation|react-i18next|i18next|expo-.*|@expo|lottie-react-native|@bitcoinerlab|@craftzdog|@dr.pogodin|@flexa|@noble|@notifee|@react-native-async-storage|@react-native-clipboard|@react-native-community|@react-native-segmented-control|@shopify|react-native-.*)/)',
   ],
   modulePathIgnorePatterns: [
     '<rootDir>/android/',

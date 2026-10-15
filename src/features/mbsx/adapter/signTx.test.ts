@@ -40,6 +40,9 @@ jest.mock('@dr.pogodin/react-native-fs', () => ({
     mockFiles.set(to, mockFiles.get(from)!);
     mockFiles.delete(from);
   }),
+  unlink: jest.fn(async (path: string) => {
+    mockFiles.delete(path);
+  }),
 }));
 
 const finalizePsbt = walletKitFinalizePsbt as jest.Mock;
