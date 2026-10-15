@@ -6,6 +6,7 @@
     android:name="android.hardware.nfc"
     android:required="false" />
   <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <uses-permission
     android:name="android.permission.CAMERA"
     android:required="true" />
