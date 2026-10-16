@@ -11,9 +11,8 @@ import {
 import type {SharedValue} from 'react-native-reanimated';
 import {useDerivedValue} from 'react-native-reanimated';
 
-import GlassButtonSurface, {
-  GLASS_BUTTON_TINT,
-} from '../Buttons/GlassButtonSurface';
+import {GLASS_BUTTON_TINT} from '../Buttons/GlassButtonSurface';
+import GCBrandCardButtonV2 from '../ButtonsV2/GCBrandCardButtonV2';
 import {buildFittedParagraph, useSatoshiFontMgr} from '../GlassBalanceGraphics';
 import {MUTED_TEXT, ROW_BORDER, SHEET_BACKGROUND} from '../GlassTxRows';
 import {getShopRowLayout, SHOP_EXPAND_BOTTOM_RATIO} from './GlassShopRows';
@@ -60,39 +59,25 @@ export const useShopExpandedPanel = (
     const panelHeight =
       panel.extras - panelTop - SCREEN_HEIGHT * SHOP_EXPAND_BOTTOM_RATIO;
     const rowTop = panelTop + layout.panelPad;
+    const ctaWidth = SCREEN_WIDTH - inset * 2;
 
-    // the glass capsule cta, shared by the brand and redeem variants
-    const glassCta = (label: string, y: number, height: number) => {
-      const ctaWidth = SCREEN_WIDTH - inset * 2;
-      const cta = buildFittedParagraph(
-        fontMgr,
-        label,
-        SCREEN_HEIGHT * 0.015,
-        700,
-        '#FFFFFF',
-        ctaWidth,
-        ctaWidth - layout.pad,
-      );
-      return (
-        <Group
-          key="cta"
-          origin={vec(inset + ctaWidth / 2, y + height / 2)}
-          transform={ctaTransform}>
-          <GlassButtonSurface
-            x={inset}
-            y={y}
-            width={ctaWidth}
-            height={height}
-          />
-          <Paragraph
-            paragraph={cta}
-            x={inset + (ctaWidth - cta.getLongestLine()) / 2}
-            y={y + (height - cta.getHeight()) / 2}
-            width={ctaWidth}
-          />
-        </Group>
-      );
-    };
+    const cta = (label: string, y: number, height: number) => (
+      <Group
+        key="cta"
+        origin={vec(inset + ctaWidth / 2, y + height / 2)}
+        transform={ctaTransform}>
+        <GCBrandCardButtonV2
+          x={inset}
+          y={y}
+          width={ctaWidth}
+          height={height}
+          radius={layout.tileRadius}
+          label={label}
+          fontMgr={fontMgr}
+          screenHeight={SCREEN_HEIGHT}
+        />
+      </Group>
+    );
 
     const children: React.ReactNode[] = [
       // the panel region continues the row's white card, with the thin
@@ -126,7 +111,7 @@ export const useShopExpandedPanel = (
 
     if (panel.kind === 'brand') {
       const count = panel.chipLabels.length;
-      const chipHeight = layout.chipHeight - SCREEN_HEIGHT * 0.008;
+      const chipHeight = layout.ctaHeight;
       const chipWidth =
         (SCREEN_WIDTH - inset * 2 - layout.chipGap * (count - 1)) / count;
       panel.chipLabels.forEach((label, i) => {
@@ -148,7 +133,7 @@ export const useShopExpandedPanel = (
               y={rowTop}
               width={chipWidth}
               height={chipHeight}
-              r={chipHeight / 2}
+              r={layout.tileRadius}
               color={selected ? GLASS_BUTTON_TINT : '#ffffff'}
             />
             {!selected ? (
@@ -157,7 +142,7 @@ export const useShopExpandedPanel = (
                 y={rowTop + 0.5}
                 width={chipWidth - 1}
                 height={chipHeight - 1}
-                r={(chipHeight - 1) / 2}
+                r={layout.tileRadius - 0.5}
                 style="stroke"
                 strokeWidth={1}
                 color="rgba(214, 216, 218, 0.8)"
@@ -174,7 +159,7 @@ export const useShopExpandedPanel = (
       });
 
       children.push(
-        glassCta(
+        cta(
           panel.ctaLabel,
           rowTop + layout.chipHeight + layout.expandGap,
           layout.ctaHeight,
@@ -231,7 +216,7 @@ export const useShopExpandedPanel = (
         />,
       );
     } else if (panel.ctaLabel) {
-      children.push(glassCta(panel.ctaLabel, rowTop, layout.codeRowHeight));
+      children.push(cta(panel.ctaLabel, rowTop, layout.ctaHeight));
     }
 
     return <Group>{children}</Group>;

@@ -330,13 +330,12 @@ const drawLogoTile = (
   cy: number,
 ) => {
   'worklet';
-  const {logos, layout, screenHeight, paints} = context;
+  const {logos, layout, paints} = context;
   const tileTop = cy - layout.tileHeight / 2;
-  const radius = screenHeight * 0.012;
   const tileRect = Skia.RRectXY(
     Skia.XYWHRect(x, tileTop, layout.tileWidth, layout.tileHeight),
-    radius,
-    radius,
+    layout.tileRadius,
+    layout.tileRadius,
   );
   canvas.drawRRect(tileRect, paints.tile);
   canvas.drawRRect(tileRect, paints.tileBorder);
@@ -546,7 +545,6 @@ const drawItem = (
       paints.border,
     );
     const cy = y + height / 2;
-    const radius = screenHeight * 0.012;
     canvas.drawRRect(
       Skia.RRectXY(
         Skia.XYWHRect(
@@ -555,8 +553,8 @@ const drawItem = (
           layout.tileWidth,
           layout.tileHeight,
         ),
-        radius,
-        radius,
+        layout.tileRadius,
+        layout.tileRadius,
       ),
       paints.skeleton,
     );

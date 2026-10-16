@@ -1,5 +1,5 @@
 import React, {useContext, useMemo} from 'react';
-import {Pressable, StyleSheet} from 'react-native';
+import {ActivityIndicator, Pressable, StyleSheet} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,10 +17,11 @@ interface Props {
   textDomain: string;
   onPress: () => void;
   disabled?: boolean;
+  loading?: boolean;
 }
 
 const BlueButtonV2: React.FC<Props> = props => {
-  const {textKey, textDomain, onPress, disabled} = props;
+  const {textKey, textDomain, onPress, disabled, loading} = props;
 
   const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const styles = useMemo(() => getStyles(SCREEN_HEIGHT), [SCREEN_HEIGHT]);
@@ -44,7 +45,7 @@ const BlueButtonV2: React.FC<Props> = props => {
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || loading}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       style={styles.size}>
@@ -55,13 +56,17 @@ const BlueButtonV2: React.FC<Props> = props => {
           disabled ? styles.disabled : null,
           motionStyle,
         ]}>
-        <TranslateText
-          textKey={textKey}
-          domain={textDomain}
-          maxSizeInPixels={SCREEN_HEIGHT * 0.022}
-          textStyle={styles.text}
-          numberOfLines={1}
-        />
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <TranslateText
+            textKey={textKey}
+            domain={textDomain}
+            maxSizeInPixels={SCREEN_HEIGHT * 0.022}
+            textStyle={styles.text}
+            numberOfLines={1}
+          />
+        )}
       </Animated.View>
     </Pressable>
   );

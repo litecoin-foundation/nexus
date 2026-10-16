@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import {SEGMENTED_PILLS_HEIGHT_RATIO} from './ButtonsV2/SegmentedPills';
 import {ScreenSizeContext} from '../context/screenSize';
 
 const LIGHT_SURFACE = '#ffffff';
@@ -137,7 +138,7 @@ const SearchBar: React.FC<Props> = props => {
   );
 };
 
-const BAR_HEIGHT_RATIO = 0.05;
+export const SEARCH_BAR_HEIGHT_RATIO = SEGMENTED_PILLS_HEIGHT_RATIO;
 const ICON_BOX_RATIO = 0.038;
 
 const getStyles = (
@@ -145,7 +146,7 @@ const getStyles = (
   screenHeight: number,
   options?: {noShadow?: boolean; borderRadius?: number},
 ) => {
-  const barHeight = screenHeight * BAR_HEIGHT_RATIO;
+  const barHeight = screenHeight * SEARCH_BAR_HEIGHT_RATIO;
   const iconBox = screenHeight * ICON_BOX_RATIO;
   const br = options?.borderRadius ?? barHeight / 2;
   return StyleSheet.create({

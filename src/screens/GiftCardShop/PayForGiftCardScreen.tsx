@@ -1,19 +1,13 @@
 import React, {useContext, useState, useRef, useEffect} from 'react';
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  DeviceEventEmitter,
-  Platform,
-} from 'react-native';
-import type {StackNavigationOptions} from '@react-navigation/stack';
+import {View, StyleSheet, DeviceEventEmitter} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import PlasmaModal from '../../components/Modals/PlasmaModal';
 import PinModalContent from '../../components/Modals/PinModalContent';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import BlueButtonV2 from '../../components/ButtonsV2/BlueButtonV2';
+import WhiteButtonV2 from '../../components/ButtonsV2/WhiteButtonV2';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 import {InitiatePurchaseResponseData} from '../../services/giftcards';
 import {sendOnchainPayment} from '../../reducers/transaction';
 import {addPopup, PopupActionType} from '../../reducers/popupschedule';
@@ -28,7 +22,14 @@ import {
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
+import {getHeaderRowHeight} from '../../components/useHeaderHeight';
 import {ScreenSizeContext} from '../../context/screenSize';
+
+const BUTTONS_GAP_RATIO = 0.015;
 
 interface PayForGiftCardScreenProps {
   route: {
@@ -55,6 +56,9 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const fixedBottomStyle = useFixedBottomStyle();
 
   const dispatch = useAppDispatch();
 
@@ -226,33 +230,37 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
         </CustomSafeAreaView>
       </View>
 
-      <View style={styles.buttonContainer}>
-        <CustomSafeAreaView
-          styles={styles.safeAreaBottom}
-          edges={Platform.OS === 'android' ? ['bottom'] : []}>
-          {error && (
-            <View style={styles.errorContainer}>
-              <TranslateText
-                textValue={error}
-                maxSizeInPixels={SCREEN_HEIGHT * 0.014}
-                textStyle={styles.errorMessage}
-                numberOfLines={1}
-              />
-            </View>
-          )}
-
-          {!isPaymentExpired && (
+      <View style={fixedBottomStyle}>
+        {error && (
+          <View style={styles.errorContainer}>
             <TranslateText
-              textKey="make_payment_in"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.017}
-              textStyle={styles.countdownText}
+              textValue={error}
+              maxSizeInPixels={SCREEN_HEIGHT * 0.014}
+              textStyle={styles.errorMessage}
               numberOfLines={1}
-              interpolationObj={{time: formatCountdown(paymentCountdown)}}
             />
-          )}
+          </View>
+        )}
 
-          <BlueRoundButton
+        {!isPaymentExpired && (
+          <TranslateText
+            textKey="make_payment_in"
+            domain="nexusShop"
+            maxSizeInPixels={SCREEN_HEIGHT * 0.017}
+            textStyle={styles.countdownText}
+            numberOfLines={1}
+            interpolationObj={{time: formatCountdown(paymentCountdown)}}
+          />
+        )}
+
+        <View style={styles.buttons}>
+          <WhiteButtonV2
+            textKey="back"
+            textDomain="nexusShop"
+            onPress={() => navigation.goBack()}
+            disabled={loading}
+          />
+          <BlueButtonV2
             textKey={isPaymentExpired ? 'payment_expired' : 'send_payment'}
             textDomain="nexusShop"
             onPress={() =>
@@ -260,20 +268,7 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
             }
             disabled={loading || isPaymentExpired}
           />
-
-          <TouchableOpacity
-            style={[commonStyles.buttonRoundedSecondary, styles.backButton]}
-            onPress={() => navigation.goBack()}
-            disabled={loading}>
-            <TranslateText
-              textKey="back"
-              domain="nexusShop"
-              maxSizeInPixels={SCREEN_HEIGHT * 0.018}
-              textStyle={commonStyles.buttonTextBlack}
-              numberOfLines={1}
-            />
-          </TouchableOpacity>
-        </CustomSafeAreaView>
+        </View>
       </View>
 
       <PlasmaModal
@@ -304,6 +299,14 @@ const PayForGiftCardScreen: React.FC<PayForGiftCardScreenProps> = ({
         textKey="payment_processing"
         textDomain="nexusShop"
       />
+
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="complete_payment"
+        titleDomain="nexusShop"
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
@@ -319,7 +322,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'space-between',
       alignItems: 'center',
     },
-    safeAreaBottom: {},
     topContainer: {
       width: '100%',
       height: screenHeight * 0.5,
@@ -333,10 +335,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
     },
     title: {
-      paddingTop:
-        Platform.OS === 'android'
-          ? getSpacing(screenWidth, screenHeight).header + 10
-          : getSpacing(screenWidth, screenHeight).header,
+      paddingTop: getHeaderRowHeight(screenWidth, screenHeight),
     },
     paymentDetails: {
       width: '100%',
@@ -380,15 +379,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: colors.danger,
       fontSize: getFontSize(screenHeight).sm,
     },
-    buttonContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.03,
-      left: 0,
-      width: '100%',
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).xl,
-    },
-    backButton: {
-      marginTop: screenHeight * 0.012,
+    buttons: {
+      gap: screenHeight * BUTTONS_GAP_RATIO,
     },
     countdownText: {
       color: '#000',
@@ -397,48 +389,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       textAlign: 'center',
       marginBottom: screenHeight * 0.015,
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
-
-export const PayForGiftCardScreenOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
-
-  return {
-    headerTransparent: true,
-    headerTitle: () => (
-      <TranslateText
-        textKey="complete_payment"
-        domain="nexusShop"
-        maxSizeInPixels={height * 0.02}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default PayForGiftCardScreen;

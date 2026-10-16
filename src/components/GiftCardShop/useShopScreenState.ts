@@ -496,7 +496,7 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
         id,
         kind: 'giftcard',
         splitY: model.top + cellHeight,
-        extras: getShopCardExpandHeight(SCREEN_HEIGHT),
+        extras: getShopCardExpandHeight(SCREEN_HEIGHT, !!card.redeemCode),
         chevronLift: layout.cellPadV + layout.chevronSize / 2,
         symbol: '',
         chipValues: [],

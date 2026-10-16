@@ -8,7 +8,6 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -27,7 +26,6 @@ import {
   setCountryPickerOpen,
 } from '../../reducers/nexusshopaccount';
 import {getCurrencyForCountry} from '../../services/giftcards';
-import HeaderButton from '../../components/Buttons/HeaderButton';
 import OptionCell from '../../components/Cells/OptionCell';
 import countries from '../../assets/countries';
 import {getCountry} from 'react-native-localize';
@@ -36,8 +34,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import TranslateText from '../../components/TranslateText';
 import {ScreenSizeContext} from '../../context/screenSize';
-import WhiteButton from '../Buttons/WhiteButton';
-import CustomSafeAreaView from '../CustomSafeAreaView';
+import WhiteButtonV2 from '../ButtonsV2/WhiteButtonV2';
+import {useFixedBottomStyle} from '../ButtonsV2/fixedBottomStyle';
+import {
+  PADDING_HORIZONTAL_RATIO,
+  ScreenHeaderBackIcon,
+  ScreenHeaderPill,
+} from '../ScreenHeader';
+import {getHeaderRowHeight} from '../useHeaderHeight';
 import StatCard from '../Cards/StatCard';
 
 const backIcon = require('../../assets/images/back-icon.png');
@@ -87,6 +91,7 @@ const ShopAccountDrawerContent: React.FC<
     () => getStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
     [SCREEN_WIDTH, SCREEN_HEIGHT],
   );
+  const fixedBottomStyle = useFixedBottomStyle();
 
   const shopCountry = account?.userCountry || getCountry();
   const [showCountryModal, setShowCountryModal] = useState(false);
@@ -289,18 +294,12 @@ const ShopAccountDrawerContent: React.FC<
             </ScrollView>
 
             {/* Sign Out Button (Fixed to Bottom) */}
-            <View style={styles.bottomContainer}>
-              <CustomSafeAreaView
-                styles={styles.buttonContainer}
-                edges={['bottom']}>
-                <WhiteButton
-                  value="Sign Out"
-                  onPress={logout}
-                  small={false}
-                  disabled={false}
-                  active={true}
-                />
-              </CustomSafeAreaView>
+            <View style={fixedBottomStyle}>
+              <WhiteButtonV2
+                textKey="logout"
+                textDomain="nexusShop"
+                onPress={logout}
+              />
             </View>
           </SafeAreaView>
         </Animated.View>
@@ -311,11 +310,9 @@ const ShopAccountDrawerContent: React.FC<
             style={[styles.countryPickerContainer, countryPickerStyle]}>
             <SafeAreaView style={styles.safeAreaContent} edges={['top']}>
               <View style={styles.pickerHeader}>
-                <HeaderButton
-                  onPress={closeCountryPicker}
-                  imageSource={backIcon}
-                  leftPadding
-                />
+                <ScreenHeaderPill back onPress={closeCountryPicker}>
+                  <ScreenHeaderBackIcon />
+                </ScreenHeaderPill>
               </View>
               <FlatList
                 data={countries}
@@ -374,10 +371,8 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       padding: screenWidth * 0.05,
     },
     pickerHeader: {
-      paddingLeft: 0,
-      paddingRight: screenWidth * 0.05,
-      paddingTop: screenHeight * 0.02,
-      paddingBottom: screenHeight * 0.015,
+      height: getHeaderRowHeight(screenWidth, screenHeight),
+      paddingHorizontal: screenWidth * PADDING_HORIZONTAL_RATIO,
       flexDirection: 'row',
       alignItems: 'center',
     },
@@ -452,16 +447,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       height: screenWidth * 0.05,
       tintColor: 'rgba(255, 255, 255, 0.5)',
       resizeMode: 'contain',
-    },
-    bottomContainer: {
-      position: 'absolute',
-      bottom: 0,
-      width: '100%',
-      paddingHorizontal: screenWidth * 0.05,
-      paddingBottom: Platform.OS === 'ios' ? 0 : screenWidth * 0.05,
-    },
-    buttonContainer: {
-      width: '100%',
     },
     listContainer: {
       paddingBottom: screenHeight * 0.02,

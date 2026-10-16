@@ -11,6 +11,7 @@ import NexusShop from '../screens/NexusShop';
 import SearchTransaction from '../screens/Wallet/SearchTransaction';
 import ShopAccountDrawerContent from '../components/Drawers/ShopAccountDrawerContent';
 import GlassChrome from '../components/GlassChrome';
+import ShopHeader from '../components/ShopHeader';
 import {GlassChromeProvider} from '../components/glassChromeFeeds';
 import {CardUnderlayProvider} from '../components/cardUnderlay';
 import {MainStackParamList, ShopDrawerParamList} from './types';
@@ -25,32 +26,36 @@ import {MainStackParamList, ShopDrawerParamList} from './types';
 const Stack = createStackNavigator<MainStackParamList>();
 const Drawer = createDrawerNavigator<ShopDrawerParamList>();
 
-// the account drawer belongs to the shop alone, so it wraps just that screen
+// NOTE: the account drawer belongs to the shop alone, so it wraps just that screen;
+// the shop's header sits above it, so the account pill stays put as its toggle
 function ShopDrawer(): React.JSX.Element {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
 
   return (
-    <Drawer.Navigator
-      screenOptions={{
-        headerShown: false,
-        drawerPosition: 'right',
-        drawerType: 'slide',
-        drawerStyle: {
-          width: SCREEN_WIDTH * 0.7,
-          borderTopLeftRadius: SCREEN_HEIGHT * 0.012,
-          borderBottomLeftRadius: SCREEN_HEIGHT * 0.012,
-          backgroundColor: 'white',
-        },
-        swipeEnabled: false, // Only open via button
-        overlayColor: 'rgba(17, 74, 175, 0.8)',
-        sceneStyle: {
-          backgroundColor: 'transparent',
-        },
-      }}
-      drawerContent={props => <ShopAccountDrawerContent {...props} />}>
-      <Drawer.Screen name="NexusShopScreen" component={NexusShop} />
-    </Drawer.Navigator>
+    <View style={styles.host}>
+      <Drawer.Navigator
+        screenOptions={{
+          headerShown: false,
+          drawerPosition: 'right',
+          drawerType: 'slide',
+          drawerStyle: {
+            width: SCREEN_WIDTH * 0.7,
+            borderTopLeftRadius: SCREEN_HEIGHT * 0.012,
+            borderBottomLeftRadius: SCREEN_HEIGHT * 0.012,
+            backgroundColor: 'white',
+          },
+          swipeEnabled: false, // Only open via button
+          overlayColor: 'rgba(17, 74, 175, 0.8)',
+          sceneStyle: {
+            backgroundColor: 'transparent',
+          },
+        }}
+        drawerContent={props => <ShopAccountDrawerContent {...props} />}>
+        <Drawer.Screen name="NexusShopScreen" component={NexusShop} />
+      </Drawer.Navigator>
+      <ShopHeader />
+    </View>
   );
 }
 

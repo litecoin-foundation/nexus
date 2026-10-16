@@ -9,28 +9,46 @@ import {
   isExpired,
 } from '../../services/giftcards';
 import {ScreenSizeContext} from '../../context/screenSize';
+import {SEGMENTED_PILLS_HEIGHT_RATIO} from '../ButtonsV2/SegmentedPills';
+import {GLASS_HEADER_PILL_HEIGHT_RATIO} from '../glassSearchLayout';
+import {getHeaderRowHeight} from '../useHeaderHeight';
 
 // Geometry and plain-data models for the shop rows. Nothing here renders:
 // GlassTxCanvas draws the models through ShopSkiaRows and GlassShopList
 // scrolls an invisible spacer of the same total height, so scroll physics
 // stay native and taps hit-test against `rowTops` — the tx list pattern.
 
-// compact gradient header: nav-bar title row, section pills, then search,
+// compact gradient header: ShopHeader's title row, section pills, then search,
 // with the card's rounded bottom edge — content-fit, no sheet lip below
-export const SHOP_HEADER_SEGMENTS_TOP_RATIO = 0.075;
-export const SHOP_HEADER_SEGMENTS_HEIGHT_RATIO = 0.048;
+export const SHOP_HEADER_SEGMENTS_HEIGHT_RATIO = SEGMENTED_PILLS_HEIGHT_RATIO;
 export const SHOP_HEADER_GAP_RATIO = 0.016;
-export const SHOP_HEADER_SEARCH_HEIGHT_RATIO = 0.052;
-export const SHOP_HEADER_BOTTOM_PAD_RATIO = 0.024;
+export const SHOP_HEADER_SEARCH_HEIGHT_RATIO =
+  SHOP_HEADER_SEGMENTS_HEIGHT_RATIO;
+export const SHOP_HEADER_INSET_RATIO = 0.04;
+const SHOP_HEADER_CONTROLS_GAP_RATIO = 0.016;
 
-export const getShopHeaderHeight = (screenHeight: number, topInset: number) =>
+export const getShopSegmentsTop = (
+  screenWidth: number,
+  screenHeight: number,
+  topInset: number,
+) =>
   topInset +
+  (getHeaderRowHeight(screenWidth, screenHeight) +
+    screenHeight * GLASS_HEADER_PILL_HEIGHT_RATIO) /
+    2 +
+  screenHeight * SHOP_HEADER_CONTROLS_GAP_RATIO;
+
+export const getShopHeaderHeight = (
+  screenWidth: number,
+  screenHeight: number,
+  topInset: number,
+) =>
+  getShopSegmentsTop(screenWidth, screenHeight, topInset) +
   screenHeight *
-    (SHOP_HEADER_SEGMENTS_TOP_RATIO +
-      SHOP_HEADER_SEGMENTS_HEIGHT_RATIO +
+    (SHOP_HEADER_SEGMENTS_HEIGHT_RATIO +
       SHOP_HEADER_GAP_RATIO +
-      SHOP_HEADER_SEARCH_HEIGHT_RATIO +
-      SHOP_HEADER_BOTTOM_PAD_RATIO);
+      SHOP_HEADER_SEARCH_HEIGHT_RATIO) +
+  screenWidth * SHOP_HEADER_INSET_RATIO;
 
 // rows start at the gradient card's bottom edge
 export const getShopListTop = getShopHeaderHeight;
@@ -42,8 +60,8 @@ export const getShopSearchBlock = (screenHeight: number) =>
 
 export const SHOP_LABEL_HEIGHT_RATIO = 0.042;
 export const SHOP_CELL_HEIGHT_RATIO = 0.09;
-export const SHOP_CHIP_ROW_HEIGHT_RATIO = 0.052;
 export const SHOP_CTA_HEIGHT_RATIO = 0.055;
+export const SHOP_CHIP_ROW_HEIGHT_RATIO = SHOP_CTA_HEIGHT_RATIO + 0.008;
 export const SHOP_EXPAND_GAP_RATIO = 0.012;
 export const SHOP_PANEL_TOP_GAP_RATIO = 0.004;
 export const SHOP_PANEL_PAD_RATIO = 0.01;
@@ -61,11 +79,15 @@ export const getShopBrandExpandHeight = (screenHeight: number) =>
     SHOP_PANEL_PAD_RATIO +
     SHOP_EXPAND_BOTTOM_RATIO);
 
-export const getShopCardExpandHeight = (screenHeight: number) =>
+// the row holds the redeem code pill, or else the cta at its own height
+export const getShopCardExpandHeight = (
+  screenHeight: number,
+  hasCode: boolean,
+) =>
   screenHeight *
   (SHOP_PANEL_TOP_GAP_RATIO +
     SHOP_PANEL_PAD_RATIO +
-    SHOP_CODE_ROW_HEIGHT_RATIO +
+    (hasCode ? SHOP_CODE_ROW_HEIGHT_RATIO : SHOP_CTA_HEIGHT_RATIO) +
     SHOP_PANEL_PAD_RATIO +
     SHOP_EXPAND_BOTTOM_RATIO);
 
@@ -444,6 +466,7 @@ export const getShopRowLayout = (screenWidth: number, screenHeight: number) => {
     pad,
     tileWidth,
     tileHeight,
+    tileRadius: screenHeight * 0.012,
     cellHeight,
     textLeft: pad + tileWidth + screenWidth * 0.035,
     // right-side columns cap the title/detail paragraphs
@@ -505,7 +528,8 @@ export const shopPanelHitTarget = (
   const rowTop = layout.panelTopGap + layout.panelPad;
 
   if (panel.kind === 'giftcard') {
-    if (yLocal >= rowTop && yLocal < rowTop + layout.codeRowHeight) {
+    const rowHeight = panel.code ? layout.codeRowHeight : layout.ctaHeight;
+    if (yLocal >= rowTop && yLocal < rowTop + rowHeight) {
       if (panel.code) {
         return {type: 'copy-code', id: panel.id, code: panel.code};
       }
@@ -551,7 +575,7 @@ export const shopPanelCtaZone = (
   const rowTop = layout.panelTopGap + layout.panelPad;
   if (panel.kind === 'giftcard') {
     return (
-      panel.hasCta && yLocal >= rowTop && yLocal < rowTop + layout.codeRowHeight
+      panel.hasCta && yLocal >= rowTop && yLocal < rowTop + layout.ctaHeight
     );
   }
   const ctaTop = rowTop + layout.chipHeight + layout.expandGap;

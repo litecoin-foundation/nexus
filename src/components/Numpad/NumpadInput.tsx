@@ -7,7 +7,10 @@ import PadGrid from './PadGrid';
 
 import TranslateText from '../../components/TranslateText';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
+import {GAP_RATIO} from '../ButtonsV2/fixedBottomStyle';
 import {ScreenSizeContext} from '../../context/screenSize';
+
+const BUTTONS_GAP_RATIO = 0.015;
 
 interface Props {
   currentCode: string;
@@ -171,16 +174,15 @@ const getStyles = (
     buttonContainer: {
       flex: 1,
       justifyContent: 'flex-end',
-      paddingHorizontal: screenHeight * 0.03,
-      paddingBottom:
-        Platform.OS === 'ios' ? screenHeight * 0.03 : screenHeight * 0.02,
+      paddingHorizontal: screenWidth * GAP_RATIO,
+      paddingBottom: screenWidth * GAP_RATIO,
     },
     secondaryButtonContainer: {
       width: '100%',
     },
     confirmButtonContainer: {
       width: '100%',
-      paddingTop: screenHeight * 0.01,
+      paddingTop: screenHeight * BUTTONS_GAP_RATIO,
     },
   });
 

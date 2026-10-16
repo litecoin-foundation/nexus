@@ -1,13 +1,19 @@
 import React, {useContext, useMemo, useState, useEffect, useRef} from 'react';
-import {View, StyleSheet, Platform} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import type {StackNavigationOptions} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {GiftCardClient, formatCurrency} from '../../services/giftcards';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import BlueButtonV2 from '../../components/ButtonsV2/BlueButtonV2';
+import {useFixedBottomStyle} from '../../components/ButtonsV2/fixedBottomStyle';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
+import ScreenHeader, {
+  ScreenHeaderNavigationOptions,
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
+import {getHeaderRowHeight} from '../../components/useHeaderHeight';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {
   colors,
@@ -75,6 +81,9 @@ const PendingGCDetails: React.FC<Props> = ({route, navigation}) => {
     () => getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT),
     [SCREEN_WIDTH, SCREEN_HEIGHT],
   );
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const fixedBottomStyle = useFixedBottomStyle();
 
   const [status, setStatus] = useState<OrderStatus>('pending_payment');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -270,17 +279,22 @@ const PendingGCDetails: React.FC<Props> = ({route, navigation}) => {
         )}
       </View>
 
-      <View style={styles.buttonContainer}>
-        <CustomSafeAreaView
-          styles={styles.safeAreaBottom}
-          edges={Platform.OS === 'android' ? ['bottom'] : []}>
-          <BlueRoundButton
-            textKey="back_to_my_cards"
-            textDomain="nexusShop"
-            onPress={navigateToMyCards}
-          />
-        </CustomSafeAreaView>
+      <View style={fixedBottomStyle}>
+        <BlueButtonV2
+          textKey="back_to_my_cards"
+          textDomain="nexusShop"
+          onPress={navigateToMyCards}
+        />
       </View>
+
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="pending_gift_card"
+        titleDomain="nexusShop"
+        onBack={navigateToMyCards}
+        fadeStyle={headerFadeStyle}
+      />
     </LinearGradient>
   );
 };
@@ -296,7 +310,6 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       justifyContent: 'space-between',
       alignItems: 'center',
     },
-    safeAreaBottom: {},
     topContainer: {
       width: '100%',
       height: screenHeight * 0.45,
@@ -310,10 +323,7 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       width: '100%',
     },
     title: {
-      paddingTop:
-        Platform.OS === 'android'
-          ? getSpacing(screenWidth, screenHeight).header + 10
-          : getSpacing(screenWidth, screenHeight).header,
+      paddingTop: getHeaderRowHeight(screenWidth, screenHeight),
     },
     paymentDetails: {
       width: '100%',
@@ -419,67 +429,12 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
       color: colors.danger,
       marginLeft: getSpacing(screenWidth, screenHeight).md,
     },
-    buttonContainer: {
-      position: 'absolute',
-      bottom: screenHeight * 0.03,
-      left: 0,
-      width: '100%',
-      paddingHorizontal: getSpacing(screenWidth, screenHeight).xl,
-    },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
 
-export const PendingGCDetailsNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
-
-  return {
-    headerTransparent: true,
-    headerTitle: () => (
-      <TranslateText
-        textKey="pending_gift_card"
-        domain="nexusShop"
-        maxSizeInPixels={height * 0.02}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() =>
-          navigation.navigate('NewWalletStack', {
-            screen: 'Main',
-            params: {
-              screen: 'NexusShop',
-              params: {
-                screen: 'NexusShopScreen',
-                params: {section: 'my-cards'},
-              },
-            },
-          })
-        }
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginEnd: -5} : null,
-    gestureEnabled: false,
-  };
+// NOTE: no back swipe: back goes to My Cards, see the header
+export const PendingGCDetailsNavigationOptions: StackNavigationOptions = {
+  ...ScreenHeaderNavigationOptions,
+  gestureEnabled: false,
 };
 
 export default PendingGCDetails;

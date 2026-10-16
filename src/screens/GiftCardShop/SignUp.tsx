@@ -11,10 +11,7 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
-import type {
-  StackNavigationProp,
-  StackNavigationOptions,
-} from '@react-navigation/stack';
+import type {StackNavigationProp} from '@react-navigation/stack';
 import {NexusShopStackParamList} from '../../navigation/NexusShopStack';
 import LinearGradient from 'react-native-linear-gradient';
 import {
@@ -41,10 +38,15 @@ import {
   clearAccount,
   setAccountError,
 } from '../../reducers/nexusshopaccount';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import BlueButtonV2 from '../../components/ButtonsV2/BlueButtonV2';
+import WhiteButtonV2 from '../../components/ButtonsV2/WhiteButtonV2';
+import {GAP_RATIO} from '../../components/ButtonsV2/fixedBottomStyle';
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {ScreenSizeContext} from '../../context/screenSize';
 import Turnstile from '../../components/Turnstile';
 import WarningModal from '../../components/Modals/WarningModal';
@@ -53,6 +55,8 @@ import {
   getSpacing,
   getCommonStyles,
 } from '../../components/GiftCardShop/theme';
+
+const BUTTONS_GAP_RATIO = 0.015;
 
 interface Props {
   route?: {
@@ -71,6 +75,8 @@ const SignUp: React.FC<Props> = ({route}) => {
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const dispatch = useAppDispatch();
   const navigation =
@@ -423,32 +429,38 @@ const SignUp: React.FC<Props> = ({route}) => {
             resetKey={turnstileResetKey}
           />
 
-          <BlueRoundButton
-            textKey="sign_up_or_login"
-            textDomain="nexusShop"
-            onPress={handleSignUp}
-            disabled={loginLoading || !turnstileToken || !email.trim()}
-            loading={loginLoading}
-            style={styles.signUpButton}
-          />
+          <View style={styles.signUpButton}>
+            <BlueButtonV2
+              textKey="sign_up_or_login"
+              textDomain="nexusShop"
+              onPress={handleSignUp}
+              disabled={loginLoading || !turnstileToken || !email.trim()}
+              loading={loginLoading}
+            />
+          </View>
 
           {__DEV__ ? (
             <View style={styles.resetButtonContainer}>
-              <BlueRoundButton
+              <WhiteButtonV2
                 textKey="reset_shop_user"
                 textDomain="nexusShop"
                 onPress={handleResetShopUser}
               />
             </View>
-          ) : (
-            <></>
-          )}
+          ) : null}
         </Animated.View>
       </CustomSafeAreaView>
       <WarningModal
         isVisible={showErrorModal}
         close={handleCloseErrorModal}
         text={errorMessage}
+      />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="sign_up_or_login"
+        titleDomain="nexusShop"
+        fadeStyle={headerFadeStyle}
       />
     </LinearGradient>
   );
@@ -565,57 +577,15 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     buttonContainer: {
       flex: 1,
       justifyContent: 'flex-end',
-      paddingHorizontal: screenHeight * 0.03,
-      paddingBottom: screenHeight * 0.03,
+      paddingHorizontal: screenWidth * GAP_RATIO,
+      paddingBottom: screenWidth * GAP_RATIO,
     },
     resetButtonContainer: {
-      paddingTop: 10,
+      paddingTop: screenHeight * BUTTONS_GAP_RATIO,
     },
     signUpButton: {
       marginTop: getSpacing(screenWidth, screenHeight).md,
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
   });
-
-export const SignUpNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
-
-  return {
-    headerTransparent: true,
-    headerTitle: () => (
-      <TranslateText
-        textKey="sign_up_or_login"
-        domain="nexusShop"
-        maxSizeInPixels={height * 0.02}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default SignUp;

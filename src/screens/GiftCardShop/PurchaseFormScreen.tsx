@@ -22,8 +22,6 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
-import type {StackNavigationOptions} from '@react-navigation/stack';
-import {useHeaderHeight} from '@react-navigation/elements';
 
 import {
   Brand,
@@ -41,12 +39,16 @@ import {
   getBorderRadius,
   getFontSize,
 } from '../../components/GiftCardShop/theme';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import BlueButtonV2 from '../../components/ButtonsV2/BlueButtonV2';
+import {GAP_RATIO} from '../../components/ButtonsV2/fixedBottomStyle';
 import TOSCheckModal from '../../components/Modals/TOSCheckModal';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
 import {ScreenSizeContext} from '../../context/screenSize';
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {setTosAgreed} from '../../reducers/nexusshopaccount';
@@ -113,8 +115,9 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
 
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
-  const deviceHeaderHeight = useHeaderHeight();
-  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, deviceHeaderHeight);
+  const {headerHeight, rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
+  const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT, headerHeight);
 
   const [amountText, setAmountText] = useState(
     amount > 0 ? amount.toString() : '',
@@ -435,7 +438,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
       {Platform.OS === 'ios' && (
         <InputAccessoryView nativeID={accessoryId}>
           <View style={styles.inputAccessory}>
-            <BlueRoundButton
+            <BlueButtonV2
               textKey="ok"
               textDomain="nexusShop"
               onPress={() => Keyboard.dismiss()}
@@ -502,7 +505,7 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
         <CustomSafeAreaView
           styles={styles.safeArea}
           edges={Platform.OS === 'android' ? ['bottom'] : []}>
-          <BlueRoundButton
+          <BlueButtonV2
             textKey="continue_purchase"
             textDomain="nexusShop"
             onPress={handleSubmit}
@@ -529,6 +532,14 @@ const PurchaseFormContent: React.FC<PurchaseFormContentProps> = ({
           )}
         </CustomSafeAreaView>
       </View>
+
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="purchase"
+        titleDomain="nexusShop"
+        fadeStyle={headerFadeStyle}
+      />
     </View>
   );
 };
@@ -602,7 +613,7 @@ const PurchaseFormScreen: React.FC<PurchaseFormScreenProps> = ({
 const getStyles = (
   screenWidth: number,
   screenHeight: number,
-  deviceHeaderHeight: number,
+  headerHeight: number,
 ) =>
   StyleSheet.create({
     container: {
@@ -612,7 +623,7 @@ const getStyles = (
     blueHeader: {
       width: screenWidth,
       backgroundColor: '#0070F0',
-      paddingTop: deviceHeaderHeight + screenHeight * 0.02,
+      paddingTop: headerHeight + screenHeight * 0.02,
       paddingHorizontal: screenWidth * 0.04,
       paddingBottom: screenHeight * 0.02,
       borderBottomLeftRadius: screenHeight * 0.04,
@@ -799,9 +810,9 @@ const getStyles = (
       lineHeight: getFontSize(screenHeight).md * 1.5,
     },
     buttonContainer: {
-      paddingHorizontal: screenWidth * 0.04,
+      paddingHorizontal: screenWidth * GAP_RATIO,
       paddingTop: screenHeight * 0.01,
-      paddingBottom: screenHeight * 0.03,
+      paddingBottom: screenWidth * GAP_RATIO,
     },
     safeArea: {},
     underButtonText: {
@@ -812,13 +823,6 @@ const getStyles = (
       textAlign: 'center',
       marginTop: screenHeight * 0.01,
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
     inputAccessory: {
       width: screenWidth,
       height: screenHeight * 0.06 + 20,
@@ -826,41 +830,5 @@ const getStyles = (
       paddingVertical: 10,
     },
   });
-
-export const PurchaseFormScreenOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width, height} = useContext(ScreenSizeContext);
-  const deviceHeaderHeight = useHeaderHeight();
-  const styles = getStyles(width, height, deviceHeaderHeight);
-
-  return {
-    headerTransparent: true,
-    headerTitle: () => (
-      <TranslateText
-        textKey="purchase"
-        domain="nexusShop"
-        maxSizeInPixels={height * 0.02}
-        textStyle={styles.headerTitle}
-        numberOfLines={1}
-      />
-    ),
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default PurchaseFormScreen;

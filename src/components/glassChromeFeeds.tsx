@@ -37,8 +37,8 @@ export interface GlassShopFeed {
   presented: boolean;
   // outlives the close animation so the rows fade out with it
   canvasActive: boolean;
-  // true while the transition is past the hand-off point (0.4): the shop
-  // holds the shared nav bar, the wallet reclaims it the moment this drops
+  // true while the transition is past the hand-off point (0.4): the shop's
+  // header has taken over from the wallet's, which stops taking touches
   ownsHeader: boolean;
   rowModels: ShopRowModels;
   scrollY: SharedValue<number>;
@@ -58,6 +58,8 @@ export interface GlassShopFeed {
   chevronNode: React.ReactNode;
   onSelectSection: (index: number) => void;
   drawerOpen: boolean;
+  onBack: () => void;
+  onToggleDrawer: () => void;
 }
 
 // The search screen takes the sheet whole rather than morphing it: the chrome

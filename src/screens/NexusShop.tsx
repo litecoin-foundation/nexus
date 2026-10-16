@@ -10,14 +10,12 @@ import React, {
 import {
   BackHandler,
   Image,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import {useHeaderHeight} from '@react-navigation/elements';
 import {useDrawerStatus} from '@react-navigation/drawer';
 import {useFocusEffect} from '@react-navigation/native';
 import {RouteProp} from '@react-navigation/native';
@@ -38,9 +36,7 @@ import {useTranslation} from 'react-i18next';
 
 import GlassShopList from '../components/GlassShopList';
 import CategoryPickerModal from '../components/Modals/CategoryPickerModal';
-import HeaderButton from '../components/Buttons/HeaderButton';
 import SegmentedPills from '../components/ButtonsV2/SegmentedPills';
-import TranslateText from '../components/TranslateText';
 import {
   useGlassWalletFeed,
   useGlassShopFeedPublisher,
@@ -55,31 +51,31 @@ import {
   getShopHeaderHeight,
   getShopListTop,
   getShopSearchBlock,
+  getShopSegmentsTop,
   ShopSection,
   SHOP_HEADER_GAP_RATIO,
+  SHOP_HEADER_INSET_RATIO,
   SHOP_HEADER_SEARCH_HEIGHT_RATIO,
   SHOP_HEADER_SEGMENTS_HEIGHT_RATIO,
-  SHOP_HEADER_SEGMENTS_TOP_RATIO,
 } from '../components/GiftCardShop/GlassShopRows';
 import {useShopScreenState} from '../components/GiftCardShop/useShopScreenState';
 import {
   CARD_FOLD_RADIUS_RATIO,
-  CARD_HEADER_RADIUS_RATIO,
   getFoldedTopHalfHeight,
   getNewMainSheetPoints,
   getNewMainTopHalfHeight,
 } from '../animations/useNewMainAnims';
 import type {ShopDrawerParamList} from '../navigation/types';
 import {ScreenSizeContext} from '../context/screenSize';
-import {useAppSelector} from '../store/hooks';
 
 // The Nexus Shop screen: a transparent-modal route in the Main stack, so
 // the live wallet stays attached and visible beneath while one transition
 // value drives the whole hand-off. The glass tab bar and its canvas are
 // shared chrome above the navigator; this screen publishes its rows and
 // animation state through glassChromeFeeds so the persistent bar refracts
-// them. The account drawer wraps just this screen. Entry: the bar's shop
-// slot or navigate('NexusShop', {screen: 'NexusShopScreen', params?}).
+// them. The account drawer wraps just this screen, and the header
+// (ShopHeader) renders above that drawer off the same feed. Entry: the bar's
+// shop slot or navigate('NexusShop', {screen: 'NexusShopScreen', params?}).
 //
 // The gradient card crowns the screen — content-fit, rounded bottom corners
 // like the folded wallet — over the light list the glass canvas draws. One
@@ -126,8 +122,8 @@ const NexusShop: React.FC<Props> = props => {
   );
   const [presented, setPresented] = useState(false);
   const [canvasActive, setCanvasActive] = useState(false);
-  // nav-bar ownership follows the transition itself (not presented), so the
-  // header crossfade tracks the morph — and the back-swipe scrub — exactly
+  // header ownership follows the transition itself (not presented), so the
+  // wallet's header hands over on the morph — and the back-swipe scrub
   const [ownsHeader, setOwnsHeader] = useState(false);
   useAnimatedReaction(
     () => transition.value >= 0.4,
@@ -262,8 +258,12 @@ const NexusShop: React.FC<Props> = props => {
   const onBack = closeShop;
   const onScrollActivity = wallet?.onContentActivity;
 
-  const headerHeight = getShopHeaderHeight(SCREEN_HEIGHT, insets.top);
-  const listTop = getShopListTop(SCREEN_HEIGHT, insets.top);
+  const headerHeight = getShopHeaderHeight(
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    insets.top,
+  );
+  const listTop = getShopListTop(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top);
 
   // only browse has a search pill: the other sections shed it, so the card
   // gives back its height and everything under the card's bottom edge — the
@@ -312,7 +312,8 @@ const NexusShop: React.FC<Props> = props => {
   // NOTE: The card's bottom edge is the container boundary. It stays pinned at
   // the wallet sheet's edge while the surface fades over ([0, 0.35]), THEN
   // travels to the shop header — one continuously visible edge, no jump.
-  // Its corners flatten from the wallet card's to the header's on the way.
+  // Its corners stay at the wallet card's radius throughout; only the height
+  // morphs.
   const gradientStyle = useAnimatedStyle(() => {
     const travelled = interpolate(
       transition.value,
@@ -320,20 +321,10 @@ const NexusShop: React.FC<Props> = props => {
       [0, 1],
       Extrapolation.CLAMP,
     );
-    const radius = interpolate(
-      travelled,
-      [0, 1],
-      [
-        SCREEN_HEIGHT * CARD_FOLD_RADIUS_RATIO,
-        SCREEN_HEIGHT * CARD_HEADER_RADIUS_RATIO,
-      ],
-    );
     return {
       height:
         morphFrom.value +
         (headerHeight - headerShrink.value - morphFrom.value) * travelled,
-      borderBottomLeftRadius: radius,
-      borderBottomRightRadius: radius,
     };
   });
   const segmentsSettleStyle = useAnimatedStyle(() => {
@@ -423,20 +414,6 @@ const NexusShop: React.FC<Props> = props => {
       }
     });
 
-  // account drawer toggle in the nav bar; hidden while the country picker
-  // inside the drawer is open
-  const isCountryPickerOpen = useAppSelector(
-    (reduxState: any) => reduxState.nexusshopaccount.isCountryPickerOpen,
-  );
-  const drawerToggleOpacity = useSharedValue(1);
-  useEffect(() => {
-    drawerToggleOpacity.value = withTiming(isCountryPickerOpen ? 0 : 1, {
-      duration: 250,
-    });
-  }, [isCountryPickerOpen, drawerToggleOpacity]);
-  const drawerToggleStyle = useAnimatedStyle(() => ({
-    opacity: drawerToggleOpacity.value,
-  }));
   const toggleDrawer = useCallback(() => {
     if (drawerOpen) {
       navigation.closeDrawer();
@@ -444,152 +421,6 @@ const NexusShop: React.FC<Props> = props => {
       navigation.openDrawer();
     }
   }, [drawerOpen, navigation]);
-
-  // nav-bar elements ride the transition: they fade in after the hand-off
-  // point and back out ahead of it, so the two headers crossfade
-  const headerFadeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      transition.value,
-      [0.45, 0.8],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
-  }));
-  const drawerHideOpacity = useSharedValue(1);
-  useEffect(() => {
-    drawerHideOpacity.value = withTiming(drawerOpen ? 0 : 1, {duration: 250});
-  }, [drawerOpen, drawerHideOpacity]);
-  const backFadeStyle = useAnimatedStyle(() => ({
-    opacity:
-      interpolate(transition.value, [0.45, 0.8], [0, 1], Extrapolation.CLAMP) *
-      drawerHideOpacity.value,
-  }));
-  const headerTitleFadeStyle = useAnimatedStyle(() => ({
-    opacity:
-      interpolate(transition.value, [0.45, 0.8], [0, 1], Extrapolation.CLAMP) *
-      drawerHideOpacity.value,
-    transform: [
-      {
-        translateY: interpolate(
-          transition.value,
-          [0.45, 0.8],
-          [6, 0],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-  }));
-
-  // the shop owns the Main route's nav bar while the transition is past the
-  // hand-off point; the wallet reclaims it the moment it drops back
-  const deviceHeaderHeight = useHeaderHeight();
-  const headerButtonsHeight = SCREEN_HEIGHT * 0.035;
-  const alignHeaderElements = useMemo(
-    () => ({
-      marginTop: (deviceHeaderHeight - insets.top - headerButtonsHeight) * -1,
-    }),
-    [deviceHeaderHeight, insets.top, headerButtonsHeight],
-  );
-  // title identical to the gift card detail screens
-  const headerTitle = useMemo(
-    () => (
-      // key: pair with the wallet set's keys — the hand-off must mount
-      // fresh views, not swap animated styles on reconciled ones
-      <Animated.View
-        key="shop-title"
-        style={[alignHeaderElements, headerTitleFadeStyle]}>
-        <TranslateText
-          textKey="nexus_shop"
-          domain="nexusShop"
-          maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-          textStyle={[headerStyles.title, {fontSize: SCREEN_HEIGHT * 0.02}]}
-          numberOfLines={1}
-        />
-      </Animated.View>
-    ),
-    [SCREEN_HEIGHT, alignHeaderElements, headerTitleFadeStyle],
-  );
-  const backButton = useMemo(
-    () => (
-      <View
-        key="shop-back"
-        style={alignHeaderElements}
-        pointerEvents={drawerOpen ? 'none' : 'auto'}>
-        <Animated.View style={[headerStyles.headerBtns, backFadeStyle]}>
-          <HeaderButton
-            onPress={closeShop}
-            imageSource={require('../assets/images/back-icon.png')}
-            leftPadding
-          />
-        </Animated.View>
-      </View>
-    ),
-    [alignHeaderElements, closeShop, backFadeStyle, drawerOpen],
-  );
-  const accountButton = useMemo(
-    () => (
-      <View key="shop-account" style={alignHeaderElements}>
-        <Animated.View
-          style={[headerStyles.headerBtns, drawerToggleStyle, headerFadeStyle]}>
-          <HeaderButton
-            onPress={toggleDrawer}
-            imageSource={require('../assets/icons/user.png')}
-            imageXY={{x: SCREEN_HEIGHT * 0.02, y: SCREEN_HEIGHT * 0.02}}
-            rightPadding
-            backgroundColorSpecified={drawerOpen ? '#0070F0' : undefined}
-          />
-        </Animated.View>
-      </View>
-    ),
-    [
-      alignHeaderElements,
-      drawerToggleStyle,
-      headerFadeStyle,
-      toggleDrawer,
-      drawerOpen,
-      SCREEN_HEIGHT,
-    ],
-  );
-  // NOTE: React Navigation applies marginHorizontal: 5 to the header content
-  // on iOS screens wider than 414px. Cancel it out.
-  const noHeaderContainerMargin = useMemo(
-    () =>
-      Platform.OS === 'ios' && SCREEN_WIDTH >= 414
-        ? {
-            headerLeftContainerStyle: {marginStart: -5},
-            headerRightContainerStyle: {marginEnd: -5},
-          }
-        : {},
-    [SCREEN_WIDTH],
-  );
-  useEffect(() => {
-    if (!ownsHeader) {
-      return;
-    }
-    // two hops up: account drawer -> transparent Main stack -> the stack
-    // whose Main route renders the nav bar. `wallet` is a dep so a raced
-    // wallet re-apply is stomped right back while the shop owns the bar.
-    const headerNav = navigation.getParent()?.getParent();
-    if (!headerNav) {
-      return;
-    }
-    headerNav.setOptions({
-      ...noHeaderContainerMargin,
-      headerTitle: () => headerTitle,
-      headerTitleAlign: 'left',
-      headerTitleContainerStyle: {left: 7},
-      headerLeft: () => backButton,
-      headerRight: () => accountButton,
-    });
-  }, [
-    ownsHeader,
-    navigation,
-    wallet,
-    headerTitle,
-    backButton,
-    accountButton,
-    noHeaderContainerMargin,
-  ]);
 
   // deep links retarget the section while the shop is already open
   const setSection = state.setSection;
@@ -627,6 +458,8 @@ const NexusShop: React.FC<Props> = props => {
       chevronNode: state.chevronNode,
       onSelectSection,
       drawerOpen,
+      onBack: closeShop,
+      onToggleDrawer: toggleDrawer,
     }),
     [
       presented,
@@ -646,6 +479,8 @@ const NexusShop: React.FC<Props> = props => {
       state.chevronNode,
       onSelectSection,
       drawerOpen,
+      closeShop,
+      toggleDrawer,
     ],
   );
   useGlassShopFeedPublisher(feed);
@@ -670,7 +505,7 @@ const NexusShop: React.FC<Props> = props => {
             segments={sections}
             activeIndex={activeSection}
             onSelect={index => state.setSection(sections[index].key)}
-            width={SCREEN_WIDTH * 0.88}
+            width={SCREEN_WIDTH * (1 - SHOP_HEADER_INSET_RATIO * 2)}
             height={SCREEN_HEIGHT * SHOP_HEADER_SEGMENTS_HEIGHT_RATIO}
             style={[styles.segments, segmentsSettleStyle]}
           />
@@ -731,20 +566,6 @@ const NexusShop: React.FC<Props> = props => {
   );
 };
 
-const headerStyles = StyleSheet.create({
-  title: {
-    color: '#fff',
-    fontFamily: 'Satoshi Variable',
-    fontStyle: 'normal',
-    fontWeight: '700',
-  },
-  headerBtns: {
-    width: 'auto',
-    height: 'auto',
-    flexDirection: 'row',
-  },
-});
-
 const getStyles = (
   screenWidth: number,
   screenHeight: number,
@@ -767,8 +588,8 @@ const getStyles = (
       left: 0,
       right: 0,
       height: headerHeight,
-      borderBottomLeftRadius: screenHeight * CARD_HEADER_RADIUS_RATIO,
-      borderBottomRightRadius: screenHeight * CARD_HEADER_RADIUS_RATIO,
+      borderBottomLeftRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
+      borderBottomRightRadius: screenHeight * CARD_FOLD_RADIUS_RATIO,
       borderCurve: 'continuous',
       overflow: 'hidden',
     },
@@ -777,19 +598,19 @@ const getStyles = (
     },
     header: {
       position: 'absolute',
-      top: topInset + screenHeight * SHOP_HEADER_SEGMENTS_TOP_RATIO,
+      top: getShopSegmentsTop(screenWidth, screenHeight, topInset),
       left: 0,
       right: 0,
     },
     segments: {
-      marginHorizontal: screenWidth * 0.06,
+      marginHorizontal: screenWidth * SHOP_HEADER_INSET_RATIO,
     },
     searchPill: {
       flexDirection: 'row',
       alignItems: 'center',
       height: screenHeight * SHOP_HEADER_SEARCH_HEIGHT_RATIO,
       marginTop: screenHeight * SHOP_HEADER_GAP_RATIO,
-      marginHorizontal: screenWidth * 0.06,
+      marginHorizontal: screenWidth * SHOP_HEADER_INSET_RATIO,
       paddingHorizontal: screenWidth * 0.04,
       borderRadius: (screenHeight * SHOP_HEADER_SEARCH_HEIGHT_RATIO) / 2,
       borderCurve: 'continuous',

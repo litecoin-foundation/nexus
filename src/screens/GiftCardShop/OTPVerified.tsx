@@ -3,7 +3,7 @@ import {View, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 
-import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import BlueButtonV2 from '../../components/ButtonsV2/BlueButtonV2';
 import {NewWalletStackParamList} from '../../navigation/types';
 import {
   colors,
@@ -53,7 +53,7 @@ const OTPVerified: React.FC = () => {
         numberOfLines={1}
       />
       <View style={styles.buttonContainer}>
-        <BlueRoundButton
+        <BlueButtonV2
           textKey="to_the_shop"
           textDomain="nexusShop"
           onPress={handleGoBack}

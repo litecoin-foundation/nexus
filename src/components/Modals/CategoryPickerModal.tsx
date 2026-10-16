@@ -92,7 +92,7 @@ function LiquidGlassCategoryPicker({
   const panelRight = SCREEN_WIDTH * 0.05;
   const panelLeft = SCREEN_WIDTH - panelRight - panelWidth;
   const panelTop =
-    getShopListTop(SCREEN_HEIGHT, insets.top) +
+    getShopListTop(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top) +
     SCREEN_HEIGHT * (SHOP_LABEL_HEIGHT_RATIO + 0.006);
   const panelHeight = Math.min(
     SCREEN_HEIGHT * 0.5,

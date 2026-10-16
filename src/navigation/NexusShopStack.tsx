@@ -1,20 +1,15 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import SignUp, {SignUpNavigationOptions} from '../screens/GiftCardShop/SignUp';
-import VerifyOTP, {
-  VerifyOTPNavigationOptions,
-} from '../screens/GiftCardShop/VerifyOTP';
+import SignUp from '../screens/GiftCardShop/SignUp';
+import VerifyOTP from '../screens/GiftCardShop/VerifyOTP';
 import OTPVerified from '../screens/GiftCardShop/OTPVerified';
-import PurchaseFormScreen, {
-  PurchaseFormScreenOptions,
-} from '../screens/GiftCardShop/PurchaseFormScreen';
-import PayForGiftCardScreen, {
-  PayForGiftCardScreenOptions,
-} from '../screens/GiftCardShop/PayForGiftCardScreen';
+import PurchaseFormScreen from '../screens/GiftCardShop/PurchaseFormScreen';
+import PayForGiftCardScreen from '../screens/GiftCardShop/PayForGiftCardScreen';
 import PendingGCDetails, {
   PendingGCDetailsNavigationOptions,
   PendingGCDetailsParams,
 } from '../screens/GiftCardShop/PendingGCDetails';
+import {ScreenHeaderNavigationOptions} from '../components/ScreenHeader';
 import {Brand, InitiatePurchaseResponseData} from '../services/giftcards';
 
 export type NexusShopStackParamList = {
@@ -48,12 +43,12 @@ function NexusShopStack(): React.JSX.Element {
       <Stack.Screen
         name="SignUp"
         component={SignUp}
-        options={({navigation}) => SignUpNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="VerifyOTP"
         component={VerifyOTP}
-        options={({navigation}) => VerifyOTPNavigationOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="OTPVerified"
@@ -67,19 +62,17 @@ function NexusShopStack(): React.JSX.Element {
       <Stack.Screen
         name="PurchaseForm"
         component={PurchaseFormScreen}
-        options={({navigation}) => PurchaseFormScreenOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="PayForGiftCard"
         component={PayForGiftCardScreen}
-        options={({navigation}) => PayForGiftCardScreenOptions(navigation)}
+        options={ScreenHeaderNavigationOptions}
       />
       <Stack.Screen
         name="PendingGCDetails"
         component={PendingGCDetails}
-        options={({navigation}) =>
-          PendingGCDetailsNavigationOptions(navigation)
-        }
+        options={PendingGCDetailsNavigationOptions}
       />
     </Stack.Navigator>
   );

@@ -6,37 +6,29 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Platform,
-  AppState,
-} from 'react-native';
+import {View, StyleSheet, Alert, Platform, AppState} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import type {StackNavigationOptions} from '@react-navigation/stack';
-import Svg, {Circle} from 'react-native-svg';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks';
 import {verifyOtpCode, loginToNexusShop} from '../../reducers/nexusshopaccount';
 import {unsetDeeplink} from '../../reducers/deeplinks';
 import NumpadInput from '../../components/Numpad/NumpadInput';
-import HeaderButton from '../../components/Buttons/HeaderButton';
-import BlueRoundButton from '../../components/Buttons/BlueRoundButton';
+import BlueButtonV2 from '../../components/ButtonsV2/BlueButtonV2';
+import TimerGrayButtonV2 from '../../components/ButtonsV2/TimerGrayButtonV2';
 import WarningModal from '../../components/Modals/WarningModal';
 import InvisibleTurnstile, {
   InvisibleTurnstileRef,
 } from '../../components/InvisibleTurnstile';
-import {
-  colors,
-  getSpacing,
-  getCommonStyles,
-} from '../../components/GiftCardShop/theme';
+import {getSpacing, getCommonStyles} from '../../components/GiftCardShop/theme';
 
 import CustomSafeAreaView from '../../components/CustomSafeAreaView';
 import TranslateText from '../../components/TranslateText';
+import ScreenHeader, {
+  useScreenHeaderArrival,
+  useScreenHeaderLayout,
+} from '../../components/ScreenHeader';
+import {getHeaderRowHeight} from '../../components/useHeaderHeight';
 import {ScreenSizeContext} from '../../context/screenSize';
 
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -50,63 +42,13 @@ interface VerifyOTPProps {
   };
 }
 
-interface CircularProgressProps {
-  size: number;
-  strokeWidth: number;
-  progress: number;
-  color: string;
-  backgroundColor: string;
-}
-
-const CircularProgress: React.FC<CircularProgressProps> = ({
-  size,
-  strokeWidth,
-  progress,
-  color,
-  backgroundColor,
-}) => {
-  // Add padding to prevent clipping
-  const padding = strokeWidth;
-  const viewBoxSize = size + padding * 2;
-  const center = viewBoxSize / 2;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (progress / 100) * circumference;
-
-  return (
-    <Svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}>
-      <Circle
-        stroke={backgroundColor}
-        fill="none"
-        cx={center}
-        cy={center}
-        r={radius}
-        strokeWidth={strokeWidth}
-      />
-      <Circle
-        stroke={color}
-        fill="none"
-        cx={center}
-        cy={center}
-        r={radius}
-        strokeWidth={strokeWidth}
-        strokeDasharray={`${circumference} ${circumference}`}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${center} ${center})`}
-      />
-    </Svg>
-  );
-};
-
 const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
   const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
     useContext(ScreenSizeContext);
   const styles = getStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
   const commonStyles = getCommonStyles(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const {rects, paddingHorizontal} = useScreenHeaderLayout();
+  const headerFadeStyle = useScreenHeaderArrival();
 
   const [otpCode, setOtpCode] = useState('');
   const resendUnlocksAtRef = useRef<number>(
@@ -361,12 +303,10 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
 
   const submitButton = useMemo(
     () => (
-      <BlueRoundButton
+      <BlueButtonV2
         textKey="verify_code"
         textDomain="nexusShop"
-        onPress={async () => {
-          await handleVerifyOTP();
-        }}
+        onPress={() => handleVerifyOTP()}
         disabled={isButtonDisabled}
         loading={loading}
       />
@@ -374,66 +314,19 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
     [isButtonDisabled, loading, handleVerifyOTP],
   );
 
-  const isResendDisabled = loading || isResending || resendCountdown > 0;
-
-  const secondaryButton = useMemo(() => {
-    // Progress should go from 100% (at 60s) to 0% (at 0s) - counting DOWN
-    const progressPercentage =
-      resendCountdown > 0
-        ? (resendCountdown / RESEND_COOLDOWN_SECONDS) * 100
-        : 0;
-
-    return (
-      <TouchableOpacity
-        style={[
-          commonStyles.buttonRoundedSecondary,
-          isResendDisabled ? styles.buttonResendDisabled : null,
-        ]}
-        onPress={async () => {
-          await handleSendOTP();
-        }}
-        disabled={isResendDisabled}>
-        <View style={styles.resendButtonContent}>
-          <TranslateText
-            textKey="resend_code"
-            domain="nexusShop"
-            maxSizeInPixels={SCREEN_HEIGHT * 0.02}
-            textStyle={[
-              commonStyles.buttonTextBlack,
-              isResendDisabled ? styles.resendTextDisabled : null,
-            ]}
-            numberOfLines={1}
-          />
-          {resendCountdown > 0 && (
-            <View style={styles.countdownContainerAbsolute}>
-              <CircularProgress
-                size={SCREEN_HEIGHT * 0.035}
-                strokeWidth={3}
-                progress={progressPercentage}
-                color="#0070F0"
-                backgroundColor="rgba(0, 112, 240, 0.15)"
-              />
-              <View style={styles.countdownTextWrapper}>
-                <TranslateText
-                  textValue={String(resendCountdown)}
-                  maxSizeInPixels={SCREEN_HEIGHT * 0.0135}
-                  textStyle={styles.countdownText}
-                  numberOfLines={1}
-                />
-              </View>
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  }, [
-    SCREEN_HEIGHT,
-    commonStyles,
-    isResendDisabled,
-    handleSendOTP,
-    resendCountdown,
-    styles,
-  ]);
+  const secondaryButton = useMemo(
+    () => (
+      <TimerGrayButtonV2
+        textKey="resend_code"
+        textDomain="nexusShop"
+        onPress={handleSendOTP}
+        seconds={resendCountdown}
+        totalSeconds={RESEND_COOLDOWN_SECONDS}
+        disabled={loading || isResending}
+      />
+    ),
+    [loading, isResending, handleSendOTP, resendCountdown],
+  );
 
   return (
     <View style={styles.container}>
@@ -484,6 +377,13 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({route}) => {
         text={resendError}
       />
       <InvisibleTurnstile ref={turnstileRef} action="send-otp" />
+      <ScreenHeader
+        rects={rects}
+        paddingHorizontal={paddingHorizontal}
+        titleKey="verify"
+        titleDomain="nexusShop"
+        fadeStyle={headerFadeStyle}
+      />
     </View>
   );
 };
@@ -500,99 +400,11 @@ const getStyles = (screenWidth: number, screenHeight: number) =>
     },
     title: {
       fontWeight: '700',
-      paddingTop:
-        Platform.OS === 'ios'
-          ? getSpacing(screenWidth, screenHeight).header
-          : getSpacing(screenWidth, screenHeight).headerAndroid,
+      paddingTop: getHeaderRowHeight(screenWidth, screenHeight),
     },
     subtitle: {
       paddingTop: getSpacing(screenWidth, screenHeight).xs,
     },
-    headerTitle: {
-      color: '#fff',
-      fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.02,
-      fontStyle: 'normal',
-      fontWeight: '700',
-    },
-    buttonResendDisabled: {
-      backgroundColor: 'rgba(242, 242, 247, 0.6)',
-      borderColor: 'rgba(142, 142, 147, 0.2)',
-    },
-    resendTextDisabled: {
-      color: 'rgba(51, 51, 51, 0.5)',
-    },
-    resendButtonContent: {
-      position: 'relative',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '100%',
-      height: '100%',
-    },
-    countdownContainerAbsolute: {
-      position: 'absolute',
-      left: getSpacing(screenWidth, screenHeight).lg,
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: screenHeight * 0.045,
-      height: screenHeight * 0.045,
-      overflow: 'visible',
-    },
-    countdownTextWrapper: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    countdownText: {
-      fontSize: screenHeight * 0.0135,
-      fontWeight: '700',
-      color: colors.primary,
-    },
   });
-
-const HeaderTitle: React.FC = React.memo(() => {
-  const {width, height} = useContext(ScreenSizeContext);
-  const styles = getStyles(width, height);
-  return (
-    <TranslateText
-      textKey="verify"
-      domain="nexusShop"
-      maxSizeInPixels={height * 0.02}
-      textStyle={styles.headerTitle}
-      numberOfLines={1}
-    />
-  );
-});
-
-export const VerifyOTPNavigationOptions = (
-  navigation: any,
-): StackNavigationOptions => {
-  const {width} = useContext(ScreenSizeContext);
-
-  return {
-    headerTransparent: true,
-    headerTitle: () => <HeaderTitle />,
-    headerTitleAlign: 'left',
-    headerTitleContainerStyle: {
-      left: 7,
-    },
-    headerLeft: () => (
-      <HeaderButton
-        onPress={() => navigation.goBack()}
-        imageSource={require('../../assets/images/back-icon.png')}
-        leftPadding
-      />
-    ),
-    headerLeftContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginStart: -5} : null,
-    headerRightContainerStyle:
-      Platform.OS === 'ios' && width >= 414 ? {marginEnd: -5} : null,
-  };
-};
 
 export default VerifyOTP;

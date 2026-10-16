@@ -89,7 +89,11 @@ export const SHEET_OVERSHOOT_RATIO = 0.1;
 
 // canvas top: above the higher of the tx list (with overshoot) and the shop
 // list; shared so the tx detail modal can mirror the same viewport
-export const getGlassCanvasTop = (screenHeight: number, topInset: number) => {
+export const getGlassCanvasTop = (
+  screenWidth: number,
+  screenHeight: number,
+  topInset: number,
+) => {
   const {UNFOLD_SHEET_POINT} = getNewMainSheetPoints(screenHeight, topInset);
   return Math.min(
     UNFOLD_SHEET_POINT +
@@ -97,7 +101,7 @@ export const getGlassCanvasTop = (screenHeight: number, topInset: number) => {
       screenHeight * SHEET_OVERSHOOT_RATIO,
     // the search block comes off the list top on the sections without a
     // search pill; the rows rise by it, and nothing draws above the canvas
-    getShopListTop(screenHeight, topInset) -
+    getShopListTop(screenWidth, screenHeight, topInset) -
       getShopSearchBlock(screenHeight) -
       screenHeight * 0.01,
   );
@@ -203,7 +207,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
   // gradient header — and runs to the screen bottom, so it spans the rows
   // and the tab bar band in every mode.
   const listTopInSheet = SCREEN_HEIGHT * GLASS_TX_LIST_TOP_RATIO;
-  const canvasTop = getGlassCanvasTop(SCREEN_HEIGHT, insets.top);
+  const canvasTop = getGlassCanvasTop(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top);
   const canvasHeight = SCREEN_HEIGHT - canvasTop;
 
   const bandHeight = getTabBarBandHeight(SCREEN_HEIGHT, insets.bottom);
@@ -343,7 +347,8 @@ const GlassTxCanvas: React.FC<Props> = props => {
   // only recomputes during the expand animation. Rows below the split slide
   // DOWN by progress*extras while the panel is revealed in the widening gap —
   // the models stay collapsed, so the unfold never re-records the list.
-  const shopRowsBase = getShopListTop(SCREEN_HEIGHT, insets.top) - canvasTop;
+  const shopRowsBase =
+    getShopListTop(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top) - canvasTop;
   const shopRowsTop = useDerivedValue(
     () => shopRowsBase - shopHeaderShrink.value,
   );

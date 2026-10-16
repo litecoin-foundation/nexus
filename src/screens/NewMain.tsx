@@ -220,9 +220,9 @@ const NewMain: React.FC<Props> = props => {
 
   const dispatch = useAppDispatch();
 
-  // the shop screen owns the shared nav bar past its transition's hand-off
-  // point; the wallet's header elements fade out/in with that same value so
-  // the two headers crossfade (and track the back-swipe scrub)
+  // the shop's header takes over past its transition's hand-off point; the
+  // wallet's header elements fade out/in with that same value so the two
+  // headers crossfade (and track the back-swipe scrub)
   const shopFeed = useGlassShopFeed();
   const shopOwnsHeader = shopFeed?.ownsHeader ?? false;
   const idleShopTransition = useSharedValue(0);
@@ -601,9 +601,9 @@ const NewMain: React.FC<Props> = props => {
     }
   }, [activeTab, uri, deeplinkSet, dispatch]);
 
-  // the navigator's header for this route only exists for the shop to take
-  // over; the wallet's own header is <MainHeader /> below
-  useMainLayout({navigation, shopOwnsHeader});
+  // the navigator's header for this route stays blank; the wallet's own
+  // header is <MainHeader /> below
+  useMainLayout({navigation});
 
   const onPressWalletButton = useCallback(() => {
     setWalletsModalOpened(!isWalletsModalOpened);

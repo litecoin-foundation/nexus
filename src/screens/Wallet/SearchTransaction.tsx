@@ -28,7 +28,7 @@ import SegmentedPills, {
   Segment,
   SEGMENTED_PILLS_HEIGHT_RATIO,
 } from '../../components/ButtonsV2/SegmentedPills';
-import SearchBar from '../../components/SearchBar';
+import SearchBar, {SEARCH_BAR_HEIGHT_RATIO} from '../../components/SearchBar';
 import SearchHeader from '../../components/SearchHeader';
 import GlassTxDetailModal from '../../components/Modals/GlassTxDetailModal';
 import FoldedSkinView from '../../components/FoldedSkinView';
@@ -81,7 +81,7 @@ interface Props {
 // Constants
 const SCREEN_RATIOS = {
   SWITCH_HEIGHT: SEGMENTED_PILLS_HEIGHT_RATIO,
-  SEARCH_BAR_HEIGHT: 0.05,
+  SEARCH_BAR_HEIGHT: SEARCH_BAR_HEIGHT_RATIO,
   CONTROLS_GAP: 0.008,
   PADDING_HORIZONTAL: 0.04,
   PRIVATE_PILL_WIDTH: 0.22,
