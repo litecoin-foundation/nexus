@@ -30,7 +30,6 @@ import {useCardUnderlayValue, useNativeCardBackdrop} from './cardUnderlay';
 import {getCapsuleShadowImage} from './capsuleShadowImage';
 import {
   getShopListTop,
-  getShopRowLayout,
   getShopSearchBlock,
   ShopRowModels,
 } from './GiftCardShop/GlassShopRows';
@@ -77,9 +76,6 @@ const BOTTOM_OVERSCAN = 4;
 // stable identity keeps the Skia list row cache intact
 const EMPTY_ROWS: GlassTxRowModels['models'] = [];
 const EMPTY_SHOP_ROWS: ShopRowModels['models'] = [];
-
-// open-ended clip height; the outer canvas-space clips bound it
-const BOTTOMLESS = 1e9;
 
 // The spring that snaps the sheet open has no clamp, so a hard flick can carry
 // it above UNFOLD_SHEET_POINT for a frame or two. The canvas starts that much
@@ -143,16 +139,6 @@ interface Props {
   // search block on the sections without a search pill. The rows ride the
   // card's bottom edge, so they rise with it.
   shopHeaderShrink: SharedValue<number>;
-  // Row expansion: the models stay collapsed; rows below `split` slide down
-  // by progress*extras while the panel overlay is revealed. Idle: split
-  // huge, extras 0, progress 1.
-  shopExpandSplit: SharedValue<number>;
-  shopExpandExtras: SharedValue<number>;
-  shopExpandProgress: SharedValue<number>;
-  shopExpandChevronLift: SharedValue<number>;
-  // panel-local overlay content and the spinning chevron cover
-  shopPanel?: React.ReactNode;
-  shopChevron?: React.ReactNode;
   // The card swap fade, shared with the native card views.
   cardSwapOpacity: SharedValue<number>;
   // Tab bar shrink (content activity) and press feedback.
@@ -180,12 +166,6 @@ const GlassTxCanvas: React.FC<Props> = props => {
     shopLogos,
     shopTransition,
     shopHeaderShrink,
-    shopExpandSplit,
-    shopExpandExtras,
-    shopExpandProgress,
-    shopExpandChevronLift,
-    shopPanel,
-    shopChevron,
     cardSwapOpacity,
     contentActivity,
     pressScale,
@@ -343,10 +323,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
 
   // The shop list top moves only when the card sheds its search block;
   // otherwise just the scroll offset does. Scrolling drives ONE mapper — the
-  // scroll group's translate; everything inside is in content coordinates and
-  // only recomputes during the expand animation. Rows below the split slide
-  // DOWN by progress*extras while the panel is revealed in the widening gap —
-  // the models stay collapsed, so the unfold never re-records the list.
+  // scroll group's translate; everything inside is in content coordinates.
   const shopRowsBase =
     getShopListTop(SCREEN_WIDTH, SCREEN_HEIGHT, insets.top) - canvasTop;
   const shopRowsTop = useDerivedValue(
@@ -370,43 +347,8 @@ const GlassTxCanvas: React.FC<Props> = props => {
   const shopScrollTransform = useDerivedValue(() => [
     {translateY: shopRowsTop.value - shopScrollY.value + shopTravel.value},
   ]);
-  const shopTransformBelow = useDerivedValue(() => [
-    {translateY: shopExpandProgress.value * shopExpandExtras.value},
-  ]);
-  const shopClipAbove = useDerivedValue(() =>
-    Skia.XYWHRect(0, 0, SCREEN_WIDTH, Math.max(0, shopExpandSplit.value)),
-  );
-  const shopClipBelow = useDerivedValue(() => {
-    const top =
-      shopExpandSplit.value + shopExpandProgress.value * shopExpandExtras.value;
-    return Skia.XYWHRect(0, top, SCREEN_WIDTH, BOTTOMLESS);
-  });
-  const shopPanelClip = useDerivedValue(() =>
-    Skia.XYWHRect(
-      0,
-      shopExpandSplit.value,
-      SCREEN_WIDTH,
-      Math.max(0, shopExpandProgress.value * shopExpandExtras.value),
-    ),
-  );
-  // the panel slides down into place under the tapped row
-  const shopPanelTransform = useDerivedValue(() => [
-    {
-      translateY:
-        shopExpandSplit.value -
-        (1 - shopExpandProgress.value) * shopExpandExtras.value,
-    },
-  ]);
-  // spinning cover over the tapped row's static chevron
-  const shopLayout = getShopRowLayout(SCREEN_WIDTH, SCREEN_HEIGHT);
-  const shopChevronX = shopLayout.chevronCx;
-  const shopChevronTransform = useDerivedValue(() => [
-    {translateX: shopChevronX},
-    {translateY: shopExpandSplit.value - shopExpandChevronLift.value},
-    {rotate: shopExpandProgress.value * Math.PI},
-  ]);
-  // canvas-space bounds for the content-space groups above
-  // the clips follow the boundary: rows above it belong to the card's
+  // canvas-space bounds for the content-space group above
+  // the clip follows the boundary: rows above it belong to the card's
   // territory and must never draw over it
   const shopMainClip = useDerivedValue(() => {
     const top = Math.max(0, shopRowsTop.value + shopTravel.value);
@@ -607,22 +549,6 @@ const GlassTxCanvas: React.FC<Props> = props => {
     ];
   });
 
-  // the split passes and panel, in content coordinates; drawn in both the
-  // main pass and the frost source inside their own scroll groups
-  const shopSplitLayers = shopNode ? (
-    <>
-      <Group clip={shopClipAbove}>{shopNode}</Group>
-      <Group clip={shopClipBelow}>
-        <Group transform={shopTransformBelow}>{shopNode}</Group>
-      </Group>
-      {shopPanel ? (
-        <Group clip={shopPanelClip}>
-          <Group transform={shopPanelTransform}>{shopPanel}</Group>
-        </Group>
-      ) : null}
-    </>
-  ) : null;
-
   // the glass needs opaque pixels beneath it: rows on the wallet, the card's
   // underlay while a card is open. a full-card underlay gets a solid backing;
   // rows bring theirs inside the fade so it never pops; partial underlays
@@ -655,12 +581,7 @@ const GlassTxCanvas: React.FC<Props> = props => {
         <Group opacity={shopLayerOpacity}>
           <Rect rect={bandClip} color={SHEET_BACKGROUND} />
           <Group clip={shopMainClip}>
-            <Group transform={shopScrollTransform}>
-              {shopSplitLayers}
-              {shopChevron ? (
-                <Group transform={shopChevronTransform}>{shopChevron}</Group>
-              ) : null}
-            </Group>
+            <Group transform={shopScrollTransform}>{shopNode}</Group>
           </Group>
         </Group>
       ) : null}

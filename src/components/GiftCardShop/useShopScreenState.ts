@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useContext,
   useEffect,
@@ -10,15 +10,8 @@ import {Alert} from 'react-native';
 import {useIsFocused} from '@react-navigation/native';
 import {getCountry} from 'react-native-localize';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useTranslation} from 'react-i18next';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {
-  Easing,
-  runOnJS,
-  SharedValue,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import type {SharedValue} from 'react-native-reanimated';
 
 import {
   Brand,
@@ -28,25 +21,13 @@ import {
   TilloCategory,
   filterBrandsByCountry,
   formatCategoryLabel,
-  formatCurrency,
 } from '../../services/giftcards';
 import {
-  buildDenominations,
-  formatDenomination,
-  getShopBrandExpandHeight,
-  getShopCardExpandHeight,
-  getShopRowLayout,
-  ShopPanelHit,
   ShopRowAction,
   ShopRowModels,
   ShopSection,
-  SHOP_CELL_HEIGHT_RATIO,
   useShopRowModels,
 } from './GlassShopRows';
-import {
-  ShopExpandedPanelData,
-  useShopExpandedPanel,
-} from './GlassShopExpandedPanel';
 import {ShopLogoImages, useShopLogoImages} from './shopLogoImages';
 import {getTabBarBandHeight} from '../glassTabBarLayout';
 import {
@@ -87,16 +68,6 @@ export interface ShopScreenState {
   handleRowAction: (action: ShopRowAction) => void;
   refreshing: boolean;
   refresh: () => Promise<void>;
-  // row-expansion unfold, read by the glass canvas
-  expandSplit: SharedValue<number>;
-  expandExtras: SharedValue<number>;
-  expandProgress: SharedValue<number>;
-  expandChevronLift: SharedValue<number>;
-  ctaPressScale: SharedValue<number>;
-  // declarative overlay the canvas reveals with the unfold
-  panelNode: React.ReactNode;
-  chevronNode: React.ReactNode;
-  panelHit: ShopPanelHit | null;
 }
 
 interface Params {
@@ -107,20 +78,11 @@ interface Params {
   shopScrollY: SharedValue<number>;
 }
 
-// idle split sits past any list
-const EXPAND_IDLE_SPLIT = 1e9;
-const EXPAND_OPEN_MS = 340;
-const EXPAND_CLOSE_MS = 260;
-// silky settle out, gentle symmetric fold shut
-const EXPAND_OPEN_EASING = Easing.bezier(0.22, 1, 0.36, 1);
-const EXPAND_CLOSE_EASING = Easing.bezier(0.4, 0, 0.6, 1);
-
 export const useShopScreenState = (params: Params): ShopScreenState => {
   const {navigation, active, requestedSection, shopScrollY} = params;
 
   const insets = useSafeAreaInsets();
-  const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
-    useContext(ScreenSizeContext);
+  const {height: SCREEN_HEIGHT} = useContext(ScreenSizeContext);
   const dispatch = useAppDispatch();
 
   const account = useAppSelector(
@@ -146,11 +108,6 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
   const [selectedCategory, setSelectedCategory] =
     useState<TilloCategory | null>(null);
   const [categoryPickerVisible, setCategoryPickerVisible] = useState(false);
-  const [expandedPanel, setExpandedPanel] =
-    useState<ShopExpandedPanelData | null>(null);
-  const [selectedAmounts, setSelectedAmounts] = useState<
-    Record<string, number>
-  >({});
 
   // fetch once the shop is first opened, not on app start
   const [activated, setActivated] = useState(false);
@@ -424,246 +381,19 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
     bottomClearance,
   });
 
-  // row expansion: the models never change — the canvas slides the rows
-  // below the split and reveals the declarative panel with the progress
-  const expandSplit = useSharedValue(EXPAND_IDLE_SPLIT);
-  const expandExtras = useSharedValue(0);
-  const expandProgress = useSharedValue(1);
-  const expandChevronLift = useSharedValue(0);
-  const ctaPressScale = useSharedValue(1);
-  // The unfold runs on the UI thread, but the panel it reveals is built on
-  // the JS one: mounting it lays out a paragraph per chip plus the cta, and
-  // rasterizes the capsule shadow the first time. Kicking the timing off in
-  // the same tick therefore opens the gap a frame or two before there is
-  // anything inside it — the pop that reads as a jump. openPanel only arms
-  // the row here; the effect below starts the motion once the panel has
-  // committed, so the very first frame of travel already draws it.
-  const armedOpenId = useRef<string | null>(null);
-  const clearExpanded = useCallback(() => {
-    armedOpenId.current = null;
-    setExpandedPanel(null);
-    expandSplit.value = EXPAND_IDLE_SPLIT;
-    expandExtras.value = 0;
-    expandProgress.value = 1;
-  }, [expandSplit, expandExtras, expandProgress]);
-
-  const {t} = useTranslation('nexusShop');
-
-  const buildPanel = useCallback(
-    (id: string): ShopExpandedPanelData | null => {
-      const cellHeight = SCREEN_HEIGHT * SHOP_CELL_HEIGHT_RATIO;
-      const layout = getShopRowLayout(SCREEN_WIDTH, SCREEN_HEIGHT);
-      const model = rowModels.models.find(
-        m => m.id === id && (m.kind === 'brand' || m.kind === 'giftcard'),
-      );
-      if (!model) {
-        return null;
-      }
-      if (model.kind === 'brand') {
-        const brand =
-          brands?.find(b => b.slug === id) ??
-          wishlistBrands?.find((b: Brand) => b.slug === id);
-        if (!brand) {
-          return null;
-        }
-        const symbol = formatCurrency(brand.currency);
-        const values = buildDenominations(brand);
-        const selected = selectedAmounts[id];
-        const selectedIndex =
-          selected === undefined ? -1 : values.indexOf(selected);
-        return {
-          id,
-          kind: 'brand',
-          splitY: model.top + cellHeight,
-          extras: getShopBrandExpandHeight(SCREEN_HEIGHT),
-          chevronLift: cellHeight / 2,
-          symbol,
-          chipValues: values,
-          chipLabels: values.map(v => `${symbol}${formatDenomination(v)}`),
-          selected: selectedIndex,
-          ctaLabel:
-            selectedIndex >= 0
-              ? `${t('purchase')}  ${symbol}${formatDenomination(values[selectedIndex])}`
-              : t('purchase'),
-          code: '',
-        };
-      }
-      const card = ownedGiftCards.find(gc => gc.id === id);
-      if (!card) {
-        return null;
-      }
-      return {
-        id,
-        kind: 'giftcard',
-        splitY: model.top + cellHeight,
-        extras: getShopCardExpandHeight(SCREEN_HEIGHT, !!card.redeemCode),
-        chevronLift: layout.cellPadV + layout.chevronSize / 2,
-        symbol: '',
-        chipValues: [],
-        chipLabels: [],
-        selected: -1,
-        ctaLabel: card.redeemCode
-          ? ''
-          : card.redeemUrl
-            ? t('view_gift_card')
-            : '',
-        code: card.redeemCode ?? '',
-      };
-    },
-    [
-      rowModels.models,
-      brands,
-      wishlistBrands,
-      ownedGiftCards,
-      selectedAmounts,
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT,
-      t,
-    ],
-  );
-
-  const openPanel = useCallback(
-    (id: string) => {
-      const panel = buildPanel(id);
-      if (!panel) {
-        return;
-      }
-      setExpandedPanel(panel);
-      expandSplit.value = panel.splitY;
-      expandExtras.value = panel.extras;
-      expandChevronLift.value = panel.chevronLift;
-      // still collapsed: nothing moves until the frame after the commit
-      expandProgress.value = 0;
-      armedOpenId.current = id;
-    },
-    [buildPanel, expandSplit, expandExtras, expandChevronLift, expandProgress],
-  );
-
-  // one frame of slack for the canvas to pick the mounted panel up, then go
-  useEffect(() => {
-    const id = expandedPanel?.id;
-    if (!id || armedOpenId.current !== id) {
-      return;
-    }
-    const frame = requestAnimationFrame(() => {
-      // a second tap can fold the row back before this fires
-      if (armedOpenId.current !== id) {
-        return;
-      }
-      armedOpenId.current = null;
-      expandProgress.value = withTiming(1, {
-        duration: EXPAND_OPEN_MS,
-        easing: EXPAND_OPEN_EASING,
-      });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [expandedPanel, expandProgress]);
-
-  // opening another row folds the open one first, so both animate
-  const swapPanels = useCallback(
-    (id: string) => {
-      clearExpanded();
-      openPanel(id);
-    },
-    [clearExpanded, openPanel],
-  );
-
-  // fold shut, then hand over to whatever comes next
-  const foldPanel = useCallback(
-    (nextId: string | null) => {
-      // a tap landing inside the arming frame folds instead of opening
-      armedOpenId.current = null;
-      expandProgress.value = withTiming(
-        0,
-        {duration: EXPAND_CLOSE_MS, easing: EXPAND_CLOSE_EASING},
-        finished => {
-          if (finished) {
-            if (nextId !== null) {
-              runOnJS(swapPanels)(nextId);
-            } else {
-              runOnJS(clearExpanded)();
-            }
-          }
-        },
-      );
-    },
-    [expandProgress, swapPanels, clearExpanded],
-  );
-
-  const toggleExpanded = useCallback(
-    (id: string) => {
-      if (expandedPanel?.id === id) {
-        foldPanel(null);
-        return;
-      }
-      if (expandedPanel) {
-        foldPanel(id);
-        return;
-      }
-      openPanel(id);
-    },
-    [expandedPanel, foldPanel, openPanel],
-  );
-
-  // chip selection redraws only the declarative panel
-  const selectChip = useCallback(
-    (id: string, value: number) => {
-      setSelectedAmounts(prev => ({...prev, [id]: value}));
-      setExpandedPanel(prev => {
-        if (!prev || prev.id !== id || prev.kind !== 'brand') {
-          return prev;
-        }
-        const index = prev.chipValues.indexOf(value);
-        return {
-          ...prev,
-          selected: index,
-          ctaLabel:
-            index >= 0
-              ? `${t('purchase')}  ${prev.symbol}${formatDenomination(value)}`
-              : t('purchase'),
-        };
-      });
-    },
-    [t],
-  );
-
-  const {panelNode, chevronNode} = useShopExpandedPanel(
-    expandedPanel,
-    ctaPressScale,
-  );
-  const panelHit = useMemo<ShopPanelHit | null>(
-    () =>
-      expandedPanel
-        ? {
-            id: expandedPanel.id,
-            kind: expandedPanel.kind,
-            splitY: expandedPanel.splitY,
-            extras: expandedPanel.extras,
-            chipValues: expandedPanel.chipValues,
-            code: expandedPanel.code,
-            hasCta: expandedPanel.ctaLabel !== '',
-          }
-        : null,
-    [expandedPanel],
-  );
-
-  // collapse rows when the list underneath them changes meaning, and clear
-  // the scroll now — the canvas draws the new rows from it this frame
+  // clear the scroll when the list changes meaning — the canvas draws the
+  // new rows from it this frame
   const setSectionAndReset = useCallback(
     (next: ShopSection) => {
       setSection(next);
-      clearExpanded();
       shopScrollY.value = 0;
     },
-    [clearExpanded, shopScrollY],
+    [shopScrollY],
   );
 
   const handleRowAction = useCallback(
     (action: ShopRowAction) => {
       switch (action.type) {
-        case 'toggle':
-          toggleExpanded(action.id);
-          break;
         case 'heart': {
           const brand =
             brands?.find(b => b.slug === action.id) ??
@@ -673,9 +403,6 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
           }
           break;
         }
-        case 'chip':
-          selectChip(action.id, action.value);
-          break;
         case 'purchase': {
           const brand =
             brands?.find(b => b.slug === action.id) ??
@@ -683,21 +410,18 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
           if (brand) {
             navigation.navigate('NexusShopStack', {
               screen: 'PurchaseForm',
-              params: {
-                brand,
-                initialAmount: selectedAmounts[action.id],
-              },
+              params: {brand},
             });
           }
           break;
         }
-        case 'copy-code':
-          Clipboard.setString(action.code);
-          Alert.alert('Copied!', 'Gift card code copied to clipboard');
-          break;
+        // a redeem code is copied; otherwise the redeem page opens
         case 'open-card': {
           const card = ownedGiftCards.find(gc => gc.id === action.id);
-          if (card?.redeemUrl) {
+          if (card?.redeemCode) {
+            Clipboard.setString(card.redeemCode);
+            Alert.alert('Copied!', 'Gift card code copied to clipboard');
+          } else if (card?.redeemUrl) {
             navigation.navigate('WebPage', {uri: card.redeemUrl});
           }
           break;
@@ -747,9 +471,6 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
       section,
       fetchCards,
       fetchBrands,
-      toggleExpanded,
-      selectChip,
-      selectedAmounts,
     ],
   );
 
@@ -761,9 +482,9 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
   }, [loggedIn, section, setSectionAndReset]);
 
   // leaving the shop only closes the picker (it floats above the closing
-  // surface). Search/panel state must NOT clear here: a row-model rebuild or
-  // panel snap mid-close-fade is a visible glitch — that state simply dies
-  // with the screen when the close pops it.
+  // surface). Search state must NOT clear here: a row-model rebuild
+  // mid-close-fade is a visible glitch — that state simply dies with the
+  // screen when the close pops it.
   const wasActive = useRef(active);
   useEffect(() => {
     if (wasActive.current && !active) {
@@ -789,14 +510,6 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
       handleRowAction,
       refreshing,
       refresh,
-      expandSplit,
-      expandExtras,
-      expandProgress,
-      expandChevronLift,
-      ctaPressScale,
-      panelNode,
-      chevronNode,
-      panelHit,
     }),
     [
       section,
@@ -811,14 +524,6 @@ export const useShopScreenState = (params: Params): ShopScreenState => {
       handleRowAction,
       refreshing,
       refresh,
-      expandSplit,
-      expandExtras,
-      expandProgress,
-      expandChevronLift,
-      ctaPressScale,
-      panelNode,
-      chevronNode,
-      panelHit,
     ],
   );
 };

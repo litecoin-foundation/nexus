@@ -5,7 +5,6 @@ import {
   PaintStyle,
   Skia,
   StrokeCap,
-  StrokeJoin,
   TextAlign,
   TileMode,
 } from '@shopify/react-native-skia';
@@ -84,7 +83,6 @@ interface ShopRowPaints {
   filterIdle: SkPaint;
   filterActive: SkPaint;
   image: SkPaint;
-  chevron: SkPaint;
 }
 
 export interface ShopRowParagraphs {
@@ -119,9 +117,6 @@ const makePaints = (screenHeight: number): ShopRowPaints => {
   const filterActive = makeStroke(TINT, screenHeight * 0.002);
   filterIdle.setStrokeCap(StrokeCap.Round);
   filterActive.setStrokeCap(StrokeCap.Round);
-  const chevron = makeStroke('#A6ACB5', screenHeight * 0.0022);
-  chevron.setStrokeCap(StrokeCap.Round);
-  chevron.setStrokeJoin(StrokeJoin.Round);
   return {
     rowBackground: makePaint('#ffffff'),
     headerBackground: makePaint(SHEET_BACKGROUND),
@@ -136,7 +131,6 @@ const makePaints = (screenHeight: number): ShopRowPaints => {
     filterIdle,
     filterActive,
     image: Skia.Paint(),
-    chevron,
   };
 };
 
@@ -196,7 +190,7 @@ const buildItem = (
           primary,
           700,
           TITLE_TEXT,
-          layout.titleMaxWidth,
+          layout.brandTitleMaxWidth,
           clamp,
         ),
         detail: buildParagraph(
@@ -368,23 +362,6 @@ const drawLogoTile = (
       cy - built.initial.getHeight() / 2,
     );
   }
-};
-
-const drawChevron = (
-  canvas: SkCanvas,
-  context: ShopRowContext,
-  cx: number,
-  cy: number,
-  expanded: boolean,
-) => {
-  'worklet';
-  const {layout, paints} = context;
-  const s = layout.chevronSize;
-  // stroked chevron, pointing down until the row opens
-  const tipY = expanded ? cy - s / 4 : cy + s / 4;
-  const endY = expanded ? cy + s / 4 : cy - s / 4;
-  canvas.drawLine(cx - s / 2, endY, cx, tipY, paints.chevron);
-  canvas.drawLine(cx, tipY, cx + s / 2, endY, paints.chevron);
 };
 
 // the glass blue capsule, trimmed to its rim for row scale
@@ -645,11 +622,8 @@ const drawItem = (
         (model.heart === 2 ? icons.heartActive : icons.heartInactive) ?? null;
       if (heart) {
         const size = layout.heartSize;
-        const cx =
-          screenWidth -
-          layout.pad -
-          layout.chevronZoneWidth -
-          layout.heartZoneWidth / 2;
+        // flush with the right edge, like the gift cards' amount column
+        const cx = screenWidth - layout.pad - size / 2;
         canvas.drawImageRect(
           heart,
           Skia.XYWHRect(0, 0, heart.width(), heart.height()),
@@ -658,13 +632,6 @@ const drawItem = (
         );
       }
     }
-    drawChevron(
-      canvas,
-      context!,
-      screenWidth - layout.pad - layout.chevronZoneWidth / 2,
-      cellCy,
-      false,
-    );
     return;
   }
 
@@ -707,17 +674,8 @@ const drawItem = (
     );
   }
 
-  if (model.kind === 'giftcard') {
-    drawChevron(
-      canvas,
-      context!,
-      screenWidth - layout.pad - layout.chevronZoneWidth / 2,
-      y + layout.cellHeight - cellPadV - layout.chevronSize / 2,
-      false,
-    );
-    if (model.faded) {
-      canvas.drawRect(Skia.XYWHRect(0, y, screenWidth, height), paints.fade);
-    }
+  if (model.kind === 'giftcard' && model.faded) {
+    canvas.drawRect(Skia.XYWHRect(0, y, screenWidth, height), paints.fade);
   }
 };
 

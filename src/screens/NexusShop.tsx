@@ -450,12 +450,6 @@ const NexusShop: React.FC<Props> = props => {
       transition,
       morphFrom,
       headerShrink,
-      expandSplit: state.expandSplit,
-      expandExtras: state.expandExtras,
-      expandProgress: state.expandProgress,
-      expandChevronLift: state.expandChevronLift,
-      panelNode: state.panelNode,
-      chevronNode: state.chevronNode,
       onSelectSection,
       drawerOpen,
       onBack: closeShop,
@@ -471,12 +465,6 @@ const NexusShop: React.FC<Props> = props => {
       transition,
       morphFrom,
       headerShrink,
-      state.expandSplit,
-      state.expandExtras,
-      state.expandProgress,
-      state.expandChevronLift,
-      state.panelNode,
-      state.chevronNode,
       onSelectSection,
       drawerOpen,
       closeShop,
@@ -525,6 +513,8 @@ const NexusShop: React.FC<Props> = props => {
                 placeholderTextColor="rgba(255, 255, 255, 0.55)"
                 returnKeyType="search"
                 autoCorrect={false}
+                autoComplete="off"
+                allowFontScaling={false}
                 selectionColor="#ffffff"
               />
               {searchInput !== '' ? (
@@ -544,8 +534,6 @@ const NexusShop: React.FC<Props> = props => {
             rowModels={state.rowModels}
             section={state.section}
             active={visible}
-            panelHit={state.panelHit}
-            ctaPressScale={state.ctaPressScale}
             onRowAction={state.handleRowAction}
             onScrollActivity={onScrollActivity}
             scrollY={scrollY}
@@ -629,9 +617,10 @@ const getStyles = (
       flex: 1,
       color: '#ffffff',
       fontFamily: 'Satoshi Variable',
-      fontSize: screenHeight * 0.017,
+      fontStyle: 'normal',
       fontWeight: '500',
-      paddingVertical: 0,
+      letterSpacing: -0.39,
+      fontSize: screenHeight * 0.02,
     },
     searchClear: {
       width: screenHeight * 0.024,

@@ -221,12 +221,6 @@ interface Props {
   shopTransition: SharedValue<number>;
   shopMorphFrom: SharedValue<number>;
   shopHeaderShrink: SharedValue<number>;
-  shopExpandSplit: SharedValue<number>;
-  shopExpandExtras: SharedValue<number>;
-  shopExpandProgress: SharedValue<number>;
-  shopExpandChevronLift: SharedValue<number>;
-  shopPanel?: React.ReactNode;
-  shopChevron?: React.ReactNode;
   activeSheet: number;
   cardSwapOpacity: SharedValue<number>;
   shopDisabled: boolean;
@@ -249,12 +243,6 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
     shopTransition,
     shopMorphFrom,
     shopHeaderShrink,
-    shopExpandSplit,
-    shopExpandExtras,
-    shopExpandProgress,
-    shopExpandChevronLift,
-    shopPanel,
-    shopChevron,
     activeSheet,
     cardSwapOpacity,
     shopDisabled,
@@ -546,12 +534,6 @@ const LiquidGlassTabBar: React.FC<Props> = props => {
         shopTransition={shopTransition}
         shopMorphFrom={shopMorphFrom}
         shopHeaderShrink={shopHeaderShrink}
-        shopExpandSplit={shopExpandSplit}
-        shopExpandExtras={shopExpandExtras}
-        shopExpandProgress={shopExpandProgress}
-        shopExpandChevronLift={shopExpandChevronLift}
-        shopPanel={shopPanel}
-        shopChevron={shopChevron}
         cardSwapOpacity={cardSwapOpacity}
         contentActivity={contentActivity}
         pressScale={pressScale}

@@ -42,19 +42,11 @@ const GlassChrome: React.FC = () => {
   const fallbackTransition = useSharedValue(0);
   const fallbackMorphFrom = useSharedValue(0);
   const fallbackHeaderShrink = useSharedValue(0);
-  const fallbackSplit = useSharedValue(1e9);
-  const fallbackExtras = useSharedValue(0);
-  const fallbackProgress = useSharedValue(1);
-  const fallbackChevronLift = useSharedValue(0);
   const shopValuesRef = useRef({
     scrollY: fallbackScrollY,
     transition: fallbackTransition,
     morphFrom: fallbackMorphFrom,
     headerShrink: fallbackHeaderShrink,
-    expandSplit: fallbackSplit,
-    expandExtras: fallbackExtras,
-    expandProgress: fallbackProgress,
-    expandChevronLift: fallbackChevronLift,
   });
   if (shop) {
     shopValuesRef.current = {
@@ -62,10 +54,6 @@ const GlassChrome: React.FC = () => {
       transition: shop.transition,
       morphFrom: shop.morphFrom,
       headerShrink: shop.headerShrink,
-      expandSplit: shop.expandSplit,
-      expandExtras: shop.expandExtras,
-      expandProgress: shop.expandProgress,
-      expandChevronLift: shop.expandChevronLift,
     };
   }
   const shopValues = shopValuesRef.current;
@@ -136,12 +124,6 @@ const GlassChrome: React.FC = () => {
         shopTransition={shopValues.transition}
         shopMorphFrom={shopValues.morphFrom}
         shopHeaderShrink={shopValues.headerShrink}
-        shopExpandSplit={shopValues.expandSplit}
-        shopExpandExtras={shopValues.expandExtras}
-        shopExpandProgress={shopValues.expandProgress}
-        shopExpandChevronLift={shopValues.expandChevronLift}
-        shopPanel={shop?.panelNode}
-        shopChevron={shop?.chevronNode}
         activeSheet={shopPresented ? 0 : wallet.activeSheet}
         cardSwapOpacity={wallet.cardSwapOpacity}
         shopDisabled={!isInternetReachable}

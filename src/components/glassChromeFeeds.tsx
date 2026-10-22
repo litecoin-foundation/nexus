@@ -50,12 +50,6 @@ export interface GlassShopFeed {
   // px the card has shed above the rows: 0 on browse, the search block on
   // the sections that have no search pill. The rows ride the card's edge.
   headerShrink: SharedValue<number>;
-  expandSplit: SharedValue<number>;
-  expandExtras: SharedValue<number>;
-  expandProgress: SharedValue<number>;
-  expandChevronLift: SharedValue<number>;
-  panelNode: React.ReactNode;
-  chevronNode: React.ReactNode;
   onSelectSection: (index: number) => void;
   drawerOpen: boolean;
   onBack: () => void;
