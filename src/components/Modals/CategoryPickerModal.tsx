@@ -12,6 +12,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  InteractionManager,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -24,15 +25,14 @@ import Animated, {
 import {
   Canvas,
   BackdropFilter,
+  Group,
   ImageFilter,
   Image as SkiaImage,
   Rect,
   RoundedRect,
-  LinearGradient,
   Skia,
   TileMode,
   makeImageFromView,
-  vec,
 } from '@shopify/react-native-skia';
 import type {SkImage} from '@shopify/react-native-skia';
 
@@ -42,7 +42,7 @@ import {
   getShopListTop,
   SHOP_LABEL_HEIGHT_RATIO,
 } from '../GiftCardShop/GlassShopRows';
-import {ROW_BORDER} from '../GlassTxRows';
+import {ROW_BORDER, SHEET_BACKGROUND} from '../GlassTxRows';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -66,8 +66,10 @@ interface Props {
   onSelect: (category: TilloCategory | null) => void;
 }
 
-const FALLBACK_GRADIENT = ['#0A1628', '#122B5C', '#0E1F3C'];
 const GLASS_BLUR_SIGMA = 12;
+// NOTE: The snapshot only covers the panel plus the ring its blur and refraction
+// sample from. Everywhere else the live page shows through untouched.
+const RING_OUTSET = 24;
 
 interface GlassModalProps {
   isOpened: boolean;
@@ -103,55 +105,60 @@ function LiquidGlassCategoryPicker({
   const [capturedImage, setCapturedImage] = useState<SkImage | null>(null);
   const capturedRef = useRef<SkImage | null>(null);
 
-  const captureScreen = useCallback(async () => {
-    if (captureRef?.current) {
-      try {
-        const img = await makeImageFromView(captureRef);
-        capturedRef.current = img;
-        setCapturedImage(prev => {
-          if (prev && prev !== img) {
-            prev.dispose?.();
-          }
-          return img;
-        });
-      } catch {
-        setCapturedImage(null);
-      }
-    }
-  }, [captureRef]);
+  const scale = useSharedValue(0.9);
+  const modalOpacity = useSharedValue(0);
+  const contentOpacity = useSharedValue(0);
+
+  const [isVisible, setVisible] = useState(false);
+  const animTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+  const captureTask = useRef<{cancel: () => void} | undefined>(undefined);
+  const captureRaf = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     return () => {
+      clearTimeout(animTimeout.current);
       capturedRef.current?.dispose?.();
       capturedRef.current = null;
     };
   }, []);
 
-  const scale = useSharedValue(0.9);
-  const modalOpacity = useSharedValue(0);
-  const contentOpacity = useSharedValue(0);
-  const backdropOpacity = useSharedValue(0);
-
-  const [isVisible, setVisible] = useState(false);
-  const animTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
-
   useEffect(() => {
+    let cancelled = false;
     if (isOpened) {
-      captureScreen();
-      setVisible(true);
-      scale.value = withSpring(1, {
-        duration: 450,
-        dampingRatio: 0.8,
-        reduceMotion: ReduceMotion.Never,
-      });
-      modalOpacity.value = withTiming(1, {duration: 180});
-      contentOpacity.value = withTiming(1, {duration: 280});
-      backdropOpacity.value = withTiming(1, {duration: 220});
-    } else {
+      clearTimeout(animTimeout.current);
+      if (!isVisible) {
+        captureTask.current = InteractionManager.runAfterInteractions(() => {
+          captureRaf.current = requestAnimationFrame(async () => {
+            if (cancelled) {
+              return;
+            }
+            let img: SkImage | null = null;
+            if (captureRef?.current) {
+              try {
+                img = await makeImageFromView(captureRef);
+              } catch {
+                img = null;
+              }
+            }
+            if (cancelled) {
+              img?.dispose?.();
+              return;
+            }
+            capturedRef.current = img;
+            setCapturedImage(prev => {
+              if (prev && prev !== img) {
+                prev.dispose?.();
+              }
+              return img;
+            });
+            setVisible(true);
+          });
+        });
+      }
+    } else if (isVisible) {
       scale.value = withTiming(0.92, {duration: 180});
       modalOpacity.value = withTiming(0, {duration: 180});
       contentOpacity.value = withTiming(0, {duration: 140});
-      backdropOpacity.value = withTiming(0, {duration: 180});
       animTimeout.current = setTimeout(() => {
         setVisible(false);
         capturedRef.current = null;
@@ -161,9 +168,28 @@ function LiquidGlassCategoryPicker({
         });
       }, 230);
     }
-    return () => clearTimeout(animTimeout.current);
+    return () => {
+      cancelled = true;
+      captureTask.current?.cancel();
+      if (captureRaf.current !== undefined) {
+        cancelAnimationFrame(captureRaf.current);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpened]);
+
+  useEffect(() => {
+    if (isOpened && isVisible) {
+      scale.value = withSpring(1, {
+        duration: 450,
+        dampingRatio: 0.8,
+        reduceMotion: ReduceMotion.Never,
+      });
+      modalOpacity.value = withTiming(1, {duration: 180});
+      contentOpacity.value = withTiming(1, {duration: 280});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpened, isVisible]);
 
   // milky frosted sheet, scaling out of its top-right anchor
   const shaderBuilder = useMemo(
@@ -192,9 +218,17 @@ function LiquidGlassCategoryPicker({
     );
   });
 
-  const animatedBackdropStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
+  const ringClip = useMemo(
+    () =>
+      Skia.XYWHRect(
+        panelLeft - RING_OUTSET,
+        panelTop - RING_OUTSET,
+        panelWidth + 2 * RING_OUTSET,
+        panelHeight + 2 * RING_OUTSET,
+      ),
+    [panelLeft, panelTop, panelWidth, panelHeight],
+  );
+
   const animatedCanvasStyle = useAnimatedStyle(() => ({
     opacity: modalOpacity.value,
   }));
@@ -252,45 +286,36 @@ function LiquidGlassCategoryPicker({
     <View
       style={[styles.overlay, {width: SCREEN_WIDTH, height: SCREEN_HEIGHT}]}
       pointerEvents="box-none">
-      <Animated.View
-        style={[
-          {width: SCREEN_WIDTH, height: SCREEN_HEIGHT},
-          animatedBackdropStyle,
-        ]}
-        pointerEvents="box-none">
-        <TouchableOpacity
-          activeOpacity={1}
-          style={[
-            {width: SCREEN_WIDTH, height: SCREEN_HEIGHT},
-            styles.backdrop,
-          ]}
-          onPress={close}
-        />
-      </Animated.View>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={{width: SCREEN_WIDTH, height: SCREEN_HEIGHT}}
+        onPress={close}
+      />
 
-      {/* the frosted sheet refracts a one-shot capture of the screen */}
       <Animated.View
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, animatedCanvasStyle]}>
         <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-          {capturedImage ? (
-            <SkiaImage
-              image={capturedImage}
-              x={0}
-              y={0}
-              width={SCREEN_WIDTH}
-              height={SCREEN_HEIGHT}
-              fit="cover"
-            />
-          ) : (
-            <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
-              <LinearGradient
-                start={vec(0, 0)}
-                end={vec(SCREEN_WIDTH, SCREEN_HEIGHT)}
-                colors={FALLBACK_GRADIENT}
+          <Group clip={ringClip}>
+            {capturedImage ? (
+              <SkiaImage
+                image={capturedImage}
+                x={0}
+                y={0}
+                width={SCREEN_WIDTH}
+                height={SCREEN_HEIGHT}
+                fit="cover"
               />
-            </Rect>
-          )}
+            ) : (
+              <Rect
+                x={0}
+                y={0}
+                width={SCREEN_WIDTH}
+                height={SCREEN_HEIGHT}
+                color={SHEET_BACKGROUND}
+              />
+            )}
+          </Group>
           <BackdropFilter filter={<ImageFilter filter={glassFilter} />} />
           <RoundedRect
             x={panelLeft + 0.5}
@@ -368,9 +393,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     zIndex: 10,
-  },
-  backdrop: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   panel: {
     position: 'absolute',
